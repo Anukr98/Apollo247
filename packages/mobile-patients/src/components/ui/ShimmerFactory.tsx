@@ -307,9 +307,34 @@ const styles = StyleSheet.create({
     marginTop: 12,
     height: 40,
   },
+  itemPrice: {
+    ...theme.viewStyles.cardViewStyle,
+    width: '90%',
+    marginRight: 5,
+    marginTop: 5,
+    height: 40,
+  },
+  itemPackagePrice: {
+    ...theme.viewStyles.cardViewStyle,
+    width: '100%',
+    marginRight: 5,
+    marginTop: 5,
+    height: 60,
+  },
   rowStyle: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  consultCtaStyle: {
+    ...theme.viewStyles.cardViewStyle,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 15,
+    flexDirection: 'row',
+    minHeight: 59,
+    width: width / 2 - 22,
+    marginRight: 12,
+    marginBottom: 12,
+    alignItems: 'center',
   },
 });
 
@@ -787,6 +812,25 @@ export const renderSlotItemShimmer = () => {
     />
   );
 };
+export const renderItemPriceShimmer = () => {
+  return (
+    <ShimmerPlaceHolder
+      shimmerColors={shimmerColors}
+      LinearGradient={LinearGradient}
+      shimmerStyle={styles.itemPrice}
+    />
+  );
+};
+
+export const renderPackageItemPriceShimmer = () => {
+  return (
+    <ShimmerPlaceHolder
+      shimmerColors={shimmerColors}
+      LinearGradient={LinearGradient}
+      shimmerStyle={styles.itemPackagePrice}
+    />
+  );
+};
 
 export const renderDiagnosticWidgetShimmer = (showHeading: boolean) => {
   return (
@@ -815,5 +859,15 @@ export const renderDiagnosticWidgetHeadingShimmer = () => {
         shimmerStyle={styles.diagnosticCard2}
       />
     </View>
+  );
+};
+
+export const consultWidgetShimmer = () => {
+  return (
+    <ShimmerPlaceHolder
+      shimmerColors={shimmerColors}
+      LinearGradient={LinearGradient}
+      shimmerStyle={styles.consultCtaStyle}
+    />
   );
 };

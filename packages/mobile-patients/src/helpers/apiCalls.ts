@@ -664,17 +664,6 @@ export const searchPickupStoresApi = async (
   );
 };
 
-export const searchClinicApi = async (): Promise<AxiosResponse<ClinicDetailsResponse>> => {
-  return Axios.post(
-    AppConfig.Configuration.GET_CLINICS[0] as string,
-    {
-      ...(AppConfig.Configuration.GET_CLINICS[1] as object),
-    },
-    {
-      headers: {},
-    }
-  );
-};
 
 export const getStoreInventoryApi = (
   shopId: string,

@@ -7,6 +7,7 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
   CircleLogo,
   ClockIcon,
+  ExpressSlotClock,
   InfoIconRed,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -45,7 +46,11 @@ import {
   GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  DiagnosticData,
+  LocationData,
+  useAppCommonData,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   findDiagnosticsByItemIDsAndCityIDVariables,
   findDiagnosticsByItemIDsAndCityID,
@@ -67,8 +72,8 @@ import { Breadcrumb } from '@aph/mobile-patients/src/components/MedicineListing/
 import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { FAQComponent } from '@aph/mobile-patients/src/components/SubscriptionMembership/Components/FAQComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { PackageCard } from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
-import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
+import PackageCard from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
+import ItemCard from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import {
   findDiagnosticsWidgetsPricing,
   findDiagnosticsWidgetsPricingVariables,
@@ -78,6 +83,7 @@ import _ from 'lodash';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { getDiagnosticExpressSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 
 const screenWidth = Dimensions.get('window').width;
 export interface TestPackageForDetails extends TestPackage {
@@ -135,6 +141,8 @@ export interface TestDetailsProps
     comingFrom?: string;
     itemName?: string;
     movedFrom?: string;
+    cityId?: string;
+    changeCTA?: boolean;
   }> {}
 
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
@@ -150,17 +158,26 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     setModifyHcCharges,
     setModifiedOrderItemIds,
     setHcCharges,
-    setAreaSelected,
     setModifiedOrder,
+    setModifiedPatientCart,
+    setDistanceCharges,
+    setDeliveryAddressId,
   } = useDiagnosticsCart();
   const { pharmacyCircleAttributes } = useShoppingCart();
 
-  const { diagnosticServiceabilityData, isDiagnosticLocationServiceable } = useAppCommonData();
+  const {
+    diagnosticServiceabilityData,
+    isDiagnosticLocationServiceable,
+    diagnosticLocation,
+  } = useAppCommonData();
 
   const testDetails = props.navigation.getParam('testDetails', {} as TestPackageForDetails);
   const testName = props.navigation.getParam('itemName');
+  const changeCTA = props.navigation.getParam('changeCTA');
+
   const { setLoading: setLoadingContext, showAphAlert, hideAphAlert } = useUIElements();
 
+  const addressCityId = props.navigation.getParam('cityId');
   const movedFrom = props.navigation.getParam('comingFrom');
   const isDeep = props.navigation.getParam('movedFrom');
   const itemId =
@@ -171,12 +188,20 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     modifiedOrderItemIds?.length &&
     modifiedOrderItemIds?.find((id: number) => Number(id) == Number(itemId));
 
+  //if passed from cartPage
+  const cityIdToUse = !!addressCityId
+    ? Number(addressCityId)
+    : Number(
+        diagnosticServiceabilityData?.cityId! || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
+      );
+
   const [cmsTestDetails, setCmsTestDetails] = useState((([] as unknown) as CMSTestDetails) || []);
   const [testInfo, setTestInfo] = useState(movedFrom == 'TestsCart' ? testDetails : ({} as any));
   const [moreInclusions, setMoreInclusions] = useState(false);
   const [readMore, setReadMore] = useState(true);
   const [errorState, setErrorState] = useState(false);
   const [widgetsData, setWidgetsData] = useState([] as any);
+  const [expressSlotMsg, setExpressSlotMsg] = useState<string>('');
 
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
 
@@ -206,6 +231,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       fetchPolicy: 'no-cache',
     });
 
+  useEffect(() => {
+    getExpressSlots(diagnosticServiceabilityData!, diagnosticLocation!);
+  }, []);
+
   /**
    * fetching the details wrt itemId
    */
@@ -226,8 +255,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       'diagnostic-details',
       Number(itemId),
       !!itemName ? itemName : cmsTestDetails?.diagnosticUrlAlias,
-      Number(diagnosticServiceabilityData?.cityId!) ||
-        AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
+      cityIdToUse
     );
     if (res?.data?.success) {
       const result = g(res, 'data', 'data');
@@ -237,7 +265,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
       !!result?.diagnosticWidgetsData &&
         result?.diagnosticWidgetsData?.length > 0 &&
-        fetchWidgetPrices(result?.diagnosticWidgetsData, diagnosticServiceabilityData?.cityId!);
+        fetchWidgetPrices(result?.diagnosticWidgetsData, cityIdToUse);
     } else {
       setLoadingContext?.(false);
       setErrorState(true);
@@ -262,9 +290,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           sourceHeaders,
         },
         variables: {
-          cityID:
-            Number(diagnosticServiceabilityData?.cityId!) ||
-            AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
+          cityID: cityIdToUse,
           itemIDs: listOfIds,
         },
         fetchPolicy: 'no-cache',
@@ -334,7 +360,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     }
   };
 
-  const fetchWidgetPrices = async (widgetsData: any, cityId: string) => {
+  const fetchWidgetPrices = async (widgetsData: any, cityId: string | number) => {
     const itemIds = widgetsData?.map((item: any) =>
       item?.diagnosticWidgetData?.map((data: any, index: number) => Number(data?.itemId))
     );
@@ -342,7 +368,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     try {
       const res = Promise.all(
         itemIds?.map((item: any) =>
-          fetchPricesForCityId(Number(cityId!) || 9, item?.length > 12 ? item?.slice(0, 12) : item)
+          fetchPricesForCityId(Number(cityId!), item?.length > 12 ? item?.slice(0, 12) : item)
         )
       );
 
@@ -371,6 +397,41 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       setLoadingContext?.(false);
     }
   };
+
+  async function getExpressSlots(
+    serviceabilityObject: DiagnosticData,
+    selectedAddress: LocationData
+  ) {
+    const getLat = selectedAddress?.latitude!;
+    const getLng = selectedAddress?.longitude!;
+    const getZipcode = selectedAddress?.pincode;
+    const getServiceablityObject = {
+      cityID: Number(serviceabilityObject?.cityId),
+      stateID: Number(serviceabilityObject?.stateId),
+    };
+    try {
+      const res = await getDiagnosticExpressSlots(
+        client,
+        getLat,
+        getLng,
+        String(getZipcode),
+        getServiceablityObject
+      );
+      if (res?.data?.getUpcomingSlotInfo) {
+        const getResponse = res?.data?.getUpcomingSlotInfo;
+        if (getResponse?.status) {
+          setExpressSlotMsg(getResponse?.slotInfo);
+        } else {
+          setExpressSlotMsg('');
+        }
+      } else {
+        setExpressSlotMsg('');
+      }
+    } catch (error) {
+      CommonBugFender('getExpressSlots_TestDetails', error);
+      setExpressSlotMsg('');
+    }
+  }
 
   const homeBreadCrumb: TestBreadcrumbLink = {
     title: 'Home',
@@ -410,7 +471,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     setModifyHcCharges?.(0);
     setModifiedOrderItemIds?.([]);
     setHcCharges?.(0);
-    setAreaSelected?.({});
+    setDistanceCharges?.(0);
+    setModifiedPatientCart?.([]);
+    setDeliveryAddressId?.('');
     //go back to homepage
     props.navigation.navigate('TESTS');
   }
@@ -434,7 +497,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         breadcrumb.push({
           title: 'Cart',
           onPress: () => {
-            navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TestsCart);
+            navigateToScreenWithEmptyStack(props.navigation, AppRoutes.AddPatients);
           },
         });
       }
@@ -916,9 +979,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       <TestListingHeader
         navigation={props.navigation}
         headerText={nameFormater(
-          !!modifiedOrder && !isEmptyObject(modifiedOrder)
-            ? 'MODIFIED ORDER'
-            : 'TEST PACKAGE DETAIL',
+          !!modifiedOrder && !isEmptyObject(modifiedOrder) ? 'MODIFY ORDER' : 'TEST PACKAGE DETAIL',
           'upper'
         )}
         movedFrom={'testDetails'}
@@ -976,6 +1037,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
             <PackageCard
               data={data}
+              diagnosticWidgetData={data?.diagnosticWidgetData}
               isCircleSubscribed={isDiagnosticCircleSubscription}
               isServiceable={isDiagnosticLocationServiceable}
               isVertical={false}
@@ -1006,6 +1068,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
             <ItemCard
               data={data}
+              diagnosticWidgetData={data?.diagnosticWidgetData}
               isCircleSubscribed={isDiagnosticCircleSubscription}
               isServiceable={isDiagnosticLocationServiceable}
               isVertical={false}
@@ -1037,7 +1100,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       discountToDisplay,
       DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS
     );
-
     const testInclusions =
       testInfo?.inclusions == null
         ? [Number(itemId)]
@@ -1045,10 +1107,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         ? testInfo?.inclusions
         : [Number(testInfo?.inclusions)];
 
-    addCartItem?.({
-      id: `${itemId!}`,
+    const addedItems = {
+      id: `${itemId}`,
       mou: 1,
-      name: cmsTestDetails?.diagnosticItemName || testInfo?.itemName,
+      name: cmsTestDetails?.diagnosticItemName || testInfo?.ItemName,
       price: price,
       specialPrice: specialPrice! | price,
       circlePrice: circlePrice,
@@ -1057,14 +1119,32 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       discountSpecialPrice: discountSpecialPrice,
       thumbnail: cmsTestDetails?.diagnosticItemImageUrl,
       collectionMethod: TEST_COLLECTION_TYPE.HC,
-      packageMrp: Number(testInfo?.packageMrp!),
       groupPlan: testInfo?.promoteCircle
         ? DIAGNOSTIC_GROUP_PLAN.CIRCLE
         : testInfo?.promoteDiscount
         ? DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
         : DIAGNOSTIC_GROUP_PLAN.ALL,
+      packageMrp: Number(testInfo?.packageMrp!),
       inclusions: testInclusions,
-    });
+      isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+    };
+
+    isModify &&
+      setModifiedPatientCart?.([
+        {
+          patientId: modifiedOrder?.patientId,
+          cartItems: cartItems?.concat(addedItems),
+        },
+      ]);
+    addCartItem?.(addedItems);
+
+    if (movedFrom === AppRoutes.CartPage && changeCTA) {
+      isModify
+        ? props.navigation.navigate(AppRoutes.CartPage, {
+            orderDetails: modifiedOrder,
+          })
+        : props.navigation.navigate(AppRoutes.AddPatients);
+    }
   }
 
   function onPressRemoveFromCart() {
@@ -1073,6 +1153,17 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     }
     removeCartItem!(`${itemId}`);
   }
+
+  const renderExpressSlots = () => {
+    return (
+      <View style={styles.outerExpressView}>
+        <View style={styles.innerExpressView}>
+          <ExpressSlotClock style={styles.expressSlotIcon} />
+          <Text style={styles.expressSlotText}>{expressSlotMsg}</Text>
+        </View>
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView
@@ -1083,6 +1174,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       {!errorState ? (
         <>
           {renderHeader()}
+          {expressSlotMsg != '' ? renderExpressSlots() : null}
           {renderBreadCrumb()}
           <ScrollView
             bounces={false}
@@ -1105,17 +1197,25 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               title={
                 isAlreadyPartOfOrder
                   ? 'ALREADY ADDED'
+                  : movedFrom === AppRoutes.CartPage && changeCTA
+                  ? 'ADD & PROCEED TO CART'
                   : isAddedToCart
-                  ? 'PROCEED TO CART '
+                  ? 'PROCEED TO CART'
                   : 'ADD TO CART'
               }
               onPress={() =>
                 isAlreadyPartOfOrder
-                  ? props.navigation.navigate(AppRoutes.TestsCart, {
+                  ? props.navigation.navigate(AppRoutes.CartPage, {
                       orderDetails: modifiedOrder,
                     })
+                  : movedFrom === AppRoutes.CartPage && changeCTA
+                  ? onPressAddToCart()
                   : isAddedToCart
-                  ? props.navigation.navigate(AppRoutes.TestsCart)
+                  ? isModify
+                    ? props.navigation.navigate(AppRoutes.CartPage, {
+                        orderDetails: modifiedOrder,
+                      })
+                    : props.navigation.navigate(AppRoutes.AddPatients)
                   : onPressAddToCart()
               }
             />
@@ -1309,5 +1409,17 @@ const styles = StyleSheet.create({
     borderTopColor: '#02475B',
     opacity: 0.3,
     borderTopWidth: 1,
+  },
+  outerExpressView: { backgroundColor: theme.colors.APP_GREEN, marginBottom: 2 },
+  innerExpressView: {
+    flexDirection: 'row',
+    padding: 8,
+    alignItems: 'center',
+    width: '97%',
+  },
+  expressSlotIcon: { width: 37, height: 37, resizeMode: 'contain' },
+  expressSlotText: {
+    ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 18),
+    marginLeft: 16,
   },
 });

@@ -63,7 +63,11 @@ import { useFetchHealthCredits } from '@aph/mobile-patients/src/components/Payme
 import { HealthCredits } from '@aph/mobile-patients/src/components/PaymentGateway/Components/HealthCredits';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useGetPaymentMethods } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useGetPaymentMethods';
-import { diagnosticPaymentSettings } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  createJusPayOrder,
+  diagnosticPaymentSettings,
+  processDiagnosticsCODOrderV2,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   isEmptyObject,
   paymentModeVersionCheck,
@@ -87,7 +91,7 @@ export interface PaymentMethodsProps extends NavigationScreenProps {
 }
 
 export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
-  const { modifiedOrder, deliveryAddressCityId } = useDiagnosticsCart();
+  const { modifiedOrder, deliveryAddressCityId, patientCartItems } = useDiagnosticsCart();
   const paymentId = props.navigation.getParam('paymentId');
   const customerId = props.navigation.getParam('customerId');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
@@ -100,6 +104,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const businessLine = props.navigation.getParam('businessLine');
   const isDiagnostic = businessLine === 'diagnostics';
   const disableCod = props.navigation.getParam('disableCOD');
+  const orderResponse = props.navigation.getParam('orderResponse');
   const { currentPatient } = useAllCurrentPatients();
   const [banks, setBanks] = useState<any>([]);
   const [isTxnProcessing, setisTxnProcessing] = useState<boolean>(false);
@@ -433,6 +438,18 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       : renderErrorPopup();
   }
 
+  function createOrderInputArray() {
+    var array = [] as any;
+    console.log({ orderResponse });
+    orderResponse?.map((item) => {
+      array.push({
+        orderID: item?.order_id,
+        amount: item?.amount,
+      });
+    });
+    return array;
+  }
+
   async function onPressPayByCash() {
     triggerWebengege('Cash');
     setisTxnProcessing(true);
@@ -458,6 +475,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         data?.createOrderV2?.payment_status || data?.updateOrderDetails?.payment_status;
       status == 'TXN_SUCCESS' ? navigatetoOrderStatus(false, 'success') : showTxnFailurePopUP();
     } catch (e) {
+      console.log({ e });
       showTxnFailurePopUP();
     }
   }

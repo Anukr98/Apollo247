@@ -3,16 +3,15 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
   Morning,
   Afternoon,
-  Night,
   MorningSelected,
   AfternoonSelected,
-  NightSelected,
   EmptySlot,
   CrossPopup,
+  PremiumIcon,
+  NightSelected,
+  Night,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { GET_CUSTOMIZED_DIAGNOSTIC_SLOTS } from '@aph/mobile-patients/src/graphql/profiles';
 import {
-  formatTestSlot,
   g,
   getTestSlotDetailsByTime,
   getUniqueTestSlots,
@@ -33,53 +32,76 @@ import {
   FlatList,
 } from 'react-native';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import {
-  getDiagnosticSlotsCustomized,
-  getDiagnosticSlotsCustomizedVariables,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsCustomized';
 import { Overlay } from 'react-native-elements';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { createAddressObject } from '@aph/mobile-patients/src/utils/commonUtils';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { diagnosticGetCustomizedSlotsV2 } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 export interface TestSlotSelectionOverlayNewProps extends AphOverlayProps {
+  showInOverlay?: boolean;
   maxDate: Date;
   date: Date;
   slotInfo?: TestSlot;
   slots: TestSlot[];
-  areaId: string;
+  areaId?: string;
   isReschdedule?: boolean;
   slotBooked?: string;
   isTodaySlotUnavailable?: boolean;
-  onSchedule: (date: Date, slotInfo: TestSlot) => void;
+  onSchedule: (date1: Date, slotInfo: TestSlot, date?: Date) => void;
   itemId?: any[];
   source?: string;
-  isVisible: boolean;
-  addressDetails?: any;
+  isVisible?: boolean;
+  isPremium?: boolean;
+  heading?: string;
+  slotInput?: any; //define type
+  isFocus?: boolean;
 }
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
+
+const localFormatTestSlot = (slotTime: string) => moment(slotTime, 'hh:mm A')?.format('HH:mm');
+
 export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewProps> = (props) => {
-  const { isTodaySlotUnavailable, maxDate, addressDetails } = props;
+  const {
+    isTodaySlotUnavailable,
+    maxDate,
+    showInOverlay,
+    slotInput,
+    isPremium,
+    isReschdedule,
+  } = props;
+  const { setLoading } = useUIElements();
   const { cartItems } = useDiagnosticsCart();
   const [selectedDayTab, setSelectedDayTab] = useState(0);
   const [slotInfo, setSlotInfo] = useState<TestSlot | undefined>(props.slotInfo);
   const [slots, setSlots] = useState<TestSlot[]>(props.slots);
   const [date, setDate] = useState<Date>(props.date);
+  const [changedDate, setChangedDate] = useState<Date>();
   const [isDateAutoSelected, setIsDateAutoSelected] = useState(true);
   const client = useApolloClient();
-  const [spinner, showSpinner] = useState(false);
   const { onSchedule, isVisible, ...attributes } = props;
-  const uniqueSlots = getUniqueTestSlots(slots);
+  const uniqueSlots = getUniqueTestSlots(slots); //removed sorting
+
   const dt = moment(props.slotBooked!).format('YYYY-MM-DD') || null;
   const tm = moment(props.slotBooked!)?.format('hh:mm A') || null; //format changed from hh:mm
-  const isSameDate = moment().isSame(moment(date), 'date');
-  const itemId = props.itemId;
-  const cartItemsWithId = cartItems?.map((item) => Number(item?.id));
+
   const [selectedDate, setSelectedDate] = useState<string>(moment(date).format('DD') || '');
-  const [newSelectedSlot, setNewSelectedSlot] = useState(
-    `${formatTestSlot(slotInfo?.slotInfo?.startTime!)}` || ''
+  const [isPrepaidSlot, setPrepaidSlot] = useState<boolean>(
+    !!isReschdedule ? false : !!isPremium ? isPremium : false
   );
+  //no need to show premium segregation in case of reschedule
+
+  const [newSelectedSlot, setNewSelectedSlot] = useState(
+    `${localFormatTestSlot(slotInfo?.slotInfo?.startTime!)}` || ''
+  );
+  const [showSpinner, setShowSpinner] = useState<boolean>(false);
+  const [newChangedDate, setNewChangedDate] = useState<Date>();
+  const [noSlotsArray, setNoSlotsArray] = useState([] as any);
+
   type UniqueSlotType = typeof uniqueSlots[0];
 
+  var noSlot = [];
   var offsetDays = 0;
   var offsetDates = 0;
   var offsetTimestamp = 0;
@@ -99,76 +121,14 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   }
   let monthHeading = `${moment().format('MMMM')} ${moment().format('YYYY')}`;
 
-  const fetchSlots = (updatedDate?: Date) => {
-    let dateToCheck = !!updatedDate ? updatedDate : date;
-    const getAddressObject = createAddressObject(addressDetails);
-    if (!isVisible) return;
-    setSelectedDate(moment(dateToCheck).format('DD'));
-    showSpinner(true);
-    client
-      .query<getDiagnosticSlotsCustomized, getDiagnosticSlotsCustomizedVariables>({
-        query: GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
-        fetchPolicy: 'no-cache',
-        variables: {
-          selectedDate: moment(dateToCheck).format('YYYY-MM-DD'),
-          areaID: Number(props.areaId!),
-          itemIds: props.isReschdedule ? itemId! : cartItemsWithId,
-          patientAddressObj: getAddressObject,
-        },
-      })
-      .then(({ data }) => {
-        const diagnosticSlots = g(data, 'getDiagnosticSlotsCustomized', 'slots') || [];
-        const timeToCompare = !!tm && moment(tm, 'hh:mm A')?.format('HH:mm');
-        const updatedDiagnosticSlots =
-          moment(dateToCheck)?.format('YYYY-MM-DD') == dt && props.isReschdedule
-            ? diagnosticSlots?.filter((item) => item?.Timeslot != timeToCompare)
-            : diagnosticSlots;
-        const slotsArray: TestSlot[] = [];
-        updatedDiagnosticSlots?.forEach((item) => {
-          //all the hardcoded values are not returned by api.
-          slotsArray.push({
-            employeeCode: 'apollo_employee_code',
-            employeeName: 'apollo_employee_name',
-            slotInfo: {
-              endTime: item?.Timeslot!,
-              status: 'empty',
-              startTime: item?.Timeslot!,
-              slot: item?.TimeslotID,
-            },
-            date: dateToCheck,
-            diagnosticBranchCode: 'apollo_route',
-          } as TestSlot);
-        });
-        // if slot is empty then refetch it for next date
-        const isSameDate = moment().isSame(moment(date), 'date');
-        const hasReachedEnd = moment(dateToCheck).isSameOrAfter(moment(maxDate), 'date');
-        if (!hasReachedEnd && slotsArray?.length == 0 && isDateAutoSelected) {
-          let changedDate = moment(dateToCheck) //date
-            .add(1, 'day')
-            .toDate();
+  //use formatTestSlot when time is coming in 24hr.
+  let dropDownOptions = uniqueSlots?.map((val) => ({
+    key: `${val?.startTime}`,
+    value: `${val.startTime}`,
+    slotInfo: val,
+  }));
 
-          fetchSlots(changedDate);
-        } else {
-          setSlots(slotsArray);
-          slotsArray?.length && setSlotInfo(slotsArray?.[0]);
-          setNewSelectedSlot(`${formatTestSlot(slotsArray?.[0]?.slotInfo?.startTime!)}` || '');
-          showSpinner(false);
-        }
-      })
-      .catch((e) => {
-        const noHubSlots = g(e, 'graphQLErrors', '0', 'message') === 'NO_HUB_SLOTS';
-        if (!noHubSlots) {
-          handleGraphQlError(e);
-        }
-        showSpinner(false);
-      });
-  };
-
-  useEffect(() => {
-    fetchSlots();
-  }, [date]);
-
-  const dayPhaseArray = [
+  var dayPhaseArray = [
     {
       tab: 0,
       activeImage: <MorningSelected />,
@@ -183,20 +143,121 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     },
   ];
 
-  let dropDownOptions = uniqueSlots?.map((val) => ({
-    key: `${formatTestSlot(val.startTime)}`,
-    value: `${formatTestSlot(val.startTime)}`,
-    data: val,
-  }));
+  useEffect(() => {
+    if (props.isFocus) {
+      setNewSelectedSlot('');
+      fetchSlots();
+    }
+  }, [date, props.isFocus]);
+
+  const fetchSlots = async (updatedDate?: Date) => {
+    let dateToCheck = !!updatedDate
+      ? moment(updatedDate)?.format('YYYY-MM-DD')
+      : moment(date)?.format('YYYY-MM-DD');
+    setSelectedDate(moment(dateToCheck).format('DD'));
+    setLoading?.(true);
+    setShowSpinner(true);
+    try {
+      const slotsResponse = props.isReschdedule
+        ? await diagnosticGetCustomizedSlotsV2(
+            client,
+            slotInput?.addressObject,
+            slotInput?.lineItems,
+            slotInput?.total,
+            dateToCheck, //will be current date
+            slotInput?.serviceabilityObj,
+            slotInput?.orderId
+          )
+        : await diagnosticGetCustomizedSlotsV2(
+            client,
+            slotInput?.addressObject,
+            slotInput?.lineItems,
+            slotInput?.total,
+            dateToCheck, //will be current date
+            slotInput?.serviceabilityObj
+          );
+      if (slotsResponse?.data?.getCustomizedSlotsv2) {
+        const getSlotResponse = slotsResponse?.data?.getCustomizedSlotsv2;
+        const getDistanceCharges = getSlotResponse?.distanceCharges;
+        //get the slots array
+        const diagnosticSlots = getSlotResponse?.available_slots || [];
+
+        const updatedDiagnosticSlots =
+          moment(dateToCheck)?.format('YYYY-MM-DD') == dt && props.isReschdedule
+            ? diagnosticSlots?.filter((item) => item?.slotDetail?.slotDisplayTime != tm)
+            : diagnosticSlots;
+
+        let slotsArray: any = [];
+        updatedDiagnosticSlots?.forEach((item) => {
+          slotsArray.push({
+            slotInfo: {
+              endTime: item?.slotDetail?.slotDisplayTime,
+              isPaidSlot: item?.isPaidSlot,
+              status: 'empty',
+              internalSlots: item?.slotDetail?.internalSlots!,
+              startTime: item?.slotDetail?.slotDisplayTime,
+              distanceCharges: !!item?.isPaidSlot && item?.isPaidSlot ? getDistanceCharges : 0, //would be overall
+            } as any,
+          });
+        });
+
+        const hasReachedEnd = moment(dateToCheck).isSameOrAfter(moment(maxDate), 'date');
+        if (!hasReachedEnd && slotsArray?.length == 0 && isDateAutoSelected) {
+          let changedDate = moment(dateToCheck) //date
+            .add(1, 'day')
+            .toDate();
+
+          fetchSlots(changedDate);
+          const array = noSlotsArray?.concat(moment(dateToCheck)?.format('DD'));
+          setNoSlotsArray(array);
+        } else {
+          setSlots(slotsArray);
+          setChangedDate(moment(dateToCheck)?.toDate());
+          //this needs to be added, if need to select the first slot by default
+          // slotsArray?.length && setSlotInfo(slotsArray?.[0]);
+          // setNewSelectedSlot(`${localFormatTestSlot(slotsArray?.[0]?.slotInfo?.startTime!)}` || ''); //for setting the next date slot by default
+          setLoading?.(false);
+          setShowSpinner(false);
+        }
+      }
+    } catch (e) {
+      const noHubSlots = g(e, 'graphQLErrors', '0', 'message') === 'NO_HUB_SLOTS';
+      if (!noHubSlots) {
+        handleGraphQlError(e);
+      }
+      setLoading?.(false);
+      setShowSpinner(false);
+    }
+  };
 
   const time24 = (item: any) => {
-    return moment(item?.value, 'hh:mm A')?.format('HH');
+    return moment(item?.value, 'hh:mm A')?.format('HH:mm');
   };
+
+  const isEveningSlotsAvailable = dropDownOptions?.filter(
+    (item) => time24(item) >= '17' && time24(item) < '23'
+  );
+  if (!!isEveningSlotsAvailable && isEveningSlotsAvailable?.length > 0) {
+    dayPhaseArray?.push({
+      tab: 2,
+      activeImage: <NightSelected />,
+      inactiveImage: <Night />,
+      title: 'Evening',
+    });
+  }
 
   if (selectedDayTab == 1) {
     //for afternoon 12-17
     dropDownOptions = dropDownOptions?.filter((item) => {
       if (time24(item) >= '12' && time24(item) < '17') {
+        return item;
+      }
+    });
+  } else if (selectedDayTab == 2) {
+    //for evening 17 - 6
+    dropDownOptions = dropDownOptions?.filter((item) => {
+      //changed from < 6 to 23
+      if (time24(item) >= '17' && time24(item) < '23') {
         return item;
       }
     });
@@ -208,11 +269,29 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
       }
     });
   }
+
+  const renderPremiumTag = () => {
+    const distanceCharges =
+      !!slotInfo?.slotInfo?.distanceCharges && slotInfo?.slotInfo?.distanceCharges;
+    return (
+      <>
+        {distanceCharges > 0 ? (
+          <View style={styles.premiumTag}>
+            <PremiumIcon style={styles.premiumIcon} />
+            <Text style={styles.premiumText}>
+              Paid Slot - Additional charge of {string.common.Rs}
+              {slotInfo?.slotInfo?.distanceCharges} will be levied
+            </Text>
+          </View>
+        ) : null}
+      </>
+    );
+  };
   const renderSlotSelectionView = () => {
     return (
-      <View>
+      <View style={{ marginBottom: 30 }}>
         <View style={styles.dayPhaseContainer}>
-          {dayPhaseArray.map((item, index) => (
+          {dayPhaseArray?.map((item, index) => (
             <TouchableOpacity
               style={[
                 styles.dayPhaseStyle,
@@ -231,7 +310,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
                 style={{
                   ...theme.fonts.IBMPlexSansMedium(16),
                   color: selectedDayTab == index ? theme.colors.APP_GREEN : theme.colors.LIGHT_BLUE,
-                  padding: 10,
+                  padding: 16,
                 }}
               >
                 {item?.title}
@@ -240,7 +319,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           ))}
         </View>
         <View>
-          {dropDownOptions?.length != 0 ? (
+          {!!dropDownOptions && dropDownOptions?.length != 0 ? (
             <FlatList
               keyExtractor={(_, index) => index.toString()}
               data={dropDownOptions}
@@ -252,11 +331,15 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
                   onPress={() => {
                     const selectedSlot = getTestSlotDetailsByTime(
                       slots,
-                      (item?.data as UniqueSlotType)?.startTime,
-                      (item?.data as UniqueSlotType)?.endTime
+                      (item?.slotInfo as UniqueSlotType)?.startTime,
+                      (item?.slotInfo as UniqueSlotType)?.endTime
                     );
                     setSlotInfo(selectedSlot);
+                    setPrepaidSlot(item?.slotInfo?.isPaidSlot);
                     setNewSelectedSlot(item?.value);
+                    props.isReschdedule && setNewChangedDate(changedDate);
+                    props.isReschdedule ? null : onSchedule(changedDate!, item, props.date);
+                    // onSchedule(date!, slotInfo!); //if first needs to be selected
                   }}
                   style={[
                     styles.dateContentStyle,
@@ -268,16 +351,24 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
                     },
                   ]}
                 >
-                  <Text
-                    style={[
-                      styles.dateTextStyle,
-                      {
-                        color: newSelectedSlot == item?.value ? 'white' : theme.colors.SHERPA_BLUE,
-                      },
-                    ]}
-                  >
-                    {item?.value}
-                  </Text>
+                  <>
+                    {item?.slotInfo?.isPaidSlot ? (
+                      isReschdedule ? null : (
+                        <PremiumIcon style={styles.premiumIconAbsolute} />
+                      )
+                    ) : null}
+                    <Text
+                      style={[
+                        styles.dateTextStyle,
+                        {
+                          color:
+                            newSelectedSlot == item?.value ? 'white' : theme.colors.SHERPA_BLUE,
+                        },
+                      ]}
+                    >
+                      {moment(item?.value, 'hh:mm A').format('hh:mm a')}
+                    </Text>
+                  </>
                 </TouchableOpacity>
               )}
             />
@@ -294,22 +385,6 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
      * as soon as current date has no slot selection, then change it to next date (autoselection)
      */
 
-    const isCurrentDateSlotUnavailable = isSameDate && uniqueSlots?.length == 0;
-    //date is the selected date & minDate : date to show.
-    const dateToHighlight =
-      isCurrentDateSlotUnavailable && isDateAutoSelected
-        ? moment(date)
-            .add(1, 'day')
-            .toDate()
-        : date;
-
-    const minDateToShow = props.isReschdedule
-      ? new Date()
-      : !!isTodaySlotUnavailable && isTodaySlotUnavailable
-      ? moment(new Date())
-          .add(1, 'day')
-          .toDate()
-      : new Date();
     return (
       <View>
         <View style={styles.monthHeading}>
@@ -341,6 +416,15 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
                   {
                     backgroundColor:
                       selectedDate == item?.dates ? theme.colors.APP_GREEN : 'transparent',
+                    marginHorizontal: showInOverlay
+                      ? width > 400
+                        ? 5
+                        : 1
+                      : width > 400
+                      ? 5
+                      : width > 340
+                      ? 1
+                      : -7, //1 : -4 (if width is 16 pixels gap)
                   },
                 ]}
               >
@@ -349,6 +433,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
                     styles.dateStyle,
                     {
                       color: selectedDate == item?.dates ? 'white' : theme.colors.SHERPA_BLUE,
+                      opacity: noSlotsArray?.includes(item?.dates) ? 0.6 : 1,
                     },
                   ]}
                 >
@@ -359,6 +444,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
                     styles.dayStyle,
                     {
                       color: selectedDate == item?.dates ? 'white' : theme.colors.SHERPA_BLUE,
+                      opacity: noSlotsArray?.includes(item?.dates) ? 0.6 : 1,
                     },
                   ]}
                 >
@@ -379,14 +465,15 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
       </View>
     );
   };
-  const isDoneBtnDisabled = !date || !slotInfo;
+
+  const isDoneBtnDisabled = !newChangedDate || !slotInfo; //!date
 
   const renderBottomButton = (
     <Button
       style={{ margin: 16, marginTop: 5, width: 'auto' }}
       onPress={() => {
         if (!isDoneBtnDisabled) {
-          onSchedule(date!, slotInfo!);
+          onSchedule(newChangedDate!, slotInfo!, new Date()); //date
         }
       }}
       disabled={isDoneBtnDisabled}
@@ -394,64 +481,92 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     />
   );
 
-  return (
-    <Overlay
-      isVisible
-      onRequestClose={() => props.onClose()}
-      windowBackgroundColor={'rgba(0, 0, 0, 0.6)'}
-      containerStyle={{ marginBottom: 0 }}
-      fullScreen
-      transparent
-      overlayStyle={styles.phrOverlayStyle}
-    >
+  const renderSlotSelection = () => {
+    return (
       <>
-        <TouchableOpacity
-          style={styles.closeContainer}
-          onPress={() => {
-            props.onClose();
-          }}
-        >
-          <CrossPopup />
-        </TouchableOpacity>
-        <View style={styles.containerStyle}>
-          <Text
-            style={[
-              {
-                ...theme.fonts.IBMPlexSansMedium(17),
-                color: theme.colors.LIGHT_BLUE,
-                padding: 15,
-              },
-              props.headingTextStyle,
-            ]}
+        {showInOverlay ? (
+          <TouchableOpacity
+            style={styles.closeContainer}
+            onPress={() => {
+              props.onClose();
+            }}
           >
-            {' '}
-            {props.heading}
-          </Text>
-          <ScrollView style={styles.containerContentStyle}>
+            <CrossPopup />
+          </TouchableOpacity>
+        ) : null}
+        <View
+          style={[
+            styles.containerStyle,
+            {
+              borderTopLeftRadius: showInOverlay ? 10 : 0,
+              borderTopRightRadius: showInOverlay ? 10 : 0,
+              marginTop: showInOverlay ? 140 : 16,
+              marginBottom: !showInOverlay ? height / 2.8 : 0, //2.8
+            },
+          ]}
+        >
+          {showInOverlay ? (
+            <Text
+              style={[
+                {
+                  ...theme.fonts.IBMPlexSansMedium(17),
+                  color: theme.colors.LIGHT_BLUE,
+                  padding: 15,
+                },
+                props.headingTextStyle,
+              ]}
+            >
+              {props.heading}
+            </Text>
+          ) : null}
+          <ScrollView style={styles.containerContentStyle} bounces={false}>
             {renderCalendarView()}
+            {isPrepaidSlot ? renderPremiumTag() : null}
             {renderSlotSelectionView()}
           </ScrollView>
-          {dropDownOptions.length ? renderBottomButton : null}
+          {showInOverlay && props.isReschdedule && dropDownOptions?.length ? (
+            renderBottomButton
+          ) : (
+            <View style={{ height: 10 }}></View>
+          )}
+          {showSpinner && props.isReschdedule && <Spinner />}
         </View>
-        {spinner && <Spinner />}
       </>
-    </Overlay>
+    );
+  };
+
+  return (
+    <>
+      {!showInOverlay ? (
+        <>{renderSlotSelection()}</>
+      ) : (
+        <Overlay
+          isVisible
+          onRequestClose={() => props.onClose()}
+          windowBackgroundColor={'rgba(0, 0, 0, 0.6)'}
+          containerStyle={{ marginBottom: 0 }}
+          fullScreen
+          transparent
+          overlayStyle={styles.phrOverlayStyle}
+        >
+          {renderSlotSelection()}
+        </Overlay>
+      )}
+    </>
   );
 };
 
 const styles = StyleSheet.create({
   containerStyle: {
-    flex: 1,
     backgroundColor: theme.colors.WHITE,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    marginTop: 140,
+    flex: 1,
   },
   containerContentStyle: {
     flex: 1,
     backgroundColor: theme.colors.WHITE,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
+    flexGrow: 1,
   },
   closeContainer: {
     alignSelf: 'flex-end',
@@ -470,8 +585,8 @@ const styles = StyleSheet.create({
     bottom: 0,
     position: 'absolute',
   },
-  warningbox: {
-    backgroundColor: '#FCFDDA',
+  premiumTag: {
+    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
     flexDirection: 'row',
     borderRadius: 10,
     margin: 15,
@@ -480,8 +595,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 10,
   },
+  premiumText: {
+    ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1),
+    marginHorizontal: 5,
+  },
+  premiumIconAbsolute: {
+    width: 16,
+    height: 16,
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    resizeMode: 'contain',
+  },
+  premiumIcon: {
+    width: 16,
+    height: 16,
+  },
   dateContainer: {
-    marginHorizontal: width > 400 ? 5 : 1, //5
     borderRadius: 10,
     paddingHorizontal: 30,
     paddingVertical: 20,
@@ -512,21 +642,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   noSlotsContainer: {
-    width: '94%',
-    paddingVertical: 40,
-    alignSelf: 'center',
-    // backgroundColor: '#c8c8c8',
-    alignContent: 'center',
     alignItems: 'center',
     justifyContent: 'center',
+    // width: '94%',
+    marginTop: 60, //40
+    // backgroundColor: '#c8c8c8',
   },
   noSlotsText: {
     ...theme.viewStyles.text('SB', 17, theme.colors.SHERPA_BLUE),
   },
   dateContentStyle: {
-    width: 68,
+    width: width > 400 ? 68 : 64,
     height: 42,
-    margin: 12,
+    margin: width > 400 ? 12 : 8,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',

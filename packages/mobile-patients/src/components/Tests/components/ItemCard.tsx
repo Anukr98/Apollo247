@@ -1,7 +1,8 @@
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { WidgetLiverIcon, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
+import { WidgetLiverIcon, CircleLogo, DownO } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { renderItemPriceShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import React, { useCallback } from 'react';
 import {
@@ -12,9 +13,14 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  ActivityIndicator,
 } from 'react-native';
 import { Image } from 'react-native-elements';
-import { isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  isEmptyObject,
+  isSmallDevice,
+  nameFormater,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   convertNumberToDecimal,
@@ -49,39 +55,57 @@ export interface ItemCardProps {
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
   source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
   sourceScreen: string;
-  onPressAddToCartFromCart?: (item: any) => void;
+  extraData?: any;
+  changeCTA?: boolean;
+  onEndReached?: any;
+  diagnosticWidgetData?: any;
+  isPriceAvailable?: boolean;
+  onPressAddToCartFromCart?: (item: any, addedItems: any) => void;
   onPressRemoveItemFromCart?: (item: any) => void;
 }
 
-export const ItemCard: React.FC<ItemCardProps> = (props) => {
-  const { cartItems, addCartItem, removeCartItem, modifiedOrderItemIds } = useDiagnosticsCart();
+const ItemCard: React.FC<ItemCardProps> = (props) => {
+  const {
+    cartItems,
+    addCartItem,
+    removeCartItem,
+    modifiedOrderItemIds,
+    modifiedOrder,
+    setModifiedPatientCart,
+    removeMultiPatientCartItems,
+    patientCartItems,
+  } = useDiagnosticsCart();
   const {
     data,
     isCircleSubscribed,
     navigation,
+    diagnosticWidgetData,
     source,
+    changeCTA,
     sourceScreen,
     onPressAddToCartFromCart,
     onPressRemoveItemFromCart,
   } = props;
 
-  const actualItemsToShow =
+  const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
+  let actualItemsToShow =
     source === 'Cart page'
-      ? data?.length > 0 && data?.filter((item: any) => item?.diagnosticPricing)
-      : data?.diagnosticWidgetData?.length > 0 &&
-        data?.diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
+      ? data?.length > 0 && data
+      : diagnosticWidgetData?.length > 0 && diagnosticWidgetData;
 
   const renderItemCard = useCallback(
     (item: any) => {
       const getItem = item?.item;
       const getDiagnosticPricingForItem = getItem?.diagnosticPricing;
-      if (getDiagnosticPricingForItem == undefined || getDiagnosticPricingForItem == null) {
-        return null;
-      }
+
+      // if (getDiagnosticPricingForItem == undefined || getDiagnosticPricingForItem == null) {
+      //   return null;
+      // }
 
       const packageMrpForItem = getItem?.packageCalculatedMrp!;
       const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
-      if (!pricesForItem?.itemActive) {
+
+      if (props.isPriceAvailable && !pricesForItem?.itemActive) {
         return null;
       }
 
@@ -125,7 +149,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
             ]}
           >
             <View style={{ flexDirection: 'row' }}>
-              <View style={{ width: '69%' }}>
+              <View style={{ width: screenWidth < 340 ? '60%' : '69%' }}>
                 {imageUrl == '' ? (
                   <WidgetLiverIcon style={styles.imageStyle} resizeMode={'contain'} />
                 ) : (
@@ -166,7 +190,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
         </TouchableOpacity>
       );
     },
-    [cartItems]
+    [cartItems, patientCartItems]
   );
 
   const renderPercentageDiscount = (discount: string | number) => {
@@ -185,7 +209,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     const promoteCircle = pricesForItem?.promoteCircle; //if circle discount is more
     const promoteDiscount = pricesForItem?.promoteDiscount; // if special discount is more than others.
 
-    return (
+    return pricesForItem || packageMrpForItem ? (
       <View>
         {promoteCircle || promoteDiscount ? (
           renderAnyDiscountView(pricesForItem, packageMrpForItem)
@@ -194,6 +218,8 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
         )}
         {renderMainPriceView(pricesForItem, packageMrpForItem)}
       </View>
+    ) : (
+      renderItemPriceShimmer()
     );
   };
 
@@ -292,15 +318,19 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     //2. non-circle + circle -> no slashing
     return (
       <View style={{ flexDirection: 'row', marginVertical: '5%' }}>
-        <Text style={styles.mainPriceText}>
-        {`${string.common.Rs} ${convertNumberToDecimal(priceToShow)}` }
-        </Text>
+        {priceToShow ? (
+          <Text style={styles.mainPriceText}>
+            {`${string.common.Rs} ${convertNumberToDecimal(priceToShow)}`}
+          </Text>
+        ) : (
+          renderItemPriceShimmer()
+        )}
         {(!isCircleSubscribed && promoteCircle && priceToShow == slashedPrice) ||
-        priceToShow == slashedPrice ? null : (
+        priceToShow == slashedPrice ? null : slashedPrice ? (
           <Text style={styles.slashedPriceText}>
             {`${string.common.Rs} ${convertNumberToDecimal(slashedPrice)}`}
           </Text>
-        )}
+        ) : null}
       </View>
     );
   };
@@ -328,7 +358,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
         ? 'Category page'
         : data?.diagnosticWidgetTitle
     );
-    addCartItem?.({
+    const addedItems = {
       id: `${item?.itemId}`,
       mou: 1,
       name: item?.itemTitle!,
@@ -343,14 +373,30 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
       groupPlan: planToConsider?.groupPlan,
       packageMrp: packageCalculatedMrp,
       inclusions: [Number(item?.itemId)], // since it's a test
-    });
-    onPressAddToCartFromCart?.(item);
+      isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+    };
+    if (sourceScreen === AppRoutes.CartPage) {
+      onPressAddToCartFromCart?.(item, addedItems);
+    } else {
+      addCartItem?.(addedItems);
+      isModifyFlow &&
+        setModifiedPatientCart?.([
+          {
+            patientId: modifiedOrder?.patientId,
+            cartItems: cartItems?.concat(addedItems),
+          },
+        ]);
+    }
   }
 
-  function onPressRemoveFromCart(item: any) {
-    removeCartItem!(`${item?.itemId}`);
-    onPressRemoveItemFromCart?.(item);
-  }
+  const onPressRemoveFromCart = (item: any) => {
+    if (sourceScreen === AppRoutes.CartPage) {
+      onPressRemoveItemFromCart?.(item);
+    } else {
+      removeCartItem?.(`${item?.itemId}`);
+      removeMultiPatientCartItems?.(`${item?.itemId}`);
+    }
+  };
 
   function postHomePageWidgetClicked(name: string, id: string, section: string) {
     DiagnosticHomePageWidgetClicked(section, name, id);
@@ -398,6 +444,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
       navigation.navigate(AppRoutes.TestDetails, {
         itemId: item?.itemId,
         comingFrom: sourceScreen,
+        changeCTA: changeCTA,
         testDetails: {
           Rate: price,
           specialPrice: specialPrice! || price,
@@ -444,18 +491,35 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
             width: isAlreadyPartOfOrder ? '80%' : '70%',
           },
         ]}
-        onPress={() =>
-          isAlreadyPartOfOrder
-            ? {}
-            : isAddedToCart
-            ? onPressRemoveFromCart(item)
-            : onPressAddToCart(item, pricesForItem, packageCalculatedMrp)
-        }
+        onPress={() => {
+          _onPressFunction(
+            isAlreadyPartOfOrder,
+            isAddedToCart,
+            item,
+            pricesForItem,
+            packageCalculatedMrp
+          );
+        }}
       >
         {isAlreadyPartOfOrder ? 'ALREADY ADDED' : isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
       </Text>
     );
   };
+
+  function _onPressFunction(
+    isAlreadyPartOfOrder: any,
+    isAddedToCart: boolean,
+    item: any,
+    pricesForItem: any,
+    packageCalculatedMrp: number
+  ) {
+    if (isAlreadyPartOfOrder) {
+    } else if (isAddedToCart) {
+      onPressRemoveFromCart(item);
+    } else {
+      onPressAddToCart(item, pricesForItem, packageCalculatedMrp);
+    }
+  }
 
   const renderError = () => {
     if (props.isVertical)
@@ -483,6 +547,13 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
   );
 
   const keyExtractor = useCallback((item: any, index: number) => `${index}`, []);
+  if (props.isPriceAvailable) {
+    actualItemsToShow =
+      source === 'Cart page'
+        ? data?.length > 0 && data?.filter((item: any) => item?.diagnosticPricing)
+        : diagnosticWidgetData?.length > 0 &&
+          diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
+  }
 
   return (
     <>
@@ -505,6 +576,8 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
             showsVerticalScrollIndicator={false}
             horizontal={!props.isVertical}
             data={actualItemsToShow}
+            onEndReached={props.onEndReached}
+            onEndReachedThreshold={0.1}
             renderItem={renderItemCard}
             maxToRenderPerBatch={8}
             initialNumToRender={3}
@@ -517,6 +590,8 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     </>
   );
 };
+
+export default React.memo(ItemCard);
 
 const styles = StyleSheet.create({
   itemCardView: {

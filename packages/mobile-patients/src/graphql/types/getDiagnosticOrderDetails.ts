@@ -16,6 +16,27 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_
   gender: string | null;
 }
 
+export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientAddressObj {
+  __typename: "PatientAddressObj";
+  addressLine1: string | null;
+  addressLine2: string | null;
+  addressType: string | null;
+  landmark: string | null;
+  state: string | null;
+  city: string | null;
+  zipcode: string | null;
+  latitude: number | null;
+  longitude: number | null;
+}
+
+export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_attributesObj {
+  __typename: "AttributesObj";
+  initialCollectionCharges: number | null;
+  distanceCharges: number | null;
+  homeCollectionCharges: number | null;
+  slotDurationInMinutes: number | null;
+}
+
 export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_itemObj {
   __typename: "ItemObj";
   itemType: string | null;
@@ -91,7 +112,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList 
   patientId: string;
   patientAddressId: string;
   patientObj: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientObj | null;
-  city: string | null;
+  patientAddressObj: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientAddressObj | null;
   slotTimings: string;
   slotId: string | null;
   totalPrice: number;
@@ -107,6 +128,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList 
   visitNo: string | null;
   invoiceURL: string | null;
   labReportURL: string | null;
+  attributesObj: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_attributesObj | null;
   diagnosticOrderLineItems: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems | null)[] | null;
   diagnosticOrdersStatus: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrdersStatus | null)[] | null;
 }
