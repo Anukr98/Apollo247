@@ -53,6 +53,7 @@ export interface Props
     medicineOrderStatusDate?: any;
     sourcePage: WebEngageEvents[WebEngageEventName.HELP_TICKET_SUBMITTED]['Source_Page'];
     pathFollowed: string;
+    refund: any[];
   }> {}
 
 export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
@@ -64,6 +65,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const medicineOrderStatusDate = navigation.getParam('medicineOrderStatusDate');
   const [email, setEmail] = useState(navigation.getParam('email') || '');
   const orderId = navigation.getParam('orderId') || '';
+  const refund = navigation.getParam('refund') || [];
   const isOrderRelatedIssue = navigation.getParam('isOrderRelatedIssue') || false;
   const [showEmailPopup, setShowEmailPopup] = useState<boolean>(email ? false : true);
   const [requestEmailWithoutAction, setRequestEmailWithoutAction] = useState<boolean>(true);

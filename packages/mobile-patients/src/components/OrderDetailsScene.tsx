@@ -2161,6 +2161,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       medicineOrderStatusDate: currentStatusDate,
       email,
       sourcePage: 'Order Details',
+      refund: refundDetails,
     });
   };
 
