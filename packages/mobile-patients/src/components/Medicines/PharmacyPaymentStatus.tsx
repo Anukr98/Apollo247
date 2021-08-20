@@ -21,6 +21,7 @@ import {
 import {
   apiCallEnums,
   g,
+  getCleverTapCircleMemberValues,
   postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -41,7 +42,7 @@ import {
   TouchableOpacity,
   View,
   Clipboard,
-  Alert,
+  Platform,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { Snackbar } from 'react-native-paper';
@@ -89,13 +90,17 @@ import {
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
-import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import {
   updateMedicineOrderSubstitution,
   updateMedicineOrderSubstitutionVariables,
 } from '@aph/mobile-patients/src/graphql/types/updateMedicineOrderSubstitution';
 import { SubstituteItemsCard } from '@aph/mobile-patients/src/components/Medicines/Components/SubstituteItemsCard';
 import InAppReview from 'react-native-in-app-review';
+import DeviceInfo from 'react-native-device-info';
 
 enum SUBSTITUTION_RESPONSE {
   OK = 'OK',
@@ -236,12 +241,39 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
 
       if (tatHours <= 5) {
         if (InAppReview.isAvailable()) {
-          await InAppReview.RequestInAppReview();
+          await InAppReview.RequestInAppReview().then((hasFlowFinishedSuccessfully) => {
+            if (hasFlowFinishedSuccessfully) {
+              postCleverTapEventForTrackingAppReview();
+            }
+          });
         }
       }
     } catch (error) {
       CommonBugFender('inAppRevireAfterPaymentForPharmacy', error);
     }
+  };
+
+  const postCleverTapEventForTrackingAppReview = async () => {
+    const uniqueId = await DeviceInfo.getUniqueId();
+    const eventAttributes: CleverTapEvents[CleverTapEventName.PLAYSTORE_APP_REVIEW_AND_RATING] = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'User Type': pharmacyUserTypeAttribute?.User_Type || '',
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      'CT Source': Platform.OS,
+      'Device ID': uniqueId,
+      'Circle Member':
+        getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+        '',
+      'Page Name': 'Pharmacy Order Completed',
+      'NAV Source': 'Pharmacy',
+    };
+    postCleverTapEvent(CleverTapEventName.APP_REVIEW_AND_RATING_TO_PLAYSTORE, eventAttributes);
   };
 
   const getUserSubscriptionsByStatus = async () => {
