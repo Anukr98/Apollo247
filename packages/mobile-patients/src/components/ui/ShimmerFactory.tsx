@@ -312,7 +312,8 @@ const styles = StyleSheet.create({
     width: '90%',
     marginRight: 5,
     marginTop: 5,
-    height: 40,
+    height: 50,
+    zIndex: 1000,
   },
   itemPackagePrice: {
     ...theme.viewStyles.cardViewStyle,
@@ -320,6 +321,7 @@ const styles = StyleSheet.create({
     marginRight: 5,
     marginTop: 5,
     height: 60,
+    zIndex: 1000,
   },
   rowStyle: {
     flexDirection: 'row',

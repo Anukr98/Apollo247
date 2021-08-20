@@ -1958,6 +1958,8 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           distanceCharges
           homeCollectionCharges
           slotDurationInMinutes
+          expectedReportGenerationTime
+          reportTATMessage
         }
         diagnosticOrderLineItems {
           id
@@ -2269,6 +2271,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
     }
   }
 `;
+
 export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
   query getDiagnosticOrdersListByMobile(
     $mobileNumber: String
@@ -2323,6 +2326,8 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           slotDurationInMinutes
           homeCollectionCharges
           distanceCharges
+          expectedReportGenerationTime
+          reportTATMessage
         }
         patientAddressObj {
           addressLine1
@@ -2423,6 +2428,7 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
     }
   }
 `;
+
 export const GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT = gql`
   query GetMedicineOrderShipmentDetails(
     $patientId: String
@@ -5416,6 +5422,10 @@ export const GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID = gql`
         attributesObj {
           homeCollectionCharges
           slotDurationInMinutes
+          initialCollectionCharges
+          distanceCharges
+          expectedReportGenerationTime
+          reportTATMessage
         }
         diagnosticOrdersStatus {
           orderStatus
@@ -5447,12 +5457,46 @@ export const INITIATE_DIAGNOSTIC_ORDER_PAYMENT = gql`
   }
 `;
 
+export const INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2 = gql`
+  mutation initiateDiagonsticHCOrderPaymentv2(
+    $diagnosticInitiateOrderPaymentInput: DiagnosticInitiateOrderPaymentv2!
+  ) {
+    initiateDiagonsticHCOrderPaymentv2(
+      diagnosticInitiateOrderPaymentInput: $diagnosticInitiateOrderPaymentInput
+    ) {
+      status
+    }
+  }
+`;
+
 export const GET_ORDER_LEVEL_DIAGNOSTIC_STATUS = gql`
   query getHCOrderFormattedTrackingHistory($diagnosticOrderID: String) {
     getHCOrderFormattedTrackingHistory(diagnosticOrderID: $diagnosticOrderID) {
       statusHistory {
         statusDate
         orderStatus
+        subStatus
+        attributes{
+          itemsModified{
+            itemId
+            itemName
+            price
+            isRemoved
+          }
+          refund{
+            txnID
+            amount
+            status
+            reason
+            amount
+            items{
+              itemId
+              itemName
+              price
+              isRemoved
+            }
+          }
+        }
       }
       statusInclusions {
         statusDate
@@ -5570,15 +5614,17 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql`
           firstName
           lastName
         }
+        attributesObj{
+          reportTATHours
+          reportTATMessage
+          reportGenerationTime
+          expectedReportGenerationTime
+        }
         diagnosticOrderLineItems {
           itemObj {
             testPreparationData
             preTestingRequirement
           }
-        }
-        attributesObj {
-          reportGenerationTime
-          preTestingRequirement
         }
       }
     }
@@ -5630,7 +5676,10 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
           }
         }
         attributesObj {
+          reportTATHours
+          reportTATMessage
           reportGenerationTime
+          expectedReportGenerationTime
         }
       }
     }

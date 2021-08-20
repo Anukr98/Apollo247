@@ -461,7 +461,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
                   style={[
                     styles.testName,
                     {
-                      maxWidth: !!lineItems?.[0]?.editOrderID ? '72%' : '78%',
+                      maxWidth: !!lineItems?.[0]?.editOrderID ? '72%' : '75%',
                     },
                   ]}
                 >
@@ -513,7 +513,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
                 style={[
                   styles.testName,
                   {
-                    maxWidth: !!items.editOrderID ? '72%' : '78%',
+                    maxWidth: !!items.editOrderID ? '72%' : '75%',
                   },
                 ]}
               >

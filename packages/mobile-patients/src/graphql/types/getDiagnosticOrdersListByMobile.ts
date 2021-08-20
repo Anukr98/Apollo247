@@ -25,9 +25,11 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   reportGenerationTime: string | null;
   initialCollectionCharges: number | null;
   isMultiUhid: boolean | null;
-  distanceCharges: number | null;
   slotDurationInMinutes: number | null;
-  homeCollectionCharges: number | null
+  homeCollectionCharges: number | null;
+  distanceCharges: number | null;
+  expectedReportGenerationTime: any | null;
+  reportTATMessage: string | null;
 }
 
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientAddressObj {

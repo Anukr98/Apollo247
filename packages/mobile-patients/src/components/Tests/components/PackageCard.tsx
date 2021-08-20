@@ -90,7 +90,7 @@ const PackageCard: React.FC<PackageCardProps> = (props) => {
       const packageMrpForItem = getItem?.packageCalculatedMrp!;
       const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
       if (props.isPriceAvailable && !pricesForItem?.itemActive) {
-        return null
+        return null;
       }
 
       const imageUrl = getItem?.itemImageUrl;

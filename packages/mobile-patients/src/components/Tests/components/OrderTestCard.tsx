@@ -270,15 +270,21 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       ? moment(props.dateTime)?.format('ddd, DD MMM YYYY') || null
       : null;
 
-    const bookedForTime = moment(props.slotTime)?.format('hh:mm a');
-    const rangeAddedTime = moment(props.slotTime)?.add(props.slotDuration,'minutes')?.format('hh:mm a');
+    const bookedForTime = moment(props.slotTime)?.format('hh:mm A');
+    const rangeAddedTime = moment(props.slotTime)
+      ?.add(props.slotDuration, 'minutes')
+      ?.format('hh:mm A');
 
     return (
       <View style={styles.bottomContainer}>
         {(!!bookedForTime || !!bookedForDate) && (
           <View>
             <Text style={styles.headingText}>Test Slot</Text>
-            {!!bookedForTime ? <Text style={styles.slotText}>{bookedForTime} - {rangeAddedTime}</Text> : null}
+            {!!bookedForTime ? (
+              <Text style={styles.slotText}>
+                {bookedForTime} - {rangeAddedTime}
+              </Text>
+            ) : null}
             {!!bookedForDate ? <Text style={styles.slotText}>{bookedForDate}</Text> : null}
           </View>
         )}
@@ -387,7 +393,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
               <View style={styles.otpContainer}>
                 <View style={styles.etaContainer}>
                   <LocationOutline style={styles.locationIcon} />
-                  <Text style={styles.otpTextStyle}>Phlebo will arrive by {phleboEta}</Text>
+                  <Text style={styles.otpTextStyle}>Apollo agent will arrive by {phleboEta}</Text>
                 </View>
                 {phleboTrackLink ? (
                   <TouchableOpacity
@@ -413,7 +419,9 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                       }
                     }}
                   >
-                    <Text style={styles.trackStyle}>{nameFormater('track Phlebo', 'upper')}</Text>
+                    <Text style={styles.trackStyle}>
+                      {nameFormater('Track Apollo agent ', 'upper')}
+                    </Text>
                   </TouchableOpacity>
                 ) : null}
               </View>
@@ -477,9 +485,10 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       </View>
     ) : null;
   };
-
   const showReportTat = () => {
-    const report = !!props?.orderAttributesObj?.reportGenerationTime
+    const report = !!props?.orderAttributesObj?.reportTATMessage
+      ? props?.orderAttributesObj?.reportTATMessage
+      : !!props?.orderAttributesObj?.reportGenerationTime
       ? props?.orderAttributesObj?.reportGenerationTime
       : '';
     const prepData = !!props?.orderAttributesObj?.preTestingRequirement
@@ -491,7 +500,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         {report ? (
           <View style={styles.reporttatContainer}>
             <ClockIcon />
-            <Text style={styles.reportTextStyle}>{`Report Generation time - ${report}`}</Text>
+            <Text style={styles.reportTextStyle}>{`${report}`}</Text>
           </View>
         ) : null}
         {prepData ? (
@@ -742,7 +751,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   trackStyle: {
-    ...theme.viewStyles.text('SB', 13, colors.APP_YELLOW, 1, 18),
+    ...theme.viewStyles.text('SB', 12, colors.APP_YELLOW, 1, 18),
   },
   ratingContainer: {
     backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,

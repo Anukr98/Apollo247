@@ -9,15 +9,43 @@ import { DIAGNOSTIC_ORDER_STATUS } from "./globalTypes";
 // GraphQL query operation: getHCOrderFormattedTrackingHistory
 // ====================================================
 
+export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusHistory_attributes_itemsModified {
+  __typename: "itemStatusInfo";
+  itemId: number | null;
+  itemName: string | null;
+  price: number | null;
+  isRemoved: boolean | null;
+}
+
+export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusHistory_attributes_refund_items {
+  __typename: "itemStatusInfo";
+  itemId: number | null;
+  itemName: string | null;
+  price: number | null;
+  isRemoved: boolean | null;
+}
+
+export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusHistory_attributes_refund {
+  __typename: "DiagnosticRefundTracking";
+  txnID: string | null;
+  amount: number | null;
+  status: string | null;
+  reason: string | null;
+  items: (getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusHistory_attributes_refund_items | null)[] | null;
+}
+
+export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusHistory_attributes {
+  __typename: "statusAttributes";
+  itemsModified: (getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusHistory_attributes_itemsModified | null)[] | null;
+  refund: (getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusHistory_attributes_refund | null)[] | null;
+}
+
 export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusHistory {
   __typename: "formattedOrderStatus";
   statusDate: any | null;
   orderStatus: DIAGNOSTIC_ORDER_STATUS | null;
-}
-
-export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_upcomingStatuses {
-  __typename: "upcomingStatus";
-  orderStatus: DIAGNOSTIC_ORDER_STATUS | null;
+  subStatus: DIAGNOSTIC_ORDER_STATUS | null;
+  attributes: getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusHistory_attributes | null;
 }
 
 export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusInclusions {
@@ -28,6 +56,11 @@ export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingH
   packageId: number | null;
   itemName: string | null;
   packageName: string | null;
+}
+
+export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_upcomingStatuses {
+  __typename: "upcomingStatus";
+  orderStatus: DIAGNOSTIC_ORDER_STATUS | null;
 }
 
 export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory {
