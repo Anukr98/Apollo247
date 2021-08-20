@@ -160,7 +160,7 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
               ? convertNumberToDecimal(
                   onlineConsultSlashedPrice -
                     couponDiscountFees +
-                    (circleSubscriptionId == '' ? Number(planSelected?.currentSellingPrice) : 0)
+                    (!circleSubscriptionId ? Number(planSelected?.currentSellingPrice) : 0)
                     + finalBookingFee
                 )
               : convertNumberToDecimal(
