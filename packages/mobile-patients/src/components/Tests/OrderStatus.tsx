@@ -126,11 +126,15 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
 
       if (diff <= 48) {
         if (InAppReview.isAvailable()) {
-          await InAppReview.RequestInAppReview().then((hasFlowFinishedSuccessfully) => {
-            if (hasFlowFinishedSuccessfully) {
-              postCleverTapEventForTrackingAppReview();
-            }
-          });
+          await InAppReview.RequestInAppReview()
+            .then((hasFlowFinishedSuccessfully) => {
+              if (hasFlowFinishedSuccessfully) {
+                postCleverTapEventForTrackingAppReview();
+              }
+            })
+            .catch((error) => {
+              CommonBugFender('inAppReviewForDignostic', error);
+            });
         }
       }
     } catch (error) {

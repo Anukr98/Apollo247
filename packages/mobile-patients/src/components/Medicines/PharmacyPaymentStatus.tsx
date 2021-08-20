@@ -241,11 +241,15 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
 
       if (tatHours <= 5) {
         if (InAppReview.isAvailable()) {
-          await InAppReview.RequestInAppReview().then((hasFlowFinishedSuccessfully) => {
-            if (hasFlowFinishedSuccessfully) {
-              postCleverTapEventForTrackingAppReview();
-            }
-          });
+          await InAppReview.RequestInAppReview()
+            .then((hasFlowFinishedSuccessfully) => {
+              if (hasFlowFinishedSuccessfully) {
+                postCleverTapEventForTrackingAppReview();
+              }
+            })
+            .catch((error) => {
+              CommonBugFender('inAppReviewForPharmacy', error);
+            });
         }
       }
     } catch (error) {

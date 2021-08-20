@@ -745,11 +745,15 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     try {
       if (g(data, 'appointment', 'doctorInfo')) {
         if (InAppReview.isAvailable()) {
-          await InAppReview.RequestInAppReview().then((hasFlowFinishedSuccessfully) => {
-            if (hasFlowFinishedSuccessfully) {
-              postCleverTapEventForTrackingAppReview();
-            }
-          });
+          await InAppReview.RequestInAppReview()
+            .then((hasFlowFinishedSuccessfully) => {
+              if (hasFlowFinishedSuccessfully) {
+                postCleverTapEventForTrackingAppReview();
+              }
+            })
+            .catch((error) => {
+              CommonBugFender('inAppReviewForDoctorConsult', error);
+            });
         }
       }
     } catch (error) {
