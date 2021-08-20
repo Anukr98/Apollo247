@@ -95,6 +95,7 @@ import {
   updateMedicineOrderSubstitutionVariables,
 } from '@aph/mobile-patients/src/graphql/types/updateMedicineOrderSubstitution';
 import { SubstituteItemsCard } from '@aph/mobile-patients/src/components/Medicines/Components/SubstituteItemsCard';
+import InAppReview from 'react-native-in-app-review';
 
 enum SUBSTITUTION_RESPONSE {
   OK = 'OK',

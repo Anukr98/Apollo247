@@ -90,10 +90,6 @@ import {
   getIndividualTestResultPdf,
   getIndividualTestResultPdfVariables,
 } from '@aph/mobile-patients/src/graphql/types/getIndividualTestResultPdf';
-import {
-  getLabResultpdf,
-  getLabResultpdfVariables,
-} from '@aph/mobile-patients/src/graphql/types/getLabResultpdf';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
