@@ -1,5 +1,5 @@
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { WidgetLiverIcon, CircleLogo, DownO } from '@aph/mobile-patients/src/components/ui/Icons';
+import { WidgetLiverIcon, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { renderItemPriceShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
@@ -13,15 +13,9 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  ActivityIndicator,
-  Platform
 } from 'react-native';
 import { Image } from 'react-native-elements';
-import {
-  isEmptyObject,
-  isSmallDevice,
-  nameFormater,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { isEmptyObject, isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   convertNumberToDecimal,
@@ -103,7 +97,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
 
       if (props.isPriceAvailable && !pricesForItem?.itemActive) {
-        return null
+        return null;
       }
 
       const imageUrl = !!getItem?.itemImageUrl
@@ -651,7 +645,7 @@ const styles = StyleSheet.create({
   },
   addToCartText: {
     textAlign: 'left',
-    position: Platform.OS == 'ios' ? 'relative' :  'absolute',
+    position: 'absolute',
     left: 16,
     bottom: 6,
     width: '70%',

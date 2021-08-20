@@ -39,6 +39,19 @@ import { diagnosticGetCustomizedSlotsV2 } from '@aph/mobile-patients/src/helpers
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 
+interface SlotDetails {
+  distanceCharges: number;
+  endTime: string;
+  internalSlots: any;
+  isPaidSlot: boolean;
+  startTime: string;
+}
+interface SlotsType {
+  key: string;
+  value: string;
+  slotInfo: SlotDetails;
+}
+
 export interface TestSlotSelectionOverlayNewProps extends AphOverlayProps {
   showInOverlay?: boolean;
   maxDate: Date;
@@ -52,9 +65,9 @@ export interface TestSlotSelectionOverlayNewProps extends AphOverlayProps {
   onSchedule: (date1: Date, slotInfo: TestSlot, date?: Date) => void;
   itemId?: any[];
   source?: string;
-  isVisible?: boolean;
+  isVisible: boolean;
   isPremium?: boolean;
-  heading?: string;
+  heading: string;
   slotInput?: any; //define type
   isFocus?: boolean;
 }
@@ -98,6 +111,10 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [newChangedDate, setNewChangedDate] = useState<Date>();
   const [noSlotsArray, setNoSlotsArray] = useState([] as any);
+  const [overallSlotsArray, setOverallSlotsArray] = useState([] as any);
+  const [morningSlots, setMorningSlots] = useState([] as any);
+  const [afternoonSlots, setAfternoonSlots] = useState([] as any);
+  const [eveningSlots, setEveningSlots] = useState([] as any);
 
   type UniqueSlotType = typeof uniqueSlots[0];
 
@@ -127,6 +144,8 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     value: `${val.startTime}`,
     slotInfo: val,
   }));
+
+  let overallSlots;
 
   var dayPhaseArray = [
     {
@@ -213,6 +232,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
         } else {
           setSlots(slotsArray);
           setChangedDate(moment(dateToCheck)?.toDate());
+          populateSlots(slotsArray);
           //this needs to be added, if need to select the first slot by default
           // slotsArray?.length && setSlotInfo(slotsArray?.[0]);
           // setNewSelectedSlot(`${localFormatTestSlot(slotsArray?.[0]?.slotInfo?.startTime!)}` || ''); //for setting the next date slot by default
@@ -234,39 +254,62 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     return moment(item?.value, 'hh:mm A')?.format('HH:mm');
   };
 
-  const isEveningSlotsAvailable = dropDownOptions?.filter(
-    (item) => time24(item) >= '17' && time24(item) < '23'
-  );
-  if (!!isEveningSlotsAvailable && isEveningSlotsAvailable?.length > 0) {
-    dayPhaseArray?.push({
-      tab: 2,
-      activeImage: <NightSelected />,
-      inactiveImage: <Night />,
-      title: 'Evening',
-    });
-  }
+  function populateSlots(slotsArray: any) {
+    const getOverallUniqueSlots = getUniqueTestSlots(slotsArray);
+    overallSlots = getOverallUniqueSlots?.map((val) => ({
+      key: `${val?.startTime}`,
+      value: `${val.startTime}`,
+      slotInfo: val,
+    }));
 
-  if (selectedDayTab == 1) {
-    //for afternoon 12-17
-    dropDownOptions = dropDownOptions?.filter((item) => {
+    let getEveningSlots: Array<SlotsType> = [];
+    let getAfternoonSlots: Array<SlotsType> = [];
+    let getMorningSlots: Array<SlotsType> = [];
+
+    getEveningSlots = overallSlots?.filter((item: any) => {
       if (time24(item) >= '12' && time24(item) < '17') {
         return item;
       }
     });
-  } else if (selectedDayTab == 2) {
-    //for evening 17 - 6
-    dropDownOptions = dropDownOptions?.filter((item) => {
+
+    getAfternoonSlots = overallSlots?.filter((item: any) => {
       //changed from < 6 to 23
       if (time24(item) >= '17' && time24(item) < '23') {
         return item;
       }
     });
-  } else if (selectedDayTab == 0) {
-    //for morning 6- 12
-    dropDownOptions = dropDownOptions?.filter((item) => {
+    getMorningSlots = overallSlots?.filter((item: any) => {
       if (time24(item) >= '06' && time24(item) < '12') {
         return item;
       }
+    });
+
+    setMorningSlots(getMorningSlots);
+    setAfternoonSlots(getAfternoonSlots);
+    setEveningSlots(getEveningSlots);
+
+    if (getMorningSlots?.length > 0) {
+      setOverallSlotsArray(getMorningSlots);
+      setSelectedDayTab(0);
+    } else if (getMorningSlots?.length == 0 && getAfternoonSlots?.length > 0) {
+      setOverallSlotsArray(getAfternoonSlots);
+      setSelectedDayTab(1);
+    } else if (
+      getMorningSlots?.length == 0 &&
+      getAfternoonSlots?.length == 0 &&
+      getEveningSlots?.length > 0
+    ) {
+      setOverallSlotsArray(getEveningSlots);
+      setSelectedDayTab(2);
+    }
+  }
+
+  if (!!eveningSlots && eveningSlots?.length > 0) {
+    dayPhaseArray?.push({
+      tab: 2,
+      activeImage: <NightSelected />,
+      inactiveImage: <Night />,
+      title: 'Evening',
     });
   }
 
@@ -319,40 +362,40 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           ))}
         </View>
         <View>
-          {!!dropDownOptions && dropDownOptions?.length != 0 ? (
+          {!!overallSlotsArray && overallSlotsArray?.length != 0 ? (
             <FlatList
               keyExtractor={(_, index) => index.toString()}
-              data={dropDownOptions}
+              data={overallSlotsArray}
               extraData={newSelectedSlot}
               contentContainerStyle={styles.timeContainer}
               numColumns={4}
-              renderItem={({ item, index }) => (
+              renderItem={(item: any, index: number) => (
                 <TouchableOpacity
                   onPress={() => {
                     const selectedSlot = getTestSlotDetailsByTime(
                       slots,
-                      (item?.slotInfo as UniqueSlotType)?.startTime,
-                      (item?.slotInfo as UniqueSlotType)?.endTime
+                      (item?.item?.slotInfo as UniqueSlotType)?.startTime,
+                      (item?.item?.slotInfo as UniqueSlotType)?.endTime
                     );
                     setSlotInfo(selectedSlot);
-                    setPrepaidSlot(item?.slotInfo?.isPaidSlot);
-                    setNewSelectedSlot(item?.value);
+                    setPrepaidSlot(item?.item?.slotInfo?.isPaidSlot);
+                    setNewSelectedSlot(item?.item?.value);
                     props.isReschdedule && setNewChangedDate(changedDate);
-                    props.isReschdedule ? null : onSchedule(changedDate!, item, props.date);
+                    props.isReschdedule ? null : onSchedule(changedDate!, item?.item, props.date);
                     // onSchedule(date!, slotInfo!); //if first needs to be selected
                   }}
                   style={[
                     styles.dateContentStyle,
                     {
                       backgroundColor:
-                        newSelectedSlot == item?.value
+                        newSelectedSlot == item?.item?.value
                           ? theme.colors.APP_GREEN
                           : theme.colors.DEFAULT_BACKGROUND_COLOR,
                     },
                   ]}
                 >
                   <>
-                    {item?.slotInfo?.isPaidSlot ? (
+                    {item?.item?.slotInfo?.isPaidSlot ? (
                       isReschdedule ? null : (
                         <PremiumIcon style={styles.premiumIconAbsolute} />
                       )
@@ -362,11 +405,13 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
                         styles.dateTextStyle,
                         {
                           color:
-                            newSelectedSlot == item?.value ? 'white' : theme.colors.SHERPA_BLUE,
+                            newSelectedSlot == item?.item?.value
+                              ? 'white'
+                              : theme.colors.SHERPA_BLUE,
                         },
                       ]}
                     >
-                      {moment(item?.value, 'hh:mm A').format('hh:mm a')}
+                      {moment(item?.item?.value, 'hh:mm A').format('hh:mm a')}
                     </Text>
                   </>
                 </TouchableOpacity>
@@ -524,7 +569,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
             {isPrepaidSlot ? renderPremiumTag() : null}
             {renderSlotSelectionView()}
           </ScrollView>
-          {showInOverlay && props.isReschdedule && dropDownOptions?.length ? (
+          {showInOverlay && props.isReschdedule && overallSlotsArray?.length ? (
             renderBottomButton
           ) : (
             <View style={{ height: 10 }}></View>
@@ -705,3 +750,8 @@ const styles = StyleSheet.create({
     width: '100%',
   },
 });
+
+TestSlotSelectionOverlayNew.defaultProps = {
+  heading: '',
+  isVisible: false,
+};

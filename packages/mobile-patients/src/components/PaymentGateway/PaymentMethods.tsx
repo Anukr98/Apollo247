@@ -409,19 +409,22 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       const { data } = response;
       console.log({ response });
       if (data?.createOrder?.success) {
-        const getPaymentId = data?.createOrder?.order_id;
-        const getArray = createOrderInputArray();
-        const response = await processDiagnosticsCODOrderV2(client, getArray);
-        const { data } = response;
-        const getResponse = data?.wrapperProcessDiagnosticHCOrderCOD?.result;
-        if (!!getResponse && getResponse?.length > 0) {
-          const isAnyFalse = getResponse?.filter((items) => !items?.status);
-          if (!!isAnyFalse && isAnyFalse?.length > 0) {
-            //show error
-            showTxnFailurePopUP();
-          } else {
-            navigatetoOrderStatus(true, 'success');
+        if (businessLine === 'diagnostics') {
+          const getArray = createOrderInputArray();
+          const response = await processDiagnosticsCODOrderV2(client, getArray);
+          const { data } = response;
+          const getResponse = data?.wrapperProcessDiagnosticHCOrderCOD?.result;
+          if (!!getResponse && getResponse?.length > 0) {
+            const isAnyFalse = getResponse?.filter((items) => !items?.status);
+            if (!!isAnyFalse && isAnyFalse?.length > 0) {
+              //show error
+              showTxnFailurePopUP();
+            } else {
+              navigatetoOrderStatus(true, 'success');
+            }
           }
+        } else {
+          navigatetoOrderStatus(true, 'success');
         }
       } else {
         showTxnFailurePopUP();
