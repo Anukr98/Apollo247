@@ -487,8 +487,8 @@
     "reschduleCountExceed": "You have rescheduled thrice. You're out of reschedule attempts.",
     "rescheduleCountText": "You can reschedule to a maximum of 3 times. If you click ok, you will have {{setRescheduleCount}} reschedule attempt(s) left.",
     "reasonForCancel_TestOrder": {
-      "notArrived": "Phlebo did not arrive",
-      "latePhelbo": "Phlebo arrived late",
+      "notArrived": "Apollo agent did not arrive",
+      "latePhelbo": "Apollo agent arrived late",
       "priceHigh": "Prices are high comparatively",
       "editOrder": "Need to Modify Order Details",
       "homeChargesHigh": "Home collection charges are high",
@@ -508,7 +508,7 @@
       "otherReasons": "Others (Please specify)"
     },
     "reasonForReschedule_TestOrder": {
-      "latePhelbo": "Phlebo did not arrive on time",
+      "latePhelbo": "Apollo agent did not arrive on time",
       "unavailable": "I am not available right now",
       "guidelinesNotFollowed": "I did not follow fasting requirement",
       "unableToProvideSample": "Not feeling well to provide sample",
@@ -583,9 +583,9 @@
     "viewReportText": "View Report",
     "sampleCollectedText": "Check Status",
     "collectionText": "Track Order",
-    "trackPhleboText": "Track Phlebo",
+    "trackPhleboText": "Track Apollo agent",
     "codDisableText": "We are currently not allowing Cash On Delivery for home sample collections.",
-    "phleboCallingError": "Error while connecting to Phlebo. Please try again later.",
+    "phleboCallingError": "Error while connecting to Apollo agent. Please try again later.",
     "modifyItemAlreadyExist": "Your cart has been updated, since it had duplicate items",
     "previousCharges": "Previous Charges",
     "currentCharges": "Current Charges",
@@ -635,7 +635,7 @@
       "title": "Did not seem Well-Trained"
     },
     {
-      "title": "Phlebo was not Polite"
+      "title": "Apollo agent was not Polite"
     },
     {
       "title": "Didn’t Wear the PPE Kit or Gloves"
