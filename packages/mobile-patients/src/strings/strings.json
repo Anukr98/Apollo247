@@ -71,6 +71,7 @@
     "gotoConsultRoomText": "Connect with doctor to start the consult",
     "gotoConsultRoomJuniorDrText": "Connect with Junior Doctor before final consult",
     "pickAnotherSlotText": "Sorry, we had to reschedule this appointment. Please pick another slot.",
+    "DisclaimerTextBookingRequest": "This is not a confirmation of the Booking. Our Executives will reach you regarding Booking Confirmation. It is subjected to availability.",
     "DisclaimerText": "By proceeding, I agree that I have read and understood the Terms & Conditions of usage of 247 and consent to the same. I am voluntarily availing of the services provided on this platform. I am fully aware that I will not be undergoing a physical examination by a physician prior to a physician recommending  medical tests and/or treatment and/or the prescribing of OTC drugs. I am also aware that  the consultation on 247 Application does not preclude my rights to visit a physician and opt for a physical examination at any point in time and I am free at any time during the consultation to request for the same.",
     "agreePhysicalConsultTC": "By proceeding, I agree that I have read and understood the Terms & Conditions of usage of 247 and consent to the same.",
     "covidContactText": "Contact our Coronavirus Helpline",
@@ -195,6 +196,11 @@
   "placeOrder": "PLACE ORDER",
   "microphone": "microphone",
   "enableMicrophoneToRecordCough": "Enable microphone from settings to record your cough.",
+  "BORJourney": {
+    "point1": "Register your Request through the Form.\n\nIf request is accepted, we will contact you for the Appointment booking and Payment.",
+    "point2": "If Appointment can not be booked, you can book another doctor",
+    "point3": "After Confirmation, you will receive the Booking Details on the Apollo 247 App/Web"
+  },
   "consultType": {
     "mainHeading": "How would you like to consult with",
     "checkBoxText": "I have consulted with {0} before",
@@ -211,7 +217,7 @@
     },
     "inperson": {
       "heading": "HOSPITAL VISIT",
-      "question": "How to consult in person?",
+      "question": "How to consult at Hospital?",
       "point1": "Choose the doctor",
       "point2": "Book a slot",
       "point3": "Visit the doctor at Hospital/Clinic",
@@ -257,8 +263,7 @@
     "need_help": "Need Help?",
     "book_appointment": "BOOK AN APPOINTMENT",
     "book_appointment_question": "Want to book an appointment?",
-    "arrayTest": [
-      {
+    "arrayTest": [{
         "id": 1,
         "title": "Are you looking for a particular doctor?",
         "descripiton": "FIND SPECIALIST",
@@ -277,8 +282,7 @@
         "image": "require('@aph/mobile-patients/src/images/home/test.png')"
       }
     ],
-    "startDoctor": [
-      {
+    "startDoctor": [{
         "name": "Dr. Narayana Rao’s",
         "status": "AVAILABLE",
         "Program": "Star Cardiology Program",
@@ -307,8 +311,7 @@
     }
   },
   "consult_room": {
-    "specialities": [
-      {
+    "specialities": [{
         "image": "",
         "name": "General Physician",
         "id": 1
@@ -342,8 +345,7 @@
     "description": "You have no consultations today :) Hope you are doing well?",
     "things_to_do": {
       "label": "Things To Do",
-      "data": [
-        {
+      "data": [{
           "title": "Your Health Profile is just 30% complete. Update it now!",
           "description": "UPDATE HEALTH PROFILE"
         },
@@ -355,8 +357,7 @@
     },
     "articles": {
       "label": "Read a few articles on how to stay healthy",
-      "data": [
-        {
+      "data": [{
           "image": "",
           "title": "5 Simple Daily Yoga Exercises For Good Health!",
           "link": ""
@@ -390,8 +391,7 @@
     "avaliablity": "Availability",
     "online": "Online\nConsults",
     "inperson": "In-Person\nConsults",
-    "filter_data": [
-      {
+    "filter_data": [{
         "label": "City",
         "options": ["Hyderabad", "Chennai"]
       },
@@ -445,7 +445,8 @@
     "storeItemsAvailabilityApiFailMsg": "Sorry! We’re unable to check availability of cart items for the selected store. Please try later or opt for Home Delivery.",
     "cartItemsNotAvailableInStore": "The item(s) you have selected are not available in the nearby stores. Kindly opt for Home Delivery and we will deliver them to you directly at your doorstep.",
     "PickupStoreUnavailable": "Sorry! We’re working hard to get to this area! In the meantime, you can try next nearest pincode.",
-    "orderDetailsExpectedDeliverySubTextNonCartOrder": "Delivery date will be updated after successful verification"
+    "orderDetailsExpectedDeliverySubTextNonCartOrder": "Delivery date will be updated after successful verification",
+    "noInternetMessage": "There is no internet. Please check your internet connection."
   },
   "diagnostics": {
     "locationPermissionText": "Allow us to serve you better by entering your area pincode below.",
@@ -461,7 +462,7 @@
     "proceedToCartCTA": "PROCEED TO CART",
     "noPreparationRequiredText": "No special preparation required",
     "noTestDescription": "No test description available",
-    "priceNotificationForCovidText": "Extra charges for Phlebotomist Protection Kit and Home Collection may apply for COVID Test. You will be informed of the charges after booking of the order.",
+    "priceNotificationForCovidText": "Extra charges for Apollo agent Protection Kit and Home Collection may apply for COVID Test. You will be informed of the charges after booking of the order.",
     "cashOnDeliverySubText": "Currently we have Cash on delivery as a payment option.",
     "bookingOrderFailedMessage": "We're sorry :(  There's been a problem with your booking. Please book again.",
     "bookingOrderDuplicateFailedMessage": "Few of the tests are added twice. Please remove duplicates and proceed to place order",
@@ -471,16 +472,14 @@
     "specialDiscountText": "TESTS247 coupon pre-applied",
     "unableToOpenReport": "We are facing some issue in opening the report. Please try again later.",
     "responseUnavailableForReport": "Report is not yet available to download. Please try after some time.",
-    "disclaimerText": [
-      {
-        "text": "Rescheduling can be done upto 3 times only"
-      }
-    ],
+    "disclaimerText": [{
+      "text": "Rescheduling can be done upto 3 times only"
+    }],
     "reschduleCountExceed": "You have rescheduled thrice. You're out of reschedule attempts.",
     "rescheduleCountText": "You can reschedule to a maximum of 3 times. If you click ok, you will have {{setRescheduleCount}} reschedule attempt(s) left.",
     "reasonForCancel_TestOrder": {
-      "notArrived": "Phlebo did not arrive",
-      "latePhelbo": "Phlebo arrived late",
+      "notArrived": "Apollo agent did not arrive",
+      "latePhelbo": "Apollo agent arrived late",
       "priceHigh": "Prices are high comparatively",
       "editOrder": "Need to Modify Order Details",
       "homeChargesHigh": "Home collection charges are high",
@@ -500,7 +499,7 @@
       "otherReasons": "Others (Please specify)"
     },
     "reasonForReschedule_TestOrder": {
-      "latePhelbo": "Phlebo did not arrive on time",
+      "latePhelbo": "Apollo agent did not arrive on time",
       "unavailable": "I am not available right now",
       "guidelinesNotFollowed": "I did not follow fasting requirement",
       "unableToProvideSample": "Not feeling well to provide sample",
@@ -536,10 +535,10 @@
     "bookOnline": "Book Online",
     "bookOnlineSubText": "Select a test or package and book appointment on Apollo 247",
     "hcSample": "Home Sample Collection",
-    "hcSampleSubText": "Certified Phlebotomist visits your home for sample collection at selected slot time",
+    "hcSampleSubText": "Certified Apollo agent visits your home for sample collection at selected slot time",
     "fastReport": "Fast & Accurate Reports",
     "fastReportSubText": "Get reports in 12 to 24 hours. View or download on app anytime",
-    "orderSuccessPhaleboText": "*The phlebotomist will call you prior to starting his journey to confirm your availability",
+    "orderSuccessPhaleboText": "*The Apollo agent will call you prior to starting his journey to confirm your availability",
     "invoiceTimelineText": "Invoice will be available to download after the sample is submitted in the lab",
     "unableToFetchStatus": "Something went wrong. We are unable to fetch status",
     "noSlotAvailable": "Sorry! There are no slots available on {{date}}. Please choose another date.",
@@ -560,7 +559,7 @@
     "howWasExpTxt": "How was your overall experience -",
     "feedbackSubTxt": "Your feedback has been submitted. Thanks for your time.",
     "homeHomeCollectionDisclaimerTxt": "Home collection charges of upto ₹100 would be levied in case of order value less than ₹500",
-    "itDoseCancelledText": "Canceled by phlebotomist as per the request",
+    "itDoseCancelledText": "Canceled by Apollo agent as per the request",
     "orderCancelledReasonText": "Order was cancelled : ",
     "wantToReschedule": "• Do you want to Reschedule Appointment ?",
     "sampleSubmitted": "Sample Submitted",
@@ -575,24 +574,25 @@
     "viewReportText": "View Report",
     "sampleCollectedText": "Check Status",
     "collectionText": "Track Order",
-    "trackPhleboText": "Track Phlebo",
+    "trackPhleboText": "Track Apollo agent",
     "codDisableText": "We are currently not allowing Cash On Delivery for home sample collections.",
-    "phleboCallingError": "Error while connecting to Phlebo. Please try again later.",
+    "phleboCallingError": "Error while connecting to Apollo agent. Please try again later.",
     "modifyItemAlreadyExist": "Your cart has been updated, since it had duplicate items",
     "previousCharges": "Previous Charges",
     "currentCharges": "Current Charges",
     "modifyDiscardText": "You were trying to modify the order. Would you like to discard and go back to home page?",
     "sampleCollected": "Sample Collected",
-    "sampleCollectedContent": "Our phlebotomist has successfully collected the samples."
+    "sampleCollectedContent": "Our Apollo agent has successfully collected the samples.",
+    "agent": "Apollo agent"
   },
   "diagnosticCategoryTitle": {
-    "category": "Category",
-    "categoryGrid": "Category_Scroll"
+    "category": "category",
+    "categoryGrid": "category_Scroll"
   },
   "orders": {
     "urOrders": "MY ORDERS",
     "ratingHeader": "FEEDBACK",
-    "ratingDetailHeader": "Rate your Experience with our Phlebotomist",
+    "ratingDetailHeader": "Rate your Experience with our Apollo agent",
     "trackOrder": "Track Order",
     "viewBill": "Order Summary",
     "call_us": "CALL US",
@@ -601,15 +601,14 @@
     "test_prec_not_req": "This test doesn't requires doctor’s prescription",
     "go_to_help": "GO TO HELP"
   },
-  "defaultReasonList": [
-    {
+  "defaultReasonList": [{
       "title": "Arrived very Late"
     },
     {
       "title": "Did not seem Well-Trained"
     },
     {
-      "title": "Phlebo was not Polite"
+      "title": "Apollo agent was not Polite"
     },
     {
       "title": "Didn’t Wear the PPE Kit or Gloves"
@@ -618,11 +617,9 @@
       "title": "I have other Feedback"
     }
   ],
-  "positiveReasonList": [
-    {
-      "title": "I have Positive Feedback"
-    }
-  ],
+  "positiveReasonList": [{
+    "title": "I have Positive Feedback"
+  }],
   "OrderSummery": {
     "total": "Total",
     "order": "ORDER",
@@ -668,8 +665,7 @@
     "order_test": "ORDER TESTS",
     "book_follow_up": "BOOK FOLLOW-UP",
     "add_note_to_notify_users": "Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!",
-    "tabs": [
-      {
+    "tabs": [{
         "title": "Consults & Rx",
         "count": "0"
       },
@@ -720,8 +716,7 @@
   "alerts": {
     "Open_camera_in_video_call": "Image capturing is disabled during a video call. Please switch to the Audio call if you want to send an Image."
   },
-  "muiltdosages": [
-    {
+  "muiltdosages": [{
       "single": "tablet",
       "multiple": "tablet(s)"
     },
@@ -842,11 +837,9 @@
     "ADVANCE_DIABETES_QUESTIONAIRE": {
       "HEADING": "THANK YOU  !!",
       "SUBHEADING": "In order to assist you in the best possible way, please answer these questions",
-      "QUESTIONAIRE": [
-        {
+      "QUESTIONAIRE": [{
           "QUESTION": "Q1. Which type of diabetes are you living with?",
-          "OPTIONS": [
-            {
+          "OPTIONS": [{
               "key": "Pre-Diabetes",
               "value": "Pre-Diabetes"
             },
@@ -866,8 +859,7 @@
         },
         {
           "QUESTION": "Q2. For how many years have you lived with diabetes?",
-          "OPTIONS": [
-            {
+          "OPTIONS": [{
               "key": "lessThan2Years",
               "value": "Less than 2 years"
             },
@@ -991,8 +983,7 @@
       "Benefits and offers available through the program may change or be withdrawn without prior intimation. Apollo 24/7 will not be responsible for any liability arising from such situations or use of such offers.",
       "Any disputes arising out of the program shall be subject to arbitration by a sole arbitrator appointed by Apollo 24/7 for this purpose. The proceedings of the arbitration shall be conducted as per the provisions of Arbitration and Conciliation Act, 1996. The place of arbitration shall be at Chennai and language of arbitration shall be English. The existence of a dispute, if at all, shall not constitute a claim against Apollo 24/7."
     ],
-    "FAQ": [
-      {
+    "FAQ": [{
         "faqQuestion": "What is the Apollo 24|7 CIRCLE Membership program?",
         "faqAnswer": "Apollo 24|7 CIRCLE membership is a one-of-its-kind program designed to give the best care and value to its members. Once you sign up by choosing the plan that suits your needs, you will receive benefits like an emergency doctor-on-call, cashback on medicines, discounts on doctor consultations, and diagnostics. Did we also tell you that all your deliveries will be done free of cost and on a priority basis?"
       },
@@ -1096,8 +1087,7 @@
     "testPincodeText": "Enter pincode here",
     "addNewAddressText": "Add New Address"
   },
-  "aboutApolloList": [
-    {
+  "aboutApolloList": [{
       "title": "About Us",
       "url": "https://www.apollo247.com/aboutUs?isMobile=true"
     },

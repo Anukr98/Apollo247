@@ -104,105 +104,6 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
     'Customer ID': currentPatient?.id,
     'Circle Member': circleSubscriptionId ? 'Yes' : 'No',
   };
-  const { cusId, isfetchingId } = useGetJuspayId();
-  const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
-
-  useEffect(() => {
-    !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
-  }, [isfetchingId]);
-
-  const initiateHyperSDK = async (cusId: any) => {
-    try {
-      const merchantId = AppConfig.Configuration.merchantId;
-      terminateSDK();
-      createHyperServiceObject();
-      initiateSDK(cusId, cusId, merchantId);
-      setHyperSdkInitialized(true);
-    } catch (error) {
-      CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
-    }
-  };
-
-  const fireCircleOtherPaymentEvent = () => {
-    source == 'Diagnostic' &&
-      postWebEngageEvent(
-        WebEngageEventName.DIAGNOSTIC_OTHER_PAYMENT_OPTION_CLICKED_POPUP,
-        CircleEventAttributes
-      );
-  };
-
-  const createOrderInternal = (subscriptionId: string) => {
-    const orders: OrderVerticals = {
-      subscription: [
-        {
-          order_id: subscriptionId,
-          amount: Number(defaultCirclePlan?.currentSellingPrice),
-          patient_id: currentPatient?.id,
-        },
-      ],
-    };
-    const orderInput: OrderCreate = {
-      orders: orders,
-      total_amount: Number(defaultCirclePlan?.currentSellingPrice),
-    };
-    return client.mutate<createOrderInternal, createOrderInternalVariables>({
-      mutation: CREATE_INTERNAL_ORDER,
-      variables: { order: orderInput },
-    });
-  };
-
-  const initiateCirclePurchase = async () => {
-    try {
-      setLoading(true);
-      const purchaseInput = {
-        userSubscription: {
-          mobile_number: currentPatient?.mobileNumber,
-          plan_id: planId,
-          sub_plan_id: defaultCirclePlan?.subPlanId,
-          storeCode,
-          FirstName: currentPatient?.firstName,
-          LastName: currentPatient?.lastName,
-          payment_reference: {
-            amount_paid: Number(defaultCirclePlan?.currentSellingPrice),
-            payment_status: PaymentStatus.PENDING,
-            purchase_via_HC: false,
-            HC_used: 0,
-          },
-          transaction_date_time: new Date().toISOString(),
-        },
-      };
-      const response = await client.mutate<CreateUserSubscription, CreateUserSubscriptionVariables>(
-        {
-          mutation: CREATE_USER_SUBSCRIPTION,
-          variables: purchaseInput,
-          fetchPolicy: 'no-cache',
-        }
-      );
-      const subscriptionId = g(response, 'data', 'CreateUserSubscription', 'response', '_id');
-      const data = await createOrderInternal(subscriptionId);
-      const orderInfo = {
-        orderId: subscriptionId,
-        circleParams: {
-          circleActivated: true,
-          circlePlanValidity: g(response, 'data', 'CreateUserSubscription', 'response', 'end_date'),
-        },
-      };
-      setLoading(false);
-      if (data?.data?.createOrderInternal?.success) {
-        props.navigation.navigate(AppRoutes.PaymentMethods, {
-          paymentId: data?.data?.createOrderInternal?.payment_order_id!,
-          amount: Number(defaultCirclePlan?.currentSellingPrice),
-          orderDetails: orderInfo,
-          businessLine: 'subscription',
-          customerId: cusId,
-        });
-      }
-      fireCircleOtherPaymentEvent();
-      closeModal && closeModal();
-    } catch (error) {
-      CommonBugFender('Circle_Purchase_Initiation_Failed', error);
-    }
-  };
 
   const renderCloseIcon = () => {
     return (
@@ -250,8 +151,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
             />
             <TouchableOpacity
               onPress={() => {
-                // props.navigation.navigate(AppRoutes.CircleSubscription, { from: from });
-                initiateCirclePurchase();
+                props.navigation.navigate(AppRoutes.SubscriptionCart);
               }}
             >
               <Text style={styles.btnText}>{string.circleDoctors.useAnotherPaymentMethod}</Text>
@@ -352,7 +252,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
       onRequestClose={() => closeModal && closeModal()}
     >
       <View>
-        {(loading || !hyperSdkInitialized) && <Spinner />}
+        {loading && <Spinner />}
         {!loading && renderCloseIcon()}
         <View style={styles.container}>
           <View style={styles.leftCircle} />

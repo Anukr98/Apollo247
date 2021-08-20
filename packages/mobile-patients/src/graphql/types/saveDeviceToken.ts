@@ -17,6 +17,7 @@ export interface saveDeviceToken_saveDeviceToken_deviceToken {
   deviceToken: string;
   createdDate: any;
   updatedDate: any | null;
+  appVersion:string;
 }
 
 export interface saveDeviceToken_saveDeviceToken {

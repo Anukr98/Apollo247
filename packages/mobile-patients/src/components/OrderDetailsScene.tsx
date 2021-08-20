@@ -82,7 +82,6 @@ import {
   handleGraphQlError,
   isEmptyObject,
   postCleverTapEvent,
-  postCleverTapPHR,
   postWebEngageEvent,
   reOrderMedicines,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -117,6 +116,8 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { NavigationActions, StackActions } from 'react-navigation';
+
 const screenWidth = Dimensions.get('window').width;
 
 export interface OrderDetailsSceneProps
@@ -482,7 +483,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         'Mobile Number': g(currentPatient, 'mobileNumber'),
         'Customer ID': g(currentPatient, 'id'),
       };
-      postCleverTapPHR(CleverTapEventName.PHARMACY_RE_ORDER_MEDICINE, cleverTapEventAttributes);
+      postCleverTapEvent(CleverTapEventName.PHARMACY_RE_ORDER_MEDICINE, cleverTapEventAttributes);
       postWebEngageEvent(WebEngageEventName.RE_ORDER_MEDICINE, eventAttributes);
       items.length && addMultipleCartItems!(items);
       items.length && prescriptions.length && addMultipleEPrescriptions!(prescriptions);
@@ -490,7 +491,14 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       if (unavailableItems.length) {
         setReOrderDetails({ total: totalItemsCount, unavailable: unavailableItems });
       } else {
-        props.navigation.navigate(AppRoutes.MedicineCart);
+        const resetAction = StackActions.reset({
+          index: 1,
+          actions: [
+            NavigationActions.navigate({ routeName: AppRoutes.MyOrdersScreen }),
+            NavigationActions.navigate({ routeName: AppRoutes.MedicineCart }),
+          ],
+        });
+        props.navigation.dispatch(resetAction);
       }
     } catch (error) {
       CommonBugFender(`${AppRoutes.OrderDetailsScene}_reOrder`, error);
@@ -2179,6 +2187,51 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     );
   };
 
+  const renderCancelButton = () => {
+    const currentStatus = order?.currentStatus;
+
+    if (currentStatus === undefined) return null;
+
+    const statusIrrespectiveOfCurrent = [
+      MEDICINE_ORDER_STATUS.DELIVERED,
+      MEDICINE_ORDER_STATUS.CANCELLED,
+      MEDICINE_ORDER_STATUS.ORDER_BILLED,
+      MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE,
+    ];
+    const statusWrtCurrent = [
+      MEDICINE_ORDER_STATUS.PAYMENT_FAILED,
+      MEDICINE_ORDER_STATUS.PAYMENT_PENDING,
+      MEDICINE_ORDER_STATUS.PAYMENT_ABORTED,
+      MEDICINE_ORDER_STATUS.ORDER_FAILED,
+    ];
+
+    const cancelNotAllowedIrrespectiveOfCurrentStatus = order?.medicineOrdersStatus?.find((item) =>
+      statusIrrespectiveOfCurrent.includes(item?.orderStatus!)
+    );
+
+    const cancelNotAllowedWrtCurrentStatus = statusWrtCurrent.includes(currentStatus!);
+
+    const cancelNotAllowed =
+      cancelNotAllowedIrrespectiveOfCurrentStatus || cancelNotAllowedWrtCurrentStatus;
+
+    return (
+      !cancelNotAllowed && (
+        <View>
+          {Array.from({ length: 10 })
+            .reverse()
+            .map((_, idx) => (
+              <View style={[styles.reOrderButtonTransparentTopView, { top: -(idx + 1) * 2 }]} />
+            ))}
+          <Button
+            style={styles.cancelOrderButton}
+            onPress={showCancelOrder}
+            title={'CANCEL ORDER'}
+          />
+        </View>
+      )
+    );
+  };
+
   const renderMedicineReOrderOverlay = () => {
     const { total, unavailable } = reOrderDetails;
     return (
@@ -2287,6 +2340,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 : !loading && renderOrderSummary()}
             </ScrollView>
             {renderReOrderButton()}
+            {renderCancelButton()}
           </>
         )}
       </SafeAreaView>
@@ -2467,5 +2521,11 @@ const styles = StyleSheet.create({
   goToHelp: {
     textAlign: 'center',
     ...theme.viewStyles.text('B', 14, '#FC9916'),
+  },
+  cancelOrderButton: {
+    width: '74.16%',
+    alignSelf: 'center',
+    marginTop: 9,
+    marginBottom: 17,
   },
 });

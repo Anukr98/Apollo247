@@ -46,6 +46,8 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   consultId: string | null;
   identifier: string | null;
   additionalNotes: string | null;
+  billNo: string | null;
+  testSequence: string | null;
   observation: string | null;
   labTestResults:
     | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response_labTestResults | null)[]
@@ -445,8 +447,8 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   immunizationName: string | null;
   dateAdministered: any | null;
   followUpDate: any | null;
-  regstrationId: string | null;
-  dateOfImmunization: string | null;
+  registrationId: string | null;
+  dateOfImmunization: any | null;
   dueDate: any | null;
   fileUrl: string | null;
   doctorName: string | null;

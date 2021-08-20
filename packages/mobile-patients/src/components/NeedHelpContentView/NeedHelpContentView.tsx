@@ -50,12 +50,14 @@ export interface Props
     email?: string;
     orderId?: string;
     sourcePage: WebEngageEvents[WebEngageEventName.HELP_TICKET_SUBMITTED]['Source_Page'];
+    pathFollowed: string;
   }> {}
 
 export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
   const sourcePage = navigation.getParam('sourcePage') || 'My Account';
   const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
   const queries = navigation.getParam('queries');
+  const pathFollowed = navigation.getParam('pathFollowed') || '';
   const queryIdLevel1 = navigation.getParam('queryIdLevel1') || helpSectionQueryId.pharmacy;
   const queryIdLevel2 = navigation.getParam('queryIdLevel2') || helpSectionQueryId.returnOrder;
   const headingTitle = queries?.find((q) => q.id === queryIdLevel1)?.title || 'Query';
@@ -186,7 +188,7 @@ export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
       const variables: SendHelpEmailVariables = {
         helpEmailInput: {
           category: parentQuery?.title,
-          reason: issueNotResolvedText,
+          reason: pathFollowed + issueNotResolvedText,
           comments: comments,
           patientId: currentPatient?.id,
           email: email,

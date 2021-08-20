@@ -33,12 +33,15 @@ export enum ProductPageViewedSource {
   SUBSTITUTES = 'substitutes',
   CROSS_SELLING_PRODUCTS = 'cross selling products',
   SIMILAR_PRODUCTS = 'similar products',
+  MULTI_VARIANT = 'multivariant',
 }
 
 export enum WebEngageEventName {
-  //doh
-  DOH_Viewed = 'DOH Viewed',
+
+  Patient_API_Error='Patient_API_Error',
+  //DOH
   DOH_Clicked = 'DOH Clicked',
+  DOH_Viewed = 'DOH Viewed',
 
   MOBILE_ENTRY = 'Mobile Entry',
   MOBILE_NUMBER_ENTERED = 'Mobile Number Entered',
@@ -785,6 +788,16 @@ export interface WebEngageEvents {
   [WebEngageEventName.DOH_Viewed]: DOHInfo;
   [WebEngageEventName.DOH_Clicked]: DOHInfo;
 
+  [WebEngageEventName.Patient_API_Error]: {
+  'Patient Name':string;
+  'Patient ID':string;
+  'Patient Number':string;
+  'Doctor ID':string | null;
+  'Screen Name':string;
+  'API Name':string;
+  'Error Name':any;
+    };
+
   // ********** Home Screen Events ********** \\
 
   [WebEngageEventName.BUY_MEDICINES]: {
@@ -1367,7 +1380,7 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED]: {
     UHID: string;
-    'Order amount': string | number;
+    'Order amount': number;
   };
   [WebEngageEventName.DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED]: {
     Rating: string | number;
@@ -1590,6 +1603,9 @@ export interface WebEngageEvents {
     'Secretary Name': string;
     'Secretary Mobile Number': string;
     'Doctor Mobile Number': string;
+    'Doctor ID': string;
+    'Display ID': number;
+    'Chat Format': 'PDF' | 'Image' | 'Text';
   };
   [WebEngageEventName.PATIENT_EXTERNAL_MEETING_LINK_CLICKED]: {
     'Doctor name': string;
@@ -1621,6 +1637,9 @@ export interface WebEngageEvents {
     'Secretary Name': string;
     'Secretary Mobile Number': string;
     'Doctor Mobile Number': string;
+    'Doctor ID': string;
+    'Display ID': number;
+    'Chat Format': 'PDF' | 'Image' | 'Text';
   };
   // confirm the type of data for the below
   [WebEngageEventName.CONSULT_SCHEDULE_FOR_LATER_CLICKED]: {
@@ -2311,6 +2330,7 @@ export interface WebEngageEvents {
     MRP?: number;
     SpecialPrice?: number | null;
     CircleCashback?: number;
+    isMultiVariant: number;
   };
   [WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
     'Patient Name': string;

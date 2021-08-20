@@ -14,18 +14,29 @@ export interface PayByCashProps {
   businessLine: 'consult' | 'diagnostics' | 'pharma' | 'subscription';
   showDiagCOD: boolean;
   diagMsg: string;
+  pharmaDisableCod?: boolean;
+  pharmaDisincentivizeCodMessage?: string;
 }
 
 export const PayByCash: React.FC<PayByCashProps> = (props) => {
-  const { onPressPlaceOrder, HCselected, businessLine, showDiagCOD, diagMsg } = props;
+  const {
+    onPressPlaceOrder,
+    HCselected,
+    businessLine,
+    showDiagCOD,
+    diagMsg,
+    pharmaDisableCod,
+    pharmaDisincentivizeCodMessage,
+  } = props;
   const disableDiagCOD = businessLine == 'diagnostics' && !showDiagCOD;
+  const disableCodOption = disableDiagCOD || HCselected || pharmaDisableCod;
 
   const renderPaybyCash = () => {
     return (
       <View
         style={{
           ...styles.subContainer,
-          opacity: disableDiagCOD || HCselected ? 0.4 : 1,
+          opacity: disableCodOption ? 0.4 : 1,
         }}
       >
         <Cash />
@@ -36,11 +47,15 @@ export const PayByCash: React.FC<PayByCashProps> = (props) => {
 
   const renderPlaceOrder = () => {
     return (
-      <TouchableOpacity onPress={onPressPlaceOrder}>
+      <TouchableOpacity
+        onPress={() => {
+          !disableCodOption && onPressPlaceOrder();
+        }}
+      >
         <Text
           style={{
             ...styles.placeOrder,
-            opacity: disableDiagCOD || HCselected ? 0.4 : 1,
+            opacity: disableCodOption ? 0.4 : 1,
           }}
         >
           PLACE ORDER
@@ -54,6 +69,8 @@ export const PayByCash: React.FC<PayByCashProps> = (props) => {
       <Text style={styles.codAlertMsg}>
         {'! COD option is not available along with OneApollo Health Credits.'}
       </Text>
+    ) : pharmaDisableCod ? (
+      <Text style={styles.codAlertMsg}>COD option is not available for this order.</Text>
     ) : null;
   };
 
@@ -79,6 +96,18 @@ export const PayByCash: React.FC<PayByCashProps> = (props) => {
     );
   };
 
+  const renderPharmaMessage = () => {
+    return (
+      !!pharmaDisincentivizeCodMessage &&
+      businessLine == 'pharma' && (
+        <View style={styles.pharmaMessageContainer}>
+          <SavingsIcon style={styles.savingIconStyle} />
+          <Text style={styles.pharmaCodMessage}>{pharmaDisincentivizeCodMessage}</Text>
+        </View>
+      )
+    );
+  };
+
   const renderChildComponent = () => {
     return (
       <View>
@@ -91,6 +120,7 @@ export const PayByCash: React.FC<PayByCashProps> = (props) => {
           {renderPlaceOrder()}
         </View>
         {renderHCMsg()}
+        {renderPharmaMessage()}
         {businessLine == 'pharma' && renderMsg()}
       </View>
     );
@@ -169,5 +199,14 @@ const styles = StyleSheet.create({
     width: '89%',
     alignSelf: 'center',
     marginLeft: 10,
+  },
+  pharmaCodMessage: {
+    ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1, 30),
+    marginLeft: 7,
+  },
+  pharmaMessageContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 15,
   },
 });

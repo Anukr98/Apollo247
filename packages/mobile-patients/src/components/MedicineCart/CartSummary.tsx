@@ -162,7 +162,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
 
   useEffect(() => {
     if (appState == 'active') {
-      availabilityTat(deliveryAddressId);
+      availabilityTat(deliveryAddressId, true);
     }
   }, [appState]);
 
@@ -237,10 +237,10 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     unserviceableItems?.length && props.navigation.goBack();
   }
 
-  async function availabilityTat(id: string) {
+  async function availabilityTat(id: string, forceCheck?: boolean) {
     const newCartItems =
       cartItems.map(({ id, quantity }) => id + quantity).toString() + deliveryAddressId;
-    if (newCartItems == lastCartItems) {
+    if (newCartItems == lastCartItems && !forceCheck) {
       return;
     }
     if (id && cartItems.length > 0) {
@@ -461,7 +461,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         return;
       }
     }
-    await availabilityTat(deliveryAddressId);
+    await availabilityTat(deliveryAddressId, true);
     let splitOrderDetails: any = {};
     if (orders?.length > 1) {
       orders?.forEach((order: any, index: number) => {
@@ -491,7 +491,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         !circleSubscriptionId && circlePlanSelected
           ? await saveOrderWithSubscription()
           : await saveOrder();
-      const { orders, transactionId, errorCode } = response?.data?.saveMedicineOrderV2 || {};
+      const { orders, transactionId, errorCode, isCodEligible } =
+        response?.data?.saveMedicineOrderV2 || {};
       const subscriptionId = response?.data?.CreateUserSubscription?.response?._id;
       const data = await createOrderInternal(orders, subscriptionId);
       if (data?.data?.createOrderInternal?.success) {
@@ -514,6 +515,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
             pharmacyUserTypeAttribute,
             orders
           ),
+          disableCOD: !isCodEligible,
         });
       }
       setloading(false);

@@ -45,6 +45,7 @@ export interface MedicineProduct {
   product_form?: string | null;
   pack_size?: string | null;
   banned?: 'Yes' | 'No';
+  subcategory?: string | null;
 }
 
 export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
@@ -121,7 +122,22 @@ export interface MedicineOrderBilledItem {
   mrp: number;
 }
 
+export interface SearchSuggestion {
+  name: string;
+  categoryId: string;
+  queryName: string;
+  superQuery?: string;
+}
+
+export interface MedicineSearchQueryFilter {
+  query: string[];
+  filter: {
+    __categories: string[];
+  };
+}
+
 export interface MedicineProductsResponse {
+  queries?: MedicineSearchQueryFilter[];
   products: MedicineProduct[];
   product_count?: number;
   count?: number;
@@ -221,6 +237,16 @@ export interface TatApiInput247 {
     qty: number;
   }[];
   userType: 'regular' | 'circle';
+}
+
+export interface TatApiInput {
+  pincode: string;
+  lat: number;
+  lng: number;
+  items: {
+    sku: string;
+    qty: number;
+  }[];
 }
 
 export interface ServiceAbilityApiInput {
@@ -891,6 +917,16 @@ export const getDeliveryTAT247 = (params: TatApiInput247): Promise<AxiosResponse
   });
 };
 
+export const getDeliveryTAT = (params: TatApiInput): Promise<AxiosResponse<any>> => {
+  const url = `${config.UATTAT_CONFIG[0]}/tat`;
+  return Axios.post(url, params, {
+    headers: {
+      Authorization: config.UATTAT_CONFIG[1],
+    },
+    timeout: config.TAT_API_TIMEOUT_IN_SEC * 1000,
+  });
+};
+
 export const getSubstitutes = async (
   sku: string
 ): Promise<AxiosResponse<{ products: MedicineProductDetails[]; product_count: number }>> => {
@@ -1240,4 +1276,11 @@ export const getDiagnosticDoctorPrescriptionResults = (
       },
     }
   );
+};
+
+export const getTatStaticContent = (
+): Promise<AxiosResponse<any>> => {
+  const baseUrl = config.assetsBaseurl;
+  const url = `${baseUrl}/tatCtaStaticContent.json`;
+  return Axios.get(url);
 };

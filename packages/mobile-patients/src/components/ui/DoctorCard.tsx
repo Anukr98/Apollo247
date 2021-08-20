@@ -63,6 +63,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
   CleverTapEventName,
   CleverTapEvents,
@@ -186,14 +187,14 @@ const styles = StyleSheet.create({
     marginEnd: 6,
   },
   consultBtnContainer: {
-    flex: 1, 
+    flex: 1,
     justifyContent: 'flex-end',
-    marginTop: 7 
+    marginTop: 7,
   },
   infoContainer: {
-    flexDirection: 'row', 
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16, 
+    paddingHorizontal: 16,
     paddingBottom: 7,
   },
   doctorLanguage: {
@@ -203,11 +204,21 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(12),
     color: theme.colors.SKY_BLUE,
   },
-  doctorInfoContainer: { 
-    flex: 1, 
-    paddingRight: 16, 
+  doctorInfoContainer: {
+    flex: 1,
+    paddingRight: 16,
     marginBottom: 16,
-   },
+  },
+  BORButtonTextStyle: {
+    ...theme.viewStyles.text('B', 13, '#FC9916', 1, 24),
+    textTransform: 'uppercase',
+  },
+  BORButtonStyle: {
+    width: '90%',
+    margin: 20,
+    backgroundColor: theme.colors.WHITE,
+    shadowOffset: { width: 2, height: 4 },
+  },
 });
 
 export interface DoctorCardProps extends NavigationScreenProps {
@@ -218,7 +229,8 @@ export interface DoctorCardProps extends NavigationScreenProps {
     | getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor
     | any
     | null;
-  onPress?: (doctorId: string, onlineConsult: boolean) => void;
+  onPressRequest?: (arg: boolean) => void;
+  onPress?: (doctorId: string) => void;
   onPressConsultNowOrBookAppointment?: (type: 'consult-now' | 'book-appointment') => void;
   displayButton?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -236,7 +248,7 @@ export interface DoctorCardProps extends NavigationScreenProps {
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
-  const rowData = props.rowData;  
+  const rowData = props.rowData;
   const { selectedConsultMode } = props;
   const ctaBannerText = rowData?.availabilityTitle;
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
@@ -261,6 +273,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const { availableModes } = props;
   const { showCircleSubscribed } = useShoppingCart();
   const [fetchedSlot, setfetchedSlot] = useState<string>('');
+  const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const isPhysical = availableModes
     ? [ConsultMode.PHYSICAL, ConsultMode.BOTH].includes(availableModes)
     : false;
@@ -324,7 +337,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     }
     props.navigation.navigate(AppRoutes.SlotSelection, {
       doctorId: id,
-      consultModeSelected: onlineConsult ? ConsultMode.ONLINE : ConsultMode.PHYSICAL,
+      consultModeSelected: onlineConsult ? 
+        string.consultModeTab.VIDEO_CONSULT :
+        string.consultModeTab.HOSPITAL_VISIT,
       externalConnect: null,
       callSaveSearch: props.callSaveSearch,
       ...params,
@@ -567,7 +582,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       >
         <View style={{ borderRadius: 10, flex: 1, zIndex: 1 }}>
           <View style={{ flexDirection: 'row' }}>
-            {rowData.slot ? (
+            {rowData.slot && !rowData?.allowBookingRequest ? (
               <AvailabilityCapsule
                 availableTime={rowData.slot}
                 styles={styles.availableView}
@@ -652,10 +667,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             </View>
 
             <View style={styles.doctorInfoContainer}>
-              <Text
-                style={[styles.doctorNameStyles, styles.doctorNameViewStyle]} 
-                numberOfLines={1}
-              >
+              <Text style={[styles.doctorNameStyles, styles.doctorNameViewStyle]} numberOfLines={1}>
                 {rowData.displayName}
               </Text>
               {renderSpecialities()}
@@ -688,14 +700,14 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               {rowData?.languages.join(', ')}
             </Text>
           </View>
-          {!!clinicAddress && 
-          <View style={styles.infoContainer}>
-            <DoctorLocation style={styles.doctorInfoIcon} />
-            <Text style={styles.doctorLocation} numberOfLines={1}>
-              {clinicAddress}
-            </Text>
-          </View>
-          }
+          {!!clinicAddress && (
+            <View style={styles.infoContainer}>
+              <DoctorLocation style={styles.doctorInfoIcon} />
+              <Text style={styles.doctorLocation} numberOfLines={1}>
+                {clinicAddress}
+              </Text>
+            </View>
+          )}
           <View style={styles.consultBtnContainer}>
             {props.displayButton && (
               <View
@@ -708,125 +720,138 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   props.buttonViewStyle,
                 ]}
               >
-                <TouchableOpacity
-                  activeOpacity={1}
-                  style={[
-                    {
-                      backgroundColor:
-                        rowData.doctorType !== 'DOCTOR_CONNECT'
-                          ? theme.colors.BUTTON_BG
-                          : theme.colors.WHITE,
-                      shadowColor:
-                        rowData.doctorType === 'DOCTOR_CONNECT'
-                          ? theme.colors.SHADOW_GRAY
-                          : theme.colors.WHITE,
-                      shadowOffset:
-                        rowData.doctorType === 'DOCTOR_CONNECT'
-                          ? { width: 0, height: 2 }
-                          : { width: 0, height: 0 },
-                      shadowOpacity: rowData.doctorType === 'DOCTOR_CONNECT' ? 0.4 : 0,
-                      shadowRadius: rowData.doctorType === 'DOCTOR_CONNECT' ? 8 : 0,
-                      elevation: rowData.doctorType === 'DOCTOR_CONNECT' ? 4 : 0,
-                      height: 44,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderRadius: rowData.doctorType === 'DOCTOR_CONNECT' ? 10 : 0,
-                    },
-                    props.buttonStyle,
-                  ]}
-                  onPress={() => {
-                    try {
-                      const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK] = {
-                        'Patient name': currentPatient.firstName,
-                        docId: rowData.id,
-                        specialityId: rowData?.specialty?.id,
-                        specialityName: rowData?.specialty?.name,
-                        'Doctor Experience': Number(rowData?.experience),
-                        docHospital: rowData?.doctorHospital?.[0]?.facility?.name,
-                        docCity: rowData?.doctorHospital?.[0]?.facility?.city,
-                        'Availability Minutes': getTimeDiff(rowData?.slot),
-                        Source: 'List',
-                        'Patient UHID': currentPatient.uhid,
-                        Relation: currentPatient?.relation,
-                        'Patient age': Math.round(
-                          moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)
-                        ),
-                        'Patient gender': currentPatient.gender,
-                        'Customer ID': currentPatient.id,
-                        User_Type: getUserType(allCurrentPatients),
-                      };
-                      if (props.rowId) {
-                        eventAttributes['Rank'] = props.rowId;
-                      }
-                      postWebEngageEvent(
-                        WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK,
-                        eventAttributes
-                      );
-                      const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
-                        'Patient name': currentPatient.firstName,
-                        docId: rowData.id,
-                        specialityId: rowData?.specialty?.id,
-                        specialityName: rowData?.specialty?.name,
-                        exp: Number(rowData?.experience),
-                        docHospital: rowData?.doctorHospital?.[0]?.facility?.name,
-                        docCity: rowData?.doctorHospital?.[0]?.facility?.city,
-                        availableInMins: getTimeDiff(rowData?.slot),
-                        Source: 'Doctor card doctor listing screen',
-                        'Patient UHID': currentPatient.uhid,
-                        Relation: currentPatient?.relation,
-                        'Patient age': Math.round(
-                          moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)
-                        ),
-                        'Patient gender': currentPatient.gender,
-                        'Customer ID': currentPatient.id,
-                        User_Type: getUserType(allCurrentPatients),
-                        rank: props.rowId || undefined,
-                        onlineConsultFee:
-                          Number(rowData?.onlineConsultationFees) ||
-                          Number(rowData?.fee) ||
-                          undefined,
-                        physicalConsultFee:
-                          Number(rowData?.physicalConsultationFees) ||
-                          Number(rowData?.fee) ||
-                          undefined,
-                      };
-                      postCleverTapEvent(
-                        CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED,
-                        cleverTapEventAttributes
-                      );
-                    } catch (error) {}
-
-                    props.onPressConsultNowOrBookAppointment &&
-                      props.onPressConsultNowOrBookAppointment(
-                        rowData.slot && moment(rowData.slot).isValid()
-                          ? 'consult-now'
-                          : 'book-appointment'
-                      );
-                    CommonLogEvent(AppRoutes.DoctorSearchListing, 'Consult now clicked');
-                    navigateToDetails(rowData.id ? rowData.id : '', {
-                      showBookAppointment: true,
-                    });
-                  }}
-                >
-                  <Text
+                {!props?.rowData?.allowBookingRequest && (
+                  <TouchableOpacity
+                    activeOpacity={1}
                     style={[
-                      styles.buttonText,
                       {
-                        color:
+                        backgroundColor:
                           rowData.doctorType !== 'DOCTOR_CONNECT'
-                            ? theme.colors.BUTTON_TEXT
-                            : theme.colors.BUTTON_BG,
+                            ? theme.colors.BUTTON_BG
+                            : theme.colors.WHITE,
+                        shadowColor:
+                          rowData.doctorType === 'DOCTOR_CONNECT'
+                            ? theme.colors.SHADOW_GRAY
+                            : theme.colors.WHITE,
+                        shadowOffset:
+                          rowData.doctorType === 'DOCTOR_CONNECT'
+                            ? { width: 0, height: 2 }
+                            : { width: 0, height: 0 },
+                        shadowOpacity: rowData.doctorType === 'DOCTOR_CONNECT' ? 0.4 : 0,
+                        shadowRadius: rowData.doctorType === 'DOCTOR_CONNECT' ? 8 : 0,
+                        elevation: rowData.doctorType === 'DOCTOR_CONNECT' ? 4 : 0,
+                        height: 44,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: rowData.doctorType === 'DOCTOR_CONNECT' ? 10 : 0,
                       },
-                      props.buttonTextStyle,
+                      props.buttonStyle,
                     ]}
+                    onPress={() => {
+                      try {
+                        const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK] = {
+                          'Patient name': currentPatient.firstName,
+                          docId: rowData.id,
+                          specialityId: rowData?.specialty?.id,
+                          specialityName: rowData?.specialty?.name,
+                          'Doctor Experience': Number(rowData?.experience),
+                          docHospital: rowData?.doctorHospital?.[0]?.facility?.name,
+                          docCity: rowData?.doctorHospital?.[0]?.facility?.city,
+                          'Availability Minutes': getTimeDiff(rowData?.slot),
+                          Source: 'List',
+                          'Patient UHID': currentPatient.uhid,
+                          Relation: currentPatient?.relation,
+                          'Patient age': Math.round(
+                            moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)
+                          ),
+                          'Patient gender': currentPatient.gender,
+                          'Customer ID': currentPatient.id,
+                          User_Type: getUserType(allCurrentPatients),
+                        };
+                        if (props.rowId) {
+                          eventAttributes['Rank'] = props.rowId;
+                        }
+                        postWebEngageEvent(
+                          WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK,
+                          eventAttributes
+                        );
+                        const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
+                          'Patient name': currentPatient.firstName,
+                          docId: rowData.id,
+                          specialityId: rowData?.specialty?.id,
+                          specialityName: rowData?.specialty?.name,
+                          exp: Number(rowData?.experience),
+                          docHospital: rowData?.doctorHospital?.[0]?.facility?.name,
+                          docCity: rowData?.doctorHospital?.[0]?.facility?.city,
+                          availableInMins: getTimeDiff(rowData?.slot),
+                          Source: 'Doctor card doctor listing screen',
+                          'Patient UHID': currentPatient.uhid,
+                          Relation: currentPatient?.relation,
+                          'Patient age': Math.round(
+                            moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)
+                          ),
+                          'Patient gender': currentPatient.gender,
+                          'Customer ID': currentPatient.id,
+                          User_Type: getUserType(allCurrentPatients),
+                          rank: props.rowId || undefined,
+                          onlineConsultFee:
+                            Number(rowData?.onlineConsultationFees) ||
+                            Number(rowData?.fee) ||
+                            undefined,
+                          physicalConsultFee:
+                            Number(rowData?.physicalConsultationFees) ||
+                            Number(rowData?.fee) ||
+                            undefined,
+                        };
+                        postCleverTapEvent(
+                          CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED,
+                          cleverTapEventAttributes
+                        );
+                      } catch (error) {}
+
+                      props.onPressConsultNowOrBookAppointment &&
+                        props.onPressConsultNowOrBookAppointment(
+                          rowData.slot && moment(rowData.slot).isValid()
+                            ? 'consult-now'
+                            : 'book-appointment'
+                        );
+                      CommonLogEvent(AppRoutes.DoctorSearchListing, 'Consult now clicked');
+                      navigateToDetails(rowData.id ? rowData.id : '', {
+                        showBookAppointment: true,
+                      });
+                    }}
                   >
-                    {!!ctaTitle
-                      ? ctaTitle
-                      : !!fetchedSlot
-                      ? getButtonTitle(fetchedSlot)
-                      : getButtonTitle(rowData?.slot)}
-                  </Text>
-                </TouchableOpacity>
+                    <Text
+                      style={[
+                        styles.buttonText,
+                        {
+                          color:
+                            rowData.doctorType !== 'DOCTOR_CONNECT'
+                              ? theme.colors.BUTTON_TEXT
+                              : theme.colors.BUTTON_BG,
+                        },
+                        props.buttonTextStyle,
+                      ]}
+                    >
+                      {!!ctaBannerText
+                        ? ctaBannerText.CONSULT_NOW
+                        : !!fetchedSlot
+                        ? getButtonTitle(fetchedSlot)
+                        : getButtonTitle(rowData?.slot)}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+
+                {props?.rowData?.allowBookingRequest && (
+                  <Button
+                    style={styles.BORButtonStyle}
+                    titleTextStyle={styles.BORButtonTextStyle}
+                    title={'Request Appointment'}
+                    onPress={() => {
+                      props.onPressRequest && props.onPressRequest(true);
+                    }}
+                  />
+                )}
               </View>
             )}
           </View>

@@ -88,10 +88,10 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { NavigationScreenProps } from 'react-navigation';
 import {
-  getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_healthChecks_response,
-  getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response,
-  getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_prescriptions_response,
-} from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
+  getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_healthChecks_response,
+  getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_labResults_response,
+  getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_prescriptions_response,
+} from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V3';
 import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -411,17 +411,17 @@ export interface HealthRecordsHomeProps extends NavigationScreenProps {
 
 export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [healthChecksNew, setHealthChecksNew] = useState<
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_healthChecks_response | null)[]
+    | (getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_healthChecks_response | null)[]
     | null
     | undefined
   >([]);
   const [labResults, setLabResults] = useState<
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response | null)[]
+    | (getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_labResults_response | null)[]
     | null
     | undefined
   >([]);
   const [prescriptions, setPrescriptions] = useState<
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_prescriptions_response | null)[]
+    | (getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_prescriptions_response | null)[]
     | null
     | undefined
   >([]);
@@ -638,19 +638,19 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       .then((data: any) => {
         const labResultsData = g(
           data,
-          'getPatientPrismMedicalRecords_V2',
+          'getPatientPrismMedicalRecords_V3',
           'labResults',
           'response'
         );
         const prescriptionsData = g(
           data,
-          'getPatientPrismMedicalRecords_V2',
+          'getPatientPrismMedicalRecords_V3',
           'prescriptions',
           'response'
         );
         const healthChecksData = g(
           data,
-          'getPatientPrismMedicalRecords_V2',
+          'getPatientPrismMedicalRecords_V3',
           'healthChecks',
           'response'
         );
@@ -677,13 +677,13 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       .then((data: any) => {
         const labResultsData = g(
           data,
-          'getPatientPrismMedicalRecords_V2',
+          'getPatientPrismMedicalRecords_V3',
           'labResults',
           'response'
         );
         const healthChecksData = g(
           data,
-          'getPatientPrismMedicalRecords_V2',
+          'getPatientPrismMedicalRecords_V3',
           'healthChecks',
           'response'
         );
@@ -703,7 +703,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       .then((data: any) => {
         const prescriptionsData = g(
           data,
-          'getPatientPrismMedicalRecords_V2',
+          'getPatientPrismMedicalRecords_V3',
           'prescriptions',
           'response'
         );

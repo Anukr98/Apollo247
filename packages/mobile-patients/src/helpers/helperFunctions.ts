@@ -108,6 +108,7 @@ import {
   PharmacyCircleMemberValues,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import Share from 'react-native-share';
+import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientAddressObj } from '../graphql/types/getDiagnosticOrderDetails';
 
 const width = Dimensions.get('window').width;
 
@@ -155,6 +156,7 @@ export enum EDIT_DELETE_TYPE {
   DELETE_HEALTH_CONDITION = 'Delete Health Condition',
   DELETE_BILL = 'Delete Bill',
   DELETE_INSURANCE = 'Delete Insurance',
+  DELETE_VACCINATION = 'Delete Vaccination',
 }
 
 type EditDeleteArray = {
@@ -300,7 +302,7 @@ export const formatAddressBookAddress = (
 };
 
 export const formatAddressForApi = (
-  address: savePatientAddress_savePatientAddress_patientAddress
+  address: savePatientAddress_savePatientAddress_patientAddress | getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientAddressObj
 ) => {
   const addrLine1 = [address?.addressLine1, address?.addressLine2, address?.landmark, address?.city]
     .filter((v) => v)
@@ -408,6 +410,15 @@ export const editDeleteData = (recordType: MedicalRecordType) => {
         {
           key: EDIT_DELETE_TYPE.DELETE_HEALTH_CONDITION,
           title: EDIT_DELETE_TYPE.DELETE_HEALTH_CONDITION,
+        },
+      ];
+      break;
+    case MedicalRecordType.IMMUNIZATION:
+      editDeleteArray = [
+        { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
+        {
+          key: EDIT_DELETE_TYPE.DELETE_VACCINATION,
+          title: EDIT_DELETE_TYPE.DELETE_VACCINATION,
         },
       ];
       break;
@@ -1483,7 +1494,7 @@ export const formatTestSlot = (slotTime: string) => moment(slotTime, 'HH:mm').fo
 export const formatTestSlotWithBuffer = (slotTime: string) => {
   const startTime = slotTime.split('-')[0];
   const endTime = moment(startTime, 'HH:mm')
-    .add(30, 'minutes')
+    .add(40, 'minutes')
     .format('HH:mm');
 
   const newSlot = [startTime, endTime];
@@ -1707,6 +1718,21 @@ export function getTimeDiff(nextSlot: any) {
   return timeDiff;
 }
 
+export const postWebEngagePHR = (
+  currentPatient: any,
+  cleverTapEventName: CleverTapEventName,
+  source: string = '',
+  data: any = {}
+) => {
+  const eventAttributes: CleverTapEvents[CleverTapEventName.MEDICAL_RECORDS] = {
+    ...removeObjectNullUndefinedProperties(data),
+    Source: source,
+    ...removeObjectNullUndefinedProperties(currentPatient),
+  };
+  postWebEngageEvent(cleverTapEventName, eventAttributes);
+  postCleverTapEvent(cleverTapEventName, eventAttributes);
+};
+
 export const postConsultSearchCleverTapEvent = (
   searchInput: string,
   currentPatient: any,
@@ -1803,6 +1829,65 @@ export const getUsageKey = (type: string) => {
   }
 };
 
+export const postWebEngageIfNewSession = (
+  type: string,
+  currentPatient: any,
+  data: any,
+  phrSession: string,
+  setPhrSession: ((value: string) => void) | null
+) => {
+  let session = phrSession;
+  let sessionId;
+  if (!session) {
+    sessionId = `${+new Date()}`;
+    const obj: any = {
+      'consults-usage': null,
+      'testReports-usage': null,
+      'hospitalizations-usage': null,
+      'healthConditions-usage': null,
+      'bills-usage': null,
+      'insurance-usage': null,
+    };
+    const usageKey = getUsageKey(type);
+    obj[usageKey] = sessionId;
+    setPhrSession?.(JSON.stringify(obj));
+    postCleverTapPHR(
+      currentPatient,
+      CleverTapEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS.replace(
+        '{0}',
+        type
+      ) as CleverTapEventName,
+      type,
+      {
+        sessionId,
+        ...data,
+      }
+    );
+  } else {
+    const sessionObj = JSON.parse(session);
+    const usageKey = getUsageKey(type);
+    sessionId = sessionObj[usageKey];
+    if (!sessionId) {
+      sessionId = `${+new Date()}`;
+      const newSessionObj = { ...sessionObj };
+      newSessionObj[usageKey] = sessionId;
+      setPhrSession?.(JSON.stringify(newSessionObj));
+      postCleverTapPHR(
+        currentPatient,
+        CleverTapEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS.replace(
+          '{0}',
+          type
+        ) as CleverTapEventName,
+        type,
+        {
+          sessionId,
+          ...data,
+        }
+      );
+    }
+  }
+};
+
 export const postCleverTapIfNewSession = (
   type: string,
   currentPatient: any,
@@ -1890,6 +1975,25 @@ export const postWEGNeedHelpEvent = (
     Source: source,
   };
   postWebEngageEvent(WebEngageEventName.NEED_HELP, eventAttributes);
+};
+
+export const postWEGPatientAPIError = (
+  currentPatient: GetCurrentPatients_getCurrentPatients_patients,
+  doc: string | null,
+  screen: string,
+  api: string,
+  error: any
+) => {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.Patient_API_Error] = {
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient ID': g(currentPatient, 'id')!,
+    'Patient Number': g(currentPatient, 'mobileNumber')!,
+    'Doctor ID': doc,
+    'Screen Name': screen,
+    'API Name': api,
+    'Error Name': error,
+  };
+  postWebEngageEvent(WebEngageEventName.Patient_API_Error, eventAttributes);
 };
 
 export const postWEGWhatsAppEvent = (whatsAppAllow: boolean) => {
@@ -2374,6 +2478,7 @@ export const formatToCartItem = ({
   image,
   sell_online,
   url_key,
+  subcategory,
 }: MedicineProduct): ShoppingCartItem => {
   return {
     id: sku,
@@ -2390,6 +2495,7 @@ export const formatToCartItem = ({
     isInStock: is_in_stock == 1,
     unavailableOnline: sell_online == 0,
     url_key,
+    subcategory,
   };
 };
 
@@ -2686,14 +2792,32 @@ export const removeConsecutiveComma = (value: string) => {
   return value.replace(/^,|,$|,(?=,)/g, '');
 };
 
-export const getCareCashback = (price: number, type_id: string | null | undefined) => {
+export const calculateCashbackForItem = (
+  price: number,
+  type_id: any,
+  subcategory: any,
+  sku: any
+) => {
   const { circleCashback } = useShoppingCart();
-  let typeId = !!type_id ? type_id.toUpperCase() : '';
-  let cashback = 0;
-  if (!!circleCashback && !!circleCashback[typeId]) {
-    cashback = price * (circleCashback[typeId] / 100);
-  }
-  return cashback;
+  const getFirstLevelCashback = () => {
+    // categoty level cashback
+    const key = type_id?.toUpperCase();
+    return circleCashback?.[key] || 0;
+  };
+  const getSecondLevelCashback = () => {
+    // sub categoty level cashback
+    const key = `${type_id?.toUpperCase()}~${subcategory}`;
+    return circleCashback?.[key] || 0;
+  };
+  const getThirdLevelCashback = () => {
+    // sku level cashback
+    const key = `${type_id?.toUpperCase()}~${subcategory}~${sku}`;
+    return circleCashback?.[key] || 0;
+  };
+  const cashbackFactor =
+    getThirdLevelCashback() || getSecondLevelCashback() || getFirstLevelCashback();
+  const cashback = cashbackFactor ? ((price * cashbackFactor) / 100).toFixed(2) : '0';
+  return cashback || 0;
 };
 
 export const readableParam = (param: string) => {
@@ -2860,8 +2984,11 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
       statusString = 'Order confirmed';
       break;
     case DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED:
+    // case DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN:
+      statusString = 'Apollo agent is on the way';
+      break;
     case DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN:
-      statusString = 'Phlebo is on the way';
+        statusString = 'Apollo agent Check-in';
       break;
     case DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED:
       statusString = 'Sample collected';
@@ -2877,10 +3004,10 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB:
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB:
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED:
-      statusString = 'Sample submitted';
+      statusString = 'Samples Received for Testing';
       break;
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB:
-      statusString = !!customText ? '2nd Sample pending' : 'Sample submitted';
+      statusString = !!customText ? '2nd Sample pending' : 'Samples Received for Testing';
       break;
     case DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED:
       statusString = 'Report generated';
@@ -2912,6 +3039,9 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
     case DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED:
       statusString = 'Partial Order Completed';
       break;
+    case DIAGNOSTIC_ORDER_STATUS.ORDER_MODIFIED:
+        statusString = 'Order modification'
+        break;
     default:
       statusString = status || '';
       statusString?.replace(/[_]/g, ' ');
@@ -3070,7 +3200,10 @@ export async function downloadDiagnosticReport(
   appointmentDate: string,
   patientName: string,
   showToast: boolean,
-  downloadFileName?: string
+  downloadFileName?: string,
+  orderStatus?: string,
+  displayId?: string,
+  isReport?: boolean
 ) {
   setLoading?.(true);
   let result = Platform.OS === 'android' && (await requestReadSmsPermission());
@@ -3085,9 +3218,12 @@ export async function downloadDiagnosticReport(
       Platform.OS == 'ios'
     ) {
       const dirs = RNFetchBlob.fs.dirs;
+      const isReportApollo = isReport ? 'labreport' : 'labinvoice';
+      const isOrderComplete = orderStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED ? 'complete' : (Math.floor(Math.random() * 300))
+      const dynamicFileName = `Apollo247_${displayId}_${isReportApollo}_${isOrderComplete}.pdf`
       const reportName = !!downloadFileName
         ? downloadFileName
-        : `Apollo247_${appointmentDate}_${patientName}.pdf`;
+        : dynamicFileName;
       const downloadPath =
         Platform.OS === 'ios'
           ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + reportName
@@ -3132,7 +3268,17 @@ export async function downloadDiagnosticReport(
           PermissionsAndroid.RESULTS.DENIED
       ) {
         storagePermissionsToDownload(() => {
-          downloadDiagnosticReport(setLoading, pdfUrl, appointmentDate, patientName, true);
+          downloadDiagnosticReport(
+            setLoading,
+            pdfUrl,
+            appointmentDate,
+            patientName,
+            true,
+            downloadFileName,
+            orderStatus,
+            displayId,
+            isReport
+          );
         });
       }
     }
@@ -3265,7 +3411,6 @@ export const getCheckoutCompletedEventAttributes = (
   }
   return eventAttributes;
 };
-
 export const getCleverTapCheckoutCompletedEventAttributes = (
   shoppingCart: ShoppingCartContextProps,
   paymentOrderId: string,
@@ -3364,7 +3509,7 @@ export const downloadDocument = (
   let viewReportOrderId = orderId;
   const configOptions = { fileCache: true };
   RNFetchBlob.config(configOptions)
-    .fetch('GET', fileUrl)
+    .fetch('GET', fileUrl.replace(/\s/g, ''))
     .then((resp) => {
       filePath = resp.path();
       return resp.readFile('base64');
@@ -3388,4 +3533,8 @@ export const getIsMedicine = (typeId: string) => {
     pl: '2',
   };
   return medicineType[typeId] || '0';
+};
+export const removeWhiteSpaces = (item: any) => {
+  const newItem = item?.replace(/\s/g, '');
+  return newItem;
 };

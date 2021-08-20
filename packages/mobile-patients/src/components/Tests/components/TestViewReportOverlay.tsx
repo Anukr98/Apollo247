@@ -4,6 +4,7 @@ import {
   downloadDiagnosticReport,
   g,
   TestSlot,
+  removeWhiteSpaces,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -93,32 +94,28 @@ export const TestViewReportOverlay: React.FC<TestViewReportOverlayProps> = (prop
             {viewReportItemsArray.map((item) => (
               <TouchableOpacity
                 onPress={async () => {
-                  if (
-                    props.viewReportOrderId == props.order?.displayId &&
-                    item?.title != string.Report.copy
-                  ) {
-                    showAphAlert!({
-                      title: string.common.uhOh,
-                      description: 'Download error. Please try after some time.',
-                    });
-                  } else {
                     if (
                       item?.title == string.Report.view ||
                       item?.title == string.Report.download
                     ) {
                       props.onPressViewReport();
                     } else if (item?.title == string.Report.share) {
-                      props.downloadDocument(props?.order?.labReportURL, 'application/pdf');
+                      props.downloadDocument(
+                        removeWhiteSpaces(props?.order?.labReportURL),
+                        'application/pdf'
+                      );
                     } else {
                       copyToClipboard(
-                        props.order && props.order?.labReportURL ? props.order?.labReportURL : ''
+                        props.order && props.order?.labReportURL
+                          ? removeWhiteSpaces(props.order?.labReportURL)
+                          : ''
                       );
                     }
+                    setTimeout(() => {
+                      props.onClose();
+                    }, 500);
                   }
-                  setTimeout(() => {
-                    props.onClose();
-                  }, 500);
-                }}
+                }
                 style={styles.itemView}
               >
                 {item?.icon}

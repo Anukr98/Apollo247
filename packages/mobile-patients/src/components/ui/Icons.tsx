@@ -752,6 +752,10 @@ export const Download: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_download.webp')} />
 );
 
+export const Highlighter: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_highligther.webp')} />
+);
+
 export const WhiteDownloadIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_white_download.png')} />
 );
@@ -1151,6 +1155,13 @@ export const InPersonHeader: React.FC<IconProps> = (props) => (
     source={require('./icons/illustration_search_specialist.webp')}
   />
 );
+export const BORHeader: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 40, height: 40 }}
+    {...props}
+    source={require('./icons/BORAvatar.webp')}
+  />
+);
 
 export const OnlineHeader: React.FC<IconProps> = (props) => (
   <IconBase
@@ -1184,6 +1195,9 @@ export const CTPayment: React.FC<IconProps> = (props) => (
 
 export const CTPrescription: React.FC<IconProps> = (props) => (
   <IconBase size="sm_l" {...props} source={require('./icons/ct_prescription.webp')} />
+);
+export const BORform: React.FC<IconProps> = (props) => (
+  <IconBase style={{ width: 15, height: 15 }} {...props} source={require('./icons/formBOR.webp')} />
 );
 
 export const CTChat: React.FC<IconProps> = (props) => (
@@ -1809,7 +1823,11 @@ export const DisabledTickIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_tick_disabled.webp')} />
 );
 export const PromoCashback: React.FC<IconProps> = (props) => (
-  <IconBase style={{width: 200, height: 75}} {...props} source={require('./icons/promoCashback2x.webp')} />
+  <IconBase
+    style={{ width: 200, height: 75 }}
+    {...props}
+    source={require('./icons/promoCashback2x.webp')}
+  />
 );
 
 export const Msgs: React.FC<IconProps> = (props) => (
@@ -2047,10 +2065,7 @@ export const EmailGray: React.FC<IconProps> = (props) => (
 );
 
 export const Pdf: React.FC<IconProps> = (props) => (
-  <IconBase
-    {...props}
-    source={require('@aph/mobile-patients/src/components/ui/icons/pdf.webp')}
-  />
+  <IconBase {...props} source={require('@aph/mobile-patients/src/components/ui/icons/pdf.webp')} />
 );
 
 export const RightArrowBlue: React.FC<IconProps> = (props) => (
@@ -2078,5 +2093,44 @@ export const ConsultPending: React.FC<IconProps> = (props) => (
   <IconBase
     {...props}
     source={require('@aph/mobile-patients/src/components/ui/icons/consult-pending.webp')}
+  />
+);
+
+export const FasterSubstitutes: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/FasterSubstitute.webp')}
+  />
+);
+
+export const Alert: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    style={{ height: 20, width: 22 }}
+    source={require('@aph/mobile-patients/src/components/ui/icons/alert.webp')}
+  />
+);
+
+export const AlertRed: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 22 }}
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/alertRed.webp')}
+  />
+);
+
+export const ExpressSlotClock: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/expressSlotIcon.webp')}
+  />
+);
+
+export const OvalUpcoming: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="lg"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/ovalUpcoming.webp')}
   />
 );

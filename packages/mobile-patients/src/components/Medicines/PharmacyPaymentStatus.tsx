@@ -41,12 +41,15 @@ import {
   TouchableOpacity,
   View,
   Clipboard,
+  Alert,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { Snackbar } from 'react-native-paper';
 import AsyncStorage from '@react-native-community/async-storage';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AddedCirclePlanWithValidity } from '@aph/mobile-patients/src/components/ui/AddedCirclePlanWithValidity';
+import InAppReview from 'react-native-in-app-review';
+
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 import {
@@ -92,6 +95,7 @@ import {
   updateMedicineOrderSubstitutionVariables,
 } from '@aph/mobile-patients/src/graphql/types/updateMedicineOrderSubstitution';
 import { SubstituteItemsCard } from '@aph/mobile-patients/src/components/Medicines/Components/SubstituteItemsCard';
+import InAppReview from 'react-native-in-app-review';
 
 enum SUBSTITUTION_RESPONSE {
   OK = 'OK',
@@ -131,6 +135,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const { orders, deliveryTime, orderInfo, isStorePickup } = props.navigation.getParam(
     'orderDetails'
   );
+  const orderDetails = props.navigation.getParam('orderDetails');
   const orderIds = orders.map(
     (item: any, index: number) => item?.orderAutoId + (index != orders?.length - 1 && ', ')
   );
@@ -146,21 +151,15 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const [codOrderProcessing, setcodOrderProcessing] = useState<boolean>(false);
   const { apisToCall, pharmacyUserTypeAttribute } = useAppCommonData();
 
-  const [showSubstituteMessage, setShowSubstituteMessage] = useState<boolean>(
-    props.navigation.getParam('showSubstituteMessage') || false
-  );
-  const [substituteMessage, setSubstituteMessage] = useState<string>(
-    props.navigation.getParam('substitutionMessage') || ''
-  );
-  const [substituteTime, setSubstituteTime] = useState<number>(
-    props.navigation.getParam('substitutionTime') || 0
-  );
+  const [showSubstituteMessage, setShowSubstituteMessage] = useState<boolean>(false);
+  const [substituteMessage, setSubstituteMessage] = useState<string>('');
+  const [substituteTime, setSubstituteTime] = useState<number>(0);
   const [transactionId, setTransactionId] = useState(null);
   const [showSubstituteConfirmation, setShowSubstituteConfirmation] = useState<boolean>(false);
   const isSplitCart: boolean = orders?.length > 1 ? true : false;
 
   useEffect(() => {
-    if (!!substituteTime && showSubstituteMessage) {
+    if (!!substituteTime && showSubstituteMessage && status == success) {
       const interval = setInterval(() => {
         if (substituteTime < 1) {
           clearInterval(interval);
@@ -206,6 +205,9 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         setTransactionId(pharmaPaymentStatus?.bankTxnId);
         setIsCircleBought(!!pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
         setTotalCashBack(pharmaPaymentStatus?.planPurchaseDetails?.totalCashBack);
+        setShowSubstituteMessage(pharmaPaymentStatus?.isSubstitution);
+        setSubstituteMessage(pharmaPaymentStatus?.substitutionMessage);
+        setSubstituteTime(pharmaPaymentStatus?.substitutionTime);
         setLoading(false);
         firePaymentStatusPageViewedEvent(
           pharmaPaymentStatus?.paymentStatus,
@@ -214,6 +216,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         );
         fireCirclePlanActivatedEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
         fireCirclePurchaseEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
+        appReviewAndRating();
       })
       .catch((error) => {
         setLoading(false);
@@ -225,6 +228,21 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
   }, []);
+
+  const appReviewAndRating = async () => {
+    try {
+      const { shipments } = orderInfo?.medicineOrderInput;
+      let tatHours = shipments?.[0].tatHours?.split('')[0];
+
+      if (tatHours <= 5) {
+        if (InAppReview.isAvailable()) {
+          await InAppReview.RequestInAppReview();
+        }
+      }
+    } catch (error) {
+      CommonBugFender('inAppRevireAfterPaymentForPharmacy', error);
+    }
+  };
 
   const getUserSubscriptionsByStatus = async () => {
     try {
@@ -717,17 +735,21 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const substituteItemsCard = () => {
-    return (
-      <SubstituteItemsCard
-        orderId={orderIds?.[0]}
-        transactionId={transId}
-        substituteMessage={substituteMessage}
-        substituteTime={substituteTime}
-        updateOrderSubstitution={updateOrderSubstitution}
-        setShowSubstituteMessage={setShowSubstituteMessage}
-        setShowSubstituteConfirmation={setShowSubstituteConfirmation}
-      />
-    );
+    if (status == success) {
+      return (
+        <SubstituteItemsCard
+          orderId={orderIds?.[0]}
+          transactionId={transId}
+          substituteMessage={substituteMessage}
+          substituteTime={substituteTime}
+          updateOrderSubstitution={updateOrderSubstitution}
+          setShowSubstituteMessage={setShowSubstituteMessage}
+          setShowSubstituteConfirmation={setShowSubstituteConfirmation}
+        />
+      );
+    } else {
+      return null;
+    }
   };
 
   const renderSubstituteSnackBar = () => {

@@ -11,6 +11,7 @@ import {
   GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
   GET_PHLOBE_DETAILS,
   DIAGNOSITC_EXOTEL_CALLING,
+  GET_RESCHEDULE_AND_CANCELLATION_REASONS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticOrdersListByMobile,
@@ -35,8 +36,8 @@ import {
   BackHandler,
   Text,
   Modal,
+  ScrollView,
   Dimensions,
-  ScrollView
 } from 'react-native';
 import { Down, DownO, InfoIconRed } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NavigationScreenProps } from 'react-navigation';
@@ -60,17 +61,19 @@ import {
   navigateToScreenWithEmptyStack,
   aphConsole,
   downloadDocument,
+  removeWhiteSpaces,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { DisabledTickIcon, TickIcon, PromoCashback } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  DisabledTickIcon,
+  TickIcon,
+  PromoCashback,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   AppConfig,
   BLACK_LIST_CANCEL_STATUS_ARRAY,
   BLACK_LIST_RESCHEDULE_STATUS_ARRAY,
   DIAGNOSTIC_ORDER_FAILED_STATUS,
-  TestCancelReasons,
-  TestReschedulingReasons,
   DIAGNOSTIC_CONFIRMED_STATUS,
-  TestCancelReasonsPre,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -115,6 +118,10 @@ import {
   diagnosticExotelCalling,
   diagnosticExotelCallingVariables,
 } from '@aph/mobile-patients/src/graphql/types/diagnosticExotelCalling';
+import {
+  getRescheduleAndCancellationReasons,
+  getRescheduleAndCancellationReasonsVariables,
+} from '@aph/mobile-patients/src/graphql/types/getRescheduleAndCancellationReasons';
 
 const { width, height } = Dimensions.get('window');
 
@@ -124,9 +131,6 @@ export interface YourOrdersTestProps extends NavigationScreenProps {
 }
 
 export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
-  const RESCHEDULE_REASONS = TestReschedulingReasons.reasons;
-  const CANCELLATION_REASONS = TestCancelReasons.reasons;
-  const PRE_CANCELLATION_REASONS = TestCancelReasonsPre.reasons;
   const CANCEL_RESCHEDULE_OPTION = [
     string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
     string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
@@ -148,8 +152,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [date, setDate] = useState<Date>(new Date());
   const [showDisplaySchedule, setDisplaySchedule] = useState<boolean>(false);
-  const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
-  const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
   const [selectedOrderId, setSelectedOrderId] = useState<number>(0);
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
@@ -165,6 +167,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [showRescheduleReasons, setShowRescheduleReasons] = useState<boolean>(false);
   const [showCancelReasons, setShowCancelReasons] = useState<boolean>(false);
   const [showPromoteCashback, setShowPromoteCashback] = useState<boolean>(false);
+  const [cancelReasonList, setCancelReasonList] = useState<any>([]);
+  const [rescheduleReasonList, setRescheduleReasonList] = useState<any>([]);
   const [selectCancelReason, setSelectCancelReason] = useState<string>('');
   const [cancelReasonComment, setCancelReasonComment] = useState<string>('');
   const [selectRescheduleReason, setSelectRescheduleReason] = useState<string>('');
@@ -321,6 +325,30 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       setLoading?.(false);
       setError(true);
       CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrders`, error);
+    }
+  };
+  const getReasons = async (item: any) => {
+    let selectedOrderTime = item?.slotDateTimeInUTC;
+    try {
+      client
+        .query<getRescheduleAndCancellationReasons, getRescheduleAndCancellationReasonsVariables>({
+          query: GET_RESCHEDULE_AND_CANCELLATION_REASONS,
+          context: {
+            sourceHeaders,
+          },
+          variables: { appointmentDateTimeInUTC: selectedOrderTime },
+          fetchPolicy: 'no-cache',
+        })
+        .then((data) => {
+          const reasonList = data?.data?.getRescheduleAndCancellationReasons || [];
+          setCancelReasonList(reasonList?.cancellationReasons);
+          setRescheduleReasonList(reasonList?.rescheduleReasons);
+        })
+        .catch((error) => {
+          CommonBugFender(`${AppRoutes.YourOrdersTest}_getReasons`, error);
+        });
+    } catch (error) {
+      CommonBugFender(`${AppRoutes.YourOrdersTest}_getReasons`, error);
     }
   };
 
@@ -482,7 +510,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         .then((data: any) => {
           const labResultsData = g(
             data,
-            'getPatientPrismMedicalRecords_V2',
+            'getPatientPrismMedicalRecords_V3',
             'labResults',
             'response'
           );
@@ -629,6 +657,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const _onPressTestReschedule = (item: any) => {
+    getReasons(item);
     setSelectedOrderId(item?.id);
     setSelectedOrder(item);
     setShowBottomOverlay(true); //show the overlay
@@ -822,7 +851,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           {string.diagnostics.reasonForReschedulingText}
         </Text>
         <View style={styles.reasonsContainer}>
-          {RESCHEDULE_REASONS?.map((item: string, index: number) => {
+          {rescheduleReasonList?.map((item: string, index: number) => {
             return (
               <>
                 <TouchableOpacity
@@ -838,7 +867,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                     )}
                   </View>
                 </TouchableOpacity>
-                {index === RESCHEDULE_REASONS?.length - 1 ? null : <Spearator />}
+                {index === rescheduleReasonList?.length - 1 ? null : <Spearator />}
               </>
             );
           })}
@@ -860,15 +889,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     let selectedOrderTime = selectedOrder?.slotDateTimeInUTC;
     selectedOrderTime = moment(selectedOrderTime);
     const current = moment();
-    const cancelReasonArray = moment(current).isAfter(selectedOrderTime)
-      ? CANCELLATION_REASONS
-      : PRE_CANCELLATION_REASONS;
+    const cancelReasonArray = cancelReasonList;
     return (
-      <View style={{ height: height - 180}}>
+      <View style={{ height: height - 200 }}>
         <Text style={styles.overlayHeadingText}>
           {string.diagnostics.reasonForCancellationText}
         </Text>
-        <ScrollView style={[styles.reasonsContainer]}>
+        <ScrollView style={styles.reasonsContainer}>
           {cancelReasonArray?.map((item: string, index: number) => {
             return (
               <>
@@ -884,8 +911,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                           ? 100
                           : 40,
                       paddingTop: 10,
-                      justifyContent:'space-between'
-
+                      justifyContent: 'space-between',
                     },
                   ]}
                 >
@@ -911,7 +937,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                     </View>
                   ) : null}
 
-                  {index === CANCELLATION_REASONS?.length - 1 ? null : <Spearator />}
+                  {index === cancelReasonArray?.length - 1 ? null : (
+                    <Spearator style={{ marginTop: 6 }} />
+                  )}
                   {selectCancelReason ===
                     string.diagnostics.reasonForCancel_TestOrder.otherReasons &&
                   item === string.diagnostics.reasonForCancel_TestOrder.otherReasons ? (
@@ -951,17 +979,20 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           <PromoCashback />
         </View>
         <View style={styles.promoButtonContainer}>
-          <TouchableOpacity onPress={()=>{
-            _onPressProceedToCancel()
-          }}>
-          <Text style={styles.yellowText}>PROCEED TO CANCEL</Text></TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              _onPressProceedToCancel();
+            }}
+          >
+            <Text style={styles.yellowText}>PROCEED TO CANCEL</Text>
+          </TouchableOpacity>
           <Button
-          onPress={() => {
-            setShowPromoteCashback(false)
-            _onPressTestReschedule(selectedOrder)
-          }}
-          style={{width:'40%'}}
-          title={'GO BACK'}
+            onPress={() => {
+              setShowPromoteCashback(false);
+              _onPressTestReschedule(selectedOrder);
+            }}
+            style={{ width: '40%' }}
+            title={'GO BACK'}
           />
         </View>
       </View>
@@ -1029,13 +1060,16 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             {selectCancelOption && (
               <View style={{ marginVertical: '2%' }}>
                 <Text style={styles.optionSubHeadingText}>{string.diagnostics.sureCancelText}</Text>
-                <Button onPress={() => {
-                  if (selectedOrder?.totalPrice && selectedOrder?.totalPrice >= 500) {
-                    _onPressProceedToCancelForPromo()
-                  } else {
-                    _onPressProceedToCancel()
-                  }
-                  }} title={'PROCEED TO CANCEL'} />
+                <Button
+                  onPress={() => {
+                    if (selectedOrder?.totalPrice && selectedOrder?.totalPrice >= 500) {
+                      _onPressProceedToCancelForPromo();
+                    } else {
+                      _onPressProceedToCancel();
+                    }
+                  }}
+                  title={'PROCEED TO CANCEL'}
+                />
               </View>
             )}
           </View>
@@ -1239,6 +1273,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             ? order?.slotDateTimeInUTC
             : getSlotStartTime(order?.slotTimings)
         }
+        slotDuration={order?.attributesObj?.slotDurationInMinutes || 45}
         isPrepaid={order?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT}
         isCancelled={currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
         cancelledReason={
@@ -1361,7 +1396,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   function _onPressViewReportAction(order: orderList) {
     if (!!order?.labReportURL && order?.labReportURL != '') {
       setActiveOrder(order);
-      setDisplayViewReport(true);
+      _onPressViewReport(order);
     } else if (!!order?.visitNo && order?.visitNo != '') {
       //directly open the phr section
       fetchTestReportResult(order);
@@ -1379,7 +1414,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       / /g,
       '_'
     );
-    downloadLabTest(order?.labReportURL!, appointmentDate, patientName, order);
+    downloadLabTest(removeWhiteSpaces(order?.labReportURL)!, appointmentDate, patientName, order);
   }
 
   async function downloadLabTest(
@@ -1390,8 +1425,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   ) {
     setLoading?.(true);
     try {
-      await downloadDiagnosticReport(setLoading, pdfUrl, appointmentDate, patientName, true);
-      setViewReportOrderId(order?.displayId);
+      await downloadDiagnosticReport(setLoading, pdfUrl, appointmentDate, patientName, true, undefined, order?.orderStatus, (order?.displayId).toString(), true);
     } catch (error) {
       setLoading?.(false);
       CommonBugFender('YourOrderTests_downloadLabTest', error);
@@ -1520,33 +1554,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       {showDisplaySchedule && renderRescheduleOrderOverlay()}
-      {displayViewReport && (
-        <TestViewReportOverlay
-          order={activeOrder}
-          heading=""
-          isVisible={displayViewReport}
-          viewReportOrderId={viewReportOrderId}
-          downloadDocument={() => {
-            const res = downloadDocument(
-              activeOrder?.labReportURL ? activeOrder?.labReportURL : '',
-              'application/pdf',
-              activeOrder?.displayId
-            );
-            if (res == activeOrder?.displayId) {
-              setViewReportOrderId(activeOrder?.displayId);
-            }
-          }}
-          onClose={() => setDisplayViewReport(false)}
-          onPressViewReport={() => {
-            DiagnosticViewReportClicked(
-              'My Order',
-              !!activeOrder?.labReportURL ? 'Yes' : 'No',
-              'Download Report PDF'
-            );
-            _onPressViewReport(activeOrder);
-          }}
-        />
-      )}
       <SafeAreaView style={theme.viewStyles.container}>
         {props?.showHeader == false ? null : (
           <Header

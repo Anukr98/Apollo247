@@ -192,7 +192,10 @@ import {
   saveModifyDiagnosticOrder,
   saveModifyDiagnosticOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/saveModifyDiagnosticOrder';
-import { processDiagnosticsCODOrder } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  getReportTAT,
+  processDiagnosticsCODOrder,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import { findDiagnosticSettings } from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
 import {
   makeAdressAsDefault,
@@ -236,6 +239,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     deliveryAddressId,
     setDeliveryAddressCityId,
     deliveryAddressCityId,
+    setDeliveryAddressStateId,
     cartTotal,
     totalPriceExcludingAnyDiscounts,
     couponDiscount,
@@ -257,6 +261,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     coupon,
     areaSelected,
     setAreaSelected,
+    diagnosticAreas,
     setDiagnosticAreas,
     cartSaving,
     discountSaving,
@@ -277,6 +282,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setModifiedOrder,
     setAsyncDiagnosticPincode,
     setModifiedOrderItemIds,
+    modifiedOrderItemIds,
+    deliveryAddressStateId,
   } = useDiagnosticsCart();
   const {
     setAddresses: setMedAddresses,
@@ -318,6 +325,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>();
   const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
   const [addressCityId, setAddressCityId] = useState<string>(deliveryAddressCityId);
+  const [addressStateId, setAddressStateId] = useState<string>(deliveryAddressStateId);
   const [validateCouponUniqueId, setValidateCouponUniqueId] = useState<string>(getUniqueId);
   const [orderDetails, setOrderDetails] = useState<orderDetails>();
   const [showInclusions, setShowInclusions] = useState<boolean>(false);
@@ -341,6 +349,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const itemWithId = itemsWithHC?.map((item) => Number(item.id!));
   const { cusId, isfetchingId } = useGetJuspayId();
   const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
+  const [reportTat, setReportTat] = useState([] as any);
 
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   var pricesForItemArray;
@@ -407,12 +416,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    if (currentPatient) {
-      checkPatientAge(currentPatient);
-    }
-  }, [currentPatient]);
-
-  useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setIsFocused(true);
       BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -442,6 +445,36 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     fetchFindDiagnosticSettings();
   }, []);
 
+  async function fetchReportTat(_cartItemId: string | number[]) {
+    const removeSpaces =
+      typeof _cartItemId == 'string' ? _cartItemId?.replace(/\s/g, '')?.split(',') : null;
+    const listOfIds =
+      typeof _cartItemId == 'string' ? removeSpaces?.map((item) => Number(item!)) : _cartItemId;
+    const pincode = selectedAddr?.zipcode;
+
+    const formattedDate = moment(diagnosticSlot?.date).format('YYYY/MM/DD');
+    const dateTimeInUTC = moment(formattedDate + ' ' + diagnosticSlot?.slotStartTime).toISOString();
+
+    try {
+      const result = await getReportTAT(
+        client,
+        !!diagnosticSlot && !isEmptyObject(diagnosticSlot) ? dateTimeInUTC : null,
+        Number(addressCityId),
+        Number(pincode),
+        listOfIds!
+      );
+      if (result?.data?.getConfigurableReportTAT) {
+        const getMaxReportTat = result?.data?.getConfigurableReportTAT?.itemLevelReportTATs;
+        setReportTat(getMaxReportTat);
+      } else {
+        setReportTat([]);
+      }
+    } catch (error) {
+      CommonBugFender('fetchReportTat_TestsCart', error);
+      setReportTat([]);
+    }
+  }
+
   const fetchTestReportGenDetails = async (_cartItemId: string | number[]) => {
     try {
       const removeSpaces =
@@ -468,6 +501,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             variables: {
               cityID: Number(addressCityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
               itemIDs: _filterItemIds,
+              pincode: !!selectedAddr ? Number(selectedAddr?.zipcode!) : null,
             },
             fetchPolicy: 'no-cache',
           })
@@ -486,7 +520,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 }
               });
             });
-            setAlsoAddListData(_diagnosticWidgetData);
+            const filteredItems =
+              !!_diagnosticWidgetData &&
+              _diagnosticWidgetData?.filter(
+                (diagItem: any) => !listOfIds?.includes(Number(diagItem?.itemId))
+              );
+            setAlsoAddListData(filteredItems);
           })
           .catch((error) => {
             setAlsoAddListData([]);
@@ -524,7 +563,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const checkPatientAge = (_selectedPatient: any, fromNewProfile: boolean = false) => {
     let age = !!_selectedPatient?.dateOfBirth ? getAge(_selectedPatient?.dateOfBirth) : null;
-    if (age && age <= 10) {
+    if (age != null && age != undefined && age <= 10) {
       setSelectedPatient(null);
       setShowSelectPatient?.(false);
       setShowPatientListOverlay?.(false);
@@ -737,10 +776,21 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   useEffect(() => {
     if (cartItems?.length > 0) {
       if (cartItemsWithId?.length > 0) {
-        fetchTestReportGenDetails(cartItemsWithId);
+        const itemIds = isModifyFlow
+          ? cartItemsWithId.concat(modifiedOrderItemIds)
+          : cartItemsWithId;
+        fetchTestReportGenDetails(itemIds);
       }
     }
   }, [cartItems?.length, addressCityId]);
+
+  useEffect(() => {
+    if (cartItemsWithId?.length > 0) {
+      const itemIds = isModifyFlow ? cartItemsWithId.concat(modifiedOrderItemIds) : cartItemsWithId;
+      fetchReportTat(itemIds);
+    }
+  }, [cartItems, addressCityId, diagnosticSlot]);
+
   useEffect(() => {
     if (isModifyFlow) {
       return;
@@ -912,7 +962,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           const serviceableData = g(data, 'getPincodeServiceability');
           if (serviceableData && serviceableData?.cityName != '') {
             setAddressCityId?.(String(serviceableData?.cityID!) || '');
+            setAddressStateId?.(String(serviceableData?.stateID!) || '');
             setDeliveryAddressCityId?.(String(serviceableData?.cityID));
+            setDeliveryAddressStateId?.(String(serviceableData?.stateID));
             getDiagnosticsAvailability(serviceableData?.cityID!, cartItems)
               .then(({ data }) => {
                 const diagnosticItems =
@@ -960,6 +1012,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 hideAphAlert!();
                 setDeliveryAddressCityId?.('');
                 setDeliveryAddressId?.('');
+                setDeliveryAddressStateId?.('');
               },
             });
             DiagnosticAddresssSelected(
@@ -976,6 +1029,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setLoading?.(false);
           setDeliveryAddressCityId?.('');
           setDeliveryAddressId?.('');
+          setDeliveryAddressStateId?.('');
         });
     }
   };
@@ -1006,11 +1060,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setWebEngageEventForAreaSelection(obj);
     } catch (e) {
       CommonBugFender('TestsCart_', e);
-
       setselectedTimeSlot(undefined);
       setLoading?.(false);
       setWebEngageEventForAddressNonServiceable(addresses?.[selectedAddressIndex]?.zipcode!);
-
       //if goes in the catch then show the area selection.
       setShowSelectedArea?.(true);
       fetchAreasForAddress(
@@ -1092,9 +1144,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               ? fetchAreasForAddress(
                   addresses?.[selectedAddressIndex]?.id,
                   addresses?.[selectedAddressIndex]?.zipcode!,
-                  shouldShowArea
+                  shouldShowArea,
+                  _itemIds
                 )
-              : getAreas();
+              : getAreas(_itemIds);
             updateCartItem?.({
               id: results?.[isItemInCart]
                 ? String(results?.[isItemInCart]?.itemId)
@@ -1137,9 +1190,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             ? fetchAreasForAddress(
                 addresses?.[selectedAddressIndex]?.id,
                 addresses?.[selectedAddressIndex]?.zipcode!,
-                shouldShowArea
+                shouldShowArea,
+                _itemIds
               )
-            : getAreas();
+            : getAreas(_itemIds);
         }
       });
       if (!isItemDisable && !isPriceChange) {
@@ -1154,9 +1208,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           ? fetchAreasForAddress(
               addresses?.[selectedAddressIndex]?.id,
               addresses?.[selectedAddressIndex]?.zipcode!,
-              shouldShowArea
+              shouldShowArea,
+              _itemIds
             )
-          : getAreas();
+          : getAreas(_itemIds);
       }
     }
   };
@@ -1255,6 +1310,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             //if address is not selected then from pincode bar otherwise from address
             cityID: cityIdToPass,
             itemIDs: listOfIds!,
+            pincode: !!selectedAddr ? Number(selectedAddr?.zipcode!) : null,
           },
           fetchPolicy: 'no-cache',
         })
@@ -1442,6 +1498,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               : undefined
             : undefined;
           const reportGenItem = reportGenDetails?.find((_item: any) => _item?.itemId === test?.id);
+          const reportTATItem =
+            !!reportTat &&
+            reportTat?.length > 0 &&
+            reportTat?.find((_item: any) => Number(_item?.itemId) === Number(test?.id));
 
           return (
             <TestItemCard
@@ -1452,6 +1512,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               key={test?.id}
               testId={test?.id}
               reportGenItem={reportGenItem}
+              reportTat={reportTATItem}
               onPress={() => {
                 CommonLogEvent(AppRoutes.TestsCart, 'Navigate to medicine details scene');
                 fetchPackageDetails(
@@ -1459,6 +1520,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   (product) => {
                     props.navigation.navigate(AppRoutes.TestDetails, {
                       comingFrom: AppRoutes.TestsCart,
+                      cityId: addressCityId,
+                      stateId: addressStateId,
                       testDetails: {
                         ItemID: test?.id,
                         ItemName: test?.name,
@@ -2183,7 +2246,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       context: {
         sourceHeaders,
       },
-      variables: { cityID: cityIdForAddress, itemIDs: itemIds! },
+      variables: {
+        cityID: cityIdForAddress,
+        itemIDs: itemIds!,
+        pincode: !!selectedAddr ? Number(selectedAddr?.zipcode!) : null,
+      },
       fetchPolicy: 'no-cache',
     });
   };
@@ -2995,7 +3062,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             ) : null}
           </>
         ) : null}
-        {isModifyFlow ? null : showSelectedArea && !isEmptyObject(areaSelected) ? (
+        {isModifyFlow ? null : showSelectedArea &&
+          !isEmptyObject(areaSelected) &&
+          diagnosticAreas?.length > 0 ? (
           <View style={styles.patientNameMainViewStyle}>
             <View style={styles.patientNameViewStyle}>
               <Text style={styles.patientNameTextStyle}>{string.diagnostics.areaText}</Text>
