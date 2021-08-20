@@ -1134,14 +1134,14 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       profile_deeplink
       photoUrl
       availableModes
-      bookingFee
-      isBookingFeeExempted
       doctorPricing {
         slashed_price
         available_to
         status
         mrp
         appointment_type
+        bookingFee
+        isBookingFeeExempted
       }
       availabilityTitle {
         AVAILABLE_NOW

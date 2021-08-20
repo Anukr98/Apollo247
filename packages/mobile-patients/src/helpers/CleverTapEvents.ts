@@ -1746,6 +1746,8 @@ export interface CleverTapEvents {
     'Hospital City': string;
     consultDateTime: Date;
     User_Type: string;
+    'Booking Fee' :  string;
+    'Booking value': number;    
   };
   [CleverTapEventName.CONSULTATION_BOOKED]: {
     consultId: string;
