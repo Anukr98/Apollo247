@@ -288,6 +288,19 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     }
   };
 
+  const renderRefund = () => {
+    return (
+      <View style={styles.flatListContainer}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <Text onPress={renderTextInputAndCTAs} style={styles.flatListItem}>
+            My issue is still not resolved
+          </Text>
+          <ArrowRight style={{ height: 18, width: 18 }} />
+        </View>
+      </View>
+    );
+  };
+
   const renderItem = ({ item }: ListRenderItemInfo<NeedHelpHelpers.HelpSectionQuery>) => {
     const onPress = () => {
       const isReturnQuery = item?.id === helpSectionQueryId.returnOrder;
