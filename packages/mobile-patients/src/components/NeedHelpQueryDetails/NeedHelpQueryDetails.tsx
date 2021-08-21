@@ -40,6 +40,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { FlatList, ListRenderItemInfo, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
+import { TouchableOpacity } from 'react-native';
 
 export interface Props
   extends NavigationScreenProps<{
@@ -291,12 +292,18 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const renderRefund = () => {
     return (
       <View style={styles.flatListContainer}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text onPress={renderTextInputAndCTAs} style={styles.flatListItem}>
-            My issue is still not resolved
-          </Text>
+        <TouchableOpacity
+          style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+          onPress={() => {
+            setSelectedQueryId(navigation.state.params?.queryIdLevel2 || '');
+            setComments('');
+          }}
+        >
+          <Text style={styles.flatListItem}>My issue is still not resolved</Text>
           <ArrowRight style={{ height: 18, width: 18 }} />
-        </View>
+        </TouchableOpacity>
+
+        {selectedQueryId && selectedQueryId?.length > 0 ? renderTextInputAndCTAs() : null}
       </View>
     );
   };
