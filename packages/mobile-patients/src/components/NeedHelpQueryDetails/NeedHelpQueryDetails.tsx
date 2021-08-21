@@ -8,6 +8,7 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT,
   SEND_HELP_EMAIL,
@@ -54,6 +55,7 @@ export interface Props
     sourcePage: WebEngageEvents[WebEngageEventName.HELP_TICKET_SUBMITTED]['Source_Page'];
     pathFollowed: string;
     refund: any[];
+    additionalInfo: boolean;
   }> {}
 
 export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
@@ -67,6 +69,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const orderId = navigation.getParam('orderId') || '';
   const refund = navigation.getParam('refund') || [];
   const isOrderRelatedIssue = navigation.getParam('isOrderRelatedIssue') || false;
+  const additionalInfo = navigation.getParam('additionalInfo') || false;
   const [showEmailPopup, setShowEmailPopup] = useState<boolean>(email ? false : true);
   const [requestEmailWithoutAction, setRequestEmailWithoutAction] = useState<boolean>(true);
   const medicineOrderStatus = navigation.getParam('medicineOrderStatus');
@@ -318,6 +321,18 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           queries,
           email,
         });
+      } else if (item?.id === helpSectionQueryId.refund && refund.length > 0 && !additionalInfo) {
+        navigation.push(AppRoutes.NeedHelpQueryDetails, {
+          queryIdLevel2: item?.id,
+          queryIdLevel1,
+          queries,
+          email,
+          orderId,
+          isOrderRelatedIssue,
+          medicineOrderStatus,
+          isConsult,
+          additionalInfo: true,
+        });
       } else {
         setSelectedQueryId(item.id!);
         setComments('');
@@ -401,9 +416,10 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       {renderHeader()}
       {renderBreadCrumb()}
       {renderHeading()}
-      {renderSubHeading()}
-      {renderReasons()}
-      {renderEmailPopup()}
+      {!additionalInfo ? renderSubHeading() : null}
+      {!additionalInfo ? renderReasons() : null}
+      {!additionalInfo ? renderEmailPopup() : null}
+      {additionalInfo ? renderRefund() : null}
     </SafeAreaView>
   );
 };
