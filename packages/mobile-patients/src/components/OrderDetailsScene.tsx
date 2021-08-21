@@ -2162,6 +2162,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       email,
       sourcePage: 'Order Details',
       refund: refundDetails,
+      payment: paymentDetails,
     });
   };
 

@@ -41,6 +41,7 @@ import { FlatList, ListRenderItemInfo, SafeAreaView, StyleSheet, Text, View } fr
 import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
 import { TouchableOpacity } from 'react-native';
+import { RefundDetails } from '@aph/mobile-patients/src/components/RefundDetails';
 
 export interface Props
   extends NavigationScreenProps<{
@@ -291,19 +292,22 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
   const renderRefund = () => {
     return (
-      <View style={styles.flatListContainer}>
-        <TouchableOpacity
-          style={{ flexDirection: 'row', justifyContent: 'space-between' }}
-          onPress={() => {
-            setSelectedQueryId(navigation.state.params?.queryIdLevel2 || '');
-            setComments('');
-          }}
-        >
-          <Text style={styles.flatListItem}>My issue is still not resolved</Text>
-          <ArrowRight style={{ height: 18, width: 18 }} />
-        </TouchableOpacity>
+      <View>
+        <RefundDetails refunds={refund} paymentDetails={[]} navigaitonProps={navigation} />
+        <View style={styles.flatListContainer}>
+          <TouchableOpacity
+            style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+            onPress={() => {
+              setSelectedQueryId(navigation.state.params?.queryIdLevel2 || '');
+              setComments('');
+            }}
+          >
+            <Text style={styles.flatListItem}>My issue is still not resolved</Text>
+            <ArrowRight style={{ height: 18, width: 18 }} />
+          </TouchableOpacity>
 
-        {selectedQueryId && selectedQueryId?.length > 0 ? renderTextInputAndCTAs() : null}
+          {selectedQueryId && selectedQueryId?.length > 0 ? renderTextInputAndCTAs() : null}
+        </View>
       </View>
     );
   };
