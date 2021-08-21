@@ -57,6 +57,7 @@ export interface Props
     sourcePage: WebEngageEvents[WebEngageEventName.HELP_TICKET_SUBMITTED]['Source_Page'];
     pathFollowed: string;
     refund: any[];
+    payment: any[];
     additionalInfo: boolean;
   }> {}
 
@@ -70,6 +71,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState(navigation.getParam('email') || '');
   const orderId = navigation.getParam('orderId') || '';
   const refund = navigation.getParam('refund') || [];
+  const payment = navigation.getParam('payment') || [];
   const isOrderRelatedIssue = navigation.getParam('isOrderRelatedIssue') || false;
   const additionalInfo = navigation.getParam('additionalInfo') || false;
   const [showEmailPopup, setShowEmailPopup] = useState<boolean>(email ? false : true);
@@ -293,7 +295,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const renderRefund = () => {
     return (
       <View>
-        <RefundDetails refunds={refund} paymentDetails={[]} navigaitonProps={navigation} />
+        <RefundDetails refunds={refund} paymentDetails={payment} navigaitonProps={navigation} />
+
         <View style={styles.flatListContainer}>
           <TouchableOpacity
             style={{ flexDirection: 'row', justifyContent: 'space-between' }}
@@ -356,6 +359,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           medicineOrderStatus,
           isConsult,
           additionalInfo: true,
+          refund: refund,
+          payment: payment,
         });
       } else {
         setSelectedQueryId(item.id!);
