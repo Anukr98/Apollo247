@@ -492,9 +492,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         const _itemIds = widgetsData?.map((item: any) => Number(item?.itemId));
         const _filterItemIds = _itemIds?.filter((val: any) => !cartItemsWithId?.includes(val));
         const pinCodeFromAddress = isModifyFlow
-          ? modifiedOrder?.patientAddressObj?.zipcode!
+          ? Number(modifiedOrder?.patientAddressObj?.zipcode!)
           : !!selectedAddr
-          ? selectedAddr?.zipcode
+          ? Number(selectedAddr?.zipcode)
           : null;
 
         client
@@ -1305,9 +1305,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           );
 
     const pinCodeFromAddress = isModifyFlow
-      ? modifiedOrder?.patientAddressObj?.zipcode!
+      ? Number(modifiedOrder?.patientAddressObj?.zipcode!)
       : !!selectedAddr
-      ? selectedAddr?.zipcode
+      ? Number(selectedAddr?.zipcode)
       : null;
 
     {
@@ -2251,9 +2251,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   ) => {
     const itemIds = comingFrom ? duplicateItem : cartItems?.map((item) => parseInt(item?.id));
     const pinCodeFromAddress = isModifyFlow
-      ? modifiedOrder?.patientAddressObj?.zipcode!
+      ? Number(modifiedOrder?.patientAddressObj?.zipcode!)
       : !!selectedAddr
-      ? selectedAddr?.zipcode
+      ? Number(selectedAddr?.zipcode)
       : null;
 
     return client.query<
