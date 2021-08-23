@@ -75,8 +75,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
       // }
       const packageMrpForItem = getItem?.packageCalculatedMrp!;
       const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
-
-      if (!pricesForItem?.itemActive) {
+      if (props.isPriceAvailable && !pricesForItem?.itemActive) {
         return null;
       }
 
