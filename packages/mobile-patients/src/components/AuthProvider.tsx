@@ -16,6 +16,7 @@ import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import { Platform, Alert } from 'react-native';
 import firebaseAuth from '@react-native-firebase/auth';
+import DeviceInfo from 'react-native-device-info';
 import {
   getNetStatus,
   postWebEngageEvent,
@@ -174,6 +175,8 @@ export const AuthProvider: React.FC = (props) => {
       headers: {
         ...headers,
         Authorization: !authToken.length ? 'Bearer 3d1833da7020e0602165529446587434' : authToken,
+        'x-app-OS': Platform.OS,
+        'x-app-version': DeviceInfo.getVersion(),
       },
     }));
     const httpLink = createHttpLink({

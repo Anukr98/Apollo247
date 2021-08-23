@@ -671,7 +671,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                             },
                           ]}
                         >
-                          <View style={{ width: '59%' }}>
+                          <View style={{ width: '40%' }}>
                             <Text style={styles.itemNameText}>
                               {nameFormater(item?.itemName, 'default')}
                             </Text>
@@ -772,10 +772,20 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       'Download Report PDF',
       orderDetails?.id
     );
-    downloadLabTest(removeWhiteSpaces(orderDetails?.labReportURL)!, appointmentDate, patientName, isReport);
+    downloadLabTest(
+      removeWhiteSpaces(orderDetails?.labReportURL)!,
+      appointmentDate,
+      patientName,
+      isReport
+    );
   };
 
-  async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string, isReport?: boolean) {
+  async function downloadLabTest(
+    pdfUrl: string,
+    appointmentDate: string,
+    patientName: string,
+    isReport?: boolean
+  ) {
     setLoading?.(true);
     try {
       await downloadDiagnosticReport(

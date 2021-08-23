@@ -1774,6 +1774,61 @@ export const postConsultPastSearchSpecialityClicked = (
   postCleverTapEvent(CleverTapEventName.CONSULT_PAST_SEARCHES_CLICKED, cleverTapEventAttributes);
 };
 
+export const postCleverTapPHR = (
+  currentPatient: any,
+  cleverTapEventName: CleverTapEventName,
+  source: string = '',
+  data: any = {}
+) => {
+  const eventAttributes: CleverTapEvents[CleverTapEventName.MEDICAL_RECORDS] = {
+    ...removeObjectNullUndefinedProperties(data),
+    Source: source,
+    ...removeObjectNullUndefinedProperties(currentPatient),
+  };
+  postWebEngageEvent(cleverTapEventName, eventAttributes);
+  postCleverTapEvent(cleverTapEventName, eventAttributes);
+};
+
+export const phrSearchCleverTapEvents = (
+  cleverTapEventName: CleverTapEventName,
+  currentPatient: any,
+  searchKey: string
+) => {
+  const eventAttributes = {
+    searchKey,
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    Relation: g(currentPatient, 'relation'),
+    'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Mobile Number': g(currentPatient, 'mobileNumber'),
+    'Customer ID': g(currentPatient, 'id'),
+  };
+  postWebEngageEvent(cleverTapEventName, eventAttributes);
+  postCleverTapEvent(cleverTapEventName, eventAttributes);
+};
+
+export const getUsageKey = (type: string) => {
+  switch (type) {
+    case 'Doctor Consults':
+      return 'consults-usage';
+    case 'Test Report':
+      return 'testReports-usage';
+    case 'Hospitalization':
+      return 'hospitalizations-usage';
+    case 'Allergy':
+    case 'Medication':
+    case 'Restriction':
+    case 'Family History':
+    case 'MedicalCondition':
+      return 'healthConditions-usage';
+    case 'Bill':
+      return 'bills-usage';
+    case 'Insurance':
+      return 'insurance-usage';
+  }
+};
+
 export const postWebEngageIfNewSession = (
   type: string,
   currentPatient: any,
@@ -1830,61 +1885,6 @@ export const postWebEngageIfNewSession = (
         }
       );
     }
-  }
-};
-
-export const postCleverTapPHR = (
-  currentPatient: any,
-  cleverTapEventName: CleverTapEventName,
-  source: string = '',
-  data: any = {}
-) => {
-  const eventAttributes: CleverTapEvents[CleverTapEventName.MEDICAL_RECORDS] = {
-    ...removeObjectNullUndefinedProperties(data),
-    Source: source,
-    ...removeObjectNullUndefinedProperties(currentPatient),
-  };
-  postWebEngageEvent(cleverTapEventName, eventAttributes);
-  postCleverTapEvent(cleverTapEventName, eventAttributes);
-};
-
-export const phrSearchCleverTapEvents = (
-  cleverTapEventName: CleverTapEventName,
-  currentPatient: any,
-  searchKey: string
-) => {
-  const eventAttributes = {
-    searchKey,
-    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-    'Patient UHID': g(currentPatient, 'uhid'),
-    Relation: g(currentPatient, 'relation'),
-    'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
-    'Patient Gender': g(currentPatient, 'gender'),
-    'Mobile Number': g(currentPatient, 'mobileNumber'),
-    'Customer ID': g(currentPatient, 'id'),
-  };
-  postWebEngageEvent(cleverTapEventName, eventAttributes);
-  postCleverTapEvent(cleverTapEventName, eventAttributes);
-};
-
-export const getUsageKey = (type: string) => {
-  switch (type) {
-    case 'Doctor Consults':
-      return 'consults-usage';
-    case 'Test Report':
-      return 'testReports-usage';
-    case 'Hospitalization':
-      return 'hospitalizations-usage';
-    case 'Allergy':
-    case 'Medication':
-    case 'Restriction':
-    case 'Family History':
-    case 'MedicalCondition':
-      return 'healthConditions-usage';
-    case 'Bill':
-      return 'bills-usage';
-    case 'Insurance':
-      return 'insurance-usage';
   }
 };
 
@@ -3411,7 +3411,6 @@ export const getCheckoutCompletedEventAttributes = (
   }
   return eventAttributes;
 };
-
 export const getCleverTapCheckoutCompletedEventAttributes = (
   shoppingCart: ShoppingCartContextProps,
   paymentOrderId: string,

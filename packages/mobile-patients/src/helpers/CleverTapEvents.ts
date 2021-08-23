@@ -361,6 +361,8 @@ export enum CleverTapEventName {
   ORDER_TESTS_FROM_PRESCRIPTION_DETAILS = 'PHR Order Tests Prescription Detail',
   CONTINUE_CONSULT_CLICKED = 'Continue Consult Clicked',
   CHAT_WITH_DOCTOR = 'Chat with Doctor',
+  Order_Medicine_From_View_Prescription = 'OrderMedicineFromViewPrescription',
+  Book_Tests_From_View_Prescription = 'BookTestsFromViewPrescription',
 
   DOCTOR_RESCHEDULE_CLAIM_REFUND = 'Doctor reschedule and Claim Refund button click',
   UPLOAD_RECORDS_CLICK_CHATROOM = 'Upload Records in chatroom clicked',
@@ -1761,6 +1763,8 @@ export interface CleverTapEvents {
     'Hospital City': string;
     consultDateTime: Date;
     User_Type: string;
+    'Booking Fee' :  string;
+    'Booking value': number;    
   };
   [CleverTapEventName.CONSULTATION_BOOKED]: {
     consultId: string;
