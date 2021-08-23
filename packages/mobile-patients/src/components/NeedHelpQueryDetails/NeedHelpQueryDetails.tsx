@@ -8,6 +8,7 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT,
   SEND_HELP_EMAIL,
@@ -39,6 +40,8 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { FlatList, ListRenderItemInfo, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
+import { TouchableOpacity } from 'react-native';
+import { RefundDetails } from '@aph/mobile-patients/src/components/RefundDetails';
 
 export interface Props
   extends NavigationScreenProps<{
@@ -53,6 +56,9 @@ export interface Props
     medicineOrderStatusDate?: any;
     sourcePage: WebEngageEvents[WebEngageEventName.HELP_TICKET_SUBMITTED]['Source_Page'];
     pathFollowed: string;
+    refund: any[];
+    payment: any[];
+    additionalInfo: boolean;
   }> {}
 
 export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
@@ -64,7 +70,10 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const medicineOrderStatusDate = navigation.getParam('medicineOrderStatusDate');
   const [email, setEmail] = useState(navigation.getParam('email') || '');
   const orderId = navigation.getParam('orderId') || '';
+  const refund = navigation.getParam('refund') || [];
+  const payment = navigation.getParam('payment') || [];
   const isOrderRelatedIssue = navigation.getParam('isOrderRelatedIssue') || false;
+  const additionalInfo = navigation.getParam('additionalInfo') || false;
   const [showEmailPopup, setShowEmailPopup] = useState<boolean>(email ? false : true);
   const [requestEmailWithoutAction, setRequestEmailWithoutAction] = useState<boolean>(true);
   const medicineOrderStatus = navigation.getParam('medicineOrderStatus');
@@ -283,6 +292,29 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     }
   };
 
+  const renderRefund = () => {
+    return (
+      <View>
+        <RefundDetails refunds={refund} paymentDetails={payment} navigaitonProps={navigation} />
+
+        <View style={styles.flatListContainer}>
+          <TouchableOpacity
+            style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+            onPress={() => {
+              setSelectedQueryId(navigation.state.params?.queryIdLevel2 || '');
+              setComments('');
+            }}
+          >
+            <Text style={styles.flatListItem}>My issue is still not resolved</Text>
+            <ArrowRight style={{ height: 18, width: 18 }} />
+          </TouchableOpacity>
+
+          {selectedQueryId && selectedQueryId?.length > 0 ? renderTextInputAndCTAs() : null}
+        </View>
+      </View>
+    );
+  };
+
   const renderItem = ({ item }: ListRenderItemInfo<NeedHelpHelpers.HelpSectionQuery>) => {
     const onPress = () => {
       const isReturnQuery = item?.id === helpSectionQueryId.returnOrder;
@@ -315,6 +347,20 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           queryIdLevel2: item?.id,
           queries,
           email,
+        });
+      } else if (item?.id === helpSectionQueryId.refund && refund.length > 0 && !additionalInfo) {
+        navigation.push(AppRoutes.NeedHelpQueryDetails, {
+          queryIdLevel2: item?.id,
+          queryIdLevel1,
+          queries,
+          email,
+          orderId,
+          isOrderRelatedIssue,
+          medicineOrderStatus,
+          isConsult,
+          additionalInfo: true,
+          refund: refund,
+          payment: payment,
         });
       } else {
         setSelectedQueryId(item.id!);
@@ -399,9 +445,10 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       {renderHeader()}
       {renderBreadCrumb()}
       {renderHeading()}
-      {renderSubHeading()}
-      {renderReasons()}
-      {renderEmailPopup()}
+      {!additionalInfo ? renderSubHeading() : null}
+      {!additionalInfo ? renderReasons() : null}
+      {!additionalInfo ? renderEmailPopup() : null}
+      {additionalInfo ? renderRefund() : null}
     </SafeAreaView>
   );
 };
