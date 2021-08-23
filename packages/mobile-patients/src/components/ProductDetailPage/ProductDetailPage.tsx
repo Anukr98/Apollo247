@@ -1079,10 +1079,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   );
               }}
             >
-              <Breadcrumb
+              {/* Intentionally commented, do not remove, will be modified and used later */}
+              {/* <Breadcrumb
                 links={pdpBreadCrumbs}
                 containerStyle={{ borderBottomWidth: 1, borderBottomColor: '#E5E5E5' }}
-              />
+              /> */}
               <ProductNameImage
                 name={medicineDetails?.name}
                 images={medicineDetails?.image}
