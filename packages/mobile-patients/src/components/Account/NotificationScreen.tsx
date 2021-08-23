@@ -255,6 +255,7 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
             id ? id : undefined,
             isCall,
             undefined,
+            undefined,
             mediaSource
           );
         }}

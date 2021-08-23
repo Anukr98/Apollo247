@@ -1179,16 +1179,17 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
 const isPricesWithInSpecifiedRange = (
   num1: number,
   num2: number,
-  percentage: number,
-  cartPriceNotUpdateRange: number
+  maxRangePercentage: number,
+  minRangePercentage: number
 ) => {
-  const diff = num1 - num2;
-  const diffP = (diff / num1) * 100;
-  const result = diffP <= percentage && diffP >= -percentage;
-  const finalResult = !!cartPriceNotUpdateRange
-    ? result && diff > cartPriceNotUpdateRange && diff < -cartPriceNotUpdateRange
-    : result;
-  return finalResult;
+  try {
+    const diff = num1 - num2;
+    const diffP = (diff / num1) * 100;
+    const result = Math.abs(diffP) >= minRangePercentage && Math.abs(diffP) <= maxRangePercentage;
+    return result;
+  } catch (error) {
+    return false;
+  }
 };
 
 const styles = StyleSheet.create({

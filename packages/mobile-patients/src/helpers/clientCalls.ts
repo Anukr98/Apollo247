@@ -106,8 +106,6 @@ import {
   BannerDisplayType,
   ProcessDiagnosticHCOrderInput,
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
-  PAYMENT_MODE,
-  OrderInput,
   SaveBookHomeCollectionOrderInputv2,
   patientObjWithLineItems,
   patientAddressObj,
@@ -201,9 +199,6 @@ import {
   updateAppointmentVariables,
   updateAppointment,
 } from '@aph/mobile-patients/src/graphql/types/updateAppointment';
-import { savePhleboFeedbackVariables, savePhleboFeedback_savePhleboFeedback } from '@aph/mobile-patients/src/graphql/types/savePhleboFeedback';
-import {  processDiagnosticHCOrder, processDiagnosticHCOrderVariables } from '@aph/mobile-patients/src/graphql/types/processDiagnosticHCOrder';
-import { createOrder, createOrderVariables } from '@aph/mobile-patients/src/graphql/types/createOrder';
 import { getDiagnosticServiceability, getDiagnosticServiceabilityVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticServiceability';
 import { saveDiagnosticBookHCOrderv2, saveDiagnosticBookHCOrderv2Variables } from '@aph/mobile-patients/src/graphql/types/saveDiagnosticBookHCOrderv2';
 import { getCustomizedSlotsv2, getCustomizedSlotsv2Variables } from '@aph/mobile-patients/src/graphql/types/getCustomizedSlotsv2';
@@ -215,10 +210,22 @@ import { rescheduleDiagnosticsOrderv2, rescheduleDiagnosticsOrderv2Variables } f
 import { diagnosticExotelCalling, diagnosticExotelCallingVariables } from '@aph/mobile-patients/src/graphql/types/diagnosticExotelCalling';
 import { wrapperProcessDiagnosticHCOrderCOD, wrapperProcessDiagnosticHCOrderCODVariables } from '@aph/mobile-patients/src/graphql/types/wrapperProcessDiagnosticHCOrderCOD';
 import { getDiagnosticOrdersListByParentOrderID, getDiagnosticOrdersListByParentOrderIDVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByParentOrderID';
-import { getDiagnosticPaymentSettings, getDiagnosticPaymentSettingsVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticPaymentSettings';
+import {
+  savePhleboFeedbackVariables,
+  savePhleboFeedback_savePhleboFeedback,
+} from '@aph/mobile-patients/src/graphql/types/savePhleboFeedback';
+import {
+  processDiagnosticHCOrder,
+  processDiagnosticHCOrderVariables,
+} from '@aph/mobile-patients/src/graphql/types/processDiagnosticHCOrder';
+import {
+  getDiagnosticPaymentSettings,
+  getDiagnosticPaymentSettingsVariables,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticPaymentSettings';
 import { getDiagnosticItemRecommendations, getDiagnosticItemRecommendationsVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticItemRecommendations';
 import { getUpcomingSlotInfo, getUpcomingSlotInfoVariables } from '@aph/mobile-patients/src/graphql/types/getUpcomingSlotInfo';
 import { getConfigurableReportTAT, getConfigurableReportTATVariables } from '@aph/mobile-patients/src/graphql/types/getConfigurableReportTAT';
+
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
   doctorIds: (string | null)[] | (string | undefined)[] | string[],
@@ -1210,25 +1217,6 @@ export const processDiagnosticsCODOrder = (
   return client.mutate<processDiagnosticHCOrder, processDiagnosticHCOrderVariables>({
     mutation: PROCESS_DIAG_COD_ORDER,
     variables: { processDiagnosticHCOrderInput: processDiagnosticHCOrderInput },
-    fetchPolicy: 'no-cache',
-  });
-};
-
-export const createJusPayOrder = (
-  client: ApolloClient<object>,
-  paymentId: string,
-  paymentMode: PAYMENT_MODE,
-  returnUrl: string
-) => {
-  const orderInput: OrderInput = {
-    payment_order_id: paymentId,
-    payment_mode: paymentMode,
-    is_mobile_sdk: true,
-    return_url: returnUrl,
-  };
-  return client.mutate<createOrder, createOrderVariables>({
-    mutation: CREATE_ORDER,
-    variables: { order_input: orderInput },
     fetchPolicy: 'no-cache',
   });
 };

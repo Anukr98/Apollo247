@@ -38,7 +38,6 @@ import {
   View,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -88,6 +87,7 @@ import {
   getReportTAT,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import moment from 'moment';
+import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 
 const screenWidth = Dimensions.get('window').width;
 export interface TestPackageForDetails extends TestPackage {
@@ -147,6 +147,7 @@ export interface TestDetailsProps
     movedFrom?: string;
     cityId?: string;
     changeCTA?: boolean;
+    stateId?: string;
   }> {}
 
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
@@ -166,6 +167,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     setModifiedPatientCart,
     setDistanceCharges,
     setDeliveryAddressId,
+    addresses,
+    deliveryAddressId,
+    deliveryAddressCityId,
+    deliveryAddressStateId,
+    diagnosticSlot,
   } = useDiagnosticsCart();
   const { pharmacyCircleAttributes } = useShoppingCart();
 
@@ -408,13 +414,26 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     serviceabilityObject: DiagnosticData,
     selectedAddress: LocationData
   ) {
-    const getLat = selectedAddress?.latitude!;
-    const getLng = selectedAddress?.longitude!;
-    const getZipcode = selectedAddress?.pincode;
-    const getServiceablityObject = {
+    var getLat = selectedAddress?.latitude!;
+    var getLng = selectedAddress?.longitude!;
+    var getZipcode = selectedAddress?.pincode!;
+    var getServiceablityObject = {
       cityID: Number(serviceabilityObject?.cityId),
       stateID: Number(serviceabilityObject?.stateId),
     };
+    if (movedFrom === AppRoutes.TestsCart) {
+      const selectedAddressIndex = addresses?.findIndex(
+        (address) => address?.id == deliveryAddressId
+      );
+      getLat = addresses?.[selectedAddressIndex]?.latitude!;
+      getLng = addresses?.[selectedAddressIndex]?.longitude!;
+      getZipcode = addresses?.[selectedAddressIndex]?.zipcode!;
+      getServiceablityObject = {
+        cityID: Number(deliveryAddressCityId),
+        stateID: Number(deliveryAddressStateId),
+      };
+    }
+
     try {
       const res = await getDiagnosticExpressSlots(
         client,
@@ -440,11 +459,25 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   }
 
   async function fetchReportTat(itemId: string | number) {
+    const selectedAddressIndex = addresses?.findIndex(
+      (address) => address?.id == deliveryAddressId
+    );
     const itemIds = [Number(itemId)];
     const id = cityIdToUse;
-    const pincode = diagnosticLocation?.pincode! || '500030';
+    const pincode =
+      movedFrom === AppRoutes.TestsCart
+        ? addresses?.[selectedAddressIndex]?.zipcode!
+        : diagnosticLocation?.pincode! || '500030';
+    const formattedDate = moment(diagnosticSlot?.date).format('YYYY/MM/DD');
+    const dateTimeInUTC = moment(formattedDate + ' ' + diagnosticSlot?.slotStartTime).toISOString();
     try {
-      const result = await getReportTAT(client, null, id, Number(pincode), itemIds);
+      const result = await getReportTAT(
+        client,
+        !!diagnosticSlot && !isEmptyObject(diagnosticSlot) ? dateTimeInUTC : null,
+        id,
+        Number(pincode),
+        itemIds
+      );
       if (result?.data?.getConfigurableReportTAT) {
         const getMaxReportTat = result?.data?.getConfigurableReportTAT?.maxReportTAT;
         setReportTat(getMaxReportTat);
@@ -891,7 +924,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         {!!cmsTestDetails?.diagnosticPretestingRequirement
           ? renderCardBottomView()
           : renderSeparator()}
-
         <View style={styles.inclusionsView}>
           {isInclusionPrsent ? (
             <Text style={styles.testIncludedText}>

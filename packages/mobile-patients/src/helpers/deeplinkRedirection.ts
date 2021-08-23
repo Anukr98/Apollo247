@@ -15,6 +15,7 @@ import { AppRoutes, getCurrentRoute } from '@aph/mobile-patients/src/components/
 import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
 import { MutableRefObject } from 'react';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export const handleOpenURL = (event: any) => {
   try {
@@ -400,6 +401,14 @@ export const handleOpenURL = (event: any) => {
         };
         break;
 
+      case 'testordersummary':
+      case 'test-order-summary':
+        return {
+          routeName: 'TestOrderSummary',
+          id: linkId ? linkId : undefined,
+        };
+        break;
+
       default:
         if (b === 0) {
           return {
@@ -431,12 +440,13 @@ export const pushTheView = (
   id?: any,
   isCall?: boolean,
   isCircleMember?: boolean,
+  isCircleMembershipExpired?:boolean,
   mediaSource?: string,
   voipCallType?: string,
   voipAppointmentId?: MutableRefObject<string>,
   isCorporateSubscribed?: boolean,
   vaccinationCmsIdentifier?: string,
-  vaccinationSubscriptionId?: string
+  vaccinationSubscriptionId?: string,
 ) => {
   setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
   switch (routeName) {
@@ -581,14 +591,18 @@ export const pushTheView = (
       });
       break;
     case 'CircleMembershipDetails':
-      if (isCircleMember) {
+      if (isCircleMember || isCircleMembershipExpired) {
         navigateToView(navigation, AppRoutes.MembershipDetails, {
           membershipType: string.Circle.planName,
           isActive: true,
           comingFrom: 'Deeplink',
         });
       } else {
-        navigation.replace(AppRoutes.ConsultRoom);
+        navigateToView(navigation,AppRoutes.CommonWebView, {
+          url:AppConfig.Configuration.CIRCLE_LANDING_URL,
+          source: 'Consult',
+          circleEventSource:'DeepLink Redirection'
+        });
       }
       break;
     case 'MyMembership':

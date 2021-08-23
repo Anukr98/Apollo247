@@ -171,7 +171,9 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
 
   useEffect(() => {
     fetchOrderDetailsFromPayments();
-    postwebEngageCheckoutCompletedEvent();
+    if (modifiedOrderDetails == null) {
+      postwebEngageCheckoutCompletedEvent();
+    }
     firePurchaseEvent(orderDetails?.orderId, orderDetails?.amount, cartItems);
     clearDiagnoticCartInfo?.();
     submitReviewOnLabBook();

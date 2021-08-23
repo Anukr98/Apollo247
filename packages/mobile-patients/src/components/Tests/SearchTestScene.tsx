@@ -596,7 +596,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           CommonLogEvent(AppRoutes.SearchTestScene, 'Search suggestion Item');
           props.navigation.navigate(AppRoutes.TestDetails, {
             itemId: product?.diagnostic_item_id,
-            source: 'Popular search',
+            source: 'Full search',
             comingFrom: AppRoutes.SearchTestScene,
           });
         }}

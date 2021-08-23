@@ -157,6 +157,7 @@ export enum EDIT_DELETE_TYPE {
   DELETE_HEALTH_CONDITION = 'Delete Health Condition',
   DELETE_BILL = 'Delete Bill',
   DELETE_INSURANCE = 'Delete Insurance',
+  DELETE_VACCINATION = 'Delete Vaccination',
 }
 
 type EditDeleteArray = {
@@ -410,6 +411,15 @@ export const editDeleteData = (recordType: MedicalRecordType) => {
         {
           key: EDIT_DELETE_TYPE.DELETE_HEALTH_CONDITION,
           title: EDIT_DELETE_TYPE.DELETE_HEALTH_CONDITION,
+        },
+      ];
+      break;
+    case MedicalRecordType.IMMUNIZATION:
+      editDeleteArray = [
+        { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
+        {
+          key: EDIT_DELETE_TYPE.DELETE_VACCINATION,
+          title: EDIT_DELETE_TYPE.DELETE_VACCINATION,
         },
       ];
       break;
@@ -1493,7 +1503,7 @@ export const formatTestSlot = (slotTime: string) => moment(slotTime, 'HH:mm').fo
 export const formatTestSlotWithBuffer = (slotTime: string) => {
   const startTime = slotTime.split('-')[0];
   const endTime = moment(startTime, 'HH:mm')
-    .add(30, 'minutes')
+    .add(40, 'minutes')
     .format('HH:mm');
 
   const newSlot = [startTime, endTime];
@@ -3181,7 +3191,10 @@ export async function downloadDiagnosticReport(
   appointmentDate: string,
   patientName: string,
   showToast: boolean,
-  downloadFileName?: string
+  downloadFileName?: string,
+  orderStatus?: string,
+  displayId?: string,
+  isReport?: boolean
 ) {
   setLoading?.(true);
   let result = Platform.OS === 'android' && (await requestReadSmsPermission());
@@ -3196,9 +3209,12 @@ export async function downloadDiagnosticReport(
       Platform.OS == 'ios'
     ) {
       const dirs = RNFetchBlob.fs.dirs;
+      const isReportApollo = isReport ? 'labreport' : 'labinvoice';
+      const isOrderComplete = orderStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED ? 'complete' : (Math.floor(Math.random() * 300))
+      const dynamicFileName = `Apollo247_${displayId}_${isReportApollo}_${isOrderComplete}.pdf`
       const reportName = !!downloadFileName
         ? downloadFileName
-        : `Apollo247_${appointmentDate}_${patientName}.pdf`;
+        : dynamicFileName;
       const downloadPath =
         Platform.OS === 'ios'
           ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + reportName
@@ -3243,7 +3259,17 @@ export async function downloadDiagnosticReport(
           PermissionsAndroid.RESULTS.DENIED
       ) {
         storagePermissionsToDownload(() => {
-          downloadDiagnosticReport(setLoading, pdfUrl, appointmentDate, patientName, true);
+          downloadDiagnosticReport(
+            setLoading,
+            pdfUrl,
+            appointmentDate,
+            patientName,
+            true,
+            downloadFileName,
+            orderStatus,
+            displayId,
+            isReport
+          );
         });
       }
     }

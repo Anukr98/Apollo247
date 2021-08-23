@@ -162,7 +162,7 @@ export enum CleverTapEventName {
   DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic make payment clicked',
   PAYMENT_INITIATED = 'Payment Initiated',
   DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic payment initiated',
-  DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnositc checkout completed',
+  DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic checkout completed',
   DIAGNOSTIC_TRACK_ORDER_VIEWED = 'Diagnostic track order viewed',
   DIAGNOSTIC_ORDER_RESCHEDULE = 'Diagnostic order rescheduled',
   DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
@@ -174,6 +174,7 @@ export enum CleverTapEventName {
   DIGNOSTIC_PAYMENT_ABORTED = 'Diagnostic payment aborted',
   DIAGNOSITC_MODIFY_CLICKED = 'Diagnositic modify order clicked',
   DIAGNOSTIC_MODIFY_ORDER = 'Diagnostic modify order',
+  DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED = 'Diagnostic product listing page viewed',
 
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
@@ -361,6 +362,8 @@ export enum CleverTapEventName {
   ORDER_TESTS_FROM_PRESCRIPTION_DETAILS = 'PHR Order Tests Prescription Detail',
   CONTINUE_CONSULT_CLICKED = 'Continue Consult Clicked',
   CHAT_WITH_DOCTOR = 'Chat with Doctor',
+  Order_Medicine_From_View_Prescription = 'OrderMedicineFromViewPrescription',
+  Book_Tests_From_View_Prescription = 'BookTestsFromViewPrescription',
 
   DOCTOR_RESCHEDULE_CLAIM_REFUND = 'Doctor reschedule and Claim Refund button click',
   UPLOAD_RECORDS_CLICK_CHATROOM = 'Upload Records in chatroom clicked',
@@ -1426,6 +1429,7 @@ export interface CleverTapEvents {
     'Item ids'?: any;
     'Total items in order': number;
     'Payment type'?: string; //for prepaid
+    'Circle user': 'Yes' | 'No';
   };
   [CleverTapEventName.PAYMENT_INITIATED]: {
     Amount: number;
@@ -1473,7 +1477,7 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED]: {
     UHID: string;
-    'Order amount': string | number;
+    'Order amount': number;
   };
   [CleverTapEventName.DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED]: {
     Rating: string | number;
@@ -1501,6 +1505,12 @@ export interface CleverTapEvents {
     UHID: string;
     'Order id': string;
     'Order status': string;
+  };
+  [CleverTapEventName.DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED]: {
+    Type: 'Category' | 'Widget';
+    Source: 'Home' | 'Deeplink' | 'Details page' | 'Cart page';
+    'Category name': '';
+    'Section name': '';
   };
 
   // ********** ConsultEvents ********** \\
@@ -1660,6 +1670,9 @@ export interface CleverTapEvents {
     'Secretary Name': string;
     'Secretary Mobile Number': string;
     'Doctor Mobile Number': string;
+    'Doctor ID': string;
+    'Display ID': number;
+    'Chat Format': 'PDF' | 'Image' | 'Text';
   };
   [CleverTapEventName.PATIENT_EXTERNAL_MEETING_LINK_CLICKED]: {
     'Doctor name': string;
@@ -1691,6 +1704,9 @@ export interface CleverTapEvents {
     'Secretary Name': string;
     'Secretary Mobile Number': string;
     'Doctor Mobile Number': string;
+    'Doctor ID': string;
+    'Display ID': number;
+    'Chat Format': 'PDF' | 'Image' | 'Text';
   };
   // confirm the type of data for the below
   [CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION]: {
@@ -1743,6 +1759,8 @@ export interface CleverTapEvents {
     'Hospital City': string;
     consultDateTime: Date;
     User_Type: string;
+    'Booking Fee' :  string;
+    'Booking value': number;    
   };
   [CleverTapEventName.CONSULTATION_BOOKED]: {
     consultId: string;

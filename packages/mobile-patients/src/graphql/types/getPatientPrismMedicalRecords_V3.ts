@@ -69,7 +69,7 @@ export interface getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_
 export interface getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_prescriptions_response {
   __typename: "PrescriptionsBaseResponse";
   id: string;
-  prescriptionName: string | null;
+  prescriptionName: string;
   date: any;
   prescribedBy: string | null;
   notes: string | null;

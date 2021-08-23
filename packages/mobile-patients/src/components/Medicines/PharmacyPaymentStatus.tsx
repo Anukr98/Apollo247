@@ -41,12 +41,15 @@ import {
   TouchableOpacity,
   View,
   Clipboard,
+  Alert,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { Snackbar } from 'react-native-paper';
 import AsyncStorage from '@react-native-community/async-storage';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AddedCirclePlanWithValidity } from '@aph/mobile-patients/src/components/ui/AddedCirclePlanWithValidity';
+import InAppReview from 'react-native-in-app-review';
+
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 import {
@@ -132,6 +135,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const { orders, deliveryTime, orderInfo, isStorePickup } = props.navigation.getParam(
     'orderDetails'
   );
+  const orderDetails = props.navigation.getParam('orderDetails');
   const orderIds = orders.map(
     (item: any, index: number) => item?.orderAutoId + (index != orders?.length - 1 && ', ')
   );
@@ -228,7 +232,6 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const appReviewAndRating = async () => {
     try {
       const { shipments } = orderInfo?.medicineOrderInput;
-
       let tatHours = shipments?.[0].tatHours?.split('')[0];
 
       if (tatHours <= 5) {

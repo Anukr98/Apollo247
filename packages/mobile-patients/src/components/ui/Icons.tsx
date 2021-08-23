@@ -352,9 +352,6 @@ export const ArrowRight: React.FC<IconProps> = (props) => (
 export const EmptySlot: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/emptyslots3x.webp')} />
 );
-export const OvalUpcoming: React.FC<IconProps> = (props) => (
-  <IconBase size="lg" {...props} source={require('./icons/ovalUpcoming3x.webp')} />
-);
 
 export const ArrowRightGreen: React.FC<IconProps> = (props) => (
   <IconBase
@@ -2202,10 +2199,101 @@ export const LongRightArrow: React.FC<IconProps> = (props) => (
   />
 );
 
+export const DoctorLocation: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/doctor_location.webp')}
+  />
+);
+
+export const DoctorLanguage: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/language.webp')}
+  />
+);
+
+export const PdfGray: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/pdf-gray.webp')}
+  />
+);
+
+export const EmailGray: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/email-gray.webp')}
+  />
+);
+
+export const Pdf: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('@aph/mobile-patients/src/components/ui/icons/pdf.webp')} />
+);
+
+export const RightArrowBlue: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/blue-arrow-right.webp')}
+  />
+);
+
+export const ConsultSuccess: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/consult-success.webp')}
+  />
+);
+
+export const ConsultFailure: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/consult-failure.webp')}
+  />
+);
+
+export const ConsultPending: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/consult-pending.webp')}
+  />
+);
+
+export const FasterSubstitutes: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/FasterSubstitute.webp')}
+  />
+);
+
+export const Alert: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    style={{ height: 20, width: 22 }}
+    source={require('@aph/mobile-patients/src/components/ui/icons/alert.webp')}
+  />
+);
+
+export const AlertRed: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 22 }}
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/alertRed.webp')}
+  />
+);
+
 export const ExpressSlotClock: React.FC<IconProps> = (props) => (
   <IconBase
     size="sm"
     {...props}
     source={require('@aph/mobile-patients/src/components/ui/icons/expressSlotIcon.webp')}
+  />
+);
+
+export const OvalUpcoming: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="lg"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/ovalUpcoming.webp')}
   />
 );

@@ -92,7 +92,6 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     (item: any) => {
       const getItem = item?.item;
       const getDiagnosticPricingForItem = getItem?.diagnosticPricing;
-
       // if (getDiagnosticPricingForItem == undefined || getDiagnosticPricingForItem == null) {
       //   return null;
       // }

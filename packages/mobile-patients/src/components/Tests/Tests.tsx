@@ -257,7 +257,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [imgHeight, setImgHeight] = useState(200);
   const [slideIndex, setSlideIndex] = useState(0);
   const [banners, setBanners] = useState([]);
-  const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
 
   const [sectionLoading, setSectionLoading] = useState<boolean>(false);
   const [bookUsSlideIndex, setBookUsSlideIndex] = useState(0);
@@ -265,7 +264,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const [widgetsData, setWidgetsData] = useState([] as any);
   const [reloadWidget, setReloadWidget] = useState<boolean>(false);
-  const [isPriceAvailable, setIsPriceAvailable] = useState<boolean>(false);
 
   const [latestPrescription, setLatestPrescription] = useState([] as any);
 
@@ -279,12 +277,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const defaultAddress = addresses?.find((item) => item?.defaultAddress);
   const [pageLoading, setPageLoading] = useState<boolean>(false);
 
-  const [clickedItem, setClickedItem] = useState<any>([]);
   const [showLocationPopup, setLocationPopup] = useState<boolean>(false);
   const [source, setSource] = useState<DIAGNOSTIC_PINCODE_SOURCE_TYPE>();
   const [showUnserviceablePopup, setUnserviceablePopup] = useState<boolean>(false);
   const [serviceableObject, setServiceableObject] = useState({} as any);
+  const [isFocused, setIsFocused] = useState<boolean>(false);
+  const [clickedItem, setClickedItem] = useState<any>([]);
   const [expressSlotMsg, setExpressSlotMsg] = useState<string>('');
+  const [isPriceAvailable, setIsPriceAvailable] = useState<boolean>(false);
 
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
 
@@ -1373,6 +1373,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     ? listShowLength
                     : data?.diagnosticWidgetData?.length
                 )}
+                isPriceAvailable={isPriceAvailable}
                 isCircleSubscribed={isDiagnosticCircleSubscription}
                 isServiceable={isDiagnosticLocationServiceable}
                 isVertical={false}
@@ -1441,10 +1442,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
               <ItemCard
                 data={data}
                 diagnosticWidgetData={data?.diagnosticWidgetData}
+                isPriceAvailable={isPriceAvailable}
                 isCircleSubscribed={isDiagnosticCircleSubscription}
                 isServiceable={isDiagnosticLocationServiceable}
                 isVertical={false}
-                isPriceAvailable={isPricesAvailable}
                 navigation={props.navigation}
                 source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME}
                 sourceScreen={AppRoutes.Tests}
@@ -1839,14 +1840,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const appointmentDate = moment(clickedItem?.slotDateTimeInUTC)?.format('DD MMM YYYY');
     const patientName = `${clickedItem?.patientObj?.firstName} ${clickedItem?.patientObj?.lastName}`;
     try {
-      setViewReportOrderId(clickedItem?.orderId);
       await downloadDiagnosticReport(
         setLoadingContext,
         removeWhiteSpaces(clickedItem?.labReportURL),
         appointmentDate,
         !!patientName ? patientName : '_',
         true,
-        undefined
+        undefined,
+        clickedItem?.orderStatus,
+        (clickedItem?.displayId).toString(),
+        true
       );
     } catch (error) {
       setLoadingContext?.(false);

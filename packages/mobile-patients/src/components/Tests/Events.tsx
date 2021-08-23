@@ -502,7 +502,7 @@ export function DiagnosticTrackOrderViewed(
   currentPatient: any,
   latestStatus: string,
   orderId: string,
-  source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary'
+  source: 'Home' | 'My Order'
 ) {
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_TRACK_ORDER_VIEWED]
@@ -548,7 +548,7 @@ export function DiagnosticItemSearched(
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_SEARCH_CLICKED, eventAttributes);
 }
 
-export function DiagnosticPaymentPageViewed(currentPatient: any, amount: string | number) {
+export function DiagnosticPaymentPageViewed(currentPatient: any, amount: number) {
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED]
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED] = {
@@ -701,4 +701,19 @@ export function DiagnosticPatientSelected(
     'Patient name': patientNames,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PATIENT_SELECTED, eventAttributes);
+}
+
+export function DiagnosticProductListingPageViewed(
+  type: any,
+  source: any,
+  categoryName: any,
+  sectionName: any
+) {
+  const eventAttributes: CleverTapEvents[CleverTapEventName.DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED] = {
+    Type: type,
+    Source: source,
+    'Category name': categoryName,
+    'Section name': sectionName,
+  };
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED, eventAttributes);
 }

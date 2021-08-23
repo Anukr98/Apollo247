@@ -147,6 +147,6 @@ const styles = StyleSheet.create({
   textStyle: {
     ...theme.viewStyles.text('SB', 14, colors.SHERPA_BLUE, 1, 20, 0),
     paddingVertical: 5,
-    textAlign:'center'
+    textAlign: 'center',
   },
 });

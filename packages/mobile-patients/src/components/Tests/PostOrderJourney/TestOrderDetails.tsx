@@ -10,6 +10,7 @@ import {
   ArrowRight,
   More,
   OrderPlacedIcon,
+  OrderTrackerSmallIcon,
   ClockIcon,
   OvalUpcoming,
 } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -47,6 +48,7 @@ import {
   handleGraphQlError,
   nameFormater,
   navigateToScreenWithEmptyStack,
+  removeWhiteSpaces,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -89,6 +91,7 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import {
   getDiagnosticOrderDetailsByDisplayID,
   getDiagnosticOrderDetailsByDisplayIDVariables,
@@ -201,7 +204,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         setError(true);
       }
     } catch (error) {
-      CommonBugFender('RecordDetails_fetchDiagnosticOrderDetails_try', error);
+      CommonBugFender('TestOrderDetails_fetchDiagnosticOrderDetails_try', error);
       setLoading?.(false);
       setError(true);
     }
@@ -269,7 +272,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     }
     if (selectedTab == string.orders.trackOrder && newList?.length > 0) {
       let latestStatus = newList?.[newList?.length - 1]?.orderStatus;
-      DiagnosticTrackOrderViewed(currentPatient, latestStatus, orderId, 'Track Order');
+      DiagnosticTrackOrderViewed(currentPatient, latestStatus, orderId, 'My Order');
     }
   }, [selectedTab]);
 
@@ -346,6 +349,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       getObject?.map((item) => orderStatusList?.push(item));
     }
   }
+
   const isReportGenerated = orderLevelStatus?.statusInclusions?.find(
     (item: any) => item?.orderStatus == DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED
   );
@@ -477,7 +481,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const renderOrderTracking = () => {
-    newList = newList =
+    newList =
       refundStatusArr?.length > 0
         ? orderStatusList
         : orderLevelStatus?.upcomingStatuses?.length > 0
@@ -495,6 +499,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             const changeModifiedText =
               order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_MODIFIED &&
               DIAGNOSTIC_SUB_STATUS_TO_SHOW?.includes(order?.subStatus!);
+            const slotDate = moment(selectedOrder?.slotDateTimeInUTC).format('Do MMM');
+            const slotTime1 = moment(selectedOrder?.slotDateTimeInUTC).format('hh:mm A');
+            const slotTime2 = moment(selectedOrder?.slotDateTimeInUTC)
+              .add(slotDuration, 'minutes')
+              .format('hh:mm A');
             return (
               <View
                 style={styles.rowStyle}
@@ -591,7 +600,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     if (orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED) {
       return renderReschuleTime();
     }
-    //check for cancelll
     if (
       orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED ||
       orderStatus === DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
@@ -996,12 +1004,20 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                             },
                           ]}
                         >
-                          <View style={{ width: '59%' }}>
+                          <View style={{ width: '40%' }}>
                             <Text style={styles.itemNameText}>
                               {nameFormater(item?.itemName, 'default')}
                             </Text>
                           </View>
-                          <StatusCard titleText={item?.orderStatus} />
+                          <StatusCard
+                            titleText={
+                              item?.itemId == 8 &&
+                              item?.orderStatus ==
+                                DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB
+                                ? '2ND SAMPLE PENDING'
+                                : item?.orderStatus
+                            }
+                          />
                         </View>
                       </View>
                     ) : null}
@@ -1053,7 +1069,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   function _onPressViewReportAction() {
     if (!!selectedOrder?.labReportURL && selectedOrder?.labReportURL != '') {
-      onPressViewReport();
+      onPressViewReport(true);
     } else if (!!selectedOrder?.visitNo && selectedOrder?.visitNo != '') {
       //directly open the phr section
       fetchTestReportResult();
@@ -1070,10 +1086,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       / /g,
       '_'
     );
-    downloadLabTest(orderDetails?.invoiceURL!, appointmentDate, patientName);
+    downloadLabTest(orderDetails?.invoiceURL!, appointmentDate, patientName, false);
   };
 
-  const onPressViewReport = () => {
+  const onPressViewReport = (isReport: boolean) => {
     const appointmentDetails = !!orderDetails?.slotDateTimeInUTC
       ? orderDetails?.slotDateTimeInUTC
       : orderDetails?.diagnosticDate;
@@ -1089,13 +1105,33 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       'Download Report PDF',
       orderDetails?.id
     );
-    downloadLabTest(orderDetails?.labReportURL!, appointmentDate, patientName);
+    downloadLabTest(
+      removeWhiteSpaces(orderDetails?.labReportURL)!,
+      appointmentDate,
+      patientName,
+      isReport
+    );
   };
 
-  async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string) {
+  async function downloadLabTest(
+    pdfUrl: string,
+    appointmentDate: string,
+    patientName: string,
+    isReport?: boolean
+  ) {
     setLoading?.(true);
     try {
-      await downloadDiagnosticReport(globalLoading, pdfUrl, appointmentDate, patientName, true);
+      await downloadDiagnosticReport(
+        globalLoading,
+        pdfUrl,
+        appointmentDate,
+        patientName,
+        true,
+        undefined,
+        orderDetails?.orderStatus,
+        (orderDetails?.displayId).toString(),
+        isReport
+      );
     } catch (error) {
       setLoading?.(false);
       CommonBugFender('YourOrderTests_downloadLabTest', error);

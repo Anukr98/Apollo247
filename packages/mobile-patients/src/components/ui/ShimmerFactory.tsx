@@ -337,6 +337,20 @@ const styles = StyleSheet.create({
     marginRight: 12,
     marginBottom: 12,
     alignItems: 'center',
+  itemPrice: {
+    ...theme.viewStyles.cardViewStyle,
+    width: '90%',
+    marginRight: 5,
+    marginTop: 5,
+    height: 40,
+  },
+
+  itemPackagePrice: {
+    ...theme.viewStyles.cardViewStyle,
+    width: '100%',
+    marginRight: 5,
+    marginTop: 5,
+    height: 60,
   },
 });
 

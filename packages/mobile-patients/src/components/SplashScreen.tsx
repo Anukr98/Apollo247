@@ -549,6 +549,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             if (mePatient) {
               if (mePatient.firstName !== '') {
                 const isCircleMember: any = await AsyncStorage.getItem('isCircleMember');
+                const isCircleMembershipExpired: any = await AsyncStorage.getItem(
+                  'isCircleMembershipExpired'
+                );
                 const isCorporateSubscribed: any = await AsyncStorage.getItem(
                   'isCorporateSubscribed'
                 );
@@ -568,6 +571,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                   id ? id : undefined,
                   isCall,
                   isCircleMember === 'yes',
+                  isCircleMembershipExpired === 'yes',
                   mediaSource,
                   voipCallType.current,
                   voipAppointmentId,
@@ -755,6 +759,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setPharmaHomeNudgeMessage,
     setPharmaCartNudgeMessage,
     setPharmaPDPNudgeMessage,
+    setPaymentCodMessage,
   } = useShoppingCart();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -995,6 +1000,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Nudge_Message_Pharmacy_Cart: {
       QA: 'QA_Show_nudge_on_pharma_cart',
       PROD: 'Show_nudge_on_pharma_cart',
+    },
+    Disincentivize_COD_Message: {
+      QA: 'QA_Disincentivize_COD_Message',
+      PROD: 'Disincentivize_COD_Message',
     },
   };
 
@@ -1270,6 +1279,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
 
       nudgeMessagePharmacyPDP && setPharmaPDPNudgeMessage?.(nudgeMessagePharmacyPDP);
+
+      const disincentivizeCodMessage = getRemoteConfigValue(
+        'Disincentivize_COD_Message',
+        (key) => config.getString(key) || ''
+      );
+
+      disincentivizeCodMessage && setPaymentCodMessage?.(disincentivizeCodMessage);
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';

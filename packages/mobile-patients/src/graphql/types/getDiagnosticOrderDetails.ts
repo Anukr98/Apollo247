@@ -118,6 +118,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList 
   slotTimings: string;
   slotId: string | null;
   totalPrice: number;
+  attributesObj: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_attributesObj | null;
   prescriptionUrl: string;
   diagnosticDate: any;
   orderStatus: DIAGNOSTIC_ORDER_STATUS;
@@ -130,7 +131,6 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList 
   visitNo: string | null;
   invoiceURL: string | null;
   labReportURL: string | null;
-  attributesObj: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_attributesObj | null;
   diagnosticOrderLineItems: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems | null)[] | null;
   diagnosticOrdersStatus: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrdersStatus | null)[] | null;
 }

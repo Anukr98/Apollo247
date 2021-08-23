@@ -58,7 +58,7 @@ export interface PackageCardProps {
   isPriceAvailable?: boolean;
 }
 
-const PackageCard: React.FC<PackageCardProps> = (props) => {
+export const PackageCard: React.FC<PackageCardProps> = (props) => {
   const {
     cartItems,
     addCartItem,
@@ -69,7 +69,6 @@ const PackageCard: React.FC<PackageCardProps> = (props) => {
     patientCartItems,
     removeMultiPatientCartItems,
   } = useDiagnosticsCart();
-
   const {
     data,
     isCircleSubscribed,
@@ -87,6 +86,9 @@ const PackageCard: React.FC<PackageCardProps> = (props) => {
       const getItem = item?.item;
       const getDiagnosticPricingForItem = getItem?.diagnosticPricing;
 
+      // if (getDiagnosticPricingForItem == undefined || getDiagnosticPricingForItem == null) {
+      //   return null;
+      // }
       const packageMrpForItem = getItem?.packageCalculatedMrp!;
       const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
       if (props.isPriceAvailable && !pricesForItem?.itemActive) {

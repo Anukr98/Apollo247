@@ -98,7 +98,7 @@ export const OtherBanks: React.FC<OtherBanksProps> = (props) => {
     setisTxnProcessing(true);
     try {
       const token = await getClientToken();
-      InitiateNetBankingTxn(currentPatient?.id, token, paymentId, bank?.paymentMethod);
+      InitiateNetBankingTxn(currentPatient?.id, token, paymentId, bank?.payment_method_code);
       props.navigation.goBack();
     } catch (e) {
       setisTxnProcessing(false);

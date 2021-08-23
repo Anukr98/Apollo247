@@ -65,8 +65,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
 
-  const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
-
   const orderSelected = props.navigation.getParam('selectedOrder');
   const individualItemStatus = props.navigation.getParam('itemLevelStatus');
   const getRefundArray = props.navigation.getParam('refundStatusArr');
@@ -74,7 +72,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   const [isViewReport, setIsViewReport] = useState<boolean>(false);
   const [activeOrder, setActiveOrder] = useState<any>('');
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
-
   const isPrepaid = orderSelected?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
 
   const [individualTestData, setIndividualTestData] = useState<any>([]);

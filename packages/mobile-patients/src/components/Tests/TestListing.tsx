@@ -43,6 +43,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { DiagnosticProductListingPageViewed } from './Events';
 
 export interface TestListingProps
   extends NavigationScreenProps<{
@@ -137,6 +138,10 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     fetchWidgetsPrices(widgetsData);
   }, [widgetsData?.diagnosticWidgetData?.[0]]);
 
+  useEffect(() => {
+    fetchWidgetsPrices(widgetsData);
+  }, [widgetsData?.diagnosticWidgetData?.[0]]);
+
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
       query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
@@ -158,11 +163,13 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       fetchPolicy: 'no-cache',
     });
 
-  //add try catch.
+  useEffect(() => {
+    DiagnosticProductListingPageViewed(widgetType, movedFrom, widgetName, title);
+  }, []);
+
   const fetchWidgetsPrices = async (widgetsData: any) => {
     const itemIds = widgetsData?.diagnosticWidgetData?.map((item: any) => Number(item?.itemId));
     setLoading?.(true);
-
     const res = Promise.all(
       itemIds?.map((item: any) =>
         fetchPricesForCityId(

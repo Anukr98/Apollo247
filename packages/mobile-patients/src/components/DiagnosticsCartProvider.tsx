@@ -128,6 +128,8 @@ export interface DiagnosticsCartContextProps {
   setDeliveryAddressId: ((id: string) => void) | null;
   deliveryAddressCityId: string;
   setDeliveryAddressCityId: ((id: string) => void) | null;
+  deliveryAddressStateId: string;
+  setDeliveryAddressStateId: ((id: string) => void) | null;
 
   addresses: savePatientAddress_savePatientAddress_patientAddress[];
   setAddresses:
@@ -274,6 +276,9 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   deliveryAddressCityId: '',
   setDeliveryAddressCityId: null,
 
+  deliveryAddressStateId: '',
+  setDeliveryAddressStateId: null,
+
   addresses: [],
   setAddresses: null,
   addAddress: null,
@@ -407,6 +412,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const [areaSelected, setAreaSelected] = useState<DiagnosticsCartContextProps['areaSelected']>({});
   const [deliveryAddressCityId, setDeliveryAddressCityId] = useState<
     DiagnosticsCartContextProps['deliveryAddressCityId']
+  >('');
+  const [deliveryAddressStateId, setDeliveryAddressStateId] = useState<
+    DiagnosticsCartContextProps['deliveryAddressStateId']
   >('');
   const [diagnosticAreas, setDiagnosticAreas] = useState<
     DiagnosticsCartContextProps['diagnosticAreas']
@@ -978,6 +986,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         setDeliveryAddressId,
         deliveryAddressCityId,
         setDeliveryAddressCityId,
+        deliveryAddressStateId,
+        setDeliveryAddressStateId,
         deliveryType,
         coupon,
         setCoupon,
