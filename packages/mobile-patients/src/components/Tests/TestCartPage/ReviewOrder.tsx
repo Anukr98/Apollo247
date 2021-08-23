@@ -213,7 +213,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   let itemNamesToKeep_global: string[] = [];
   let itemIdsToRemove_global: Number[] = [];
   let itemIdsToKeep_global: Number[] = [];
-  let obj: any = {};
+  let obj;
   let setLowItemName: string[] = [],
     setHighPriceName: string[] = [];
 
@@ -255,10 +255,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       );
       if (res?.data?.success) {
         const getItems = res?.data?.data;
-        getItems?.map((item: any) => {
-          (obj.id = Number(item?.itemId)), (obj.name = item?.itemName);
-        });
-        setCartItemsMapping?.(obj);
+        setCartItemsMapping?.(getItems);
       }
     } catch (error) {
       CommonBugFender('populateCartMapping_ReviewOrder', error);
@@ -354,10 +351,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           preTestingRequirement:
             !!reportGenDetails && reportGenDetails?.[index]?.itemPrepration
               ? reportGenDetails?.[index]?.itemPrepration
-              : null,
-          reportGenerationTime:
-            !!reportGenDetails && reportGenDetails?.[index]?.itemReportTat
-              ? reportGenDetails?.[index]?.itemReportTat
               : null,
         } as DiagnosticLineItem)
     );
@@ -759,7 +752,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
   const renderTotalCharges = () => {
     const anyCartSaving = isDiagnosticCircleSubscription ? cartSaving + circleSaving : cartSaving;
-
+    const hcChargesToShow = getHcCharges()?.toFixed(2);
     return (
       <>
         {/* {renderCouponView()} */}
@@ -774,7 +767,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           {renderPrices('Total MRP', totalPriceExcludingAnyDiscounts.toFixed(2))}
 
           {couponDiscount > 0 && renderPrices('Coupon Discount', couponDiscount?.toFixed(2))}
-          {
+          {isModifyFlow && Number(hcChargesToShow) == 0 ? null : (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={[styles.pricesNormalText, { width: '60%' }]}>
                 {string.diagnosticsCartPage.homeCollectionText}
@@ -794,11 +787,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
                     },
                   ]}
                 >
-                  {string.common.Rs} {getHcCharges()?.toFixed(2)}
+                  {string.common.Rs} {hcChargesToShow}
                 </Text>
               </View>
             </View>
-          }
+          )}
           {distanceCharges > 0 &&
             renderPrices(
               string.diagnosticsCartPage.paidSlotText,
@@ -1123,6 +1116,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           }
         })
         .catch((error) => {
+          console.log({ error });
           CommonBugFender('TestsCart_saveHomeCollectionOrder', error);
           setLoading?.(false);
           showAphAlert?.({
@@ -1170,10 +1164,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             !!reportGenDetails && reportGenDetails?.[index]?.itemPrepration
               ? reportGenDetails?.[index]?.itemPrepration
               : null,
-          reportGenerationTime:
-            !!reportGenDetails && reportGenDetails?.[index]?.itemReportTat
-              ? reportGenDetails?.[index]?.itemReportTat
-              : null,
         } as DiagnosticLineItem)
     );
     const itemPricingObject = isModifyFlow
@@ -1195,20 +1185,16 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
   const getItemName = (itemIds: any): string => {
     const itemNames: string[] = [];
-
     !!itemIds &&
       itemIds?.length &&
       itemIds?.map((id: number) => {
-        // const findItem = cartItems?.find(
-        //   (cItems: DiagnosticsCartItem) => Number(cItems?.id) === Number(id)
-        // );
-        const arrayToSelect =
-          !!cartItemsMapping && cartItemsMapping?.length > 0 ? cartItemsMapping : cartItems;
+        const isFromApi = !!cartItemsMapping && cartItemsMapping?.length > 0;
+        const arrayToSelect = isFromApi ? cartItemsMapping : cartItems;
         const findItem = arrayToSelect?.find(
-          (cItems: DiagnosticsCartItem) => Number(cItems?.id) === Number(id)
+          (cItems: any) => Number(isFromApi ? cItems?.itemId : cItems?.id) === Number(id)
         );
         if (!!findItem) {
-          itemNames?.push(findItem?.name);
+          itemNames?.push(isFromApi ? findItem?.itemName : findItem?.name);
         }
         //in case of modify. => only for single uhid
         else if (isModifyFlow) {
@@ -1225,7 +1211,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           });
         }
       });
-
     return itemNames?.join(', ');
   };
 
@@ -1387,7 +1372,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const highTestText = higherPricesName?.join(', ');
     showAphAlert?.({
       title: 'Your cart has been revised!',
-      description: `The "${dupTestText}" has been removed from your cart as it is already included in another test "${highTestText}" in your cart. Kindly proceed to pay the revised amount`,
+      description: isModifyFlow
+        ? `"${dupTestText}" and "${highTestText}" have common parameters, and cannot be booked together. Your cart would be updated.`
+        : `The "${dupTestText}" has been removed from your cart as it is already included in another test "${highTestText}" in your cart. Kindly proceed to pay the revised amount`,
       onPressOk: () => {
         //disable the cta
         hideAphAlert?.();
@@ -1633,7 +1620,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setLoading?.(true);
     const modifyBookingInput: saveModifyDiagnosticOrderInput = {
       orderId: modifiedOrder?.id,
-      collectionCharges: modifiedOrder?.collectionCharges, //no need to pass newCharges as of now
+      collectionCharges: !!modifiedOrder?.collectionCharges ? modifiedOrder?.collectionCharges : 0, //no need to pass newCharges as of now
       bookingSource: DiagnosticsBookingSource.MOBILE,
       deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
       items: createItemPrice(cartItems)?.itemPricingObject, //total (prev+ curr)

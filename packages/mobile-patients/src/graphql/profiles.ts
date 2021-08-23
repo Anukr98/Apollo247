@@ -2038,8 +2038,8 @@ export const GET_DIAGNOSTICS_HC_CHARGES = gql`
 `;
 
 export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
-  query findDiagnosticsByItemIDsAndCityID($cityID: Int!, $itemIDs: [Int]!) {
-    findDiagnosticsByItemIDsAndCityID(cityID: $cityID, itemIDs: $itemIDs) {
+  query findDiagnosticsByItemIDsAndCityID($cityID: Int!, $itemIDs: [Int]!, $pincode:Int) {
+    findDiagnosticsByItemIDsAndCityID(cityID: $cityID, itemIDs: $itemIDs, pincode: $pincode) {
       diagnostics {
         id
         itemId
@@ -6300,3 +6300,28 @@ export const GET_DIAGNOSTIC_EXPRESS_SLOTS_INFO  = gql`
   }
 `;
 
+export const INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2 = gql`
+  mutation initiateDiagonsticHCOrderPaymentv2(
+    $diagnosticInitiateOrderPaymentInput: DiagnosticInitiateOrderPaymentv2!
+  ) {
+    initiateDiagonsticHCOrderPaymentv2(
+      diagnosticInitiateOrderPaymentInput: $diagnosticInitiateOrderPaymentInput
+    ) {
+      status
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_REPORT_TAT = gql `
+  query getConfigurableReportTAT($slotDateTimeInUTC: DateTime,$cityId: Int!, $pincode: Int!, $itemIds: [Int]!){
+    getConfigurableReportTAT(slotDateTimeInUTC: $slotDateTimeInUTC,cityId: $cityId, pincode: $pincode, itemIds: $itemIds){
+      maxReportTAT
+      reportTATMessage
+      itemLevelReportTATs{
+        itemId
+        reportTATMessage
+        reportTATInUTC
+      }
+    }
+  }
+`;

@@ -178,9 +178,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       ? orderDetails?.attributesObj?.homeCollectionCharges
       : orderDetails?.collectionCharges != null
       ? orderDetails?.collectionCharges
-      : totalIndividualDiagonsticsCharges! > orderDetails?.totalPrice
-      ? totalIndividualDiagonsticsCharges! - orderDetails?.totalPrice!
-      : orderDetails?.totalPrice! - totalIndividualDiagonsticsCharges;
+      : 0.0;
 
   //removed the savings (cart,circle,discounts)
   const grossCharges = totalIndividualDiagonsticsCharges!;
@@ -244,17 +242,24 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       ) || null;
     const bookedForTime =
       getUTCDateTime != null
-        ? moment(getUTCDateTime).format('hh:mm a')
+        ? moment(getUTCDateTime).format('hh:mm A')
         : getSlotStartTime(orderDetails?.slotTimings);
-    const rangeAddedTime = getUTCDateTime != null
-    ? moment(getUTCDateTime).add(slotDuration,'minutes').format('hh:mm a')
-    : getSlotStartTime(orderDetails?.slotTimings);
+    const rangeAddedTime =
+      getUTCDateTime != null
+        ? moment(getUTCDateTime)
+            .add(slotDuration, 'minutes')
+            .format('hh:mm A')
+        : getSlotStartTime(orderDetails?.slotTimings);
     return (
       <View style={[styles.testSlotContainer]}>
         {(!!bookedForTime || !!bookedForDate) && (
           <View>
-            <Text style={styles.headingText}>Appointment Time</Text>
-            {!!bookedForTime ? <Text style={styles.slotText}>{bookedForTime} - {rangeAddedTime}</Text> : null}
+            <Text style={styles.headingText}>Test Slot</Text>
+            {!!bookedForTime ? (
+              <Text style={styles.slotText}>
+                {bookedForTime} - {rangeAddedTime}
+              </Text>
+            ) : null}
             {!!bookedForDate ? <Text style={styles.slotText}>{bookedForDate}</Text> : null}
           </View>
         )}

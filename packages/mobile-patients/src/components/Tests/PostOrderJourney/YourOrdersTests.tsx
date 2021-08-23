@@ -97,7 +97,6 @@ import {
   diagnosticGetCustomizedSlotsV2,
   diagnosticRescheduleOrder,
   diagnosticsOrderListByParentId,
-  getDiagnosticRefundOrders,
   getPatientPrismMedicalRecordsApi,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { Overlay } from 'react-native-elements';
@@ -190,7 +189,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   >([]);
   const [selectedTestArray, setSelectedTestArray] = useState([] as any);
 
-  const [refundStatusArr, setRefundStatusArr] = useState<any>(null);
   const [selectedOrder, setSelectedOrder] = useState<orderList>();
   const [error, setError] = useState(false);
   const { getPatientApiCall } = useAuth();
@@ -426,27 +424,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   };
 
-  const fetchRefundForOrder = async (orderSelected: any, tab: boolean) => {
-    setRefundStatusArr(null);
-    setLoading?.(true);
-    try {
-      let response: any = await getDiagnosticRefundOrders(client, orderSelected?.paymentOrderId);
-      if (response?.data?.data) {
-        const refundData = g(response, 'data', 'data', 'getOrderInternal', 'refunds');
-        const getTransId = g(response, 'data', 'data', 'getOrderInternal', 'txn_id');
-        if (refundData?.length! > 0) {
-          setRefundStatusArr(refundData);
-        }
-        performNavigation(orderSelected, tab, refundData, getTransId);
-      } else {
-        performNavigation(orderSelected, tab, []);
-      }
-    } catch (error) {
-      CommonBugFender('OrderedTestStatus_fetchRefundOrder', error);
-      setLoading?.(false);
-    }
-  };
-
   function updateCancelCard(orderId: string | number) {
     const findOrderIndex = orders?.findIndex((arrObj: orderListByMobile) => arrObj?.id === orderId);
     if (findOrderIndex !== -1) {
@@ -468,7 +445,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         console.log({ data });
         const cancelResponse = g(data, 'data', 'cancelDiagnosticOrdersv2', 'status');
         if (!!cancelResponse && cancelResponse === true) {
-          updateCancelCard(selectedOrderId);
+          // updateCancelCard(selectedOrderId);
+          setTimeout(() => refetchOrders(), 1000);
           showAphAlert?.({
             unDismissable: true,
             title: string.common.hiWithSmiley,
@@ -772,13 +750,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     ) as string;
     const formatTime =
       rescheduleSlotObject?.slotStartTime || (diagnosticSlot?.slotStartTime as string);
-    const dateTimeInUTC = moment(
-      `${formattedDate} ${formatTime}`,
-      'YYYY-MM-DD hh:mm:ss'
-    ).toISOString();
-    // const formattedString = moment(`${formattedDate} ${formatTime}`,'YYYY-MM-DD HH:mm:ss');
-    // console.log({ formattedString });
-    // const dateTimeInUTC = new Date(formattedString)?.toISOString();
+
+    const formattedString = moment(formattedDate).format('YYYY/MM/DD') + ' ' + formatTime;
+    const dateTimeInUTC = new Date(formattedString)?.toISOString();
 
     const dateTimeToShow = formattedDate + ', ' + formatTime;
     const comment = '';
@@ -825,8 +799,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             currentPatient,
             selectedOrder?.patientObj!
           );
-          // rescheduleSelectedOrder(obj);
-          setTimeout(() => refetchOrders(), 1500);
+          rescheduleSelectedOrder(obj);
           showAphAlert?.({
             unDismissable: true,
             title: string.common.hiWithSmiley,
@@ -1419,20 +1392,29 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       const res = await diagnosticsOrderListByParentId(client, parentOrderId!);
       if (res?.data?.getDiagnosticOrdersListByParentOrderID) {
         const getOrders = res?.data?.getDiagnosticOrdersListByParentOrderID?.ordersList! || [];
-
-        setMultipleOrdersList(getOrders);
-        setShowMultiUhidOption(true);
+        if (getOrders?.length == 0) {
+          //in that case when res is [] => cancelled all muhid order except one, try to reschedule
+          setIsMultiUhid(false);
+          setShowMultiUhidOption(false);
+          setShowRescheduleReasons(true);
+          setSelectRescheduleOption(true);
+        } else {
+          setMultipleOrdersList(getOrders);
+          setShowMultiUhidOption(true);
+        }
       } else {
         setMultipleOrdersList([]);
+        setShowMultiUhidOption(false);
         setShowRescheduleReasons(true);
         setSelectRescheduleOption(true);
       }
       setLoading?.(false);
     } catch (error) {
-      console.log({ error });
       setMultipleOrdersList([]);
+      setIsMultiUhid(false);
       setShowRescheduleReasons(true);
       setSelectRescheduleOption(true);
+      setShowMultiUhidOption(false);
 
       setLoading?.(false);
       CommonBugFender('YourOrdersTest_callMultiUhidApi', error);
@@ -1461,21 +1443,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   function _navigateToYourTestDetails(order: orderList, tab: boolean) {
     const isPrepaid = order?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
     setLoading?.(true);
-    if (isPrepaid && DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus)) {
-      fetchRefundForOrder(order, tab);
-    } else {
-      performNavigation(order, tab);
-    }
+    performNavigation(order, tab);
   }
 
-  function performNavigation(order: any, tab: boolean, refundArray?: any, refundTransId?: string) {
+  function performNavigation(order: any, tab: boolean) {
     setLoading?.(false);
     props.navigation.push(AppRoutes.TestOrderDetails, {
       orderId: order?.id,
       setOrders: (orders: orderList[]) => setOrders(orders),
       selectedOrder: order,
-      refundStatusArr: refundArray,
-      refundTransactionId: refundTransId,
       comingFrom: AppRoutes.YourOrdersTest,
       showOrderSummaryTab: tab,
     });
@@ -1574,7 +1550,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             ? order?.slotDateTimeInUTC
             : getSlotStartTime(order?.slotTimings)
         }
-        slotDuration={order?.attributesObj?.slotDurationInMinutes || 45}
+        slotDuration={
+          order?.attributesObj?.slotDurationInMinutes || AppConfig.Configuration.DEFAULT_PHELBO_ETA
+        }
         isPrepaid={order?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT}
         isCancelled={currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
         cancelledReason={

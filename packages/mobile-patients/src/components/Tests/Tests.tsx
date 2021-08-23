@@ -265,6 +265,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const [widgetsData, setWidgetsData] = useState([] as any);
   const [reloadWidget, setReloadWidget] = useState<boolean>(false);
+  const [isPriceAvailable, setIsPriceAvailable] = useState<boolean>(false);
 
   const [latestPrescription, setLatestPrescription] = useState([] as any);
 
@@ -651,6 +652,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       }
       newWidgetsData?.length > 0 && reloadWidget ? setReloadWidget(false) : setReloadWidget(true);
       setWidgetsData(newWidgetsData);
+      setIsPriceAvailable(true);
       setSectionLoading(false);
       setLoading?.(false);
       setPageLoading?.(false);

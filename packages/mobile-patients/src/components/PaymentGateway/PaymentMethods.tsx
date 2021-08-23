@@ -77,6 +77,8 @@ import { useFetchSavedCards } from '@aph/mobile-patients/src/components/PaymentG
 import Decimal from 'decimal.js';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { SavingsIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 import {
   initiateDiagonsticHCOrderPaymentv2,
   initiateDiagonsticHCOrderPaymentv2Variables,

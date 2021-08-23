@@ -198,9 +198,6 @@ export interface DiagnosticsCartContextProps {
   duplicateItemsArray: [];
   setDuplicateItemsArray: ((items: any | []) => void) | null;
 
-  filterPatientCartItems: any[];
-  setFilterPatientCartItems: ((items: any[]) => void) | null;
-
   modifiedPatientCart: DiagnosticPatientCartItem[];
   setModifiedPatientCart: ((items: DiagnosticPatientCartItem[]) => void) | null;
 
@@ -325,8 +322,6 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   showSelectedPatient: null,
   duplicateItemsArray: [],
   setDuplicateItemsArray: null,
-  filterPatientCartItems: [],
-  setFilterPatientCartItems: null,
   modifiedPatientCart: [],
   setModifiedPatientCart: null,
   phleboETA: 0,
@@ -690,10 +685,12 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const checkItemRemovedFromAllPatients = (cartItemId: number) => {
     let isItemExistInPatientCart: boolean = true;
     patientCartItems?.forEach((patient: DiagnosticPatientCartItem) => {
-      const findItem = patient?.cartItems?.some(
+      const findAllItem = patient?.cartItems?.filter(
         (itemObj: DiagnosticsCartItem) => Number(itemObj?.id) === Number(cartItemId)
       );
-      if (findItem) {
+      const findItem =
+        !!findAllItem && findAllItem?.length > 0 && findAllItem?.filter((item) => item?.isSelected);
+      if (!!findItem && findItem?.length > 0) {
         isItemExistInPatientCart = false;
       }
     });
@@ -719,12 +716,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
       return obj;
     });
 
-  const [filterPatientCartItems, setFilterPatientCartItems] = useState<
-    DiagnosticsCartContextProps['filterPatientCartItems']
-  >(filterPatientCartItem);
-
   const allCartItems =
-    !!filterPatientCartItems && filterPatientCartItem?.map((item) => item?.cartItems)?.flat();
+    !!filterPatientCartItem && filterPatientCartItem?.map((item) => item?.cartItems)?.flat();
 
   const withDiscount = allCartItems?.filter(
     (item: DiagnosticsCartItem) => item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
@@ -1023,8 +1016,6 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         showSelectedPatient,
         duplicateItemsArray,
         setDuplicateItemsArray,
-        filterPatientCartItems,
-        setFilterPatientCartItems,
         modifiedPatientCart,
         setModifiedPatientCart,
         removeMultiPatientCartItems,

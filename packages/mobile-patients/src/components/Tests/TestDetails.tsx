@@ -83,7 +83,11 @@ import _ from 'lodash';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { getDiagnosticExpressSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  getDiagnosticExpressSlots,
+  getReportTAT,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
+import moment from 'moment';
 
 const screenWidth = Dimensions.get('window').width;
 export interface TestPackageForDetails extends TestPackage {
@@ -202,6 +206,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [errorState, setErrorState] = useState(false);
   const [widgetsData, setWidgetsData] = useState([] as any);
   const [expressSlotMsg, setExpressSlotMsg] = useState<string>('');
+  const [reportTat, setReportTat] = useState<string>('');
 
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
 
@@ -242,6 +247,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     if (itemId) {
       fetchTestDetails_CMS(itemId, null);
       loadTestDetails(itemId);
+      fetchReportTat(itemId);
     } else if (testName) {
       fetchTestDetails_CMS(99999, testName);
     } else {
@@ -430,6 +436,24 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     } catch (error) {
       CommonBugFender('getExpressSlots_TestDetails', error);
       setExpressSlotMsg('');
+    }
+  }
+
+  async function fetchReportTat(itemId: string | number) {
+    const itemIds = [Number(itemId)];
+    const id = cityIdToUse;
+    const pincode = diagnosticLocation?.pincode! || '500030';
+    try {
+      const result = await getReportTAT(client, null, id, Number(pincode), itemIds);
+      if (result?.data?.getConfigurableReportTAT) {
+        const getMaxReportTat = result?.data?.getConfigurableReportTAT?.maxReportTAT;
+        setReportTat(getMaxReportTat);
+      } else {
+        setReportTat('');
+      }
+    } catch (error) {
+      CommonBugFender('fetchReportTat_TestDetails', error);
+      setReportTat('');
     }
   }
 
@@ -634,8 +658,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     return (
       <View style={styles.descriptionCardOuterView}>
         {renderCardTopView()}
-        {renderCardMidView()}
-        {renderCardBottomView()}
         {renderPriceView()}
       </View>
     );
@@ -778,22 +800,26 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
 
   /**
-   * if not by drupal then show from local db.
+   * if not coming from the config report tat, then if not by drupal then show from local db.
    */
   const renderCardMidView = () => {
+    const showReportTat =
+      reportTat != ''
+        ? reportTat
+        : !!cmsTestDetails?.diagnosticReportGenerationTime ||
+          !cmsTestDetails?.diagnosticReportCustomerText;
     return (
       <>
-        {!!cmsTestDetails?.diagnosticReportGenerationTime ||
-        !!cmsTestDetails?.diagnosticReportCustomerText ? (
+        {!!showReportTat && showReportTat != '' ? (
           <>
-            {renderSeparator()}
             <View style={styles.midCardView}>
               <ClockIcon style={styles.clockIconStyle} />
-
               <View style={styles.midCardTextView}>
-                <Text style={styles.reportTimeText}>Report generation Time</Text>
+                <Text style={styles.reportTimeText}>Get Reports by</Text>
                 <Text style={styles.reportTime}>
-                  {cmsTestDetails?.diagnosticReportCustomerText
+                  {reportTat != ''
+                    ? moment(reportTat)?.format('dddd, DD MMMM')
+                    : cmsTestDetails?.diagnosticReportCustomerText
                     ? cmsTestDetails?.diagnosticReportCustomerText
                     : cmsTestDetails?.diagnosticReportGenerationTime}
                 </Text>
@@ -811,23 +837,20 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const renderCardBottomView = () => {
     return (
       <>
-        {!!cmsTestDetails?.diagnosticPretestingRequirement ? (
-          <>
-            {renderSeparator()}
-            <View style={styles.bottomCardView}>
-              <InfoIconRed style={styles.infoIconStyle} />
-              <Text style={styles.preTestingText}>
-                {cmsTestDetails?.diagnosticPretestingRequirement}
-              </Text>
-            </View>
-          </>
-        ) : null}
+        {renderSeparator()}
+        <View style={styles.bottomCardView}>
+          <InfoIconRed style={styles.infoIconStyle} />
+          <Text style={styles.preTestingText}>
+            {cmsTestDetails?.diagnosticPretestingRequirement}
+          </Text>
+        </View>
+        {renderSeparator()}
       </>
     );
   };
 
-  const renderSeparator = () => {
-    return <Spearator />;
+  const renderSeparator = (space?: boolean) => {
+    return <Spearator style={{ marginTop: space ? 10 : 0 }} />;
   };
 
   const renderCardTopView = () => {
@@ -863,6 +886,12 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               testInfo?.itemName}
           </Text>
         </View>
+        {renderSeparator(true)}
+        {renderCardMidView()}
+        {!!cmsTestDetails?.diagnosticPretestingRequirement
+          ? renderCardBottomView()
+          : renderSeparator()}
+
         <View style={styles.inclusionsView}>
           {isInclusionPrsent ? (
             <Text style={styles.testIncludedText}>
@@ -1321,20 +1350,26 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   midCardView: { flexDirection: 'row', height: 60, width: '90%' },
-  clockIconStyle: { height: 32, width: 32, resizeMode: 'contain', alignSelf: 'center' },
+  clockIconStyle: {
+    height: 17,
+    width: 17,
+    resizeMode: 'contain',
+    alignSelf: 'flex-start',
+    marginVertical: '4%',
+  },
   midCardTextView: {
     flexDirection: 'column',
-    marginHorizontal: '2%',
+    marginHorizontal: '3%',
     justifyContent: 'center',
     alignSelf: 'center',
   },
   reportTimeText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 0.5, 15),
+    ...theme.viewStyles.text('M', 11, theme.colors.SHERPA_BLUE, 0.5, 13),
     textAlign: 'left',
     letterSpacing: 0.25,
   },
   reportTime: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 1, 16),
+    ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 1, 16),
     textAlign: 'left',
     letterSpacing: 0.25,
     marginVertical: 4,
@@ -1344,12 +1379,12 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: 'center',
   },
-  infoIconStyle: { height: 24, width: 24, resizeMode: 'contain' },
+  infoIconStyle: { height: 17, width: 17, resizeMode: 'contain' },
   preTestingText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 12 : 13, '#FF637B', 1, 15),
+    ...theme.viewStyles.text('M', 11, '#FF637B', 1, 15),
     textAlign: 'left',
     letterSpacing: 0.25,
-    marginHorizontal: '4%',
+    marginHorizontal: '3%',
   },
   itemNameText: {
     ...theme.viewStyles.text('SB', isSmallDevice ? 16.5 : 18, theme.colors.SHERPA_BLUE, 1, 25),

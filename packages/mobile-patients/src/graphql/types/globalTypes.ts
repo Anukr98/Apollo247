@@ -1199,6 +1199,9 @@ export interface DeletePatientPrismMedicalRecordInput {
 export interface DiagnosticInitiateOrderPayment {
   orderId?: string | null;
 }
+export interface DiagnosticInitiateOrderPaymentv2 {
+  paymentOrderID?: string | null;
+}
 
 export interface DiagnosticInitiateOrderPaymentv2 {
   paymentOrderID?: string | null;

@@ -52,6 +52,7 @@ import {
   GET_DIAGNOSTIC_PAYMENT_SETTINGS,
   GET_DIAGNOSTICS_RECOMMENDATIONS,
   GET_DIAGNOSTIC_EXPRESS_SLOTS_INFO,
+  GET_DIAGNOSTIC_REPORT_TAT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -217,6 +218,7 @@ import { getDiagnosticOrdersListByParentOrderID, getDiagnosticOrdersListByParent
 import { getDiagnosticPaymentSettings, getDiagnosticPaymentSettingsVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticPaymentSettings';
 import { getDiagnosticItemRecommendations, getDiagnosticItemRecommendationsVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticItemRecommendations';
 import { getUpcomingSlotInfo, getUpcomingSlotInfoVariables } from '@aph/mobile-patients/src/graphql/types/getUpcomingSlotInfo';
+import { getConfigurableReportTAT, getConfigurableReportTATVariables } from '@aph/mobile-patients/src/graphql/types/getConfigurableReportTAT';
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
   doctorIds: (string | null)[] | (string | undefined)[] | string[],
@@ -1415,6 +1417,29 @@ export const getDiagnosticExpressSlots = (
      longitude: longitude,
      zipcode: zipcode,
      serviceability : serviceabilityObj
+    },
+    fetchPolicy: 'no-cache',
+  }); 
+};
+
+export const getReportTAT = (
+  client: ApolloClient<object>,
+  slotDateTimeInUTC: string| null,
+  cityId: number,
+  pincode: number,
+  itemIds: number[]
+) =>
+{
+  return client.query<getConfigurableReportTAT, getConfigurableReportTATVariables>({
+    query: GET_DIAGNOSTIC_REPORT_TAT,
+    context: {
+      sourceHeaders,
+    },
+    variables: {
+      slotDateTimeInUTC: slotDateTimeInUTC,
+      cityId: cityId,
+      pincode: pincode,
+      itemIds: itemIds
     },
     fetchPolicy: 'no-cache',
   }); 

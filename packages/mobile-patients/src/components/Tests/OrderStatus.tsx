@@ -109,7 +109,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const [showMoreArray, setShowMoreArray] = useState([] as any);
   const [apiPrimaryOrderDetails, setApiPrimaryOrderDetails] = useState([] as any);
   const [primaryOrderId, setPrimaryOrderId] = useState<string>('');
-  const [slotDuration, setSlotDuration] = useState<string>('');
+  const [slotDuration, setSlotDuration] = useState<number>(0);
 
   const moveToMyOrders = () => {
     props.navigation.popToTop({ immediate: true }); //if not added, stack was getting cleared.
@@ -124,7 +124,11 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       let response = await fetchOrderDetails(primaryId);
       if (!!response && response?.data && !response?.errors) {
         let getOrderDetailsResponse = response?.data?.getDiagnosticOrderDetails?.ordersList || [];
+        const getSlotDuration =
+          response?.data?.getDiagnosticOrderDetails?.ordersList?.attributesObj
+            ?.slotDurationInMinutes || AppConfig.Configuration.DEFAULT_PHELBO_ETA;
         setApiPrimaryOrderDetails([getOrderDetailsResponse]!);
+        setSlotDuration(getSlotDuration);
       } else {
         setApiPrimaryOrderDetails([]);
       }
@@ -145,7 +149,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
         const getSlotDateTime = getResponse?.ordersList?.[0]?.slotDateTimeInUTC;
         const primaryOrderID = getResponse?.ordersList?.[0]?.primaryOrderID;
         const slotDuration =
-          getResponse?.ordersList?.[0]?.attributesObj?.slotDurationInMinutes || 45;
+          getResponse?.ordersList?.[0]?.attributesObj?.slotDurationInMinutes || 0;
         setApiOrderDetails([getResponse]);
         setTimeDate(getSlotDateTime);
         setSlotDuration(slotDuration);
@@ -291,7 +295,6 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
               )}
               {!!time && (
                 <Text style={styles.pickupDate}>
-                  {' '}
                   | {time} - {rangeAddedTime}
                 </Text>
               )}
