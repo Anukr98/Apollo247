@@ -703,7 +703,12 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       'Page Name': 'Consultation Details',
       'NAV Source': 'Consult',
     };
-    postCleverTapEvent(CleverTapEventName.APP_REVIEW_AND_RATING_TO_PLAYSTORE, eventAttributes);
+    postCleverTapEvent(
+      Platform.OS == 'android'
+        ? CleverTapEventName.APP_REVIEW_AND_RATING_TO_PLAYSTORE
+        : CleverTapEventName.APP_REVIEW_AND_RATING_TO_APPSTORE,
+      eventAttributes
+    );
   };
   const renderTopDetailsView = () => {
     return !g(caseSheetDetails, 'appointment', 'doctorInfo') ? null : (

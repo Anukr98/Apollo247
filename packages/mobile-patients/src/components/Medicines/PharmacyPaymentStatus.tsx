@@ -277,7 +277,12 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       'Page Name': 'Pharmacy Order Completed',
       'NAV Source': 'Pharmacy',
     };
-    postCleverTapEvent(CleverTapEventName.APP_REVIEW_AND_RATING_TO_PLAYSTORE, eventAttributes);
+    postCleverTapEvent(
+      Platform.OS == 'android'
+        ? CleverTapEventName.APP_REVIEW_AND_RATING_TO_PLAYSTORE
+        : CleverTapEventName.APP_REVIEW_AND_RATING_TO_APPSTORE,
+      eventAttributes
+    );
   };
 
   const getUserSubscriptionsByStatus = async () => {

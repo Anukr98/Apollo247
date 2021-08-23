@@ -162,7 +162,12 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       'Page Name': 'Dignostic Order Completed',
       'NAV Source': 'Dignostic',
     };
-    postCleverTapEvent(CleverTapEventName.APP_REVIEW_AND_RATING_TO_PLAYSTORE, eventAttributes);
+    postCleverTapEvent(
+      Platform.OS == 'android'
+        ? CleverTapEventName.APP_REVIEW_AND_RATING_TO_PLAYSTORE
+        : CleverTapEventName.APP_REVIEW_AND_RATING_TO_APPSTORE,
+      eventAttributes
+    );
   };
 
   const postwebEngageCheckoutCompletedEvent = () => {

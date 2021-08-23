@@ -511,7 +511,9 @@ export enum CleverTapEventName {
 
   //App Review and Rating on Playstore
   PLAYSTORE_APP_REVIEW_AND_RATING = 'Playstore app review and rating',
-  APP_REVIEW_AND_RATING_TO_PLAYSTORE = 'App review and rating to playstore'
+  APP_REVIEW_AND_RATING_TO_PLAYSTORE = 'Playstore review popup showed',
+  APP_REVIEW_AND_RATING_TO_APPSTORE = 'Appstore review popup showed'
+
 }
 
 export interface PatientInfo {
