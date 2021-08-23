@@ -65,8 +65,9 @@ import {
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { TestProceedBar } from '@aph/mobile-patients/src/components/Tests/components/TestProceedBar';
 import {
+  createHyperServiceObject,
   initiateSDK,
-  isSDKInitialised,
+  terminateSDK,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { findDiagnosticSettings } from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
 import {
@@ -113,6 +114,8 @@ import {
   TimelineWizard,
 } from '@aph/mobile-patients/src/components/Tests/components/TimelineWizard';
 import { saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWithOrderIDs } from '@aph/mobile-patients/src/graphql/types/saveDiagnosticBookHCOrderv2';
+import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const screenWidth = Dimensions.get('window').width;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
@@ -208,16 +211,16 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const [showInclusions, setShowInclusions] = useState<boolean>(false);
   const [orderDetails, setOrderDetails] = useState<orderDetails>();
   const [isVisible, setIsVisible] = useState<boolean>(showPaidPopUp);
+  const [date, setDate] = useState<Date>(new Date());
+  const { cusId, isfetchingId } = useGetJuspayId();
+  const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
 
   let itemNamesToRemove_global: string[] = [];
-  let itemNamesToKeep_global: string[] = [];
   let itemIdsToRemove_global: Number[] = [];
   let itemIdsToKeep_global: Number[] = [];
-  let obj;
   let setLowItemName: string[] = [],
     setHighPriceName: string[] = [];
 
-  const [date, setDate] = useState<Date>(new Date());
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const addressText = isModifyFlow
     ? formatAddressWithLandmark(modifiedOrder?.patientAddressObj) || ''
@@ -267,10 +270,13 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     return true;
   }
 
-  const initiateHyperSDK = async () => {
+  const initiateHyperSDK = async (cusId: any) => {
     try {
-      const isInitiated: boolean = await isSDKInitialised();
-      !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id);
+      const merchantId = AppConfig.Configuration.merchantId;
+      terminateSDK();
+      createHyperServiceObject();
+      initiateSDK(cusId, cusId, merchantId);
+      setHyperSdkInitialized(true);
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
@@ -307,8 +313,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    initiateHyperSDK();
-  }, [currentPatient]);
+    !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
+  }, [isfetchingId]);
 
   const fetchFindDiagnosticSettings = async () => {
     try {
@@ -1508,6 +1514,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             orderResponse: array,
             eventAttributes,
             businessLine: 'diagnostics',
+            customerId: cusId,
           });
         }
       }
@@ -1724,6 +1731,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         {renderTestProceedBar()}
       </SafeAreaView>
       {isVisible && renderPremiumOverlay()}
+      {!hyperSdkInitialized && <Spinner />}
     </View>
   );
 };
