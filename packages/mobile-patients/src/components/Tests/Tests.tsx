@@ -1442,6 +1442,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 isCircleSubscribed={isDiagnosticCircleSubscription}
                 isServiceable={isDiagnosticLocationServiceable}
                 isVertical={false}
+                isPriceAvailable={isPricesAvailable}
                 navigation={props.navigation}
                 source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME}
                 sourceScreen={AppRoutes.Tests}
