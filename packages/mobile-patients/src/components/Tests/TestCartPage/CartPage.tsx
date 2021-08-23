@@ -300,6 +300,12 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     comingFrom?: string
   ) => {
     const itemIds = comingFrom ? duplicateItem : cartItems?.map((item) => parseInt(item?.id));
+    const pinCodeFromAddress = isModifyFlow
+      ? Number(modifiedOrder?.patientAddressObj?.zipcode!)
+      : !!selectedAddr
+      ? Number(selectedAddr?.zipcode)
+      : null;
+
     return client.query<
       findDiagnosticsByItemIDsAndCityID,
       findDiagnosticsByItemIDsAndCityIDVariables
@@ -308,7 +314,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       context: {
         sourceHeaders,
       },
-      variables: { cityID: cityIdForAddress, itemIDs: itemIds! },
+      variables: { cityID: cityIdForAddress, itemIDs: itemIds!, pincode: pinCodeFromAddress },
       fetchPolicy: 'no-cache',
     });
   };
@@ -452,6 +458,11 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     cartItemIds: any,
     sourceFunction: string
   ) => {
+    const pinCodeFromAddress = isModifyFlow
+      ? Number(modifiedOrder?.patientAddressObj?.zipcode!)
+      : !!selectedAddr
+      ? Number(selectedAddr?.zipcode)
+      : null;
     try {
       client
         .query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
@@ -462,6 +473,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           variables: {
             cityID: Number(addressCityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
             itemIDs: _filterItemIds,
+            pincode: pinCodeFromAddress,
           },
           fetchPolicy: 'no-cache',
         })
@@ -1175,6 +1187,12 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
               AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
           );
 
+    const pinCodeFromAddress = isModifyFlow
+      ? Number(modifiedOrder?.patientAddressObj?.zipcode!)
+      : !!selectedAddr
+      ? Number(selectedAddr?.zipcode)
+      : null;
+
     {
       setLoading?.(true);
       client
@@ -1187,6 +1205,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
             //if address is not selected then from pincode bar otherwise from address
             cityID: cityIdToPass,
             itemIDs: listOfIds!,
+            pincode: pinCodeFromAddress,
           },
           fetchPolicy: 'no-cache',
         })
