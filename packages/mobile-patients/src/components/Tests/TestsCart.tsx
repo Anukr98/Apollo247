@@ -3054,12 +3054,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               </View>
               <Text style={styles.patientDetailsTextStyle}>{addressText}</Text>
             </View>
-            {showPriceMismatch ? (
-              <View style={styles.blueView}>
-                <InfoIconBlue style={{ width: 18, height: 18 }} />
-                <Text style={styles.lbTextStyle}>{string.diagnostics.pricesChangedMessage}</Text>
-              </View>
-            ) : null}
           </>
         ) : null}
         {isModifyFlow ? null : showSelectedArea &&
@@ -3441,6 +3435,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       </View>
     );
   };
+
+  const renderPriceMismatchView = () => {
+    return (
+      <>
+        {showPriceMismatch ? (
+          <View style={styles.blueView}>
+            <InfoIconBlue style={{ width: 18, height: 18 }} />
+            <Text style={styles.lbTextStyle}>{string.diagnostics.pricesChangedMessage}</Text>
+          </View>
+        ) : null}
+      </>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       {displaySchedule && (
@@ -3483,6 +3491,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         <ScrollView bounces={false}>
           <View style={{ marginVertical: 16 }}>
             {renderPatientDetails()}
+            {renderPriceMismatchView()}
             {renderItemsInCart()}
             {isModifyFlow ? renderPreviouslyAddedItems() : null}
             {renderTotalCharges()}
@@ -3642,11 +3651,12 @@ const styles = StyleSheet.create({
   blueView: {
     flexDirection: 'row',
     backgroundColor: '#E0F0FF',
-    marginTop: -5,
+    marginTop: -8,
     paddingHorizontal: 20,
     paddingVertical: 8,
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
+    marginBottom: 5,
   },
   dashedBannerViewStyle: {
     ...cardViewStyle,
