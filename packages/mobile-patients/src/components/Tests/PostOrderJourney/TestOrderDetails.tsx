@@ -488,10 +488,17 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         ? orderLevelStatus?.statusHistory.concat(orderLevelStatus?.upcomingStatuses)
         : orderLevelStatus?.statusHistory;
     scrollToSlots();
+
+    const getAllStatusDone = newList?.filter((value) =>
+      orderLevelStatus?.statusHistory?.includes(value)
+    );
     return (
       <View>
         <View style={{ margin: 20 }}>
           {newList?.map((order: any, index: number, array: any) => {
+            const showInclusions = orderLevelStatus?.statusHistory?.find(
+              (item: any) => item?.orderStatus === order?.orderStatus
+            );
             let isStatusDone = true;
             if (order?.__typename == 'upcomingStatus') {
               isStatusDone = false;
@@ -544,7 +551,13 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                       )}
                     </View>
                     {renderSubStatus(order, index)}
-                    {showContentBasedOnStatus(order, isStatusDone, index, array?.length)}
+                    {showContentBasedOnStatus(
+                      order,
+                      isStatusDone,
+                      index,
+                      showInclusions,
+                      getAllStatusDone
+                    )}
                     {/**for showing the additional view for orderModification */}
                   </View>
                 </View>
@@ -563,7 +576,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     order: any,
     isStatusDone: boolean,
     index: number,
-    arrayLength: number
+    showInclusions: any,
+    getAllStatusDone: any
   ) {
     const orderStatus = order?.orderStatus;
     const slotDate = moment(selectedOrder?.slotDateTimeInUTC).format('Do MMM');
@@ -594,7 +608,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         return renderFeedbackOption();
       }
     }
-    if (DROP_DOWN_ARRAY_STATUS.includes(orderStatus) && index == arrayLength - 1) {
+    if (
+      !!showInclusions &&
+      DROP_DOWN_ARRAY_STATUS.includes(showInclusions?.orderStatus) &&
+      index == getAllStatusDone?.length - 1
+    ) {
       return renderInclusionLevelDropDown(order);
     }
     if (orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED) {

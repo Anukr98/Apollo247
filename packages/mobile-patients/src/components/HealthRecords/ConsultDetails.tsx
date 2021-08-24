@@ -69,6 +69,7 @@ import {
   postWebEngageEvent,
   postCleverTapPHR,
   postCleverTapEvent,
+  getCleverTapCircleMemberValues,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   CleverTapEventName,
@@ -129,6 +130,7 @@ import {
   getDiagnosticSlotsCustomized,
   getDiagnosticSlotsCustomizedVariables,
 } from '../../graphql/types/getDiagnosticSlotsCustomized';
+import DeviceInfo from 'react-native-device-info';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -356,6 +358,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const [testSlot, setTestSlot] = useState<string>('');
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
+
+  const { pharmacyUserTypeAttribute } = useAppCommonData();
+  const { pharmacyCircleAttributes } = useShoppingCart();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -678,6 +683,33 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     );
   };
 
+  const postCleverTapEventForTrackingAppReview = async () => {
+    const uniqueId = await DeviceInfo.getUniqueId();
+    const eventAttributes: CleverTapEvents[CleverTapEventName.PLAYSTORE_APP_REVIEW_AND_RATING] = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'User Type': pharmacyUserTypeAttribute?.User_Type || '',
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      'CT Source': Platform.OS,
+      'Device ID': uniqueId,
+      'Circle Member':
+        getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+        '',
+      'Page Name': 'Consultation Details',
+      'NAV Source': 'Consult',
+    };
+    postCleverTapEvent(
+      Platform.OS == 'android'
+        ? CleverTapEventName.APP_REVIEW_AND_RATING_TO_PLAYSTORE
+        : CleverTapEventName.APP_REVIEW_AND_RATING_TO_APPSTORE,
+      eventAttributes
+    );
+  };
   const renderTopDetailsView = () => {
     return !g(caseSheetDetails, 'appointment', 'doctorInfo') ? null : (
       <View style={styles.topCardViewStyle}>
@@ -718,7 +750,15 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     try {
       if (g(data, 'appointment', 'doctorInfo')) {
         if (InAppReview.isAvailable()) {
-          await InAppReview.RequestInAppReview();
+          await InAppReview.RequestInAppReview()
+            .then((hasFlowFinishedSuccessfully) => {
+              if (hasFlowFinishedSuccessfully) {
+                postCleverTapEventForTrackingAppReview();
+              }
+            })
+            .catch((error) => {
+              CommonBugFender('inAppReviewForDoctorConsult', error);
+            });
         }
       }
     } catch (error) {
