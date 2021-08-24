@@ -39,7 +39,8 @@ import {
   getPackageIds,
   getCheckoutCompletedEventAttributes,
   getCleverTapCheckoutCompletedEventAttributes,
-} from '@aph/mobile-patients/src//helpers/helperFunctions';
+  isCartPriceWithInSpecifiedRange,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   availabilityApi247,
   GetTatResponse247,
@@ -120,6 +121,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     grandTotal,
     circleMembershipCharges,
     circlePlanSelected,
+    cartPriceNotUpdateRange,
   } = useShoppingCart();
   const {
     pharmacyUserTypeAttribute,
@@ -355,22 +357,43 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     inventoryData: GetTatResponse247['response']['items'],
     updatedCartItems: ShoppingCartItem[]
   ) {
-    let Items: ShoppingCartItem[] = [];
+    const updatePrices = AppConfig.Configuration.CART_UPDATE_PRICE_CONFIG.updatePrices;
+    const updatePricePercent = AppConfig.Configuration.CART_UPDATE_PRICE_CONFIG.percentage;
+    const updatePricesNotAllowed = updatePrices === 'No';
+    if (updatePricesNotAllowed) {
+      return;
+    }
+
+    const cartItemsAfterPriceUpdate: ShoppingCartItem[] = [];
     updatedCartItems.forEach((item) => {
-      let object = item;
-      let cartItem = inventoryData.filter((cartItem) => cartItem.sku == item.id);
-      if (cartItem.length) {
-        if (object.price != Number(object.mou) * cartItem[0].mrp && cartItem[0].mrp != 0) {
-          object.specialPrice &&
-            (object.specialPrice =
-              Number(object.mou) * cartItem[0].mrp * (object.specialPrice / object.price));
-          object.price = Number(object.mou) * cartItem[0].mrp;
+      const cartItem = { ...item };
+      const storeItem = inventoryData?.find((cartItem) => cartItem?.sku == item?.id);
+      if (storeItem) {
+        const storePrice = Number(cartItem?.mou) * storeItem?.mrp;
+        const allowPriceUpdate =
+          cartItem?.price !== storePrice
+            ? updatePrices === 'ByPercentage'
+              ? isCartPriceWithInSpecifiedRange(
+                  cartItem?.price,
+                  storePrice,
+                  updatePricePercent,
+                  cartPriceNotUpdateRange
+                )
+              : true
+            : false;
+        if (storeItem?.mrp != 0 && allowPriceUpdate) {
+          if (cartItem?.specialPrice) {
+            cartItem['specialPrice'] =
+              Number(cartItem?.mou) * storeItem?.mrp * (cartItem?.specialPrice / cartItem?.price);
+          }
+          cartItem['price'] = Number(cartItem?.mou) * storeItem?.mrp;
         }
       }
-      Items.push(object);
+      cartItemsAfterPriceUpdate.push(cartItem);
     });
-    setCartItems!(Items);
+    setCartItems!(cartItemsAfterPriceUpdate);
   }
+
   const onFinishUpload = () => {
     if (isPhysicalUploadComplete) {
       setloading!(false);

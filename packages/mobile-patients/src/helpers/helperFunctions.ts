@@ -302,7 +302,9 @@ export const formatAddressBookAddress = (
 };
 
 export const formatAddressForApi = (
-  address: savePatientAddress_savePatientAddress_patientAddress | getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientAddressObj
+  address:
+    | savePatientAddress_savePatientAddress_patientAddress
+    | getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientAddressObj
 ) => {
   const addrLine1 = [address?.addressLine1, address?.addressLine2, address?.landmark, address?.city]
     .filter((v) => v)
@@ -2984,11 +2986,11 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
       statusString = 'Order confirmed';
       break;
     case DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED:
-    // case DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN:
+      // case DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN:
       statusString = 'Apollo agent is on the way';
       break;
     case DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN:
-        statusString = 'Apollo agent Check-in';
+      statusString = 'Apollo agent Check-in';
       break;
     case DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED:
       statusString = 'Sample collected';
@@ -3040,8 +3042,8 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
       statusString = 'Partial Order Completed';
       break;
     case DIAGNOSTIC_ORDER_STATUS.ORDER_MODIFIED:
-        statusString = 'Order modification'
-        break;
+      statusString = 'Order modification';
+      break;
     default:
       statusString = status || '';
       statusString?.replace(/[_]/g, ' ');
@@ -3219,11 +3221,12 @@ export async function downloadDiagnosticReport(
     ) {
       const dirs = RNFetchBlob.fs.dirs;
       const isReportApollo = isReport ? 'labreport' : 'labinvoice';
-      const isOrderComplete = orderStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED ? 'complete' : (Math.floor(Math.random() * 300))
-      const dynamicFileName = `Apollo247_${displayId}_${isReportApollo}_${isOrderComplete}.pdf`
-      const reportName = !!downloadFileName
-        ? downloadFileName
-        : dynamicFileName;
+      const isOrderComplete =
+        orderStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED
+          ? 'complete'
+          : Math.floor(Math.random() * 300);
+      const dynamicFileName = `Apollo247_${displayId}_${isReportApollo}_${isOrderComplete}.pdf`;
+      const reportName = !!downloadFileName ? downloadFileName : dynamicFileName;
       const downloadPath =
         Platform.OS === 'ios'
           ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + reportName
@@ -3537,4 +3540,20 @@ export const getIsMedicine = (typeId: string) => {
 export const removeWhiteSpaces = (item: any) => {
   const newItem = item?.replace(/\s/g, '');
   return newItem;
+};
+
+export const isCartPriceWithInSpecifiedRange = (
+  num1: number,
+  num2: number,
+  maxRangePercentage: number,
+  minRangePercentage: number
+) => {
+  try {
+    const diff = num1 - num2;
+    const diffP = (diff / num1) * 100;
+    const result = Math.abs(diffP) >= minRangePercentage && Math.abs(diffP) <= maxRangePercentage;
+    return result;
+  } catch (error) {
+    return false;
+  }
 };
