@@ -756,6 +756,25 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     );
   };
 
+  const renderCirclePurchase = () => {
+    return (
+      <View>
+        <View style={{ flexDirection: 'row' }}>
+          <CircleLogo />
+          <View style={{ height: '100%', width: 1, backgroundColor: '#909090' }} />
+          <View>
+            <Text>
+              You can save {string.common.Rs} {circleSaving} on this order with Circle!
+            </Text>
+            <TouchableOpacity onPress={() => console.log('onpress')}>
+              <Text>VIEW PLANS</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   const renderTotalCharges = () => {
     const anyCartSaving = isDiagnosticCircleSubscription ? cartSaving + circleSaving : cartSaving;
     const hcChargesToShow = getHcCharges()?.toFixed(2);
@@ -770,6 +789,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             },
           ]}
         >
+          {/* {renderCirclePurchase()} */}
           {renderPrices('Total MRP', totalPriceExcludingAnyDiscounts.toFixed(2))}
 
           {couponDiscount > 0 && renderPrices('Coupon Discount', couponDiscount?.toFixed(2))}
