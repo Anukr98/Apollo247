@@ -29,6 +29,7 @@ import React, { useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Button, ButtonProps, Divider } from 'react-native-elements';
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
+import { postCleverTapUploadPrescriptionEvents } from '@aph/mobile-patients/src/components/UploadPrescription/Events';
 
 export interface Props {
   selectedOption: PrescriptionType | null;
@@ -226,6 +227,7 @@ export const PrescriptionOptions: React.FC<Props> = ({
           if (selectedEPres.length == 0) {
             return;
           }
+          postCleverTapUploadPrescriptionEvents('My Prescription', 'Cart');
           onSelectOption(PrescriptionType.UPLOADED, selectedEPres, physicalPrescriptions);
         }}
         selectedEprescriptionIds={ePrescriptions.map((item) => item.id)}

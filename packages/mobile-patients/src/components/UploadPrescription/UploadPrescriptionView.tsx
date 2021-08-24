@@ -61,6 +61,7 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { postCleverTapUploadPrescriptionEvents } from '@aph/mobile-patients/src/components/UploadPrescription/Events';
 
 const { width, height } = Dimensions.get('window');
 
@@ -310,6 +311,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
             style={styles.cameraActionButton}
             onPress={() => {
               removeClickedPhoto();
+              postCleverTapUploadPrescriptionEvents('Gallery', 'Non-Cart');
               props.navigation.navigate(AppRoutes.UploadPrescription, {
                 type: 'Camera',
                 phyPrescriptionsProp: [...phyPrescriptionUploaded, ...imageClickData],
@@ -566,6 +568,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           } as PhysicalPrescription)
       );
       setShowSpinner(false);
+      postCleverTapUploadPrescriptionEvents('Gallery', 'Non-Cart');
       props.navigation.navigate(AppRoutes.UploadPrescription, {
         type: 'Gallery',
         phyPrescriptionsProp: [...phyPrescriptionUploaded, ...documentData],
@@ -611,6 +614,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           return;
         }
         const uploadedImages = formatResponse(images);
+        postCleverTapUploadPrescriptionEvents('Gallery', 'Non-Cart');
         props.navigation.navigate(AppRoutes.UploadPrescription, {
           type: 'Gallery',
           phyPrescriptionsProp: [...phyPrescriptionUploaded, ...uploadedImages],
@@ -651,6 +655,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           if (selectedEPres.length == 0) {
             return;
           }
+          postCleverTapUploadPrescriptionEvents('My Prescription', 'Non-Cart');
           props.navigation.navigate(AppRoutes.UploadPrescription, {
             type: 'E-Prescription',
             ePrescriptionsProp: [...ePresscriptionUploaded, ...selectedEPres],

@@ -522,6 +522,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         price,
         special_price,
         category_id,
+        subcategory,
       } = medicineDetails;
       const stock_availability =
         sell_online == 0 ? 'Not for Sale' : !!isProductInStock ? 'Yes' : 'No';
@@ -569,6 +570,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         MRP: price,
         SpecialPrice: special_price || undefined,
         CircleCashback: Number(cashback) || 0,
+        SubCategory: subcategory || '',
       };
       if (movedFrom === 'deeplink') {
         eventAttributes['Circle Membership Added'] = circleID
