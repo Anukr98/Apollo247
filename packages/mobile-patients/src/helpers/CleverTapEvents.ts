@@ -507,6 +507,13 @@ export enum CleverTapEventName {
   VACCINATION_BOOKING_CONFIRMATION = 'Vaccine_Booking confirmation',
   VACCINATION_CANCELLATION = 'Vaccine_Cancellation',
   PHR_CLICK_VACCINATION = 'PHR_CLICK_VACCINATION',
+
+
+  //App Review and Rating on Playstore
+  PLAYSTORE_APP_REVIEW_AND_RATING = 'Playstore app review and rating',
+  APP_REVIEW_AND_RATING_TO_PLAYSTORE = 'Playstore review popup showed',
+  APP_REVIEW_AND_RATING_TO_APPSTORE = 'Appstore review popup showed'
+
 }
 
 export interface PatientInfo {
@@ -615,14 +622,14 @@ export interface HomeScreenAttributes {
   Source?: 'Home Screen' | 'Menu' | 'My Account Screen';
   'Page Name'?: string;
   'Nav src'?:
-    | 'hero banner'
-    | 'Bottom bar'
-    | 'app launch'
-    | 'homepage bar'
-    | 'Vaccine Widget'
-    | 'Blog Widget'
-    | 'my account'
-    | 'Top bar';
+  | 'hero banner'
+  | 'Bottom bar'
+  | 'app launch'
+  | 'homepage bar'
+  | 'Vaccine Widget'
+  | 'Blog Widget'
+  | 'my account'
+  | 'Top bar';
 }
 
 export interface HdfcCustomerInfo {
@@ -1085,14 +1092,14 @@ export interface CleverTapEvents {
     'Discounted Price'?: number;
     Quantity: number;
     Source:
-      | 'Pharmacy Home'
-      | 'Pharmacy PDP'
-      | 'Pharmacy List'
-      | 'Pharmacy Partial Search'
-      | 'Pharmacy Full Search'
-      | 'Similar Widget'
-      | 'Pharmacy Cart'
-      | 'Category Tree';
+    | 'Pharmacy Home'
+    | 'Pharmacy PDP'
+    | 'Pharmacy List'
+    | 'Pharmacy Partial Search'
+    | 'Pharmacy Full Search'
+    | 'Similar Widget'
+    | 'Pharmacy Cart'
+    | 'Category Tree';
     Brand?: string;
     'Brand ID'?: string;
     'category name'?: string;
@@ -1327,13 +1334,13 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.DIAGNOSTIC_TEST_DESCRIPTION]: {
     Source:
-      | 'Full Search'
-      | 'Home Page'
-      | 'Cart Page'
-      | 'Partial Search'
-      | 'Deeplink'
-      | 'Popular search'
-      | 'Category page';
+    | 'Full Search'
+    | 'Home Page'
+    | 'Cart Page'
+    | 'Partial Search'
+    | 'Deeplink'
+    | 'Popular search'
+    | 'Category page';
     'Item Name': string;
     'Item Type'?: string;
     'Item Code': string;
@@ -1396,10 +1403,10 @@ export interface CleverTapEvents {
     Source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary';
     'Report generated': 'Yes' | 'No';
     'Action taken':
-      | 'View Report'
-      | 'Download Report PDF'
-      | 'Share on Whatsapp'
-      | 'Copy Link to PDF';
+    | 'View Report'
+    | 'Download Report PDF'
+    | 'Share on Whatsapp'
+    | 'Copy Link to PDF';
   };
   [CleverTapEventName.DIAGNOSTIC_FEEDBACK_GIVEN]: {
     'Patient UHID': string;
@@ -1411,14 +1418,14 @@ export interface CleverTapEvents {
     'Item Name': string;
     'Item ID': string; // (SKUID)
     Source:
-      | 'Home page'
-      | 'Full search'
-      | 'Details page'
-      | 'Partial search'
-      | 'Listing page'
-      | 'Popular search'
-      | 'Category page'
-      | 'Prescription';
+    | 'Home page'
+    | 'Full search'
+    | 'Details page'
+    | 'Partial search'
+    | 'Listing page'
+    | 'Popular search'
+    | 'Category page'
+    | 'Prescription';
     Section?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
@@ -1934,12 +1941,12 @@ export interface CleverTapEvents {
 
   [CleverTapEventName.ADD_RECORD]: {
     Source:
-      | 'Doctor Consultation'
-      | 'Test Report'
-      | 'Hospitalization'
-      | 'Health Condition'
-      | 'Bill'
-      | 'Insurance'; // List/Profile
+    | 'Doctor Consultation'
+    | 'Test Report'
+    | 'Hospitalization'
+    | 'Health Condition'
+    | 'Bill'
+    | 'Insurance'; // List/Profile
   };
 
   [CleverTapEventName.UPLOAD_PRESCRIPTION]: PatientInfo;
@@ -2403,12 +2410,12 @@ export interface CleverTapEvents {
     Rank: number | string;
     Is_TopDoc?: YesOrNo;
     Source:
-      | 'Deeplink'
-      | 'Doctor Card clicked'
-      | 'Search'
-      | 'My Doctors'
-      | 'Appointment CTA'
-      | 'Past search clicked';
+    | 'Deeplink'
+    | 'Doctor Card clicked'
+    | 'Search'
+    | 'My Doctors'
+    | 'Appointment CTA'
+    | 'Past search clicked';
     'Doctor card clicked': YesOrNo;
     DOTH: 'T' | 'F';
     'Doctor Tab': 'Apollo Tab' | 'Doctor Partner Tab' | 'NA';
@@ -2776,4 +2783,20 @@ export interface CleverTapEvents {
       'Consult Mode': string;
     };
   };
+
+  [CleverTapEventName.PLAYSTORE_APP_REVIEW_AND_RATING]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    'User Type': string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    'CT Source': string;
+    'Device ID': string;
+    'Circle Member': string;
+    'Page Name': string;
+    'NAV Source': 'Pharmacy' | 'Consult' | 'Dignostic'
+  };
+
 }
