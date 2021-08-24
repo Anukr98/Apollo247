@@ -487,10 +487,17 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         ? orderLevelStatus?.statusHistory.concat(orderLevelStatus?.upcomingStatuses)
         : orderLevelStatus?.statusHistory;
     scrollToSlots();
+
+    const getAllStatusDone = newList?.filter((value) =>
+      orderLevelStatus?.statusHistory?.includes(value)
+    );
     return (
       <View>
         <View style={{ margin: 20 }}>
           {newList?.map((order: any, index: number, array: any) => {
+            const showInclusions = orderLevelStatus?.statusHistory?.find(
+              (item: any) => item?.orderStatus === order?.orderStatus
+            );
             let isStatusDone = true;
             if (order?.__typename == 'upcomingStatus') {
               isStatusDone = false;
@@ -554,8 +561,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                     {REFUND_STATUSES.SUCCESS === order?.orderStatus
                       ? renderTransactionDetails()
                       : null}
-                    {DROP_DOWN_ARRAY_STATUS.includes(order?.orderStatus) &&
-                    index == array?.length - 1
+                    {!!showInclusions &&
+                    DROP_DOWN_ARRAY_STATUS.includes(showInclusions?.orderStatus) &&
+                    index == getAllStatusDone?.length - 1
                       ? renderInclusionLevelDropDown(order)
                       : null}
                     {order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED &&
