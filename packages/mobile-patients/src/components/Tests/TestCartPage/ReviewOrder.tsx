@@ -2,7 +2,10 @@ import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponent
 import {
   CheckedIcon,
   CircleLogo,
+  DeleteIcon,
   Down,
+  RadioButtonIcon,
+  RadioButtonUnselectedIcon,
   SavingsIcon,
   Up,
 } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -73,6 +76,7 @@ import { findDiagnosticSettings } from '@aph/mobile-patients/src/graphql/types/f
 import {
   CREATE_INTERNAL_ORDER,
   FIND_DIAGNOSTIC_SETTINGS,
+  GET_PLAN_DETAILS_BY_PLAN_ID,
   MODIFY_DIAGNOSTIC_ORDERS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -116,6 +120,7 @@ import {
 import { saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWithOrderIDs } from '@aph/mobile-patients/src/graphql/types/saveDiagnosticBookHCOrderv2';
 import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
 
 const screenWidth = Dimensions.get('window').width;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
@@ -204,6 +209,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   var slotBookedArray = ['slot', 'already', 'booked', 'select a slot'];
 
   const { currentPatient } = useAllCurrentPatients();
+  const { cusId, isfetchingId } = useGetJuspayId();
   const [phleboMin, setPhleboMin] = useState(0);
   const [showAllPreviousItems, setShowAllPreviousItems] = useState<boolean>(false);
   const [isHcApiCalled, setHcApiCalled] = useState<boolean>(false);
@@ -212,8 +218,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const [orderDetails, setOrderDetails] = useState<orderDetails>();
   const [isVisible, setIsVisible] = useState<boolean>(showPaidPopUp);
   const [date, setDate] = useState<Date>(new Date());
-  const { cusId, isfetchingId } = useGetJuspayId();
   const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
+  const [isCircleAdded, setIsCircleAdded] = useState<boolean>(false);
+  const [membershipPlans, setMembershipPlans] = useState<any>([]);
+  const [defaultCirclePlan, setDefaultCirclePlan] = useState<any>(null);
 
   let itemNamesToRemove_global: string[] = [];
   let itemIdsToRemove_global: Number[] = [];
@@ -247,6 +255,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
   useEffect(() => {
     populateCartMapping();
+    //if not a circle member
+    if (!isDiagnosticCircleSubscription) {
+      fetchCirclePlans();
+    }
   }, []);
 
   async function populateCartMapping() {
@@ -281,6 +293,31 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
   };
+
+  const fetchCirclePlans = async () => {
+    try {
+      const res = await client.query<GetPlanDetailsByPlanId>({
+        query: GET_PLAN_DETAILS_BY_PLAN_ID,
+        fetchPolicy: 'no-cache',
+        variables: {
+          plan_id: AppConfig.Configuration.CIRCLE_PLAN_ID,
+        },
+      });
+      const membershipPlans = res?.data?.GetPlanDetailsByPlanId?.response?.plan_summary;
+      if (membershipPlans) {
+        setMembershipPlans(membershipPlans);
+        const defaultPlan = membershipPlans?.filter((item: any) => item?.defaultPack === true);
+        if (defaultPlan?.length > 0) {
+          setDefaultCirclePlan(defaultPlan?.[0]);
+        }
+      }
+    } catch (error) {
+      CommonBugFender('fetchCirclePlans_GetPlanDetailsByPlanId', error);
+    }
+  };
+
+  console.log({ membershipPlans });
+  console.log({ defaultCirclePlan });
 
   const createOrderInternal = (orders: OrderCreate) =>
     client.mutate<createOrderInternal, createOrderInternalVariables>({
@@ -583,6 +620,42 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         {itemsWithQuantity?.map((item: DiagnosticsCartItem, index: number) => {
           return renderItemView(item);
         })}
+        {isCircleAdded ? renderCircleMembershipItem() : null}
+      </View>
+    );
+  };
+
+  {
+    /**
+    check for the plan selected
+   */
+  }
+  const renderCircleMembershipItem = () => {
+    const defaultPlanPurchasePrice = !!defaultCirclePlan && defaultCirclePlan?.currentSellingPrice;
+    const defaultPlanDurationInMonths = !!defaultCirclePlan && defaultCirclePlan?.durationInMonth;
+    return (
+      <View style={{ margin: 16 }}>
+        <View style={styles.flexRow}>
+          <View
+            style={{
+              flexDirection: 'row',
+              width: screenWidth > 350 ? '77%' : '72%',
+              alignItems: 'center',
+            }}
+          >
+            <CircleLogo style={styles.smallCircleLogo} />
+            <Text style={styles.circleMembershipText}>
+              {defaultPlanDurationInMonths} {defaultPlanDurationInMonths == 1 ? 'month' : 'months'}{' '}
+              membership
+            </Text>
+          </View>
+          <Text style={[styles.priceTextStyle, { marginRight: 20 }]}>
+            {string.common.Rs} {defaultPlanPurchasePrice}
+          </Text>
+        </View>
+        <TouchableOpacity onPress={() => setIsCircleAdded(false)} style={styles.removeTouch}>
+          <Text style={styles.removeText}>REMOVE</Text>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -627,8 +700,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       </View>
     );
   };
-
-  //check the design of the view.
 
   const renderPreviouslyAddedItems = () => {
     const previousAddedItemsCount =
@@ -756,28 +827,113 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     );
   };
 
+  function _navigateToViewCirclePlans() {}
+
   const renderCirclePurchase = () => {
     return (
-      <View>
-        <View style={{ flexDirection: 'row' }}>
-          <CircleLogo />
-          <View style={{ height: '100%', width: 1, backgroundColor: '#909090' }} />
-          <View>
-            <Text>
-              You can save {string.common.Rs} {circleSaving} on this order with Circle!
-            </Text>
-            <TouchableOpacity onPress={() => console.log('onpress')}>
-              <Text>VIEW PLANS</Text>
+      <View style={styles.circlePlanOuterView}>
+        <View style={{ backgroundColor: '#FFF5DE' }}>
+          <View style={styles.circlePlanInnerView}>
+            <CircleLogo style={styles.circlePlanLogoStyle} />
+            <View style={styles.verticalSeparator} />
+            <View>
+              <Text style={styles.youCanText}>
+                You can{' '}
+                <Text style={styles.youCanGreenText}>
+                  save {string.common.Rs} {circleSaving}
+                </Text>
+                <Text style={styles.youCanBoldText}> on this order</Text> with Circle!
+              </Text>
+              <TouchableOpacity
+                onPress={() => _navigateToViewCirclePlans()}
+                style={styles.viewPlanTouch}
+              >
+                <Text style={styles.viewPlanText}>VIEW PLANS</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+        {renderPlanSelectionView()}
+      </View>
+    );
+  };
+
+  /** check for renew flow => need to check the renew_price & status of circle in ConsultRoom -> isexpired
+   * setIsCircleExpired -> shoppingCartProvider
+   * circle wali api se jo data aa raha hai, usme circle ka status "disabled" karke static data daal do membership me
+   *
+   */
+
+  /**
+   * check for the plan selected as well
+   */
+  const renderPlanSelectionView = () => {
+    const defaultPlanPurchasePrice = !!defaultCirclePlan && defaultCirclePlan?.currentSellingPrice;
+    const defaultPlanDurationInMonths = !!defaultCirclePlan && defaultCirclePlan?.durationInMonth;
+    return (
+      <>
+        {!!defaultPlanPurchasePrice && !!defaultPlanDurationInMonths ? (
+          <View style={{ padding: 8, flexDirection: 'row' }}>
+            <TouchableOpacity
+              onPress={() => setIsCircleAdded(true)}
+              style={styles.planSelectedRadioTouch}
+            >
+              {isCircleAdded ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
             </TouchableOpacity>
+            <Text style={styles.planBuyText}>
+              Buy at {string.common.Rs} {defaultPlanPurchasePrice} for {defaultPlanDurationInMonths}{' '}
+              months
+            </Text>
+          </View>
+        ) : null}
+      </>
+    );
+  };
+
+  /**
+   * check for the plan selected as well
+   */
+  const renderCircleAdded = () => {
+    const defaultPlanDurationInMonths = !!defaultCirclePlan && defaultCirclePlan?.durationInMonth;
+    const validTill = moment(new Date(), 'DD/MM/YYYY').add(
+      'days',
+      defaultCirclePlan?.valid_duration
+    );
+    return (
+      <View style={styles.circleAddedOuterView}>
+        <View style={{ backgroundColor: 'rgb(219, 237, 233)' }}>
+          <View style={styles.circleAddedInnerView}>
+            <CircleLogo style={[styles.circlePlanLogoStyle, { alignSelf: 'flex-start' }]} />
+            <View style={styles.verticalSeparator} />
+            <View style={{ width: '67%' }}>
+              <Text style={styles.circlePlanDurationText}>
+                {`${defaultPlanDurationInMonths} ${
+                  defaultPlanDurationInMonths == 1 ? 'month' : 'months'
+                } membership successfully added to cart!'`}
+              </Text>
+              <Text style={styles.circlePlanValidText}>
+                {`Valid till: ${moment(validTill)?.format('D MMM YYYY')}`}
+              </Text>
+            </View>
+            <View>
+              <TouchableOpacity
+                onPress={() => setIsCircleAdded(false)}
+                style={styles.circlePlanDeleteTouch}
+              >
+                <DeleteIcon style={styles.deleteIcon} />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </View>
     );
   };
 
+  //change circle purchase price to selected plan
   const renderTotalCharges = () => {
     const anyCartSaving = isDiagnosticCircleSubscription ? cartSaving + circleSaving : cartSaving;
     const hcChargesToShow = getHcCharges()?.toFixed(2);
+    const defaultPlanPurchasePrice = !!defaultCirclePlan && defaultCirclePlan?.currentSellingPrice;
     return (
       <>
         {/* {renderCouponView()} */}
@@ -789,7 +945,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             },
           ]}
         >
-          {/* {renderCirclePurchase()} */}
+          {/**handing already purchased member */}
+          {isCircleAdded ? renderCircleAdded() : renderCirclePurchase()}
           {renderPrices('Total MRP', totalPriceExcludingAnyDiscounts.toFixed(2))}
 
           {couponDiscount > 0 && renderPrices('Coupon Discount', couponDiscount?.toFixed(2))}
@@ -825,6 +982,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
               false,
               false
             )}
+          {isCircleAdded &&
+            circleSaving > 0 &&
+            renderPrices('Circle Membership', defaultPlanPurchasePrice?.toFixed(2), false, false)}
           {normalSaving > 0 && renderPrices('Cart Savings', normalSaving?.toFixed(2), false, true)}
           {isDiagnosticCircleSubscription && circleSaving > 0 && (
             <View style={[styles.rowSpaceBetweenStyle]}>
@@ -855,7 +1015,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
               true
             )}
           <Spearator style={{ marginBottom: 6, marginTop: 6 }} />
-          {renderPrices('To Pay', grandTotal.toFixed(2), true)}
+          {renderPrices('To Pay', grandTotal?.toFixed(2), true)}
         </View>
         {anyCartSaving > 0 && renderCartSavingBanner()}
         {/* {isDiagnosticCircleSubscription ? null : circleSaving > 0 && renderSavedBanner()} */}
@@ -1906,5 +2066,70 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     margin: 16,
+  },
+  circlePlanOuterView: {
+    margin: 6,
+    borderColor: theme.colors.APP_GREEN,
+    borderRadius: 5,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+  },
+  circlePlanInnerView: { flexDirection: 'row', padding: 16 },
+  circlePlanLogoStyle: {
+    height: 50,
+    width: 50,
+    resizeMode: 'contain',
+    alignSelf: 'center',
+  },
+  verticalSeparator: {
+    height: '100%',
+    width: 1,
+    backgroundColor: 'rgba(2, 71, 91, 0.3)',
+    marginLeft: 12,
+    marginRight: 12,
+  },
+  youCanText: { ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 1, 16) },
+  youCanGreenText: { ...theme.viewStyles.text('M', 12, theme.colors.APP_GREEN, 1, 16) },
+  youCanBoldText: { ...theme.viewStyles.text('SB', 12, theme.colors.SHERPA_BLUE, 1, 16) },
+  viewPlanTouch: { marginTop: 8, width: '50%' },
+  viewPlanText: { ...theme.viewStyles.text('B', 14, theme.colors.APP_YELLOW, 1, 24) },
+  planSelectedRadioTouch: {
+    width: '10%',
+    alignItems: 'center',
+  },
+  planBuyText: {
+    ...theme.viewStyles.text('SB', 14, theme.colors.APP_GREEN, 1, 26),
+    marginLeft: 12,
+  },
+  circleAddedOuterView: {
+    margin: 6,
+    borderColor: 'rgb(219, 237, 233)',
+    borderRadius: 5,
+    borderWidth: 2,
+    marginBottom: 16,
+  },
+  circleAddedInnerView: { flexDirection: 'row', padding: 16 },
+  circlePlanDurationText: { ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 1, 16) },
+  circlePlanValidText: {
+    ...theme.viewStyles.text('R', 10, theme.colors.SHERPA_BLUE, 0.6, 13),
+    marginTop: 6,
+  },
+  circlePlanDeleteTouch: {
+    marginLeft: 16,
+    height: 30,
+    width: 30,
+  },
+  deleteIcon: { height: 20, width: 20, resizeMode: 'contain', alignSelf: 'flex-end' },
+  flexRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  smallCircleLogo: { height: 25, width: 35, resizeMode: 'contain' },
+  circleMembershipText: {
+    ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 22),
+    marginHorizontal: 8,
+  },
+  removeTouch: { alignSelf: 'flex-end', alignItems: 'center' },
+  removeText: {
+    ...theme.viewStyles.text('SB', 12, theme.colors.APP_YELLOW, 1, 24),
+    marginRight: 20,
+    textAlign: 'center',
   },
 });
