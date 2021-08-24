@@ -494,6 +494,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         setReportGenDetails(result || []);
         const _itemIds = widgetsData?.map((item: any) => Number(item?.itemId));
         const _filterItemIds = _itemIds?.filter((val: any) => !cartItemsWithId?.includes(val));
+        const pinCodeFromAddress = isModifyFlow
+          ? Number(modifiedOrder?.patientAddressObj?.zipcode!)
+          : !!selectedAddr
+          ? Number(selectedAddr?.zipcode)
+          : null;
 
         client
           .query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
@@ -504,7 +509,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             variables: {
               cityID: Number(addressCityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
               itemIDs: _filterItemIds,
-              pincode: !!selectedAddr ? Number(selectedAddr?.zipcode!) : null,
+              pincode: pinCodeFromAddress,
             },
             fetchPolicy: 'no-cache',
           })
@@ -872,6 +877,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setHcApiCalled(true);
     }
   }, [areaSelected]);
+
   const fetchAddresses = async () => {
     try {
       if (addresses?.length) {
@@ -1301,6 +1307,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
           );
 
+    const pinCodeFromAddress = isModifyFlow
+      ? Number(modifiedOrder?.patientAddressObj?.zipcode!)
+      : !!selectedAddr
+      ? Number(selectedAddr?.zipcode)
+      : null;
+
     {
       setLoading?.(true);
       client
@@ -1313,7 +1325,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             //if address is not selected then from pincode bar otherwise from address
             cityID: cityIdToPass,
             itemIDs: listOfIds!,
-            pincode: !!selectedAddr ? Number(selectedAddr?.zipcode!) : null,
+            pincode: pinCodeFromAddress,
           },
           fetchPolicy: 'no-cache',
         })
@@ -2241,6 +2253,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     comingFrom?: string
   ) => {
     const itemIds = comingFrom ? duplicateItem : cartItems?.map((item) => parseInt(item?.id));
+    const pinCodeFromAddress = isModifyFlow
+      ? Number(modifiedOrder?.patientAddressObj?.zipcode!)
+      : !!selectedAddr
+      ? Number(selectedAddr?.zipcode)
+      : null;
+
     return client.query<
       findDiagnosticsByItemIDsAndCityID,
       findDiagnosticsByItemIDsAndCityIDVariables
@@ -2252,7 +2270,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       variables: {
         cityID: cityIdForAddress,
         itemIDs: itemIds!,
-        pincode: !!selectedAddr ? Number(selectedAddr?.zipcode!) : null,
+        pincode: pinCodeFromAddress,
       },
       fetchPolicy: 'no-cache',
     });
