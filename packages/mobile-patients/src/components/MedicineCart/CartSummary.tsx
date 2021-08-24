@@ -488,7 +488,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   const initiateOrder = async () => {
     try {
       const response =
-        !circleSubscriptionId && circlePlanSelected
+        !circleSubscriptionId && circleMembershipCharges
           ? await saveOrderWithSubscription()
           : await saveOrder();
       const { orders, transactionId, errorCode, isCodEligible } =
