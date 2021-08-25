@@ -131,8 +131,6 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       query: GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT,
       variables,
     });
-
-    console.log('csk1', JSON.stringify(data));
     return data?.getMedicineOrderOMSDetailsWithAddress?.medicineOrderDetails;
   };
 
