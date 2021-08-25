@@ -107,6 +107,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     if (!_queries) {
       fetchQueries();
     }
+    console.log('csk a', refund, payment);
     if (
       queryIdLevel1 == helpSectionQueryId.pharmacy &&
       navigation.getParam('refund') === undefined
@@ -360,6 +361,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
   const renderItem = ({ item }: ListRenderItemInfo<NeedHelpHelpers.HelpSectionQuery>) => {
     const onPress = () => {
+      console.log('refund', JSON.stringify(fetchRefund));
       const isReturnQuery = item?.id === helpSectionQueryId.returnOrder;
       if (item?.queries?.length) {
         navigation.push(AppRoutes.NeedHelpQueryDetails, {
@@ -402,8 +404,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           medicineOrderStatus,
           isConsult,
           additionalInfo: true,
-          refund: refund,
-          payment: payment,
+          refund: refund || fetchRefund,
+          payment: payment || fetchPayment,
         });
       } else {
         setSelectedQueryId(item.id!);
