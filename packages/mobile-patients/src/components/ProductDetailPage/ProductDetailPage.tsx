@@ -827,7 +827,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       .finally(() => setLoading!(false));
   };
 
-  const onAddCartItem = (item?: pharmaSubstitution_pharmaSubstitution_substitutes) => {
+  const onAddCartItem = (
+    item?: pharmaSubstitution_pharmaSubstitution_substitutes,
+    isFromFastSubstitutes?: boolean
+  ) => {
     const medicine_details = item ? item : medicineDetails;
     const {
       sku,
@@ -867,7 +870,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     }
     postwebEngageAddToCartEvent(
       medicineDetails,
-      'Pharmacy PDP',
+      isFromFastSubstitutes ? 'PDP Fast Substitutes' : 'Pharmacy PDP',
       sectionName,
       '',
       pharmacyCircleAttributes!
