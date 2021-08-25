@@ -1544,6 +1544,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const checkVitalQuestionsStatus = () => {
+    const isConsultPending =  appointmentData?.status == 'PENDING'; 
     if (appointmentData.isAutomatedQuestionsComplete) {
       requestToJrDoctor();
       if (
@@ -1556,7 +1557,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         showAndUpdateNudgeScreenVisibility();
       }
     } else {
-      setDisplayChatQuestions(skipAutoQuestions.current ? false : true);
+      const displayQuestion = isConsultPending ? skipAutoQuestions.current ? false : true : false
+      setDisplayChatQuestions(displayQuestion);
     }
   };
 
