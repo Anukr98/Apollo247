@@ -339,7 +339,11 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const renderRefund = () => {
     return (
       <View>
-        <RefundDetails refunds={refund} paymentDetails={payment} navigaitonProps={navigation} />
+        <RefundDetails
+          refunds={refund || fetchRefund}
+          paymentDetails={payment || fetchPayment}
+          navigaitonProps={navigation}
+        />
 
         <View style={styles.flatListContainer}>
           <TouchableOpacity
@@ -408,8 +412,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           medicineOrderStatus,
           isConsult,
           additionalInfo: true,
-          refund: refund || fetchRefund,
-          payment: payment || fetchPayment,
+          refund: refund.length <= 0 ? fetchRefund : refund,
+          payment: payment.length <= 0 ? fetchPayment : payment,
         });
       } else {
         setSelectedQueryId(item.id!);
