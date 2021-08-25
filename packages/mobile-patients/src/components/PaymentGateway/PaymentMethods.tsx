@@ -538,7 +538,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
             isCOD
           );
         props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
-          status: paymentStatus,
+          paymentStatus: paymentStatus,
           price: amount,
           transId: paymentId,
           orderDetails: orderDetails,
