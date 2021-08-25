@@ -21,7 +21,7 @@ export enum AppEnv {
   QA6 = 'QA6',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA2 as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -506,7 +506,7 @@ const PharmaApiConfig = {
     ],
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
     MED_CART_ITEMS_DETAILS: [`${apolloProdBaseUrl}/popcscrchcart_api.php`, pharmaToken201],
-    IMAGES_BASE_URL: [`https://d27zlipt1pllog.cloudfront.net/pub/media`],
+    IMAGES_BASE_URL: [`https://newassets.apollo247.com/pub/media`],
     GET_DELIVERY_TIME: [
       'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
       pharmaTokenYXV,

@@ -207,10 +207,11 @@ export const aphConsole: AphConsole = {
   },
 };
 
-export const productsThumbnailUrl = (filePath: string, baseUrl?: string) =>
-  (filePath || '').startsWith('http')
+export const productsThumbnailUrl = (filePath: string, baseUrl?: string) => {
+  return (filePath || '').startsWith('http')
     ? filePath
     : `${baseUrl || AppConfig.Configuration.IMAGES_BASE_URL[0]}${filePath}`;
+};
 
 export const formatAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
   const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');

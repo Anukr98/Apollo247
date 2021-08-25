@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
   },
 
   banner1: {
-    height: 145,
+    height: 160,
     width: '100%',
   },
   medicineContainer: {
@@ -310,6 +310,12 @@ const styles = StyleSheet.create({
   rowStyle: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  pharmaFetchAddressTextShimmer: {
+    borderRadius: 10,
+    height: 150,
+    width: 150,
+    margin: 12,
   },
   itemPrice: {
     ...theme.viewStyles.cardViewStyle,
@@ -515,17 +521,6 @@ export const renderMedicinesShimmer = () => {
         shimmerColors={shimmerColors}
         shimmerStyle={styles.medicinecCard2}
       />
-
-      <ShimmerPlaceHolder
-        LinearGradient={LinearGradient}
-        shimmerColors={shimmerColors}
-        shimmerStyle={styles.medicineCard3}
-      />
-      <View style={styles.sliderDotsContainer}>
-        <View style={styles.sliderDots} />
-        <View style={styles.sliderDots} />
-        <View style={styles.sliderDots} />
-      </View>
     </View>
   );
 };
@@ -828,6 +823,33 @@ export const renderDiagnosticWidgetHeadingShimmer = () => {
         LinearGradient={LinearGradient}
         shimmerColors={shimmerColors}
         shimmerStyle={styles.diagnosticCard2}
+      />
+    </View>
+  );
+};
+
+export const renderPharmaFetchAddressHeadingShimmer = () => {
+  return (
+    <View style={[styles.rowStyle, { marginTop: 16 }]}>
+      <ShimmerPlaceHolder
+        LinearGradient={LinearGradient}
+        shimmerColors={shimmerColors}
+        shimmerStyle={styles.pharmaFetchAddressTextShimmer}
+      />
+      <ShimmerPlaceHolder
+        LinearGradient={LinearGradient}
+        shimmerColors={shimmerColors}
+        shimmerStyle={styles.pharmaFetchAddressTextShimmer}
+      />
+      <ShimmerPlaceHolder
+        LinearGradient={LinearGradient}
+        shimmerColors={shimmerColors}
+        shimmerStyle={styles.pharmaFetchAddressTextShimmer}
+      />
+      <ShimmerPlaceHolder
+        LinearGradient={LinearGradient}
+        shimmerColors={shimmerColors}
+        shimmerStyle={styles.pharmaFetchAddressTextShimmer}
       />
     </View>
   );
