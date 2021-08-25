@@ -34,6 +34,9 @@ export enum ProductPageViewedSource {
   SUBSTITUTES = 'substitutes',
   CROSS_SELLING_PRODUCTS = 'cross selling products',
   SIMILAR_PRODUCTS = 'similar products',
+  MULTI_VARIANT = 'multivariant',
+  PDP_ALL_SUSBTITUTES = 'PDP All Substitutes',
+  PDP_FAST_SUSBTITUTES = 'PDP Fast Substitutes',
 }
 
 export enum CleverTapEventName {
@@ -138,6 +141,7 @@ export enum CleverTapEventName {
   PHARMACY_RE_ORDER_MEDICINE = 'Pharmacy Reorder Clicked',
   PHARMACY_MY_ORDERS_CLICKED = 'Pharmacy My Orders Clicked',
   PHARMACY_MY_ORDER_TRACKING_CLICKED = 'Pharmacy Track Order Clicked',
+  PHARMACY_FAST_SUBSTITUTES_VIEWED = 'Pharmacy Fast Substitutes Viewed',
 
   // Diagnostics Events
   DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
@@ -1100,7 +1104,9 @@ export interface CleverTapEvents {
       | 'Pharmacy Full Search'
       | 'Similar Widget'
       | 'Pharmacy Cart'
-      | 'Category Tree';
+      | 'Category Tree'
+      | 'PDP All Substitutes'
+      | 'PDP Fast Substitutes';
     Brand?: string;
     'Brand ID'?: string;
     'category name'?: string;
@@ -2799,6 +2805,13 @@ export interface CleverTapEvents {
     'Circle Member': string;
     'Page Name': string;
     'NAV Source': 'Pharmacy' | 'Consult' | 'Dignostic';
+  };
+
+  [CleverTapEventName.PHARMACY_FAST_SUBSTITUTES_VIEWED]: {
+    'Product Code': string;
+    'Product Name': string;
+    'Stock type': 'In stock' | 'Out of stock';
+    Type: string;
   };
 
   [CleverTapEventName.PHARMACY_PRESCRIPTION_UPLOADED]: {

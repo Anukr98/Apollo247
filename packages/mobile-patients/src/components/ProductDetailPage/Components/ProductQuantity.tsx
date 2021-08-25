@@ -114,6 +114,8 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
         {isSellOnline && !!packSize && !!productForm && !!packForm && renderPackSize()}
       </View>
       <Substitutes
+        sku={sku}
+        name={name}
         onPressAddToCart={onAddCartItem}
         isProductInStock={isInStock}
         isAlternative={!isPharma}

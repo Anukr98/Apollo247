@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import {
@@ -14,6 +14,7 @@ import {
   productsThumbnailUrl,
   getMaxQtyForMedicineItem,
   nameFormater,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Image } from 'react-native-elements';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -22,10 +23,19 @@ import { QuantityButton } from '@aph/mobile-patients/src/components/ui/QuantityB
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  CleverTapEvents,
+  CleverTapEventName,
+  ProductPageViewedSource,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 export interface SubstitutesProps {
-  onPressAddToCart: (item: pharmaSubstitution_pharmaSubstitution_substitutes) => void;
+  sku: string;
+  name: string;
+  onPressAddToCart: (
+    item: pharmaSubstitution_pharmaSubstitution_substitutes,
+    isFromFastSubstitutes: boolean
+  ) => void;
   isProductInStock: boolean;
   isAlternative: boolean; // value will be true for pharma products, and false for non pharma products
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
@@ -33,8 +43,14 @@ export interface SubstitutesProps {
 
 export const Substitutes: React.FC<SubstitutesProps> = (props) => {
   const { cartItems, removeCartItem, updateCartItem, productSubstitutes } = useShoppingCart();
-  const { onPressAddToCart, isProductInStock, isAlternative } = props;
+  const { sku, name, onPressAddToCart, isProductInStock, isAlternative } = props;
   const [showSubstitues, setShowSubstitues] = useState<boolean>(!isProductInStock);
+
+  useEffect(() => {
+    if (showSubstitues) {
+      fireCleverTapEvent();
+    }
+  }, [showSubstitues]);
 
   const renderHeading = () => (
     <TouchableOpacity
@@ -94,7 +110,7 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
 
   const renderAddToCartView = (item: any) => {
     return (
-      <TouchableOpacity activeOpacity={1} onPress={() => onPressAddToCart(item)}>
+      <TouchableOpacity activeOpacity={1} onPress={() => onPressAddToCart(item, true)}>
         <Text style={theme.viewStyles.text('SB', 12, '#fc9916', 1, 24, 0)}>{'ADD TO CART'}</Text>
       </TouchableOpacity>
     );
@@ -193,7 +209,7 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
             props.navigation.replace(AppRoutes.ProductDetailPage, {
               urlKey: substitute?.url_key,
               sku: substitute?.sku,
-              movedFrom: ProductPageViewedSource.SUBSTITUTES,
+              movedFrom: ProductPageViewedSource.PDP_FAST_SUSBTITUTES,
             });
           }}
           style={styles.substituteCard}
@@ -220,6 +236,19 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
         </TouchableOpacity>
       );
     });
+  };
+
+  const fireCleverTapEvent = () => {
+    let cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_FAST_SUBSTITUTES_VIEWED] = {
+      'Product Code': sku || '',
+      'Product Name': name || '',
+      'Stock type': isProductInStock ? 'In stock' : 'Out of stock',
+      Type: isAlternative ? 'Pharma' : 'Non-Pharma',
+    };
+    postCleverTapEvent(
+      CleverTapEventName.PHARMACY_FAST_SUBSTITUTES_VIEWED,
+      cleverTapEventAttributes
+    );
   };
 
   return (
