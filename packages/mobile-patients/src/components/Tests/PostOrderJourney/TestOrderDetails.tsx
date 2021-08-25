@@ -561,6 +561,12 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                     {REFUND_STATUSES.SUCCESS === order?.orderStatus
                       ? renderTransactionDetails()
                       : null}
+
+                    {order?.orderStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED &&
+                    !isStatusDone &&
+                    DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED != orderDetails?.orderStatus
+                      ? renderOrderCompletedHint()
+                      : null}
                     {!!showInclusions &&
                     DROP_DOWN_ARRAY_STATUS.includes(showInclusions?.orderStatus) &&
                     index == getAllStatusDone?.length - 1
@@ -606,6 +612,15 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       </>
     );
   };
+  const renderOrderCompletedHint = () => {
+    return (
+      <View>
+        <Text style={styles.orderCompText}>
+        {'Reports will be shared over whatsapp & SMS as well'}
+        </Text>
+      </View>
+    )
+  }
 
   const renderInclusionLevelDropDown = (order: any) => {
     /**add condition for sample submitted if inclusion level same */
@@ -1113,6 +1128,7 @@ const styles = StyleSheet.create({
   refundTxnId: {
     ...theme.viewStyles.text('M', 11, colors.SHERPA_BLUE, 1, 14),
   },
+  orderCompText: { ...theme.viewStyles.text('R', 10, theme.colors.SHERPA_BLUE) },
   flexRow: {
     justifyContent: 'center',
     flexDirection: 'row',
