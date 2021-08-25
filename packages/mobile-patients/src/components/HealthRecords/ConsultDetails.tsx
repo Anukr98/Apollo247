@@ -1159,7 +1159,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           <Text style={styles.tatDeliveryText}>
             {`(${defaultAddress?.zipcode}) by ${tat}`}
           </Text>
-      </Text> : noPincode.replace(' ', '') ? <Text style={styles.tatText}>{noPincode}</Text> : null
+      </Text> : noPincode ? <Text style={styles.tatText}>{noPincode}</Text> : null
   };
 
   const testTatText = () => {
@@ -1175,7 +1175,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           <Text style={styles.tatDeliveryText}>
             {`(${defaultAddress?.zipcode}) by ${testSlot}`}
           </Text>
-      </Text> : noPincode.replace(' ', '') ? <Text style={styles.tatText}>{noPincode}</Text> : null
+      </Text> : noPincode ? <Text style={styles.tatText}>{noPincode}</Text> : null
   };
 
   const renderPrescriptions = () => {
