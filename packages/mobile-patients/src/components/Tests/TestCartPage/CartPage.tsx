@@ -938,7 +938,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           style={[
             styles.addressOutermostView,
             {
-              minHeight: screenHeight > 800 ? 150 : screenHeight < 600 ? 165 : 175,
+              minHeight: screenHeight > 800 ? 145 : screenHeight < 600 ? 160 : 170,
             },
           ]}
         >
@@ -948,7 +948,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           <View>
             <View style={styles.addressTextView}>
               {!!addressText && (
-                <Text numberOfLines={4} style={styles.addressTextStyle}>
+                <Text numberOfLines={2} style={styles.addressTextStyle}>
                   {addressText}
                 </Text>
               )}
@@ -1087,7 +1087,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     count: number
   ) => {
     return (
-      <>
+      <View style={styles.patientNameCartItemView}>
         <View style={styles.patientNameView}>
           <View style={{ width: '72%' }}>
             <Text style={styles.patientNameText}>
@@ -1098,7 +1098,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         </View>
 
         {!!count && renderEachPatientCartCount(count)}
-      </>
+      </View>
     );
   };
 
@@ -1128,6 +1128,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                     : null}
                   {!!patientItems && patientItems?.length > 0 && (
                     <FlatList
+                      contentContainerStyle={{ marginTop: 50 }}
                       showsVerticalScrollIndicator={false}
                       bounces={false}
                       extraData={patientItems}
@@ -1789,7 +1790,13 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
   const renderStickyBottom = () => {
     return (
-      <StickyBottomComponent style={{ shadowColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}>
+      <StickyBottomComponent
+        style={{
+          shadowColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+          borderTopColor: '#B8B8B8',
+          borderTopWidth: 1,
+        }}
+      >
         <Button
           title={isModifyFlow ? 'PROCEED TO NEW CART' : 'SCHEDULE APPOINTMENT'}
           onPress={() => _navigateToNextScreen()}
@@ -1977,4 +1984,5 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   cartCountText: { ...theme.viewStyles.text('SB', 12, theme.colors.SHERPA_BLUE, 1, 18) },
+  patientNameCartItemView: { marginBottom: -50, zIndex: 3000 },
 });

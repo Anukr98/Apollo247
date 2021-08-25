@@ -90,6 +90,7 @@ import moment from 'moment';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 
 const screenWidth = Dimensions.get('window').width;
+const screenHeight = Dimensions.get('window').height;
 export interface TestPackageForDetails extends TestPackage {
   collectionType: TEST_COLLECTION_TYPE;
   preparation: string;
@@ -213,6 +214,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [widgetsData, setWidgetsData] = useState([] as any);
   const [expressSlotMsg, setExpressSlotMsg] = useState<string>('');
   const [reportTat, setReportTat] = useState<string>('');
+  const [showBottomBar, setShowBottomBar] = useState<boolean>(false);
+  const [priceHeight, setPriceHeight] = useState<number>(0);
 
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
 
@@ -228,6 +231,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   const isAddedToCart = !!cartItems?.find((item) => item.id == testInfo?.ItemID);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
+  const priceViewRef = React.useRef<View>(null);
 
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
@@ -691,12 +695,16 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     return (
       <View style={styles.descriptionCardOuterView}>
         {renderCardTopView()}
-        {renderPriceView()}
+        {renderPriceView(false)}
       </View>
     );
   };
 
-  const renderPriceView = () => {
+  function _setPriceLayoutPosition(layout: any, event: any) {
+    setPriceHeight(layout?.height);
+  }
+
+  const renderPriceView = (isBottom: boolean) => {
     //if coming from anywhere other than cart page
     //check other conidtions
     const slashedPrice =
@@ -728,12 +736,37 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       }
     }
     return (
-      <View style={{}}>
+      <View>
+        {!isBottom
+          ? renderTopPriceView(slashedPrice, priceToShow)
+          : renderBottomPriceView(slashedPrice, priceToShow)}
+      </View>
+    );
+  };
+
+  const renderTopPriceView = (slashedPrice: number, priceToShow: number) => {
+    return (
+      <View
+        ref={priceViewRef}
+        onLayout={(event) => {
+          const layout = event.nativeEvent.layout;
+          _setPriceLayoutPosition(layout, event);
+        }}
+      >
         {renderSeparator()}
         <View style={{ marginTop: '2%' }}>
           {renderSlashedView(slashedPrice, priceToShow)}
-          {!_.isEmpty(testInfo) && renderMainPriceView(priceToShow)}
+          {!_.isEmpty(testInfo) && renderMainPriceView(priceToShow, true)}
         </View>
+      </View>
+    );
+  };
+
+  const renderBottomPriceView = (slashedPrice: number, priceToShow: number) => {
+    return (
+      <View>
+        {renderSlashedView(slashedPrice, priceToShow)}
+        {!_.isEmpty(testInfo) && renderMainPriceView(priceToShow, false)}
       </View>
     );
   };
@@ -753,7 +786,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     );
   };
 
-  const renderMainPriceView = (priceToShow: number) => {
+  const renderMainPriceView = (priceToShow: number, showSavings: boolean) => {
     return (
       <View style={styles.flexRowView}>
         {!!priceToShow && (
@@ -761,7 +794,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             {string.common.Rs} {convertNumberToDecimal(priceToShow)}
           </Text>
         )}
-        {renderDiscountView()}
+        {showSavings ? renderDiscountView() : null}
       </View>
     );
   };
@@ -796,7 +829,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             {renderSavingView(
               'Savings',
               specialDiscountSaving,
-              { marginHorizontal: '1%' },
+              { marginHorizontal: '2%' },
               styles.savingsText
             )}
           </View>
@@ -1243,6 +1276,16 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             keyboardDismissMode="on-drag"
             style={{ marginBottom: 60 }}
             ref={scrollViewRef}
+            scrollEventThrottle={16}
+            onScroll={(event) => {
+              // show price if price is scrolled off the screen
+              priceViewRef?.current &&
+                priceViewRef?.current?.measure(
+                  (x: any, y: any, width: any, height: any, pagex: any, pagey: any) => {
+                    setShowBottomBar(pagey - screenHeight / 10 < priceHeight);
+                  }
+                );
+            }}
           >
             {!_.isEmpty(testInfo) && !!cmsTestDetails && renderItemCard()}
             {renderDescriptionCard()}
@@ -1255,6 +1298,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               : null}
           </ScrollView>
           <StickyBottomComponent>
+            {showBottomBar && renderPriceView(true)}
             <Button
               title={
                 isAlreadyPartOfOrder
@@ -1280,6 +1324,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                     : props.navigation.navigate(AppRoutes.AddPatients)
                   : onPressAddToCart()
               }
+              style={showBottomBar ? { width: '70%' } : {}}
             />
           </StickyBottomComponent>
         </>
@@ -1329,7 +1374,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   descriptionCardOuterView: {
-    width: Dimensions.get('window').width * 0.9,
+    width: screenWidth * 0.9,
     ...theme.viewStyles.card(16, 4, 10, '#fff', 10),
     padding: 16,
     elevation: 10,
