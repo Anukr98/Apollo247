@@ -1349,7 +1349,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 </>
               );
             })}
-<<<<<<< HEAD
             <TouchableOpacity
               style={styles.tatContainer}
               onPress={() => {
@@ -1362,22 +1361,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                     <Text style={styles.tatText}>{testTat['discount']}</Text>
                     <Text style={styles.tatText}>{testTat['reportTime']}</Text>
                   </View> : null}
-=======
-            <View style={styles.tatContainer}>
-              {tatContent.length ? (
-                <View>
-                  {testTatText()}
-                  <Text style={styles.tatText}>{testTat['discount']}</Text>
-                  <Text style={styles.tatText}>{testTat['reportTime']}</Text>
-                </View>
-              ) : null}
-              <TouchableOpacity
-                onPress={() => {
-                  postWEGEvent('test');
-                  onAddTestsToCart();
-                }}
-              >
->>>>>>> release/v5.8.0
                 <Text style={styles.quickActionButtons}>
                   {strings.health_records_home.order_test}
                 </Text>
