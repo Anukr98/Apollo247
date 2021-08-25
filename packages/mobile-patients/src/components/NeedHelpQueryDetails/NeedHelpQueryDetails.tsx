@@ -393,7 +393,11 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           queries,
           email,
         });
-      } else if (item?.id === helpSectionQueryId.refund && refund.length > 0 && !additionalInfo) {
+      } else if (
+        item?.id === helpSectionQueryId.refund &&
+        (refund.length > 0 || fetchRefund.length > 0) &&
+        !additionalInfo
+      ) {
         navigation.push(AppRoutes.NeedHelpQueryDetails, {
           queryIdLevel2: item?.id,
           queryIdLevel1,
