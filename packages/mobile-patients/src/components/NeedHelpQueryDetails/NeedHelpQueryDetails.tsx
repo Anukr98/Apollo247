@@ -107,7 +107,13 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     if (!_queries) {
       fetchQueries();
     }
-    const res = getOMSDetails();
+    if (
+      queryIdLevel1 == helpSectionQueryId.pharmacy &&
+      navigation.getParam('refund') === undefined
+    ) {
+      console.log('csk i am called');
+      getOMSDetails();
+    }
   }, []);
 
   const fetchQueries = async () => {
@@ -155,9 +161,12 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     const order = data?.getMedicineOrderOMSDetailsWithAddress?.medicineOrderDetails;
     const paymentDetails = order?.medicineOrderPayments || [];
     const RefundTypes = ['REFUND_REQUEST_RAISED', 'REFUND_SUCCESSFUL'];
-    const refundDetails = order?.medicineOrderRefunds?.filter(
-      (item) => RefundTypes.indexOf(item?.refundStatus!) != -1
-    );
+    const refundDetails =
+      order?.medicineOrderRefunds?.filter(
+        (item) => RefundTypes.indexOf(item?.refundStatus!) != -1
+      ) || [];
+    setFetchRefund(refundDetails);
+    setFetchPayment(paymentDetails);
   };
 
   const renderHeader = () => {
