@@ -492,6 +492,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     const getAllStatusDone = newList?.filter((value) =>
       orderLevelStatus?.statusHistory?.includes(value)
     );
+    const filterDoneStatusWithoutRefund = getAllStatusDone?.filter(
+      (item: any) => item?.orderStatus !== DIAGNOSTIC_ORDER_STATUS.REFUND_INITIATED
+    );
     return (
       <View>
         <View style={{ margin: 20 }}>
@@ -551,14 +554,12 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                       )}
                     </View>
                     {renderSubStatus(order, index)}
-                    {showContentBasedOnStatus(
-                      order,
-                      isStatusDone,
-                      index,
-                      showInclusions,
-                      getAllStatusDone
-                    )}
-                    {/**for showing the additional view for orderModification */}
+                    {showContentBasedOnStatus(order, isStatusDone, index)}
+                    {/** since this can with any combination */}
+                    {!!showInclusions &&
+                      DROP_DOWN_ARRAY_STATUS.includes(showInclusions?.orderStatus) &&
+                      index == filterDoneStatusWithoutRefund?.length - 1 &&
+                      renderInclusionLevelDropDown(order)}
                   </View>
                 </View>
               </View>
@@ -572,19 +573,14 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   //define type
-  function showContentBasedOnStatus(
-    order: any,
-    isStatusDone: boolean,
-    index: number,
-    showInclusions: any,
-    getAllStatusDone: any
-  ) {
+  function showContentBasedOnStatus(order: any, isStatusDone: boolean, index: number) {
     const orderStatus = order?.orderStatus;
     const slotDate = moment(selectedOrder?.slotDateTimeInUTC).format('Do MMM');
     const slotTime1 = moment(selectedOrder?.slotDateTimeInUTC).format('hh:mm A');
     const slotTime2 = moment(selectedOrder?.slotDateTimeInUTC)
       .add(slotDuration, 'minutes')
       .format('hh:mm A');
+
     if (orderStatus === DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN) {
       if (!isStatusDone) {
         return (
@@ -607,13 +603,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       if (isStatusDone && !!showRateDiagnosticBtn) {
         return renderFeedbackOption();
       }
-    }
-    if (
-      !!showInclusions &&
-      DROP_DOWN_ARRAY_STATUS.includes(showInclusions?.orderStatus) &&
-      index == getAllStatusDone?.length - 1
-    ) {
-      return renderInclusionLevelDropDown(order);
     }
     if (orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED) {
       return renderReschuleTime();
