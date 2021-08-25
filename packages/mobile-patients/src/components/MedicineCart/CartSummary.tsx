@@ -645,7 +645,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
 
   const renderWhatsAppUpdates = () => {
     return (
-      <View style={{ alignItems: 'center' }}>
+      <View>
         <WhatsAppStatus
           onPress={() => {
             whatsAppUpdate ? setWhatsAppUpdate(false) : setWhatsAppUpdate(true);
