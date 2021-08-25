@@ -91,6 +91,7 @@ import {
   createOrderInternalVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
 import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
+import { WhatsAppStatus } from '@aph/mobile-patients/src/components/ui/WhatsAppStatus';
 
 export interface CartSummaryProps extends NavigationScreenProps {}
 
@@ -146,6 +147,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   const { OrderInfo, SubscriptionInfo } = useGetOrderInfo();
   const { cusId, isfetchingId } = useGetJuspayId();
   const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
+  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
+
   useEffect(() => {
     hasUnserviceableproduct();
     AppState.addEventListener('change', handleAppStateChange);
@@ -655,6 +658,15 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           {uploadPrescriptionRequired &&
             prescriptionType === PrescriptionType.UPLOADED &&
             renderPrescriptions()}
+          {
+            <WhatsAppStatus
+              onPress={() => {
+                whatsAppUpdate ? setWhatsAppUpdate(false) : setWhatsAppUpdate(true);
+                console.log('csk w status', whatsAppUpdate);
+              }}
+              isSelected={whatsAppUpdate}
+            />
+          }
         </ScrollView>
         {renderButton()}
         {(loading || !hyperSdkInitialized) && <Spinner />}
