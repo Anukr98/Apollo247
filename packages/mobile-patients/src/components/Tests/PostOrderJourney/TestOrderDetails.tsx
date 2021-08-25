@@ -608,6 +608,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         return renderFeedbackOption();
       }
     }
+    if (orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED && !isStatusDone) {
+      if (DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED != selectedOrder?.orderStatus) {
+        return renderOrderCompletedHint()
+      }
+    }
     if (
       !!showInclusions &&
       DROP_DOWN_ARRAY_STATUS.includes(showInclusions?.orderStatus) &&
@@ -1063,6 +1068,16 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     );
   };
 
+  const renderOrderCompletedHint = () => {
+    return (
+      <View>
+        <Text style={styles.orderCompText}>
+        {'Reports will be shared over whatsapp & SMS as well'}
+        </Text>
+      </View>
+    )
+  }
+
   const renderBottomSection = (order: any) => {
     return <View>{isReportGenerated ? renderButtons() : null}</View>;
   };
@@ -1436,6 +1451,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   rateYourExpText: { ...theme.viewStyles.text('B', 14, theme.colors.APP_YELLOW) },
+  orderCompText: { ...theme.viewStyles.text('R', 10, theme.colors.SHERPA_BLUE) },
   feedbackTouch: { marginBottom: 2, width: '100%' },
   ratingContainer: {
     backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
