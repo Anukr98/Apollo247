@@ -1288,7 +1288,9 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   };
 
   const getOriginalBookingAmt = () => {
-    let onlineDrPricing;
+    let onlineDrPricing = doctor?.doctorPricing.find((item: any) => 
+    item.available_to == 'CARE_PLAN' && item.appointment_type == 'ONLINE');
+    
     if(!isCirclePricing || !onlineDrPricing){
       onlineDrPricing = doctor?.doctorPricing.find((item: any) => 
       item.available_to == 'ALL' && item.appointment_type == 'ONLINE')
