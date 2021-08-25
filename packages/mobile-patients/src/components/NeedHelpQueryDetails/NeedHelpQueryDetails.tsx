@@ -12,6 +12,7 @@ import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT,
   SEND_HELP_EMAIL,
+  GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetMedicineOrderShipmentDetails,
@@ -42,6 +43,12 @@ import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
 import { TouchableOpacity } from 'react-native';
 import { RefundDetails } from '@aph/mobile-patients/src/components/RefundDetails';
+import {
+  getMedicineOrderOMSDetailsWithAddress,
+  getMedicineOrderOMSDetailsWithAddressVariables,
+  getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails,
+  getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
+} from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
 
 export interface Props
   extends NavigationScreenProps<{
@@ -98,6 +105,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     if (!_queries) {
       fetchQueries();
     }
+    const res = getOMSDetails();
   }, []);
 
   const fetchQueries = async () => {
@@ -123,7 +131,33 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       query: GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT,
       variables,
     });
+
+    console.log('csk1', JSON.stringify(data));
     return data?.getMedicineOrderOMSDetailsWithAddress?.medicineOrderDetails;
+  };
+
+  const getOMSDetails = async () => {
+    const vars: getMedicineOrderOMSDetailsWithAddressVariables = {
+      patientId: currentPatient && currentPatient.id,
+      orderAutoId: Number(orderId),
+      billNumber: '',
+    };
+
+    const { data } = await client.query<
+      getMedicineOrderOMSDetailsWithAddress,
+      getMedicineOrderOMSDetailsWithAddressVariables
+    >({
+      query: GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS,
+      variables: vars,
+      fetchPolicy: 'no-cache',
+    });
+
+    const order = data?.getMedicineOrderOMSDetailsWithAddress?.medicineOrderDetails;
+    const paymentDetails = order?.medicineOrderPayments || [];
+    const RefundTypes = ['REFUND_REQUEST_RAISED', 'REFUND_SUCCESSFUL'];
+    const refundDetails = order?.medicineOrderRefunds?.filter(
+      (item) => RefundTypes.indexOf(item?.refundStatus!) != -1
+    );
   };
 
   const renderHeader = () => {
