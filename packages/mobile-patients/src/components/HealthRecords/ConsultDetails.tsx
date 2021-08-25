@@ -299,6 +299,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE, 1, 16),
     paddingBottom: 10,
   },
+  tatDeliveryText: { color: theme.colors.APP_GREEN },
 });
 
 export interface ConsultDetailsProps
@@ -441,10 +442,18 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         if (data) {
           const addressList = data?.data?.getPatientAddressList?.addressList || [];
           if (addressList.length) {
-            const address = addressList.find((address) => address?.defaultAddress);
-            address && address?.latitude && setDefaultAddress(address);
+            const address = addressList.find(address => address?.defaultAddress);
+            if (address){
+              address?.latitude && setDefaultAddress(address);
+            } else {
+              setLoading && setLoading(false);
+              setPrescAvailability('unavailable');
+              setTestAvailability('unavailable');
+            }
           } else {
             setLoading && setLoading(false);
+            setPrescAvailability('unavailable');
+            setTestAvailability('unavailable');
           }
         }
       })
@@ -458,12 +467,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     const skus = caseSheetDetails?.medicinePrescription?.map((item: any) => item?.id);
     const data = await availabilityApi247(defaultAddress?.zipcode || '', skus?.join(','));
     const medicineResponse = data?.data?.response;
-    if (medicineResponse.length) {
-      const availableMedicines = medicineResponse.filter((item) => item?.exist);
+    if(medicineResponse.length){
+      const availableMedicines = medicineResponse.filter(item => item?.exist);    
       setPrescAvailability(availableMedicines.length == skus?.length ? 'available' : 'partial');
-      const skuItems = skus?.map((item) => {
-        return { sku: item, qty: 1 };
-      })!;
+      const skuItems = availableMedicines?.map(item => {return {sku: item?.sku, qty: 1}})!;
       const data = await getDeliveryTAT({
         lat: defaultAddress?.latitude!,
         lng: defaultAddress?.longitude!,
@@ -1143,29 +1150,35 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   };
 
   const priscTatText = () => {
-    const { isAllMedicineAtPincode, isPartialMedicineAtPincode, noPincode } = tatContent.find(
-      (item) => item.isMedicine
-    );
-    return prescAvailability !== 'unavailable' ? (
-      <Text style={styles.tatText}>
-        {prescAvailability == 'available'
-          ? isAllMedicineAtPincode + ` at (${defaultAddress?.zipcode}) by ${tat}`
-          : isPartialMedicineAtPincode + `at (${defaultAddress?.zipcode}) by ${tat}`}
-      </Text>
-    ) : null;
+    const {
+      isAllMedicineAtPincode, 
+      isPartialMedicineAtPincode,
+      noPincode} = tatContent.find(item => item.isMedicine);
+    return prescAvailability !== 'unavailable' ? 
+      <Text style={styles.tatText}>{
+        prescAvailability == 'available' ? 
+        isAllMedicineAtPincode + ' at ' : 
+        isPartialMedicineAtPincode + ' at '}
+          <Text style={styles.tatDeliveryText}>
+            {`(${defaultAddress?.zipcode}) by ${tat}`}
+          </Text>
+      </Text> : noPincode ? <Text style={styles.tatText}>{noPincode}</Text> : null
   };
 
   const testTatText = () => {
-    const { isPartialTestAtPincode, isAllTestAtPincode, noPincode } = tatContent.find(
-      (item) => item.isTest
-    );
-    return testAvailability !== 'unavailable' ? (
-      <Text style={styles.tatText}>
-        {testAvailability == 'available'
-          ? isPartialTestAtPincode + ` at (${defaultAddress?.zipcode}) by ${testSlot}`
-          : isAllTestAtPincode + `at (${defaultAddress?.zipcode}) by ${testSlot}`}
-      </Text>
-    ) : null;
+    const {
+      isPartialTestAtPincode, 
+      isAllTestAtPincode,
+      noPincode} = tatContent.find(item => item.isTest);
+    return testAvailability !== 'unavailable' ? 
+      <Text style={styles.tatText}>{
+        testAvailability == 'available' ? 
+        isPartialTestAtPincode + ' at ': 
+        isAllTestAtPincode + ' at '}
+          <Text style={styles.tatDeliveryText}>
+            {`(${defaultAddress?.zipcode}) by ${testSlot}`}
+          </Text>
+      </Text> : noPincode ? <Text style={styles.tatText}>{noPincode}</Text> : null
   };
 
   const renderPrescriptions = () => {
@@ -1204,23 +1217,16 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                     </>
                   );
               })}
-              <View style={styles.tatContainer}>
-                {tatContent.length ? (
+              <TouchableOpacity
+                style={styles.tatContainer}
+                onPress={onAddToCart}>
+                {tatContent.length ?
                   <View>
                     {priscTatText()}
-                    <Text style={styles.tatText}>
-                      {tatContent.find((item) => item.isMedicine)['discount']}
-                    </Text>
-                  </View>
-                ) : null}
-                <TouchableOpacity
-                  onPress={() => {
-                    onAddToCart();
-                  }}
-                >
+                    <Text style={styles.tatText}>{tatContent.find(item => item.isMedicine)['discount']}</Text>
+                  </View> : null}
                   <Text style={styles.quickActionButtons}>ORDER MEDICINES</Text>
-                </TouchableOpacity>
-              </View>
+              </TouchableOpacity>
             </View>
           </View>
         ) : (
@@ -1346,25 +1352,22 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 </>
               );
             })}
-            <View style={styles.tatContainer}>
-              {tatContent.length ? (
-                <View>
-                  {testTatText()}
-                  <Text style={styles.tatText}>{testTat['discount']}</Text>
-                  <Text style={styles.tatText}>{testTat['reportTime']}</Text>
-                </View>
-              ) : null}
-              <TouchableOpacity
-                onPress={() => {
-                  postWEGEvent('test');
-                  onAddTestsToCart();
-                }}
-              >
+            <TouchableOpacity
+              style={styles.tatContainer}
+              onPress={() => {
+                postWEGEvent('test');
+                onAddTestsToCart();
+              }}>
+              {tatContent.length ?
+                  <View>
+                    {testTatText()}
+                    <Text style={styles.tatText}>{testTat['discount']}</Text>
+                    <Text style={styles.tatText}>{testTat['reportTime']}</Text>
+                  </View> : null}
                 <Text style={styles.quickActionButtons}>
                   {strings.health_records_home.order_test}
                 </Text>
-              </TouchableOpacity>
-            </View>
+            </TouchableOpacity>
           </View>
         ) : (
           renderNoData('No Tests')
