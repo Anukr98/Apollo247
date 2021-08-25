@@ -79,6 +79,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const orderId = navigation.getParam('orderId') || '';
   const refund = navigation.getParam('refund') || [];
   const payment = navigation.getParam('payment') || [];
+  const [fetchRefund, setFetchRefund] = useState<any[]>([]);
+  const [fetchPayment, setFetchPayment] = useState<any[]>([]);
   const isOrderRelatedIssue = navigation.getParam('isOrderRelatedIssue') || false;
   const additionalInfo = navigation.getParam('additionalInfo') || false;
   const [showEmailPopup, setShowEmailPopup] = useState<boolean>(email ? false : true);
