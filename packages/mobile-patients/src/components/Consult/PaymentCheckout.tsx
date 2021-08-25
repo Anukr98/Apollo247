@@ -270,9 +270,11 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     (circleSubscriptionId || circlePlanSelected) && discountedPrice ? discountedPrice : 0;
   const { cusId, isfetchingId } = useGetJuspayId();
   const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
+  const isCirclePricing =  circleSubscriptionId || circlePlanSelected
 
   useEffect(() => {
     verifyCoupon();
+    setBookingAmount();
   }, [circlePlanSelected]);
 
   useEffect(() => {
@@ -298,11 +300,19 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   };
 
   const setBookingAmount = () => {
-    const onlineDrPricing = doctor?.doctorPricing.find((item: any) => 
-    item.available_to == 'ALL' && item.appointment_type == 'ONLINE')
+    let onlineDrPricing;
+    if(isCirclePricing){
+      onlineDrPricing = doctor?.doctorPricing.find((item: any) => 
+      item.available_to == 'CARE_PLAN' && item.appointment_type == 'ONLINE')
+    } else {
+      onlineDrPricing = doctor?.doctorPricing.find((item: any) => 
+      item.available_to == 'ALL' && item.appointment_type == 'ONLINE')
+    }
     const {bookingFee, isBookingFeeExempted} = onlineDrPricing || {}
-    setBookingFee(bookingFee);
-    setIsBookingFeeExempted(isBookingFeeExempted); 
+    if(bookingFee){
+      setBookingFee(bookingFee);
+      setIsBookingFeeExempted(isBookingFeeExempted);
+    }
   }
 
   const bookAppointment = () => {
@@ -1280,8 +1290,14 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   };
 
   const getOriginalBookingAmt = () => {
-    const onlineDrPricing = doctor?.doctorPricing.find((item: any) => 
-    item.available_to == 'ALL' && item.appointment_type == 'ONLINE')
+    let onlineDrPricing;
+    if(isCirclePricing){
+      onlineDrPricing = doctor?.doctorPricing.find((item: any) => 
+      item.available_to == 'CARE_PLAN' && item.appointment_type == 'ONLINE')
+    } else {
+      onlineDrPricing = doctor?.doctorPricing.find((item: any) => 
+      item.available_to == 'ALL' && item.appointment_type == 'ONLINE')
+    }
     let {bookingFee, isBookingFeeExempted} = onlineDrPricing || {}
     const billAmount =
       circlePlanSelected && isCircleDoctorOnSelectedConsultMode
