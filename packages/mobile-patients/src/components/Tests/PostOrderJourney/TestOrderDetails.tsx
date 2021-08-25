@@ -132,7 +132,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
   );
   const [showRateDiagnosticBtn, setShowRateDiagnosticBtn] = useState(false);
-  const [showOrderCompleteText, setShowOrderCompleteText] = useState(false);
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
