@@ -643,6 +643,19 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     );
   };
 
+  const renderWhatsAppUpdates = () => {
+    return (
+      <View style={{ alignItems: 'center' }}>
+        <WhatsAppStatus
+          onPress={() => {
+            whatsAppUpdate ? setWhatsAppUpdate(false) : setWhatsAppUpdate(true);
+          }}
+          isSelected={whatsAppUpdate}
+        />
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -658,15 +671,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           {uploadPrescriptionRequired &&
             prescriptionType === PrescriptionType.UPLOADED &&
             renderPrescriptions()}
-          {
-            <WhatsAppStatus
-              onPress={() => {
-                whatsAppUpdate ? setWhatsAppUpdate(false) : setWhatsAppUpdate(true);
-                console.log('csk w status', whatsAppUpdate);
-              }}
-              isSelected={whatsAppUpdate}
-            />
-          }
+          {renderWhatsAppUpdates()}
         </ScrollView>
         {renderButton()}
         {(loading || !hyperSdkInitialized) && <Spinner />}
