@@ -409,6 +409,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         }
         id
         hideHealthRecordNudge
+        discountedAmount
         patientId
         doctorId
         appointmentDateTime
@@ -578,6 +579,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         }
         id
         hideHealthRecordNudge
+        discountedAmount
         patientId
         doctorId
         appointmentDateTime
@@ -747,6 +749,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         }
         id
         hideHealthRecordNudge
+        discountedAmount
         patientId
         doctorId
         appointmentDateTime
@@ -916,6 +919,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         }
         id
         hideHealthRecordNudge
+        discountedAmount
         patientId
         doctorId
         appointmentDateTime
@@ -1149,6 +1153,8 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
         status
         mrp
         appointment_type
+        bookingFee
+        isBookingFeeExempted
       }
       availabilityTitle {
         AVAILABLE_NOW

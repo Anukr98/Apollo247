@@ -204,6 +204,7 @@ export interface getPatientAllAppointments_getPatientAllAppointments_cancelledAp
   appointmentPayments: (getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_appointmentPayments | null)[] | null;
   id: string;
   hideHealthRecordNudge: boolean | null;
+  discountedAmount: number | null;
   patientId: string;
   doctorId: string;
   appointmentDateTime: any;
@@ -419,6 +420,7 @@ export interface getPatientAllAppointments_getPatientAllAppointments_followUpApp
   appointmentPayments: (getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_appointmentPayments | null)[] | null;
   id: string;
   hideHealthRecordNudge: boolean | null;
+  discountedAmount: number | null;
   patientId: string;
   doctorId: string;
   appointmentDateTime: any;
@@ -634,6 +636,7 @@ export interface getPatientAllAppointments_getPatientAllAppointments_activeAppoi
   appointmentPayments: (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_appointmentPayments | null)[] | null;
   id: string;
   hideHealthRecordNudge: boolean | null;
+  discountedAmount: number | null;
   patientId: string;
   doctorId: string;
   appointmentDateTime: any;
@@ -849,6 +852,7 @@ export interface getPatientAllAppointments_getPatientAllAppointments_completedAp
   appointmentPayments: (getPatientAllAppointments_getPatientAllAppointments_completedAppointments_appointmentPayments | null)[] | null;
   id: string;
   hideHealthRecordNudge: boolean | null;
+  discountedAmount: number | null;
   patientId: string;
   doctorId: string;
   appointmentDateTime: any;

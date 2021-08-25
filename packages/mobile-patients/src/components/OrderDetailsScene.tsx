@@ -2161,6 +2161,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       medicineOrderStatusDate: currentStatusDate,
       email,
       sourcePage: 'Order Details',
+      refund: refundDetails,
+      payment: paymentDetails,
     });
   };
 
@@ -2223,7 +2225,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               <View style={[styles.reOrderButtonTransparentTopView, { top: -(idx + 1) * 2 }]} />
             ))}
           <Button
-            style={{ width: '74.16%', alignSelf: 'center', marginTop: 9, marginBottom: 17 }}
+            style={styles.cancelOrderButton}
             onPress={showCancelOrder}
             title={'CANCEL ORDER'}
           />
@@ -2521,5 +2523,11 @@ const styles = StyleSheet.create({
   goToHelp: {
     textAlign: 'center',
     ...theme.viewStyles.text('B', 14, '#FC9916'),
+  },
+  cancelOrderButton: {
+    width: '74.16%',
+    alignSelf: 'center',
+    marginTop: 9,
+    marginBottom: 17,
   },
 });

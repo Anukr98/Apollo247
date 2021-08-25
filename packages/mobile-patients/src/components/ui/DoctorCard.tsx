@@ -337,7 +337,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     }
     props.navigation.navigate(AppRoutes.SlotSelection, {
       doctorId: id,
-      consultModeSelected: onlineConsult ? ConsultMode.ONLINE : ConsultMode.PHYSICAL,
+      consultModeSelected: onlineConsult ? 
+        string.consultModeTab.VIDEO_CONSULT :
+        string.consultModeTab.HOSPITAL_VISIT,
       externalConnect: null,
       callSaveSearch: props.callSaveSearch,
       ...params,

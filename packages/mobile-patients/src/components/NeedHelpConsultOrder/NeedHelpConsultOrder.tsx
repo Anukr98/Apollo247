@@ -134,6 +134,7 @@ export const NeedHelpConsultOrder: React.FC<Props> = ({ navigation }) => {
         email,
         isConsult: true,
         queries,
+        pathFollowed: string.otherIssueNotMyConsults + ' - ',
       });
     };
     return <AphListItem title={string.otherIssueNotMyConsults} onPress={onPress} />;

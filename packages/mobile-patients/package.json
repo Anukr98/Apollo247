@@ -90,7 +90,7 @@
     "decimal.js": "^10.3.1",
     "graphql": "^14.5.3",
     "graphql-tag": "^2.10.1",
-    "hyper-sdk-react": "^2.0.10",
+    "hyper-sdk-react": "^2.0.19",
     "jsc-android": "^250230.2.1",
     "jwt-decode": "^2.2.0",
     "lodash": "^4.17.15",

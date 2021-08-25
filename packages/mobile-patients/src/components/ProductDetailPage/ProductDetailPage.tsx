@@ -522,6 +522,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         price,
         special_price,
         category_id,
+        subcategory,
       } = medicineDetails;
       const stock_availability =
         sell_online == 0 ? 'Not for Sale' : !!isProductInStock ? 'Yes' : 'No';
@@ -569,6 +570,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         MRP: price,
         SpecialPrice: special_price || undefined,
         CircleCashback: Number(cashback) || 0,
+        SubCategory: subcategory || '',
       };
       if (movedFrom === 'deeplink') {
         eventAttributes['Circle Membership Added'] = circleID
@@ -757,6 +759,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       setdeliveryError(pincodeServiceableItemOutOfStockMsg);
       setdeliveryTime('');
       setshowDeliverySpinner(false);
+      setIsInStock(false);
     }
   };
 
@@ -1081,10 +1084,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   );
               }}
             >
-              <Breadcrumb
+              {/* Intentionally commented, do not remove, will be modified and used later */}
+              {/* <Breadcrumb
                 links={pdpBreadCrumbs}
                 containerStyle={{ borderBottomWidth: 1, borderBottomColor: '#E5E5E5' }}
-              />
+              /> */}
               <ProductNameImage
                 name={medicineDetails?.name}
                 images={medicineDetails?.image}
@@ -1200,8 +1204,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   navigation={props.navigation}
                 />
               )}
-              {!!medicineDetails?.marketer_address && (
-                <ProductManufacturer address={medicineDetails?.marketer_address} />
+              {(!!medicineDetails?.marketer_address || !!medicineDetails?.country_of_origin) && (
+                <ProductManufacturer
+                  address={medicineDetails?.marketer_address}
+                  origin={medicineDetails?.country_of_origin}
+                />
               )}
               {renderDisclaimerMessage()}
               <View style={{ height: 130 }} />
