@@ -939,7 +939,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           style={[
             styles.addressOutermostView,
             {
-              minHeight: screenHeight > 800 ? 145 : screenHeight < 600 ? 160 : 170,
+              minHeight: screenHeight > 800 ? 150 : screenHeight < 600 ? 165 : 175,
             },
           ]}
         >
