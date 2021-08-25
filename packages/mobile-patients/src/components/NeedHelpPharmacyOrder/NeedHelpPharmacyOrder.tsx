@@ -152,6 +152,7 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
         queries,
         email,
         sourcePage,
+        pathFollowed: string.otherIssueNotMyOrders + ' - ',
       });
     };
     return <AphListItem title={string.otherIssueNotMyOrders} onPress={onPress} />;

@@ -31,9 +31,13 @@ import {
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  GET_CUSTOMIZED_DIAGNOSTIC_SLOTS, GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
-  GET_DIAGNOSTIC_NEAREST_AREA, GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES, GET_PATIENT_ADDRESS_LIST,
-  GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS } from '@aph/mobile-patients/src/graphql/profiles';
+  GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
+  GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+  GET_DIAGNOSTIC_NEAREST_AREA,
+  GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
+  GET_PATIENT_ADDRESS_LIST,
+  GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { ProfileImageComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/ProfileImageComponent';
 import { getAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import {
@@ -65,6 +69,7 @@ import {
   postWebEngageEvent,
   postCleverTapPHR,
   postCleverTapEvent,
+  getCleverTapCircleMemberValues,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   CleverTapEventName,
@@ -96,19 +101,36 @@ import { ListItem } from 'react-native-elements';
 import _ from 'lodash';
 import { AxiosResponse } from 'axios';
 import {
-  availabilityApi247, getDeliveryTAT, getDiagnosticDoctorPrescriptionResults, 
-  getMedicineDetailsApi, getTatStaticContent, MedicineProductDetailsResponse} from '../../helpers/apiCalls';
+  availabilityApi247,
+  getDeliveryTAT,
+  getDiagnosticDoctorPrescriptionResults,
+  getMedicineDetailsApi,
+  getTatStaticContent,
+  MedicineProductDetailsResponse,
+} from '../../helpers/apiCalls';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/Events';
 import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
 import InAppReview from 'react-native-in-app-review';
 import {
-  getPatientAddressList, getPatientAddressListVariables, 
-  getPatientAddressList_getPatientAddressList_addressList } from '../../graphql/types/getPatientAddressList';
-import { getPincodeServiceability, getPincodeServiceabilityVariables } from '../../graphql/types/getPincodeServiceability';
-import { findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables } from '../../graphql/types/findDiagnosticsByItemIDsAndCityID';
+  getPatientAddressList,
+  getPatientAddressListVariables,
+  getPatientAddressList_getPatientAddressList_addressList,
+} from '../../graphql/types/getPatientAddressList';
+import {
+  getPincodeServiceability,
+  getPincodeServiceabilityVariables,
+} from '../../graphql/types/getPincodeServiceability';
+import {
+  findDiagnosticsByItemIDsAndCityID,
+  findDiagnosticsByItemIDsAndCityIDVariables,
+} from '../../graphql/types/findDiagnosticsByItemIDsAndCityID';
 import { getNearestArea, getNearestAreaVariables } from '../../graphql/types/getNearestArea';
-import { getDiagnosticSlotsCustomized, getDiagnosticSlotsCustomizedVariables } from '../../graphql/types/getDiagnosticSlotsCustomized';
+import {
+  getDiagnosticSlotsCustomized,
+  getDiagnosticSlotsCustomizedVariables,
+} from '../../graphql/types/getDiagnosticSlotsCustomized';
+import DeviceInfo from 'react-native-device-info';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -325,16 +347,21 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const [showNotExistAlert, setshowNotExistAlert] = useState<boolean>(false);
   const [APICalled, setAPICalled] = useState<boolean>(false);
   const [showReferral, setShowReferral] = useState<boolean>(true);
-  const [defaultAddress, setDefaultAddress] = useState<getPatientAddressList_getPatientAddressList_addressList>()
+  const [defaultAddress, setDefaultAddress] = useState<
+    getPatientAddressList_getPatientAddressList_addressList
+  >();
   const [cityId, setCityId] = useState<number>(0);
-  const [testIds, setTestIds] = useState<number[]>([])
-  const [testAvailability, setTestAvailability] = useState<availability>('unavailable')
-  const [prescAvailability, setPrescAvailability] = useState<availability>('unavailable')
-  const [tatContent, setTatContent] = useState<any[]>([])
-  const [tat, setTat] = useState<string>('')
+  const [testIds, setTestIds] = useState<number[]>([]);
+  const [testAvailability, setTestAvailability] = useState<availability>('unavailable');
+  const [prescAvailability, setPrescAvailability] = useState<availability>('unavailable');
+  const [tatContent, setTatContent] = useState<any[]>([]);
+  const [tat, setTat] = useState<string>('');
   const [testSlot, setTestSlot] = useState<string>('');
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
+
+  const { pharmacyUserTypeAttribute } = useAppCommonData();
+  const { pharmacyCircleAttributes } = useShoppingCart();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -356,18 +383,18 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if(caseSheetDetails && !defaultAddress){
+    if (caseSheetDetails && !defaultAddress) {
       getAddressList();
-    } else if(defaultAddress && !testIds.length) {
+    } else if (defaultAddress && !testIds.length) {
       getPincodeServicibility(Number(defaultAddress?.zipcode));
-      if(caseSheetDetails?.medicinePrescription?.length){
+      if (caseSheetDetails?.medicinePrescription?.length) {
         checkMedicineAvailability();
       }
     } else {
       getNearestArea();
     }
-  }, [caseSheetDetails, defaultAddress, testIds])
-  
+  }, [caseSheetDetails, defaultAddress, testIds]);
+
   useEffect(() => {
     setLoading && setLoading(true);
     client
@@ -408,8 +435,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       })
       .then(async (data) => {
         const tatData = await getTatStaticContent();
-        if(tatData?.data){
-          setTatContent(tatData?.data?.data?.response)
+        if (tatData?.data) {
+          setTatContent(tatData?.data?.data?.response);
         }
         if (data) {
           const addressList = data?.data?.getPatientAddressList?.addressList || [];
@@ -434,7 +461,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         setLoading && setLoading(false);
       });
   };
-  
+
   const checkMedicineAvailability = async () => {
     const skus = caseSheetDetails?.medicinePrescription?.map((item: any) => item?.id);
     const data = await availabilityApi247(defaultAddress?.zipcode || '', skus?.join(','));
@@ -449,14 +476,14 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         pincode: defaultAddress?.zipcode!,
         items: skuItems,
       });
-      if(data?.data?.response){
-        const {tat} = data?.data?.response;
-        setTat(moment(tat, 'DD-MMM-YYYY HH:mm').format('h:mm A, DD MMM YYYY'));        
-      }else {
+      if (data?.data?.response) {
+        const { tat } = data?.data?.response;
+        setTat(moment(tat, 'DD-MMM-YYYY HH:mm').format('h:mm A, DD MMM YYYY'));
+      } else {
         setLoading && setLoading(false);
       }
     }
-  }
+  };
 
   const getPincodeServicibility = (pinCodeFromAddress: number) => {
     client
@@ -468,19 +495,21 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then(async (data) => {
-        const {cityID} = data?.data?.getPincodeServiceability || {};
-        if(cityID){
+        const { cityID } = data?.data?.getPincodeServiceability || {};
+        if (cityID) {
           setCityId(cityID);
-          const items = caseSheetDetails?.diagnosticPrescription?.filter(
-            (val) => val?.itemname)?.map((item) => item?.itemname);
+          const items = caseSheetDetails?.diagnosticPrescription
+            ?.filter((val) => val?.itemname)
+            ?.map((item) => item?.itemname);
           const formattedItemNames = items?.map((item) => item)?.join('|');
-          
+
           const diagnosticResults = await getDiagnosticDoctorPrescriptionResults(
             formattedItemNames || ''
           );
-          const itemIds = diagnosticResults?.data?.data?.map(
-            (item: any) => Number(item?.diagnostic_item_id));
-          getTestCityServicibility(itemIds, cityID)
+          const itemIds = diagnosticResults?.data?.data?.map((item: any) =>
+            Number(item?.diagnostic_item_id)
+          );
+          getTestCityServicibility(itemIds, cityID);
         }
       })
       .catch((error) => {
@@ -501,13 +530,12 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
-        const {diagnostics} = data?.data?.findDiagnosticsByItemIDsAndCityID || {};
-        if(diagnostics?.length){
-          setTestAvailability(diagnostics?.length == testIds.length ? 'available' 
-          : 'partial')
+        const { diagnostics } = data?.data?.findDiagnosticsByItemIDsAndCityID || {};
+        if (diagnostics?.length) {
+          setTestAvailability(diagnostics?.length == testIds.length ? 'available' : 'partial');
           const availableTestIds = diagnostics?.map((item: any) => item?.itemId);
           setTestIds(availableTestIds);
-        }else{
+        } else {
           setLoading && setLoading(false);
         }
       })
@@ -522,19 +550,27 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       .query<getNearestArea, getNearestAreaVariables>({
         query: GET_DIAGNOSTIC_NEAREST_AREA,
         variables: {
-          patientAddressId: defaultAddress?.id || ''
+          patientAddressId: defaultAddress?.id || '',
         },
         fetchPolicy: 'no-cache',
-      }).then(async (data) => {
+      })
+      .then(async (data) => {
         const areaId = data?.data?.getNearestArea?.area?.id;
-        if(areaId) {          
-          for(let i = 0; i < slotFetchCount; i++){
-            const response = await getDiagnosticSlots(areaId, moment(new Date()).
-            add(i,'days').format('YYYY-MM-DD'));
-            const {slots} =  response?.data.getDiagnosticSlotsCustomized || {};
-            if(slots?.length){
-              const slotDateTime = moment(slots[0]?.Timeslot, ["HH:mm"]).format("h:mm A, ") 
-              + moment(new Date()).add(i,'days').format('DD MMM YYYY')
+        if (areaId) {
+          for (let i = 0; i < slotFetchCount; i++) {
+            const response = await getDiagnosticSlots(
+              areaId,
+              moment(new Date())
+                .add(i, 'days')
+                .format('YYYY-MM-DD')
+            );
+            const { slots } = response?.data.getDiagnosticSlotsCustomized || {};
+            if (slots?.length) {
+              const slotDateTime =
+                moment(slots[0]?.Timeslot, ['HH:mm']).format('h:mm A, ') +
+                moment(new Date())
+                  .add(i, 'days')
+                  .format('DD MMM YYYY');
               setTestSlot(slotDateTime);
               setLoading && setLoading(false);
               break;
@@ -545,34 +581,36 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       .catch((error) => {
         setLoading && setLoading(false);
         CommonBugFender('NearestArea', error);
-      });;
+      });
   };
 
   const getDiagnosticSlots = async (areaID: number, date: string) => {
-    const res = await client
-      .query<getDiagnosticSlotsCustomized, getDiagnosticSlotsCustomizedVariables>({
-        query: GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
-        fetchPolicy: 'no-cache',
-        variables: {
-          selectedDate: date,
-          areaID,
-          itemIds: testIds,
-          patientAddressObj: {
-            addressLine1: defaultAddress?.addressLine1,
-            addressLine2: defaultAddress?.addressLine2,
-            addressType: defaultAddress?.addressType,
-            city: defaultAddress?.city,
-            landmark: defaultAddress?.landmark,
-            latitude: defaultAddress?.latitude,
-            longitude: defaultAddress?.longitude,
-            state: defaultAddress?.state,
-            zipcode: defaultAddress?.zipcode,
-            },
-          },
-        })
+    const res = await client.query<
+      getDiagnosticSlotsCustomized,
+      getDiagnosticSlotsCustomizedVariables
+    >({
+      query: GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
+      fetchPolicy: 'no-cache',
+      variables: {
+        selectedDate: date,
+        areaID,
+        itemIds: testIds,
+        patientAddressObj: {
+          addressLine1: defaultAddress?.addressLine1,
+          addressLine2: defaultAddress?.addressLine2,
+          addressType: defaultAddress?.addressType,
+          city: defaultAddress?.city,
+          landmark: defaultAddress?.landmark,
+          latitude: defaultAddress?.latitude,
+          longitude: defaultAddress?.longitude,
+          state: defaultAddress?.state,
+          zipcode: defaultAddress?.zipcode,
+        },
+      },
+    });
     return res;
-  }
-  
+  };
+
   const postWEGEvent = (
     type: 'medicine' | 'test' | 'download prescription',
     medOrderType?: CleverTapEvents[CleverTapEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS]['Order Type']
@@ -630,24 +668,18 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         : CleverTapEventName.DOWNLOAD_PRESCRIPTION,
       eventAttributes
     );
-    if(type == 'medicine'){
-      postWebEngageEvent(
-        CleverTapEventName.Order_Medicine_From_View_Prescription,
-        {
-          'Booking Source': 'APP'
-        }
-      );
+    if (type == 'medicine') {
+      postWebEngageEvent(CleverTapEventName.Order_Medicine_From_View_Prescription, {
+        'Booking Source': 'APP',
+      });
     }
-    
-    if(type == 'test'){
-      postWebEngageEvent(
-        CleverTapEventName.Book_Tests_From_View_Prescription,
-        {
-          'Booking Source': 'APP'
-        }
-      );
+
+    if (type == 'test') {
+      postWebEngageEvent(CleverTapEventName.Book_Tests_From_View_Prescription, {
+        'Booking Source': 'APP',
+      });
     }
-    
+
     postCleverTapEvent(
       type == 'medicine'
         ? CleverTapEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS
@@ -658,6 +690,33 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     );
   };
 
+  const postCleverTapEventForTrackingAppReview = async () => {
+    const uniqueId = await DeviceInfo.getUniqueId();
+    const eventAttributes: CleverTapEvents[CleverTapEventName.PLAYSTORE_APP_REVIEW_AND_RATING] = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'User Type': pharmacyUserTypeAttribute?.User_Type || '',
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      'CT Source': Platform.OS,
+      'Device ID': uniqueId,
+      'Circle Member':
+        getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+        '',
+      'Page Name': 'Consultation Details',
+      'NAV Source': 'Consult',
+    };
+    postCleverTapEvent(
+      Platform.OS == 'android'
+        ? CleverTapEventName.APP_REVIEW_AND_RATING_TO_PLAYSTORE
+        : CleverTapEventName.APP_REVIEW_AND_RATING_TO_APPSTORE,
+      eventAttributes
+    );
+  };
   const renderTopDetailsView = () => {
     return !g(caseSheetDetails, 'appointment', 'doctorInfo') ? null : (
       <View style={styles.topCardViewStyle}>
@@ -698,7 +757,15 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     try {
       if (g(data, 'appointment', 'doctorInfo')) {
         if (InAppReview.isAvailable()) {
-          await InAppReview.RequestInAppReview();
+          await InAppReview.RequestInAppReview()
+            .then((hasFlowFinishedSuccessfully) => {
+              if (hasFlowFinishedSuccessfully) {
+                postCleverTapEventForTrackingAppReview();
+              }
+            })
+            .catch((error) => {
+              CommonBugFender('inAppReviewForDoctorConsult', error);
+            });
         }
       }
     } catch (error) {
@@ -1253,8 +1320,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   };
 
   const renderTestNotes = () => {
-    const testTat = tatContent.length && 
-      tatContent.find(item => item.isTest);
+    const testTat = tatContent.length && tatContent.find((item) => item.isTest);
     return (
       <>
         {renderHeadingView(
@@ -1283,6 +1349,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 </>
               );
             })}
+<<<<<<< HEAD
             <TouchableOpacity
               style={styles.tatContainer}
               onPress={() => {
@@ -1295,6 +1362,22 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                     <Text style={styles.tatText}>{testTat['discount']}</Text>
                     <Text style={styles.tatText}>{testTat['reportTime']}</Text>
                   </View> : null}
+=======
+            <View style={styles.tatContainer}>
+              {tatContent.length ? (
+                <View>
+                  {testTatText()}
+                  <Text style={styles.tatText}>{testTat['discount']}</Text>
+                  <Text style={styles.tatText}>{testTat['reportTime']}</Text>
+                </View>
+              ) : null}
+              <TouchableOpacity
+                onPress={() => {
+                  postWEGEvent('test');
+                  onAddTestsToCart();
+                }}
+              >
+>>>>>>> release/v5.8.0
                 <Text style={styles.quickActionButtons}>
                   {strings.health_records_home.order_test}
                 </Text>

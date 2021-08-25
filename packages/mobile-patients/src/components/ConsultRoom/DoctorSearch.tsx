@@ -1544,6 +1544,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 : props.navigation.navigate(AppRoutes.DoctorDetails, {
                     doctorId: item?.id,
                     callSaveSearch: 'true',
+                    consultModeSelected: item?.consultMode,
                   });
             }}
           />

@@ -47,7 +47,7 @@ export const Bank: React.FC<BankProps> = (props) => {
         <AlertRed style={styles.alertIcon} />
         <Text style={styles.outageMsg}>
           {outageStatus == 'FLUCTUATE'
-            ? 'Experiencing high failures. Please try another option'
+            ? 'Experiencing high failures. Please try another option, if possible.'
             : 'Disabled due to  high failures. Please try another option'}
         </Text>
       </View>

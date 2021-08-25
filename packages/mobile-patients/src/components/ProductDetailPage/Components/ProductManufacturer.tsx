@@ -3,16 +3,27 @@ import { StyleSheet, View, Text } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 
 export interface ProductManufacturerProps {
-  address: string;
+  address?: string;
+  origin?: string;
 }
 
 export const ProductManufacturer: React.FC<ProductManufacturerProps> = (props) => {
-  const { address } = props;
+  const { address, origin } = props;
 
   return (
     <View style={styles.cardStyle}>
-      <Text style={styles.heading}>Manufacturer/Marketer address</Text>
-      <Text style={styles.subHeading}>{address}</Text>
+      {!!address && (
+        <View>
+          <Text style={styles.heading}>Manufacturer/Marketer Address</Text>
+          <Text style={styles.subHeading}>{address}</Text>
+        </View>
+      )}
+      {!!origin && (
+        <View>
+          <Text style={[styles.heading, { marginTop: 7 }]}>Country of Origin</Text>
+          <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 25, 0.35)}>{origin}</Text>
+        </View>
+      )}
     </View>
   );
 };

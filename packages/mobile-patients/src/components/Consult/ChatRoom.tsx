@@ -3648,7 +3648,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         mutation: POST_WEB_ENGAGE,
         variables: {
           doctorConsultEventInput: {
-            mobileNumber: phoneNumber || '',
+            mobileNumber: g(appointmentData, 'doctorInfo', 'mobileNumber'),
             eventName: WebEngageEvent.PATIENT_SENT_MESSAGE,
             consultID: g(appointmentData, 'id')!,
             displayId: String(g(appointmentData, 'displayId')!),

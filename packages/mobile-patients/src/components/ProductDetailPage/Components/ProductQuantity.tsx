@@ -4,6 +4,8 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { getMaxQtyForMedicineItem } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { DropdownBlueDown } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Substitutes } from '@aph/mobile-patients/src/components/Medicines/Components/Substitutes';
+import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 
 export interface ProductQuantityProps {
   maxOrderQuantity: number;
@@ -21,6 +23,8 @@ export interface ProductQuantityProps {
   isBanned: boolean;
   productForm: string;
   onNotifyMeClick: () => void;
+  isPharma: boolean;
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>;
 }
 
 export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
@@ -40,6 +44,7 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
     isBanned,
     productForm,
     onNotifyMeClick,
+    isPharma,
   } = props;
 
   const renderQuantity = () => {
@@ -108,6 +113,12 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
         {isSellOnline && renderQuantity()}
         {isSellOnline && !!packSize && !!productForm && !!packForm && renderPackSize()}
       </View>
+      <Substitutes
+        onPressAddToCart={onAddCartItem}
+        isProductInStock={isInStock}
+        isAlternative={!isPharma}
+        navigation={props.navigation}
+      />
       {isSellOnline && !isBanned && renderCartCTA()}
     </View>
   );

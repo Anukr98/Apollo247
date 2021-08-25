@@ -22,7 +22,7 @@ export const OutagePrompt: React.FC<OutagePromptProps> = (props) => {
         <Text
           style={{ ...styles.textStyle, color: outageStatus == 'DOWN' ? '#BF2600' : '#01475B' }}
         >
-          {`${msg} experiencing high failures. Please try another payment option.`}
+          {`${msg} experiencing high failures. Please try another payment option, if possible.`}
         </Text>
       </View>
     );
