@@ -127,7 +127,14 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     deliveryCharges,
   } = useShoppingCart();
   const [loading, setLoading] = useState<boolean>(true);
-  const [status, setStatus] = useState<string>(props.navigation.getParam('status'));
+  const { success, failure, aborted, pending } = Payment;
+  const [status, setStatus] = useState<string>(
+    props.navigation.getParam('paymentStatus') == 'success'
+      ? success
+      : props.navigation.getParam('paymentStatus') == 'pending'
+      ? pending
+      : pending
+  );
   const [paymentRefId, setpaymentRefId] = useState<string>('');
   const [orderDateTime, setorderDateTime] = useState('');
   const [paymentMode, setPaymentMode] = useState('');
@@ -148,7 +155,6 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const [isCircleBought, setIsCircleBought] = useState<boolean>(false);
   const [totalCashBack, setTotalCashBack] = useState<number>(0);
   const client = useApolloClient();
-  const { success, failure, aborted } = Payment;
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
@@ -192,12 +198,10 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
 
   useEffect(() => {
     setLoading(true);
-    const apiCall = GET_PHARMA_TRANSACTION_STATUS_V2;
     const variables = { paymentOrderId: transId };
-
     client
       .query({
-        query: apiCall,
+        query: GET_PHARMA_TRANSACTION_STATUS_V2,
         variables: variables,
         fetchPolicy: 'no-cache',
       })
@@ -205,7 +209,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         const pharmaPaymentStatus = res?.data?.pharmaPaymentStatusV2;
         setorderDateTime(pharmaPaymentStatus?.orderDateTime);
         setpaymentRefId(pharmaPaymentStatus?.paymentRefId);
-        setStatus(pharmaPaymentStatus?.paymentStatus);
+        status == pending && setStatus(pharmaPaymentStatus?.paymentStatus);
         setPaymentMode(pharmaPaymentStatus?.paymentMode);
         setTransactionId(pharmaPaymentStatus?.bankTxnId);
         setIsCircleBought(!!pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
