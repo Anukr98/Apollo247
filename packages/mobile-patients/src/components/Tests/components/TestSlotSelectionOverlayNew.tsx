@@ -169,6 +169,10 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     }
   }, [date, props.isFocus]);
 
+  useEffect(() => {
+    changeOverallSlots();
+  }, [selectedDayTab]);
+
   const fetchSlots = async (updatedDate?: Date) => {
     let dateToCheck = !!updatedDate
       ? moment(updatedDate)?.format('YYYY-MM-DD')
@@ -266,13 +270,13 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     let getAfternoonSlots: Array<SlotsType> = [];
     let getMorningSlots: Array<SlotsType> = [];
 
-    getEveningSlots = overallSlots?.filter((item: any) => {
+    getAfternoonSlots = overallSlots?.filter((item: any) => {
       if (time24(item) >= '12' && time24(item) < '17') {
         return item;
       }
     });
 
-    getAfternoonSlots = overallSlots?.filter((item: any) => {
+    getEveningSlots = overallSlots?.filter((item: any) => {
       //changed from < 6 to 23
       if (time24(item) >= '17' && time24(item) < '23') {
         return item;
@@ -311,6 +315,18 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
       inactiveImage: <Night />,
       title: 'Evening',
     });
+  }
+
+  function changeOverallSlots() {
+    if (selectedDayTab == 1) {
+      setOverallSlotsArray(afternoonSlots);
+    }
+    if (selectedDayTab == 2) {
+      setOverallSlotsArray(eveningSlots);
+    }
+    if (selectedDayTab == 0) {
+      setOverallSlotsArray(morningSlots);
+    }
   }
 
   const renderPremiumTag = () => {
