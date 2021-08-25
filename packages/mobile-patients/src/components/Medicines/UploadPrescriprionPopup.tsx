@@ -65,6 +65,7 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { postCleverTapUploadPrescriptionEvents } from '@aph/mobile-patients/src/components/UploadPrescription/Events';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -253,6 +254,9 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
       CleverTapEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED,
       cleverTapEventAttributes
     );
+    if (props.type == 'cartOrMedicineFlow') {
+      postCleverTapUploadPrescriptionEvents('Gallery', 'Cart');
+    }
   };
 
   useEffect(() => {
@@ -599,6 +603,9 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
             onPress={() => {
               postUPrescriptionWEGEvent('E-Rx');
               postCleverTapUPrescriptionEvents('My Prescription');
+              if (props.type == 'cartOrMedicineFlow') {
+                postCleverTapUploadPrescriptionEvents('My Prescription', 'Cart');
+              }
               props.onResponse('E-PRESCRIPTION', []);
             }}
           >

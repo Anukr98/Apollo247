@@ -529,6 +529,8 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
             setCircleMembershipCharges && setCircleMembershipCharges(0);
             selectDefaultPlan && selectDefaultPlan(membershipPlans);
           } else {
+            setIsCircleSubscription && setIsCircleSubscription(false);
+            setCircleMembershipCharges && setCircleMembershipCharges(0);
             setDefaultCirclePlan && setDefaultCirclePlan(null);
             setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
           }

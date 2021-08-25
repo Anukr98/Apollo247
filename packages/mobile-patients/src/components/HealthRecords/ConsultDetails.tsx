@@ -131,6 +131,7 @@ import {
   getDiagnosticSlotsCustomizedVariables,
 } from '../../graphql/types/getDiagnosticSlotsCustomized';
 import DeviceInfo from 'react-native-device-info';
+import { postCleverTapUploadPrescriptionEvents } from '@aph/mobile-patients/src/components/UploadPrescription/Events';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -1001,6 +1002,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         addMultipleCartItems?.(cartItems);
         setEPrescriptions?.([presToAdd]);
         setLoading?.(false);
+        postCleverTapUploadPrescriptionEvents('Health Records', 'Cart');
         props.navigation.push(AppRoutes.MedicineCart);
       } catch (error) {
         setLoading?.(false);
@@ -1014,6 +1016,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     }
 
     setEPrescriptions?.([presToAdd]);
+    postCleverTapUploadPrescriptionEvents('Health Records', 'Non-Cart');
     props.navigation.navigate(AppRoutes.UploadPrescription, {
       ePrescriptionsProp: [presToAdd],
       type: 'E-Prescription',
