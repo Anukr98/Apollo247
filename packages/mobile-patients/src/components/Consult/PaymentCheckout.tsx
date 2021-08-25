@@ -300,11 +300,9 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   };
 
   const setBookingAmount = () => {
-    let onlineDrPricing;
-    if(isCirclePricing){
-      onlineDrPricing = doctor?.doctorPricing.find((item: any) => 
-      item.available_to == 'CARE_PLAN' && item.appointment_type == 'ONLINE')
-    } else {
+    let onlineDrPricing = doctor?.doctorPricing.find((item: any) => 
+      item.available_to == 'CARE_PLAN' && item.appointment_type == 'ONLINE');
+    if(!isCirclePricing || !onlineDrPricing){
       onlineDrPricing = doctor?.doctorPricing.find((item: any) => 
       item.available_to == 'ALL' && item.appointment_type == 'ONLINE')
     }
@@ -1291,10 +1289,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const getOriginalBookingAmt = () => {
     let onlineDrPricing;
-    if(isCirclePricing){
-      onlineDrPricing = doctor?.doctorPricing.find((item: any) => 
-      item.available_to == 'CARE_PLAN' && item.appointment_type == 'ONLINE')
-    } else {
+    if(!isCirclePricing || !onlineDrPricing){
       onlineDrPricing = doctor?.doctorPricing.find((item: any) => 
       item.available_to == 'ALL' && item.appointment_type == 'ONLINE')
     }
