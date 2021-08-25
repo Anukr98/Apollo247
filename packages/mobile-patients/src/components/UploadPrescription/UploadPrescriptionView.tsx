@@ -311,7 +311,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
             style={styles.cameraActionButton}
             onPress={() => {
               removeClickedPhoto();
-              postCleverTapUploadPrescriptionEvents('Gallery', 'Non-Cart');
+              postCleverTapUploadPrescriptionEvents('Camera', 'Non-Cart');
               props.navigation.navigate(AppRoutes.UploadPrescription, {
                 type: 'Camera',
                 phyPrescriptionsProp: [...phyPrescriptionUploaded, ...imageClickData],
@@ -485,28 +485,13 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
   ];
 
   const postUPrescriptionWEGEvent = (
-    source:
-      | WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
-      | CleverTapEvents[CleverTapEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
+    source: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED] = {
       Source: source,
       'Upload Source': 'Upload Flow',
     };
     postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED, eventAttributes);
-  };
-
-  const postCleverTapUPrescriptionEvents = (
-    source: CleverTapEvents[CleverTapEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
-  ) => {
-    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED] = {
-      Source: source,
-      Location: 'Upload Flow',
-    };
-    postCleverTapEvent(
-      CleverTapEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED,
-      cleverTapEventAttributes
-    );
   };
 
   const getBase64 = (response: DocumentPickerResponse[]): Promise<string>[] => {
@@ -527,7 +512,6 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
 
   const onBrowseClicked = async () => {
     postUPrescriptionWEGEvent('Choose Gallery');
-    postCleverTapUPrescriptionEvents('Gallery');
     CommonLogEvent('UPLOAD_PRESCRIPTION_POPUP', 'Gallery opened');
     const eventAttributes: WebEngageEvents['Upload Photo'] = {
       Source: 'Gallery',
@@ -585,7 +569,6 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
 
   const openGallery = () => {
     postUPrescriptionWEGEvent('Choose Gallery');
-    postCleverTapUPrescriptionEvents('Gallery');
     CommonLogEvent('UPLAOD_PRESCRIPTION_POPUP', 'Gallery opened');
 
     const eventAttributes: WebEngageEvents['Upload Photo'] = {

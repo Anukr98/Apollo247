@@ -122,7 +122,6 @@ export enum CleverTapEventName {
   PHARMACY_PAYMENT_INSTRUMENT_SELECTED = 'Pharmacy Payment Instrument Selected',
   PHARMACY_NONCART_ORDER_SUBMIT_CLICKED = 'Pharmacy Noncart Order Submit Clicked',
   UPLOAD_PRESCRIPTION_OPTION_SELECTED = 'Upload Prescription Option Selected',
-  UPLOAD_PRESCRIPTION_IMAGE_UPLOADED = 'Upload Prescription Image Uploaded',
   BUY_MEDICINES = 'Pharmacy Buy Medicines Clicked',
   PHARMACY_CART_ADDRESS_SELECTED_SUCCESS = 'Pharmacy Address Selected Success',
   PHARMACY_COUPON_ACTION = 'Pharmacy Coupon Action',
@@ -1226,11 +1225,6 @@ export interface CleverTapEvents {
     NumberOfPrescriptionUploaded: number;
     NumberOfEPrescriptions: number;
     User_Type?: PharmaUserStatus;
-  };
-  [CleverTapEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]: {
-    Source: 'Camera' | 'Gallery' | 'My Prescription';
-    Location?: UploadPrescSource;
-    'User Type'?: PharmaUserStatus;
   };
   [CleverTapEventName.PHARMACY_NONCART_ORDER_SUBMIT_CLICKED]: {
     'Order ID': string | number;
@@ -2803,6 +2797,6 @@ export interface CleverTapEvents {
 
   [CleverTapEventName.PHARMACY_PRESCRIPTION_UPLOADED]: {
     Location: 'Cart' | 'Non-Cart';
-    Source: 'Gallery' | 'My Prescription' | 'Consult Room' | 'Health Records';
+    Source: 'Gallery' | 'Camera' | 'My Prescription' | 'Consult Room' | 'Health Records';
   };
 }
