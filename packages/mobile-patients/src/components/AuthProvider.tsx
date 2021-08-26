@@ -40,6 +40,7 @@ import WebEngage from 'react-native-webengage';
 import AsyncStorage from '@react-native-community/async-storage';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import loggingLink from '@aph/mobile-patients/src/helpers/loggingLink';
+import DeviceInfo from 'react-native-device-info';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then(
@@ -174,6 +175,8 @@ export const AuthProvider: React.FC = (props) => {
       headers: {
         ...headers,
         Authorization: !authToken.length ? 'Bearer 3d1833da7020e0602165529446587434' : authToken,
+        'x-app-OS': Platform.OS,
+        'x-app-version': DeviceInfo.getVersion(),
       },
     }));
     const httpLink = createHttpLink({
