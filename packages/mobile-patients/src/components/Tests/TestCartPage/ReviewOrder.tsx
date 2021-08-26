@@ -218,6 +218,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   let itemNamesToRemove_global: string[] = [];
   let itemIdsToRemove_global: Number[] = [];
   let itemIdsToKeep_global: Number[] = [];
+  let itemNamesToKeep_global: string[] = [];
   let setLowItemName: string[] = [],
     setHighPriceName: string[] = [];
 
@@ -1503,7 +1504,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           modifiedOrder?.paymentType !== DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
         ) {
           //call the process wali api & success page (check for modify Order)
-          processModifiyCODOrder(getOrderDetails, grandTotal, eventAttributes, orderInfo, payId);
+          processModifiyCODOrder(getOrderDetails, grandTotal, eventAttributes, orderInfo, payId!);
         } else {
           setLoading?.(false);
           props.navigation.navigate(AppRoutes.PaymentMethods, {
