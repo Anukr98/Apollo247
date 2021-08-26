@@ -434,7 +434,7 @@ export enum CleverTapEventName {
   PATIENT_SESSION_STREAM_DESTROYED = 'Patient Session Stream Destroyed',
   PATIENT_SESSION_STREAM_PROPERTY_CHANGED = 'Patient Session Stream Property Changed',
   //chatRoom Events
-  PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT = 'Patient sent chat message post consult',
+  PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT = 'Consult Patient sent chat message post consult',
   PATIENT_EXTERNAL_MEETING_LINK_CLICKED = 'Patient Clicked on Video Link',
   // Symptom Tracker Events
   SYMPTOM_TRACKER_FOR_MYSELF = 'Myself clicked SC',
