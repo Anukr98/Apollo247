@@ -1593,7 +1593,8 @@ export type CircleEventSource =
   | 'My Account-My membership section'
   | 'Corporate Membership Page'
   | 'Circle Membership page'
-  | 'VC Doctor Card';
+  | 'VC Doctor Card'
+  | 'Diagnostic Review page';
 
 export const getCircleNoSubscriptionText = () => string.common.circleNoSubscriptionText;
 

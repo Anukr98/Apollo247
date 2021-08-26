@@ -1080,7 +1080,8 @@
     "PHARMACY_HOME_STICKY": "PHARMACY_HOME_STICKY",
     "VC_DOCTOR_PROFILE": "VC_DOCTOR_PROFILE",
     "PHARMA_CART": "PHARMA_CART",
-    "VC_CART": "VC_CART"
+    "VC_CART": "VC_CART",
+    "DIAGNOSTIC_CART": "DIAGNOSTIC_CART"
   },
   "circleMembershipBenefits": {
     "PHARMA_CASHBACK": "Pharma Cashback",

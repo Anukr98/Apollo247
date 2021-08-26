@@ -95,7 +95,13 @@ interface CircleMembershipPlansProps extends NavigationScreenProps {
   doctorFees?: number;
   onEndApiCall?: (() => void) | null;
   buyNow?: boolean;
-  source?: 'Pharma' | 'Product Detail' | 'Pharma Cart' | 'Diagnostic' | 'Consult';
+  source?:
+    | 'Pharma'
+    | 'Product Detail'
+    | 'Pharma Cart'
+    | 'Diagnostic'
+    | 'Consult'
+    | 'Diagnostic Cart';
   from?: string;
   healthCredits?: number;
   circleEventSource?: CircleEventSource;
@@ -836,6 +842,16 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
               props.navigation.navigate(AppRoutes.SubscriptionCart);
             }
           } else if (from === string.banner_context.PHARMACY_HOME) {
+            if (!cartItems?.length) {
+              closeModal?.();
+              props.navigation.navigate(AppRoutes.SubscriptionCart);
+            } else {
+              setCircleMembershipCharges &&
+                setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
+              setCircleSubPlanId && setCircleSubPlanId(circlePlanSelected?.subPlanId);
+              closeModal && closeModal();
+            }
+          } else if (from === string.banner_context.DIAGNOSTIC_CART) {
             if (!cartItems?.length) {
               closeModal?.();
               props.navigation.navigate(AppRoutes.SubscriptionCart);

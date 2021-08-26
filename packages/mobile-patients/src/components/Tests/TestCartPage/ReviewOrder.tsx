@@ -121,6 +121,7 @@ import { saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWith
 import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
+import { CircleMembershipPlans } from '../../ui/CircleMembershipPlans';
 
 const screenWidth = Dimensions.get('window').width;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
@@ -191,7 +192,12 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setCartItemsMapping,
   } = useDiagnosticsCart();
 
-  const { circleSubscriptionId } = useShoppingCart();
+  const {
+    circleSubscriptionId,
+    setCircleMembershipCharges,
+    setCircleSubPlanId,
+    circleMembershipCharges,
+  } = useShoppingCart();
   const { setauthToken } = useAppCommonData();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -222,10 +228,12 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const [isCircleAdded, setIsCircleAdded] = useState<boolean>(false);
   const [membershipPlans, setMembershipPlans] = useState<any>([]);
   const [defaultCirclePlan, setDefaultCirclePlan] = useState<any>(null);
+  const [showCirclePopup, setShowCirclePopup] = useState<boolean>(false);
 
   let itemNamesToRemove_global: string[] = [];
   let itemIdsToRemove_global: Number[] = [];
   let itemIdsToKeep_global: Number[] = [];
+  let itemNamesToKeep_global: string[] = [];
   let setLowItemName: string[] = [],
     setHighPriceName: string[] = [];
 
@@ -661,8 +669,15 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   };
 
   const renderItemView = (item: DiagnosticsCartItem) => {
-    const priceToShow = diagnosticsDisplayPrice(item, isDiagnosticCircleSubscription)?.priceToShow;
+    const showCirclePrice = isDiagnosticCircleSubscription ? true : isCircleAdded;
+    const priceToShow = diagnosticsDisplayPrice(item, showCirclePrice)?.priceToShow;
+    const mrpToDisplay = diagnosticsDisplayPrice(item, showCirclePrice)?.mrpToDisplay;
+
     const calTotal = priceToShow * item?.mou;
+    const savingAmount =
+      Number((!!item?.packageMrp && item?.packageMrp!) || mrpToDisplay) -
+      Number(item?.circleSpecialPrice!);
+
     return (
       <View>
         <View style={styles.itemView}>
@@ -672,6 +687,14 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             }}
           >
             <Text style={styles.addressTextStyle}>{nameFormater(item?.name, 'default')}</Text>
+            {isCircleAdded && savingAmount > 0 && (
+              <View style={{ flexDirection: 'row', marginTop: 3 }}>
+                <CircleLogo style={styles.savingCircleIcon} />
+                <Text style={styles.savingTextStyle}>
+                  Savings {string.common.Rs} {savingAmount}
+                </Text>
+              </View>
+            )}
           </View>
           <View style={{ alignItems: 'center' }}>
             <Text style={styles.priceTextStyle}>
@@ -827,7 +850,35 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     );
   };
 
-  function _navigateToViewCirclePlans() {}
+  console.log({ circleMembershipCharges });
+  console.log({ circleSubscriptionId });
+  const renderCircleMembershipPopup = () => {
+    return (
+      <CircleMembershipPlans
+        isModal={true}
+        closeModal={() => setShowCirclePopup(false)}
+        navigation={props.navigation}
+        isConsultJourney={false}
+        from={string.banner_context.DIAGNOSTIC_CART}
+        source={'Diagnostic Cart'}
+        onSelectMembershipPlan={(plan) => {
+          if (plan) {
+            // if plan is selected
+            setCircleMembershipCharges && setCircleMembershipCharges(plan?.currentSellingPrice);
+            setCircleSubPlanId && setCircleSubPlanId(plan?.subPlanId);
+          } else {
+            // if plan is removed
+            setCircleMembershipCharges && setCircleMembershipCharges(0);
+          }
+        }}
+        circleEventSource={'Diagnostic Review page'}
+      />
+    );
+  };
+
+  function _navigateToViewCirclePlans() {
+    setShowCirclePopup(true);
+  }
 
   const renderCirclePurchase = () => {
     return (
@@ -934,6 +985,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const anyCartSaving = isDiagnosticCircleSubscription ? cartSaving + circleSaving : cartSaving;
     const hcChargesToShow = getHcCharges()?.toFixed(2);
     const defaultPlanPurchasePrice = !!defaultCirclePlan && defaultCirclePlan?.currentSellingPrice;
+    const toPayPrice = isCircleAdded
+      ? Number(grandTotal) + Number(defaultPlanPurchasePrice) - Number(circleSaving)
+      : grandTotal;
     return (
       <>
         {/* {renderCouponView()} */}
@@ -986,7 +1040,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             circleSaving > 0 &&
             renderPrices('Circle Membership', defaultPlanPurchasePrice?.toFixed(2), false, false)}
           {normalSaving > 0 && renderPrices('Cart Savings', normalSaving?.toFixed(2), false, true)}
-          {isDiagnosticCircleSubscription && circleSaving > 0 && (
+          {(isDiagnosticCircleSubscription || isCircleAdded) && circleSaving > 0 && (
             <View style={[styles.rowSpaceBetweenStyle]}>
               <View style={{ flexDirection: 'row', flex: 0.8 }}>
                 <CircleLogo
@@ -1015,10 +1069,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
               true
             )}
           <Spearator style={{ marginBottom: 6, marginTop: 6 }} />
-          {renderPrices('To Pay', grandTotal?.toFixed(2), true)}
+          {renderPrices('To Pay', toPayPrice?.toFixed(2), true)}
         </View>
         {anyCartSaving > 0 && renderCartSavingBanner()}
-        {/* {isDiagnosticCircleSubscription ? null : circleSaving > 0 && renderSavedBanner()} */}
+        {isCircleAdded && circleSaving > 0 && renderAddtionalCircleSavingBanner(toPayPrice)}
       </>
     );
   };
@@ -1044,6 +1098,30 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       'on this order',
       'left',
       'saving'
+    );
+  };
+
+  const renderAddtionalCircleSavingBanner = (effectivePrice: number) => {
+    return (
+      <View style={[styles.dashedBannerViewStyle, styles.circleSavingOuterView]}>
+        <SavingsIcon style={styles.savingIconStyle} />
+        <View style={styles.circleSavingView}>
+          <Text style={styles.circleSavingNormalText}>
+            You
+            <Text style={styles.circleSavingGreenText}>
+              {' '}
+              saved {string.common.Rs}
+              {circleSaving}
+            </Text>{' '}
+            <Text style={styles.circleSavingBoldText}>on this order </Text>
+            with Circle! Your effective price is{' '}
+            <Text style={styles.circleSavingBoldText}>
+              {string.common.Rs}
+              {effectivePrice}
+            </Text>
+          </Text>
+        </View>
+      </View>
     );
   };
 
@@ -1911,6 +1989,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         {renderTestProceedBar()}
       </SafeAreaView>
       {isVisible && renderPremiumOverlay()}
+      {showCirclePopup && renderCircleMembershipPopup()}
       {!hyperSdkInitialized && <Spinner />}
     </View>
   );
@@ -2073,6 +2152,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderWidth: 2,
     borderStyle: 'dashed',
+    marginBottom: 16,
   },
   circlePlanInnerView: { flexDirection: 'row', padding: 16 },
   circlePlanLogoStyle: {
@@ -2132,4 +2212,17 @@ const styles = StyleSheet.create({
     marginRight: 20,
     textAlign: 'center',
   },
+  savingTextStyle: {
+    ...theme.viewStyles.text('M', isSmallDevice ? 10.5 : 11, theme.colors.APP_GREEN, 1, 18),
+    lineHeight: 18,
+    textAlign: 'center',
+    alignSelf: 'center',
+    marginLeft: 3,
+  },
+  savingCircleIcon: { height: 20, width: isSmallDevice ? 23 : 25, resizeMode: 'contain' },
+  circleSavingBoldText: { ...theme.viewStyles.text('SB', 12, theme.colors.SHERPA_BLUE, 1, 18) },
+  circleSavingGreenText: { ...theme.viewStyles.text('R', 12, theme.colors.APP_GREEN, 1, 18) },
+  circleSavingNormalText: { ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 1, 18) },
+  circleSavingView: { width: '89%', marginHorizontal: 6 },
+  circleSavingOuterView: { borderStyle: 'solid', backgroundColor: '#F3FFFF', borderWidth: 1 },
 });
