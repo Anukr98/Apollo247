@@ -1701,6 +1701,8 @@ export interface WebEngageEvents {
     'Hospital City': string;
     'Consult Date Time': Date;
     User_Type: string;
+    'Booking value': number;
+    'Booking Fee': string;
   };
   [WebEngageEventName.CONSULTATION_BOOKED]: {
     'Consult ID': string;

@@ -2096,6 +2096,29 @@ export const ConsultPending: React.FC<IconProps> = (props) => (
   />
 );
 
+export const FasterSubstitutes: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/FasterSubstitute.webp')}
+  />
+);
+
+export const Alert: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    style={{ height: 20, width: 22 }}
+    source={require('@aph/mobile-patients/src/components/ui/icons/alert.webp')}
+  />
+);
+
+export const AlertRed: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 22 }}
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/alertRed.webp')}
+  />
+);
+
 export const ExpressSlotClock: React.FC<IconProps> = (props) => (
   <IconBase
     size="sm"

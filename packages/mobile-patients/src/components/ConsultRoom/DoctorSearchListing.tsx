@@ -745,7 +745,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                           lat: response.latitude || '',
                           lng: response.longitude || '',
                         },
-                        'availability',
+                        'distance',
                         undefined,
                         false,
                         doctorSearch
@@ -1408,6 +1408,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: rowData.id,
               callSaveSearch: callSaveSearch,
+              consultModeSelected: rowData?.consultMode,
             });
           } else {
             props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {

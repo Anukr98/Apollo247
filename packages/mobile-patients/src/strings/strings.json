@@ -135,7 +135,8 @@
     "CorporateVaccineBenefit": "DEPENDENT_VACCINATION_REG",
     "noDiagnosticsAvailable": "Unfortunately, we do not have any diagnostic(s) available right now.",
     "unableToSetDeliveryAddress": "We're sorry! Unable to set delivery address. Please try again after some time",
-    "circleNoSubscriptionText": "No Subscription"
+    "circleNoSubscriptionText": "No Subscription",
+    "bookingFee": "Booking Fee",
   },
   "components": {
     "medicineDetails": {
@@ -661,7 +662,9 @@
     "clickPhotos": "CLICK MORE PHOTOS",
     "order_medicine": "ORDER MEDICINES",
     "order_medicine_msg": "Try our Express Delivery in 2-4 hours",
-    "order_test": "ORDER TESTS",
+    "order_test": "BOOK TESTS NOW",
+    "slot_filling": "Slots filling fast!",
+    "order_medicines": "ORDER MEDICINES NOW",
     "book_follow_up": "BOOK FOLLOW-UP",
     "add_note_to_notify_users": "Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!",
     "tabs": [{

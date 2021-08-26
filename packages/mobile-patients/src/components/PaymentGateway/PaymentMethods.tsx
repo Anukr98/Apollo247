@@ -78,7 +78,6 @@ import { useFetchSavedCards } from '@aph/mobile-patients/src/components/PaymentG
 import Decimal from 'decimal.js';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-
 const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {
@@ -111,7 +110,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { authToken, setauthToken } = useAppCommonData();
-  const { grandTotal, deliveryCharges, packagingCharges } = useShoppingCart();
+  const { grandTotal, cartItems, nonCodSKus } = useShoppingCart();
   const { healthCredits } = useFetchHealthCredits(businessLine);
   const { paymentMethods, cardTypes, fetching } = useGetPaymentMethods(paymentId);
   const [HCSelected, setHCSelected] = useState<boolean>(false);
@@ -126,6 +125,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [showCOD, setShowCOD] = useState<boolean>(isDiagnostic ? false : true);
   const [showDiagnosticHCMsg, setShowDiagnosticHCMsg] = useState<string>('');
   const paymentType = useRef<string>('');
+  const [areNonCODSkus, setAreNonCODSkus] = useState(false);
 
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
@@ -147,6 +147,14 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       isDiagnosticModify ? setShowCOD(false) : fetchDiagnosticPaymentMethods();
     }
   }, []);
+
+  useEffect(() => {
+    if (cartItems?.length) {
+      const skusNotForCod = cartItems?.find((item) => nonCodSKus?.includes(item?.id));
+      const areNonCodSkus = !!skusNotForCod?.id;
+      setAreNonCODSkus(areNonCodSkus);
+    }
+  }, [cartItems]);
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', () => {
@@ -464,10 +472,13 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   const OtherBanks = () => {
-    const topBanks = paymentMethods?.find((item: any) => item?.name == 'NB');
+    const topBanks = paymentMethods?.find((item: any) => item?.name == 'FEATURED_BANKS');
+    let otherBanks = paymentMethods?.find((item: any) => item?.name == 'OTHER_BANKS');
     const methods =
       topBanks?.payment_methods?.map((item: any) => item?.payment_method_code).slice(0, 4) || [];
-    const otherBanks = banks?.filter((item: any) => !methods?.includes(item?.paymentMethod));
+    otherBanks = otherBanks?.payment_methods?.filter(
+      (item: any) => !methods?.includes(item?.payment_method_code)
+    );
     triggerWebengege('Net Banking');
     props.navigation.navigate(AppRoutes.OtherBanks, {
       paymentId: paymentId,
@@ -505,6 +516,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const navigatetoOrderStatus = (isCOD: boolean, paymentStatus: string) => {
     PaymentStatus(paymentStatus, businessLine, paymentId);
+    setauthToken?.('');
     switch (businessLine) {
       case 'diagnostics':
         props.navigation.navigate(AppRoutes.OrderStatus, {
@@ -535,7 +547,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
             isCOD
           );
         props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
-          status: paymentStatus,
+          paymentStatus: paymentStatus,
           price: amount,
           transId: paymentId,
           orderDetails: orderDetails,
@@ -603,7 +615,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
               return !!amount && versionCheck && showPrepaid && renderWallets(methods);
             case 'UPI':
               return !!amount && versionCheck && showPrepaid && renderUPIPayments(filterUPIApps());
-            case 'NB':
+            case 'FEATURED_BANKS':
               return !!amount && versionCheck && showPrepaid && renderNetBanking(methods);
             case 'HEALTH_CREDITS':
               return versionCheck && showPrepaid && renderHealthCredits();
@@ -674,6 +686,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         diagMsg={showDiagnosticHCMsg}
         pharmaDisableCod={disableCod}
         pharmaDisincentivizeCodMessage={paymentCodMessage}
+        areNonCodSkus={areNonCODSkus}
       />
     );
   };

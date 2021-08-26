@@ -39,7 +39,8 @@ import {
   getPackageIds,
   getCheckoutCompletedEventAttributes,
   getCleverTapCheckoutCompletedEventAttributes,
-} from '@aph/mobile-patients/src//helpers/helperFunctions';
+  isCartPriceWithInSpecifiedRange,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   availabilityApi247,
   GetTatResponse247,
@@ -90,6 +91,7 @@ import {
   createOrderInternalVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
 import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
+import { WhatsAppStatus } from '@aph/mobile-patients/src/components/ui/WhatsAppStatus';
 
 export interface CartSummaryProps extends NavigationScreenProps {}
 
@@ -120,6 +122,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     grandTotal,
     circleMembershipCharges,
     circlePlanSelected,
+    cartPriceNotUpdateRange,
   } = useShoppingCart();
   const {
     pharmacyUserTypeAttribute,
@@ -144,6 +147,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   const { OrderInfo, SubscriptionInfo } = useGetOrderInfo();
   const { cusId, isfetchingId } = useGetJuspayId();
   const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
+  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
+
   useEffect(() => {
     hasUnserviceableproduct();
     AppState.addEventListener('change', handleAppStateChange);
@@ -162,7 +167,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
 
   useEffect(() => {
     if (appState == 'active') {
-      availabilityTat(deliveryAddressId);
+      availabilityTat(deliveryAddressId, true);
     }
   }, [appState]);
 
@@ -237,10 +242,10 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     unserviceableItems?.length && props.navigation.goBack();
   }
 
-  async function availabilityTat(id: string) {
+  async function availabilityTat(id: string, forceCheck?: boolean) {
     const newCartItems =
       cartItems.map(({ id, quantity }) => id + quantity).toString() + deliveryAddressId;
-    if (newCartItems == lastCartItems) {
+    if (newCartItems == lastCartItems && !forceCheck) {
       return;
     }
     if (id && cartItems.length > 0) {
@@ -355,22 +360,43 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     inventoryData: GetTatResponse247['response']['items'],
     updatedCartItems: ShoppingCartItem[]
   ) {
-    let Items: ShoppingCartItem[] = [];
+    const updatePrices = AppConfig.Configuration.CART_UPDATE_PRICE_CONFIG.updatePrices;
+    const updatePricePercent = AppConfig.Configuration.CART_UPDATE_PRICE_CONFIG.percentage;
+    const updatePricesNotAllowed = updatePrices === 'No';
+    if (updatePricesNotAllowed) {
+      return;
+    }
+
+    const cartItemsAfterPriceUpdate: ShoppingCartItem[] = [];
     updatedCartItems.forEach((item) => {
-      let object = item;
-      let cartItem = inventoryData.filter((cartItem) => cartItem.sku == item.id);
-      if (cartItem.length) {
-        if (object.price != Number(object.mou) * cartItem[0].mrp && cartItem[0].mrp != 0) {
-          object.specialPrice &&
-            (object.specialPrice =
-              Number(object.mou) * cartItem[0].mrp * (object.specialPrice / object.price));
-          object.price = Number(object.mou) * cartItem[0].mrp;
+      const cartItem = { ...item };
+      const storeItem = inventoryData?.find((cartItem) => cartItem?.sku == item?.id);
+      if (storeItem) {
+        const storePrice = Number(cartItem?.mou) * storeItem?.mrp;
+        const allowPriceUpdate =
+          cartItem?.price !== storePrice
+            ? updatePrices === 'ByPercentage'
+              ? isCartPriceWithInSpecifiedRange(
+                  cartItem?.price,
+                  storePrice,
+                  updatePricePercent,
+                  cartPriceNotUpdateRange
+                )
+              : true
+            : false;
+        if (storeItem?.mrp != 0 && allowPriceUpdate) {
+          if (cartItem?.specialPrice) {
+            cartItem['specialPrice'] =
+              Number(cartItem?.mou) * storeItem?.mrp * (cartItem?.specialPrice / cartItem?.price);
+          }
+          cartItem['price'] = Number(cartItem?.mou) * storeItem?.mrp;
         }
       }
-      Items.push(object);
+      cartItemsAfterPriceUpdate.push(cartItem);
     });
-    setCartItems!(Items);
+    setCartItems!(cartItemsAfterPriceUpdate);
   }
+
   const onFinishUpload = () => {
     if (isPhysicalUploadComplete) {
       setloading!(false);
@@ -461,7 +487,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         return;
       }
     }
-    await availabilityTat(deliveryAddressId);
+    await availabilityTat(deliveryAddressId, true);
     let splitOrderDetails: any = {};
     if (orders?.length > 1) {
       orders?.forEach((order: any, index: number) => {
@@ -488,7 +514,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   const initiateOrder = async () => {
     try {
       const response =
-        !circleSubscriptionId && circlePlanSelected
+        !circleSubscriptionId && circleMembershipCharges
           ? await saveOrderWithSubscription()
           : await saveOrder();
       const { orders, transactionId, errorCode, isCodEligible } =
@@ -617,6 +643,19 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     );
   };
 
+  const renderWhatsAppUpdates = () => {
+    return (
+      <View>
+        <WhatsAppStatus
+          onPress={() => {
+            whatsAppUpdate ? setWhatsAppUpdate(false) : setWhatsAppUpdate(true);
+          }}
+          isSelected={whatsAppUpdate}
+        />
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -632,6 +671,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           {uploadPrescriptionRequired &&
             prescriptionType === PrescriptionType.UPLOADED &&
             renderPrescriptions()}
+          {renderWhatsAppUpdates()}
         </ScrollView>
         {renderButton()}
         {(loading || !hyperSdkInitialized) && <Spinner />}

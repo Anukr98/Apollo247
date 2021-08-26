@@ -95,6 +95,12 @@ import {
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import AsyncStorage from '@react-native-community/async-storage';
 import { NudgeMessage } from '@aph/mobile-patients/src/components/Medicines/Components/NudgeMessage';
+import { GET_PRODUCT_SUBSTITUTES } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  pharmaSubstitution,
+  pharmaSubstitutionVariables,
+  pharmaSubstitution_pharmaSubstitution_substitutes,
+} from '@aph/mobile-patients/src/graphql/types/pharmaSubstitution';
 
 export type ProductPageViewedEventProps = Pick<
   WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED],
@@ -142,6 +148,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     pharmaPDPNudgeMessage,
     circleSubscriptionId,
     isCircleExpired,
+    setProductSubstitutes,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
@@ -222,6 +229,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, [medicineDetails]);
 
   useEffect(() => {
+    setProductSubstitutes?.([]);
     getMedicineDetails();
     if (sku) fetchDeliveryTime(pincode, false);
     BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
@@ -291,6 +299,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     getUserType();
   }, []);
 
+  useEffect(() => {
+    if (sku && pincode) {
+      getProductSubstitutes(sku);
+    }
+  }, [sku, isPharma, pincode]);
+
   const getMedicineDetails = (zipcode?: string, pinAcdxCode?: string, selectedSku?: string) => {
     setLoading(true);
     if (urlKey || selectedSku) {
@@ -329,7 +343,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           setLoading(false);
         });
     }
-    fetchSubstitutes();
   };
 
   const setMedicineData = (productDetails: MedicineProductDetails) => {
@@ -358,6 +371,42 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       });
       setMultiVariantSkuInformation(skusInformation);
     }
+  };
+
+  const getProductSubstitutes = async (sku: string) => {
+    let latitude,
+      longitude = 0;
+    let input = {
+      sku,
+      pincode,
+      isPharma,
+    };
+    const data = await getPlaceInfoByPincode(pincode);
+    const locationData = data?.data?.results?.[0]?.geometry?.location;
+    latitude = locationData?.lat;
+    longitude = locationData?.lng;
+    if (latitude && longitude) {
+      input['lat'] = parseFloat(latitude.toFixed(2));
+      input['lng'] = parseFloat(longitude.toFixed(2));
+    }
+    client
+      .query<pharmaSubstitution, pharmaSubstitutionVariables>({
+        query: GET_PRODUCT_SUBSTITUTES,
+        variables: { substitutionInput: input },
+        fetchPolicy: 'no-cache',
+      })
+      .then((res) => {
+        const substitutes = res?.data?.pharmaSubstitution?.substitutes;
+        if (substitutes?.length) {
+          setProductSubstitutes?.(substitutes);
+        } else {
+          fetchSubstitutes();
+        }
+      })
+      .catch((error) => {
+        setProductSubstitutes?.([]);
+        fetchSubstitutes();
+      });
   };
 
   const onSelectVariant = (sku: string) => {
@@ -473,6 +522,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         price,
         special_price,
         category_id,
+        subcategory,
       } = medicineDetails;
       const stock_availability =
         sell_online == 0 ? 'Not for Sale' : !!isProductInStock ? 'Yes' : 'No';
@@ -520,6 +570,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         MRP: price,
         SpecialPrice: special_price || undefined,
         CircleCashback: Number(cashback) || 0,
+        SubCategory: subcategory || '',
       };
       if (movedFrom === 'deeplink') {
         eventAttributes['Circle Membership Added'] = circleID
@@ -708,6 +759,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       setdeliveryError(pincodeServiceableItemOutOfStockMsg);
       setdeliveryTime('');
       setshowDeliverySpinner(false);
+      setIsInStock(false);
     }
   };
 
@@ -778,7 +830,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       .finally(() => setLoading!(false));
   };
 
-  const onAddCartItem = () => {
+  const onAddCartItem = (
+    item?: pharmaSubstitution_pharmaSubstitution_substitutes,
+    isFromFastSubstitutes?: boolean
+  ) => {
+    const medicine_details = item ? item : medicineDetails;
     const {
       sku,
       mou,
@@ -790,7 +846,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       thumbnail,
       MaxOrderQty,
       url_key,
-    } = medicineDetails;
+    } = medicine_details;
     if (cartItems.find(({ id }) => id?.toUpperCase() === sku?.toUpperCase())) {
       updateCartItem?.({ id: sku, quantity: productQuantity });
     } else {
@@ -817,7 +873,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     }
     postwebEngageAddToCartEvent(
       medicineDetails,
-      'Pharmacy PDP',
+      isFromFastSubstitutes ? 'PDP Fast Substitutes' : 'Pharmacy PDP',
       sectionName,
       '',
       pharmacyCircleAttributes!
@@ -1028,10 +1084,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   );
               }}
             >
-              <Breadcrumb
+              {/* Intentionally commented, do not remove, will be modified and used later */}
+              {/* <Breadcrumb
                 links={pdpBreadCrumbs}
                 containerStyle={{ borderBottomWidth: 1, borderBottomColor: '#E5E5E5' }}
-              />
+              /> */}
               <ProductNameImage
                 name={medicineDetails?.name}
                 images={medicineDetails?.image}
@@ -1083,6 +1140,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   isSellOnline={medicineDetails?.sell_online === 1}
                   isBanned={medicineDetails?.banned === 'Yes'}
                   onNotifyMeClick={onNotifyMeClick}
+                  isPharma={isPharma}
+                  navigation={props.navigation}
                 />
               </View>
               {isPharma && (
@@ -1145,8 +1204,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   navigation={props.navigation}
                 />
               )}
-              {!!medicineDetails?.marketer_address && (
-                <ProductManufacturer address={medicineDetails?.marketer_address} />
+              {(!!medicineDetails?.marketer_address || !!medicineDetails?.country_of_origin) && (
+                <ProductManufacturer
+                  address={medicineDetails?.marketer_address}
+                  origin={medicineDetails?.country_of_origin}
+                />
               )}
               {renderDisclaimerMessage()}
               <View style={{ height: 130 }} />

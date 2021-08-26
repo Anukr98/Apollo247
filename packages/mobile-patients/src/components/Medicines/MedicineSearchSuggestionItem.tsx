@@ -1,5 +1,9 @@
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { MedicineIcon, MedicineRxIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  MedicineIcon,
+  MedicineRxIcon,
+  PrescriptionRequiredIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
@@ -49,6 +53,16 @@ const styles = StyleSheet.create({
   searchSuggestionItem: {
     flexDirection: 'row',
     paddingVertical: 14,
+  },
+  rxSymbolContainer: {
+    position: 'absolute',
+    left: 30,
+    zIndex: 9,
+  },
+  rxSymbol: {
+    resizeMode: 'contain',
+    width: 15,
+    height: 15,
   },
 });
 
@@ -150,12 +164,19 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
     return (
       <View style={styles.iconOrImageContainerStyle}>
         {imageUri ? (
-          <Image
-            placeholderStyle={theme.viewStyles.imagePlaceholderStyle}
-            source={{ uri: imageUri }}
-            style={{ height: 40, width: 40 }}
-            resizeMode="contain"
-          />
+          <View>
+            {prescriptionRequired && (
+              <View style={styles.rxSymbolContainer}>
+                <PrescriptionRequiredIcon style={styles.rxSymbol} />
+              </View>
+            )}
+            <Image
+              placeholderStyle={theme.viewStyles.imagePlaceholderStyle}
+              source={{ uri: imageUri }}
+              style={{ height: 40, width: 40 }}
+              resizeMode="contain"
+            />
+          </View>
         ) : prescriptionRequired ? (
           <MedicineRxIcon />
         ) : (

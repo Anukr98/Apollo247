@@ -16,6 +16,7 @@ export interface PayByCashProps {
   diagMsg: string;
   pharmaDisableCod?: boolean;
   pharmaDisincentivizeCodMessage?: string;
+  areNonCodSkus?: boolean;
 }
 
 export const PayByCash: React.FC<PayByCashProps> = (props) => {
@@ -27,6 +28,7 @@ export const PayByCash: React.FC<PayByCashProps> = (props) => {
     diagMsg,
     pharmaDisableCod,
     pharmaDisincentivizeCodMessage,
+    areNonCodSkus,
   } = props;
   const disableDiagCOD = businessLine == 'diagnostics' && !showDiagCOD;
   const disableCodOption = disableDiagCOD || HCselected || pharmaDisableCod;
@@ -49,13 +51,13 @@ export const PayByCash: React.FC<PayByCashProps> = (props) => {
     return (
       <TouchableOpacity
         onPress={() => {
-          !disableCodOption && onPressPlaceOrder();
+          !disableCodOption && !areNonCodSkus && onPressPlaceOrder();
         }}
       >
         <Text
           style={{
             ...styles.placeOrder,
-            opacity: disableCodOption ? 0.4 : 1,
+            opacity: disableCodOption || areNonCodSkus ? 0.4 : 1,
           }}
         >
           PLACE ORDER
@@ -68,6 +70,10 @@ export const PayByCash: React.FC<PayByCashProps> = (props) => {
     return HCselected ? (
       <Text style={styles.codAlertMsg}>
         {'! COD option is not available along with OneApollo Health Credits.'}
+      </Text>
+    ) : areNonCodSkus ? (
+      <Text style={[styles.codAlertMsg, { lineHeight: 0 }]}>
+        Some of the products you have added to cart are not eligible for Cash on Delivery.
       </Text>
     ) : pharmaDisableCod ? (
       <Text style={styles.codAlertMsg}>COD option is not available for this order.</Text>
@@ -99,6 +105,7 @@ export const PayByCash: React.FC<PayByCashProps> = (props) => {
   const renderPharmaMessage = () => {
     return (
       !!pharmaDisincentivizeCodMessage &&
+      !areNonCodSkus &&
       businessLine == 'pharma' && (
         <View style={styles.pharmaMessageContainer}>
           <SavingsIcon style={styles.savingIconStyle} />

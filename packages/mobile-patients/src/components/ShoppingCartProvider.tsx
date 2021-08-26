@@ -18,6 +18,7 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { addToCartTagalysEvent } from '@aph/mobile-patients/src/helpers/Tagalys';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Decimal } from 'decimal.js';
+import { pharmaSubstitution_pharmaSubstitution_substitutes } from '@aph/mobile-patients/src/graphql/types/pharmaSubstitution';
 export interface ShoppingCartItem {
   id: string;
   name: string;
@@ -270,8 +271,18 @@ export interface ShoppingCartContextProps {
   setPharmaPDPNudgeMessage: ((value: NudgeMessage) => void) | null;
   pharmaCartNudgeMessage: NudgeMessageCart | null;
   setPharmaCartNudgeMessage: ((value: NudgeMessageCart) => void) | null;
+  productSubstitutes: pharmaSubstitution_pharmaSubstitution_substitutes | null;
+  setProductSubstitutes:
+    | ((value: pharmaSubstitution_pharmaSubstitution_substitutes) => void)
+    | null;
   paymentCodMessage: string;
   setPaymentCodMessage: ((message: string) => void) | null;
+  subscriptionCoupon: PharmaCoupon | null;
+  setSubscriptionCoupon: ((coupon: PharmaCoupon | null) => void) | null;
+  subscriptionHCUsed: number;
+  setSubscriptionHCUsed: ((value: number) => void) | null;
+  subscriptionBillTotal: number;
+  setSubscriptionBillTotal: ((value: number) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -394,8 +405,16 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setPharmaCartNudgeMessage: null,
   pharmaPDPNudgeMessage: null,
   setPharmaPDPNudgeMessage: null,
+  productSubstitutes: null,
+  setProductSubstitutes: null,
   paymentCodMessage: '',
   setPaymentCodMessage: null,
+  subscriptionCoupon: null,
+  setSubscriptionCoupon: null,
+  subscriptionHCUsed: 0,
+  setSubscriptionHCUsed: null,
+  subscriptionBillTotal: 0,
+  setSubscriptionBillTotal: null,
 });
 
 const AsyncStorageKeys = {
@@ -538,6 +557,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [pharmaCartNudgeMessage, setPharmaCartNudgeMessage] = useState<
     ShoppingCartContextProps['pharmaCartNudgeMessage']
   >(null);
+  const [productSubstitutes, setProductSubstitutes] = useState<
+    ShoppingCartContextProps['productSubstitutes']
+  >(null);
   const [paymentCodMessage, setPaymentCodMessage] = useState<
     ShoppingCartContextProps['paymentCodMessage']
   >('');
@@ -545,6 +567,17 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [isProuctFreeCouponApplied, setisProuctFreeCouponApplied] = useState<boolean>(false);
   const [orders, setOrders] = useState<ShoppingCartContextProps['orders']>([]);
   const [shipments, setShipments] = useState<ShoppingCartContextProps['shipments']>([]);
+
+  const [subscriptionCoupon, setSubscriptionCoupon] = useState<
+    ShoppingCartContextProps['subscriptionCoupon']
+  >(null);
+  const [subscriptionHCUsed, setSubscriptionHCUsed] = useState<
+    ShoppingCartContextProps['subscriptionHCUsed']
+  >(0);
+  const [subscriptionBillTotal, setSubscriptionBillTotal] = useState<
+    ShoppingCartContextProps['subscriptionBillTotal']
+  >(0);
+
   const setEPrescriptions: ShoppingCartContextProps['setEPrescriptions'] = (items) => {
     _setEPrescriptions(items);
   };
@@ -742,7 +775,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const getGrandTotalFromShipments = () => {
     let total = 0;
     shipments.forEach((item: any) => (total = Number(Decimal.add(total, item.estimatedAmount))));
-    if (circleMembershipCharges) {
+    if (!circleSubscriptionId && circleMembershipCharges) {
       total = Number(Decimal.add(total, circleMembershipCharges));
     }
     return total;
@@ -757,7 +790,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
           deliveryCharges -
           couponDiscount -
           productDiscount +
-          (!!circleMembershipCharges ? circleMembershipCharges : 0)
+          (!circleSubscriptionId && !!circleMembershipCharges ? circleMembershipCharges : 0)
         ).toFixed(2)
       );
 
@@ -841,6 +874,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setdeliveryTime('');
     setPrescriptionType(null);
     setConsultProfile(null);
+    setSubscriptionCoupon(null);
   };
 
   useEffect(() => {
@@ -1305,8 +1339,16 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setPharmaCartNudgeMessage,
         pharmaPDPNudgeMessage,
         setPharmaPDPNudgeMessage,
+        productSubstitutes,
+        setProductSubstitutes,
         paymentCodMessage,
         setPaymentCodMessage,
+        subscriptionCoupon,
+        setSubscriptionCoupon,
+        subscriptionHCUsed,
+        setSubscriptionHCUsed,
+        subscriptionBillTotal,
+        setSubscriptionBillTotal,
       }}
     >
       {props.children}

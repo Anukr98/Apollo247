@@ -6,6 +6,7 @@ import com.BV.LinearGradient.LinearGradientPackage;
 import com.apollopatient.appsignature.RNAppSignatureHelperPackage;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.bebnev.RNUserAgentPackage;
 import com.ibits.react_native_in_app_review.AppReviewPackage;
 import com.christopherdro.htmltopdf.RNHTMLtoPDFPackage;
 import com.horcrux.svg.SvgPackage;
@@ -21,7 +22,7 @@ import com.webengage.sdk.android.WebEngage;
 import com.webengage.sdk.android.WebEngageActivityLifeCycleCallbacks;
 import com.webengage.sdk.android.WebEngageConfig;
 import com.clevertap.android.sdk.ActivityLifecycleCallback;
-
+import com.ibits.react_native_in_app_review.AppReviewPackage;
 import java.util.List;
 
 import io.reactivex.Observable;
@@ -92,7 +93,7 @@ public class MainApplication extends Application implements ReactApplication {
                 //Staging -- in~~c2ab3529
                 //Production -- in~~c2ab3533
                 WebEngageConfig webEngageConfig = new WebEngageConfig.Builder()
-                        .setWebEngageKey("in~~c2ab3529")
+                        .setWebEngageKey("in~~c2ab3533")
                         .setDebugMode(false) // only in development mode
                         .build();
 
