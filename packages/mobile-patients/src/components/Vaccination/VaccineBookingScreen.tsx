@@ -558,8 +558,8 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
     try {
       const merchantId = AppConfig.Configuration.merchantId;
       terminateSDK();
-      setTimeout(() => createHyperServiceObject(), 1400);
-      setTimeout(() => initiateSDK(cusId, cusId, merchantId), 1500);
+      createHyperServiceObject();
+      initiateSDK(cusId, cusId, merchantId);
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
@@ -1362,7 +1362,6 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
 
   const setUpSelectedPatient = (_selectedPatient: any) => {
     setSelectedPatient(_selectedPatient);
-    console.log('check _selectedPatient -- ', _selectedPatient);
   };
 
   const onNewProfileAdded = (newPatient: any) => {

@@ -12,7 +12,7 @@ import { StyleSheet, Text, TouchableOpacity, View, StyleProp, ViewStyle } from '
 import {
   getDiscountPercentage,
   productsThumbnailUrl,
-  getCareCashback,
+  calculateCashbackForItem,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Image } from 'react-native-elements';
 import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
@@ -147,6 +147,8 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
     price,
     special_price,
     thumbnail,
+    subcategory,
+    sku,
     sell_online,
     is_prescription_required,
     MaxOrderQty,
@@ -164,7 +166,7 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
     image,
   } = props;
   const finalPrice = price - Number(special_price) ? Number(special_price) : price;
-  const cashback = getCareCashback(Number(finalPrice), type_id);
+  const cashback = calculateCashbackForItem(Number(finalPrice), type_id, subcategory, sku);
 
   const isOutOfStock =
     dc_availability?.toLowerCase() === 'no' && is_in_contract?.toLowerCase() === 'no';
@@ -268,13 +270,9 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
 
   const renderCareCashback = () => {
     const finalPrice = Number(special_price) || price;
-    const cashback = getCareCashback(Number(finalPrice), type_id);
+    const cashback = calculateCashbackForItem(Number(finalPrice), type_id, subcategory, sku);
     if (!!cashback && type_id) {
-      return (
-        <CareCashbackBanner
-          bannerText={`extra ${string.common.Rs}${cashback.toFixed(2)} cashback`}
-        />
-      );
+      return <CareCashbackBanner bannerText={`extra ${string.common.Rs}${cashback} cashback`} />;
     } else {
       return <></>;
     }

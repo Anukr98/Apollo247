@@ -38,6 +38,7 @@ import {
   validateCoupon,
   getPackageIds,
   getCheckoutCompletedEventAttributes,
+  getCleverTapCheckoutCompletedEventAttributes,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   availabilityApi247,
@@ -177,8 +178,9 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     try {
       const merchantId = AppConfig.Configuration.pharmaMerchantId;
       terminateSDK();
-      setTimeout(() => createHyperServiceObject(), 1400);
-      setTimeout(() => (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true)), 1500);
+      createHyperServiceObject();
+      initiateSDK(cusId, cusId, merchantId);
+      setHyperSdkInitialized(true);
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
@@ -489,7 +491,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         !circleSubscriptionId && circlePlanSelected
           ? await saveOrderWithSubscription()
           : await saveOrder();
-      const { orders, transactionId, errorCode } = response?.data?.saveMedicineOrderV2 || {};
+      const { orders, transactionId, errorCode, isCodEligible } =
+        response?.data?.saveMedicineOrderV2 || {};
       const subscriptionId = response?.data?.CreateUserSubscription?.response?._id;
       const data = await createOrderInternal(orders, subscriptionId);
       if (data?.data?.createOrderInternal?.success) {
@@ -506,6 +509,13 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
             paymentId,
             pharmacyUserTypeAttribute
           ),
+          cleverTapCheckoutEventAttributes: getCleverTapCheckoutCompletedEventAttributes(
+            shoppingCart,
+            paymentId,
+            pharmacyUserTypeAttribute,
+            orders
+          ),
+          disableCOD: !isCodEligible,
         });
       }
       setloading(false);

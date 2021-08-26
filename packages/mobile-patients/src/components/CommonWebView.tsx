@@ -23,37 +23,10 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
-
-import string from '@aph/mobile-patients/src/strings/strings.json';
-import {
-  CREATE_USER_SUBSCRIPTION,
-  CREATE_INTERNAL_ORDER,
-} from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  CreateUserSubscription,
-  CreateUserSubscriptionVariables,
-} from '@aph/mobile-patients/src/graphql/types/CreateUserSubscription';
 import { useApolloClient } from 'react-apollo-hooks';
-import {
-  one_apollo_store_code,
-  PaymentStatus,
-  OrderCreate,
-  OrderVerticals,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import {
-  createOrderInternal,
-  createOrderInternalVariables,
-} from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
-import { CommonBugFender } from '../FunctionHelpers/DeviceHelper';
-import {
-  initiateSDK,
-  createHyperServiceObject,
-  terminateSDK,
-} from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
+import { postAppsFlyerCircleAddRemoveCartEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
+
 export interface CommonWebViewProps extends NavigationScreenProps {}
 
 export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
@@ -75,9 +48,6 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
     setCircleSubPlanId,
     setAutoCirlcePlanAdded,
   } = useShoppingCart();
-  const { showAphAlert } = useUIElements();
-  const storeCode =
-    Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const fireCirclePlanSelectedEvent = () => {
     const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED] = {
@@ -88,8 +58,6 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
     source == ('Pharma' || 'Product Detail' || 'Pharma Cart') &&
       postWebEngageEvent(WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED, CircleEventAttributes);
   };
-  const { cusId, isfetchingId } = useGetJuspayId();
-  const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
 
   useEffect(() => {
     if (circleEventSource) fireCircleLandingPageViewedEvent();
@@ -121,6 +89,7 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
       price: circleData?.currentSellingPrice,
     };
     postCleverTapEvent(CleverTapEventName.CIRCLE_PLAN_TO_CART, cleverTapEventAttributes);
+    postAppsFlyerCircleAddRemoveCartEvent(circleData, circleEventSource, 'add', currentPatient);
   };
 
   useEffect(() => {
@@ -139,102 +108,8 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
     }
   };
 
-  useEffect(() => {
-    !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
-  }, [isfetchingId]);
-
-  const initiateHyperSDK = async (cusId: any) => {
-    try {
-      const merchantId = AppConfig.Configuration.merchantId;
-      terminateSDK();
-      setTimeout(() => createHyperServiceObject(), 1400);
-      setTimeout(() => (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true)), 1500);
-    } catch (error) {
-      CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
-    }
-  };
-
   const handleResponse = (data: NavState) => {
     setCanGoBack(data?.canGoBack || false);
-  };
-
-  const createOrderInternal = (selectedPlan: any, subscriptionId: string) => {
-    const orders: OrderVerticals = {
-      subscription: [
-        {
-          order_id: subscriptionId,
-          amount: Number(selectedPlan?.currentSellingPrice),
-          patient_id: currentPatient?.id,
-        },
-      ],
-    };
-    const orderInput: OrderCreate = {
-      orders: orders,
-      total_amount: Number(selectedPlan?.currentSellingPrice),
-    };
-    return client.mutate<createOrderInternal, createOrderInternalVariables>({
-      mutation: CREATE_INTERNAL_ORDER,
-      variables: { order: orderInput },
-    });
-  };
-
-  const initiateCirclePurchase = async (selectedPlan: any) => {
-    try {
-      setLoading(true);
-      const purchaseInput = {
-        userSubscription: {
-          mobile_number: currentPatient?.mobileNumber,
-          plan_id: planId,
-          sub_plan_id: selectedPlan?.subPlanId,
-          storeCode,
-          FirstName: currentPatient?.firstName,
-          LastName: currentPatient?.lastName,
-          payment_reference: {
-            amount_paid: Number(selectedPlan?.currentSellingPrice),
-            payment_status: PaymentStatus.PENDING,
-            purchase_via_HC: false,
-            HC_used: 0,
-          },
-          transaction_date_time: new Date().toISOString(),
-        },
-      };
-      const response = await client.mutate<CreateUserSubscription, CreateUserSubscriptionVariables>(
-        {
-          mutation: CREATE_USER_SUBSCRIPTION,
-          variables: purchaseInput,
-          fetchPolicy: 'no-cache',
-        }
-      );
-      const subscriptionId = g(response, 'data', 'CreateUserSubscription', 'response', '_id');
-      const data = await createOrderInternal(selectedPlan, subscriptionId);
-      const orderInfo = {
-        orderId: subscriptionId,
-        circleParams: {
-          circleActivated: true,
-          circlePlanValidity: g(response, 'data', 'CreateUserSubscription', 'response', 'end_date'),
-        },
-      };
-      setLoading(false);
-      if (data?.data?.createOrderInternal?.success) {
-        props.navigation.navigate(AppRoutes.PaymentMethods, {
-          paymentId: data?.data?.createOrderInternal?.payment_order_id!,
-          amount: Number(selectedPlan?.currentSellingPrice),
-          orderDetails: orderInfo,
-          businessLine: 'subscription',
-          customerId: cusId,
-        });
-      }
-    } catch (error) {
-      setLoading(false);
-      renderAlert('Something went wrong. Please try again after some time');
-    }
-  };
-
-  const renderAlert = (message: string) => {
-    showAphAlert!({
-      title: string.common.uhOh,
-      description: message,
-    });
   };
 
   const renderWebView = () => {
@@ -261,7 +136,7 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
             const responseData = selectedPlan;
             fireCirclePlanSelectedEvent();
             if (action == 'PAY') {
-              initiateCirclePurchase(selectedPlan);
+              props.navigation.navigate(AppRoutes.SubscriptionCart);
             } else {
               setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
               setDefaultCirclePlan && setDefaultCirclePlan(null);
@@ -298,7 +173,7 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
         <Header leftIcon={isGoBack ? 'close' : 'logo'} onPressLeftIcon={() => handleBack()} />
         <View style={{ flex: 1, overflow: 'hidden' }}>{renderWebView()}</View>
       </SafeAreaView>
-      {(loading || !hyperSdkInitialized) && <Spinner />}
+      {loading && <Spinner />}
     </View>
   );
 };

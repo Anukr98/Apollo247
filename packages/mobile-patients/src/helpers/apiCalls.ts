@@ -45,6 +45,7 @@ export interface MedicineProduct {
   product_form?: string | null;
   pack_size?: string | null;
   banned?: 'Yes' | 'No';
+  subcategory?: string | null;
 }
 
 export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
@@ -121,7 +122,22 @@ export interface MedicineOrderBilledItem {
   mrp: number;
 }
 
+export interface SearchSuggestion {
+  name: string;
+  categoryId: string;
+  queryName: string;
+  superQuery?: string;
+}
+
+export interface MedicineSearchQueryFilter {
+  query: string[];
+  filter: {
+    __categories: string[];
+  };
+}
+
 export interface MedicineProductsResponse {
+  queries?: MedicineSearchQueryFilter[];
   products: MedicineProduct[];
   product_count?: number;
   count?: number;

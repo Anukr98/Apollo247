@@ -13,7 +13,7 @@ import { WebView } from 'react-native-webview';
 import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import { dateFormatterDDMM } from '@aph/mobile-patients/src/utils/dateUtil';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { AppRoutes, getCurrentRoute } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NotificationListener } from '@aph/mobile-patients/src/components/NotificationListener';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
@@ -826,7 +826,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const saveDeviceNotificationToken = async (id: string) => {
     try {
       const oneTimeApiCall = await AsyncStorage.getItem('saveTokenDeviceApiCall');
-      const token = await messaging().getToken();
+      let token = await messaging().getToken();
+
+      if (
+        !token ||
+        token === '' ||
+        token.length == 0 ||
+        typeof token != 'string' ||
+        typeof token == 'object'
+      ) {
+        token = await messaging().getToken(); //again retry
+      }
+
       if (!oneTimeApiCall) {
         saveTokenDevice(client, token, id);
         await AsyncStorage.setItem('saveTokenDeviceApiCall', 'called');
@@ -1150,7 +1161,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const upcomingConsultsCount = appointmentCount?.upcomingConsultsCount || 0;
         const upcomingPhysicalConsultsCount = appointmentCount?.upcomingPhysicalConsultsCount || 0;
 
-        if (upcomingConsultsCount - upcomingPhysicalConsultsCount > 0) {
+        if (upcomingConsultsCount - upcomingPhysicalConsultsCount > 0
+          && getCurrentRoute() !== AppRoutes.ChatRoom) {
           overlyCallPermissions(
             currentPatient!.firstName!,
             'the doctor',
@@ -1700,6 +1712,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 if (circlePlan[0]?.status === 'disabled') {
                   setIsCircleExpired && setIsCircleExpired(true);
                   setNonCircleValues();
+                } else {
+                  setIsCircleExpired && setIsCircleExpired(false);
                 }
               }
               setCircleSubscription && setCircleSubscription(circleSubscription);
@@ -1786,6 +1800,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
     if (plan?.subscriptionStatus === 'disabled') {
       setIsCircleExpired && setIsCircleExpired(true);
+    } else {
+      setIsCircleExpired && setIsCircleExpired(false);
     }
 
     return circleSubscptionData;
@@ -1931,6 +1947,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           if (circleData?.status === 'disabled') {
             setIsCircleExpired && setIsCircleExpired(true);
             setNonCircleValues();
+          } else {
+            setIsCircleExpired && setIsCircleExpired(false);
           }
 
           const planValidity = {
@@ -2887,6 +2905,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           circleActivated={circleActivatedRef.current}
           circlePlanValidity={circlePlanValidity}
           from={string.banner_context.HOME}
+          source={string.banner_context.HOME}
           successCallback={() => {
             getUserSubscriptionsWithBenefits();
           }}

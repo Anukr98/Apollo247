@@ -45,7 +45,7 @@ import {
   BOOK_APPOINTMENT_TRANSFER,
   UPDATE_APPOINTMENT_SESSION,
   ADD_CHAT_DOCUMENTS,
-  UPLOAD_MEDIA_DOCUMENT_PRISM,
+  UPLOAD_MEDIA_DOCUMENT_V2,
   SEND_PATIENT_WAIT_NOTIFICATION,
   UPDATE_HEALTH_RECORD_NUDGE_STATUS,
   GET_APPOINTMENT_DATA,
@@ -262,7 +262,7 @@ let joinTimerId: any;
 let diffInHours: number;
 let rescheduleInitiatedBy: string;
 let callhandelBack: boolean = true;
-let jdCount: any = 1;
+// let jdCount: any = 1;          // For now jd is assigned from backend
 let isJdAllowed: boolean = true;
 let abondmentStarted = false;
 let jdAssigned: boolean = false;
@@ -1008,6 +1008,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const sectionHeader = '^^#sectionHeader';
   const followUpChatGuideLines = '^^#followUpChatGuideLines';
   const externalMeetingLink = '^^#externalMeetingLink';
+  const jdAutoAssign = '^^#JdInfoMsg';
 
   const disconnecting = 'Disconnecting...';
   const callConnected = 'Call Connected';
@@ -1450,7 +1451,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, [currentPatientWithHistory, displayChatQuestions]);
 
   useEffect(() => {
-    if (!disableChat && status.current !== STATUS.COMPLETED && isInFuture) {
+    if (!disableChat && status.current !== STATUS.COMPLETED && isInFuture && !fromIncomingCall) {
       callPermissions();
     }
   }, []);
@@ -1530,7 +1531,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const checkVitalQuestionsStatus = () => {
-    if (appointmentData.isJdQuestionsComplete) {
+    if (appointmentData.isAutomatedQuestionsComplete) {
       requestToJrDoctor();
       if (
         !disableChat &&
@@ -1686,7 +1687,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   useEffect(() => {
-    if (callType) {
+    if (callType && !fromIncomingCall) {
       AsyncStorage.setItem('callDisconnected', 'false');
 
       callPermissions(() => {
@@ -2234,7 +2235,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         mutation: CALL_CONNECTION_UPDATES,
         variables: { CheckCallConnectionInput: input },
       });
-      console.log(JSON.stringify(data));
     } catch (error) {
       CommonBugFender('ChatRoom_updateCallConnectionStatus', error);
       console.log(error, JSON.stringify(data));
@@ -2249,10 +2249,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           getPatientApiCall();
           getPatientApiCallWithHistory();
           postAppointmentWEGEvent(WebEngageEventName.COMPLETED_AUTOMATED_QUESTIONS);
-          jdCount = parseInt(
-            data.data.addToConsultQueueWithAutomatedQuestions.totalJuniorDoctorsOnline,
-            10
-          );
+          // jdCount = parseInt(
+          //   data.data.addToConsultQueueWithAutomatedQuestions.totalJuniorDoctorsOnline,
+          //   10
+          // );
           isJdAllowed = data.data.addToConsultQueueWithAutomatedQuestions.isJdAllowed;
           jdAssigned = data.data.addToConsultQueueWithAutomatedQuestions.isJdAssigned;
         })
@@ -2263,7 +2263,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     } else {
       addToConsultQueue(client, appointmentData.id)
         .then(({ data }: any) => {
-          jdCount = parseInt(data.data.addToConsultQueue.totalJuniorDoctorsOnline, 10);
+          // jdCount = parseInt(data.data.addToConsultQueue.totalJuniorDoctorsOnline, 10);
           isJdAllowed = data.data.addToConsultQueue.isJdAllowed;
           jdAssigned = data.data.addToConsultQueue.isJdAssigned;
         })
@@ -3026,7 +3026,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       '2. Be present here in the consult room at the time of appointment \n',
       '3. Wait for the doctor to connect with you via audio/video call\n',
     ];
-    if (appointmentData.isJdQuestionsComplete || skipAutoQuestions.current) {
+    if (appointmentData.isAutomatedQuestionsComplete || skipAutoQuestions.current) {
       successSteps = [
         'Please follow these simple steps for your appointment: \n',
         '1. Be present here in the consult room at the time of appointment \n',
@@ -3054,7 +3054,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
       describeYourMedicalConditionAutomatedText();
     } else {
-      if (appointmentData.isJdQuestionsComplete) {
+      if (appointmentData.isAutomatedQuestionsComplete) {
         const result = insertText.filter((obj: any) => {
           return obj.message === consultPatientStartedMsg;
         });
@@ -3166,8 +3166,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         jdThankyouResult.length === 0 &&
         stopConsultjrResult.length === 0 &&
         languageQueueResult.length === 0 &&
-        !appointmentData.isJdQuestionsComplete &&
-        jdCount > 0 &&
+        !appointmentData.isAutomatedQuestionsComplete &&
+        // jdCount > 0 &&
         isJdAllowed === true
       ) {
         pubnub.publish(
@@ -3229,8 +3229,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         jdThankyouResult.length === 0 &&
         stopConsultjrResult.length === 0 &&
         languageQueueResult.length === 0 &&
-        !appointmentData.isJdQuestionsComplete &&
-        jdCount > 0 &&
+        !appointmentData.isAutomatedQuestionsComplete &&
+        // jdCount > 0 &&
         isJdAllowed === true &&
         !!(textChange && !jrDoctorJoined.current) &&
         status.current !== STATUS.COMPLETED &&
@@ -3370,6 +3370,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         updateSessionAPI();
         checkingAppointmentDates();
         addMessages(message);
+        setDisplayChatQuestions(false);
       } else if (message.message.message === stopConsultJr) {
         stopInterval();
         thirtySecondTimer && clearTimeout(thirtySecondTimer);
@@ -3410,6 +3411,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           setTimeout(() => {
             hideCallUI();
           }, 2000);
+
           if (isAudio.current) {
             handleEndAudioCall();
           } else {
@@ -5305,7 +5307,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       patientRejectedCall === (rowData as any) ||
       callRelatedCodes.includes(rowData?.message) ||
       (!automatedCodesToRender.includes(rowData?.message) && rowData?.message?.startsWith('^^#')) ||
-      (rowData?.automatedText === consultPatientStartedMsg && rowData?.message == 'welcome')
+      (rowData?.automatedText === consultPatientStartedMsg && rowData?.message == 'welcome') ||
+      rowData?.automatedText === jdAutoAssign
     ) {
       return null;
     }
@@ -5928,17 +5931,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <TouchableOpacity
           onPress={() => {
             fireWebengageEvent(appointmentData);
-            props.navigation.navigate(AppRoutes.DoctorDetails, {
-              doctorId: doctorId,
-              cleverTapAppointmentAttributes: {
-                source: 'Appointment CTA',
-                appointmentCTA: 'Inside consult room',
-              },
-            });
+            appointmentData?.doctorInfo?.allowBookingRequest
+              ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
+                  doctorId: doctorId,
+                  cleverTapAppointmentAttributes: {
+                    source: 'Appointment CTA',
+                    appointmentCTA: 'Inside consult room',
+                  },
+                })
+              : props.navigation.navigate(AppRoutes.DoctorDetails, {
+                  doctorId: doctorId,
+                  cleverTapAppointmentAttributes: {
+                    source: 'Appointment CTA',
+                    appointmentCTA: 'Inside consult room',
+                  },
+                });
           }}
         >
           <Text style={theme.viewStyles.text('B', 13, theme.colors.APP_YELLOW)}>
-            {strings.common.book_apointment}
+            {appointmentData?.doctorInfo?.allowBookingRequest
+              ? 'REQUEST APPOINTMENT'
+              : strings.common.book_apointment}
           </Text>
         </TouchableOpacity>
       </View>
@@ -6407,6 +6420,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setTimeout(() => {
               hideCallUI();
             }, 2000);
+
             if (isAudio.current) {
               handleEndAudioCall();
             } else {
@@ -6465,7 +6479,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
       callEndWebengageEvent('Patient');
 
-      if (publishPubnub) {
+      if (publishPubnub && patientId == currentPatient?.id) {
         pubnub.publish(
           {
             message: {
@@ -6521,7 +6535,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setCameraPosition('front');
       postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
       callEndWebengageEvent('Patient');
-      if (publishPubnub) {
+      if (publishPubnub && patientId == currentPatient?.id) {
         pubnub.publish(
           {
             message: {
@@ -6616,9 +6630,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
   };
 
-  const callUploadMediaDocumentApi = (inputData: MediaPrescriptionUploadRequest) =>
+  const callUploadMediaDocumentApiV2 = (inputData: MediaPrescriptionUploadRequest) =>
     client.mutate({
-      mutation: UPLOAD_MEDIA_DOCUMENT_PRISM,
+      mutation: UPLOAD_MEDIA_DOCUMENT_V2,
       fetchPolicy: 'no-cache',
       variables: {
         MediaPrescriptionUploadRequest: inputData,
@@ -6662,41 +6676,39 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           prescriptionFiles: [prescriptionFile],
         };
         try {
-          const response = await callUploadMediaDocumentApi(inputData);
-          const recordId = g(response, 'data', 'uploadMediaDocument', 'recordId');
-          if (recordId) {
-            getPrismUrls(client, patientId, [recordId])
-              .then((data: any) => {
-                const text = {
-                  id: patientId,
-                  message: imageconsult,
-                  fileType: item.fileType == 'pdf' ? 'pdf' : 'image',
-                  fileName: item.title + '.' + item.fileType,
-                  prismId: recordId,
-                  url: (data.urls && data.urls[0]) || '',
-                  messageDate: new Date(),
-                };
-                pubnub.publish(
-                  {
-                    channel: channel,
-                    message: text,
-                    storeInHistory: true,
-                    sendByPost: true,
-                  },
-                  (status, response) => {
-                    if (status.statusCode == 200) {
-                      HereNowPubnub('ImageUploaded');
-                    }
-                  }
-                );
-                KeepAwake.activate();
-              })
-              .catch((e) => {
-                CommonBugFender('ChatRoom_getPrismUrls_uploadDocument', e);
-              });
+          const response = await callUploadMediaDocumentApiV2(inputData);
+
+          if (
+            response?.data?.uploadMediaDocumentV2 &&
+            Array.isArray(response.data.uploadMediaDocumentV2) &&
+            response.data.uploadMediaDocumentV2.length &&
+            response.data.uploadMediaDocumentV2[0]?.fileUrl
+          ) {
+            const text = {
+              id: patientId,
+              message: imageconsult,
+              fileType: item.fileType == 'pdf' ? 'pdf' : 'image',
+              fileName: item.title + '.' + item.fileType,
+              url: response.data.uploadMediaDocumentV2[0].fileUrl || '',
+              messageDate: new Date(),
+            };
+            pubnub.publish(
+              {
+                channel: channel,
+                message: text,
+                storeInHistory: true,
+                sendByPost: true,
+              },
+              (status, response) => {
+                if (status.statusCode == 200) {
+                  HereNowPubnub('ImageUploaded');
+                }
+              }
+            );
+            KeepAwake.activate();
           } else {
             Alert.alert('Upload document failed');
-            CommonLogEvent('ChatRoom_callUploadMediaDocumentApi_Failed', response);
+            CommonLogEvent('ChatRoom_callUploadMediaDocumentApiV2_Failed', response);
           }
         } catch (e) {
           // adding retry
@@ -6723,7 +6735,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         instructions={[
           'Take clear Picture of your entire file.',
           'Doctor details & date of the test should be clearly visible.',
-          'Only JPG / PNG type files up to 2 mb are allowed',
+          'Only JPG / PNG / PDF type files up to 25 MB are allowed',
         ]}
         isVisible={isDropdownVisible}
         disabledOption={'NONE'}
@@ -6731,7 +6743,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         blockCameraMessage={strings.alerts.Open_camera_in_video_call}
         optionTexts={{
           camera: 'TAKE A PHOTO',
-          gallery: 'CHOOSE FROM\nGALLERY',
+          gallery: 'CHOOSE FROM\nDEVICE',
           prescription: 'UPLOAD\nFROM PHR',
         }}
         hideTAndCs={true}
@@ -6863,6 +6875,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     }
                   }
                 );
+                setLoading(false);
             });
           }
         }}
@@ -7567,7 +7580,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               currentPatient,
               secretaryData
             );
-            setShowReschedulePopup(true);
+            appointmentData?.doctorInfo?.allowBookingRequest
+              ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
+                  doctorId: doctorId,
+                  cleverTapAppointmentAttributes: {
+                    source: 'Appointment CTA',
+                    appointmentCTA: 'Inside consult room',
+                  },
+                })
+              : setShowReschedulePopup(true);
             setShowRescheduleCancel(false);
           }}
           closeModal={() => setShowRescheduleCancel(false)}
@@ -7593,7 +7614,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             );
             CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'RESCHEDULE_INSTEAD_Clicked');
             setShowCancelPopup(false);
-            setShowReschedulePopup(true);
+            appointmentData?.doctorInfo?.allowBookingRequest
+              ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
+                  doctorId: doctorId,
+                  cleverTapAppointmentAttributes: {
+                    source: 'Appointment CTA',
+                    appointmentCTA: 'Inside consult room',
+                  },
+                })
+              : setShowReschedulePopup(true);
           }}
           onPressCancel={() => {
             postAppointmentWEGEvents(WebEngageEventName.CANCEL_CONSULTATION_CLICKED);
@@ -7613,6 +7642,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <CheckReschedulePopup
           data={appointmentData}
           navigation={props.navigation}
+          secretaryData={secretaryData}
           closeModal={() => setShowReschedulePopup(false)}
           cancelSuccessCallback={() => {
             postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER);
@@ -7859,6 +7889,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 : transferData.id
               : appointmentData.id
           }
+          secretaryData={secretaryData}
           data={transferData ? transferData : appointmentData}
           bookFollowUp={false}
           KeyFollow={'RESCHEDULE'}

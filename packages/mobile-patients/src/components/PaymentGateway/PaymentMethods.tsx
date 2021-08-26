@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -91,11 +91,15 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const paymentId = props.navigation.getParam('paymentId');
   const customerId = props.navigation.getParam('customerId');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
+  const cleverTapCheckoutEventAttributes = props.navigation.getParam(
+    'cleverTapCheckoutEventAttributes'
+  );
   const [amount, setAmount] = useState<number>(props.navigation.getParam('amount'));
   const orderDetails = props.navigation.getParam('orderDetails');
   const eventAttributes = props.navigation.getParam('eventAttributes');
   const businessLine = props.navigation.getParam('businessLine');
   const isDiagnostic = businessLine === 'diagnostics';
+  const disableCod = props.navigation.getParam('disableCOD');
   const { currentPatient } = useAllCurrentPatients();
   const [banks, setBanks] = useState<any>([]);
   const [isTxnProcessing, setisTxnProcessing] = useState<boolean>(false);
@@ -109,7 +113,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { authToken, setauthToken } = useAppCommonData();
   const { grandTotal, deliveryCharges, packagingCharges } = useShoppingCart();
   const { healthCredits } = useFetchHealthCredits(businessLine);
-  const { paymentMethods, cardTypes, fetching } = useGetPaymentMethods(businessLine);
+  const { paymentMethods, cardTypes, fetching } = useGetPaymentMethods(paymentId);
   const [HCSelected, setHCSelected] = useState<boolean>(false);
   const [burnHc, setburnHc] = useState<number>(0);
   const storeCode =
@@ -120,6 +124,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [showPrepaid, setShowPrepaid] = useState<boolean>(isDiagnostic ? false : true);
   const [showCOD, setShowCOD] = useState<boolean>(isDiagnostic ? false : true);
   const [showDiagnosticHCMsg, setShowDiagnosticHCMsg] = useState<string>('');
+  const paymentType = useRef<string>('');
 
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
@@ -218,9 +223,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         payload?.requestId == 'phonePe' && status && setphonePeReady(true);
         payload?.requestId == 'googlePay' && status && setGooglePayReady(true);
         break;
-      // case 'cardList':
-      //   setSavedCards(payload?.payload?.cards || []);
-      //   break;
       default:
         payload?.error && handleError(payload?.errorMessage);
     }
@@ -346,6 +348,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   function triggerWebengege(type: string) {
+    paymentType.current = type;
     PaymentInitiated(amount, businessLine, type, paymentId);
   }
 
@@ -357,7 +360,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressBank(bankCode: string) {
-    triggerWebengege('Net Banking');
+    triggerWebengege('NetBanking-' + bankCode);
     const token = await getClientToken();
     token
       ? InitiateNetBankingTxn(currentPatient?.id, token, paymentId, bankCode)
@@ -365,7 +368,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressWallet(wallet: string) {
-    triggerWebengege(wallet);
+    triggerWebengege('Wallet-' + wallet);
     const token = await getClientToken();
     token
       ? wallet == 'PHONEPE' && phonePeReady
@@ -375,7 +378,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressUPIApp(app: any) {
-    triggerWebengege(app?.payment_method_name);
+    triggerWebengege('UPIApp-' + app?.payment_method_name);
     const token = await getClientToken();
     const paymentCode = app?.payment_method_code;
     const sdkPresent =
@@ -446,6 +449,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressplaceHcOrder() {
+    triggerWebengege('HealthCredits');
     try {
       setisTxnProcessing(true);
       const response = await createJusPayOrder(false);
@@ -500,6 +504,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const navigatetoOrderStatus = (isCOD: boolean, paymentStatus: string) => {
     PaymentStatus(paymentStatus, businessLine, paymentId);
+    setauthToken?.('');
     switch (businessLine) {
       case 'diagnostics':
         props.navigation.navigate(AppRoutes.OrderStatus, {
@@ -520,13 +525,22 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         break;
       case 'pharma':
         paymentStatus == 'success' &&
-          PharmaOrderPlaced(checkoutEventAttributes, shoppingCart, paymentId, burnHc, isCOD);
+          PharmaOrderPlaced(
+            checkoutEventAttributes,
+            cleverTapCheckoutEventAttributes,
+            paymentType.current,
+            shoppingCart,
+            paymentId,
+            burnHc,
+            isCOD
+          );
         props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
           status: paymentStatus,
           price: amount,
           transId: paymentId,
           orderDetails: orderDetails,
           checkoutEventAttributes: checkoutEventAttributes,
+          cleverTapCheckoutEventAttributes,
         });
         break;
       case 'subscription':
@@ -658,6 +672,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         onPressPlaceOrder={onPressPayByCash}
         showDiagCOD={showCOD}
         diagMsg={showDiagnosticHCMsg}
+        pharmaDisableCod={disableCod}
       />
     );
   };

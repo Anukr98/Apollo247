@@ -156,6 +156,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const voipDoctorName = useRef<string>('');
 
   const [userLoggedIn, setUserLoggedIn] = useState<any | null>(null);
+  const [createCleverTapProifle, setCreateCleverTapProifle] = useState<any | null>(null);
 
   const [spinValue, setSpinValue] = useState(new Animated.Value(0));
   const [animatedValue, setAnimatedValue] = useState(new Animated.Value(0));
@@ -248,6 +249,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
     if (
       !currentDeviceToken ||
+      currentDeviceToken === '' ||
+      currentDeviceToken.length == 0 ||
       typeof currentDeviceToken != 'string' ||
       typeof currentDeviceToken == 'object'
     ) {
@@ -402,7 +405,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     ) {
       const params = id?.split('+');
       voipCallType.current = params?.[1]!;
-      callPermissions();
       getAppointmentDataAndNavigate(params?.[0]!, true);
     } else if (routeName == 'prohealth') {
       fetchProhealthHospitalDetails(id);
@@ -573,11 +575,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                   vaccinationCmsIdentifier,
                   vaccinationSubscriptionId
                 );
-                CleverTap.profileGetCleverTapID((err, res) => {
-                  if (!res) {
-                    onCleverTapUserLogin(currentPatient);
-                  }
-                });
+                let _createCleverTapProifle = createCleverTapProifle;
+                if (_createCleverTapProifle == null) {
+                  _createCleverTapProifle = await AsyncStorage.getItem('createCleverTapProifle');
+                  if (_createCleverTapProifle == 'false') onCleverTapUserLogin(mePatient);
+                }
                 callPhrNotificationApi(currentPatient);
                 setCrashlyticsAttributes(mePatient);
               } else {
@@ -611,6 +613,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const prefetchUserMetadata = async () => {
     const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
     setUserLoggedIn(userLoggedIn);
+    const _createCleverTapProifle = await AsyncStorage.getItem('createCleverTapProifle');
+    setCreateCleverTapProifle(_createCleverTapProifle);
   };
 
   const getAppointmentDataAndNavigate = async (appointmentId: string, isCall: boolean) => {
@@ -747,6 +751,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setMaxCartValueForCOD,
     setNonCodSKus,
     setCartPriceNotUpdateRange,
+    setPdpDisclaimerMessage,
+    setPharmaHomeNudgeMessage,
+    setPharmaCartNudgeMessage,
+    setPharmaPDPNudgeMessage,
   } = useShoppingCart();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -972,6 +980,22 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Diagnostics_Help_NonOrder_Queries',
       PROD: 'Diagnostics_Help_NonOrder_Queries',
     },
+    Pharma_Discailmer_Message: {
+      QA: 'QA_Pharma_PDP_Disclaimer',
+      PROD: 'Pharma_PDP_Disclaimer',
+    },
+    Nudge_Message_Pharmacy_Home: {
+      QA: 'QA_Show_nudge_on_pharma_home',
+      PROD: 'Show_nudge_on_pharma_home',
+    },
+    Nudge_Message_Pharmacy_PDP: {
+      QA: 'QA_Show_nudge_on_pharma_pdp',
+      PROD: 'Show_nudge_on_pharma_pdp',
+    },
+    Nudge_Message_Pharmacy_Cart: {
+      QA: 'QA_Show_nudge_on_pharma_cart',
+      PROD: 'Show_nudge_on_pharma_cart',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1089,6 +1113,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) => JSON.parse(config.getString(key)) || []
       );
       nonCodSkuList?.length && setNonCodSKus?.(nonCodSkuList);
+
+      const disclaimerMessagePdp = getRemoteConfigValue('Pharma_Discailmer_Message', (key) =>
+        config.getString(key)
+      );
+      setPdpDisclaimerMessage?.(disclaimerMessagePdp);
 
       setAppConfig(
         'Min_Value_For_Pharmacy_Free_Delivery',
@@ -1220,6 +1249,27 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'Diagnostics_Help_NonOrder_Queries',
         (key) => config.getString(key)
       );
+
+      const nudgeMessagePharmacyHome = getRemoteConfigValue(
+        'Nudge_Message_Pharmacy_Home',
+        (key) => JSON.parse(config.getString(key)) || null
+      );
+
+      nudgeMessagePharmacyHome && setPharmaHomeNudgeMessage?.(nudgeMessagePharmacyHome);
+
+      const nudgeMessagePharmacyCart = getRemoteConfigValue(
+        'Nudge_Message_Pharmacy_Cart',
+        (key) => JSON.parse(config.getString(key)) || null
+      );
+
+      nudgeMessagePharmacyCart && setPharmaCartNudgeMessage?.(nudgeMessagePharmacyCart);
+
+      const nudgeMessagePharmacyPDP = getRemoteConfigValue(
+        'Nudge_Message_Pharmacy_PDP',
+        (key) => JSON.parse(config.getString(key)) || null
+      );
+
+      nudgeMessagePharmacyPDP && setPharmaPDPNudgeMessage?.(nudgeMessagePharmacyPDP);
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';

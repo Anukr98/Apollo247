@@ -99,7 +99,7 @@ import {
   deletePatientPrismMedicalRecords,
   getPatientPrismMedicalRecordsApi,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_prescriptions_response } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
+import { getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_prescriptions_response } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V3';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import moment from 'moment';
 import _ from 'lodash';
@@ -232,7 +232,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
   const [prescriptions, setPrescriptions] = useState<
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_prescriptions_response | null)[]
+    | (getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_prescriptions_response | null)[]
     | null
     | undefined
   >(props.navigation?.getParam('prescriptionArray') || []);
@@ -364,7 +364,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       .then((data: any) => {
         const prescriptionsData = g(
           data,
-          'getPatientPrismMedicalRecords_V2',
+          'getPatientPrismMedicalRecords_V3',
           'prescriptions',
           'response'
         );

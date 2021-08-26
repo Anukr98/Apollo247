@@ -2,6 +2,37 @@ import { PharmaUserStatus } from '@aph/mobile-patients/src/components/AppCommonD
 
 type YesOrNo = { value: 'Yes' | 'No' };
 
+export type CircleNavigationSource =
+  | 'Circle Popup Plan only'
+  | 'Landing Home Page banners'
+  | 'Medicine Home page banners'
+  | 'Medicine Homepage Sticky'
+  | 'Diagnostic Home page Banner'
+  | 'VC Doctor Profile'
+  | 'Cart(Pharma)'
+  | 'Cart(VC)'
+  | 'Membership Details'
+  | 'Landing Home Page'
+  | 'My Account-My membership section'
+  | 'Corporate Membership Page'
+  | 'Circle Membership page'
+  | 'VC Doctor Card';
+
+export type CIRCLE_EVENT_DATA = {
+  userId: string;
+  navigation_source: string | CircleNavigationSource;
+  price: number;
+  duration_in_month: number;
+  circle_plan_id: string;
+  corporate_name?: string;
+  source_identifier?: string;
+  circle_start_date?: Date | string;
+  circle_end_date?: Date | string;
+  af_currency: string;
+  af_revenue: number;
+  special_price_enabled?: 'Yes' | 'No';
+};
+
 export enum ProductPageViewedSource {
   NOTIFICATION = 'notification',
   DEEP_LINK = 'deeplink',
@@ -92,6 +123,10 @@ export enum AppsFlyerEventName {
   PAYMENT_STATUS = 'Payment Status',
 
   PURCHASE = 'purchase',
+
+  // Circle Events
+  CIRCLE_ADD_TO_CART = 'Circle Plan Add to Cart',
+  CIRCLE_REMOVE_FROM_CART = 'Circle Plan Remove from Cart',
 }
 
 export interface PatientInfo {
@@ -307,7 +342,7 @@ export interface AppsFlyerEvents {
     'Cart ID'?: string | number; // Optional
     'Service Area': 'Pharmacy' | 'Diagnostic';
     'Circle discount': number;
-    "Circle user": 'Yes' | 'No';
+    'Circle user': 'Yes' | 'No';
   };
   [AppsFlyerEventName.PRODUCT_PAGE_VIEWED]: {
     source: ProductPageViewedSource;
@@ -553,6 +588,10 @@ export interface AppsFlyerEvents {
     af_revenue: number;
     af_currency: string;
   };
+
+  // circle events
+  [AppsFlyerEventName.CIRCLE_ADD_TO_CART]: CIRCLE_EVENT_DATA;
+  [AppsFlyerEventName.CIRCLE_REMOVE_FROM_CART]: CIRCLE_EVENT_DATA;
 
   [AppsFlyerEventName.PAYMENT_STATUS]: {
     status: string;

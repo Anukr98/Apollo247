@@ -256,6 +256,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     }
   }, []);
   const client = useApolloClient();
+  const isValidPincode = (pincode: any) => /^[1-9]{1}\d{0,9}$/.test(pincode);
   const isAddressValid =
     userName &&
     phoneNumber &&
@@ -264,6 +265,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     areaDetails &&
     pincode &&
     pincode.length === 6 &&
+    isValidPincode(pincode) &&
     city &&
     city.length > 1 &&
     state &&
@@ -272,7 +274,8 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
       ? true
       : addressType !== undefined &&
         (addressType !== PATIENT_ADDRESS_TYPE.OTHER ||
-          (addressType === PATIENT_ADDRESS_TYPE.OTHER && optionalAddress));
+          (addressType === PATIENT_ADDRESS_TYPE.OTHER && optionalAddress)) &&
+        isValidPincode(pincode);
 
   const saveAddress = (addressInput: PatientAddressInput) =>
     client.mutate<savePatientAddress, savePatientAddressVariables>({
@@ -466,7 +469,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
   };
 
   const validateAndSetPincode = (pincode: string) => {
-    if (pincode == '' || /^[1-9]{1}\d{0,9}$/.test(pincode)) {
+    if (pincode == '' || isValidPincode(pincode)) {
       setpincode(pincode);
       pincode.length == 6 && updateCityStateByPincode(pincode);
     }

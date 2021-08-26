@@ -227,6 +227,7 @@ export const GET_PATIENT_PAST_SEARCHES = gql`
       image
       specialty
       symptoms
+      allowBookingRequest
     }
   }
 `;
@@ -422,8 +423,10 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isConsultStarted
         isSeniorConsultStarted
         isJdQuestionsComplete
+        isAutomatedQuestionsComplete
         symptoms
         doctorInfo {
+          allowBookingRequest
           awards
           city
           country
@@ -589,8 +592,10 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isConsultStarted
         isSeniorConsultStarted
         isJdQuestionsComplete
+        isAutomatedQuestionsComplete
         symptoms
         doctorInfo {
+          allowBookingRequest
           awards
           city
           country
@@ -756,8 +761,10 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isConsultStarted
         isSeniorConsultStarted
         isJdQuestionsComplete
+        isAutomatedQuestionsComplete
         symptoms
         doctorInfo {
+          allowBookingRequest
           awards
           city
           country
@@ -923,8 +930,10 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isConsultStarted
         isSeniorConsultStarted
         isJdQuestionsComplete
+        isAutomatedQuestionsComplete
         symptoms
         doctorInfo {
+          allowBookingRequest
           awards
           city
           country
@@ -1715,9 +1724,7 @@ export const SAVE_MEDICINE_ORDER_OMS_V2 = gql`
       errorCode
       errorMessage
       transactionId
-      isSubstitution
-      substitutionTime
-      substitutionMessage
+      isCodEligible
       orders {
         id
         orderAutoId
@@ -1736,6 +1743,7 @@ export const SAVE_ORDER_WITH_SUBSCRIPTION = gql`
       errorCode
       errorMessage
       transactionId
+      isCodEligible
       orders {
         id
         orderAutoId
@@ -2442,6 +2450,14 @@ export const GET_PATIENT_FEEDBACK = gql`
   }
 `;
 
+export const MERGE_PDF = gql`
+  mutation mergePDFS($uhid: String!, $fileUrls: [String]!) {
+    mergePDFS(fileUrls: $fileUrls, uhid: $uhid) {
+      mergepdfUrl
+    }
+  }
+`;
+
 export const SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS = gql`
   mutation savePrescriptionMedicineOrderOMS(
     $prescriptionMedicineOMSInput: PrescriptionMedicineOrderOMSInput
@@ -3045,6 +3061,364 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
           consultId
           identifier
           additionalNotes
+          billNo
+          testSequence
+          observation
+          labTestResults {
+            parameterName
+            unit
+            result
+            range
+            outOfRange
+            # resultDate
+          }
+          fileUrl
+          testResultFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+          }
+        }
+        errorCode
+        errorMsg
+        errorType
+      }
+      prescriptions {
+        response {
+          id
+          prescriptionName
+          date
+          # dateOfPrescription
+          # startDate
+          # endDate
+          prescribedBy
+          notes
+          prescriptionSource
+          siteDisplayName
+          source
+          fileUrl
+          prescriptionFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+          }
+          hospital_name
+          hospitalId
+        }
+        errorCode
+        errorMsg
+        errorType
+      }
+      healthChecks {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          authToken
+          userId
+          id
+          fileUrl
+          date
+          healthCheckName
+          healthCheckDate
+          siteDisplayName
+          healthCheckSummary
+          healthCheckFiles {
+            id
+            fileName
+            mimeType
+            content
+            # byteContent
+            # dateCreated
+          }
+          source
+          healthCheckType
+          followupDate
+        }
+      }
+      hospitalizations {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          authToken
+          userId
+          id
+          fileUrl
+          date
+          hospitalizationDate
+          dateOfHospitalization
+          hospitalName
+          doctorName
+          reasonForAdmission
+          siteDisplayName
+          diagnosisNotes
+          dateOfDischarge
+          dischargeSummary
+          doctorInstruction
+          dateOfNextVisit
+          hospitalizationFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
+          }
+          source
+        }
+      }
+      medicalBills {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          bill_no
+          hospitalName
+          billDate
+          source
+          siteDisplayName
+          notes
+          fileUrl
+          billDateTime
+          billFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
+          }
+        }
+      }
+      medicalInsurances {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          insuranceCompany
+          policyNumber
+          startDate
+          endDate
+          startDateTime
+          endDateTime
+          source
+          siteDisplayName
+          fileUrl
+          notes
+          sumInsured
+          insuranceFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
+          }
+        }
+      }
+      medicalConditions {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          medicalConditionName
+          doctorTreated
+          startDate
+          source
+          endDate
+          notes
+          illnessType
+          fileUrl
+          siteDisplayName
+          startDateTime
+          endDateTime
+          medicationFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
+          }
+        }
+      }
+      medications {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          medicineName
+          medicalCondition
+          doctorName
+          startDate
+          endDate
+          startDateTime
+          endDateTime
+          morning
+          noon
+          siteDisplayName
+          evening
+          notes
+          source
+        }
+      }
+      healthRestrictions {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          startDate
+          endDate
+          startDateTime
+          endDateTime
+          restrictionName
+          suggestedByDoctor
+          nature
+          siteDisplayName
+          source
+          notes
+        }
+      }
+      allergies {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          startDate
+          endDate
+          fileUrl
+          startDateTime
+          endDateTime
+          allergyName
+          severity
+          reactionToAllergy
+          doctorTreated
+          notes
+          siteDisplayName
+          source
+          attachmentList {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
+          }
+        }
+      }
+      familyHistory {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          diseaseName
+          authToken
+          source
+          fileUrl
+          familyMember
+          notes
+          siteDisplayName
+          recordDateTime
+          age
+          familyHistoryFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
+          }
+        }
+      }
+      immunizations {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          immunizationName
+          dateAdministered
+          followUpDate
+          registrationId
+          dateOfImmunization
+          dueDate
+          fileUrl
+          doctorName
+          manufacturer
+          batchno
+          vaccineName
+          potency
+          hospitalName
+          vaccine_location
+          notes
+          source
+          reactions {
+            type
+            from
+            to
+          }
+          immunizationFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+            dateCreated
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_MEDICAL_PRISM_RECORD_V3 = gql`
+  query getPatientPrismMedicalRecords_V3($patientId: ID!, $records: [MedicalRecordType]) {
+    getPatientPrismMedicalRecords_V3(patientId: $patientId, records: $records) {
+      labResults {
+        response {
+          id
+          labTestName
+          labTestSource
+          packageId
+          packageName
+          # labTestDate
+          date
+          labTestRefferedBy
+          siteDisplayName
+          tag
+          consultId
+          identifier
+          additionalNotes
+          billNo
+          testSequence
           observation
           labTestResults {
             parameterName
@@ -3430,6 +3804,14 @@ export const GET_LAB_RESULT_PDF = gql`
   }
 `;
 
+export const GET_INDIVIDUAL_TEST_RESULT_PDF = gql`
+  query getIndividualTestResultPdf($patientId: ID!, $recordId: String!, $sequence: String!) {
+    getIndividualTestResultPdf(patientId: $patientId, recordId: $recordId, sequence: $sequence) {
+      url
+    }
+  }
+`;
+
 export const ADD_PATIENT_MEDICAL_INSURANCE_RECORD = gql`
   mutation addPatientMedicalInsuranceRecord(
     $addPatientMedicalInsuranceRecordInput: AddPatientMedicalInsuranceRecordInput
@@ -3735,6 +4117,7 @@ export const GET_APPOINTMENT_DATA = gql`
         rescheduleCount
         appointmentState
         isJdQuestionsComplete
+        isAutomatedQuestionsComplete
         isSeniorConsultStarted
         patientInfo {
           firstName
@@ -4038,6 +4421,22 @@ export const UPLOAD_DOCUMENT = gql`
   }
 `;
 
+export const UPLOAD_MEDIA_DOCUMENT_V2 = gql`
+  mutation uploadMediaDocumentV2(
+    $MediaPrescriptionUploadRequest: MediaPrescriptionUploadRequest
+    $uhid: String!
+    $appointmentId: ID!
+  ) {
+    uploadMediaDocumentV2(
+      prescriptionInput: $MediaPrescriptionUploadRequest
+      uhid: $uhid
+      appointmentId: $appointmentId
+    ) {
+      fileUrl
+    }
+  }
+`;
+
 export const DOWNLOAD_DOCUMENT = gql`
   query downloadDocuments($downloadDocumentsInput: DownloadDocumentsInput!) {
     downloadDocuments(downloadDocumentsInput: $downloadDocumentsInput) {
@@ -4092,15 +4491,7 @@ export const ADD_PATIENT_FEEDBACK = gql`
 export const AUTOMATED_QUESTIONS = gql`
   mutation addToConsultQueueWithAutomatedQuestions($ConsultQueueInput: ConsultQueueInput) {
     addToConsultQueueWithAutomatedQuestions(consultQueueInput: $ConsultQueueInput) {
-      id
-      doctorId
       totalJuniorDoctorsOnline
-      juniorDoctorsList {
-        juniorDoctorId
-        doctorName
-        # queueCount
-      }
-      totalJuniorDoctors
       isJdAllowed
       isJdAssigned
     }
@@ -4307,6 +4698,9 @@ export const GET_PHARMA_TRANSACTION_STATUS_V2 = gql`
       paymentStatus
       paymentDateTime
       paymentMode
+      isSubstitution
+      substitutionTime
+      substitutionMessage
       planPurchaseDetails {
         planPurchased
         totalCashBack
@@ -4799,8 +5193,8 @@ export const ADD_DIABETIC_QUESTIONNAIRE = gql`
 `;
 
 export const GET_PAYMENT_METHODS = gql`
-  query getPaymentMethods($is_mobile: Boolean) {
-    getPaymentMethods(is_mobile: $is_mobile) {
+  query getPaymentMethods($is_mobile: Boolean, $payment_order_id: String) {
+    getPaymentMethods(is_mobile: $is_mobile, payment_order_id: $payment_order_id) {
       name
       minimum_supported_version
       payment_methods {
@@ -5141,6 +5535,7 @@ export const GET_PATIENT_PAST_CONSULTED_DOCTORS = gql`
       specialty {
         name
       }
+      allowBookingRequest
       consultDetails {
         consultDateTime
         displayId
@@ -5336,6 +5731,60 @@ export const VERIFY_CORPORATE_EMAIL_OTP_AND_SUBSCRIBE = gql`
 
 ///---BELOW is pointed to vaccine endpoint-------->>
 
+export const CANCEL_VACCINATION_APPOINTMENT = gql`
+  mutation CancelAppointment($appointment_id: String, $display_id: Float) {
+    CancelAppointment(appointment_id: $appointment_id, display_id: $display_id) {
+      code
+      success
+      message
+      response {
+        id
+        status
+      }
+    }
+  }
+`;
+
+export const GET_ALL_VACCINATION_APPOINTMENTS = gql`
+  query GetAllAppointments {
+    GetAllAppointments {
+      code
+      success
+      message
+      response {
+        id
+        dose_number
+        resource_id
+        patient_info {
+          firstName
+          lastName
+          age
+          gender
+          uhid
+          relation
+        }
+        status
+        payment_type
+        resource_session_details {
+          session_name
+          start_date_time
+          vaccine_type
+          resource_detail {
+            name
+            street_line1
+            street_line2
+            street_line3
+            city
+            state
+          }
+        }
+        display_id
+        payment_type
+      }
+    }
+  }
+`;
+
 export const GET_VACCINATION_SITES = gql`
   query getResourcesList($city: String!, $vaccine_type: VACCINE_TYPE, $is_retail: Boolean) {
     getResourcesList(city: $city, vaccine_type: $vaccine_type, is_retail: $is_retail) {
@@ -5490,56 +5939,19 @@ export const GET_VACCINATION_APPOINMENT_DETAILS = gql`
   }
 `;
 
-export const CANCEL_VACCINATION_APPOINTMENT = gql`
-  mutation CancelAppointment($appointment_id: String, $display_id: Float) {
-    CancelAppointment(appointment_id: $appointment_id, display_id: $display_id) {
-      code
-      success
-      message
-      response {
+export const MAKE_APPOINTMENT_BOOKING_REQUEST = gql`
+  mutation appointmentBookingRequest($bookAppointment: AppointmentBookingRequestInput!) {
+    appointmentBookingRequest(appointmentInput: $bookAppointment) {
+      appointment {
         id
+        doctorId
+        appointmentDateTime
         status
+        appointmentType
+        patientId
+        __typename
       }
-    }
-  }
-`;
-
-export const GET_ALL_VACCINATION_APPOINTMENTS = gql`
-  query GetAllAppointments {
-    GetAllAppointments {
-      code
-      success
-      message
-      response {
-        id
-        dose_number
-        resource_id
-        patient_info {
-          firstName
-          lastName
-          age
-          gender
-          uhid
-          relation
-        }
-        status
-        payment_type
-        resource_session_details {
-          session_name
-          start_date_time
-          vaccine_type
-          resource_detail {
-            name
-            street_line1
-            street_line2
-            street_line3
-            city
-            state
-          }
-        }
-        display_id
-        payment_type
-      }
+      __typename
     }
   }
 `;
@@ -5593,6 +6005,15 @@ export const COWIN_REGISTRATION = gql`
         error
       }
       message
+    }
+  }
+`;
+
+export const GET_RESCHEDULE_AND_CANCELLATION_REASONS = gql`
+  query getRescheduleAndCancellationReasons($appointmentDateTimeInUTC: DateTime!) {
+    getRescheduleAndCancellationReasons(appointmentDateTimeInUTC: $appointmentDateTimeInUTC) {
+      rescheduleReasons
+      cancellationReasons
     }
   }
 `;

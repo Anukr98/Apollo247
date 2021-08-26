@@ -20,7 +20,7 @@ import com.webengage.sdk.android.WebEngage;
 import com.webengage.sdk.android.WebEngageActivityLifeCycleCallbacks;
 import com.webengage.sdk.android.WebEngageConfig;
 import com.clevertap.android.sdk.ActivityLifecycleCallback;
-
+import com.ibits.react_native_in_app_review.AppReviewPackage;
 import java.util.List;
 
 import io.reactivex.Observable;

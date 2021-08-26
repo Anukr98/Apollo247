@@ -12,6 +12,7 @@ import {
   tabBarOptions,
 } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultRoom';
 import { DoctorDetails } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorDetails';
+import { DoctorDetailsBookingOnRequest } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorDetailsBookingOnRequest';
 import { DoctorSearch } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearch';
 import { DoctorSearchListing } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearchListing';
 import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
@@ -35,7 +36,6 @@ import { Medicine } from '@aph/mobile-patients/src/components/Medicines/Medicine
 import { MedicineSearch } from '@aph/mobile-patients/src/components/MedicineSearch/MedicineSearch';
 import { MedicineListing } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListing';
 import { MedicineBuyAgain } from '@aph/mobile-patients/src/components/MedicineBuyAgain/MedicineBuyAgain';
-import { MedicineDetailsScene } from '@aph/mobile-patients/src/components/Medicines/MedicineDetailsScene';
 import { ProductDetailPage } from '@aph/mobile-patients/src/components/ProductDetailPage/ProductDetailPage';
 import { SelectDeliveryAddress } from '@aph/mobile-patients/src/components/Medicines/SelectDeliveryAddress';
 import { StorePickupScene } from '@aph/mobile-patients/src/components/Medicines/StorePickupScene';
@@ -123,8 +123,7 @@ import { SymptomTracker } from '@aph/mobile-patients/src/components/SymptomTrack
 import { SymptomSelection } from '@aph/mobile-patients/src/components/SymptomSelection';
 import { PaymentCheckout } from '@aph/mobile-patients/src/components/Consult/PaymentCheckout';
 import { PaymentCheckoutPhysical } from '@aph/mobile-patients/src/components/Consult/PaymentCheckoutPhysical';
-import { CircleSubscription } from '@aph/mobile-patients/src/components/CirclePlan/CircleSubscription';
-import { SubscriptionPaymentGateway } from '@aph/mobile-patients/src/components/CirclePlan/SubscriptionPaymentGateway';
+import { SubscriptionCart } from '@aph/mobile-patients/src/components/CirclePlan/SubscriptionCart';
 import { PrescriptionOrderSummary } from '@aph/mobile-patients/src/components/Medicines/PrescriptionOrderSummary';
 import { Maps } from '@aph/mobile-patients/src/components/ui/Maps';
 import { PaymentMethods } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentMethods';
@@ -134,7 +133,6 @@ import { ProHealthWebView } from '@aph/mobile-patients/src/components/ProHealthW
 import MyOrdersScreen from '@aph/mobile-patients/src/components/MyOrders/MyOrdersScreen';
 import { TestRatingScreen } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/TestRatingScreen';
 import { SlotSelection } from '@aph/mobile-patients/src/components/Consult/SlotSelection';
-
 import { VaccineBookingScreen } from '@aph/mobile-patients/src/components/Vaccination/VaccineBookingScreen';
 import { VaccineBookingConfirmationScreen } from '@aph/mobile-patients//src/components/Vaccination/VaccineBookingConfirmationScreen';
 import { BookedVaccineScreen } from '@aph/mobile-patients//src/components/Vaccination/BookedVaccineScreen';
@@ -176,6 +174,7 @@ export enum AppRoutes {
   Consult = 'Consult',
   FilterScene = 'FilterScene',
   DoctorDetails = 'DoctorDetails',
+  DoctorDetailsBookingOnRequest = 'DoctorDetailsBookingOnRequest',
   AssociateDoctorDetails = 'AssociateDoctorDetails',
   AppointmentDetails = 'AppointmentDetails',
   AppointmentDetailsPhysical = 'AppointmentDetailsPhysical',
@@ -184,7 +183,6 @@ export enum AppRoutes {
   MedicineSearch = 'MedicineSearch',
   MedicineListing = 'MedicineListing',
   MedicineBuyAgain = 'MedicineBuyAgain',
-  MedicineDetailsScene = 'MedicineDetailsScene',
   ProductDetailPage = 'ProductDetailPage',
   ApplyCouponScene = 'ApplyCouponScene',
   ViewCoupons = 'ViewCoupons',
@@ -263,8 +261,7 @@ export enum AppRoutes {
   AppointmentFilterScene = 'AppointmentFilterScene',
   PaymentCheckout = 'PaymentCheckout',
   PaymentCheckoutPhysical = 'PaymentCheckoutPhysical',
-  CircleSubscription = 'CircleSubscription',
-  SubscriptionPaymentGateway = 'SubscriptionPaymentGateway',
+  SubscriptionCart = 'SubscriptionCart',
   PrescriptionOrderSummary = 'PrescriptionOrderSummary',
   PaymentMethods = 'PaymentMethods',
   OtherBanks = 'OtherBanks',
@@ -388,6 +385,10 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
     screen: DoctorDetails,
     path: 'DoctorDetailsPage',
   },
+  [AppRoutes.DoctorDetailsBookingOnRequest]: {
+    screen: DoctorDetailsBookingOnRequest,
+    path: 'DoctorDetailsBookingOnRequestPage',
+  },
   [AppRoutes.AssociateDoctorDetails]: {
     screen: DoctorDetails,
   },
@@ -408,9 +409,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.MedicineBuyAgain]: {
     screen: MedicineBuyAgain,
-  },
-  [AppRoutes.MedicineDetailsScene]: {
-    screen: MedicineDetailsScene,
   },
   [AppRoutes.ProductDetailPage]: {
     screen: ProductDetailPage,
@@ -656,11 +654,8 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.PaymentCheckoutPhysical]: {
     screen: PaymentCheckoutPhysical,
   },
-  [AppRoutes.CircleSubscription]: {
-    screen: CircleSubscription,
-  },
-  [AppRoutes.SubscriptionPaymentGateway]: {
-    screen: SubscriptionPaymentGateway,
+  [AppRoutes.SubscriptionCart]: {
+    screen: SubscriptionCart,
   },
   [AppRoutes.PrescriptionOrderSummary]: {
     screen: PrescriptionOrderSummary,

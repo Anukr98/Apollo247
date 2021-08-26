@@ -495,7 +495,35 @@ export const Login: React.FC<LoginProps> = (props) => {
   const deviceTokenAPI = async (patientId: string) => {
     const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
     const deviceToken2 = deviceToken ? JSON.parse(deviceToken) : '';
-    saveTokenDevice(client, deviceToken2, patientId);
+
+    if (
+      !deviceToken2 ||
+      deviceToken2 === '' ||
+      deviceToken2.length == 0 ||
+      typeof deviceToken2 != 'string' ||
+      typeof deviceToken2 == 'object'
+    ) {
+      messaging()
+        .getToken()
+        .then((token) => {
+          saveTokenDevice(client, token, patientId)
+            ?.then((resp) => {})
+            .catch((e) => {
+              CommonBugFender('Login_saveTokenDevice', e);
+              AsyncStorage.setItem('deviceToken', '');
+            });
+        })
+        .catch((e) => {
+          CommonBugFender('Login_getDeviceToken', e);
+        });
+    } else {
+      saveTokenDevice(client, deviceToken2, patientId)
+        ?.then((resp) => {})
+        .catch((e) => {
+          CommonBugFender('Login_saveTokenDevice', e);
+          AsyncStorage.setItem('deviceToken', '');
+        });
+    }
   };
 
   const navigateTo = (routeName: AppRoutes, patient?: any) => {

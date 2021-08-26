@@ -13,6 +13,7 @@ export interface saveMedicineOrderV2_saveMedicineOrderV2_orders {
   __typename: "MedicineOrderIds";
   id: string;
   orderAutoId: number | null;
+  estimatedAmount: number | null;
 }
 
 export interface saveMedicineOrderV2_saveMedicineOrderV2 {
@@ -20,9 +21,7 @@ export interface saveMedicineOrderV2_saveMedicineOrderV2 {
   errorCode: number | null;
   errorMessage: string | null;
   transactionId: number | null;
-  isSubstitution: boolean | null;
-  substitutionTime: number | null;
-  substitutionMessage: string | null;
+  isCodEligible: boolean | null;
   orders: (saveMedicineOrderV2_saveMedicineOrderV2_orders | null)[] | null;
 }
 

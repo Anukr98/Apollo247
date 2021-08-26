@@ -1575,6 +1575,7 @@ export const onCleverTapUserLogin = async (_currentPatient: any) => {
       ...(_currentPatient?.createdDate && { CreatedDate: _currentPatient?.createdDate }),
     };
     CleverTap.onUserLogin(_userProfile);
+    AsyncStorage.setItem('createCleverTapProifle', 'true');
   } catch (error) {
     CommonBugFender('setCleverTapUserLogin', error);
   }
@@ -1706,6 +1707,21 @@ export function getTimeDiff(nextSlot: any) {
   return timeDiff;
 }
 
+export const postWebEngagePHR = (
+  currentPatient: any,
+  cleverTapEventName: CleverTapEventName,
+  source: string = '',
+  data: any = {}
+) => {
+  const eventAttributes: CleverTapEvents[CleverTapEventName.MEDICAL_RECORDS] = {
+    ...removeObjectNullUndefinedProperties(data),
+    Source: source,
+    ...removeObjectNullUndefinedProperties(currentPatient),
+  };
+  postWebEngageEvent(cleverTapEventName, eventAttributes);
+  postCleverTapEvent(cleverTapEventName, eventAttributes);
+};
+
 export const postConsultSearchCleverTapEvent = (
   searchInput: string,
   currentPatient: any,
@@ -1802,6 +1818,65 @@ export const getUsageKey = (type: string) => {
   }
 };
 
+export const postWebEngageIfNewSession = (
+  type: string,
+  currentPatient: any,
+  data: any,
+  phrSession: string,
+  setPhrSession: ((value: string) => void) | null
+) => {
+  let session = phrSession;
+  let sessionId;
+  if (!session) {
+    sessionId = `${+new Date()}`;
+    const obj: any = {
+      'consults-usage': null,
+      'testReports-usage': null,
+      'hospitalizations-usage': null,
+      'healthConditions-usage': null,
+      'bills-usage': null,
+      'insurance-usage': null,
+    };
+    const usageKey = getUsageKey(type);
+    obj[usageKey] = sessionId;
+    setPhrSession?.(JSON.stringify(obj));
+    postCleverTapPHR(
+      currentPatient,
+      CleverTapEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS.replace(
+        '{0}',
+        type
+      ) as CleverTapEventName,
+      type,
+      {
+        sessionId,
+        ...data,
+      }
+    );
+  } else {
+    const sessionObj = JSON.parse(session);
+    const usageKey = getUsageKey(type);
+    sessionId = sessionObj[usageKey];
+    if (!sessionId) {
+      sessionId = `${+new Date()}`;
+      const newSessionObj = { ...sessionObj };
+      newSessionObj[usageKey] = sessionId;
+      setPhrSession?.(JSON.stringify(newSessionObj));
+      postCleverTapPHR(
+        currentPatient,
+        CleverTapEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS.replace(
+          '{0}',
+          type
+        ) as CleverTapEventName,
+        type,
+        {
+          sessionId,
+          ...data,
+        }
+      );
+    }
+  }
+};
+
 export const postCleverTapIfNewSession = (
   type: string,
   currentPatient: any,
@@ -1889,6 +1964,25 @@ export const postWEGNeedHelpEvent = (
     Source: source,
   };
   postWebEngageEvent(WebEngageEventName.NEED_HELP, eventAttributes);
+};
+
+export const postWEGPatientAPIError = (
+  currentPatient: GetCurrentPatients_getCurrentPatients_patients,
+  doc: string | null,
+  screen: string,
+  api: string,
+  error: any
+) => {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.Patient_API_Error] = {
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient ID': g(currentPatient, 'id')!,
+    'Patient Number': g(currentPatient, 'mobileNumber')!,
+    'Doctor ID': doc,
+    'Screen Name': screen,
+    'API Name': api,
+    'Error Name': error,
+  };
+  postWebEngageEvent(WebEngageEventName.Patient_API_Error, eventAttributes);
 };
 
 export const postWEGWhatsAppEvent = (whatsAppAllow: boolean) => {
@@ -2373,6 +2467,7 @@ export const formatToCartItem = ({
   image,
   sell_online,
   url_key,
+  subcategory,
 }: MedicineProduct): ShoppingCartItem => {
   return {
     id: sku,
@@ -2389,6 +2484,7 @@ export const formatToCartItem = ({
     isInStock: is_in_stock == 1,
     unavailableOnline: sell_online == 0,
     url_key,
+    subcategory,
   };
 };
 
@@ -2685,14 +2781,32 @@ export const removeConsecutiveComma = (value: string) => {
   return value.replace(/^,|,$|,(?=,)/g, '');
 };
 
-export const getCareCashback = (price: number, type_id: string | null | undefined) => {
+export const calculateCashbackForItem = (
+  price: number,
+  type_id: any,
+  subcategory: any,
+  sku: any
+) => {
   const { circleCashback } = useShoppingCart();
-  let typeId = !!type_id ? type_id.toUpperCase() : '';
-  let cashback = 0;
-  if (!!circleCashback && !!circleCashback[typeId]) {
-    cashback = price * (circleCashback[typeId] / 100);
-  }
-  return cashback;
+  const getFirstLevelCashback = () => {
+    // categoty level cashback
+    const key = type_id?.toUpperCase();
+    return circleCashback?.[key] || 0;
+  };
+  const getSecondLevelCashback = () => {
+    // sub categoty level cashback
+    const key = `${type_id?.toUpperCase()}~${subcategory}`;
+    return circleCashback?.[key] || 0;
+  };
+  const getThirdLevelCashback = () => {
+    // sku level cashback
+    const key = `${type_id?.toUpperCase()}~${subcategory}~${sku}`;
+    return circleCashback?.[key] || 0;
+  };
+  const cashbackFactor =
+    getThirdLevelCashback() || getSecondLevelCashback() || getFirstLevelCashback();
+  const cashback = cashbackFactor ? ((price * cashbackFactor) / 100).toFixed(2) : '0';
+  return cashback || 0;
 };
 
 export const readableParam = (param: string) => {
@@ -3264,6 +3378,79 @@ export const getCheckoutCompletedEventAttributes = (
   }
   return eventAttributes;
 };
+export const getCleverTapCheckoutCompletedEventAttributes = (
+  shoppingCart: ShoppingCartContextProps,
+  paymentOrderId: string,
+  pharmacyUserTypeAttribute: any,
+  ordersIds: any
+) => {
+  const {
+    deliveryAddressId,
+    addresses,
+    storeId,
+    stores,
+    uploadPrescriptionRequired,
+    physicalPrescriptions,
+    cartItems,
+    cartTotal,
+    deliveryCharges,
+    coupon,
+    couponDiscount,
+    productDiscount,
+    ePrescriptions,
+    grandTotal,
+    circleSubscriptionId,
+    isCircleSubscription,
+    cartTotalCashback,
+    pharmacyCircleAttributes,
+    orders,
+    pinCode,
+  } = shoppingCart;
+  const addr = deliveryAddressId && addresses.find((item) => item.id == deliveryAddressId);
+  const store = storeId && stores.find((item) => item.storeid == storeId);
+  const shippingInformation = addr ? formatAddress(addr) : store ? store.address : '';
+  const getFormattedAmount = (num: number) => Number(num.toFixed(2));
+  const eventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED] = {
+    'Transaction ID': paymentOrderId,
+    'Order Type': 'Cart',
+    'Prescription Added': !!(physicalPrescriptions.length || ePrescriptions.length),
+    'Shipping information': shippingInformation, // (Home/Store address)
+    'Total items in cart': cartItems.length,
+    'Grand Total': cartTotal + deliveryCharges,
+    'Total Discount %': coupon
+      ? getFormattedAmount(((couponDiscount + productDiscount) / cartTotal) * 100)
+      : 0,
+    'Discount Amount': getFormattedAmount(couponDiscount + productDiscount),
+    'Shipping Charges': deliveryCharges,
+    'Net after discount': getFormattedAmount(grandTotal),
+    'Payment status': 1,
+    'Service Area': 'Pharmacy',
+    'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
+    af_revenue: getFormattedAmount(grandTotal),
+    'Circle Cashback amount':
+      circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
+    'Split Cart': orders?.length > 1 ? 'Yes' : 'No',
+    'Prescription Option selected': uploadPrescriptionRequired
+      ? 'Prescription Upload'
+      : 'Not Applicable',
+    'Circle Member':
+      getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+      undefined,
+    'Circle Membership Value': pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
+    'User Type': pharmacyUserTypeAttribute?.User_Type || undefined,
+    'Coupon Applied': coupon?.coupon || undefined,
+    Pincode: pinCode || undefined,
+    'Cart Items': JSON.stringify(cartItems),
+    'Order_ID(s)': ordersIds?.map((i) => i?.orderAutoId)?.join(','),
+  };
+  if (store) {
+    eventAttributes['Store Id'] = store.storeid;
+    eventAttributes['Store Name'] = store.storename;
+    eventAttributes['Store Number'] = store.phone;
+    eventAttributes['Store Address'] = store.address;
+  }
+  return eventAttributes;
+};
 
 export const getDiagnosticCityLevelPaymentOptions = (cityId: string) => {
   let remoteData = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_PAYMENT_OPTION;
@@ -3289,7 +3476,7 @@ export const downloadDocument = (
   let viewReportOrderId = orderId;
   const configOptions = { fileCache: true };
   RNFetchBlob.config(configOptions)
-    .fetch('GET', fileUrl)
+    .fetch('GET', fileUrl.replace(/\s/g, ''))
     .then((resp) => {
       filePath = resp.path();
       return resp.readFile('base64');
@@ -3313,4 +3500,8 @@ export const getIsMedicine = (typeId: string) => {
     pl: '2',
   };
   return medicineType[typeId] || '0';
+};
+export const removeWhiteSpaces = (item: any) => {
+  const newItem = item?.replace(/\s/g, '');
+  return newItem;
 };
