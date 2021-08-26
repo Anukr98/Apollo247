@@ -299,6 +299,12 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   tatDeliveryText: { color: theme.colors.APP_GREEN },
+  slotText: {
+    ...theme.viewStyles.text('R', 13, theme.colors.APP_RED, 1, 24),
+    flex: 1,
+    textAlign: 'right',
+    paddingEnd: 10,
+  }
 });
 
 export interface ConsultDetailsProps
@@ -386,12 +392,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     if (caseSheetDetails && !defaultAddress) {
       getAddressList();
     } else if (defaultAddress && !testIds.length) {
-      getPincodeServicibility(Number(defaultAddress?.zipcode));
       if (caseSheetDetails?.medicinePrescription?.length) {
         checkMedicineAvailability();
       }
     } else {
-      getNearestArea();
+      // Test Delivery slots api to be addded here in future
     }
   }, [caseSheetDetails, defaultAddress, testIds]);
 
@@ -1222,7 +1227,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                     {priscTatText()}
                     <Text style={styles.tatText}>{tatContent.find(item => item.isMedicine)['discount']}</Text>
                   </View> : null}
-                  <Text style={styles.quickActionButtons}>ORDER MEDICINES</Text>
+                  <Text style={styles.quickActionButtons}>
+                    {strings.health_records_home.order_medicines}
+                  </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -1357,12 +1364,14 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               }}>
               {tatContent.length ?
                   <View>
-                    {testTatText()}
                     <Text style={styles.tatText}>{testTat['discount']}</Text>
                     <Text style={styles.tatText}>{testTat['reportTime']}</Text>
                   </View> : null}
                 <Text style={styles.quickActionButtons}>
                   {strings.health_records_home.order_test}
+                </Text>
+                <Text style={styles.slotText}>
+                  {strings.health_records_home.slot_filling}
                 </Text>
             </TouchableOpacity>
           </View>
