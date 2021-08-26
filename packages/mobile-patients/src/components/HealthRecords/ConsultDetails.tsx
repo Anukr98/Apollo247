@@ -485,10 +485,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       if (data?.data?.response) {
         const { tat } = data?.data?.response;
         setTat(moment(tat, 'DD-MMM-YYYY HH:mm').format('h:mm A, DD MMM YYYY'));
-      } else {
-        setLoading && setLoading(false);
       }
     }
+    setLoading && setLoading(false);
   };
 
   const getPincodeServicibility = (pinCodeFromAddress: number) => {
