@@ -3649,13 +3649,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         variables: {
           doctorConsultEventInput: {
             mobileNumber: g(appointmentData, 'doctorInfo', 'mobileNumber'),
-            eventName: WebEngageEvent.PATIENT_SENT_MESSAGE,
+            eventName: WebEngageEvent.CONSULT_PATIENT_SENT_MESSAGE,
             consultID: g(appointmentData, 'id')!,
             displayId: String(g(appointmentData, 'displayId')!),
             consultMode: ConsultMode.ONLINE,
             doctorFullName: g(appointmentData, 'doctorInfo', 'fullName')!,
             message,
             chatFormat: msgType,
+            source: 'APP',
         }},
       })
       .then(() => {})

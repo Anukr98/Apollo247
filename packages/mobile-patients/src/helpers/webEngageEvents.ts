@@ -388,7 +388,7 @@ export enum WebEngageEventName {
   PATIENT_SESSION_STREAM_DESTROYED = 'Patient Session Stream Destroyed',
   PATIENT_SESSION_STREAM_PROPERTY_CHANGED = 'Patient Session Stream Property Changed',
   //chatRoom Events
-  PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT = 'Patient sent chat message post consult',
+  PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT = 'Consult Patient sent chat message post consult',
   ORDER_MEDICINES_IN_CONSULT_ROOM = 'Order meds in Consult room',
   BOOK_TESTS_IN_CONSULT_ROOM = 'Book tests in consult room',
   PATIENT_EXTERNAL_MEETING_LINK_CLICKED = 'Patient Clicked on Video Link',
