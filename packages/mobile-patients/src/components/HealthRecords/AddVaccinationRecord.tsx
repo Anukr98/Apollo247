@@ -311,7 +311,7 @@ export const AddVaccinationRecord: React.FC<AAddVaccinationRecordProps> = (props
   useEffect(() => {
     if (selectedRecord) {
       var doseCount: any;
-      selectedRecord.batchno === 1 ? (doseCount = 'Dose 1') : (doseCount = 'Dose 2');
+      selectedRecord.batchno === '1' ? (doseCount = 'Dose 1') : (doseCount = 'Dose 2');
       setVaccinationName(selectedRecord.vaccineName || '');
       setRegistrationID(selectedRecord.registrationId || '');
       setdateOfTest(
@@ -535,6 +535,7 @@ export const AddVaccinationRecord: React.FC<AAddVaccinationRecordProps> = (props
                   placeholder={'Hospital/Clinic name'}
                   style={styles.doctorInputContainer}
                   numberOfLines={1}
+                  keyboardType="ascii-capable"
                   value={vaccinationCener}
                   onChangeText={(vaccCenter) => {
                     if (isValidText(vaccCenter)) {
