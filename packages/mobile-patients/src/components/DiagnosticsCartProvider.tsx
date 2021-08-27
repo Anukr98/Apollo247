@@ -14,7 +14,8 @@ import {
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import AsyncStorage from '@react-native-community/async-storage';
-import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList } from '../graphql/types/getDiagnosticOrdersListByMobile';
+import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 export interface orderList
   extends getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList {}
@@ -211,6 +212,12 @@ export interface DiagnosticsCartContextProps {
 
   cartItemsMapping: any[];
   setCartItemsMapping: ((items: any[]) => void) | null;
+
+  isCircleAddedToCart: boolean;
+  setIsCircleAddedToCart: ((value: boolean) => void) | null;
+
+  selectedCirclePlan: any;
+  setSelectedCirclePlan: ((plan: any) => void) | null;
 }
 
 export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>({
@@ -335,6 +342,10 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   setShowMultiPatientMsg: null,
   cartItemsMapping: [],
   setCartItemsMapping: null,
+  isCircleAddedToCart: false,
+  setIsCircleAddedToCart: null,
+  selectedCirclePlan: null,
+  setSelectedCirclePlan: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -342,6 +353,8 @@ const showGenericAlert = (message: string) => {
 };
 
 export const DiagnosticsCartProvider: React.FC = (props) => {
+  const { circleMembershipCharges } = useShoppingCart();
+
   const id = '';
   const AsyncStorageKeys = {
     cartItems: `diagnosticsCartItems${id}`,
@@ -521,6 +534,14 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const [cartItemsMapping, setCartItemsMapping] = useState<
     DiagnosticsCartContextProps['cartItemsMapping']
   >([]);
+
+  const [isCircleAddedToCart, setIsCircleAddedToCart] = useState<
+    DiagnosticsCartContextProps['isCircleAddedToCart']
+  >(false);
+
+  const [selectedCirclePlan, setSelectedCirclePlan] = useState<
+    DiagnosticsCartContextProps['selectedCirclePlan']
+  >(null);
 
   const setShowMultiPatientMsg: DiagnosticsCartContextProps['setShowMultiPatientMsg'] = (value) => {
     _setShowMultiPatientMsg(value);
@@ -1036,6 +1057,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         removeDuplicatePatientCartItems,
         cartItemsMapping,
         setCartItemsMapping,
+        isCircleAddedToCart,
+        setIsCircleAddedToCart,
+        selectedCirclePlan,
+        setSelectedCirclePlan,
       }}
     >
       {props.children}

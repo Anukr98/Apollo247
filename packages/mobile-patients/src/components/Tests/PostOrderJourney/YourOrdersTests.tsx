@@ -521,10 +521,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const checkIfPreTestingExists = (order: orderList) => {
     if (order != null) {
-      const filterPreTestingData = order?.diagnosticOrderLineItems?.filter((items) =>
-        items?.itemObj
-          ? items?.itemObj?.testPreparationData != ''
-          : items?.diagnostics?.testPreparationData != ''
+      const filterPreTestingData = order?.diagnosticOrderLineItems?.filter(
+        (items) => items?.itemObj && items?.itemObj?.testPreparationData != ''
       );
       return filterPreTestingData?.length == 0 ? false : true;
     }

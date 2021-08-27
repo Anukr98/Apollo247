@@ -489,12 +489,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         : orderLevelStatus?.statusHistory;
     scrollToSlots();
 
-    const getAllStatusDone = newList?.filter((value) =>
-      orderLevelStatus?.statusHistory?.includes(value)
-    );
-    const filterDoneStatusWithoutRefund = getAllStatusDone?.filter(
-      (item: any) => item?.orderStatus !== DIAGNOSTIC_ORDER_STATUS.REFUND_INITIATED
-    );
     return (
       <View>
         <View style={{ margin: 20 }}>
@@ -509,11 +503,24 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             const changeModifiedText =
               order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_MODIFIED &&
               DIAGNOSTIC_SUB_STATUS_TO_SHOW?.includes(order?.subStatus!);
-            const slotDate = moment(selectedOrder?.slotDateTimeInUTC).format('Do MMM');
-            const slotTime1 = moment(selectedOrder?.slotDateTimeInUTC).format('hh:mm A');
-            const slotTime2 = moment(selectedOrder?.slotDateTimeInUTC)
-              .add(slotDuration, 'minutes')
-              .format('hh:mm A');
+
+            const isOrderCompleted = orderLevelStatus?.statusHistory?.find(
+              (item: any) => item?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED
+            );
+
+            const isPOC =
+              isOrderCompleted == undefined &&
+              orderLevelStatus?.statusHistory?.find(
+                (item: any) => item?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED
+              );
+
+            const isSampleSubmitted =
+              isOrderCompleted == undefined &&
+              isPOC === undefined &&
+              orderLevelStatus?.statusHistory?.find(
+                (item: any) => item?.orderStatus === DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED
+              );
+
             return (
               <View
                 style={styles.rowStyle}
@@ -556,10 +563,18 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                     {renderSubStatus(order, index)}
                     {showContentBasedOnStatus(order, isStatusDone, index)}
                     {/** since this can with any combination */}
-                    {!!showInclusions &&
-                      DROP_DOWN_ARRAY_STATUS.includes(showInclusions?.orderStatus) &&
-                      index == filterDoneStatusWithoutRefund?.length - 1 &&
-                      renderInclusionLevelDropDown(order)}
+                    {!!isOrderCompleted
+                      ? null
+                      : !!showInclusions &&
+                        DROP_DOWN_ARRAY_STATUS.includes(showInclusions?.orderStatus)
+                      ? !!isPOC &&
+                        order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED
+                        ? renderInclusionLevelDropDown(order)
+                        : !!isSampleSubmitted &&
+                          order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED
+                        ? renderInclusionLevelDropDown(order)
+                        : null
+                      : null}
                   </View>
                 </View>
               </View>
@@ -1022,12 +1037,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                             </Text>
                           </View>
                           <StatusCard
-                            titleText={
+                            titleText={item?.orderStatus}
+                            customText={
                               item?.itemId == 8 &&
-                              item?.orderStatus ==
+                              item?.orderStatus ===
                                 DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB
-                                ? '2ND SAMPLE PENDING'
-                                : item?.orderStatus
                             }
                           />
                         </View>

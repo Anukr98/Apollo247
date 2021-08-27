@@ -1,10 +1,10 @@
 import { Platform } from 'react-native';
-import { AddressObj, ConsultMode, patientAddressObj, PLAN } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { AddressObj, ConsultMode, DiagnosticLineItem, patientAddressObj, PLAN } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { DIAGNOSTIC_GROUP_PLAN, GooglePlacesType } from '@aph/mobile-patients/src/helpers/apiCalls';
 import moment from 'moment';
-import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getDiscountPercentage, isDiagnosticSelectedCartEmpty } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import DeviceInfo from 'react-native-device-info';
-import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { DiagnosticPatientCartItem, DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 export const getValuesArray = (arr: any) => {
   const finalArr = arr.map((item: any) => item.name);
@@ -461,4 +461,56 @@ export enum DIAGNOSTIC_PINCODE_SOURCE_TYPE  {
   SEARCH = 'Search',
   AUTO = 'Auto-select',
   ADDRESS = 'Saved Address'
+}
+
+export const createLineItemPrices = (selectedItem: any, isDiagnosticCircleSubscription: boolean, reportGenDetails: any) =>{
+  var pricesForItemArray = selectedItem?.cartItems?.map(
+    (item: any, index: number) =>
+      ({
+        itemId: Number(item?.id),
+        price:
+          isDiagnosticCircleSubscription && item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+            ? Number(item?.circleSpecialPrice)
+            : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+            ? Number(item?.discountSpecialPrice)
+            : Number(item?.specialPrice) || Number(item?.price),
+        mrp:
+          isDiagnosticCircleSubscription && item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+            ? Number(item?.circlePrice)
+            : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+            ? Number(item?.discountPrice)
+            : Number(item?.price),
+        groupPlan: isDiagnosticCircleSubscription
+          ? item?.groupPlan!
+          : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+          ? item?.groupPlan
+          : DIAGNOSTIC_GROUP_PLAN.ALL,
+        preTestingRequirement:
+          !!reportGenDetails && reportGenDetails?.[index]?.itemPrepration
+            ? reportGenDetails?.[index]?.itemPrepration
+            : null,
+      } as DiagnosticLineItem)
+  );
+
+  return {
+    pricesForItemArray,
+  };
+}
+
+export const createPatientObjLineItems = (patientCartItems: DiagnosticPatientCartItem[], isDiagnosticCircleSubscription: boolean, reportGenDetails: any) =>{
+  const filterPatientItems = isDiagnosticSelectedCartEmpty(patientCartItems);
+  var array = [] as any; //define type
+
+  filterPatientItems?.map((item) => {
+    const getPricesForItem = createLineItemPrices(item, isDiagnosticCircleSubscription, reportGenDetails)?.pricesForItemArray;
+    const totalPrice = getPricesForItem
+      ?.map((item: any) => Number(item?.price))
+      ?.reduce((prev: number, curr: number) => prev + curr, 0);
+    array.push({
+      patientID: item?.patientId,
+      lineItems: getPricesForItem,
+      totalPrice: totalPrice,
+    });
+  });
+  return array;
 }
