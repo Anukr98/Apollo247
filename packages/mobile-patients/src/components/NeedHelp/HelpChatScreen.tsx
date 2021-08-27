@@ -7,6 +7,8 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { ChatSend } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
+import { getHelpdeskTickets } from '../../graphql/types/getHelpdeskTickets';
+import { GET_HELPDESK_TICKETS } from '@aph/mobile-patients/src/graphql/profiles';
 import moment from 'moment';
 import {
   HELP_DESK_TICKET_STATUS,
@@ -217,13 +219,14 @@ const BUSINESS = {
 export interface HelpChatProps extends NavigationScreenProps {}
 
 export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
-  let ticket = props.navigation.getParam('ticket');
+  let ticketId = props.navigation.getParam('ticketId');
+  const [ticket, setTicket] = useState<any>(props.navigation.getParam('ticket'));
   const flatListRef = useRef<FlatList<any> | undefined | null>();
   const [loading, setLoading] = useState<boolean>(false);
   const [messageText, setMessageText] = useState<string>('');
   const [contentHeight, setContentHeight] = useState(40);
   const [isTicketClosed, setIsTicketClosed] = useState<boolean>(
-    ticket.statusType.toUpperCase() === 'CLOSED' ? true : false
+    ticket?.statusType?.toUpperCase() === 'CLOSED' ? true : false
   );
   const [conversations, setConverstions] = useState<any>([]);
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
@@ -233,8 +236,42 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
   const client = useApolloClient();
 
   useEffect(() => {
-    getConversation();
+    if (ticketId) {
+      // when there is only ticketId
+      setLoading(true);
+      setRefreshing(true);
+      setTimeout(() => fetchTicketDetails(), 2000);
+    } else {
+      if (ticket) {
+        getConversation();
+      }
+    }
   }, []);
+
+  const fetchTicketDetails = () => {
+    client
+      .query<getHelpdeskTickets>({
+        query: GET_HELPDESK_TICKETS,
+        fetchPolicy: 'no-cache',
+      })
+      .then((response) => {
+        let correspondingTicket = response?.data?.getHelpdeskTickets?.tickets?.filter(
+          (t) => t?.id === ticketId
+        )[0];
+
+        setTicket(correspondingTicket);
+        setTimeout(() => getConversation(), 3000);
+
+        setLoading(false);
+        setRefreshing(false);
+      })
+      .catch((error) => {
+        setLoading(false);
+        setRefreshing(false);
+
+        CommonBugFender('fetchHelpdeskTickets', error);
+      });
+  };
 
   const getConversation = () => {
     setLoading(true);
@@ -366,11 +403,11 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
     return (
       <View style={styles.orderStatusCard}>
         <View style={styles.orderStatusTitleContainer}>
-          <Text style={styles.orderStatusTitle}>{ticket.subject || ''}</Text>
-          <OrderStatusIndicator orderStatus={ticket.statusType} />
+          <Text style={styles.orderStatusTitle}>{ticket?.subject || ''}</Text>
+          <OrderStatusIndicator orderStatus={ticket?.statusType} />
         </View>
         <Text style={styles.orderSubTitle}>
-          #{ticket.ticketNumber} | Raised on {getDate(ticket.createdTime)}
+          #{ticket?.ticketNumber} | Raised on {getDate(ticket?.createdTime)}
         </Text>
       </View>
     );
@@ -403,8 +440,8 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
     var reopenCTADisabled: boolean = false;
     let showWhatsappCTA: boolean = false;
 
-    if (ticket.closedTime) {
-      var closedTime = moment(ticket.closedTime);
+    if (ticket?.closedTime) {
+      var closedTime = moment(ticket?.closedTime);
       var nowTime = moment(new Date());
       var duration = moment.duration(nowTime.diff(closedTime)).asHours();
 
@@ -463,16 +500,16 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
 
       if (ticket?.customFields?.Business == BUSINESS.PHARMACY) {
         phoneNumber = '914041894343';
-        message = `I want to know the status of my Help_ticket , Ticket Number : ${ticket.ticketNumber}`;
+        message = `I want to know the status of my Help_ticket , Ticket Number : ${ticket?.ticketNumber}`;
       } else if (ticket?.customFields?.Business == BUSINESS.VIRTUAL_CONSULTATION) {
         phoneNumber = '918047104009';
-        message = `I want to know the status of my VC_Help_ticket  , Ticket Number :  ${ticket.ticketNumber}`;
+        message = `I want to know the status of my VC_Help_ticket  , Ticket Number :  ${ticket?.ticketNumber}`;
       } else if (ticket?.customFields?.Business == BUSINESS.PHYSICAL_CONSULTATION) {
         phoneNumber = '918047104009';
-        message = `I want to know the status of my PC_Help_ticket , Ticket Number:  ${ticket.ticketNumber}`;
+        message = `I want to know the status of my PC_Help_ticket , Ticket Number:  ${ticket?.ticketNumber}`;
       } else if (ticket?.customFields?.Business == BUSINESS.DIAGNOSTICS) {
         phoneNumber = '914048218743';
-        message = `I want to know the status of my Help_ticket , Ticket Number :  ${ticket.ticketNumber}`;
+        message = `I want to know the status of my Help_ticket , Ticket Number :  ${ticket?.ticketNumber}`;
       }
 
       const whatsAppScheme = `whatsapp://send?text=${message}&phone=${phoneNumber}`;
