@@ -3033,8 +3033,8 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
         statusString = 'Partial Refund Initiated'
         break;
     default:
-      statusString = status || '';
-      statusString?.replace(/[_]/g, ' ');
+      statusString = status 
+      // statusString?.replace(/[_]/g, ' ');
   }
   return statusString;
 };

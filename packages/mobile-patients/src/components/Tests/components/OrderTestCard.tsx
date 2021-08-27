@@ -149,6 +149,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                       flexDirection: 'row',
                       minWidth: 0,
                       maxWidth: !!item?.editOrderID ? (screenWidth > 350 ? '68%' : '57%') : '80%',
+                      flex: 1,
                     }}
                   >
                     <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
@@ -176,7 +177,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
               index: number
             ) => (
               <>
-                <View style={{ flexDirection: 'row', width: '86%' }}>
+                <View style={{ flexDirection: 'row', width: '86%', flex: 1 }}>
                   <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
                   <Text style={styles.testName}>
                     {!!item?.itemName ? nameFormater(item?.itemName!, 'title') : ''}{' '}
