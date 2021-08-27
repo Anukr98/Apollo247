@@ -488,6 +488,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       }
     }
     await availabilityTat(deliveryAddressId, true);
+    setloading(true);
     let splitOrderDetails: any = {};
     if (orders?.length > 1) {
       orders?.forEach((order: any, index: number) => {
@@ -522,7 +523,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       const subscriptionId = response?.data?.CreateUserSubscription?.response?._id;
       const data = await createOrderInternal(orders, subscriptionId);
       if (data?.data?.createOrderInternal?.success) {
-        setauthToken?.('');
         const paymentId = data?.data?.createOrderInternal?.payment_order_id!;
         props.navigation.navigate(AppRoutes.PaymentMethods, {
           paymentId: paymentId,
@@ -545,6 +545,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         });
       }
       setloading(false);
+      setauthToken?.('');
     } catch (error) {
       setloading(false);
       renderAlert('Something went wrong. Please try again after some time');
