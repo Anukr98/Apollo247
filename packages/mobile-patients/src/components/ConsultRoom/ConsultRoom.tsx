@@ -854,8 +854,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, []);
 
   const fetchUserAgent = () => {
-    let userAgent = UserAgent.getUserAgent();
-    AsyncStorage.setItem(USER_AGENT, userAgent);
+    try {
+      let userAgent = UserAgent?.getUserAgent();
+      AsyncStorage.setItem(USER_AGENT, userAgent);
+    } catch {}
   };
 
   //for prohealth option
