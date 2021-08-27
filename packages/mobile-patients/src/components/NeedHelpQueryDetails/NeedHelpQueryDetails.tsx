@@ -8,9 +8,11 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT,
   SEND_HELP_EMAIL,
+  GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetMedicineOrderShipmentDetails,
@@ -39,6 +41,14 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { FlatList, ListRenderItemInfo, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
+import { TouchableOpacity } from 'react-native';
+import { RefundDetails } from '@aph/mobile-patients/src/components/RefundDetails';
+import {
+  getMedicineOrderOMSDetailsWithAddress,
+  getMedicineOrderOMSDetailsWithAddressVariables,
+  getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails,
+  getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
+} from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
 
 export interface Props
   extends NavigationScreenProps<{
@@ -52,6 +62,10 @@ export interface Props
     isConsult?: boolean;
     medicineOrderStatusDate?: any;
     sourcePage: WebEngageEvents[WebEngageEventName.HELP_TICKET_SUBMITTED]['Source_Page'];
+    pathFollowed: string;
+    refund: any[];
+    payment: any[];
+    additionalInfo: boolean;
   }> {}
 
 export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
@@ -59,10 +73,16 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const _queries = navigation.getParam('queries');
   const queryIdLevel1 = navigation.getParam('queryIdLevel1') || '';
   const queryIdLevel2 = navigation.getParam('queryIdLevel2') || '';
+  const pathFollowed = navigation.getParam('pathFollowed') || '';
   const medicineOrderStatusDate = navigation.getParam('medicineOrderStatusDate');
   const [email, setEmail] = useState(navigation.getParam('email') || '');
   const orderId = navigation.getParam('orderId') || '';
+  const refund = navigation.getParam('refund') || [];
+  const payment = navigation.getParam('payment') || [];
+  const [fetchRefund, setFetchRefund] = useState<any[]>([]);
+  const [fetchPayment, setFetchPayment] = useState<any[]>([]);
   const isOrderRelatedIssue = navigation.getParam('isOrderRelatedIssue') || false;
+  const additionalInfo = navigation.getParam('additionalInfo') || false;
   const [showEmailPopup, setShowEmailPopup] = useState<boolean>(email ? false : true);
   const [requestEmailWithoutAction, setRequestEmailWithoutAction] = useState<boolean>(true);
   const medicineOrderStatus = navigation.getParam('medicineOrderStatus');
@@ -86,6 +106,12 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   useEffect(() => {
     if (!_queries) {
       fetchQueries();
+    }
+    if (
+      queryIdLevel1 == helpSectionQueryId.pharmacy &&
+      navigation.getParam('refund') === undefined
+    ) {
+      getOMSDetails();
     }
   }, []);
 
@@ -115,6 +141,33 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     return data?.getMedicineOrderOMSDetailsWithAddress?.medicineOrderDetails;
   };
 
+  const getOMSDetails = async () => {
+    const vars: getMedicineOrderOMSDetailsWithAddressVariables = {
+      patientId: currentPatient && currentPatient.id,
+      orderAutoId: Number(orderId),
+      billNumber: '',
+    };
+
+    const { data } = await client.query<
+      getMedicineOrderOMSDetailsWithAddress,
+      getMedicineOrderOMSDetailsWithAddressVariables
+    >({
+      query: GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS,
+      variables: vars,
+      fetchPolicy: 'no-cache',
+    });
+
+    const order = data?.getMedicineOrderOMSDetailsWithAddress?.medicineOrderDetails;
+    const paymentDetails = order?.medicineOrderPayments || [];
+    const RefundTypes = ['REFUND_REQUEST_RAISED', 'REFUND_SUCCESSFUL'];
+    const refundDetails =
+      order?.medicineOrderRefunds?.filter(
+        (item) => RefundTypes.indexOf(item?.refundStatus!) != -1
+      ) || [];
+    setFetchRefund(refundDetails);
+    setFetchPayment(paymentDetails);
+  };
+
   const renderHeader = () => {
     const onPressBack = () => navigation.goBack();
     const pageTitle = string.help.toUpperCase();
@@ -134,16 +187,41 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     return <Breadcrumb links={breadCrumb} containerStyle={styles.breadcrumb} />;
   };
 
-  const onSuccess = () => {
+  const onSuccess = (response: any) => {
     showAphAlert!({
       title: string.common.hiWithSmiley,
       description: needHelpToContactInMessage || string.needHelpSubmitMessage,
       unDismissable: true,
       onPressOk: () => {
         hideAphAlert!();
-        navigateToHome(navigation);
+        openHelpChatScreen(response);
       },
     });
+  };
+
+  const openHelpChatScreen = (response: any) => {
+    let ticketId = response?.data?.sendHelpEmail.split(':')[1] || 0;
+    let ticket = {
+      closedTime: null,
+      createdTime: '',
+      customFields: {
+        Business: '',
+        __typename: '',
+      },
+      id: ticketId,
+      modifiedTime: '2021-08-26T11:30:46.000Z',
+      status: '',
+      statusType: 'Open',
+      subject: '',
+      ticketNumber: '',
+    };
+
+    if (ticketId) {
+      navigation.navigate(AppRoutes.HelpChatScreen, {
+        ticketId: ticketId,
+        ticket: ticket,
+      });
+    }
   };
 
   const onError = () => {
@@ -170,7 +248,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       const variables: SendHelpEmailVariables = {
         helpEmailInput: {
           category: parentQuery?.title,
-          reason,
+          reason: pathFollowed + reason,
           comments: comments,
           patientId: currentPatient?.id,
           email: email,
@@ -179,12 +257,13 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         },
       };
 
-      await client.query<SendHelpEmail, SendHelpEmailVariables>({
+      let res = await client.query<SendHelpEmail, SendHelpEmailVariables>({
         query: SEND_HELP_EMAIL,
         variables,
       });
+
       setLoading!(false);
-      onSuccess();
+      onSuccess(res);
       if (orderType && queryOrderId) {
         saveNeedHelpQuery({ orderId: `${queryOrderId}`, orderType, createdDate: new Date() });
       }
@@ -281,6 +360,33 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     }
   };
 
+  const renderRefund = () => {
+    return (
+      <View>
+        <RefundDetails
+          refunds={refund || fetchRefund}
+          paymentDetails={payment || fetchPayment}
+          navigaitonProps={navigation}
+        />
+
+        <View style={styles.flatListContainer}>
+          <TouchableOpacity
+            style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+            onPress={() => {
+              setSelectedQueryId(navigation.state.params?.queryIdLevel2 || '');
+              setComments('');
+            }}
+          >
+            <Text style={styles.flatListItem}>My issue is still not resolved</Text>
+            <ArrowRight style={{ height: 18, width: 18 }} />
+          </TouchableOpacity>
+
+          {selectedQueryId && selectedQueryId?.length > 0 ? renderTextInputAndCTAs() : null}
+        </View>
+      </View>
+    );
+  };
+
   const renderItem = ({ item }: ListRenderItemInfo<NeedHelpHelpers.HelpSectionQuery>) => {
     const onPress = () => {
       const isReturnQuery = item?.id === helpSectionQueryId.returnOrder;
@@ -304,6 +410,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           queries,
           email,
           orderId,
+          pathFollowed: item?.title + ' - ',
         });
       } else if (isReturnQuery) {
         navigation.navigate(AppRoutes.ReturnMedicineOrder, {
@@ -312,6 +419,24 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           queryIdLevel2: item?.id,
           queries,
           email,
+        });
+      } else if (
+        item?.id === helpSectionQueryId.refund &&
+        (refund.length > 0 || fetchRefund.length > 0) &&
+        !additionalInfo
+      ) {
+        navigation.push(AppRoutes.NeedHelpQueryDetails, {
+          queryIdLevel2: item?.id,
+          queryIdLevel1,
+          queries,
+          email,
+          orderId,
+          isOrderRelatedIssue,
+          medicineOrderStatus,
+          isConsult,
+          additionalInfo: true,
+          refund: refund.length <= 0 ? fetchRefund : refund,
+          payment: payment.length <= 0 ? fetchPayment : payment,
         });
       } else {
         setSelectedQueryId(item.id!);
@@ -396,9 +521,10 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       {renderHeader()}
       {renderBreadCrumb()}
       {renderHeading()}
-      {renderSubHeading()}
-      {renderReasons()}
-      {renderEmailPopup()}
+      {!additionalInfo ? renderSubHeading() : null}
+      {!additionalInfo ? renderReasons() : null}
+      {!additionalInfo ? renderEmailPopup() : null}
+      {additionalInfo ? renderRefund() : null}
     </SafeAreaView>
   );
 };

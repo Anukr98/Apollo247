@@ -12,7 +12,7 @@ import {
   ImageBackground,
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   GET_DOCTOR_DETAILS_BY_ID,
@@ -26,6 +26,7 @@ import {
   postWebEngageEvent,
   generateTimeSlots,
   timeTo12HrFormat,
+  postWEGPatientAPIError,
   postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -117,11 +118,13 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   const [doctorDetails, setDoctorDetails] = useState<getDoctorDetailsById_getDoctorDetailsById>();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [selectedDateIndex, setSelectedDateIndex] = useState<number>(0);
+  const [selectedDateIndexHiglight, setSelectedDateIndexHighlight] = useState<number>(0);
   const [isSlotDateSelected, setIsSlotDateSelected] = useState<boolean>(false);
   const consultOnlineTab = string.consultModeTab.VIDEO_CONSULT;
   const consultPhysicalTab = string.consultModeTab.HOSPITAL_VISIT;
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
+  const slotSelected = useRef<boolean>(false);
 
   const bothConsultTabs = [
     {
@@ -241,15 +244,19 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   useEffect(() => {
     setWebEngageScreenNames('Doctor Profile');
     fetchDoctorDetails();
-    fetchNextAvailabilitySlot(consultTabs[0].title, true);
   }, []);
 
+  useEffect(() => {
+    if(doctorDetails){
+      fetchNextAvailabilitySlot(selectedTab, true);
+    }
+  }, [doctorDetails])
   useEffect(() => {
     onlineSlotsCount && nextAvailableDate && calculateNextNDates(onlineSlotsCount);
   }, [onlineSlotsCount, nextAvailableDate]);
 
   useEffect(() => {
-    physicalSlotsCount && nextAvailableDate && calculateNextNDates(physicalSlotsCount);
+    physicalSlotsCount && nextAvailableDate && calculateNextNDates(physicalSlotsCount);    
   }, [physicalSlotsCount, nextAvailableDate]);
 
   useEffect(() => {
@@ -291,22 +298,22 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   const fetchNextAvailabilitySlot = async (
     consultType: string = consultTabs[0].title,
     callOnLaunch: boolean = false
-  ) => {
+  ) => {    
     try {
       const todayDate = moment(new Date()).format('YYYY-MM-DD');
       const res: any = await getNextAvailableSlots(client, [doctorId] || [], todayDate);
       const slot =
-        consultType === consultTabs[0].title
+        consultType === consultOnlineTab
           ? res?.data?.[0]?.availableSlot
           : res?.data?.[0]?.physicalAvailableSlot;
       if (slot) {
         const nextAvailableDate: Date = new Date(slot);
         calculateNextNDates();
         setNextAvailableDate(slot);
-        consultType === consultTabs[0].title
+        consultType === consultOnlineTab
           ? fetchOnlineTotalAvailableSlots(nextAvailableDate, callOnLaunch)
           : fetchPhysicalTotalAvailableSlots(nextAvailableDate, callOnLaunch);
-
+        
         if (!callOnLaunch) {
           const checkAvailabilityDate = datesSlots?.filter(
             (date: any) =>
@@ -344,14 +351,16 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           },
         },
       });
+
       setTimeArray(defaultTimeData);
       const availableSlots = res?.data?.getDoctorAvailableSlots?.availableSlots;
-      const slotCounts = res?.data?.getDoctorAvailableSlots?.slotCounts;
+      const slotCounts = res?.data?.getDoctorAvailableSlots?.slotCounts;      
       callOnLaunch && setOnlineSlotsCount(slotCounts);
       if (availableSlots) {
         setTotalSlots(availableSlots?.length);
         setTimeArrayData(availableSlots, selectedDate);
       }
+      slotCounts && calculateNextNDates(slotCounts);      
     } catch (error) {
       CommonBugFender('SlotSelection_fetchTotalAvailableSlots', error);
     }
@@ -369,19 +378,21 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           DoctorPhysicalAvailabilityInput: {
             availableDate: moment(selectedDate).format('YYYY-MM-DD'),
             doctorId,
-            facilityId: doctorDetails?.doctorHospital?.[0]?.facility?.id,
+            facilityId: doctorDetails?.doctorHospital?.[0]?.facility?.id || '',
           },
         },
       });
-      setTimeArray(defaultTimeData);
+      
       const availableSlots = res?.data?.getDoctorPhysicalAvailableSlots?.availableSlots;
       const slotCounts = res?.data?.getDoctorPhysicalAvailableSlots?.slotCounts;
       callOnLaunch && setPhysicalSlotsCount(slotCounts);
       if (availableSlots) {
         setTotalSlots(availableSlots?.length);
         setTimeArrayData(availableSlots, selectedDate);
-      }
+      }      
+      slotCounts && calculateNextNDates(slotCounts);
     } catch (error) {
+      console.log('SlotSelection_fetchTotalAvailableSlotsPhysical', error);
       CommonBugFender('SlotSelection_fetchTotalAvailableSlots', error);
     }
   };
@@ -389,8 +400,11 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   const setTimeArrayData = async (availableSlots: string[], date: Date) => {
     setLoadTotalSlots(true);
     const array = await generateTimeSlots(availableSlots, date);
+
+    const arrayRrequired = array.filter((i) => i.time.length > 0);
+
     setLoadTotalSlots(false);
-    setTimeArray(array);
+    setTimeArray(arrayRrequired);
   };
 
   const calculateNextNDates = (slotDateAndCount?: any) => {
@@ -402,9 +416,11 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
         .toDateString();
       var isToday = today.toDateString() == dateString;
       const isTomorrow = tomorrow.toDate().toDateString() == dateString;
-      if (isToday || isTomorrow) {
-        setSelectedDateIndex(isTomorrow ? 1 : 0);
-      }
+      // if (isToday || isTomorrow) {
+      //   console.log('CHECKING2', isTomorrow ? 1 : 0);
+        
+      //   setSelectedDateIndex(isTomorrow ? 1 : 0);
+      // }
     }
     if (slotDateAndCount?.length > 0) {
       const sortedData = slotDateAndCount?.sort((a: any, b: any) => {
@@ -580,6 +596,9 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           if (tab !== selectedTab) {
             setTotalSlots(-1);
             setLoadTotalSlots(true);
+            slotSelected.current = false;
+            setSelectedDateIndexHighlight(0);
+            setSelectedDateIndex(0);
             fetchNextAvailabilitySlot(tab);
           }
         }}
@@ -589,7 +608,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     );
   };
 
-  const renderSlotsDates = () => {
+  const renderSlotsDates = () => {    
     return (
       <FlatList
         data={datesSlots}
@@ -604,11 +623,14 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     );
   };
 
-  const renderSlotsDatesItems = (item: SlotsType, index: number) => {
+  const renderSlotsDatesItems = (item: SlotsType, index: number) => {            
+    if (item?.count === 0 && index === selectedDateIndexHiglight && !slotSelected.current){
+      handleDateSelection(item, index + 1);
+    }
     const textColor =
-      index === selectedDateIndex || item?.count === 0
+      index === selectedDateIndexHiglight || item?.count === 0
         ? 'white'
-        : theme.colors.SEARCH_UNDERLINE_COLOR;
+        : theme.colors.SEARCH_UNDERLINE_COLOR;        
     return (
       <TouchableOpacity
         key={index}
@@ -618,14 +640,17 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
             marginLeft: index === 0 ? 18 : 8,
             marginRight: index === datesSlots?.length - 1 ? 18 : 0,
             backgroundColor:
-              index === selectedDateIndex && item?.count > 0
+              index === selectedDateIndexHiglight && item?.count > 0
                 ? theme.colors.SEARCH_UNDERLINE_COLOR
                 : item?.count === 0
                 ? theme.colors.GRAYED
                 : 'white',
           },
         ]}
-        onPress={() => handleDateSelection(item, index)}
+        onPress={() => {
+          slotSelected.current = true;
+          handleDateSelection(item, index)
+        }}
       >
         {totalSlots === -1 ? (
           renderDateSlotsShimmer()
@@ -644,16 +669,18 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   };
 
   const handleDateSelection = (item: SlotsType, index: number) => {
-    if (selectedDateIndex === index) return;
+    if (selectedDateIndexHiglight === index) return;
     setIsSlotDateSelected(true);
     setSelectedDateIndex(index);
+    setSelectedDateIndexHighlight(index);
     const todayDate = moment(new Date());
     const tomorrowDate = moment(new Date()).add('1', 'day');
     const date = index === 0 ? todayDate : index === 1 ? tomorrowDate : item?.date;
     setLoadTotalSlots(true);
-    isOnlineSelected
-      ? fetchOnlineTotalAvailableSlots(date)
-      : fetchPhysicalTotalAvailableSlots(date);
+    if(slotSelected.current)
+      isOnlineSelected
+        ? fetchOnlineTotalAvailableSlots(date)
+        : fetchPhysicalTotalAvailableSlots(date);
   };
 
   const renderSelectedDate = () => {
@@ -685,6 +712,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
         bounces={false}
         showsVerticalScrollIndicator={false}
         ref={slotsScrollViewRef}
+        ListEmptyComponent={renderEmptyComponent()}
         ListHeaderComponent={renderListHeaderComponent()}
         ListFooterComponent={
           totalSlots === 0 && !loadTotalSlots ? <View /> : renderFooterComponent()
@@ -692,6 +720,16 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
       />
     );
   };
+  
+  const renderEmptyComponent = () => {
+    if(loadTotalSlots){
+      return (
+        <View style={styles.emptyComponentView}>
+          {Array(6).fill(1).map(renderSlotItemShimmer)}
+        </View>
+      )
+    }  
+  }
 
   const renderListHeaderComponent = () => {
     return (
@@ -900,6 +938,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     }, 500);
     setIsSlotDateSelected(true);
     setSelectedDateIndex(dateIndex);
+    setSelectedDateIndexHighlight(dateIndex);
     setLoadTotalSlots(true);
     isOnlineSelected
       ? fetchOnlineTotalAvailableSlots(nextAvailableDate)
@@ -1004,7 +1043,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           ? renderDoctorDetails()
           : renderDoctorDetailsShimmer({ height: isCircleDoctor ? 120 : 105 })}
         {renderConsultTypeTabs()}
-        {renderTotalSlots()}
+        <ScrollView>{renderTotalSlots()}</ScrollView>
         {totalSlots === 0 && !loadTotalSlots ? <View /> : renderProceedButton()}
       </View>
     </SafeAreaView>
@@ -1163,5 +1202,11 @@ const styles = StyleSheet.create({
     height: 65,
     width: 65,
     justifyContent: 'center',
+  },
+  emptyComponentView: {
+    flexDirection: 'row', 
+    flexWrap: 'wrap', 
+    marginStart: 40, 
+    marginTop: 20,
   },
 });

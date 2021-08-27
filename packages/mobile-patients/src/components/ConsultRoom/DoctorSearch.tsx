@@ -42,6 +42,7 @@ import {
   postFirebaseEvent,
   postWebEngageEvent,
   getUserType,
+  postWEGPatientAPIError,
   postCleverTapEvent,
   postConsultSearchCleverTapEvent,
   postConsultPastSearchSpecialityClicked,
@@ -516,6 +517,13 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           setProcedures([]);
           setSymptoms([]);
           setisSearching(false);
+          postWEGPatientAPIError(
+            currentPatient,
+            '',
+            'DoctorSearch',
+            'GET_DOCTOR_LIST',
+            JSON.stringify(e)
+          );
           CommonBugFender('DoctorSearch_fetchSearchData', e);
         });
     }
@@ -717,6 +725,14 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           });
         }
       }
+    } else {
+      postWEGPatientAPIError(
+        currentPatient,
+        '',
+        'DoctorSearch',
+        'GET_PATIENT_ALL_CONSULTED_DOCTORS',
+        JSON.stringify(res)
+      );
     }
     setConsultedDoctors(consultedDoctors);
   };
@@ -955,11 +971,17 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           onPress={() => {
             if (rowData.searchType === 'DOCTOR') {
               CommonLogEvent(AppRoutes.DoctorSearch, 'Doctor Search Move clicked');
-              props.navigation.navigate(AppRoutes.DoctorDetails, {
-                doctorId: rowData.typeId,
-                callSaveSearch: 'true',
-                fromPastSearch: true,
-              });
+              rowData?.allowBookingRequest
+                ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
+                    doctorId: rowData.typeId,
+                    callSaveSearch: 'true',
+                    fromPastSearch: true,
+                  })
+                : props.navigation.navigate(AppRoutes.DoctorDetails, {
+                    doctorId: rowData.typeId,
+                    callSaveSearch: 'true',
+                    fromPastSearch: true,
+                  });
             }
             if (rowData.searchType === 'SPECIALTY') {
               CommonLogEvent(AppRoutes.DoctorSearch, 'Doctor Search Move  SPECIALTY clicked');
@@ -1514,10 +1536,16 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               postDoctorClickWEGEvent({ ...item, itemNo }, 'Search');
               postSearchedResultWebEngageEvent(item?.displayName);
               CommonLogEvent(AppRoutes.DoctorSearch, 'renderSearchDoctorResultsRow clicked');
-              props.navigation.navigate(AppRoutes.DoctorDetails, {
-                doctorId: item?.id,
-                callSaveSearch: 'true',
-              });
+              item?.allowBookingRequest
+                ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
+                    doctorId: item.id,
+                    callSaveSearch: 'true',
+                  })
+                : props.navigation.navigate(AppRoutes.DoctorDetails, {
+                    doctorId: item?.id,
+                    callSaveSearch: 'true',
+                    consultModeSelected: item?.consultMode,
+                  });
             }}
           />
         </View>

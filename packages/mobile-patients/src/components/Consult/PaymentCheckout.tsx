@@ -35,6 +35,7 @@ import {
   navigateToHome,
   getUserType,
   getPackageIds,
+  postWEGPatientAPIError,
   postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
@@ -44,8 +45,6 @@ import {
   PLAN,
   OrderCreate,
   OrderVerticals,
-  PAYMENT_MODE,
-  OrderInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   calculateCircleDoctorPricing,
@@ -190,6 +189,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const [gender, setGender] = useState<string>(currentPatient?.gender);
   const [patientListYPos, setPatientListYPos] = useState<number>(0);
   const [patientProfiles, setPatientProfiles] = useState<any>([]);
+  const [bookingFee, setBookingFee] = useState<number>(0)
+  const [isBookingFeeExempted, setIsBookingFeeExempted] = useState<boolean>(true)
 
   const circleDoctorDetails = calculateCircleDoctorPricing(
     doctor,
@@ -217,25 +218,27 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     : physicalConsultDiscountedPrice;
   const storeCode =
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
-  const amount = Number(Decimal.sub(Number(price), couponDiscountFees));
+  const consultBookingFee = isBookingFeeExempted ? 0 : bookingFee;
+  const amount = Number(Decimal.sub(Number(price), couponDiscountFees).plus(consultBookingFee));
   const amountToPay =
     circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
         ? Number(
             Decimal.sub(onlineConsultPrice, couponDiscountFees).plus(
-              circleSubscriptionId == '' ? Number(circlePlanSelected?.currentSellingPrice) : 0
-            )
+              !circleSubscriptionId ? Number(circlePlanSelected?.currentSellingPrice) : 0
+            ).plus(consultBookingFee)
           )
         : Number(
             Decimal.sub(physicalConsultSlashedPrice, couponDiscountFees).plus(
-              circleSubscriptionId == '' ? Number(circlePlanSelected?.currentSellingPrice) : 0
+              !circleSubscriptionId ? Number(circlePlanSelected?.currentSellingPrice) : 0
             )
           )
       : amount;
   const consultAmounttoPay =
     circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
-        ? Number(Decimal.sub(onlineConsultPrice, couponDiscountFees))
+        ? Number(Decimal.sub(onlineConsultPrice, couponDiscountFees).plus(
+          consultBookingFee))
         : Number(Decimal.sub(physicalConsultSlashedPrice, couponDiscountFees))
       : amount;
   const notSubscriberUserForCareDoctor =
@@ -270,14 +273,17 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     (circleSubscriptionId || circlePlanSelected) && discountedPrice ? discountedPrice : 0;
   const { cusId, isfetchingId } = useGetJuspayId();
   const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
+  const isCirclePricing =  circleSubscriptionId || circlePlanSelected
 
   useEffect(() => {
     verifyCoupon();
+    setBookingAmount();
   }, [circlePlanSelected]);
 
   useEffect(() => {
     setPatientProfiles(moveSelectedToTop());
     fetchUserSpecificCoupon();
+    setBookingAmount();
   }, []);
 
   useEffect(() => {
@@ -295,6 +301,20 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
   };
+
+  const setBookingAmount = () => {
+    let onlineDrPricing = doctor?.doctorPricing.find((item: any) => 
+      item.available_to == 'CARE_PLAN' && item.appointment_type == 'ONLINE');
+    if(!isCirclePricing || !onlineDrPricing){
+      onlineDrPricing = doctor?.doctorPricing.find((item: any) => 
+      item.available_to == 'ALL' && item.appointment_type == 'ONLINE')
+    }
+    const {bookingFee, isBookingFeeExempted} = onlineDrPricing || {}
+    if(bookingFee){
+      setBookingFee(bookingFee);
+      setIsBookingFeeExempted(isBookingFeeExempted);
+    }
+  }
 
   const bookAppointment = () => {
     const appointmentInput: bookAppointmentVariables = {
@@ -332,10 +352,14 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       fetchPolicy: 'no-cache',
     });
   };
-
+  
   const createOrderInternal = (orderId: string, subscriptionId?: string) => {
     const orders: OrderVerticals = {
-      consult: [{ order_id: orderId, amount: consultAmounttoPay, patient_id: currentPatient?.id }],
+      consult: [{
+        order_id: orderId, 
+        amount: consultAmounttoPay,
+        patient_id: currentPatient?.id 
+      }],
     };
     if (subscriptionId) {
       orders['subscription'] = [
@@ -448,6 +472,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           couponDiscountFees={couponDiscountFees}
           circleSubscriptionId={circleSubscriptionId}
           planSelected={circlePlanSelected}
+          bookingFee={bookingFee}
+          isBookingFeeExempted={isBookingFeeExempted}
         />
       </View>
     );
@@ -655,6 +681,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     setCouponDiscountFees(0);
     setDoctorDiscountedFees(actualAmount);
     setSuccessMessage('');
+    setBookingAmount()
   };
 
   const renderCouponSavingsView = () => {
@@ -717,17 +744,23 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           }, 300);
           if (resp?.data?.errorCode == 0) {
             if (resp?.data?.response?.valid) {
-              const revisedAmount = billAmount - Number(g(resp, 'data', 'response', 'discount')!);
+              const discount = Number(g(resp, 'data', 'response', 'discount')!);
+              const revisedAmount = billAmount - discount;
               const successMessage = resp?.data?.response?.successMessage || '';
               setSuccessMessage(successMessage);
               setCoupon(coupon);
-              setCouponDiscountFees(Number(g(resp, 'data', 'response', 'discount')!));
+              setCouponDiscountFees(discount);
               setDoctorDiscountedFees(revisedAmount);
               res();
+              if(discount == billAmount){
+                setIsBookingFeeExempted(true);
+              } else {
+                setBookingAmount()
+              }
               if (fireEvent) {
                 const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_COUPON_APPLIED] = {
                   CouponCode: coupon,
-                  'Discount Amount': Number(g(resp, 'data', 'response', 'discount')!),
+                  'Discount Amount': discount,
                   'Net Amount': Number(revisedAmount),
                   'Coupon Applied': true,
                 };
@@ -891,9 +924,24 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
             businessLine: 'consult',
             customerId: cusId,
           });
+        } else {
+          postWEGPatientAPIError(
+            currentPatient,
+            '',
+            'PaymentCheckout',
+            'CREATE_INTERNAL_ORDER',
+            JSON.stringify(data)
+          );
         }
       }
     } catch (error) {
+      postWEGPatientAPIError(
+        currentPatient,
+        '',
+        'PaymentCheckout',
+        'BOOK_APPOINTMENT / CREATE_INTERNAL_ORDER',
+        JSON.stringify(error)
+      );
       handleError(error);
     }
     setLoading!(false);
@@ -1006,6 +1054,13 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         handleOrderSuccess(`${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`, id);
       })
       .catch((e) => {
+        postWEGPatientAPIError(
+          currentPatient,
+          '',
+          'PaymentCheckout',
+          'MAKE_APPOINTMENT_PAYMENT',
+          JSON.stringify(e)
+        );
         setLoading!(false);
         handleGraphQlError(e);
       });
@@ -1052,6 +1107,13 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       })
       .catch((e) => {
         setLoading && setLoading(false);
+        postWEGPatientAPIError(
+          currentPatient,
+          '',
+          'PaymentCheckout',
+          'MAKE_APPOINTMENT_PAYMENT',
+          JSON.stringify(e)
+        );
         props.navigation.navigate('APPOINTMENTS');
       });
   };
@@ -1225,9 +1287,37 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         getPatientApiCall();
       })
       .catch((e: any) => {
+        postWEGPatientAPIError(
+          currentPatient,
+          '',
+          'PaymentCheckout',
+          'UPDATE_WHATSAPP_STATUS',
+          JSON.stringify(e)
+        );
         CommonBugFender('ConsultOverlay_whatsAppUpdateAPICall_error', e);
       });
   };
+
+  const getOriginalBookingAmt = () => {
+    let onlineDrPricing = doctor?.doctorPricing.find((item: any) => 
+    item.available_to == 'CARE_PLAN' && item.appointment_type == 'ONLINE');
+    
+    if(!isCirclePricing || !onlineDrPricing){
+      onlineDrPricing = doctor?.doctorPricing.find((item: any) => 
+      item.available_to == 'ALL' && item.appointment_type == 'ONLINE')
+    }
+    let {bookingFee, isBookingFeeExempted} = onlineDrPricing || {}
+    const billAmount =
+      circlePlanSelected && isCircleDoctorOnSelectedConsultMode
+        ? isOnlineConsult
+          ? onlineConsultSlashedPrice
+          : physicalConsultSlashedPrice
+        : Number(price);
+    if(couponDiscountFees == billAmount && !isBookingFeeExempted){
+      bookingFee = 0;
+    }
+    return {bookingFee, isBookingFeeExempted};
+  }
 
   const postWebEngagePayButtonClickedEvent = () => {
     const timeSlot =
@@ -1238,6 +1328,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         ? nextAvailableSlot
         : selectedTimeSlot;
     const localTimeSlot = new Date(timeSlot);
+    const {bookingFee, isBookingFeeExempted} = getOriginalBookingAmt();
     const doctorClinics = (g(doctor, 'doctorHospital') || []).filter((item: any) => {
       if (item?.facility?.facilityType) return item?.facility?.facilityType === 'HOSPITAL';
     });
@@ -1272,6 +1363,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           ? `${doctorClinics?.[0].facility?.city}`
           : '',
       User_Type: getUserType(allCurrentPatients),
+      'Booking Fee' :  isBookingFeeExempted ? 'False' : 'True',
+      'Booking value': isBookingFeeExempted ? 0 : bookingFee,
     };
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PAY_BUTTON_CLICKED] = {
       consultDateTime: localTimeSlot,
@@ -1304,6 +1397,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           ? `${doctorClinics?.[0].facility?.city}`
           : '',
       User_Type: getUserType(allCurrentPatients),
+      'Booking Fee' :  isBookingFeeExempted ? 'False' : 'True',
+      'Booking value': bookingFee,
     };
     postCleverTapEvent(CleverTapEventName.CONSULT_PAY_BUTTON_CLICKED, cleverTapEventAttributes);
     postWebEngageEvent(WebEngageEventName.PAY_BUTTON_CLICKED, eventAttributes);

@@ -61,6 +61,7 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { postCleverTapUploadPrescriptionEvents } from '@aph/mobile-patients/src/components/UploadPrescription/Events';
 
 const { width, height } = Dimensions.get('window');
 
@@ -216,7 +217,7 @@ export interface UploadPrescriptionViewProps extends NavigationScreenProps {
   ePresscriptionUploaded: EPrescription[];
 }
 
-const MAX_FILE_SIZE = 2000000; // 2MB
+const MAX_FILE_SIZE = 25000000; // ~25MB
 
 export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (props) => {
   const phyPrescriptionUploaded = props.navigation.getParam('phyPrescriptionUploaded') || [];
@@ -310,6 +311,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
             style={styles.cameraActionButton}
             onPress={() => {
               removeClickedPhoto();
+              postCleverTapUploadPrescriptionEvents('Camera', 'Non-Cart');
               props.navigation.navigate(AppRoutes.UploadPrescription, {
                 type: 'Camera',
                 phyPrescriptionsProp: [...phyPrescriptionUploaded, ...imageClickData],
@@ -483,28 +485,13 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
   ];
 
   const postUPrescriptionWEGEvent = (
-    source:
-      | WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
-      | CleverTapEvents[CleverTapEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
+    source: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED] = {
       Source: source,
       'Upload Source': 'Upload Flow',
     };
     postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED, eventAttributes);
-  };
-
-  const postCleverTapUPrescriptionEvents = (
-    source: CleverTapEvents[CleverTapEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
-  ) => {
-    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED] = {
-      Source: source,
-      Location: 'Upload Flow',
-    };
-    postCleverTapEvent(
-      CleverTapEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED,
-      cleverTapEventAttributes
-    );
   };
 
   const getBase64 = (response: DocumentPickerResponse[]): Promise<string>[] => {
@@ -525,7 +512,6 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
 
   const onBrowseClicked = async () => {
     postUPrescriptionWEGEvent('Choose Gallery');
-    postCleverTapUPrescriptionEvents('Gallery');
     CommonLogEvent('UPLOAD_PRESCRIPTION_POPUP', 'Gallery opened');
     const eventAttributes: WebEngageEvents['Upload Photo'] = {
       Source: 'Gallery',
@@ -545,7 +531,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           strings.common.uhOh,
           !isValidPdf
             ? `Invalid File Type. File type must be PDF.`
-            : `Invalid File Size. File size must be less than 2MB.`
+            : `Invalid File Size. File size must be less than 25MB.`
         );
         return;
       }
@@ -566,6 +552,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           } as PhysicalPrescription)
       );
       setShowSpinner(false);
+      postCleverTapUploadPrescriptionEvents('Gallery', 'Non-Cart');
       props.navigation.navigate(AppRoutes.UploadPrescription, {
         type: 'Gallery',
         phyPrescriptionsProp: [...phyPrescriptionUploaded, ...documentData],
@@ -582,7 +569,6 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
 
   const openGallery = () => {
     postUPrescriptionWEGEvent('Choose Gallery');
-    postCleverTapUPrescriptionEvents('Gallery');
     CommonLogEvent('UPLAOD_PRESCRIPTION_POPUP', 'Gallery opened');
 
     const eventAttributes: WebEngageEvents['Upload Photo'] = {
@@ -607,10 +593,11 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
         const isGreaterThanSpecifiedSize = images.find(({ size }) => size > MAX_FILE_SIZE);
         setShowSpinner(false);
         if (isGreaterThanSpecifiedSize) {
-          Alert.alert(strings.common.uhOh, `Invalid File Size. File size must be less than 2MB.`);
+          Alert.alert(strings.common.uhOh, `Invalid File Size. File size must be less than 25MB.`);
           return;
         }
         const uploadedImages = formatResponse(images);
+        postCleverTapUploadPrescriptionEvents('Gallery', 'Non-Cart');
         props.navigation.navigate(AppRoutes.UploadPrescription, {
           type: 'Gallery',
           phyPrescriptionsProp: [...phyPrescriptionUploaded, ...uploadedImages],
@@ -651,6 +638,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           if (selectedEPres.length == 0) {
             return;
           }
+          postCleverTapUploadPrescriptionEvents('My Prescription', 'Non-Cart');
           props.navigation.navigate(AppRoutes.UploadPrescription, {
             type: 'E-Prescription',
             ePrescriptionsProp: [...ePresscriptionUploaded, ...selectedEPres],

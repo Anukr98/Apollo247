@@ -13,7 +13,7 @@ import { WebView } from 'react-native-webview';
 import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import { dateFormatterDDMM } from '@aph/mobile-patients/src/utils/dateUtil';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { AppRoutes, getCurrentRoute } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NotificationListener } from '@aph/mobile-patients/src/components/NotificationListener';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
@@ -104,6 +104,7 @@ import {
   GetAllUHIDSForNumber_CM,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
+import UserAgent from 'react-native-user-agent';
 import {
   getAllProHealthAppointments,
   getUserBannersList,
@@ -146,6 +147,7 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
+import { USER_AGENT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
 import messaging from '@react-native-firebase/messaging';
 import moment from 'moment';
 import React, { useEffect, useRef, useState } from 'react';
@@ -848,7 +850,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   useEffect(() => {
     getPatientApiCall();
     setVaccineLoacalStorageData();
+    fetchUserAgent();
   }, []);
+
+  const fetchUserAgent = () => {
+    try {
+      let userAgent = UserAgent?.getUserAgent();
+      AsyncStorage.setItem(USER_AGENT, userAgent);
+    } catch {}
+  };
 
   //for prohealth option
   useEffect(() => {
@@ -1161,7 +1171,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const upcomingConsultsCount = appointmentCount?.upcomingConsultsCount || 0;
         const upcomingPhysicalConsultsCount = appointmentCount?.upcomingPhysicalConsultsCount || 0;
 
-        if (upcomingConsultsCount - upcomingPhysicalConsultsCount > 0) {
+        if (
+          upcomingConsultsCount - upcomingPhysicalConsultsCount > 0 &&
+          getCurrentRoute() !== AppRoutes.ChatRoom
+        ) {
           overlyCallPermissions(
             currentPatient!.firstName!,
             'the doctor',
@@ -1711,6 +1724,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 if (circlePlan[0]?.status === 'disabled') {
                   setIsCircleExpired && setIsCircleExpired(true);
                   setNonCircleValues();
+                } else {
+                  setIsCircleExpired && setIsCircleExpired(false);
                 }
               }
               setCircleSubscription && setCircleSubscription(circleSubscription);
@@ -1797,6 +1812,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
     if (plan?.subscriptionStatus === 'disabled') {
       setIsCircleExpired && setIsCircleExpired(true);
+    } else {
+      setIsCircleExpired && setIsCircleExpired(false);
     }
 
     return circleSubscptionData;
@@ -1914,6 +1931,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           const paymentStoredVal =
             typeof paymentRef == 'string' ? JSON.parse(paymentRef) : paymentRef;
           AsyncStorage.setItem('isCircleMember', 'yes');
+
+          circleData?.status === 'disabled'
+            ? AsyncStorage.setItem('isCircleMembershipExpired', 'yes')
+            : AsyncStorage.setItem('isCircleMembershipExpired', 'no');
+
           setIsCircleMember && setIsCircleMember('yes');
           AsyncStorage.removeItem('circlePlanSelected');
           let WEGAttributes = {};
@@ -1940,8 +1962,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           onAppLoad && logHomePageViewed(WEGAttributes);
 
           if (circleData?.status === 'disabled') {
+            AsyncStorage.setItem('isCircleMembershipExpired', 'yes');
             setIsCircleExpired && setIsCircleExpired(true);
             setNonCircleValues();
+          } else {
+            setIsCircleExpired && setIsCircleExpired(false);
           }
 
           const planValidity = {
@@ -2898,6 +2923,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           circleActivated={circleActivatedRef.current}
           circlePlanValidity={circlePlanValidity}
           from={string.banner_context.HOME}
+          source={string.banner_context.HOME}
           successCallback={() => {
             getUserSubscriptionsWithBenefits();
           }}
@@ -3544,12 +3570,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const data = handleOpenURL(item?.url);
         const { routeName, id, isCall, mediaSource } = data;
         const isCircleMember: any = await AsyncStorage.getItem('isCircleMember');
+        const isCircleMembershipExpired: any = await AsyncStorage.getItem(
+          'isCircleMembershipExpired'
+        );
         pushTheView(
           props.navigation,
           routeName,
           id ? id : undefined,
           isCall,
           isCircleMember === 'yes',
+          isCircleMembershipExpired === 'yes',
           mediaSource
         );
       } else {

@@ -17,6 +17,7 @@ export interface getPatientPastSearches_getPatientPastSearches {
   image: string | null;
   specialty: string | null;
   symptoms: string | null;
+  allowBookingRequest: boolean | null;
 }
 
 export interface getPatientPastSearches {

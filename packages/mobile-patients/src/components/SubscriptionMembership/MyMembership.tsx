@@ -361,7 +361,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           setShowCircleActivation(true);
         }}
         screenName={'My Membership'}
-        circleEventSource={'Membership Details'}
+        circleEventSource={'My Account-My membership section'}
       />
     );
   };

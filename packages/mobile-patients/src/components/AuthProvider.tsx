@@ -16,6 +16,7 @@ import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import { Platform, Alert } from 'react-native';
 import firebaseAuth from '@react-native-firebase/auth';
+import DeviceInfo from 'react-native-device-info';
 import {
   getNetStatus,
   postWebEngageEvent,

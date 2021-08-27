@@ -6,6 +6,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import AsyncStorage from '@react-native-community/async-storage';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import moment from 'moment';
+import { postAppsFlyerCircleAddRemoveCartEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 import {
   fireCirclePlanRemovedEvent,
   fireCleverTapCirclePlanRemovedEvent,
@@ -69,11 +70,18 @@ export const CircleCartItem: React.FC<CircleCartItemProps> = (props) => {
             <TouchableOpacity
               onPress={() => {
                 fireCirclePlanRemovedEvent(props?.currentPatient);
+                const circleSource = 'Cart(Pharma)';
                 fireCleverTapCirclePlanRemovedEvent(
                   props?.currentPatient,
-                  'Cart(Pharma)',
+                  circleSource,
                   circlePlanSelected,
                   allCurrentPatients
+                );
+                postAppsFlyerCircleAddRemoveCartEvent(
+                  circlePlanSelected,
+                  circleSource,
+                  'remove',
+                  props?.currentPatient
                 );
                 setCirclePlanSelected && setCirclePlanSelected(null);
                 setIsCircleSubscription && setIsCircleSubscription(false);

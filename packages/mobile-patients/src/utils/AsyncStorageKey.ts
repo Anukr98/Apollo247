@@ -9,3 +9,5 @@ export const SKIP_LOCATION_PROMPT = 'SKIP_LOCATION_PROMPT';
 export const LOGIN_PROFILE = 'LOGIN_PROFILE';
 
 export const HEALTH_CREDITS = 'HEALTH_CREDITS';
+
+export const USER_AGENT = 'USER_AGENT';

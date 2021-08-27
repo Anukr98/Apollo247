@@ -405,7 +405,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     ) {
       const params = id?.split('+');
       voipCallType.current = params?.[1]!;
-      callPermissions();
       getAppointmentDataAndNavigate(params?.[0]!, true);
     } else if (routeName == 'prohealth') {
       fetchProhealthHospitalDetails(id);
@@ -550,6 +549,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             if (mePatient) {
               if (mePatient.firstName !== '') {
                 const isCircleMember: any = await AsyncStorage.getItem('isCircleMember');
+                const isCircleMembershipExpired: any = await AsyncStorage.getItem(
+                  'isCircleMembershipExpired'
+                );
                 const isCorporateSubscribed: any = await AsyncStorage.getItem(
                   'isCorporateSubscribed'
                 );
@@ -569,6 +571,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                   id ? id : undefined,
                   isCall,
                   isCircleMember === 'yes',
+                  isCircleMembershipExpired === 'yes',
                   mediaSource,
                   voipCallType.current,
                   voipAppointmentId,
@@ -752,6 +755,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setMaxCartValueForCOD,
     setNonCodSKus,
     setCartPriceNotUpdateRange,
+    setPdpDisclaimerMessage,
+    setPharmaHomeNudgeMessage,
+    setPharmaCartNudgeMessage,
+    setPharmaPDPNudgeMessage,
+    setPaymentCodMessage,
   } = useShoppingCart();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -977,6 +985,26 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Diagnostics_Help_NonOrder_Queries',
       PROD: 'Diagnostics_Help_NonOrder_Queries',
     },
+    Pharma_Discailmer_Message: {
+      QA: 'QA_Pharma_PDP_Disclaimer',
+      PROD: 'Pharma_PDP_Disclaimer',
+    },
+    Nudge_Message_Pharmacy_Home: {
+      QA: 'QA_Show_nudge_on_pharma_home',
+      PROD: 'Show_nudge_on_pharma_home',
+    },
+    Nudge_Message_Pharmacy_PDP: {
+      QA: 'QA_Show_nudge_on_pharma_pdp',
+      PROD: 'Show_nudge_on_pharma_pdp',
+    },
+    Nudge_Message_Pharmacy_Cart: {
+      QA: 'QA_Show_nudge_on_pharma_cart',
+      PROD: 'Show_nudge_on_pharma_cart',
+    },
+    Disincentivize_COD_Message: {
+      QA: 'QA_Disincentivize_COD_Message',
+      PROD: 'Disincentivize_COD_Message',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1094,6 +1122,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) => JSON.parse(config.getString(key)) || []
       );
       nonCodSkuList?.length && setNonCodSKus?.(nonCodSkuList);
+
+      const disclaimerMessagePdp = getRemoteConfigValue('Pharma_Discailmer_Message', (key) =>
+        config.getString(key)
+      );
+      setPdpDisclaimerMessage?.(disclaimerMessagePdp);
 
       setAppConfig(
         'Min_Value_For_Pharmacy_Free_Delivery',
@@ -1225,6 +1258,34 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'Diagnostics_Help_NonOrder_Queries',
         (key) => config.getString(key)
       );
+
+      const nudgeMessagePharmacyHome = getRemoteConfigValue(
+        'Nudge_Message_Pharmacy_Home',
+        (key) => JSON.parse(config.getString(key)) || null
+      );
+
+      nudgeMessagePharmacyHome && setPharmaHomeNudgeMessage?.(nudgeMessagePharmacyHome);
+
+      const nudgeMessagePharmacyCart = getRemoteConfigValue(
+        'Nudge_Message_Pharmacy_Cart',
+        (key) => JSON.parse(config.getString(key)) || null
+      );
+
+      nudgeMessagePharmacyCart && setPharmaCartNudgeMessage?.(nudgeMessagePharmacyCart);
+
+      const nudgeMessagePharmacyPDP = getRemoteConfigValue(
+        'Nudge_Message_Pharmacy_PDP',
+        (key) => JSON.parse(config.getString(key)) || null
+      );
+
+      nudgeMessagePharmacyPDP && setPharmaPDPNudgeMessage?.(nudgeMessagePharmacyPDP);
+
+      const disincentivizeCodMessage = getRemoteConfigValue(
+        'Disincentivize_COD_Message',
+        (key) => config.getString(key) || ''
+      );
+
+      disincentivizeCodMessage && setPaymentCodMessage?.(disincentivizeCodMessage);
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';

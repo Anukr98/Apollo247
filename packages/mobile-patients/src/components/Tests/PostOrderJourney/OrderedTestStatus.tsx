@@ -40,7 +40,7 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
+import { getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_labResults_response } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V3';
 import { RefundCard } from '@aph/mobile-patients/src/components/Tests/components/RefundCard';
 import { DiagnosticViewReportClicked } from '@aph/mobile-patients/src/components/Tests/Events';
 import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
@@ -65,7 +65,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
 
-  const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
 
   const orderSelected = props.navigation.getParam('selectedOrder');
   const individualItemStatus = props.navigation.getParam('itemLevelStatus');
@@ -74,12 +73,11 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   const [isViewReport, setIsViewReport] = useState<boolean>(false);
   const [activeOrder, setActiveOrder] = useState<any>('');
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
-  const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
   const isPrepaid = orderSelected?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
 
   const [individualTestData, setIndividualTestData] = useState<any>([]);
   const [labResults, setLabResults] = useState<
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response | null)[]
+    | (getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_labResults_response | null)[]
     | null
     | undefined
   >([]);
@@ -111,7 +109,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
       .then((data: any) => {
         const labResultsData = g(
           data,
-          'getPatientPrismMedicalRecords_V2',
+          'getPatientPrismMedicalRecords_V3',
           'labResults',
           'response'
         );
@@ -280,7 +278,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
     DiagnosticViewReportClicked();
     if (visitId) {
       setActiveOrder(order);
-      setDisplayViewReport(true);
+      fetchTestReportResult(order);
     } else {
       props.navigation.navigate(AppRoutes.HealthRecordsHome);
     }
@@ -374,21 +372,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
-      {displayViewReport && (
-        <TestViewReportOverlay
-          order={activeOrder}
-          heading=""
-          isVisible={displayViewReport}
-          viewReportOrderId={viewReportOrderId}
-          downloadDocument={() => {
-            downloadDocument;
-          }}
-          onClose={() => setDisplayViewReport(false)}
-          onPressViewReport={() => {
-            fetchTestReportResult(activeOrder);
-          }}
-        />
-      )}
       <SafeAreaView style={theme.viewStyles.container}>
         <Header
           leftIcon="backArrow"

@@ -28,7 +28,7 @@ export const HealthCredits: React.FC<HealthCreditsProps> = (props) => {
     return (
       <View style={styles.subcontainer}>
         <OneApollo style={{ height: 32, width: 42 }} />
-        <Text style={styles.hcs}>Availabe Health Credits</Text>
+        <Text style={styles.hcs}>Available Health Credits</Text>
       </View>
     );
   };

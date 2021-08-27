@@ -204,6 +204,7 @@ export interface getPatientAllAppointments_getPatientAllAppointments_cancelledAp
   appointmentPayments: (getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_appointmentPayments | null)[] | null;
   id: string;
   hideHealthRecordNudge: boolean | null;
+  discountedAmount: number | null;
   patientId: string;
   doctorId: string;
   appointmentDateTime: any;
@@ -218,6 +219,7 @@ export interface getPatientAllAppointments_getPatientAllAppointments_cancelledAp
   isConsultStarted: boolean | null;
   isSeniorConsultStarted: boolean | null;
   isJdQuestionsComplete: boolean | null;
+  isAutomatedQuestionsComplete: boolean | null;
   symptoms: string | null;
   doctorInfo: getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_doctorInfo | null;
   caseSheet: (getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_caseSheet | null)[] | null;
@@ -418,6 +420,7 @@ export interface getPatientAllAppointments_getPatientAllAppointments_followUpApp
   appointmentPayments: (getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_appointmentPayments | null)[] | null;
   id: string;
   hideHealthRecordNudge: boolean | null;
+  discountedAmount: number | null;
   patientId: string;
   doctorId: string;
   appointmentDateTime: any;
@@ -432,6 +435,7 @@ export interface getPatientAllAppointments_getPatientAllAppointments_followUpApp
   isConsultStarted: boolean | null;
   isSeniorConsultStarted: boolean | null;
   isJdQuestionsComplete: boolean | null;
+  isAutomatedQuestionsComplete: boolean | null;
   symptoms: string | null;
   doctorInfo: getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_doctorInfo | null;
   caseSheet: (getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_caseSheet | null)[] | null;
@@ -632,6 +636,7 @@ export interface getPatientAllAppointments_getPatientAllAppointments_activeAppoi
   appointmentPayments: (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_appointmentPayments | null)[] | null;
   id: string;
   hideHealthRecordNudge: boolean | null;
+  discountedAmount: number | null;
   patientId: string;
   doctorId: string;
   appointmentDateTime: any;
@@ -646,6 +651,7 @@ export interface getPatientAllAppointments_getPatientAllAppointments_activeAppoi
   isConsultStarted: boolean | null;
   isSeniorConsultStarted: boolean | null;
   isJdQuestionsComplete: boolean | null;
+  isAutomatedQuestionsComplete: boolean | null;
   symptoms: string | null;
   doctorInfo: getPatientAllAppointments_getPatientAllAppointments_activeAppointments_doctorInfo | null;
   caseSheet: (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet | null)[] | null;
@@ -846,6 +852,7 @@ export interface getPatientAllAppointments_getPatientAllAppointments_completedAp
   appointmentPayments: (getPatientAllAppointments_getPatientAllAppointments_completedAppointments_appointmentPayments | null)[] | null;
   id: string;
   hideHealthRecordNudge: boolean | null;
+  discountedAmount: number | null;
   patientId: string;
   doctorId: string;
   appointmentDateTime: any;
@@ -860,6 +867,7 @@ export interface getPatientAllAppointments_getPatientAllAppointments_completedAp
   isConsultStarted: boolean | null;
   isSeniorConsultStarted: boolean | null;
   isJdQuestionsComplete: boolean | null;
+  isAutomatedQuestionsComplete: boolean | null;
   symptoms: string | null;
   doctorInfo: getPatientAllAppointments_getPatientAllAppointments_completedAppointments_doctorInfo | null;
   caseSheet: (getPatientAllAppointments_getPatientAllAppointments_completedAppointments_caseSheet | null)[] | null;

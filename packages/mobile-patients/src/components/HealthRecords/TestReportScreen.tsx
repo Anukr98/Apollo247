@@ -11,6 +11,9 @@ import {
   Keyboard,
   TouchableOpacity,
   FlatList,
+  Platform,
+  Alert,
+  PermissionsAndroid,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -40,9 +43,13 @@ import {
 import { addPatientLabTestRecord } from '@aph/mobile-patients/src/graphql/types/addPatientLabTestRecord';
 import {
   ADD_PATIENT_LAB_TEST_RECORD,
+  GET_INDIVIDUAL_TEST_RESULT_PDF,
+  GET_LAB_RESULT_PDF,
   GET_PRISM_AUTH_TOKEN,
+  MERGE_PDF,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { mimeType } from '../../helpers/mimeType';
 import {
   g,
   postWebEngageEvent,
@@ -76,6 +83,14 @@ import {
 import { searchPHRApiWithAuthToken } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { BillRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/BillRecordCard';
+import { mergePDFS, mergePDFSVariables } from '@aph/mobile-patients/src/graphql/types/mergePDFS';
+import RNFetchBlob from 'rn-fetch-blob';
+import {
+  getIndividualTestResultPdf,
+  getIndividualTestResultPdfVariables,
+} from '@aph/mobile-patients/src/graphql/types/getIndividualTestResultPdf';
+import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -156,7 +171,7 @@ const styles = StyleSheet.create({
 export enum FILTER_TYPE {
   SORT_BY = 'Sort by',
   TEST_NAME = 'Test Name',
-  DATE = 'Date',
+  DATE = 'Bill Date',
   PACKAGE = 'Package',
   PARAMETER_NAME = 'Parameter Name',
   SOURCE = 'Source',
@@ -204,6 +219,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   const [searchText, setSearchText] = useState('');
   const _searchInputRef = useRef(null);
   const [apiError, setApiError] = useState(false);
+  const file_name_text = 'TestReport_';
 
   const [healthRecordSearchResults, setHealthRecordSearchResults] = useState<any>([]);
   const [prismAuthToken, setPrismAuthToken] = useState<string>(
@@ -245,13 +261,13 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       .then((data: any) => {
         const labResultsData = g(
           data,
-          'getPatientPrismMedicalRecords_V2',
+          'getPatientPrismMedicalRecords_V3',
           'labResults',
           'response'
         );
         const healthChecksData = g(
           data,
-          'getPatientPrismMedicalRecords_V2',
+          'getPatientPrismMedicalRecords_V3',
           'healthChecks',
           'response'
         );
@@ -278,6 +294,33 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       getLatestLabAndHealthCheckRecords();
     }
   }, [callApi]);
+
+  useEffect(() => {
+    Platform.OS === 'android' && requestReadSmsPermission();
+  });
+
+  const requestReadSmsPermission = async () => {
+    try {
+      const results = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+      ]);
+      if (
+        results[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] !==
+        PermissionsAndroid.RESULTS.GRANTED
+      ) {
+      }
+      if (
+        results[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] !==
+        PermissionsAndroid.RESULTS.GRANTED
+      ) {
+      }
+      if (results) {
+      }
+    } catch (error) {
+      CommonBugFender('RecordDetails_requestReadSmsPermission_try', error);
+    }
+  };
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -345,6 +388,12 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   useEffect(() => {
     if (testReportMainData) {
       let finalData: { key: string; data: any[] }[] = [];
+      let arrData: Array<{
+        key: string;
+        data: any[];
+      }> = [];
+      let remItem: { key: string; data: any[] }[] = [];
+      let arrElements: { data: any[] }[] = [];
       if (filterApplied) {
         const filterAppliedString =
           filterApplied === FILTER_TYPE.DATE
@@ -358,47 +407,54 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
             : 'labTestSource';
         testReportMainData?.forEach((dataObject: any) => {
           const dataObjectArray: any[] = [];
-          if (dataObject?.data?.labTestName && filterApplied === FILTER_TYPE.PARAMETER_NAME) {
-            dataObject?.data?.labTestResults?.forEach((parameterObject: any) => {
-              const keyValue = parameterObject?.parameterName;
-              const dataExistsAt = finalData?.findIndex((data: { key: string; data: any[] }) => {
-                return data?.key === keyValue;
+          if (
+            dataObject?.data?.labTestResults?.length > 0 ||
+            dataObject?.data?.labTestSource === 'self' ||
+            dataObject?.data?.labTestSource === '247self' ||
+            filterApplied === FILTER_TYPE.DATE
+          ) {
+            if (dataObject?.data?.labTestName && filterApplied === FILTER_TYPE.PARAMETER_NAME) {
+              dataObject?.data?.labTestResults?.forEach((parameterObject: any) => {
+                const keyValue = parameterObject?.parameterName;
+                const dataExistsAt = finalData?.findIndex((data: { key: string; data: any[] }) => {
+                  return data?.key === keyValue;
+                });
+                if (keyValue) {
+                  const modifiedData = { ...dataObject, paramObject: parameterObject };
+                  if (dataExistsAt === -1 || finalData?.length === 0) {
+                    const obj = {
+                      key: keyValue,
+                      data: [modifiedData],
+                    };
+                    finalData?.push(obj);
+                  } else if (dataExistsAt > -1) {
+                    const array = finalData[dataExistsAt]?.data;
+                    array?.push(modifiedData);
+                    finalData[dataExistsAt].data = array;
+                  }
+                }
               });
+            } else {
+              const dateExistsAt = finalData.findIndex((data: { key: string; data: any[] }) => {
+                return (
+                  (data.key === '247self' ? 'self' : data.key) ===
+                  getObjectParameter(dataObject?.data, filterAppliedString)
+                );
+              });
+              const keyValue = getObjectParameter(dataObject?.data, filterAppliedString);
               if (keyValue) {
-                const modifiedData = { ...dataObject, paramObject: parameterObject };
-                if (dataExistsAt === -1 || finalData?.length === 0) {
+                if (dateExistsAt === -1 || finalData.length === 0) {
+                  dataObjectArray.push(dataObject);
                   const obj = {
                     key: keyValue,
-                    data: [modifiedData],
+                    data: dataObjectArray,
                   };
-                  finalData?.push(obj);
-                } else if (dataExistsAt > -1) {
-                  const array = finalData[dataExistsAt]?.data;
-                  array?.push(modifiedData);
-                  finalData[dataExistsAt].data = array;
+                  finalData.push(obj);
+                } else if (dateExistsAt > -1) {
+                  const array = finalData[dateExistsAt].data;
+                  array.push(dataObject);
+                  finalData[dateExistsAt].data = array;
                 }
-              }
-            });
-          } else {
-            const dateExistsAt = finalData.findIndex((data: { key: string; data: any[] }) => {
-              return (
-                (data.key === '247self' ? 'self' : data.key) ===
-                getObjectParameter(dataObject?.data, filterAppliedString)
-              );
-            });
-            const keyValue = getObjectParameter(dataObject?.data, filterAppliedString);
-            if (keyValue) {
-              if (dateExistsAt === -1 || finalData.length === 0) {
-                dataObjectArray.push(dataObject);
-                const obj = {
-                  key: keyValue,
-                  data: dataObjectArray,
-                };
-                finalData.push(obj);
-              } else if (dateExistsAt > -1) {
-                const array = finalData[dateExistsAt].data;
-                array.push(dataObject);
-                finalData[dateExistsAt].data = array;
               }
             }
           }
@@ -406,16 +462,69 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         finalData = finalData?.sort((data1: any, data2: any) => {
           const filteredData1 = _.lowerCase(data1?.key);
           const filteredData2 = _.lowerCase(data2?.key);
-          if (filterApplied === FILTER_TYPE.DATE) {
-            return filteredData1 > filteredData2 ? -1 : filteredData1 < filteredData2 ? 1 : 0;
-          }
           return filteredData2 > filteredData1 ? -1 : filteredData2 < filteredData1 ? 1 : 0;
         });
       } else {
         // render when no filter is applied
         finalData = initialSortByDays('lab-results', testReportMainData, finalData);
+
+        finalData.forEach(function(item) {
+          item.data.map(function(entry) {
+            if (entry.type === 'healthCheck') {
+              entry.data.billNo = null;
+              return entry;
+            }
+          });
+          item.data.map((items) => {
+            let path = 'data.billNo';
+            arrElements = _(item.data)
+              .filter((object) => _.has(object, path))
+              .groupBy(path)
+              .map((value, key) => ({
+                key: key,
+                data: value,
+              }))
+              .value();
+            remItem = _(arrElements)
+              .groupBy(path)
+              .map((value, key) => ({
+                key: item.key,
+                data: value,
+              }))
+              .value();
+          });
+          if (remItem[0]?.key !== undefined) {
+            arrData.push({ key: remItem[0]?.key, data: remItem[0]?.data });
+          }
+        });
       }
-      setLocalTestReportsData(finalData);
+      if (filterApplied === FILTER_TYPE.DATE) {
+        finalData.forEach(function(item) {
+          item?.data?.map((items) => {
+            let path = 'data.billNo';
+            arrElements = _(item?.data)
+              .filter((object) => _.has(object, path))
+              .groupBy(path)
+              .map((value, key) => ({
+                key: key,
+                data: value,
+              }))
+              .value();
+
+            remItem = _(arrElements)
+              .groupBy(path)
+              .map((value, key) => ({
+                key: item.key,
+                data: value,
+              }))
+              .value();
+          });
+          if (remItem[0]?.key !== undefined) {
+            arrData.push({ key: remItem[0]?.key, data: remItem[0]?.data });
+          }
+        });
+      }
+      arrData?.length > 0 ? setLocalTestReportsData(arrData) : setLocalTestReportsData(finalData);
     }
   }, [filterApplied, testReportMainData]);
 
@@ -423,6 +532,8 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
     if (obj.healthCheckName) {
       return filterAppliedString === 'labTestName'
         ? obj.healthCheckName
+        : filterAppliedString === 'billNo'
+        ? obj.billNo
         : filterAppliedString === 'labTestSource'
         ? obj.source === '247self'
           ? 'self'
@@ -602,6 +713,138 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
     });
   };
 
+  const mergePDF = (clubFileURL: any) => {
+    Alert.alert(
+      'This option will download all reports in this bill.',
+      '**This report is a representation from the official Electronic Medical Record of Apollo Hospitals',
+      [
+        { text: 'OK', onPress: () => onDownloadLabTestReports(clubFileURL) },
+        { text: 'Cancel', style: 'cancel' },
+      ],
+      {
+        cancelable: true,
+      }
+    );
+  };
+
+  const onDownloadLabTestReports = async (clubFiles: any) => {
+    setShowSpinner(true);
+    let imageArray: any[] = [];
+    const promises = clubFiles.map((item) => {
+      if (!item?.data?.fileUrl) {
+        return client
+          .query<getIndividualTestResultPdf, getIndividualTestResultPdfVariables>({
+            query: GET_INDIVIDUAL_TEST_RESULT_PDF,
+            variables: {
+              patientId: currentPatient?.id,
+              recordId: item?.data?.id,
+              sequence: item?.data?.testSequence,
+            },
+          })
+          .then((data: any) => {
+            return data?.data?.getIndividualTestResultPdf?.url;
+          })
+          .catch((e: any) => {
+            setShowSpinner(false);
+            currentPatient && handleGraphQlError(e, 'Report is yet not available');
+            CommonBugFender('HealthRecordDetails_downloadPDFTestReport', e);
+          });
+      }
+    });
+    const results = await Promise.all(promises);
+    if (results?.length > 0 && results[0] != undefined) {
+      setShowSpinner(true);
+      client
+        .mutate<mergePDFS, mergePDFSVariables>({
+          mutation: MERGE_PDF,
+          variables: {
+            uhid: currentPatient?.id,
+            fileUrls: results,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((data: any) => {
+          setShowSpinner(false);
+          downloadDocument(data?.data?.mergePDFS?.mergepdfUrl);
+        })
+        .catch((e) => {
+          CommonBugFender('MERGE_PDF', e);
+          setShowSpinner(false);
+          handleGraphQlError(e);
+        });
+    } else {
+      setShowSpinner(true);
+      clubFiles.map((items: any) => {
+        items?.data?.testResultFiles.map((item: any) => {
+          imageArray.push(item?.file_Url);
+        });
+      });
+      if (imageArray?.length > 0) {
+        client
+          .mutate<mergePDFS, mergePDFSVariables>({
+            mutation: MERGE_PDF,
+            variables: {
+              uhid: currentPatient?.id,
+              fileUrls: imageArray,
+            },
+            fetchPolicy: 'no-cache',
+          })
+          .then((data: any) => {
+            setShowSpinner(false);
+            downloadDocument(data?.data?.mergePDFS?.mergepdfUrl);
+          })
+          .catch((e) => {
+            CommonBugFender('MERGE_PDF', e);
+            setShowSpinner(false);
+            handleGraphQlError(e);
+          });
+      }
+    }
+  };
+
+  const downloadDocument = (url: any) => {
+    setShowSpinner!(true);
+    const dirs = RNFetchBlob.fs.dirs;
+    const fileName: string =
+      Platform.OS === 'android'
+        ? file_name_text + currentPatient?.uhid + '_' + new Date().getTime()
+        : 'TEST_REPORT' + '.pdf';
+    const downloadPath =
+      Platform.OS === 'ios'
+        ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + (fileName || 'Apollo_TestReport.pdf')
+        : dirs.DownloadDir + '/' + (fileName || 'Apollo_TestReport.pdf');
+    RNFetchBlob.config({
+      fileCache: true,
+      path: downloadPath,
+      addAndroidDownloads: {
+        title: fileName,
+        useDownloadManager: true,
+        notification: true,
+        mediaScannable: true,
+        path: downloadPath,
+        mime: mimeType(downloadPath),
+        description: 'File downloaded by download manager.',
+      },
+    })
+      .fetch('GET', url, {
+        //some headers ..
+      })
+      .then((res) => {
+        setShowSpinner!(false);
+        Platform.OS === 'ios'
+          ? RNFetchBlob.ios.previewDocument(res.path())
+          : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+      })
+      .catch((err) => {
+        setShowSpinner!(false);
+        CommonBugFender('REAL_TIME_TEST_REPORT', err);
+        handleGraphQlError(err);
+      })
+      .finally(() => {
+        setShowSpinner && setShowSpinner!(false);
+      });
+  };
+
   const onPressDeletePrismMedicalRecords = (selectedItem: any) => {
     if (filterApplied === FILTER_TYPE.PARAMETER_NAME) {
       setShowSpinner(true);
@@ -712,51 +955,119 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       }
       return moment(new Date(date)).format('DD MMM');
     };
-    const prescriptionName =
-      filterApplied &&
-      filterApplied === FILTER_TYPE.PACKAGE &&
-      item?.data?.packageName?.length > 0 &&
-      item?.data?.packageName !== '-'
-        ? item?.data?.packageName
-        : filterApplied === FILTER_TYPE.PARAMETER_NAME && item?.data?.labTestName
-        ? `${
-            item?.paramObject
-              ? `${item?.paramObject.range || '-'} ${item?.paramObject.unit || ''}`
-              : '-'
-          }`
-        : item?.data?.labTestName || item?.data?.healthCheckName;
-    const doctorName =
-      filterApplied === FILTER_TYPE.PARAMETER_NAME && item?.data?.labTestName
-        ? item?.data?.labTestName
-        : item?.data?.labTestRefferedBy
-        ? 'with Dr. ' + item?.data?.labTestRefferedBy
-        : '';
-    const dateText = getPresctionDate(item?.data?.date);
-    const soureName =
-      getSourceName(item?.data?.labTestSource, item?.data?.siteDisplayName, item?.data?.source) ||
-      '-';
-    const selfUpload = true;
-    const showEditDeleteOption =
-      soureName === string.common.clicnical_document_text || soureName === '-' ? true : false;
-    const hideEditDeleteOption = item?.data?.healthCheckName && showEditDeleteOption ? true : false;
-    return (
-      <HealthRecordCard
-        item={filterApplied === FILTER_TYPE.PARAMETER_NAME ? item : item?.data}
-        index={index}
-        editDeleteData={editDeleteData(MedicalRecordType.TEST_REPORT)}
-        showUpdateDeleteOption={showEditDeleteOption}
-        hideUpdateDeleteOption={hideEditDeleteOption}
-        onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
-        onDeletePress={(selectedItem) => onPressDeletePrismMedicalRecords(selectedItem)}
-        onEditPress={(selectedItem) => onPressEditPrismMedicalRecords(selectedItem)}
-        prescriptionName={prescriptionName}
-        doctorName={doctorName}
-        dateText={dateText}
-        selfUpload={selfUpload}
-        sourceName={soureName || ''}
-        deleteRecordText={'test results'}
-      />
-    );
+    if (item?.key === 'null') {
+      return item?.data?.map((dataItem: any, index: number) => {
+        const prescriptionName =
+          filterApplied &&
+          filterApplied === FILTER_TYPE.PACKAGE &&
+          dataItem?.data?.packageName?.length > 0 &&
+          dataItem?.data?.packageName !== '-'
+            ? dataItem?.data?.packageName
+            : filterApplied === FILTER_TYPE.PARAMETER_NAME && dataItem?.data?.labTestName
+            ? `${
+                dataItem?.paramObject
+                  ? `${dataItem?.paramObject.range || '-'} ${dataItem?.paramObject.unit || ''}`
+                  : '-'
+              }`
+            : dataItem?.data?.labTestName || dataItem?.data?.healthCheckName;
+        const doctorName =
+          filterApplied === FILTER_TYPE.PARAMETER_NAME && dataItem?.data?.labTestName
+            ? dataItem?.data?.labTestName
+            : dataItem?.data?.labTestRefferedBy
+            ? 'with Dr. ' + dataItem?.data?.labTestRefferedBy
+            : '';
+        const dateText = getPresctionDate(dataItem?.data?.date);
+        const soureName =
+          getSourceName(
+            dataItem?.data?.labTestSource,
+            dataItem?.data?.siteDisplayName,
+            dataItem?.data?.source
+          ) || '-';
+        const selfUpload = true;
+        const showEditDeleteOption =
+          soureName === string.common.clicnical_document_text || soureName === '-' ? true : false;
+        const hideEditDeleteOption =
+          dataItem?.data?.healthCheckName && showEditDeleteOption ? true : false;
+        return (
+          <HealthRecordCard
+            item={filterApplied === FILTER_TYPE.PARAMETER_NAME ? dataItem : dataItem?.data}
+            index={index}
+            editDeleteData={editDeleteData(MedicalRecordType.TEST_REPORT)}
+            showUpdateDeleteOption={showEditDeleteOption}
+            hideUpdateDeleteOption={hideEditDeleteOption}
+            onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
+            onDeletePress={(selectedItem) => onPressDeletePrismMedicalRecords(selectedItem)}
+            onEditPress={(selectedItem) => onPressEditPrismMedicalRecords(selectedItem)}
+            prescriptionName={prescriptionName}
+            doctorName={doctorName}
+            dateText={dateText}
+            selfUpload={selfUpload}
+            sourceName={soureName || ''}
+            deleteRecordText={'test results'}
+          />
+        );
+      });
+    } else if (
+      item?.data?.billNo === null ||
+      !!item?.data?.billNo === undefined ||
+      item?.key === undefined
+    ) {
+      const prescriptionName =
+        filterApplied &&
+        filterApplied === FILTER_TYPE.PACKAGE &&
+        item.data?.packageName?.length > 0 &&
+        item?.data?.packageName !== '-'
+          ? item?.data?.packageName
+          : filterApplied === FILTER_TYPE.PARAMETER_NAME && item?.data?.labTestName
+          ? `${
+              item?.paramObject
+                ? `${item?.paramObject.range || '-'} ${item?.paramObject.unit || ''}`
+                : '-'
+            }`
+          : item?.data?.labTestName || item?.data?.healthCheckName;
+      const doctorName =
+        filterApplied === FILTER_TYPE.PARAMETER_NAME && item?.data?.labTestName
+          ? item?.data?.labTestName
+          : item?.data?.labTestRefferedBy
+          ? 'with Dr. ' + item?.data?.labTestRefferedBy
+          : '';
+      const dateText = getPresctionDate(item?.data?.date);
+      const soureName =
+        getSourceName(item?.data?.labTestSource, item?.data?.siteDisplayName, item?.data?.source) ||
+        '-';
+      const selfUpload = true;
+      const showEditDeleteOption =
+        soureName === string.common.clicnical_document_text || soureName === '-' ? true : false;
+      const hideEditDeleteOption =
+        item?.data?.healthCheckName && showEditDeleteOption ? true : false;
+      return (
+        <HealthRecordCard
+          item={filterApplied === FILTER_TYPE.PARAMETER_NAME ? item : item?.data}
+          index={index}
+          editDeleteData={editDeleteData(MedicalRecordType.TEST_REPORT)}
+          showUpdateDeleteOption={showEditDeleteOption}
+          hideUpdateDeleteOption={hideEditDeleteOption}
+          onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
+          onDeletePress={(selectedItem) => onPressDeletePrismMedicalRecords(selectedItem)}
+          onEditPress={(selectedItem) => onPressEditPrismMedicalRecords(selectedItem)}
+          prescriptionName={prescriptionName}
+          doctorName={doctorName}
+          dateText={dateText}
+          selfUpload={selfUpload}
+          sourceName={soureName || ''}
+          deleteRecordText={'test results'}
+        />
+      );
+    } else {
+      return (
+        <BillRecordCard
+          onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
+          onDownloadLabTestReports={(testReportsItem) => mergePDF(testReportsItem)}
+          item={item?.data}
+          testReportItems={item?.data}
+        />
+      );
+    }
   };
 
   const renderTestReports = () => {
@@ -868,7 +1179,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
             const eventAttributes: CleverTapEvents[CleverTapEventName.ADD_RECORD] = {
               Source: 'Test Report',
             };
-            postWebEngageEvent(CleverTapEventName.ADD_RECORD, eventAttributes);
+            postWebEngageEvent(WebEngageEventName.ADD_RECORD, eventAttributes);
             postCleverTapEvent(CleverTapEventName.ADD_RECORD, eventAttributes);
             props.navigation.navigate(AppRoutes.AddRecord, {
               navigatedFrom: 'Test Reports',

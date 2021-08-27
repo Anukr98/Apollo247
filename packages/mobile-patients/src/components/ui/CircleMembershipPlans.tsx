@@ -61,6 +61,7 @@ import moment from 'moment';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
+  postAppsFlyerCircleAddRemoveCartEvent,
   fireCirclePaymentPageViewedEvent,
   postCircleWEGEvent,
 } from '@aph/mobile-patients/src/components/CirclePlan/Events';
@@ -166,8 +167,6 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     'Customer ID': currentPatient?.id,
     'Circle Member': circleSubscriptionId ? 'Yes' : 'No',
   };
-  const { cusId, isfetchingId } = useGetJuspayId();
-  const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
 
   useEffect(() => {
     if (!props.membershipPlans || props.membershipPlans?.length === 0) {
@@ -199,22 +198,6 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       CleverTapEventName.CIRCLE_POP_UP_VIEWED_PLANS_ONLY,
       cleverTapEventAttributes
     );
-  };
-
-  useEffect(() => {
-    !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
-  }, [isfetchingId]);
-
-  const initiateHyperSDK = async (cusId: any) => {
-    try {
-      const merchantId = AppConfig.Configuration.merchantId;
-      terminateSDK();
-      createHyperServiceObject();
-      initiateSDK(cusId, cusId, merchantId);
-      setHyperSdkInitialized(true);
-    } catch (error) {
-      CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
-    }
   };
 
   const fireMembershipPlanSelected = () => {
@@ -281,6 +264,14 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     const membershipPlan = membershipPlans?.[index];
     setCirclePlanSelected && setCirclePlanSelected(membershipPlan);
     AsyncStorage.setItem('circlePlanSelected', JSON.stringify(membershipPlan));
+    if (source === 'Pharma Cart') {
+      postAppsFlyerCircleAddRemoveCartEvent(
+        membershipPlan,
+        circleEventSource,
+        'add',
+        currentPatient
+      );
+    }
     if (isConsultJourney) {
       !isModal &&
         circleWebEngageEventForAddToCart(
@@ -348,8 +339,10 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       user_type: getUserType(allCurrentPatients),
       price: circleData?.currentSellingPrice,
     };
-    if (isConsultJourney || getButtonTitle() === string.circleDoctors.addToCart)
+    if (isConsultJourney || getButtonTitle() === string.circleDoctors.addToCart) {
       postCleverTapEvent(CleverTapEventName.CIRCLE_PLAN_TO_CART, cleverTapEventAttributes);
+      postAppsFlyerCircleAddRemoveCartEvent(circleData, circleEventSource, 'add', currentPatient);
+    }
   };
 
   const fireCirclePlanRemovedEvent = () => {
@@ -423,41 +416,6 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       variables: purchaseInput,
       fetchPolicy: 'no-cache',
     });
-  };
-
-  const initiateCirclePurchase = async () => {
-    try {
-      setSpinning(true);
-      const response = await createUserSubscription();
-      const subscriptionId = g(response, 'data', 'CreateUserSubscription', 'response', '_id');
-      const data = await createOrderInternal(subscriptionId);
-      const orderInfo = {
-        orderId: subscriptionId,
-        circleParams: {
-          circleActivated: true,
-          circlePlanValidity: g(response, 'data', 'CreateUserSubscription', 'response', 'end_date'),
-        },
-      };
-      setSpinning(false);
-      closeModal && closeModal();
-      if (data?.data?.createOrderInternal?.success) {
-        fireCirclePaymentPageViewedEvent(
-          circlePlanSelected,
-          circleEventSource!,
-          allCurrentPatients,
-          currentPatient
-        );
-        props.navigation.navigate(AppRoutes.PaymentMethods, {
-          paymentId: data?.data?.createOrderInternal?.payment_order_id!,
-          amount: amountToPay,
-          orderDetails: orderInfo,
-          businessLine: 'subscription',
-          customerId: cusId,
-        });
-      }
-    } catch (error) {
-      CommonBugFender('Circle_Purchase_Initiation_Failed', error);
-    }
   };
 
   const renderCareSubscribeCard = (value: any, index: number) => {
@@ -576,6 +534,8 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
             setCircleMembershipCharges && setCircleMembershipCharges(0);
             selectDefaultPlan && selectDefaultPlan(membershipPlans);
           } else {
+            setIsCircleSubscription && setIsCircleSubscription(false);
+            setCircleMembershipCharges && setCircleMembershipCharges(0);
             setDefaultCirclePlan && setDefaultCirclePlan(null);
             setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
           }
@@ -888,6 +848,12 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         ]}
         onPress={() => {
           fireCircleBuyNowEvent();
+          postAppsFlyerCircleAddRemoveCartEvent(
+            circlePlanSelected,
+            circleEventSource,
+            'add',
+            currentPatient
+          );
           isConsultJourney &&
             circleWebEngageEventForAddToCart(
               WebEngageEventName.VC_NON_CIRCLE_ADDS_CART,
@@ -902,15 +868,18 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
               closeModal && closeModal();
               onPurchasePlanThroughHC();
             } else {
-              initiateCirclePurchase();
+              closeModal?.();
+              props.navigation.navigate(AppRoutes.SubscriptionCart);
             }
           } else if (from === string.banner_context.PHARMACY_HOME) {
             if (!cartItems?.length) {
-              initiateCirclePurchase();
+              closeModal?.();
+              props.navigation.navigate(AppRoutes.SubscriptionCart);
             } else {
               setCircleMembershipCharges &&
                 setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
               setCircleSubPlanId && setCircleSubPlanId(circlePlanSelected?.subPlanId);
+              closeModal && closeModal();
             }
           } else {
             closeModal && closeModal();
@@ -985,6 +954,12 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
               circlePlanSelected,
               allCurrentPatients
             );
+            postAppsFlyerCircleAddRemoveCartEvent(
+              circlePlanSelected,
+              circleEventSource,
+              'remove',
+              currentPatient
+            );
             setCirclePlanSelected && setCirclePlanSelected(null);
             setIsCircleSubscription && setIsCircleSubscription(false);
             setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
@@ -999,12 +974,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   };
   return (
     <View style={isModal ? {} : [styles.careBannerView, props.style]}>
-      {circlePlanSelected &&
-      !isModal &&
-      !autoCirlcePlanAdded &&
-      !spinning &&
-      !defaultCirclePlan &&
-      hyperSdkInitialized
+      {circlePlanSelected && !isModal && !autoCirlcePlanAdded && !spinning && !defaultCirclePlan
         ? renderCarePlanAdded()
         : renderSubscribeCareContainer()}
     </View>
