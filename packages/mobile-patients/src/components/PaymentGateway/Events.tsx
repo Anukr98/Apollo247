@@ -52,7 +52,6 @@ export function PaymentInitiated(
       paymentOrderId: paymentOrderId,
       'Payment Instrument': instrument,
     };
-    console.log('pharmaEventAttributes >>>>>', pharmaEventAttributes);
 
     LOB == 'pharma' &&
       postCleverTapEvent(CleverTapEventName.PHARMACY_PAYMENT_INITIATED, pharmaEventAttributes);
