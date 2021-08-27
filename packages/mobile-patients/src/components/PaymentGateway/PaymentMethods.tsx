@@ -356,9 +356,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     }
   };
 
-  function triggerWebengege(type: string) {
+  function triggerWebengege(type: string, instrument: string) {
     paymentType.current = type;
-    PaymentInitiated(amount, businessLine, type, paymentId);
+    PaymentInitiated(amount, businessLine, type, paymentId, instrument);
   }
 
   function triggerUserPaymentAbortedEvent(errorCode: string) {
@@ -369,7 +369,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressBank(bankCode: string) {
-    triggerWebengege('NetBanking-' + bankCode);
+    triggerWebengege('NetBanking-' + bankCode, 'NB');
     const token = await getClientToken();
     token
       ? InitiateNetBankingTxn(currentPatient?.id, token, paymentId, bankCode)
@@ -377,7 +377,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressWallet(wallet: string) {
-    triggerWebengege('Wallet-' + wallet);
+    triggerWebengege('Wallet-' + wallet, 'WALLET');
     const token = await getClientToken();
     token
       ? wallet == 'PHONEPE' && phonePeReady
@@ -387,7 +387,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressUPIApp(app: any) {
-    triggerWebengege('UPIApp-' + app?.payment_method_name);
+    triggerWebengege('UPIApp-' + app?.payment_method_name, 'UPI');
     const token = await getClientToken();
     const paymentCode = app?.payment_method_code;
     const sdkPresent =
@@ -410,7 +410,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressVPAPay(VPA: string) {
-    triggerWebengege('UPI Collect');
+    triggerWebengege('UPI Collect', 'UPI');
     try {
       setisTxnProcessing(true);
       const response = await verifyVPA(VPA);
@@ -427,7 +427,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressNewCardPayNow(cardInfo: any, saveCard: boolean) {
-    triggerWebengege('Card');
+    triggerWebengege('Card', 'CARD');
     const token = await getClientToken();
     token
       ? InitiateCardTxn(currentPatient?.id, token, paymentId, cardInfo, saveCard)
@@ -435,7 +435,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressSavedCardPayNow(cardInfo: any, cvv: string) {
-    triggerWebengege('Card');
+    triggerWebengege('Card', 'CARD');
     const token = await getClientToken();
     token
       ? InitiateSavedCardTxn(currentPatient?.id, token, paymentId, cardInfo, cvv)
@@ -443,7 +443,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressPayByCash() {
-    triggerWebengege('Cash');
+    triggerWebengege('Cash', 'COD');
     setisTxnProcessing(true);
     try {
       businessLine == 'diagnostics' && initiateOrderPayment();
@@ -458,7 +458,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressplaceHcOrder() {
-    triggerWebengege('HealthCredits');
+    triggerWebengege('HealthCredits', 'HEALTH_CREDITS');
     try {
       setisTxnProcessing(true);
       const response = await createJusPayOrder(false);
@@ -479,7 +479,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     otherBanks = otherBanks?.payment_methods?.filter(
       (item: any) => !methods?.includes(item?.payment_method_code)
     );
-    triggerWebengege('Net Banking');
+    triggerWebengege('NetBanking - OtherBanks', 'NB');
     props.navigation.navigate(AppRoutes.OtherBanks, {
       paymentId: paymentId,
       amount: amount,
