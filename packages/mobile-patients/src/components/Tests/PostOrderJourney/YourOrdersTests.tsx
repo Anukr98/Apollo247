@@ -543,10 +543,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const checkIfPreTestingExists = (order: orderList) => {
     if (order != null) {
-      const filterPreTestingData = order?.diagnosticOrderLineItems?.filter((items) =>
-        items?.itemObj
-          ? items?.itemObj?.testPreparationData != ''
-          : items?.diagnostics?.testPreparationData != ''
+      const filterPreTestingData = order?.diagnosticOrderLineItems?.filter(
+        (items) => items?.itemObj && items?.itemObj?.testPreparationData != ''
       );
       return filterPreTestingData?.length == 0 ? false : true;
     }
@@ -1425,7 +1423,17 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   ) {
     setLoading?.(true);
     try {
-      await downloadDiagnosticReport(setLoading, pdfUrl, appointmentDate, patientName, true, undefined, order?.orderStatus, (order?.displayId).toString(), true);
+      await downloadDiagnosticReport(
+        setLoading,
+        pdfUrl,
+        appointmentDate,
+        patientName,
+        true,
+        undefined,
+        order?.orderStatus,
+        (order?.displayId).toString(),
+        true
+      );
     } catch (error) {
       setLoading?.(false);
       CommonBugFender('YourOrderTests_downloadLabTest', error);

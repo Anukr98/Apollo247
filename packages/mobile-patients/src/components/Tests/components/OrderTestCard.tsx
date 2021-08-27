@@ -244,7 +244,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     const getPrepData = filterOrderLineItem?.map(
       (
         item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems
-      ) => item?.itemObj?.testPreparationData || item?.diagnostics?.testPreparationData!
+      ) => item?.itemObj?.testPreparationData
     );
     const filterData = [...new Set(getPrepData)];
     return (
