@@ -250,6 +250,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setLoading(true);
       getMedicineDetails();
+      if (sku && pincode) {
+        getProductSubstitutes(sku);
+      }
     });
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       setLoading(true);
@@ -303,7 +306,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     if (sku && pincode) {
       getProductSubstitutes(sku);
     }
-  }, [sku, isPharma, pincode]);
+  }, [sku, isPharma, pincode, props.navigation, medicineDetails]);
 
   const getMedicineDetails = (zipcode?: string, pinAcdxCode?: string, selectedSku?: string) => {
     setLoading(true);
@@ -400,6 +403,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         if (substitutes?.length) {
           setProductSubstitutes?.(substitutes);
         } else {
+          setProductSubstitutes?.([]);
           fetchSubstitutes();
         }
       })

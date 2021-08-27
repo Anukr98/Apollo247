@@ -158,7 +158,7 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
     <View style={styles.expressContainer}>
       <ExpressDeliveryLogo style={styles.expressLogo} />
       <Text
-        style={theme.viewStyles.text('SB', 14, '#02475B', 1, 25, 0.35)}
+        style={theme.viewStyles.text('SB', 13, '#02475B', 1, 25, 0.35)}
       >{`within ${tatDuration} hours`}</Text>
     </View>
   );
@@ -169,7 +169,7 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
     return (
       <View>
         {isTatPriceLess ? (
-          <View>
+          <View style={{ flex: 1 }}>
             <Text style={styles.priceStrikeOff}>{`MRP ${string.common.Rs}${price}`}</Text>
             <Text style={styles.discount}>{`${percentageDiscount.toFixed(1)}% off`}</Text>
             <Text style={styles.price}>
@@ -206,7 +206,7 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
       return (
         <TouchableOpacity
           onPress={() => {
-            props.navigation.replace(AppRoutes.ProductDetailPage, {
+            props.navigation.push(AppRoutes.ProductDetailPage, {
               urlKey: substitute?.url_key,
               sku: substitute?.sku,
               movedFrom: ProductPageViewedSource.PDP_FAST_SUSBTITUTES,
@@ -219,9 +219,7 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
             <View style={styles.nameManufacturer}>
               <View>
                 {renderTitle(name)}
-                <Text style={theme.viewStyles.text('R', 13, '#01475B', 1, 27)}>
-                  {manufacturerText}
-                </Text>
+                <Text style={styles.manufacturerText}>{manufacturerText}</Text>
               </View>
               {is_express && renderExpress(tatDuration[0])}
             </View>
@@ -317,7 +315,7 @@ const styles = StyleSheet.create({
   },
   expressLogo: {
     resizeMode: 'contain',
-    width: 60,
+    width: 55,
     height: 20,
     marginRight: 3,
   },
@@ -341,7 +339,6 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
     color: '#01475b',
     opacity: 0.6,
-    paddingRight: 5,
     textAlign: 'right',
   },
   quantityView: {
@@ -367,8 +364,13 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 13, '#00B38E', 1, 20, 0.35),
   },
   price: {
-    ...theme.viewStyles.text('B', 14, '#02475B', 1, 17, 0.35),
+    ...theme.viewStyles.text('B', 14, '#02475B', 1, 20, 0.35),
     textAlign: 'right',
   },
   nameManufacturer: { justifyContent: 'space-between', flex: 0.9 },
+  manufacturerText: {
+    ...theme.viewStyles.text('R', 13, '#01475B', 1, 17),
+    marginTop: 2,
+    marginBottom: 7,
+  },
 });
