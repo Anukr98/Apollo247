@@ -6903,6 +6903,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 }
               } else if (_uploadedUrl) {
                 const fileName = item?.fileName || '';
+                const splitArr = _uploadedUrl.split('.');
+                const fileType = splitArr[splitArr.length-1];
+                if(fileType){
+                  postChatWebEngEvent(fileType == 'pdf' ? 'PDF' : 'Image', '');
+                }
                 await callAddChatDocumentApi(prism, _uploadedUrl, fileName);
               }
               // });
