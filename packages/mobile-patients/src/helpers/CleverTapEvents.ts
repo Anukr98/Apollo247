@@ -1190,6 +1190,7 @@ export interface CleverTapEvents {
     'Cart Items'?: number;
     Coupon?: string;
     paymentOrderId: string;
+    'Payment Instrument': string;
   };
   [CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED]: {
     Source: 'Home' | 'Cart';
