@@ -951,7 +951,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             </View>
           </View>
         ) : null}
-        {!orderBilledAndPacked && additionalDisount && newOrders && !prescriptionUpload ? (
+        {additionalDisount && newOrders && !prescriptionUpload ? (
           <View
             style={[
               styles.paymentCard,
