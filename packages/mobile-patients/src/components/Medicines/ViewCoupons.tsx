@@ -151,7 +151,7 @@ export interface pharma_coupon {
 }
 
 export interface ViewCouponsProps extends NavigationScreenProps {
-  movedFrom: 'consult' | 'pharma' | 'diagnostic';
+  movedFrom: 'consult' | 'pharma' | 'diagnostic' | 'subscription';
   onApplyCoupon: (value: string) => Promise<void>;
   coupon: string;
 }
@@ -160,6 +160,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
   const onApplyCoupon = props.navigation.getParam('onApplyCoupon');
   const movedFrom = props.navigation.getParam('movedFrom');
   const isFromConsult = movedFrom === 'consult';
+  const isFromSubscription = movedFrom === 'subscription';
   const couponFromConsult = props.navigation.getParam('coupon');
   const [couponText, setCouponText] = useState<string>(couponFromConsult || '');
   const [couponError, setCouponError] = useState<string>('');
@@ -182,6 +183,8 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     circleSubscriptionId,
     hdfcSubscriptionId,
     setIsFreeDelivery,
+    circlePlanSelected,
+    setSubscriptionCoupon,
   } = useShoppingCart();
   const { showAphAlert, setLoading } = useUIElements();
   const [shimmerLoading, setShimmerLoading] = useState<boolean>(true);
@@ -212,7 +215,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
       packageId: getPackageIds(activeUserSubscriptions)?.join(),
       mobile: g(currentPatient, 'mobileNumber'),
       email: g(currentPatient, 'emailAddress'),
-      type: isFromConsult ? 'Consult' : 'Pharmacy',
+      type: isFromConsult ? 'Consult' : isFromSubscription ? 'Subs' : 'Pharmacy',
     };
     fetchConsultCoupons(data)
       .then((res: any) => {
@@ -243,9 +246,12 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
   ) => {
     CommonLogEvent(AppRoutes.ViewCoupons, 'Select coupon');
     setLoading?.(true);
-    const data = {
+    let data = {
       mobile: g(currentPatient, 'mobileNumber'),
-      billAmount: cartTotal.toFixed(2),
+      billAmount:
+        isFromSubscription && circlePlanSelected?.currentSellingPrice
+          ? circlePlanSelected?.currentSellingPrice
+          : cartTotal.toFixed(2),
       coupon: coupon,
       pinCode: pharmacyPincode,
       products: cartItems?.map((item) => ({
@@ -258,12 +264,25 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
       packageIds: packageId,
       email: g(currentPatient, 'emailAddress'),
     };
+    if (isFromSubscription && circlePlanSelected?.subPlanId) {
+      data['subscriptionType'] = `APOLLO:${circlePlanSelected?.subPlanId}`;
+    }
+    console.log('validateConsultCoupon data >> ', data);
     validateConsultCoupon(data)
       .then((resp: any) => {
         if (resp?.data?.errorCode == 0) {
           if (resp?.data?.response?.valid) {
             const successMessage = resp?.data?.response?.successMessage || '';
-            setCoupon!({ ...g(resp?.data, 'response')!, successMessage: successMessage });
+            setCoupon!({
+              ...resp?.data?.response,
+              successMessage: successMessage,
+            });
+            if (isFromSubscription) {
+              setSubscriptionCoupon?.({
+                ...g(resp?.data, 'response')!,
+                successMessage: successMessage,
+              });
+            }
             setIsFreeDelivery?.(!!resp?.data?.response?.freeDelivery);
             props.navigation.goBack();
           } else {

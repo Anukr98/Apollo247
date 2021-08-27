@@ -56,6 +56,7 @@ import {
   getPackageIds,
   getIsMedicine,
   getNetStatus,
+  isCartPriceWithInSpecifiedRange,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   pinCodeServiceabilityApi247,
@@ -228,7 +229,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (!deliveryAddressId && cartItems.length > 0) {
       setCartItems!(cartItems.map((item) => ({ ...item, unserviceable: false })));
     } else if (deliveryAddressId && cartItems.length > 0) {
-      availabilityTat(false, true);
+      availabilityTat(true, true);
     }
   }, [deliveryAddressId]);
 
@@ -434,6 +435,19 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         };
         try {
           const res = await getDeliveryTAT247(tatInput);
+          const errorCode = res?.data?.errorCode;
+          if (errorCode == -1011) {
+            // error code for Unable to find PinCode in Master List
+            setloading(false);
+            setDeliveryAddressId?.('');
+            postPhamracyCartAddressSelectedFailure(
+              selectedAddress.zipcode!,
+              formatAddress(selectedAddress),
+              'No'
+            );
+            renderAlert(string.medicine_cart.pharmaAddressUnServiceableAlert);
+            return;
+          }
           const response = res?.data?.response;
           setOrders?.(response);
           let inventoryData: any = [];
@@ -581,7 +595,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         const allowPriceUpdate =
           cartItem?.price !== storePrice
             ? updatePrices === 'ByPercentage'
-              ? isPricesWithInSpecifiedRange(
+              ? isCartPriceWithInSpecifiedRange(
                   cartItem?.price,
                   storePrice,
                   updatePricePercent,
@@ -1161,21 +1175,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     );
   };
   return <View style={{ flex: 1 }}>{cartItems?.length ? renderScreen() : renderEmptyCart()}</View>;
-};
-
-const isPricesWithInSpecifiedRange = (
-  num1: number,
-  num2: number,
-  percentage: number,
-  cartPriceNotUpdateRange: number
-) => {
-  const diff = num1 - num2;
-  const diffP = (diff / num1) * 100;
-  const result = diffP <= percentage && diffP >= -percentage;
-  const finalResult = !!cartPriceNotUpdateRange
-    ? result && diff > cartPriceNotUpdateRange && diff < -cartPriceNotUpdateRange
-    : result;
-  return finalResult;
 };
 
 const styles = StyleSheet.create({

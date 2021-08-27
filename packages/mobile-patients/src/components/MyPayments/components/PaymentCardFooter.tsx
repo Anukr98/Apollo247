@@ -61,7 +61,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
           status: status,
           aptType: aptType,
         };
-      } else if (refundInfo.length) {
+      } else if (refundInfo?.length) {
         status = 'TXN_REFUND';
         return {
           leftHeaderText: leftHeaderText,
@@ -110,7 +110,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
         const { paymentType, paymentMode } = paymentInfo;
         type = !paymentMode ? paymentType : PaymentModes[paymentMode];
         status =
-          currentStatus === 'CANCELLED' && refundInfo.length ? REFUND : paymentInfo.paymentStatus;
+          currentStatus === 'CANCELLED' && refundInfo?.length ? REFUND : paymentInfo?.paymentStatus;
         return {
           leftHeaderText: 'Order No. - ' + orderAutoId,
           dateAndTime: getDate(dateAndTime),
@@ -208,7 +208,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
       const { appointmentRefunds, PaymentOrders } = item;
       const { refund } = PaymentOrders;
       const refundInfo = refund?.length ? refund : appointmentRefunds;
-      if ((status === SUCCESS || status === FAILED) && refundInfo.length < 1) {
+      if ((status === SUCCESS || status === FAILED) && refundInfo?.length < 1) {
         return <CardFooterButton buttonTitle={buttonTitle} onPressAction={navigateTo} />;
       } else {
         return null;

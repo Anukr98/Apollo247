@@ -365,6 +365,8 @@ export enum CleverTapEventName {
   ORDER_TESTS_FROM_PRESCRIPTION_DETAILS = 'PHR Order Tests Prescription Detail',
   CONTINUE_CONSULT_CLICKED = 'Continue Consult Clicked',
   CHAT_WITH_DOCTOR = 'Chat with Doctor',
+  Order_Medicine_From_View_Prescription = 'OrderMedicineFromViewPrescription',
+  Book_Tests_From_View_Prescription = 'BookTestsFromViewPrescription',
 
   DOCTOR_RESCHEDULE_CLAIM_REFUND = 'Doctor reschedule and Claim Refund button click',
   UPLOAD_RECORDS_CLICK_CHATROOM = 'Upload Records in chatroom clicked',
@@ -509,6 +511,14 @@ export enum CleverTapEventName {
   VACCINATION_BOOKING_CONFIRMATION = 'Vaccine_Booking confirmation',
   VACCINATION_CANCELLATION = 'Vaccine_Cancellation',
   PHR_CLICK_VACCINATION = 'PHR_CLICK_VACCINATION',
+
+  //App Review and Rating on Playstore
+  PLAYSTORE_APP_REVIEW_AND_RATING = 'Playstore app review and rating',
+  APP_REVIEW_AND_RATING_TO_PLAYSTORE = 'Playstore review popup showed',
+  APP_REVIEW_AND_RATING_TO_APPSTORE = 'Appstore review popup showed',
+
+  //Upload Prescription
+  PHARMACY_PRESCRIPTION_UPLOADED = 'Pharmacy Prescription Uploaded',
 }
 
 export interface PatientInfo {
@@ -1767,6 +1777,8 @@ export interface CleverTapEvents {
     'Hospital City': string;
     consultDateTime: Date;
     User_Type: string;
+    'Booking Fee': string;
+    'Booking value': number;
   };
   [CleverTapEventName.CONSULTATION_BOOKED]: {
     consultId: string;
@@ -2374,6 +2386,7 @@ export interface CleverTapEvents {
     MRP?: number;
     SpecialPrice?: number | null;
     CircleCashback?: number;
+    SubCategory: string;
   };
   [CleverTapEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
     'Patient Name': string;
@@ -2779,10 +2792,30 @@ export interface CleverTapEvents {
     };
   };
 
+  [CleverTapEventName.PLAYSTORE_APP_REVIEW_AND_RATING]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    'User Type': string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    'CT Source': string;
+    'Device ID': string;
+    'Circle Member': string;
+    'Page Name': string;
+    'NAV Source': 'Pharmacy' | 'Consult' | 'Dignostic';
+  };
+
   [CleverTapEventName.PHARMACY_FAST_SUBSTITUTES_VIEWED]: {
     'Product Code': string;
     'Product Name': string;
     'Stock type': 'In stock' | 'Out of stock';
     Type: string;
+  };
+
+  [CleverTapEventName.PHARMACY_PRESCRIPTION_UPLOADED]: {
+    Location: 'Cart' | 'Non-Cart';
+    Source: 'Gallery' | 'My Prescription' | 'Consult Room' | 'Health Records';
   };
 }

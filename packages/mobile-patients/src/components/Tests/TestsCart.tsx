@@ -261,6 +261,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     coupon,
     areaSelected,
     setAreaSelected,
+    diagnosticAreas,
     setDiagnosticAreas,
     cartSaving,
     discountSaving,
@@ -450,10 +451,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const listOfIds =
       typeof _cartItemId == 'string' ? removeSpaces?.map((item) => Number(item!)) : _cartItemId;
     const pincode = selectedAddr?.zipcode;
+
+    const formattedDate = moment(diagnosticSlot?.date).format('YYYY/MM/DD');
+    const dateTimeInUTC = moment(formattedDate + ' ' + diagnosticSlot?.slotStartTime).toISOString();
+
     try {
       const result = await getReportTAT(
         client,
-        null,
+        !!diagnosticSlot && !isEmptyObject(diagnosticSlot) ? dateTimeInUTC : null,
         Number(addressCityId),
         Number(pincode),
         listOfIds!
@@ -486,6 +491,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         setReportGenDetails(result || []);
         const _itemIds = widgetsData?.map((item: any) => Number(item?.itemId));
         const _filterItemIds = _itemIds?.filter((val: any) => !cartItemsWithId?.includes(val));
+        const pinCodeFromAddress = isModifyFlow
+          ? Number(modifiedOrder?.patientAddressObj?.zipcode!)
+          : !!selectedAddr
+          ? Number(selectedAddr?.zipcode)
+          : null;
 
         client
           .query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
@@ -496,7 +506,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             variables: {
               cityID: Number(addressCityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
               itemIDs: _filterItemIds,
-              pincode: !!selectedAddr ? Number(selectedAddr?.zipcode!) : null,
+              pincode: pinCodeFromAddress,
             },
             fetchPolicy: 'no-cache',
           })
@@ -775,10 +785,17 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           ? cartItemsWithId.concat(modifiedOrderItemIds)
           : cartItemsWithId;
         fetchTestReportGenDetails(itemIds);
-        fetchReportTat(itemIds);
       }
     }
   }, [cartItems?.length, addressCityId]);
+
+  useEffect(() => {
+    if (cartItemsWithId?.length > 0) {
+      const itemIds = isModifyFlow ? cartItemsWithId.concat(modifiedOrderItemIds) : cartItemsWithId;
+      fetchReportTat(itemIds);
+    }
+  }, [cartItems, addressCityId, diagnosticSlot]);
+
   useEffect(() => {
     if (isModifyFlow) {
       return;
@@ -857,6 +874,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setHcApiCalled(true);
     }
   }, [areaSelected]);
+
   const fetchAddresses = async () => {
     try {
       if (addresses?.length) {
@@ -1286,6 +1304,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
           );
 
+    const pinCodeFromAddress = isModifyFlow
+      ? Number(modifiedOrder?.patientAddressObj?.zipcode!)
+      : !!selectedAddr
+      ? Number(selectedAddr?.zipcode)
+      : null;
+
     {
       setLoading?.(true);
       client
@@ -1298,7 +1322,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             //if address is not selected then from pincode bar otherwise from address
             cityID: cityIdToPass,
             itemIDs: listOfIds!,
-            pincode: !!selectedAddr ? Number(selectedAddr?.zipcode!) : null,
+            pincode: pinCodeFromAddress,
           },
           fetchPolicy: 'no-cache',
         })
@@ -2226,6 +2250,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     comingFrom?: string
   ) => {
     const itemIds = comingFrom ? duplicateItem : cartItems?.map((item) => parseInt(item?.id));
+    const pinCodeFromAddress = isModifyFlow
+      ? Number(modifiedOrder?.patientAddressObj?.zipcode!)
+      : !!selectedAddr
+      ? Number(selectedAddr?.zipcode)
+      : null;
+
     return client.query<
       findDiagnosticsByItemIDsAndCityID,
       findDiagnosticsByItemIDsAndCityIDVariables
@@ -2237,7 +2267,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       variables: {
         cityID: cityIdForAddress,
         itemIDs: itemIds!,
-        pincode: !!selectedAddr ? Number(selectedAddr?.zipcode!) : null,
+        pincode: pinCodeFromAddress,
       },
       fetchPolicy: 'no-cache',
     });
@@ -3042,15 +3072,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               </View>
               <Text style={styles.patientDetailsTextStyle}>{addressText}</Text>
             </View>
-            {showPriceMismatch ? (
-              <View style={styles.blueView}>
-                <InfoIconBlue style={{ width: 18, height: 18 }} />
-                <Text style={styles.lbTextStyle}>{string.diagnostics.pricesChangedMessage}</Text>
-              </View>
-            ) : null}
           </>
         ) : null}
-        {isModifyFlow ? null : showSelectedArea && !isEmptyObject(areaSelected) ? (
+        {isModifyFlow ? null : showSelectedArea &&
+          !isEmptyObject(areaSelected) &&
+          diagnosticAreas?.length > 0 ? (
           <View style={styles.patientNameMainViewStyle}>
             <View style={styles.patientNameViewStyle}>
               <Text style={styles.patientNameTextStyle}>{string.diagnostics.areaText}</Text>
@@ -3427,6 +3453,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       </View>
     );
   };
+
+  const renderPriceMismatchView = () => {
+    return (
+      <>
+        {showPriceMismatch ? (
+          <View style={styles.blueView}>
+            <InfoIconBlue style={{ width: 18, height: 18 }} />
+            <Text style={styles.lbTextStyle}>{string.diagnostics.pricesChangedMessage}</Text>
+          </View>
+        ) : null}
+      </>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       {displaySchedule && (
@@ -3469,6 +3509,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         <ScrollView bounces={false}>
           <View style={{ marginVertical: 16 }}>
             {renderPatientDetails()}
+            {renderPriceMismatchView()}
             {renderItemsInCart()}
             {isModifyFlow ? renderPreviouslyAddedItems() : null}
             {renderTotalCharges()}
@@ -3628,11 +3669,12 @@ const styles = StyleSheet.create({
   blueView: {
     flexDirection: 'row',
     backgroundColor: '#E0F0FF',
-    marginTop: -5,
+    marginTop: -8,
     paddingHorizontal: 20,
     paddingVertical: 8,
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
+    marginBottom: 5,
   },
   dashedBannerViewStyle: {
     ...cardViewStyle,

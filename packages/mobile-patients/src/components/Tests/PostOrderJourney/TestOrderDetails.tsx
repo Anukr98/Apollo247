@@ -487,10 +487,17 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         ? orderLevelStatus?.statusHistory.concat(orderLevelStatus?.upcomingStatuses)
         : orderLevelStatus?.statusHistory;
     scrollToSlots();
+
+    const getAllStatusDone = newList?.filter((value) =>
+      orderLevelStatus?.statusHistory?.includes(value)
+    );
     return (
       <View>
         <View style={{ margin: 20 }}>
           {newList?.map((order: any, index: number, array: any) => {
+            const showInclusions = orderLevelStatus?.statusHistory?.find(
+              (item: any) => item?.orderStatus === order?.orderStatus
+            );
             let isStatusDone = true;
             if (order?.__typename == 'upcomingStatus') {
               isStatusDone = false;
@@ -554,8 +561,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                     {REFUND_STATUSES.SUCCESS === order?.orderStatus
                       ? renderTransactionDetails()
                       : null}
-                    {DROP_DOWN_ARRAY_STATUS.includes(order?.orderStatus) &&
-                    index == array?.length - 1
+                    {!!showInclusions &&
+                    DROP_DOWN_ARRAY_STATUS.includes(showInclusions?.orderStatus) &&
+                    index == getAllStatusDone?.length - 1
                       ? renderInclusionLevelDropDown(order)
                       : null}
                     {order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED &&
@@ -671,7 +679,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                             },
                           ]}
                         >
-                          <View style={{ width: '59%' }}>
+                          <View style={{ width: '40%' }}>
                             <Text style={styles.itemNameText}>
                               {nameFormater(item?.itemName, 'default')}
                             </Text>
@@ -736,7 +744,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   function _onPressViewReportAction() {
     if (!!selectedOrder?.labReportURL && selectedOrder?.labReportURL != '') {
-      onPressViewReport();
+      onPressViewReport(true);
     } else if (!!selectedOrder?.visitNo && selectedOrder?.visitNo != '') {
       //directly open the phr section
       fetchTestReportResult();
@@ -753,10 +761,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       / /g,
       '_'
     );
-    downloadLabTest(orderDetails?.invoiceURL!, appointmentDate, patientName);
+    downloadLabTest(orderDetails?.invoiceURL!, appointmentDate, patientName, false);
   };
 
-  const onPressViewReport = () => {
+  const onPressViewReport = (isReport: boolean) => {
     const appointmentDetails = !!orderDetails?.slotDateTimeInUTC
       ? orderDetails?.slotDateTimeInUTC
       : orderDetails?.diagnosticDate;
@@ -772,10 +780,20 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       'Download Report PDF',
       orderDetails?.id
     );
-    downloadLabTest(removeWhiteSpaces(orderDetails?.labReportURL)!, appointmentDate, patientName);
+    downloadLabTest(
+      removeWhiteSpaces(orderDetails?.labReportURL)!,
+      appointmentDate,
+      patientName,
+      isReport
+    );
   };
 
-  async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string) {
+  async function downloadLabTest(
+    pdfUrl: string,
+    appointmentDate: string,
+    patientName: string,
+    isReport?: boolean
+  ) {
     setLoading?.(true);
     try {
       await downloadDiagnosticReport(
@@ -787,7 +805,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         undefined,
         orderDetails?.orderStatus,
         (orderDetails?.displayId).toString(),
-        false
+        isReport
       );
     } catch (error) {
       setLoading?.(false);
