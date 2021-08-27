@@ -3042,12 +3042,9 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
     case DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED:
       statusString = 'Partial Order Completed';
       break;
-    case DIAGNOSTIC_ORDER_STATUS.ORDER_MODIFIED:
-      statusString = 'Order modification';
-      break;
     default:
-      statusString = status || '';
-      statusString?.replace(/[_]/g, ' ');
+      statusString = '';
+      // statusString?.replace(/[_]/g, ' ');
   }
   return statusString;
 };

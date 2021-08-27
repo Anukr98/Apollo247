@@ -488,9 +488,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         : orderLevelStatus?.statusHistory;
     scrollToSlots();
 
-    const getAllStatusDone = newList?.filter((value) =>
-      orderLevelStatus?.statusHistory?.includes(value)
-    );
+    console.log({ orderLevelStatus });
+
     return (
       <View>
         <View style={{ margin: 20 }}>
@@ -498,6 +497,28 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             const showInclusions = orderLevelStatus?.statusHistory?.find(
               (item: any) => item?.orderStatus === order?.orderStatus
             );
+
+            //don't show if order is completed
+            const isOrderCompleted = orderLevelStatus?.statusHistory?.find(
+              (item: any) => item?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED
+            );
+
+            const isPOC =
+              isOrderCompleted == undefined &&
+              orderLevelStatus?.statusHistory?.find(
+                (item: any) => item?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED
+              );
+
+            const isSampleSubmitted =
+              isOrderCompleted == undefined &&
+              isPOC === undefined &&
+              orderLevelStatus?.statusHistory?.find(
+                (item: any) => item?.orderStatus === DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED
+              );
+
+            //status which we want to show on ui
+            const showStatus = getTestOrderStatusText(order?.orderStatus) != '';
+
             let isStatusDone = true;
             if (order?.__typename == 'upcomingStatus') {
               isStatusDone = false;
@@ -508,78 +529,90 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
               .add(slotDuration, 'minutes')
               .format('hh:mm A');
             return (
-              <View
-                style={styles.rowStyle}
-                onLayout={(event) => {
-                  const layout = event.nativeEvent.layout;
-                  if (isStatusDone && selectedTab === string.orders.trackOrder) {
-                    setScrollYValue(layout.y);
-                  }
-                }}
-              >
-                {renderGraphicalStatus(order, index, isStatusDone, array)}
-                <View style={{ marginBottom: 8, flex: 1 }}>
-                  <View style={[isStatusDone ? styles.statusDoneView : { padding: 10 }]}>
-                    <View style={styles.flexRow}>
-                      <View style={{ width: '75%' }}>
-                        <Text
-                          style={[
-                            styles.statusTextStyle,
-                            {
-                              color:
-                                DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus) ||
-                                order?.orderStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB
-                                  ? theme.colors.INPUT_FAILURE_TEXT
-                                  : theme.colors.SHERPA_BLUE,
-                            },
-                          ]}
-                        >
-                          {nameFormater(getTestOrderStatusText(order?.orderStatus), 'title')}
-                        </Text>
+              <>
+                {!!showStatus && showStatus ? (
+                  <View
+                    style={styles.rowStyle}
+                    onLayout={(event) => {
+                      const layout = event.nativeEvent.layout;
+                      if (isStatusDone && selectedTab === string.orders.trackOrder) {
+                        setScrollYValue(layout.y);
+                      }
+                    }}
+                  >
+                    {renderGraphicalStatus(order, index, isStatusDone, array)}
+                    <View style={{ marginBottom: 8, flex: 1 }}>
+                      <View style={[isStatusDone ? styles.statusDoneView : { padding: 10 }]}>
+                        <View style={styles.flexRow}>
+                          <View style={{ width: '75%' }}>
+                            <Text
+                              style={[
+                                styles.statusTextStyle,
+                                {
+                                  color:
+                                    DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus) ||
+                                    order?.orderStatus ==
+                                      DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB
+                                      ? theme.colors.INPUT_FAILURE_TEXT
+                                      : theme.colors.SHERPA_BLUE,
+                                },
+                              ]}
+                            >
+                              {nameFormater(getTestOrderStatusText(order?.orderStatus), 'title')}
+                            </Text>
+                          </View>
+                          {isStatusDone ? (
+                            renderCustomDescriptionOrDateAndTime(order)
+                          ) : (
+                            <View style={{ width: '25%' }} />
+                          )}
+                        </View>
+                        {order?.orderStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN &&
+                        !isStatusDone ? (
+                          <Text style={styles.statusSubTextStyle}>
+                            {`Apollo agent will arrive on ${slotDate}, ${slotTime1} - ${slotTime2}`}
+                          </Text>
+                        ) : null}
+                        {sampleCollectedArray.includes(order?.orderStatus) && !isStatusDone ? (
+                          <Text style={styles.statusSubTextStyle}>{`Invoice to be Generated`}</Text>
+                        ) : null}
+                        {sampleCollectedArray.includes(order?.orderStatus) &&
+                        isStatusDone &&
+                        orderDetails?.invoiceURL
+                          ? renderInvoiceGenerated()
+                          : null}
+
+                        {REFUND_STATUSES.SUCCESS === order?.orderStatus
+                          ? renderTransactionDetails()
+                          : null}
+
+                        {order?.orderStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED &&
+                        !isStatusDone &&
+                        DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED != orderDetails?.orderStatus
+                          ? renderOrderCompletedHint()
+                          : null}
+                        {!!isOrderCompleted
+                          ? null
+                          : !!showInclusions &&
+                            DROP_DOWN_ARRAY_STATUS.includes(showInclusions?.orderStatus)
+                          ? !!isPOC &&
+                            order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED
+                            ? renderInclusionLevelDropDown(order)
+                            : !!isSampleSubmitted &&
+                              order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED
+                            ? renderInclusionLevelDropDown(order)
+                            : null
+                          : null}
+                        {order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED &&
+                        isStatusDone &&
+                        !!showRateDiagnosticBtn
+                          ? renderFeedbackOption()
+                          : null}
                       </View>
-                      {isStatusDone ? (
-                        renderCustomDescriptionOrDateAndTime(order)
-                      ) : (
-                        <View style={{ width: '25%' }} />
-                      )}
                     </View>
-                    {order?.orderStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN &&
-                    !isStatusDone ? (
-                      <Text style={styles.statusSubTextStyle}>
-                        {`Apollo agent will arrive on ${slotDate}, ${slotTime1} - ${slotTime2}`}
-                      </Text>
-                    ) : null}
-                    {sampleCollectedArray.includes(order?.orderStatus) && !isStatusDone ? (
-                      <Text style={styles.statusSubTextStyle}>{`Invoice to be Generated`}</Text>
-                    ) : null}
-                    {sampleCollectedArray.includes(order?.orderStatus) &&
-                    isStatusDone &&
-                    orderDetails?.invoiceURL
-                      ? renderInvoiceGenerated()
-                      : null}
-
-                    {REFUND_STATUSES.SUCCESS === order?.orderStatus
-                      ? renderTransactionDetails()
-                      : null}
-
-                    {order?.orderStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED &&
-                    !isStatusDone &&
-                    DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED != orderDetails?.orderStatus
-                      ? renderOrderCompletedHint()
-                      : null}
-                    {!!showInclusions &&
-                    DROP_DOWN_ARRAY_STATUS.includes(showInclusions?.orderStatus) &&
-                    index == getAllStatusDone?.length - 1
-                      ? renderInclusionLevelDropDown(order)
-                      : null}
-                    {order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED &&
-                    isStatusDone &&
-                    !!showRateDiagnosticBtn
-                      ? renderFeedbackOption()
-                      : null}
                   </View>
-                </View>
-              </View>
+                ) : null}
+              </>
             );
           })}
         </View>
@@ -616,11 +649,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     return (
       <View>
         <Text style={styles.orderCompText}>
-        {'Reports will be shared over whatsapp & SMS as well'}
+          {'Reports will be shared over whatsapp & SMS as well'}
         </Text>
       </View>
-    )
-  }
+    );
+  };
 
   const renderInclusionLevelDropDown = (order: any) => {
     /**add condition for sample submitted if inclusion level same */
@@ -700,12 +733,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                             </Text>
                           </View>
                           <StatusCard
-                            titleText={
+                            titleText={item?.orderStatus}
+                            customText={
                               item?.itemId == 8 &&
-                              item?.orderStatus ==
+                              item?.orderStatus ===
                                 DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB
-                                ? '2ND SAMPLE PENDING'
-                                : item?.orderStatus
                             }
                           />
                         </View>
