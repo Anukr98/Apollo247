@@ -86,7 +86,7 @@ export const ProductList: React.FC<Props> = ({
       movedFrom === ProductPageViewedSource.SIMILAR_PRODUCTS ||
       movedFrom === ProductPageViewedSource.PDP_ALL_SUSBTITUTES
     ) {
-      navigation.replace(AppRoutes.ProductDetailPage, {
+      navigation.push(AppRoutes.ProductDetailPage, {
         sku,
         movedFrom,
         sectionName,
