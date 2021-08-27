@@ -41,7 +41,6 @@ import WebEngage from 'react-native-webengage';
 import AsyncStorage from '@react-native-community/async-storage';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import loggingLink from '@aph/mobile-patients/src/helpers/loggingLink';
-import DeviceInfo from 'react-native-device-info';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then(
