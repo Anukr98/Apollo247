@@ -742,6 +742,9 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                     : mrpTotal.toFixed(2)}
                 </Text>
               </View>
+              {/**
+               * Code commented below to hide product discount temporarily (APP-12263)
+               */}
               {/* {!newOrders && product_discount > 0 ? (
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                   <Text style={styles.paymentLeftText}>{string.OrderSummery.product_discount}</Text>
@@ -763,6 +766,9 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                   </Text>
                 </View>
               ) : null}
+              {/**
+               * Code commented below to hide coupon discount temporarily (APP-12263)
+               */}
               {/* {coupon_discount > 0 ? (
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                   <Text style={styles.paymentLeftText}>{string.OrderSummery.coupon_discount}</Text>
@@ -951,6 +957,9 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             </View>
           </View>
         ) : null}
+        {/**
+         * Code commented below to hide additional discount temporarily (APP-12263)
+         */}
         {/* {additionalDisount && newOrders && !prescriptionUpload ? (
           <View
             style={[
