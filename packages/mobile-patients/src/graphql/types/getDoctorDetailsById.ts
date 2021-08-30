@@ -16,6 +16,8 @@ export interface getDoctorDetailsById_getDoctorDetailsById_doctorPricing {
   status: PLAN_STATUS | null;
   mrp: number | null;
   appointment_type: APPOINTMENT_TYPE | null;
+  is_cashback_enabled: boolean | null;
+  cashback_amount: number | null;
 }
 
 export interface getDoctorDetailsById_getDoctorDetailsById_availabilityTitle {

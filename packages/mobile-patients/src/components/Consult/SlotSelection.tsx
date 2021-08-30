@@ -220,6 +220,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     physicalConsultMRPPrice,
     physicalConsultSlashedPrice,
     isCircleDoctorOnSelectedConsultMode,
+    cashbackEnabled,
   } = circleDoctorDetails;
   const { circleSubscriptionId } = useShoppingCart();
   const { locationDetails } = useAppCommonData();
@@ -231,7 +232,9 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   const actualPrice = isCircleDoctorOnSelectedConsultMode
     ? isOnlineSelected
       ? circleSubscriptionId
-        ? onlineConsultSlashedPrice
+        ? cashbackEnabled 
+          ? onlineConsultMRPPrice
+          : onlineConsultSlashedPrice
         : onlineConsultMRPPrice
       : circleSubscriptionId
       ? physicalConsultSlashedPrice

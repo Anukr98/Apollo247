@@ -2036,6 +2036,13 @@ export const SavingsIcon: React.FC<IconProps> = (props) => (
   />
 );
 
+export const Tick: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/tick.webp')}
+  />
+);
+
 export const DoctorLocation: React.FC<IconProps> = (props) => (
   <IconBase
     {...props}

@@ -116,7 +116,7 @@
     "react-native-device-info": "^5.4.0",
     "react-native-document-picker": "^3.5.4",
     "react-native-easy-content-loader": "^0.3.2",
-    "react-native-elements": "^1.1.0",
+    "react-native-elements": "^2.3.0",
     "react-native-geolocation-service": "^5.1.1",
     "react-native-gesture-handler": "1.5.0",
     "react-native-html-to-pdf": "^0.9.1",
