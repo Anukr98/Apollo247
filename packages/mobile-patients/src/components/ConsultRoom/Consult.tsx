@@ -148,24 +148,19 @@ const styles = StyleSheet.create({
     width: 60,
   },
   doctorNameStyles: {
-    paddingTop: 40,
-    paddingLeft: 0,
-    textTransform: 'capitalize',
-    ...theme.fonts.IBMPlexSansMedium(18),
-    color: theme.colors.SEARCH_DOCTOR_NAME,
+    paddingTop: 6,
+    paddingLeft: 10,
+    ...theme.viewStyles.text('SB', 14, theme.colors.LIGHT_BLUE, 1, 20),
   },
   doctorSpecializationStyles: {
-    paddingTop: 4,
     paddingBottom: 11.5,
-    paddingLeft: 0,
-    ...theme.fonts.IBMPlexSansSemiBold(12),
-    color: theme.colors.SKY_BLUE,
+    paddingLeft: 10,
+    ...theme.viewStyles.text('R', 12, theme.colors.LIGHT_BLUE, 1, 16),
   },
   consultTextStyles: {
-    paddingVertical: 11.5,
-    paddingLeft: 0,
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.LIGHT_BLUE,
+    paddingTop: 30,
+    paddingLeft: 10,
+    ...theme.viewStyles.text('M', 12, theme.colors.APP_GREEN, 1, 16),
   },
   separatorStyle: {
     borderBottomWidth: 0.5,
@@ -181,23 +176,20 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.yellowTextStyle,
   },
   prepareForConsult: {
-    ...theme.viewStyles.yellowTextStyle,
+    color: theme.colors.WHITE,
     ...theme.fonts.IBMPlexSansBold(13),
     textAlign: 'right',
-    paddingHorizontal: 15,
-    paddingTop: 11,
-    paddingBottom: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
   },
   fillVitalsForConsult: {
     ...theme.fonts.IBMPlexSansMedium(12),
-    textAlign: 'right',
     lineHeight: 15.6,
     opacity: 0.6,
     color: '#02475B',
     letterSpacing: 0.04,
-    paddingHorizontal: 15,
-    paddingTop: 1,
-    paddingBottom: 16,
+    paddingHorizontal: 10,
+    paddingBottom: 10,
   },
   postConsultTextStyles1: {
     ...theme.fonts.IBMPlexSansMedium(12),
@@ -246,7 +238,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginHorizontal: 16,
     borderRadius: 5,
-    marginTop: 14,
+    marginVertical: 14,
   },
   sectionHeaderTitleStyle: {
     ...theme.viewStyles.text('SB', 14, '#0087BA', 1, 18, 0.18),
@@ -352,8 +344,7 @@ const styles = StyleSheet.create({
   },
   textConsultSubtextView: {
     flexDirection: 'row',
-    alignSelf: 'flex-end',
-    paddingBottom: -16,
+    paddingStart: 10,
     opacity: 1,
   },
   completedConsultViewStyle: {
@@ -458,6 +449,88 @@ const styles = StyleSheet.create({
   },
   patientNameText: {
     ...theme.viewStyles.text('M', 10, theme.colors.APP_GREEN, 1, 13)
+  },
+  patientNameHeading: {
+    ...theme.viewStyles.text('M', 12, theme.colors.SKY_BLUE, 1, 16)
+  },
+  patientNameStyle: {
+    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 18),
+    paddingStart: 12,
+  },
+  cancelledView: {
+    flexDirection: 'row',
+    marginBottom: 16,
+    flex: 1,
+    paddingTop: 4,
+  },
+  viewDetailContainer: {
+    backgroundColor: theme.colors.WHITE,
+    borderRadius: 8,
+    marginStart: 24,
+    borderColor: theme.colors.APP_YELLOW,
+    borderWidth: 1
+  },
+  bookAgainView: {
+    backgroundColor: theme.colors.APP_YELLOW, 
+    borderRadius: 8, 
+    marginEnd: 24
+  },
+  prescriptionView: {
+    backgroundColor: theme.colors.WHITE,
+    borderRadius: 8,
+    marginStart: 24,
+    marginBottom: 16,
+    borderColor: theme.colors.APP_YELLOW,
+    borderWidth: 1
+  },
+  textConsultView: {
+    backgroundColor: theme.colors.WHITE, 
+    borderRadius: 8, 
+    marginEnd: 24, 
+    marginBottom: 16, 
+    borderColor: theme.colors.APP_YELLOW,
+    borderWidth: 1
+  },
+  consultStartedView: {
+    alignSelf: 'flex-end',
+    paddingBottom: 16
+  },
+  consultStartedBtn: {
+    backgroundColor: theme.colors.APP_YELLOW, 
+    borderRadius: 8, 
+    marginEnd: 24
+  },
+  anotherSlotBtn: {
+    backgroundColor: theme.colors.APP_YELLOW,
+    borderRadius: 8, 
+    marginEnd: 24,
+    alignSelf: 'flex-end',
+    marginBottom: 16
+  },
+  patientContainer: {
+    flexDirection: 'row', 
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    alignItems: 'center'
+  },
+  listHeader: {
+    flex: 1,
+    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+    height: 50,
+    marginTop: -14, 
+    justifyContent: 'flex-end',
+  },
+  statusText: {
+    position: 'absolute',
+    left: 10,
+    top: 6,
+    ...theme.viewStyles.text(
+      'M',
+      10,
+      theme.colors.APP_RED,
+      1,
+      13
+    ),
   }
 });
 
@@ -508,15 +581,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
   const client = useApolloClient();
 
-  // useEffect(() => {
-  //   if (currentPatient && profile) {
-  //     if (currentPatient.id != profile.id) {
-  //       setPageLoading(true);
-  //       fetchAppointments();
-  //     }
-  //   }
-  //   currentPatient && setProfile(currentPatient!);
-  // }, [currentPatient, props.navigation.state.params]);
   useEffect(() => {
     setPageLoading(true);
     fetchAppointments();
@@ -838,15 +902,14 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       return (
         <View
           style={{
-            flexDirection: 'row',
-            marginBottom: 16,
-            flex: 1,
-            justifyContent: cancelConsulations ? 'flex-end' : 'space-between',
-          }}
+            ...styles.cancelledView,
+             justifyContent: cancelConsulations ? 'flex-end' : 'space-between'
+            }}
         >
           {cancelConsulations ? null : (
             <TouchableOpacity
               activeOpacity={1}
+              style={styles.viewDetailContainer}
               onPress={() => {
                 onPressPastAppointmentViewDetails();
                 fireWebengageEvent(item, 'details');
@@ -856,7 +919,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 style={[
                   styles.prepareForConsult,
                   {
-                    paddingBottom: -16,
+                    color: theme.colors.APP_YELLOW,
                   },
                 ]}
               >
@@ -866,6 +929,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           )}
           <TouchableOpacity
             activeOpacity={1}
+            style={styles.bookAgainView}
             onPress={() => {
               setAppoinmentItem(item);
               item?.doctorInfo?.allowBookingRequest
@@ -886,14 +950,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               fireWebengageEvent(item, cancelConsulations ? 'cancel' : 'followup');
             }}
           >
-            <Text
-              style={[
-                styles.prepareForConsult,
-                {
-                  paddingBottom: -16,
-                },
-              ]}
-            >
+            <Text style={styles.prepareForConsult}>
               {cancelConsulations ? 'BOOK AGAIN' : 'BOOK FOLLOW UP'}
             </Text>
           </TouchableOpacity>
@@ -985,22 +1042,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       };
       return (
         <View>
-          <TouchableOpacity activeOpacity={1} onPress={onPressTextConsult}>
-            <View style={{ flexDirection: 'row', alignSelf: 'flex-end' }}>
-              <ChatBlueIcon style={{ width: 20, height: 20, marginTop: 12 }} />
-              <Text
-                style={[
-                  styles.prepareForConsult,
-                  {
-                    paddingBottom: -16,
-                    paddingLeft: 8,
-                  },
-                ]}
-              >
-                {'TEXT CONSULT'}
-              </Text>
-            </View>
-            {day1.diff(day2, 'days') > 0 ? (
+          {day1.diff(day2, 'days') > 0 ? (
               <View style={styles.textConsultSubtextView}>
                 <Text style={styles.postConsultTextStyles1}>
                   {'You can follow up with the doctor via text '}
@@ -1011,7 +1053,37 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             ) : (
               <View style={{ height: 16 }} />
             )}
-          </TouchableOpacity>
+          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+            <TouchableOpacity
+              style={styles.prescriptionView} 
+              activeOpacity={1}
+              onPress={() => {
+                props.navigation.navigate(AppRoutes.ConsultDetails, {
+                  CaseSheet: item.id,
+                  DoctorInfo: item.doctorInfo,
+                  FollowUp: item.isFollowUp,
+                  appointmentType: item.appointmentType,
+                  DisplayId: item.displayId,
+                  BlobName: '',
+                });
+              }}
+              >
+                <Text
+                  style={{...styles.prepareForConsult, color: theme.colors.APP_YELLOW}}
+                >
+                  {'VIEW PRESCRIPTION'}
+                </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.textConsultView} 
+              activeOpacity={1} onPress={onPressTextConsult}>
+                <Text
+                  style={{...styles.prepareForConsult, color: theme.colors.APP_YELLOW}}
+                >
+                  {'TEXT CONSULT'}
+                </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       );
     };
@@ -1115,27 +1187,25 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         );
       } else
         return (
-          <View style={{ flexDirection: 'row' }}>
-            <TouchableOpacity
-              activeOpacity={1}
-              style={{ flex: 1 }}
-              onPress={onPressActiveUpcomingButtons}
-            >
-              <Text
-                style={[
-                  styles.prepareForConsult,
-                  {
-                    opacity: 1,
-                    paddingBottom: 0,
-                  },
-                ]}
+          <View>
+            <Text style={styles.fillVitalsForConsult}>
+              {getConsultationSubTexts()}
+            </Text>
+            <View style={styles.consultStartedView}>
+              <TouchableOpacity
+                activeOpacity={1}
+                style={styles.consultStartedBtn}
+                onPress={onPressActiveUpcomingButtons}
               >
-                {item.isConsultStarted
-                  ? string.common.continueConsult
-                  : string.common.prepareForConsult}
-              </Text>
-              <Text style={styles.fillVitalsForConsult}>{getConsultationSubTexts()}</Text>
-            </TouchableOpacity>
+                <Text
+                  style={styles.prepareForConsult}
+                >
+                  {item.isConsultStarted
+                    ? string.common.continueConsult
+                    : string.common.prepareForConsult}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         );
     };
@@ -1162,7 +1232,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               {string.common.pickAnotherSlotText}
             </Text>
           </View>
-          <TouchableOpacity activeOpacity={1} onPress={onPressPickAnotherSlot}>
+          <TouchableOpacity
+            style={styles.anotherSlotBtn} 
+            activeOpacity={1} onPress={onPressPickAnotherSlot}>
             <Text style={styles.prepareForConsult}>PICK ANOTHER SLOT</Text>
           </TouchableOpacity>
         </>
@@ -1220,17 +1292,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             <View style={{ flexDirection: 'row' }}>
               <Text
                 style={{
-                  position: 'absolute',
-                  left: 18,
-                  top: 6,
-                  ...theme.viewStyles.text(
-                    'M',
-                    10,
-                    getAppointmentStatusText() === 'Cancelled' ? 
+                  ...styles.statusText,
+                  color: getAppointmentStatusText() === 'Cancelled' ? 
                     theme.colors.APP_RED : theme.colors.APP_YELLOW,
-                    1,
-                    13
-                  ),
                 }}
               >
                 {getAppointmentStatusText()?.toUpperCase()}
@@ -1246,6 +1310,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               )}
               <View style={{height: 1, width: '100%', backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR, position: 'absolute', top: 26 }} />
               <View style={{ flex: 1, marginRight: 16 }}>
+                <Text style={styles.consultTextStyles}>
+                    {item.appointmentType === 'ONLINE' ? 'Online Consultation' : doctorHospitalName}
+                </Text>
                 <Text style={styles.doctorNameStyles} numberOfLines={1}>
                   {item.doctorInfo ? `${item.doctorInfo.displayName}` : ''}
                 </Text>
@@ -1256,31 +1323,19 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 ) : (
                   <Text style={styles.doctorSpecializationStyles}>
                     {item.doctorInfo && item.doctorInfo.specialty
-                      ? item.doctorInfo.specialty.name.toUpperCase()
-                      : ''}
-                    {item.doctorInfo
-                      ? ` | ${item.doctorInfo.experience} YR${
-                          Number(item.doctorInfo.experience) > 1 ? 'S' : ''
-                        }`
+                      ? item.doctorInfo.specialty.name
                       : ''}
                   </Text>
                 )}
-                <View style={styles.separatorStyle} />
                 <View style={styles.onlineIconView}>
-                  <Text style={styles.consultTextStyles}>
-                    {item.appointmentType === 'ONLINE' ? 'Online Consultation' : doctorHospitalName}
-                  </Text>
-                  {item.appointmentType === 'ONLINE' ? (
-                    <CTLightGrayVideo style={{ marginTop: 13, height: 19, width: 19 }} />
-                  ) : (
-                    <PhysicalConsultDarkBlueIcon
-                      style={{ marginTop: 13, height: 14.4, width: 12 }}
-                    />
-                  )}
                 </View>
               </View>
             </View>
-            <View style={[styles.separatorStyle, { marginHorizontal: 16 }]} />
+            <View style={styles.separatorStyle} />
+            <View style={styles.patientContainer}>
+              <Text style={styles.patientNameHeading}>Patient Name</Text>
+              <Text style={styles.patientNameStyle}>{item?.patientName}</Text>
+            </View>
             {item?.isFollowUp === 'true' && followUpMedicineNameText ? (
               <View style={{ marginHorizontal: 16, marginTop: 6 }}>
                 <Text style={{ ...theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0.03) }}>
@@ -1349,14 +1404,16 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     const {id, firstName, lastName} = selectedPatient || {};
     if(id){
       return (
-        <TouchableOpacity
-          onPress={() => selectPatient('ALL')} 
-          style={styles.patientNameView}>
-          <Text style={styles.patientNameText}>
-            {firstName + ' ' + lastName}
-          </Text>
-          <Close style={styles.crossIcon}/>
-        </TouchableOpacity>
+        <View style={styles.listHeader}>
+          <TouchableOpacity
+            onPress={() => selectPatient('ALL')} 
+            style={styles.patientNameView}>
+            <Text style={styles.patientNameText}>
+              {firstName + ' ' + lastName}
+            </Text>
+            <Close style={styles.crossIcon}/>
+          </TouchableOpacity>
+        </View>
       )
     }
   };
@@ -1375,6 +1432,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={renderNoAppointments()}
             ListHeaderComponent={renderHeader()}
+            stickyHeaderIndices={selectedPatient?.id ? [0]: []}
             ListFooterComponent={renderFooter()}
             renderItem={({ item, index }) => renderConsultationCard(item, index)}
           />

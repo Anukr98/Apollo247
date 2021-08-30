@@ -165,6 +165,7 @@ export interface getPatientAllAppointments_getPatientAllAppointments_appointment
 
 export interface getPatientAllAppointments_getPatientAllAppointments_appointments {
   __typename: "PatinetAppointments";
+  patientName: string | null;
   appointmentPayments: (getPatientAllAppointments_getPatientAllAppointments_appointments_appointmentPayments | null)[] | null;
   id: string;
   hideHealthRecordNudge: boolean | null;

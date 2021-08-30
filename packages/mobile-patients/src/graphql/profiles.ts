@@ -397,6 +397,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
     getPatientAllAppointments(patientId: $patientId, patientMobile: $patientMobile, offset: $offset, limit: $limit) {
       totalAppointmentCount
       appointments {
+        patientName
         appointmentPayments {
           id
           amountPaid
