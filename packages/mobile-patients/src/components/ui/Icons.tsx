@@ -2031,3 +2031,17 @@ export const SavingsIcon: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/saving_icon.webp')}
   />
 );
+
+export const DownArrow: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/down_arrow.webp')}
+  />
+);
+
+export const Close: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/green_cross.webp')}
+  />
+);
