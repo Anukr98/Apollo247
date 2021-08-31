@@ -206,13 +206,13 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
   if (hdfcSubscriptionId && hdfcStatus === 'active') {
     packageId.push(`HDFC:${hdfcPlanId}`);
   }
-  if (circleSubscriptionId && circleStatus === 'active') {
-    packageId.push(`APOLLO:${circlePlanId}`);
+  if ((circleSubscriptionId && circleStatus === 'active') || circlePlanSelected?.subPlanId) {
+    packageId.push(`APOLLO:${circlePlanId || circlePlanSelected?.subPlanId}`);
   }
 
   useEffect(() => {
     const data = {
-      packageId: getPackageIds(activeUserSubscriptions)?.join(),
+      packageId: getPackageIds(activeUserSubscriptions, circlePlanSelected)?.join(),
       mobile: g(currentPatient, 'mobileNumber'),
       email: g(currentPatient, 'emailAddress'),
       type: isFromConsult ? 'Consult' : isFromSubscription ? 'Subs' : 'Pharmacy',

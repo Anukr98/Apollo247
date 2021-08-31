@@ -452,12 +452,17 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           productDiscount,
           cartItems,
           setCouponProducts,
-          getPackageIds(activeUserSubscriptions)
+          getPackageIds(activeUserSubscriptions, circlePlanSelected)
         );
         if (response !== 'success') {
           removeCouponWithAlert(response);
         }
       } catch (error) {
+        CommonBugFender(`${AppRoutes.CartSummary}_onPressProceedtoPay`, Error(error));
+        showAphAlert?.({
+          title: string.common.uhOh,
+          description: string.common.somethingWentWrong,
+        });
         return;
       }
     }

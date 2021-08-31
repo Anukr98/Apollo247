@@ -1,4 +1,8 @@
-import { LocationData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  AppCommonDataContextProps,
+  LocationData,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import DeviceInfo from 'react-native-device-info';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   getPlaceInfoByLatLng,
@@ -3293,8 +3297,11 @@ export const getHealthCredits = async () => {
   }
 };
 
-export const getPackageIds = (activeUserSubscriptions: any) => {
-  let packageIds: string[] = [];
+export const getPackageIds = (
+  activeUserSubscriptions: AppCommonDataContextProps['activeUserSubscriptions'],
+  circlePlanSelected?: ShoppingCartContextProps['circlePlanSelected']
+) => {
+  const packageIds: string[] = [];
   activeUserSubscriptions &&
     Object.keys(activeUserSubscriptions)?.forEach((subscription: string) => {
       activeUserSubscriptions?.[subscription]?.forEach((item) => {
@@ -3302,6 +3309,9 @@ export const getPackageIds = (activeUserSubscriptions: any) => {
           packageIds.push(`${subscription?.toUpperCase()}:${item?.plan_id}`);
       });
     });
+  if (circlePlanSelected?.subPlanId) {
+    packageIds.push(circlePlanSelected?.subPlanId);
+  }
   return packageIds;
 };
 
