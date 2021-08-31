@@ -445,7 +445,8 @@
     "cartItemsNotAvailableInStore": "The item(s) you have selected are not available in the nearby stores. Kindly opt for Home Delivery and we will deliver them to you directly at your doorstep.",
     "PickupStoreUnavailable": "Sorry! We’re working hard to get to this area! In the meantime, you can try next nearest pincode.",
     "orderDetailsExpectedDeliverySubTextNonCartOrder": "Delivery date will be updated after successful verification",
-    "noInternetMessage": "There is no internet. Please check your internet connection."
+    "noInternetMessage": "There is no internet. Please check your internet connection.",
+    "missingItemsAlertMessage": "Sorry, the following items are unavailable at your location and will be removed from the cart:"
   },
   "diagnostics": {
     "locationPermissionText": "Allow us to serve you better by entering your area pincode below.",
