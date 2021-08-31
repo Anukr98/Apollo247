@@ -76,6 +76,7 @@ export enum CleverTapEventName {
   USER_CHANGED_LOCATION = 'Change location',
   CONSULT_FILTER_APPLIED = 'Consult Filter applied',
   CONSULT_MEDICAL_DETAILS_FILLED = 'Consult Medical details filled',
+  VIEW_PRESCRIPTION_CLICKED_APPOINTMENT_CARD = 'View Prescription Clicked on Appointment Card',
 
   //DOH events
   CONSULT_DOH_Viewed = 'Consult DOH viewed',
@@ -1998,6 +1999,16 @@ export interface CleverTapEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+  };
+  [CleverTapEventName.VIEW_PRESCRIPTION_CLICKED_APPOINTMENT_CARD]: {
+    'Doctor Name': string;
+    'Doctor Phone Number': string;
+    'Doctor ID': string;
+    'Doctor Speciality Name': string;
+    'Doctor Category': string;
+    'Patient Name': string;
+    'Patient Phone Number': string;
+    'Display ID': string;
   };
   [CleverTapEventName.COMPLETED_AUTOMATED_QUESTIONS]: {
     'Doctor Name': string;

@@ -781,6 +781,33 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     );
   };
 
+  const onViewPrescriptionClick = async (item: Appointment) => {
+    const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
+    const eventAttributes :
+     CleverTapEvents[CleverTapEventName.VIEW_PRESCRIPTION_CLICKED_APPOINTMENT_CARD] = {
+      'Doctor Name': g(item, 'doctorInfo', 'fullName') || '',
+      'Doctor Phone Number': g(item, 'doctorInfo', 'mobileNumber') || '',
+      'Doctor ID': g(item, 'doctorInfo', 'id') || '',
+      'Doctor Speciality Name': g(item, 'doctorInfo', 'specialty', 'name') || '',
+      'Doctor Category': g(item, 'doctorInfo', 'doctorType') || '',
+      'Patient Name': g(item, 'patientName') || '',
+      'Patient Phone Number': `+91${storedPhoneNumber}`,
+      'Display ID': String(g(item, 'displayId')) || '',
+    }
+    console.log({eventAttributes});
+    
+    postCleverTapEvent(CleverTapEventName.VIEW_PRESCRIPTION_CLICKED_APPOINTMENT_CARD,
+       eventAttributes);
+    props.navigation.navigate(AppRoutes.ConsultDetails, {
+      CaseSheet: item.id,
+      DoctorInfo: item.doctorInfo,
+      FollowUp: item.isFollowUp,
+      appointmentType: item.appointmentType,
+      DisplayId: item.displayId,
+      BlobName: '',
+    });
+  }
+
   const renderConsultationCard = (item: Appointment, index: number) => {
     let tomorrowDate = moment(new Date())
       .add(1, 'days')
@@ -1057,16 +1084,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             <TouchableOpacity
               style={styles.prescriptionView} 
               activeOpacity={1}
-              onPress={() => {
-                props.navigation.navigate(AppRoutes.ConsultDetails, {
-                  CaseSheet: item.id,
-                  DoctorInfo: item.doctorInfo,
-                  FollowUp: item.isFollowUp,
-                  appointmentType: item.appointmentType,
-                  DisplayId: item.displayId,
-                  BlobName: '',
-                });
-              }}
+              onPress={() => onViewPrescriptionClick(item)}
               >
                 <Text
                   style={{...styles.prepareForConsult, color: theme.colors.APP_YELLOW}}
