@@ -318,7 +318,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         {!!props.showRescheduleCancel && props.showRescheduleCancel && !props.isHelp ? (
           <TouchableOpacity activeOpacity={1} onPress={props.onPressReschedule}>
             <Text style={[styles.yellowText, { fontSize: screenWidth > 380 ? 14 : 13 }]}>
-              RESCHEDULE
+              RESCHEDULE | CANCEL
             </Text>
           </TouchableOpacity>
         ) : null}
