@@ -32,6 +32,7 @@ export const initiateSDK = (customerId: string, requestId: string, merchantId: s
       clientId: AppConfig.Configuration.clientId,
       customerId: customerId, //Any unique refrences to current customer
       environment: AppConfig.Configuration.jusPayenvironment,
+      eligibilityInInitiate: true,
     },
   };
   //It is highly recommended to initiate SDK from the order summary page
@@ -184,7 +185,6 @@ export const isGooglePayReady = () => {
       sdkPresent: 'ANDROID_GOOGLEPAY',
     },
   };
-  console.log('payload >>', payload);
   HyperSdkReact.process(JSON.stringify(payload));
 };
 
@@ -197,7 +197,6 @@ export const isPhonePeReady = () => {
       sdkPresent: 'ANDROID_PHONEPE',
     },
   };
-  console.log('payload >>', payload);
   HyperSdkReact.process(JSON.stringify(payload));
 };
 
@@ -280,6 +279,61 @@ export const InitiateSavedCardTxn = (
       cardToken: cardInfo?.card_token,
       cardSecurityCode: cvv,
       clientAuthToken: clientAuthToken,
+    },
+  };
+  HyperSdkReact.process(JSON.stringify(payload));
+};
+
+export const CheckCredEligibility = (
+  requestId: string,
+  mobileNo: string,
+  amount: string,
+  clientAuthToken: string
+) => {
+  const payload = {
+    requestId: requestId,
+    service: AppConfig.Configuration.jusPayService,
+    action: 'eligibility',
+    amount: amount, //mandatory
+    clientAuthToken: clientAuthToken,
+    data: {
+      apps: [
+        {
+          checkType: ['cred'],
+          mobile: '9940499788',
+          // udf: {
+          //   key1: 'value1',
+          // },
+          // gatewayReferenceId: {
+          //   cred: 'gatewayRefeerenceIdForCredChecktype',
+          // },
+        },
+      ],
+      cards: [],
+      wallets: [],
+    },
+  };
+  console.log('payload >>>', JSON.stringify(payload));
+
+  HyperSdkReact.process(JSON.stringify(payload));
+};
+
+export const InitiateCredTxn = (
+  requestId: string,
+  clientAuthToken: string,
+  paymentOrderId: string,
+  mobileNo: string
+) => {
+  const payload = {
+    requestId: requestId,
+    service: AppConfig.Configuration.jusPayService,
+    payload: {
+      action: 'appPayTxn',
+      orderId: paymentOrderId,
+      paymentMethod: 'CRED',
+      clientAuthToken: clientAuthToken,
+      application: 'CRED',
+      walletMobileNumber: mobileNo, //required for collect and web-redirect flow
     },
   };
   HyperSdkReact.process(JSON.stringify(payload));

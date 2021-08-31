@@ -21,7 +21,7 @@ export enum AppEnv {
   QA6 = 'QA6',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA2 as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA6 as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -175,7 +175,7 @@ const appStaticVariables = {
     diagnostic: '6ce8d555-9be5-48b5-b4de-06480f9c9cab',
     deliveryStatus: '3df5b586-ce39-478a-a5ec-1e525f5dc42a',
     vaccination: 'd73f3dc4-bc92-11eb-8529-0242ac130003',
-    refund:'9ae4ad26-f559-4350-b81d-8f751be8e33b',
+    refund: '9ae4ad26-f559-4350-b81d-8f751be8e33b',
   },
   MED_ORDER_NON_CART_CALL_ME_OPTION_WHATSAPP_LINK:
     'https://api.whatsapp.com/send?phone=914041894343&text=I%20want%20to%20inform%20the%20pharmacist%20regarding%20my%20medicines',
