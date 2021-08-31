@@ -531,7 +531,10 @@ const styles = StyleSheet.create({
       1,
       13
     ),
-  }
+  },
+  horizontalContainer: {
+    flexDirection: 'row',
+  },
 });
 
 export interface ConsultProps extends NavigationScreenProps {
@@ -778,6 +781,32 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       )
     );
   };
+
+  const onViewPrescriptionClick = async (item: Appointment) => {
+    const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
+    const eventAttributes :
+     CleverTapEvents[CleverTapEventName.VIEW_PRESCRIPTION_CLICKED_APPOINTMENT_CARD] = {
+      'Doctor Name': g(item, 'doctorInfo', 'fullName') || '',
+      'Doctor Phone Number': g(item, 'doctorInfo', 'mobileNumber') || '',
+      'Doctor ID': g(item, 'doctorInfo', 'id') || '',
+      'Doctor Speciality Name': g(item, 'doctorInfo', 'specialty', 'name') || '',
+      'Doctor Category': g(item, 'doctorInfo', 'doctorType') || '',
+      'Patient Name': g(item, 'patientName') || '',
+      'Patient Phone Number': `+91${storedPhoneNumber}`,
+      'Display ID': String(g(item, 'displayId')) || '',
+    }
+    
+    postCleverTapEvent(CleverTapEventName.VIEW_PRESCRIPTION_CLICKED_APPOINTMENT_CARD,
+       eventAttributes);
+    props.navigation.navigate(AppRoutes.ConsultDetails, {
+      CaseSheet: item.id,
+      DoctorInfo: item.doctorInfo,
+      FollowUp: item.isFollowUp,
+      appointmentType: item.appointmentType,
+      DisplayId: item.displayId,
+      BlobName: '',
+    });
+  }
 
   const renderConsultationCard = (item: Appointment, index: number) => {
     let tomorrowDate = moment(new Date())
@@ -1038,6 +1067,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           disableChat: item.doctorInfo && pastAppointmentItem,
         });
       };
+      const isPrescAvailable = item.caseSheet?.some(item => item?.sentToPatient)
       return (
         <View>
           {day1.diff(day2, 'days') > 0 ? (
@@ -1051,27 +1081,22 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             ) : (
               <View style={{ height: 16 }} />
             )}
-          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-            <TouchableOpacity
-              style={styles.prescriptionView} 
-              activeOpacity={1}
-              onPress={() => {
-                props.navigation.navigate(AppRoutes.ConsultDetails, {
-                  CaseSheet: item.id,
-                  DoctorInfo: item.doctorInfo,
-                  FollowUp: item.isFollowUp,
-                  appointmentType: item.appointmentType,
-                  DisplayId: item.displayId,
-                  BlobName: '',
-                });
-              }}
-              >
-                <Text
-                  style={{...styles.prepareForConsult, color: theme.colors.APP_YELLOW}}
+          <View style={{
+            ...styles.horizontalContainer,
+            justifyContent: isPrescAvailable ? 'space-between' : 'flex-end'
+            }}>
+            {isPrescAvailable && 
+              <TouchableOpacity
+                style={styles.prescriptionView} 
+                activeOpacity={1}
+                onPress={() => onViewPrescriptionClick(item)}
                 >
-                  {'VIEW PRESCRIPTION'}
-                </Text>
-            </TouchableOpacity>
+                  <Text
+                    style={{...styles.prepareForConsult, color: theme.colors.APP_YELLOW}}
+                  >
+                    {'VIEW PRESCRIPTION'}
+                  </Text>
+              </TouchableOpacity>}
             <TouchableOpacity
               style={styles.textConsultView} 
               activeOpacity={1} onPress={onPressTextConsult}>

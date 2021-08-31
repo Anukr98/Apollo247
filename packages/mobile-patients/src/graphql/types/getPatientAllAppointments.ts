@@ -158,6 +158,7 @@ export interface getPatientAllAppointments_getPatientAllAppointments_appointment
   followUpAfterInDays: string | null;
   version: number | null;
   doctorType: DoctorType | null;
+  sentToPatient: boolean | null;
   medicinePrescription: (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription | null)[] | null;
   diagnosticPrescription: (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_diagnosticPrescription | null)[] | null;
   blobName: string | null;
