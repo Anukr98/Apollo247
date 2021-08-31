@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
   },
   nameManufacturer: { justifyContent: 'space-between', flex: 0.9 },
   manufacturerText: {
-    ...theme.viewStyles.text('R', 13, '#01475B', 1, 17),
+    ...theme.viewStyles.text('R', 12, '#01475B', 1, 17),
     marginTop: 2,
     marginBottom: 7,
   },
