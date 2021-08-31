@@ -574,10 +574,63 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     }
   }
 
+  const missingItemsInShipment = (
+    inventoryData: GetTatResponse247['response']['items'],
+    updatedCartItems: ShoppingCartItem[]
+  ) => {
+    const missingItems: ShoppingCartItem[] = [];
+    if (inventoryData?.length) {
+      const shipmentSkus = inventoryData.map((items: any) => items?.sku);
+      updatedCartItems
+        .filter((item: ShoppingCartItem) => !shipmentSkus.includes(item.id))
+        .map((item: ShoppingCartItem) => {
+          missingItems.push(item);
+        });
+    }
+    return missingItems;
+  };
+
+  const showMissingCartItemsAlert = (missingCartItems: ShoppingCartItem[]) => {
+    let message = string.medicine_cart.missingItemsAlertMessage + '\n';
+    missingCartItems.map((item: ShoppingCartItem) => {
+      if (item.name) message += '\n\u2022 ' + item.name;
+    });
+    showAphAlert!({
+      title: 'Hi!',
+      description: message,
+      titleStyle: theme.viewStyles.text('SB', 18, '#890000'),
+      unDismissable: true,
+      CTAs: [
+        {
+          text: string.medicine_cart.tatUnServiceableAlertChangeCTA,
+          type: 'orange-link',
+          onPress: showAddressPopup,
+        },
+        {
+          text: string.medicine_cart.tatUnServiceableAlertRemoveCTA,
+          type: 'orange-link',
+          onPress: () => removeMissingCartItems(missingCartItems),
+        },
+      ],
+    });
+  };
+
+  const removeMissingCartItems = (missingCartItems: ShoppingCartItem[]) => {
+    hideAphAlert?.();
+    const missingSkus = missingCartItems.map((items: ShoppingCartItem) => items?.id);
+    setCartItems?.(cartItems.filter((item: ShoppingCartItem) => !missingSkus.includes(item.id)));
+  };
+
   async function updatePricesAfterTat(
     inventoryData: GetTatResponse247['response']['items'],
     updatedCartItems: ShoppingCartItem[]
   ) {
+    // check for missing items in TAT response and show alert to user.
+    const missingCartItems = missingItemsInShipment(inventoryData, updatedCartItems);
+    if (missingCartItems?.length) {
+      showMissingCartItemsAlert(missingCartItems);
+      return;
+    }
     const updatePrices = AppConfig.Configuration.CART_UPDATE_PRICE_CONFIG.updatePrices;
     const updatePricePercent = AppConfig.Configuration.CART_UPDATE_PRICE_CONFIG.percentage;
     const updatePricesNotAllowed = updatePrices === 'No';
