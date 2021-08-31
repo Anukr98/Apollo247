@@ -25,6 +25,10 @@ import moment from 'moment';
 import { AppointmentFilterObject } from '@aph/mobile-patients/src/components/ConsultRoom/Consult';
 import _ from 'lodash';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
+import { useAllCurrentPatients } from '../../hooks/authHooks';
+import { AppRoutes } from '../NavigatorContainer';
+import { NavigationParams, NavigationRoute, NavigationScreenProp } from 'react-navigation';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   container: {
@@ -112,7 +116,7 @@ const styles = StyleSheet.create({
   },
   settingsColumn: {
     flex: 1,
-    padding: 15,
+    paddingHorizontal: 15,
   },
   selectedMenuItemText: {
     ...theme.viewStyles.text('M', 14, theme.colors.BONDI_BLUE),
@@ -120,274 +124,129 @@ const styles = StyleSheet.create({
   availabilityTextStyle: {
     ...theme.viewStyles.text('M', 15, '#02475b'),
   },
+  patientView: {
+    backgroundColor: theme.colors.WHITE,
+    borderRadius: 8, 
+    paddingHorizontal: 8, 
+    paddingVertical: 12, 
+    marginTop: 10,
+    shadowColor: 'rgba(0,0,0,0.2)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  patientSelectedView: {
+    backgroundColor: theme.colors.APP_GREEN,
+    borderRadius: 8, 
+    paddingHorizontal: 8, 
+    paddingVertical: 12, 
+    marginTop: 10,
+    shadowColor: 'rgba(0,0,0,0.2)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  patientText: {
+    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE)
+  },
+  patientSelectedText: {
+    ...theme.viewStyles.text('M', 14, theme.colors.WHITE)
+  },
+  addPatientText: {
+    ...theme.viewStyles.text('M', 14, theme.colors.APP_YELLOW)
+  },
 });
 
 interface AppointmentFilterSceneProps {
-  setFilter: (filter: AppointmentFilterObject) => void;
-  filter: AppointmentFilterObject;
-  setIsFilterOpen: (filterOpen: boolean) => void;
-  filterDoctorsList: string[];
-  filterSpecialtyList: string[];
-  selectedDate: Date | null;
-  setSelectedDate: (selectedDate: Date | null) => void;
+  selectedPatient: any;
+  selectPatient: (patient: any) => void;
+  dismissModal: () => void;
+  navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
 }
 
 export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (props) => {
   const {
-    filter,
-    setFilter,
-    setIsFilterOpen,
-    filterDoctorsList,
-    filterSpecialtyList,
-    selectedDate,
-    setSelectedDate,
+    selectedPatient,
+    selectPatient,
+    dismissModal,
   } = props;
-  const availabilityList = strings.appointments.availabilityList;
-  const appointmentStatus = strings.appointments.appointmentStatus;
-  const [showCalander, setshowCalander] = useState<boolean>(false);
-  const [localFilter, setLocalFilter] = useState<AppointmentFilterObject>(_.cloneDeep(filter));
-  const [date, setDate] = useState<Date>(new Date());
-  const [selectedDateText, setSelectedDateText] = useState('');
-
-  const filterValues = (valueList: Array<string>, value: string) => {
-    if (valueList.includes(value)) {
-      valueList = valueList.filter((val) => val !== value);
-    } else {
-      valueList.push(value);
-    }
-    return valueList;
-  };
-
-  const setFilterValues = (type: string, value: string, remDate: boolean = false) => {
-    if (type === 'appointmentStatus') {
-      const appointmentStatus = filterValues(localFilter?.appointmentStatus || [], value);
-      setLocalFilter({ ...localFilter, appointmentStatus });
-    } else if (type === 'availability') {
-      const availability = availabilityFilterValue(localFilter?.availability || [], value, remDate);
-      setLocalFilter({ ...localFilter, availability });
-    } else if (type === 'doctor') {
-      const doctorsList = filterValues(localFilter?.doctorsList || [], value);
-      setLocalFilter({ ...localFilter, doctorsList });
-    } else if (type === 'specialty') {
-      const specialtyList = filterValues(localFilter?.specialtyList || [], value);
-      setLocalFilter({ ...localFilter, specialtyList });
-    }
-  };
-
-  const availabilityFilterValue = (
-    valueList: Array<string>,
-    value: string,
-    remDate: boolean = true
-  ) => {
-    if (remDate && valueList.includes(dateFormatText(selectedDate!))) {
-      const ind = valueList.indexOf(dateFormatText(selectedDate!));
-      valueList.splice(ind, 1, value);
-    } else if (valueList.includes(value)) {
-      valueList = valueList.filter((val) => val !== value);
-    } else {
-      valueList.push(value);
-    }
-    return valueList;
-  };
-
-  useEffect(() => {
-    selectedDate && setSelectedDateText(dateFormatText(selectedDate));
-  }, []);
-
-  const dateFormatText = (filterDate: Date) => {
-    return moment(filterDate).format('DD/MM/YYYY');
-  };
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
 
   const [menuItems, setMenuItems] = useState([
-    { id: '0', name: 'Appointment Status' },
-    { id: '1', name: 'Date' },
-    { id: '2', name: 'Doctor' },
-    { id: '3', name: 'Speciality' },
+    { id: '0', name: 'Patient Name' },
   ]);
-  const renderFilterSection = (id: number) => {
-    const options =
-      id === 0
-        ? appointmentStatus
-        : id === 1
-        ? availabilityList
-        : id === 2
-        ? filterDoctorsList
-        : filterSpecialtyList;
-    const filterTypeValue =
-      id === 0
-        ? 'appointmentStatus'
-        : id === 1
-        ? 'availability'
-        : id === 2
-        ? 'doctor'
-        : 'specialty';
-    const optionsSelected =
-      id === 0
-        ? localFilter?.appointmentStatus
-        : id === 1
-        ? localFilter?.availability
-        : id === 2
-        ? localFilter?.doctorsList
-        : localFilter?.specialtyList;
-
+  const [patient, setPatient] = useState<any>(selectedPatient);
+  
+  const renderPatientName = (item?: any) => {
+    let isSelected = item?.id === patient?.id;
+    if(item == 'ALL') {
+      isSelected = item == patient;
+    } 
+    
+    const {firstName, lastName} = item || {};
     return (
-      <>
-        <View style={[styles.optionsView]}>
-          <Modal
-            animationType="slide"
-            transparent={true}
-            visible={showCalander}
-            onRequestClose={() => {
-              setshowCalander(false);
-            }}
-            onDismiss={() => {
-              setshowCalander(false);
-            }}
-          >
-            <View style={styles.calendarMainView}>
-              <View style={styles.calendarMainViewStyle}>
-                <View>
-                  <Text style={styles.availabilityTextStyle}>Availability</Text>
-                </View>
-                <TouchableOpacity
-                  onPress={() => {
-                    setshowCalander(false);
-                  }}
-                >
-                  <CloseCal style={styles.closeIconStyle} />
-                </TouchableOpacity>
-              </View>
-              <View style={styles.calendarViewStyle} />
-              <CalendarView
-                styles={styles.calendarStyle}
-                date={date}
-                onPressDate={(date) => {
-                  setSelectedDateText(dateFormatText(date));
-                  const availability = availabilityFilterValue(
-                    localFilter?.availability || [],
-                    dateFormatText(date)
-                  );
-                  setLocalFilter({ ...localFilter, availability });
-                  setSelectedDate(date);
-                  setshowCalander(false);
-                }}
-                showWeekView={false}
-              />
-            </View>
-          </Modal>
-          {options.map((name, index) => (
-            <Button
-              title={name}
-              style={[
-                styles.buttonStyle,
-                isOptionSelected(optionsSelected || [], name)
-                  ? { backgroundColor: theme.colors.APP_GREEN }
-                  : null,
-              ]}
-              titleTextStyle={[
-                styles.buttonTextStyle,
-                isOptionSelected(optionsSelected || [], name)
-                  ? { color: theme.colors.WHITE }
-                  : null,
-              ]}
-              onPress={() => {
-                setFilterValues(filterTypeValue, name);
-              }}
-            />
-          ))}
-          {id === 1 && selectedDateText ? (
-            <Button
-              title={selectedDateText}
-              style={[
-                styles.buttonStyle,
-                selectedDateText ? { backgroundColor: theme.colors.APP_GREEN } : null,
-              ]}
-              titleTextStyle={[
-                styles.buttonTextStyle,
-                selectedDateText ? { color: theme.colors.WHITE } : null,
-              ]}
-              onPress={() => {
-                setSelectedDate(null);
-                setSelectedDateText('');
-                const availability = availabilityFilterValue(
-                  localFilter?.availability || [],
-                  selectedDateText,
-                  false
-                );
-                setLocalFilter({ ...localFilter, availability });
-              }}
-            />
-          ) : null}
-          {id === 1 ? (
-            <TouchableOpacity
-              style={{ position: 'absolute', right: 10, top: 15 }}
-              activeOpacity={1}
-              onPress={() => {
-                setshowCalander(!showCalander);
-              }}
-            >
-              {showCalander ? <CalendarClose /> : <CalendarShow />}
-            </TouchableOpacity>
-          ) : null}
-        </View>
-      </>
-    );
-  };
-
-  const isOptionSelected = (type: Array<string>, value: string) => {
-    return type.includes(value) ? true : false;
-  };
-
-  const renderSelectedView = (selectedItem: string) => {
-    switch (selectedItem) {
-      case '0':
-        return renderFilterSection(0);
-      case '1':
-        return renderFilterSection(1);
-      case '2':
-        return renderFilterSection(2);
-      case '3':
-        return renderFilterSection(3);
-    }
-  };
+      <TouchableOpacity
+        onPress={() => setPatient(item || 'ALL')} 
+        style={isSelected ? styles.patientSelectedView : styles.patientView}>
+        <Text style={isSelected ? styles.patientSelectedText : styles.patientText}>
+          {firstName ? firstName + ' ' + lastName : 'All Patients'}
+        </Text>
+      </TouchableOpacity>
+    )
+  }
+  
+  const renderAddPatient = () => {
+    return (
+      <TouchableOpacity
+        onPress={() => {
+          props.navigation.navigate(AppRoutes.EditProfile, {
+            isEdit: false,
+            screenName: string.consult,
+            mobileNumber: currentPatient && currentPatient!.mobileNumber,
+          });
+        }} 
+        style={styles.patientView}>
+        <Text style={styles.addPatientText}>
+          {'Add Patient'}
+        </Text>
+      </TouchableOpacity>
+    )
+  }
 
   // this holds the keys of the menuItems for the view to know which category is currently being rendered.
-  const [selectedItem, setSelectedItem] = useState('0');
   const filtersCard = () => {
     return (
       <View style={styles.content}>
         <View style={styles.menuColumn}>
           {menuItems.map((item, index) => {
             return (
-              <TouchableOpacity
+              <View
                 key={item.id}
-                onPress={() => setSelectedItem(item.id)}
-                style={[styles.menuItem, item.id === selectedItem ? styles.selectedMenuItem : null]}
+                style={[styles.menuItem, styles.selectedMenuItem]}
               >
-                <Text
-                  style={[
-                    item.id === selectedItem ? styles.selectedMenuItemText : styles.menuItemText,
-                    { textAlign: 'center' },
-                  ]}
-                >
+                <Text style={styles.menuItemText}>
                   {item.name}
                 </Text>
-              </TouchableOpacity>
+              </View>
             );
           })}
           <View
             style={{ display: 'flex', backgroundColor: theme.colors.CARD_BG, height: '100%' }}
           />
         </View>
-        <View style={styles.settingsColumn}>{renderSelectedView(selectedItem)}</View>
+        <View style={styles.settingsColumn}>
+          {renderPatientName('ALL')}
+          {allCurrentPatients.map((item: any) =>
+            renderPatientName(item)
+          )}
+          {renderAddPatient()}
+        </View>
       </View>
     );
   };
 
-  const closePop = () => {
-    setFilter(localFilter);
-    setIsFilterOpen(false);
-  };
   const renderTopView = () => {
     return (
       <Header
@@ -401,33 +260,18 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
-              const initialAppointmentFilterObject: AppointmentFilterObject = {
-                appointmentStatus: [],
-                availability: [],
-                doctorsList: [],
-                specialtyList: [],
-              };
-              setLocalFilter(initialAppointmentFilterObject);
-              setFilter(initialAppointmentFilterObject);
-              setSelectedDate(null);
-              setSelectedDateText('');
+              setPatient(null);
             }}
           >
             <Reload />
           </TouchableOpacity>
         }
-        onPressLeftIcon={() => closePop()}
+        onPressLeftIcon={dismissModal}
       />
     );
   };
 
   const bottomButton = () => {
-    const filterLength =
-      (localFilter && localFilter.availability?.length) ||
-      (localFilter && localFilter.appointmentStatus?.length) ||
-      (localFilter && localFilter.doctorsList?.length) ||
-      (localFilter && localFilter.specialtyList?.length) ||
-      0;
     return (
       <StickyBottomComponent
         style={{ backgroundColor: theme.colors.WHITE, elevation: 20, height: '12%' }}
@@ -436,10 +280,10 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
           title={'APPLY FILTERS'}
           style={{ flex: 1, marginHorizontal: 40, marginTop: 15 }}
           onPress={() => {
-            setFilter(localFilter);
-            setIsFilterOpen(false);
+            patient && selectPatient(patient)
+            dismissModal();
           }}
-          disabled={filterLength > 0 ? false : true}
+          disabled={!patient}
         />
       </StickyBottomComponent>
     );
@@ -448,10 +292,7 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
   return (
     <SafeAreaView style={styles.container}>
       {renderTopView()}
-      <ScrollView style={{ flex: 1 }} bounces={false}>
-        {filtersCard()}
-        <View style={{ height: 160 }} />
-      </ScrollView>
+      {filtersCard()}
       {bottomButton()}
     </SafeAreaView>
   );
