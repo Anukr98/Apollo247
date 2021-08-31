@@ -535,7 +535,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const getHomePageWidgets = async (cityId: string) => {
     setSectionLoading(true);
     try {
-      const result: any = await getDiagnosticHomePageWidgets('diagnostic');
+      const result: any = await getDiagnosticHomePageWidgets('diagnostic', Number(cityId));
       if (result?.data?.success && result?.data?.data?.length > 0) {
         const sortWidgets = result?.data?.data?.sort(
           (a: any, b: any) =>
