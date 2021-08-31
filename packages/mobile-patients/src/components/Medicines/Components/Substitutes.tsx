@@ -28,6 +28,7 @@ import {
   CleverTapEventName,
   ProductPageViewedSource,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface SubstitutesProps {
   sku: string;
@@ -195,7 +196,6 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
         image,
         is_prescription_required,
         name,
-        is_express,
         tatDuration,
         price,
         tatPrice,
@@ -203,6 +203,8 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
       } = substitute;
       const quantity = getItemQuantity(sku);
       const manufacturerText = nameFormater(manufacturer, 'title');
+      const is_express =
+        parseInt(tatDuration?.[0]) <= AppConfig.Configuration.EXPRESS_MAXIMUM_HOURS;
       return (
         <TouchableOpacity
           onPress={() => {
@@ -369,7 +371,7 @@ const styles = StyleSheet.create({
   },
   nameManufacturer: { justifyContent: 'space-between', flex: 0.9 },
   manufacturerText: {
-    ...theme.viewStyles.text('R', 13, '#01475B', 1, 17),
+    ...theme.viewStyles.text('R', 12, '#01475B', 1, 17),
     marginTop: 2,
     marginBottom: 7,
   },
