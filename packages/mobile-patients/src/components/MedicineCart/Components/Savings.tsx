@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { CircleLogo, Down, Up } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { Down, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import React, { useState } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ListItem } from 'react-native-elements';
 
 export interface SavingsProps {}
 
@@ -15,214 +16,188 @@ export const Savings: React.FC<SavingsProps> = (props) => {
     cartTotalCashback,
     circleMembershipCharges,
     coupon,
-    couponProducts,
+    deliveryCharges,
   } = useShoppingCart();
-  const [showCareDetails, setShowCareDetails] = useState(true);
-  const [showCareSavings, setShowCareSavings] = useState(true);
-
-  const deliveryFee = AppConfig.Configuration.DELIVERY_CHARGES;
-  const totalSavings =
+  const [savingDetailsVisible, setSavingDetailsVisible] = useState(true);
+  const deliveryFeeSavings = deliveryCharges ? 0 : AppConfig.Configuration.DELIVERY_CHARGES;
+  const totalSaved =
     coupon && !coupon?.circleBenefits
-      ? deliveryFee + productDiscount + couponDiscount
+      ? deliveryFeeSavings + productDiscount + couponDiscount
       : isCircleSubscription || circleMembershipCharges
-      ? deliveryFee + productDiscount + couponDiscount + cartTotalCashback
+      ? deliveryFeeSavings + productDiscount + couponDiscount + cartTotalCashback
       : productDiscount;
+  const totalCouldSaveByCircle =
+    AppConfig.Configuration.DELIVERY_CHARGES +
+    cartTotalCashback +
+    productDiscount +
+    (coupon?.circleBenefits ? couponDiscount : 0);
 
-  function getSavings() {
-    return Number(totalSavings).toFixed(2);
-  }
-
-  function saveMessage() {
+  const renderYouSavedCard = () => {
     return (
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={() => {
-          if (!!coupon && !isCircleSubscription) {
-            setShowCareSavings(!showCareSavings);
-          } else {
-            setShowCareDetails(!showCareDetails);
-          }
-        }}
-      >
-        <View style={styles.rowSpaceBetween}>
-          <Text style={styles.youText}>
-            You <Text style={styles.saveText}>saved ₹{getSavings()}</Text> on your purchase
-          </Text>
-          <Down
-            style={{
-              height: 15,
-              transform: [{ rotate: showCareDetails && showCareSavings ? '180deg' : '0deg' }],
-            }}
+      !!totalSaved && (
+        <View style={styles.youSavedCard}>
+          <ListItem
+            onPress={() => setSavingDetailsVisible(!savingDetailsVisible)}
+            containerStyle={savingDetailsVisible ? styles.youSavedItem : styles.youSavedHidden}
+            bottomDivider={savingDetailsVisible}
+            title={
+              <Text>
+                <Text style={styles.sherpaBlueText}>{'You'}</Text>
+                <Text style={styles.saveText}>{` saved ₹${totalSaved.toFixed(2)} `}</Text>
+                <Text style={styles.sherpaBlueText}>{'on your purchase.'}</Text>
+              </Text>
+            }
+            rightIcon={savingDetailsVisible ? <Up /> : <Down />}
+            Component={TouchableOpacity}
           />
+          {savingDetailsVisible && renderSavingDetails()}
         </View>
-      </TouchableOpacity>
+      )
     );
-  }
+  };
 
-  function careSubscribeMessage() {
-    let circleSaving = (cartTotalCashback + deliveryFee + Number(productDiscount)).toFixed(2);
-    if (couponProducts.length) {
-      circleSaving = (cartTotalCashback + deliveryFee).toFixed(2);
-    }
-    if (cartTotalCashback > 1 && showCareDetails && Number(couponDiscount) < Number(circleSaving)) {
-      return (
-        <View style={styles.careMessageCard}>
+  const renderSavingDetails = () => {
+    const isCircle = isCircleSubscription || circleMembershipCharges;
+    return (
+      <>
+        {!!isCircle && (
+          <ListItem
+            containerStyle={styles.listItem}
+            titleStyle={styles.sherpaBlueText}
+            title={
+              <Text>
+                <Text style={styles.yellowText}>{'Circle '}</Text>
+                <Text style={styles.sherpaBlueText}>{'Membership Cashback'}</Text>
+              </Text>
+            }
+            rightTitle={`₹${cartTotalCashback.toFixed(2)}`}
+            rightTitleStyle={styles.yellowText}
+          />
+        )}
+        {!!isCircle && (
+          <ListItem
+            containerStyle={styles.listItem}
+            titleStyle={styles.sherpaBlueText}
+            title={
+              <Text>
+                <Text style={styles.yellowText}>{'Circle '}</Text>
+                <Text style={styles.sherpaBlueText}>{'Delivery'}</Text>
+              </Text>
+            }
+            rightTitle={`₹${deliveryFeeSavings.toFixed(2)}`}
+            rightTitleStyle={styles.yellowText}
+          />
+        )}
+        {!!productDiscount && (
+          <ListItem
+            containerStyle={styles.listItem}
+            titleStyle={styles.sherpaBlueText}
+            title={'Product Discount'}
+            rightTitle={`₹${productDiscount.toFixed(2)}`}
+            rightTitleStyle={styles.sherpaBlueText}
+          />
+        )}
+        {!!couponDiscount && (
+          <ListItem
+            containerStyle={styles.listItem}
+            titleStyle={styles.sherpaBlueText}
+            title={'Coupon Savings'}
+            rightTitle={`₹${couponDiscount.toFixed(2)}`}
+            rightTitleStyle={styles.sherpaBlueText}
+          />
+        )}
+        {!isCircle && !!deliveryFeeSavings && (
+          <ListItem
+            containerStyle={styles.listItem}
+            titleStyle={styles.sherpaBlueText}
+            title={'Delivery Savings'}
+            rightTitle={`₹${deliveryFeeSavings.toFixed(2)}`}
+            rightTitleStyle={styles.sherpaBlueText}
+          />
+        )}
+        <ListItem
+          topDivider
+          containerStyle={styles.listItemTotal}
+          rightTitle={`₹${totalSaved.toFixed(2)}`}
+          rightTitleStyle={styles.sherpaBlueBoldText}
+        />
+      </>
+    );
+  };
+
+  const renderYouCouldSaveCard = () => {
+    return (
+      totalCouldSaveByCircle > totalSaved && (
+        <View style={styles.youCouldSaveCard}>
           <Text style={styles.youText}>
-            You could <Text style={styles.saveText}>save ₹{circleSaving}</Text> on your purchase
-            with
+            <Text>{'You could'}</Text>
+            <Text style={styles.saveText}>{` save ₹${totalCouldSaveByCircle.toFixed(2)} `}</Text>
+            <Text>{'on your purchase with'}</Text>
           </Text>
           <CircleLogo style={styles.circleLogo} />
         </View>
-      );
-    } else {
-      return <></>;
-    }
-  }
-
-  function careSavings() {
-    return (
-      <View style={styles.careSavingsContainer}>
-        <View style={styles.rowSpaceBetween}>
-          <View
-            style={{
-              flexDirection: 'row',
-            }}
-          >
-            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>
-              <Text style={theme.viewStyles.text('R', 14, '#FC9916', 1, 20)}>Circle </Text>
-              Membership Cashback
-            </Text>
-          </View>
-          <Text style={theme.viewStyles.text('R', 14, '#FC9916', 1, 20)}>₹{cartTotalCashback}</Text>
-        </View>
-        {!!deliveryFee && (
-          <View style={[styles.rowSpaceBetween, { marginTop: 10 }]}>
-            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>
-              <Text style={theme.viewStyles.text('R', 14, '#FC9916', 1, 20)}>Circle </Text>
-              Delivery
-            </Text>
-            <Text style={theme.viewStyles.text('R', 14, '#FC9916', 1, 20)}>
-              ₹{deliveryFee.toFixed(2)}
-            </Text>
-          </View>
-        )}
-        {!!productDiscount && (
-          <View style={[styles.rowSpaceBetween, { marginTop: 10 }]}>
-            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>Product Discount</Text>
-            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>
-              ₹{productDiscount.toFixed(2)}
-            </Text>
-          </View>
-        )}
-        {!!coupon && showCareSavings && renderCurrentSavings()}
-        {showCareSavings && (
-          <View style={styles.totalAmountContainer}>
-            <Text style={styles.totalAmount}>₹{totalSavings.toFixed(2)}</Text>
-          </View>
-        )}
-      </View>
-    );
-  }
-
-  const renderCurrentSavings = () => {
-    return (
-      <View style={styles.careSavingsContainer}>
-        {!!couponDiscount && (
-          <View style={[styles.rowSpaceBetween]}>
-            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>Coupon savings</Text>
-            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>
-              ₹{couponDiscount.toFixed(2)}
-            </Text>
-          </View>
-        )}
-        {!!productDiscount && (
-          <View style={[styles.rowSpaceBetween, { marginTop: 5 }]}>
-            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>Product Discount</Text>
-            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>
-              ₹{productDiscount.toFixed(2)}
-            </Text>
-          </View>
-        )}
-      </View>
+      )
     );
   };
 
   return (
     <>
-      {totalSavings > 0 && (
-        <View style={styles.savingsCard}>
-          {saveMessage()}
-          {(isCircleSubscription || !!circleMembershipCharges) &&
-            (!coupon || coupon?.circleBenefits) &&
-            showCareDetails &&
-            careSavings()}
-        </View>
-      )}
-      {!isCircleSubscription && careSubscribeMessage()}
+      {renderYouSavedCard()}
+      {renderYouCouldSaveCard()}
     </>
   );
 };
 
+const { APP_GREEN, WHITE, CARD_BG, LIGHT_BLUE, APP_YELLOW, SHERPA_BLUE } = theme.colors;
+const { card, text } = theme.viewStyles;
 const styles = StyleSheet.create({
-  savingsCard: {
-    ...theme.viewStyles.cardViewStyle,
-    marginTop: 10,
-    marginHorizontal: 13,
-    borderRadius: 5,
+  youSavedCard: {
+    ...card(14, 12, 5, WHITE),
     marginBottom: 0,
-    paddingHorizontal: 15,
-    paddingVertical: 9,
-    borderColor: '#00B38E',
+    borderColor: APP_GREEN,
     borderWidth: 1,
   },
-  careMessageCard: {
+  youCouldSaveCard: {
+    ...card(14, 12, 5, CARD_BG),
+    marginTop: 0,
     flexDirection: 'row',
-    ...theme.viewStyles.cardViewStyle,
-    borderRadius: 5,
-    marginHorizontal: 14,
-    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-    paddingHorizontal: 15,
-    paddingVertical: 9,
-    elevation: 3,
-  },
-  careSavingsContainer: {
-    borderTopColor: '#979797',
-    borderTopWidth: 0.5,
-    paddingVertical: 10,
-    marginTop: 10,
-  },
-  rowSpaceBetween: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  totalAmountContainer: {
-    borderTopColor: '#979797',
-    borderTopWidth: 0.5,
-    paddingTop: 5,
-    marginTop: 10,
-  },
-  totalAmount: {
-    ...theme.viewStyles.text('B', 14, '#02475B', 1, 20),
-    textAlign: 'right',
   },
   youText: {
-    ...theme.fonts.IBMPlexSansRegular(13),
-    lineHeight: 17,
-    color: '#02475B',
+    ...text('R', 13, LIGHT_BLUE, 1, 17),
   },
   saveText: {
-    ...theme.fonts.IBMPlexSansSemiBold(13),
-    lineHeight: 17,
-    color: '#00B38E',
+    ...text('SB', 13, APP_GREEN, 1, 17),
   },
   circleLogo: {
     resizeMode: 'contain',
     width: 45,
     height: 20,
   },
-  circleLogoTwo: {
-    resizeMode: 'contain',
-    width: 40,
-    height: 20,
+  youSavedItem: {
+    paddingHorizontal: 0,
+    paddingTop: 0,
+    paddingBottom: 10,
+    marginBottom: 10,
+  },
+  youSavedHidden: {
+    padding: 0,
+  },
+  listItem: {
+    padding: 0,
+    margin: 0,
+  },
+  listItemTotal: {
+    padding: 0,
+    paddingTop: 5,
+    marginTop: 10,
+  },
+  sherpaBlueText: {
+    ...text('R', 14, SHERPA_BLUE, 1, 24),
+  },
+  yellowText: {
+    ...text('R', 14, APP_YELLOW, 1, 24),
+  },
+  sherpaBlueBoldText: {
+    ...text('SB', 14, LIGHT_BLUE, 1, 24),
   },
 });
