@@ -8,7 +8,8 @@ import {
   ApolloPartnerIcon,
   InfoBlue,
   CircleLogo,
-  ShareYellowDocIcon,
+  DoctorLocation,
+  DoctorLanguage,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   CommonBugFender,
@@ -94,8 +95,8 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   drImageBackground: {
-    height: 95,
-    width: 95,
+    height: 74,
+    width: 74,
     justifyContent: 'center',
   },
   drImageMargins: {
@@ -104,6 +105,7 @@ const styles = StyleSheet.create({
   },
   doctorNameStyles: {
     paddingTop: 0,
+    paddingBottom: 4,
     paddingLeft: 0,
     flex: 1,
     textTransform: 'capitalize',
@@ -111,27 +113,26 @@ const styles = StyleSheet.create({
     color: theme.colors.SEARCH_DOCTOR_NAME,
   },
   doctorSpecializationStyles: {
-    paddingTop: 4,
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansSemiBold(12),
     color: theme.colors.SKY_BLUE,
     textTransform: 'uppercase',
   },
   doctorLocation: {
+    flex: 1,
     paddingTop: 2,
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansMedium(12),
     color: theme.colors.SEARCH_EDUCATION_COLOR,
   },
   educationTextStyles: {
-    paddingTop: 10,
+    paddingTop: 8,
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansMedium(12),
     color: theme.colors.SEARCH_EDUCATION_COLOR,
   },
   careLogo: {
     alignSelf: 'center',
-    marginBottom: 10,
     width: 30,
     height: 18,
     marginTop: 2,
@@ -169,17 +170,45 @@ const styles = StyleSheet.create({
     marginRight: 2,
   },
   doctorProfile: {
-    height: 80,
-    borderRadius: 40,
-    width: 80,
+    height: 60,
+    borderRadius: 30,
+    width: 60,
     alignSelf: 'center',
   },
   doctorNameViewStyle: {
     flexDirection: 'row',
-    paddingTop: 35,
+    paddingTop: 29,
     justifyContent: 'space-between',
     flex: 1,
   },
+  doctorInfoIcon: {
+    height: 14,
+    width: 14,
+    marginEnd: 6,
+  },
+  consultBtnContainer: {
+    flex: 1, 
+    justifyContent: 'flex-end',
+    marginTop: 7 
+  },
+  infoContainer: {
+    flexDirection: 'row', 
+    alignItems: 'center',
+    paddingHorizontal: 16, 
+    paddingBottom: 7,
+  },
+  doctorLanguage: {
+    flex: 1,
+    paddingTop: 2,
+    paddingLeft: 0,
+    ...theme.fonts.IBMPlexSansMedium(12),
+    color: theme.colors.SKY_BLUE,
+  },
+  doctorInfoContainer: { 
+    flex: 1, 
+    paddingRight: 16, 
+    marginBottom: 16,
+   },
   BORButtonTextStyle: {
     ...theme.viewStyles.text('B', 13, '#FC9916', 1, 24),
     textTransform: 'uppercase',
@@ -212,22 +241,14 @@ export interface DoctorCardProps extends NavigationScreenProps {
   doctorsNextAvailability?:
     | (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability | null)[]
     | null;
-  numberOfLines?: number;
   availableModes?: ConsultMode | null;
   callSaveSearch?: string;
   onPlanSelected?: (() => void) | null;
   selectedConsultMode?: ConsultMode | null;
-  onPressShare?: (
-    rowData:
-      | SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors
-      | getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors
-      | getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor
-      | any
-  ) => void;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
-  const rowData = props.rowData;
+  const rowData = props.rowData;  
   const { selectedConsultMode } = props;
   const ctaBannerText = rowData?.availabilityTitle;
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
@@ -430,7 +451,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const renderSpecialities = () => {
     return (
       <View>
-        <Text style={styles.doctorSpecializationStyles}>{rowData?.specialtydisplayName || ''}</Text>
+        <Text style={styles.doctorSpecializationStyles} numberOfLines={1}>
+          {rowData?.specialtydisplayName || ''}
+        </Text>
         <Text style={styles.doctorSpecializationStyles}>
           {rowData?.experience} YR
           {Number(rowData?.experience) != 1 ? 'S Exp.' : ' Exp.'}
@@ -643,18 +666,17 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               </View>
             </View>
 
-            <View style={{ flex: 1, paddingRight: 16, marginBottom: 16 }}>
-              <View style={styles.doctorNameViewStyle}>
-                <Text style={styles.doctorNameStyles}>{rowData.displayName}</Text>
-                <TouchableOpacity
-                  activeOpacity={1}
-                  onPress={() => props.onPressShare && props.onPressShare(rowData)}
-                  style={{ paddingLeft: 5 }}
-                >
-                  <ShareYellowDocIcon style={{ width: 24, height: 24 }} />
-                </TouchableOpacity>
-              </View>
+            <View style={styles.doctorInfoContainer}>
+              <Text
+                style={[styles.doctorNameStyles, styles.doctorNameViewStyle]} 
+                numberOfLines={1}
+              >
+                {rowData.displayName}
+              </Text>
               {renderSpecialities()}
+              <Text style={styles.educationTextStyles} numberOfLines={1}>
+                {rowData.qualification}
+              </Text>
               {isCircleDoctorOnSelectedConsultMode
                 ? renderCareDoctorsFee()
                 : calculatefee(rowData, isBoth, isOnline)}
@@ -673,23 +695,23 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   )}
                 </Text>
               ) : null}
-              <Text
-                style={[
-                  styles.educationTextStyles,
-                  { marginTop: isCircleDoctorOnSelectedConsultMode ? 10 : 0 },
-                ]}
-                numberOfLines={props.numberOfLines}
-              >
-                {rowData.qualification}
-              </Text>
-              {!!clinicAddress && (
-                <Text style={styles.doctorLocation} numberOfLines={props.numberOfLines}>
-                  {clinicAddress}
-                </Text>
-              )}
             </View>
           </View>
-          <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+          <View style={styles.infoContainer}>
+            <DoctorLanguage style={styles.doctorInfoIcon} />
+            <Text style={styles.doctorLanguage} numberOfLines={1}>
+              {rowData?.languages.join(', ')}
+            </Text>
+          </View>
+          {!!clinicAddress && 
+          <View style={styles.infoContainer}>
+            <DoctorLocation style={styles.doctorInfoIcon} />
+            <Text style={styles.doctorLocation} numberOfLines={1}>
+              {clinicAddress}
+            </Text>
+          </View>
+          }
+          <View style={styles.consultBtnContainer}>
             {props.displayButton && (
               <View
                 style={[

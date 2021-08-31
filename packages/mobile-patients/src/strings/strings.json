@@ -1255,5 +1255,20 @@
     "dose_2_alert": "Please make sure that the difference between 1st and 2nd dose is as per Govt. guidelines. If difference in 2nd dose is less than Govt. guideline, you will not be given 2nd dose.",
     "verify_title": "VERIFY",
     "submit_title": "SUBMIT "
+  },
+  "consultPayment": {
+    "appointmentDetails": "Appointment Details",
+    "knowConsultation": "Know About Your Consultation",
+    "receiveCallText": "You will receive a call from the doctor on the Apollo247 App.",
+    "beforeConsultation": "Before Consultation",
+    "consultation": "Consultation",
+    "postConsultation": "Post Consultation",
+    "detailedGuidelines": "* For detailed consultation guidelines",
+    "stepOne": "Join Consult Room and upload your medical records \n",
+    "stepOneSubheading": "* Reschedule & Cancellation allowed upto 15 mins prior to the appointment time.",
+    "stepTwo": "Consultation with Doctor via audio/video call.\nAccess your prescription in the Consult Room.",
+    "stepThree": "If required, share necessary reports and text updates.",
+    "viewGuideline": "View Consultation Guidelines \n",
+    "download": "Download",
   }
 }
