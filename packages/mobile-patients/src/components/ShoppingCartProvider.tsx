@@ -598,11 +598,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     if (cartItems.length) {
       // calculate circle cashback
       cartItems.forEach((item) => {
-        const finalPrice = item.specialPrice
-          ? item.price - item.specialPrice
-            ? item.specialPrice
-            : item.price
-          : item.price;
+        const finalPrice = (coupon && item.couponPrice) || item.specialPrice || item.price;
         let cashback = 0;
         const type_id = item?.productType?.toUpperCase();
         if (!!circleCashback && !!circleCashback?.[type_id]) {
