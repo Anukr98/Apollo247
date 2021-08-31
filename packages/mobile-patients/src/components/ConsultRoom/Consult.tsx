@@ -795,7 +795,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       'Patient Phone Number': `+91${storedPhoneNumber}`,
       'Display ID': String(g(item, 'displayId')) || '',
     }
-    console.log({eventAttributes});
     
     postCleverTapEvent(CleverTapEventName.VIEW_PRESCRIPTION_CLICKED_APPOINTMENT_CARD,
        eventAttributes);
