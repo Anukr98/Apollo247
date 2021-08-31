@@ -278,7 +278,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
 
   useEffect(() => {
     if (!!coupon && !coupon?.circleBenefits) {
-      setCircleMembershipCharges && setCircleMembershipCharges(0);
       setIsCircleSubscription?.(false);
     } else if (coupon?.circleBenefits) {
       setIsCircleSubscription?.(true);
