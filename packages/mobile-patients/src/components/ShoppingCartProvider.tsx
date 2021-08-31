@@ -601,7 +601,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         const finalPrice = (coupon && item.couponPrice) || item.specialPrice || item.price;
         let cashback = 0;
         const type_id = item?.productType?.toUpperCase();
-        if (!!circleCashback && !!circleCashback?.[type_id]) {
+        if (!!circleCashback && !!circleCashback?.[type_id] && !item.isFreeCouponProduct) {
           const circleCashBack =
             circleCashback?.[`${type_id}~${item?.subcategory}`] || circleCashback?.[type_id];
           cashback = finalPrice * item.quantity * (circleCashBack / 100);
@@ -1121,6 +1121,14 @@ export const ShoppingCartProvider: React.FC = (props) => {
       setisProuctFreeCouponApplied(false);
     }
   }, [cartTotal, coupon]);
+
+  useEffect(() => {
+    const discount = shipments.reduce(
+      (currTotal, currItem) => currTotal + (currItem?.productDiscount || 0),
+      0
+    );
+    setProductDiscount(discount);
+  }, [shipments]);
 
   const deductProductDiscount = (products: CartProduct[]) => {
     let discount = 0;
