@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "apollo:codegen": "apollo codegen:generate ./src/graphql/types/ --outputFlat --addTypename --endpoint=https://qa5api.apollo247.com/graphql --target=typescript --queries=./src/graphql/**.ts",
+    "apollo:codegen": "apollo codegen:generate ./src/graphql/types/ --outputFlat --addTypename --endpoint=https://aph-staging-api.apollo247.com/graphql --target=typescript --queries=./src/graphql/**.ts",
     "build": "npm run build:android & npm run build:ios",
     "build:android": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/",
     "build:ios": "rm -rf ios/bundle/; mkdir ios/bundle; react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/bundle/main.jsbundle --assets-dest ios/bundle",
