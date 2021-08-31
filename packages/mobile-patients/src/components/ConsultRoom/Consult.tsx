@@ -583,7 +583,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
   useEffect(() => {
     setPageLoading(true);
-    fetchAppointments();
+    fetchAppointments(true);
   }, []);
 
   useEffect(() => {
@@ -720,12 +720,28 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         },
       });
       const {appointments, totalAppointmentCount} = data?.getPatientAllAppointments || {};
-      let isOnlineFutureOnly: any = [];
-      // isOnlineFutureOnly = appointments?.activeAppointments?.filter(
-      //   (it) =>
-      //     moment(it?.appointmentDateTime).isAfter(moment(new Date())) &&
-      //     it?.appointmentType == 'ONLINE'
-      // ).length;
+      const futureOnlineAppts: Appointment[] = appointments?.filter(
+        (it) =>
+          moment(it?.appointmentDateTime).isAfter(moment(new Date())) &&
+          it?.appointmentType == 'ONLINE'
+      ) || [];
+      if (futureOnlineAppts.length && reload) {
+        if (Platform.OS === 'ios') {
+          callPermissions();
+        } else {
+          callPermissions(() => {
+            overlyCallPermissions(
+              futureOnlineAppts[0]?.patientName || '',
+              futureOnlineAppts[0]?.doctorInfo?.displayName || '',
+              showAphAlert,
+              hideAphAlert,
+              true,
+              () => {},
+              'Appointment Screen'
+            );
+          });
+        }
+      }
       if(reload){
         appointments && setAllAppointments([...appointments]);
       } else {
@@ -734,24 +750,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       setTotalApptCount(totalAppointmentCount || 0);
       setLoading(false);
       setPageLoading(false);
-
-      // if (isOnlineFutureOnly > 0) {
-      //   if (Platform.OS === 'ios') {
-      //     callPermissions();
-      //   } else {
-      //     callPermissions(() => {
-      //       overlyCallPermissions(
-      //         currentPatient!.firstName!,
-      //         activeAppointments[0]?.doctorInfo?.displayName || '',
-      //         showAphAlert,
-      //         hideAphAlert,
-      //         true,
-      //         () => {},
-      //         'Appointment Screen'
-      //       );
-      //     });
-      //   }
-      // }
     } catch (error) {
       setLoading(false);
       setPageLoading(false);
