@@ -29,6 +29,7 @@ import {
   ProductPageViewedSource,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import moment from 'moment';
 
 export interface SubstitutesProps {
   sku: string;
@@ -164,6 +165,17 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
     </View>
   );
 
+  const renderDeliveryDateTime = (tat: string) => (
+    <View>
+      <Text style={theme.viewStyles.text('M', 12, '#01475b', 1, 15, 0)}>Delivery By</Text>
+      <Text style={theme.viewStyles.text('M', 12, '#01475b', 1, 15, 0)}>
+        {moment(new Date(tat), AppConfig.Configuration.MED_DELIVERY_DATE_TAT_API_FORMAT).format(
+          AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT
+        )}
+      </Text>
+    </View>
+  );
+
   const renderPrice = (price: number, tatPrice: number) => {
     const isTatPriceLess = tatPrice < price;
     const percentageDiscount = isTatPriceLess ? ((price - tatPrice) / price) * 100 : 0;
@@ -196,6 +208,7 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
         image,
         is_prescription_required,
         name,
+        tat,
         tatDuration,
         price,
         tatPrice,
@@ -223,7 +236,7 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
                 {renderTitle(name)}
                 <Text style={styles.manufacturerText}>{manufacturerText}</Text>
               </View>
-              {is_express && renderExpress(tatDuration[0])}
+              {is_express ? renderExpress(tatDuration[0]) : renderDeliveryDateTime(tat)}
             </View>
             <View style={{ justifyContent: 'space-between' }}>
               {renderPrice(price, tatPrice)}
@@ -265,6 +278,7 @@ const styles = StyleSheet.create({
   cardStyle: {
     ...theme.viewStyles.cardViewStyle,
     marginVertical: 20,
+    marginHorizontal: 1,
     paddingVertical: 10,
   },
   heading: {
