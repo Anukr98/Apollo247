@@ -156,7 +156,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
 
   useEffect(() => {
     const data = {
-      packageId: getPackageIds(activeUserSubscriptions, circlePlanSelected)?.join(),
+      packageId: getPackageIds(activeUserSubscriptions)?.join(),
       mobile: g(currentPatient, 'mobileNumber'),
       email: g(currentPatient, 'emailAddress'),
       type: isDiag ? 'Diag' : 'Pharmacy',
@@ -191,7 +191,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
         quantity: item.quantity,
         specialPrice: item.specialPrice || item.price,
       })),
-      packageIds: getPackageIds(activeUserSubscriptions, circlePlanSelected),
+      packageIds: getPackageIds(activeUserSubscriptions),
       email: g(currentPatient, 'emailAddress'),
     };
     validateConsultCoupon(data)

@@ -725,7 +725,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         quantity: item?.quantity,
         specialPrice: item?.specialPrice || item?.price,
       })),
-      packageIds: getPackageIds(activeUserSubscriptions, circlePlanSelected),
+      packageIds: getPackageIds(activeUserSubscriptions),
       email: g(currentPatient, 'emailAddress'),
     };
     setLoading(true);
