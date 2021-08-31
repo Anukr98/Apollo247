@@ -531,7 +531,10 @@ const styles = StyleSheet.create({
       1,
       13
     ),
-  }
+  },
+  horizontalContainer: {
+    flexDirection: 'row',
+  },
 });
 
 export interface ConsultProps extends NavigationScreenProps {
@@ -1065,6 +1068,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           disableChat: item.doctorInfo && pastAppointmentItem,
         });
       };
+      const isPrescAvailable = item.caseSheet?.some(item => item?.sentToPatient)
       return (
         <View>
           {day1.diff(day2, 'days') > 0 ? (
@@ -1078,18 +1082,22 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             ) : (
               <View style={{ height: 16 }} />
             )}
-          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-            <TouchableOpacity
-              style={styles.prescriptionView} 
-              activeOpacity={1}
-              onPress={() => onViewPrescriptionClick(item)}
-              >
-                <Text
-                  style={{...styles.prepareForConsult, color: theme.colors.APP_YELLOW}}
+          <View style={{
+            ...styles.horizontalContainer,
+            justifyContent: isPrescAvailable ? 'space-between' : 'flex-end'
+            }}>
+            {isPrescAvailable && 
+              <TouchableOpacity
+                style={styles.prescriptionView} 
+                activeOpacity={1}
+                onPress={() => onViewPrescriptionClick(item)}
                 >
-                  {'VIEW PRESCRIPTION'}
-                </Text>
-            </TouchableOpacity>
+                  <Text
+                    style={{...styles.prepareForConsult, color: theme.colors.APP_YELLOW}}
+                  >
+                    {'VIEW PRESCRIPTION'}
+                  </Text>
+              </TouchableOpacity>}
             <TouchableOpacity
               style={styles.textConsultView} 
               activeOpacity={1} onPress={onPressTextConsult}>
