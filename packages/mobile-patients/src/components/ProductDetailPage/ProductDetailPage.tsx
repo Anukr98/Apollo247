@@ -1146,6 +1146,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   onNotifyMeClick={onNotifyMeClick}
                   isPharma={isPharma}
                   navigation={props.navigation}
+                  setShowSubstituteInfo={setShowSubstituteInfo}
                 />
               </View>
               {isPharma && (
