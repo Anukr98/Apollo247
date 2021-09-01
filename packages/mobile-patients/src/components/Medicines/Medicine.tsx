@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   searchInput: { minHeight: undefined, paddingVertical: 8 },
-  searchInputContainer: { marginBottom: 15, marginTop: 5 },
+  searchInputContainer: { marginTop: 5, marginBottom: 0 },
   sliderDotStyle: {
     height: 8,
     width: 8,
