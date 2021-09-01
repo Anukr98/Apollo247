@@ -753,7 +753,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   );
 
   const withAll = allCartItems?.filter((item: DiagnosticsCartItem) =>
-    isDiagnosticCircleSubscription
+    isDiagnosticCircleSubscription || isCircleAddedToCart
       ? item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.ALL
       : item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.CIRCLE ||
         item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
@@ -819,7 +819,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
       deliveryCharges +
       couponDiscount -
       cartSaving -
-      (isDiagnosticCircleSubscription ? circleSaving : 0) +
+      (isDiagnosticCircleSubscription || isCircleAddedToCart ? circleSaving : 0) +
       (!!distanceCharges ? distanceCharges : 0)
     ).toFixed(2)
   );

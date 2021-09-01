@@ -104,6 +104,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const isDiagnostic = businessLine === 'diagnostics';
   const disableCod = props.navigation.getParam('disableCOD');
   const orderResponse = props.navigation.getParam('orderResponse');
+  const isCircleAddedToCart = props.navigation.getParam('isCircleAddedToCart');
   const { currentPatient } = useAllCurrentPatients();
   const [banks, setBanks] = useState<any>([]);
   const [isTxnProcessing, setisTxnProcessing] = useState<boolean>(false);
@@ -148,7 +149,11 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       //modify -> always show prepaid
       // modify -> not to show cod
       setShowPrepaid(AppConfig.Configuration.Enable_Diagnostics_Prepaid);
-      isDiagnosticModify ? setShowCOD(false) : fetchDiagnosticPaymentMethods();
+      isDiagnosticModify
+        ? setShowCOD(false)
+        : isCircleAddedToCart
+        ? setShowCOD(false)
+        : fetchDiagnosticPaymentMethods();
     }
   }, []);
 
@@ -561,6 +566,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           eventAttributes,
           paymentStatus: paymentStatus,
           isModify: isDiagnosticModify ? modifiedOrder : null,
+          isCircleAddedToCart: isCircleAddedToCart,
         });
         break;
       case 'consult':

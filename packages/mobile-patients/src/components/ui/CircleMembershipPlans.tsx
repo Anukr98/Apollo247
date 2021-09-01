@@ -701,6 +701,8 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         ? AppConfig.Configuration.CIRCLE_LANDING_URL
         : isDiagnosticJourney || from === string.banner_context.DIAGNOSTIC_HOME
         ? AppConfig.Configuration.CIRCLE_TEST_URL
+        : from === string.banner_context.DIAGNOSTIC_CART
+        ? AppConfig.Configuration.CIRLCE_PHARMA_URL
         : AppConfig.Configuration.CIRLCE_PHARMA_URL,
       source: source,
       circleEventSource,
@@ -785,7 +787,9 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   };
 
   const getButtonTitle = () =>
-    buyNow && from !== string.banner_context.PHARMACY_HOME
+    buyNow && from === string.banner_context.DIAGNOSTIC_CART
+      ? string.circleDoctors.addToCart
+      : buyNow && from !== string.banner_context.PHARMACY_HOME
       ? purchaseWithHC
         ? string.circleDoctors.upgradeWithHC.replace(
             '{hc}',
