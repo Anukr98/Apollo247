@@ -1276,6 +1276,7 @@ export const GET_PLATINUM_DOCTOR = gql`
         doctorfacility
         fee
         specialistPluralTerm
+        languages
         specialistPluralTerm
         specialtydisplayName
         doctorType

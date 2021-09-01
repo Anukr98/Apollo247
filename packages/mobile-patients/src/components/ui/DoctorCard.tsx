@@ -529,6 +529,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   if (rowData) {
     const clinicAddress = rowData?.doctorfacility;
+    const languages = rowData?.languages;
     return (
       <TouchableOpacity
         key={rowData.id}
@@ -710,12 +711,14 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               ) : null}
             </View>
           </View>
-          <View style={styles.infoContainer}>
-            <DoctorLanguage style={styles.doctorInfoIcon} />
-            <Text style={styles.doctorLanguage} numberOfLines={1}>
-              {rowData?.languages.join(', ')}
-            </Text>
-          </View>
+          {languages &&
+            <View style={styles.infoContainer}>
+              <DoctorLanguage style={styles.doctorInfoIcon} />
+              <Text style={styles.doctorLanguage} numberOfLines={1}>
+                {languages?.join(', ')}
+              </Text>
+            </View>
+          }
           {!!clinicAddress && (
             <View style={styles.infoContainer}>
               <DoctorLocation style={styles.doctorInfoIcon} />
