@@ -130,8 +130,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { healthCredits } = useFetchHealthCredits(businessLine);
   const { paymentMethods, cardTypes, fetching } = useGetPaymentMethods(paymentId);
   const { savedCards } = useFetchSavedCards(customerId);
-  // const { clientAuthToken } = useGetClientAuthToken(customerId);
-  const clientAuthToken = 'tkn_689a5303f33b4b328b0b95e0cf52fb22';
+  const { clientAuthToken } = customerId && useGetClientAuthToken(customerId, businessLine);
 
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
@@ -190,7 +189,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }, [clientAuthToken]);
 
   const checkCredEligibility = () => {
-    console.log('check eliginility <<<<<<<<<<<<<<<');
     const mobileNo = currentPatient?.mobileNumber;
     CheckCredEligibility(currentPatient?.id, mobileNo, String(amount), clientAuthToken);
   };
@@ -214,7 +212,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const handleEventListener = (resp: any) => {
     var data = JSON.parse(resp);
     var event: string = data.event || '';
-    console.log('event >>>', event);
     switch (event) {
       case 'process_result':
         var payload = data.payload || {};

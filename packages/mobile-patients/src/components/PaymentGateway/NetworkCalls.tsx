@@ -313,8 +313,7 @@ export const CheckCredEligibility = (
       wallets: [],
     },
   };
-  console.log('payload >>>', JSON.stringify(payload));
-
+  console.log('eligibility call payload >>>', JSON.stringify(payload));
   HyperSdkReact.process(JSON.stringify(payload));
 };
 
