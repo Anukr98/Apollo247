@@ -96,7 +96,7 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
       {!isAlternative && (
         <View style={styles.substituteMsgContainer}>
           <Text style={styles.subHeading}>
-            Substitutes are products with same molecular compositionn
+            Substitutes are products with same molecular composition
           </Text>
           <TouchableOpacity
             onPress={() => {
