@@ -49,6 +49,10 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
   const [showSubstitues, setShowSubstitues] = useState<boolean>(!isProductInStock);
 
   useEffect(() => {
+    setShowSubstitues(!isProductInStock);
+  }, [isProductInStock]);
+
+  useEffect(() => {
     if (showSubstitues) {
       fireCleverTapEvent();
     }
@@ -170,7 +174,7 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
       <Text style={theme.viewStyles.text('M', 12, '#01475b', 1, 15, 0)}>Delivery By</Text>
       <Text style={theme.viewStyles.text('M', 12, '#01475b', 1, 15, 0)}>
         {moment(new Date(tat), AppConfig.Configuration.MED_DELIVERY_DATE_TAT_API_FORMAT).format(
-          AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT
+          'D MMM | hh:mm A'
         )}
       </Text>
     </View>
