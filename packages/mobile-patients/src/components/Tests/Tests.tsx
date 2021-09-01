@@ -174,7 +174,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { OrderCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/OrderCardCarousel';
 import { PrescriptionCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/PrescriptionCardCarousel';
 import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
-
+import { Cache } from "react-native-cache";
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_2.webp'),
@@ -303,6 +303,29 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const [serviceableObject, setServiceableObject] = useState({} as any);
 
+  const cache = new Cache({
+    namespace: "tests",
+    policy: {
+        maxEntries: 100
+    },
+    backend: AsyncStorage
+});
+useEffect(() => {
+  if (!(bannerData && bannerData?.length) ) {
+    setBannerDataToCache()
+  }
+}, [bannerData])
+
+  
+const getDataFromCache = async() => {
+    const banner_data = await cache.get('banner_data');
+    setBannerData && setBannerData(banner_data)
+}
+
+const setBannerDataToCache = async() => {
+  const banner_data = bannerData && bannerData?.length ? bannerData : [];
+  await cache.set('banner_data', banner_data);
+}
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
       query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
@@ -393,6 +416,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       fetchPatientClosedOrders();
       fetchPatientPrescriptions();
       getUserBanners();
+      getDataFromCache()
     }
   }, [currentPatient]);
 
