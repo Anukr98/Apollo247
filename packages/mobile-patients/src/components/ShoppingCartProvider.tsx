@@ -799,8 +799,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
     deliveryAddressId &&
     addresses?.length &&
     grandTotal &&
-    grandTotal !== deliveryCharges
-      ? grandTotal >= minimumCartValue
+    grandTotal - (circleMembershipCharges || 0) !== deliveryCharges
+      ? grandTotal - (circleMembershipCharges || 0) >= minimumCartValue
       : true;
 
   const uploadPrescriptionRequired =

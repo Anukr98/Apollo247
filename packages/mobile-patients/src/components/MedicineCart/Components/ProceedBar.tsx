@@ -31,6 +31,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
     orders,
     minimumCartValue,
     isValidCartValue,
+    circleMembershipCharges,
   } = useShoppingCart();
   const {
     onPressAddDeliveryAddress,
@@ -135,7 +136,8 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
   };
 
   const renderMinimumCartMessage = () => {
-    const toAdd = (minimumCartValue - grandTotal)?.toFixed(2);
+    const cartTotal = circleMembershipCharges ? grandTotal - circleMembershipCharges : grandTotal;
+    const toAdd = (minimumCartValue - cartTotal)?.toFixed(2);
     return (
       <View style={styles.minCartContainer}>
         <Text style={styles.minCartMsg}>{`Add items worth ₹${toAdd} more to place an order`}</Text>
