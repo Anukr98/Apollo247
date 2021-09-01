@@ -161,6 +161,9 @@ import { MedicineSearchEvents } from '@aph/mobile-patients/src/components/Medici
 import { NudgeMessage } from '@aph/mobile-patients/src/components/Medicines/Components/NudgeMessage';
 
 const styles = StyleSheet.create({
+  scrollViewStyle: {
+    marginBottom: 35,
+  },
   buyAgain: {
     paddingVertical: 10,
     paddingHorizontal: 0,
@@ -2040,7 +2043,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       });
 
     return (
-      <ScrollView removeClippedSubviews={true} bounces={false}>
+      <ScrollView removeClippedSubviews={true} bounces={false} style={styles.scrollViewStyle}>
         <CategoryAndSpecialOffers
           containerStyle={styles.categoryAndSpecialOffers}
           onPressShopByCategory={() => setCategoryTreeVisible(true)}
