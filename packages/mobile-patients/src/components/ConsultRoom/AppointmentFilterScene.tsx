@@ -173,7 +173,7 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
     dismissModal,
   } = props;
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
-
+  
   const [menuItems, setMenuItems] = useState([
     { id: '0', name: 'Patient Name' },
   ]);
@@ -239,7 +239,7 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
         <View style={styles.settingsColumn}>
           {renderPatientName('ALL')}
           {allCurrentPatients.map((item: any) =>
-            renderPatientName(item)
+            item?.id != '+ADD MEMBER' && renderPatientName(item)
           )}
           {renderAddPatient()}
         </View>
