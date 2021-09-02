@@ -698,6 +698,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
     props.navigation.navigate(AppRoutes.TestReportViewScreen, {
       data: filterApplied === FILTER_TYPE.PARAMETER_NAME ? selectedItem?.data : selectedItem,
       labResults: true,
+      testReport: testReportsData,
     });
   };
 

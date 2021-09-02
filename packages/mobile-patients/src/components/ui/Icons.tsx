@@ -333,6 +333,18 @@ export const SearchAreaIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_search_area_icon.webp')} />
 );
 
+export const BarChar: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/barChart.webp')} />
+);
+
+export const RedArrow: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/Red_Up_Arrow.webp')} />
+);
+
+export const RedDownArrow: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/Red_Down_Arrow.webp')} />
+);
+
 export const TestTimeIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_test_time.webp')} />
 );
@@ -1823,7 +1835,11 @@ export const DisabledTickIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_tick_disabled.webp')} />
 );
 export const PromoCashback: React.FC<IconProps> = (props) => (
-  <IconBase style={{width: 200, height: 75}} {...props} source={require('./icons/promoCashback2x.webp')} />
+  <IconBase
+    style={{ width: 200, height: 75 }}
+    {...props}
+    source={require('./icons/promoCashback2x.webp')}
+  />
 );
 
 export const Msgs: React.FC<IconProps> = (props) => (

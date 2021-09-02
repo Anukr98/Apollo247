@@ -49,7 +49,7 @@ target 'ApolloPatient' do
   pod 'SDWebImage', '~> 5.0'
   pod 'FMDB'
   pod 'AFNetworking', '~> 3.2.1'
-  pod 'Charts', '~> 3.0.4'
+  pod 'Charts', '~> 3.3.0'
   pod 'TGFoursquareLocationDetail'
   pod 'IQKeyboardManager'
   pod 'youtube-ios-player-helper', '~> 0.1.4'
@@ -75,6 +75,7 @@ target 'ApolloPatient' do
   pod 'react-native-netinfo', :path => '../node_modules/@react-native-community/netinfo'
   pod 'opentok-react-native', :path => '../node_modules/opentok-react-native'
   pod 'react-native-webengage', :path => '../node_modules/react-native-webengage'
+  pod 'RNCharts', :path => '../node_modules/react-native-charts-wrapper'
   pod 'WebEngage', '~> 5.0.2'
 
   pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-community/async-storage'

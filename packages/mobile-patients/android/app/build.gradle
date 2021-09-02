@@ -221,6 +221,7 @@ dependencies {
     implementation project(':react-native-appsflyer')
     implementation project(':react-native-splash-screen')
     implementation project(':react-native-camera')
+    implementation project(':react-native-charts-wrapper')
     implementation 'com.google.firebase:firebase-messaging:17.3.2'
     implementation project(':@react-native-community_progress-bar-android')
     implementation project(':@react-native-community_progress-view')

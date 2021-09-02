@@ -3426,7 +3426,7 @@ export const GET_MEDICAL_PRISM_RECORD_V3 = gql`
             result
             range
             outOfRange
-            # resultDate
+            resultDate
           }
           fileUrl
           testResultFiles {
@@ -3808,6 +3808,22 @@ export const GET_INDIVIDUAL_TEST_RESULT_PDF = gql`
   query getIndividualTestResultPdf($patientId: ID!, $recordId: String!, $sequence: String!) {
     getIndividualTestResultPdf(patientId: $patientId, recordId: $recordId, sequence: $sequence) {
       url
+    }
+  }
+`;
+
+export const GET_VISUALIZATION_DATA = gql`
+  query getVisualizationData($uhid: String!, $serviceName: String!, $parameterName: String!) {
+    getVisualizationData(uhid: $uhid, serviceName: $serviceName, parameterName: $parameterName) {
+      errorCode
+      errorMsg
+      response {
+        parameterName
+        result
+        unit
+        range
+        resultDate
+      }
     }
   }
 `;
