@@ -117,6 +117,7 @@ const styles = StyleSheet.create({
   settingsColumn: {
     flex: 1,
     paddingHorizontal: 15,
+    marginBottom: 200,
   },
   selectedMenuItemText: {
     ...theme.viewStyles.text('M', 14, theme.colors.BONDI_BLUE),
@@ -207,7 +208,7 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
             mobileNumber: currentPatient && currentPatient!.mobileNumber,
           });
         }} 
-        style={styles.patientView}>
+        style={{...styles.patientView, marginBottom: 20 }}>
         <Text style={styles.addPatientText}>
           {'Add Patient'}
         </Text>
@@ -236,13 +237,14 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
             style={{ display: 'flex', backgroundColor: theme.colors.CARD_BG, height: '100%' }}
           />
         </View>
-        <View style={styles.settingsColumn}>
+        <ScrollView 
+          style={styles.settingsColumn}>
           {renderPatientName('ALL')}
           {allCurrentPatients.map((item: any) =>
             item?.id != '+ADD MEMBER' && renderPatientName(item)
           )}
           {renderAddPatient()}
-        </View>
+        </ScrollView>
       </View>
     );
   };
