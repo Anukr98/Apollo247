@@ -815,7 +815,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
     const getConsultationSubTexts = () => {
       return !item?.isConsultStarted
-        ? string.common.fillVitalsText
+        ? string.common.mentionReports
         : !item?.isJdQuestionsComplete
         ? string.common.gotoConsultRoomJuniorDrText
         : string.common.gotoConsultRoomText || '';
@@ -826,7 +826,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         return 'Cancelled';
       } else if (item?.status === STATUS.COMPLETED) {
         return 'Completed';
-      } else if (item?.status === STATUS.PENDING) {
+      } else if (item?.status === STATUS.PENDING ||
+          item?.status === STATUS.IN_PROGRESS) {
         return 'Active';
       }  else if (item?.appointmentState === APPOINTMENT_STATE.RESCHEDULE) {
         return 'Rescheduled';
@@ -927,60 +928,67 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       };
       const cancelConsulations = getAppointmentStatusText() === 'Cancelled';
       return (
-        <View
+        <View>
+          <Text style={styles.fillVitalsForConsult}>
+              {item?.status == STATUS.CANCELLED ?
+              string.common.bookAnotherSlot :
+              item?.status == STATUS.COMPLETED ? string.common.bookFollowUp : null}
+          </Text>
+          <View
           style={{
             ...styles.cancelledView,
              justifyContent: cancelConsulations ? 'flex-end' : 'space-between'
             }}
-        >
-          {cancelConsulations ? null : (
+          >
+            {cancelConsulations ? null : (
+              <TouchableOpacity
+                activeOpacity={1}
+                style={styles.viewDetailContainer}
+                onPress={() => {
+                  onPressPastAppointmentViewDetails();
+                  fireWebengageEvent(item, 'details');
+                }}
+              >
+                <Text
+                  style={[
+                    styles.prepareForConsult,
+                    {
+                      color: theme.colors.APP_YELLOW,
+                    },
+                  ]}
+                >
+                  {'VIEW DETAILS'}
+                </Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
               activeOpacity={1}
-              style={styles.viewDetailContainer}
+              style={styles.bookAgainView}
               onPress={() => {
-                onPressPastAppointmentViewDetails();
-                fireWebengageEvent(item, 'details');
+                setAppoinmentItem(item);
+                item?.doctorInfo?.allowBookingRequest
+                  ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
+                      doctorId: item?.doctorId || item?.doctorInfo?.id,
+                      cleverTapAppointmentAttributes: {
+                        source: 'Appointment CTA',
+                        appointmentCTA: cancelConsulations ? 'Cancelled' : 'Past',
+                      },
+                    })
+                  : props.navigation.navigate(AppRoutes.DoctorDetails, {
+                      doctorId: item?.doctorId || item?.doctorInfo?.id,
+                      cleverTapAppointmentAttributes: {
+                        source: 'Appointment CTA',
+                        appointmentCTA: cancelConsulations ? 'Cancelled' : 'Past',
+                      },
+                    });
+                fireWebengageEvent(item, cancelConsulations ? 'cancel' : 'followup');
               }}
             >
-              <Text
-                style={[
-                  styles.prepareForConsult,
-                  {
-                    color: theme.colors.APP_YELLOW,
-                  },
-                ]}
-              >
-                {'VIEW DETAILS'}
+              <Text style={styles.prepareForConsult}>
+                {cancelConsulations ? 'BOOK AGAIN' : 'BOOK FOLLOW UP'}
               </Text>
             </TouchableOpacity>
-          )}
-          <TouchableOpacity
-            activeOpacity={1}
-            style={styles.bookAgainView}
-            onPress={() => {
-              setAppoinmentItem(item);
-              item?.doctorInfo?.allowBookingRequest
-                ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
-                    doctorId: item?.doctorId || item?.doctorInfo?.id,
-                    cleverTapAppointmentAttributes: {
-                      source: 'Appointment CTA',
-                      appointmentCTA: cancelConsulations ? 'Cancelled' : 'Past',
-                    },
-                  })
-                : props.navigation.navigate(AppRoutes.DoctorDetails, {
-                    doctorId: item?.doctorId || item?.doctorInfo?.id,
-                    cleverTapAppointmentAttributes: {
-                      source: 'Appointment CTA',
-                      appointmentCTA: cancelConsulations ? 'Cancelled' : 'Past',
-                    },
-                  });
-              fireWebengageEvent(item, cancelConsulations ? 'cancel' : 'followup');
-            }}
-          >
-            <Text style={styles.prepareForConsult}>
-              {cancelConsulations ? 'BOOK AGAIN' : 'BOOK FOLLOW UP'}
-            </Text>
-          </TouchableOpacity>
+          </View>  
         </View>
       );
     };
@@ -1285,25 +1293,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       }
     };
 
-    const renderDoctorImage = () => {
-      return (
-        <View style={styles.imageView}>
-          {!!g(item, 'doctorInfo', 'thumbnailUrl') ? (
-            <Image
-              style={styles.doctorImageStyle}
-              source={{ uri: item.doctorInfo!.thumbnailUrl! }}
-              resizeMode={'contain'}
-            />
-          ) : (
-            <DoctorPlaceholderImage
-              style={styles.doctorImagePlaceholderStyle}
-              resizeMode={'contain'}
-            />
-          )}
-        </View>
-      );
-    };
-
     return (
       <View>
         <TouchableOpacity
@@ -1488,24 +1477,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     return <TabHeader containerStyle={containerStyle} navigation={props.navigation} />;
   };
 
-  const renderCurrentPatientName = () => {
-    return (
-      <>
-        <Text style={styles.hiTextStyle}>{'hi'}</Text>
-        <View style={styles.nameTextContainerStyle}>
-          <View style={{ flexDirection: 'row', flex: 1 }}>
-            <Text style={styles.nameTextStyle} numberOfLines={1}>
-              {(currentPatient && currentPatient!.firstName!.toLowerCase() + '!') || ''}
-            </Text>
-            {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
-              <LinkedUhidIcon style={styles.linkUhidIconStyle} resizeMode={'contain'} />
-            ) : null}
-          </View>
-        </View>
-      </>
-    );
-  };
-
   const renderNoAppointments = () => {
     if (!loading) {
       return (
@@ -1528,59 +1499,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       );
     }
   };
-  const renderTabSwitch = () => {
-    return (
-      <TabsComponent
-        height={43}
-        titleStyle={{ fontSize: 14 }}
-        selectedTitleStyle={{ fontSize: 14 }}
-        style={{
-          borderRadius: 0,
-          backgroundColor: colors.DEFAULT_BACKGROUND_COLOR,
-          shadowColor: colors.SHADOW_GRAY,
-          shadowOffset: { width: 0, height: 10 },
-          shadowOpacity: 0.4,
-          shadowRadius: 8,
-          elevation: 14,
-        }}
-        tabViewStyle={{
-          backgroundColor: colors.CARD_BG,
-        }}
-        data={tabs}
-        onChange={(selectedTab: string) => {
-          setselectedTab(selectedTab);
-        }}
-        selectedTab={selectedTab}
-      />
-    );
-  };
 
-  const renderSelectMemberView = () => {
-    return (
-      <View
-        style={[
-          styles.selectedMemberViewStyle,
-          {
-            marginBottom: selectedTab === tabs[0].title ? undefined : 0,
-          },
-        ]}
-      >
-        <Text style={styles.viewAnotherMemberTextStyle}>
-          {'View appointments of another member?'}
-        </Text>
-
-        <ProfileList
-          navigation={props.navigation}
-          saveUserChange={true}
-          childView={<Text style={styles.selectedMemberTextStyle}>{'SELECT MEMBER'}</Text>}
-          listContainerStyle={{ marginLeft: 6, marginTop: 22 }}
-          selectedProfile={profile}
-          setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
-          unsetloaderDisplay={true}
-        ></ProfileList>
-      </View>
-    );
-  };
   const renderPatientHeader = () => {
     return (
       <View style={styles.patientHeaderView}>
