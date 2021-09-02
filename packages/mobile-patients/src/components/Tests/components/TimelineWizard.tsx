@@ -49,8 +49,16 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
     isCircleAddedToCart,
     setIsCircleAddedToCart,
     setSelectedCirclePlan,
+    setIsDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
-  const { setCircleMembershipCharges, setCircleSubPlanId } = useShoppingCart();
+  const {
+    setCircleMembershipCharges,
+    setCircleSubPlanId,
+    setCirclePlanSelected,
+    setCircleSubscriptionId,
+
+    setIsCircleSubscription,
+  } = useShoppingCart();
 
   function imageRules(currentPage: SCREEN_NAMES) {
     switch (currentPage) {
@@ -122,10 +130,15 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
   }
 
   function _navigateToRespectivePage(pageName: any) {
-    isCircleAddedToCart && setIsCircleAddedToCart?.(false);
-    setCircleMembershipCharges?.(0);
-    setSelectedCirclePlan?.(null);
-    setCircleSubPlanId?.('');
+    // isCircleAddedToCart && setIsCircleAddedToCart?.(false);
+    if (isCircleAddedToCart) {
+      setCircleMembershipCharges?.(0);
+      setCircleSubPlanId?.('');
+      setCircleSubscriptionId?.('');
+      setIsCircleSubscription?.(false);
+      setIsDiagnosticCircleSubscription?.(false);
+      setCirclePlanSelected?.(null); //overall
+    }
     props.navigation.navigate(pageName);
   }
 

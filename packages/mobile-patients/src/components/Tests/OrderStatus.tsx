@@ -78,13 +78,12 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     isDiagnosticCircleSubscription,
     clearDiagnoticCartInfo,
     cartItems,
+    setIsDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
   const { circleSubscriptionId, circlePlanSelected } = useShoppingCart();
   const client = useApolloClient();
   const { setLoading } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
-
-  console.log({ props });
 
   const modifiedOrderDetails = props.navigation.getParam('isModify');
   const orderDetails = props.navigation.getParam('orderDetails');
@@ -195,6 +194,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   }
 
   useEffect(() => {
+    isCircleAddedToCart && setIsDiagnosticCircleSubscription?.(true);
     fetchOrderDetailsFromPayments();
     isCircleAddedToCart && getUserSubscriptionsByStatus();
     if (modifiedOrderDetails == null) {
@@ -398,8 +398,16 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
 
   const renderAmount = () => {
     return (
-      <Text style={styles.savedTxt}>
-        {isCOD ? 'Amount to be paid via cash' : 'Total amount paid'} :{' '}
+      <Text
+        style={[
+          styles.savedTxt,
+          {
+            textAlign: isCircleAddedToCart ? 'center' : 'left',
+            lineHeight: isCircleAddedToCart ? 24 : 16,
+          },
+        ]}
+      >
+        {isCOD ? 'Amount to be paid via cash' : 'Total Amount Paid'} :{' '}
         <Text style={styles.amount}>
           {string.common.Rs}
           {orderDetails?.amount}
@@ -412,7 +420,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     return (
       <View style={styles.totalSavingOuterView}>
         {renderAmount()}
-        {!!savings && (
+        {!!savings && !isCircleAddedToCart && (
           <Text style={{ ...styles.savedTxt, marginTop: 8 }}>
             You {''}
             <Text style={styles.savedAmt}>
@@ -422,10 +430,12 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
             {''} on your purchase.
           </Text>
         )}
-        {(((isDiagnosticCircleSubscription || isCircleAddedToCart) && orderCircleSaving > 0) ||
-          !!showCartSaving ||
-          couldBeSaved) && <Spearator style={{ marginVertical: 10 }} />}
-        {(isDiagnosticCircleSubscription || isCircleAddedToCart) && orderCircleSaving > 0 && (
+        {isCircleAddedToCart
+          ? null
+          : ((isDiagnosticCircleSubscription && orderCircleSaving > 0) ||
+              !!showCartSaving ||
+              couldBeSaved) && <Spearator style={{ marginVertical: 10 }} />}
+        {isDiagnosticCircleSubscription && orderCircleSaving > 0 && !isCircleAddedToCart && (
           <>
             <View style={styles.circleSaving}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -648,6 +658,13 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     );
   };
 
+  function _navigateToCircleBenefits() {
+    props.navigation.navigate(AppRoutes.MembershipDetails, {
+      membershipType: 'CIRCLE PLAN',
+      isActive: true,
+    });
+  }
+
   //check for expired case
   const renderCirclePurchaseCard = () => {
     const duration = circlePlanSelected?.durationInMonth;
@@ -657,10 +674,10 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       circlePlanSelected?.valid_duration
     );
     return (
-      <View style={{ ...theme.viewStyles.cardContainer, marginBottom: 30, padding: 16 }}>
+      <View style={styles.circlePurchaseDetailsCard}>
         <View style={{ flexDirection: 'row' }}>
-          <CircleLogo style={{ height: 45, width: 45, resizeMode: 'contain' }} />
-          <View style={{ width: '85%', marginHorizontal: 8 }}>
+          <CircleLogo style={styles.circleLogoIcon} />
+          <View style={styles.circlePurchaseDetailsView}>
             <Text style={styles.circlePurchaseText}>
               Congrats! You have successfully purchased the {duration} months (Trial) Circle Plan
               for {string.common.Rs}
@@ -681,6 +698,12 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
             </Text>
           </View>
         </View>
+        <TouchableOpacity
+          onPress={() => _navigateToCircleBenefits()}
+          style={styles.viewAllBenefitsTouch}
+        >
+          <Text style={styles.yellowText}>VIEW ALL BENEFITS</Text>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -688,7 +711,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   return (
     <View style={{ flex: 1, backgroundColor: colors.DEFAULT_BACKGROUND_COLOR }}>
       <SafeAreaView style={styles.container}>
-        <ScrollView bounces={false} style={{ flex: 1 }} showsVerticalScrollIndicator={true}>
+        <ScrollView bounces={false} style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
           <View style={{ marginHorizontal: 20, marginBottom: 100 }}>
             {renderHeader()}
             {renderOrderPlacedMsg()}
@@ -824,7 +847,7 @@ const styles = StyleSheet.create({
     marginVertical: 30,
     borderColor: theme.colors.APP_GREEN,
     borderWidth: 2,
-    borderRadius: 5,
+    borderRadius: 10,
     padding: 16,
     paddingVertical: 10,
     borderStyle: 'dashed',
@@ -964,9 +987,27 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 10, 'white'),
     textAlign: 'center',
   },
-  circlePurchaseText: { ...theme.viewStyles.text('R', 11, colors.SHERPA_BLUE, 1, 14) },
+  circlePurchaseText: { ...theme.viewStyles.text('R', 11, colors.SHERPA_BLUE, 1, 16) },
   circlePlanValidText: {
     ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 0.6, 16),
     marginTop: 6,
   },
+  viewAllBenefitsTouch: {
+    alignSelf: 'flex-end',
+    height: 25,
+    justifyContent: 'center',
+  },
+  yellowText: { ...theme.viewStyles.text('SB', 13, colors.APP_YELLOW, 1, 24) },
+  circlePurchaseDetailsCard: {
+    ...theme.viewStyles.cardContainer,
+    marginBottom: 30,
+    padding: 16,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: 'transparent',
+    borderLeftColor: '#007C9D',
+    borderLeftWidth: 4,
+  },
+  circleLogoIcon: { height: 45, width: 45, resizeMode: 'contain' },
+  circlePurchaseDetailsView: { width: '85%', marginHorizontal: 8 },
 });

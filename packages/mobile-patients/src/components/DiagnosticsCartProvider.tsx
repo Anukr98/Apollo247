@@ -889,6 +889,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setPhleboETA(0);
     setShowMultiPatientMsg(false);
     setCartItemsMapping([]);
+    setIsCircleAddedToCart?.(false);
+    setSelectedCirclePlan?.(null);
   };
 
   useEffect(() => {

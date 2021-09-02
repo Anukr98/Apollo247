@@ -200,6 +200,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setIsCircleAddedToCart,
     selectedCirclePlan,
     setSelectedCirclePlan,
+    setIsDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
 
   const {
@@ -208,6 +209,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setCircleSubPlanId,
     setCircleSubscriptionId,
     setCirclePlanSelected,
+    setIsCircleSubscription,
   } = useShoppingCart();
   const { setauthToken } = useAppCommonData();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
@@ -266,6 +268,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     isModifyFlow ? modifiedPatientCart : patientCartItems
   );
   var patientCartItemsCopy = JSON.parse(JSON.stringify(isCartEmpty));
+  const showCirclePlans =
+    (!isDiagnosticCircleSubscription && !isCircleAddedToCart) ||
+    (!isDiagnosticCircleSubscription &&
+      isModifyFlow &&
+      modifiedOrder?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT);
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
@@ -286,6 +293,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     if (!isDiagnosticCircleSubscription) {
       fetchCirclePlans();
     }
+    !!selectedCirclePlan && !isEmptyObject(selectedCirclePlan) && _addCircleValues();
   }, []);
 
   async function populateCartMapping() {
@@ -307,10 +315,15 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   //clear all the values added value
   function clearCircleAddedToCart() {
     //clear the value of circleAddedToCart on going back (header, h/w back, timeline wizard)
-    !isDiagnosticCircleSubscription && isCircleAddedToCart && setIsCircleAddedToCart?.(false);
-    setCircleMembershipCharges?.(0);
-    setSelectedCirclePlan?.(null);
-    setCircleSubPlanId?.('');
+    // !isDiagnosticCircleSubscription && isCircleAddedToCart && setIsCircleAddedToCart?.(false);
+    if (isCircleAddedToCart) {
+      setCircleMembershipCharges?.(0);
+      setCircleSubPlanId?.('');
+      setCircleSubscriptionId?.('');
+      setIsCircleSubscription?.(false);
+      setIsDiagnosticCircleSubscription?.(false);
+      setCirclePlanSelected?.(null); //overall
+    }
   }
 
   function handleBack() {
@@ -913,6 +926,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         onSelectMembershipPlan={(plan) => {
           if (plan) {
             // if plan is selected
+            setIsDiagnosticCircleSubscription?.(true);
             setIsCircleAddedToCart?.(true);
             setSelectedCirclePlan?.(plan);
             setCircleMembershipCharges && setCircleMembershipCharges(plan?.currentSellingPrice);
@@ -966,9 +980,20 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
    *
    */
 
-  function _addCirclePlan() {
+  function _addCircleValues() {
+    // setIsDiagnosticCircleSubscription?.(true);
     setIsCircleAddedToCart?.(true);
-    setCirclePlanSelected?.(defaultCirclePlan);
+    setCirclePlanSelected?.(selectedCirclePlan); //overall
+    setSelectedCirclePlan?.(selectedCirclePlan); //diag
+    setIsCircleSubscription?.(true);
+  }
+
+  function _addCirclePlan() {
+    // setIsDiagnosticCircleSubscription?.(true);
+    setIsCircleAddedToCart?.(true);
+    setCirclePlanSelected?.(defaultCirclePlan); //overall
+    setSelectedCirclePlan?.(defaultCirclePlan); //diag
+    setIsCircleSubscription?.(true);
   }
 
   /**
@@ -1038,6 +1063,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     );
   };
 
+  // console.log({ isCircleAddedToCart });
+  // console.log({ isDiagnosticCircleSubscription });
+  // console.log({ showCirclePlans });
+
   //change circle purchase price to selected plan
   const renderTotalCharges = () => {
     const anyCartSaving = isDiagnosticCircleSubscription ? cartSaving + circleSaving : cartSaving;
@@ -1055,7 +1084,14 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           ]}
         >
           {/**handing already purchased member */}
-          {isCircleAddedToCart ? renderCircleAdded() : renderCirclePurchase()}
+          {isDiagnosticCircleSubscription ||
+          (isDiagnosticCircleSubscription &&
+            isModifyFlow &&
+            modifiedOrder?.paymentType !== DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT)
+            ? null
+            : isCircleAddedToCart
+            ? renderCircleAdded()
+            : renderCirclePurchase()}
           {renderPrices('Total MRP', totalPriceExcludingAnyDiscounts.toFixed(2))}
 
           {couponDiscount > 0 && renderPrices('Coupon Discount', couponDiscount?.toFixed(2))}
@@ -1393,10 +1429,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         reportGenDetails
       ) as (patientObjWithLineItems | null)[];
 
-      console.log({ getPatientLineItems });
-      console.log({ circleSubscriptionId });
-      console.log({ props });
-      console.log({ localCircleSubId });
+      // console.log({ getPatientLineItems });
+      // console.log({ circleSubscriptionId });
+      // console.log({ props });
+      // console.log({ localCircleSubId });
       const bookingOrderInfo: SaveBookHomeCollectionOrderInputv2 = {
         patientAddressID: slotsInput?.addressObject?.patientAddressID,
         patientObjWithLineItems: getPatientLineItems?.map((item: any) => item),
@@ -1484,17 +1520,19 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         ({
           itemId: Number(item?.id),
           price:
-            isDiagnosticCircleSubscription && item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+            (isDiagnosticCircleSubscription || isCircleAddedToCart) &&
+            item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
               ? Number(item?.circleSpecialPrice)
               : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
               ? Number(item?.discountSpecialPrice)
               : Number(item?.specialPrice) || Number(item?.price),
           quantity: 1,
-          groupPlan: isDiagnosticCircleSubscription
-            ? item?.groupPlan!
-            : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
-            ? item?.groupPlan
-            : DIAGNOSTIC_GROUP_PLAN.ALL,
+          groupPlan:
+            isDiagnosticCircleSubscription || isCircleAddedToCart
+              ? item?.groupPlan!
+              : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+              ? item?.groupPlan
+              : DIAGNOSTIC_GROUP_PLAN.ALL,
           preTestingRequirement:
             !!reportGenDetails && reportGenDetails?.[index]?.itemPrepration
               ? reportGenDetails?.[index]?.itemPrepration
@@ -1781,7 +1819,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         //will for single order
         array = [{ order_id: getOrderDetails, amount: grandTotal, patient_id: getPatientId }];
       } else {
-        console.log('heeee');
         getOrderDetails?.map(
           (
             item: saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWithOrderIDs
@@ -1794,23 +1831,30 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           }
         );
       }
-      console.log({ cartItems });
 
-      console.log('yaha in order verticals');
       const circlePlanPurchasePrice = !!selectedCirclePlan
         ? selectedCirclePlan?.currentSellingPrice
         : !!defaultCirclePlan && defaultCirclePlan?.currentSellingPrice;
 
-      const orders: OrderVerticals = {
-        diagnostics: array,
-        subscription: [
-          {
-            order_id: localCircleSubId,
-            amount: circlePlanPurchasePrice,
-            patient_id: currentPatient?.id,
-          },
-        ],
-      };
+      let orders: OrderVerticals;
+      //trying to purchase circle
+      if (!isDiagnosticCircleSubscription && isCircleAddedToCart) {
+        orders = {
+          diagnostics: array,
+          subscription: [
+            {
+              order_id: localCircleSubId,
+              amount: circlePlanPurchasePrice,
+              patient_id: currentPatient?.id,
+            },
+          ],
+        };
+      } else {
+        orders = {
+          diagnostics: array,
+        };
+      }
+
       const orderInput: OrderCreate = {
         orders: orders,
         total_amount: toPayPrice,
@@ -1818,7 +1862,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       };
       console.log({ orderInput });
       const response = await createOrderInternal(orderInput);
-      console.log({ response });
       if (response?.data?.createOrderInternal?.success) {
         //check for webenage
         const orderInfo = {
@@ -1979,12 +2022,14 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       bookingSource: DiagnosticsBookingSource.MOBILE,
       deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
       items: createItemPrice(cartItems)?.itemPricingObject, //total (prev+ curr)
-      userSubscriptionId: circleSubscriptionId,
+      userSubscriptionId: circleSubscriptionId != '' ? circleSubscriptionId : localCircleSubId,
       subscriptionInclusionId: null,
       amountToPay: grandTotal, //total amount to pay
     };
+    console.log({ modifyBookingInput });
     saveModifyOrder?.(modifyBookingInput)
       .then((data) => {
+        console.log({ data });
         const getModifyResponse = data?.data?.saveModifyDiagnosticOrder;
         if (!getModifyResponse?.status) {
           apiHandleErrorFunction(modifyBookingInput, getModifyResponse, BOOKING_TYPE.MODIFY);
@@ -2017,6 +2062,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   function onPressProceedToPay() {
     setLoading?.(true);
     //do not createSubId, if it is already added
+    console.log('heheh');
+    console.log({ isCircleAddedToCart });
+    console.log({ localCircleSubId });
     if (isCircleAddedToCart && localCircleSubId == '') {
       callCreateCircleSubscription();
     } else {
@@ -2067,17 +2115,14 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         setCircleSubscriptionId?.(subscriptionId);
         callDiagnosticBookingServices();
       } else {
-        localCircleSubId = '';
-        clearCircleAddedToCart;
         setLoading?.(false);
+        showUnableToPurchaseCircleMsg();
       }
     } catch (error) {
       //if error then remove the circle price and let user know, something happened
       //ok got it, remove the circle
       console.log({ error });
       setLoading?.(false);
-      localCircleSubId = '';
-      clearCircleAddedToCart();
       showUnableToPurchaseCircleMsg();
       CommonBugFender('callCreateCircleSubscription_ReviewPage', error);
     }
@@ -2086,8 +2131,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   function showUnableToPurchaseCircleMsg() {
     showAphAlert?.({
       title: string.common.uhOh,
-      description:
-        'Sorry, we are unable to add circle to your cart at this moment!, Proceed without it',
+      description: 'There was an error while confirming your order. Please try again!',
     });
   }
 
