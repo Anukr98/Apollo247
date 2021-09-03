@@ -21,17 +21,6 @@ import {
 import moment from 'moment';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import SwitchSelector from 'react-native-switch-selector';
-import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  g,
-  handleGraphQlError,
-  phrSortByDate,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { useApolloClient } from 'react-apollo-hooks';
-import { StringNullableChain } from 'lodash';
 
 const styles = StyleSheet.create({
   container: {
@@ -374,16 +363,26 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
   const renderServiceName = () => {
     let reportObj = {} as SelectedTestReport;
     var goal = Number(yAxisValue);
+    goal = goal.toFixed(2);
+    var convertGoal = Number(goal);
     var lineContainer = props?.lineData;
-    var index = lineContainer?.indexOf(goal);
+    var num: any;
+    var checkMinus: any;
+    const lineData = lineContainer.map((i) => Number(i));
+    var index = lineData.indexOf(convertGoal);
+    console.log(typeof convertGoal, index);
     const mergeArray: [] = [];
     const mergeLabTestFiles: [] = [];
-    var num: any;
-    if (index !== 0) {
+    if (index !== 0 && goal !== 0) {
       num = goal - props?.lineData[index - 1];
       num = num.toFixed(2);
     }
-    var checkMinus = num?.includes('-');
+    var checkNumber = isNaN(num);
+    if (num !== undefined && !checkNumber) {
+      checkMinus = num?.includes('-');
+    }
+    console.log(checkMinus, 'checkMinus');
+
     return (
       <View style={styles.serviceNameSubContainer}>
         <TouchableOpacity
@@ -440,10 +439,10 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
           </View>
           <View style={styles.axisValueContainer}>
             <Text style={styles.axisValueTextContainer}>
-              {!!yAxisValue ? yAxisValue + '*10' : 'Dummy' + '*10'}
+              {!!goal ? goal + '*10' : String(props.lineData[0]) + '*10'}
             </Text>
             <Text style={styles.powerTenTextContainer}>6</Text>
-            {checkMinus || num === undefined ? (
+            {!!checkMinus || num === undefined ? (
               <RedDownArrow size="sm" style={{ left: 20, width: 20, height: 20 }} />
             ) : (
               <RedArrow size="sm" style={{ left: 20, width: 20, height: 20 }} />

@@ -738,6 +738,8 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                           ? 190
                           : !!item?.parameterName && item?.parameterName?.length > 60
                           ? 150
+                          : !!item?.result && numberOfLineBreaks <= 2 && item?.result?.length < 100
+                          ? 190
                           : 150,
                     },
                   ]}
@@ -948,49 +950,42 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
     return (
       <View>
         <ScrollView>
-          {data?.labTestSource === '247self'
-            ? imagesArray?.map((item, index) => {
-                const file_name = item?.fileName || '';
-                const file_Url = item?.file_Url || '';
-                return file_name && file_name.toLowerCase().endsWith('.pdf') ? (
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    style={styles.imageViewStyle}
-                    onPress={() => {
-                      setShowPDF(true);
-                      setPdfFileUrl(file_Url);
-                      setFileNamePDF(file_name);
-                    }}
-                  >
-                    <Pdf
-                      key={file_Url}
-                      source={{ uri: file_Url }}
-                      style={styles.pdfStyle}
-                      singlePage
-                    />
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    onPress={() => {
-                      props.navigation.navigate(AppRoutes.ImageSliderScreen, {
-                        images: [file_Url],
-                        heading: file_name || 'Image',
-                      });
-                    }}
-                    style={styles.imageViewStyle}
-                  >
-                    <Image
-                      placeholderStyle={styles.imagePlaceHolderStyle}
-                      PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
-                      source={{ uri: file_Url }}
-                      style={styles.imageStyle}
-                      resizeMode="contain"
-                    />
-                  </TouchableOpacity>
-                );
-              })
-            : null}
+          {imagesArray?.map((item, index) => {
+            const file_name = item?.fileName || '';
+            const file_Url = item?.file_Url || '';
+            return file_name && file_name.toLowerCase().endsWith('.pdf') ? (
+              <TouchableOpacity
+                activeOpacity={1}
+                style={styles.imageViewStyle}
+                onPress={() => {
+                  setShowPDF(true);
+                  setPdfFileUrl(file_Url);
+                  setFileNamePDF(file_name);
+                }}
+              >
+                <Pdf key={file_Url} source={{ uri: file_Url }} style={styles.pdfStyle} singlePage />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={() => {
+                  props.navigation.navigate(AppRoutes.ImageSliderScreen, {
+                    images: [file_Url],
+                    heading: file_name || 'Image',
+                  });
+                }}
+                style={styles.imageViewStyle}
+              >
+                <Image
+                  placeholderStyle={styles.imagePlaceHolderStyle}
+                  PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
+                  source={{ uri: file_Url }}
+                  style={styles.imageStyle}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
       </View>
     );
