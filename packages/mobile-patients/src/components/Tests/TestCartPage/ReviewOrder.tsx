@@ -1098,6 +1098,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       };
       diagnosticSaveBookHcCollectionV2(client, bookingOrderInfo)
         .then(async ({ data }) => {
+          console.log({ data });
           const getSaveHomeCollectionResponse =
             data?.saveDiagnosticBookHCOrderv2?.patientsObjWithOrderIDs;
           const checkIsFalse = getSaveHomeCollectionResponse?.find(
