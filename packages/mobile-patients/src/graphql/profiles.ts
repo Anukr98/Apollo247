@@ -4438,6 +4438,7 @@ export const SAVE_DIAGNOSTIC_ORDER_NEW = gql`
       errorMessageToDisplay
       attributes {
         itemids
+        refreshCart
       }
     }
   }
@@ -5707,6 +5708,7 @@ export const MODIFY_DIAGNOSTIC_ORDERS = gql`
           itemToKeep
           itemsWithConflicts
         }
+        refreshCart
       }
     }
   }
@@ -6194,6 +6196,7 @@ export const SAVE_DIAGNOSTIC_ORDER_V2 = gql`
             itemToKeep
             itemsWithConflicts
           }
+          refreshCart
         }
       }
     }

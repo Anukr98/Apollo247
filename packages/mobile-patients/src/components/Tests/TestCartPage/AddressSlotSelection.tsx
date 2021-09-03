@@ -124,12 +124,12 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
       (item: any, index: number) =>
         ({
           itemId: Number(item?.id),
-          price: Number(item?.circleSpecialPrice),
-          // isDiagnosticCircleSubscription && item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
-          //   ? Number(item?.circleSpecialPrice)
-          //   : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
-          //   ? Number(item?.discountSpecialPrice)
-          //   : Number(item?.specialPrice) || Number(item?.price),
+          price:
+            isDiagnosticCircleSubscription && item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+              ? Number(item?.circleSpecialPrice)
+              : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+              ? Number(item?.discountSpecialPrice)
+              : Number(item?.specialPrice) || Number(item?.price),
           mrp:
             isDiagnosticCircleSubscription && item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
               ? Number(item?.circlePrice)

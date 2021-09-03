@@ -19,6 +19,7 @@ export interface saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patient
   __typename: "CustomResponse";
   itemids: string | null;
   conflictedItems: (saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWithOrderIDs_attributes_conflictedItems | null)[] | null;
+  refreshCart: boolean | null;
 }
 
 export interface saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWithOrderIDs {

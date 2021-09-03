@@ -1353,6 +1353,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         },
       });
     } else {
+      const hasRefreshAttribute =
+        source === BOOKING_TYPE.SAVE
+          ? !!data?.[0]?.attributes?.refreshCart && data?.[0]?.attributes?.refreshCart
+          : data?.errorMessageToDisplay;
+
       if (
         slotBookedArray.some((item) => message?.includes(item)) ||
         message.includes('slot has been booked')
@@ -1367,6 +1372,19 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           onPressOk: () => {
             props.navigation.goBack(); // to fetch new slots
             hideAphAlert?.();
+          },
+        });
+      }
+      //for the errors related to invalid_order_line_items/ invalid_order_rate / invalid_groupPlan
+      else if (hasRefreshAttribute) {
+        setLoading?.(false);
+        showAphAlert?.({
+          title: string.common.uhOh,
+          description: message,
+          unDismissable: true,
+          onPressOk: () => {
+            hideAphAlert?.();
+            props.navigation.navigate(AppRoutes.CartPage, {});
           },
         });
       } else {
