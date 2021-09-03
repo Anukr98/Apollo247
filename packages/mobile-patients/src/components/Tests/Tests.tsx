@@ -174,7 +174,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { OrderCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/OrderCardCarousel';
 import { PrescriptionCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/PrescriptionCardCarousel';
 import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
-import { Cache } from "react-native-cache";
+// import { Cache } from "react-native-cache";
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_2.webp'),
@@ -272,7 +272,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [slideIndex, setSlideIndex] = useState(0);
   const [banners, setBanners] = useState([]);
   const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
-  const [cityId, setCityId] = useState("")
+  const [cityId, setCityId] = useState('');
 
   const [sectionLoading, setSectionLoading] = useState<boolean>(false);
   const [showItemCard, setShowItemCard] = useState<boolean>(false);
@@ -303,29 +303,30 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const [serviceableObject, setServiceableObject] = useState({} as any);
 
-  const cache = new Cache({
-    namespace: "tests",
-    policy: {
-        maxEntries: 100
-    },
-    backend: AsyncStorage
-});
-useEffect(() => {
-  if (!(bannerData && bannerData?.length) ) {
-    setBannerDataToCache()
-  }
-}, [bannerData])
+  //cache related changes will bd uncommented post 5.8.0 merge to 5.9.0
 
-  
-const getDataFromCache = async() => {
-    const banner_data = await cache.get('banner_data');
-    setBannerData && setBannerData(banner_data)
-}
+  //   const cache = new Cache({
+  //     namespace: "tests",
+  //     policy: {
+  //         maxEntries: 100
+  //     },
+  //     backend: AsyncStorage
+  // });
+  // useEffect(() => {
+  //   if (!(bannerData && bannerData?.length) ) {
+  //     setBannerDataToCache()
+  //   }
+  // }, [bannerData])
 
-const setBannerDataToCache = async() => {
-  const banner_data = bannerData && bannerData?.length ? bannerData : [];
-  await cache.set('banner_data', banner_data);
-}
+  // const getDataFromCache = async() => {
+  //     const banner_data = await cache.get('banner_data');
+  //     setBannerData && setBannerData(banner_data)
+  // }
+
+  // const setBannerDataToCache = async() => {
+  //   const banner_data = bannerData && bannerData?.length ? bannerData : [];
+  //   await cache.set('banner_data', banner_data);
+  // }
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
       query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
@@ -416,7 +417,7 @@ const setBannerDataToCache = async() => {
       fetchPatientClosedOrders();
       fetchPatientPrescriptions();
       getUserBanners();
-      getDataFromCache()
+      // getDataFromCache();
     }
   }, [currentPatient]);
 
@@ -571,6 +572,7 @@ const setBannerDataToCache = async() => {
     }
   };
   const getHomePageWidgets = async (cityId: string) => {
+    setSectionLoading(true);
     try {
       const result: any = await getDiagnosticHomePageWidgets('diagnostic', Number(cityId));
       if (result?.data?.success && result?.data?.data?.length > 0) {
@@ -578,12 +580,12 @@ const setBannerDataToCache = async() => {
           (a: any, b: any) =>
             Number(a.diagnosticwidgetsRankOrder) - Number(b.diagnosticwidgetsRankOrder)
         );
-        setCityId(cityId);
+        // setCityId(cityId);
         //call here the prices.
-        setWidgetsData(sortWidgets);
-        setIsPriceAvailable(false);
-        setSectionLoading(false);
-        setShowItemCard(true);
+        // setWidgetsData(sortWidgets);
+        // setIsPriceAvailable(false);
+        // setSectionLoading(false);
+        // setShowItemCard(true);
         fetchWidgetsPrices(sortWidgets, cityId);
       } else {
         setSectionLoading(false);
@@ -1647,13 +1649,13 @@ const setBannerDataToCache = async() => {
     const showViewAll = !!isPricesAvailable && data?.diagnosticWidgetData?.length > 2;
     const lengthOfTitle = data?.diagnosticWidgetTitle?.length;
     return (
-      <View>
-        {
+      <View style={!!isPricesAvailable ? styles.widgetSpacing : {}}>
+        {!!isPricesAvailable ? (
           <>
             {sectionLoading ? (
               renderDiagnosticWidgetHeadingShimmer() //load heading
             ) : (
-              !!isPricesAvailable ? <SectionHeader
+              <SectionHeader
                 leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
                 leftTextStyle={[
                   styles.widgetHeading,
@@ -1682,7 +1684,7 @@ const setBannerDataToCache = async() => {
                     : undefined
                 }
                 style={showViewAll ? { paddingBottom: 1 } : {}}
-              /> : null
+              />
             )}
             {sectionLoading ? (
               renderDiagnosticWidgetShimmer(false) //to load package card
@@ -1698,7 +1700,9 @@ const setBannerDataToCache = async() => {
               />
             )}
           </>
-        }
+        ) : sectionLoading ? (
+          renderDiagnosticWidgetShimmer(true) //load overall widget
+        ) : null}
       </View>
     );
   };
@@ -1717,8 +1721,8 @@ const setBannerDataToCache = async() => {
           <>
             {sectionLoading ? (
               renderDiagnosticWidgetHeadingShimmer() //load heading
-            ) : (
-              !!isPricesAvailable ? <SectionHeader
+            ) : !!isPricesAvailable ? (
+              <SectionHeader
                 leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
                 leftTextStyle={[
                   styles.widgetHeading,
@@ -1747,8 +1751,8 @@ const setBannerDataToCache = async() => {
                     : undefined
                 }
                 style={showViewAll ? { paddingBottom: 1 } : {}}
-              /> : null
-            )}
+              />
+            ) : null}
             {sectionLoading ? (
               renderDiagnosticWidgetShimmer(false) //load package card
             ) : (
@@ -1763,7 +1767,7 @@ const setBannerDataToCache = async() => {
               />
             )}
           </>
-      }
+        }
       </View>
     );
   };
