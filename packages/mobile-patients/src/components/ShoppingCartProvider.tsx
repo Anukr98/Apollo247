@@ -910,6 +910,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         shipmentPackagingfee -
         shipmentCouponDiscount -
         shipmentProductDiscount;
+      const isCircleUser = isCircleSubscription || circleSubscriptionId;
       shipment['shopId'] = order['storeCode'];
       shipment['tatType'] = order['storeType'];
       shipment['estimatedAmount'] = formatNumber(estimatedAmount);
@@ -925,7 +926,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
       shipment['allocationProfileName'] = order['allocationProfileName'];
       shipment['clusterId'] = order['clusterId'];
       shipment['totalCashBack'] =
-        isCircleSubscription || circleSubscriptionId ? Number(shipmentCashback) || 0 : 0;
+        (isCircleUser && coupon?.circleBenefits) || (isCircleUser && !coupon?.coupon)
+          ? Number(shipmentCashback) || 0
+          : 0;
       shipmentsArray.push(shipment);
       shipment['coupon'] = coupon ? coupon.coupon : '';
     });
@@ -974,6 +977,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
       packagingCharges -
       shipmentCouponDiscount -
       shipmentProductDiscount;
+    const isCircleUser = isCircleSubscription || circleSubscriptionId;
     shipment['estimatedAmount'] = formatNumber(estimatedAmount);
     shipment['deliveryCharges'] = deliveryCharges;
     shipment['couponDiscount'] = formatNumber(shipmentCouponDiscount);
@@ -989,7 +993,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
     shipment['allocationProfileName'] = null;
     shipment['clusterId'] = null;
     shipment['totalCashBack'] =
-      isCircleSubscription || circleSubscriptionId ? Number(shipmentCashback) || 0 : 0;
+      (isCircleUser && coupon?.circleBenefits) || (isCircleUser && !coupon?.coupon)
+        ? Number(shipmentCashback) || 0
+        : 0;
     shipment['coupon'] = coupon ? coupon.coupon : '';
     setShipments([shipment]);
   }
