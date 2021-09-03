@@ -93,7 +93,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   }, [movedFrom]);
 
   const fetchWidgets = async (title: string) => {
-    const createTitle = title
+    const createTitle = decodeURIComponent(title)
       ?.trim()
       ?.replace(/ /g, '-')
       ?.toLowerCase();
