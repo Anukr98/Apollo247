@@ -370,7 +370,6 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
     var checkMinus: any;
     const lineData = lineContainer.map((i) => Number(i));
     var index = lineData.indexOf(convertGoal);
-    console.log(typeof convertGoal, index);
     const mergeArray: [] = [];
     const mergeLabTestFiles: [] = [];
     if (index !== 0 && goal !== 0) {
@@ -381,7 +380,6 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
     if (num !== undefined && !checkNumber) {
       checkMinus = num?.includes('-');
     }
-    console.log(checkMinus, 'checkMinus');
 
     return (
       <View style={styles.serviceNameSubContainer}>
