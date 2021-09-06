@@ -71,6 +71,7 @@ export interface AuthContextProps {
   setMobileAPICalled: ((par: boolean) => void) | null;
   getFirebaseToken: (() => Promise<unknown>) | null;
   authToken: string;
+  validateAuthToken: (() => void) | null;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -97,6 +98,7 @@ export const AuthContext = React.createContext<AuthContextProps>({
 
   getFirebaseToken: null,
   authToken: '',
+  validateAuthToken: null,
 });
 
 let apolloClient: ApolloClient<NormalizedCacheObject>;
@@ -108,6 +110,39 @@ const webengage = new WebEngage();
 export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
   const hasAuthToken = !_isEmpty(authToken);
+
+  useEffect(() => {
+    // listening to change in authtoken
+    const checkChangeinAuthToken = auth?.onIdTokenChanged(async (user) => {
+      if (user) {
+        const jwt = await user.getIdToken(true).catch((error) => {
+          setIsSigningIn(false);
+          setSignInError(true);
+          setAuthToken('');
+          throw error;
+        });
+        setAuthToken(jwt);
+      }
+    });
+    // unsubscribe on unmounting
+    return checkChangeinAuthToken();
+  }, []);
+
+  useEffect(() => {
+    // building apolloclient when ever there is a change in authToken
+    buildApolloClient(authToken);
+  }, [authToken]);
+
+  const validateAuthToken = () => {
+    if (authToken) {
+      const jwtDecode = require('jwt-decode');
+      const millDate = jwtDecode(authToken).exp;
+      const currentTime = new Date().valueOf() / 1000;
+      millDate < currentTime && getFirebaseToken();
+    } else {
+      getFirebaseToken();
+    }
+  };
 
   const setNewToken = async () => {
     const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
@@ -125,7 +160,11 @@ export const AuthProvider: React.FC = (props) => {
             setAuthToken(jwt);
           }
         });
-      } catch (e) {}
+      } catch (e) {
+        postWebEngageEvent(WebEngageEventName.ERROR_WHILE_FETCHING_JWT_TOKEN, {
+          PatientId: currentPatientId,
+        });
+      }
     }
   };
   const validateAndUpdate = (authToken: any) => {
@@ -142,7 +181,7 @@ export const AuthProvider: React.FC = (props) => {
       getFirebaseToken();
     }
   };
-  const buildApolloClient = (authToken: string, handleUnauthenticated: any) => {
+  const buildApolloClient = (authToken: string) => {
     if (authToken) {
       const jwtDecode = require('jwt-decode');
       const millDate = jwtDecode(authToken).exp;
@@ -193,7 +232,7 @@ export const AuthProvider: React.FC = (props) => {
       cache,
     });
   };
-  apolloClient = buildApolloClient(authToken, () => getFirebaseToken());
+  apolloClient = buildApolloClient(authToken);
 
   const [currentPatientId, setCurrentPatientId] = useState<AuthContextProps['currentPatientId']>(
     null
@@ -247,12 +286,7 @@ export const AuthProvider: React.FC = (props) => {
   }, [auth]);
 
   useEffect(() => {
-    async function fetchData() {
-      let jwtToken: any = await AsyncStorage.getItem('jwt');
-      jwtToken = JSON.parse(jwtToken || 'null');
-      validateAndUpdate(jwtToken);
-    }
-    fetchData();
+    validateAndUpdate(authToken);
   }, [auth]);
 
   const getFirebaseToken = () => {
@@ -276,14 +310,18 @@ export const AuthProvider: React.FC = (props) => {
             setAuthToken(jwt);
             AsyncStorage.setItem('jwt', JSON.stringify(jwt));
 
-            apolloClient = buildApolloClient(jwt, () => getFirebaseToken());
+            apolloClient = buildApolloClient(jwt);
             authStateRegistered = false;
             resolve(jwt);
           }
           setIsSigningIn(false);
         });
       });
-    } catch (error) {}
+    } catch (error) {
+      postWebEngageEvent(WebEngageEventName.ERROR_WHILE_FETCHING_JWT_TOKEN, {
+        PatientId: currentPatientId,
+      });
+    }
   };
 
   const getPatientApiCall = async (containsHistory: boolean) => {
@@ -407,6 +445,7 @@ export const AuthProvider: React.FC = (props) => {
             getFirebaseToken,
 
             authToken,
+            validateAuthToken,
           }}
         >
           {props.children}
