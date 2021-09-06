@@ -473,6 +473,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           { position: 'absolute', top: statusBarHeight(), width: '100%' },
         ]}
         navigation={props.navigation}
+        screenAsSource={'My Account'}
       />
     );
   };
