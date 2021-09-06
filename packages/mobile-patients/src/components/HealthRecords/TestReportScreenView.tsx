@@ -17,6 +17,7 @@ import {
   TouchableOpacity,
   BackHandler,
   View,
+  Alert,
 } from 'react-native';
 import {
   GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID,
@@ -746,7 +747,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                 >
                   <View style={styles.labelViewStyle}>
                     <Text style={styles.labelStyle}>{item?.parameterName}</Text>
-                    {data.labTestSource === 'Hospital' && !!item.unit && !!item.range ? (
+                    {data.labTestSource === 'Hospital' && !!item.unit && !!item.result ? (
                       <TouchableOpacity
                         activeOpacity={1}
                         onPress={() => {
@@ -871,9 +872,11 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
           },
         })
         .then(({ data }: any) => {
-          showResponseData(data.getVisualizationData.response);
-          setSendParamName(paramName);
-          setSendTestReportName(labTestName);
+          if (data?.getVisualizationData?.response?.length > 0) {
+            showResponseData(data.getVisualizationData.response);
+            setSendParamName(paramName);
+            setSendTestReportName(labTestName);
+          }
           setShowPopup(true);
         })
         .catch((e: any) => {
@@ -1190,6 +1193,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         testReport={sendTestReportName}
         allTestReports={testReportsData}
         onSendTestReport={(selectedItem) => callBackTestReports(selectedItem)}
+        siteName={data?.siteDisplayName}
       />
     );
   };

@@ -21,6 +21,8 @@ import {
 import moment from 'moment';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import SwitchSelector from 'react-native-switch-selector';
+import { Colors } from 'react-native/Libraries/NewAppScreen';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 
 const styles = StyleSheet.create({
   container: {
@@ -88,7 +90,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 10,
     borderRadius: 10,
-    width: '100%',
+    width: '95%',
     overflow: 'hidden',
   },
   dateContainer: {
@@ -106,7 +108,7 @@ const styles = StyleSheet.create({
   serviceNameSubContainer: {
     justifyContent: 'space-between',
     flexDirection: 'column',
-    height: 55,
+    height: 80,
     backgroundColor: 'white',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
@@ -126,17 +128,17 @@ const styles = StyleSheet.create({
   serviceNameTextContainer: {
     flexDirection: 'row',
     left: 10,
-    top: 5,
   },
   paramName: {
     ...theme.viewStyles.text('R', 13, 'grey', 1, 19, 0.35),
     left: 15,
+    top: 5,
   },
   axisValueContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     left: 10,
-    top: 7,
+    top: 10,
   },
   axisValueTextContainer: {
     fontSize: 20,
@@ -170,6 +172,31 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     marginBottom: 16,
   },
+  siteNameStyling: {
+    left: 10,
+    top: 13,
+    ...theme.viewStyles.text('R', 14, '#FCB716', 1, 19, 0.35),
+  },
+  iconStyling: {
+    left: 20,
+    width: 20,
+    height: 20,
+  },
+  mclStyling: {
+    left: 4,
+    fontSize: 14,
+    color: '#1180BF',
+  },
+  serviceName: {
+    ...theme.viewStyles.text('R', 16, '#01475B', 1, 19, 0.35),
+    top: 5,
+  },
+  miscStyling: {
+    marginTop: 20,
+    marginBottom: 10,
+    width: '90%',
+    left: 13,
+  },
 });
 
 export interface CombinedBarChartProps {
@@ -189,6 +216,7 @@ export interface CombinedBarChartProps {
   testReport?: string;
   allTestReports?: [];
   onSendTestReport?: (selectedItem: any) => void;
+  siteName: string;
 }
 
 interface SelectedTestReport {
@@ -277,7 +305,7 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
           lineDashLengths: [1, 5],
         },
         {
-          limit: props.maxLine,
+          limit: props.maxLine + 10,
           lineColor: processColor('#BF2600'),
           lineDashPhase: 1,
           lineWidth: 1.5,
@@ -426,27 +454,21 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
             <ArrowRight />
           </View>
           <View style={styles.serviceNameTextContainer}>
-            <Text
-              style={{
-                ...theme.viewStyles.text('R', 16, '#01475B', 1, 19, 0.35),
-              }}
-            >
-              {'Service name'}
-            </Text>
+            <Text style={styles.serviceName}>{'Service name'}</Text>
             <Text style={styles.paramName}>{`${'\u25CF '}` + ' Parameter name'}</Text>
           </View>
           <View style={styles.axisValueContainer}>
-            <Text style={styles.axisValueTextContainer}>
-              {!!goal ? goal + '*10' : String(props.lineData[0]) + '*10'}
-            </Text>
+            <Text style={styles.axisValueTextContainer}>{!!goal ? goal + '*10' : '' + '*10'}</Text>
             <Text style={styles.powerTenTextContainer}>6</Text>
+            <Text style={styles.mclStyling}>mcl</Text>
             {!!checkMinus || num === undefined ? (
-              <RedDownArrow size="sm" style={{ left: 20, width: 20, height: 20 }} />
+              <RedDownArrow size="sm" style={styles.iconStyling} />
             ) : (
-              <RedArrow size="sm" style={{ left: 20, width: 20, height: 20 }} />
+              <RedArrow size="sm" style={styles.iconStyling} />
             )}
-            <Text style={styles.redValueDecider}>{num || 'N/A'}</Text>
+            <Text style={styles.redValueDecider}>{checkNumber === false ? num : 'N/A'}</Text>
           </View>
+          <Text style={styles.siteNameStyling}>{props.siteName}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -468,7 +490,7 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
         setValueFormatter(dayFormat);
         break;
       case 'Month':
-        let monthFormat = exerciseLog?.map((x) => moment(x).format(`ddd DD`));
+        let monthFormat = exerciseLog?.map((x) => moment(x).format(`DD`));
         setValueFormatter(monthFormat);
         break;
       default:
@@ -483,7 +505,7 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
         <SwitchSelector
           options={options}
           initial={0}
-          buttonColor={'white'}
+          buttonColor={colors.WHITE}
           backgroundColor={'#E5E5E5'}
           selectedColor={'#02475B'}
           textColor={'#02475B'}
@@ -497,7 +519,9 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
 
         <View style={styles.barChartMainContainer}>
           <View style={{ height: 290 }}>
-            <Text style={styles.paramNameTextContainer}>{props.title}</Text>
+            <Text numberOfLines={1} style={styles.paramNameTextContainer}>
+              {props.title}
+            </Text>
             <Text style={styles.dateContainer}>
               {`\u25CF ${moment(props.date).format(string.common.date_placeholder_text)}`}
             </Text>
@@ -511,7 +535,7 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
               onSelect={(event) => handleSelect(event)}
               highlightPerDragEnabled={false}
               highlightFullBarEnabled={false}
-              zoom={{ scaleX: 1.1, scaleY: 1.1, xValue: 9999, yValue: 1, axisDependency: 'RIGHT' }}
+              zoom={{ scaleX: 0.0, scaleY: 0.0, xValue: 9999, yValue: 1, axisDependency: 'RIGHT' }}
               chartDescription={{ text: '' }}
               marker={marker}
               style={styles.container}
@@ -526,7 +550,7 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
             <View style={styles.serviceNameContainer} />
           </View>
           {renderServiceName()}
-          <View style={{ marginTop: 20, marginBottom: 10, width: '90%', left: 13 }}>
+          <View style={styles.miscStyling}>
             <Text style={styles.miscInfoContainer}>
               {
                 'Note: Loinc code for this is ABP1234. The parameter value and test combo plotted represent the same loinc code'
