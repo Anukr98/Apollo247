@@ -10,7 +10,6 @@ import {
   ArrowRight,
   More,
   OrderPlacedIcon,
-  OrderTrackerSmallIcon,
   ClockIcon,
   OvalUpcoming,
 } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -37,7 +36,6 @@ import {
 import {
   getDiagnosticOrderDetails,
   getDiagnosticOrderDetailsVariables,
-  getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList,
   getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
 import {
@@ -598,7 +596,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     );
   };
 
-  //define type
   function showContentBasedOnStatus(order: any, isStatusDone: boolean, index: number) {
     const orderStatus = order?.orderStatus;
     const slotDate = moment(selectedOrder?.slotDateTimeInUTC).format('Do MMM');
@@ -893,6 +890,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         itemsLength?.filter((item: any) => item?.isRemoved)) ||
       [];
     const isAdded = !!addedItems && addedItems?.length > 0;
+    const isRemoved = !!removedItems && removedItems?.length > 0;
     const addedItemPrices = !!addedItems && addedItems?.map((item: any) => item?.price);
 
     const removedItemsPrices = !!removedItems && removedItems?.map((item: any) => item?.price);
@@ -918,44 +916,64 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
               activeOpacity={1}
               style={styles.itemsTouch}
             >
-              <Text style={styles.itemsAddedText}>
-                {isAdded ? addedItems?.length : removedItems?.length} items{' '}
-                {isAdded ? 'added' : 'removed'} in cart
-              </Text>
-              <View style={styles.flexRow}>
-                <Text style={[styles.itemsAddedText, { marginRight: 6 }]}>
-                  {string.common.Rs}
-                  {totalPrice}
-                </Text>
-                <ArrowRight
-                  style={{
-                    transform: [
-                      { rotate: dropDownItemListIndex?.includes(index) ? '270deg' : '90deg' },
-                    ],
-                    tintColor: 'black',
-                  }}
-                />
-              </View>
+              <>
+                {(isAdded && isRemoved) || (isRemoved && !isAdded) ? (
+                  <>
+                    <Text style={styles.itemsAddedText}>{itemsLength?.length} items modified</Text>
+                    <ArrowRight
+                      style={{
+                        transform: [
+                          { rotate: dropDownItemListIndex?.includes(index) ? '270deg' : '90deg' },
+                        ],
+                        tintColor: 'black',
+                      }}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <Text style={styles.itemsAddedText}>
+                      {isAdded ? addedItems?.length : removedItems?.length} items{' '}
+                      {isAdded ? 'added' : 'removed'} in cart
+                    </Text>
+                    <View style={styles.flexRow}>
+                      <Text style={[styles.itemsAddedText, { marginRight: 6 }]}>
+                        {string.common.Rs}
+                        {totalPrice}
+                      </Text>
+                      <ArrowRight
+                        style={{
+                          transform: [
+                            { rotate: dropDownItemListIndex?.includes(index) ? '270deg' : '90deg' },
+                          ],
+                          tintColor: 'black',
+                        }}
+                      />
+                    </View>
+                  </>
+                )}
+              </>
             </TouchableOpacity>
             {dropDownItemListIndex?.includes(index) &&
-              (isAdded ? addedItems : removedItems)?.map((items: any) => {
-                return (
-                  <View
-                    style={[styles.flexRow, { justifyContent: 'space-between', marginTop: '4%' }]}
-                  >
-                    <View style={styles.modificationItemView}>
-                      <Text style={[styles.itemsNameAddedText, { width: '87%' }]}>
-                        {nameFormater(items?.itemName, 'default')}
+              (isAdded && isRemoved ? itemsLength : isAdded ? addedItems : removedItems)?.map(
+                (items: any) => {
+                  return (
+                    <View
+                      style={[styles.flexRow, { justifyContent: 'space-between', marginTop: '4%' }]}
+                    >
+                      <View style={styles.modificationItemView}>
+                        <Text style={[styles.itemsNameAddedText, { width: '87%' }]}>
+                          {nameFormater(items?.itemName, 'default')}
+                        </Text>
+                        {!!items?.isRemoved && items.isRemoved ? renderRemoveTag() : null}
+                      </View>
+                      <Text style={styles.itemsNameAddedText}>
+                        {string.common.Rs}
+                        {items?.price}
                       </Text>
-                      {!!items?.isRemoved && !items.isRemoved ? renderRemoveTag() : null}
                     </View>
-                    <Text style={styles.itemsNameAddedText}>
-                      {string.common.Rs}
-                      {items?.price}
-                    </Text>
-                  </View>
-                );
-              })}
+                  );
+                }
+              )}
           </View>
         ) : null}
       </>
@@ -1519,7 +1537,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-
   statusUpcomingView: {
     padding: 10,
     flex: 1,

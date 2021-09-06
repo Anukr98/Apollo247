@@ -24,6 +24,7 @@ import {
   DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY,
   DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
   DIAGNOSTIC_STATUS_BEFORE_SUBMITTED,
+  DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -630,7 +631,8 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           ? renderOrderBreakdownCard(getModifiedLineItems, string.diagnostics.currentCharges)
           : null}
         {renderPricesCard()}
-        {orderDetails?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED && !isPrepaid
+        {(orderDetails?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED && !isPrepaid) ||
+        (isPrepaid && DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY.includes(orderDetails?.orderStatus))
           ? null
           : renderPaymentCard()}
       </View>
