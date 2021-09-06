@@ -1388,6 +1388,7 @@ export interface WebEngageEvents {
     'Phlebo Name': string;
     'Order id': string | number;
     'Phlebo id': string | number;
+    Comment?: string 
   };
   [WebEngageEventName.DIAGNOSTIC_PHLEBO_CALLING_CLICKED]: {
     UHID: string;

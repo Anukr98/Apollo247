@@ -520,8 +520,16 @@ export enum CleverTapEventName {
   GET_OTP_ON_CALL = 'Get OTP On call Clicked',
   LOGIN_VIA_TRUECALLER = 'Login Via Truecaller Clicked',
   LOGIN_WITH_TRUECALLER_CONTINUE = 'Login with true caller continue clicked',
-  LOGIN_WITH_TRUECALLER_SKIPPED = 'Login with true caller skip clicked'
+  LOGIN_WITH_TRUECALLER_SKIPPED = 'Login with true caller skip clicked',
 
+  //App Review and Rating on Playstore
+  PLAYSTORE_APP_REVIEW_AND_RATING = 'Playstore app review and rating',
+  APP_REVIEW_AND_RATING_TO_PLAYSTORE = 'Playstore review popup showed',
+  APP_REVIEW_AND_RATING_TO_APPSTORE = 'Appstore review popup showed',
+
+
+  // Custom UTM Events
+  CUSTOM_UTM_VISITED = 'App launch source'
 }
 
 export interface PatientInfo {
@@ -1503,6 +1511,7 @@ export interface CleverTapEvents {
     'Phlebo Name': string;
     'Order id': string | number;
     'Phlebo id': string | number;
+    Comment: string
   };
   [CleverTapEventName.DIAGNOSTIC_PHLEBO_CALLING_CLICKED]: {
     UHID: string;

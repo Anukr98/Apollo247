@@ -5078,11 +5078,13 @@ export const SAVE_PHLEBO_FEEDBACK = gql`
     $phleboRating: Int!
     $phleboFeedback: String
     $diagnosticOrdersId: String!
+    $patientComments: String
   ) {
     savePhleboFeedback(
       phleboRating: $phleboRating
       phleboFeedback: $phleboFeedback
       diagnosticOrdersId: $diagnosticOrdersId
+      patientComments: $patientComments
     ) {
       status
     }

@@ -558,7 +558,8 @@ export function DiagnosticPhleboFeedbackSubmitted(
   feedback: string | number,
   phleboName: string,
   orderId: string | number,
-  phleboId: string | number
+  phleboId: string | number,
+  patientComment: string
 ) {
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED]
@@ -568,6 +569,7 @@ export function DiagnosticPhleboFeedbackSubmitted(
     'Phlebo Name': phleboName,
     'Order id': orderId,
     'Phlebo id': phleboId,
+    Comment: patientComment,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED, eventAttributes);
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED, eventAttributes);
