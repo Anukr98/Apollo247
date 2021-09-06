@@ -42,7 +42,13 @@ export const SimilarProducts: React.FC<SimilarProductsProps> = (props) => {
         data={similarProducts}
         Component={ProductUpSellingCard}
         navigation={props.navigation}
-        addToCartSource={isSimilarProducts ? 'Similar Widget' : 'Pharmacy PDP'}
+        addToCartSource={
+          isSubstituteProducts
+            ? 'PDP All Substitutes'
+            : isSimilarProducts
+            ? 'Similar Widget'
+            : 'Pharmacy PDP'
+        }
         movedFrom={ProductPageViewedSource.SIMILAR_PRODUCTS}
         contentContainerStyle={{ marginLeft: -18 }}
       />

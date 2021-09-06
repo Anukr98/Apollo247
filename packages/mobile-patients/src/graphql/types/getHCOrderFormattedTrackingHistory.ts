@@ -25,10 +25,16 @@ export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingH
   packageName: string | null;
 }
 
+export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_upcomingStatuses {
+  __typename: "upcomingStatus";
+  orderStatus: DIAGNOSTIC_ORDER_STATUS | null;
+}
+
 export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory {
   __typename: "HCOrderFormattedTrackingHistoryResult";
   statusHistory: (getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusHistory | null)[] | null;
   statusInclusions: (getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusInclusions | null)[] | null;
+  upcomingStatuses: (getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_upcomingStatuses | null)[] | null;
 }
 
 export interface getHCOrderFormattedTrackingHistory {

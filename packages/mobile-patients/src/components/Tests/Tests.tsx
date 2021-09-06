@@ -26,6 +26,7 @@ import {
   Remove,
   DropdownGreen,
   WidgetLiverIcon,
+  ExpressSlotClock,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -111,6 +112,7 @@ import {
 import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
 import {
   getDiagnosticClosedOrders,
+  getDiagnosticExpressSlots,
   getDiagnosticOpenOrders,
   getDiagnosticPatientPrescription,
   getDiagnosticPhelboDetails,
@@ -296,37 +298,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const defaultAddress = addresses?.find((item) => item?.defaultAddress);
   const [pageLoading, setPageLoading] = useState<boolean>(false);
   const [isFocused, setIsFocused] = useState<boolean>(false);
-  const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
   const [clickedItem, setClickedItem] = useState<any>([]);
+  const [serviceableObject, setServiceableObject] = useState({} as any);
+  const [expressSlotMsg, setExpressSlotMsg] = useState<string>('');
+  const [isPriceAvailable, setIsPriceAvailable] = useState<boolean>(false);
 
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
 
-  const [serviceableObject, setServiceableObject] = useState({} as any);
-
-  //cache related changes will bd uncommented post 5.8.0 merge to 5.9.0
-
-  //   const cache = new Cache({
-  //     namespace: "tests",
-  //     policy: {
-  //         maxEntries: 100
-  //     },
-  //     backend: AsyncStorage
-  // });
-  // useEffect(() => {
-  //   if (!(bannerData && bannerData?.length) ) {
-  //     setBannerDataToCache()
-  //   }
-  // }, [bannerData])
-
-  // const getDataFromCache = async() => {
-  //     const banner_data = await cache.get('banner_data');
-  //     setBannerData && setBannerData(banner_data)
-  // }
-
-  // const setBannerDataToCache = async() => {
-  //   const banner_data = bannerData && bannerData?.length ? bannerData : [];
-  //   await cache.set('banner_data', banner_data);
-  // }
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
       query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
@@ -431,16 +409,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
           //call only when they are different.
           if (asyncDiagnosticPincode?.pincode === getAsyncPincode?.pincode) {
             return;
-          } else {
-            checkIsPinCodeServiceable(
-              getAsyncPincode?.pincode!
-                ? getAsyncPincode?.pincode
-                : !!pharmacyLocation
-                ? pharmacyLocation?.pincode!
-                : locationDetails?.pincode!,
-              'manual',
-              'initalPincode'
-            );
           }
           setDiagnosticLocation?.(!!pharmacyLocation ? pharmacyLocation! : locationDetails!);
         }
@@ -619,6 +587,41 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   };
 
+  async function getExpressSlots(
+    serviceabilityObject: DiagnosticData,
+    selectedAddress: LocationData
+  ) {
+    const getLat = selectedAddress?.latitude!;
+    const getLng = selectedAddress?.longitude!;
+    const getZipcode = selectedAddress?.pincode;
+    const getServiceablityObject = {
+      cityID: Number(serviceabilityObject?.cityId),
+      stateID: Number(serviceabilityObject?.stateId),
+    };
+    try {
+      const res: any = await getDiagnosticExpressSlots(
+        client,
+        getLat,
+        getLng,
+        String(getZipcode),
+        getServiceablityObject
+      );
+      if (res?.data?.getUpcomingSlotInfo) {
+        const getResponse = res?.data?.getUpcomingSlotInfo;
+        if (getResponse?.status) {
+          setExpressSlotMsg(getResponse?.slotInfo);
+        } else {
+          setExpressSlotMsg('');
+        }
+      } else {
+        setExpressSlotMsg('');
+      }
+    } catch (error) {
+      CommonBugFender('getExpressSlots_Tests', error);
+      setExpressSlotMsg('');
+    }
+  }
+
   const fetchWidgetsPrices = async (widgetsData: any, cityId: string) => {
     //filter the items.
     const filterWidgets = widgetsData?.filter(
@@ -659,6 +662,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       }
       newWidgetsData?.length > 0 && reloadWidget ? setReloadWidget(false) : setReloadWidget(true);
       setWidgetsData(newWidgetsData);
+      setIsPriceAvailable(true);
       setSectionLoading(false);
       setLoading?.(false);
       setPageLoading?.(false);
@@ -817,6 +821,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setAsyncPharmaLocation(saveAddress);
             setAsyncDiagnosticPincode?.(saveAddress);
             setLoadingContext?.(false);
+            //calling slot api
+            getExpressSlots(serviceableResponse, response);
           } else {
             let response = {
               displayName: '',
@@ -854,6 +860,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setAsyncPharmaLocation(saveAddress);
             setAsyncDiagnosticPincode?.(saveAddress);
             setLoadingContext?.(false);
+            //calling slot api
+            getExpressSlots(serviceableResponse, response);
           }
         } catch (e) {
           CommonBugFender('updatePlaceInfoByPincode_Tests', e);
@@ -1599,49 +1607,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-  const renderBottomViews = () => {
-    const isWidget = widgetsData?.length > 0;
-    const isWidget1 =
-      isWidget && widgetsData?.find((item: any) => item?.diagnosticwidgetsRankOrder == '1');
-    const isWidget2 =
-      isWidget && widgetsData?.find((item: any) => item?.diagnosticwidgetsRankOrder == '2');
-    const isWidget3 =
-      isWidget && widgetsData?.find((item: any) => item?.diagnosticwidgetsRankOrder == '3');
-    const restWidgets =
-      isWidget && widgetsData?.length > 3 && widgetsData?.slice(3, widgetsData?.length);
-    return (
-      <>
-        {!!isWidget1 ? renderWidgets(isWidget1) : null}
-        {renderStepsToBook()}
-        {renderCarouselBanners()}
-        {!!isWidget2 ? renderWidgets(isWidget2) : null}
-        {renderWhyBookUs()}
-        {!!isWidget3 ? renderWidgets(isWidget3) : null}
-        {renderCertificateView()}
-        {!!restWidgets && restWidgets.map((item: any) => renderWidgets(item))}
-      </>
-    );
-  };
-
-  const renderWidgets = (data: any) => {
-    let widgetType = data?.diagnosticWidgetType;
-    switch (widgetType) {
-      case 'Package':
-        return renderPackageWidget(data);
-        break;
-      case string.diagnosticCategoryTitle.categoryGrid:
-        return scrollWidgetSection(data);
-        break;
-      case string.diagnosticCategoryTitle.category:
-        return gridWidgetSection(data);
-        break;
-      default:
-        return renderTestWidgets(data);
-        break;
-    }
-  };
-
   const renderPackageWidget = (data: any) => {
+    let listShowLength = 10;
     const isPricesAvailable =
       !!data &&
       data?.diagnosticWidgetData?.length > 0 &&
@@ -1691,6 +1658,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
             ) : (
               <PackageCard
                 data={data}
+                diagnosticWidgetData={data?.diagnosticWidgetData?.slice(
+                  0,
+                  data?.diagnosticWidgetData?.length >= listShowLength
+                    ? listShowLength
+                    : data?.diagnosticWidgetData?.length
+                )}
+                isPriceAvailable={isPriceAvailable}
                 isCircleSubscribed={isDiagnosticCircleSubscription}
                 isServiceable={isDiagnosticLocationServiceable}
                 isVertical={false}
@@ -1758,6 +1732,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
             ) : (
               <ItemCard
                 data={data}
+                diagnosticWidgetData={data?.diagnosticWidgetData}
+                isPriceAvailable={isPriceAvailable}
                 isCircleSubscribed={isDiagnosticCircleSubscription}
                 isServiceable={isDiagnosticLocationServiceable}
                 isVertical={false}
@@ -2127,7 +2103,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         item?.id
       );
       if (!!item?.labReportURL && item?.labReportURL != '') {
-        setDisplayViewReport(true);
+        onPressViewReport();
         setClickedItem(item);
       } else {
         showAphAlert?.({
@@ -2151,14 +2127,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const appointmentDate = moment(clickedItem?.slotDateTimeInUTC)?.format('DD MMM YYYY');
     const patientName = `${clickedItem?.patientObj?.firstName} ${clickedItem?.patientObj?.lastName}`;
     try {
-      setViewReportOrderId(clickedItem?.orderId);
       await downloadDiagnosticReport(
         setLoadingContext,
         removeWhiteSpaces(clickedItem?.labReportURL),
         appointmentDate,
         !!patientName ? patientName : '_',
         true,
-        undefined
+        undefined,
+        clickedItem?.orderStatus,
+        (clickedItem?.displayId).toString(),
+        true
       );
     } catch (error) {
       setLoadingContext?.(false);
@@ -2207,7 +2185,27 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   }
 
+  const renderExpressSlots = () => {
+    return (
+      <View style={styles.outerExpressView}>
+        <View style={styles.innerExpressView}>
+          <ExpressSlotClock style={styles.expressSlotIcon} />
+          <Text style={styles.expressSlotText}>{expressSlotMsg}</Text>
+        </View>
+      </View>
+    );
+  };
+
+  function getRanking(rank: string) {
+    const findRank =
+      !!widgetsData &&
+      widgetsData?.length > 0 &&
+      widgetsData?.find((item: any) => item?.diagnosticwidgetsRankOrder === rank);
+    return findRank;
+  }
+
   const renderSections = () => {
+    const widget1 = getRanking('1');
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -2219,13 +2217,65 @@ export const Tests: React.FC<TestsProps> = (props) => {
         style={{ flex: 1 }}
       >
         {widgetsData?.length == 0 && reloadWidget && renderLowNetwork()}
-        {renderBanner()}
+        {renderWidgetType(widget1)} {/**1 */}
         {renderYourOrders()}
         {latestPrescription?.length > 0 ? renderPrescriptionCard() : null}
         {renderOrderStatusCard()}
         {renderBottomViews()}
       </TouchableOpacity>
     );
+  };
+
+  const renderBottomViews = () => {
+    const isWidget = widgetsData?.length > 0;
+
+    const isWidget2 = getRanking('2');
+    const isWidget3 = getRanking('3');
+    const isWidget4 = getRanking('4');
+    const isWidget5 = getRanking('5');
+    const isWidget6 = getRanking('6');
+
+    const restWidgets =
+      isWidget && widgetsData?.length > 6 && widgetsData?.slice(6, widgetsData?.length);
+    return (
+      <>
+        {!!isWidget2 ? renderWidgetType(isWidget2) : null} {/**2 */}
+        {!!isWidget3 ? renderWidgetType(isWidget3) : null} {/** 3 */}
+        {renderStepsToBook()}
+        {!!isWidget4 ? renderWidgetType(isWidget4) : null} {/** 4 */}
+        {renderCarouselBanners()}
+        {!!isWidget5 ? renderWidgetType(isWidget5) : null} {/** 5 */}
+        {renderWhyBookUs()}
+        {!!isWidget6 ? renderWidgetType(isWidget6) : null} {/** 6 */}
+        {renderCertificateView()}
+        {!!restWidgets && restWidgets.map((item: any) => renderWidgetType(item))}
+      </>
+    );
+  };
+
+  const renderWidgetType = (widget: any) => {
+    if (!!widget) {
+      const widgetName = widget?.diagnosticWidgetType?.toLowerCase();
+      switch (widgetName) {
+        case 'banner':
+          return renderBanner();
+          break;
+        case 'package':
+          return renderPackageWidget(widget);
+          break;
+        case string.diagnosticCategoryTitle.categoryGrid:
+          return scrollWidgetSection(widget);
+          break;
+        case string.diagnosticCategoryTitle.category:
+          return gridWidgetSection(widget);
+          break;
+        default:
+          return renderTestWidgets(widget);
+          break;
+      }
+    } else {
+      return null;
+    }
   };
 
   const renderCartDetails = () => {
@@ -2407,14 +2457,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
             <WidgetLiverIcon style={styles.image} resizeMode={'contain'} />
           )}
         </View>
-        <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>
-          {item?.itemTitle}
+        <Text numberOfLines={2} ellipsizeMode="tail" style={styles.textStyle}>
+          {nameFormater(item?.itemTitle, 'default')}
         </Text>
       </TouchableOpacity>
     );
   };
   const gridWidgetSection = (data: any) => {
-    const numColumns = 3;
+    const numColumns = 4;
     let newGridData: any[] = [];
     if (
       data?.diagnosticWidgetData?.length >= numColumns &&
@@ -2465,31 +2515,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
-      {displayViewReport && (
-        <TestViewReportOverlay
-          order={clickedItem}
-          heading=""
-          isVisible={displayViewReport}
-          onClose={() => {
-            setDisplayViewReport(false);
-            setClickedItem([]);
-          }}
-          downloadDocument={() => {
-            const res = downloadDocument(
-              clickedItem?.labReportURL,
-              'application/pdf',
-              clickedItem?.orderId
-            );
-            if (res == clickedItem?.orderId) {
-              setViewReportOrderId(clickedItem?.orderId);
-            }
-          }}
-          viewReportOrderId={viewReportOrderId}
-          onPressViewReport={() => {
-            onPressViewReport();
-          }}
-        />
-      )}
       <SafeAreaView style={{ ...viewStyles.container }}>
         {pageLoading ? (
           <View style={{ backgroundColor: 'white' }}>
@@ -2502,6 +2527,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             <View style={{ backgroundColor: 'white' }}>
               {renderDiagnosticHeader()}
               {renderSearchBar()}
+              {expressSlotMsg != '' ? renderExpressSlots() : null}
               {renderSearchSuggestions()}
             </View>
             <View style={{ flex: 1 }}>
@@ -2751,31 +2777,42 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   circleView: {
-    width: 80,
-    height: 80,
-    borderRadius: 80 / 2,
+    width: 50,
+    height: 50,
+    borderRadius: 50 / 2,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#f9f9f9',
   },
   image: {
-    width: 50,
-    height: 50,
+    width: 30,
+    height: 30,
     backgroundColor: '#f9f9f9',
   },
   gridPart: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: '33%',
+    width: '25%',
     borderColor: '#E8E8E8',
     borderWidth: 0.5,
     padding: 15,
   },
   textStyle: {
     ...theme.viewStyles.text('SB', 14, colors.SHERPA_BLUE, 1, 20, 0),
-    padding: 5,
+    paddingVertical: 5,
+    textAlign: 'center',
+    width: '100%',
   },
   widgetSpacing: {
     marginVertical: 20,
   },
+  outerExpressView: { backgroundColor: colors.APP_GREEN, marginBottom: 2 },
+  innerExpressView: {
+    flexDirection: 'row',
+    padding: 8,
+    alignItems: 'center',
+    width: '97%',
+  },
+  expressSlotIcon: { width: 37, height: 37, resizeMode: 'contain' },
+  expressSlotText: { ...theme.viewStyles.text('SB', 14, colors.WHITE, 1, 18), marginLeft: 16 },
 });

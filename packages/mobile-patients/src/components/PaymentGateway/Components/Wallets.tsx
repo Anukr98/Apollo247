@@ -4,6 +4,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CollapseView } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CollapseView';
 import { WalletIcon } from '@aph/mobile-patients/src/components/PaymentGateway/Components/WalletIcon';
 import { paymentModeVersionCheck } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { OutagePrompt } from '@aph/mobile-patients/src/components/PaymentGateway/Components/OutagePrompt';
 
 export interface WalletsProps {
   onPressPayNow: (wallet: string) => void;
@@ -15,16 +16,24 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
 
   const renderWallet = (item: any) => {
     return (
-      <TouchableOpacity
-        style={{
-          ...styles.wallet,
-          borderBottomWidth: item?.index == wallets.length - 1 ? 0 : 1,
-        }}
-        onPress={() => onPressPayNow(item?.item?.payment_method_code)}
-      >
-        <WalletIcon imageUrl={item?.item?.image_url} />
-        <Text style={styles.payNow}>PAY NOW</Text>
-      </TouchableOpacity>
+      <View>
+        <OutagePrompt
+          outageStatus={item?.item?.outage_status}
+          msg={item?.item?.payment_method_name + ' is'}
+        />
+        <TouchableOpacity
+          disabled={item?.item?.outage_status == 'DOWN' ? true : false}
+          style={{
+            ...styles.wallet,
+            borderBottomWidth: item?.index == wallets.length - 1 ? 0 : 1,
+            opacity: item?.item?.outage_status == 'DOWN' ? 0.5 : 1,
+          }}
+          onPress={() => onPressPayNow(item?.item?.payment_method_code)}
+        >
+          <WalletIcon imageUrl={item?.item?.image_url} />
+          <Text style={styles.payNow}>PAY NOW</Text>
+        </TouchableOpacity>
+      </View>
     );
   };
   const renderWallets = () => {

@@ -12,6 +12,7 @@ import {
   default as strings,
 } from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import moment from 'moment';
 import React from 'react';
 import {
   Dimensions,
@@ -46,6 +47,7 @@ export interface TestItemCardProps {
   isSpecialDiscount?: boolean;
   showCartInclusions?: boolean;
   duplicateArray?: any;
+  reportTat?: any;
 }
 
 export const TestItemCard: React.FC<TestItemCardProps> = (props) => {
@@ -60,6 +62,7 @@ export const TestItemCard: React.FC<TestItemCardProps> = (props) => {
     onPressRemove,
     onPress,
     testId,
+    reportTat,
   } = props;
 
   const renderSpecialDiscountText = (styleObj?: any) => {
@@ -210,14 +213,25 @@ export const TestItemCard: React.FC<TestItemCardProps> = (props) => {
   };
 
   const renderReportTimeAndInfoView = () => {
-    return reportGenItem?.itemPrepration || reportGenItem?.itemReportTat || reportGenItem?.itemCustomerText ? (
+    return reportGenItem?.itemPrepration ||
+      reportGenItem?.itemReportTat ||
+      reportGenItem?.itemCustomerText ||
+      reportTat?.reportTATInUTC ? (
       <View style={styles.timeAndInfoMainViewStyle}>
-        {reportGenItem?.itemCustomerText || reportGenItem?.itemReportTat ? (
+        {reportTat?.reportTATInUTC ||
+        reportGenItem?.itemCustomerText ||
+        reportGenItem?.itemReportTat ? (
           <View style={styles.reportGenViewStyle}>
             <TestTimeIcon style={styles.timeIconStyle} />
-            <Text
-              style={styles.reportGenTextStyle}
-            >{`Report Generation time - ${reportGenItem?.itemCustomerText ? reportGenItem?.itemCustomerText : reportGenItem?.itemReportTat}`}</Text>
+            <Text style={styles.reportGenTextStyle}>
+              {!!reportTat?.reportTATInUTC && reportTat?.reportTATInUTC != ''
+                ? `Report by ${moment(reportTat?.reportTATInUTC)?.format('ddd, DD MMM')}`
+                : `Report Generation time - ${
+                    reportGenItem?.itemCustomerText
+                      ? reportGenItem?.itemCustomerText
+                      : reportGenItem?.itemReportTat
+                  }`}
+            </Text>
           </View>
         ) : null}
         {reportGenItem?.itemPrepration ? (
@@ -337,13 +351,13 @@ const styles = StyleSheet.create({
   timeIconStyle: {
     width: 16,
     height: 16,
-    alignSelf: 'flex-start'
+    alignSelf: 'flex-start',
   },
   reportGenTextStyle: {
     ...text('M', 10, SHERPA_BLUE, 0.6, 16),
     marginLeft: 8,
   },
-  reportGenViewStyle: { flexDirection: 'row', marginBottom: 8, alignItems: 'center',width:'98%' },
+  reportGenViewStyle: { flexDirection: 'row', marginBottom: 8, alignItems: 'center', width: '98%' },
   removeTouch: {
     height: 30,
     width: 30,

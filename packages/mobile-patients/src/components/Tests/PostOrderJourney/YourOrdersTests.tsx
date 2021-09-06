@@ -35,6 +35,7 @@ import {
   FlatList,
   BackHandler,
   Text,
+  Modal,
   ScrollView,
   Dimensions,
 } from 'react-native';
@@ -72,6 +73,7 @@ import {
   BLACK_LIST_CANCEL_STATUS_ARRAY,
   BLACK_LIST_RESCHEDULE_STATUS_ARRAY,
   DIAGNOSTIC_ORDER_FAILED_STATUS,
+  DIAGNOSTIC_CONFIRMED_STATUS,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -150,8 +152,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [date, setDate] = useState<Date>(new Date());
   const [showDisplaySchedule, setDisplaySchedule] = useState<boolean>(false);
-  const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
-  const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
   const [selectedOrderId, setSelectedOrderId] = useState<number>(0);
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
@@ -341,6 +341,30 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       setLoading?.(false);
       setError(true);
       CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrders`, error);
+    }
+  };
+  const getReasons = async (item: any) => {
+    let selectedOrderTime = item?.slotDateTimeInUTC;
+    try {
+      client
+        .query<getRescheduleAndCancellationReasons, getRescheduleAndCancellationReasonsVariables>({
+          query: GET_RESCHEDULE_AND_CANCELLATION_REASONS,
+          context: {
+            sourceHeaders,
+          },
+          variables: { appointmentDateTimeInUTC: selectedOrderTime },
+          fetchPolicy: 'no-cache',
+        })
+        .then((data) => {
+          const reasonList = data?.data?.getRescheduleAndCancellationReasons || [];
+          setCancelReasonList(reasonList?.cancellationReasons);
+          setRescheduleReasonList(reasonList?.rescheduleReasons);
+        })
+        .catch((error) => {
+          CommonBugFender(`${AppRoutes.YourOrdersTest}_getReasons`, error);
+        });
+    } catch (error) {
+      CommonBugFender(`${AppRoutes.YourOrdersTest}_getReasons`, error);
     }
   };
 
@@ -560,10 +584,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const checkIfPreTestingExists = (order: orderList) => {
     if (order != null) {
-      const filterPreTestingData = order?.diagnosticOrderLineItems?.filter((items) =>
-        items?.itemObj
-          ? items?.itemObj?.testPreparationData != ''
-          : items?.diagnostics?.testPreparationData != ''
+      const filterPreTestingData = order?.diagnosticOrderLineItems?.filter(
+        (items) => items?.itemObj && items?.itemObj?.testPreparationData != ''
       );
       return filterPreTestingData?.length == 0 ? false : true;
     }
@@ -1289,6 +1311,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             ? order?.slotDateTimeInUTC
             : getSlotStartTime(order?.slotTimings)
         }
+        slotDuration={order?.attributesObj?.slotDurationInMinutes || 45}
         isPrepaid={order?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT}
         isCancelled={currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
         cancelledReason={
@@ -1411,7 +1434,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   function _onPressViewReportAction(order: orderList) {
     if (!!order?.labReportURL && order?.labReportURL != '') {
       setActiveOrder(order);
-      setDisplayViewReport(true);
+      _onPressViewReport(order);
     } else if (!!order?.visitNo && order?.visitNo != '') {
       //directly open the phr section
       fetchTestReportResult(order);
@@ -1440,8 +1463,17 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   ) {
     setLoading?.(true);
     try {
-      await downloadDiagnosticReport(setLoading, pdfUrl, appointmentDate, patientName, true);
-      setViewReportOrderId(order?.displayId);
+      await downloadDiagnosticReport(
+        setLoading,
+        pdfUrl,
+        appointmentDate,
+        patientName,
+        true,
+        undefined,
+        order?.orderStatus,
+        (order?.displayId).toString(),
+        true
+      );
     } catch (error) {
       setLoading?.(false);
       CommonBugFender('YourOrderTests_downloadLabTest', error);
@@ -1602,33 +1634,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       {showDisplaySchedule && renderRescheduleOrderOverlay()}
-      {displayViewReport && (
-        <TestViewReportOverlay
-          order={activeOrder}
-          heading=""
-          isVisible={displayViewReport}
-          viewReportOrderId={viewReportOrderId}
-          downloadDocument={() => {
-            const res = downloadDocument(
-              activeOrder?.labReportURL ? activeOrder?.labReportURL : '',
-              'application/pdf',
-              activeOrder?.displayId
-            );
-            if (res == activeOrder?.displayId) {
-              setViewReportOrderId(activeOrder?.displayId);
-            }
-          }}
-          onClose={() => setDisplayViewReport(false)}
-          onPressViewReport={() => {
-            DiagnosticViewReportClicked(
-              'My Order',
-              !!activeOrder?.labReportURL ? 'Yes' : 'No',
-              'Download Report PDF'
-            );
-            _onPressViewReport(activeOrder);
-          }}
-        />
-      )}
       <SafeAreaView style={theme.viewStyles.container}>
         {props?.showHeader == false ? null : (
           <Header

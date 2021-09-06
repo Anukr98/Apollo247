@@ -411,6 +411,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         }
         id
         hideHealthRecordNudge
+        discountedAmount
         patientId
         doctorId
         appointmentDateTime
@@ -559,6 +560,532 @@ export const GET_PATIENT_ALL_CONSULTED_DOCTORS = gql`
           }
           photoUrl
         }
+        id
+        hideHealthRecordNudge
+        discountedAmount
+        patientId
+        doctorId
+        appointmentDateTime
+        appointmentType
+        hospitalId
+        status
+        bookingDate
+        rescheduleCount
+        isFollowUp
+        appointmentState
+        displayId
+        isConsultStarted
+        isSeniorConsultStarted
+        isJdQuestionsComplete
+        isAutomatedQuestionsComplete
+        symptoms
+        doctorInfo {
+          allowBookingRequest
+          awards
+          city
+          country
+          chatDays
+          dateOfBirth
+          displayName
+          doctorType
+          delegateNumber
+          emailAddress
+          experience
+          firebaseToken
+          firstName
+          fullName
+          gender
+          isActive
+          id
+          name
+          mobileNumber
+          isActive
+        }
+      }
+      doctorHospital {
+        facility {
+          id
+          name
+          city
+          latitude
+          longitude
+          facilityType
+          streetLine1
+          streetLine2
+          streetLine3
+          imageUrl
+        }
+      }
+      starTeam {
+        associatedDoctor {
+          id
+          salutation
+          firstName
+          lastName
+          fullName
+          displayName
+          experience
+          city
+          photoUrl
+          qualification
+          thumbnailUrl
+          physicalConsultationFees
+          onlineConsultationFees
+          specialty {
+            id
+            name
+            image
+            userFriendlyNomenclature
+          }
+          consultHours {
+            consultMode
+            consultType
+            endTime
+            facility {
+              city
+              country
+              facilityType
+              id
+              imageUrl
+              latitude
+              longitude
+              name
+              state
+              streetLine1
+              streetLine2
+              streetLine3
+              zipcode
+            }
+            id
+            isActive
+            startTime
+            weekDay
+            consultDuration
+            consultBuffer
+          }
+          doctorHospital {
+            facility {
+              city
+              country
+              facilityType
+              id
+              imageUrl
+              latitude
+              longitude
+              name
+              state
+              streetLine1
+              streetLine2
+              streetLine3
+              zipcode
+            }
+          }
+          doctorSecretary {
+            secretary {
+              id
+              name
+              mobileNumber
+              isActive
+            }
+          }
+          packages {
+            fees
+            id
+            name
+          }
+          specialty {
+            createdDate
+            id
+            image
+            name
+            specialistSingularTerm
+            specialistPluralTerm
+            userFriendlyNomenclature
+            displayOrder
+          }
+          starTeam {
+            isActive
+          }
+        }
+        caseSheet {
+          id
+          followUpAfterInDays
+          version
+          doctorType
+          medicinePrescription {
+            id
+            medicineName
+            medicineUnit
+            medicineTimings
+            medicineDosage
+            medicineCustomDosage
+            medicineConsumptionDurationInDays
+            medicineConsumptionDurationUnit
+          }
+          diagnosticPrescription {
+            itemname
+            testInstruction
+          }
+          blobName
+        }
+      }
+      activeAppointments {
+        appointmentPayments {
+          id
+          amountPaid
+          paymentRefId
+          paymentStatus
+          paymentDateTime
+          responseCode
+          responseMessage
+          bankTxnId
+          orderId
+        }
+        id
+        hideHealthRecordNudge
+        discountedAmount
+        patientId
+        doctorId
+        appointmentDateTime
+        appointmentType
+        hospitalId
+        status
+        bookingDate
+        rescheduleCount
+        isFollowUp
+        appointmentState
+        displayId
+        isConsultStarted
+        isSeniorConsultStarted
+        isJdQuestionsComplete
+        isAutomatedQuestionsComplete
+        symptoms
+        doctorInfo {
+          allowBookingRequest
+          awards
+          city
+          country
+          chatDays
+          dateOfBirth
+          displayName
+          doctorType
+          delegateNumber
+          emailAddress
+          experience
+          firebaseToken
+          firstName
+          fullName
+          gender
+          isActive
+          id
+          languages
+          lastName
+          mobileNumber
+          onlineConsultationFees
+          onlineStatus
+          photoUrl
+          physicalConsultationFees
+          qualification
+          registrationNumber
+          salutation
+          signature
+          specialization
+          state
+          streetLine1
+          streetLine2
+          streetLine3
+          thumbnailUrl
+          zip
+          bankAccount {
+            accountHolderName
+            accountNumber
+            accountType
+            bankName
+            city
+            id
+            IFSCcode
+            state
+            streetLine1
+          }
+          consultHours {
+            consultMode
+            consultType
+            endTime
+            facility {
+              city
+              country
+              facilityType
+              id
+              imageUrl
+              latitude
+              longitude
+              name
+              state
+              streetLine1
+              streetLine2
+              streetLine3
+              zipcode
+            }
+            id
+            isActive
+            startTime
+            weekDay
+            consultDuration
+            consultBuffer
+          }
+          doctorHospital {
+            facility {
+              city
+              country
+              facilityType
+              id
+              imageUrl
+              latitude
+              longitude
+              name
+              state
+              streetLine1
+              streetLine2
+              streetLine3
+              zipcode
+            }
+          }
+          doctorSecretary {
+            secretary {
+              id
+              name
+              mobileNumber
+              isActive
+            }
+          }
+          packages {
+            fees
+            id
+            name
+          }
+          specialty {
+            createdDate
+            id
+            image
+            name
+            specialistSingularTerm
+            specialistPluralTerm
+            userFriendlyNomenclature
+            displayOrder
+          }
+          starTeam {
+            isActive
+          }
+        }
+        caseSheet {
+          id
+          followUpAfterInDays
+          version
+          doctorType
+          medicinePrescription {
+            id
+            medicineName
+            medicineUnit
+            medicineTimings
+            medicineDosage
+            medicineCustomDosage
+            medicineConsumptionDurationInDays
+            medicineConsumptionDurationUnit
+          }
+          diagnosticPrescription {
+            itemname
+            testInstruction
+          }
+          blobName
+        }
+      }
+      completedAppointments {
+        appointmentPayments {
+          id
+          amountPaid
+          paymentRefId
+          paymentStatus
+          paymentDateTime
+          responseCode
+          responseMessage
+          bankTxnId
+          orderId
+        }
+        id
+        hideHealthRecordNudge
+        discountedAmount
+        patientId
+        doctorId
+        appointmentDateTime
+        appointmentType
+        hospitalId
+        status
+        bookingDate
+        rescheduleCount
+        isFollowUp
+        appointmentState
+        displayId
+        isConsultStarted
+        isSeniorConsultStarted
+        isJdQuestionsComplete
+        isAutomatedQuestionsComplete
+        symptoms
+        doctorInfo {
+          allowBookingRequest
+          awards
+          city
+          country
+          chatDays
+          dateOfBirth
+          displayName
+          doctorType
+          delegateNumber
+          emailAddress
+          experience
+          firebaseToken
+          firstName
+          fullName
+          gender
+          isActive
+          id
+          languages
+          lastName
+          mobileNumber
+          onlineConsultationFees
+          onlineStatus
+          photoUrl
+          physicalConsultationFees
+          qualification
+          registrationNumber
+          salutation
+          signature
+          specialization
+          state
+          streetLine1
+          streetLine2
+          streetLine3
+          thumbnailUrl
+          zip
+          bankAccount {
+            accountHolderName
+            accountNumber
+            accountType
+            bankName
+            city
+            id
+            IFSCcode
+            state
+            streetLine1
+          }
+          consultHours {
+            consultMode
+            consultType
+            endTime
+            facility {
+              city
+              country
+              facilityType
+              id
+              imageUrl
+              latitude
+              longitude
+              name
+              state
+              streetLine1
+              streetLine2
+              streetLine3
+              zipcode
+            }
+            id
+            isActive
+            startTime
+            weekDay
+            consultDuration
+            consultBuffer
+          }
+          doctorHospital {
+            facility {
+              city
+              country
+              facilityType
+              id
+              imageUrl
+              latitude
+              longitude
+              name
+              state
+              streetLine1
+              streetLine2
+              streetLine3
+              zipcode
+            }
+          }
+          doctorSecretary {
+            secretary {
+              id
+              name
+              mobileNumber
+              isActive
+            }
+          }
+          packages {
+            fees
+            id
+            name
+          }
+          specialty {
+            createdDate
+            id
+            image
+            name
+            specialistSingularTerm
+            specialistPluralTerm
+            userFriendlyNomenclature
+            displayOrder
+          }
+          starTeam {
+            isActive
+          }
+        }
+        caseSheet {
+          id
+          followUpAfterInDays
+          version
+          doctorType
+          medicinePrescription {
+            id
+            medicineName
+            medicineUnit
+            medicineTimings
+            medicineDosage
+            medicineCustomDosage
+            medicineConsumptionDurationInDays
+            medicineConsumptionDurationUnit
+          }
+          diagnosticPrescription {
+            itemname
+            testInstruction
+          }
+          blobName
+        }
+      }
+    }
+  }
+`;
+
+export const GET_PATIENT_ALL_CONSULTED_DOCTORS = gql`
+  query getPatientAllConsultedDoctors($patientId: String!) {
+    getPatientAllAppointments(patientId: $patientId) {
+      appointments {
+        doctorInfo {
+          id
+          displayName
+          specialty {
+            image
+            name
+          }
+          photoUrl
+        }
       }
     }
   }
@@ -620,6 +1147,11 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
         status
         mrp
         appointment_type
+        slashed_price
+        is_cashback_enabled
+        cashback_amount
+        bookingFee
+        isBookingFeeExempted
       }
       availabilityTitle {
         AVAILABLE_NOW
@@ -738,6 +1270,7 @@ export const GET_PLATINUM_DOCTOR = gql`
         doctorfacility
         fee
         specialistPluralTerm
+        languages
         specialistPluralTerm
         specialtydisplayName
         doctorType
@@ -1397,10 +1930,25 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           lastName
           gender
         }
-        city
+        patientAddressObj {
+          addressLine1
+          addressLine2
+          addressType
+          landmark
+          state
+          city
+          zipcode
+          latitude
+          longitude
+        }
         slotTimings
         slotId
         totalPrice
+        attributesObj {
+          slotDurationInMinutes
+          expectedReportGenerationTime
+          reportTATMessage
+        }
         prescriptionUrl
         diagnosticDate
         orderStatus
@@ -1490,8 +2038,8 @@ export const GET_DIAGNOSTICS_HC_CHARGES = gql`
 `;
 
 export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
-  query findDiagnosticsByItemIDsAndCityID($cityID: Int!, $itemIDs: [Int]!) {
-    findDiagnosticsByItemIDsAndCityID(cityID: $cityID, itemIDs: $itemIDs) {
+  query findDiagnosticsByItemIDsAndCityID($cityID: Int!, $itemIDs: [Int]!, $pincode: Int) {
+    findDiagnosticsByItemIDsAndCityID(cityID: $cityID, itemIDs: $itemIDs, pincode: $pincode) {
       diagnostics {
         id
         itemId
@@ -1771,6 +2319,9 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           preTestingRequirement
           reportGenerationTime
           initialCollectionCharges
+          slotDurationInMinutes
+          expectedReportGenerationTime
+          reportTATMessage
         }
         patientAddressObj {
           addressLine1
@@ -2517,6 +3068,362 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS_BY_MOBILE = gql`
 export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
   query getPatientPrismMedicalRecords_V2($patientId: ID!, $records: [MedicalRecordType]) {
     getPatientPrismMedicalRecords_V2(patientId: $patientId, records: $records) {
+      labResults {
+        response {
+          id
+          labTestName
+          labTestSource
+          packageId
+          packageName
+          # labTestDate
+          date
+          labTestRefferedBy
+          siteDisplayName
+          tag
+          consultId
+          identifier
+          additionalNotes
+          billNo
+          testSequence
+          observation
+          labTestResults {
+            parameterName
+            unit
+            result
+            range
+            outOfRange
+            # resultDate
+          }
+          fileUrl
+          testResultFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+          }
+        }
+        errorCode
+        errorMsg
+        errorType
+      }
+      prescriptions {
+        response {
+          id
+          prescriptionName
+          date
+          # dateOfPrescription
+          # startDate
+          # endDate
+          prescribedBy
+          notes
+          prescriptionSource
+          siteDisplayName
+          source
+          fileUrl
+          prescriptionFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+          }
+          hospital_name
+          hospitalId
+        }
+        errorCode
+        errorMsg
+        errorType
+      }
+      healthChecks {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          authToken
+          userId
+          id
+          fileUrl
+          date
+          healthCheckName
+          healthCheckDate
+          siteDisplayName
+          healthCheckSummary
+          healthCheckFiles {
+            id
+            fileName
+            mimeType
+            content
+            # byteContent
+            # dateCreated
+          }
+          source
+          healthCheckType
+          followupDate
+        }
+      }
+      hospitalizations {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          authToken
+          userId
+          id
+          fileUrl
+          date
+          hospitalizationDate
+          dateOfHospitalization
+          hospitalName
+          doctorName
+          reasonForAdmission
+          siteDisplayName
+          diagnosisNotes
+          dateOfDischarge
+          dischargeSummary
+          doctorInstruction
+          dateOfNextVisit
+          hospitalizationFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
+          }
+          source
+        }
+      }
+      medicalBills {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          bill_no
+          hospitalName
+          billDate
+          source
+          siteDisplayName
+          notes
+          fileUrl
+          billDateTime
+          billFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
+          }
+        }
+      }
+      medicalInsurances {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          insuranceCompany
+          policyNumber
+          startDate
+          endDate
+          startDateTime
+          endDateTime
+          source
+          siteDisplayName
+          fileUrl
+          notes
+          sumInsured
+          insuranceFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
+          }
+        }
+      }
+      medicalConditions {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          medicalConditionName
+          doctorTreated
+          startDate
+          source
+          endDate
+          notes
+          illnessType
+          fileUrl
+          siteDisplayName
+          startDateTime
+          endDateTime
+          medicationFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
+          }
+        }
+      }
+      medications {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          medicineName
+          medicalCondition
+          doctorName
+          startDate
+          endDate
+          startDateTime
+          endDateTime
+          morning
+          noon
+          siteDisplayName
+          evening
+          notes
+          source
+        }
+      }
+      healthRestrictions {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          startDate
+          endDate
+          startDateTime
+          endDateTime
+          restrictionName
+          suggestedByDoctor
+          nature
+          siteDisplayName
+          source
+          notes
+        }
+      }
+      allergies {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          startDate
+          endDate
+          fileUrl
+          startDateTime
+          endDateTime
+          allergyName
+          severity
+          reactionToAllergy
+          doctorTreated
+          notes
+          siteDisplayName
+          source
+          attachmentList {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
+          }
+        }
+      }
+      familyHistory {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          diseaseName
+          authToken
+          source
+          fileUrl
+          familyMember
+          notes
+          siteDisplayName
+          recordDateTime
+          age
+          familyHistoryFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
+          }
+        }
+      }
+      immunizations {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          immunizationName
+          dateAdministered
+          followUpDate
+          registrationId
+          dateOfImmunization
+          dueDate
+          fileUrl
+          doctorName
+          manufacturer
+          batchno
+          vaccineName
+          potency
+          hospitalName
+          vaccine_location
+          notes
+          source
+          reactions {
+            type
+            from
+            to
+          }
+          immunizationFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+            dateCreated
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_MEDICAL_PRISM_RECORD_V3 = gql`
+  query getPatientPrismMedicalRecords_V3($patientId: ID!, $records: [MedicalRecordType]) {
+    getPatientPrismMedicalRecords_V3(patientId: $patientId, records: $records) {
       labResults {
         response {
           id
@@ -4664,8 +5571,8 @@ export const ADD_DIABETIC_QUESTIONNAIRE = gql`
 `;
 
 export const GET_PAYMENT_METHODS = gql`
-  query getPaymentMethods($is_mobile: Boolean, $payment_order_id: String) {
-    getPaymentMethods(is_mobile: $is_mobile, payment_order_id: $payment_order_id) {
+  query getPaymentMethodsV2($is_mobile: Boolean, $payment_order_id: String!) {
+    getPaymentMethodsV2(is_mobile: $is_mobile, payment_order_id: $payment_order_id) {
       name
       minimum_supported_version
       payment_methods {
@@ -4673,6 +5580,7 @@ export const GET_PAYMENT_METHODS = gql`
         payment_method_name
         payment_method_code
         minimum_supported_version
+        outage_status
       }
     }
   }
@@ -4712,6 +5620,30 @@ export const GET_INTERNAL_ORDER = gql`
       txn_id
       status_id
       payment_order_id
+      DiagnosticsPaymentDetails {
+        ordersList {
+          id
+          patientId
+          primaryOrderID
+          displayId
+          slotDateTimeInUTC
+          attributesObj {
+            slotDurationInMinutes
+          }
+          patientObj {
+            id
+            firstName
+            lastName
+            gender
+          }
+          diagnosticOrderLineItems {
+            itemId
+            itemName
+            price
+            editOrderID
+          }
+        }
+      }
       refunds {
         status
         unique_request_id
@@ -4832,6 +5764,12 @@ export const GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID = gql`
         isRescheduled
         preBookingId
         id
+        attributesObj {
+          homeCollectionCharges
+          slotDurationInMinutes
+          expectedReportGenerationTime
+          reportTATMessage
+        }
         diagnosticOrdersStatus {
           orderStatus
         }
@@ -4876,6 +5814,9 @@ export const GET_ORDER_LEVEL_DIAGNOSTIC_STATUS = gql`
         packageId
         itemName
         packageName
+      }
+      upcomingStatuses {
+        orderStatus
       }
     }
   }
@@ -4982,15 +5923,17 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql`
           firstName
           lastName
         }
+        attributesObj {
+          reportTATHours
+          reportTATMessage
+          reportGenerationTime
+          expectedReportGenerationTime
+        }
         diagnosticOrderLineItems {
           itemObj {
             testPreparationData
             preTestingRequirement
           }
-        }
-        attributesObj {
-          reportGenerationTime
-          preTestingRequirement
         }
       }
     }
@@ -5042,7 +5985,10 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
           }
         }
         attributesObj {
+          reportTATHours
+          reportTATMessage
           reportGenerationTime
+          expectedReportGenerationTime
         }
       }
     }
@@ -5506,6 +6452,102 @@ export const GET_DIAGNOSTIC_PAYMENT_SETTINGS = gql`
     getDiagnosticPaymentSettings(paymentOrderId: $paymentOrderId) {
       cod
       hc_credits_message
+    }
+  }
+`;
+
+export const GET_PRODUCT_SUBSTITUTES = gql`
+  query pharmaSubstitution($substitutionInput: PharmaSubstitutionRequest) {
+    pharmaSubstitution(substitutionInput: $substitutionInput) {
+      substitutes {
+        sku
+        name
+        price
+        mou
+        image
+        thumbnail
+        small_image
+        is_express
+        is_in_contract
+        is_prescription_required
+        description
+        subcategory
+        type_id
+        url_key
+        is_in_stock
+        MaxOrderQty
+        sell_online
+        manufacturer
+        dc_availability
+        tat
+        tatDuration
+        tatPrice
+      }
+    }
+  }
+`;
+
+export const POST_WEB_ENGAGE = gql`
+  mutation postConsultEventToDoctor($doctorConsultEventInput: PatientConsultEventToDoctorInput!) {
+    postConsultEventToDoctor(doctorConsultEventInput: $doctorConsultEventInput) {
+      response {
+        status
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTICS_RECOMMENDATIONS = gql`
+  mutation getDiagnosticItemRecommendations($itemIds: [Int]!, $records: Int) {
+    getDiagnosticItemRecommendations(itemIds: $itemIds, numberOfRecordsToFetch: $records) {
+      itemsData {
+        itemId
+        itemName
+        combinedLift
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_EXPRESS_SLOTS_INFO = gql`
+  query getUpcomingSlotInfo(
+    $latitude: Float!
+    $longitude: Float!
+    $zipcode: String!
+    $serviceability: DiagnosticsServiceability!
+  ) {
+    getUpcomingSlotInfo(
+      latitude: $latitude
+      longitude: $longitude
+      zipcode: $zipcode
+      serviceability: $serviceability
+    ) {
+      status
+      slotInfo
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_REPORT_TAT = gql`
+  query getConfigurableReportTAT(
+    $slotDateTimeInUTC: DateTime
+    $cityId: Int!
+    $pincode: Int!
+    $itemIds: [Int]!
+  ) {
+    getConfigurableReportTAT(
+      slotDateTimeInUTC: $slotDateTimeInUTC
+      cityId: $cityId
+      pincode: $pincode
+      itemIds: $itemIds
+    ) {
+      maxReportTAT
+      reportTATMessage
+      itemLevelReportTATs {
+        itemId
+        reportTATMessage
+        reportTATInUTC
+      }
     }
   }
 `;
