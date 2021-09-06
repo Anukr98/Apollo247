@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'transparent',
     padding: 6,
-    height: 27,
+    height: 30,
     justifyContent: 'center',
   },
   titleStyle: {
