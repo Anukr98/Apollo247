@@ -403,31 +403,34 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   phleboDetails?.orderPhleboDetails?.diagnosticOrdersId === order?.id
               );
               if (findOrder && findOrder.orderPhleboDetails !== null) {
-                if (order?.phleboDetailsObj === null) {
-                  order.phleboDetailsObj = {
-                    PhelboOTP: null,
-                    PhelbotomistName: null,
-                    PhelbotomistMobile: null,
-                    PhelbotomistTrackLink: null,
-                    TempRecording: null,
-                    CheckInTime: null,
-                    PhleboLatitude: null,
-                    PhleboLongitude: null,
-                    PhleboRating: null,
-                    allowCalling: null,
-                    __typename: 'PhleboDetailsObj',
+                if (order?.diagnosticOrderPhlebotomists === null) {
+                  order.diagnosticOrderPhlebotomists = {
+                    phleboRating: null,
+                    phleboOTP: null,
+                    checkinDateTime: null,
+                    phleboTrackLink: null,
+                    allowCalling: null, //added
+                    diagnosticPhlebotomists: {
+                      id: null,
+                      name: null,
+                      mobile: null,
+                      vaccinationStatus: null,
+                    },
                   };
                 }
-                order.phleboDetailsObj.PhelboOTP = findOrder?.orderPhleboDetails?.phleboOTP;
-                order.phleboDetailsObj.PhelbotomistName =
+                order.diagnosticOrderPhlebotomists.phleboOTP =
+                  findOrder?.orderPhleboDetails?.phleboOTP;
+                order.diagnosticOrderPhlebotomists.diagnosticPhlebotomists.name =
                   findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.name;
-                order.phleboDetailsObj.PhelbotomistMobile =
+                order.diagnosticOrderPhlebotomists.diagnosticPhlebotomists.mobile =
                   findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.mobile;
-                order.phleboDetailsObj.PhelbotomistTrackLink =
+                order.diagnosticOrderPhlebotomists.phleboTrackLink =
                   findOrder?.orderPhleboDetails?.phleboTrackLink;
-                order.phleboDetailsObj.CheckInTime = findOrder?.phleboEta?.estimatedArrivalTime;
-                order.phleboDetailsObj.PhleboRating = findOrder?.orderPhleboDetails?.phleboRating;
-                order.phleboDetailsObj.allowCalling = findOrder?.allowCalling;
+                order.diagnosticOrderPhlebotomists.checkinDateTime =
+                  findOrder?.phleboEta?.estimatedArrivalTime;
+                order.diagnosticOrderPhlebotomists.phleboRating =
+                  findOrder?.orderPhleboDetails?.phleboRating;
+                order.diagnosticOrderPhlebotomists.allowCalling = findOrder?.allowCalling;
               }
             });
             setOrders(ordersList);
@@ -1311,7 +1314,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPressReschedule={() => _onPressTestReschedule(order)}
         onPressViewDetails={() => _navigateToYourTestDetails(order, true)}
         onPressViewReport={() => _onPressViewReportAction(order)}
-        phelboObject={order?.phleboDetailsObj}
+        phelboObject={order?.diagnosticOrderPhlebotomists}
         onPressRatingStar={(star) => {
           props.navigation.navigate(AppRoutes.TestRatingScreen, {
             ratingStar: star,

@@ -1842,6 +1842,18 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           PhleboLatitude
           PhleboLongitude
         }
+        diagnosticOrderPhlebotomists {
+          phleboRating
+          phleboOTP
+          checkinDateTime
+          phleboTrackLink
+          diagnosticPhlebotomists {
+            id
+            name
+            mobile
+            vaccinationStatus
+          }
+        }
         diagnosticOrderReschedule {
           rescheduleDate
           rescheduleReason
@@ -4931,6 +4943,7 @@ export const GET_PHLOBE_DETAILS = gql`
           diagnosticPhlebotomists {
             name
             mobile
+            vaccinationStatus
           }
           phleboOTP
           phleboTrackLink

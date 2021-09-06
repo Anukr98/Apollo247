@@ -324,15 +324,15 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
   const showDetailOTPContainer = () => {
     const phlObj = props?.phelboObject;
-    const otpToShow = !!phlObj && phlObj?.PhelboOTP;
-    const phoneNumber = !!phlObj && phlObj?.PhelbotomistMobile;
-    const name = !!phlObj && phlObj?.PhelbotomistName;
-    const phleboTrackLink = !!phlObj && phlObj?.PhelbotomistTrackLink;
+    const otpToShow = !!phlObj && phlObj?.phleboOTP;
+    const phoneNumber = !!phlObj && phlObj?.diagnosticPhlebotomists?.mobile;
+    const name = !!phlObj && phlObj?.diagnosticPhlebotomists?.name;
+    const phleboTrackLink = !!phlObj && phlObj?.phleboTrackLink;
     const orderId = props.orderId.toString();
-    const checkEta = !!phlObj?.CheckInTime;
+    const checkEta = !!phlObj?.checkinDateTime;
     let phleboEta = '';
     if (checkEta) {
-      phleboEta = moment(phlObj?.CheckInTime).format('hh:mm A');
+      phleboEta = moment(phlObj?.checkinDateTime).format('hh:mm A');
     }
     const slotime = !!props.slotTime ? moment(props?.slotTime) || null : null;
     const showDetailedInfo = !!slotime
@@ -421,7 +421,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
   const showOnlyOTPContainer = () => {
     const phlObj = props?.phelboObject;
-    const otpToShow = !!phlObj && phlObj?.PhelboOTP;
+    const otpToShow = !!phlObj && phlObj?.phleboOTP;
     return (
       <View style={styles.ratingContainer}>
         <Text style={styles.otpBoxTextStyle}>OTP : {otpToShow}</Text>
@@ -432,7 +432,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   const showRatingView = () => {
     const starCount = [1, 2, 3, 4, 5];
     const phlObj = props?.phelboObject;
-    const phleboRating = !!phlObj && phlObj?.PhleboRating;
+    const phleboRating = !!phlObj && phlObj?.phleboRating;
     let checkRating = starCount.includes(phleboRating);
     const ratedStarCount = starCount.slice(0, phleboRating);
     const unRatedStarCount = starCount.slice(phleboRating, starCount.length);
