@@ -660,6 +660,8 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
             const unit = item?.unit;
             var minNum: number;
             var maxNum: number;
+            let validNumber = new RegExp(/^-?([0-9]*\.?[0-9]+|[0-9]+\.?[0-9]*)$/);
+            var checkNumber = validNumber.test(item?.result);
             var resultColorChanger: boolean;
             var stringColorChanger: boolean;
             var rangeColorChanger: boolean;
@@ -747,7 +749,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                 >
                   <View style={styles.labelViewStyle}>
                     <Text style={styles.labelStyle}>{item?.parameterName}</Text>
-                    {data.labTestSource === 'Hospital' && !!item.unit && !!item.result ? (
+                    {data.labTestSource === 'Hospital' && !!checkNumber ? (
                       <TouchableOpacity
                         activeOpacity={1}
                         onPress={() => {
@@ -1144,10 +1146,11 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
     let arrRange: [] = [];
     let arrResult: [] = [];
     let modifiedResult: [] = [];
-    let validNumber = new RegExp(/^\d*\.?\d*$/);
+    let validNumber = new RegExp(/^[0-9]*([.,][0-9]+)?$/);
     if (resonseData?.length > 0) {
       resonseData?.map((items: any) => {
-        let checkValidNumber = validNumber.test(items.result);
+        let checkValidNumber = validNumber.test(items?.result);
+        console.log(checkValidNumber, 'items.result');
         if (!!checkValidNumber) {
           arrDate?.push(items.resultDate);
           arrRange?.push(items.range);
@@ -1179,7 +1182,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
     }
     const lineData = arrResult.map((i) => Number(i));
     const dateForRanges = arrDate.map((i) => Number(i));
-    return (
+    return arrResult.length > 0 ? (
       <CombinedBarChart
         title={sendParamName}
         onClickClose={() => setShowPopup(false)}
@@ -1195,6 +1198,8 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         onSendTestReport={(selectedItem) => callBackTestReports(selectedItem)}
         siteName={data?.siteDisplayName}
       />
+    ) : (
+      Alert.alert('OOPS!!', 'Result doesnt have a valid value')
     );
   };
 
