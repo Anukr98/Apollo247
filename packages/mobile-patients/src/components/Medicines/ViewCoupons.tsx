@@ -143,6 +143,7 @@ export interface pharma_coupon {
   applicable?: string;
   textOffer?: string;
   frontEndCategory?: string;
+  circleBenefits?: boolean;
 }
 
 export interface ViewCouponsProps extends NavigationScreenProps {
@@ -240,7 +241,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
   }, []);
 
   const isCircleCoupon = (coupon: pharma_coupon) => {
-    return coupon?.applicable?.toLowerCase().includes('APOLLO:Circle'.toLowerCase());
+    return !!coupon?.circleBenefits;
   };
 
   const isProductOfferCoupon = (coupon: pharma_coupon) => {
