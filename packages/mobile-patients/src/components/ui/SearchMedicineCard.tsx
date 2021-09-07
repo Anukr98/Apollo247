@@ -2,6 +2,7 @@ import {
   MedicineIcon,
   MedicineRxIcon,
   ExpressDeliveryLogo,
+  CircleDiscountBadge,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
@@ -94,6 +95,14 @@ const styles = StyleSheet.create({
     height: 80,
     width: 80,
   },
+  discountBadgeText: {
+    color: 'white',
+    position: 'absolute',
+    left: 10,
+    ...theme.fonts.IBMPlexSansMedium(11),
+  },
+  discountBadgeIcon: { height: 17, width: 110 },
+  discountBadgeView: { position: 'absolute', top: 0 },
 });
 
 export interface Props extends MedicineProduct {
@@ -138,6 +147,7 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
     dc_availability,
     is_in_contract,
     image,
+    merchandising,
   } = props;
 
   const isOutOfStock =
@@ -256,14 +266,29 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
     );
   };
 
+  const renderMerchandisingTag = () => {
+    const text = merchandising == 1 ? 'Apollo\'s Choice' : merchandising == 2 ? 'Recommended' : null;
+    if (text) {
+      return (
+        <View style={styles.discountBadgeView}>
+          <CircleDiscountBadge style={styles.discountBadgeIcon} />
+          <Text style={styles.discountBadgeText}>{text}</Text>
+        </View>
+      );
+    } else {
+      return null;
+    }
+  };
+
   return (
     <TouchableOpacity
       activeOpacity={1}
       style={[styles.containerStyle, containerStyle, { zIndex: -1 }]}
       onPress={() => onPress()}
     >
+      {!!merchandising && renderMerchandisingTag()}
       {is_express === 'Yes' && renderExpressFlag()}
-      <View style={{ flexDirection: 'row' }}>
+      <View style={{ flexDirection: 'row', paddingTop: merchandising ? 10 : 0 }}>
         {renderMedicineIcon()}
         <View style={styles.flexStyle}>{renderTitleAndIcon()}</View>
         <View style={{ width: 10 }}></View>

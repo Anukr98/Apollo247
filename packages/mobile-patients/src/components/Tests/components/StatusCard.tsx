@@ -16,6 +16,7 @@ interface StatusCardProps {
   containerStyle?: StyleProp<ViewStyle>;
   titleText: DIAGNOSTIC_ORDER_STATUS;
   titleStyle?: StyleProp<TextStyle>;
+  customText?: boolean;
 }
 
 export const StatusCard: React.FC<StatusCardProps> = (props) => {
@@ -44,7 +45,7 @@ export const StatusCard: React.FC<StatusCardProps> = (props) => {
           },
         ]}
       >
-        {nameFormater(getTestOrderStatusText(props.titleText!), 'title')}
+        {nameFormater(getTestOrderStatusText(props.titleText!, props.customText), 'title')}
       </Text>
     </View>
   );

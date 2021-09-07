@@ -7,6 +7,7 @@ import { AddressCard } from '@aph/mobile-patients/src/components/Medicines/Compo
 import { AppRoutes } from '../../NavigatorContainer';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { renderPharmaFetchAddressHeadingShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -19,6 +20,7 @@ export interface AccessLocationProps {
   onPressSelectAddress: (address: savePatientAddress_savePatientAddress_patientAddress) => void;
   source?: string;
   hidePincodeCurrentLocation?: boolean;
+  isAddressLoading: boolean;
 }
 
 export const AccessLocation: React.FC<AccessLocationProps> = (props) => {
@@ -75,7 +77,9 @@ export const AccessLocation: React.FC<AccessLocationProps> = (props) => {
   };
 
   const renderAddresses = () => {
-    return (
+    return props.isAddressLoading ? (
+      renderPharmaFetchAddressHeadingShimmer()
+    ) : (
       <View>
         <Text style={styles.addressHeader}>{string.accessLocationPopUp.chooseFromAddressText}</Text>
         <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>

@@ -6,6 +6,8 @@ import com.BV.LinearGradient.LinearGradientPackage;
 import com.apollopatient.appsignature.RNAppSignatureHelperPackage;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.bebnev.RNUserAgentPackage;
+import com.ibits.react_native_in_app_review.AppReviewPackage;
 import com.christopherdro.htmltopdf.RNHTMLtoPDFPackage;
 import com.horcrux.svg.SvgPackage;
 import com.appsflyer.reactnative.RNAppsFlyerPackage;
@@ -51,6 +53,7 @@ public class MainApplication extends Application implements ReactApplication {
                     packages.add(new RNAppSignatureHelperPackage());
                     packages.add(new LinearGradientPackage());
                     packages.add(new GetReferrerPackage());
+
                     return packages;
                 }
 
@@ -90,7 +93,7 @@ public class MainApplication extends Application implements ReactApplication {
                 //Staging -- in~~c2ab3529
                 //Production -- in~~c2ab3533
                 WebEngageConfig webEngageConfig = new WebEngageConfig.Builder()
-                        .setWebEngageKey("in~~c2ab3533")
+                        .setWebEngageKey("in~~c2ab3529")
                         .setDebugMode(false) // only in development mode
                         .build();
 

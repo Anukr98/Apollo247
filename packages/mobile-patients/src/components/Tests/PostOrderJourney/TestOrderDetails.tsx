@@ -11,9 +11,12 @@ import {
   More,
   OrderPlacedIcon,
   OrderTrackerSmallIcon,
+  ClockIcon,
+  OvalUpcoming,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import _ from 'lodash';
 import {
+  DIAGNOSTIC_FAILURE_STATUS_ARRAY,
   DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS,
   DIAGNOSTIC_ORDER_FAILED_STATUS,
   DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
@@ -32,6 +35,7 @@ import {
   getDiagnosticOrderDetails,
   getDiagnosticOrderDetailsVariables,
   getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList,
+  getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
 import {
   downloadDiagnosticReport,
@@ -94,6 +98,7 @@ const DROP_DOWN_ARRAY_STATUS = [
 ];
 
 type orderStatus = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus;
+type orderLineItems = getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems;
 export interface TestOrderDetailsProps extends NavigationScreenProps {
   orderId: string;
   showOrderSummaryTab: boolean;
@@ -129,12 +134,12 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const [scrollYValue, setScrollYValue] = useState(0);
+  const [slotDuration, setSlotDuration] = useState(0);
   const [loading1, setLoading] = useState<boolean>(true);
   const [orderLevelStatus, setOrderLevelStatus] = useState([] as any);
-  const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
   const [showInclusionStatus, setShowInclusionStatus] = useState<boolean>(false);
   const [showError, setError] = useState<boolean>(false);
-  const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
+
   const scrollViewRef = React.useRef<ScrollView | null>(null);
 
   const [orderDetails, setOrderDetails] = useState([] as any);
@@ -196,11 +201,18 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         setError(true);
       }
     } catch (error) {
-      CommonBugFender('TestOrderDetails_fetchDiagnosticOrderDetails', error);
+      CommonBugFender('TestOrderDetails_fetchDiagnosticOrderDetails_try', error);
       setLoading?.(false);
       setError(true);
     }
   };
+  const sampleCollectedArray = [
+    DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
+    DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
+    DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
+    DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
+    DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
+  ];
 
   async function callOrderLevelStatusApi(orderId: string) {
     try {
@@ -226,6 +238,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       let response = await fetchOrderDetails(orderId);
       if (!!response && response?.data && !response?.errors) {
         let getOrderDetails = response?.data?.getDiagnosticOrderDetails?.ordersList;
+        setSlotDuration(getOrderDetails?.attributesObj?.slotDurationInMinutes || 45);
         setOrderDetails(getOrderDetails);
         setError(false);
       } else {
@@ -259,7 +272,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     }
     if (selectedTab == string.orders.trackOrder && newList?.length > 0) {
       let latestStatus = newList?.[newList?.length - 1]?.orderStatus;
-      DiagnosticTrackOrderViewed(currentPatient, latestStatus, orderId, 'Track Order');
+      DiagnosticTrackOrderViewed(currentPatient, latestStatus, orderId, 'My Order');
     }
   }, [selectedTab]);
 
@@ -391,9 +404,18 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     }
   };
 
+  const renderOrderReportTat = (reportTat: any) => {
+    return (
+      <View style={styles.reportTatBottomview}>
+        <ClockIcon style={styles.clockIconStyle} />
+        <Text style={styles.reportOrderTextStyle}> {reportTat} </Text>
+      </View>
+    );
+  };
+
   const renderRefund = () => {
     const isOrderModified = orderDetails?.diagnosticOrderLineItems?.find(
-      (item) => !!item?.editOrderID && item?.editOrderID
+      (item: orderLineItems) => !!item?.editOrderID && item?.editOrderID
     );
     if (!!orderLevelStatus && !_.isEmpty(orderLevelStatus) && refundStatusArr?.length > 0) {
       return (
@@ -411,7 +433,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const getFormattedTime = (time: string) => {
-    return moment(time).format('hh:mm a');
+    return moment(time).format('hh:mm A');
   };
 
   const renderGraphicalStatus = (order: any, index: number, isStatusDone: boolean, array: any) => {
@@ -420,7 +442,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         {isStatusDone ? (
           <OrderPlacedIcon style={styles.statusIconStyle} />
         ) : (
-          <OrderTrackerSmallIcon style={[styles.statusIconSmallStyle]} />
+          <OvalUpcoming style={[styles.statusIconSmallStyle]} />
         )}
 
         <View
@@ -432,7 +454,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                   ? 'transparent'
                   : isStatusDone
                   ? theme.colors.SKY_BLUE
-                  : 'rgba(0,135,186,0.3)',
+                  : 'rgba(0,179,142,0.3)',
             },
           ]}
         />
@@ -458,66 +480,159 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const renderOrderTracking = () => {
-    newList = newList =
-      refundStatusArr?.length > 0 ? orderStatusList : orderLevelStatus?.statusHistory;
+    newList =
+      refundStatusArr?.length > 0
+        ? orderStatusList
+        : orderLevelStatus?.upcomingStatuses?.length > 0
+        ? orderLevelStatus?.statusHistory.concat(orderLevelStatus?.upcomingStatuses)
+        : orderLevelStatus?.statusHistory;
     scrollToSlots();
+
+    console.log({ orderLevelStatus });
+
     return (
       <View>
         <View style={{ margin: 20 }}>
           {newList?.map((order: any, index: number, array: any) => {
-            const isStatusDone = true;
-            return (
-              <View
-                style={styles.rowStyle}
-                onLayout={(event) => {
-                  const layout = event.nativeEvent.layout;
-                  if (isStatusDone && selectedTab === string.orders.trackOrder) {
-                    setScrollYValue(layout.y);
-                  }
-                }}
-              >
-                {renderGraphicalStatus(order, index, isStatusDone, array)}
-                <View style={{ marginBottom: 8, flex: 1 }}>
-                  <View style={[isStatusDone ? styles.statusDoneView : { padding: 10 }]}>
-                    <View style={styles.flexRow}>
-                      <View style={{ width: '75%' }}>
-                        <Text
-                          style={[
-                            styles.statusTextStyle,
-                            {
-                              color:
-                                DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus) ||
-                                order?.orderStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB
-                                  ? theme.colors.INPUT_FAILURE_TEXT
-                                  : theme.colors.SHERPA_BLUE,
-                            },
-                          ]}
-                        >
-                          {nameFormater(getTestOrderStatusText(order?.orderStatus), 'default')}
-                        </Text>
-                      </View>
-                      {isStatusDone ? renderCustomDescriptionOrDateAndTime(order) : null}
-                    </View>
+            const showInclusions = orderLevelStatus?.statusHistory?.find(
+              (item: any) => item?.orderStatus === order?.orderStatus
+            );
 
-                    {REFUND_STATUSES.SUCCESS === order?.orderStatus
-                      ? renderTransactionDetails()
-                      : null}
-                    {DROP_DOWN_ARRAY_STATUS.includes(order?.orderStatus) &&
-                    index == array?.length - 1
-                      ? renderInclusionLevelDropDown(order)
-                      : null}
-                    {order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED &&
-                    !!showRateDiagnosticBtn
-                      ? renderFeedbackOption()
-                      : null}
+            //don't show if order is completed
+            const isOrderCompleted = orderLevelStatus?.statusHistory?.find(
+              (item: any) => item?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED
+            );
+
+            const isPOC =
+              isOrderCompleted == undefined &&
+              orderLevelStatus?.statusHistory?.find(
+                (item: any) => item?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED
+              );
+
+            const isSampleSubmitted =
+              isOrderCompleted == undefined &&
+              isPOC === undefined &&
+              orderLevelStatus?.statusHistory?.find(
+                (item: any) => item?.orderStatus === DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED
+              );
+
+            //status which we want to show on ui
+            const showStatus = getTestOrderStatusText(order?.orderStatus) != '';
+
+            let isStatusDone = true;
+            if (order?.__typename == 'upcomingStatus') {
+              isStatusDone = false;
+            }
+            const slotDate = moment(selectedOrder?.slotDateTimeInUTC).format('Do MMM');
+            const slotTime1 = moment(selectedOrder?.slotDateTimeInUTC).format('hh:mm A');
+            const slotTime2 = moment(selectedOrder?.slotDateTimeInUTC)
+              .add(slotDuration, 'minutes')
+              .format('hh:mm A');
+            return (
+              <>
+                {!!showStatus && showStatus ? (
+                  <View
+                    style={styles.rowStyle}
+                    onLayout={(event) => {
+                      const layout = event.nativeEvent.layout;
+                      if (isStatusDone && selectedTab === string.orders.trackOrder) {
+                        setScrollYValue(layout.y);
+                      }
+                    }}
+                  >
+                    {renderGraphicalStatus(order, index, isStatusDone, array)}
+                    <View style={{ marginBottom: 8, flex: 1 }}>
+                      <View style={[isStatusDone ? styles.statusDoneView : { padding: 10 }]}>
+                        <View style={styles.flexRow}>
+                          <View style={{ width: '75%' }}>
+                            <Text
+                              style={[
+                                styles.statusTextStyle,
+                                {
+                                  color:
+                                    DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus) ||
+                                    order?.orderStatus ==
+                                      DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB
+                                      ? theme.colors.INPUT_FAILURE_TEXT
+                                      : theme.colors.SHERPA_BLUE,
+                                },
+                              ]}
+                            >
+                              {nameFormater(getTestOrderStatusText(order?.orderStatus), 'title')}
+                            </Text>
+                          </View>
+                          {isStatusDone ? (
+                            renderCustomDescriptionOrDateAndTime(order)
+                          ) : (
+                            <View style={{ width: '25%' }} />
+                          )}
+                        </View>
+                        {order?.orderStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN &&
+                        !isStatusDone ? (
+                          <Text style={styles.statusSubTextStyle}>
+                            {`Apollo agent will arrive on ${slotDate}, ${slotTime1} - ${slotTime2}`}
+                          </Text>
+                        ) : null}
+                        {sampleCollectedArray.includes(order?.orderStatus) && !isStatusDone ? (
+                          <Text style={styles.statusSubTextStyle}>{`Invoice to be Generated`}</Text>
+                        ) : null}
+                        {sampleCollectedArray.includes(order?.orderStatus) &&
+                        isStatusDone &&
+                        orderDetails?.invoiceURL
+                          ? renderInvoiceGenerated()
+                          : null}
+
+                        {REFUND_STATUSES.SUCCESS === order?.orderStatus
+                          ? renderTransactionDetails()
+                          : null}
+
+                        {order?.orderStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED &&
+                        !isStatusDone &&
+                        DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED != orderDetails?.orderStatus
+                          ? renderOrderCompletedHint()
+                          : null}
+                        {!!isOrderCompleted
+                          ? null
+                          : !!showInclusions &&
+                            DROP_DOWN_ARRAY_STATUS.includes(showInclusions?.orderStatus)
+                          ? !!isPOC &&
+                            order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED
+                            ? renderInclusionLevelDropDown(order)
+                            : !!isSampleSubmitted &&
+                              order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED
+                            ? renderInclusionLevelDropDown(order)
+                            : null
+                          : null}
+                        {order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED &&
+                        isStatusDone &&
+                        !!showRateDiagnosticBtn
+                          ? renderFeedbackOption()
+                          : null}
+                      </View>
+                    </View>
                   </View>
-                </View>
-              </View>
+                ) : null}
+              </>
             );
           })}
         </View>
         {renderRefund()}
         <View style={{ height: 60 }} />
+      </View>
+    );
+  };
+
+  const renderInvoiceGenerated = () => {
+    return (
+      <View style={styles.viewInvoiceView}>
+        <Text style={styles.invoiceGeneratedText}>Invoice is generated</Text>
+        <TouchableOpacity
+          onPress={onPressInvoice}
+          activeOpacity={1}
+          style={{ justifyContent: 'center' }}
+        >
+          <Text style={styles.yellowText}>VIEW INVOICE</Text>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -528,6 +643,15 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         <Spearator style={styles.horizontalSeparator} />
         <Text style={styles.refundTxnId}>Txn id: {refundTransactionId}</Text>
       </>
+    );
+  };
+  const renderOrderCompletedHint = () => {
+    return (
+      <View>
+        <Text style={styles.orderCompText}>
+          {'Reports will be shared over whatsapp & SMS as well'}
+        </Text>
+      </View>
     );
   };
 
@@ -603,18 +727,17 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                             },
                           ]}
                         >
-                          <View style={{ width: '59%' }}>
+                          <View style={{ width: '40%' }}>
                             <Text style={styles.itemNameText}>
                               {nameFormater(item?.itemName, 'default')}
                             </Text>
                           </View>
                           <StatusCard
-                            titleText={
+                            titleText={item?.orderStatus}
+                            customText={
                               item?.itemId == 8 &&
-                              item?.orderStatus ==
+                              item?.orderStatus ===
                                 DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB
-                                ? '2ND SAMPLE PENDING'
-                                : item?.orderStatus
                             }
                           />
                         </View>
@@ -668,7 +791,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   function _onPressViewReportAction() {
     if (!!selectedOrder?.labReportURL && selectedOrder?.labReportURL != '') {
-      setDisplayViewReport(true);
+      onPressViewReport(true);
     } else if (!!selectedOrder?.visitNo && selectedOrder?.visitNo != '') {
       //directly open the phr section
       fetchTestReportResult();
@@ -685,10 +808,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       / /g,
       '_'
     );
-    downloadLabTest(orderDetails?.invoiceURL!, appointmentDate, patientName);
+    downloadLabTest(orderDetails?.invoiceURL!, appointmentDate, patientName, false);
   };
 
-  const onPressViewReport = () => {
+  const onPressViewReport = (isReport: boolean) => {
     const appointmentDetails = !!orderDetails?.slotDateTimeInUTC
       ? orderDetails?.slotDateTimeInUTC
       : orderDetails?.diagnosticDate;
@@ -704,13 +827,33 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       'Download Report PDF',
       orderDetails?.id
     );
-    downloadLabTest(removeWhiteSpaces(orderDetails?.labReportURL)!, appointmentDate, patientName);
+    downloadLabTest(
+      removeWhiteSpaces(orderDetails?.labReportURL)!,
+      appointmentDate,
+      patientName,
+      isReport
+    );
   };
 
-  async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string) {
+  async function downloadLabTest(
+    pdfUrl: string,
+    appointmentDate: string,
+    patientName: string,
+    isReport?: boolean
+  ) {
     setLoading?.(true);
     try {
-      await downloadDiagnosticReport(globalLoading, pdfUrl, appointmentDate, patientName, true);
+      await downloadDiagnosticReport(
+        globalLoading,
+        pdfUrl,
+        appointmentDate,
+        patientName,
+        true,
+        undefined,
+        orderDetails?.orderStatus,
+        (orderDetails?.displayId).toString(),
+        isReport
+      );
     } catch (error) {
       setLoading?.(false);
       CommonBugFender('YourOrderTests_downloadLabTest', error);
@@ -765,6 +908,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       !!g(orderDetails, 'totalPrice') && (
         <TestOrderSummaryView
           orderDetails={orderDetails}
+          slotDuration={slotDuration}
           onPressViewReport={_onPressViewReportAction}
           onPressDownloadInvoice={onPressInvoice}
           refundDetails={refundStatusArr}
@@ -816,26 +960,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       </MaterialMenu>
     );
   };
+
   return (
     <View style={{ flex: 1 }}>
-      {displayViewReport && (
-        <TestViewReportOverlay
-          order={orderDetails}
-          heading=""
-          isVisible={displayViewReport}
-          viewReportOrderId={viewReportOrderId}
-          downloadDocument={() => {
-            const res = downloadDocument(selectedOrder?.labReportURL, 'application/pdf', orderId);
-            if (res == orderId) {
-              setViewReportOrderId(orderId);
-            }
-          }}
-          onClose={() => setDisplayViewReport(false)}
-          onPressViewReport={() => {
-            onPressViewReport();
-          }}
-        />
-      )}
       <SafeAreaView style={theme.viewStyles.container}>
         <View style={styles.headerShadowContainer}>
           <Header
@@ -862,6 +989,12 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
           {renderError()}
         </ScrollView>
+        {selectedTab == string.orders.trackOrder &&
+        orderDetails?.attributesObj?.reportTATMessage &&
+        !DIAGNOSTIC_FAILURE_STATUS_ARRAY?.includes(selectedOrder?.orderStatus) &&
+        selectedOrder?.orderStatus !== DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED
+          ? renderOrderReportTat(orderDetails?.attributesObj?.reportTATMessage)
+          : null}
         {selectedTab == string.orders.trackOrder ? renderBottomSection(orderDetails) : null}
       </SafeAreaView>
 
@@ -880,6 +1013,15 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 5,
     zIndex: 1,
+  },
+  buttonView: { margin: 10 },
+  buttonStyleReport: { width: '85%', alignSelf: 'center', justifyContent: 'center' },
+  reportTatBottomview: {
+    backgroundColor: colors.TEST_CARD_BUTTOM_BG,
+    padding: 10,
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   yellowText: {
     ...theme.viewStyles.text('SB', 14, colors.APP_YELLOW),
@@ -907,14 +1049,14 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE),
   },
-  verticalProgressLine: { flex: 1, width: 6, alignSelf: 'center' },
+  verticalProgressLine: { flex: 1, width: 5, alignSelf: 'center' },
   statusIconStyle: {
     height: 28,
     width: 28,
   },
   statusIconSmallStyle: {
-    height: 15,
-    width: 15,
+    height: 12,
+    width: 12,
   },
   viewRowStyle: {
     flex: 1,
@@ -942,6 +1084,18 @@ const styles = StyleSheet.create({
     letterSpacing: 0.0,
     flex: 1,
   },
+  reportOrderTextStyle: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: colors.SHERPA_BLUE,
+    marginHorizontal: 6,
+    lineHeight: 16,
+    letterSpacing: 0.04,
+  },
+  statusSubTextStyle: {
+    ...theme.fonts.IBMPlexSansRegular(10),
+    letterSpacing: 0.0,
+    color: theme.colors.SHERPA_BLUE,
+  },
   lineSeparator: {
     height: 1,
     backgroundColor: theme.colors.LIGHT_BLUE,
@@ -951,8 +1105,8 @@ const styles = StyleSheet.create({
   },
   buttonStyle: {
     alignSelf: 'center',
-    marginTop: -10,
-    width: '95%',
+    marginVertical: 10,
+    width: '85%',
     marginLeft: 10,
     marginRight: 10,
   },
@@ -974,6 +1128,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   inclusionContainer: {
+    marginBottom: 15,
     marginTop: 10,
   },
   rowStyle: { flexDirection: 'row' },
@@ -987,7 +1142,7 @@ const styles = StyleSheet.create({
   rateYourExpText: { ...theme.viewStyles.text('B', 14, theme.colors.APP_YELLOW) },
   feedbackTouch: { marginBottom: 2, width: '100%' },
   ratingContainer: {
-    backgroundColor: '#FCFDDA',
+    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
     borderRadius: 10,
     marginBottom: 5,
     padding: 5,
@@ -1005,9 +1160,23 @@ const styles = StyleSheet.create({
   refundTxnId: {
     ...theme.viewStyles.text('M', 11, colors.SHERPA_BLUE, 1, 14),
   },
+  orderCompText: { ...theme.viewStyles.text('R', 10, theme.colors.SHERPA_BLUE) },
   flexRow: {
     justifyContent: 'center',
     flexDirection: 'row',
   },
   horizontalSeparator: { marginTop: 8, marginBottom: 8 },
+  clockIconStyle: { height: 20, width: 20, resizeMode: 'contain' },
+  invoiceGeneratedText: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: theme.colors.SHERPA_BLUE,
+    lineHeight: 16,
+    alignSelf: 'center',
+  },
+  viewInvoiceView: {
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    marginVertical: 12,
+    height: 30,
+  },
 });

@@ -8,6 +8,8 @@ import {
   ApolloPartnerIcon,
   InfoBlue,
   CircleLogo,
+  ShareYellowDocIcon,
+  Tick,
   DoctorLocation,
   DoctorLanguage,
 } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -181,20 +183,25 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     flex: 1,
   },
+  tickIcon: {
+    height: 8,
+    width: 8,
+    marginStart: 4,
+  },
   doctorInfoIcon: {
     height: 14,
     width: 14,
     marginEnd: 6,
   },
   consultBtnContainer: {
-    flex: 1, 
+    flex: 1,
     justifyContent: 'flex-end',
-    marginTop: 7 
+    marginTop: 7,
   },
   infoContainer: {
-    flexDirection: 'row', 
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16, 
+    paddingHorizontal: 16,
     paddingBottom: 7,
   },
   doctorLanguage: {
@@ -204,11 +211,11 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(12),
     color: theme.colors.SKY_BLUE,
   },
-  doctorInfoContainer: { 
-    flex: 1, 
-    paddingRight: 16, 
+  doctorInfoContainer: {
+    flex: 1,
+    paddingRight: 16,
     marginBottom: 16,
-   },
+  },
   BORButtonTextStyle: {
     ...theme.viewStyles.text('B', 13, '#FC9916', 1, 24),
     textTransform: 'uppercase',
@@ -248,7 +255,7 @@ export interface DoctorCardProps extends NavigationScreenProps {
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
-  const rowData = props.rowData;  
+  const rowData = props.rowData;
   const { selectedConsultMode } = props;
   const ctaBannerText = rowData?.availabilityTitle;
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
@@ -269,6 +276,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     isCircleDoctorOnSelectedConsultMode,
     physicalConsultSlashedPrice,
     physicalConsultDiscountedPrice,
+    cashbackEnabled,
+    cashbackAmount,
   } = circleDoctorDetails;
   const { availableModes } = props;
   const { showCircleSubscribed } = useShoppingCart();
@@ -337,9 +346,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     }
     props.navigation.navigate(AppRoutes.SlotSelection, {
       doctorId: id,
-      consultModeSelected: onlineConsult ? 
-        string.consultModeTab.VIDEO_CONSULT :
-        string.consultModeTab.HOSPITAL_VISIT,
+      consultModeSelected: onlineConsult
+        ? string.consultModeTab.VIDEO_CONSULT
+        : string.consultModeTab.HOSPITAL_VISIT,
       externalConnect: null,
       callSaveSearch: props.callSaveSearch,
       ...params,
@@ -361,7 +370,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   };
 
   const renderCareDoctorsFee = () => {
-    if (showCircleSubscribed) {
+    if (showCircleSubscribed && !cashbackEnabled) {
       return (
         <View style={{ marginTop: 5 }}>
           <View style={styles.rowContainer}>
@@ -397,31 +406,38 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           <View style={styles.seperatorLine} />
           <TouchableOpacity
             style={{ flex: 1 }}
-            onPress={() => openCircleWebView()}
+            onPress={() => !showCircleSubscribed && openCircleWebView()}
             activeOpacity={1}
           >
-            <Text
-              style={{
-                ...theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW),
-                flexWrap: 'wrap',
-              }}
-            >
-              {string.circleDoctors.circleMemberPays}
-            </Text>
             <View style={styles.rowContainer}>
-              <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.APP_YELLOW) }}>
-                {string.common.Rs}
-                {convertNumberToDecimal(circleDoctorSlashedPrice)}
-              </Text>
-
-              <InfoBlue style={styles.infoIcon} />
               <Text
                 style={{
-                  ...theme.viewStyles.text('M', 10, theme.colors.TURQUOISE_LIGHT_BLUE, 1, 12),
+                  ...theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW),
+                  flexWrap: 'wrap',
                 }}
               >
-                {string.circleDoctors.upgradeNow}
+                {cashbackEnabled ? string.common.circleCashback : string.common.circleDiscount}
               </Text>
+              {showCircleSubscribed && <Tick style={styles.tickIcon} />}
+            </View>
+            <View style={styles.rowContainer}>
+              <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.APP_YELLOW) }}>
+                {cashbackEnabled
+                  ? `Upto ${cashbackAmount} HC`
+                  : string.common.Rs + convertNumberToDecimal(circleDoctorDiscountedPrice)}
+              </Text>
+              {!showCircleSubscribed && (
+                <View style={styles.rowContainer}>
+                  <InfoBlue style={styles.infoIcon} />
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text('M', 10, theme.colors.TURQUOISE_LIGHT_BLUE, 1, 12),
+                    }}
+                  >
+                    {string.circleDoctors.upgradeNow}
+                  </Text>
+                </View>
+              )}
             </View>
           </TouchableOpacity>
         </View>
@@ -513,6 +529,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   if (rowData) {
     const clinicAddress = rowData?.doctorfacility;
+    const languages = rowData?.languages;
     return (
       <TouchableOpacity
         key={rowData.id}
@@ -667,10 +684,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             </View>
 
             <View style={styles.doctorInfoContainer}>
-              <Text
-                style={[styles.doctorNameStyles, styles.doctorNameViewStyle]} 
-                numberOfLines={1}
-              >
+              <Text style={[styles.doctorNameStyles, styles.doctorNameViewStyle]} numberOfLines={1}>
                 {rowData.displayName}
               </Text>
               {renderSpecialities()}
@@ -682,7 +696,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 : calculatefee(rowData, isBoth, isOnline)}
               {isCircleDoctorOnSelectedConsultMode &&
               circleDoctorDiscountedPrice > -1 &&
-              showCircleSubscribed ? (
+              showCircleSubscribed &&
+              !cashbackEnabled ? (
                 <Text
                   style={{
                     ...theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW),
@@ -697,20 +712,22 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               ) : null}
             </View>
           </View>
-          <View style={styles.infoContainer}>
-            <DoctorLanguage style={styles.doctorInfoIcon} />
-            <Text style={styles.doctorLanguage} numberOfLines={1}>
-              {rowData?.languages.join(', ')}
-            </Text>
-          </View>
-          {!!clinicAddress && 
-          <View style={styles.infoContainer}>
-            <DoctorLocation style={styles.doctorInfoIcon} />
-            <Text style={styles.doctorLocation} numberOfLines={1}>
-              {clinicAddress}
-            </Text>
-          </View>
-          }
+          {languages && (
+            <View style={styles.infoContainer}>
+              <DoctorLanguage style={styles.doctorInfoIcon} />
+              <Text style={styles.doctorLanguage} numberOfLines={1}>
+                {languages?.join(', ')}
+              </Text>
+            </View>
+          )}
+          {!!clinicAddress && (
+            <View style={styles.infoContainer}>
+              <DoctorLocation style={styles.doctorInfoIcon} />
+              <Text style={styles.doctorLocation} numberOfLines={1}>
+                {clinicAddress}
+              </Text>
+            </View>
+          )}
           <View style={styles.consultBtnContainer}>
             {props.displayButton && (
               <View

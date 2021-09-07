@@ -561,7 +561,15 @@ const SignUp: React.FC<SignUpProps> = (props) => {
       const event: any = await AsyncStorage.getItem('deeplink');
       const data = handleOpenURL(event);
       const { routeName, id, isCall, timeout, mediaSource } = data;
-      pushTheView(props.navigation, routeName, id ? id : undefined, isCall, undefined, mediaSource);
+      pushTheView(
+        props.navigation,
+        routeName,
+        id ? id : undefined,
+        isCall,
+        undefined,
+        undefined,
+        mediaSource
+      );
     } catch (error) {}
   };
 
