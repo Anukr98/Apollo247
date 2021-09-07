@@ -281,7 +281,7 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
               hideAphAlert!();
 
               setShowTicketCreationLagMessage(true);
-              setTimeout(() => fetchTicketDetails(), 5000);
+              setTimeout(() => fetchTicketDetails(), 10000);
             },
           });
         }
