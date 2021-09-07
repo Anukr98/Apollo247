@@ -28,7 +28,6 @@ export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_clo
 
 export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders_attributesObj {
   __typename: "AttributesObj";
-  reportTATHours: number | null;
   reportTATMessage: string | null;
   reportGenerationTime: string | null;
   expectedReportGenerationTime: any | null;
