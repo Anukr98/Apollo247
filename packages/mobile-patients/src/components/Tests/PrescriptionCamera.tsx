@@ -69,7 +69,6 @@ export const PrescriptionCamera: React.FC<PrescriptionCameraProps> = (props) => 
       } as PhysicalPrescription;
     });
   };
-  // console.log('object :>> ', type,responseData?.[0]?.base64,title);
   let _camera = useRef(null);
   useEffect(() => {
     setLoading?.(false);
@@ -77,15 +76,12 @@ export const PrescriptionCamera: React.FC<PrescriptionCameraProps> = (props) => 
     clickPhoto()
   }, []);
 
-
-
   const client = useApolloClient();
   const removeClickedPhoto = () => {
     setPhotoBase64('');
     _camera?.current?.resumePreview();
   };
 
-  
   const renderCameraActions = () => {
     return (
       !!photoBase64 && (
@@ -110,33 +106,13 @@ export const PrescriptionCamera: React.FC<PrescriptionCameraProps> = (props) => 
       )
     );
   };
-  const onClickTakePhoto = () => {
-      ImagePicker.openCamera({
-        cropping: true,//props.isProfileImage ? true : false,
-        hideBottomControls: true,
-        width: 2096, //props.isProfileImage ? 2096 : undefined,
-        height: 2096, //props.isProfileImage ? 2096 : undefined,
-        includeBase64: true,
-        multiple: true, //props.isProfileImage ? false : true,
-        compressImageQuality: 0.5,
-        compressImageMaxHeight: 2096,
-        compressImageMaxWidth: 2096,
-        writeTempFile: false,
-      })
-        .then((response) => {
-          console.log('response :>> ', response);
-        })
-        .catch((e: Error) => {
-          console.log('e :>> ', e);
-        });
-  };
+  
   const clickPhoto = async () => {
     try {
       const options = { quality: 0.5, base64: true, pauseAfterCapture: true };
       const data = await _camera?.current?.takePictureAsync(options);
       const clickedPhotoResponse = formatResponse([data], true);
       setImageClickData(clickedPhotoResponse);
-      // setPhotoBase64(data?.base64);
     } catch (error) {
       CommonBugFender('PrescriptionCamera_clickPhoto', error);
     }
@@ -153,37 +129,6 @@ export const PrescriptionCamera: React.FC<PrescriptionCameraProps> = (props) => 
     );
   };
 
-  const renderPermissionContainer = () => (
-    <View style={styles.permissionContainer}>
-      <TouchableOpacity
-        style={{ marginTop: height / 4 }}
-        onPress={() => {
-          Permissions.request('camera')
-            .then((message) => {
-              _camera?.current?.refreshAuthorizationStatus();
-              if (message === 'authorized') {
-                setIsCameraAccessGranted(true);
-              } else if (message === 'denied' || message === 'restricted') {
-                setIsCameraAccessGranted(false);
-              }
-            })
-            .catch((e) => {});
-        }}
-      >
-        <View style={styles.permissionBox}>
-          <View style={styles.rowCenter}>
-            <PhrCameraIcon style={styles.cameraIcon} />
-            <Text style={styles.cameraText}>Allow Camera Access</Text>
-          </View>
-          <Text style={styles.cameraSubText}>
-            Allow Apollo 247 access to your camera to take photos of your prescription
-          </Text>
-        </View>
-      </TouchableOpacity>
-    </View>
-  );
-  
-  
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
