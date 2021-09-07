@@ -1,6 +1,7 @@
 import Axios, { AxiosResponse, Canceler } from 'axios';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { getTagalysConfig, Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
+import { string } from '../strings/string';
 
 export interface MedicineProduct {
   category_id?: string;
@@ -46,6 +47,7 @@ export interface MedicineProduct {
   pack_size?: string | null;
   banned?: 'Yes' | 'No';
   subcategory?: string | null;
+  merchandising?: number | null;
 }
 
 export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
@@ -237,6 +239,16 @@ export interface TatApiInput247 {
     qty: number;
   }[];
   userType: 'regular' | 'circle';
+}
+
+export interface TatApiInput {
+  pincode: string;
+  lat: number;
+  lng: number;
+  items: {
+    sku: string;
+    qty: number;
+  }[];
 }
 
 export interface ServiceAbilityApiInput {
@@ -564,6 +576,66 @@ export interface ProceduresAndSymptomsResult {
   tag: string;
 }
 
+export interface SpecialOfferWidgetsData {
+  widgetTitle: string;
+  widgetRank: string;
+}
+
+export interface SpecialOffersWidgetsApiResponse {
+  success: string;
+  msg: string;
+  data: SpecialOfferWidgetsData[]
+}
+
+export interface SpecialOffersCouponsData {
+  couponCode: string;
+  description: string;
+  startDate: number;
+  endDate: number;
+  header: string;
+  logo: string;
+  knowMore: string;
+  terms: string;
+  redirectUrl: string;
+  skus?: [] | null;
+}
+
+export interface SpecialOffersCouponsApiResponse {
+  errorCode: number;
+  errorMsg?: null;
+  errorType?: null;
+  response?: SpecialOffersCouponsData[];
+}
+
+export interface SpecialOffersCategoryApiResponse {
+  category_id: number;
+  title: string;
+  url_key: string;
+  image_url: string;
+  specialoffer_position: string;
+}
+
+export interface SpecialOffersBrandsApiResponse {
+  id: number;
+  title: string;
+  url_key: string;
+  image: string;
+  position: string;
+  promotional_message: string;
+  discount: string;
+  sorting_option: string;
+}
+
+export interface SpecialOffersBrandsProductsApiResponse {
+  filters?: [] | null;
+  sort_by?: [] | null;
+  products: MedicineProduct[];
+  product_count: number;
+  search_heading: string;
+}
+
+
+
 const config = AppConfig.Configuration;
 
 export const getMedicineDetailsApi = (
@@ -852,6 +924,54 @@ export const getMedicinePageProducts = (
   });
 };
 
+export const getSpecialOffersPageWidgets = (): Promise<AxiosResponse<SpecialOffersWidgetsApiResponse>> => {
+  const url = `${config.SPECIAL_OFFERS_PAGE_WIDGETS[0]}`;
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.SPECIAL_OFFERS_PAGE_WIDGETS[1],
+    },
+  });
+};
+
+export const getSpecialOffersPageCoupons = (): Promise<AxiosResponse<SpecialOffersCouponsApiResponse>> => {
+  const url = `${config.SPECIAL_OFFERS_PAGE_COUPONS[0]}`;
+  return Axios.get(url, {
+    headers: {},
+  });
+};
+
+export const getSpecialOffersPageCategory = (): Promise<AxiosResponse<SpecialOffersCategoryApiResponse>> => {
+  const url = `${config.SPECIAL_OFFERS_CATEGORY[0]}`;
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.SPECIAL_OFFERS_CATEGORY[1],
+    },
+  });
+};
+
+export const getSpecialOffersPageBrands = (): Promise<AxiosResponse<SpecialOffersBrandsApiResponse>> => {
+  const url = `${config.SPECIAL_OFFERS_BRANDS[0]}`;
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.SPECIAL_OFFERS_BRANDS[1],
+    },
+  });
+};
+
+export const getSpecialOffersPageBrandsProducts = (activeBrand: string, discount_percentage: object) 
+:Promise<AxiosResponse<SpecialOffersBrandsProductsApiResponse>> => {
+  const url = `${config.SPECIAL_OFFERS_BRANDS_PRODUCTS[0]}`;
+  return Axios.post(url,
+    {
+      params: activeBrand,
+      filter: { discount_percentage}
+    },
+    {headers: {
+      Authorization: config.SPECIAL_OFFERS_BRANDS_PRODUCTS[1],
+    }},
+  );
+};
+
 const googlePlacesApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 
 export const getPlaceInfoByPincode = (
@@ -904,6 +1024,16 @@ export const getDeliveryTAT247 = (params: TatApiInput247): Promise<AxiosResponse
     cancelToken: new CancelToken((c) => {
       cancelGetDeliveryTAT247 = c;
     }),
+  });
+};
+
+export const getDeliveryTAT = (params: TatApiInput): Promise<AxiosResponse<any>> => {
+  const url = `${config.UATTAT_CONFIG[0]}/tat`;
+  return Axios.post(url, params, {
+    headers: {
+      Authorization: config.UATTAT_CONFIG[1],
+    },
+    timeout: config.TAT_API_TIMEOUT_IN_SEC * 1000,
   });
 };
 
@@ -1164,9 +1294,9 @@ export const getDiagnosticsPopularResults = (
   });
 };
 
-export const getDiagnosticHomePageWidgets = (pageName: string): Promise<AxiosResponse<any>> => {
+export const getDiagnosticHomePageWidgets = (pageName: string,  cityId: number): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
-  const getWidgets = `${baseurl}/${pageName}/getwidgets`;
+  const getWidgets = `${baseurl}/${pageName}/getwidgets?city=${cityId}`;
   return Axios.get(getWidgets, {
     headers: {
       Authorization: config.DRUPAL_CONFIG[1],
@@ -1256,4 +1386,11 @@ export const getDiagnosticDoctorPrescriptionResults = (
       },
     }
   );
+};
+
+export const getTatStaticContent = (
+): Promise<AxiosResponse<any>> => {
+  const baseUrl = config.assetsBaseurl;
+  const url = `${baseUrl}/tatCtaStaticContent.json`;
+  return Axios.get(url);
 };

@@ -4,19 +4,19 @@
 // This file was automatically generated and should not be edited.
 
 // ====================================================
-// GraphQL query operation: getOrderPhleboDetailsBulk
+// GraphQL query operation: getRescheduleAndCancellationReasons
 // ====================================================
 
+export interface getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons {
+  __typename: "rescheduleAndCancellationReasons";
+  rescheduleReasons: (string | null)[] | null;
+  cancellationReasons: (string | null)[] | null;
+}
+
 export interface getRescheduleAndCancellationReasons {
-    __typename: "rescheduleAndCancellationReasons";
-    getRescheduleAndCancellationReasons: any;
-  }
+  getRescheduleAndCancellationReasons: getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons | null;
+}
 
-  export interface getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons {
-    rescheduleReasons: any;
-    cancellationReasons: any;
-  }
-
-  export interface getRescheduleAndCancellationReasonsVariables {
-    appointmentDateTimeInUTC: any;
-  }
+export interface getRescheduleAndCancellationReasonsVariables {
+  appointmentDateTimeInUTC: any;
+}

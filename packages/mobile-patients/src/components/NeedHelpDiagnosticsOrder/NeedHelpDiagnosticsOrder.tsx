@@ -403,14 +403,14 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
         />
       </View>
     );
-  }
+  };
 
   const renderHeader = () => {
     const onPressBack = () => navigation.goBack();
     const pageTitle = string.help.toUpperCase();
     return <Header title={pageTitle} leftIcon="backArrow" onPressLeftIcon={onPressBack} />;
   };
-  
+
   const renderBreadCrumb = () => {
     const breadCrumb = [
       {
@@ -423,16 +423,41 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
     return <Breadcrumb links={breadCrumb} containerStyle={styles.breadcrumb} />;
   };
 
-  const onSuccess = () => {
+  const onSuccess = (res: any) => {
     showAphAlert!({
       title: string.common.hiWithSmiley,
       description: needHelpToContactInMessage || string.needHelpSubmitMessage,
       unDismissable: true,
       onPressOk: () => {
         hideAphAlert!();
-        navigateToHome(navigation);
+        openHelpChatScreen(res);
       },
     });
+  };
+
+  const openHelpChatScreen = (response: any) => {
+    let ticketId = response?.data?.sendHelpEmail.split(':')[1] || 0;
+    let ticket = {
+      closedTime: null,
+      createdTime: '',
+      customFields: {
+        Business: '',
+        __typename: '',
+      },
+      id: ticketId,
+      modifiedTime: '2021-08-26T11:30:46.000Z',
+      status: '',
+      statusType: 'Open',
+      subject: '',
+      ticketNumber: '',
+    };
+
+    if (ticketId) {
+      navigation.navigate(AppRoutes.HelpChatScreen, {
+        ticketId: ticketId,
+        ticket: ticket,
+      });
+    }
   };
 
   const onError = () => {
@@ -466,12 +491,13 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
         },
       };
 
-      await client.query<SendHelpEmail, SendHelpEmailVariables>({
+      let response = await client.query<SendHelpEmail, SendHelpEmailVariables>({
         query: SEND_HELP_EMAIL,
         variables,
       });
+
       setLoading!(false);
-      onSuccess();
+      onSuccess(response);
       if (orderType && queryOrderId) {
         saveNeedHelpQuery({ orderId: `${queryOrderId}`, orderType, createdDate: new Date() });
       }
@@ -615,7 +641,6 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
     );
   };
 
-
   const renderDivider = () => {
     return <Divider style={styles.divider} />;
   };
@@ -666,9 +691,10 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
         queries,
         email,
         sourcePage,
+        pathFollowed: string.otherIssueNotMyOrders + ' - ',
       });
     };
-    return <AphListItem title={string.otherIssueNotMyOrders} onPress={onPress} />
+    return <AphListItem title={string.otherIssueNotMyOrders} onPress={onPress} />;
   };
 
   const renderEmailPopup = () => {
@@ -695,13 +721,17 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
       {renderHeader()}
       {renderBreadCrumb()}
       {renderHeading()}
-      {orders?.length > 0 ? renderFirstOrder() : <>
-            {orders?.length > 0 ? <Spearator /> : null}
-            <Text style={styles.subHeading}>
-              If your order transaction failed report issue in this section:
-            </Text>
-            {renderNotOrderRelated()}
-          </>}
+      {orders?.length > 0 ? (
+        renderFirstOrder()
+      ) : (
+        <>
+          {orders?.length > 0 ? <Spearator /> : null}
+          <Text style={styles.subHeading}>
+            If your order transaction failed report issue in this section:
+          </Text>
+          {renderNotOrderRelated()}
+        </>
+      )}
       {renderEmailPopup()}
     </SafeAreaView>
   );

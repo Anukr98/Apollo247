@@ -90,10 +90,6 @@ import {
   getIndividualTestResultPdf,
   getIndividualTestResultPdfVariables,
 } from '@aph/mobile-patients/src/graphql/types/getIndividualTestResultPdf';
-import {
-  getLabResultpdf,
-  getLabResultpdfVariables,
-} from '@aph/mobile-patients/src/graphql/types/getLabResultpdf';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
@@ -471,7 +467,14 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       } else {
         // render when no filter is applied
         finalData = initialSortByDays('lab-results', testReportMainData, finalData);
+
         finalData.forEach(function(item) {
+          item.data.map(function(entry) {
+            if (entry.type === 'healthCheck') {
+              entry.data.billNo = null;
+              return entry;
+            }
+          });
           item.data.map((items) => {
             let path = 'data.billNo';
             arrElements = _(item.data)
@@ -490,7 +493,9 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
               }))
               .value();
           });
-          arrData.push({ key: remItem[0]?.key, data: remItem[0]?.data });
+          if (remItem[0]?.key !== undefined) {
+            arrData.push({ key: remItem[0]?.key, data: remItem[0]?.data });
+          }
         });
       }
       if (filterApplied === FILTER_TYPE.DATE) {
@@ -505,6 +510,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
                 data: value,
               }))
               .value();
+
             remItem = _(arrElements)
               .groupBy(path)
               .map((value, key) => ({
@@ -513,7 +519,9 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
               }))
               .value();
           });
-          arrData.push({ key: remItem[0]?.key, data: remItem[0]?.data });
+          if (remItem[0]?.key !== undefined) {
+            arrData.push({ key: remItem[0]?.key, data: remItem[0]?.data });
+          }
         });
       }
       arrData?.length > 0 ? setLocalTestReportsData(arrData) : setLocalTestReportsData(finalData);

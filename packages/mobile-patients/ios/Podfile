@@ -119,6 +119,9 @@ target 'ApolloPatient' do
 
   pod 'clevertap-react-native', :path => '../node_modules/clevertap-react-native'
 
+  pod 'react-native-user-agent', :path => '../node_modules/react-native-user-agent'
+  pod 'react-native-in-app-review', :path => '../node_modules/react-native-in-app-review'
+
   target 'NotificationService' do
       platform :ios, '10.0'
       pod 'WebEngageBannerPush'

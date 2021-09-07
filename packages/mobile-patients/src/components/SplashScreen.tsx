@@ -38,6 +38,8 @@ import {
   postFirebaseEvent,
   setCrashlyticsAttributes,
   onCleverTapUserLogin,
+  getUTMdataFromURL,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -82,6 +84,7 @@ import {
   createHyperServiceObject,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import CleverTap from 'clevertap-react-native';
+import { CleverTapEventName } from '../helpers/CleverTapEvents';
 
 (function() {
   /**
@@ -354,8 +357,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     try {
       Linking.getInitialURL()
         .then((url) => {
+          triggerUTMCustomEvent(url);
           setBugFenderLog('DEEP_LINK_URL', url);
-
           if (url) {
             try {
               if (Platform.OS === 'ios') InitiateAppsFlyer(props.navigation);
@@ -377,6 +380,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         try {
           setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
           const data = handleOpenURL(event.url);
+          triggerUTMCustomEvent(event.url);
           const { routeName, id, isCall, timeout, mediaSource } = data;
           redirectRoute(routeName, id, isCall, timeout, mediaSource, data?.data);
           fireAppOpenedEvent(event.url);
@@ -614,6 +618,31 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     fetchData();
   };
 
+  const triggerUTMCustomEvent = async (url: string | null) => {
+    try {
+      if (url) {
+        const { utm_source, utm_medium, utm_campaign, appUrl } = getUTMdataFromURL(url);
+        if (utm_source || utm_medium || utm_campaign) {
+          postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
+            utm_source,
+            utm_medium,
+            utm_campaign,
+            appUrl,
+          });
+        } else {
+          postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
+            appUrl,
+            deeplink: 'Deeplink',
+          });
+        }
+      } else {
+        postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
+          source: 'Organic',
+        });
+      }
+    } catch (error) {}
+  };
+
   const prefetchUserMetadata = async () => {
     const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
     setUserLoggedIn(userLoggedIn);
@@ -759,6 +788,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setPharmaHomeNudgeMessage,
     setPharmaCartNudgeMessage,
     setPharmaPDPNudgeMessage,
+    setPaymentCodMessage,
   } = useShoppingCart();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -999,6 +1029,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Nudge_Message_Pharmacy_Cart: {
       QA: 'QA_Show_nudge_on_pharma_cart',
       PROD: 'Show_nudge_on_pharma_cart',
+    },
+    Disincentivize_COD_Message: {
+      QA: 'QA_Disincentivize_COD_Message',
+      PROD: 'Disincentivize_COD_Message',
     },
   };
 
@@ -1274,6 +1308,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
 
       nudgeMessagePharmacyPDP && setPharmaPDPNudgeMessage?.(nudgeMessagePharmacyPDP);
+
+      const disincentivizeCodMessage = getRemoteConfigValue(
+        'Disincentivize_COD_Message',
+        (key) => config.getString(key) || ''
+      );
+
+      disincentivizeCodMessage && setPaymentCodMessage?.(disincentivizeCodMessage);
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';

@@ -713,7 +713,12 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       })
       .then((data) => {
         setLoading && setLoading(false);
-        getPatientApiCall();
+        getPatientApiCall().then(() => {
+          if (screenName === string.consult) {
+            const { navigation } = props;
+            navigation.goBack();
+          }
+        });
         if (screenName === string.symptomChecker.symptomTracker) {
           const { navigation } = props;
           navigation.goBack();

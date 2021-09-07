@@ -51,6 +51,7 @@ import {
   GET_APPOINTMENT_DATA,
   GET_DOCTOR_DETAILS_BY_ID,
   CALL_CONNECTION_UPDATES,
+  POST_WEB_ENGAGE,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   bookRescheduleAppointment,
@@ -97,6 +98,9 @@ import {
   Gender,
   USER_STATUS,
   CheckCallConnectionInput,
+  WebEngageEvent,
+  ConsultMode,
+  PatientConsultEventToDoctorInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updateAppointmentSession,
@@ -216,6 +220,11 @@ import { getMedicineDetailsApi, MedicineProductDetailsResponse } from '../../hel
 import { AxiosResponse } from 'axios';
 import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/Events';
 import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  postDoctorConsultEvent,
+  postDoctorConsultEventVariables,
+} from '../../graphql/types/postDoctorConsultEvent';
+import { postCleverTapUploadPrescriptionEvents } from '@aph/mobile-patients/src/components/UploadPrescription/Events';
 
 interface OpentokStreamObject {
   connection: {
@@ -1036,6 +1045,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const showProgressBarOnHeader = useRef<boolean>(false);
   const isJdAllowedToAssign = useRef<boolean | null | undefined>(null);
   const [appointmentDiffMin, setAppointmentDiffMin] = useState<number>(0);
+  const [phoneNumber, setPhoneNumber] = useState<string | null>('');
   let cancelAppointmentTitle = '';
   if (appointmentDiffMin >= 15) {
     cancelAppointmentTitle =
@@ -1045,9 +1055,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }
   const isAppointmentStartsInFifteenMin = appointmentDiffMin <= 15 && appointmentDiffMin > 0;
   const isAppointmentExceedsTenMin = appointmentDiffMin <= 0 && appointmentDiffMin > -10;
+  type messageType = 'PDF' | 'Text' | 'Image';
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBack);
+    AsyncStorage.getItem('phoneNumber').then(setPhoneNumber);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
@@ -1275,7 +1287,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const postConsultCardEvents = (
     type:
       | WebEngageEventName.CHAT_WITH_DOCTOR
-      | WebEngageEventName.PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT
+      | WebEngageEventName.PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT,
+    chatFormat: messageType
   ) => {
     try {
       const eventAttributes:
@@ -1316,8 +1329,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         'Secretary Name': g(secretaryData, 'name'),
         'Secretary Mobile Number': g(secretaryData, 'mobileNumber'),
         'Doctor Mobile Number': g(appointmentData, 'doctorInfo', 'mobileNumber')!,
+        'Doctor ID': g(appointmentData, 'doctorInfo', 'id')!,
+        'Display ID': g(appointmentData, 'displayId')!,
+        'Chat Format': chatFormat,
       };
       postWebEngageEvent(type, eventAttributes);
+      postCleverTapEvent(type, eventAttributes);
     } catch (error) {}
   };
 
@@ -1531,6 +1548,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const checkVitalQuestionsStatus = () => {
+    const isConsultPending =  appointmentData?.status == 'PENDING'; 
     if (appointmentData.isAutomatedQuestionsComplete) {
       requestToJrDoctor();
       if (
@@ -1543,7 +1561,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         showAndUpdateNudgeScreenVisibility();
       }
     } else {
-      setDisplayChatQuestions(skipAutoQuestions.current ? false : true);
+      const displayQuestion = isConsultPending ? skipAutoQuestions.current ? false : true : false
+      setDisplayChatQuestions(displayQuestion);
     }
   };
 
@@ -3614,15 +3633,42 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
         }
       );
-
-      if (status.current !== STATUS.COMPLETED) {
-        postConsultCardEvents(WebEngageEventName.CHAT_WITH_DOCTOR);
-      } else {
-        postConsultCardEvents(WebEngageEventName.PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT);
-      }
+      postChatWebEngEvent('Text', text.message);
     } catch (error) {
       CommonBugFender('ChatRoom_send_try', error);
     }
+  };
+
+  const postChatWebEngEvent = (msgType: messageType, message: string) => {
+    if (status.current !== STATUS.COMPLETED) {
+      postConsultCardEvents(WebEngageEventName.CHAT_WITH_DOCTOR, msgType);
+    } else {
+      postBackendWebEngage(msgType, message);
+      postConsultCardEvents(WebEngageEventName.PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT, msgType);
+    }
+  };
+
+  const postBackendWebEngage = async (msgType: messageType, message: string) => {
+    client
+      .mutate<postDoctorConsultEvent, postDoctorConsultEventVariables>({
+        mutation: POST_WEB_ENGAGE,
+        variables: {
+          doctorConsultEventInput: {
+            mobileNumber: g(appointmentData, 'doctorInfo', 'mobileNumber'),
+            eventName: WebEngageEvent.CONSULT_PATIENT_SENT_MESSAGE,
+            consultID: g(appointmentData, 'id')!,
+            displayId: String(g(appointmentData, 'displayId')!),
+            consultMode: ConsultMode.ONLINE,
+            doctorFullName: g(appointmentData, 'doctorInfo', 'fullName')!,
+            message,
+            chatFormat: msgType,
+            source: 'APP',
+        }},
+      })
+      .then(() => {})
+      .catch((error) => {
+        CommonBugFender('postConsultEventToDoctor', error);
+      });
   };
 
   let leftComponent = 0;
@@ -4025,6 +4071,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         addMultipleCartItems?.(cartItems);
         setEPrescriptions?.([presToAdd]);
         setLoading(false);
+        postCleverTapUploadPrescriptionEvents('Consult Room', 'Cart');
         props.navigation.push(AppRoutes.MedicineCart);
       } catch (error) {
         setLoading(false);
@@ -4037,6 +4084,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       return;
     }
     setEPrescriptions?.([presToAdd]);
+    postCleverTapUploadPrescriptionEvents('Consult Room', 'Non-Cart');
     props.navigation.navigate(AppRoutes.UploadPrescription, {
       ePrescriptionsProp: [presToAdd],
       type: 'E-Prescription',
@@ -6684,10 +6732,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             response.data.uploadMediaDocumentV2.length &&
             response.data.uploadMediaDocumentV2[0]?.fileUrl
           ) {
+            const fileType = item.fileType == 'pdf' ? 'pdf' : 'image';
             const text = {
               id: patientId,
               message: imageconsult,
-              fileType: item.fileType == 'pdf' ? 'pdf' : 'image',
+              fileType,
               fileName: item.title + '.' + item.fileType,
               url: response.data.uploadMediaDocumentV2[0].fileUrl || '',
               messageDate: new Date(),
@@ -6705,6 +6754,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 }
               }
             );
+            postChatWebEngEvent(fileType == 'pdf' ? 'PDF' : 'Image', text.message);
             KeepAwake.activate();
           } else {
             Alert.alert('Upload document failed');
@@ -6853,6 +6903,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 }
               } else if (_uploadedUrl) {
                 const fileName = item?.fileName || '';
+                const splitArr = _uploadedUrl.split('.');
+                const fileType = splitArr[splitArr.length-1];
+                if(fileType){
+                  postChatWebEngEvent(fileType == 'pdf' ? 'PDF' : 'Image', '');
+                }
                 await callAddChatDocumentApi(prism, _uploadedUrl, fileName);
               }
               // });
@@ -6875,7 +6930,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     }
                   }
                 );
-                setLoading(false);
+              setLoading(false);
             });
           }
         }}

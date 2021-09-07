@@ -11,6 +11,7 @@ import {
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CollapseView } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CollapseView';
 import { paymentModeVersionCheck } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { OutagePrompt } from '@aph/mobile-patients/src/components/PaymentGateway/Components/OutagePrompt';
 const { width } = Dimensions.get('window');
 const newWidth = width - 40;
 export interface NetBankingProps {
@@ -22,11 +23,23 @@ export interface NetBankingProps {
 export const NetBanking: React.FC<NetBankingProps> = (props) => {
   const { onPressOtherBanks, topBanks, onPressBank } = props;
 
+  const banksOutageCheck = () => {
+    const banks = topBanks?.slice(0, 4);
+    const index = banks.findIndex(
+      (item: any) => item?.outage_status == 'FLUCTUATE' || item?.outage_status == 'DOWN'
+    );
+    return index == -1 ? false : true;
+  };
+
   const renderBank = (item: any) => {
-    const marginLeft = item?.index == 0 ? 0 : (newWidth - 180) * 0.33;
+    const marginLeft = item?.index == 0 ? 0 : (width - 320) * 0.33;
     return (
       <View style={{ ...styles.bankCont, marginLeft: marginLeft }}>
-        <TouchableOpacity onPress={() => onPressBank(item?.item?.payment_method_code)}>
+        <TouchableOpacity
+          disabled={item?.item?.outage_status == 'DOWN' ? true : false}
+          style={{ opacity: item?.item?.outage_status == 'DOWN' ? 0.5 : 1 }}
+          onPress={() => onPressBank(item?.item?.payment_method_code)}
+        >
           <Image
             source={{ uri: item?.item?.image_url }}
             resizeMode={'contain'}
@@ -36,15 +49,32 @@ export const NetBanking: React.FC<NetBankingProps> = (props) => {
         <Text numberOfLines={2} style={styles.bankName}>
           {item?.item?.payment_method_name}
         </Text>
+        {renderOutageStatus(item?.item?.outage_status)}
       </View>
     );
+  };
+
+  const renderOutageStatus = (outageStatus: string) => {
+    return outageStatus == 'FLUCTUATE' || outageStatus == 'DOWN' ? (
+      <View style={{}}>
+        <Text
+          style={{
+            ...styles.outageStatus,
+            backgroundColor: outageStatus == 'FLUCTUATE' ? '#FCFDDA' : '#FFEBE6',
+            color: outageStatus == 'FLUCTUATE' ? '#01475B' : '#BF2600',
+          }}
+        >
+          {outageStatus == 'FLUCTUATE' ? 'High failures' : 'Down'}
+        </Text>
+      </View>
+    ) : null;
   };
 
   const renderTopBanks = () => {
     return (
       <View>
         <FlatList
-          style={{ flex: 1 }}
+          style={{ flex: 1, marginTop: 15 }}
           data={topBanks.slice(0, 4)}
           horizontal={true}
           showsHorizontalScrollIndicator={false}
@@ -69,8 +99,15 @@ export const NetBanking: React.FC<NetBankingProps> = (props) => {
   const renderChildComponent = () => {
     return (
       <View style={styles.ChildComponent}>
-        {renderTopBanks()}
-        {renderShowOtherBanks()}
+        {banksOutageCheck() && (
+          <View style={{ paddingHorizontal: 20 }}>
+            <OutagePrompt outageStatus={'FLUCTUATE'} msg={'Few Banks are'} />
+          </View>
+        )}
+        <View>
+          {renderTopBanks()}
+          {renderShowOtherBanks()}
+        </View>
       </View>
     );
   };
@@ -84,8 +121,7 @@ const styles = StyleSheet.create({
   ChildComponent: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingBottom: 15,
   },
   otherBanks: {
     ...theme.fonts.IBMPlexSansBold(13),
@@ -105,8 +141,18 @@ const styles = StyleSheet.create({
     width: 35,
   },
   bankCont: {
-    width: 45,
+    width: 80,
     alignItems: 'center',
     marginBottom: 20,
+  },
+  outageStatus: {
+    ...theme.fonts.IBMPlexSansMedium(10),
+    lineHeight: 14,
+    color: '#01475B',
+    backgroundColor: '#FCFDDA',
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 5,
+    marginTop: 2,
   },
 });

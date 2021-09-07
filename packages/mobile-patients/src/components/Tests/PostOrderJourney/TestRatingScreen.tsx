@@ -92,8 +92,8 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
           value={userInput}
           placeholder={'Write your Feedback Here'}
           onChangeText={(text) => setUserInput(text)}
-          style={{ textAlign: 'center' }}
-          underlineColorAndroid={colors.APP_GREEN}
+          style={styles.textInputStyle}
+          underlineColorAndroid={'transparent'}
         />
       </View>
     );
@@ -120,20 +120,30 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
     feedback: string | number,
     phleboName: string,
     orderId: string | number,
-    phleboId: string | number
+    phleboId: string | number,
+    patientComment: string
   ) => {
-    DiagnosticPhleboFeedbackSubmitted(rating, feedback, phleboName, orderId, phleboId);
+    DiagnosticPhleboFeedbackSubmitted(
+      rating,
+      feedback,
+      phleboName,
+      orderId,
+      phleboId,
+      patientComment
+    );
   };
+
   const onSubmitFeedback = async (rating: number, feedback: string, id: string) => {
     setLoading?.(true);
     try {
-      const response = await savePhleboFeedback(client, rating, feedback, id);
+      const response = await savePhleboFeedback(client, rating, feedback, id, userInput);
       postDiagnosticPhleboFeedbackSubmitted(
         rating,
         feedback,
         phlObj?.PhelbotomistName,
         orderDetail?.displayId,
-        id
+        id,
+        userInput
       );
       setLoading?.(false);
       showAphAlert?.({
@@ -172,7 +182,7 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
             <View style={styles.phleboDetails}>
               <UserOutline style={styles.icon} />
               <Text style={styles.textStylePhlebo}>
-                Phlebotomist • {`${phlObj?.PhelbotomistName}`}
+                Apollo agent • {`${phlObj?.PhelbotomistName}`}
               </Text>
             </View>
           ) : (
@@ -300,6 +310,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     width: '70%',
+    marginTop: 8,
   },
   submitCtaContainer: {
     width: '100%',
@@ -308,5 +319,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 10,
     backgroundColor: 'white',
+  },
+  textInputStyle: {
+    textAlign: 'center',
+    borderWidth: 1,
+    borderColor: 'transparent',
+    borderBottomColor: colors.APP_GREEN,
   },
 });

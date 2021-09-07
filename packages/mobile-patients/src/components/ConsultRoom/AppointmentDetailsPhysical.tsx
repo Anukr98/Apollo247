@@ -638,7 +638,7 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
             <Text style={styles.regularTextPay}>{string.common.toPay}</Text>
             <Text style={{ ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE) }}>
               {string.common.Rs}
-              {g(data, 'appointmentPayments', '0' as any, 'amountPaid')}
+              {data?.discountedAmount || ''}
             </Text>
           </View>
         </View>

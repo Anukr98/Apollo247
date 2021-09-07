@@ -1,5 +1,13 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, Text, BackHandler, View, ScrollView, TouchableOpacity } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  BackHandler,
+  View,
+  ScrollView,
+  TouchableOpacity,
+  Platform,
+} from 'react-native';
 import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
 import {
   CircleLogo,
@@ -19,6 +27,8 @@ import {
   navigateToHome,
   nameFormater,
   postCleverTapEvent,
+  g,
+  getCleverTapCircleMemberValues,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -28,9 +38,13 @@ import { firePurchaseEvent } from '@aph/mobile-patients/src/components/Tests/Eve
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import InAppReview from 'react-native-in-app-review';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import DeviceInfo from 'react-native-device-info';
 
 export interface OrderStatusProps extends NavigationScreenProps {}
 
@@ -85,9 +99,13 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       source: AppRoutes.OrderStatus,
     });
   };
+  const { pharmacyUserTypeAttribute } = useAppCommonData();
+  const { pharmacyCircleAttributes } = useShoppingCart();
 
   useEffect(() => {
-    postwebEngageCheckoutCompletedEvent();
+    if (modifiedOrderDetails == null) {
+      postwebEngageCheckoutCompletedEvent();
+    }
     firePurchaseEvent(orderDetails?.orderId, orderDetails?.amount, cartItems);
     clearDiagnoticCartInfo?.();
     submitReviewOnLabBook();
@@ -102,19 +120,54 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       const { diagnosticDate } = orderDetails;
       let currentDate = new Date();
       let givenDate = new Date(diagnosticDate);
-      let currentDateFormat = `${currentDate.getDate()}-${currentDate.getMonth()}-${currentDate.getFullYear()}`;
-      let digonisticDateFormat = `${givenDate.getDate()}-${givenDate.getMonth()}-${givenDate.getFullYear()}`;
-      currentDate.setDate(currentDate.getDate() + 1);
-      let nextDateFormat = `${currentDate.getDate()}-${currentDate.getMonth()}-${currentDate.getFullYear()}`;
+      var diff = (givenDate.getTime() - givenDate.getTime()) / 1000;
+      diff /= 60 * 60;
+      console.log(orderDetails, 'orderDetails');
 
-      if (currentDateFormat === digonisticDateFormat || nextDateFormat === digonisticDateFormat) {
+      if (diff <= 48) {
         if (InAppReview.isAvailable()) {
-          await InAppReview.RequestInAppReview();
+          await InAppReview.RequestInAppReview()
+            .then((hasFlowFinishedSuccessfully) => {
+              if (hasFlowFinishedSuccessfully) {
+                postCleverTapEventForTrackingAppReview();
+              }
+            })
+            .catch((error) => {
+              CommonBugFender('inAppReviewForDignostic', error);
+            });
         }
       }
     } catch (error) {
       CommonBugFender('inAppRevireAfterPaymentForDignostic', error);
     }
+  };
+
+  const postCleverTapEventForTrackingAppReview = async () => {
+    const uniqueId = await DeviceInfo.getUniqueId();
+    const eventAttributes: CleverTapEvents[CleverTapEventName.PLAYSTORE_APP_REVIEW_AND_RATING] = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'User Type': pharmacyUserTypeAttribute?.User_Type || '',
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      'CT Source': Platform.OS,
+      'Device ID': uniqueId,
+      'Circle Member':
+        getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+        '',
+      'Page Name': 'Dignostic Order Completed',
+      'NAV Source': 'Dignostic',
+    };
+    postCleverTapEvent(
+      Platform.OS == 'android'
+        ? CleverTapEventName.APP_REVIEW_AND_RATING_TO_PLAYSTORE
+        : CleverTapEventName.APP_REVIEW_AND_RATING_TO_APPSTORE,
+      eventAttributes
+    );
   };
 
   const postwebEngageCheckoutCompletedEvent = () => {

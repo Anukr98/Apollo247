@@ -50,12 +50,14 @@ export interface Props
     email?: string;
     orderId?: string;
     sourcePage: WebEngageEvents[WebEngageEventName.HELP_TICKET_SUBMITTED]['Source_Page'];
+    pathFollowed: string;
   }> {}
 
 export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
   const sourcePage = navigation.getParam('sourcePage') || 'My Account';
   const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
   const queries = navigation.getParam('queries');
+  const pathFollowed = navigation.getParam('pathFollowed') || '';
   const queryIdLevel1 = navigation.getParam('queryIdLevel1') || helpSectionQueryId.pharmacy;
   const queryIdLevel2 = navigation.getParam('queryIdLevel2') || helpSectionQueryId.returnOrder;
   const headingTitle = queries?.find((q) => q.id === queryIdLevel1)?.title || 'Query';
@@ -186,7 +188,7 @@ export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
       const variables: SendHelpEmailVariables = {
         helpEmailInput: {
           category: parentQuery?.title,
-          reason: issueNotResolvedText,
+          reason: pathFollowed,
           comments: comments,
           patientId: currentPatient?.id,
           email: email,
@@ -195,12 +197,13 @@ export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
         },
       };
 
-      await client.query<SendHelpEmail, SendHelpEmailVariables>({
+      let res = await client.query<SendHelpEmail, SendHelpEmailVariables>({
         query: SEND_HELP_EMAIL,
         variables,
       });
+
       setLoading!(false);
-      onSuccess();
+      onSuccess(res);
       if (orderType && queryOrderId) {
         saveNeedHelpQuery({ orderId: `${queryOrderId}`, orderType, createdDate: new Date() });
       }
@@ -215,16 +218,41 @@ export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  const onSuccess = () => {
+  const onSuccess = (res: any) => {
     showAphAlert!({
       title: string.common.hiWithSmiley,
       description: needHelpToContactInMessage || string.needHelpSubmitMessage,
       unDismissable: true,
       onPressOk: () => {
         hideAphAlert!();
-        navigateToHome(navigation);
+        openHelpChatScreen(res);
       },
     });
+  };
+
+  const openHelpChatScreen = (response: any) => {
+    let ticketId = response?.data?.sendHelpEmail.split(':')[1] || 0;
+    let ticket = {
+      closedTime: null,
+      createdTime: '',
+      customFields: {
+        Business: '',
+        __typename: '',
+      },
+      id: ticketId,
+      modifiedTime: '2021-08-26T11:30:46.000Z',
+      status: '',
+      statusType: 'Open',
+      subject: '',
+      ticketNumber: '',
+    };
+
+    if (ticketId) {
+      navigation.navigate(AppRoutes.HelpChatScreen, {
+        ticketId: ticketId,
+        ticket: ticket,
+      });
+    }
   };
 
   const onError = () => {
