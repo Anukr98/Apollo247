@@ -496,14 +496,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             const showInclusions = orderLevelStatus?.statusHistory?.find(
               (item: any) => item?.orderStatus === order?.orderStatus
             );
-            let isStatusDone = true;
-            if (order?.__typename == 'upcomingStatus') {
-              isStatusDone = false;
-            }
-            const changeModifiedText =
-              order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_MODIFIED &&
-              DIAGNOSTIC_SUB_STATUS_TO_SHOW?.includes(order?.subStatus!);
 
+            //don't show if order is completed
             const isOrderCompleted = orderLevelStatus?.statusHistory?.find(
               (item: any) => item?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED
             );
@@ -521,63 +515,80 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                 (item: any) => item?.orderStatus === DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED
               );
 
+            //status which we want to show on ui
+            const showStatus = getTestOrderStatusText(order?.orderStatus) != '';
+            let isStatusDone = true;
+            if (order?.__typename == 'upcomingStatus') {
+              isStatusDone = false;
+            }
+            const changeModifiedText =
+              order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_MODIFIED &&
+              DIAGNOSTIC_SUB_STATUS_TO_SHOW?.includes(order?.subStatus!);
+
             return (
-              <View
-                style={styles.rowStyle}
-                onLayout={(event) => {
-                  const layout = event.nativeEvent.layout;
-                  if (isStatusDone && selectedTab === string.orders.trackOrder) {
-                    setScrollYValue(layout.y);
-                  }
-                }}
-              >
-                {renderGraphicalStatus(order, index, isStatusDone, array)}
-                <View style={{ marginBottom: 8, flex: 1 }}>
-                  <View style={[isStatusDone ? styles.statusDoneView : styles.statusUpcomingView]}>
-                    <View style={styles.flexRow}>
-                      <View style={{ width: '75%' }}>
-                        <Text
-                          style={[
-                            styles.statusTextStyle,
-                            {
-                              color:
-                                DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus) ||
-                                order?.orderStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB
-                                  ? theme.colors.INPUT_FAILURE_TEXT
-                                  : theme.colors.SHERPA_BLUE,
-                            },
-                          ]}
-                        >
-                          {nameFormater(
-                            getTestOrderStatusText(order?.orderStatus, changeModifiedText),
-                            'title'
+              <>
+                {!!showStatus && showStatus ? (
+                  <View
+                    style={styles.rowStyle}
+                    onLayout={(event) => {
+                      const layout = event.nativeEvent.layout;
+                      if (isStatusDone && selectedTab === string.orders.trackOrder) {
+                        setScrollYValue(layout.y);
+                      }
+                    }}
+                  >
+                    {renderGraphicalStatus(order, index, isStatusDone, array)}
+                    <View style={{ marginBottom: 8, flex: 1 }}>
+                      <View
+                        style={[isStatusDone ? styles.statusDoneView : styles.statusUpcomingView]}
+                      >
+                        <View style={styles.flexRow}>
+                          <View style={{ width: '75%' }}>
+                            <Text
+                              style={[
+                                styles.statusTextStyle,
+                                {
+                                  color:
+                                    DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus) ||
+                                    order?.orderStatus ==
+                                      DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB
+                                      ? theme.colors.INPUT_FAILURE_TEXT
+                                      : theme.colors.SHERPA_BLUE,
+                                },
+                              ]}
+                            >
+                              {nameFormater(
+                                getTestOrderStatusText(order?.orderStatus, changeModifiedText),
+                                'title'
+                              )}
+                            </Text>
+                          </View>
+                          {isStatusDone ? (
+                            renderCustomDescriptionOrDateAndTime(order)
+                          ) : (
+                            <View style={{ width: '25%' }} />
                           )}
-                        </Text>
+                        </View>
+                        {renderSubStatus(order, index)}
+                        {showContentBasedOnStatus(order, isStatusDone, index)}
+                        {/** since this can with any combination */}
+                        {!!isOrderCompleted
+                          ? null
+                          : !!showInclusions &&
+                            DROP_DOWN_ARRAY_STATUS.includes(showInclusions?.orderStatus)
+                          ? !!isPOC &&
+                            order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED
+                            ? renderInclusionLevelDropDown(order)
+                            : !!isSampleSubmitted &&
+                              order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED
+                            ? renderInclusionLevelDropDown(order)
+                            : null
+                          : null}
                       </View>
-                      {isStatusDone ? (
-                        renderCustomDescriptionOrDateAndTime(order)
-                      ) : (
-                        <View style={{ width: '25%' }} />
-                      )}
                     </View>
-                    {renderSubStatus(order, index)}
-                    {showContentBasedOnStatus(order, isStatusDone, index)}
-                    {/** since this can with any combination */}
-                    {!!isOrderCompleted
-                      ? null
-                      : !!showInclusions &&
-                        DROP_DOWN_ARRAY_STATUS.includes(showInclusions?.orderStatus)
-                      ? !!isPOC &&
-                        order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED
-                        ? renderInclusionLevelDropDown(order)
-                        : !!isSampleSubmitted &&
-                          order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED
-                        ? renderInclusionLevelDropDown(order)
-                        : null
-                      : null}
                   </View>
-                </View>
-              </View>
+                ) : null}
+              </>
             );
           })}
         </View>

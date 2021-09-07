@@ -562,7 +562,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     setModifiedPatientCart?.(modifiedPatientCart?.slice(0));
   }
 
-  const updatePricesInCart = (results: any) => {
+  const updatePricesInCart = (results: any, isNavigate?: boolean) => {
     if (results?.length == 0) {
       setLoading?.(false);
     }
@@ -672,9 +672,10 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         setLoading?.(false);
       }
     }
+    !!isNavigate && isNavigate && _navigateToNextScreen();
   };
 
-  async function getAddressServiceability() {
+  async function getAddressServiceability(navigate?: boolean) {
     //check in case of modify
     const selectedAddress = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
     setPinCode?.(selectedAddr?.zipcode!);
@@ -709,7 +710,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
             .then(({ data }) => {
               const diagnosticItems =
                 g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
-              updatePricesInCart(diagnosticItems);
+              updatePricesInCart(diagnosticItems, navigate);
               patientCartItems?.length == 0 && setLoading?.(false);
             })
             .catch((e) => {
@@ -1469,6 +1470,10 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     }
   }
 
+  function _validatePricesWithAddress() {
+    getAddressServiceability(true);
+  }
+
   function _navigateToNextScreen() {
     isModifyFlow ? _navigateToReviewPage() : _navigateToAddressSelection();
   }
@@ -1535,179 +1540,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       itemPricingObject,
       pricesForItemArray,
     };
-  }
-  //applying the first level duplicate checks. (check for normal + modify ) - single/multi
-  function _checkInclusionLevelDuplicates() {
-    const arrayToSelect = isModifyFlow ? modifiedPatientCart : isCartPresent;
-    const filteredPatientItems = !!arrayToSelect && arrayToSelect;
-
-    filteredPatientItems?.map((pItem, index) => {
-      const allInclusions = pItem?.cartItems?.map((item) => item?.inclusions);
-      const getPricesForItem = createItemPrice()?.itemPricingObject;
-      const getCartItemPrices = createItemPrice()?.pricesForItemArray;
-      const mergedInclusions = allInclusions?.flat(1); //from array level to single array
-      const duplicateItems_1 = mergedInclusions?.filter(
-        (e: any, i: any, a: any) => a.indexOf(e) !== i
-      );
-
-      const duplicateItems = [...new Set(duplicateItems_1)];
-
-      hideAphAlert?.();
-      setLoading?.(false);
-
-      if (duplicateItems?.length) {
-        checkDuplicateItems_Level1(
-          getPricesForItem,
-          duplicateItems,
-          getCartItemPrices,
-          pItem?.patientId,
-          pItem?.cartItems,
-          index,
-          filteredPatientItems?.length
-        );
-      } else {
-        if (index === isCartPresent?.length - 1) {
-          _navigateToNextScreen(); //move to next screen
-        } else {
-          index++;
-        }
-      }
-    });
-  }
-
-  function checkDuplicateItems_Level1(
-    getPricesForItem: any,
-    duplicateItems: any,
-    getCartItemPrices: any,
-    patientId: string,
-    cartItemsToCheck: DiagnosticsCartItem[],
-    index: number,
-    totalLength: number
-  ) {
-    //search for duplicate items in cart. (single tests added)
-    let duplicateItemIds =
-      !!cartItemsToCheck &&
-      cartItemsToCheck?.filter((item) => duplicateItems?.includes(Number(item?.id)));
-
-    let itemIdRemove = duplicateItemIds?.map((item) => Number(item?.id));
-
-    //rest of the duplicate items which are not directly present in the cart
-    const remainingDuplicateItems = duplicateItems?.filter(function(item: any) {
-      return itemIdRemove?.indexOf(item) < 0;
-    });
-
-    //search for remaining duplicate items in cart's package inclusions
-    let itemIdWithPackageInclusions =
-      !!cartItemsToCheck &&
-      cartItemsToCheck?.filter(({ inclusions }) =>
-        inclusions?.some((num) => remainingDuplicateItems?.includes(num))
-      );
-
-    //get only itemId
-    let packageInclusionItemId = itemIdWithPackageInclusions?.map((item) => Number(item?.id));
-
-    //for the remaining packageItems, extract the prices
-    let pricesForPackages = [] as any;
-
-    getPricesForItem?.forEach((pricesItem: any) => {
-      packageInclusionItemId?.forEach((packageId: number) => {
-        if (Number(pricesItem?.itemId) == Number(packageId)) {
-          pricesForPackages.push(pricesItem);
-        }
-      });
-    });
-
-    //sort with accordance with price
-    let sortedPricesForPackage = pricesForPackages?.sort((a: any, b: any) => b?.price - a?.price);
-    let remainingPackageDuplicateItems = sortedPricesForPackage?.slice(
-      1,
-      sortedPricesForPackage?.length
-    );
-    let remainingPackageDuplicateItemId = remainingPackageDuplicateItems?.map((item: any) =>
-      Number(item?.itemId)
-    );
-    let finalRemovalId = [...itemIdRemove, remainingPackageDuplicateItemId]?.flat(1);
-
-    setLoading?.(true);
-    getDiagnosticsAvailability(
-      Number(addressCityId),
-      cartItemsToCheck,
-      finalRemovalId,
-      'proceedToPay'
-    )
-      .then(({ data }) => {
-        const diagnosticItems = g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
-        const formattedDuplicateTest = diagnosticItems?.map((item) =>
-          !!item?.itemName ? nameFormater(item?.itemName, 'default') : item?.itemName
-        );
-        const duplicateTests = formattedDuplicateTest?.join(', ');
-        //remaining itemId's
-        const updatedCartItems = cartItemsToCheck?.filter(function(items: any) {
-          return finalRemovalId?.indexOf(Number(items?.id)) < 0;
-        });
-
-        //now on the updated cart item, find the duplicate items => higher price items
-        const higherPricesItems = updatedCartItems?.filter(({ inclusions }) =>
-          inclusions?.some((num) => finalRemovalId?.includes(num))
-        );
-
-        //if not found at inclusion level, then show whatever is coming from api.
-        if (higherPricesItems?.length == 0) {
-          setLoading?.(false);
-          index == totalLength - 1 && _navigateToNextScreen();
-        } else {
-          //there can be case, that they are found in the inclusion level.
-          const formattedHigherPriceItemName = higherPricesItems?.map(
-            (item) => !!item?.name && nameFormater(item?.name, 'default')
-          );
-          const higherPricesName = formattedHigherPriceItemName?.join(', ');
-
-          //clear cart
-          onChangeCartItems(updatedCartItems, duplicateTests, finalRemovalId, patientId);
-
-          //show inclusions
-          let array = [] as any;
-          updatedCartItems?.forEach((item) =>
-            diagnosticItems?.forEach((dItem) => {
-              if (item?.inclusions?.includes(Number(dItem?.itemId))) {
-                array.push({
-                  id: item?.id,
-                  removalId: dItem?.itemId,
-                  removalName: dItem?.itemName,
-                  patientId: patientId,
-                });
-              }
-            })
-          );
-
-          setShowInclusions(true);
-          let arrayToSet = [...duplicateNameArray, array].flat(1);
-          setDuplicateNameArray(arrayToSet);
-          // setDuplicateItemsArray?.(arrayToSet);
-          // setOverallArray([...overallArray, arrayToSet]);
-
-          overallDuplicateArray = [...overallDuplicateArray, arrayToSet]?.flat(1);
-
-          setDuplicateItemsArray?.(overallDuplicateArray);
-          fullHighPriceItems = fullHighPriceItems?.concat(
-            fullHighPriceItems === '' ? higherPricesName : ', ' + higherPricesName
-          );
-          fullDuplicateItems = fullDuplicateItems?.concat(
-            fullDuplicateItems === '' ? duplicateTests : ', ' + duplicateTests
-          );
-
-          if (index === isCartPresent?.length - 1) {
-            renderDuplicateMessage(fullDuplicateItems, fullHighPriceItems);
-            setOverallArray(overallDuplicateArray);
-          }
-        }
-      })
-      .catch((e) => {
-        //if api fails then also show the name... & remove..
-        CommonBugFender('TestsCart_getDiagnosticsAvailability', e);
-        setLoading?.(false);
-        errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
-      });
   }
 
   function checkIsItemRemovedFromAll(
@@ -1799,7 +1631,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       >
         <Button
           title={isModifyFlow ? 'PROCEED TO NEW CART' : 'SCHEDULE APPOINTMENT'}
-          onPress={() => _navigateToNextScreen()}
+          onPress={() => _validatePricesWithAddress()}
           disabled={disableCTA}
         />
       </StickyBottomComponent>

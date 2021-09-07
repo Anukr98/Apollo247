@@ -1460,8 +1460,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       console.log({ bookingOrderInfo });
       diagnosticSaveBookHcCollectionV2(client, bookingOrderInfo)
         .then(async ({ data }) => {
-          console.log('save booking order');
-          console.log({ data });
           const getSaveHomeCollectionResponse =
             data?.saveDiagnosticBookHCOrderv2?.patientsObjWithOrderIDs;
           const checkIsFalse = getSaveHomeCollectionResponse?.find(
@@ -1718,6 +1716,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         },
       });
     } else {
+      const hasRefreshAttribute =
+        source === BOOKING_TYPE.SAVE
+          ? !!data?.[0]?.attributes?.refreshCart && data?.[0]?.attributes?.refreshCart
+          : data?.errorMessageToDisplay;
+
       if (
         slotBookedArray.some((item) => message?.includes(item)) ||
         message.includes('slot has been booked')
@@ -1732,6 +1735,19 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           onPressOk: () => {
             props.navigation.goBack(); // to fetch new slots
             hideAphAlert?.();
+          },
+        });
+      }
+      //for the errors related to invalid_order_line_items/ invalid_order_rate / invalid_groupPlan
+      else if (hasRefreshAttribute) {
+        setLoading?.(false);
+        showAphAlert?.({
+          title: string.common.uhOh,
+          description: message,
+          unDismissable: true,
+          onPressOk: () => {
+            hideAphAlert?.();
+            props.navigation.navigate(AppRoutes.CartPage, {});
           },
         });
       } else {
@@ -1892,7 +1908,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           modifiedOrder?.paymentType !== DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
         ) {
           //call the process wali api & success page (check for modify Order)
-          processModifiyCODOrder(getOrderDetails, toPayPrice, eventAttributes, orderInfo, payId);
+          processModifiyCODOrder(getOrderDetails, grandTotal, eventAttributes, orderInfo, payId!);
         } else {
           console.log('in the payment methodss');
           setLoading?.(false);

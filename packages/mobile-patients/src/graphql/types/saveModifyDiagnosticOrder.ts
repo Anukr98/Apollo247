@@ -19,6 +19,7 @@ export interface saveModifyDiagnosticOrder_saveModifyDiagnosticOrder_attributes 
   __typename: "CustomResponse";
   itemids: string | null;
   conflictedItems: (saveModifyDiagnosticOrder_saveModifyDiagnosticOrder_attributes_conflictedItems | null)[] | null;
+  refreshCart: boolean | null;
 }
 
 export interface saveModifyDiagnosticOrder_saveModifyDiagnosticOrder {
