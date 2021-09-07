@@ -1291,5 +1291,10 @@
     "stepThree": "If required, share necessary reports and text updates.",
     "viewGuideline": "View Consultation Guidelines \n",
     "download": "Download",
+  },
+  "specialOffersScreen": {
+    "couponKnowMore": "How you can redeem this offer:",
+    "brandDealsSubHeading": "Select any of the brands below to see its products on offer",
+    "readTermsAndConditions": "Read the Terms & Conditions"
   }
 }

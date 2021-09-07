@@ -316,6 +316,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setIsCircleExpired,
     isCircleExpired,
     pharmaHomeNudgeMessage,
+    setMedicineHomeBannerData,
+    setMedicineHotSellersData,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
@@ -931,6 +933,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
       const resonse = (await getMedicinePageProducts(axdcCode, pinCode)).data;
       setData(resonse);
+      if (setMedicineHomeBannerData) {
+        setMedicineHomeBannerData(resonse?.mainbanners);
+      }
+      if (setMedicineHotSellersData) {
+        setMedicineHotSellersData(resonse?.hot_sellers);
+      }
       setMedicinePageAPiResponse!(resonse);
       cacheCachableResponse(resonse);
 
@@ -2163,9 +2171,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           onPressShopByCategory={() => setCategoryTreeVisible(true)}
           onPressSpecialOffers={() => {
             const categoryId = AppConfig.Configuration.SPECIAL_OFFERS_CATEGORY_ID;
-            props.navigation.navigate(AppRoutes.MedicineListing, {
-              category_id: categoryId,
-              title: string.specialOffers,
+            props.navigation.navigate(AppRoutes.SpecialOffersScreen, {
+              movedFrom: 'home',
             });
           }}
         />
