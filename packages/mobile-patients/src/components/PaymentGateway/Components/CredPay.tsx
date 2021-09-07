@@ -10,17 +10,18 @@ import { OffersIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 export interface CredPayProps {
   onPressPayNow: (wallet: string) => void;
   paymentMethod: any;
+  credInfo: any;
 }
 
 export const CredPay: React.FC<CredPayProps> = (props) => {
-  const { onPressPayNow, paymentMethod } = props;
-  const cred = {};
+  const { onPressPayNow, paymentMethod, credInfo } = props;
+
   const renderImage = () => {
-    const imageUrl = 'https://d1sofudel0ufia.cloudfront.net/assets/cred_brand_logo_bg_black.png';
+    const imageUrl = credInfo?.layout?.icon;
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <Image source={{ uri: imageUrl }} style={{ height: 25, width: 25 }} />
-        <Text style={styles.name}>Cred Pay</Text>
+        <Text style={styles.name}>{credInfo?.layout?.ctaText}</Text>
       </View>
     );
   };
@@ -29,9 +30,7 @@ export const CredPay: React.FC<CredPayProps> = (props) => {
     return (
       <View style={{ flexDirection: 'row', paddingBottom: 15 }}>
         <OffersIcon style={styles.offerIcon} />
-        <Text style={styles.offermsg}>
-          {'Get 10% discount on purchase of 200 and above. \n TnC Apply.'}
-        </Text>
+        <Text style={styles.offermsg}>{credInfo?.layout?.bannerText}</Text>
       </View>
     );
   };
