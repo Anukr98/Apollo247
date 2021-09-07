@@ -34,6 +34,9 @@ export enum ProductPageViewedSource {
   SUBSTITUTES = 'substitutes',
   CROSS_SELLING_PRODUCTS = 'cross selling products',
   SIMILAR_PRODUCTS = 'similar products',
+  MULTI_VARIANT = 'multivariant',
+  PDP_ALL_SUSBTITUTES = 'PDP All Substitutes',
+  PDP_FAST_SUSBTITUTES = 'PDP Fast Substitutes',
 }
 
 export enum CleverTapEventName {
@@ -123,7 +126,6 @@ export enum CleverTapEventName {
   PHARMACY_PAYMENT_INSTRUMENT_SELECTED = 'Pharmacy Payment Instrument Selected',
   PHARMACY_NONCART_ORDER_SUBMIT_CLICKED = 'Pharmacy Noncart Order Submit Clicked',
   UPLOAD_PRESCRIPTION_OPTION_SELECTED = 'Upload Prescription Option Selected',
-  UPLOAD_PRESCRIPTION_IMAGE_UPLOADED = 'Upload Prescription Image Uploaded',
   BUY_MEDICINES = 'Pharmacy Buy Medicines Clicked',
   PHARMACY_CART_ADDRESS_SELECTED_SUCCESS = 'Pharmacy Address Selected Success',
   PHARMACY_COUPON_ACTION = 'Pharmacy Coupon Action',
@@ -139,6 +141,7 @@ export enum CleverTapEventName {
   PHARMACY_RE_ORDER_MEDICINE = 'Pharmacy Reorder Clicked',
   PHARMACY_MY_ORDERS_CLICKED = 'Pharmacy My Orders Clicked',
   PHARMACY_MY_ORDER_TRACKING_CLICKED = 'Pharmacy Track Order Clicked',
+  PHARMACY_FAST_SUBSTITUTES_VIEWED = 'Pharmacy Fast Substitutes Viewed',
 
   // Diagnostics Events
   DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
@@ -162,7 +165,7 @@ export enum CleverTapEventName {
   DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic make payment clicked',
   PAYMENT_INITIATED = 'Payment Initiated',
   DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic payment initiated',
-  DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnositc checkout completed',
+  DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic checkout completed',
   DIAGNOSTIC_TRACK_ORDER_VIEWED = 'Diagnostic track order viewed',
   DIAGNOSTIC_ORDER_RESCHEDULE = 'Diagnostic order rescheduled',
   DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
@@ -174,6 +177,7 @@ export enum CleverTapEventName {
   DIGNOSTIC_PAYMENT_ABORTED = 'Diagnostic payment aborted',
   DIAGNOSITC_MODIFY_CLICKED = 'Diagnositic modify order clicked',
   DIAGNOSTIC_MODIFY_ORDER = 'Diagnostic modify order',
+  DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED = 'Diagnostic product listing page viewed',
 
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
@@ -363,6 +367,8 @@ export enum CleverTapEventName {
   CHAT_WITH_DOCTOR = 'Chat with Doctor',
   OPENTOK_EVENT_RECEIVED = 'OpenTok Event Received',
   OPENTOK_ERROR_RECEIVED = 'OpenTok Error Received',
+  Order_Medicine_From_View_Prescription = 'OrderMedicineFromViewPrescription',
+  Book_Tests_From_View_Prescription = 'BookTestsFromViewPrescription',
 
   DOCTOR_RESCHEDULE_CLAIM_REFUND = 'Doctor reschedule and Claim Refund button click',
   UPLOAD_RECORDS_CLICK_CHATROOM = 'Upload Records in chatroom clicked',
@@ -431,7 +437,7 @@ export enum CleverTapEventName {
   PATIENT_SESSION_STREAM_DESTROYED = 'Patient Session Stream Destroyed',
   PATIENT_SESSION_STREAM_PROPERTY_CHANGED = 'Patient Session Stream Property Changed',
   //chatRoom Events
-  PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT = 'Patient sent chat message post consult',
+  PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT = 'Consult Patient sent chat message post consult',
   PATIENT_EXTERNAL_MEETING_LINK_CLICKED = 'Patient Clicked on Video Link',
   // Symptom Tracker Events
   SYMPTOM_TRACKER_FOR_MYSELF = 'Myself clicked SC',
@@ -514,6 +520,8 @@ export enum CleverTapEventName {
   APP_REVIEW_AND_RATING_TO_PLAYSTORE = 'Playstore review popup showed',
   APP_REVIEW_AND_RATING_TO_APPSTORE = 'Appstore review popup showed',
 
+  //Upload Prescription
+  PHARMACY_PRESCRIPTION_UPLOADED = 'Pharmacy Prescription Uploaded',
 
   // Custom UTM Events
   CUSTOM_UTM_VISITED = 'App launch source'
@@ -1108,7 +1116,9 @@ export interface CleverTapEvents {
     | 'Pharmacy Full Search'
     | 'Similar Widget'
     | 'Pharmacy Cart'
-    | 'Category Tree';
+    | 'Category Tree'
+    | 'PDP All Substitutes'
+    | 'PDP Fast Substitutes';
     Brand?: string;
     'Brand ID'?: string;
     'category name'?: string;
@@ -1193,6 +1203,7 @@ export interface CleverTapEvents {
     'Cart Items'?: number;
     Coupon?: string;
     paymentOrderId: string;
+    'Payment Instrument': string;
   };
   [CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED]: {
     Source: 'Home' | 'Cart';
@@ -1234,11 +1245,6 @@ export interface CleverTapEvents {
     NumberOfPrescriptionUploaded: number;
     NumberOfEPrescriptions: number;
     User_Type?: PharmaUserStatus;
-  };
-  [CleverTapEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]: {
-    Source: 'Camera' | 'Gallery' | 'My Prescription';
-    Location?: UploadPrescSource;
-    'User Type'?: PharmaUserStatus;
   };
   [CleverTapEventName.PHARMACY_NONCART_ORDER_SUBMIT_CLICKED]: {
     'Order ID': string | number;
@@ -1449,6 +1455,7 @@ export interface CleverTapEvents {
     'Item ids'?: any;
     'Total items in order': number;
     'Payment type'?: string; //for prepaid
+    'Circle user': 'Yes' | 'No';
   };
   [CleverTapEventName.PAYMENT_INITIATED]: {
     Amount: number;
@@ -1496,7 +1503,7 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED]: {
     UHID: string;
-    'Order amount': string | number;
+    'Order amount': number;
   };
   [CleverTapEventName.DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED]: {
     Rating: string | number;
@@ -1525,6 +1532,12 @@ export interface CleverTapEvents {
     UHID: string;
     'Order id': string;
     'Order status': string;
+  };
+  [CleverTapEventName.DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED]: {
+    Type: 'Category' | 'Widget';
+    Source: 'Home' | 'Deeplink' | 'Details page' | 'Cart page';
+    'Category name': '';
+    'Section name': '';
   };
 
   // ********** ConsultEvents ********** \\
@@ -1684,6 +1697,9 @@ export interface CleverTapEvents {
     'Secretary Name': string;
     'Secretary Mobile Number': string;
     'Doctor Mobile Number': string;
+    'Doctor ID': string;
+    'Display ID': number;
+    'Chat Format': 'PDF' | 'Image' | 'Text';
   };
   [CleverTapEventName.PATIENT_EXTERNAL_MEETING_LINK_CLICKED]: {
     'Doctor name': string;
@@ -1715,6 +1731,9 @@ export interface CleverTapEvents {
     'Secretary Name': string;
     'Secretary Mobile Number': string;
     'Doctor Mobile Number': string;
+    'Doctor ID': string;
+    'Display ID': number;
+    'Chat Format': 'PDF' | 'Image' | 'Text';
   };
   [CleverTapEventName.OPENTOK_ERROR_RECEIVED]: {
     'Doctor ID': string;
@@ -1805,6 +1824,8 @@ export interface CleverTapEvents {
     'Hospital City': string;
     consultDateTime: Date;
     User_Type: string;
+    'Booking Fee': string;
+    'Booking value': number;
   };
   [CleverTapEventName.CONSULTATION_BOOKED]: {
     consultId: string;
@@ -2432,6 +2453,7 @@ export interface CleverTapEvents {
     MRP?: number;
     SpecialPrice?: number | null;
     CircleCashback?: number;
+    SubCategory: string;
   };
   [CleverTapEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
     'Patient Name': string;
@@ -2835,5 +2857,32 @@ export interface CleverTapEvents {
       _247_Flag: boolean | undefined;
       'Consult Mode': string;
     };
+  };
+
+  [CleverTapEventName.PLAYSTORE_APP_REVIEW_AND_RATING]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    'User Type': string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    'CT Source': string;
+    'Device ID': string;
+    'Circle Member': string;
+    'Page Name': string;
+    'NAV Source': 'Pharmacy' | 'Consult' | 'Dignostic';
+  };
+
+  [CleverTapEventName.PHARMACY_FAST_SUBSTITUTES_VIEWED]: {
+    'Product Code': string;
+    'Product Name': string;
+    'Stock type': 'In stock' | 'Out of stock';
+    Type: string;
+  };
+
+  [CleverTapEventName.PHARMACY_PRESCRIPTION_UPLOADED]: {
+    Location: 'Cart' | 'Non-Cart';
+    Source: 'Gallery' | 'Camera' | 'My Prescription' | 'Consult Room' | 'Health Records';
   };
 }

@@ -423,16 +423,41 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
     return <Breadcrumb links={breadCrumb} containerStyle={styles.breadcrumb} />;
   };
 
-  const onSuccess = () => {
+  const onSuccess = (res: any) => {
     showAphAlert!({
       title: string.common.hiWithSmiley,
       description: needHelpToContactInMessage || string.needHelpSubmitMessage,
       unDismissable: true,
       onPressOk: () => {
         hideAphAlert!();
-        navigateToHome(navigation);
+        openHelpChatScreen(res);
       },
     });
+  };
+
+  const openHelpChatScreen = (response: any) => {
+    let ticketId = response?.data?.sendHelpEmail.split(':')[1] || 0;
+    let ticket = {
+      closedTime: null,
+      createdTime: '',
+      customFields: {
+        Business: '',
+        __typename: '',
+      },
+      id: ticketId,
+      modifiedTime: '2021-08-26T11:30:46.000Z',
+      status: '',
+      statusType: 'Open',
+      subject: '',
+      ticketNumber: '',
+    };
+
+    if (ticketId) {
+      navigation.navigate(AppRoutes.HelpChatScreen, {
+        ticketId: ticketId,
+        ticket: ticket,
+      });
+    }
   };
 
   const onError = () => {
@@ -466,12 +491,13 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
         },
       };
 
-      await client.query<SendHelpEmail, SendHelpEmailVariables>({
+      let response = await client.query<SendHelpEmail, SendHelpEmailVariables>({
         query: SEND_HELP_EMAIL,
         variables,
       });
+
       setLoading!(false);
-      onSuccess();
+      onSuccess(response);
       if (orderType && queryOrderId) {
         saveNeedHelpQuery({ orderId: `${queryOrderId}`, orderType, createdDate: new Date() });
       }

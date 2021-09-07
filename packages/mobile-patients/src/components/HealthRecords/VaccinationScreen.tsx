@@ -19,12 +19,17 @@ import { ProfileImageComponent } from '@aph/mobile-patients/src/components/Healt
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
   g,
   initialSortByDays,
   handleGraphQlError,
+  editDeleteData,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  deletePatientPrismMedicalRecords,
+  getPatientPrismMedicalRecordsApi,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useApolloClient } from 'react-apollo-hooks';
 import moment from 'moment';
@@ -154,6 +159,7 @@ export const VaccinationScreen: React.FC<VaccinationScreenProps> = (props) => {
         if (!!immunizations) {
           finalData = initialSortByDays('immunization', immunizations, finalData);
           setLocalVaccinationData(finalData);
+          console.log(immunizations, 'FINAL DATA');
         }
         setShowSpinner(false);
       })
@@ -197,6 +203,39 @@ export const VaccinationScreen: React.FC<VaccinationScreenProps> = (props) => {
     );
   };
 
+  const onPressEditPrismMedicalRecords = (selectedItem: any) => {
+    setCallApi(false);
+    props.navigation.navigate(AppRoutes.AddVaccinationRecord, {
+      navigatedFrom: 'Test Reports',
+      recordType: MedicalRecordType.IMMUNIZATION,
+      selectedRecordID: selectedItem?.id,
+      selectedRecord: selectedItem,
+      onRecordAdded: onRecordAdded,
+    });
+  };
+
+  const onPressDeletePrismMedicalRecords = (selectedItem: any) => {
+    setShowSpinner(true);
+    deletePatientPrismMedicalRecords(
+      client,
+      selectedItem?.id,
+      currentPatient?.id || '',
+      MedicalRecordType.IMMUNIZATION
+    )
+      .then((status) => {
+        if (status) {
+          getLatestLabAndHealthCheckRecords();
+        } else {
+          setShowSpinner(false);
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('TestReportScreen_deletePatientPrismMedicalRecords', error);
+        setShowSpinner(false);
+        currentPatient && handleGraphQlError(error);
+      });
+  };
+
   const renderSectionHeader = (section: any) => {
     let sectionTitle = section.key;
     return <Text style={styles.sectionHeaderTitleStyle}>{sectionTitle}</Text>;
@@ -230,18 +269,22 @@ export const VaccinationScreen: React.FC<VaccinationScreenProps> = (props) => {
       return moment(new Date(date)).format('DD MMM');
     };
     const soureName = item?.source === '247self' ? 'Self upload' : item?.hospitalName;
-    const showEditDeleteOption = item?.source === '247self' ? true : false;
     const dateText = getPresctionDate(item?.dateOfImmunization || item?.followUpDate);
     const doseType = item?.batchno === '1' ? 'Dose 1' : 'Dose 2';
     const sourceType = true;
-    const hideEditDeleteOption = true;
+    const showEditDeleteOption =
+      soureName === string.common.clicnical_document_text || soureName === '247self' ? true : false;
+    const hideEditDeleteOption = item?.data?.healthCheckName && showEditDeleteOption ? true : false;
     return (
       <HealthRecordCard
         item={item}
         index={index}
+        editDeleteData={editDeleteData(MedicalRecordType.IMMUNIZATION)}
         showUpdateDeleteOption={showEditDeleteOption}
         hideUpdateDeleteOption={hideEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
+        onEditPress={(selectedItem) => onPressEditPrismMedicalRecords(selectedItem)}
+        onDeletePress={(selectItem) => onPressDeletePrismMedicalRecords(selectItem)}
         prescriptionName={doseType}
         doctorName={item?.vaccineName}
         dateText={dateText}

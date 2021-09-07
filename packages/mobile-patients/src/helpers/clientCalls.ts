@@ -37,8 +37,10 @@ import {
   UPDATE_APPOINTMENT,
   SAVE_PHLEBO_FEEDBACK,
   PROCESS_DIAG_COD_ORDER,
-  CREATE_ORDER,
   GET_DIAGNOSTIC_PAYMENT_SETTINGS,
+  GET_DIAGNOSTICS_RECOMMENDATIONS,
+  GET_DIAGNOSTIC_EXPRESS_SLOTS_INFO,
+  GET_DIAGNOSTIC_REPORT_TAT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -92,8 +94,7 @@ import {
   BannerDisplayType,
   ProcessDiagnosticHCOrderInput,
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
-  PAYMENT_MODE,
-  OrderInput,
+  DiagnosticsServiceability,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { insertMessageVariables } from '@aph/mobile-patients/src/graphql/types/insertMessage';
 import {
@@ -185,13 +186,12 @@ import {
   processDiagnosticHCOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/processDiagnosticHCOrder';
 import {
-  createOrder,
-  createOrderVariables,
-} from '@aph/mobile-patients/src/graphql/types/createOrder';
-import {
   getDiagnosticPaymentSettings,
   getDiagnosticPaymentSettingsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticPaymentSettings';
+import { getDiagnosticItemRecommendations, getDiagnosticItemRecommendationsVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticItemRecommendations';
+import { getUpcomingSlotInfo, getUpcomingSlotInfoVariables } from '@aph/mobile-patients/src/graphql/types/getUpcomingSlotInfo';
+import { getConfigurableReportTAT, getConfigurableReportTATVariables } from '@aph/mobile-patients/src/graphql/types/getConfigurableReportTAT';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -1185,25 +1185,6 @@ export const processDiagnosticsCODOrder = (
   });
 };
 
-export const createJusPayOrder = (
-  client: ApolloClient<object>,
-  paymentId: string,
-  paymentMode: PAYMENT_MODE,
-  returnUrl: string
-) => {
-  const orderInput: OrderInput = {
-    payment_order_id: paymentId,
-    payment_mode: paymentMode,
-    is_mobile_sdk: true,
-    return_url: returnUrl,
-  };
-  return client.mutate<createOrder, createOrderVariables>({
-    mutation: CREATE_ORDER,
-    variables: { order_input: orderInput },
-    fetchPolicy: 'no-cache',
-  });
-};
-
 export const diagnosticPaymentSettings = (client: ApolloClient<object>, paymentId: string) => {
   return client.query<getDiagnosticPaymentSettings, getDiagnosticPaymentSettingsVariables>({
     query: GET_DIAGNOSTIC_PAYMENT_SETTINGS,
@@ -1213,4 +1194,69 @@ export const diagnosticPaymentSettings = (client: ApolloClient<object>, paymentI
     variables: { paymentOrderId: paymentId },
     fetchPolicy: 'no-cache',
   });
+};
+
+export const getDiagnosticCartRecommendations = (
+  client: ApolloClient<object>,
+  itemIds: any,
+  numOfRecords: number
+) =>
+{
+  return client.query<getDiagnosticItemRecommendations, getDiagnosticItemRecommendationsVariables>({
+    query: GET_DIAGNOSTICS_RECOMMENDATIONS,
+    context: {
+      sourceHeaders,
+    },
+    variables: {
+      itemIds: itemIds,
+      records: numOfRecords
+    },
+    fetchPolicy: 'no-cache',
+  }); 
+};
+
+export const getDiagnosticExpressSlots = (
+  client: ApolloClient<object>,
+  latitude: number,
+  longitude: number,
+  zipcode: string,
+  serviceabilityObj: DiagnosticsServiceability
+) =>
+{
+  return client.query<getUpcomingSlotInfo, getUpcomingSlotInfoVariables>({
+    query: GET_DIAGNOSTIC_EXPRESS_SLOTS_INFO,
+    context: {
+      sourceHeaders,
+    },
+    variables: {
+     latitude: latitude,
+     longitude: longitude,
+     zipcode: zipcode,
+     serviceability : serviceabilityObj
+    },
+    fetchPolicy: 'no-cache',
+  }); 
+};
+
+export const getReportTAT = (
+  client: ApolloClient<object>,
+  slotDateTimeInUTC: string| null,
+  cityId: number,
+  pincode: number,
+  itemIds: number[]
+) =>
+{
+  return client.query<getConfigurableReportTAT, getConfigurableReportTATVariables>({
+    query: GET_DIAGNOSTIC_REPORT_TAT,
+    context: {
+      sourceHeaders,
+    },
+    variables: {
+      slotDateTimeInUTC: slotDateTimeInUTC,
+      cityId: cityId,
+      pincode: pincode,
+      itemIds: itemIds
+    },
+    fetchPolicy: 'no-cache',
+  }); 
 };

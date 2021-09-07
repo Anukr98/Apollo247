@@ -18,7 +18,7 @@ import {
   PreviousPrescriptionIcon,
   WhiteArrowRightIcon,
   DownArrow,
-  Close
+  Close,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppointmentFilterScene } from '@aph/mobile-patients/src/components/ConsultRoom/AppointmentFilterScene';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
@@ -394,12 +394,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   patientHeaderView: {
-    flexDirection: 'row', 
+    flexDirection: 'row',
     paddingHorizontal: 22,
     paddingBottom: 8,
-    backgroundColor: theme.colors.WHITE, 
-    alignItems: 'center', 
-    justifyContent: 'space-between'
+    backgroundColor: theme.colors.WHITE,
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   allApptText: {
     ...theme.viewStyles.text('R', 14, theme.colors.SLATE_GRAY, 1, 18),
@@ -419,39 +419,39 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.CALL_BG_GRAY,
     borderWidth: 1,
     marginTop: 6,
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   prevApptText: {
-    ...theme.viewStyles.text('R', 10, theme.colors.NILE_BLUE, 1, 13)
+    ...theme.viewStyles.text('R', 10, theme.colors.NILE_BLUE, 1, 13),
   },
   downArrowIcon: {
     width: 12,
-    height: 8, 
-    marginStart: 12
+    height: 8,
+    marginStart: 12,
   },
   patientNameView: {
-    flexDirection: 'row', 
-    backgroundColor: theme.colors.WHITE, 
-    alignItems: 'center', 
-    alignSelf: 'flex-start', 
+    flexDirection: 'row',
+    backgroundColor: theme.colors.WHITE,
+    alignItems: 'center',
+    alignSelf: 'flex-start',
     paddingHorizontal: 8,
-    paddingVertical: 3, 
+    paddingVertical: 3,
     borderRadius: 6,
-    borderWidth: 1, 
+    borderWidth: 1,
     borderColor: theme.colors.APP_GREEN,
     marginBottom: 6,
-    marginStart: 6
+    marginStart: 6,
   },
   crossIcon: {
-    height: 6, 
-    width: 6, 
-    marginStart: 8
+    height: 6,
+    width: 6,
+    marginStart: 8,
   },
   patientNameText: {
-    ...theme.viewStyles.text('M', 10, theme.colors.APP_GREEN, 1, 13)
+    ...theme.viewStyles.text('M', 10, theme.colors.APP_GREEN, 1, 13),
   },
   patientNameHeading: {
-    ...theme.viewStyles.text('M', 12, theme.colors.SKY_BLUE, 1, 16)
+    ...theme.viewStyles.text('M', 12, theme.colors.SKY_BLUE, 1, 16),
   },
   patientNameStyle: {
     ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 18),
@@ -468,12 +468,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginStart: 24,
     borderColor: theme.colors.APP_YELLOW,
-    borderWidth: 1
+    borderWidth: 1,
   },
   bookAgainView: {
-    backgroundColor: theme.colors.APP_YELLOW, 
-    borderRadius: 8, 
-    marginEnd: 24
+    backgroundColor: theme.colors.APP_YELLOW,
+    borderRadius: 8,
+    marginEnd: 24,
   },
   prescriptionView: {
     backgroundColor: theme.colors.WHITE,
@@ -481,56 +481,50 @@ const styles = StyleSheet.create({
     marginStart: 24,
     marginBottom: 16,
     borderColor: theme.colors.APP_YELLOW,
-    borderWidth: 1
+    borderWidth: 1,
   },
   textConsultView: {
-    backgroundColor: theme.colors.WHITE, 
-    borderRadius: 8, 
-    marginEnd: 24, 
-    marginBottom: 16, 
+    backgroundColor: theme.colors.WHITE,
+    borderRadius: 8,
+    marginEnd: 24,
+    marginBottom: 16,
     borderColor: theme.colors.APP_YELLOW,
-    borderWidth: 1
+    borderWidth: 1,
   },
   consultStartedView: {
     alignSelf: 'flex-end',
-    paddingBottom: 16
+    paddingBottom: 16,
   },
   consultStartedBtn: {
-    backgroundColor: theme.colors.APP_YELLOW, 
-    borderRadius: 8, 
-    marginEnd: 24
+    backgroundColor: theme.colors.APP_YELLOW,
+    borderRadius: 8,
+    marginEnd: 24,
   },
   anotherSlotBtn: {
     backgroundColor: theme.colors.APP_YELLOW,
-    borderRadius: 8, 
+    borderRadius: 8,
     marginEnd: 24,
     alignSelf: 'flex-end',
-    marginBottom: 16
+    marginBottom: 16,
   },
   patientContainer: {
-    flexDirection: 'row', 
+    flexDirection: 'row',
     paddingHorizontal: 12,
     paddingVertical: 8,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   listHeader: {
     flex: 1,
     backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
     height: 50,
-    marginTop: -14, 
+    marginTop: -14,
     justifyContent: 'flex-end',
   },
   statusText: {
     position: 'absolute',
     left: 10,
     top: 6,
-    ...theme.viewStyles.text(
-      'M',
-      10,
-      theme.colors.APP_RED,
-      1,
-      13
-    ),
+    ...theme.viewStyles.text('M', 10, theme.colors.APP_RED, 1, 13),
   },
   horizontalContainer: {
     flexDirection: 'row',
@@ -565,7 +559,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [loading, setLoading] = useState<boolean>(false);
   const [pageLoading, setPageLoading] = useState<boolean>(true);
-  const [showFilter, setShowFilter] = useState<boolean>(false)
+  const [showFilter, setShowFilter] = useState<boolean>(false);
 
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [appointmentItem, setAppoinmentItem] = useState<Appointment | null>();
@@ -591,8 +585,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
   useEffect(() => {
     setPageLoading(true);
-    fetchAppointments(true)
-  }, [selectedPatient])
+    fetchAppointments(true);
+  }, [selectedPatient]);
 
   useEffect(() => {
     if (movedFrom === 'deeplink') {
@@ -722,12 +716,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           limit: 5,
         },
       });
-      const {appointments, totalAppointmentCount} = data?.getPatientAllAppointments || {};
-      const futureOnlineAppts: Appointment[] = appointments?.filter(
-        (it) =>
-          moment(it?.appointmentDateTime).isAfter(moment(new Date())) &&
-          it?.appointmentType == 'ONLINE'
-      ) || [];
+      const { appointments, totalAppointmentCount } = data?.getPatientAllAppointments || {};
+      const futureOnlineAppts: Appointment[] =
+        appointments?.filter(
+          (it) =>
+            moment(it?.appointmentDateTime).isAfter(moment(new Date())) &&
+            it?.appointmentType == 'ONLINE'
+        ) || [];
       if (futureOnlineAppts.length && reload) {
         if (Platform.OS === 'ios') {
           callPermissions();
@@ -745,7 +740,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           });
         }
       }
-      if(reload){
+      if (reload) {
         appointments && setAllAppointments([...appointments]);
       } else {
         appointments && setAllAppointments([...allAppointments, ...appointments]);
@@ -784,8 +779,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
   const onViewPrescriptionClick = async (item: Appointment) => {
     const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
-    const eventAttributes :
-     CleverTapEvents[CleverTapEventName.VIEW_PRESCRIPTION_CLICKED_APPOINTMENT_CARD] = {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.VIEW_PRESCRIPTION_CLICKED_APPOINTMENT_CARD] = {
       'Doctor Name': g(item, 'doctorInfo', 'fullName') || '',
       'Doctor Phone Number': g(item, 'doctorInfo', 'mobileNumber') || '',
       'Doctor ID': g(item, 'doctorInfo', 'id') || '',
@@ -794,10 +788,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       'Patient Name': g(item, 'patientName') || '',
       'Patient Phone Number': `+91${storedPhoneNumber}`,
       'Display ID': String(g(item, 'displayId')) || '',
-    }
-    
-    postCleverTapEvent(CleverTapEventName.VIEW_PRESCRIPTION_CLICKED_APPOINTMENT_CARD,
-       eventAttributes);
+    };
+
+    postCleverTapEvent(
+      CleverTapEventName.VIEW_PRESCRIPTION_CLICKED_APPOINTMENT_CARD,
+      eventAttributes
+    );
     props.navigation.navigate(AppRoutes.ConsultDetails, {
       CaseSheet: item.id,
       DoctorInfo: item.doctorInfo,
@@ -806,7 +802,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       DisplayId: item.displayId,
       BlobName: '',
     });
-  }
+  };
 
   const renderConsultationCard = (item: Appointment, index: number) => {
     let tomorrowDate = moment(new Date())
@@ -826,10 +822,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         return 'Cancelled';
       } else if (item?.status === STATUS.COMPLETED) {
         return 'Completed';
-      } else if (item?.status === STATUS.PENDING ||
-          item?.status === STATUS.IN_PROGRESS) {
+      } else if (item?.status === STATUS.PENDING || item?.status === STATUS.IN_PROGRESS) {
         return 'Active';
-      }  else if (item?.appointmentState === APPOINTMENT_STATE.RESCHEDULE) {
+      } else if (item?.appointmentState === APPOINTMENT_STATE.RESCHEDULE) {
         return 'Rescheduled';
       } else if (item?.isFollowUp === 'true') {
         return 'Follow Up Appointment';
@@ -930,14 +925,16 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       return (
         <View>
           <Text style={styles.fillVitalsForConsult}>
-              {item?.status == STATUS.CANCELLED ?
-              string.common.bookAnotherSlot :
-              item?.status == STATUS.COMPLETED ? string.common.bookFollowUp : null}
+            {item?.status == STATUS.CANCELLED
+              ? string.common.bookAnotherSlot
+              : item?.status == STATUS.COMPLETED
+              ? string.common.bookFollowUp
+              : null}
           </Text>
           <View
-          style={{
-            ...styles.cancelledView,
-             justifyContent: cancelConsulations ? 'flex-end' : 'space-between'
+            style={{
+              ...styles.cancelledView,
+              justifyContent: cancelConsulations ? 'flex-end' : 'space-between',
             }}
           >
             {cancelConsulations ? null : (
@@ -988,7 +985,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 {cancelConsulations ? 'BOOK AGAIN' : 'BOOK FOLLOW UP'}
               </Text>
             </TouchableOpacity>
-          </View>  
+          </View>
         </View>
       );
     };
@@ -1075,44 +1072,45 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           disableChat: item.doctorInfo && pastAppointmentItem,
         });
       };
-      const isPrescAvailable = item.caseSheet?.some(item => item?.sentToPatient)
+      const isPrescAvailable = item.caseSheet?.some((item) => item?.sentToPatient);
       return (
         <View>
           {day1.diff(day2, 'days') > 0 ? (
-              <View style={styles.textConsultSubtextView}>
-                <Text style={styles.postConsultTextStyles1}>
-                  {'You can follow up with the doctor via text '}
-                </Text>
+            <View style={styles.textConsultSubtextView}>
+              <Text style={styles.postConsultTextStyles1}>
+                {'You can follow up with the doctor via text '}
+              </Text>
 
-                <Text style={styles.postConsultTextStyles2}>{numberDaysToConsultText}</Text>
-              </View>
-            ) : (
-              <View style={{ height: 16 }} />
-            )}
-          <View style={{
-            ...styles.horizontalContainer,
-            justifyContent: isPrescAvailable ? 'space-between' : 'flex-end'
-            }}>
-            {isPrescAvailable && 
+              <Text style={styles.postConsultTextStyles2}>{numberDaysToConsultText}</Text>
+            </View>
+          ) : (
+            <View style={{ height: 16 }} />
+          )}
+          <View
+            style={{
+              ...styles.horizontalContainer,
+              justifyContent: isPrescAvailable ? 'space-between' : 'flex-end',
+            }}
+          >
+            {isPrescAvailable && (
               <TouchableOpacity
-                style={styles.prescriptionView} 
+                style={styles.prescriptionView}
                 activeOpacity={1}
                 onPress={() => onViewPrescriptionClick(item)}
-                >
-                  <Text
-                    style={{...styles.prepareForConsult, color: theme.colors.APP_YELLOW}}
-                  >
-                    {'VIEW PRESCRIPTION'}
-                  </Text>
-              </TouchableOpacity>}
-            <TouchableOpacity
-              style={styles.textConsultView} 
-              activeOpacity={1} onPress={onPressTextConsult}>
-                <Text
-                  style={{...styles.prepareForConsult, color: theme.colors.APP_YELLOW}}
-                >
-                  {'TEXT CONSULT'}
+              >
+                <Text style={{ ...styles.prepareForConsult, color: theme.colors.APP_YELLOW }}>
+                  {'VIEW PRESCRIPTION'}
                 </Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              style={styles.textConsultView}
+              activeOpacity={1}
+              onPress={onPressTextConsult}
+            >
+              <Text style={{ ...styles.prepareForConsult, color: theme.colors.APP_YELLOW }}>
+                {'TEXT CONSULT'}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -1219,18 +1217,14 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       } else
         return (
           <View>
-            <Text style={styles.fillVitalsForConsult}>
-              {getConsultationSubTexts()}
-            </Text>
+            <Text style={styles.fillVitalsForConsult}>{getConsultationSubTexts()}</Text>
             <View style={styles.consultStartedView}>
               <TouchableOpacity
                 activeOpacity={1}
                 style={styles.consultStartedBtn}
                 onPress={onPressActiveUpcomingButtons}
               >
-                <Text
-                  style={styles.prepareForConsult}
-                >
+                <Text style={styles.prepareForConsult}>
                   {item.isConsultStarted
                     ? string.common.continueConsult
                     : string.common.prepareForConsult}
@@ -1264,8 +1258,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             </Text>
           </View>
           <TouchableOpacity
-            style={styles.anotherSlotBtn} 
-            activeOpacity={1} onPress={onPressPickAnotherSlot}>
+            style={styles.anotherSlotBtn}
+            activeOpacity={1}
+            onPress={onPressPickAnotherSlot}
+          >
             <Text style={styles.prepareForConsult}>PICK ANOTHER SLOT</Text>
           </TouchableOpacity>
         </>
@@ -1305,8 +1301,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               <Text
                 style={{
                   ...styles.statusText,
-                  color: getAppointmentStatusText() === 'Cancelled' ? 
-                    theme.colors.APP_RED : theme.colors.APP_YELLOW,
+                  color:
+                    getAppointmentStatusText() === 'Cancelled'
+                      ? theme.colors.APP_RED
+                      : theme.colors.APP_YELLOW,
                 }}
               >
                 {getAppointmentStatusText()?.toUpperCase()}
@@ -1320,10 +1318,18 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               ) : (
                 <CapsuleView title={title} style={styles.availableView} isActive={isActive} />
               )}
-              <View style={{height: 1, width: '100%', backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR, position: 'absolute', top: 26 }} />
+              <View
+                style={{
+                  height: 1,
+                  width: '100%',
+                  backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+                  position: 'absolute',
+                  top: 26,
+                }}
+              />
               <View style={{ flex: 1, marginRight: 16 }}>
                 <Text style={styles.consultTextStyles}>
-                    {item.appointmentType === 'ONLINE' ? 'Online Consultation' : doctorHospitalName}
+                  {item.appointmentType === 'ONLINE' ? 'Online Consultation' : doctorHospitalName}
                 </Text>
                 <Text style={styles.doctorNameStyles} numberOfLines={1}>
                   {item.doctorInfo ? `${item.doctorInfo.displayName}` : ''}
@@ -1339,8 +1345,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       : ''}
                   </Text>
                 )}
-                <View style={styles.onlineIconView}>
-                </View>
+                <View style={styles.onlineIconView}></View>
               </View>
             </View>
             <View style={styles.separatorStyle} />
@@ -1392,16 +1397,17 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   };
 
   const renderFooter = () => {
-    if(loading){
+    if (loading) {
       return <Spinner />;
-    } else if(totalApptCount && allAppointments.length != totalApptCount){
+    } else if (totalApptCount && allAppointments.length != totalApptCount) {
       return (
-        <TouchableOpacity 
-          style={styles.prevApptView}  
+        <TouchableOpacity
+          style={styles.prevApptView}
           onPress={() => {
             setLoading(true);
             fetchAppointments();
-          }}>
+          }}
+        >
           <Text style={styles.prevApptText}>Previous Appointments</Text>
           <DownArrow style={styles.downArrowIcon} />
         </TouchableOpacity>
@@ -1409,24 +1415,19 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     } else {
       return null;
     }
-    
   };
 
   const renderHeader = () => {
-    const {id, firstName, lastName} = selectedPatient || {};
-    if(id){
+    const { id, firstName, lastName } = selectedPatient || {};
+    if (id) {
       return (
         <View style={styles.listHeader}>
-          <TouchableOpacity
-            onPress={() => selectPatient('ALL')} 
-            style={styles.patientNameView}>
-            <Text style={styles.patientNameText}>
-              {firstName + ' ' + lastName}
-            </Text>
-            <Close style={styles.crossIcon}/>
+          <TouchableOpacity onPress={() => selectPatient('ALL')} style={styles.patientNameView}>
+            <Text style={styles.patientNameText}>{firstName + ' ' + lastName}</Text>
+            <Close style={styles.crossIcon} />
           </TouchableOpacity>
         </View>
-      )
+      );
     }
   };
 
@@ -1438,13 +1439,18 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         ) : (
           <FlatList
             keyExtractor={(_, index) => index.toString()}
-            contentContainerStyle={{ padding: 12, paddingTop: 0, marginTop: 14, paddingBottom: 120}}
+            contentContainerStyle={{
+              padding: 12,
+              paddingTop: 0,
+              marginTop: 14,
+              paddingBottom: 120,
+            }}
             data={allAppointments}
             bounces={false}
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={renderNoAppointments()}
             ListHeaderComponent={renderHeader()}
-            stickyHeaderIndices={selectedPatient?.id ? [0]: []}
+            stickyHeaderIndices={selectedPatient?.id ? [0] : []}
             ListFooterComponent={renderFooter()}
             renderItem={({ item, index }) => renderConsultationCard(item, index)}
           />
@@ -1508,18 +1514,19 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           <Text style={styles.selectPatientText}>Select Patient</Text>
         </TouchableOpacity>
       </View>
-    )
-  }
-
+    );
+  };
 
   const renderAppointmentFilterScreen = () => {
-    return showFilter && (
-      <AppointmentFilterScene
-        selectPatient={selectPatient}
-        selectedPatient={selectedPatient}
-        dismissModal={() => setShowFilter(false)}
-        navigation={props.navigation}
-      />
+    return (
+      showFilter && (
+        <AppointmentFilterScene
+          selectPatient={selectPatient}
+          selectedPatient={selectedPatient}
+          dismissModal={() => setShowFilter(false)}
+          navigation={props.navigation}
+        />
+      )
     );
   };
   return (
