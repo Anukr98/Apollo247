@@ -274,6 +274,10 @@ export const SpecialOffers: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_special_offers.webp')} />
 );
 
+export const OffersIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/offerGreen.webp')} />
+);
+
 export const AddIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_plus_onorange.webp')} />
 );
