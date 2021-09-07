@@ -393,9 +393,11 @@ export const GET_PATIENT_ALL_APPOINTMENTS_FOR_HELP = gql`
 `;
 
 export const GET_PATIENT_ALL_APPOINTMENTS = gql`
-  query getPatientAllAppointments($patientId: String!) {
-    getPatientAllAppointments(patientId: $patientId) {
-      cancelledAppointments {
+  query getPatientAllAppointments($patientId: String!, $patientMobile: String!, $offset: Int!, $limit: Int!) {
+    getPatientAllAppointments(patientId: $patientId, patientMobile: $patientMobile, offset: $offset, limit: $limit) {
+      totalAppointmentCount
+      appointments {
+        patientName
         appointmentPayments {
           id
           amountPaid
@@ -431,7 +433,6 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           awards
           city
           country
-          chatDays
           dateOfBirth
           displayName
           doctorType
@@ -462,17 +463,6 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           streetLine3
           thumbnailUrl
           zip
-          bankAccount {
-            accountHolderName
-            accountNumber
-            accountType
-            bankName
-            city
-            id
-            IFSCcode
-            state
-            streetLine1
-          }
           consultHours {
             consultMode
             consultType
@@ -516,19 +506,6 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
               zipcode
             }
           }
-          doctorSecretary {
-            secretary {
-              id
-              name
-              mobileNumber
-              isActive
-            }
-          }
-          packages {
-            fees
-            id
-            name
-          }
           specialty {
             createdDate
             id
@@ -548,6 +525,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           followUpAfterInDays
           version
           doctorType
+          sentToPatient
           medicinePrescription {
             id
             medicineName
@@ -565,17 +543,22 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           blobName
         }
       }
-      followUpAppointments {
-        appointmentPayments {
+    }
+  }
+`;
+
+export const GET_PATIENT_ALL_CONSULTED_DOCTORS = gql`
+  query getPatientAllConsultedDoctors($patientId: String!) {
+    getPatientAllAppointments(patientId: $patientId) {
+      appointments {
+        doctorInfo {
           id
-          amountPaid
-          paymentRefId
-          paymentStatus
-          paymentDateTime
-          responseCode
-          responseMessage
-          bankTxnId
-          orderId
+          displayName
+          specialty {
+            image
+            name
+          }
+          photoUrl
         }
         id
         hideHealthRecordNudge
@@ -614,34 +597,45 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           gender
           isActive
           id
-          languages
-          lastName
+          name
           mobileNumber
-          onlineConsultationFees
-          onlineStatus
-          photoUrl
-          physicalConsultationFees
-          qualification
-          registrationNumber
-          salutation
-          signature
-          specialization
-          state
+          isActive
+        }
+      }
+      doctorHospital {
+        facility {
+          id
+          name
+          city
+          latitude
+          longitude
+          facilityType
           streetLine1
           streetLine2
           streetLine3
+          imageUrl
+        }
+      }
+      starTeam {
+        associatedDoctor {
+          id
+          salutation
+          firstName
+          lastName
+          fullName
+          displayName
+          experience
+          city
+          photoUrl
+          qualification
           thumbnailUrl
-          zip
-          bankAccount {
-            accountHolderName
-            accountNumber
-            accountType
-            bankName
-            city
+          physicalConsultationFees
+          onlineConsultationFees
+          specialty {
             id
-            IFSCcode
-            state
-            streetLine1
+            name
+            image
+            userFriendlyNomenclature
           }
           consultHours {
             consultMode
@@ -1276,6 +1270,7 @@ export const GET_PLATINUM_DOCTOR = gql`
         doctorfacility
         fee
         specialistPluralTerm
+        languages
         specialistPluralTerm
         specialtydisplayName
         doctorType
@@ -3073,6 +3068,362 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS_BY_MOBILE = gql`
 export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
   query getPatientPrismMedicalRecords_V2($patientId: ID!, $records: [MedicalRecordType]) {
     getPatientPrismMedicalRecords_V2(patientId: $patientId, records: $records) {
+      labResults {
+        response {
+          id
+          labTestName
+          labTestSource
+          packageId
+          packageName
+          # labTestDate
+          date
+          labTestRefferedBy
+          siteDisplayName
+          tag
+          consultId
+          identifier
+          additionalNotes
+          billNo
+          testSequence
+          observation
+          labTestResults {
+            parameterName
+            unit
+            result
+            range
+            outOfRange
+            # resultDate
+          }
+          fileUrl
+          testResultFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+          }
+        }
+        errorCode
+        errorMsg
+        errorType
+      }
+      prescriptions {
+        response {
+          id
+          prescriptionName
+          date
+          # dateOfPrescription
+          # startDate
+          # endDate
+          prescribedBy
+          notes
+          prescriptionSource
+          siteDisplayName
+          source
+          fileUrl
+          prescriptionFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+          }
+          hospital_name
+          hospitalId
+        }
+        errorCode
+        errorMsg
+        errorType
+      }
+      healthChecks {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          authToken
+          userId
+          id
+          fileUrl
+          date
+          healthCheckName
+          healthCheckDate
+          siteDisplayName
+          healthCheckSummary
+          healthCheckFiles {
+            id
+            fileName
+            mimeType
+            content
+            # byteContent
+            # dateCreated
+          }
+          source
+          healthCheckType
+          followupDate
+        }
+      }
+      hospitalizations {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          authToken
+          userId
+          id
+          fileUrl
+          date
+          hospitalizationDate
+          dateOfHospitalization
+          hospitalName
+          doctorName
+          reasonForAdmission
+          siteDisplayName
+          diagnosisNotes
+          dateOfDischarge
+          dischargeSummary
+          doctorInstruction
+          dateOfNextVisit
+          hospitalizationFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
+          }
+          source
+        }
+      }
+      medicalBills {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          bill_no
+          hospitalName
+          billDate
+          source
+          siteDisplayName
+          notes
+          fileUrl
+          billDateTime
+          billFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
+          }
+        }
+      }
+      medicalInsurances {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          insuranceCompany
+          policyNumber
+          startDate
+          endDate
+          startDateTime
+          endDateTime
+          source
+          siteDisplayName
+          fileUrl
+          notes
+          sumInsured
+          insuranceFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
+          }
+        }
+      }
+      medicalConditions {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          medicalConditionName
+          doctorTreated
+          startDate
+          source
+          endDate
+          notes
+          illnessType
+          fileUrl
+          siteDisplayName
+          startDateTime
+          endDateTime
+          medicationFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
+          }
+        }
+      }
+      medications {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          medicineName
+          medicalCondition
+          doctorName
+          startDate
+          endDate
+          startDateTime
+          endDateTime
+          morning
+          noon
+          siteDisplayName
+          evening
+          notes
+          source
+        }
+      }
+      healthRestrictions {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          startDate
+          endDate
+          startDateTime
+          endDateTime
+          restrictionName
+          suggestedByDoctor
+          nature
+          siteDisplayName
+          source
+          notes
+        }
+      }
+      allergies {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          startDate
+          endDate
+          fileUrl
+          startDateTime
+          endDateTime
+          allergyName
+          severity
+          reactionToAllergy
+          doctorTreated
+          notes
+          siteDisplayName
+          source
+          attachmentList {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
+          }
+        }
+      }
+      familyHistory {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          diseaseName
+          authToken
+          source
+          fileUrl
+          familyMember
+          notes
+          siteDisplayName
+          recordDateTime
+          age
+          familyHistoryFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
+          }
+        }
+      }
+      immunizations {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          immunizationName
+          dateAdministered
+          followUpDate
+          registrationId
+          dateOfImmunization
+          dueDate
+          fileUrl
+          doctorName
+          manufacturer
+          batchno
+          vaccineName
+          potency
+          hospitalName
+          vaccine_location
+          notes
+          source
+          reactions {
+            type
+            from
+            to
+          }
+          immunizationFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+            dateCreated
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_MEDICAL_PRISM_RECORD_V3 = gql`
+  query getPatientPrismMedicalRecords_V3($patientId: ID!, $records: [MedicalRecordType]) {
+    getPatientPrismMedicalRecords_V3(patientId: $patientId, records: $records) {
       labResults {
         response {
           id
@@ -5673,11 +6024,13 @@ export const SAVE_PHLEBO_FEEDBACK = gql`
     $phleboRating: Int!
     $phleboFeedback: String
     $diagnosticOrdersId: String!
+    $patientComments: String
   ) {
     savePhleboFeedback(
       phleboRating: $phleboRating
       phleboFeedback: $phleboFeedback
       diagnosticOrdersId: $diagnosticOrdersId
+      patientComments: $patientComments
     ) {
       status
     }

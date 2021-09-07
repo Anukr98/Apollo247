@@ -167,6 +167,8 @@ const styles = StyleSheet.create({
     ...text('M', 12, INPUT_FAILURE_TEXT),
   },
   linkContainer: {
+    marginLeft: -40,
+    marginTop: 30,
     flexDirection: 'row',
     justifyContent: 'flex-end',
   },
@@ -183,14 +185,12 @@ const styles = StyleSheet.create({
   },
   progressLineContainer: {
     flexDirection: 'row',
-    flex: 1,
     alignItems: 'center',
     marginTop: 20,
     marginBottom: 20,
     marginLeft: -40,
   },
   progressLineComplete: {
-    flex: 1,
     height: 4,
     backgroundColor: APP_GREEN,
     marginTop: 20,
@@ -198,7 +198,6 @@ const styles = StyleSheet.create({
     marginLeft: -40,
   },
   progressLineCompleteGray: {
-    flex: 1,
     height: 4,
     backgroundColor: LIGHT_GRAY,
     opacity: 0.3,

@@ -9,6 +9,7 @@ import {
   ExpressDeliveryLogo,
   DownOrange,
   UpOrange,
+  PendingIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   productsThumbnailUrl,
@@ -41,11 +42,19 @@ export interface SubstitutesProps {
   isProductInStock: boolean;
   isAlternative: boolean; // value will be true for pharma products, and false for non pharma products
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
+  setShowSubstituteInfo?: (show: boolean) => void;
 }
 
 export const Substitutes: React.FC<SubstitutesProps> = (props) => {
   const { cartItems, removeCartItem, updateCartItem, productSubstitutes } = useShoppingCart();
-  const { sku, name, onPressAddToCart, isProductInStock, isAlternative } = props;
+  const {
+    sku,
+    name,
+    onPressAddToCart,
+    isProductInStock,
+    isAlternative,
+    setShowSubstituteInfo,
+  } = props;
   const [showSubstitues, setShowSubstitues] = useState<boolean>(!isProductInStock);
 
   useEffect(() => {
@@ -85,9 +94,18 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
           ))}
       </View>
       {!isAlternative && (
-        <Text style={styles.subHeading}>
-          Substitutes are products with same molecular composition
-        </Text>
+        <View style={styles.substituteMsgContainer}>
+          <Text style={styles.subHeading}>
+            Substitutes are products with same molecular composition
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              setShowSubstituteInfo && setShowSubstituteInfo(true);
+            }}
+          >
+            <PendingIcon style={styles.pendingIcon} />
+          </TouchableOpacity>
+        </View>
       )}
     </TouchableOpacity>
   );
@@ -393,4 +411,11 @@ const styles = StyleSheet.create({
     marginTop: 2,
     marginBottom: 7,
   },
+  pendingIcon: {
+    resizeMode: 'contain',
+    width: 15,
+    height: 15,
+    marginTop: 8,
+  },
+  substituteMsgContainer: { flexDirection: 'row', justifyContent: 'space-between', width: '90%' },
 });

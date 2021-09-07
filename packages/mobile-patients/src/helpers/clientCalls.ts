@@ -1153,19 +1153,16 @@ export const savePhleboFeedback = (
   client: ApolloClient<object>,
   rating: number,
   feedback: string,
-  orderId: string
+  orderId: string,
+  userComment: string
 ) => {
-  const inputVariables = {
-    phleboRating: rating,
-    phleboFeedback: feedback,
-    diagnosticOrdersId: orderId,
-  };
   return client.mutate<savePhleboFeedback_savePhleboFeedback, savePhleboFeedbackVariables>({
     mutation: SAVE_PHLEBO_FEEDBACK,
     variables: {
       phleboRating: rating,
       phleboFeedback: feedback,
       diagnosticOrdersId: orderId,
+      patientComments: userComment
     },
     fetchPolicy: 'no-cache',
   });

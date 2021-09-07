@@ -68,6 +68,9 @@
     "prepareForConsult": "FILL MEDICAL DETAILS",
     "continueConsult": "GO TO CONSULT ROOM",
     "fillVitalsText": "Fill vitals to get started with the consult journey",
+    "bookAnotherSlot": "Book another slot with the doctor to complete your consultation",
+    "bookFollowUp": "Book your slot with the doctor for a follow up consultation",
+    "mentionReports": "Mention your condition and upload reports before the consultation starts ",
     "gotoConsultRoomText": "Connect with doctor to start the consult",
     "gotoConsultRoomJuniorDrText": "Connect with Junior Doctor before final consult",
     "pickAnotherSlotText": "Sorry, we had to reschedule this appointment. Please pick another slot.",
@@ -458,7 +461,8 @@
     "cartItemsNotAvailableInStore": "The item(s) you have selected are not available in the nearby stores. Kindly opt for Home Delivery and we will deliver them to you directly at your doorstep.",
     "PickupStoreUnavailable": "Sorry! We’re working hard to get to this area! In the meantime, you can try next nearest pincode.",
     "orderDetailsExpectedDeliverySubTextNonCartOrder": "Delivery date will be updated after successful verification",
-    "noInternetMessage": "There is no internet. Please check your internet connection."
+    "noInternetMessage": "There is no internet. Please check your internet connection.",
+    "missingItemsAlertMessage": "Sorry, the following items are unavailable at your location and will be removed from the cart:"
   },
   "diagnostics": {
     "locationPermissionText": "Allow us to serve you better by entering your area pincode below.",

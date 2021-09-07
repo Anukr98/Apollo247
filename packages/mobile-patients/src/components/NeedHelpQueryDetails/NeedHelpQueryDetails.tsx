@@ -248,7 +248,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       const variables: SendHelpEmailVariables = {
         helpEmailInput: {
           category: parentQuery?.title,
-          reason: pathFollowed + reason,
+          reason: reason,
           comments: comments,
           patientId: currentPatient?.id,
           email: email,
@@ -410,7 +410,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           queries,
           email,
           orderId,
-          pathFollowed: item?.title + ' - ',
+          pathFollowed: item?.title,
         });
       } else if (isReturnQuery) {
         navigation.navigate(AppRoutes.ReturnMedicineOrder, {
