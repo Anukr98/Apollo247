@@ -265,7 +265,7 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
         } else {
           showAphAlert!({
             title: `Oops :)`,
-            description: "Couldn't get the ticket information.Press OK to reload",
+            description: "Your ticket is still being submitted. Please reload this screen by clicking OK, GOT IT",
             onPressOk: () => {
               hideAphAlert!();
               fetchTicketDetails();
