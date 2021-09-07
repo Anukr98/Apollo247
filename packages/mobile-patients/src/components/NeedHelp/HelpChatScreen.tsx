@@ -194,6 +194,14 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginTop: 50,
   },
+  ticketCreationLagTime: {
+    color: '#FC9916',
+    ...theme.fonts.IBMPlexSansRegular(15),
+    marginHorizontal: 3,
+    alignSelf: 'center',
+    textAlign: 'center',
+    marginTop: 50,
+  },
   chatSend: {
     width: 24,
     height: 24,
@@ -231,6 +239,7 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
   const [conversations, setConverstions] = useState<any>([]);
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [showTicketCreationLagMessage, setShowTicketCreationLagMessage] = useState(false);
 
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -238,9 +247,8 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
   useEffect(() => {
     if (ticketId) {
       // when there is only ticketId
-      setLoading(true);
-      setRefreshing(true);
-      setTimeout(() => fetchTicketDetails(), 2000);
+      setShowTicketCreationLagMessage(true);
+      setTimeout(() => fetchTicketDetails(), 30000);
     } else {
       if (ticket) {
         getConversation();
@@ -249,6 +257,8 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
   }, []);
 
   const fetchTicketDetails = () => {
+    setShowTicketCreationLagMessage(true);
+
     client
       .query<getHelpdeskTickets>({
         query: GET_HELPDESK_TICKETS,
@@ -265,20 +275,21 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
         } else {
           showAphAlert!({
             title: `Oops :)`,
-            description: "Your ticket is still being submitted. Please reload this screen by clicking OK, GOT IT",
+            description:
+              'Your ticket is still being submitted. Please reload this screen by clicking OK, GOT IT',
             onPressOk: () => {
               hideAphAlert!();
-              fetchTicketDetails();
+
+              setShowTicketCreationLagMessage(true);
+              setTimeout(() => fetchTicketDetails(), 5000);
             },
           });
         }
 
-        setLoading(false);
-        setRefreshing(false);
+        setShowTicketCreationLagMessage(false);
       })
       .catch((error) => {
-        setLoading(false);
-        setRefreshing(false);
+        setShowTicketCreationLagMessage(false);
 
         CommonBugFender('fetchHelpdeskTickets', error);
       });
@@ -569,22 +580,37 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
     <View style={theme.viewStyles.container}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-        {renderOrderStatusHeader()}
+        {!showTicketCreationLagMessage ? renderOrderStatusHeader() : null}
 
         {loading ? (
           <ActivityIndicator style={{ flex: 1, alignItems: 'center' }} size="large" color="green" />
         ) : (
           <View style={[{ flex: 1 }]}>
-            {(conversations == null || conversations.length == 0) && (
-              <Text style={styles.noConversationTillNow}>
-                {string.needHelpScreen.no_conversation_till_now}
-              </Text>
-            )}
-            {renderChatView()}
+            {!showTicketCreationLagMessage &&
+              (conversations == null || conversations.length == 0) && (
+                <Text style={styles.noConversationTillNow}>
+                  {string.needHelpScreen.no_conversation_till_now}
+                </Text>
+              )}
+
+            {showTicketCreationLagMessage ? (
+              <View style={{ marginTop: 300 }}>
+                <ActivityIndicator
+                  style={{ flex: 1, alignItems: 'center' }}
+                  size="large"
+                  color="green"
+                />
+                <Text style={styles.ticketCreationLagTime}>
+                  {string.needHelpScreen.ticket_creation_lag_time}
+                </Text>
+              </View>
+            ) : null}
+
+            {!showTicketCreationLagMessage ? renderChatView() : null}
           </View>
         )}
 
-        {!isTicketClosed && (
+        {!isTicketClosed && !showTicketCreationLagMessage && (
           <View style={styles.chatFooterContainer}>
             <View style={styles.textInputContainerStyles}>
               <TextInput
