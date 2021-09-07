@@ -91,7 +91,8 @@ import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
-let divisionFactor =
+
+const divisionFactor =
   screenHeight > 800 ? 10.5 : screenHeight > 700 ? 12.5 : screenHeight > 600 ? 14.5 : 16.5;
 export interface TestPackageForDetails extends TestPackage {
   collectionType: TEST_COLLECTION_TYPE;
