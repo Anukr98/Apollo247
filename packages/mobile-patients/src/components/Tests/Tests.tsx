@@ -202,6 +202,36 @@ export interface DiagnosticData {
   city: string;
   state: string;
 }
+interface DiagnosticWidgetInclusionObservationData {
+  mandatoryValue: string;
+  observationName: string;
+}
+interface DiagnosticWidgetInclusion {
+  incItemId: string;
+  incTitle: string;
+  incObservationData: DiagnosticWidgetInclusionObservationData[];
+}
+export interface DiagnosticWidgetItem {
+  itemTitle: string;
+  itemImageUrl: string;
+  itemId: string;
+  itemCanonicalTag: string;
+  inclusionData: DiagnosticWidgetInclusion[];
+  itemIcon: string;
+  diagnosticPricing: any;
+  packageCalculatedMrp: any;
+}
+
+export interface DiagnosticWidget {
+  diagnosticWidgetData: DiagnosticWidgetItem[];
+  diagnosticWidgetTitle: string;
+  diagnosticWidgetType: string;
+  diagnosticwidgetsRankOrder: string;
+  id: string;
+  diagnosticWidgetBannerImage: string;
+  diagnosticWidgetBannerUrl: string;
+  diagnosticWidgetBannerText: string;
+}
 
 export interface TestsProps
   extends NavigationScreenProps<{
@@ -623,40 +653,37 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }
 
   const fetchWidgetsPrices = async (widgetsData: any, cityId: string) => {
-    //filter the items.
     const filterWidgets = widgetsData?.filter(
       (item: any) => !!item?.diagnosticWidgetData && item?.diagnosticWidgetData?.length > 0
     );
     const itemIds = filterWidgets?.map((item: any) =>
       item?.diagnosticWidgetData?.map((data: any, index: number) => Number(data?.itemId))
     );
+    const allItemIds = itemIds?.flat();
     //restriction less than 12.
     try {
-      const res = Promise.all(
-        !!itemIds &&
-          itemIds?.map((item: any) =>
-            fetchPricesForCityId(
-              Number(cityId!) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
-              item?.length > 12 ? item?.slice(0, 12) : item
-            )
-          )
-      );
-
-      const response = (await res)?.map(
-        (item: any) => g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics') || []
+      const res = await fetchPricesForCityId(
+        Number(cityId!) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
+        allItemIds
       );
       let newWidgetsData = [...filterWidgets];
 
-      for (let i = 0; i < filterWidgets?.length; i++) {
-        for (let j = 0; j < filterWidgets?.[i]?.diagnosticWidgetData?.length; j++) {
-          const findIndex = filterWidgets?.[i]?.diagnosticWidgetData?.findIndex(
-            (item: any) => item?.itemId == Number(response?.[i]?.[j]?.itemId)
-          );
-          if (findIndex !== -1) {
-            (newWidgetsData[i].diagnosticWidgetData[findIndex].packageCalculatedMrp =
-              response?.[i]?.[j]?.packageCalculatedMrp),
-              (newWidgetsData[i].diagnosticWidgetData[findIndex].diagnosticPricing =
-                response?.[i]?.[j]?.diagnosticPricing);
+      const priceResult = res?.data?.findDiagnosticsWidgetsPricing;
+      if (!!priceResult && !!priceResult?.diagnostics && priceResult?.diagnostics?.length > 0) {
+        const widgetPricingArr = priceResult?.diagnostics;
+
+        for (let i = 0; i < filterWidgets?.length; i++) {
+          for (let j = 0; j < filterWidgets?.[i]?.diagnosticWidgetData?.length; j++) {
+            let wItem = filterWidgets?.[i]?.diagnosticWidgetData?.[j]; // j ka element
+            const findIndex = widgetPricingArr?.findIndex(
+              (pricingData) => Number(pricingData?.itemId) === Number(wItem?.itemId)
+            );
+            if (findIndex !== -1) {
+              (newWidgetsData[i].diagnosticWidgetData[j].packageCalculatedMrp =
+                widgetPricingArr?.[findIndex]?.packageCalculatedMrp),
+                (newWidgetsData[i].diagnosticWidgetData[j].diagnosticPricing =
+                  widgetPricingArr?.[findIndex]?.diagnosticPricing);
+            }
           }
         }
       }

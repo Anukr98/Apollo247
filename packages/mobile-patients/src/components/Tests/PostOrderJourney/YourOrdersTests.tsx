@@ -135,6 +135,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
     string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
   ];
+  const ALL = 'All';
 
   const {
     diagnosticSlot,
@@ -181,12 +182,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [orders, setOrders] = useState<any>(props.navigation.getParam('orders'));
   const [showPatientsOverlay, setShowPatientsOverlay] = useState<boolean>(false);
   const [activeOrder, setActiveOrder] = useState<orderList>('');
-  const [selectedPatient, setSelectedPatient] = useState<string>('All');
+  const [selectedPatient, setSelectedPatient] = useState<string>(ALL);
   const [selectedPatientId, setSelectedPatientId] = useState<string>('');
   const [orderListData, setOrderListData] = useState<(orderListByMobile | null)[] | null>([]);
-  const [filteredOrderList, setFilteredOrderList] = useState<(orderListByMobile | null)[] | null>(
-    []
-  );
   const [profileArray, setProfileArray] = useState<
     GetCurrentPatients_getCurrentPatients_patients[] | null
   >(allCurrentPatients);
@@ -257,15 +255,23 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   }, [currentPatient]);
 
+  //orderListData => next set of results
+  //orders => data to be shown (can have filter)
+  //resultList => entire list without filter
   useEffect(() => {
-    if (selectedPatient == 'All') {
-      setOrders(filteredOrderList);
-      setResultList(filteredOrderList);
+    if (selectedPatient === ALL) {
+      setOrders(resultList); // set all the orders present.
     } else {
-      setOrders(fetchFilteredOrder());
-      setResultList(fetchFilteredOrder()!);
+      setOrders(filterResultsForPatient(resultList));
     }
   }, [selectedPatientId]);
+
+  function filterResultsForPatient(list: orderList[]) {
+    const getPatientFilteredResults = list?.filter(
+      (item: orderList) => item?.patientId === selectedPatientId
+    );
+    return getPatientFilteredResults;
+  }
 
   const refetchOrders = async () => {
     fetchOrders(true);
@@ -302,23 +308,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           if (currentOffset == 1) {
             setResultList(ordersList);
           } else {
-            if (selectedPatient == 'All') {
-              setResultList(resultList?.concat(ordersList!));
-            } else {
-              resultList?.length > 0
-                ? setResultList(resultList?.concat(fetchFilteredOrder()!))
-                : setResultList(resultList?.concat(ordersList!));
-            }
+            setResultList(resultList?.concat(ordersList));
           }
-          const finalList =
-            currentOffset == 1
-              ? ordersList
-              : selectedPatient == 'All'
-              ? resultList?.concat(ordersList)
-              : resultList?.length > 0
-              ? resultList?.concat(fetchFilteredOrder())
-              : resultList?.concat(ordersList);
-
+          const finalList = currentOffset == 1 ? ordersList : resultList?.concat(ordersList);
           const filteredOrderList =
             finalList ||
             []?.filter((item: orderListByMobile) => {
@@ -368,15 +360,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   };
 
-  const fetchFilteredOrder = () => {
-    let filteredList = filteredOrderList?.filter((item) => {
-      if (selectedPatientId === item?.patientId) {
-        return item;
-      }
-    });
-    return filteredList;
-  };
-
   const getPhlobeOTP = (orderIdsArr: any, ordersList: any, isRefetch: boolean) => {
     try {
       setLoading?.(true);
@@ -402,39 +385,49 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   phleboDetails?.orderPhleboDetails?.diagnosticOrdersId === order?.id
               );
               if (findOrder && findOrder.orderPhleboDetails !== null) {
-                if (order?.phleboDetailsObj === null) {
-                  order.phleboDetailsObj = {
-                    PhelboOTP: null,
-                    PhelbotomistName: null,
-                    PhelbotomistMobile: null,
-                    PhelbotomistTrackLink: null,
-                    TempRecording: null,
-                    CheckInTime: null,
-                    PhleboLatitude: null,
-                    PhleboLongitude: null,
-                    PhleboRating: null,
-                    allowCalling: null,
-                    __typename: 'PhleboDetailsObj',
+                if (order?.diagnosticOrderPhlebotomists === null) {
+                  order.diagnosticOrderPhlebotomists = {
+                    phleboRating: null,
+                    phleboOTP: null,
+                    checkinDateTime: null,
+                    phleboTrackLink: null,
+                    allowCalling: null, //added
+                    diagnosticPhlebotomists: {
+                      id: null,
+                      name: null,
+                      mobile: null,
+                      vaccinationStatus: null,
+                    },
                   };
                 }
-                order.phleboDetailsObj.PhelboOTP = findOrder?.orderPhleboDetails?.phleboOTP;
-                order.phleboDetailsObj.PhelbotomistName =
+                order.diagnosticOrderPhlebotomists.phleboOTP =
+                  findOrder?.orderPhleboDetails?.phleboOTP;
+                order.diagnosticOrderPhlebotomists.diagnosticPhlebotomists.name =
                   findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.name;
-                order.phleboDetailsObj.PhelbotomistMobile =
+                order.diagnosticOrderPhlebotomists.diagnosticPhlebotomists.mobile =
                   findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.mobile;
-                order.phleboDetailsObj.PhelbotomistTrackLink =
+                order.diagnosticOrderPhlebotomists.phleboTrackLink =
                   findOrder?.orderPhleboDetails?.phleboTrackLink;
-                order.phleboDetailsObj.CheckInTime = findOrder?.phleboEta?.estimatedArrivalTime;
-                order.phleboDetailsObj.PhleboRating = findOrder?.orderPhleboDetails?.phleboRating;
-                order.phleboDetailsObj.allowCalling = findOrder?.allowCalling;
+                order.diagnosticOrderPhlebotomists.checkinDateTime =
+                  findOrder?.phleboEta?.estimatedArrivalTime;
+                order.diagnosticOrderPhlebotomists.phleboRating =
+                  findOrder?.orderPhleboDetails?.phleboRating;
+                order.diagnosticOrderPhlebotomists.allowCalling = findOrder?.allowCalling;
               }
             });
-            setOrders(ordersList);
-            setFilteredOrderList(ordersList);
+            //ordersList => contains all results.
+            if (selectedPatient === ALL) {
+              setOrders(ordersList); // set all the orders present.
+            } else {
+              setOrders(setOrders(filterResultsForPatient(ordersList)));
+            }
             setTimeout(() => setLoading?.(false), 1000);
           } else {
-            setOrders(ordersList);
-            setFilteredOrderList(ordersList);
+            if (selectedPatient === ALL) {
+              setOrders(ordersList); // set all the orders present.
+            } else {
+              setOrders(setOrders(filterResultsForPatient(ordersList)));
+            }
             setLoading?.(false);
           }
         })
@@ -1309,7 +1302,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPressReschedule={() => _onPressTestReschedule(order)}
         onPressViewDetails={() => _navigateToYourTestDetails(order, true)}
         onPressViewReport={() => _onPressViewReportAction(order)}
-        phelboObject={order?.phleboDetailsObj}
+        phelboObject={order?.diagnosticOrderPhlebotomists}
         onPressRatingStar={(star) => {
           props.navigation.navigate(AppRoutes.TestRatingScreen, {
             ratingStar: star,
@@ -1487,8 +1480,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           (orderListData?.length && orderListData?.length < 10) ||
           loading ||
           error ||
-          !orderListData?.length ||
-          !resultList?.length
+          !orderListData?.length
             ? null
             : renderLoadMore()
         }
@@ -1519,7 +1511,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
   const newProfileArray = [
     {
-      firstName: 'All',
+      firstName: ALL,
       lastName: '',
       gender: '',
       dateOfBirth: '',
@@ -1814,11 +1806,15 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 10,
   },
   patientCard: {
-    backgroundColor: '#F7F8F5',
+    backgroundColor: colors.DEFAULT_BACKGROUND_COLOR,
     padding: 10,
     borderRadius: 10,
     elevation: 2,
     marginBottom: 30,
+    shadowColor: '#808080',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
   },
   patientItem: {
     flexDirection: 'row',
@@ -1828,7 +1824,7 @@ const styles = StyleSheet.create({
     elevation: 2,
     backgroundColor: 'white',
     paddingHorizontal: 10,
-    paddingVertical: 20,
+    paddingVertical: 15,
     margin: 5,
   },
   patientText: {
