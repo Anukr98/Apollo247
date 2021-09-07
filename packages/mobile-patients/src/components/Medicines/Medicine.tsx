@@ -165,6 +165,9 @@ import { Cache } from 'react-native-cache';
 import { setItem, getItem } from '@aph/mobile-patients/src/helpers/TimedAsyncStorage';
 
 const styles = StyleSheet.create({
+  scrollViewStyle: {
+    marginBottom: 35,
+  },
   buyAgain: {
     paddingVertical: 10,
     paddingHorizontal: 0,
@@ -811,6 +814,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
       const formattedLocation = formatAddressToLocation(deliveryAddress! || null);
       setLocationValues(formattedLocation);
+      setPageLoading!(false);
 
       globalLoading!(false);
     } catch (error) {
@@ -1045,6 +1049,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     globalLoading!(true);
     doRequestAndAccessLocationModified()
       .then((response) => {
+        setPageLoading!(false);
         globalLoading!(false);
         if (response) {
           setLocationValues(response);
@@ -2152,7 +2157,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       });
 
     return (
-      <ScrollView removeClippedSubviews={true} bounces={false}>
+      <ScrollView removeClippedSubviews={true} bounces={false} style={styles.scrollViewStyle}>
         <CategoryAndSpecialOffers
           containerStyle={styles.categoryAndSpecialOffers}
           onPressShopByCategory={() => setCategoryTreeVisible(true)}

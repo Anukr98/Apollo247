@@ -85,6 +85,7 @@ export interface PharmaCoupon extends validatePharmaCoupon_validatePharmaCoupon 
   reason: String;
   freeDelivery: boolean;
   products: [];
+  circleBenefits: boolean;
 }
 
 export interface CartProduct {
@@ -614,14 +615,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
     if (cartItems.length) {
       // calculate circle cashback
       cartItems.forEach((item) => {
-        const finalPrice = item.specialPrice
-          ? item.price - item.specialPrice
-            ? item.specialPrice
-            : item.price
-          : item.price;
+        const finalPrice = (coupon && item.couponPrice) || item.specialPrice || item.price;
         let cashback = 0;
         const type_id = item?.productType?.toUpperCase();
-        if (!!circleCashback && !!circleCashback?.[type_id]) {
+        if (!!circleCashback && !!circleCashback?.[type_id] && !item.isFreeCouponProduct) {
           const circleCashBack =
             circleCashback?.[`${type_id}~${item?.subcategory}`] || circleCashback?.[type_id];
           cashback = finalPrice * item.quantity * (circleCashBack / 100);
@@ -755,7 +752,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     isFreeDelivery ||
     deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP ||
     isCircleSubscription ||
-    circleMembershipCharges ||
+    (circleMembershipCharges && !coupon) ||
     hdfcPlanName === string.Hdfc_values.PLATINUM_PLAN
       ? 0
       : cartTotal > 0 &&
@@ -930,6 +927,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         shipmentPackagingfee -
         shipmentCouponDiscount -
         shipmentProductDiscount;
+      const isCircleUser = isCircleSubscription || circleSubscriptionId;
       shipment['shopId'] = order['storeCode'];
       shipment['tatType'] = order['storeType'];
       shipment['estimatedAmount'] = formatNumber(estimatedAmount);
@@ -945,7 +943,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
       shipment['allocationProfileName'] = order['allocationProfileName'];
       shipment['clusterId'] = order['clusterId'];
       shipment['totalCashBack'] =
-        !coupon?.coupon && (isCircleSubscription || circleSubscriptionId)
+        (isCircleUser && coupon?.circleBenefits) || (isCircleUser && !coupon?.coupon)
           ? Number(shipmentCashback) || 0
           : 0;
       shipmentsArray.push(shipment);
@@ -996,6 +994,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
       packagingCharges -
       shipmentCouponDiscount -
       shipmentProductDiscount;
+    const isCircleUser = isCircleSubscription || circleSubscriptionId;
     shipment['estimatedAmount'] = formatNumber(estimatedAmount);
     shipment['deliveryCharges'] = deliveryCharges;
     shipment['couponDiscount'] = formatNumber(shipmentCouponDiscount);
@@ -1011,7 +1010,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     shipment['allocationProfileName'] = null;
     shipment['clusterId'] = null;
     shipment['totalCashBack'] =
-      !coupon?.coupon && (isCircleSubscription || circleSubscriptionId)
+      (isCircleUser && coupon?.circleBenefits) || (isCircleUser && !coupon?.coupon)
         ? Number(shipmentCashback) || 0
         : 0;
     shipment['coupon'] = coupon ? coupon.coupon : '';
@@ -1141,6 +1140,14 @@ export const ShoppingCartProvider: React.FC = (props) => {
       setisProuctFreeCouponApplied(false);
     }
   }, [cartTotal, coupon]);
+
+  useEffect(() => {
+    const discount = shipments.reduce(
+      (currTotal, currItem) => currTotal + (currItem?.productDiscount || 0),
+      0
+    );
+    setProductDiscount(discount);
+  }, [shipments]);
 
   const deductProductDiscount = (products: CartProduct[]) => {
     let discount = 0;

@@ -21,7 +21,7 @@ export enum AppEnv {
   QA6 = 'QA6',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA4 as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA5 as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -1393,6 +1393,11 @@ export const DIAGNOSTIC_SHOW_OTP_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
   DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
   DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
+];
+
+export const DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY = [
+  DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
 ];
 
 export const TestsNewFeedbackData = {
