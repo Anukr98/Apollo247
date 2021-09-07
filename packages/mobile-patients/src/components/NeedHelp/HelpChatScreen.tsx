@@ -232,7 +232,7 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  const { showAphAlert } = useUIElements();
+  const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
 
   useEffect(() => {
@@ -259,8 +259,19 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
           (t) => t?.id === ticketId
         )[0];
 
-        setTicket(correspondingTicket);
-        setTimeout(() => getConversation(), 3000);
+        if (correspondingTicket) {
+          setTicket(correspondingTicket);
+          setTimeout(() => getConversation(), 3000);
+        } else {
+          showAphAlert!({
+            title: `Oops :)`,
+            description: "Couldn't get the ticket information.Press OK to reload",
+            onPressOk: () => {
+              hideAphAlert!();
+              fetchTicketDetails();
+            },
+          });
+        }
 
         setLoading(false);
         setRefreshing(false);
