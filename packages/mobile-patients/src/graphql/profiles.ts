@@ -393,9 +393,11 @@ export const GET_PATIENT_ALL_APPOINTMENTS_FOR_HELP = gql`
 `;
 
 export const GET_PATIENT_ALL_APPOINTMENTS = gql`
-  query getPatientAllAppointments($patientId: String!) {
-    getPatientAllAppointments(patientId: $patientId) {
-      cancelledAppointments {
+  query getPatientAllAppointments($patientId: String!, $patientMobile: String!, $offset: Int!, $limit: Int!) {
+    getPatientAllAppointments(patientId: $patientId, patientMobile: $patientMobile, offset: $offset, limit: $limit) {
+      totalAppointmentCount
+      appointments {
+        patientName
         appointmentPayments {
           id
           amountPaid
@@ -431,7 +433,6 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           awards
           city
           country
-          chatDays
           dateOfBirth
           displayName
           doctorType
@@ -462,17 +463,6 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           streetLine3
           thumbnailUrl
           zip
-          bankAccount {
-            accountHolderName
-            accountNumber
-            accountType
-            bankName
-            city
-            id
-            IFSCcode
-            state
-            streetLine1
-          }
           consultHours {
             consultMode
             consultType
@@ -516,19 +506,6 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
               zipcode
             }
           }
-          doctorSecretary {
-            secretary {
-              id
-              name
-              mobileNumber
-              isActive
-            }
-          }
-          packages {
-            fees
-            id
-            name
-          }
           specialty {
             createdDate
             id
@@ -548,6 +525,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           followUpAfterInDays
           version
           doctorType
+          sentToPatient
           medicinePrescription {
             id
             medicineName
@@ -565,17 +543,22 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           blobName
         }
       }
-      followUpAppointments {
-        appointmentPayments {
+    }
+  }
+`;
+
+export const GET_PATIENT_ALL_CONSULTED_DOCTORS = gql`
+  query getPatientAllConsultedDoctors($patientId: String!) {
+    getPatientAllAppointments(patientId: $patientId) {
+      appointments {
+        doctorInfo {
           id
-          amountPaid
-          paymentRefId
-          paymentStatus
-          paymentDateTime
-          responseCode
-          responseMessage
-          bankTxnId
-          orderId
+          displayName
+          specialty {
+            image
+            name
+          }
+          photoUrl
         }
         id
         hideHealthRecordNudge
@@ -614,34 +597,45 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           gender
           isActive
           id
-          languages
-          lastName
+          name
           mobileNumber
-          onlineConsultationFees
-          onlineStatus
-          photoUrl
-          physicalConsultationFees
-          qualification
-          registrationNumber
-          salutation
-          signature
-          specialization
-          state
+          isActive
+        }
+      }
+      doctorHospital {
+        facility {
+          id
+          name
+          city
+          latitude
+          longitude
+          facilityType
           streetLine1
           streetLine2
           streetLine3
+          imageUrl
+        }
+      }
+      starTeam {
+        associatedDoctor {
+          id
+          salutation
+          firstName
+          lastName
+          fullName
+          displayName
+          experience
+          city
+          photoUrl
+          qualification
           thumbnailUrl
-          zip
-          bankAccount {
-            accountHolderName
-            accountNumber
-            accountType
-            bankName
-            city
+          physicalConsultationFees
+          onlineConsultationFees
+          specialty {
             id
-            IFSCcode
-            state
-            streetLine1
+            name
+            image
+            userFriendlyNomenclature
           }
           consultHours {
             consultMode
@@ -1079,23 +1073,6 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
   }
 `;
 
-export const GET_PATIENT_ALL_CONSULTED_DOCTORS = gql`
-  query getPatientAllConsultedDoctors($patientId: String!) {
-    getPatientAllAppointments(patientId: $patientId) {
-      appointments {
-        doctorInfo {
-          id
-          displayName
-          specialty {
-            image
-            name
-          }
-          photoUrl
-        }
-      }
-    }
-  }
-`;
 
 export const GET_ALL_SPECIALTIES = gql`
   query getAllSpecialties {
@@ -1153,6 +1130,9 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
         status
         mrp
         appointment_type
+        slashed_price
+        is_cashback_enabled
+        cashback_amount
         bookingFee
         isBookingFeeExempted
       }
@@ -1273,6 +1253,7 @@ export const GET_PLATINUM_DOCTOR = gql`
         doctorfacility
         fee
         specialistPluralTerm
+        languages
         specialistPluralTerm
         specialtydisplayName
         doctorType
@@ -3779,6 +3760,7 @@ export const GET_MEDICAL_PRISM_RECORD_V3 = gql`
   }
 `;
 
+
 export const DELETE_HEALTH_RECORD_FILES = gql`
   mutation deleteHealthRecordFiles($deleteHealthRecordFilesInput: DeleteHealthRecordFilesInput) {
     deleteHealthRecordFiles(deleteHealthRecordFilesInput: $deleteHealthRecordFilesInput) {
@@ -5670,11 +5652,13 @@ export const SAVE_PHLEBO_FEEDBACK = gql`
     $phleboRating: Int!
     $phleboFeedback: String
     $diagnosticOrdersId: String!
+    $patientComments: String
   ) {
     savePhleboFeedback(
       phleboRating: $phleboRating
       phleboFeedback: $phleboFeedback
       diagnosticOrdersId: $diagnosticOrdersId
+      patientComments: $patientComments
     ) {
       status
     }

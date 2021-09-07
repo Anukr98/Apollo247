@@ -179,10 +179,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const client = useApolloClient();
   const [orders, setOrders] = useState<any>(props.navigation.getParam('orders'));
-  const [isPaitentList, setIsPaitentList] = useState<boolean>(false);
+  const [showPatientsOverlay, setShowPatientsOverlay] = useState<boolean>(false);
   const [activeOrder, setActiveOrder] = useState<orderList>('');
-  const [selectedPaitent, setSelectedPaitent] = useState<string>('All');
-  const [selectedPaitentId, setSelectedPaitentId] = useState<string>('');
+  const [selectedPatient, setSelectedPatient] = useState<string>('All');
+  const [selectedPatientId, setSelectedPatientId] = useState<string>('');
   const [orderListData, setOrderListData] = useState<(orderListByMobile | null)[] | null>([]);
   const [filteredOrderList, setFilteredOrderList] = useState<(orderListByMobile | null)[] | null>(
     []
@@ -191,7 +191,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     GetCurrentPatients_getCurrentPatients_patients[] | null
   >(allCurrentPatients);
   const [currentOffset, setCurrentOffset] = useState<number>(1);
-  const [resultList, setResultList] = useState<(orderListByMobile | null)[] | null>([]);
+  const [resultList, setResultList] = useState([] as any);
   const source = props.navigation.getParam('source');
 
   var rescheduleDate: Date,
@@ -258,12 +258,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    if (selectedPaitent == 'All') {
+    if (selectedPatient == 'All') {
       setOrders(filteredOrderList);
+      setResultList(filteredOrderList);
     } else {
       setOrders(fetchFilteredOrder());
+      setResultList(fetchFilteredOrder()!);
     }
-  }, [selectedPaitentId]);
+  }, [selectedPatientId]);
 
   const refetchOrders = async () => {
     fetchOrders(true);
@@ -300,9 +302,23 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           if (currentOffset == 1) {
             setResultList(ordersList);
           } else {
-            setResultList(resultList?.concat(ordersList));
+            if (selectedPatient == 'All') {
+              setResultList(resultList?.concat(ordersList!));
+            } else {
+              resultList?.length > 0
+                ? setResultList(resultList?.concat(fetchFilteredOrder()!))
+                : setResultList(resultList?.concat(ordersList!));
+            }
           }
-          const finalList = currentOffset == 1 ? ordersList : resultList?.concat(ordersList);
+          const finalList =
+            currentOffset == 1
+              ? ordersList
+              : selectedPatient == 'All'
+              ? resultList?.concat(ordersList)
+              : resultList?.length > 0
+              ? resultList?.concat(fetchFilteredOrder())
+              : resultList?.concat(ordersList);
+
           const filteredOrderList =
             finalList ||
             []?.filter((item: orderListByMobile) => {
@@ -354,7 +370,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const fetchFilteredOrder = () => {
     let filteredList = filteredOrderList?.filter((item) => {
-      if (selectedPaitentId === item?.patientId) {
+      if (selectedPatientId === item?.patientId) {
         return item;
       }
     });
@@ -644,10 +660,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         <TouchableOpacity
           style={styles.activeFilterView}
           onPress={() => {
-            setIsPaitentList(true);
+            setShowPatientsOverlay(true);
           }}
         >
-          <Text style={styles.textSelectedPaitent}>{selectedPaitent}</Text>
+          <Text style={styles.textSelectedPatient}>{selectedPatient}</Text>
           <Down />
         </TouchableOpacity>
       </View>
@@ -690,7 +706,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     );
     rescheduleOrder(rescheduleDiagnosticsInput)
       .then((data) => {
-        aphConsole.log({ data });
         const rescheduleResponse = g(data, 'data', 'rescheduleDiagnosticsOrder');
         if (rescheduleResponse?.status == 'true' && rescheduleResponse?.rescheduleCount <= 3) {
           setTimeout(() => refetchOrders(), 1700);
@@ -1472,7 +1487,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           (orderListData?.length && orderListData?.length < 10) ||
           loading ||
           error ||
-          !orderListData?.length
+          !orderListData?.length ||
+          !resultList?.length
             ? null
             : renderLoadMore()
         }
@@ -1508,7 +1524,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       gender: '',
       dateOfBirth: '',
     },
-    ...profileArray?.slice(0, profileArray.length - 1),
+    ...profileArray?.slice(0, profileArray?.length - 1),
   ];
   const renderError = () => {
     if (error) {
@@ -1525,40 +1541,71 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const renderModalView = (item: any, index: number) => {
+    const isSelected = selectedPatientId == item?.id;
     return (
       <TouchableOpacity
         onPress={() => {
-          setSelectedPaitent(item?.firstName == null ? '' : item?.firstName);
-          setSelectedPaitentId(item?.id);
-          setIsPaitentList(false);
-          setCurrentOffset(1);
+          setSelectedPatient(item?.firstName == null ? '' : item?.firstName);
+          setSelectedPatientId(item?.id);
+          setShowPatientsOverlay(false);
         }}
         style={[
-          styles.paitentItem,
+          styles.patientItem,
           {
-            backgroundColor: selectedPaitentId == item.id ? '#00B38E' : 'white',
+            backgroundColor: isSelected ? colors.APP_GREEN : colors.WHITE,
           },
         ]}
       >
-        <Text
-          style={[
-            styles.paitentText,
-            { color: selectedPaitentId == item.id ? 'white' : '#00B38E' },
-          ]}
-        >
+        <Text style={[styles.patientText, { color: isSelected ? colors.WHITE : colors.APP_GREEN }]}>
           {item?.firstName}
         </Text>
         {item?.gender && item?.dateOfBirth ? (
           <Text
-            style={[
-              styles.paitentSubText,
-              { color: selectedPaitentId == item.id ? 'white' : '#00B38E' },
-            ]}
+            style={[styles.patientSubText, { color: isSelected ? colors.WHITE : colors.APP_GREEN }]}
           >{`${item?.gender}, ${moment().diff(item?.dateOfBirth, 'years')}`}</Text>
         ) : null}
       </TouchableOpacity>
     );
   };
+
+  function _onPressClosePatientOverlay() {
+    setShowPatientsOverlay(false);
+  }
+
+  const renderPatientsOverlay = () => {
+    return (
+      <Overlay
+        onRequestClose={() => _onPressClosePatientOverlay()}
+        isVisible={showPatientsOverlay}
+        onBackdropPress={() => _onPressClosePatientOverlay()}
+        windowBackgroundColor={'rgba(0, 0, 0, 0.6)'}
+        containerStyle={{ marginBottom: 0 }}
+        fullScreen
+        transparent
+        overlayStyle={styles.overlayStyle}
+      >
+        <View style={{ flex: 1 }}>
+          <TouchableOpacity style={{ flex: 1 }} onPress={() => _onPressClosePatientOverlay()}>
+            <View style={styles.modalMainView}>
+              <View style={styles.paitentModalView}>
+                <Text style={styles.textHeadingModal}>Select Patient Name</Text>
+                <View style={styles.patientCard}>
+                  <FlatList
+                    bounces={false}
+                    data={newProfileArray}
+                    extraData={selectedPatientId}
+                    keyExtractor={(_, index) => `${index}`}
+                    renderItem={({ item, index }) => renderModalView(item, index)}
+                  />
+                </View>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </Overlay>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       {showDisplaySchedule && renderRescheduleOrderOverlay()}
@@ -1575,31 +1622,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         {renderError()}
         {renderOrders()}
         {showBottomOverlay && renderBottomPopUp()}
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={isPaitentList}
-          onRequestClose={() => {
-            setIsPaitentList(false);
-          }}
-          onDismiss={() => {
-            setIsPaitentList(false);
-          }}
-        >
-          <View style={styles.modalMainView}>
-            <View style={styles.paitentModalView}>
-              <Text style={styles.textHeadingModal}>Select Patient Name</Text>
-              <View style={styles.paitentCard}>
-                <FlatList
-                  data={newProfileArray}
-                  extraData={selectedPaitentId}
-                  keyExtractor={(_, index) => `${index}`}
-                  renderItem={({ item, index }) => renderModalView(item, index)}
-                />
-              </View>
-            </View>
-          </View>
-        </Modal>
+        {showPatientsOverlay && renderPatientsOverlay()}
       </SafeAreaView>
       {loading && !props?.showHeader ? null : loading && <Spinner />}
     </View>
@@ -1760,7 +1783,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 14, '#02475b'),
     // marginBottom: 5,
   },
-  textSelectedPaitent: {
+  textSelectedPatient: {
     ...theme.viewStyles.text('SB', 14, '#02475b'),
     width: '85%',
   },
@@ -1784,18 +1807,20 @@ const styles = StyleSheet.create({
   },
   paitentModalView: {
     backgroundColor: 'white',
+    height: height / 2,
     width: '100%',
     padding: 20,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
   },
-  paitentCard: {
+  patientCard: {
     backgroundColor: '#F7F8F5',
     padding: 10,
     borderRadius: 10,
     elevation: 2,
+    marginBottom: 30,
   },
-  paitentItem: {
+  patientItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -1806,11 +1831,11 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     margin: 5,
   },
-  paitentText: {
+  patientText: {
     ...theme.viewStyles.text('R', 16, '#00B38E'),
     width: '80%',
   },
-  paitentSubText: {
+  patientSubText: {
     ...theme.viewStyles.text('R', 12, '#00B38E'),
     width: '20%',
   },

@@ -742,17 +742,14 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                     : mrpTotal.toFixed(2)}
                 </Text>
               </View>
-              {/**
-               * Code commented below to hide product discount temporarily (APP-12263)
-               */}
-              {/* {!newOrders && product_discount > 0 ? (
+              {!orderBilledAndPacked && !newOrders && product_discount > 0 ? (
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                   <Text style={styles.paymentLeftText}>{string.OrderSummery.product_discount}</Text>
                   <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
                     - {string.common.Rs} {product_discount.toFixed(2)}
                   </Text>
                 </View>
-              ) : null} */}
+              ) : null}
               {orderBilledAndPacked &&
               newOrders &&
               billingDetails &&
@@ -766,17 +763,14 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                   </Text>
                 </View>
               ) : null}
-              {/**
-               * Code commented below to hide coupon discount temporarily (APP-12263)
-               */}
-              {/* {coupon_discount > 0 ? (
+              {!orderBilledAndPacked && coupon_discount > 0 ? (
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                   <Text style={styles.paymentLeftText}>{string.OrderSummery.coupon_discount}</Text>
                   <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
                     - {string.common.Rs} {coupon_discount.toFixed(2)}
                   </Text>
                 </View>
-              ) : null} */}
+              ) : null}
               {!newOrders && !offlineOrderNumber ? (
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                   <Text style={styles.paymentLeftText}>{string.OrderSummery.delivery_charges}</Text>
@@ -957,10 +951,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             </View>
           </View>
         ) : null}
-        {/**
-         * Code commented below to hide additional discount temporarily (APP-12263)
-         */}
-        {/* {additionalDisount && newOrders && !prescriptionUpload ? (
+        {additionalDisount && newOrders && !prescriptionUpload ? (
           <View
             style={[
               styles.paymentCard,
@@ -992,7 +983,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
               </Text>
             </View>
           </View>
-        ) : null} */}
+        ) : null}
         {!orderBilledAndPacked && !offlineOrderNumber ? (
           <View style={{ flexDirection: 'row', paddingHorizontal: 16, marginTop: 16 }}>
             <Text style={[styles.DisclaimerTitle]}>Disclaimer: </Text>

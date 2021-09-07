@@ -189,8 +189,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const [gender, setGender] = useState<string>(currentPatient?.gender);
   const [patientListYPos, setPatientListYPos] = useState<number>(0);
   const [patientProfiles, setPatientProfiles] = useState<any>([]);
-  const [bookingFee, setBookingFee] = useState<number>(0)
-  const [isBookingFeeExempted, setIsBookingFeeExempted] = useState<boolean>(true)
+  const [bookingFee, setBookingFee] = useState<number>(0);
+  const [isBookingFeeExempted, setIsBookingFeeExempted] = useState<boolean>(true);
 
   const circleDoctorDetails = calculateCircleDoctorPricing(
     doctor,
@@ -205,7 +205,10 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     onlineConsultMRPPrice,
     physicalConsultMRPPrice,
     isCircleDoctorOnSelectedConsultMode,
+    cashbackAmount,
+    cashbackEnabled,
   } = circleDoctorDetails;
+  const onlineConsultPrice = cashbackEnabled ? onlineConsultMRPPrice : onlineConsultSlashedPrice;
   const { circleSubscriptionId, circlePlanSelected, hdfcSubscriptionId } = useShoppingCart();
   const [disabledCheckout, setDisabledCheckout] = useState<boolean>(
     isCircleDoctorOnSelectedConsultMode && !circleSubscriptionId
@@ -221,9 +224,9 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
         ? Number(
-            Decimal.sub(onlineConsultSlashedPrice, couponDiscountFees).plus(
-              !circleSubscriptionId ? Number(circlePlanSelected?.currentSellingPrice) : 0
-            ).plus(consultBookingFee)
+            Decimal.sub(onlineConsultPrice, couponDiscountFees)
+              .plus(!circleSubscriptionId ? Number(circlePlanSelected?.currentSellingPrice) : 0)
+              .plus(consultBookingFee)
           )
         : Number(
             Decimal.sub(physicalConsultSlashedPrice, couponDiscountFees).plus(
@@ -234,8 +237,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const consultAmounttoPay =
     circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
-        ? Number(Decimal.sub(onlineConsultSlashedPrice, couponDiscountFees).plus(
-          consultBookingFee))
+        ? Number(Decimal.sub(onlineConsultPrice, couponDiscountFees).plus(consultBookingFee))
         : Number(Decimal.sub(physicalConsultSlashedPrice, couponDiscountFees))
       : amount;
   const notSubscriberUserForCareDoctor =
@@ -252,7 +254,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const actualAmount =
     circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
-        ? onlineConsultSlashedPrice
+        ? onlineConsultPrice
         : physicalConsultSlashedPrice
       : Number(price);
   const [doctorDiscountedFees, setDoctorDiscountedFees] = useState<number>(actualAmount);
@@ -270,7 +272,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     (circleSubscriptionId || circlePlanSelected) && discountedPrice ? discountedPrice : 0;
   const { cusId, isfetchingId } = useGetJuspayId();
   const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
-  const isCirclePricing =  circleSubscriptionId || circlePlanSelected
+  const isCirclePricing = circleSubscriptionId || circlePlanSelected;
 
   useEffect(() => {
     verifyCoupon();
@@ -300,18 +302,20 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   };
 
   const setBookingAmount = () => {
-    let onlineDrPricing = doctor?.doctorPricing.find((item: any) => 
-      item.available_to == 'CARE_PLAN' && item.appointment_type == 'ONLINE');
-    if(!isCirclePricing || !onlineDrPricing){
-      onlineDrPricing = doctor?.doctorPricing.find((item: any) => 
-      item.available_to == 'ALL' && item.appointment_type == 'ONLINE')
+    let onlineDrPricing = doctor?.doctorPricing.find(
+      (item: any) => item.available_to == 'CARE_PLAN' && item.appointment_type == 'ONLINE'
+    );
+    if (!isCirclePricing || !onlineDrPricing) {
+      onlineDrPricing = doctor?.doctorPricing.find(
+        (item: any) => item.available_to == 'ALL' && item.appointment_type == 'ONLINE'
+      );
     }
-    const {bookingFee, isBookingFeeExempted} = onlineDrPricing || {}
-    if(bookingFee){
+    const { bookingFee, isBookingFeeExempted } = onlineDrPricing || {};
+    if (bookingFee) {
       setBookingFee(bookingFee);
       setIsBookingFeeExempted(isBookingFeeExempted);
     }
-  }
+  };
 
   const bookAppointment = () => {
     const appointmentInput: bookAppointmentVariables = {
@@ -349,14 +353,16 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       fetchPolicy: 'no-cache',
     });
   };
-  
+
   const createOrderInternal = (orderId: string, subscriptionId?: string) => {
     const orders: OrderVerticals = {
-      consult: [{
-        order_id: orderId, 
-        amount: consultAmounttoPay,
-        patient_id: currentPatient?.id 
-      }],
+      consult: [
+        {
+          order_id: orderId,
+          amount: consultAmounttoPay,
+          patient_id: currentPatient?.id,
+        },
+      ],
     };
     if (subscriptionId) {
       orders['subscription'] = [
@@ -448,7 +454,13 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   };
 
   const renderCareMembershipAddedCard = () => {
-    return <CareMembershipAdded doctor={doctor} isOnlineConsult={isOnlineConsult} />;
+    return (
+      <CareMembershipAdded
+        doctor={doctor}
+        isOnlineConsult={isOnlineConsult}
+        couponDiscountFees={couponDiscountFees}
+      />
+    );
   };
 
   const renderPriceBreakup = () => {
@@ -630,6 +642,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         onEndApiCall={() => setDisabledCheckout(false)}
         from={string.banner_context.VC_CART}
         circleEventSource={'Cart(VC)'}
+        cashbackAmount={cashbackAmount}
+        cashbackEnabled={cashbackEnabled}
       />
     );
   };
@@ -670,7 +684,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     setCouponDiscountFees(0);
     setDoctorDiscountedFees(actualAmount);
     setSuccessMessage('');
-    setBookingAmount()
+    setBookingAmount();
   };
 
   const renderCouponSavingsView = () => {
@@ -694,7 +708,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     const billAmount =
       circlePlanSelected && isCircleDoctorOnSelectedConsultMode
         ? isOnlineConsult
-          ? onlineConsultSlashedPrice
+          ? onlineConsultPrice
           : physicalConsultSlashedPrice
         : Number(price);
     const timeSlot =
@@ -741,10 +755,10 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
               setCouponDiscountFees(discount);
               setDoctorDiscountedFees(revisedAmount);
               res();
-              if(discount == billAmount){
+              if (discount == billAmount) {
                 setIsBookingFeeExempted(true);
               } else {
-                setBookingAmount()
+                setBookingAmount();
               }
               if (fireEvent) {
                 const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_COUPON_APPLIED] = {
@@ -1288,25 +1302,27 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   };
 
   const getOriginalBookingAmt = () => {
-    let onlineDrPricing = doctor?.doctorPricing.find((item: any) => 
-    item.available_to == 'CARE_PLAN' && item.appointment_type == 'ONLINE');
-    
-    if(!isCirclePricing || !onlineDrPricing){
-      onlineDrPricing = doctor?.doctorPricing.find((item: any) => 
-      item.available_to == 'ALL' && item.appointment_type == 'ONLINE')
+    let onlineDrPricing = doctor?.doctorPricing.find(
+      (item: any) => item.available_to == 'CARE_PLAN' && item.appointment_type == 'ONLINE'
+    );
+
+    if (!isCirclePricing || !onlineDrPricing) {
+      onlineDrPricing = doctor?.doctorPricing.find(
+        (item: any) => item.available_to == 'ALL' && item.appointment_type == 'ONLINE'
+      );
     }
-    let {bookingFee, isBookingFeeExempted} = onlineDrPricing || {}
+    let { bookingFee, isBookingFeeExempted } = onlineDrPricing || {};
     const billAmount =
       circlePlanSelected && isCircleDoctorOnSelectedConsultMode
         ? isOnlineConsult
           ? onlineConsultSlashedPrice
           : physicalConsultSlashedPrice
         : Number(price);
-    if(couponDiscountFees == billAmount && !isBookingFeeExempted){
+    if (couponDiscountFees == billAmount && !isBookingFeeExempted) {
       bookingFee = 0;
     }
-    return {bookingFee, isBookingFeeExempted};
-  }
+    return { bookingFee, isBookingFeeExempted };
+  };
 
   const postWebEngagePayButtonClickedEvent = () => {
     const timeSlot =
@@ -1317,7 +1333,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         ? nextAvailableSlot
         : selectedTimeSlot;
     const localTimeSlot = new Date(timeSlot);
-    const {bookingFee, isBookingFeeExempted} = getOriginalBookingAmt();
+    const { bookingFee, isBookingFeeExempted } = getOriginalBookingAmt();
     const doctorClinics = (g(doctor, 'doctorHospital') || []).filter((item: any) => {
       if (item?.facility?.facilityType) return item?.facility?.facilityType === 'HOSPITAL';
     });
@@ -1352,7 +1368,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           ? `${doctorClinics?.[0].facility?.city}`
           : '',
       User_Type: getUserType(allCurrentPatients),
-      'Booking Fee' :  isBookingFeeExempted ? 'False' : 'True',
+      'Booking Fee': isBookingFeeExempted ? 'False' : 'True',
       'Booking value': isBookingFeeExempted ? 0 : bookingFee,
     };
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PAY_BUTTON_CLICKED] = {
@@ -1386,7 +1402,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           ? `${doctorClinics?.[0].facility?.city}`
           : '',
       User_Type: getUserType(allCurrentPatients),
-      'Booking Fee' :  isBookingFeeExempted ? 'False' : 'True',
+      'Booking Fee': isBookingFeeExempted ? 'False' : 'True',
       'Booking value': bookingFee,
     };
     postCleverTapEvent(CleverTapEventName.CONSULT_PAY_BUTTON_CLICKED, cleverTapEventAttributes);
@@ -1405,10 +1421,11 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         ]}
       >
         <Text style={styles.smallText}>
-          You could have{' '}
+          You could {cashbackEnabled ? 'get ' : ' '}
           <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.SEARCH_UNDERLINE_COLOR) }}>
-            saved {string.common.Rs}
-            {convertNumberToDecimal(discountedPrice)}
+            {cashbackEnabled
+              ? `upto ${cashbackAmount} HC`
+              : `save ${string.common.Rs + convertNumberToDecimal(discountedPrice)}`}
           </Text>{' '}
           on this purchase with
         </Text>

@@ -798,7 +798,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             const latLang = data.results[0].geometry.location || {};
             const response = getFormattedLocation(addrComponents, latLang, pinCode);
             const saveAddress = {
-              pincode: pincode,
+              pincode: pinCode,
               id: '',
               city: response?.city,
               state: response?.state,
@@ -1146,6 +1146,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   onNotifyMeClick={onNotifyMeClick}
                   isPharma={isPharma}
                   navigation={props.navigation}
+                  setShowSubstituteInfo={setShowSubstituteInfo}
                 />
               </View>
               {isPharma && (

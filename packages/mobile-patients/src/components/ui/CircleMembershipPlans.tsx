@@ -25,7 +25,7 @@ import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/G
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import ContentLoader from 'react-native-easy-content-loader';
-import { CircleLogo, BlueTick, CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CircleLogo, BlueTick, CrossPopup, ExclamationGreen } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import AsyncStorage from '@react-native-community/async-storage';
 import { Overlay } from 'react-native-elements';
@@ -81,6 +81,7 @@ import {
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
+import {Tooltip} from 'react-native-elements';
 
 const { width } = Dimensions.get('window');
 interface CircleMembershipPlansProps extends NavigationScreenProps {
@@ -101,6 +102,8 @@ interface CircleMembershipPlansProps extends NavigationScreenProps {
   circleEventSource?: CircleEventSource;
   onPurchaseWithHCCallback?: (res: any) => void;
   screenName?: string;
+  cashbackEnabled?: boolean;
+  cashbackAmount?: number;
 }
 
 export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (props) => {
@@ -124,6 +127,8 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     onPurchaseWithHCCallback,
     screenName,
     circleEventSource,
+    cashbackEnabled,
+    cashbackAmount,
   } = props;
   const client = useApolloClient();
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
@@ -559,8 +564,8 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
                   <Text style={styles.getCareText}>
                     Get{' '}
                     <Text style={theme.viewStyles.text('SB', 13, theme.colors.LIGHT_BLUE)}>
-                      {string.common.Rs}
-                      {convertNumberToDecimal(careDiscountPrice)} off{' '}
+                      {cashbackEnabled ? `upto ${cashbackAmount} HC` : 
+                      string.common.Rs + convertNumberToDecimal(careDiscountPrice) + ' off '}
                     </Text>{' '}
                     on this Consult with CIRCLE membership and a lot more benefits....
                   </Text>
@@ -612,20 +617,49 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
 
   const renderCircleDiscountOnConsult = () => {
     return (
-      <View style={styles.circleDiscountContainer}>
-        <BlueTick style={styles.tickIcon} />
-        <Text style={[styles.getCareText, { marginRight: 0 }]}>
-          Get{' '}
-          <Text style={theme.viewStyles.text('SB', 12, theme.colors.LIGHT_BLUE)}>
-            {string.common.Rs}
-            {convertNumberToDecimal(careDiscountPrice)} off{' '}
-          </Text>{' '}
-          on this Consult
-        </Text>
+      <View>
+        <View style={styles.circleDiscountContainer}>
+          <BlueTick style={styles.tickIcon} />
+          <Text style={[styles.getCareText, { marginRight: 0 }]}>
+            Get{' '}
+            <Text style={theme.viewStyles.text('SB', 12, theme.colors.LIGHT_BLUE)}>
+              {cashbackEnabled ? `upto ${cashbackAmount} HC` : 
+              string.common.Rs + convertNumberToDecimal(careDiscountPrice)+ 'off '}
+            </Text>{' '}
+            on this Consult
+          </Text>
+        </View>
+        {cashbackEnabled && 
+          <View style={styles.hcInfoView}>
+            <Text style={styles.hcInfoText}>
+              {string.common.hcToRupee}
+            </Text>
+            <Tooltip
+              containerStyle={styles.tooltipView}
+              height={126}
+              width={264}
+              skipAndroidStatusBar={true}
+              pointerColor={theme.colors.WHITE}
+              overlayColor={theme.colors.CLEAR}
+              popover={
+                <View>
+                  <Text style={styles.tooltipTitle}>{string.common.whatIsHc}</Text>
+                  <Text style={styles.tootipDesc}>{string.common.hcShort}
+                  <Text style={styles.hcBoldText}>
+                    {string.common.healthCredit}
+                    </Text>
+                    {string.common.hcInfo}
+                    </Text>
+                  <Text style={styles.tipHcInfoText}>{string.common.hcToRupee}</Text>
+                </View>
+              }>
+              <ExclamationGreen style={styles.infoIcon} />
+            </Tooltip>
+          </View>}
       </View>
     );
   };
-
+  
   const renderKnowMore = (alignSelf: 'flex-end' | 'center') => {
     return (
       <View
@@ -1169,5 +1203,39 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 10,
     paddingBottom: 20,
+  },
+  infoIcon: {
+    height: 12, 
+    width: 12, 
+    marginStart: 8
+  },
+  hcInfoView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  hcInfoText: {
+    ...theme.viewStyles.text('R', 12, theme.colors.LIGHT_BLUE)
+  },
+  tooltipTitle: {
+    ...theme.viewStyles.text('M', 13, theme.colors.APP_YELLOW)
+  },
+  tootipDesc: {
+    ...theme.viewStyles.text('R', 10, theme.colors.LIGHT_BLUE, undefined, 12),
+    paddingTop: 4,
+  },
+  tipHcInfoText: {
+    ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE, undefined, 14),
+    paddingTop: 4,
+  },
+  hcBoldText: {
+    fontWeight: '500',
+  },
+  tooltipView: {
+    backgroundColor: theme.colors.WHITE,
+    shadowColor: theme.colors.SHADOW_GRAY,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8
   },
 });

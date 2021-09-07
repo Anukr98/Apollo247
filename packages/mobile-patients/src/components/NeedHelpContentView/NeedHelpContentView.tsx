@@ -188,7 +188,7 @@ export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
       const variables: SendHelpEmailVariables = {
         helpEmailInput: {
           category: parentQuery?.title,
-          reason: pathFollowed + issueNotResolvedText,
+          reason: pathFollowed,
           comments: comments,
           patientId: currentPatient?.id,
           email: email,
