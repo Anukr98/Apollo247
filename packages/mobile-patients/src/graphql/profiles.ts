@@ -6199,3 +6199,11 @@ export const GET_DIAGNOSTIC_REPORT_TAT = gql`
     }
   }
 `;
+
+export const SAVE_JUSPAY_SDK_RESPONSE = gql`
+  mutation saveJuspayResponseForAudit($auditInput: AuditInput) {
+    saveJuspayResponseForAudit(auditInput: $auditInput) {
+      success
+    }
+  }
+`;

@@ -41,6 +41,7 @@ import {
   GET_DIAGNOSTICS_RECOMMENDATIONS,
   GET_DIAGNOSTIC_EXPRESS_SLOTS_INFO,
   GET_DIAGNOSTIC_REPORT_TAT,
+  SAVE_JUSPAY_SDK_RESPONSE,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -189,9 +190,18 @@ import {
   getDiagnosticPaymentSettings,
   getDiagnosticPaymentSettingsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticPaymentSettings';
-import { getDiagnosticItemRecommendations, getDiagnosticItemRecommendationsVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticItemRecommendations';
-import { getUpcomingSlotInfo, getUpcomingSlotInfoVariables } from '@aph/mobile-patients/src/graphql/types/getUpcomingSlotInfo';
-import { getConfigurableReportTAT, getConfigurableReportTATVariables } from '@aph/mobile-patients/src/graphql/types/getConfigurableReportTAT';
+import {
+  getDiagnosticItemRecommendations,
+  getDiagnosticItemRecommendationsVariables,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticItemRecommendations';
+import {
+  getUpcomingSlotInfo,
+  getUpcomingSlotInfoVariables,
+} from '@aph/mobile-patients/src/graphql/types/getUpcomingSlotInfo';
+import {
+  getConfigurableReportTAT,
+  getConfigurableReportTATVariables,
+} from '@aph/mobile-patients/src/graphql/types/getConfigurableReportTAT';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -1203,8 +1213,7 @@ export const getDiagnosticCartRecommendations = (
   client: ApolloClient<object>,
   itemIds: any,
   numOfRecords: number
-) =>
-{
+) => {
   return client.query<getDiagnosticItemRecommendations, getDiagnosticItemRecommendationsVariables>({
     query: GET_DIAGNOSTICS_RECOMMENDATIONS,
     context: {
@@ -1212,10 +1221,10 @@ export const getDiagnosticCartRecommendations = (
     },
     variables: {
       itemIds: itemIds,
-      records: numOfRecords
+      records: numOfRecords,
     },
     fetchPolicy: 'no-cache',
-  }); 
+  });
 };
 
 export const getDiagnosticExpressSlots = (
@@ -1224,31 +1233,29 @@ export const getDiagnosticExpressSlots = (
   longitude: number,
   zipcode: string,
   serviceabilityObj: DiagnosticsServiceability
-) =>
-{
+) => {
   return client.query<getUpcomingSlotInfo, getUpcomingSlotInfoVariables>({
     query: GET_DIAGNOSTIC_EXPRESS_SLOTS_INFO,
     context: {
       sourceHeaders,
     },
     variables: {
-     latitude: latitude,
-     longitude: longitude,
-     zipcode: zipcode,
-     serviceability : serviceabilityObj
+      latitude: latitude,
+      longitude: longitude,
+      zipcode: zipcode,
+      serviceability: serviceabilityObj,
     },
     fetchPolicy: 'no-cache',
-  }); 
+  });
 };
 
 export const getReportTAT = (
   client: ApolloClient<object>,
-  slotDateTimeInUTC: string| null,
+  slotDateTimeInUTC: string | null,
   cityId: number,
   pincode: number,
   itemIds: number[]
-) =>
-{
+) => {
   return client.query<getConfigurableReportTAT, getConfigurableReportTATVariables>({
     query: GET_DIAGNOSTIC_REPORT_TAT,
     context: {
@@ -1258,8 +1265,19 @@ export const getReportTAT = (
       slotDateTimeInUTC: slotDateTimeInUTC,
       cityId: cityId,
       pincode: pincode,
-      itemIds: itemIds
+      itemIds: itemIds,
     },
     fetchPolicy: 'no-cache',
-  }); 
+  });
+};
+
+export const saveJusPaySDKresponse = (client: ApolloClient<object>, payload: any) => {
+  client.query({
+    query: SAVE_JUSPAY_SDK_RESPONSE,
+    context: {
+      sourceHeaders,
+    },
+    variables: payload,
+    fetchPolicy: 'no-cache',
+  });
 };

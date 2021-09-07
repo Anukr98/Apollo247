@@ -63,7 +63,10 @@ import { useFetchHealthCredits } from '@aph/mobile-patients/src/components/Payme
 import { HealthCredits } from '@aph/mobile-patients/src/components/PaymentGateway/Components/HealthCredits';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useGetPaymentMethods } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useGetPaymentMethods';
-import { diagnosticPaymentSettings } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  diagnosticPaymentSettings,
+  saveJusPaySDKresponse,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   isEmptyObject,
   paymentModeVersionCheck,
@@ -78,6 +81,8 @@ import { useFetchSavedCards } from '@aph/mobile-patients/src/components/PaymentG
 import Decimal from 'decimal.js';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import DeviceInfo from 'react-native-device-info';
+
 const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {
@@ -238,6 +243,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const handleTxnStatus = (status: string, payload: any) => {
+    storeSDKresponse(payload);
     switch (status) {
       case 'CHARGED':
         navigatetoOrderStatus(false, 'success');
@@ -252,6 +258,28 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         // includes cases AUTHENTICATION_FAILED, AUTHORIZATION_FAILED, JUSPAY_DECLINED
         showTxnFailurePopUP();
     }
+  };
+
+  const storeSDKresponse = (payload: any) => {
+    try {
+      const sdkResponse = {
+        auditInput: {
+          paymentOrderId: paymentId,
+          source:
+            Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS,
+          sdkOrWebResponse: {
+            action: payload?.payload?.action, // type of payment or mode of payment
+            status: payload?.payload?.status, // status of the txn
+            orderId: payload?.payload?.orderId, // orderId
+            error: payload?.error, // boolean value, is true in case of errors
+            errorCode: payload?.errorCode, // corresponding Juspay error code in case of errors
+            activityResponse: payload?.payload?.otherInfo?.response?.dropoutInfo?.activityResponse,
+          },
+          version: DeviceInfo.getVersion(),
+        },
+      };
+      saveJusPaySDKresponse(client, sdkResponse);
+    } catch (error) {}
   };
 
   const handleError = (errorMessage: string) => {
