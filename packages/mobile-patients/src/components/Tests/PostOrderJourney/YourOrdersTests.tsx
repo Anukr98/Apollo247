@@ -360,31 +360,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   };
 
-  const getReasons = async (item: any) => {
-    let selectedOrderTime = item?.slotDateTimeInUTC;
-    try {
-      client
-        .query<getRescheduleAndCancellationReasons, getRescheduleAndCancellationReasonsVariables>({
-          query: GET_RESCHEDULE_AND_CANCELLATION_REASONS,
-          context: {
-            sourceHeaders,
-          },
-          variables: { appointmentDateTimeInUTC: selectedOrderTime },
-          fetchPolicy: 'no-cache',
-        })
-        .then((data) => {
-          const reasonList = data?.data?.getRescheduleAndCancellationReasons || [];
-          setCancelReasonList(reasonList?.cancellationReasons);
-          setRescheduleReasonList(reasonList?.rescheduleReasons);
-        })
-        .catch((error) => {
-          CommonBugFender(`${AppRoutes.YourOrdersTest}_getReasons`, error);
-        });
-    } catch (error) {
-      CommonBugFender(`${AppRoutes.YourOrdersTest}_getReasons`, error);
-    }
-  };
-
   const getPhlobeOTP = (orderIdsArr: any, ordersList: any, isRefetch: boolean) => {
     try {
       setLoading?.(true);
