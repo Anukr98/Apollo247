@@ -293,27 +293,22 @@ export const CheckCredEligibility = (
   const payload = {
     requestId: requestId,
     service: AppConfig.Configuration.jusPayService,
-    action: 'eligibility',
-    amount: amount, //mandatory
-    clientAuthToken: clientAuthToken,
-    data: {
-      apps: [
-        {
-          checkType: ['cred'],
-          mobile: '9940499788',
-          // udf: {
-          //   key1: 'value1',
-          // },
-          // gatewayReferenceId: {
-          //   cred: 'gatewayRefeerenceIdForCredChecktype',
-          // },
-        },
-      ],
-      cards: [],
-      wallets: [],
+    payload: {
+      action: 'eligibility',
+      amount: amount, //mandatory
+      clientAuthToken: clientAuthToken,
+      data: {
+        apps: [
+          {
+            checkType: ['cred'],
+            mobile: mobileNo,
+          },
+        ],
+        cards: [],
+        wallets: [],
+      },
     },
   };
-  console.log('eligibility call payload >>>', JSON.stringify(payload));
   HyperSdkReact.process(JSON.stringify(payload));
 };
 

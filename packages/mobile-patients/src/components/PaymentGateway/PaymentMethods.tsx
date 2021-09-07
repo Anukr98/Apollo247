@@ -131,6 +131,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { paymentMethods, cardTypes, fetching } = useGetPaymentMethods(paymentId);
   const { savedCards } = useFetchSavedCards(customerId);
   const { clientAuthToken } = customerId && useGetClientAuthToken(customerId, businessLine);
+  const [cred, setCred] = useState<any>(undefined);
 
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
@@ -189,7 +190,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }, [clientAuthToken]);
 
   const checkCredEligibility = () => {
-    const mobileNo = currentPatient?.mobileNumber;
+    const mobileNo = currentPatient?.mobileNumber.substring(3);
     CheckCredEligibility(currentPatient?.id, mobileNo, String(amount), clientAuthToken);
   };
 
@@ -250,7 +251,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         payload?.requestId == 'googlePay' && status && setGooglePayReady(true);
         break;
       case 'eligibility':
-        console.log('eligibilitypayload >>', JSON.stringify(payload));
+        const eligibleApps = payload?.payload?.apps[0]?.paymentMethodsEligibility;
+        setCred(eligibleApps?.find((item: any) => item?.paymentMethod == 'CRED'));
         break;
       default:
         payload?.error && handleError(payload?.errorMessage);
@@ -408,9 +410,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   async function onPressCred() {
     const token = await getClientToken();
-    token
-      ? InitiateCredTxn(currentPatient?.id, token, paymentId, currentPatient?.mobileNumber)
-      : renderErrorPopup();
+    const mobileNo = currentPatient?.mobileNumber.substring(3);
+    token ? InitiateCredTxn(currentPatient?.id, token, paymentId, mobileNo) : renderErrorPopup();
   }
 
   async function onPressUPIApp(app: any) {
@@ -641,7 +642,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
             case 'WALLET':
               return !!amount && versionCheck && showPrepaid && renderWallets(methods);
             case 'CRED':
-              return !!amount && showPrepaid && renderCred(methods[0]);
+              return !!amount && versionCheck && showPrepaid && renderCred(methods[0]);
             case 'UPI':
               return !!amount && versionCheck && showPrepaid && renderUPIPayments(filterUPIApps());
             case 'FEATURED_BANKS':
@@ -671,7 +672,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderCred = (info: any) => {
-    return <CredPay paymentMethod={info} onPressPayNow={onPressCred} />;
+    return !!cred && cred?.isEligible ? (
+      <CredPay credInfo={cred} paymentMethod={info} onPressPayNow={onPressCred} />
+    ) : null;
   };
 
   const renderUPIPayments = (upiApps: any) => {

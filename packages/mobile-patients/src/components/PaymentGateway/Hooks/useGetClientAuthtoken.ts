@@ -3,7 +3,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { GET_JUSPAY_CLIENTAUTH_TOKEN } from '@aph/mobile-patients/src/graphql/profiles';
 
 export const useGetClientAuthToken = (customer_id: string, businessLine: string) => {
-  const [clientAuthToken, setClientAuthToken] = useState<any>([]);
+  const [clientAuthToken, setClientAuthToken] = useState<any>(undefined);
   const client = useApolloClient();
 
   const getJuspayClientToken = () => {
