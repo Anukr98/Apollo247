@@ -103,6 +103,7 @@ import {
 import {
   useShoppingCart,
   PhysicalPrescription,
+  EPrescription
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import {
   CommonBugFender,
@@ -220,6 +221,7 @@ export interface TestsProps
   extends NavigationScreenProps<{
     comingFrom?: string;
     movedFrom?: string;
+    setEPrescriptions: ((items: EPrescription[]) => void) | null;
   }> {}
 
 export const Tests: React.FC<TestsProps> = (props) => {
@@ -1979,19 +1981,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
   const onClickTakePhoto = () => {
     ImagePicker.openCamera({
-      cropping: false, //props.isProfileImage ? true : false,
+      cropping: false,
       hideBottomControls: true,
-      width: 2096, //props.isProfileImage ? 2096 : undefined,
-      height: 2096, //props.isProfileImage ? 2096 : undefined,
+      width: 2096, 
+      height: 2096, 
       includeBase64: true,
-      multiple: true, //props.isProfileImage ? false : true,
+      multiple: true, 
       compressImageQuality: 0.5,
       compressImageMaxHeight: 2096,
       compressImageMaxWidth: 2096,
       writeTempFile: false,
     })
       .then((response) => {
-        console.log('response :>> ', response);
         setLoading(true);
         props.navigation.navigate(AppRoutes.PrescriptionCamera, {
           type: 'CAMERA_AND_GALLERY',
@@ -2000,7 +2001,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         });
       })
       .catch((e: Error) => {
-        console.log('e :>> ', e);
       });
   };
 
@@ -2035,18 +2035,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
         displayPrismRecords={true}
         navigation={props.navigation}
         onSubmit={(selectedEPres) => {
-          // setSelectPrescriptionVisible(false);
-          // if (selectedEPres.length == 0) {
-          //   return;
-          // }
-          // setEPrescriptions && setEPrescriptions(selectedEPres);
-          // props.navigation.navigate(AppRoutes.UploadPrescription, {
-          //   ePrescriptionsProp: selectedEPres,
-          //   type: 'E-Prescription',
-          //   showOptions: false,
-          //   isReUpload: true,
-          //   orderAutoId: orderAutoId,
-          // });
+          setSelectPrescriptionVisible(false);
+          if (selectedEPres.length == 0) {
+            return;
+          }
+          props.navigation.navigate(AppRoutes.SubmittedPrescription, {
+            ePrescriptionsProp: selectedEPres,
+            type: 'E-Prescription',
+            showOptions: false,
+            isReUpload: true,
+          });
         }}
         selectedEprescriptionIds={[]}
         isVisible={isSelectPrescriptionVisible}
@@ -2661,12 +2659,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   onClickTakePhoto();
                 } else {
                   setIsPrescriptionUpload(false);
-                  props.navigation.navigate(AppRoutes.SubmittedPrescription, {
-                    
-                  });
+                  setSelectPrescriptionVisible(true)
                 }
               }}
-              style={{ flexDirection: 'row', alignContent: 'center' }}
+              style={styles.areaStyles}
             >
               {item.icon}
               <Text style={styles.textPrescription}>{item.title}</Text>
@@ -2799,7 +2795,9 @@ const styles = StyleSheet.create({
   textPrescription: {
     ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE),
     marginBottom: 20,
+    paddingHorizontal:10
   },
+  areaStyles:{ flexDirection: 'row', alignContent: 'center' },
   buttonStyle: { width: '30%', alignSelf: 'center' },
   prescriptionText: {
     ...theme.viewStyles.text('SB', 15, theme.colors.SHERPA_BLUE, 1, 20),
