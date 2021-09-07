@@ -348,10 +348,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       ? slotime.diff(moment(), 'minutes') < 60 && slotime.diff(moment(), 'minutes') > 0
       : false;
     const isCallingEnabled = !!phlObj ? phlObj?.allowCalling : false;
-    const showVaccinationStatus =
-      !!phlObj &&
-      !!phlObj?.diagnosticPhlebotomists?.vaccinationStatus &&
-      phlObj?.diagnosticPhlebotomists?.vaccinationStatus != '';
+    const showVaccinationStatus = !!phlObj?.diagnosticPhlebotomists?.vaccinationStatus;
 
     return (
       <>
