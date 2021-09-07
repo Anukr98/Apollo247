@@ -199,7 +199,9 @@ export interface SelectEPrescriptionModalProps {
 
 export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> = (props) => {
   const [selectedPrescription, setSelectedPrescription] = useState<{ [key: string]: boolean }>({});
-  const [selectedDischargeSummary, setSelectedDischargeSummary] = useState<{ [key: string]: boolean }>({});
+  const [selectedDischargeSummary, setSelectedDischargeSummary] = useState<{
+    [key: string]: boolean;
+  }>({});
   const [showPreview, setShowPreview] = useState<boolean>(false);
   const [imageUrl, setImageUrl] = useState<string>('');
   const [imageIndex, setImageIndex] = useState<string>('');
@@ -207,7 +209,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
   const loadRecordsStep = 12;
   const [healthRecordIndex, setHealthRecordIndex] = useState<number>(loadRecordsStep);
   const [refreshHealthRecords, setRefreshHealthRecords] = useState<boolean>(false);
-  const [dischargeSummaryData, setDischargeSummaryData] = useState<any[]>([])
+  const [dischargeSummaryData, setDischargeSummaryData] = useState<any[]>([]);
   const { currentPatient, profileAllPatients } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const client = useApolloClient();
@@ -215,7 +217,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
 
   useEffect(() => {
     getLatestHospitalizationRecords();
-  }, [])
+  }, []);
 
   useEffect(() => {
     if (!currentPatient) {
@@ -350,20 +352,30 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
   const formatDischargeSummaryData = (
     summaryData: getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_hospitalizations_response[]
   ) => {
-    const dischargeSummary = summaryData.map((item) =>
-    ({
-      id: item?.id,
-      date: moment(item?.dateOfHospitalization || item?.date).format(DATE_FORMAT),
-      uploadedUrl: item?.hospitalizationFiles?.[0]?.file_Url + '/' + item?.hospitalizationFiles?.[0]?.fileName,
-      doctorName: item?.doctorName || 'Hospitalizations',
-      forPatient: (currentPatient && currentPatient.firstName) || '',
-      medicines: '',
-      message: item?.dateOfHospitalization ? 
-        `Date of Hospitalization: ${moment(item?.dateOfHospitalization).format('DD-MMM-YYYY')}\n` :  `` +
-        item?.dateOfDischarge ? `Date of Discharge: ${moment(item?.dateOfDischarge).format('DD-MMM-YYYY')}\n` : `-` + 
-          item?.diagnosisNotes ? `Diagnosis Notes: ${item?.diagnosisNotes}` : ``
-    } as any)
-    )
+    const dischargeSummary = summaryData
+      .map(
+        (item) =>
+          ({
+            id: item?.id,
+            date: moment(item?.dateOfHospitalization || item?.date).format(DATE_FORMAT),
+            uploadedUrl:
+              item?.hospitalizationFiles?.[0]?.file_Url +
+              '/' +
+              item?.hospitalizationFiles?.[0]?.fileName,
+            doctorName: item?.doctorName || 'Hospitalizations',
+            forPatient: (currentPatient && currentPatient.firstName) || '',
+            medicines: '',
+            message: item?.dateOfHospitalization
+              ? `Date of Hospitalization: ${moment(item?.dateOfHospitalization).format(
+                  'DD-MMM-YYYY'
+                )}\n`
+              : `` + item?.dateOfDischarge
+              ? `Date of Discharge: ${moment(item?.dateOfDischarge).format('DD-MMM-YYYY')}\n`
+              : `-` + item?.diagnosisNotes
+              ? `Diagnosis Notes: ${item?.diagnosisNotes}`
+              : ``,
+          } as any)
+      )
       .filter((item) => !!item.uploadedUrl)
       .sort(
         (a, b) =>
@@ -372,16 +384,15 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
             .getTime() -
           moment(a.date, DATE_FORMAT)
             .toDate()
-            .getTime());
+            .getTime()
+      );
     setDischargeSummaryData(dischargeSummary);
   };
 
   const renderDischargeSummaryList = () => {
     return (
       <View>
-        <Text style={styles.sectionHeadings}>
-          {`Discharge Summary`}
-        </Text>
+        <Text style={styles.sectionHeadings}>{`Discharge Summary`}</Text>
         <FlatList
           data={dischargeSummaryData}
           renderItem={renderDischargeSummary}
@@ -427,17 +438,17 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     return array.sort(({ data: data1 }, { data: data2 }) => {
       let date1 = new Date(
         data1.testDate ||
-        data1.labTestDate ||
-        data1.appointmentDate ||
-        data1.dateOfHospitalization ||
-        data1.date
+          data1.labTestDate ||
+          data1.appointmentDate ||
+          data1.dateOfHospitalization ||
+          data1.date
       );
       let date2 = new Date(
         data2.testDate ||
-        data2.labTestDate ||
-        data2.appointmentDate ||
-        data2.dateOfHospitalization ||
-        data2.date
+          data2.labTestDate ||
+          data2.appointmentDate ||
+          data2.dateOfHospitalization ||
+          data2.date
       );
       return date1 > date2 ? -1 : date1 < date2 ? 1 : data2.id - data1.id;
     });
@@ -494,33 +505,33 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
   const formattedEPrescriptions = ePrescriptions
     .map(
       (item) =>
-      ({
-        id: item!.id,
-        date: moment(item!.quoteDateTime).format(DATE_FORMAT),
-        uploadedUrl: item!.prescriptionImageUrl,
-        doctorName: `Meds Rx ${(item!.id && item!.id.substring(0, item!.id.indexOf('-'))) || ''}`, // item.referringDoctor ? `Dr. ${item.referringDoctor}` : ''
-        forPatient: (currentPatient && currentPatient.firstName) || '',
-        medicines: getMedicines(item!.medicineOrderLineItems! || []),
-        prismPrescriptionFileId: item!.prismPrescriptionFileId,
-      } as EPrescription)
+        ({
+          id: item!.id,
+          date: moment(item!.quoteDateTime).format(DATE_FORMAT),
+          uploadedUrl: item!.prescriptionImageUrl,
+          doctorName: `Meds Rx ${(item!.id && item!.id.substring(0, item!.id.indexOf('-'))) || ''}`, // item.referringDoctor ? `Dr. ${item.referringDoctor}` : ''
+          forPatient: (currentPatient && currentPatient.firstName) || '',
+          medicines: getMedicines(item!.medicineOrderLineItems! || []),
+          prismPrescriptionFileId: item!.prismPrescriptionFileId,
+        } as EPrescription)
     )
     .concat(
       ePrescriptionsFromConsults.map(
         (item) =>
-        ({
-          id: item!.id,
-          appointmentId: item?.id,
-          date: moment(item!.appointmentDateTime).format(DATE_FORMAT),
-          uploadedUrl: getBlobUrl(item?.caseSheet),
-          doctorName: item!.doctorInfo ? `${item!.doctorInfo.fullName}` : '',
-          forPatient: (currentPatient && currentPatient.firstName) || '',
-          medicines: (
-            (getCaseSheet(item!.caseSheet as any) || { medicinePrescription: [] })
-              .medicinePrescription || []
-          )
-            .map((item) => item!.medicineName)
-            .join(', '),
-        } as EPrescription)
+          ({
+            id: item!.id,
+            appointmentId: item?.id,
+            date: moment(item!.appointmentDateTime).format(DATE_FORMAT),
+            uploadedUrl: getBlobUrl(item?.caseSheet),
+            doctorName: item!.doctorInfo ? `${item!.doctorInfo.fullName}` : '',
+            forPatient: (currentPatient && currentPatient.firstName) || '',
+            medicines: (
+              (getCaseSheet(item!.caseSheet as any) || { medicinePrescription: [] })
+                .medicinePrescription || []
+            )
+              .map((item) => item!.medicineName)
+              .join(', '),
+          } as EPrescription)
       )
     )
     .filter((item) => !!item.uploadedUrl)
@@ -646,7 +657,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     const selected = selectedHealthRecord?.findIndex((i) => i === imageIndex.toString()) > -1;
     return (
       <Overlay
-        onRequestClose={() => { }}
+        onRequestClose={() => {}}
         isVisible={showPreview}
         onBackdropPress={() => setShowPreview(false)}
       >
@@ -755,17 +766,19 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
             message += `UHID: ${(currentPatient && currentPatient.uhid) || '-'}\n`;
             message += `Test Date: ${date || '-'}\n`;
             message += `${data?.observation ? `Observation Notes: ${data?.observation}\n` : ``}`;
-            message += `${data?.additionalNotes ? `Additional Notes: ${data?.additionalNotes}\n` : ``
-              }`;
+            message += `${
+              data?.additionalNotes ? `Additional Notes: ${data?.additionalNotes}\n` : ``
+            }`;
             message += `---------------\n`;
             (data?.labTestResults || []).forEach((record: any) => {
               if (record) {
                 if (record.parameterName) {
                   message += `${record.parameterName}\n`;
-                  message += `${record.result
+                  message += `${
+                    record.result
                       ? `Result: ${record.result} ${record.unit ? record.unit || '' : ''}\n`
                       : ``
-                    }`;
+                  }`;
                 } else {
                   message += `Summary: ${record.result}`;
                 }
@@ -795,10 +808,12 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
             message += `Test Name: ${name}\n`;
             message += `UHID: ${(currentPatient && currentPatient.uhid) || '-'}\n`;
             message += `Test Date: ${moment(date).format('DD-MMM-YYYY') || '-'}\n`;
-            message += `${data?.observation ? `Observation Notes: ${data?.additionalNotes}\n` : ``
-              }`;
-            message += `${data?.additionalNotes ? `Additional Notes: ${data?.additionalNotes}\n` : ``
-              }`;
+            message += `${
+              data?.observation ? `Observation Notes: ${data?.additionalNotes}\n` : ``
+            }`;
+            message += `${
+              data?.additionalNotes ? `Additional Notes: ${data?.additionalNotes}\n` : ``
+            }`;
             message += `---------------\n`;
             (data?.medicalRecordParameters || []).forEach((record: any) => {
               if (record) {
@@ -885,8 +900,9 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
         title={'UPLOAD'}
         disabled={
           Object.keys(selectedPrescription)?.filter((item) => selectedPrescription?.[item])
-            ?.length == 0 && selectedHealthRecord.length === 0 &&
-            Object.keys(selectedDischargeSummary)?.filter((item) => selectedDischargeSummary?.[item])
+            ?.length == 0 &&
+          selectedHealthRecord.length === 0 &&
+          Object.keys(selectedDischargeSummary)?.filter((item) => selectedDischargeSummary?.[item])
             ?.length == 0
         }
         onPress={onPressUpload}
