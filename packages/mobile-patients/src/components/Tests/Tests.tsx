@@ -297,6 +297,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [isPrescriptionUpload, setIsPrescriptionUpload] = useState<boolean>(false);
   const [isPrescriptionGallery, setIsPrescriptionGallery] = useState<boolean>(false);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
+  const [isUploaded, setIsUploaded] = useState(false);
   const [widgetsData, setWidgetsData] = useState([] as any);
   const [reloadWidget, setReloadWidget] = useState<boolean>(false);
 
@@ -2018,13 +2019,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
             }}
           />
         </View>
-        <View style={styles.bottomArea}>
+        {isUploaded ? <View style={styles.bottomArea}>
           <View style={{ flexDirection: 'row', paddingHorizontal: 5 }}>
             <GreenCheck style={{ width: 18, height: 18 }} />
             <Text style={styles.prescriptionTextUpload}>Prescription Uploaded</Text>
           </View>
-          <Text style={styles.prescriptionTextUploadTime}>12 Aug, 18:33</Text>
-        </View>
+          <Text style={styles.prescriptionTextUploadTime}>{moment().format("DD MMM, HH:mm")}</Text>
+        </View> : null}
       </View>
     );
   };
