@@ -248,7 +248,7 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
     if (ticketId) {
       // when there is only ticketId
       setShowTicketCreationLagMessage(true);
-      setTimeout(() => fetchTicketDetails(), 30000);
+      setTimeout(() => fetchTicketDetails(), 10000);
     } else {
       if (ticket) {
         getConversation();
