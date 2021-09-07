@@ -919,7 +919,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
               <>
                 {(isAdded && isRemoved) || (isRemoved && !isAdded) ? (
                   <>
-                    <Text style={styles.itemsAddedText}>{itemsLength?.length} items modified</Text>
+                    <Text style={styles.itemsAddedText}>
+                      {itemsLength?.length} items modified in order
+                    </Text>
                     <ArrowRight
                       style={{
                         transform: [
