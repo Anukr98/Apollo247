@@ -339,6 +339,11 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       ? slotime.diff(moment(), 'minutes') < 60 && slotime.diff(moment(), 'minutes') > 0
       : false;
     const isCallingEnabled = !!phlObj ? phlObj?.allowCalling : false;
+    const showVaccinationStatus =
+      !!phlObj &&
+      !!phlObj?.diagnosticPhlebotomists?.vaccinationStatus &&
+      phlObj?.diagnosticPhlebotomists?.vaccinationStatus != '';
+
     return (
       <>
         {!!otpToShow && DIAGNOSTIC_SHOW_OTP_STATUS.includes(props.orderLevelStatus) ? (
@@ -363,7 +368,16 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                   {name ? (
                     <View style={styles.nameContainer}>
                       <Text style={styles.nameTextHeadingStyles}>Phlebotomist Details</Text>
-                      <Text style={styles.nameTextStyles}>{name}</Text>
+                      <View style={styles.rowCenter}>
+                        <Text style={styles.nameTextStyles}>{name}</Text>
+                        {!!showVaccinationStatus && showVaccinationStatus && (
+                          <View style={styles.vaccinationContainer}>
+                            <Text style={styles.vaccinationText}>
+                              {phlObj?.diagnosticPhlebotomists?.vaccinationStatus}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
                     </View>
                   ) : null}
                 </View>
@@ -774,4 +788,19 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 10, 'white'),
     textAlign: 'center',
   },
+  rowCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  vaccinationContainer: {
+    backgroundColor: colors.TURQUOISE_LIGHT_BLUE,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: 'transparent',
+    padding: 4,
+    marginHorizontal: 8,
+    maxWidth: '60%',
+  },
+  vaccinationText: { ...theme.viewStyles.text('M', 12, colors.WHITE, 1, 15) },
 });
