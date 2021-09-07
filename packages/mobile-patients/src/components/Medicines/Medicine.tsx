@@ -934,10 +934,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       const resonse = (await getMedicinePageProducts(axdcCode, pinCode)).data;
       setData(resonse);
       if (setMedicineHomeBannerData) {
-        setMedicineHomeBannerData(resonse.mainbanners);
+        setMedicineHomeBannerData(resonse?.mainbanners);
       }
       if (setMedicineHotSellersData) {
-        setMedicineHotSellersData(resonse.hot_sellers);
+        setMedicineHotSellersData(resonse?.hot_sellers);
       }
       setMedicinePageAPiResponse!(resonse);
       cacheCachableResponse(resonse);
