@@ -484,6 +484,11 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           removeCouponWithAlert(response);
         }
       } catch (error) {
+        CommonBugFender(`${AppRoutes.CartSummary}_onPressProceedtoPay`, Error(error));
+        showAphAlert?.({
+          title: string.common.uhOh,
+          description: string.common.somethingWentWrong,
+        });
         return;
       }
     }

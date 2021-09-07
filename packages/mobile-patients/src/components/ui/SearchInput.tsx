@@ -69,13 +69,17 @@ export const SearchInput: React.FC<SearchInputProps> = (props) => {
           rightIconContainerStyle={[styles.rightIconContainerStyle, props.rightIconContainerStyle]}
           style={[styles.style, props.style]}
           containerStyle={[styles.containerStyle, props.containerStyle]}
-          errorStyle={[
-            {
-              ...theme.viewStyles.text('M', 14, '#02475b'),
-              marginHorizontal: 10,
-            },
-            props.errorStyle,
-          ]}
+          errorStyle={
+            props._itemsNotFound
+              ? [
+                  {
+                    ...theme.viewStyles.text('M', 14, '#02475b'),
+                    marginHorizontal: 10,
+                  },
+                  props.errorStyle,
+                ]
+              : { maxHeight: 0 }
+          }
           errorMessage={
             props._itemsNotFound ? `Hit enter to search for '${props.value}'` : undefined
           }

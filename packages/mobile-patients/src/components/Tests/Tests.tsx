@@ -176,7 +176,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { OrderCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/OrderCardCarousel';
 import { PrescriptionCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/PrescriptionCardCarousel';
 import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
-
+// import { Cache } from "react-native-cache";
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_2.webp'),
@@ -273,8 +273,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [imgHeight, setImgHeight] = useState(200);
   const [slideIndex, setSlideIndex] = useState(0);
   const [banners, setBanners] = useState([]);
+  const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
+  const [cityId, setCityId] = useState('');
 
   const [sectionLoading, setSectionLoading] = useState<boolean>(false);
+  const [showItemCard, setShowItemCard] = useState<boolean>(false);
   const [bookUsSlideIndex, setBookUsSlideIndex] = useState(0);
   const [showbookingStepsModal, setShowBookingStepsModal] = useState(false);
   const [scrollOffset, setScrollOffset] = useState<number>(0);
@@ -392,6 +395,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       fetchPatientClosedOrders();
       fetchPatientPrescriptions();
       getUserBanners();
+      // getDataFromCache();
     }
   }, [currentPatient]);
 
@@ -535,17 +539,21 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setReloadWidget(true);
     }
   };
-
   const getHomePageWidgets = async (cityId: string) => {
     setSectionLoading(true);
     try {
-      const result: any = await getDiagnosticHomePageWidgets('diagnostic');
+      const result: any = await getDiagnosticHomePageWidgets('diagnostic', Number(cityId));
       if (result?.data?.success && result?.data?.data?.length > 0) {
         const sortWidgets = result?.data?.data?.sort(
           (a: any, b: any) =>
             Number(a.diagnosticwidgetsRankOrder) - Number(b.diagnosticwidgetsRankOrder)
         );
+        // setCityId(cityId);
         //call here the prices.
+        // setWidgetsData(sortWidgets);
+        // setIsPriceAvailable(false);
+        // setSectionLoading(false);
+        // setShowItemCard(true);
         fetchWidgetsPrices(sortWidgets, cityId);
       } else {
         setSectionLoading(false);
@@ -1667,7 +1675,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             )}
           </>
         ) : sectionLoading ? (
-          renderDiagnosticWidgetShimmer(true) //to show overall widget
+          renderDiagnosticWidgetShimmer(true) //load overall widget
         ) : null}
       </View>
     );
@@ -1682,12 +1690,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const lengthOfTitle = data?.diagnosticWidgetTitle?.length;
 
     return (
-      <View style={!!isPricesAvailable ? styles.widgetSpacing : {}}>
-        {!!isPricesAvailable ? (
+      <View>
+        {
           <>
             {sectionLoading ? (
               renderDiagnosticWidgetHeadingShimmer() //load heading
-            ) : (
+            ) : !!isPricesAvailable ? (
               <SectionHeader
                 leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
                 leftTextStyle={[
@@ -1718,7 +1726,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 }
                 style={showViewAll ? { paddingBottom: 1 } : {}}
               />
-            )}
+            ) : null}
             {sectionLoading ? (
               renderDiagnosticWidgetShimmer(false) //load package card
             ) : (
@@ -1735,9 +1743,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               />
             )}
           </>
-        ) : sectionLoading ? (
-          renderDiagnosticWidgetShimmer(true) //load overall widget
-        ) : null}
+        }
       </View>
     );
   };
@@ -2130,7 +2136,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         undefined,
         clickedItem?.orderStatus,
         (clickedItem?.displayId).toString(),
-        true,
+        true
       );
     } catch (error) {
       setLoadingContext?.(false);
@@ -2478,7 +2484,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <View style={{ marginTop: 10 }}>
         <SectionHeader
-          leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')} //nameFormater(data?.diagnosticWidgetTitle, 'upper')
+          leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
           leftTextStyle={[
             styles.widgetHeading,
             {
@@ -2486,7 +2492,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             },
           ]}
           rightText={showViewAll ? 'VIEW ALL' : ''}
-          rightTextStyle={styles.widgetViewAllText} //showViewAll ? styles.widgetViewAllText : {}
+          rightTextStyle={styles.widgetViewAllText}
           onPressRightText={() => {
             props.navigation.navigate(AppRoutes.TestWidgetListing, {
               movedFrom: AppRoutes.Tests,

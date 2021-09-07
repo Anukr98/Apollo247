@@ -46,6 +46,7 @@ export interface MedicineProduct {
   pack_size?: string | null;
   banned?: 'Yes' | 'No';
   subcategory?: string | null;
+  merchandising?: number | null;
 }
 
 export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
@@ -1184,9 +1185,9 @@ export const getDiagnosticsPopularResults = (
   });
 };
 
-export const getDiagnosticHomePageWidgets = (pageName: string): Promise<AxiosResponse<any>> => {
+export const getDiagnosticHomePageWidgets = (pageName: string,  cityId: number): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
-  const getWidgets = `${baseurl}/${pageName}/getwidgets`;
+  const getWidgets = `${baseurl}/${pageName}/getwidgets?city=${cityId}`;
   return Axios.get(getWidgets, {
     headers: {
       Authorization: config.DRUPAL_CONFIG[1],

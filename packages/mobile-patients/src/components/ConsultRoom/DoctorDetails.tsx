@@ -104,7 +104,7 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
-import {Tooltip} from 'react-native-elements';
+import { Tooltip } from 'react-native-elements';
 
 const { height, width } = Dimensions.get('window');
 
@@ -323,12 +323,12 @@ const styles = StyleSheet.create({
     top: -2,
   },
   tickIcon: {
-    height: 8, 
-    width: 8, 
-    marginStart: 4
+    height: 8,
+    width: 8,
+    marginStart: 4,
   },
   tooltipTitle: {
-    ...theme.viewStyles.text('M', 13, theme.colors.APP_YELLOW)
+    ...theme.viewStyles.text('M', 13, theme.colors.APP_YELLOW),
   },
   tootipDesc: {
     ...theme.viewStyles.text('R', 10, theme.colors.LIGHT_BLUE, undefined, 12),
@@ -346,15 +346,15 @@ const styles = StyleSheet.create({
     shadowColor: theme.colors.SHADOW_GRAY,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.4,
-    shadowRadius: 8
+    shadowRadius: 8,
   },
   onlineCardView: {
-    width: 200
+    width: 200,
   },
   availablityCapsuleText: {
     marginTop: -5,
-    width: 140
-    }
+    width: 140,
+  },
 });
 type Appointments = {
   date: string;
@@ -704,7 +704,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             setshowSpinner(false);
             fetchNextAvailableSlots([data.getDoctorDetailsById.id]);
             setAvailableModes(data.getDoctorDetailsById);
-            setConsultMode(data.getDoctorDetailsById.availableModes[0])
+            setConsultMode(data.getDoctorDetailsById.availableModes[0]);
           } else {
             setTimeout(() => {
               setshowSpinner(false);
@@ -816,8 +816,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     try {
       if (modeOfConsult.includes(ConsultMode.BOTH)) {
         setConsultType(ConsultMode.BOTH);
-        if (availabileMode === ConsultMode.PHYSICAL)
-          set_follow_up_chat_message_visibility(false);
+        if (availabileMode === ConsultMode.PHYSICAL) set_follow_up_chat_message_visibility(false);
       } else if (modeOfConsult.includes(ConsultMode.ONLINE)) {
         setConsultType(ConsultMode.ONLINE);
       } else if (modeOfConsult.includes(ConsultMode.PHYSICAL)) {
@@ -879,7 +878,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         CommonBugFender('DoctorDetails_getNetStatus', e);
       });
   };
-  
+
   const renderCareDoctorPricing = (consultType: ConsultMode) => {
     return (
       <View style={{ paddingBottom: showCircleSubscribed ? 16 : 3 }}>
@@ -887,13 +886,16 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           style={[
             styles.carePrice,
             {
-              textDecorationLine: showCircleSubscribed && 
-              (!cashbackEnabled || consultType === ConsultMode.PHYSICAL) ? 'line-through' : 'none',
+              textDecorationLine:
+                showCircleSubscribed && (!cashbackEnabled || consultType === ConsultMode.PHYSICAL)
+                  ? 'line-through'
+                  : 'none',
               ...theme.viewStyles.text(
                 'M',
                 15,
                 showCircleSubscribed && (!cashbackEnabled || consultType === ConsultMode.PHYSICAL)
-                 ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
+                  ? theme.colors.BORDER_BOTTOM_COLOR
+                  : theme.colors.LIGHT_BLUE
               ),
             },
           ]}
@@ -905,36 +907,42 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         </Text>
         <View style={styles.rowContainer}>
           <Tooltip
-              containerStyle={styles.tooltipView}
-              height={126}
-              width={264}
-              skipAndroidStatusBar={true}
-              toggleOnPress={!!cashbackEnabled}
-              pointerColor={theme.colors.WHITE}
-              overlayColor={theme.colors.CLEAR}
-              popover={
-                <View>
-                  <Text style={styles.tooltipTitle}>{string.common.whatIsHc}</Text>
-                  <Text style={styles.tootipDesc}>{string.common.hcShort}
-                  <Text style={styles.hcBoldText}>
-                    {string.common.healthCredit}
-                    </Text>
-                    {string.common.hcInfo}
-                    </Text>
-                  <Text style={styles.tipHcInfoText}>{string.common.hcToRupee}</Text>
-                </View>
-              }>
+            containerStyle={styles.tooltipView}
+            height={126}
+            width={264}
+            skipAndroidStatusBar={true}
+            toggleOnPress={!!cashbackEnabled}
+            pointerColor={theme.colors.WHITE}
+            overlayColor={theme.colors.CLEAR}
+            popover={
+              <View>
+                <Text style={styles.tooltipTitle}>{string.common.whatIsHc}</Text>
+                <Text style={styles.tootipDesc}>
+                  {string.common.hcShort}
+                  <Text style={styles.hcBoldText}>{string.common.healthCredit}</Text>
+                  {string.common.hcInfo}
+                </Text>
+                <Text style={styles.tipHcInfoText}>{string.common.hcToRupee}</Text>
+              </View>
+            }
+          >
             <Text style={styles.careDiscountedPrice}>
-              {consultType === ConsultMode.PHYSICAL ? string.common.Rs +
-              convertNumberToDecimal(physicalConsultSlashedPrice) : cashbackEnabled ?
-              `Upto ${cashbackAmount} HC` : string.common.Rs +
-              convertNumberToDecimal(onlineConsultSlashedPrice)}
+              {consultType === ConsultMode.PHYSICAL
+                ? string.common.Rs + convertNumberToDecimal(physicalConsultSlashedPrice)
+                : cashbackEnabled
+                ? `Upto ${cashbackAmount} HC`
+                : string.common.Rs + convertNumberToDecimal(onlineConsultSlashedPrice)}
             </Text>
           </Tooltip>
-          {showCircleSubscribed ? consultType === ConsultMode.PHYSICAL ? (
-            <CircleLogo style={[styles.smallCareLogo, { height: 17 }]} /> 
-          ) : cashbackEnabled ? <Tick style={styles.tickIcon} /> : 
-          <CircleLogo style={[styles.smallCareLogo, { height: 17 }]} /> : null}
+          {showCircleSubscribed ? (
+            consultType === ConsultMode.PHYSICAL ? (
+              <CircleLogo style={[styles.smallCareLogo, { height: 17 }]} />
+            ) : cashbackEnabled ? (
+              <Tick style={styles.tickIcon} />
+            ) : (
+              <CircleLogo style={[styles.smallCareLogo, { height: 17 }]} />
+            )
+          ) : null}
         </View>
         {!showCircleSubscribed ? (
           <TouchableOpacity
@@ -948,15 +956,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             <InfoBlue style={styles.smallInfo} />
           </TouchableOpacity>
         ) : null}
-        {showCircleSubscribed && 
-          consultType === ConsultMode.ONLINE &&
-          cashbackEnabled &&
+        {showCircleSubscribed && consultType === ConsultMode.ONLINE && cashbackEnabled && (
           <View style={styles.rowContainer}>
             <Text style={styles.smallText}>as a</Text>
             <CircleLogo style={styles.smallCareLogo} />
             <Text style={styles.smallText}>members</Text>
           </View>
-          }
+        )}
       </View>
     );
   };
@@ -1102,7 +1108,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               <View
                 style={[
                   styles.onlineConsultView,
-                  {justifyContent: isPhysical?.length ? 'center' : 'flex-start'},
+                  { justifyContent: isPhysical?.length ? 'center' : 'flex-start' },
                   isPayrollDoctor || (isBoth?.length === 0 && isPhysical?.length === 0)
                     ? styles.consultModeCard
                     : {},
@@ -1159,45 +1165,45 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                         );
                       }}
                     >
-                    <View style={styles.onlineCardView}>
-                      <Text style={styles.onlineConsultLabel}>Consult In-App</Text>
-                      {isCircleDoctor && onlineConsultMRPPrice > 0 ? (
-                        renderCareDoctorPricing(ConsultMode.ONLINE)
-                      ) : (
-                        <Text style={styles.onlineConsultAmount}>
-                          {Number(VirtualConsultationFee) <= 0 ||
-                          VirtualConsultationFee === doctorDetails.onlineConsultationFees ? (
-                            <Text>{`${string.common.Rs}${convertNumberToDecimal(
-                              doctorDetails?.onlineConsultationFees
-                            )}`}</Text>
-                          ) : (
-                            <>
-                              <Text
-                                style={{
-                                  textDecorationLine: 'line-through',
-                                  textDecorationStyle: 'solid',
-                                }}
-                              >
-                                {`(${string.common.Rs}${convertNumberToDecimal(
-                                  doctorDetails?.onlineConsultationFees
-                                )})`}
-                              </Text>
-                              <Text>
-                                {' '}
-                                {string.common.Rs}
-                                {convertNumberToDecimal(VirtualConsultationFee)}
-                              </Text>
-                            </>
-                          )}
-                        </Text>
-                      )}
-                      <AvailabilityCapsule
-                        titleTextStyle={{ paddingHorizontal: 7 }}
-                        styles={styles.availablityCapsuleText}
-                        availableTime={availableTime}
-                        availNowText={ctaBannerText?.AVAILABLE_NOW || ''}
-                      />
-                    </View>
+                      <View style={styles.onlineCardView}>
+                        <Text style={styles.onlineConsultLabel}>Consult In-App</Text>
+                        {isCircleDoctor && onlineConsultMRPPrice > 0 ? (
+                          renderCareDoctorPricing(ConsultMode.ONLINE)
+                        ) : (
+                          <Text style={styles.onlineConsultAmount}>
+                            {Number(VirtualConsultationFee) <= 0 ||
+                            VirtualConsultationFee === doctorDetails.onlineConsultationFees ? (
+                              <Text>{`${string.common.Rs}${convertNumberToDecimal(
+                                doctorDetails?.onlineConsultationFees
+                              )}`}</Text>
+                            ) : (
+                              <>
+                                <Text
+                                  style={{
+                                    textDecorationLine: 'line-through',
+                                    textDecorationStyle: 'solid',
+                                  }}
+                                >
+                                  {`(${string.common.Rs}${convertNumberToDecimal(
+                                    doctorDetails?.onlineConsultationFees
+                                  )})`}
+                                </Text>
+                                <Text>
+                                  {' '}
+                                  {string.common.Rs}
+                                  {convertNumberToDecimal(VirtualConsultationFee)}
+                                </Text>
+                              </>
+                            )}
+                          </Text>
+                        )}
+                        <AvailabilityCapsule
+                          titleTextStyle={{ paddingHorizontal: 7 }}
+                          styles={styles.availablityCapsuleText}
+                          availableTime={availableTime}
+                          availNowText={ctaBannerText?.AVAILABLE_NOW || ''}
+                        />
+                      </View>
                     </TouchableOpacity>
                   </View>
                 ) : null}
@@ -1216,7 +1222,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     {!onlineSelected && (
                       <RectangularIcon
                         resizeMode={'stretch'}
-                        style={[styles.rectangularView, {height: rectangularIconHeight}]}
+                        style={[styles.rectangularView, { height: rectangularIconHeight }]}
                       />
                     )}
                     <TouchableOpacity
@@ -1238,7 +1244,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                         )}
                         <AvailabilityCapsule
                           titleTextStyle={{ paddingHorizontal: 7 }}
-                          styles={{ marginTop: cashbackEnabled ? 12 : -5}}
+                          styles={{ marginTop: cashbackEnabled ? 12 : -5 }}
                           availableTime={physicalAvailableTime}
                           availNowText={ctaBannerText?.AVAILABLE_NOW || ''}
                         />

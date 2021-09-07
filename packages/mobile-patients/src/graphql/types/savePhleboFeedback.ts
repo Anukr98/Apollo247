@@ -20,4 +20,5 @@ export interface savePhleboFeedbackVariables {
   phleboRating: number;
   phleboFeedback?: string | null;
   diagnosticOrdersId: string;
+  patientComments?: string | null;
 }
