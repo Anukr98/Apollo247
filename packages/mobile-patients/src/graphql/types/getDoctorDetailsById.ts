@@ -16,6 +16,8 @@ export interface getDoctorDetailsById_getDoctorDetailsById_doctorPricing {
   status: PLAN_STATUS | null;
   mrp: number | null;
   appointment_type: APPOINTMENT_TYPE | null;
+  is_cashback_enabled: boolean | null;
+  cashback_amount: number | null;
 }
 
 export interface getDoctorDetailsById_getDoctorDetailsById_availabilityTitle {
@@ -167,6 +169,8 @@ export interface getDoctorDetailsById_getDoctorDetailsById {
   profile_deeplink: string | null;
   photoUrl: string | null;
   availableModes: (ConsultMode | null)[] | null;
+  bookingFee: number | null;
+  isBookingFeeExempted: boolean | null;
   doctorPricing: (getDoctorDetailsById_getDoctorDetailsById_doctorPricing | null)[] | null;
   availabilityTitle: getDoctorDetailsById_getDoctorDetailsById_availabilityTitle | null;
   specialty: getDoctorDetailsById_getDoctorDetailsById_specialty | null;

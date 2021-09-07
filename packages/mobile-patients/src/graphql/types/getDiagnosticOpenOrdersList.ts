@@ -15,6 +15,14 @@ export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrd
   lastName: string | null;
 }
 
+export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_attributesObj {
+  __typename: "AttributesObj";
+  reportTATHours: number | null;
+  reportTATMessage: string | null;
+  reportGenerationTime: string | null;
+  expectedReportGenerationTime: any | null;
+}
+
 export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_diagnosticOrderLineItems_itemObj {
   __typename: "ItemObj";
   testPreparationData: string | null;
@@ -24,12 +32,6 @@ export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrd
 export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_diagnosticOrderLineItems {
   __typename: "DiagnosticOrderLineItems";
   itemObj: getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_diagnosticOrderLineItems_itemObj | null;
-}
-
-export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_attributesObj {
-  __typename: "AttributesObj";
-  reportGenerationTime: string | null;
-  preTestingRequirement: string | null;
 }
 
 export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders {
@@ -42,8 +44,8 @@ export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrd
   labReportURL: string | null;
   paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
   patientObj: getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_patientObj | null;
-  diagnosticOrderLineItems: (getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_diagnosticOrderLineItems | null)[] | null;
   attributesObj: getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_attributesObj | null;
+  diagnosticOrderLineItems: (getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_diagnosticOrderLineItems | null)[] | null;
 }
 
 export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList {

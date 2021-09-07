@@ -182,7 +182,7 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
             <View style={styles.phleboDetails}>
               <UserOutline style={styles.icon} />
               <Text style={styles.textStylePhlebo}>
-                Phlebotomist • {`${phlObj?.PhelbotomistName}`}
+                Apollo agent • {`${phlObj?.PhelbotomistName}`}
               </Text>
             </View>
           ) : (

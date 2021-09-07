@@ -42,6 +42,7 @@ export interface getPlatinumDoctor_getPlatinumDoctor_doctors {
   doctorfacility: string | null;
   fee: number | null;
   specialistPluralTerm: string | null;
+  languages: (string | null)[] | null;
   specialtydisplayName: string | null;
   qualification: string | null;
   experience: number | null;
