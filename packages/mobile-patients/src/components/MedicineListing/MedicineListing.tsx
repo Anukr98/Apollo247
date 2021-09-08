@@ -546,14 +546,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
 
   const renderLoadingMore = () => {
     return isLoadingMore ? (
-      <View
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'row',
-        }}
-      >
+      <View style={styles.loadingContainer}>
         <Text style={styles.loadingMoreProducts}>Hold on, loading more products.</Text>
         <ActivityIndicator color="green" size="small" />
       </View>
@@ -731,6 +724,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingHorizontal: 3,
   },
+  loadingContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
 });
-
 
