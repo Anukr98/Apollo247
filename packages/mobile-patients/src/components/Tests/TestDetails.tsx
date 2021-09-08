@@ -432,9 +432,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       };
     }
 
-    if (movedFrom == AppRoutes.TestsCart && Number(deliveryAddressStateId) == 0) {
-      return;
-    } else if (!isDiagnosticLocationServiceable) {
+    if (
+      (movedFrom == AppRoutes.TestsCart && Number(deliveryAddressStateId) == 0) ||
+      !isDiagnosticLocationServiceable
+    ) {
+      setExpressSlotMsg('');
       return;
     }
 

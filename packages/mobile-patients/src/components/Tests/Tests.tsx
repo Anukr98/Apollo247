@@ -646,6 +646,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     };
     //response when unserviceable
     if (Number(serviceabilityObject?.stateId) == 0 && serviceabilityObject?.city == '') {
+      setExpressSlotMsg('');
       return;
     }
     try {
@@ -870,7 +871,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setAsyncDiagnosticPincode?.(saveAddress);
             setLoadingContext?.(false);
             //calling slot api
-            isDiagnosticLocationServiceable && getExpressSlots(serviceableResponse, response);
+            isDiagnosticLocationServiceable
+              ? getExpressSlots(serviceableResponse, response)
+              : setExpressSlotMsg('');
           } else {
             let response = {
               displayName: '',
@@ -909,7 +912,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setAsyncDiagnosticPincode?.(saveAddress);
             setLoadingContext?.(false);
             //calling slot api
-            isDiagnosticLocationServiceable && getExpressSlots(serviceableResponse, response);
+            isDiagnosticLocationServiceable
+              ? getExpressSlots(serviceableResponse, response)
+              : setExpressSlotMsg('');
           }
         } catch (e) {
           CommonBugFender('updatePlaceInfoByPincode_Tests', e);
