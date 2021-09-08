@@ -292,8 +292,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         axdcCode,
         pinCode
       );
-      // setBannerImage(data?.design[0]?.mobile_banner_image);
-      setBannerImage('/thumbnail/apollo24logo.png');
+       setBannerImage(data?.design[0]?.mobile_banner_image);
       updateProducts(pageId, existingProducts, data);
       setProductsTotal(data.count);
       updateLoading(pageId, false);
