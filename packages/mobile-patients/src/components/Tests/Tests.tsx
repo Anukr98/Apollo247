@@ -307,6 +307,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
       fetchPolicy: 'no-cache',
     });
 
+  const setWebEnageEventForPinCodeClicked = (
+    mode: string,
+    pincode: string,
+    serviceable: boolean
+  ) => {
+    DiagnosticPinCodeClicked(currentPatient, mode, pincode, serviceable, isDiagnosticCircleSubscription);
+  };
+
   const postDiagnosticAddToCartEvent = (
     name: string,
     id: string,
@@ -315,7 +323,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
     section?: 'Featured tests' | 'Browse packages'
   ) => {
-    DiagnosticAddToCartEvent(name, id, price, discountedPrice, source, section);
+    DiagnosticAddToCartEvent(name, id, price, discountedPrice, source, section, currentPatient, isDiagnosticCircleSubscription);
   };
 
   useEffect(() => {
@@ -842,8 +850,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setDiagnosticServiceabilityData?.(obj); //sets the city,state, and there id's
             setDiagnosticLocationServiceable?.(true);
             setServiceabilityMsg('');
-            setUnserviceablePopup(false);
-            !!source && DiagnosticPinCodeClicked(currentPatient, pincode, true, source);
+            mode && setWebEnageEventForPinCodeClicked(mode, pincode, true);
+            comingFrom == 'defaultAddress' &&
+              DiagnosticAddresssSelected('Existing', 'Yes', pincode, 'Home page',currentPatient, isDiagnosticCircleSubscription);
+            comingFrom == 'newAddress' &&
+              DiagnosticAddresssSelected('New', 'Yes', pincode, 'Home page',currentPatient, isDiagnosticCircleSubscription);
           } else {
             //null in case of non-serviceable
             obj = getNonServiceableObject();
@@ -1316,11 +1327,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       if (item?.redirectUrl && item?.redirectUrl != '') {
         //for rtpcr - drive through - open webview
         if (item?.redirectUrlText === 'WebView') {
-          DiagnosticBannerClick(
-            slideIndex + 1,
-            Number(item?.itemId || item?.id),
-            item?.bannerTitle
-          );
+          DiagnosticBannerClick(slideIndex + 1, Number(item?.itemId), item?.bannerTitle, currentPatient,isDiagnosticCircleSubscription);
           try {
             const openUrl = item?.redirectUrl || AppConfig.Configuration.RTPCR_Google_Form;
             props.navigation.navigate(AppRoutes.CovidScan, {
@@ -1347,13 +1354,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
             }
           } catch (error) {}
           if (route == 'testdetails') {
-            DiagnosticBannerClick(slideIndex + 1, Number(itemId), item?.bannerTitle);
+            DiagnosticBannerClick(slideIndex + 1, Number(itemId), item?.bannerTitle, currentPatient, isDiagnosticCircleSubscription);
             props.navigation.navigate(AppRoutes.TestDetails, {
               itemId: itemId,
               comingFrom: AppRoutes.Tests,
             });
           } else if (route == 'testlisting') {
-            DiagnosticBannerClick(slideIndex + 1, Number(0), item?.bannerTitle);
+            DiagnosticBannerClick(slideIndex + 1, Number(0), item?.bannerTitle, currentPatient, isDiagnosticCircleSubscription);
             props.navigation.navigate(AppRoutes.TestListing, {
               movedFrom: 'deeplink',
               widgetName: itemId, //name,
@@ -1785,7 +1792,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
           getItemIds,
           0,
           0,
-          DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PRESCRIPTION
+          DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PRESCRIPTION,
+          currentPatient,
+          isDiagnosticCircleSubscription
         );
       })
       .catch((e) => {
@@ -2164,10 +2173,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
               data={item}
               onPressWidget={() => {
                 DiagnosticHomePageWidgetClicked(
+                  currentPatient,
                   data?.diagnosticWidgetTitle,
                   undefined,
                   undefined,
-                  item?.itemTitle
+                  item?.itemTitle,
+                  isDiagnosticCircleSubscription
                 );
                 {
                   props.navigation.navigate(AppRoutes.TestListing, {
@@ -2195,10 +2206,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
         style={styles.gridPart}
         onPress={() => {
           DiagnosticHomePageWidgetClicked(
+            currentPatient,
             data?.diagnosticWidgetTitle,
             undefined,
             undefined,
-            item?.itemTitle
+            item?.itemTitle,
+            isDiagnosticCircleSubscription
           );
           {
             props.navigation.navigate(AppRoutes.TestListing, {
