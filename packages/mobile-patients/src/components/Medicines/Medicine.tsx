@@ -816,7 +816,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
       const formattedLocation = formatAddressToLocation(deliveryAddress! || null);
       setLocationValues(formattedLocation);
-      setPageLoading!(false);
 
       globalLoading!(false);
     } catch (error) {
@@ -1057,7 +1056,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     globalLoading!(true);
     doRequestAndAccessLocationModified()
       .then((response) => {
-        setPageLoading!(false);
         globalLoading!(false);
         if (response) {
           setLocationValues(response);
