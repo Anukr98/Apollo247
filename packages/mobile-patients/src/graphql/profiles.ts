@@ -1441,6 +1441,7 @@ export const SAVE_PATIENT_ADDRESS = gql`
         longitude
         stateCode
         name
+        defaultAddress
       }
     }
   }
@@ -6303,7 +6304,8 @@ query {
       __typename
     }
   }
-}`
+}
+`
 
 export const ADD_PATIENT_PRESCRIPTION_RECORD = gql`
   mutation addPatientPrescriptionRecord($AddPrescriptionRecordInput: AddPrescriptionRecordInput) {
@@ -6312,7 +6314,7 @@ export const ADD_PATIENT_PRESCRIPTION_RECORD = gql`
       __typename
     }
   }
-}`
+`;
 
 export const SAVE_JUSPAY_SDK_RESPONSE = gql`
   mutation saveJuspayResponseForAudit($auditInput: AuditInput) {
