@@ -564,18 +564,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     return (
       <>
         {bottomFilters?.length > 0 && !isLoading && (
-          <View
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              flexDirection: 'row',
-              justifyContent: 'flex-start',
-              paddingTop: 15,
-              paddingBottom: 9,
-              backgroundColor: '#fff',
-              paddingHorizontal: 3,
-            }}
-          >
+          <View style={styles.bottomFiltersContainer}>
             <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
               {bottomFilters?.map((item) => (
                 <MedicineBottomFilters
@@ -732,5 +721,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  bottomFiltersContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    paddingTop: 15,
+    paddingBottom: 9,
+    backgroundColor: '#fff',
+    paddingHorizontal: 3,
+  },
 });
+
 
