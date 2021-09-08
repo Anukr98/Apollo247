@@ -24,13 +24,16 @@ import { circleValidity } from '@aph/mobile-patients/src/components/ShoppingCart
 import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
-
-function createPatientAttributes(currentPatient: any) {
+import AsyncStorage from '@react-native-community/async-storage';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+async function createPatientAttributes(currentPatient: any) {
+  const userType = await AsyncStorage.getItem('userType');
   const patientAttributes = {
     'Patient UHID': g(currentPatient, 'uhid'),
     'Patient Gender': g(currentPatient, 'gender'),
     'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
     'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+    'User Type' : !!userType ? JSON.parse(userType) : string.user_type.NEW
   };
   return patientAttributes;
 }

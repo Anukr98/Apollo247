@@ -38,6 +38,7 @@ import {
   SET_DEFAULT_ADDRESS,
   GET_PATIENT_ADDRESS_LIST,
   GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
+  GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import {
@@ -176,6 +177,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { OrderCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/OrderCardCarousel';
 import { PrescriptionCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/PrescriptionCardCarousel';
 import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
+import { getDiagnosticOrdersListByMobile, getDiagnosticOrdersListByMobileVariables } from '../../graphql/types/getDiagnosticOrdersListByMobile';
 // import { Cache } from "react-native-cache";
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
@@ -524,6 +526,55 @@ export const Tests: React.FC<TestsProps> = (props) => {
     } catch (error) {
       setPatientClosedOrders([]);
       CommonBugFender('fetchPatientOpenOrders_Tests', error);
+    }
+  };
+  
+  useEffect(() => {
+    // getting userType from asyncStorage
+    const fetchUserType = async () => {
+      try {
+        const userType = await AsyncStorage.getItem('userType');
+        if (userType == null) {
+          fetchOrders();
+        }
+      } catch (error) {
+        fetchOrders();
+      }
+    };
+    fetchUserType();
+  }, []);
+  const fetchOrders = async () => {
+    //for checking whether user is new or repeat.
+    try {
+      setLoading?.(true);
+      client
+        .query<getDiagnosticOrdersListByMobile, getDiagnosticOrdersListByMobileVariables>({
+          query: GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
+          context: {
+            sourceHeaders,
+          },
+          variables: {
+            mobileNumber: currentPatient && currentPatient.mobileNumber,
+            paginated: true,
+            limit: 10,
+            offset: 1,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((data) => {
+          const ordersList = data?.data?.getDiagnosticOrdersListByMobile?.ordersList || [];
+          const userType = ordersList?.length > 0 ? string.user_type.REPEAT : string.user_type.NEW;
+          AsyncStorage.setItem('userType', JSON.stringify(userType));
+        })
+        .catch((error) => {
+          setLoading?.(false);
+          setError(true);
+          CommonBugFender(`${AppRoutes.Tests}_fetchOrders`, error);
+        });
+    } catch (error) {
+      setLoading?.(false);
+      setError(true);
+      CommonBugFender(`${AppRoutes.Tests}_fetchOrders`, error);
     }
   };
 
