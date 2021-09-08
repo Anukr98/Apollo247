@@ -133,6 +133,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     outputRange: [1, 1, 0],
     extrapolate: 'clamp',
   });
+
   const imageTranslate = scrollY.interpolate({
     inputRange: [0, HEADER_SCROLL_DISTANCE],
     outputRange: [0, 100],
@@ -277,6 +278,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     existingProducts: MedicineProduct[]
   ) => {
     try {
+      console.log('categoryId', categoryId);
       updateLoading(pageId, true);
       const _selectedFilters = formatFilters(selectedFilters, filters);
       if (_selectedFilters.category != navigation.getParam('category_id'))
@@ -292,7 +294,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         axdcCode,
         pinCode
       );
-       setBannerImage(data?.design[0]?.mobile_banner_image);
+      setBannerImage(data?.design[0]?.mobile_banner_image);
       updateProducts(pageId, existingProducts, data);
       setProductsTotal(data.count);
       updateLoading(pageId, false);
@@ -424,7 +426,6 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
           <>
             <MedicineListingProducts
               data={products}
-              // onEndReached={onEndReached}
               ListFooterComponent={renderLoading()}
               ListEmptyComponent={renderProductsNotFound()}
               navigation={navigation}

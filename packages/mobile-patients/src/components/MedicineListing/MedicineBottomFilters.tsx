@@ -30,6 +30,23 @@ const MedicineBottomFilters: React.FC<medicineBottomFilterProps> = ({
       backgroundColor: categoryId === bottomCategoryId ? '#00B38E' : '#fff',
       marginHorizontal: 5,
     },
+    btnContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexDirection: 'row',
+    },
+    iconStyle: {
+      marginLeft: -3,
+    },
+    txtStyle:
+      categoryId === bottomCategoryId
+        ? theme.viewStyles.text('R', 10, '#fff', 1, 24, 0)
+        : theme.viewStyles.text('R', 10, '#02475B', 1, 24, 0),
+    txtStyle2:
+      categoryId === bottomCategoryId
+        ? theme.viewStyles.text('R', 10, '#fff', 1, 24, 0)
+        : theme.viewStyles.text('R', 10, '#02475B', 1, 24, 0),
   });
   return (
     <>
@@ -46,35 +63,12 @@ const MedicineBottomFilters: React.FC<medicineBottomFilterProps> = ({
         }}
       >
         {categoryId === bottomCategoryId ? (
-          <View
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexDirection: 'row',
-            }}
-          >
-            <Ionicons name="md-close-outline" size={13} color="#fff" style={{ marginLeft: -3 }} />
-            <Text
-              style={
-                categoryId === bottomCategoryId
-                  ? theme.viewStyles.text('R', 10, '#fff', 1, 24, 0)
-                  : theme.viewStyles.text('R', 10, '#02475B', 1, 24, 0)
-              }
-            >
-              {title}
-            </Text>
+          <View style={styles.btnContainer}>
+            <Ionicons name="md-close-outline" size={13} color="#fff" style={styles.iconStyle} />
+            <Text style={styles.txtStyle}>{title}</Text>
           </View>
         ) : (
-          <Text
-            style={
-              categoryId === bottomCategoryId
-                ? theme.viewStyles.text('R', 10, '#fff', 1, 24, 0)
-                : theme.viewStyles.text('R', 10, '#02475B', 1, 24, 0)
-            }
-          >
-            {title}
-          </Text>
+          <Text style={styles.txtStyle2}>{title}</Text>
         )}
       </TouchableOpacity>
     </>
