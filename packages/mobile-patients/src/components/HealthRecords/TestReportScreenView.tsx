@@ -517,6 +517,8 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
             currentPatient && handleGraphQlError(e, 'Report is yet not available');
             CommonBugFender('HealthRecordDetails_downloadPDFTestReport', e);
           });
+      } else if (!!data?.healthCheckDate) {
+        downloadDocument(data.fileUrl);
       } else {
         client
           .query<getLabResultpdf, getLabResultpdfVariables>({
