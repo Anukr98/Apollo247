@@ -626,6 +626,15 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       });
   };
 
+  const disableButton = () => {
+    if (data?.labTestSource === 'self' || data?.labTestSource === '247self') {
+      const buttonDisable = data?.labTestResults?.length > 0 && imagesArray?.length > 0;
+      return buttonDisable;
+    } else {
+      return true;
+    }
+  };
+
   const renderDownloadButton = () => {
     const buttonTitle = 'TEST REPORT';
     const btnTitle = 'DOWNLOAD ';
@@ -636,9 +645,10 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         labResults ? downloadPDFTestReport() : callConvertToZipApi();
       }
     };
+    const buttonEnable = disableButton();
     return (
       <View style={{ marginHorizontal: 40, marginBottom: 15, marginTop: 33 }}>
-        <Button title={'SAVE AS PDF'} onPress={_callDownloadDocumentApi} />
+        <Button disabled={!buttonEnable} title={'SAVE AS PDF'} onPress={_callDownloadDocumentApi} />
       </View>
     );
   };
@@ -1015,10 +1025,12 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         ).format(string.common.date_placeholder_text)}`}</Text>
       );
     };
+    const buttonEnable = disableButton();
     return (
       <View style={styles.topView}>
         <View style={styles.shareIconRender}>
           <TouchableOpacity
+            disabled={!buttonEnable}
             onPress={() => (labResults ? downloadPDFTestReport(true) : downloadDocument())}
           >
             <ShareBlueIcon size={'md'} style={{ width: 22, height: 22 }} />
@@ -1150,7 +1162,6 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
     if (resonseData?.length > 0) {
       resonseData?.map((items: any) => {
         let checkValidNumber = validNumber.test(items?.result);
-        console.log(checkValidNumber, 'items.result');
         if (!!checkValidNumber) {
           arrDate?.push(items.resultDate);
           arrRange?.push(items.range);
