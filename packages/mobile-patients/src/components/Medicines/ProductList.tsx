@@ -10,6 +10,7 @@ import {
   formatToCartItem,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
+  ProductPageViewedSource,
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -25,11 +26,6 @@ import {
 } from 'react-native';
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import {
-  CleverTapEvents,
-  CleverTapEventName,
-  ProductPageViewedSource,
-} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 type ListProps = FlatListProps<MedicineProduct>;
 
@@ -38,9 +34,7 @@ export interface Props extends Omit<ListProps, 'renderItem'> {
   /** one of the props (Component | renderComponent) are mandatory */
   Component?: React.FC<ProductCardProps>;
   renderComponent?: ListRenderItem<ProductCardProps>;
-  addToCartSource:
-    | WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source']
-    | CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Source'];
+  addToCartSource: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source'];
   movedFrom: ProductPageViewedSource;
   productPageViewedEventProps?: ProductPageViewedEventProps;
   sectionName?: string;
@@ -59,10 +53,7 @@ export const ProductList: React.FC<Props> = ({
   contentContainerStyle,
   ...restOfProps
 }) => {
-  const isPdp: boolean =
-    addToCartSource === 'Similar Widget' ||
-    addToCartSource === 'Pharmacy PDP' ||
-    addToCartSource == 'PDP All Substitutes';
+  const isPdp: boolean = addToCartSource === 'Similar Widget' || addToCartSource === 'Pharmacy PDP';
   const step: number = 3;
   const initData = data?.length > 4 ? data?.slice(0, step) : data;
   const [dataToShow, setDataToShow] = useState(initData);
@@ -82,11 +73,8 @@ export const ProductList: React.FC<Props> = ({
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
 
   const onPress = (sku: string, urlKey: string) => {
-    if (
-      movedFrom === ProductPageViewedSource.SIMILAR_PRODUCTS ||
-      movedFrom === ProductPageViewedSource.PDP_ALL_SUSBTITUTES
-    ) {
-      navigation.push(AppRoutes.ProductDetailPage, {
+    if (movedFrom === ProductPageViewedSource.SIMILAR_PRODUCTS) {
+      navigation.replace(AppRoutes.ProductDetailPage, {
         sku,
         movedFrom,
         sectionName,
@@ -187,6 +175,7 @@ export const ProductList: React.FC<Props> = ({
 
   return (
     <FlatList
+      nestedScrollEnabled
       data={isPdp ? dataToShow : data}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
@@ -229,3 +218,4 @@ const styles = StyleSheet.create({
     marginRight: 20,
   },
 });
+
