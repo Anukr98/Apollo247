@@ -103,7 +103,7 @@ import {
 import {
   useShoppingCart,
   PhysicalPrescription,
-  EPrescription
+  EPrescription,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import {
   CommonBugFender,
@@ -644,6 +644,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
       cityID: Number(serviceabilityObject?.cityId),
       stateID: Number(serviceabilityObject?.stateId),
     };
+    //response when unserviceable
+    if (Number(serviceabilityObject?.stateId) == 0 && serviceabilityObject?.city == '') {
+      setExpressSlotMsg('');
+      return;
+    }
     try {
       const res: any = await getDiagnosticExpressSlots(
         client,
@@ -866,7 +871,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setAsyncDiagnosticPincode?.(saveAddress);
             setLoadingContext?.(false);
             //calling slot api
-            getExpressSlots(serviceableResponse, response);
+            isDiagnosticLocationServiceable
+              ? getExpressSlots(serviceableResponse, response)
+              : setExpressSlotMsg('');
           } else {
             let response = {
               displayName: '',
@@ -905,7 +912,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setAsyncDiagnosticPincode?.(saveAddress);
             setLoadingContext?.(false);
             //calling slot api
-            getExpressSlots(serviceableResponse, response);
+            isDiagnosticLocationServiceable
+              ? getExpressSlots(serviceableResponse, response)
+              : setExpressSlotMsg('');
           }
         } catch (e) {
           CommonBugFender('updatePlaceInfoByPincode_Tests', e);
@@ -2012,10 +2021,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
     ImagePicker.openCamera({
       cropping: false,
       hideBottomControls: true,
-      width: 2096, 
-      height: 2096, 
+      width: 2096,
+      height: 2096,
       includeBase64: true,
-      multiple: true, 
+      multiple: true,
       compressImageQuality: 0.5,
       compressImageMaxHeight: 2096,
       compressImageMaxWidth: 2096,
@@ -2029,8 +2038,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           title: 'Camera',
         });
       })
-      .catch((e: Error) => {
-      });
+      .catch((e: Error) => {});
   };
 
   const renderUploadPrescriptionCard = () => {
@@ -2048,13 +2056,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
             }}
           />
         </View>
-        {isUploaded ? <View style={styles.bottomArea}>
-          <View style={{ flexDirection: 'row', paddingHorizontal: 5 }}>
-            <GreenCheck style={{ width: 18, height: 18 }} />
-            <Text style={styles.prescriptionTextUpload}>Prescription Uploaded</Text>
+        {isUploaded ? (
+          <View style={styles.bottomArea}>
+            <View style={{ flexDirection: 'row', paddingHorizontal: 5 }}>
+              <GreenCheck style={{ width: 18, height: 18 }} />
+              <Text style={styles.prescriptionTextUpload}>Prescription Uploaded</Text>
+            </View>
+            <Text style={styles.prescriptionTextUploadTime}>
+              {moment().format('DD MMM, HH:mm')}
+            </Text>
           </View>
-          <Text style={styles.prescriptionTextUploadTime}>{moment().format("DD MMM, HH:mm")}</Text>
-        </View> : null}
+        ) : null}
       </View>
     );
   };
@@ -2688,7 +2700,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   onClickTakePhoto();
                 } else {
                   setIsPrescriptionUpload(false);
-                  setSelectPrescriptionVisible(true)
+                  setSelectPrescriptionVisible(true);
                 }
               }}
               style={styles.areaStyles}
@@ -2824,9 +2836,9 @@ const styles = StyleSheet.create({
   textPrescription: {
     ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE),
     marginBottom: 20,
-    paddingHorizontal:10
+    paddingHorizontal: 10,
   },
-  areaStyles:{ flexDirection: 'row', alignContent: 'center' },
+  areaStyles: { flexDirection: 'row', alignContent: 'center' },
   buttonStyle: { width: '30%', alignSelf: 'center' },
   prescriptionText: {
     ...theme.viewStyles.text('SB', 15, theme.colors.SHERPA_BLUE, 1, 20),
