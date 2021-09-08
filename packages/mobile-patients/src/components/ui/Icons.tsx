@@ -274,6 +274,10 @@ export const SpecialOffers: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_special_offers.webp')} />
 );
 
+export const OffersIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/offerGreen.webp')} />
+);
+
 export const AddIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_plus_onorange.webp')} />
 );
@@ -430,6 +434,14 @@ export const GalleryIcon: React.FC<IconProps> = (props) => (
 
 export const PrescriptionIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_prescription.webp')} />
+);
+
+export const PrescriptionColored: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/prescriptionColored_3x.webp')} />
+);
+
+export const GreenCheck: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/greenCheck_3x.webp')} />
 );
 
 export const Check: React.FC<IconProps> = (props) => (
@@ -1626,6 +1638,10 @@ export const CircleDiscountBadge: React.FC<IconProps> = (props) => (
 
 export const PrescriptionRequiredIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/PrescriptionIcon.webp')} />
+);
+
+export const PrescriptionCallIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/phone-call_3x.webp')} />
 );
 
 export const VegetarianIcon: React.FC<IconProps> = (props) => (
