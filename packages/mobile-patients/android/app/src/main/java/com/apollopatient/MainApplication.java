@@ -93,7 +93,7 @@ public class MainApplication extends Application implements ReactApplication {
                 //Staging -- in~~c2ab3529
                 //Production -- in~~c2ab3533
                 WebEngageConfig webEngageConfig = new WebEngageConfig.Builder()
-                        .setWebEngageKey("in~~c2ab3529")
+                        .setWebEngageKey("in~~c2ab3533")
                         .setDebugMode(false) // only in development mode
                         .build();
 
