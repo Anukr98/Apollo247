@@ -15,7 +15,6 @@ import android.provider.Settings;
 import androidx.annotation.RequiresApi;
 import com.clevertap.android.sdk.CleverTapAPI;
 import com.facebook.react.ReactActivity;
-import java.util.Objects;
 
 public class MainActivity extends ReactActivity {
 
