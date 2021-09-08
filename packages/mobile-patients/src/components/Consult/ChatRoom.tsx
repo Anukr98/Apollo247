@@ -1163,6 +1163,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         'City'
       ] = location;
     }
+    if (type == WebEngageEventName.PATIENT_ENDED_CONSULT) {
+      const event = eventAttributes as WebEngageEvents[WebEngageEventName.PATIENT_ENDED_CONSULT]; 
+      event['Doctor ID'] = g(appointmentData, 'doctorInfo', 'id')!;
+      event['Doctor Number'] = g(appointmentData, 'doctorInfo', 'mobileNumber');
+      event['Doctor Facility ID'] = g(appointmentData,
+        'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'id');
+      event['Doctor Facility'] = g(appointmentData,
+        'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name');
+      event['Appointment ID'] = g(appointmentData, 'id');
+      event['Appointment Display ID'] = g(appointmentData, 'displayId');
+      event['Patient Number'] = g(appointmentData, 'patientName');
+      event['Session ID'] = sessionId;
+      event['Call ID'] = token;
+      event['Did doctor Join'] = 'string';
+    }
+    postCleverTapEvent(type, eventAttributes);
     postWebEngageEvent(type, eventAttributes);
   };
 
@@ -1362,7 +1378,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       'Doctor Type': g(appointmentData, 'doctorInfo', 'doctorType')!,
       'Mode of Call': isAudioCall ? 'Audio' : 'Video',
       Platform: 'App',
+      'Doctor ID': g(appointmentData, 'doctorInfo', 'id'),
+      'Doctor Number': g(appointmentData, 'doctorInfo', 'mobileNumber'),
+      'Doctor Facility ID': g(appointmentData, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'id'),
+      'Doctor Facility': g(appointmentData, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name'),
+      'Session ID': sessionId,
+      'Call ID': token,
     };
+    postCleverTapEvent(eventName, eventAttributes);
     postWebEngageEvent(eventName, eventAttributes);
   };
 
@@ -1480,6 +1503,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
     if (fromIncomingCall === true) {
       fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_ANSWERED_CALL);
+    } else {
+      fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_DECLINED_CALL);
     }
     updateNumberOfParticipants();
     fetchDoctorDetails();
@@ -2469,6 +2494,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
   const publisherEventHandlers = {
     streamCreated: (event: string) => {
+      postOpentokEvent('Publisher Stream Created', event);
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_PUBLISHER_STREAM_CREATED,
         JSON.stringify(event)
@@ -2479,6 +2505,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       startCallConnectionUpdateFx();
     },
     streamDestroyed: (event: string) => {
+      postOpentokEvent('Publisher Stream Destroyed', event);
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_PUBLISHER_STREAM_DESTROYED,
         JSON.stringify(event)
@@ -2492,6 +2519,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
     },
     error: (error: string) => {
+      postOpentokError('Publisher Error', error);
       openTokErrorWebEngageEvents(
         WebEngageEventName.PATIENT_PUBLISHER_ERROR,
         JSON.stringify(error)
@@ -2501,6 +2529,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setSnackBar();
     },
     otrnError: (error: string) => {
+      postOpentokError('Publisher OTRN Error', error);
       openTokErrorWebEngageEvents(
         WebEngageEventName.PATIENT_PUBLISHER_OTRNERROR,
         JSON.stringify(error)
@@ -2513,6 +2542,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const subscriberEventHandlers = {
     error: (error: string) => {
+      postOpentokError('Subscriber Error', error);
       setSnackBar();
       openTokErrorWebEngageEvents(
         WebEngageEventName.DOCTOR_SUBSCRIBER_ERROR,
@@ -2520,6 +2550,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       );
     },
     connected: (event: string) => {
+      postOpentokEvent('Subscriber Connected', event);
       openTokWebEngageEvents(WebEngageEventName.DOCTOR_SUBSCRIBER_CONNECTED, JSON.stringify(event));
       setSnackbarState(false);
       playJoinSound();
@@ -2536,6 +2567,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }, 3000);
     },
     disconnected: (event: string) => {
+      postOpentokEvent('Subscriber Disonnected', event);
       callEndWebengageEvent('Network');
       openTokWebEngageEvents(
         WebEngageEventName.DOCTOR_SUBSCRIBER_DISCONNECTED,
@@ -2550,6 +2582,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
     },
     otrnError: (error: string) => {
+      postOpentokError('Subscriber OTRN Error', error);
       openTokErrorWebEngageEvents(
         WebEngageEventName.DOCTOR_SUBSCRIBER_OTRNERROR,
         JSON.stringify(error)
@@ -2557,6 +2590,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setSnackBar();
     },
     videoDisabled: (error: any) => {
+      postOpentokEvent('Subscriber Video Disabled', error);
       openTokWebEngageEvents(
         WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_DISABLED,
         JSON.stringify(error)
@@ -2568,6 +2602,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
     },
     videoEnabled: (error: any) => {
+      postOpentokEvent('Subscriber Video Enabled', error);
       openTokWebEngageEvents(
         WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_ENABLED,
         JSON.stringify(error)
@@ -2578,10 +2613,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
     },
     videoDisableWarning: (error: string) => {
+      postOpentokEvent('Subscriber Video Disable Warning', error);
       callToastStatus.current =
         'Internet connection at the doctor’s end appears to be unstable if the problem persists, the video will be automatically turned off.';
     },
     videoDisableWarningLifted: (error: string) => {
+      postOpentokEvent('Subscriber Video Disable Warning Lifted', error);
       callToastStatus.current = '';
       setDowngradeToAudio(false);
     },
@@ -2589,6 +2626,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const sessionEventHandlers = {
     error: (error: OpentokError) => {
+      postOpentokError('Session Error', error);
       setCallMinimize(false);
       AsyncStorage.setItem('callDisconnected', 'true');
       if (
@@ -2620,6 +2658,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
     },
     connectionCreated: (event: string) => {
+      postOpentokEvent('Session Connection Created', event);
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_SESSION_CONNECTION_CREATED,
         JSON.stringify(event)
@@ -2628,6 +2667,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setSnackbarState(false);
     },
     connectionDestroyed: (event: string) => {
+      postOpentokEvent('Session Connection Destroyed', event);
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_SESSION_CONNECTION_DESTROYED,
         JSON.stringify(event)
@@ -2641,11 +2681,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }, 2000);
     },
     sessionConnected: (event: string) => {
+      postOpentokEvent('Session Connected', event);
       openTokWebEngageEvents(WebEngageEventName.PATIENT_SESSION_CONNECTED, JSON.stringify(event));
       setSnackbarState(false);
       KeepAwake.activate();
     },
     sessionDisconnected: (event: string) => {
+      postOpentokEvent('Session Disconnected', event);
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_SESSION_DISCONNECTED,
         JSON.stringify(event)
@@ -2654,6 +2696,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       eventsAfterConnectionDestroyed();
     },
     sessionReconnected: (event: string) => {
+      postOpentokEvent('Session Reconnected', event);
       openTokWebEngageEvents(WebEngageEventName.PATIENT_SESSION_RECONNECTED, JSON.stringify(event));
       setSnackbarState(false);
       resetCurrentRetryAttempt();
@@ -2666,6 +2709,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       KeepAwake.activate();
     },
     sessionReconnecting: (event: string) => {
+      postOpentokEvent('Session Reconnecting', event);
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_SESSION_RECONNECTING,
         JSON.stringify(event)
@@ -2676,14 +2720,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setSessionReconnectMsg();
       KeepAwake.activate();
     },
-    signal: (event: string) => {},
     streamCreated: (event: string) => {
+      postOpentokEvent('Session Stream Created', event);
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_SESSION_STREAM_CREATED,
         JSON.stringify(event)
       );
     },
     streamDestroyed: (event: string) => {
+      postOpentokEvent('Session Stream Destroyed', event);
       callEndWebengageEvent(
         g(appointmentData, 'doctorInfo', 'doctorType') === 'JUNIOR'
           ? 'Junior Doctor'
@@ -2695,6 +2740,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       );
     },
     streamPropertyChanged: (event: OptntokChangeProp) => {
+      postOpentokEvent('Session Stream Property Changed', event);
       callEndWebengageEvent('Network');
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_SESSION_STREAM_PROPERTY_CHANGED,
@@ -2709,6 +2755,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
     },
     otrnError: (error: string) => {
+      postOpentokError('Session OTRN Error', error);
       openTokErrorWebEngageEvents(
         WebEngageEventName.PATIENT_SESSION_OTRNERROR,
         JSON.stringify(error)
@@ -2722,6 +2769,52 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       AsyncStorage.setItem('callDisconnected', 'true');
     },
   };
+
+  const postOpentokError = (errorName: string, errorData: any) => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.OPENTOK_ERROR_RECEIVED] = {
+      'Doctor ID': g(appointmentData, 'doctorInfo', 'id')!,
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName'),
+      'Doctor Number': g(appointmentData, 'doctorInfo', 'mobileNumber'),
+      'Doctor Type': g(appointmentData, 'doctorInfo', 'doctorType'),
+      'Doctor Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id'),
+      'Doctor Speciality': g(appointmentData, 'doctorInfo', 'specialty', 'name'),
+      'Doctor Facility ID':  g(appointmentData, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'id'),
+      'Doctor Facility':  g(appointmentData, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name'),
+      'Appointment ID': g(appointmentData, 'id'),
+      'Appointment Display ID': g(appointmentData, 'displayId'),
+      'Patient Name': g(appointmentData, 'patientName'),
+      'Patient Number': g(appointmentData, 'patientName'),
+      'Session ID': sessionId,
+      'Call ID': token,
+      'Error Name': errorName,
+      'Error Data': JSON.stringify(errorData),
+      'reason': errorData?.reason || '',
+    }
+    postCleverTapEvent(CleverTapEventName.OPENTOK_ERROR_RECEIVED, eventAttributes);
+  }
+
+  const postOpentokEvent = (eventName: string, eventData: any) => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.OPENTOK_EVENT_RECEIVED] = {
+      'Doctor ID': g(appointmentData, 'doctorInfo', 'id')!,
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName'),
+      'Doctor Number': g(appointmentData, 'doctorInfo', 'mobileNumber'),
+      'Doctor Type': g(appointmentData, 'doctorInfo', 'doctorType'),
+      'Doctor Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id'),
+      'Doctor Speciality': g(appointmentData, 'doctorInfo', 'specialty', 'name'),
+      'Doctor Facility ID':  g(appointmentData, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'id'),
+      'Doctor Facility':  g(appointmentData, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name'),
+      'Appointment ID': g(appointmentData, 'id'),
+      'Appointment Display ID': g(appointmentData, 'displayId'),
+      'Patient Name': g(appointmentData, 'patientName'),
+      'Patient Number': g(appointmentData, 'patientName'),
+      'Session ID': sessionId,
+      'Call ID': token,
+      'Event Name': eventName,
+      'Event Data': JSON.stringify(eventData),
+      'reason': eventData?.reason || '',
+    }
+    postCleverTapEvent(CleverTapEventName.OPENTOK_EVENT_RECEIVED, eventAttributes);
+  }
 
   const resetCurrentRetryAttempt = () => {
     isCallReconnecting.current = false;

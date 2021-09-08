@@ -393,8 +393,18 @@ export const GET_PATIENT_ALL_APPOINTMENTS_FOR_HELP = gql`
 `;
 
 export const GET_PATIENT_ALL_APPOINTMENTS = gql`
-  query getPatientAllAppointments($patientId: String!, $patientMobile: String!, $offset: Int!, $limit: Int!) {
-    getPatientAllAppointments(patientId: $patientId, patientMobile: $patientMobile, offset: $offset, limit: $limit) {
+  query getPatientAllAppointments(
+    $patientId: String!
+    $patientMobile: String!
+    $offset: Int!
+    $limit: Int!
+  ) {
+    getPatientAllAppointments(
+      patientId: $patientId
+      patientMobile: $patientMobile
+      offset: $offset
+      limit: $limit
+    ) {
       totalAppointmentCount
       appointments {
         patientName
@@ -1073,7 +1083,6 @@ export const GET_PATIENT_ALL_CONSULTED_DOCTORS = gql`
   }
 `;
 
-
 export const GET_ALL_SPECIALTIES = gql`
   query getAllSpecialties {
     getAllSpecialties {
@@ -1432,6 +1441,7 @@ export const SAVE_PATIENT_ADDRESS = gql`
         longitude
         stateCode
         name
+        defaultAddress
       }
     }
   }
@@ -2375,6 +2385,18 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           CheckInTime
           PhleboLatitude
           PhleboLongitude
+        }
+        diagnosticOrderPhlebotomists {
+          phleboRating
+          phleboOTP
+          checkinDateTime
+          phleboTrackLink
+          diagnosticPhlebotomists {
+            id
+            name
+            mobile
+            vaccinationStatus
+          }
         }
         diagnosticOrderReschedule {
           rescheduleDate
@@ -3759,7 +3781,6 @@ export const GET_MEDICAL_PRISM_RECORD_V3 = gql`
     }
   }
 `;
-
 
 export const DELETE_HEALTH_RECORD_FILES = gql`
   mutation deleteHealthRecordFiles($deleteHealthRecordFilesInput: DeleteHealthRecordFilesInput) {
@@ -5435,6 +5456,18 @@ export const GET_ORDER_LEVEL_DIAGNOSTIC_STATUS = gql`
         statusDate
         orderStatus
       }
+      groupedPendingReportInclusions {
+        inclusions {
+          itemId
+          itemName
+          packageId
+          packageName
+          orderStatus
+        }
+        isReportPending
+        reportTATMessage
+        expectedReportGenerationTime
+      }
       statusInclusions {
         statusDate
         orderStatus
@@ -5500,6 +5533,7 @@ export const GET_PHLOBE_DETAILS = gql`
           diagnosticPhlebotomists {
             name
             mobile
+            vaccinationStatus
           }
           phleboOTP
           phleboTrackLink
@@ -5552,7 +5586,6 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql`
           lastName
         }
         attributesObj {
-          reportTATHours
           reportTATMessage
           reportGenerationTime
           expectedReportGenerationTime
@@ -5613,7 +5646,6 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
           }
         }
         attributesObj {
-          reportTATHours
           reportTATMessage
           reportGenerationTime
           expectedReportGenerationTime
@@ -6175,6 +6207,138 @@ export const GET_DIAGNOSTIC_REPORT_TAT = gql`
         itemId
         reportTATMessage
         reportTATInUTC
+      }
+    }
+  }
+`;
+
+export const GET_PATIENT_PRESCRIPTIONS = gql`
+query {
+  getPatientPrescriptions(
+    patientId: $patientId
+    limit: 100
+  ) {
+    response {
+      doctorName
+      patientName
+      caseSheet {
+        notes
+        blobName
+        consultType
+        prescriptionGeneratedDate
+        diagnosis {
+          name
+          __typename
+        }
+        diagnosticPrescription {
+          itemname
+          __typename
+        }
+        doctorId
+        doctorType
+        followUp
+        followUpAfterInDays
+        followUpDate
+        followUpConsultType
+        id
+        medicinePrescription {
+          medicineConsumptionDurationInDays
+          medicineDosage
+          id
+          medicineCustomDetails
+          medicineConsumptionDurationUnit
+          medicineFormTypes
+          medicineFrequency
+          medicineInstructions
+          medicineName
+          medicineTimings
+          medicineToBeTaken
+          medicineUnit
+          routeOfAdministration
+          __typename
+        }
+        symptoms {
+          symptom
+          since
+          howOften
+          severity
+          details
+          __typename
+        }
+        otherInstructions {
+          instruction
+          __typename
+        }
+        __typename
+      }
+    }
+  }
+  getPatientPrismMedicalRecords_V2(
+    patientId: $patientId
+    records: [PRESCRIPTION]
+  ) {
+    prescriptions {
+      response {
+        id
+        prescriptionName
+        date
+        prescribedBy
+        notes
+        prescriptionSource
+        source
+        siteDisplayName
+        fileUrl
+        prescriptionFiles {
+          id
+          fileName
+          mimeType
+          content
+          byteContent
+          __typename
+        }
+        __typename
+      }
+      errorCode
+      errorMsg
+      errorType
+      __typename
+    }
+  }
+}
+`
+
+export const ADD_PATIENT_PRESCRIPTION_RECORD = gql`
+  mutation addPatientPrescriptionRecord($AddPrescriptionRecordInput: AddPrescriptionRecordInput) {
+    addPatientPrescriptionRecord(addPrescriptionRecordInput: $AddPrescriptionRecordInput) {
+      status
+      __typename
+    }
+  }
+`;
+
+export const SAVE_JUSPAY_SDK_RESPONSE = gql`
+  mutation saveJuspayResponseForAudit($auditInput: AuditInput) {
+    saveJuspayResponseForAudit(auditInput: $auditInput) {
+      success
+    }
+  }
+`;
+
+export const GET_JUSPAY_CLIENTAUTH_TOKEN = gql`
+  query getCustomer(
+    $customerId: String
+    $is_pharma_juspay: Boolean
+    $get_client_auth_token: Boolean
+  ) {
+    getCustomer(
+      customerId: $customerId
+      is_pharma_juspay: $is_pharma_juspay
+      get_client_auth_token: $get_client_auth_token
+    ) {
+      mobile_number
+      juspay {
+        client_auth_token
+        client_auth_token_expiry
       }
     }
   }

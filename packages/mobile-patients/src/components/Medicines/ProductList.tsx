@@ -187,6 +187,7 @@ export const ProductList: React.FC<Props> = ({
 
   return (
     <FlatList
+      nestedScrollEnabled
       data={isPdp ? dataToShow : data}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
@@ -229,3 +230,4 @@ const styles = StyleSheet.create({
     marginRight: 20,
   },
 });
+
