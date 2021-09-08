@@ -14,8 +14,8 @@ import {
   addPharmaItemToCart,
   getIsMedicine,
   getMaxQtyForMedicineItem,
-  productsThumbnailUrl,
   getDiscountPercentage,
+  specialOffersImagesThumbnailUrl,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
 import {
@@ -310,7 +310,7 @@ export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
         showsHorizontalScrollIndicator={false}
         data={brandsData}
         renderItem={({ item, index }) => {
-          const imgUrl = productsThumbnailUrl(item.image);
+          const imgUrl = specialOffersImagesThumbnailUrl(item.image);
           return renderItem(imgUrl, item);
         }}
       />
@@ -322,7 +322,7 @@ export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
           showsHorizontalScrollIndicator={false}
           data={productData}
           renderItem={({ item, index }) => {
-            const imgUrl = productsThumbnailUrl(item?.image);
+            const imgUrl = specialOffersImagesThumbnailUrl(item?.image);
             return renderProductsItem(imgUrl, item);
           }}
         />
