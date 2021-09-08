@@ -1382,33 +1382,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
-  const onClickDoctorShare = (doctorData: any, rank: number) => {
-    if (doctorData) {
-      postDoctorShareWEGEvents(
-        doctorData,
-        WebEngageEventName.SHARE_CLICK_DOC_LIST_SCREEN,
-        currentPatient,
-        specialityId,
-        rank
-      );
-      postDoctorShareCleverTapEvents(
-        doctorData,
-        CleverTapEventName.CONSULT_SHARE_ICON_CLICKED,
-        currentPatient,
-        specialityId,
-        rank
-      );
-      setShowDoctorSharePopup(true);
-      setDoctorShareData(doctorData);
-      setDoctorShareRank(rank);
-    }
-  };
-
   const renderDoctorCard = (
     rowData: any,
     index: number,
     styles: StyleProp<ViewStyle> = {},
-    numberOfLines?: number,
     filter?: ConsultMode
   ) => {
     return platinumDoctor?.id !== rowData?.id ? (
@@ -1418,7 +1395,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         rowData={rowData}
         navigation={props.navigation}
         style={styles}
-        numberOfLines={numberOfLines}
         availableModes={rowData.consultMode}
         callSaveSearch={callSaveSearch}
         onPressRequest={(arg: boolean) => {
@@ -1441,7 +1417,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             });
           }
         }}
-        onPressShare={(doctorData) => onClickDoctorShare(doctorData, index + 1)}
         onPressConsultNowOrBookAppointment={(type) => {
           postDoctorClickWEGEvent(rowData, 'List', false, type);
         }}
@@ -1455,17 +1430,16 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     rowData: any,
     index: number,
     styles: StyleProp<ViewStyle> = {},
-    numberOfLines?: number,
     filter?: ConsultMode
   ) => {
     if (rowData) {
       return index === 0 && platinumDoctor ? (
         <>
           {renderPlatinumDoctorView(index)}
-          {renderDoctorCard(rowData, index, styles, numberOfLines, filter)}
+          {renderDoctorCard(rowData, index, styles, filter)}
         </>
       ) : (
-        renderDoctorCard(rowData, index, styles, numberOfLines, filter)
+        renderDoctorCard(rowData, index, styles, filter)
       );
     }
     return null;
@@ -1565,7 +1539,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             bounces={false}
             data={doctors}
             renderItem={({ item, index }) =>
-              renderSearchDoctorResultsRow(item, index, {}, undefined, filter)
+              renderSearchDoctorResultsRow(item, index, {}, filter)
             }
             keyExtractor={(item) => item!.id}
             onEndReachedThreshold={0.2}
@@ -1839,7 +1813,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           buttonViewStyle={{ overflow: 'hidden' }}
           buttonStyle={buttonStyle}
           buttonTextStyle={buttonTextStyle}
-          onPressShare={(doctorData) => onClickDoctorShare(doctorData, index + 1)}
           onPress={(id: string, onlineConsult: boolean) => {
             postDoctorClickWEGEvent(platinumDoctor, 'List', true);
             postPlatinumDoctorWEGEvents(platinumDoctor, WebEngageEventName.DOH_Clicked);

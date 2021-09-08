@@ -5,7 +5,7 @@ import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/global
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import {
@@ -288,6 +288,16 @@ export const AddVaccinationRecord: React.FC<AAddVaccinationRecordProps> = (props
   const covidType = ['Covisheild', 'Covaxin', 'Sputnik', 'Pfizer'];
   const doseType = ['Dose 1', 'Dose 2'];
 
+  const recordType = props.navigation.state.params
+    ? props.navigation.state.params.recordType
+    : false;
+  const selectedRecordID = props.navigation.state.params
+    ? props.navigation.state.params.selectedRecordID
+    : null;
+  const selectedRecord = props.navigation.state.params
+    ? props.navigation.state.params.selectedRecord
+    : null;
+
   const renderBottomButton = () => {
     return (
       <Button
@@ -297,6 +307,22 @@ export const AddVaccinationRecord: React.FC<AAddVaccinationRecordProps> = (props
       />
     );
   };
+
+  useEffect(() => {
+    if (selectedRecord) {
+      var doseCount: any;
+      selectedRecord.batchno === '1' ? (doseCount = 'Dose 1') : (doseCount = 'Dose 2');
+      setVaccinationName(selectedRecord.vaccineName || '');
+      setRegistrationID(selectedRecord.registrationId || '');
+      setdateOfTest(
+        selectedRecord?.dateOfImmunization
+          ? moment(selectedRecord?.dateOfImmunization).format(string.common.date_placeholder_text)
+          : ''
+      );
+      setDoseCount(doseCount || '');
+      setVaccinationCener(selectedRecord.vaccine_location);
+    }
+  }, [selectedRecord]);
 
   const gotoHealthRecordsHomeScreen = () => {
     props.navigation.state.params?.onRecordAdded();
@@ -352,6 +378,7 @@ export const AddVaccinationRecord: React.FC<AAddVaccinationRecordProps> = (props
           variables: {
             addImmunizationRecordInput: {
               patientId: currentPatient?.id,
+              id: selectedRecordID,
               recordType: MedicalRecordType.IMMUNIZATION,
               immunizationName: 'COVID',
               vaccineName: vaccinationName,
@@ -508,6 +535,7 @@ export const AddVaccinationRecord: React.FC<AAddVaccinationRecordProps> = (props
                   placeholder={'Hospital/Clinic name'}
                   style={styles.doctorInputContainer}
                   numberOfLines={1}
+                  keyboardType="ascii-capable"
                   value={vaccinationCener}
                   onChangeText={(vaccCenter) => {
                     if (isValidText(vaccCenter)) {

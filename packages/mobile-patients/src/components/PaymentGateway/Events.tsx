@@ -29,7 +29,8 @@ export function PaymentInitiated(
   grandTotal: number,
   LOB: string,
   type: string,
-  paymentOrderId: string
+  paymentOrderId: string,
+  instrument: string
 ) {
   try {
     const eventAttributes: WebEngageEvents[WebEngageEventName.PAYMENT_INITIATED] = {
@@ -49,6 +50,7 @@ export function PaymentInitiated(
       amount: grandTotal,
       serviceArea: 'pharmacy',
       paymentOrderId: paymentOrderId,
+      'Payment Instrument': instrument,
     };
 
     LOB == 'pharma' &&

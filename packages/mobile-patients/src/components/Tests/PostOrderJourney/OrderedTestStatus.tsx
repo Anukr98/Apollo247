@@ -65,7 +65,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
 
-  const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
 
   const orderSelected = props.navigation.getParam('selectedOrder');
   const individualItemStatus = props.navigation.getParam('itemLevelStatus');
@@ -74,7 +73,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   const [isViewReport, setIsViewReport] = useState<boolean>(false);
   const [activeOrder, setActiveOrder] = useState<any>('');
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
-  const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
   const isPrepaid = orderSelected?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
 
   const [individualTestData, setIndividualTestData] = useState<any>([]);
@@ -280,7 +278,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
     DiagnosticViewReportClicked();
     if (visitId) {
       setActiveOrder(order);
-      setDisplayViewReport(true);
+      fetchTestReportResult(order);
     } else {
       props.navigation.navigate(AppRoutes.HealthRecordsHome);
     }
@@ -374,21 +372,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
-      {displayViewReport && (
-        <TestViewReportOverlay
-          order={activeOrder}
-          heading=""
-          isVisible={displayViewReport}
-          viewReportOrderId={viewReportOrderId}
-          downloadDocument={() => {
-            downloadDocument;
-          }}
-          onClose={() => setDisplayViewReport(false)}
-          onPressViewReport={() => {
-            fetchTestReportResult(activeOrder);
-          }}
-        />
-      )}
       <SafeAreaView style={theme.viewStyles.container}>
         <Header
           leftIcon="backArrow"
