@@ -27,7 +27,13 @@ import {
   DropdownGreen,
   WidgetLiverIcon,
   ExpressSlotClock,
+  PrescriptionColored,
+  GreenCheck,
+  PrescriptionIcon,
+  GalleryIcon,
+  CameraIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -63,6 +69,7 @@ import {
   removeWhiteSpaces,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import React, { useEffect, useState } from 'react';
@@ -84,6 +91,7 @@ import {
   Alert,
   Linking,
   FlatList,
+  Modal,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
@@ -92,7 +100,11 @@ import {
   SEARCH_TYPE,
   TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import {
+  useShoppingCart,
+  PhysicalPrescription,
+  EPrescription
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import {
   CommonBugFender,
   CommonLogEvent,
@@ -175,6 +187,8 @@ import moment from 'moment';
 import AsyncStorage from '@react-native-community/async-storage';
 import { OrderCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/OrderCardCarousel';
 import { PrescriptionCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/PrescriptionCardCarousel';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+
 // import { Cache } from "react-native-cache";
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
@@ -232,6 +246,7 @@ export interface TestsProps
   extends NavigationScreenProps<{
     comingFrom?: string;
     movedFrom?: string;
+    setEPrescriptions: ((items: EPrescription[]) => void) | null;
     homeScreenAttributes?: any;
   }> {}
 
@@ -306,7 +321,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [bookUsSlideIndex, setBookUsSlideIndex] = useState(0);
   const [showbookingStepsModal, setShowBookingStepsModal] = useState(false);
   const [scrollOffset, setScrollOffset] = useState<number>(0);
-
+  const [isPrescriptionUpload, setIsPrescriptionUpload] = useState<boolean>(false);
+  const [isPrescriptionGallery, setIsPrescriptionGallery] = useState<boolean>(false);
+  const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
+  const [isUploaded, setIsUploaded] = useState(false);
   const [widgetsData, setWidgetsData] = useState([] as any);
   const [reloadWidget, setReloadWidget] = useState<boolean>(false);
 
@@ -1974,6 +1992,94 @@ export const Tests: React.FC<TestsProps> = (props) => {
       </View>
     );
   };
+  const formatResponse = (response: ImageCropPickerResponse[]) => {
+    if (response.length == 0) return [];
+
+    return response.map((item) => {
+      const isPdf = item.mime == 'application/pdf';
+      const fileUri = item!.path || `folder/file.jpg`;
+      const random8DigitNumber = Math.floor(Math.random() * 90000) + 20000000;
+      const fileType = isPdf ? 'pdf' : fileUri.substring(fileUri.lastIndexOf('.') + 1);
+
+      return {
+        base64: item.data,
+        fileType: fileType,
+        title: `${isPdf ? 'PDF' : 'IMG'}_${random8DigitNumber}`,
+      } as PhysicalPrescription;
+    });
+  };
+  const onClickTakePhoto = () => {
+    ImagePicker.openCamera({
+      cropping: false,
+      hideBottomControls: true,
+      width: 2096, 
+      height: 2096, 
+      includeBase64: true,
+      multiple: true, 
+      compressImageQuality: 0.5,
+      compressImageMaxHeight: 2096,
+      compressImageMaxWidth: 2096,
+      writeTempFile: false,
+    })
+      .then((response) => {
+        setLoading(true);
+        props.navigation.navigate(AppRoutes.PrescriptionCamera, {
+          type: 'CAMERA_AND_GALLERY',
+          responseData: formatResponse([response] as ImageCropPickerResponse[]),
+          title: 'Camera',
+        });
+      })
+      .catch((e: Error) => {
+      });
+  };
+
+  const renderUploadPrescriptionCard = () => {
+    return (
+      <View style={styles.precriptionContainer}>
+        <View style={styles.precriptionContainerUpload}>
+          <PrescriptionColored style={{ height: 35 }} />
+          <Text style={styles.prescriptionText}>Place your order via prescription</Text>
+          <Button
+            title={'UPLOAD'}
+            style={styles.buttonStyle}
+            onPress={() => {
+              setIsPrescriptionGallery(false);
+              setIsPrescriptionUpload(true);
+            }}
+          />
+        </View>
+        {isUploaded ? <View style={styles.bottomArea}>
+          <View style={{ flexDirection: 'row', paddingHorizontal: 5 }}>
+            <GreenCheck style={{ width: 18, height: 18 }} />
+            <Text style={styles.prescriptionTextUpload}>Prescription Uploaded</Text>
+          </View>
+          <Text style={styles.prescriptionTextUploadTime}>{moment().format("DD MMM, HH:mm")}</Text>
+        </View> : null}
+      </View>
+    );
+  };
+  const renderEPrescriptionModal = () => {
+    return (
+      <SelectEPrescriptionModal
+        displayPrismRecords={true}
+        navigation={props.navigation}
+        onSubmit={(selectedEPres) => {
+          setSelectPrescriptionVisible(false);
+          if (selectedEPres.length == 0) {
+            return;
+          }
+          props.navigation.navigate(AppRoutes.SubmittedPrescription, {
+            ePrescriptionsProp: selectedEPres,
+            type: 'E-Prescription',
+            showOptions: false,
+            isReUpload: true,
+          });
+        }}
+        selectedEprescriptionIds={[]}
+        isVisible={isSelectPrescriptionVisible}
+      />
+    );
+  };
 
   function onPressBookNow(item: any) {
     const testPrescription = item?.caseSheet?.diagnosticPrescription;
@@ -2249,6 +2355,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         {renderWidgetType(widget1)} {/**1 */}
         {renderYourOrders()}
         {latestPrescription?.length > 0 ? renderPrescriptionCard() : null}
+        {renderUploadPrescriptionCard()}
         {renderOrderStatusCard()}
         {renderBottomViews()}
       </TouchableOpacity>
@@ -2542,6 +2649,74 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  const prescriptionOptionArray = [
+    {
+      icon: <GalleryIcon />,
+      title: 'Choose from Gallery',
+    },
+    {
+      icon: <CameraIcon />,
+      title: 'Take a Picture',
+    },
+    {
+      icon: <PrescriptionIcon />,
+      title: 'Select from my Prescriptions',
+    },
+  ];
+
+  const prescriptionGalleryOptionArray = [
+    {
+      title: 'Photo Library',
+    },
+    {
+      title: 'Upload PDF',
+    },
+  ];
+
+  const renderOptionsUploadPrescription = () => {
+    return (
+      <>
+        <Text style={styles.textHeadingModal}>Upload Prescription</Text>
+        {prescriptionOptionArray.map((item) => {
+          return (
+            <TouchableOpacity
+              onPress={() => {
+                if (item.title == 'Choose from Gallery') {
+                  setIsPrescriptionGallery(true);
+                } else if (item.title == 'Take a Picture') {
+                  setIsPrescriptionUpload(false);
+                  onClickTakePhoto();
+                } else {
+                  setIsPrescriptionUpload(false);
+                  setSelectPrescriptionVisible(true)
+                }
+              }}
+              style={styles.areaStyles}
+            >
+              {item.icon}
+              <Text style={styles.textPrescription}>{item.title}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </>
+    );
+  };
+
+  const renderGalleryOption = () => {
+    return (
+      <>
+        <Text style={styles.textHeadingModal}>Choose from Gallery</Text>
+        {prescriptionGalleryOptionArray.map((item) => {
+          return (
+            <TouchableOpacity style={{ flexDirection: 'row', alignContent: 'center' }}>
+              <Text style={styles.textPrescription}>{item.title}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
@@ -2558,6 +2733,25 @@ export const Tests: React.FC<TestsProps> = (props) => {
               {renderSearchBar()}
               {expressSlotMsg != '' ? renderExpressSlots() : null}
               {renderSearchSuggestions()}
+              <Modal
+                animationType="fade"
+                transparent={true}
+                visible={isPrescriptionUpload}
+                onRequestClose={() => {
+                  setIsPrescriptionUpload(false);
+                }}
+                onDismiss={() => {
+                  setIsPrescriptionUpload(false);
+                }}
+              >
+                <View style={styles.modalMainView}>
+                  <View style={styles.paitentModalView}>
+                    {isPrescriptionGallery
+                      ? renderGalleryOption()
+                      : renderOptionsUploadPrescription()}
+                  </View>
+                </View>
+              </Modal>
             </View>
             <View style={{ flex: 1 }}>
               <ScrollView
@@ -2577,6 +2771,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         )}
       </SafeAreaView>
       {showbookingStepsModal ? renderBookingStepsModal() : null}
+      {isSelectPrescriptionVisible && renderEPrescriptionModal()}
     </View>
   );
 };
@@ -2592,6 +2787,67 @@ const styles = StyleSheet.create({
     borderRadius: 7,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  modalMainView: {
+    backgroundColor: 'rgba(100,100,100, 0.5)',
+    flex: 1,
+    justifyContent: 'flex-end',
+    // alignItems: 'center',
+    flexDirection: 'column',
+  },
+  paitentModalView: {
+    backgroundColor: 'white',
+    width: '100%',
+    padding: 10,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  },
+  precriptionContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    ...theme.viewStyles.shadowStyle,
+    marginHorizontal: 20,
+    marginVertical: 5,
+  },
+  precriptionContainerUpload: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    paddingHorizontal: 5,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    paddingVertical: 10,
+  },
+  textHeadingModal: {
+    ...theme.viewStyles.text('B', 17, colors.SHERPA_BLUE),
+    marginBottom: 20,
+  },
+  textPrescription: {
+    ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE),
+    marginBottom: 20,
+    paddingHorizontal:10
+  },
+  areaStyles:{ flexDirection: 'row', alignContent: 'center' },
+  buttonStyle: { width: '30%', alignSelf: 'center' },
+  prescriptionText: {
+    ...theme.viewStyles.text('SB', 15, theme.colors.SHERPA_BLUE, 1, 20),
+    textAlign: 'left',
+    width: '50%',
+  },
+  bottomArea: {
+    backgroundColor: colors.APP_GREEN,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  prescriptionTextUpload: {
+    ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1),
+    paddingHorizontal: 5,
+  },
+  prescriptionTextUploadTime: {
+    ...theme.viewStyles.text('R', 14, theme.colors.WHITE, 1),
+    paddingHorizontal: 5,
   },
   labelText: {
     ...theme.fonts.IBMPlexSansBold(9),
