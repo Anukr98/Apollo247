@@ -12,7 +12,7 @@ import { Overlay } from 'react-native-elements';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import {
   filterHtmlContent,
-  productsThumbnailUrl,
+  couponThumbnailUrl,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import HTML from 'react-native-render-html';
 import { SpecialOffersCouponsData } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -86,7 +86,7 @@ export const CouponsSection = (props: { offersdata: SpecialOffersCouponsData[] }
             </View>
             <View style={{ flexDirection: 'column', flex: 1 }}>
               <Text style={styles.headerStyle}>{item.header}</Text>
-              <View style={{ flexDirection: 'row', flex: 1 }}>
+              <View style={{ flexDirection: 'row' }}>
                 <Text style={[styles.subHeaderStyle, { alignSelf: 'flex-start' }]}>
                   Valid till -{' '}
                 </Text>
@@ -95,14 +95,22 @@ export const CouponsSection = (props: { offersdata: SpecialOffersCouponsData[] }
                 </Text>
                 <Text style={[styles.subHeaderStyle, { paddingRight: 21 }]}> | </Text>
                 {couponCodePresent ? (
-                  <View style={{ flexDirection: 'row' }}>
-                    <Text style={styles.subHeaderStyle}>Use Code -</Text>
-                    <Text style={[styles.subHeaderStyle, { fontWeight: '500' }]}>
+                  <View style={styles.couponCodeContainer}>
+                    <Text style={[styles.subHeaderStyle, { alignSelf: 'flex-end' }]}>
+                      Use Code -
+                    </Text>
+                    <Text
+                      style={[styles.subHeaderStyle, { fontWeight: '500', alignSelf: 'flex-end' }]}
+                    >
                       {item?.couponCode}
                     </Text>
                   </View>
                 ) : (
-                  <Text style={styles.subHeaderStyle}>Code Not Required</Text>
+                  <View style={{ paddingRight: 10, flex: 1, justifyContent: 'flex-end' }}>
+                    <Text style={[styles.subHeaderStyle, { alignSelf: 'flex-end' }]}>
+                      Code Not Required
+                    </Text>
+                  </View>
                 )}
               </View>
               <View style={{ flexDirection: 'row', flex: 1, justifyContent: 'space-between' }}>
@@ -221,7 +229,7 @@ export const CouponsSection = (props: { offersdata: SpecialOffersCouponsData[] }
             : couponOffersData
         }
         renderItem={({ item, index }) => {
-          const imgUrl = productsThumbnailUrl(item?.logo);
+          const imgUrl = couponThumbnailUrl(item?.logo);
           return renderItem(imgUrl, item, index);
         }}
       />
@@ -247,6 +255,7 @@ const styles = StyleSheet.create({
     width: '90%',
     backgroundColor: '#F7F8F5',
     paddingBottom: 15,
+    paddingTop: 10,
   },
   imageContainer: {
     paddingRight: 10,
@@ -265,7 +274,6 @@ const styles = StyleSheet.create({
     paddingRight: 10,
     fontWeight: '600',
     lineHeight: 15,
-    paddingTop: 15,
   },
   subHeaderStyle: {
     ...theme.fonts.IBMPlexSansRegular(8),
@@ -277,6 +285,12 @@ const styles = StyleSheet.create({
     paddingRight: 21,
     fontWeight: '500',
     alignSelf: 'flex-start',
+  },
+  couponCodeContainer: {
+    flexDirection: 'row',
+    flex: 1,
+    justifyContent: 'flex-end',
+    paddingRight: 10,
   },
   bottomHeaderStyle: {
     ...theme.fonts.IBMPlexSansRegular(9),
