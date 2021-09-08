@@ -265,12 +265,10 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   const testReportsData = props.navigation?.getParam('testReport') || [];
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
   const [showAdditionalNotes, setShowAdditionalNotes] = useState<boolean>(false);
-  const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [showReadMore, setShowReadMore] = useState<boolean>(false);
   const [apiError, setApiError] = useState(false);
   const [showReadMoreData, setShowReadMoreData] = useState('');
   const [showPopup, setShowPopup] = useState<boolean>(false);
-  const [callBackTest, setCallBackTest] = useState<boolean>(false);
   const [resonseData, showResponseData] = useState<[]>([]);
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [showPDF, setShowPDF] = useState<boolean>(false);
@@ -1197,6 +1195,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         allTestReports={testReportsData}
         onSendTestReport={(selectedItem) => callBackTestReports(selectedItem)}
         siteName={data?.siteDisplayName}
+        serviceName={sendTestReportName}
       />
     ) : (
       Alert.alert('OOPS!!', 'Result doesnt have a valid value')

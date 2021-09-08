@@ -122,8 +122,8 @@ const styles = StyleSheet.create({
   },
   arrowIcon: {
     alignItems: 'flex-end',
-    top: 15,
-    height: 1,
+    top: 25,
+    height: 2,
   },
   serviceNameTextContainer: {
     flexDirection: 'row',
@@ -133,6 +133,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('R', 13, 'grey', 1, 19, 0.35),
     left: 15,
     top: 5,
+    width: '45%',
   },
   axisValueContainer: {
     flexDirection: 'row',
@@ -190,6 +191,7 @@ const styles = StyleSheet.create({
   serviceName: {
     ...theme.viewStyles.text('R', 16, '#01475B', 1, 19, 0.35),
     top: 5,
+    width: '45%',
   },
   miscStyling: {
     marginTop: 20,
@@ -216,7 +218,8 @@ export interface CombinedBarChartProps {
   testReport?: string;
   allTestReports?: [];
   onSendTestReport?: (selectedItem: any) => void;
-  siteName: string;
+  siteName?: string;
+  serviceName?: string;
 }
 
 interface SelectedTestReport {
@@ -444,7 +447,7 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
               });
               reportObj.labTestResults = mergeArray;
               reportObj.testResultFiles = mergeLabTestFiles;
-              props.onSendTestReport(reportObj);
+              props?.onSendTestReport(reportObj);
             } else {
               Alert.alert('OOPS!!', 'Please select any one of the bar charts');
             }
@@ -454,8 +457,12 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
             <ArrowRight />
           </View>
           <View style={styles.serviceNameTextContainer}>
-            <Text style={styles.serviceName}>{'Service name'}</Text>
-            <Text style={styles.paramName}>{`${'\u25CF '}` + ' Parameter name'}</Text>
+            <Text numberOfLines={1} style={styles.serviceName}>
+              {props?.serviceName}
+            </Text>
+            <Text numberOfLines={1} style={styles.paramName}>
+              {`${'\u25CF '}` + props?.title}
+            </Text>
           </View>
           <View style={styles.axisValueContainer}>
             <Text style={styles.axisValueTextContainer}>{!!goal ? goal + '*10' : '' + '*10'}</Text>
