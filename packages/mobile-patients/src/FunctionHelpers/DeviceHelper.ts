@@ -27,7 +27,7 @@ export const CommonLogEvent = async (title: string, data?: any) => {
   } catch (error) {}
 };
 
-export const CommonBugFender = async (stringName: string, errorValue: Error) => {
+export const CommonBugFender = async (stringName: string, errorValue: Error | any) => {
   try {
     phoneNumber = phoneNumber || (await AsyncStorage.getItem('phoneNumber')) || '';
     await crashlytics().setUserId(phoneNumber);

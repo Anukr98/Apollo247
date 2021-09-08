@@ -1432,6 +1432,7 @@ export const SAVE_PATIENT_ADDRESS = gql`
         longitude
         stateCode
         name
+        defaultAddress
       }
     }
   }

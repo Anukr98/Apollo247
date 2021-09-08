@@ -175,7 +175,6 @@ import moment from 'moment';
 import AsyncStorage from '@react-native-community/async-storage';
 import { OrderCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/OrderCardCarousel';
 import { PrescriptionCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/PrescriptionCardCarousel';
-import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
 // import { Cache } from "react-native-cache";
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
@@ -192,10 +191,6 @@ const whyBookUsArray = [
 ];
 
 const { width: winWidth, height: winHeight } = Dimensions.get('window');
-const LOCAL_DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY = DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.concat(
-  DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED
-);
-
 export interface DiagnosticData {
   cityId: string;
   stateId: string;
@@ -237,6 +232,7 @@ export interface TestsProps
   extends NavigationScreenProps<{
     comingFrom?: string;
     movedFrom?: string;
+    homeScreenAttributes?: any;
   }> {}
 
 export const Tests: React.FC<TestsProps> = (props) => {
@@ -303,7 +299,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [imgHeight, setImgHeight] = useState(200);
   const [slideIndex, setSlideIndex] = useState(0);
   const [banners, setBanners] = useState([]);
-  const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
   const [cityId, setCityId] = useState('');
 
   const [sectionLoading, setSectionLoading] = useState<boolean>(false);
@@ -332,6 +327,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [serviceableObject, setServiceableObject] = useState({} as any);
   const [expressSlotMsg, setExpressSlotMsg] = useState<string>('');
   const [isPriceAvailable, setIsPriceAvailable] = useState<boolean>(false);
+  const [fetchAddressLoading, setFetchAddressLoading] = useState<boolean>(false);
 
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
 
@@ -412,8 +408,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     DiagnosticLandingPageViewedEvent(
       currentPatient,
       isDiagnosticLocationServiceable,
-      movedFrom == 'deeplink' ? 'Deeplink' : undefined,
       isDiagnosticCircleSubscription,
+      movedFrom == 'deeplink' ? 'Deeplink' : undefined,
       homeScreenAttributes
     );
   }, []);
@@ -563,6 +559,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         setBannerLoading(false);
       }
     } catch (error) {
+      console.log('ye4');
       CommonBugFender('getDiagnosticBanner_Tests', error);
       setBanners([]);
       setBannerLoading(false);
@@ -590,6 +587,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         setWidgetsData([]);
         setLoading?.(false);
         setPageLoading?.(false);
+        console.log('ye');
         setReloadWidget(true);
       }
     } catch (error) {
@@ -688,6 +686,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }
       }
       newWidgetsData?.length > 0 && reloadWidget ? setReloadWidget(false) : setReloadWidget(true);
+
       setWidgetsData(newWidgetsData);
       setIsPriceAvailable(true);
       setSectionLoading(false);
@@ -784,7 +783,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           }
         }
       }
-      setPageLoading?.(true);
+      setFetchAddressLoading?.(true);
       const response = await client.query<getPatientAddressList, getPatientAddressListVariables>({
         query: GET_PATIENT_ADDRESS_LIST,
         variables: { patientId: currentPatient?.id },
@@ -808,10 +807,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
       } else {
         checkLocation(addressList);
       }
-      setPageLoading?.(false);
+      setFetchAddressLoading?.(false);
     } catch (error) {
       checkLocation(addresses);
-      setPageLoading?.(false);
+      setFetchAddressLoading?.(false);
       CommonBugFender('fetching_Addresses_on_Test_Page', error);
     }
   }
@@ -931,6 +930,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const checkIsPinCodeServiceable = async (pincode: string, mode?: string, comingFrom?: string) => {
     let obj = {} as DiagnosticData;
     if (!!pincode) {
+      reloadWidget && setReloadWidget(false);
       setPageLoading?.(true);
       setSectionLoading(true); //for loading the widgets.
       client
@@ -1324,6 +1324,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       },
       children: !pincodeInput ? (
         <AccessLocation
+          isAddressLoading={fetchAddressLoading}
           source={AppRoutes.Tests}
           addresses={addressList}
           onPressSelectAddress={(address) => {
@@ -1937,6 +1938,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   function refetchWidgets() {
+    setReloadWidget(false);
     setWidgetsData([]);
     setLoading?.(true);
     //if banners are not loaded, then refetch them.
