@@ -13,7 +13,6 @@ import android.os.Bundle;
 import android.os.Vibrator;
 import android.provider.Settings;
 import androidx.annotation.RequiresApi;
-import com.google.firebase.analytics.FirebaseAnalytics;
 import com.clevertap.android.sdk.CleverTapAPI;
 import com.facebook.react.ReactActivity;
 import java.util.Objects;
@@ -28,7 +27,6 @@ public class MainActivity extends ReactActivity {
     private static final String TAG = "intentlogs";
     private static String referrer = "";
     private Ringtone ringtone;
-    private FirebaseAnalytics mFirebaseAnalytics;
 
     @Override
     protected String getMainComponentName() {
@@ -82,13 +80,6 @@ public class MainActivity extends ReactActivity {
             e.printStackTrace();
         }
         //end
-
-        try{
-            mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
-            mFirebaseAnalytics.setUserProperty("ct_objectId",Objects.requireNonNull(CleverTapAPI.getDefaultInstance(this)).getCleverTapID());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
