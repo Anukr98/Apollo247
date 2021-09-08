@@ -479,7 +479,7 @@ const PharmaApiConfig = {
       pharmaTokenYXV,
     ],
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
-    PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/categoriesScript.php`, pharmaToken201],
+    PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/categoryproducts_api.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
     SPECIAL_OFFERS_PAGE_WIDGETS: ['https://uatcms.apollo247.com/api/special-offer/getwidget', specialOffersWidgetApiCredentials],
     SPECIAL_OFFERS_PAGE_COUPONS: ['https://uatvalidcoupon.apollo247.com/offers'],
@@ -1586,3 +1586,4 @@ export const AppConfig = {
   Configuration,
   Specialities,
 };
+

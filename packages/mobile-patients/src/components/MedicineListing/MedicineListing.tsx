@@ -25,14 +25,33 @@ import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEng
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, SafeAreaView, StyleSheet, Text, BackHandler } from 'react-native';
+import React, { EventHandler, useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  BackHandler,
+  View,
+  Image,
+  ScrollView,
+  Animated,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  Platform,
+  TouchableOpacity,
+} from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AddedToCartToast } from '@aph/mobile-patients/src/components/ui/AddedToCartToast';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import MedicineBottomFilters from './MedicineBottomFilters';
+import { productsThumbnailUrl } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import ContentLoader from 'react-native-easy-content-loader';
+import LinearGradient from 'react-native-linear-gradient';
+import ShimmerPlaceholder, { createShimmerPlaceholder } from 'react-native-shimmer-placeholder';
 
 export type SortByOption = {
   id: string;
@@ -56,6 +75,12 @@ export interface Props
   }> {}
 
 export const MedicineListing: React.FC<Props> = ({ navigation }) => {
+  interface bottomFilter {
+    category_id: string;
+    url_key: string;
+    title: string;
+  }
+
   // navigation props
   const searchText = navigation.getParam('searchText') || '';
   const [categoryId, setCategoryId] = useState<string>(navigation.getParam('category_id') || '');
@@ -85,6 +110,35 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const [filterVisible, setFilterVisible] = useState<boolean>(false);
   const [showAddedToCart, setShowAddedToCart] = useState<boolean>(false);
   const [showFilterOption, setShowFilterOption] = useState<boolean>(false);
+  const [bottomFilters, setBottomFilters] = React.useState<bottomFilter[]>([]);
+  const [bottomCategoryId, setBottomCategoryId] = React.useState<string>('');
+  const [scroll, setScroll] = React.useState(new Animated.Value(0));
+  const [bannerImage, setBannerImage] = React.useState<string>('');
+  const onEndReachedCalledDuringMomentum = React.useRef(true);
+
+  const HEADER_MAX_HEIGHT = 140;
+  const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? 60 : 73;
+  const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
+
+  const scrollY = Animated.add(scroll, Platform.OS === 'ios' ? HEADER_MAX_HEIGHT : 0);
+
+  const headerTranslate = scrollY.interpolate({
+    inputRange: [0, HEADER_SCROLL_DISTANCE],
+    outputRange: [0, -HEADER_SCROLL_DISTANCE],
+    extrapolate: 'clamp',
+  });
+
+  const imageOpacity = scrollY.interpolate({
+    inputRange: [0, HEADER_SCROLL_DISTANCE / 2, HEADER_SCROLL_DISTANCE],
+    outputRange: [1, 1, 0],
+    extrapolate: 'clamp',
+  });
+
+  const imageTranslate = scrollY.interpolate({
+    inputRange: [0, HEADER_SCROLL_DISTANCE],
+    outputRange: [0, 100],
+    extrapolate: 'clamp',
+  });
 
   // global contexts
   const { currentPatient } = useAllCurrentPatients();
@@ -126,6 +180,23 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
     };
   }, []);
+
+  const onBottomCategoryChange = (categoryId: string) => {
+    if (categoryId?.length > 0) {
+      setProducts([]);
+      setProductsTotal(0);
+      setPageId(1);
+      setFilterBy({ category: [categoryId] });
+      searchProductsByCategory(
+        categoryId,
+        1,
+        sortBy?.id || null,
+        { category: [categoryId] },
+        filterOptions,
+        []
+      );
+    }
+  };
 
   const onPressHardwareBack = () => navigation.goBack();
 
@@ -207,8 +278,14 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     existingProducts: MedicineProduct[]
   ) => {
     try {
+      console.log('categoryId', categoryId);
       updateLoading(pageId, true);
       const _selectedFilters = formatFilters(selectedFilters, filters);
+      if (_selectedFilters.category != navigation.getParam('category_id'))
+        setBottomCategoryId(_selectedFilters?.category);
+      else {
+        setFilterBy({});
+      }
       const { data } = await getProductsByCategoryApi(
         categoryId,
         pageId,
@@ -217,12 +294,27 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         axdcCode,
         pinCode
       );
+      setBannerImage(data?.design[0]?.mobile_banner_image);
       updateProducts(pageId, existingProducts, data);
       setProductsTotal(data.count);
       updateLoading(pageId, false);
       setPageId(pageId + 1);
       setSortByOptions(Array.isArray(data?.sort_by) ? data?.sort_by : []);
       setFilterOptions(Array.isArray(data?.filters) ? data?.filters : []);
+      const arr: bottomFilter[] = [];
+
+      if (data?.filters) {
+        data?.filters?.map((item) => {
+          if (item?.name === 'Category') {
+            item?.values?.map((value) => {
+              value?.child?.map((child: any) => {
+                arr.push(child);
+              });
+            });
+          }
+        });
+      }
+      setBottomFilters((prev: any) => [...prev, ...arr]);
     } catch (error) {
       updateLoading(pageId, false);
       renderAlert();
@@ -309,58 +401,65 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     };
     return <MedicineListingSections {...props} />;
   };
-
-  const renderProducts = () => {
-    const onEndReached = () => {
-      if (!isLoadingMore && products.length < productsTotal) {
-        if (searchText) {
-          searchProducts(searchText, pageId, sortBy?.id || null, filterBy, filterOptions);
-        } else {
-          searchProductsByCategory(
-            categoryId,
-            pageId,
-            sortBy?.id || null,
-            filterBy,
-            filterOptions,
-            products
-          );
-        }
+  const onEndReached = () => {
+    if (!isLoadingMore && products.length < productsTotal) {
+      if (searchText) {
+        searchProducts(searchText, pageId, sortBy?.id || null, filterBy, filterOptions);
+      } else {
+        searchProductsByCategory(
+          categoryId,
+          pageId,
+          sortBy?.id || null,
+          filterBy,
+          filterOptions,
+          products
+        );
       }
-    };
-
+    }
+  };
+  const renderProducts = () => {
     return (
-      <MedicineListingProducts
-        data={isLoading ? [] : products}
-        onEndReached={onEndReached}
-        onEndReachedThreshold={0.1}
-        ListFooterComponent={renderLoading()}
-        ListEmptyComponent={renderProductsNotFound()}
-        navigation={navigation}
-        addToCartSource={
-          searchText
-            ? 'Pharmacy Full Search'
-            : breadCrumb.length
-            ? 'Category Tree'
-            : 'Pharmacy List'
-        }
-        movedFrom={
-          searchText
-            ? ProductPageViewedSource.FULL_SEARCH
-            : ProductPageViewedSource.CATEGORY_OR_LISTING
-        }
-        productPageViewedEventProps={{
-          CategoryID: categoryId,
-          CategoryName: categoryId ? pageTitle : '',
-          SectionName: categoryId ? 'Category Tree' : '',
-        }}
-        view={showListView ? 'list' : 'grid'}
-        onAddedSuccessfully={() => {
-          setShowAddedToCart(true);
-          setTimeout(() => {
-            setShowAddedToCart(false);
-          }, 7000);
-        }}
-      />
+      <>
+        {isLoading ? (
+          renderLoading()
+        ) : (
+          <>
+            <MedicineListingProducts
+              data={products}
+              ListFooterComponent={renderLoading()}
+              ListEmptyComponent={renderProductsNotFound()}
+              navigation={navigation}
+              addToCartSource={
+                searchText
+                  ? 'Pharmacy Full Search'
+                  : breadCrumb.length
+                  ? 'Category Tree'
+                  : 'Pharmacy List'
+              }
+              movedFrom={
+                searchText
+                  ? ProductPageViewedSource.FULL_SEARCH
+                  : ProductPageViewedSource.CATEGORY_OR_LISTING
+              }
+              productPageViewedEventProps={{
+                CategoryID: categoryId,
+                CategoryName: categoryId ? pageTitle : '',
+                SectionName: categoryId ? 'Category Tree' : '',
+              }}
+              view={showListView ? 'list' : 'grid'}
+              onAddedSuccessfully={() => {
+                setShowAddedToCart(true);
+                setTimeout(() => {
+                  setShowAddedToCart(false);
+                }, 7000);
+              }}
+              onMomentumScrollBegin={() => {
+                onEndReachedCalledDuringMomentum.current = false;
+              }}
+            />
+          </>
+        )}
+      </>
     );
   };
 
@@ -403,13 +502,25 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
           selectedFilters={filterBy}
           onClose={onClose}
           onApplyFilters={onApplyFilters}
+          bottomCategoryId={bottomCategoryId}
         />
       )
     );
   };
 
   const renderLoading = () => {
-    return isLoading ? <ActivityIndicator color="green" size="large" /> : null;
+    return isLoading ? (
+      <ActivityIndicator color="green" size="large" />
+    ) : (
+      !isLoadingMore && products.length < productsTotal && (
+        <TouchableOpacity
+          onPress={() => onEndReached()}
+          style={{ ...styles.btnStyle, marginTop: 20 }}
+        >
+          <Text style={theme.viewStyles.text('SB', 10, '#fc9916', 1, 24, 0)}>Load More</Text>
+        </TouchableOpacity>
+      )
+    );
   };
 
   const renderProductsNotFound = () => {
@@ -434,23 +545,92 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderLoadingMore = () => {
-    return isLoadingMore
-      ? [
-          <ActivityIndicator color="green" size="small" />,
-          <Text style={styles.loadingMoreProducts}>Hold on, loading more products.</Text>,
-        ]
-      : null;
+    return isLoadingMore ? (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingMoreProducts}>Hold on, loading more products.</Text>
+        <ActivityIndicator color="green" size="small" />
+      </View>
+    ) : null;
   };
 
+  const renderFilterButtons = () => {
+    return (
+      <>
+        {bottomFilters?.length > 0 && !isLoading && (
+          <View style={styles.bottomFiltersContainer}>
+            <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+              {bottomFilters?.map((item) => (
+                <MedicineBottomFilters
+                  title={item?.title}
+                  setBottomCategoryId={setBottomCategoryId}
+                  bottomCategoryId={bottomCategoryId}
+                  categoryId={item?.category_id}
+                  navigationCategoryId={navigation.getParam('category_id') || ''}
+                  onBottomCategoryChange={onBottomCategoryChange}
+                />
+              ))}
+            </ScrollView>
+          </View>
+        )}
+      </>
+    );
+  };
   return (
     <SafeAreaView style={container}>
       {renderHeader()}
-      {renderSections()}
-      {renderProducts()}
-      {renderLoadingMore()}
-      {renderSortByOverlay()}
-      {renderFilterByOverlay()}
-      {showAddedToCart && renderAddedToCart()}
+      <View style={styles.fill}>
+        <Animated.ScrollView
+          style={{ ...styles.fill }}
+          scrollEventThrottle={1}
+          onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scroll } } }], {
+            useNativeDriver: true,
+          })}
+          contentInset={{
+            top: HEADER_MAX_HEIGHT,
+          }}
+          contentOffset={{
+            y: -HEADER_MAX_HEIGHT,
+          }}
+        >
+          <View
+            style={{
+              marginTop: 140,
+            }}
+          >
+            {renderSections()}
+            {renderProducts()}
+          </View>
+        </Animated.ScrollView>
+        {renderLoadingMore()}
+        {renderSortByOverlay()}
+        {renderFilterByOverlay()}
+        {showAddedToCart && renderAddedToCart()}
+        {renderFilterButtons()}
+        <Animated.View
+          pointerEvents="none"
+          style={[styles.header, { transform: [{ translateY: headerTranslate }] }]}
+        >
+          {isLoading ? (
+            <ShimmerPlaceholder
+              LinearGradient={LinearGradient}
+              shimmerStyle={{ height: 140, width: '100%' }}
+            ></ShimmerPlaceholder>
+          ) : (
+            <Animated.Image
+              style={[
+                styles.backgroundImage,
+                {
+                  opacity: imageOpacity,
+                  transform: [{ translateY: imageTranslate }],
+                },
+              ]}
+              source={{
+                uri: productsThumbnailUrl(bannerImage),
+              }}
+            />
+          )}
+        </Animated.View>
+      </View>
     </SafeAreaView>
   );
 };
@@ -472,4 +652,83 @@ const styles = StyleSheet.create({
   clickHere: {
     ...text('M', 14, APP_YELLOW),
   },
+  btnStyle: {
+    alignSelf: 'center',
+    borderColor: '#fc9916',
+    borderWidth: 0.5,
+    borderRadius: 1,
+    paddingHorizontal: 8,
+    shadowColor: 'rgba(0, 0, 0, 0.2)',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 5,
+    backgroundColor: '#fff',
+    elevation: 5,
+  },
+  fill: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+  },
+  header: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    overflow: 'hidden',
+    height: 140,
+  },
+  backgroundImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    width: null,
+    height: 140,
+    resizeMode: 'cover',
+  },
+  bar: {
+    backgroundColor: 'transparent',
+    marginTop: Platform.OS === 'ios' ? 28 : 38,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+  },
+  title: {
+    color: 'white',
+    fontSize: 18,
+  },
+  scrollViewContent: {
+    // iOS uses content inset, which acts like padding.
+    paddingTop: Platform.OS !== 'ios' ? 140 : 0,
+  },
+  row: {
+    height: 40,
+    margin: 16,
+    backgroundColor: '#D3D3D3',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bottomFiltersContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    paddingTop: 15,
+    paddingBottom: 9,
+    backgroundColor: '#fff',
+    paddingHorizontal: 3,
+  },
+  loadingContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
 });
+
