@@ -215,6 +215,7 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-receive-sharing-intent')
     implementation project(':react-native-user-agent')
     implementation project(':react-native-in-app-review')
     implementation project(':react-native-html-to-pdf')

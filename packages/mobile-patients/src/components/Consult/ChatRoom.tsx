@@ -7,6 +7,8 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import RNFetchBlob from 'rn-fetch-blob';
+import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import {
   ChatCallIcon,
   ChatSend,
@@ -119,6 +121,7 @@ import {
   getSecretaryDetailsByDoctor,
   getParticipantsLiveStatus,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { stat } from 'react-native-fs';
 import {
   WebEngageEventName,
   WebEngageEvents,
@@ -178,6 +181,7 @@ import {
   postCleverTapEvent,
   getNetStatus,
   postAppointmentCleverTapEvents,
+  fileToBase64,
 } from '../../helpers/helperFunctions';
 import { mimeType } from '../../helpers/mimeType';
 import { FeedbackPopup } from '../FeedbackPopup';
@@ -188,7 +192,7 @@ import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { CustomAlert } from '../ui/CustomAlert';
 import { Snackbar } from 'react-native-paper';
 import BackgroundTimer from 'react-native-background-timer';
-import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
+import { MAX_FILE_SIZE, UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
 import { ChatRoom_NotRecorded_Value } from '@aph/mobile-patients/src/strings/strings.json';
 import {
   LocationData,
@@ -1058,12 +1062,87 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   type messageType = 'PDF' | 'Text' | 'Image';
 
   useEffect(() => {
+    
+    handleExternalFileShareUpload();
+
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     AsyncStorage.getItem('phoneNumber').then(setPhoneNumber);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
   }, []);
+
+  const handleExternalFileShareUpload = () => {
+    try {
+      const sharedFiles = props.navigation.getParam('sharedFilesList');
+
+      if (sharedFiles && sharedFiles.length > 0) {
+        let uploadFileTaskPromiseArray: any[] = [];
+
+        sharedFiles.map((file: any) => {
+          const taskPromise = new Promise((resolve, reject) => {
+            let conetentUri = file.contentUri;
+            let fileNameAndExtension = file.fileName;
+
+            let obtainedfFileType = fileNameAndExtension.substring(
+              fileNameAndExtension.lastIndexOf('.') + 1
+            );
+
+            if (conetentUri.startsWith('content://')) {
+              const RNFS = require('react-native-fs');
+
+              const destPath = `${RNFS.TemporaryDirectoryPath}/${fileNameAndExtension}`;
+              RNFS.copyFile(conetentUri, destPath)
+                .then((path: any) => {
+                  RNFetchBlob.fs
+                    .stat(destPath)
+                    .then((stats) => {
+                      let fileSize = stats?.size;
+                      if (fileSize > MAX_FILE_SIZE) {
+                        Alert.alert(
+                          strings.common.uhOh,
+                          `Invalid File Size. File size must be less than 2MB.`
+                        );
+                        reject(undefined);
+                        return;
+                      }
+
+                      fileToBase64(destPath).then((fileBase64) => {
+                        const random8DigitNumber = Math.floor(Math.random() * 90000) + 20000000;
+
+                        let uploadFileItem = {
+                          base64: fileBase64,
+                          fileType: obtainedfFileType,
+                          title: obtainedfFileType.toUpperCase() + '_' + random8DigitNumber,
+                        };
+
+                        resolve(uploadFileItem);
+                      });
+                    })
+                    .catch((err) => {
+                      reject(undefined);
+                    });
+                })
+                .catch((err) => {
+                  reject(undefined);
+                });
+            }
+          });
+          uploadFileTaskPromiseArray.push(taskPromise);
+        });
+
+        Promise.all(uploadFileTaskPromiseArray)
+          .then((results) => {
+            uploadDocument(results, 'Gallery');
+          })
+          .catch((err) => {
+            Alert.alert(strings.common.uhOh, `Something went wrong.`);
+          });
+      }
+    } catch (err) {
+      Alert.alert(strings.common.uhOh, `Something went wrong.`);
+    }
+  };
 
   const onCall = useRef<boolean>(false);
 
@@ -6796,6 +6875,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
     for (let i = 0; i < resource?.length; i++) {
       const item = resource[i];
+
       if (
         item.fileType == 'jpg' ||
         item.fileType == 'jpeg' ||
@@ -6902,6 +6982,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 consultWebEngageEvents(WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM);
               }
             }
+
             uploadDocument(response, response[0].base64, response[0].fileType, type);
             //updatePhysicalPrescriptions(response);
           } else {
