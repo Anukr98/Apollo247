@@ -923,7 +923,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setAsyncPharmaLocation(saveAddress);
             setAsyncDiagnosticPincode?.(saveAddress);
             setLoadingContext?.(false);
-            //calling slot api
             getExpressSlots(serviceableResponse, response);
           } else {
             let response = {
@@ -1565,7 +1564,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
       if (item?.redirectUrl && item?.redirectUrl != '') {
         //for rtpcr - drive through - open webview
         if (item?.redirectUrlText === 'WebView') {
-          DiagnosticBannerClick(slideIndex + 1, Number(item?.itemId), item?.bannerTitle, currentPatient,isDiagnosticCircleSubscription);
+          DiagnosticBannerClick(
+            slideIndex + 1,
+            Number(item?.itemId || item?.id),
+            item?.bannerTitle
+          );
           try {
             const openUrl = item?.redirectUrl || AppConfig.Configuration.RTPCR_Google_Form;
             props.navigation.navigate(AppRoutes.CovidScan, {

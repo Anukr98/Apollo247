@@ -448,7 +448,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         String(getZipcode),
         getServiceablityObject
       );
-
       if (res?.data?.getUpcomingSlotInfo) {
         const getResponse = res?.data?.getUpcomingSlotInfo;
         if (getResponse?.status) {
