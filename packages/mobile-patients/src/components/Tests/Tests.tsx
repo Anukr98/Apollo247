@@ -818,10 +818,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setAsyncPharmaLocation(saveAddress);
             setAsyncDiagnosticPincode?.(saveAddress);
             setLoadingContext?.(false);
-            //calling slot api
-            isDiagnosticLocationServiceable
-              ? getExpressSlots(serviceableResponse, response)
-              : setExpressSlotMsg('');
+            getExpressSlots(serviceableResponse, response);
           } else {
             let response = {
               displayName: '',
@@ -860,9 +857,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setAsyncDiagnosticPincode?.(saveAddress);
             setLoadingContext?.(false);
             //calling slot api
-            isDiagnosticLocationServiceable
-              ? getExpressSlots(serviceableResponse, response)
-              : setExpressSlotMsg('');
+            getExpressSlots(serviceableResponse, response);
           }
         } catch (e) {
           CommonBugFender('updatePlaceInfoByPincode_Tests', e);
