@@ -1074,6 +1074,10 @@
     "PHARMA_CART": "PHARMA_CART",
     "VC_CART": "VC_CART"
   },
+  "user_type": {
+    "NEW": "New",
+    "REPEAT": "Repeat"
+  },
   "circleMembershipBenefits": {
     "PHARMA_CASHBACK": "Pharma Cashback",
     "FREE_DELIVERY": "Free Delivery",

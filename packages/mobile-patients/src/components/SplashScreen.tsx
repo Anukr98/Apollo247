@@ -85,6 +85,7 @@ import {
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import CleverTap from 'clevertap-react-native';
 import { CleverTapEventName } from '../helpers/CleverTapEvents';
+import analytics from '@react-native-firebase/analytics';
 
 (function() {
   /**
@@ -229,6 +230,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     AsyncStorage.removeItem('saveTokenDeviceApiCall');
     handleDeepLink();
     getDeviceToken();
+    initializeRealTimeUninstall();
   }, []);
 
   useEffect(() => {
@@ -246,6 +248,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       CommonBugFender('ErrorWhilecreatingHyperServiceObject', error);
     }
   }, []);
+
+  const initializeRealTimeUninstall = () => {
+    CleverTap.profileGetCleverTapID((error, res) => {
+      analytics().setUserProperty('ct_objectId', `${res}`);
+    });
+  };
 
   const getDeviceToken = async () => {
     const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';

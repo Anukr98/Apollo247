@@ -192,6 +192,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [resultList, setResultList] = useState([] as any);
   const source = props.navigation.getParam('source');
 
+  const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
+
   var rescheduleDate: Date,
     rescheduleSlotObject: {
       slotStartTime: any;
@@ -695,7 +697,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       selectRescheduleReason,
       formatTime,
       formattedDate,
-      String(selectedOrderId)
+      String(selectedOrderId),
+      currentPatient,
+      isDiagnosticCircleSubscription
     );
     rescheduleOrder(rescheduleDiagnosticsInput)
       .then((data) => {
@@ -1353,7 +1357,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   }
 
   function _onPressAddTest(order: orderList) {
-    DiagnosticAddTestClicked(order?.id, currentPatient, order?.orderStatus);
+    DiagnosticAddTestClicked(order?.id, currentPatient, order?.orderStatus, isDiagnosticCircleSubscription);
 
     //clear the cart, if it has some duplicate item present.
     const getOrderItems = order?.diagnosticOrderLineItems?.map(
