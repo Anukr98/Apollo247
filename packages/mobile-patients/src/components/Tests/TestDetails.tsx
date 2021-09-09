@@ -83,7 +83,10 @@ import _ from 'lodash';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { getDiagnosticExpressSlots, getReportTAT } from '../../helpers/clientCalls';
+import {
+  getDiagnosticExpressSlots,
+  getReportTAT,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import moment from 'moment';
 
 const screenWidth = Dimensions.get('window').width;
@@ -429,6 +432,14 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       };
     }
 
+    if (
+      (movedFrom == AppRoutes.TestsCart && Number(deliveryAddressStateId) == 0) ||
+      !isDiagnosticLocationServiceable
+    ) {
+      setExpressSlotMsg('');
+      return;
+    }
+
     try {
       const res = await getDiagnosticExpressSlots(
         client,
@@ -437,7 +448,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         String(getZipcode),
         getServiceablityObject
       );
-      console.log({ res });
+
       if (res?.data?.getUpcomingSlotInfo) {
         const getResponse = res?.data?.getUpcomingSlotInfo;
         if (getResponse?.status) {
