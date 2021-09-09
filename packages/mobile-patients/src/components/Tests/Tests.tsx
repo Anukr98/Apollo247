@@ -263,6 +263,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [imgHeight, setImgHeight] = useState(200);
   const [slideIndex, setSlideIndex] = useState(0);
   const [banners, setBanners] = useState([]);
+  const [cityId, setCityId] = useState('');
+  const [currentOffset, setCurrentOffset] = useState<number>(1);
 
   const [sectionLoading, setSectionLoading] = useState<boolean>(false);
   const [bookUsSlideIndex, setBookUsSlideIndex] = useState(0);
@@ -528,8 +530,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
           variables: {
             mobileNumber: currentPatient && currentPatient.mobileNumber,
             paginated: true,
-            limit: 10,
-            offset: 1,
+            limit: 1, //decreased limit to 1 because we only need to check whether user had any single order or not
+            offset: currentOffset,
           },
           fetchPolicy: 'no-cache',
         })
