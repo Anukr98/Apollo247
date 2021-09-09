@@ -217,6 +217,18 @@ export const productsThumbnailUrl = (filePath: string, baseUrl?: string) => {
     : `${baseUrl || AppConfig.Configuration.IMAGES_BASE_URL[0]}${filePath}`;
 };
 
+export const couponThumbnailUrl = (filePath: string, baseUrl?: string) => {
+  return (filePath || '').startsWith('http')
+    ? filePath
+    : `${baseUrl || AppConfig.Configuration.COUPON_IMAGES_BASE_URL[0]}${filePath}`;
+};
+
+export const specialOffersImagesThumbnailUrl = (filePath: string, baseUrl?: string) => {
+  return (filePath || '').startsWith('http')
+    ? filePath
+    : `${baseUrl || AppConfig.Configuration.SPECIAL_OFFERS_IMAGES_BASE_URL[0]}${filePath}`;
+};
+
 export const formatAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
   const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
   const landmark = [address.landmark];

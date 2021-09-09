@@ -92,7 +92,6 @@ export const PrescriptionCamera: React.FC<PrescriptionCameraProps> = (props) => 
           <TouchableOpacity
             style={styles.cameraActionButton}
             onPress={ () => {
-              console.log(imageClickData,`object`, )
               props.navigation.navigate(AppRoutes.SubmittedPrescription, {
                 type: 'Camera',
                 ePrescriptionsProp: imageClickData,

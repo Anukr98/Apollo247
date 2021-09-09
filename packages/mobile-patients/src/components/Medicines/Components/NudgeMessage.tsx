@@ -28,7 +28,7 @@ export interface NudgeMessageProps {
 export const NudgeMessage: React.FC<NudgeMessageProps> = (props) => {
   const { nudgeMessage, nudgeMessageCart, source } = props;
   const { circleSubscriptionId, isCircleExpired, grandTotal } = useShoppingCart();
-  const showCircleLogo = circleSubscriptionId && !isCircleExpired;
+  const showCircleLogo = !!circleSubscriptionId && !isCircleExpired;
 
   const replaceTextAmount = (text: string) => {
     return text
