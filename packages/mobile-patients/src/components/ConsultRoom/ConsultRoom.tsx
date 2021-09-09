@@ -9,6 +9,7 @@ import {
   SubscriptionData,
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { WebView } from 'react-native-webview';
 import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import { dateFormatterDDMM } from '@aph/mobile-patients/src/utils/dateUtil';
@@ -20,6 +21,7 @@ import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp'
 import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
 import CovidButton from '@aph/mobile-patients/src/components/ConsultRoom/Components/CovidStyles';
 import firebaseAuth from '@react-native-firebase/auth';
+import ReceiveSharingIntent from 'react-native-receive-sharing-intent';
 
 import {
   CartIcon,
@@ -134,6 +136,7 @@ import {
   getCleverTapCircleMemberValues,
   getAge,
   removeObjectNullUndefinedProperties,
+  fileToBase64,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -848,6 +851,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   useEffect(() => {
+    //Getting shared file path
+    ReceiveSharingIntent.getReceivedFiles(
+      (files: any) => {
+        props.navigation.navigate(AppRoutes.PostShareAppointmentSelectorScreen, {
+          sharedFiles: files,
+        });
+      },
+      (error: any) => {},
+      'ShareMedia' // share url protocol (must be unique to your app, suggest using your apple bundle id)
+    );
+
     getPatientApiCall();
     setVaccineLoacalStorageData();
     fetchUserAgent();
@@ -1515,6 +1529,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           'Home Screen'
         );
         props.navigation.navigate(AppRoutes.DoctorSearch);
+        //props.navigation.navigate(AppRoutes.PostShareAppointmentSelectorScreen);
       },
     },
     {

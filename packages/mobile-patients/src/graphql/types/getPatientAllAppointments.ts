@@ -837,6 +837,8 @@ export interface getPatientAllAppointments_getPatientAllAppointments {
   __typename: "PatientAllAppointmentsResult";
   totalAppointmentCount: number | null;
   appointments: getPatientAllAppointments_getPatientAllAppointments_appointments[] | null;
+  activeAppointments: getPatientAllAppointments_getPatientAllAppointments_appointments[] | null;
+  followUpAppointments: getPatientAllAppointments_getPatientAllAppointments_appointments[] | null;
 }
 
 export interface getPatientAllAppointments {

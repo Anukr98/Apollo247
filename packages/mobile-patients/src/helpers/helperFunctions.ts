@@ -3575,6 +3575,15 @@ export const getIsMedicine = (typeId: string) => {
   };
   return medicineType[typeId] || '0';
 };
+
+export async function fileToBase64(uri: string) {
+  try {
+    return RNFetchBlob.fs.readFile(uri, 'base64');
+  } catch (e) {
+    console.warn('fileToBase64()', e.message);
+    return '';
+  }
+}
 export const removeWhiteSpaces = (item: any) => {
   const newItem = item?.replace(/\s/g, '');
   return newItem;

@@ -117,6 +117,7 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
                   source={{ uri: item?.image }}
                   style={styles.doctorProfileIcon}
                 />
+                
                 <View style={{ flex: 1 }}>
                   <Text style={styles.itemTxt}>{item?.name}</Text>
                   <Text style={isSearchTypeDoctor ? styles.itemSubTxt : styles.smallText}>
