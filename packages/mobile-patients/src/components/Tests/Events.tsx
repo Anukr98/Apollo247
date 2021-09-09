@@ -696,3 +696,20 @@ export function DiagnosticProductListingPageViewed(type: any, source: any, categ
   };
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED, eventAttributes);
 }
+
+export function DiagnosticPrescriptionSubmitted(
+  currentPatient: any,
+  prescriptionUrl: any,
+  itemName: any,
+  isDiagnosticCircleSubscription?: boolean | undefined
+) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
+  const eventAttributes: CleverTapEvents[CleverTapEventName.DIAGNOSTIC_PRESCRIPTION_SUBMITTED] = {
+    ...getPatientAttributes,
+    Source: 'Apollo247App',
+    PrescriptionUrl: prescriptionUrl,
+    'Item name': itemName,
+    'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+  };
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PRESCRIPTION_SUBMITTED, eventAttributes);
+}
