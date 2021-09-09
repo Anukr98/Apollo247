@@ -124,6 +124,10 @@ export const useGetOrderInfo = () => {
 
   const selectedStore = storeId && stores.find((item) => item.storeid == storeId);
   const { storename, address, workinghrs, phone, city, state, state_id } = selectedStore || {};
+  const totalCashBack =
+    (!coupon?.coupon && isCircleSubscription) || (coupon?.circleBenefits && isCircleSubscription)
+      ? Number(cartTotalCashback) || 0
+      : 0;
 
   const pickUpOrderInfo: saveMedicineOrderOMSVariables = {
     medicineCartOMSInput: {
@@ -196,11 +200,12 @@ export const useGetOrderInfo = () => {
         ? { userSubscriptionId: circleSubscriptionId }
         : null,
       planPurchaseDetails: !!circleMembershipCharges ? planPurchaseDetails : null,
-      totalCashBack: !coupon?.coupon && isCircleSubscription ? Number(cartTotalCashback) || 0 : 0,
+      totalCashBack,
       appVersion: DeviceInfo.getVersion(),
       savedDeliveryCharge:
         !!isFreeDelivery || isCircleSubscription ? 0 : AppConfig.Configuration.DELIVERY_CHARGES,
       appointmentId: appointmentIds?.length ? appointmentIds.join(',') : '',
+      isCashBack: !!totalCashBack,
     },
   };
 
