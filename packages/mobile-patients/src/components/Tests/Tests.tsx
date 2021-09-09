@@ -546,11 +546,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
   
   useEffect(() => {
-    // getting userType from asyncStorage
+    // getting diagnosticUserType from asyncStorage
     const fetchUserType = async () => {
       try {
-        const userType = await AsyncStorage.getItem('userType');
-        if (userType == null) {
+        const diagnosticUserType = await AsyncStorage.getItem('diagnosticUserType');
+        if (diagnosticUserType == null) {
           fetchOrders();
         }
       } catch (error) {
@@ -579,8 +579,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         })
         .then((data) => {
           const ordersList = data?.data?.getDiagnosticOrdersListByMobile?.ordersList || [];
-          const userType = ordersList?.length > 0 ? string.user_type.REPEAT : string.user_type.NEW;
-          AsyncStorage.setItem('userType', JSON.stringify(userType));
+          const diagnosticUserType = ordersList?.length > 0 ? string.user_type.REPEAT : string.user_type.NEW;
+          AsyncStorage.setItem('diagnosticUserType', JSON.stringify(diagnosticUserType));
         })
         .catch((error) => {
           setLoading?.(false);
