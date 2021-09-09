@@ -365,6 +365,8 @@ export enum CleverTapEventName {
   ORDER_TESTS_FROM_PRESCRIPTION_DETAILS = 'PHR Order Tests Prescription Detail',
   CONTINUE_CONSULT_CLICKED = 'Continue Consult Clicked',
   CHAT_WITH_DOCTOR = 'Chat with Doctor',
+  OPENTOK_EVENT_RECEIVED = 'OpenTok Event Received',
+  OPENTOK_ERROR_RECEIVED = 'OpenTok Error Received',
   Order_Medicine_From_View_Prescription = 'OrderMedicineFromViewPrescription',
   Book_Tests_From_View_Prescription = 'BookTestsFromViewPrescription',
 
@@ -834,6 +836,12 @@ export interface consultCallEndData {
   'Doctor Type': string;
   'Mode of Call': 'Audio' | 'Video';
   Platform: 'App';
+  'Doctor ID': string;
+  'Doctor Number': string;
+  'Doctor Facility ID': string;
+  'Doctor Facility': string;
+  'Session ID': string;
+  'Call ID': string;
 }
 
 interface consultLocation {
@@ -1727,6 +1735,44 @@ export interface CleverTapEvents {
     'Display ID': number;
     'Chat Format': 'PDF' | 'Image' | 'Text';
   };
+  [CleverTapEventName.OPENTOK_ERROR_RECEIVED]: {
+    'Doctor ID': string;
+    'Doctor Name': string;
+    'Doctor Number': string;
+    'Doctor Type': string;
+    'Doctor Speciality ID': string;
+    'Doctor Speciality': string;
+    'Doctor Facility ID': string;
+    'Doctor Facility': string;
+    'Appointment ID': string;
+    'Appointment Display ID': string;
+    'Patient Name': string;
+    'Patient Number': string;
+    'Session ID': string;
+    'Call ID': string;
+    'Error Name': string;
+    'Error Data': string;
+    'reason': string;
+  };
+  [CleverTapEventName.OPENTOK_EVENT_RECEIVED]: {
+    'Doctor ID': string;
+    'Doctor Name': string;
+    'Doctor Number': string;
+    'Doctor Type': string;
+    'Doctor Speciality ID': string;
+    'Doctor Speciality': string;
+    'Doctor Facility ID': string;
+    'Doctor Facility': string;
+    'Appointment ID': string;
+    'Appointment Display ID': string;
+    'Patient Name': string;
+    'Patient Number': string;
+    'Session ID': string;
+    'Call ID': string;
+    'Event Name': string;
+    'Event Data': string;
+    'reason': string;
+  };
   // confirm the type of data for the below
   [CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION]: {
     docName: string;
@@ -2250,6 +2296,16 @@ export interface CleverTapEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    'Doctor ID': string;
+    'Doctor Number': string;
+    'Doctor Facility ID': string;
+    'Doctor Facility': string;
+    'Appointment ID': string;
+    'Appointment Display ID': string;
+    'Patient Number': string;
+    'Session ID': string;
+    'Call ID': string;
+    'Did doctor Join': string;
   };
   [CleverTapEventName.CALL_ENDED]: {
     'Doctor Name': string;

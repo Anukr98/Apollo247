@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useQuery } from 'react-apollo-hooks';
+import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
   SafeAreaView,
   StyleSheet,
@@ -49,6 +49,8 @@ import {
 import { TrackerBig } from '@aph/mobile-patients/src/components/ui/Icons';
 import Pdf from 'react-native-pdf';
 import { SelectEprescriptionCard } from '@aph/mobile-patients/src/components/Medicines/Components/SelectEprescriptionCard';
+import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_hospitalizations_response } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V3';
 
 const { width, height } = Dimensions.get('window');
 
@@ -197,6 +199,9 @@ export interface SelectEPrescriptionModalProps {
 
 export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> = (props) => {
   const [selectedPrescription, setSelectedPrescription] = useState<{ [key: string]: boolean }>({});
+  const [selectedDischargeSummary, setSelectedDischargeSummary] = useState<{
+    [key: string]: boolean;
+  }>({});
   const [showPreview, setShowPreview] = useState<boolean>(false);
   const [imageUrl, setImageUrl] = useState<string>('');
   const [imageIndex, setImageIndex] = useState<string>('');
@@ -204,9 +209,15 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
   const loadRecordsStep = 12;
   const [healthRecordIndex, setHealthRecordIndex] = useState<number>(loadRecordsStep);
   const [refreshHealthRecords, setRefreshHealthRecords] = useState<boolean>(false);
+  const [dischargeSummaryData, setDischargeSummaryData] = useState<any[]>([]);
   const { currentPatient, profileAllPatients } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
+  const client = useApolloClient();
   const DATE_FORMAT = 'DD MMM YYYY';
+
+  useEffect(() => {
+    getLatestHospitalizationRecords();
+  }, []);
 
   useEffect(() => {
     if (!currentPatient) {
@@ -318,6 +329,108 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     });
     setCombination(sordByDate(mergeArray));
   }, [labResults, prescriptions]);
+
+  const getLatestHospitalizationRecords = () => {
+    getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [
+      MedicalRecordType.HOSPITALIZATION,
+    ])
+      .then((data: any) => {
+        const hospitalizationsData = g(
+          data,
+          'getPatientPrismMedicalRecords_V3',
+          'hospitalizations',
+          'response'
+        );
+        if (hospitalizationsData?.length) formatDischargeSummaryData(hospitalizationsData);
+      })
+      .catch((error) => {
+        CommonBugFender('SelectEPrescriptionModal_getLatestHospitalizationRecords', error);
+        currentPatient && handleGraphQlError(error);
+      });
+  };
+
+  const formatDischargeSummaryData = (
+    summaryData: getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_hospitalizations_response[]
+  ) => {
+    const dischargeSummary = summaryData
+      .map(
+        (item) =>
+          ({
+            id: item?.id,
+            date: moment(item?.dateOfHospitalization || item?.date).format(DATE_FORMAT),
+            uploadedUrl:
+              item?.hospitalizationFiles?.[0]?.file_Url +
+              '/' +
+              item?.hospitalizationFiles?.[0]?.fileName,
+            doctorName: item?.doctorName || 'Hospitalizations',
+            forPatient: (currentPatient && currentPatient.firstName) || '',
+            medicines: '',
+            message: item?.dateOfHospitalization
+              ? `Date of Hospitalization: ${moment(item?.dateOfHospitalization).format(
+                  'DD-MMM-YYYY'
+                )}\n`
+              : `` + item?.dateOfDischarge
+              ? `Date of Discharge: ${moment(item?.dateOfDischarge).format('DD-MMM-YYYY')}\n`
+              : `-` + item?.diagnosisNotes
+              ? `Diagnosis Notes: ${item?.diagnosisNotes}`
+              : ``,
+          } as any)
+      )
+      .filter((item) => !!item.uploadedUrl)
+      .sort(
+        (a, b) =>
+          moment(b.date, DATE_FORMAT)
+            .toDate()
+            .getTime() -
+          moment(a.date, DATE_FORMAT)
+            .toDate()
+            .getTime()
+      );
+    setDischargeSummaryData(dischargeSummary);
+  };
+
+  const renderDischargeSummaryList = () => {
+    return (
+      <View>
+        <Text style={styles.sectionHeadings}>{`Discharge Summary`}</Text>
+        <FlatList
+          data={dischargeSummaryData}
+          renderItem={renderDischargeSummary}
+          keyExtractor={(item) => item.id}
+          numColumns={3}
+          contentContainerStyle={{ paddingHorizontal: 15 }}
+        />
+      </View>
+    );
+  };
+
+  const renderDischargeSummary = ({ item, index }) => {
+    const isPdf = item?.uploadedUrl?.split('.')?.pop() === 'pdf';
+    const selected = !!selectedDischargeSummary[item?.id];
+    const heading = item?.doctorName || '';
+    const dateOfPrescription = item?.date;
+    return (
+      <SelectEprescriptionCard
+        selected={selected}
+        isPdf={isPdf}
+        url={item?.uploadedUrl || ''}
+        heading={heading}
+        date={dateOfPrescription}
+        onLongPressCard={() => {
+          setIsPdfPrescription(isPdf);
+          setImageUrl(item?.uploadedUrl);
+          setImageIndex(index.toString());
+          setShowPreview(true);
+        }}
+        onPressCard={() => {
+          setSelectedDischargeSummary({
+            ...selectedDischargeSummary,
+            [item.id]: !selected,
+          });
+        }}
+      />
+    );
+  };
 
   const sordByDate = (
     array: { type: 'medical' | 'lab' | 'health' | 'hospital' | 'prescription'; data: any }[]
@@ -633,6 +746,8 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
   const onPressUpload = () => {
     CommonLogEvent('SELECT_PRESCRIPTION_MODAL', 'Formatted e prescription');
     const submitValues = prescriptionUpto6months?.filter((item) => selectedPrescription[item!.id]);
+    const selectedDS = dischargeSummaryData?.filter((item) => selectedDischargeSummary[item?.id]);
+    if (selectedDS.length) submitValues.push(...selectedDS);
     if (combination) {
       combination.forEach(({ type, data }, index) => {
         if (selectedHealthRecord?.findIndex((i) => i === index.toString()) > -1) {
@@ -747,6 +862,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
       });
     }
     setSelectedHealthRecord([]);
+    setSelectedDischargeSummary({});
     props.onSubmit(submitValues);
   };
 
@@ -784,7 +900,10 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
         title={'UPLOAD'}
         disabled={
           Object.keys(selectedPrescription)?.filter((item) => selectedPrescription?.[item])
-            ?.length == 0 && selectedHealthRecord.length === 0
+            ?.length == 0 &&
+          selectedHealthRecord.length === 0 &&
+          Object.keys(selectedDischargeSummary)?.filter((item) => selectedDischargeSummary?.[item])
+            ?.length == 0
         }
         onPress={onPressUpload}
         style={styles.buttonCta}
@@ -813,6 +932,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                   renderSteps()}
                 {!!prescriptionUpto6months.length && renderEPrescriptions(false)}
                 {!!combination?.length && props.displayPrismRecords && renderHealthRecords()}
+                {!!dischargeSummaryData?.length && renderDischargeSummaryList()}
                 {!!prescriptionOlderThan6months.length && renderEPrescriptions(true)}
                 <View style={{ height: 12 }} />
               </>

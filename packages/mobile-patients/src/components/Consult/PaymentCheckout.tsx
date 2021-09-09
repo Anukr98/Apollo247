@@ -353,16 +353,14 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       fetchPolicy: 'no-cache',
     });
   };
-
+  
   const createOrderInternal = (orderId: string, subscriptionId?: string) => {
     const orders: OrderVerticals = {
-      consult: [
-        {
-          order_id: orderId,
-          amount: consultAmounttoPay,
-          patient_id: currentPatient?.id,
-        },
-      ],
+      consult: [{
+        order_id: orderId, 
+        amount: consultAmounttoPay,
+        patient_id: currentPatient?.id 
+      }],
     };
     if (subscriptionId) {
       orders['subscription'] = [
@@ -455,12 +453,11 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const renderCareMembershipAddedCard = () => {
     return (
-      <CareMembershipAdded
+      <CareMembershipAdded 
         doctor={doctor}
         isOnlineConsult={isOnlineConsult}
-        couponDiscountFees={couponDiscountFees}
-      />
-    );
+        couponDiscountFees={couponDiscountFees} />
+        );
   };
 
   const renderPriceBreakup = () => {

@@ -284,6 +284,11 @@ export interface ShoppingCartContextProps {
   setSubscriptionHCUsed: ((value: number) => void) | null;
   subscriptionBillTotal: number;
   setSubscriptionBillTotal: ((value: number) => void) | null;
+  medicineHomeBannerData: any;
+  setMedicineHomeBannerData: ((value: any) => void) | null;
+  medicineHotSellersData: any;
+  setMedicineHotSellersData: ((value: any) => void) | null;
+  
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -416,6 +421,10 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setSubscriptionHCUsed: null,
   subscriptionBillTotal: 0,
   setSubscriptionBillTotal: null,
+  medicineHomeBannerData: null,
+  setMedicineHomeBannerData: null,
+  medicineHotSellersData: null,
+  setMedicineHotSellersData: null,
 });
 
 const AsyncStorageKeys = {
@@ -578,6 +587,14 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [subscriptionBillTotal, setSubscriptionBillTotal] = useState<
     ShoppingCartContextProps['subscriptionBillTotal']
   >(0);
+
+  const [medicineHomeBannerData, setMedicineHomeBannerData] = useState<
+    ShoppingCartContextProps['medicineHomeBannerData']
+  >(null);
+
+  const [medicineHotSellersData, setMedicineHotSellersData] = useState<
+    ShoppingCartContextProps['medicineHotSellersData']
+  >(null);
 
   const setEPrescriptions: ShoppingCartContextProps['setEPrescriptions'] = (items) => {
     _setEPrescriptions(items);
@@ -872,6 +889,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setPrescriptionType(null);
     setConsultProfile(null);
     setSubscriptionCoupon(null);
+    setMedicineHomeBannerData(null);
+    setMedicineHotSellersData(null);
   };
 
   useEffect(() => {
@@ -1356,6 +1375,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setSubscriptionHCUsed,
         subscriptionBillTotal,
         setSubscriptionBillTotal,
+        medicineHomeBannerData,
+        setMedicineHomeBannerData,
+        medicineHotSellersData,
+        setMedicineHotSellersData,
       }}
     >
       {props.children}

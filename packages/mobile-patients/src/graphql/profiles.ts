@@ -393,8 +393,18 @@ export const GET_PATIENT_ALL_APPOINTMENTS_FOR_HELP = gql`
 `;
 
 export const GET_PATIENT_ALL_APPOINTMENTS = gql`
-  query getPatientAllAppointments($patientId: String!, $patientMobile: String!, $offset: Int!, $limit: Int!) {
-    getPatientAllAppointments(patientId: $patientId, patientMobile: $patientMobile, offset: $offset, limit: $limit) {
+  query getPatientAllAppointments(
+    $patientId: String!
+    $patientMobile: String!
+    $offset: Int!
+    $limit: Int!
+  ) {
+    getPatientAllAppointments(
+      patientId: $patientId
+      patientMobile: $patientMobile
+      offset: $offset
+      limit: $limit
+    ) {
       totalAppointmentCount
       appointments {
         patientName
@@ -1073,24 +1083,6 @@ export const GET_PATIENT_ALL_CONSULTED_DOCTORS = gql`
   }
 `;
 
-export const GET_PATIENT_ALL_CONSULTED_DOCTORS = gql`
-  query getPatientAllConsultedDoctors($patientId: String!) {
-    getPatientAllAppointments(patientId: $patientId) {
-      appointments {
-        doctorInfo {
-          id
-          displayName
-          specialty {
-            image
-            name
-          }
-          photoUrl
-        }
-      }
-    }
-  }
-`;
-
 export const GET_ALL_SPECIALTIES = gql`
   query getAllSpecialties {
     getAllSpecialties {
@@ -1449,6 +1441,7 @@ export const SAVE_PATIENT_ADDRESS = gql`
         longitude
         stateCode
         name
+        defaultAddress
       }
     }
   }
@@ -2393,6 +2386,18 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           PhleboLatitude
           PhleboLongitude
         }
+        diagnosticOrderPhlebotomists {
+          phleboRating
+          phleboOTP
+          checkinDateTime
+          phleboTrackLink
+          diagnosticPhlebotomists {
+            id
+            name
+            mobile
+            vaccinationStatus
+          }
+        }
         diagnosticOrderReschedule {
           rescheduleDate
           rescheduleReason
@@ -3068,362 +3073,6 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS_BY_MOBILE = gql`
 export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
   query getPatientPrismMedicalRecords_V2($patientId: ID!, $records: [MedicalRecordType]) {
     getPatientPrismMedicalRecords_V2(patientId: $patientId, records: $records) {
-      labResults {
-        response {
-          id
-          labTestName
-          labTestSource
-          packageId
-          packageName
-          # labTestDate
-          date
-          labTestRefferedBy
-          siteDisplayName
-          tag
-          consultId
-          identifier
-          additionalNotes
-          billNo
-          testSequence
-          observation
-          labTestResults {
-            parameterName
-            unit
-            result
-            range
-            outOfRange
-            # resultDate
-          }
-          fileUrl
-          testResultFiles {
-            id
-            fileName
-            mimeType
-            index
-            file_Url
-            # content
-            # byteContent
-          }
-        }
-        errorCode
-        errorMsg
-        errorType
-      }
-      prescriptions {
-        response {
-          id
-          prescriptionName
-          date
-          # dateOfPrescription
-          # startDate
-          # endDate
-          prescribedBy
-          notes
-          prescriptionSource
-          siteDisplayName
-          source
-          fileUrl
-          prescriptionFiles {
-            id
-            fileName
-            mimeType
-            index
-            file_Url
-            # content
-            # byteContent
-          }
-          hospital_name
-          hospitalId
-        }
-        errorCode
-        errorMsg
-        errorType
-      }
-      healthChecks {
-        errorCode
-        errorMsg
-        errorType
-        response {
-          authToken
-          userId
-          id
-          fileUrl
-          date
-          healthCheckName
-          healthCheckDate
-          siteDisplayName
-          healthCheckSummary
-          healthCheckFiles {
-            id
-            fileName
-            mimeType
-            content
-            # byteContent
-            # dateCreated
-          }
-          source
-          healthCheckType
-          followupDate
-        }
-      }
-      hospitalizations {
-        errorCode
-        errorMsg
-        errorType
-        response {
-          authToken
-          userId
-          id
-          fileUrl
-          date
-          hospitalizationDate
-          dateOfHospitalization
-          hospitalName
-          doctorName
-          reasonForAdmission
-          siteDisplayName
-          diagnosisNotes
-          dateOfDischarge
-          dischargeSummary
-          doctorInstruction
-          dateOfNextVisit
-          hospitalizationFiles {
-            id
-            fileName
-            mimeType
-            index
-            file_Url
-            # content
-            # byteContent
-            # dateCreated
-          }
-          source
-        }
-      }
-      medicalBills {
-        errorCode
-        errorMsg
-        errorType
-        response {
-          id
-          bill_no
-          hospitalName
-          billDate
-          source
-          siteDisplayName
-          notes
-          fileUrl
-          billDateTime
-          billFiles {
-            id
-            fileName
-            mimeType
-            index
-            file_Url
-            # content
-            # byteContent
-            # dateCreated
-          }
-        }
-      }
-      medicalInsurances {
-        errorCode
-        errorMsg
-        errorType
-        response {
-          id
-          insuranceCompany
-          policyNumber
-          startDate
-          endDate
-          startDateTime
-          endDateTime
-          source
-          siteDisplayName
-          fileUrl
-          notes
-          sumInsured
-          insuranceFiles {
-            id
-            fileName
-            mimeType
-            index
-            file_Url
-            # content
-            # byteContent
-            # dateCreated
-          }
-        }
-      }
-      medicalConditions {
-        errorCode
-        errorMsg
-        errorType
-        response {
-          id
-          medicalConditionName
-          doctorTreated
-          startDate
-          source
-          endDate
-          notes
-          illnessType
-          fileUrl
-          siteDisplayName
-          startDateTime
-          endDateTime
-          medicationFiles {
-            id
-            fileName
-            mimeType
-            index
-            file_Url
-            # content
-            # byteContent
-            # dateCreated
-          }
-        }
-      }
-      medications {
-        errorCode
-        errorMsg
-        errorType
-        response {
-          id
-          medicineName
-          medicalCondition
-          doctorName
-          startDate
-          endDate
-          startDateTime
-          endDateTime
-          morning
-          noon
-          siteDisplayName
-          evening
-          notes
-          source
-        }
-      }
-      healthRestrictions {
-        errorCode
-        errorMsg
-        errorType
-        response {
-          id
-          startDate
-          endDate
-          startDateTime
-          endDateTime
-          restrictionName
-          suggestedByDoctor
-          nature
-          siteDisplayName
-          source
-          notes
-        }
-      }
-      allergies {
-        errorCode
-        errorMsg
-        errorType
-        response {
-          id
-          startDate
-          endDate
-          fileUrl
-          startDateTime
-          endDateTime
-          allergyName
-          severity
-          reactionToAllergy
-          doctorTreated
-          notes
-          siteDisplayName
-          source
-          attachmentList {
-            id
-            fileName
-            mimeType
-            index
-            file_Url
-            # content
-            # byteContent
-            # dateCreated
-          }
-        }
-      }
-      familyHistory {
-        errorCode
-        errorMsg
-        errorType
-        response {
-          id
-          diseaseName
-          authToken
-          source
-          fileUrl
-          familyMember
-          notes
-          siteDisplayName
-          recordDateTime
-          age
-          familyHistoryFiles {
-            id
-            fileName
-            mimeType
-            index
-            file_Url
-            # content
-            # byteContent
-            # dateCreated
-          }
-        }
-      }
-      immunizations {
-        errorCode
-        errorMsg
-        errorType
-        response {
-          id
-          immunizationName
-          dateAdministered
-          followUpDate
-          registrationId
-          dateOfImmunization
-          dueDate
-          fileUrl
-          doctorName
-          manufacturer
-          batchno
-          vaccineName
-          potency
-          hospitalName
-          vaccine_location
-          notes
-          source
-          reactions {
-            type
-            from
-            to
-          }
-          immunizationFiles {
-            id
-            fileName
-            mimeType
-            content
-            byteContent
-            dateCreated
-          }
-        }
-      }
-    }
-  }
-`;
-
-export const GET_MEDICAL_PRISM_RECORD_V3 = gql`
-  query getPatientPrismMedicalRecords_V3($patientId: ID!, $records: [MedicalRecordType]) {
-    getPatientPrismMedicalRecords_V3(patientId: $patientId, records: $records) {
       labResults {
         response {
           id
@@ -5807,6 +5456,18 @@ export const GET_ORDER_LEVEL_DIAGNOSTIC_STATUS = gql`
         statusDate
         orderStatus
       }
+      groupedPendingReportInclusions {
+        inclusions {
+          itemId
+          itemName
+          packageId
+          packageName
+          orderStatus
+        }
+        isReportPending
+        reportTATMessage
+        expectedReportGenerationTime
+      }
       statusInclusions {
         statusDate
         orderStatus
@@ -5872,6 +5533,7 @@ export const GET_PHLOBE_DETAILS = gql`
           diagnosticPhlebotomists {
             name
             mobile
+            vaccinationStatus
           }
           phleboOTP
           phleboTrackLink
@@ -5924,7 +5586,6 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql`
           lastName
         }
         attributesObj {
-          reportTATHours
           reportTATMessage
           reportGenerationTime
           expectedReportGenerationTime
@@ -5985,7 +5646,6 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
           }
         }
         attributesObj {
-          reportTATHours
           reportTATMessage
           reportGenerationTime
           expectedReportGenerationTime
@@ -6547,6 +6207,138 @@ export const GET_DIAGNOSTIC_REPORT_TAT = gql`
         itemId
         reportTATMessage
         reportTATInUTC
+      }
+    }
+  }
+`;
+
+export const GET_PATIENT_PRESCRIPTIONS = gql`
+query {
+  getPatientPrescriptions(
+    patientId: $patientId
+    limit: 100
+  ) {
+    response {
+      doctorName
+      patientName
+      caseSheet {
+        notes
+        blobName
+        consultType
+        prescriptionGeneratedDate
+        diagnosis {
+          name
+          __typename
+        }
+        diagnosticPrescription {
+          itemname
+          __typename
+        }
+        doctorId
+        doctorType
+        followUp
+        followUpAfterInDays
+        followUpDate
+        followUpConsultType
+        id
+        medicinePrescription {
+          medicineConsumptionDurationInDays
+          medicineDosage
+          id
+          medicineCustomDetails
+          medicineConsumptionDurationUnit
+          medicineFormTypes
+          medicineFrequency
+          medicineInstructions
+          medicineName
+          medicineTimings
+          medicineToBeTaken
+          medicineUnit
+          routeOfAdministration
+          __typename
+        }
+        symptoms {
+          symptom
+          since
+          howOften
+          severity
+          details
+          __typename
+        }
+        otherInstructions {
+          instruction
+          __typename
+        }
+        __typename
+      }
+    }
+  }
+  getPatientPrismMedicalRecords_V2(
+    patientId: $patientId
+    records: [PRESCRIPTION]
+  ) {
+    prescriptions {
+      response {
+        id
+        prescriptionName
+        date
+        prescribedBy
+        notes
+        prescriptionSource
+        source
+        siteDisplayName
+        fileUrl
+        prescriptionFiles {
+          id
+          fileName
+          mimeType
+          content
+          byteContent
+          __typename
+        }
+        __typename
+      }
+      errorCode
+      errorMsg
+      errorType
+      __typename
+    }
+  }
+}
+`
+
+export const ADD_PATIENT_PRESCRIPTION_RECORD = gql`
+  mutation addPatientPrescriptionRecord($AddPrescriptionRecordInput: AddPrescriptionRecordInput) {
+    addPatientPrescriptionRecord(addPrescriptionRecordInput: $AddPrescriptionRecordInput) {
+      status
+      __typename
+    }
+  }
+`;
+
+export const SAVE_JUSPAY_SDK_RESPONSE = gql`
+  mutation saveJuspayResponseForAudit($auditInput: AuditInput) {
+    saveJuspayResponseForAudit(auditInput: $auditInput) {
+      success
+    }
+  }
+`;
+
+export const GET_JUSPAY_CLIENTAUTH_TOKEN = gql`
+  query getCustomer(
+    $customerId: String
+    $is_pharma_juspay: Boolean
+    $get_client_auth_token: Boolean
+  ) {
+    getCustomer(
+      customerId: $customerId
+      is_pharma_juspay: $is_pharma_juspay
+      get_client_auth_token: $get_client_auth_token
+    ) {
+      mobile_number
+      juspay {
+        client_auth_token
+        client_auth_token_expiry
       }
     }
   }

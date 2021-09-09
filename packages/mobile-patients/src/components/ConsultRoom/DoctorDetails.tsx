@@ -878,7 +878,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         CommonBugFender('DoctorDetails_getNetStatus', e);
       });
   };
-
+  
   const renderCareDoctorPricing = (consultType: ConsultMode) => {
     return (
       <View style={{ paddingBottom: showCircleSubscribed ? 16 : 3 }}>
