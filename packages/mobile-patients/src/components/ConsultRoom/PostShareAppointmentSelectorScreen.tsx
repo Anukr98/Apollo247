@@ -12,6 +12,7 @@ import {
   FlatList,
 } from 'react-native';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import moment from 'moment';
 
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -62,13 +63,17 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 12, theme.colors.SKY_BLUE),
     textTransform: 'capitalize',
   },
+  patientname: {
+    marginTop: 7,
+    ...theme.viewStyles.text('R', 12, theme.colors.SKY_BLUE),
+  },
   consultationType: {
     ...theme.viewStyles.text('R', 14, '#A8A9A4'),
     textTransform: 'capitalize',
     marginTop: 7,
   },
   datAndTime: {
-    ...theme.viewStyles.text('R', 12, '#A8A9A4'),
+    ...theme.viewStyles.text('M', 14, '#000'),
   },
   doctorProfileIcon: {
     width: 40,
@@ -135,12 +140,17 @@ export const PostShareAppointmentSelectorScreen: React.FC<PostShareAppointmentSe
       const followUpAppointments = data?.getPatientAllAppointments?.followUpAppointments;
 
       const sharableAttachmentAppointment = [...activeAppointments, ...followUpAppointments];
+
       if (!sharableAttachmentAppointment || sharableAttachmentAppointment.length == 0) {
         showAphAlert!({
           title: 'Uh oh! :(',
           description: 'No appointment details to show .',
         });
       }
+
+      sharableAttachmentAppointment.sort((apnmt1: any, apnmt2: any) => {
+        return moment.utc(apnmt2.appointmentDateTime).diff(moment.utc(apnmt1.appointmentDateTime));
+      });
 
       setAppointmentList(sharableAttachmentAppointment);
     } catch (error) {
@@ -184,7 +194,11 @@ export const PostShareAppointmentSelectorScreen: React.FC<PostShareAppointmentSe
               {item?.doctorInfo?.specialty?.specialistSingularTerm}
             </Text>
             <Text style={styles.consultationType}>{item?.appointmentType}</Text>
-            <Text style={styles.datAndTime}> {item?.bookingDate}</Text>
+            <Text style={styles.datAndTime}>
+              {moment(item?.bookingDate).format('DD MMM YYYY, hh:mm A')}
+            </Text>
+
+            <Text style={styles.patientname}>{item?.patientName}</Text>
           </View>
         </View>
       </TouchableOpacity>
