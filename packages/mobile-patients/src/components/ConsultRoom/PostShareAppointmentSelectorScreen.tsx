@@ -207,11 +207,12 @@ export const PostShareAppointmentSelectorScreen: React.FC<PostShareAppointmentSe
 
   const openOnlineAppointmentChatScreen = (item: any) => {
     if (item.appointmentType === 'ONLINE') {
+      props.navigation.goBack();
+
       props.navigation.navigate(AppRoutes.ChatRoom, {
         data: item,
         callType: '',
         prescription: '',
-
         sharedFilesList: sharedFiles,
       });
     } else {
