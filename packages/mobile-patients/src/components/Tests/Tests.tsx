@@ -590,6 +590,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
       cityID: Number(serviceabilityObject?.cityId),
       stateID: Number(serviceabilityObject?.stateId),
     };
+    //response when unserviceable
+    if (Number(serviceabilityObject?.stateId) == 0 && serviceabilityObject?.city == '') {
+      setExpressSlotMsg('');
+      return;
+    }
     try {
       const res: any = await getDiagnosticExpressSlots(
         client,
@@ -814,7 +819,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setAsyncDiagnosticPincode?.(saveAddress);
             setLoadingContext?.(false);
             //calling slot api
-            getExpressSlots(serviceableResponse, response);
+            isDiagnosticLocationServiceable
+              ? getExpressSlots(serviceableResponse, response)
+              : setExpressSlotMsg('');
           } else {
             let response = {
               displayName: '',
@@ -853,7 +860,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setAsyncDiagnosticPincode?.(saveAddress);
             setLoadingContext?.(false);
             //calling slot api
-            getExpressSlots(serviceableResponse, response);
+            isDiagnosticLocationServiceable
+              ? getExpressSlots(serviceableResponse, response)
+              : setExpressSlotMsg('');
           }
         } catch (e) {
           CommonBugFender('updatePlaceInfoByPincode_Tests', e);
@@ -1453,7 +1462,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
       if (item?.redirectUrl && item?.redirectUrl != '') {
         //for rtpcr - drive through - open webview
         if (item?.redirectUrlText === 'WebView') {
-          DiagnosticBannerClick(slideIndex + 1, Number(item?.itemId), item?.bannerTitle);
+          DiagnosticBannerClick(
+            slideIndex + 1,
+            Number(item?.itemId || item?.id),
+            item?.bannerTitle
+          );
           try {
             const openUrl = item?.redirectUrl || AppConfig.Configuration.RTPCR_Google_Form;
             props.navigation.navigate(AppRoutes.CovidScan, {
@@ -2130,7 +2143,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         undefined,
         clickedItem?.orderStatus,
         (clickedItem?.displayId).toString(),
-        true,
+        true
       );
     } catch (error) {
       setLoadingContext?.(false);
