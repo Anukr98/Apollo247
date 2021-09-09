@@ -178,6 +178,7 @@ export enum CleverTapEventName {
   DIAGNOSITC_MODIFY_CLICKED = 'Diagnositic modify order clicked',
   DIAGNOSTIC_MODIFY_ORDER = 'Diagnostic modify order',
   DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED = 'Diagnostic product listing page viewed',
+  DIAGNOSTIC_PRESCRIPTION_SUBMITTED = 'Diagnostic prescription submitted',
 
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
@@ -1538,6 +1539,12 @@ export interface CleverTapEvents {
     Source: 'Home' | 'Deeplink' | 'Details page' | 'Cart page';
     'Category name': '';
     'Section name': '';
+  };
+  [CleverTapEventName.DIAGNOSTIC_PRESCRIPTION_SUBMITTED]: {
+    Source: string;
+    'PrescriptionUrl': any;
+    'Item name': string;
+    'Circle user': string
   };
 
   // ********** ConsultEvents ********** \\
