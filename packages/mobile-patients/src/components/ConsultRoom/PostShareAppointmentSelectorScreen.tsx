@@ -31,6 +31,7 @@ const { width, height } = Dimensions.get('window');
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { renderPostShareAppointmentLoadingShimmer } from '../ui/ShimmerFactory';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import ReceiveSharingIntent from 'react-native-receive-sharing-intent';
 
 const styles = StyleSheet.create({
   nameTextContainerStyle: {
@@ -175,6 +176,7 @@ export const PostShareAppointmentSelectorScreen: React.FC<PostShareAppointmentSe
           } else {
             openOnlineAppointmentChatScreen(item);
           }
+          ReceiveSharingIntent.clearReceivedFiles();
         }}
       >
         <View style={{ flexDirection: 'row' }}>
