@@ -1339,7 +1339,7 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED]: {
     'Order amount': string | number;
-    'Order id': string;
+    'Order ID': string;
     'Order status'?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR]: DiagnosticPinCode;
@@ -1912,7 +1912,7 @@ export interface CleverTapEvents {
     'Order date'?: string;
     'Order type': 'Non Cart' | 'Cart' | 'Offline';
     'Customer ID': string;
-    'Delivery date'?: string;
+    'Delivery Date'?: string;
     'Mobile number': string;
     'Order status': MEDICINE_ORDER_STATUS;
   };

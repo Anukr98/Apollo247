@@ -573,7 +573,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         MaxOrderQuantity: MaxOrderQty,
         MRP: price,
         SpecialPrice: special_price || undefined,
-        CircleCashback: Number(cashback) || 0,
+        'Circle Cashback': Number(cashback) || 0,
         SubCategory: subcategory || '',
       };
       if (movedFrom === 'deeplink') {
