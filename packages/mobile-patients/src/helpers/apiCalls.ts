@@ -48,6 +48,7 @@ export interface MedicineProduct {
   banned?: 'Yes' | 'No';
   subcategory?: string | null;
   merchandising?: number | null;
+  suggested_qty: string | null;
 }
 
 export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
@@ -689,7 +690,7 @@ export const searchMedicineApi = async (
 ): Promise<AxiosResponse<PopcSrchPrdApiResponse>> => {
   const CancelToken = Axios.CancelToken;
   cancelSearchMedicineApi247 && cancelSearchMedicineApi247();
-  return Axios({
+  const res =  Axios({
     url: config.MED_SEARCH[0],
     method: 'POST',
     data: {
@@ -707,6 +708,8 @@ export const searchMedicineApi = async (
       cancelSearchMedicineApi247 = c;
     }),
   });
+  console.log('res is....................', res);
+  return res;
 };
 
 export const formatFilters = (filters: { [key: string]: string[] } | null) =>
