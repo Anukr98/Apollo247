@@ -55,9 +55,9 @@ import moment from 'moment';
 import {
   convertNumberToDecimal,
 } from '@aph/mobile-patients/src/utils/commonUtils';
-import { RenderPdf } from '../../ui/RenderPdf';
-import PaymentStatusConstants from '../constants';
-import FooterButton from './components/FooterButton';
+import { RenderPdf } from '@aph/mobile-patients/src/components/ui/RenderPdf';
+import PaymentStatusConstants from '@aph/mobile-patients/src/components/MyPayments/constants';
+import FooterButton from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/components/FooterButton';
 
 export interface ConsultPaymentScreenProps extends NavigationScreenProps {}
 
