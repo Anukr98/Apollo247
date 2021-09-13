@@ -54,7 +54,15 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity, BackHandler } from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  BackHandler,
+  Dimensions,
+} from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -78,18 +86,17 @@ import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMen
 import {
   getHCOrderFormattedTrackingHistory,
   getHCOrderFormattedTrackingHistoryVariables,
+  getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_groupedPendingReportInclusions,
+  getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_groupedPendingReportInclusions_inclusions,
   getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusHistory,
   getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusHistory_attributes_refund,
 } from '@aph/mobile-patients/src/graphql/types/getHCOrderFormattedTrackingHistory';
 import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components/StatusCard';
-import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 
-import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import {
   getDiagnosticOrderDetailsByDisplayID,
   getDiagnosticOrderDetailsByDisplayIDVariables,
@@ -102,6 +109,9 @@ const DROP_DOWN_ARRAY_STATUS = [
 type orderStatus = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus;
 type orderLineItems = getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems;
 type orderStatusTracking = getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusHistory;
+type groupedInclusions = getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_groupedPendingReportInclusions_inclusions;
+type groupedItems = getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_groupedPendingReportInclusions;
+const screenWidth = Dimensions.get('window').width;
 export interface TestOrderDetailsProps extends NavigationScreenProps {
   orderId: string;
   showOrderSummaryTab: boolean;
@@ -991,7 +1001,20 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const renderInclusionLevelDropDown = (order: any) => {
-    /**add condition for sample submitted if inclusion level same */
+    //replaced groupedPendingReportInclusions => statusInclusions
+    const isGroupedInclusions =
+      !!orderLevelStatus?.groupedPendingReportInclusions &&
+      orderLevelStatus?.groupedPendingReportInclusions?.length > 0;
+
+    //done for old orders
+    if (isGroupedInclusions) {
+      return renderGroupedInclusions();
+    } else {
+      return renderStatusInclusions();
+    }
+  };
+
+  function findTestInclusionStatusDetails() {
     const totalInclusions = orderLevelStatus?.statusInclusions?.length;
     const hasDiffStatusLevelInclusion = !!orderLevelStatus?.statusInclusions && totalInclusions > 0;
 
@@ -1012,7 +1035,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
     const reportText =
       !!pendingReportInclusions && pendingReportInclusions?.length > 0 && isReportText
-        ? `Report pending for ${pendingReportInclusions?.length} of ${totalInclusions}`
+        ? `Report pending for ${pendingReportInclusions?.length} of ${totalInclusions} tests`
         : !!sampleRejectedInclusions && sampleRejectedInclusions?.length > 0
         ? `${sampleRejectedInclusions?.length} test in order rejected `
         : !!sampleSubmittedInclusions &&
@@ -1022,7 +1045,105 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         ? `${sampleSubmittedInclusions?.length} ${
             sampleSubmittedInclusions?.length == 1 ? 'test' : 'tests'
           } in order are sample submitted `
-        : '';
+        : 'Sample collected';
+
+    return {
+      hasDiffStatusLevelInclusion,
+      reportText,
+    };
+  }
+
+  const renderGroupedInclusions = () => {
+    const hasDiffStatusLevelInclusion = findTestInclusionStatusDetails()
+      ?.hasDiffStatusLevelInclusion;
+    const reportText = findTestInclusionStatusDetails()?.reportText;
+    const groupedStatus = orderLevelStatus?.groupedPendingReportInclusions;
+    return (
+      <>
+        {!hasDiffStatusLevelInclusion ? null : (
+          <View>
+            <View style={styles.lineSeparator} />
+            <View style={styles.inclusionContainer}>
+              <TouchableOpacity
+                onPress={() => setShowInclusionStatus(!showInclusionStatus)}
+                activeOpacity={1}
+                style={styles.viewRowStyle}
+              >
+                <Text style={styles.itemNameText}>{!!reportText ? reportText : ''}</Text>
+                <ArrowRight
+                  style={{
+                    transform: [{ rotate: showInclusionStatus ? '270deg' : '90deg' }],
+                    tintColor: 'black',
+                  }}
+                />
+              </TouchableOpacity>
+            </View>
+
+            {showInclusionStatus &&
+              groupedStatus?.map((item: any, index: number) => {
+                let selectedItem = item?.inclusions;
+                const hasReportTat = !!item?.reportTATMessage && item?.reportTATMessage != '';
+                return (
+                  <View
+                    style={[
+                      hasReportTat ? styles.groupedOuterView : styles.groupedOuterViewWithout,
+                    ]}
+                  >
+                    {selectedItem?.map((inclusionItem: groupedInclusions, itemIndex: number) => {
+                      return (
+                        <>
+                          {!!inclusionItem?.itemName ? (
+                            <View style={{}}>
+                              <View style={[styles.itemNameContainer, { marginBottom: 8 }]}>
+                                <View style={{ width: '40%' }}>
+                                  <Text style={styles.itemNameText}>
+                                    {nameFormater(inclusionItem?.itemName, 'default')}
+                                  </Text>
+                                </View>
+                                <StatusCard
+                                  titleText={inclusionItem?.orderStatus!}
+                                  customText={
+                                    inclusionItem?.itemId == 8 &&
+                                    inclusionItem?.orderStatus ===
+                                      DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB
+                                  }
+                                />
+                              </View>
+                            </View>
+                          ) : null}
+                          {itemIndex === selectedItem?.length - 1 ? null : (
+                            <View style={styles.fullInclusionLevelSeparator} />
+                          )}
+                        </>
+                      );
+                    })}
+                    {renderGroupedReportTat(item)}
+                  </View>
+                );
+              })}
+          </View>
+        )}
+      </>
+    );
+  };
+
+  const renderGroupedReportTat = (groupedItem: groupedItems) => {
+    return (
+      <>
+        {!!groupedItem?.reportTATMessage && groupedItem?.reportTATMessage != '' ? (
+          <View style={styles.reportTatGroupedView}>
+            <Text style={styles.reportTatGroupedTatText}>{groupedItem?.reportTATMessage}</Text>
+          </View>
+        ) : null}
+      </>
+    );
+  };
+
+  const renderStatusInclusions = () => {
+    const hasDiffStatusLevelInclusion = findTestInclusionStatusDetails()
+      ?.hasDiffStatusLevelInclusion;
+
+    const reportText = findTestInclusionStatusDetails()?.reportText;
 
     return (
       <>
@@ -1586,4 +1707,35 @@ const styles = StyleSheet.create({
     marginTop: '4%',
   },
   modificationItemView: { width: '72%', flexDirection: 'row' },
+  groupedOuterView: {
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#D1D1D1',
+    padding: 8,
+    marginBottom: 12,
+  },
+  groupedOuterViewWithout: {
+    padding: 8,
+    paddingBottom: 4,
+    marginBottom: 8,
+  },
+  reportTatGroupedView: {
+    margin: -8,
+    marginTop: 8,
+    padding: 8,
+    borderRadius: 10,
+    backgroundColor: colors.TEST_CARD_BUTTOM_BG,
+  },
+  reportTatGroupedTatText: {
+    ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 1, 16),
+    textAlign: 'center',
+  },
+  fullInclusionLevelSeparator: {
+    backgroundColor: '#D1D1D1',
+    height: 1,
+    width: screenWidth - 120,
+    marginLeft: -8,
+    marginTop: 8,
+    marginBottom: 8,
+  },
 });

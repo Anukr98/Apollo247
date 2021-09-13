@@ -17,7 +17,6 @@ export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrd
 
 export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_attributesObj {
   __typename: "AttributesObj";
-  reportTATHours: number | null;
   reportTATMessage: string | null;
   reportGenerationTime: string | null;
   expectedReportGenerationTime: any | null;

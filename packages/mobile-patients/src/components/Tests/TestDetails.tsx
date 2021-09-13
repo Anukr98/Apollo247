@@ -441,6 +441,14 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       };
     }
 
+    if (
+      (movedFrom == AppRoutes.TestsCart && Number(deliveryAddressStateId) == 0) ||
+      !isDiagnosticLocationServiceable
+    ) {
+      setExpressSlotMsg('');
+      return;
+    }
+
     try {
       const res = await getDiagnosticExpressSlots(
         client,
