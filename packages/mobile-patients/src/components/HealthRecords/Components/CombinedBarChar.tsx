@@ -9,6 +9,7 @@ import {
   View,
   TouchableOpacity,
   Alert,
+  Platform,
 } from 'react-native';
 import { CombinedChart } from 'react-native-charts-wrapper';
 import { Overlay } from 'react-native-elements';
@@ -23,6 +24,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import SwitchSelector from 'react-native-switch-selector';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { Item } from 'react-native-paper/lib/typescript/src/components/List/List';
 
 const styles = StyleSheet.create({
   container: {
@@ -79,7 +81,7 @@ const styles = StyleSheet.create({
     bottom: 10,
   },
   barChartMainContainer: {
-    marginTop: 20,
+    marginTop: 15,
     borderRadius: 10,
     marginBottom: 10,
     backgroundColor: '#FAFAFA',
@@ -88,15 +90,21 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 16, '#1180BF', 1, 20.8),
     left: 15,
     marginTop: 10,
-    marginBottom: 10,
-    borderRadius: 10,
-    width: '95%',
+    borderRadius: 5,
     overflow: 'hidden',
+    height: 20,
+    backgroundColor: 'white',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
+    width: '90%',
   },
   dateContainer: {
     ...theme.viewStyles.text('R', 12, 'grey', 1, 20.8),
     left: 15,
-    marginTop: 5,
+    marginTop: 20,
     bottom: 10,
   },
   serviceNameContainer: {
@@ -128,12 +136,14 @@ const styles = StyleSheet.create({
   serviceNameTextContainer: {
     flexDirection: 'row',
     left: 10,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    width: '40%',
   },
   paramName: {
     ...theme.viewStyles.text('R', 13, 'grey', 1, 19, 0.35),
     left: 15,
     top: 5,
-    width: '45%',
   },
   axisValueContainer: {
     flexDirection: 'row',
@@ -191,7 +201,6 @@ const styles = StyleSheet.create({
   serviceName: {
     ...theme.viewStyles.text('R', 16, '#01475B', 1, 19, 0.35),
     top: 5,
-    width: '45%',
   },
   miscStyling: {
     marginTop: 20,
@@ -250,8 +259,8 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
   const [valueFormatter, setValueFormatter] = useState<[]>([]);
 
   useLayoutEffect(() => {
-    let exerciseLog = props?.rangeDate?.map((x) => new Date(x));
-    let format = exerciseLog?.map((x) => moment(x).format('hA'));
+    let rangeLog = props?.rangeDate?.map((x) => new Date(x));
+    let format = rangeLog?.map((x) => moment(x).format(`DD MMM 'YY`));
     setValueFormatter(format);
   }, []);
 
@@ -308,7 +317,7 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
           lineDashLengths: [1, 5],
         },
         {
-          limit: props.maxLine + 10,
+          limit: props.maxLine,
           lineColor: processColor('#BF2600'),
           lineDashPhase: 1,
           lineWidth: 1.5,
@@ -339,9 +348,10 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
   const marker = {
     enabled: true,
     markerColor: processColor('white'),
-    textColor: processColor('#1180BF'),
+    textColor: processColor('#01475B'),
     markerFontSize: 15,
     textSize: 14,
+    elevation: 2,
   };
 
   const data = {
@@ -481,35 +491,39 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
     );
   };
 
-  const onClickValueFormatterChange = (value: any) => {
-    let exerciseLog = props?.rangeDate?.map((x) => new Date(x));
-    switch (value) {
-      case 'Year':
-        let yearFormat = exerciseLog?.map((x) => moment(x).format(`MMM'YY`));
-        setValueFormatter(yearFormat);
-        break;
-      case 'Week':
-        let weekFormat = exerciseLog?.map((x) => moment(x).format(`DD MMM`));
-        setValueFormatter(weekFormat);
-        break;
-      case 'Day':
-        let dayFormat = exerciseLog?.map((x) => moment(x).format(`hA`));
-        setValueFormatter(dayFormat);
-        break;
-      case 'Month':
-        let monthFormat = exerciseLog?.map((x) => moment(x).format(`DD`));
-        setValueFormatter(monthFormat);
-        break;
-      default:
-        break;
-    }
-  };
+  // const onClickValueFormatterChange = (value: any) => {
+  //   let exerciseLog = props?.rangeDate?.map((x) => new Date(x));
+  //   console.log(exerciseLog);
+  //   switch (value) {
+  //     case 'Year':
+  //       let yearFormat = exerciseLog?.map((x) => moment(x).format(`MMM'YY`));
+  //       setValueFormatter(yearFormat);
+  //       break;
+  //     case 'Week':
+  //       let weekFormat = exerciseLog?.map((x) => moment(x).format(`DD MMM`));
+  //       setValueFormatter(weekFormat);
+  //       break;
+  //     case 'Day':
+  //       let dayFormat = exerciseLog?.map((x) => moment(x).format(`hA`));
+  //       setValueFormatter(dayFormat);
+  //       break;
+  //     case 'Month':
+  //       let monthFormat = exerciseLog?.map((x) => moment(x).format(`DD`));
+  //       setValueFormatter(monthFormat);
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  // };
 
   const renderBarChartView = () => {
+    let rangeLog = props?.rangeDate?.map((x) => new Date(x));
+    let compareDates = moment(rangeLog[0]).format('YYYY-MM-DD');
+    console.log(compareDates, props.date);
     return (
       <View style={styles.phrUploadOptionsViewStyle}>
         <Text style={styles.healthInsightsContainer}>{'HEALTH INSIGHTS'}</Text>
-        <SwitchSelector
+        {/* <SwitchSelector
           options={options}
           initial={0}
           buttonColor={colors.WHITE}
@@ -522,15 +536,18 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
           hasPadding
           height={20}
           onPress={(value) => onClickValueFormatterChange(value)}
-        />
-
+        /> */}
+        <Text numberOfLines={1} style={styles.paramNameTextContainer}>
+          {props.title}
+        </Text>
         <View style={styles.barChartMainContainer}>
           <View style={{ height: 290 }}>
-            <Text numberOfLines={1} style={styles.paramNameTextContainer}>
-              {props.title}
-            </Text>
             <Text style={styles.dateContainer}>
-              {`\u25CF ${moment(props.date).format(string.common.date_placeholder_text)}`}
+              {compareDates !== props.date
+                ? `\u25CF ${moment(rangeLog[0]).format(
+                    string.common.date_placeholder_text
+                  )} - ${moment(props.date).format(string.common.date_placeholder_text)}`
+                : `\u25CF ${moment(props.date).format(string.common.date_placeholder_text)}`}
             </Text>
             <CombinedChart
               drawBorders={false}
@@ -542,7 +559,14 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
               onSelect={(event) => handleSelect(event)}
               highlightPerDragEnabled={false}
               highlightFullBarEnabled={false}
-              zoom={{ scaleX: 0.0, scaleY: 0.0, xValue: 9999, yValue: 1, axisDependency: 'RIGHT' }}
+              legend={{ enabled: true, xEntrySpace: 10, yEntrySpace: 10 }}
+              zoom={
+                props?.lineData?.length > 4
+                  ? Platform.OS === 'ios'
+                    ? { scaleX: 2, scaleY: 1, xValue: -9999, yValue: 1, axisDependency: 'RIGHT' }
+                    : { scaleX: 4, scaleY: 1, xValue: 9999, yValue: 1, axisDependency: 'RIGHT' }
+                  : null
+              }
               chartDescription={{ text: '' }}
               marker={marker}
               style={styles.container}
