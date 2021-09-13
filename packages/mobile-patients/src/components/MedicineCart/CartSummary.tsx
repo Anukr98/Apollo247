@@ -552,6 +552,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
             orders
           ),
           disableCOD: !isCodEligible,
+          paymentCodMessage: codMessage,
         });
       }
       setloading(false);
