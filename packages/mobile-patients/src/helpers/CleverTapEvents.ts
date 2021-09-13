@@ -1178,7 +1178,7 @@ export interface CleverTapEvents {
     'Delivery charge': number;
     'Shipping Charges': number;
     'Net after discount': number;
-    'Prescription Needed?': YesOrNo;
+    'Prescription Required?': YesOrNo;
     'Cart ID'?: string; // we don't have cartId before placing order
     'Mode of Delivery': 'Home' | 'Pickup' | 'Home Visit' | 'Clinic Visit';
     'Delivery Date Time'?: string; // Optional (only if Home)
@@ -1373,7 +1373,7 @@ export interface CleverTapEvents {
   [CleverTapEventName.DIAGNOSTIC_CART_VIEWED]: {
     //this is already done
     'Total items in cart': number;
-    'Prescription Needed?': 'Yes' | 'No';
+    'Prescription Required?': 'Yes' | 'No';
     'Delivery charge'?: number;
     'Coupon code used'?: string;
     'Total Discount': number;

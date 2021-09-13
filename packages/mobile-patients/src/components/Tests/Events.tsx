@@ -314,7 +314,7 @@ export function DiagnosticCartViewed(
     // 'Delivery charge': deliveryCharges,
     'Total Discount': Number(couponDiscount),
     'Net after discount': gTotal,
-    'Prescription Needed?': prescReqd ? 'Yes' : 'No',
+    'Prescription Required?': prescReqd ? 'Yes' : 'No',
     'Cart Items': cartItems?.map(
       (item) =>
         (({

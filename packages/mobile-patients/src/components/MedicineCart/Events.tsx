@@ -82,7 +82,7 @@ export function postwebEngageProceedToPayEvent(
     'Sub Total': cartTotal,
     'Shipping Charges': deliveryCharges,
     'Net after discount': grandTotal,
-    'Prescription Needed?': uploadPrescriptionRequired ? 'Yes' : 'No',
+    'Prescription Required?': uploadPrescriptionRequired ? 'Yes' : 'No',
     'Mode of Delivery': !isStorePickup ? 'Home' : 'Pickup',
     'Delivery Date Time': !isStorePickup && moment(deliveryTime).isValid ? deliveryTime||undefined : undefined, // Optional (only if Home)
     'Pincode': pinCode,
