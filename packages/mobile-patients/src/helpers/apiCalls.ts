@@ -690,7 +690,7 @@ export const searchMedicineApi = async (
 ): Promise<AxiosResponse<PopcSrchPrdApiResponse>> => {
   const CancelToken = Axios.CancelToken;
   cancelSearchMedicineApi247 && cancelSearchMedicineApi247();
-  const res =  Axios({
+  return Axios({
     url: config.MED_SEARCH[0],
     method: 'POST',
     data: {
@@ -708,8 +708,6 @@ export const searchMedicineApi = async (
       cancelSearchMedicineApi247 = c;
     }),
   });
-  console.log('res is....................', res);
-  return res;
 };
 
 export const formatFilters = (filters: { [key: string]: string[] } | null) =>
