@@ -68,6 +68,7 @@ import {
   setAsyncPharmaLocation,
   downloadDocument,
   removeWhiteSpaces,
+  storagePermissions,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
@@ -93,6 +94,7 @@ import {
   Linking,
   FlatList,
   Modal,
+  Platform,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
@@ -191,7 +193,11 @@ import { PrescriptionCardCarousel } from '@aph/mobile-patients/src/components/Te
 import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
 import { getDiagnosticOrdersListByMobile, getDiagnosticOrdersListByMobileVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-
+import strings from '@aph/mobile-patients/src/strings/strings.json';
+import DocumentPicker, { DocumentPickerResponse } from 'react-native-document-picker';
+import ImageResizer from 'react-native-image-resizer';
+import RNFetchBlob from 'rn-fetch-blob';
+export const MAX_FILE_SIZE = 25000000; // ~25MB
 // import { Cache } from "react-native-cache";
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
@@ -251,6 +257,8 @@ export interface TestsProps
     movedFrom?: string;
     setEPrescriptions: ((items: EPrescription[]) => void) | null;
     homeScreenAttributes?: any;
+    phyPrescriptionUploaded: PhysicalPrescription[];
+    ePresscriptionUploaded: EPrescription[];
   }> {}
 
 export const Tests: React.FC<TestsProps> = (props) => {
@@ -306,6 +314,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const movedFrom = props.navigation.getParam('movedFrom');
   const homeScreenAttributes = props.navigation.getParam('homeScreenAttributes');
+  const phyPrescriptionUploaded = props.navigation.getParam('phyPrescriptionUploaded') || [];
+  const ePresscriptionUploaded = props.navigation.getParam('ePresscriptionUploaded') || [];
   const { currentPatient } = useAllCurrentPatients();
 
   const hdfc_values = string.Hdfc_values;
@@ -2093,6 +2103,108 @@ export const Tests: React.FC<TestsProps> = (props) => {
       .catch((e: Error) => {});
   };
 
+  const openGallery = () => {
+    setIsPrescriptionUpload(false);
+    ImagePicker.openPicker({
+      cropping: true,
+      hideBottomControls: true,
+      includeBase64: true,
+      multiple: true,
+      compressImageQuality: 0.5,
+      compressImageMaxHeight: 2096,
+      compressImageMaxWidth: 2096,
+      writeTempFile: false,
+      freeStyleCropEnabled: false,
+    })
+      .then((response) => {
+        const images = response as ImageCropPickerResponse[];
+        const isGreaterThanSpecifiedSize = images.find(({ size }) => size > MAX_FILE_SIZE);
+        // setShowSpinner(false);
+        if (isGreaterThanSpecifiedSize) {
+          Alert.alert(strings.common.uhOh, `Invalid File Size. File size must be less than 25MB.`);
+          return;
+        }
+        const uploadedImages = formatResponse(images);
+        props.navigation.navigate(AppRoutes.SubmittedPrescription, {
+          type: 'Gallery',
+          phyPrescriptionsProp: [...phyPrescriptionUploaded, ...uploadedImages],
+          ePrescriptionsProp: ePresscriptionUploaded,
+          source: 'Tests',
+        });
+      })
+      .catch((e: Error) => {
+        CommonBugFender('Tests_onClickGallery', e);
+        // setShowSpinner(false);
+      });
+  };
+  const getBase64 = (response: DocumentPickerResponse[]): Promise<string>[] => {
+    return response.map(async ({ fileCopyUri: uri, name: fileName, type }) => {
+      const isPdf = fileName.toLowerCase().endsWith('.pdf'); // TODO: check here if valid image by mime
+      uri = Platform.OS === 'ios' ? decodeURI(uri.replace('file://', '')) : uri;
+      let compressedImageUri = '';
+      if (!isPdf) {
+        // Image Quality 0-100
+        compressedImageUri = (await ImageResizer.createResizedImage(uri, 2096, 2096, 'JPEG', 50))
+          .uri;
+        compressedImageUri =
+          Platform.OS === 'ios' ? compressedImageUri.replace('file://', '') : compressedImageUri;
+      }
+      return RNFetchBlob.fs.readFile(!isPdf ? compressedImageUri : uri, 'base64');
+    });
+  };
+
+  const onBrowseClicked = async () => {
+    setIsPrescriptionUpload(false);
+    try {
+      // setShowSpinner(true);
+      const documents = await DocumentPicker.pickMultiple({
+        type: [DocumentPicker.types.pdf],
+        copyTo: 'documentDirectory',
+      });
+      const isValidPdf = documents.find(({ name }) => name.toLowerCase().endsWith('.pdf'));
+      const isValidSize = documents.find(({ size }) => size < MAX_FILE_SIZE);
+      if (!isValidPdf || !isValidSize) {
+        // setShowSpinner(false);
+        Alert.alert(
+          strings.common.uhOh,
+          !isValidPdf
+            ? `Invalid File Type. File type must be PDF.`
+            : `Invalid File Size. File size must be less than 25MB.`
+        );
+        return;
+      }
+      const base64Array = await Promise.all(getBase64(documents));
+      const base64FormattedArray = base64Array.map(
+        (base64, index) =>
+          ({
+            mime: documents[index].type,
+            data: base64,
+          } as ImageCropPickerResponse)
+      );
+      const documentData = base64Array.map(
+        (base64, index) =>
+          ({
+            title: documents[index].name,
+            fileType: documents[index].type,
+            base64: base64,
+          } as PhysicalPrescription)
+      );
+      // setShowSpinner(false);
+      // postCleverTapUploadPrescriptionEvents('Gallery', 'Non-Cart');
+      props.navigation.navigate(AppRoutes.SubmittedPrescription, {
+        type: 'Gallery',
+        phyPrescriptionsProp: [...phyPrescriptionUploaded, ...documentData],
+        ePrescriptionsProp: ePresscriptionUploaded,
+        source: 'SubmittedPrescription',
+      });
+    } catch (e:any) {
+      // setShowSpinner(false);
+      if (DocumentPicker.isCancel(e)) {
+        CommonBugFender('SubmittedPrescription_onClickGallery', e);
+      }
+    }
+  };
+
   const renderUploadPrescriptionCard = () => {
     return (
       <View style={styles.precriptionContainer}>
@@ -2778,7 +2890,21 @@ export const Tests: React.FC<TestsProps> = (props) => {
         <Text style={styles.textHeadingModal}>Choose from Gallery</Text>
         {prescriptionGalleryOptionArray.map((item) => {
           return (
-            <TouchableOpacity style={{ flexDirection: 'row', alignContent: 'center' }}>
+            <TouchableOpacity style={{ flexDirection: 'row', alignContent: 'center' }}
+            onPress={()=>{
+              if (item?.title == 'Photo Library') {
+                openGallery()
+              } else {
+                if (Platform.OS === 'android') {
+                  storagePermissions(() => {
+                    onBrowseClicked();
+                  });
+                } else {
+                  onBrowseClicked();
+                }
+              }
+            }}
+            >
               <Text style={styles.textPrescription}>{item.title}</Text>
             </TouchableOpacity>
           );

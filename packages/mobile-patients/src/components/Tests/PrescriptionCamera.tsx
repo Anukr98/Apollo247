@@ -35,6 +35,7 @@ import {
   DeleteIconWhite,
   WhiteTickIcon
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import strings from '@aph/mobile-patients/src/strings/strings.json';
 
 const { width, height } = Dimensions.get('window');
 
