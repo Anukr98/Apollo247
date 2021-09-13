@@ -31,12 +31,12 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_
 
 export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_attributesObj {
   __typename: "AttributesObj";
-  initialCollectionCharges: number | null;
-  distanceCharges: number | null;
-  homeCollectionCharges: number | null;
   slotDurationInMinutes: number | null;
   expectedReportGenerationTime: any | null;
   reportTATMessage: string | null;
+  initialCollectionCharges: number | null;
+  distanceCharges: number | null;
+  homeCollectionCharges: number | null;
 }
 
 export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_itemObj {
