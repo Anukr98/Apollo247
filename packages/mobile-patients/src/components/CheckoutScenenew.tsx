@@ -761,6 +761,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     const appointmentIds = ePrescriptions
       ?.filter((item) => !!item?.appointmentId)
       ?.map((item) => item?.appointmentId);
+    const totalCashBack =
+      (!coupon?.coupon && isCircleSubscription) || (coupon?.circleBenefits && isCircleSubscription)
+        ? Number(cartTotalCashback) || 0
+        : 0;
     const orderInfo: saveMedicineOrderOMSVariables = {
       medicineCartOMSInput: {
         tatType: tatType,
@@ -843,15 +847,12 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               subPlanId: circleSubPlanId || '',
             }
           : null,
-        totalCashBack:
-          (!coupon?.coupon && isCircleSubscription) ||
-          (coupon?.circleBenefits && isCircleSubscription)
-            ? Number(cartTotalCashback) || 0
-            : 0,
+        totalCashBack,
         appVersion: DeviceInfo.getVersion(),
         savedDeliveryCharge:
           !!isFreeDelivery || isCircleSubscription ? 0 : AppConfig.Configuration.DELIVERY_CHARGES,
         appointmentId: appointmentIds?.length ? appointmentIds.join(',') : '',
+        isCashBack: !!totalCashBack,
       },
     };
 
