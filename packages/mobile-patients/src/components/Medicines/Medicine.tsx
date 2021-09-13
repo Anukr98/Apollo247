@@ -365,7 +365,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.CATEGORY_CLICKED, eventAttributes);
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CATEGORY_VIEWED] = {
       'category name': categoryName || undefined,
-      'category ID': categoryId || undefined,
+      'Category ID': categoryId || undefined,
       'Section Name': sectionName || undefined,
       Source: source,
     };

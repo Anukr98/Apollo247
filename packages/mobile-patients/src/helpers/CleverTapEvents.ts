@@ -1062,7 +1062,7 @@ export interface CleverTapEvents {
   [CleverTapEventName.PHARMACY_NOTIFY_ME]: {
     'product name': string;
     'product id': string; // (SKUID)
-    'category ID': string;
+    'Category ID': string;
     price: number;
     pincode: string;
     serviceable: YesOrNo;
@@ -1070,24 +1070,24 @@ export interface CleverTapEvents {
 
   [CleverTapEventName.PHARMACY_CATEGORY_VIEWED]: {
     'category name'?: string;
-    'category ID'?: string;
+    'Category ID'?: string;
     Source: 'Home' | 'Category Tree';
     'Section Name'?: string;
   };
   [CleverTapEventName.CATEGORY_FILTER_CLICKED]: {
     'category name': string;
-    'category ID': string;
+    'Category ID': string;
   };
   [CleverTapEventName.CATEGORY_FILTER_APPLIED]: {
     'category name': string;
-    'category ID': string;
+    'Category ID': string;
     discount: string;
     'sort by': string;
     price: string;
   };
   [CleverTapEventName.CATEGORY_LIST_GRID_VIEW]: {
     'Category name'?: string;
-    'Category id'?: string;
+    'Category ID'?: string;
     Type: 'Grid' | 'List';
     Source: 'Search' | 'Category';
   };
@@ -1125,7 +1125,7 @@ export interface CleverTapEvents {
     Brand?: string;
     'Brand ID'?: string;
     'category name'?: string;
-    'category ID'?: string;
+    'Category ID'?: string;
     Section?: string;
     'Section Name'?: string;
     af_revenue?: number;
@@ -2454,7 +2454,7 @@ export interface CleverTapEvents {
     /**
      * Category ID & Category Name is applicable if customers clicks on products from any category (all categories of shop by category or health areas)
      */
-    CategoryID?: string;
+    'Category ID'?: string;
     CategoryName?: string;
     /**
      * Section Name is applicable if customer clicked on the product from the homepage product widgets like Hot sellers, Recommended products

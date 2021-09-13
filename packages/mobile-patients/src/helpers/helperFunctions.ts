@@ -1660,7 +1660,7 @@ export const postwebEngageAddToCartEvent = (
     'product id (SKUID)': sku,
     'category name': categoryName || undefined,
     'Section Name': sectionName || undefined,
-    'category ID': category_id || undefined,
+    'Category ID': category_id || undefined,
     Price: price,
     'Discounted Price': Number(special_price) || undefined,
     Quantity: 1,
