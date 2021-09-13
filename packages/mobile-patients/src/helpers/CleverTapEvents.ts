@@ -1069,24 +1069,24 @@ export interface CleverTapEvents {
   };
 
   [CleverTapEventName.PHARMACY_CATEGORY_VIEWED]: {
-    'category name'?: string;
+    'Category Name'?: string;
     'Category ID'?: string;
     Source: 'Home' | 'Category Tree';
     'Section Name'?: string;
   };
   [CleverTapEventName.CATEGORY_FILTER_CLICKED]: {
-    'category name': string;
+    'Category Name': string;
     'Category ID': string;
   };
   [CleverTapEventName.CATEGORY_FILTER_APPLIED]: {
-    'category name': string;
+    'Category Name': string;
     'Category ID': string;
     discount: string;
     'sort by': string;
     price: string;
   };
   [CleverTapEventName.CATEGORY_LIST_GRID_VIEW]: {
-    'Category name'?: string;
+    'Category Name'?: string;
     'Category ID'?: string;
     Type: 'Grid' | 'List';
     Source: 'Search' | 'Category';
@@ -1124,7 +1124,7 @@ export interface CleverTapEvents {
     | 'PDP Fast Substitutes';
     Brand?: string;
     'Brand ID'?: string;
-    'category name'?: string;
+    'Category Name'?: string;
     'Category ID'?: string;
     Section?: string;
     'Section Name'?: string;
@@ -1550,7 +1550,7 @@ export interface CleverTapEvents {
   [CleverTapEventName.DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED]: {
     Type: 'Category' | 'Widget';
     Source: 'Home' | 'Deeplink' | 'Details page' | 'Cart page';
-    'Category name': '';
+    'Category Name': '';
     'Section name': '';
   };
   [CleverTapEventName.DIAGNOSTIC_PRESCRIPTION_SUBMITTED]: {

@@ -1635,7 +1635,7 @@ export const postwebEngageAddToCartEvent = (
   }: Pick<MedicineProduct, 'sku' | 'name' | 'price' | 'special_price' | 'category_id'>,
   source: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Source'],
   sectionName?: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Section Name'],
-  categoryName?: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['category name'],
+  categoryName?: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Category Name'],
   pharmacyCircleAttributes?: PharmacyCircleEvent
 ) => {
   const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART] = {
@@ -1658,7 +1658,7 @@ export const postwebEngageAddToCartEvent = (
   const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART] = {
     'product name': name,
     'product id (SKUID)': sku,
-    'category name': categoryName || undefined,
+    'Category Name': categoryName || undefined,
     'Section Name': sectionName || undefined,
     'Category ID': category_id || undefined,
     Price: price,

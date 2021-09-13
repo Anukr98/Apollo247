@@ -1023,7 +1023,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_NOTIFY_ME] = {
       'product name': medicineDetails?.name,
       'product id': medicineDetails?.sku,
-      'Category ID': medicineDetails?.category_id || undefined,
+      'Category ID': medicineDetails?.category_id || '',
       price: medicineDetails?.price,
       pincode: pincode,
       serviceable: notServiceable ? 'No' : 'Yes',
