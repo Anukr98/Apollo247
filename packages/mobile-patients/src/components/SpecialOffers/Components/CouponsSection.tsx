@@ -113,13 +113,7 @@ export const CouponsSection = (props: { offersdata: SpecialOffersCouponsData[] }
                   </View>
                 )}
               </View>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  flex: 1,
-                  justifyContent: 'space-between',
-                }}
-              >
+              <View style={styles.couponAndKnowMoreContainer}>
                 <TouchableOpacity onPress={() => updateKnowMore(index)}>
                   <View style={{ flexDirection: 'row', paddingRight: 12 }}>
                     <Text style={[styles.bottomHeaderStyle, { alignSelf: 'flex-start' }]}>
@@ -379,5 +373,10 @@ const styles = StyleSheet.create({
     width: 10,
     paddingTop: 3,
     alignSelf: 'center',
+  },
+  couponAndKnowMoreContainer: {
+    flexDirection: 'row',
+    flex: 1,
+    justifyContent: 'space-between',
   },
 });
