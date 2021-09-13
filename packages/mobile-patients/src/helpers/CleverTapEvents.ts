@@ -1182,7 +1182,7 @@ export interface CleverTapEvents {
     'Cart ID'?: string; // we don't have cartId before placing order
     'Mode of Delivery': 'Home' | 'Pickup' | 'Home Visit' | 'Clinic Visit';
     'Delivery Date Time'?: string; // Optional (only if Home)
-    'Pin Code': string | number;
+    'Pincode': string | number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
     'Store Id'?: string;
     'Store Name'?: string;
@@ -1405,7 +1405,7 @@ export interface CleverTapEvents {
     'Prescription Uploaded?': boolean;
     'Prescription Mandatory?': boolean;
     'Mode of Sample Collection': 'Home Visit' | 'Clinic Visit';
-    'Pin Code': string | number;
+    'Pincode': string | number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
     'Area Name': string;
     'Area id': string | number;

@@ -388,7 +388,7 @@ export function DiagnosticProceedToPay(
     'Prescription Uploaded?': false, //from backend
     'Prescription Mandatory?': prescRqd,
     'Mode of Sample Collection': mode,
-    'Pin Code': pincode,
+    Pincode: pincode,
     'Service Area': serviceName,
     'Area Name': areaName,
     'Area id': areaId,

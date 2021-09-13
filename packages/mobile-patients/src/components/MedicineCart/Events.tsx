@@ -85,7 +85,7 @@ export function postwebEngageProceedToPayEvent(
     'Prescription Needed?': uploadPrescriptionRequired ? 'Yes' : 'No',
     'Mode of Delivery': !isStorePickup ? 'Home' : 'Pickup',
     'Delivery Date Time': !isStorePickup && moment(deliveryTime).isValid ? deliveryTime||undefined : undefined, // Optional (only if Home)
-    'Pin Code': pinCode,
+    'Pincode': pinCode,
     'Service Area': 'Pharmacy',
     'No. of out of stock items': numberOfOutOfStockItems,
     'Split Cart': !!isSplitCart ? 'Yes' : 'No',
