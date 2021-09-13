@@ -154,6 +154,7 @@ import { PostShareAppointmentSelectorScreen } from '@aph/mobile-patients/src/com
 import { PrescriptionCamera } from '@aph/mobile-patients/src/components/Tests/PrescriptionCamera';
 import { SubmittedPrescription } from '@aph/mobile-patients/src/components/Tests/SubmittedPrescription';
 import { SpecialOffersScreen } from '@aph/mobile-patients/src/components/SpecialOffers/SpecialOffers';
+import { ConsultPaymentScreen } from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/ConsultPaymentScreen';
 
 export enum AppRoutes {
   Login = 'Login',
@@ -295,6 +296,7 @@ export enum AppRoutes {
   PrescriptionCamera = 'PrescriptionCamera',
   SubmittedPrescription = 'SubmittedPrescription',
   SpecialOffersScreen = 'SpecialOffersScreen',
+  ConsultPaymentScreen = 'ConsultPaymentScreen',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -751,6 +753,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.SpecialOffersScreen]: {
     screen: SpecialOffersScreen,
+  },
+  [AppRoutes.ConsultPaymentScreen]: {
+    screen: ConsultPaymentScreen,
   },
 };
 
