@@ -2472,7 +2472,7 @@ export interface CleverTapEvents {
     MaxOrderQuantity?: number;
     MRP?: number;
     SpecialPrice?: number | null;
-    CircleCashback?: number;
+    'Circle Cashback'?: number;
     SubCategory: string;
   };
   [CleverTapEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
