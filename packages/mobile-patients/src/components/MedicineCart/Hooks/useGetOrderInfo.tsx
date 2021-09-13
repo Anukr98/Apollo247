@@ -71,6 +71,11 @@ export const useGetOrderInfo = () => {
     ?.filter((item) => !!item?.appointmentId)
     ?.map((item) => item?.appointmentId);
 
+  const totalCashBack =
+    (!coupon?.coupon && isCircleSubscription) || (coupon?.circleBenefits && isCircleSubscription)
+      ? Number(cartTotalCashback) || 0
+      : 0;
+
   const OrderInfo: saveMedicineOrderV2Variables = {
     medicineOrderInput: {
       patientId: currentPatient?.id || '',
@@ -97,6 +102,7 @@ export const useGetOrderInfo = () => {
       // healthCreditUsed: hcOrder ? getFormattedAmount(grandTotal) : 0,
       shipments: shipments,
       appointmentId: appointmentIds?.length ? appointmentIds.join(',') : '',
+      isCashBack: !!totalCashBack,
     },
   };
 
@@ -124,10 +130,6 @@ export const useGetOrderInfo = () => {
 
   const selectedStore = storeId && stores.find((item) => item.storeid == storeId);
   const { storename, address, workinghrs, phone, city, state, state_id } = selectedStore || {};
-  const totalCashBack =
-    (!coupon?.coupon && isCircleSubscription) || (coupon?.circleBenefits && isCircleSubscription)
-      ? Number(cartTotalCashback) || 0
-      : 0;
 
   const pickUpOrderInfo: saveMedicineOrderOMSVariables = {
     medicineCartOMSInput: {
