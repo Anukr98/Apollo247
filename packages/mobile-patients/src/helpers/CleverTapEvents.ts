@@ -1100,7 +1100,7 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.PHARMACY_STORE_SELECTED_SUCCESS]: {
     Pincode: string;
-    'Store Id': string;
+    'Store ID': string;
     'Store Name': string;
     'Store Number': string;
     'Store Address': string;
@@ -1184,7 +1184,7 @@ export interface CleverTapEvents {
     'Delivery Date Time'?: string; // Optional (only if Home)
     'Pincode': string | number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
-    'Store Id'?: string;
+    'Store ID'?: string;
     'Store Name'?: string;
     'Popup Shown'?: boolean;
     'No. of out of stock items'?: number;
