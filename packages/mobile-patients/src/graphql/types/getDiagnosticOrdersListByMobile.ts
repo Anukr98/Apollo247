@@ -131,6 +131,8 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   checkinDateTime: any | null;
   phleboTrackLink: string | null;
   diagnosticPhlebotomists: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderPhlebotomists_diagnosticPhlebotomists;
+  isPhleboETAElapsed: string | null;
+  phleboETAElapsedMessage: string | null;
 }
 
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderReschedule {

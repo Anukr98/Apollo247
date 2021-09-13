@@ -32,14 +32,14 @@ export const CircleHeading: React.FC<CircleHeadingProps> = (props) => {
 
 const styles = StyleSheet.create({
   circleText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 10 : 10.5, theme.colors.SHERPA_BLUE),
+    ...theme.viewStyles.text('M', isSmallDevice ? 9.5 : 10.5, theme.colors.SHERPA_BLUE),
     lineHeight: 13,
     textAlign: 'center',
     alignSelf: 'center',
   },
   circleIconStyle: {
-    height: isSmallDevice ? 17 : 20,
-    width: isSmallDevice ? 28 : 36,
+    height: isSmallDevice ? 16 : 19,
+    width: isSmallDevice ? 27 : 35,
     resizeMode: 'contain',
     marginRight: 2,
   },

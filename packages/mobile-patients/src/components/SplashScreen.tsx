@@ -85,6 +85,7 @@ import {
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import CleverTap from 'clevertap-react-native';
 import { CleverTapEventName } from '../helpers/CleverTapEvents';
+import analytics from '@react-native-firebase/analytics';
 
 (function() {
   /**
@@ -229,6 +230,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     AsyncStorage.removeItem('saveTokenDeviceApiCall');
     handleDeepLink();
     getDeviceToken();
+    initializeRealTimeUninstall();
   }, []);
 
   useEffect(() => {
@@ -246,6 +248,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       CommonBugFender('ErrorWhilecreatingHyperServiceObject', error);
     }
   }, []);
+
+  const initializeRealTimeUninstall = () => {
+    CleverTap.profileGetCleverTapID((error, res) => {
+      analytics().setUserProperty('ct_objectId', `${res}`);
+    });
+  };
 
   const getDeviceToken = async () => {
     const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
@@ -782,13 +790,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setMinimumCartValue,
     setMinCartValueForCOD,
     setMaxCartValueForCOD,
-    setNonCodSKus,
     setCartPriceNotUpdateRange,
     setPdpDisclaimerMessage,
     setPharmaHomeNudgeMessage,
     setPharmaCartNudgeMessage,
     setPharmaPDPNudgeMessage,
-    setPaymentCodMessage,
   } = useShoppingCart();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -950,10 +956,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Mininum_Cart_Values',
       PROD: 'Mininum_Cart_Values',
     },
-    Sku_Non_COD: {
-      QA: 'QA_Sku_Non_COD',
-      PROD: 'Sku_Non_COD',
-    },
     Helpdesk_Chat_Confim_Msg: {
       QA: 'Helpdesk_Chat_Confim_Msg_QA',
       PROD: 'Helpdesk_Chat_Confim_Msg_Prod',
@@ -1029,10 +1031,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Nudge_Message_Pharmacy_Cart: {
       QA: 'QA_Show_nudge_on_pharma_cart',
       PROD: 'Show_nudge_on_pharma_cart',
-    },
-    Disincentivize_COD_Message: {
-      QA: 'QA_Disincentivize_COD_Message',
-      PROD: 'Disincentivize_COD_Message',
     },
   };
 
@@ -1145,12 +1143,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         setMaxCartValueForCOD?.(minMaxCartValues?.maxCartValueCOD);
       minMaxCartValues?.priceNotUpdateRange &&
         setCartPriceNotUpdateRange?.(minMaxCartValues?.priceNotUpdateRange);
-
-      const nonCodSkuList = getRemoteConfigValue(
-        'Sku_Non_COD',
-        (key) => JSON.parse(config.getString(key)) || []
-      );
-      nonCodSkuList?.length && setNonCodSKus?.(nonCodSkuList);
 
       const disclaimerMessagePdp = getRemoteConfigValue('Pharma_Discailmer_Message', (key) =>
         config.getString(key)
@@ -1308,13 +1300,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
 
       nudgeMessagePharmacyPDP && setPharmaPDPNudgeMessage?.(nudgeMessagePharmacyPDP);
-
-      const disincentivizeCodMessage = getRemoteConfigValue(
-        'Disincentivize_COD_Message',
-        (key) => config.getString(key) || ''
-      );
-
-      disincentivizeCodMessage && setPaymentCodMessage?.(disincentivizeCodMessage);
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';

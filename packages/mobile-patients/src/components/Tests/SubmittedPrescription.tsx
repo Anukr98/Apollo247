@@ -34,6 +34,8 @@ import { AddPrescriptionRecordInput, MedicalRecordType } from '@aph/mobile-patie
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import moment from 'moment';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { DiagnosticPrescriptionSubmitted } from '@aph/mobile-patients/src/components/Tests/Events';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 const { width, height } = Dimensions.get('window');
 
 export interface SubmittedPrescriptionProps extends NavigationScreenProps {
@@ -53,6 +55,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   const [EPrescriptionsProps, setEPrescriptionsProps] = useState<EPrescription[]>(
     ePrescriptionsProp
   );
+  const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const [testName, settestName] = useState<string>('');
   const [locationName, setLocationName] = useState<string>('');
   const [additionalNotes, setadditionalNotes] = useState<string>('');
@@ -112,6 +115,12 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
     .then(({ data }) => {
       const status = g(data, 'addPatientPrescriptionRecord', 'status');
       const eventInputData = removeObjectProperty(inputData, 'prescriptionFiles');
+      DiagnosticPrescriptionSubmitted(
+        currentPatient,
+        inputData?.prescriptionFiles,
+        inputData?.prescriptionName,
+        isDiagnosticCircleSubscription
+      );
       showAphAlert!({
         title: `Hi ${g(currentPatient, 'firstName') || ''} ${g(currentPatient, 'lastName') || ''}!`,
         description: `Prescription Uploaded Successfully`,

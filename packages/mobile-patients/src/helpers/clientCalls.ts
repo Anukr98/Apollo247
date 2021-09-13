@@ -1206,68 +1206,6 @@ export const diagnosticPaymentSettings = (client: ApolloClient<object>, paymentI
   });
 };
 
-export const getDiagnosticCartRecommendations = (
-  client: ApolloClient<object>,
-  itemIds: any,
-  numOfRecords: number
-) => {
-  return client.query<getDiagnosticItemRecommendations, getDiagnosticItemRecommendationsVariables>({
-    query: GET_DIAGNOSTICS_RECOMMENDATIONS,
-    context: {
-      sourceHeaders,
-    },
-    variables: {
-      itemIds: itemIds,
-      records: numOfRecords,
-    },
-    fetchPolicy: 'no-cache',
-  });
-};
-
-export const getDiagnosticExpressSlots = (
-  client: ApolloClient<object>,
-  latitude: number,
-  longitude: number,
-  zipcode: string,
-  serviceabilityObj: DiagnosticsServiceability
-) => {
-  return client.query<getUpcomingSlotInfo, getUpcomingSlotInfoVariables>({
-    query: GET_DIAGNOSTIC_EXPRESS_SLOTS_INFO,
-    context: {
-      sourceHeaders,
-    },
-    variables: {
-      latitude: latitude,
-      longitude: longitude,
-      zipcode: zipcode,
-      serviceability: serviceabilityObj,
-    },
-    fetchPolicy: 'no-cache',
-  });
-};
-
-export const getReportTAT = (
-  client: ApolloClient<object>,
-  slotDateTimeInUTC: string | null,
-  cityId: number,
-  pincode: number,
-  itemIds: number[]
-) => {
-  return client.query<getConfigurableReportTAT, getConfigurableReportTATVariables>({
-    query: GET_DIAGNOSTIC_REPORT_TAT,
-    context: {
-      sourceHeaders,
-    },
-    variables: {
-      slotDateTimeInUTC: slotDateTimeInUTC,
-      cityId: cityId,
-      pincode: pincode,
-      itemIds: itemIds,
-    },
-    fetchPolicy: 'no-cache',
-  });
-};
-
 export const saveJusPaySDKresponse = (client: ApolloClient<object>, payload: any) => {
   client.query({
     query: SAVE_JUSPAY_SDK_RESPONSE,
@@ -1277,4 +1215,69 @@ export const saveJusPaySDKresponse = (client: ApolloClient<object>, payload: any
     variables: payload,
     fetchPolicy: 'no-cache',
   });
+};
+
+export const getDiagnosticCartRecommendations = (
+  client: ApolloClient<object>,
+  itemIds: any,
+  numOfRecords: number
+) =>
+{
+  return client.query<getDiagnosticItemRecommendations, getDiagnosticItemRecommendationsVariables>({
+    query: GET_DIAGNOSTICS_RECOMMENDATIONS,
+    context: {
+      sourceHeaders,
+    },
+    variables: {
+      itemIds: itemIds,
+      records: numOfRecords
+    },
+    fetchPolicy: 'no-cache',
+  }); 
+};
+
+export const getDiagnosticExpressSlots = (
+  client: ApolloClient<object>,
+  latitude: number,
+  longitude: number,
+  zipcode: string,
+  serviceabilityObj: DiagnosticsServiceability
+) =>
+{
+  return client.query<getUpcomingSlotInfo, getUpcomingSlotInfoVariables>({
+    query: GET_DIAGNOSTIC_EXPRESS_SLOTS_INFO,
+    context: {
+      sourceHeaders,
+    },
+    variables: {
+     latitude: latitude,
+     longitude: longitude,
+     zipcode: zipcode,
+     serviceability : serviceabilityObj
+    },
+    fetchPolicy: 'no-cache',
+  }); 
+};
+
+export const getReportTAT = (
+  client: ApolloClient<object>,
+  slotDateTimeInUTC: string| null,
+  cityId: number,
+  pincode: number,
+  itemIds: number[]
+) =>
+{
+  return client.query<getConfigurableReportTAT, getConfigurableReportTATVariables>({
+    query: GET_DIAGNOSTIC_REPORT_TAT,
+    context: {
+      sourceHeaders,
+    },
+    variables: {
+      slotDateTimeInUTC: slotDateTimeInUTC,
+      cityId: cityId,
+      pincode: pincode,
+      itemIds: itemIds
+    },
+    fetchPolicy: 'no-cache',
+  }); 
 };

@@ -2167,3 +2167,11 @@ export const OvalUpcoming: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/ovalUpcoming.webp')}
   />
 );
+
+export const RemoveIconGrey: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/crossIcon.webp')}
+  />
+);

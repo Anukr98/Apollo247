@@ -11,19 +11,19 @@
 		13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB11A68108700A75B9A /* LaunchScreen.xib */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		2B33AFBF63F35AB46311A80E /* Pods_NotificationService.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4392D2E5CA60B9267FE80B3 /* Pods_NotificationService.framework */; };
-		3989311398CD4273BCF8C3F2 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		340B8FDC1998C9480FADE8FF /* Pods_ApolloPatient_NotificationViewController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B18683BE5BBDB87838764E4 /* Pods_ApolloPatient_NotificationViewController.framework */; };
+		3989311398CD4273BCF8C3F2 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
 		4929325025C1959C000A9EBF /* join_sound.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4929324E25C1959C000A9EBF /* join_sound.mp3 */; };
 		492AFA5125C2A4A500330A9C /* left_sound.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 492AFA4F25C2A4A500330A9C /* left_sound.mp3 */; };
-		51DB4749A9874BD886B2F10B /* (null) in Resources */ = {isa = PBXBuildFile; };
+		51DB4749A9874BD886B2F10B /* BuildFile in Resources */ = {isa = PBXBuildFile; };
 		6717258923016EF10088EE92 /* OTInstall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6717258823016EF10088EE92 /* OTInstall.swift */; };
-		6F01AA3CDEAB4200B6F4D225 /* (null) in Resources */ = {isa = PBXBuildFile; };
-		7639B49CA7D542FAB3993C3B /* (null) in Resources */ = {isa = PBXBuildFile; };
-		7A1955DD5F9B407C97969865 /* (null) in Resources */ = {isa = PBXBuildFile; };
-		7BE6FC5527994F0299F8F1F2 /* (null) in Resources */ = {isa = PBXBuildFile; };
-		7CF13BFBC3EB448BA0017BA0 /* (null) in Resources */ = {isa = PBXBuildFile; };
-		87388654E0C94B80AB6AC365 /* (null) in Resources */ = {isa = PBXBuildFile; };
-		92F3F92657424548B56588C7 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		6F01AA3CDEAB4200B6F4D225 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		7639B49CA7D542FAB3993C3B /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		7A1955DD5F9B407C97969865 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		7BE6FC5527994F0299F8F1F2 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		7CF13BFBC3EB448BA0017BA0 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		87388654E0C94B80AB6AC365 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		92F3F92657424548B56588C7 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
 		970ECE9323CB50040022FE84 /* VitalsBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 970ECE9123CB50030022FE84 /* VitalsBridge.m */; };
 		970ECE9423CB50040022FE84 /* Vitals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 970ECE9223CB50040022FE84 /* Vitals.swift */; };
 		977C7CF82369AEFB008DA5C8 /* OTScreenCapturer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 977C7CF72369AEFB008DA5C8 /* OTScreenCapturer.swift */; };
@@ -57,9 +57,8 @@
 		97FFBDEF23E4887B00E55E34 /* rrule.js in Resources */ = {isa = PBXBuildFile; fileRef = 97FFBDE223E4887A00E55E34 /* rrule.js */; };
 		97FFBDF023E4887B00E55E34 /* nlp.js in Resources */ = {isa = PBXBuildFile; fileRef = 97FFBDE323E4887A00E55E34 /* nlp.js */; };
 		97FFBDF123E4887B00E55E34 /* JavaScriptBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97FFBDE423E4887A00E55E34 /* JavaScriptBridge.swift */; };
-		A524156DA44B087D3B074B50 /* Pods_NotificationViewController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A8C567DC7954927D541F1168 /* Pods_NotificationViewController.framework */; };
-		AAD0918B90D345E89B6D312A /* (null) in Resources */ = {isa = PBXBuildFile; };
-		B6877E075F394A0DB541F9EE /* (null) in Resources */ = {isa = PBXBuildFile; };
+		AAD0918B90D345E89B6D312A /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		B6877E075F394A0DB541F9EE /* BuildFile in Resources */ = {isa = PBXBuildFile; };
 		BB8190F124F8C26C00AD66C6 /* AIRDummyView.m in Sources */ = {isa = PBXBuildFile; fileRef = BB8190BB24F8C26C00AD66C6 /* AIRDummyView.m */; };
 		BB8190F224F8C26C00AD66C6 /* AIRGoogleMapUrlTile.m in Sources */ = {isa = PBXBuildFile; fileRef = BB8190BF24F8C26C00AD66C6 /* AIRGoogleMapUrlTile.m */; };
 		BB8190F324F8C26C00AD66C6 /* AIRGoogleMapPolygonManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BB8190C224F8C26C00AD66C6 /* AIRGoogleMapPolygonManager.m */; };
@@ -115,12 +114,13 @@
 		BBA1D02324F4D25800C77819 /* GMUStaticCluster.m in Sources */ = {isa = PBXBuildFile; fileRef = BBA1D00524F4D25800C77819 /* GMUStaticCluster.m */; };
 		BBA1D02424F4D25800C77819 /* GMSMarker+GMUClusteritem.m in Sources */ = {isa = PBXBuildFile; fileRef = BBA1D00824F4D25800C77819 /* GMSMarker+GMUClusteritem.m */; };
 		C38E9E715A0517993FE5D4F8 /* Pods_ApolloPatient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72F617656E6541D1F4092240 /* Pods_ApolloPatient.framework */; };
-		D7233BEF61ED4CC7ABE5D4E7 /* (null) in Resources */ = {isa = PBXBuildFile; };
-		E0A12ADE12A2489881685B48 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		D7233BEF61ED4CC7ABE5D4E7 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		DEFE75B8059A44072F55061C /* Pods_ApolloPatient_NotificationService.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C02A609AA003951A14D58ACA /* Pods_ApolloPatient_NotificationService.framework */; };
+		E0A12ADE12A2489881685B48 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
 		E892BC222670D8CC0018AA07 /* RNShare.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E892BC212670D8CC0018AA07 /* RNShare.framework */; };
-		ECCC0EE0406F45368B4BB8A1 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		ECCC0EE0406F45368B4BB8A1 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
 		ED297163215061F000B7C4FE /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED297162215061F000B7C4FE /* JavaScriptCore.framework */; };
-		F109515A71C04208812E40C7 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		F109515A71C04208812E40C7 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
 		F1B3D78C22B8D37200521684 /* IBMPlexSans-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F1B3D75622B8D37100521684 /* IBMPlexSans-Medium.ttf */; };
 		F1B3D78D22B8D37200521684 /* IBMPlexSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F1B3D75722B8D37100521684 /* IBMPlexSans-SemiBold.ttf */; };
 		F1B3D79522B8D37200521684 /* IBMPlexSans-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F1B3D75F22B8D37100521684 /* IBMPlexSans-Light.ttf */; };
@@ -193,6 +193,7 @@
 		4929324E25C1959C000A9EBF /* join_sound.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = join_sound.mp3; sourceTree = "<group>"; };
 		492AFA4F25C2A4A500330A9C /* left_sound.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = left_sound.mp3; sourceTree = "<group>"; };
 		534D05559BD207D7C46A5934 /* Pods-ApolloPatient-NotificationViewController.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloPatient-NotificationViewController.release.xcconfig"; path = "Target Support Files/Pods-ApolloPatient-NotificationViewController/Pods-ApolloPatient-NotificationViewController.release.xcconfig"; sourceTree = "<group>"; };
+		5B18683BE5BBDB87838764E4 /* Pods_ApolloPatient_NotificationViewController.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ApolloPatient_NotificationViewController.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6717258723016EF00088EE92 /* ApolloPatient-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ApolloPatient-Bridging-Header.h"; sourceTree = "<group>"; };
 		6717258823016EF10088EE92 /* OTInstall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTInstall.swift; sourceTree = "<group>"; };
 		6790F2152317D9880037D908 /* RSKImageCropper.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RSKImageCropper.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -229,7 +230,6 @@
 		97A8D7942316F5DF0010C1EB /* ExportDeviceToken.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExportDeviceToken.h; sourceTree = "<group>"; };
 		97A8D7952316F5DF0010C1EB /* ExportDeviceToken.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ExportDeviceToken.m; sourceTree = "<group>"; };
 		97B123D724E53C1600B9D379 /* callkitAppIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = callkitAppIcon.png; sourceTree = "<group>"; };
-		97CD3E3365391D05A4D87F89 /* Pods_NotificationService.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NotificationService.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		97D79A1A24924D410029DE31 /* main.jsbundle */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = main.jsbundle; sourceTree = "<group>"; };
 		97EA49A523D5B006001B575B /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
 		97FFBDB423E4843800E55E34 /* ApolloVitalsFramework.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ApolloVitalsFramework.framework; sourceTree = "<group>"; };
@@ -248,7 +248,6 @@
 		97FFBDE323E4887A00E55E34 /* nlp.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = nlp.js; sourceTree = "<group>"; };
 		97FFBDE423E4887A00E55E34 /* JavaScriptBridge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JavaScriptBridge.swift; sourceTree = "<group>"; };
 		A749C30ED45DCE1AA003CE32 /* Pods-NotificationViewController.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NotificationViewController.debug.xcconfig"; path = "Target Support Files/Pods-NotificationViewController/Pods-NotificationViewController.debug.xcconfig"; sourceTree = "<group>"; };
-		A8C567DC7954927D541F1168 /* Pods_NotificationViewController.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NotificationViewController.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5D21E095A9DC3D5465004F8 /* Pods-NotificationService.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NotificationService.release.xcconfig"; path = "Target Support Files/Pods-NotificationService/Pods-NotificationService.release.xcconfig"; sourceTree = "<group>"; };
 		BB8190BB24F8C26C00AD66C6 /* AIRDummyView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AIRDummyView.m; sourceTree = "<group>"; };
 		BB8190BC24F8C26C00AD66C6 /* AIRGoogleMapWMSTile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AIRGoogleMapWMSTile.h; sourceTree = "<group>"; };
@@ -375,7 +374,7 @@
 		BBA1D00724F4D25800C77819 /* GMUClusterItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GMUClusterItem.h; sourceTree = "<group>"; };
 		BBA1D00824F4D25800C77819 /* GMSMarker+GMUClusteritem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GMSMarker+GMUClusteritem.m"; sourceTree = "<group>"; };
 		BC164DC10808B8284C771748 /* Pods-ApolloPatient.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloPatient.release.xcconfig"; path = "Target Support Files/Pods-ApolloPatient/Pods-ApolloPatient.release.xcconfig"; sourceTree = "<group>"; };
-		C4392D2E5CA60B9267FE80B3 /* Pods_NotificationService.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NotificationService.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		C02A609AA003951A14D58ACA /* Pods_ApolloPatient_NotificationService.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ApolloPatient_NotificationService.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E892BC212670D8CC0018AA07 /* RNShare.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RNShare.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED2971642150620600B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.0.sdk/System/Library/Frameworks/JavaScriptCore.framework; sourceTree = DEVELOPER_DIR; };
@@ -403,7 +402,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2B33AFBF63F35AB46311A80E /* Pods_NotificationService.framework in Frameworks */,
+				DEFE75B8059A44072F55061C /* Pods_ApolloPatient_NotificationService.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -413,7 +412,7 @@
 			files = (
 				9797AC2A2420DFD500AD397F /* UserNotificationsUI.framework in Frameworks */,
 				9797AC292420DFD500AD397F /* UserNotifications.framework in Frameworks */,
-				A524156DA44B087D3B074B50 /* Pods_NotificationViewController.framework in Frameworks */,
+				340B8FDC1998C9480FADE8FF /* Pods_ApolloPatient_NotificationViewController.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -461,8 +460,8 @@
 				72F617656E6541D1F4092240 /* Pods_ApolloPatient.framework */,
 				978157C32420C86800749029 /* UserNotifications.framework */,
 				978157C52420C86800749029 /* UserNotificationsUI.framework */,
-				C4392D2E5CA60B9267FE80B3 /* Pods_NotificationService.framework */,
-				A8C567DC7954927D541F1168 /* Pods_NotificationViewController.framework */,
+				C02A609AA003951A14D58ACA /* Pods_ApolloPatient_NotificationService.framework */,
+				5B18683BE5BBDB87838764E4 /* Pods_ApolloPatient_NotificationViewController.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -853,6 +852,7 @@
 				9797AC142420DF3400AD397F /* Sources */,
 				9797AC152420DF3400AD397F /* Frameworks */,
 				9797AC162420DF3400AD397F /* Resources */,
+				1214DBF5613FC0C7B9385380 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -871,6 +871,7 @@
 				9797AC242420DFD400AD397F /* Sources */,
 				9797AC252420DFD400AD397F /* Frameworks */,
 				9797AC262420DFD400AD397F /* Resources */,
+				EC2E0DBA48FC772CDD922084 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -977,21 +978,21 @@
 				97FFBDF023E4887B00E55E34 /* nlp.js in Resources */,
 				97D79A1C24924D410029DE31 /* main.jsbundle in Resources */,
 				97FFBDEF23E4887B00E55E34 /* rrule.js in Resources */,
-				F109515A71C04208812E40C7 /* (null) in Resources */,
-				51DB4749A9874BD886B2F10B /* (null) in Resources */,
-				92F3F92657424548B56588C7 /* (null) in Resources */,
-				7CF13BFBC3EB448BA0017BA0 /* (null) in Resources */,
-				E0A12ADE12A2489881685B48 /* (null) in Resources */,
-				7A1955DD5F9B407C97969865 /* (null) in Resources */,
-				7BE6FC5527994F0299F8F1F2 /* (null) in Resources */,
-				7639B49CA7D542FAB3993C3B /* (null) in Resources */,
-				3989311398CD4273BCF8C3F2 /* (null) in Resources */,
-				6F01AA3CDEAB4200B6F4D225 /* (null) in Resources */,
-				ECCC0EE0406F45368B4BB8A1 /* (null) in Resources */,
-				AAD0918B90D345E89B6D312A /* (null) in Resources */,
-				D7233BEF61ED4CC7ABE5D4E7 /* (null) in Resources */,
-				B6877E075F394A0DB541F9EE /* (null) in Resources */,
-				87388654E0C94B80AB6AC365 /* (null) in Resources */,
+				F109515A71C04208812E40C7 /* BuildFile in Resources */,
+				51DB4749A9874BD886B2F10B /* BuildFile in Resources */,
+				92F3F92657424548B56588C7 /* BuildFile in Resources */,
+				7CF13BFBC3EB448BA0017BA0 /* BuildFile in Resources */,
+				E0A12ADE12A2489881685B48 /* BuildFile in Resources */,
+				7A1955DD5F9B407C97969865 /* BuildFile in Resources */,
+				7BE6FC5527994F0299F8F1F2 /* BuildFile in Resources */,
+				7639B49CA7D542FAB3993C3B /* BuildFile in Resources */,
+				3989311398CD4273BCF8C3F2 /* BuildFile in Resources */,
+				6F01AA3CDEAB4200B6F4D225 /* BuildFile in Resources */,
+				ECCC0EE0406F45368B4BB8A1 /* BuildFile in Resources */,
+				AAD0918B90D345E89B6D312A /* BuildFile in Resources */,
+				D7233BEF61ED4CC7ABE5D4E7 /* BuildFile in Resources */,
+				B6877E075F394A0DB541F9EE /* BuildFile in Resources */,
+				87388654E0C94B80AB6AC365 /* BuildFile in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1030,11 +1031,29 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-NotificationService-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-ApolloPatient-NotificationService-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		1214DBF5613FC0C7B9385380 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-ApolloPatient-NotificationService/Pods-ApolloPatient-NotificationService-resources.sh",
+				"${PODS_ROOT}/GoogleMaps/Maps/Frameworks/GoogleMaps.framework/Resources/GoogleMaps.bundle",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleMaps.bundle",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ApolloPatient-NotificationService/Pods-ApolloPatient-NotificationService-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		5F4655D92D55608694564CE5 /* [CP] Copy Pods Resources */ = {
@@ -1298,11 +1317,29 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-NotificationViewController-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-ApolloPatient-NotificationViewController-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		EC2E0DBA48FC772CDD922084 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-ApolloPatient-NotificationViewController/Pods-ApolloPatient-NotificationViewController-resources.sh",
+				"${PODS_ROOT}/GoogleMaps/Maps/Frameworks/GoogleMaps.framework/Resources/GoogleMaps.bundle",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleMaps.bundle",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ApolloPatient-NotificationViewController/Pods-ApolloPatient-NotificationViewController-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -1474,7 +1511,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MARKETING_VERSION = 5.8.0;
+				MARKETING_VERSION = 5.9.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lc++",
@@ -1526,7 +1563,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MARKETING_VERSION = 5.8.0;
+				MARKETING_VERSION = 5.9.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lc++",
@@ -1644,7 +1681,7 @@
 		};
 		9797AC222420DF3400AD397F /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 8D81C5135BEDE9E60C222C45 /* Pods-NotificationService.debug.xcconfig */;
+			baseConfigurationReference = 033B584C2F2AF813918AC710 /* Pods-ApolloPatient-NotificationService.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -1663,7 +1700,7 @@
 				INFOPLIST_FILE = NotificationService/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 5.8.0;
+				MARKETING_VERSION = 5.9.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247.NotificationService;
@@ -1676,7 +1713,7 @@
 		};
 		9797AC232420DF3400AD397F /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B5D21E095A9DC3D5465004F8 /* Pods-NotificationService.release.xcconfig */;
+			baseConfigurationReference = 836CC23D25E3A67B27683734 /* Pods-ApolloPatient-NotificationService.release.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -1696,7 +1733,7 @@
 				INFOPLIST_FILE = NotificationService/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 5.8.0;
+				MARKETING_VERSION = 5.9.0;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1708,7 +1745,7 @@
 		};
 		9797AC372420DFD500AD397F /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = A749C30ED45DCE1AA003CE32 /* Pods-NotificationViewController.debug.xcconfig */;
+			baseConfigurationReference = 1E298778D52A8CF8271AE6DD /* Pods-ApolloPatient-NotificationViewController.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -1727,7 +1764,7 @@
 				INFOPLIST_FILE = NotificationViewController/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 5.8.0;
+				MARKETING_VERSION = 5.9.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247.NotificationViewController;
@@ -1740,7 +1777,7 @@
 		};
 		9797AC382420DFD500AD397F /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 8097225873FF04AEF5DA2ED7 /* Pods-NotificationViewController.release.xcconfig */;
+			baseConfigurationReference = 534D05559BD207D7C46A5934 /* Pods-ApolloPatient-NotificationViewController.release.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -1760,7 +1797,7 @@
 				INFOPLIST_FILE = NotificationViewController/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 5.8.0;
+				MARKETING_VERSION = 5.9.0;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247.NotificationViewController;
 				PRODUCT_NAME = "$(TARGET_NAME)";
