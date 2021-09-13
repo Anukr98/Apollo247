@@ -1169,6 +1169,16 @@ export const validateConsultCoupon = (data: any): Promise<AxiosResponse<any>> =>
   return Axios.post(url, data);
 };
 
+export const fetchAutoApplyCoupon = (data: any): Promise<AxiosResponse<any>> => {
+  const { mobile, packageId, email, type } = data;
+  const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
+  let url = `${baseUrl}/autoapply?mobile=${mobile}&email=${email}&type=${type}`;
+  if (!!packageId) {
+    url += `&packageId=${packageId}`;
+  }  
+  return Axios.get(url);
+};
+
 export const userSpecificCoupon = (
   mobileNumber: string,
   type: string

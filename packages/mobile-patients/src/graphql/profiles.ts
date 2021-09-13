@@ -557,189 +557,23 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
   }
 `;
 
-export const GET_PATIENT_ALL_CONSULTED_DOCTORS = gql`
-  query getPatientAllConsultedDoctors($patientId: String!) {
-    getPatientAllAppointments(patientId: $patientId) {
-      appointments {
-        doctorInfo {
-          id
-          displayName
-          specialty {
-            image
-            name
-          }
-          photoUrl
-        }
-        id
-        hideHealthRecordNudge
-        discountedAmount
-        patientId
-        doctorId
-        appointmentDateTime
-        appointmentType
-        hospitalId
-        status
-        bookingDate
-        rescheduleCount
-        isFollowUp
-        appointmentState
-        displayId
-        isConsultStarted
-        isSeniorConsultStarted
-        isJdQuestionsComplete
-        isAutomatedQuestionsComplete
-        symptoms
-        doctorInfo {
-          allowBookingRequest
-          awards
-          city
-          country
-          chatDays
-          dateOfBirth
-          displayName
-          doctorType
-          delegateNumber
-          emailAddress
-          experience
-          firebaseToken
-          firstName
-          fullName
-          gender
-          isActive
-          id
-          name
-          mobileNumber
-          isActive
-        }
-      }
-      doctorHospital {
-        facility {
-          id
-          name
-          city
-          latitude
-          longitude
-          facilityType
-          streetLine1
-          streetLine2
-          streetLine3
-          imageUrl
-        }
-      }
-      starTeam {
-        associatedDoctor {
-          id
-          salutation
-          firstName
-          lastName
-          fullName
-          displayName
-          experience
-          city
-          photoUrl
-          qualification
-          thumbnailUrl
-          physicalConsultationFees
-          onlineConsultationFees
-          specialty {
-            id
-            name
-            image
-            userFriendlyNomenclature
-          }
-          consultHours {
-            consultMode
-            consultType
-            endTime
-            facility {
-              city
-              country
-              facilityType
-              id
-              imageUrl
-              latitude
-              longitude
-              name
-              state
-              streetLine1
-              streetLine2
-              streetLine3
-              zipcode
-            }
-            id
-            isActive
-            startTime
-            weekDay
-            consultDuration
-            consultBuffer
-          }
-          doctorHospital {
-            facility {
-              city
-              country
-              facilityType
-              id
-              imageUrl
-              latitude
-              longitude
-              name
-              state
-              streetLine1
-              streetLine2
-              streetLine3
-              zipcode
-            }
-          }
-          doctorSecretary {
-            secretary {
-              id
-              name
-              mobileNumber
-              isActive
-            }
-          }
-          packages {
-            fees
-            id
-            name
-          }
-          specialty {
-            createdDate
-            id
-            image
-            name
-            specialistSingularTerm
-            specialistPluralTerm
-            userFriendlyNomenclature
-            displayOrder
-          }
-          starTeam {
-            isActive
-          }
-        }
-        caseSheet {
-          id
-          followUpAfterInDays
-          version
-          doctorType
-          medicinePrescription {
-            id
-            medicineName
-            medicineUnit
-            medicineTimings
-            medicineDosage
-            medicineCustomDosage
-            medicineConsumptionDurationInDays
-            medicineConsumptionDurationUnit
-          }
-          diagnosticPrescription {
-            itemname
-            testInstruction
-          }
-          blobName
-        }
-      }
+export const GET_PATIENT_ACTIVE_FOLLOWUP_APPOINTMENTS = gql`
+  query getPatientAllAppointments(
+    $patientId: String!
+    $patientMobile: String!
+    $offset: Int!
+    $limit: Int!
+  ) {
+    getPatientAllAppointments(
+      patientId: $patientId
+      patientMobile: $patientMobile
+      offset: $offset
+      limit: $limit
+    ) {
+      totalAppointmentCount
+
       activeAppointments {
+        patientName
         appointmentPayments {
           id
           amountPaid
@@ -775,7 +609,6 @@ export const GET_PATIENT_ALL_CONSULTED_DOCTORS = gql`
           awards
           city
           country
-          chatDays
           dateOfBirth
           displayName
           doctorType
@@ -806,17 +639,6 @@ export const GET_PATIENT_ALL_CONSULTED_DOCTORS = gql`
           streetLine3
           thumbnailUrl
           zip
-          bankAccount {
-            accountHolderName
-            accountNumber
-            accountType
-            bankName
-            city
-            id
-            IFSCcode
-            state
-            streetLine1
-          }
           consultHours {
             consultMode
             consultType
@@ -860,19 +682,6 @@ export const GET_PATIENT_ALL_CONSULTED_DOCTORS = gql`
               zipcode
             }
           }
-          doctorSecretary {
-            secretary {
-              id
-              name
-              mobileNumber
-              isActive
-            }
-          }
-          packages {
-            fees
-            id
-            name
-          }
           specialty {
             createdDate
             id
@@ -892,6 +701,7 @@ export const GET_PATIENT_ALL_CONSULTED_DOCTORS = gql`
           followUpAfterInDays
           version
           doctorType
+          sentToPatient
           medicinePrescription {
             id
             medicineName
@@ -909,7 +719,9 @@ export const GET_PATIENT_ALL_CONSULTED_DOCTORS = gql`
           blobName
         }
       }
-      completedAppointments {
+
+      followUpAppointments {
+        patientName
         appointmentPayments {
           id
           amountPaid
@@ -945,7 +757,6 @@ export const GET_PATIENT_ALL_CONSULTED_DOCTORS = gql`
           awards
           city
           country
-          chatDays
           dateOfBirth
           displayName
           doctorType
@@ -976,17 +787,6 @@ export const GET_PATIENT_ALL_CONSULTED_DOCTORS = gql`
           streetLine3
           thumbnailUrl
           zip
-          bankAccount {
-            accountHolderName
-            accountNumber
-            accountType
-            bankName
-            city
-            id
-            IFSCcode
-            state
-            streetLine1
-          }
           consultHours {
             consultMode
             consultType
@@ -1030,19 +830,6 @@ export const GET_PATIENT_ALL_CONSULTED_DOCTORS = gql`
               zipcode
             }
           }
-          doctorSecretary {
-            secretary {
-              id
-              name
-              mobileNumber
-              isActive
-            }
-          }
-          packages {
-            fees
-            id
-            name
-          }
           specialty {
             createdDate
             id
@@ -1062,6 +849,7 @@ export const GET_PATIENT_ALL_CONSULTED_DOCTORS = gql`
           followUpAfterInDays
           version
           doctorType
+          sentToPatient
           medicinePrescription {
             id
             medicineName
@@ -2397,6 +2185,8 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
             mobile
             vaccinationStatus
           }
+          isPhleboETAElapsed
+          phleboETAElapsedMessage
         }
         diagnosticOrderReschedule {
           rescheduleDate
@@ -6213,99 +6003,93 @@ export const GET_DIAGNOSTIC_REPORT_TAT = gql`
 `;
 
 export const GET_PATIENT_PRESCRIPTIONS = gql`
-query {
-  getPatientPrescriptions(
-    patientId: $patientId
-    limit: 100
-  ) {
-    response {
-      doctorName
-      patientName
-      caseSheet {
-        notes
-        blobName
-        consultType
-        prescriptionGeneratedDate
-        diagnosis {
-          name
-          __typename
-        }
-        diagnosticPrescription {
-          itemname
-          __typename
-        }
-        doctorId
-        doctorType
-        followUp
-        followUpAfterInDays
-        followUpDate
-        followUpConsultType
-        id
-        medicinePrescription {
-          medicineConsumptionDurationInDays
-          medicineDosage
-          id
-          medicineCustomDetails
-          medicineConsumptionDurationUnit
-          medicineFormTypes
-          medicineFrequency
-          medicineInstructions
-          medicineName
-          medicineTimings
-          medicineToBeTaken
-          medicineUnit
-          routeOfAdministration
-          __typename
-        }
-        symptoms {
-          symptom
-          since
-          howOften
-          severity
-          details
-          __typename
-        }
-        otherInstructions {
-          instruction
-          __typename
-        }
-        __typename
-      }
-    }
-  }
-  getPatientPrismMedicalRecords_V2(
-    patientId: $patientId
-    records: [PRESCRIPTION]
-  ) {
-    prescriptions {
+  query {
+    getPatientPrescriptions(patientId: $patientId, limit: 100) {
       response {
-        id
-        prescriptionName
-        date
-        prescribedBy
-        notes
-        prescriptionSource
-        source
-        siteDisplayName
-        fileUrl
-        prescriptionFiles {
+        doctorName
+        patientName
+        caseSheet {
+          notes
+          blobName
+          consultType
+          prescriptionGeneratedDate
+          diagnosis {
+            name
+            __typename
+          }
+          diagnosticPrescription {
+            itemname
+            __typename
+          }
+          doctorId
+          doctorType
+          followUp
+          followUpAfterInDays
+          followUpDate
+          followUpConsultType
           id
-          fileName
-          mimeType
-          content
-          byteContent
+          medicinePrescription {
+            medicineConsumptionDurationInDays
+            medicineDosage
+            id
+            medicineCustomDetails
+            medicineConsumptionDurationUnit
+            medicineFormTypes
+            medicineFrequency
+            medicineInstructions
+            medicineName
+            medicineTimings
+            medicineToBeTaken
+            medicineUnit
+            routeOfAdministration
+            __typename
+          }
+          symptoms {
+            symptom
+            since
+            howOften
+            severity
+            details
+            __typename
+          }
+          otherInstructions {
+            instruction
+            __typename
+          }
           __typename
         }
+      }
+    }
+    getPatientPrismMedicalRecords_V2(patientId: $patientId, records: [PRESCRIPTION]) {
+      prescriptions {
+        response {
+          id
+          prescriptionName
+          date
+          prescribedBy
+          notes
+          prescriptionSource
+          source
+          siteDisplayName
+          fileUrl
+          prescriptionFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+            __typename
+          }
+          __typename
+        }
+        errorCode
+        errorMsg
+        errorType
         __typename
       }
-      errorCode
-      errorMsg
-      errorType
-      __typename
     }
   }
-}
-`
+`;
 
 export const ADD_PATIENT_PRESCRIPTION_RECORD = gql`
   mutation addPatientPrescriptionRecord($AddPrescriptionRecordInput: AddPrescriptionRecordInput) {

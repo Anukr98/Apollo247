@@ -112,6 +112,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const { cartItems: shopCartItems } = useShoppingCart();
   const { showAphAlert, setLoading: setGlobalLoading, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
+  const { isDiagnosticCircleSubscription } = useDiagnosticsCart()
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
 
   //add the cityId in case of modifyFlow
@@ -279,7 +280,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       id,
       price,
       discountedPrice,
-      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.POPULAR_SEARCH
+      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.POPULAR_SEARCH,
+      currentPatient,
+      isDiagnosticCircleSubscription
     );
   };
 
@@ -287,7 +290,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     keyword: string,
     results: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
   ) => {
-    DiagnosticItemSearched(currentPatient, keyword, results);
+    DiagnosticItemSearched(currentPatient, keyword, results, isDiagnosticCircleSubscription);
   };
 
   const onAddCartItem = (

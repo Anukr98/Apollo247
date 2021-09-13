@@ -1498,7 +1498,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             elevation: displayoverlay ? 0 : 15,
           }
         : {};
-    return <TabHeader containerStyle={containerStyle} navigation={props.navigation} />;
+    return (
+      <TabHeader
+        containerStyle={containerStyle}
+        navigation={props.navigation}
+        screenAsSource={'Appointment Page'}
+      />
+    );
   };
 
   const renderNoAppointments = () => {
