@@ -113,16 +113,24 @@ export const CouponsSection = (props: { offersdata: SpecialOffersCouponsData[] }
                   </View>
                 )}
               </View>
-              <View style={{ flexDirection: 'row', flex: 1, justifyContent: 'space-between' }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  flex: 1,
+                  justifyContent: 'space-between',
+                }}
+              >
                 <TouchableOpacity onPress={() => updateKnowMore(index)}>
-                  <Text style={[styles.bottomHeaderStyle, { alignSelf: 'flex-start' }]}>
-                    {item?.knowMoreOption ? `Know Less ` : `Know More `}
+                  <View style={{ flexDirection: 'row', paddingRight: 12 }}>
+                    <Text style={[styles.bottomHeaderStyle, { alignSelf: 'flex-start' }]}>
+                      {item?.knowMoreOption ? `Know Less ` : `Know More `}
+                    </Text>
                     {item?.knowMoreOption ? (
                       <UpOrange style={styles.arrowIconStyles} />
                     ) : (
                       <DownOrange style={styles.arrowIconStyles} />
                     )}
-                  </Text>
+                  </View>
                 </TouchableOpacity>
                 {couponCodePresent && (
                   <TouchableOpacity onPress={() => copyToClipboard(item?.couponCode)}>
@@ -295,7 +303,7 @@ const styles = StyleSheet.create({
   bottomHeaderStyle: {
     ...theme.fonts.IBMPlexSansRegular(9),
     color: '#FFA92C',
-    paddingRight: 10,
+    paddingRight: 5,
     fontWeight: '500',
   },
   couponKnowMoreText: {
