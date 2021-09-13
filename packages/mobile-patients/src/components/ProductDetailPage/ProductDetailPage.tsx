@@ -555,7 +555,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         'product id (SKUID)': sku?.toUpperCase(),
         'product name': name,
         Stockavailability: stock_availability,
-        CategoryID: category_id || undefined,
+        'Category ID': category_id || undefined,
         CategoryName: productPageViewedEventProps?.CategoryName || undefined,
         'Section Name': productPageViewedEventProps?.SectionName || undefined,
         'Circle Member':
@@ -573,7 +573,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         MaxOrderQuantity: MaxOrderQty,
         MRP: price,
         SpecialPrice: special_price || undefined,
-        CircleCashback: Number(cashback) || 0,
+        'Circle Cashback': Number(cashback) || 0,
         SubCategory: subcategory || '',
       };
       if (movedFrom === 'deeplink') {
@@ -1023,7 +1023,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_NOTIFY_ME] = {
       'product name': medicineDetails?.name,
       'product id': medicineDetails?.sku,
-      'category ID': medicineDetails?.category_id || undefined,
+      'Category ID': medicineDetails?.category_id || '',
       price: medicineDetails?.price,
       pincode: pincode,
       serviceable: notServiceable ? 'No' : 'Yes',

@@ -862,10 +862,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     const appointmentDateTime = moment
       .utc(item.appointmentDateTime)
       .local()
-      .format('YYYY-MM-DD HH:mm:ss');
+      .format('YYYY-MM-DD HH:mm:ss');      
     const minutes = moment.duration(moment(appointmentDateTime).diff(new Date())).asMinutes();
     const title =
-      minutes > 0 && minutes <= 15
+      minutes > 0 && minutes <= 15 && getAppointmentStatusText() == 'Active'
         ? `${Math.ceil(minutes)} MIN${Math.ceil(minutes) > 1 ? 'S' : ''}`
         : tomorrowDate == appointmentDateTomarrow
         ? 'TOMORROW, ' + moment(appointmentDateTime).format('h:mm A')
@@ -874,7 +874,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               ? 'h:mm A'
               : 'DD MMM YYYY, h:mm A'
           );
-    const isActive = minutes > 0 && minutes <= 15 ? true : false;
+    const isActive = minutes > 0 && minutes <= 15 &&
+       getAppointmentStatusText() == 'Active' ? true : false;
     const dateIsAfterconsult = moment(appointmentDateTime).isAfter(moment(new Date()));
     const doctorHospitalName =
       g(item, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')! ||

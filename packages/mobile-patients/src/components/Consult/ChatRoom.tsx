@@ -1134,9 +1134,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           .then((results) => {
             uploadDocument(results, 'Gallery');
           })
-          .catch((err) => {
-            Alert.alert(strings.common.uhOh, `Something went wrong.`);
-          });
+          .catch((err) => {});
       }
     } catch (err) {
       Alert.alert(strings.common.uhOh, `Something went wrong.`);

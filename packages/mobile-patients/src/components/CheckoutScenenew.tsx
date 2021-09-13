@@ -361,7 +361,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         'Service Area': 'Pharmacy',
         'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
         af_revenue: getFormattedAmount(grandTotal),
-        'Circle Cashback amount':
+        'Circle Cashback Amount':
           circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
         'Split Cart': orders?.length > 1 ? 'Yes' : 'No',
         'Prescription Option selected': uploadPrescriptionRequired
@@ -380,7 +380,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         'Payment Instrument': isCOD ? 'COD' : paymentMode || undefined,
       };
       if (store) {
-        eventAttributes['Store Id'] = store.storeid;
+        eventAttributes['Store ID'] = store.storeid;
         eventAttributes['Store Name'] = store.storename;
         eventAttributes['Store Number'] = store.phone;
         eventAttributes['Store Address'] = store.address;

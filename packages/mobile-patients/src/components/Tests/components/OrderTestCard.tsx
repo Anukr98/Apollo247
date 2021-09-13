@@ -159,7 +159,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                         ? nameFormater(item?.diagnostics?.itemName!, 'title')
                         : ''}{' '}
                     </Text>
-                  {!!item?.editOrderID ? renderNewTag() : null}
+                    {!!item?.editOrderID ? renderNewTag() : null}
                   </View>
                   {index == 1 &&
                     filterOrderLineItem?.length - 2 > 0 &&
@@ -647,7 +647,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     flexDirection: 'row',
     marginTop: 20,
-    marginBottom: '2%',
+    marginBottom: '1%',
     minHeight: 40,
   },
   testForText: {
