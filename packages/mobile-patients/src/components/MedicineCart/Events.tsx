@@ -102,7 +102,7 @@ export function postwebEngageProceedToPayEvent(
   if (selectedStore) {
     eventAttributes['Store Id'] = selectedStore.storeid;
     eventAttributes['Store Name'] = selectedStore.storename;
-    cleverTapEventAttributes['Store Id'] = selectedStore.storeid||undefined;
+    cleverTapEventAttributes['Store ID'] = selectedStore.storeid||undefined;
     cleverTapEventAttributes['Store Name'] = selectedStore.storename||undefined;
   }
   postWebEngageEvent(WebEngageEventName.PHARMACY_PROCEED_TO_PAY_CLICKED, eventAttributes);

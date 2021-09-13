@@ -3518,7 +3518,7 @@ export const getCleverTapCheckoutCompletedEventAttributes = (
     'Order_ID(s)': ordersIds?.map((i) => i?.orderAutoId)?.join(','),
   };
   if (store) {
-    eventAttributes['Store Id'] = store.storeid;
+    eventAttributes['Store ID'] = store.storeid;
     eventAttributes['Store Name'] = store.storename;
     eventAttributes['Store Number'] = store.phone;
     eventAttributes['Store Address'] = store.address;

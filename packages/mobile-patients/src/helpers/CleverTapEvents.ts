@@ -611,7 +611,7 @@ export interface ConsultRoomDoctorPatientInfo {
 }
 
 export interface AutoSelectLocation extends UserInfo {
-  serviceability: boolean;
+  Serviceability: boolean;
   pincode: string;
 }
 
@@ -1274,7 +1274,7 @@ export interface CleverTapEvents {
     'Cart ID'?: string | number; // Optional
     'Service Area': 'Pharmacy' | 'Diagnostic';
     'Mode of Delivery'?: 'Home' | 'Pickup';
-    'Store Id'?: string;
+    'Store ID'?: string;
     'Store Name'?: string;
     'Store Number'?: string;
     'Store Address'?: string;
@@ -1302,7 +1302,7 @@ export interface CleverTapEvents {
     'Patient UHID': string;
     'Mobile Number': string;
     'Customer ID': string;
-    serviceability: string;
+    Serviceability: string;
     pincode: string;
     source: string;
   };

@@ -390,7 +390,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         'Payment Instrument': isCOD ? 'COD' : paymentMode || undefined,
       };
       if (store) {
-        eventAttributes['Store Id'] = store.storeid;
+        eventAttributes['Store ID'] = store.storeid;
         eventAttributes['Store Name'] = store.storename;
         eventAttributes['Store Number'] = store.phone;
         eventAttributes['Store Address'] = store.address;
