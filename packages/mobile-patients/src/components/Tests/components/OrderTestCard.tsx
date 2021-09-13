@@ -159,8 +159,8 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                         ? nameFormater(item?.diagnostics?.itemName!, 'title')
                         : ''}{' '}
                     </Text>
-                  </View>
                   {!!item?.editOrderID ? renderNewTag() : null}
+                  </View>
                   {index == 1 &&
                     filterOrderLineItem?.length - 2 > 0 &&
                     renderShowMore(filterOrderLineItem, item?.itemName!)}
