@@ -516,6 +516,21 @@ export enum CleverTapEventName {
   PHR_CLICK_VACCINATION = 'PHR_CLICK_VACCINATION',
 
 
+
+  HOME_ICON_CLICKED = 'Homepage logo Clicked',
+  //Home Page Event
+  USER_PROFILE_IMAGE_NAME_CLICKED = 'User Profile Image name Clicked',
+  ADD_MEMBER_PROFILE_CLICKED = 'Add Members Profile Clicked',
+  SAVE_MEMBER_PROFILE_CLICKED = 'Save Member Profile Clicked',
+  CONFIRM_MEMBER_PROFILE_CLICKED = 'Confirm Member Profile Clicked',
+  LOGIN_DONE = 'Login Done',
+
+  //Auth Clever tap events
+  GET_OTP_ON_CALL = 'Get OTP On call Clicked',
+  LOGIN_VIA_TRUECALLER = 'Login Via Truecaller Clicked',
+  LOGIN_WITH_TRUECALLER_CONTINUE = 'Login with true caller continue clicked',
+  LOGIN_WITH_TRUECALLER_SKIPPED = 'Login with true caller skip clicked',
+
   //App Review and Rating on Playstore
   PLAYSTORE_APP_REVIEW_AND_RATING = 'Playstore app review and rating',
   APP_REVIEW_AND_RATING_TO_PLAYSTORE = 'Playstore review popup showed',
