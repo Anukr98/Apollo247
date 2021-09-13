@@ -2186,7 +2186,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       .then((response) => {
         const images = response as ImageCropPickerResponse[];
         const isGreaterThanSpecifiedSize = images.find(({ size }) => size > MAX_FILE_SIZE);
-        // setShowSpinner(false);
         if (isGreaterThanSpecifiedSize) {
           Alert.alert(strings.common.uhOh, `Invalid File Size. File size must be less than 25MB.`);
           return;
@@ -2201,7 +2200,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       })
       .catch((e: Error) => {
         CommonBugFender('Tests_onClickGallery', e);
-        // setShowSpinner(false);
       });
   };
   const getBase64 = (response: DocumentPickerResponse[]): Promise<string>[] => {
@@ -2210,7 +2208,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       uri = Platform.OS === 'ios' ? decodeURI(uri.replace('file://', '')) : uri;
       let compressedImageUri = '';
       if (!isPdf) {
-        // Image Quality 0-100
         compressedImageUri = (await ImageResizer.createResizedImage(uri, 2096, 2096, 'JPEG', 50))
           .uri;
         compressedImageUri =
@@ -2223,7 +2220,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const onBrowseClicked = async () => {
     setIsPrescriptionUpload(false);
     try {
-      // setShowSpinner(true);
       const documents = await DocumentPicker.pickMultiple({
         type: [DocumentPicker.types.pdf],
         copyTo: 'documentDirectory',
@@ -2231,7 +2227,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       const isValidPdf = documents.find(({ name }) => name.toLowerCase().endsWith('.pdf'));
       const isValidSize = documents.find(({ size }) => size < MAX_FILE_SIZE);
       if (!isValidPdf || !isValidSize) {
-        // setShowSpinner(false);
         Alert.alert(
           strings.common.uhOh,
           !isValidPdf
@@ -2256,8 +2251,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
             base64: base64,
           } as PhysicalPrescription)
       );
-      // setShowSpinner(false);
-      // postCleverTapUploadPrescriptionEvents('Gallery', 'Non-Cart');
       props.navigation.navigate(AppRoutes.SubmittedPrescription, {
         type: 'Gallery',
         phyPrescriptionsProp: [...phyPrescriptionUploaded, ...documentData],
@@ -2265,7 +2258,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         source: 'SubmittedPrescription',
       });
     } catch (e:any) {
-      // setShowSpinner(false);
       if (DocumentPicker.isCancel(e)) {
         CommonBugFender('SubmittedPrescription_onClickGallery', e);
       }
