@@ -66,7 +66,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
   } = props;
   let actualItemsToShow = diagnosticWidgetData?.length > 0 && diagnosticWidgetData;
   const { currentPatient } = useAllCurrentPatients();
-  const {isDiagnosticCircleSubscription} = useDiagnosticsCart()
+  const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const renderItemCard = useCallback(
     (item: any) => {
       const getItem = item?.item;
@@ -251,7 +251,8 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     return (
       <View style={mainViewStyle}>
         <Text style={textStyle}>
-          {text} {string.common.Rs} {convertNumberToDecimal(price)}
+          {text} {string.common.Rs}
+          {convertNumberToDecimal(price)}
         </Text>
       </View>
     );
@@ -298,7 +299,8 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
       <View style={{ flexDirection: 'row', marginVertical: '2%' }}>
         {priceToShow ? (
           <Text style={styles.mainPriceText}>
-            {string.common.Rs} {convertNumberToDecimal(priceToShow)}
+            {string.common.Rs}
+            {convertNumberToDecimal(priceToShow)}
           </Text>
         ) : (
           renderPackageItemPriceShimmer()
@@ -307,7 +309,8 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
         {(!isCircleSubscribed && promoteCircle && priceToShow == slashedPrice) ||
         priceToShow == slashedPrice ? null : (
           <Text style={styles.slashedPriceText}>
-            ({string.common.Rs} {convertNumberToDecimal(slashedPrice)})
+            ({string.common.Rs}
+            {convertNumberToDecimal(slashedPrice)})
           </Text>
         )}
         {renderAddToCart(isAddedToCart, getItem, pricesForItem, packageMrpForItem)}
@@ -367,7 +370,14 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
   }
 
   function postHomePageWidgetClicked(name: string, id: string, section: string) {
-    DiagnosticHomePageWidgetClicked(currentPatient,section, id, name, '' , isDiagnosticCircleSubscription);
+    DiagnosticHomePageWidgetClicked(
+      currentPatient,
+      section,
+      id,
+      name,
+      '',
+      isDiagnosticCircleSubscription
+    );
   }
 
   function onPress(item: any, packageCalculatedMrp: number, pricesForItem: any) {
@@ -526,7 +536,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
     elevation: 10,
     marginTop: 16,
-    marginBottom: 20,
+    marginBottom: 16,
   },
   topPackageView: {
     minHeight: 50,
