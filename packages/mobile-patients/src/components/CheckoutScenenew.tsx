@@ -154,7 +154,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     orders,
     minCartValueForCOD,
     maxCartValueForCOD,
-    nonCodSKus,
     clearCartInfo,
     circlePlanSelected,
   } = useShoppingCart();
@@ -189,7 +188,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const [HCorder, setHCorder] = useState<boolean>(false);
   const [scrollToend, setScrollToend] = useState<boolean>(false);
   const [showCareDetails, setShowCareDetails] = useState(true);
-  const [areNonCODSkus, setAreNonCODSkus] = useState(false);
   const [orderTransactionId, setOrderTransactionId] = useState<string>('');
   const client = useApolloClient();
 
@@ -260,14 +258,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       });
     return () => {};
   }, []);
-
-  useEffect(() => {
-    if (cartItems?.length) {
-      const skusNotForCod = cartItems?.find((item) => nonCodSKus?.includes(item?.id));
-      const areNonCodSkus = !!skusNotForCod?.id;
-      setAreNonCODSkus(areNonCodSkus);
-    }
-  }, [cartItems]);
 
   const fetchHealthCredits = async () => {
     client
@@ -1515,7 +1505,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       <View>
         <Button
           disabled={
-            areNonCODSkus ||
             isLessThanCodLimit ||
             isMoreThanCodLimit ||
             isOneApolloSelected ||
@@ -1536,10 +1525,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         ) : isMoreThanCodLimit ? (
           <Text style={styles.codAlertMsg}>
             {`Maximum Order amount eligible for COD is ₹${maxCartValueForCOD}.`}
-          </Text>
-        ) : areNonCODSkus ? (
-          <Text style={styles.codAlertMsg}>
-            {'Some of the products you have added to cart are not eligible for Cash on Delivery'}
           </Text>
         ) : !!isOneApolloSelected ? (
           <Text style={styles.codAlertMsg}>
