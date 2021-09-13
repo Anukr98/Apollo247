@@ -400,6 +400,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                       mobile: null,
                       vaccinationStatus: null,
                     },
+                    isPhleboETAElapsed: null,
+                    phleboETAElapsedMessage: null
                   };
                 }
                 order.diagnosticOrderPhlebotomists.phleboOTP =
