@@ -350,6 +350,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     const isCallingEnabled = !!phlObj ? phlObj?.allowCalling : false;
     const showVaccinationStatus = !!phlObj?.diagnosticPhlebotomists?.vaccinationStatus;
     const isPhleboETAElapsed = !!phlObj && phlObj?.isPhleboETAElapsed;
+    const phleboETAElapsedMessage = phlObj?.phleboETAElapsedMessage;
 
     return (
       <>
@@ -405,7 +406,11 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
               <View style={styles.otpContainer}>
                 <View style={styles.etaContainer}>
                   <LocationOutline style={styles.locationIcon} />
-                  <Text style={styles.otpTextStyle}>Apollo agent will arrive by {phleboEta}</Text>
+                  <Text style={styles.otpTextStyle}>
+                    {isPhleboETAElapsed
+                      ? phleboETAElapsedMessage
+                      : `Apollo agent will arrive by ${phleboEta}`}
+                  </Text>
                 </View>
                 {phleboTrackLink ? (
                   <TouchableOpacity
@@ -439,21 +444,11 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
               </View>
             ) : null}
           </>
-        ) : isPhleboETAElapsed ? renderPhleboETAElapsed() : null}
+        ) : null}
       </>
     );
   };
 
-  const renderPhleboETAElapsed = () => {
-    const phlObj = props?.phelboObject;
-    const phleboETAElapsedMessage = !!phlObj && phlObj?.phleboETAElapsedMessage;
-
-    return (
-      <View style={styles.ratingContainer}>
-        <Text style={styles.otpBoxTextStyle}>{phleboETAElapsedMessage}</Text>
-      </View>
-    );
-  };
   const showOnlyOTPContainer = () => {
     const phlObj = props?.phelboObject;
     const otpToShow = !!phlObj && phlObj?.phleboOTP;
