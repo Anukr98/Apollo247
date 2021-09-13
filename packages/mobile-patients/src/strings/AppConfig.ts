@@ -481,11 +481,17 @@ const PharmaApiConfig = {
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
     PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/categoryproducts_api.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
-    SPECIAL_OFFERS_PAGE_WIDGETS: ['https://uatcms.apollo247.com/api/special-offer/getwidget', specialOffersWidgetApiCredentials],
+    SPECIAL_OFFERS_PAGE_WIDGETS: [
+      'https://uatcms.apollo247.com/api/special-offer/getwidget',
+      specialOffersWidgetApiCredentials,
+    ],
     SPECIAL_OFFERS_PAGE_COUPONS: ['https://uatvalidcoupon.apollo247.com/offers'],
-    SPECIAL_OFFERS_CATEGORY:[`${apolloUatBaseUrl}/specialoffercategory_api.php`, pharmaToken201],
-    SPECIAL_OFFERS_BRANDS:[`${apolloUatBaseUrl}/specialofferbrand_api.php`, pharmaToken201],
-    SPECIAL_OFFERS_BRANDS_PRODUCTS:[`${apolloUatBaseUrl}/popcsrchspecialoffer_api.php`, pharmaToken201],
+    SPECIAL_OFFERS_CATEGORY: [`${apolloUatBaseUrl}/specialoffercategory_api.php`, pharmaToken201],
+    SPECIAL_OFFERS_BRANDS: [`${apolloUatBaseUrl}/specialofferbrand_api.php`, pharmaToken201],
+    SPECIAL_OFFERS_BRANDS_PRODUCTS: [
+      `${apolloUatBaseUrl}/popcsrchspecialoffer_api.php`,
+      pharmaToken201,
+    ],
     ALL_BRANDS: [`${apolloUatBaseUrl}/allbrands_api.php`, pharmaToken201],
     GET_TEST_PACKAGES: [
       `http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedata`,
@@ -533,11 +539,17 @@ const PharmaApiConfig = {
     GET_SUBSTITUTES: [`${apolloProdBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
     PRODUCTS_BY_CATEGORY: [`${apolloProdBaseUrl}/categoryproducts_api.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloProdBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
-    SPECIAL_OFFERS_PAGE_WIDGETS: ['https://cms.apollo247.com/api/special-offer/getwidget', specialOffersWidgetApiCredentials],
+    SPECIAL_OFFERS_PAGE_WIDGETS: [
+      'https://cms.apollo247.com/api/special-offer/getwidget',
+      specialOffersWidgetApiCredentials,
+    ],
     SPECIAL_OFFERS_PAGE_COUPONS: ['https://validcoupon.apollo247.com/offers'],
-    SPECIAL_OFFERS_CATEGORY:[`${apolloProdBaseUrl}/specialoffercategory_api.php`, pharmaToken201],
-    SPECIAL_OFFERS_BRANDS:[`${apolloProdBaseUrl}/specialofferbrand_api.php`, pharmaToken201],
-    SPECIAL_OFFERS_BRANDS_PRODUCTS:[`${apolloProdBaseUrl}/popcsrchspecialoffer_api.php`, pharmaToken201],
+    SPECIAL_OFFERS_CATEGORY: [`${apolloProdBaseUrl}/specialoffercategory_api.php`, pharmaToken201],
+    SPECIAL_OFFERS_BRANDS: [`${apolloProdBaseUrl}/specialofferbrand_api.php`, pharmaToken201],
+    SPECIAL_OFFERS_BRANDS_PRODUCTS: [
+      `${apolloProdBaseUrl}/popcsrchspecialoffer_api.php`,
+      pharmaToken201,
+    ],
     ALL_BRANDS: [`${apolloProdBaseUrl}/allbrands_api.php`, pharmaToken201],
     GET_TEST_PACKAGES: [
       `https://report.apollodiagnostics.in/Apollo/AskApollo.aspx?cmd=getpackagedata`,

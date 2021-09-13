@@ -34,6 +34,7 @@ import {
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 const screenWidth = Dimensions.get('window').width;
 const CARD_WIDTH = screenWidth * 0.45;
 const CARD_HEIGHT = 230; //210
@@ -71,6 +72,8 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     onPressAddToCartFromCart,
     onPressRemoveItemFromCart,
   } = props;
+  const { currentPatient } = useAllCurrentPatients();
+  const {isDiagnosticCircleSubscription} = useDiagnosticsCart()
 
   let actualItemsToShow =
     source === 'Cart page'
@@ -339,7 +342,9 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
       widgetType === string.diagnosticCategoryTitle.categoryGrid ||
         widgetType == string.diagnosticCategoryTitle.category
         ? 'Category page'
-        : data?.diagnosticWidgetTitle
+        : data?.diagnosticWidgetTitle,
+      currentPatient,
+      isDiagnosticCircleSubscription
     );
     addCartItem?.({
       id: `${item?.itemId}`,
@@ -366,7 +371,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
   }
 
   function postHomePageWidgetClicked(name: string, id: string, section: string) {
-    DiagnosticHomePageWidgetClicked(section, name, id);
+    DiagnosticHomePageWidgetClicked(currentPatient,section, name, id, '', isDiagnosticCircleSubscription);
   }
 
   function onPress(item: any, packageCalculatedMrp: number, pricesForItem: any) {

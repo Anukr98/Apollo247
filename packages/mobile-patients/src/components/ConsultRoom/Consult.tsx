@@ -67,6 +67,7 @@ import {
   BackHandler,
 } from 'react-native';
 import { FlatList, NavigationEvents, NavigationScreenProps } from 'react-navigation';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   getPatientAllAppointments,
   getPatientAllAppointmentsVariables,
@@ -549,16 +550,20 @@ export interface AppointmentFilterObject {
 }
 
 export const Consult: React.FC<ConsultProps> = (props) => {
+  const { allAppointmentApiResponse, setAllAppointmentApiResponse } = useAppCommonData();
+
   const tabs = [{ title: 'Active' }, { title: 'Completed' }, { title: 'Cancelled' }];
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const movedFrom = props.navigation.getParam('movedFrom');
 
-  const [allAppointments, setAllAppointments] = useState<Appointment[]>([]);
+  const [allAppointments, setAllAppointments] = useState<Appointment[] | null>(
+    allAppointmentApiResponse
+  );
   const [totalApptCount, setTotalApptCount] = useState<number>(0);
   const [selectedPatient, selectPatient] = useState<any>('ALL');
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [loading, setLoading] = useState<boolean>(false);
-  const [pageLoading, setPageLoading] = useState<boolean>(true);
+  const [pageLoading, setPageLoading] = useState<boolean>(false);
   const [showFilter, setShowFilter] = useState<boolean>(false);
 
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
@@ -579,12 +584,17 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const client = useApolloClient();
 
   useEffect(() => {
-    setPageLoading(true);
-    fetchAppointments(true);
-  }, []);
+    if (selectedPatient?.id) {
+      // For a particular patient selected invalidate the cache and show page loading
+      setAllAppointmentApiResponse!(null);
+      setPageLoading(true);
+    }
 
-  useEffect(() => {
-    setPageLoading(true);
+    if (!allAppointmentApiResponse) {
+      // show loader when no data in cache
+      setPageLoading(true);
+    }
+
     fetchAppointments(true);
   }, [selectedPatient]);
 
@@ -742,8 +752,16 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       }
       if (reload) {
         appointments && setAllAppointments([...appointments]);
+
+        selectedPatient === 'ALL' &&
+          appointments &&
+          setAllAppointmentApiResponse!([...appointments]);
       } else {
         appointments && setAllAppointments([...allAppointments, ...appointments]);
+
+        selectedPatient === 'ALL' &&
+          appointments &&
+          setAllAppointmentApiResponse!([...allAppointments, ...appointments]);
       }
       setTotalApptCount(totalAppointmentCount || 0);
       setLoading(false);
@@ -1535,17 +1553,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       )
     );
   };
+
   return (
     <View style={{ flex: 1 }}>
-      <NavigationEvents
-        onDidFocus={(payload) => {
-          if (callFetchAppointmentApi) {
-            setPageLoading(true);
-            fetchAppointments();
-          }
-        }}
-        onDidBlur={(payload) => {}}
-      />
+      <NavigationEvents onDidFocus={(payload) => {}} onDidBlur={(payload) => {}} />
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
         {renderTopView()}
         {renderPatientHeader()}

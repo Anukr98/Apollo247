@@ -55,7 +55,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
   validateConsultCoupon,
-  userSpecificCoupon,
+  fetchAutoApplyCoupon,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   WebEngageEventName,
@@ -281,7 +281,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   useEffect(() => {
     setPatientProfiles(moveSelectedToTop());
-    fetchUserSpecificCoupon();
+    getAutoApplyCoupon();
     setBookingAmount();
   }, []);
 
@@ -398,25 +398,39 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     });
   };
 
-  const fetchUserSpecificCoupon = () => {
-    userSpecificCoupon(g(currentPatient, 'mobileNumber'), 'Consult')
+  const getAutoApplyCoupon = () => {
+    setLoading && setLoading(true);
+    const data = {
+      packageId: getPackageIds(activeUserSubscriptions)?.join(),
+      mobile: g(currentPatient, 'mobileNumber'),
+      email: g(currentPatient, 'emailAddress'),
+      type: 'Consult',
+    };
+    fetchAutoApplyCoupon(data)
       .then((resp: any) => {
         if (resp?.data?.errorCode == 0) {
           let couponList = resp?.data?.response;
           if (typeof couponList != null && couponList?.length) {
-            const coupon = couponList?.[0]?.coupon;
-            validateUserSpecificCoupon(coupon);
+            validateAutoApplyCoupon(couponList);
           }
-        }
+        } else {
+          setLoading && setLoading(false);
+        } 
       })
       .catch((error) => {
+        setLoading && setLoading(false);
         CommonBugFender('fetchingUserSpecificCoupon', error);
       });
   };
 
-  async function validateUserSpecificCoupon(coupon: string) {
+  async function validateAutoApplyCoupon(couponList: any[]) {
     try {
-      await validateCoupon(coupon, true);
+      for (let couponObj of couponList) {
+        const {coupon} = couponObj || {};        
+        const couponStatus: any =  await validateCoupon(coupon, true);
+        if(couponStatus?.applied) break;
+      }
+      setLoading && setLoading(false);
     } catch (error) {
       setCoupon('');
       setDoctorDiscountedFees(actualAmount);
@@ -751,7 +765,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
               setCoupon(coupon);
               setCouponDiscountFees(discount);
               setDoctorDiscountedFees(revisedAmount);
-              res();
+              res({applied: true});
               if (discount == billAmount) {
                 setIsBookingFeeExempted(true);
               } else {
@@ -770,7 +784,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
                 fireBaseFCM();
               }
             } else {
-              rej(resp?.data?.response?.reason);
+              res(resp?.data?.response?.reason);
               if (fireEvent) {
                 const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_COUPON_APPLIED] = {
                   CouponCode: coupon,

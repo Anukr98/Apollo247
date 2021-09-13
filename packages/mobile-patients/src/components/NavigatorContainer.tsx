@@ -149,6 +149,8 @@ import { AddVaccinationRecord } from '@aph/mobile-patients/src/components/Health
 import { CowinCertificateOTPScreen } from '@aph/mobile-patients/src/components/HealthRecords/CowinCertificateOTPScreen';
 import { CowinCertificateGetOTP } from '@aph/mobile-patients/src/components/HealthRecords/CowinCertificateGetOTP';
 import { CowinProfileSelection } from '@aph/mobile-patients/src/components/HealthRecords/CowinProfileSelection';
+import { CowinCertificateViewer } from '@aph/mobile-patients/src/components/HealthRecords/CowinCertificateViewer';
+import { PostShareAppointmentSelectorScreen } from '@aph/mobile-patients/src/components/ConsultRoom/PostShareAppointmentSelectorScreen';
 import { PrescriptionCamera } from '@aph/mobile-patients/src/components/Tests/PrescriptionCamera';
 import { SubmittedPrescription } from '@aph/mobile-patients/src/components/Tests/SubmittedPrescription';
 import { SpecialOffersScreen } from '@aph/mobile-patients/src/components/SpecialOffers/SpecialOffers';
@@ -289,6 +291,7 @@ export enum AppRoutes {
   CowinCertificateOTPScreen = 'CowinCertificateOTPScreen',
   CowinCertificateGetOTP = 'CowinCertificateGetOTP',
   CowinProfileSelection = 'CowinProfileSelection',
+  PostShareAppointmentSelectorScreen = 'PostShareAppointmentSelectorScreen',
   PrescriptionCamera = 'PrescriptionCamera',
   SubmittedPrescription = 'SubmittedPrescription',
   SpecialOffersScreen = 'SpecialOffersScreen',
@@ -736,6 +739,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.CowinProfileSelection]: {
     screen: CowinProfileSelection,
+  },
+  [AppRoutes.PostShareAppointmentSelectorScreen]: {
+    screen: PostShareAppointmentSelectorScreen,
   },
   [AppRoutes.PrescriptionCamera]: {
     screen: PrescriptionCamera,
