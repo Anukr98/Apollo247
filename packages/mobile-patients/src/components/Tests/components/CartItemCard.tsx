@@ -85,7 +85,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
             styles.cartItemView,
             {
               paddingTop: props.index == 0 ? 22 : 12,
-              paddingBottom: !!(hasExtraData || inclusionCount || showSavingsView) ? 8 : 16,
+              paddingBottom: !!(hasExtraData || inclusionCount || showSavingsView) ? 0 : 16, //8
             },
           ]}
         >
@@ -138,7 +138,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
         ]}
       >
         {!!inclusionCount ? (
-          <View style={{ marginLeft: 4 }}>
+          <View>
             <Text style={styles.inclusionCountText}>{`Includes ${inclusionCount} test${
               inclusionCount == 1 ? '' : 's'
             }`}</Text>
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
   cartItemView: {
     justifyContent: 'space-between',
     padding: 16,
-    minHeight: 46,
+    minHeight: 40, //46
   },
   removeIconView: { justifyContent: 'center', alignSelf: 'flex-start' },
   reportGenTextStyle: {
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
     paddingRight: 6,
   },
   reportView: {
-    paddingLeft: 16,
+    paddingLeft: 10, //16
     paddingRight: 16,
     paddingBottom: 10,
     paddingTop: 6,
