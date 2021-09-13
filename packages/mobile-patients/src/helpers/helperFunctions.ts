@@ -3501,7 +3501,7 @@ export const getCleverTapCheckoutCompletedEventAttributes = (
     'Service Area': 'Pharmacy',
     'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
     af_revenue: getFormattedAmount(grandTotal),
-    'Circle Cashback amount':
+    'Circle Cashback Amount':
       circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
     'Split Cart': orders?.length > 1 ? 'Yes' : 'No',
     'Prescription Option selected': uploadPrescriptionRequired

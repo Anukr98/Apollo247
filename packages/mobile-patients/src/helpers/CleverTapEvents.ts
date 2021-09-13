@@ -1282,7 +1282,7 @@ export interface CleverTapEvents {
     af_currency: string;
     'Circle Member'?: PharmacyCircleMemberValues;
     'Circle Membership Value'?: number | null;
-    'Circle Cashback amount': number;
+    'Circle Cashback Amount': number;
     'Cart Items'?: string | undefined;
     'User Type'?: PharmaUserStatus;
     'Split Cart'?: YesOrNo;
