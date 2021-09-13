@@ -62,6 +62,7 @@ import {
   aphConsole,
   downloadDocument,
   removeWhiteSpaces,
+  isSmallDevice,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   DisabledTickIcon,
@@ -1357,7 +1358,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   }
 
   function _onPressAddTest(order: orderList) {
-    DiagnosticAddTestClicked(order?.id, currentPatient, order?.orderStatus, isDiagnosticCircleSubscription);
+    DiagnosticAddTestClicked(
+      order?.id,
+      currentPatient,
+      order?.orderStatus,
+      isDiagnosticCircleSubscription
+    );
 
     //clear the cart, if it has some duplicate item present.
     const getOrderItems = order?.diagnosticOrderLineItems?.map(
@@ -1780,12 +1786,12 @@ const styles = StyleSheet.create({
     // marginBottom: 5,
   },
   textSelectedPatient: {
-    ...theme.viewStyles.text('SB', 14, '#02475b'),
+    ...theme.viewStyles.text('M', 14, colors.LIGHT_BLUE, 1),
     width: '85%',
   },
   activeFilterView: {
     ...theme.viewStyles.text('SB', 14, '#02475b'),
-    backgroundColor: '#F3F3F3',
+    backgroundColor: colors.WHITE,
     borderWidth: 1,
     borderColor: '#BDBDBD',
     borderRadius: 8,
@@ -1832,11 +1838,10 @@ const styles = StyleSheet.create({
     margin: 5,
   },
   patientText: {
-    ...theme.viewStyles.text('R', 16, '#00B38E'),
-    width: '80%',
+    ...theme.viewStyles.text('R', isSmallDevice ? 15 : 16, '#00B38E'),
+    width: isSmallDevice ? '72%' : '78%',
   },
   patientSubText: {
-    ...theme.viewStyles.text('R', 12, '#00B38E'),
-    width: '20%',
+    ...theme.viewStyles.text('R', isSmallDevice ? 11 : 12, '#00B38E'),
   },
 });
