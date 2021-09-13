@@ -2185,6 +2185,8 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
             mobile
             vaccinationStatus
           }
+          isPhleboETAElapsed
+          phleboETAElapsedMessage
         }
         diagnosticOrderReschedule {
           rescheduleDate
