@@ -199,6 +199,8 @@ const styles = StyleSheet.create({
     margin: 16,
     minHeight: 190,
     width: winWidth - 32,
+    marginBottom: 24,
+    marginTop: 4,
   },
   rowStyles: { flexDirection: 'row', justifyContent: 'space-between' },
   heading1: {
