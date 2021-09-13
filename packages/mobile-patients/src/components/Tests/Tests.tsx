@@ -597,6 +597,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
       cityID: Number(serviceabilityObject?.cityId),
       stateID: Number(serviceabilityObject?.stateId),
     };
+    //response when unserviceable
+    if (Number(serviceabilityObject?.stateId) == 0 && serviceabilityObject?.city == '') {
+      setExpressSlotMsg('');
+      return;
+    }
     try {
       const res: any = await getDiagnosticExpressSlots(
         client,
