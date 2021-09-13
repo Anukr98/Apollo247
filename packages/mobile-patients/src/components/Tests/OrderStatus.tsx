@@ -173,7 +173,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const postwebEngageCheckoutCompletedEvent = () => {
     let attributes = {
       ...eventAttributes,
-      'Payment mode': isCOD ? 'Cash' : 'Prepaid',
+      'Payment Mode': isCOD ? 'Cash' : 'Prepaid',
       'Circle discount': circleSubscriptionId && orderCircleSaving ? orderCircleSaving : 0,
       'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
     };

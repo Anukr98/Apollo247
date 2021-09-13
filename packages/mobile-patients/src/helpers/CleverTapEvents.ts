@@ -1457,7 +1457,7 @@ export interface CleverTapEvents {
     Pincode: string | number;
     'Patient UHID': string;
     'Order amount': number; // Optional
-    'Payment mode'?: 'Cash' | 'Prepaid'; // Optional
+    'Payment Mode'?: 'Cash' | 'Prepaid'; // Optional
     'Circle discount'?: number;
     'Appointment Date'?: string;
     'Appointment time'?: string;
