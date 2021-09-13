@@ -840,10 +840,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         return 'Cancelled';
       } else if (item?.status === STATUS.COMPLETED) {
         return 'Completed';
-      } else if (item?.status === STATUS.PENDING || item?.status === STATUS.IN_PROGRESS) {
-        return 'Active';
       } else if (item?.appointmentState === APPOINTMENT_STATE.RESCHEDULE) {
         return 'Rescheduled';
+      } else if (item?.status === STATUS.PENDING || item?.status === STATUS.IN_PROGRESS) {
+        return 'Active';
       } else if (item?.isFollowUp === 'true') {
         return 'Follow Up Appointment';
       } else {
