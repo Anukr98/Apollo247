@@ -4,7 +4,7 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StyleSheet, View, ScrollView, Text, Dimensions } from 'react-native';
+import { SafeAreaView, StyleSheet, View, ScrollView, Text, Dimensions, Image } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -20,22 +20,42 @@ import {
   formatAddressBookAddress,
   handleGraphQlError,
   g,
-  removeObjectProperty
+  removeObjectProperty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { RxPrescriptionCallIc, PrescriptionCallIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  RxPrescriptionCallIc,
+  PrescriptionCallIcon,
+  BlueTick,
+  GreenCircleTick,
+  FileBig,
+  Close,
+  PhrCloseIcon,
+  RemoveIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { ADD_PATIENT_PRESCRIPTION_RECORD } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  ADD_PRESCRIPTION_RECORD,
+  GET_PATIENT_PRESCRIPTIONS,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   CommonBugFender,
   setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { addPatientPrescriptionRecord } from '@aph/mobile-patients/src/graphql/types/addPatientPrescriptionRecord';
-import { AddPrescriptionRecordInput, MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  AddPrescriptionRecordInput,
+  MedicalRecordType,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import moment from 'moment';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { DiagnosticPrescriptionSubmitted } from '@aph/mobile-patients/src/components/Tests/Events';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import {
+  getPatientPrescriptions,
+  getPatientPrescriptionsVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPatientPrescriptions';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 const { width, height } = Dimensions.get('window');
 
 export interface SubmittedPrescriptionProps extends NavigationScreenProps {
@@ -60,12 +80,35 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   const [locationName, setLocationName] = useState<string>('');
   const [additionalNotes, setadditionalNotes] = useState<string>('');
   const [dateOfTest, setdateOfTest] = useState<string>('');
+  const [onSumbitSuccess, setOnSumbitSuccess] = useState<boolean>(false);
   const selectedRecordID = props.navigation.state.params
     ? props.navigation.state.params.selectedRecordID
     : null;
   useEffect(() => {
     setLoading?.(false);
+    fetchPatientPrescriptions();
   }, []);
+
+  const fetchPatientPrescriptions = () => {
+    client
+      .query<getPatientPrescriptions, getPatientPrescriptionsVariables>({
+        query: GET_PATIENT_PRESCRIPTIONS,
+
+        variables: {
+          patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+          limit: 100,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data) => {
+        if (data) {
+          const response = data?.data?.getPatientPrescriptions?.response || [];
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('AddressBook__getAddressList', error);
+      });
+  };
   const renderExpectCall = () => {
     return (
       <View
@@ -76,21 +119,19 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
           alignContent: 'center',
         }}
       >
-        <PrescriptionCallIcon />
+        <PrescriptionCallIcon style={{margin:10}}/>
         <Text
-          style={{
-            width: '85%',
-            ...theme.viewStyles.text('SB', 10, theme.colors.SHERPA_BLUE, 1, 20),
-            paddingHorizontal: 5,
-          }}
+          style={styles.expectText}
         >
           Expect a call in the next 2 hours from an Apollo agent to assist you in placing an order
         </Text>
       </View>
     );
   };
-
+  // console.log('ePrescriptionsProp :>> ', ePrescriptionsProp);
+  // console.log('phyPrescriptionsProp :>> ', phyPrescriptionsProp);
   const onSubmitPrescription = () => {
+    setOnSumbitSuccess(true);
     const inputData: AddPrescriptionRecordInput = {
       id: selectedRecordID,
       patientId: currentPatient?.id || '',
@@ -106,44 +147,53 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
       prescriptionFiles: ePrescriptionsProp,
     };
     client
-    .mutate<addPatientPrescriptionRecord>({
-      mutation: ADD_PATIENT_PRESCRIPTION_RECORD,
-      variables: {
-        AddPrescriptionRecordInput: inputData,
-      },
-    })
-    .then(({ data }) => {
-      const status = g(data, 'addPatientPrescriptionRecord', 'status');
-      const eventInputData = removeObjectProperty(inputData, 'prescriptionFiles');
-      DiagnosticPrescriptionSubmitted(
-        currentPatient,
-        inputData?.prescriptionFiles,
-        inputData?.prescriptionName,
-        isDiagnosticCircleSubscription
-      );
-      showAphAlert!({
-        title: `Hi ${g(currentPatient, 'firstName') || ''} ${g(currentPatient, 'lastName') || ''}!`,
-        description: `Prescription Uploaded Successfully`,
-        unDismissable: true,
-        onPressOk: () => {
-          hideAphAlert!();
-          props.navigation.navigate(AppRoutes.Tests)
+      .mutate<addPatientPrescriptionRecord>({
+        mutation: ADD_PRESCRIPTION_RECORD,
+        variables: {
+          AddPrescriptionRecordInput: inputData,
         },
+      })
+      .then(({ data }) => {
+        const status = g(data, 'addPatientPrescriptionRecord', 'status');
+        const eventInputData = removeObjectProperty(inputData, 'prescriptionFiles');
+        DiagnosticPrescriptionSubmitted(
+          currentPatient,
+          inputData?.prescriptionFiles,
+          inputData?.prescriptionName,
+          isDiagnosticCircleSubscription
+        );
+        setOnSumbitSuccess(true);
+        // showAphAlert!({
+        //   title: `Hi ${g(currentPatient, 'firstName') || ''} ${g(currentPatient, 'lastName') || ''}!`,
+        //   description: `Prescription Uploaded Successfully`,
+        //   unDismissable: true,
+        //   onPressOk: () => {
+        //     hideAphAlert!();
+        //   },
+        // });
+      })
+      .catch((e) => {
+        console.log('errors :>> ', e);
+        CommonBugFender('AddRecord_ADD_PRESCRIPTION_RECORD', e);
+        // showAphAlert?.({
+        //   unDismissable: true,
+        //   title: string.common.uhOh,
+        //   description: `Something went wrong.`,
+        //   onPressOk: () => {
+        //     hideAphAlert?.();
+        //     props.navigation.navigate('TESTS')
+        //   },
+        // });
       });
-    })
-    .catch((e) => {
-      CommonBugFender('AddRecord_ADD_PRESCRIPTION_RECORD', e);
-      showAphAlert?.({
-        unDismissable: true,
-        title: string.common.uhOh,
-        description: `Something went wrong.`,
-        onPressOk: () => {
-          hideAphAlert?.();
-          props.navigation.navigate(AppRoutes.Tests)
-        },
-      });
-    });
-  }
+  };
+  const renderSuccessUploadView = () => {
+    return (
+      <View style={styles.successView}>
+        <GreenCircleTick width={55} height={55}/>
+        <Text style={styles.successText}>Prescription Successfully Uploaded</Text>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.containerStyle}>
@@ -157,29 +207,140 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
           />
         )}
 
-        <ScrollView
-          bounces={false}
-          scrollEventThrottle={1}
-        >
+        <ScrollView bounces={false} scrollEventThrottle={1}>
           <View style={styles.presStyle}>
-            <Text style={styles.textStyle}>{nameFormater('Physical Prescriptions', 'upper')}</Text>
-            <View
-              style={styles.presText}
-            >
-              {ePrescriptionsProp.map((item: any) => {
-                return <Text style={styles.leftText}>{item?.title}</Text>;
-              })}
-            </View>
-            <Text style={styles.textStyle}>PRESCRIPTION FROM HEALTH RECORDS</Text>
+            {!onSumbitSuccess
+              ? <>
+                  { phyPrescriptionsProp &&
+                    phyPrescriptionsProp?.length ?
+                    <View>
+                      <Text style={styles.textStyle}>
+                        {nameFormater('Physical Prescriptions', 'upper')}
+                      </Text>
+                      <View style={styles.presText}>
+                        {phyPrescriptionsProp.map((item: any) => {
+                          return (
+                            <View
+                              style={{ flexDirection: 'row', margin: 5, alignContent: 'center' }}
+                            >
+                              <View
+                                style={{
+                                  flexDirection: 'row',
+                                  width: '90%',
+                                  alignContent: 'center',
+                                }}
+                              >
+                                <View
+                                  style={{
+                                    paddingLeft: 8,
+                                    paddingRight: 16,
+                                    width: 54,
+                                  }}
+                                >
+                                  {item.fileType == 'pdf' ? (
+                                    <FileBig
+                                      style={{
+                                        height: 45,
+                                        width: 30,
+                                        borderRadius: 5,
+                                      }}
+                                    />
+                                  ) : (
+                                    <Image
+                                      style={{
+                                        height: 40,
+                                        width: 30,
+                                        borderRadius: 5,
+                                      }}
+                                      source={{ uri: `data:image/jpeg;base64,${item.base64}` }}
+                                    />
+                                  )}
+                                </View>
+                                <Text style={styles.leftText}>{item?.title}</Text>
+                              </View>
+                              <View style={{ justifyContent: 'center' }}>
+                                <RemoveIcon />
+                              </View>
+                            </View>
+                          );
+                        })}
+                      </View>
+                     </View> : null}
+                    <>
+                      { ePrescriptionsProp && ePrescriptionsProp?.length ?
+                      <View>
+                      <Text style={styles.textStyle}>PRESCRIPTION FROM HEALTH RECORDS</Text>
+                      <View style={styles.presText}>
+                        {ePrescriptionsProp.map((item: any) => {
+                          return (
+                            <View
+                              style={{ flexDirection: 'row', margin: 5, alignContent: 'center' }}
+                            >
+                              <View
+                                style={{
+                                  flexDirection: 'row',
+                                  width: '90%',
+                                  alignContent: 'center',
+                                }}
+                              >
+                                <View
+                                  style={{
+                                    paddingLeft: 8,
+                                    paddingRight: 16,
+                                    width: 54,
+                                  }}
+                                >
+                                  {item.fileType == 'pdf' ? (
+                                    <FileBig
+                                      style={{
+                                        height: 45,
+                                        width: 30,
+                                        borderRadius: 5,
+                                      }}
+                                    />
+                                  ) : (
+                                    <Image
+                                      style={{
+                                        height: 40,
+                                        width: 30,
+                                        borderRadius: 5,
+                                      }}
+                                      source={{ uri: `${item.uploadedUrl}` }}
+                                    />
+                                  )}
+                                </View>
+                                <Text style={styles.leftText}>{item?.fileName}</Text>
+                              </View>
+                              <View style={{ justifyContent: 'center' }}>
+                                <RemoveIcon />
+                              </View>
+                            </View>
+                          );
+                        })}
+                      </View>
+                     </View> : null }
+
+                    </>
+                    <TouchableOpacity style={styles.addPresView}>
+                      <Text style={styles.addPresText}>+ADD MORE PRESCRIPTIONS</Text>
+                    </TouchableOpacity>
+                  </>
+           
+              : renderSuccessUploadView()
+              }
           </View>
           <View>
             {renderExpectCall()}
             <Button
-            title={'SUBMIT'}
-            style={styles.buttonStyle}
-            onPress={()=>{
-              onSubmitPrescription()
-            }}
+              title={onSumbitSuccess ? 'GO TO HOME' : 'SUBMIT'}
+              style={styles.buttonStyle}
+              onPress={() => {
+                if (onSumbitSuccess) {
+                  props.navigation.navigate('TESTS');
+                } else {
+                  onSubmitPrescription();
+                }
+              }}
             />
           </View>
         </ScrollView>
@@ -208,6 +369,28 @@ const styles = StyleSheet.create({
   leftText: {
     color: theme.colors.FILTER_CARD_LABEL,
     ...theme.fonts.IBMPlexSansMedium(14),
+    alignSelf: 'center',
+  },
+  addPresView:{
+    width:'100%',
+    padding:10,
+  },
+  addPresText:{
+    ...theme.viewStyles.text('SB', 14, theme.colors.TANGERINE_YELLOW, 1, 20),
+    alignSelf:'center',
+  },
+  expectText:{
+    width: '85%',
+    ...theme.viewStyles.text('SB', 12, theme.colors.SHERPA_BLUE, 1, 20),
+    paddingHorizontal: 5,
+  },
+  successText: {
+    ...theme.viewStyles.text('B', 16, '#1084A9', 1)
+  },
+  successView: {
+    justifyContent:'center',
+    alignItems:'center',
+    flex:1,
   },
   starText: {
     color: theme.colors.RED,
@@ -215,6 +398,7 @@ const styles = StyleSheet.create({
   },
   textStyle: {
     ...theme.viewStyles.text('SB', 13, theme.colors.SHERPA_BLUE, 1),
+    padding: 5,
   },
   subtitleStyle: {
     ...theme.fonts.IBMPlexSansMedium(16),
@@ -238,18 +422,18 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.WHITE,
     flexWrap: 'wrap',
   },
-  buttonStyle: {margin:10,width:'90%',alignSelf:'center'},
+  buttonStyle: { margin: 10, width: '90%', alignSelf: 'center' },
   presText: {
     backgroundColor: 'white',
     borderRadius: 10,
-    padding: 10,
+    padding: 5,
     shadowColor: theme.colors.SHADOW_GRAY,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
     shadowRadius: 8,
     elevation: 4,
-    marginVertical: 10,
+    marginVertical: 5,
   },
-  presStyle: { flex:1,padding: 10,height:height-180},
-  containerStyle:{ flex: 1, height: height }
+  presStyle: { flex: 1, padding: 10, height: height - 180 },
+  containerStyle: { flex: 1, height: height },
 });

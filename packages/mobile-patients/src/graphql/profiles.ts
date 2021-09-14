@@ -6003,9 +6003,15 @@ export const GET_DIAGNOSTIC_REPORT_TAT = gql`
 `;
 
 export const GET_PATIENT_PRESCRIPTIONS = gql`
-  query {
-    getPatientPrescriptions(patientId: $patientId, limit: 100) {
-      response {
+  query getPatientPrescriptions(
+    $patientId: String!
+    $limit: Int!
+    ) {
+      getPatientPrescriptions(
+        patientId: $patientId
+        limit: $limit
+      ) {
+        response{
         doctorName
         patientName
         caseSheet {
@@ -6015,11 +6021,9 @@ export const GET_PATIENT_PRESCRIPTIONS = gql`
           prescriptionGeneratedDate
           diagnosis {
             name
-            __typename
           }
           diagnosticPrescription {
             itemname
-            __typename
           }
           doctorId
           doctorType
@@ -6056,49 +6060,12 @@ export const GET_PATIENT_PRESCRIPTIONS = gql`
             instruction
             __typename
           }
-          __typename
         }
-      }
-    }
-    getPatientPrismMedicalRecords_V2(patientId: $patientId, records: [PRESCRIPTION]) {
-      prescriptions {
-        response {
-          id
-          prescriptionName
-          date
-          prescribedBy
-          notes
-          prescriptionSource
-          source
-          siteDisplayName
-          fileUrl
-          prescriptionFiles {
-            id
-            fileName
-            mimeType
-            content
-            byteContent
-            __typename
-          }
-          __typename
-        }
-        errorCode
-        errorMsg
-        errorType
-        __typename
       }
     }
   }
 `;
 
-export const ADD_PATIENT_PRESCRIPTION_RECORD = gql`
-  mutation addPatientPrescriptionRecord($AddPrescriptionRecordInput: AddPrescriptionRecordInput) {
-    addPatientPrescriptionRecord(addPrescriptionRecordInput: $AddPrescriptionRecordInput) {
-      status
-      __typename
-    }
-  }
-`;
 
 export const SAVE_JUSPAY_SDK_RESPONSE = gql`
   mutation saveJuspayResponseForAudit($auditInput: AuditInput) {
