@@ -1264,7 +1264,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           <View style={styles.container}>
             <ScrollView style={styles.container}>
               {renderStatusCard()}
-              {status == success && renderConsultInfo()}
+              {renderConsultInfo()}
               {circleSavings > 0 && !circleSubscriptionId
                 ? renderAddedCirclePlanWithValidity()
                 : null}
