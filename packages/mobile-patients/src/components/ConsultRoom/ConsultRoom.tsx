@@ -9,6 +9,7 @@ import {
   SubscriptionData,
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { WebView } from 'react-native-webview';
 import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import { dateFormatterDDMM } from '@aph/mobile-patients/src/utils/dateUtil';
@@ -20,6 +21,7 @@ import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp'
 import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
 import CovidButton from '@aph/mobile-patients/src/components/ConsultRoom/Components/CovidStyles';
 import firebaseAuth from '@react-native-firebase/auth';
+import ReceiveSharingIntent from 'react-native-receive-sharing-intent';
 
 import {
   CartIcon,
@@ -134,6 +136,7 @@ import {
   getCleverTapCircleMemberValues,
   getAge,
   removeObjectNullUndefinedProperties,
+  fileToBase64,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -205,6 +208,7 @@ import {
   HomeScreenAttributes,
   PatientInfo as PatientInfoObj,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { getUniqueId } from 'react-native-device-info';
 
 const { Vitals } = NativeModules;
 
@@ -848,8 +852,20 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   useEffect(() => {
+    //Getting shared file path
+    ReceiveSharingIntent.getReceivedFiles(
+      (files: any) => {
+        props.navigation.navigate(AppRoutes.PostShareAppointmentSelectorScreen, {
+          sharedFiles: files,
+        });
+      },
+      (error: any) => {},
+      'ShareMedia' // share url protocol (must be unique to your app, suggest using your apple bundle id)
+    );
+
     getPatientApiCall();
     setVaccineLoacalStorageData();
+    cleverTapEventForLoginDone();
     fetchUserAgent();
   }, []);
 
@@ -1515,6 +1531,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           'Home Screen'
         );
         props.navigation.navigate(AppRoutes.DoctorSearch);
+        //props.navigation.navigate(AppRoutes.PostShareAppointmentSelectorScreen);
       },
     },
     {
@@ -2741,6 +2758,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         onProfileChange={onProfileChange}
         navigation={props.navigation}
         saveUserChange={true}
+        cleverTapProfileClickEvent={() => cleverTapEventForProfileClick()}
+        cleverTapEventForAddMemberClick={() => cleverTapEventForAddMemberClick()}
         childView={
           <View
             style={{
@@ -2789,6 +2808,73 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         unsetloaderDisplay={true}
       />
     );
+  };
+
+  const cleverTapEventForProfileClick = () => {
+    let eventAttributes = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
+      'Nav src': 'Homepage',
+      'Circle Member':
+        getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+        undefined,
+      'Device Id': getUniqueId(),
+    };
+    postCleverTapEvent(CleverTapEventName.USER_PROFILE_IMAGE_NAME_CLICKED, eventAttributes);
+  };
+
+  const cleverTapEventForLoginDone = () => {
+    if (!props.navigation.state.params?.previousRoute) {
+      return null;
+    } else if (props.navigation.state.params?.previousRoute == 'Login') {
+      let eventAttributes = {
+        'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+        'Patient UHID': g(currentPatient, 'uhid'),
+        Relation: g(currentPatient, 'relation'),
+        'Patient age': Math.round(
+          moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+        ),
+        'Patient gender': g(currentPatient, 'gender'),
+        'Mobile Number': g(currentPatient, 'mobileNumber'),
+        'Customer ID': g(currentPatient, 'id'),
+        User_Type: getUserType(allCurrentPatients),
+        'Nav src': 'Login screen',
+        'Circle Member':
+          getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+          undefined,
+        'Device Id': getUniqueId(),
+      };
+      postCleverTapEvent(CleverTapEventName.LOGIN_DONE, eventAttributes);
+    }
+  };
+
+  const cleverTapEventForAddMemberClick = () => {
+    let eventAttributes = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
+      'Nav src': 'Profile Picture',
+      'Circle Member':
+        getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+        undefined,
+      'Device Id': getUniqueId(),
+    };
+    postCleverTapEvent(CleverTapEventName.ADD_MEMBER_PROFILE_CLICKED, eventAttributes);
   };
 
   const renderListView = (text: string, source: string) => {

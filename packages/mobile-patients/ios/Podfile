@@ -109,6 +109,7 @@ target 'ApolloPatient' do
 
   pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
 
+  pod 'react-native-receive-sharing-intent', :path => '../node_modules/react-native-receive-sharing-intent'
   pod 'RNShare', :path => '../node_modules/react-native-share/RNShare.podspec'
 
   pod 'RNSVG', :path => '../node_modules/react-native-svg'

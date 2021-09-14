@@ -54,6 +54,8 @@ import {
   getPhrHighlightText,
   phrSearchCleverTapEvents,
   removeObjectNullUndefinedProperties,
+  getUserType,
+  getCleverTapCircleMemberValues,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   CleverTapEventName,
@@ -101,6 +103,8 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { renderHealthRecordShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import { useShoppingCart } from '../ShoppingCartProvider';
+import { getUniqueId } from 'react-native-device-info';
 
 const { width } = Dimensions.get('window');
 
@@ -435,7 +439,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const client = useApolloClient();
   const { getPatientApiCall } = useAuth();
   const { phrNotificationData, setPhrNotificationData } = useAppCommonData();
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
   const [callApi, setCallApi] = useState(true);
@@ -473,6 +477,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     currentPatient?.patientMedicalHistory?.weight &&
     currentPatient?.patientMedicalHistory?.weight !== 'No Idea' &&
     currentPatient?.patientMedicalHistory?.weight !== 'Not Recorded';
+
+  const { pharmacyCircleAttributes } = useShoppingCart();
 
   useEffect(() => {
     removeObjectNullUndefinedProperties(currentPatient);
@@ -845,9 +851,31 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         onPressLeftIcon={() => {
           setPhrNotificationData && setPhrNotificationData(null);
           navigateToHome(props.navigation);
+          cleverTapEventForHomeIconClick();
         }}
       />
     );
+  };
+
+  const cleverTapEventForHomeIconClick = () => {
+    let eventAttributes = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
+      'Nav src': 'Health record',
+      'Circle Member':
+        getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+        undefined,
+      'Device Id': getUniqueId(),
+    };
+    postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);
   };
 
   const renderProfileDetailsView = () => {

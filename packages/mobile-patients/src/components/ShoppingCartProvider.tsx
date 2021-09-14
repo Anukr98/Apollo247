@@ -260,8 +260,6 @@ export interface ShoppingCartContextProps {
   setMinCartValueForCOD: ((value: number) => void) | null;
   maxCartValueForCOD: number;
   setMaxCartValueForCOD: ((value: number) => void) | null;
-  nonCodSKus: string[];
-  setNonCodSKus: ((items: string[]) => void) | null;
   cartPriceNotUpdateRange: number;
   setCartPriceNotUpdateRange: ((value: number) => void) | null;
   pdpDisclaimerMessage: string;
@@ -276,8 +274,6 @@ export interface ShoppingCartContextProps {
   setProductSubstitutes:
     | ((value: pharmaSubstitution_pharmaSubstitution_substitutes) => void)
     | null;
-  paymentCodMessage: string;
-  setPaymentCodMessage: ((message: string) => void) | null;
   subscriptionCoupon: PharmaCoupon | null;
   setSubscriptionCoupon: ((coupon: PharmaCoupon | null) => void) | null;
   subscriptionHCUsed: number;
@@ -288,7 +284,6 @@ export interface ShoppingCartContextProps {
   setMedicineHomeBannerData: ((value: any) => void) | null;
   medicineHotSellersData: any;
   setMedicineHotSellersData: ((value: any) => void) | null;
-  
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -399,8 +394,6 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setMinCartValueForCOD: null,
   maxCartValueForCOD: 0,
   setMaxCartValueForCOD: null,
-  nonCodSKus: [],
-  setNonCodSKus: null,
   cartPriceNotUpdateRange: 0,
   setCartPriceNotUpdateRange: null,
   pdpDisclaimerMessage: '',
@@ -413,8 +406,6 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setPharmaPDPNudgeMessage: null,
   productSubstitutes: null,
   setProductSubstitutes: null,
-  paymentCodMessage: '',
-  setPaymentCodMessage: null,
   subscriptionCoupon: null,
   setSubscriptionCoupon: null,
   subscriptionHCUsed: 0,
@@ -556,7 +547,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [cartPriceNotUpdateRange, setCartPriceNotUpdateRange] = useState<
     ShoppingCartContextProps['cartPriceNotUpdateRange']
   >(0);
-  const [nonCodSKus, setNonCodSKus] = useState<ShoppingCartContextProps['nonCodSKus']>([]);
   const [asyncPincode, setAsyncPincode] = useState<ShoppingCartContextProps['asyncPincode']>();
   const [pharmaHomeNudgeMessage, setPharmaHomeNudgeMessage] = useState<
     ShoppingCartContextProps['pharmaHomeNudgeMessage']
@@ -570,9 +560,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [productSubstitutes, setProductSubstitutes] = useState<
     ShoppingCartContextProps['productSubstitutes']
   >(null);
-  const [paymentCodMessage, setPaymentCodMessage] = useState<
-    ShoppingCartContextProps['paymentCodMessage']
-  >('');
 
   const [isProuctFreeCouponApplied, setisProuctFreeCouponApplied] = useState<boolean>(false);
   const [orders, setOrders] = useState<ShoppingCartContextProps['orders']>([]);
@@ -1352,8 +1339,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setMinCartValueForCOD,
         maxCartValueForCOD,
         setMaxCartValueForCOD,
-        nonCodSKus,
-        setNonCodSKus,
         cartPriceNotUpdateRange,
         setCartPriceNotUpdateRange,
         pdpDisclaimerMessage,
@@ -1367,8 +1352,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setPharmaPDPNudgeMessage,
         productSubstitutes,
         setProductSubstitutes,
-        paymentCodMessage,
-        setPaymentCodMessage,
         subscriptionCoupon,
         setSubscriptionCoupon,
         subscriptionHCUsed,

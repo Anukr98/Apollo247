@@ -82,10 +82,10 @@ export function postwebEngageProceedToPayEvent(
     'Sub Total': cartTotal,
     'Shipping Charges': deliveryCharges,
     'Net after discount': grandTotal,
-    'Prescription Needed?': uploadPrescriptionRequired ? 'Yes' : 'No',
+    'Prescription Required?': uploadPrescriptionRequired ? 'Yes' : 'No',
     'Mode of Delivery': !isStorePickup ? 'Home' : 'Pickup',
     'Delivery Date Time': !isStorePickup && moment(deliveryTime).isValid ? deliveryTime||undefined : undefined, // Optional (only if Home)
-    'Pin Code': pinCode,
+    'Pincode': pinCode,
     'Service Area': 'Pharmacy',
     'No. of out of stock items': numberOfOutOfStockItems,
     'Split Cart': !!isSplitCart ? 'Yes' : 'No',
@@ -102,7 +102,7 @@ export function postwebEngageProceedToPayEvent(
   if (selectedStore) {
     eventAttributes['Store Id'] = selectedStore.storeid;
     eventAttributes['Store Name'] = selectedStore.storename;
-    cleverTapEventAttributes['Store Id'] = selectedStore.storeid||undefined;
+    cleverTapEventAttributes['Store ID'] = selectedStore.storeid||undefined;
     cleverTapEventAttributes['Store Name'] = selectedStore.storename||undefined;
   }
   postWebEngageEvent(WebEngageEventName.PHARMACY_PROCEED_TO_PAY_CLICKED, eventAttributes);

@@ -67,12 +67,14 @@
     "greatPopup": "Great! :)",
     "prepareForConsult": "FILL MEDICAL DETAILS",
     "continueConsult": "GO TO CONSULT ROOM",
+    "consultRoom": "CONTINUE CONSULT",
     "fillVitalsText": "Fill vitals to get started with the consult journey",
     "bookAnotherSlot": "Book another slot with the doctor to complete your consultation",
     "bookFollowUp": "Book your slot with the doctor for a follow up consultation",
     "mentionReports": "Mention your condition and upload reports before the consultation starts ",
     "gotoConsultRoomText": "Connect with doctor to start the consult",
     "gotoConsultRoomJuniorDrText": "Connect with Junior Doctor before final consult",
+    "joinConsultRoom": "Join the Consult room to continue your consultation",
     "pickAnotherSlotText": "Sorry, we had to reschedule this appointment. Please pick another slot.",
     "DisclaimerTextBookingRequest": "This is not a confirmation of the Booking. Our Executives will reach you regarding Booking Confirmation. It is subjected to availability.",
     "DisclaimerText": "By proceeding, I agree that I have read and understood the Terms & Conditions of usage of 247 and consent to the same. I am voluntarily availing of the services provided on this platform. I am fully aware that I will not be undergoing a physical examination by a physician prior to a physician recommending  medical tests and/or treatment and/or the prescribing of OTC drugs. I am also aware that  the consultation on 247 Application does not preclude my rights to visit a physician and opt for a physical examination at any point in time and I am free at any time during the consultation to request for the same.",
@@ -1073,6 +1075,10 @@
     "VC_DOCTOR_PROFILE": "VC_DOCTOR_PROFILE",
     "PHARMA_CART": "PHARMA_CART",
     "VC_CART": "VC_CART"
+  },
+  "user_type": {
+    "NEW": "New",
+    "REPEAT": "Repeat"
   },
   "circleMembershipBenefits": {
     "PHARMA_CASHBACK": "Pharma Cashback",

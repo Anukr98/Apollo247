@@ -62,8 +62,8 @@ const styles = StyleSheet.create({
   },
   titleStyle: {
     color: theme.colors.SHERPA_BLUE,
-    ...theme.fonts.IBMPlexSansMedium(10),
-    lineHeight: 14,
+    ...theme.fonts.IBMPlexSansRegular(10),
+    lineHeight: 17,
     textAlign: 'center',
   },
 });

@@ -1420,6 +1420,7 @@ export interface MedicineCartOMSInput {
   prescriptionType?: PrescriptionType | null;
   tatCity?: string | null;
   tatHours?: string | null;
+  isCashBack: boolean;
 }
 
 export interface MedicineCartOMSItem {

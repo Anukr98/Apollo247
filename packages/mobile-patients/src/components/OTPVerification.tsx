@@ -357,7 +357,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     }
   };
 
-  const navigateTo = (routeName: AppRoutes) => {
+  const navigateTo = (routeName: AppRoutes, parmas?: { previousRoute: string }) => {
     props.navigation.dispatch(
       StackActions.reset({
         index: 0,
@@ -365,6 +365,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         actions: [
           NavigationActions.navigate({
             routeName: routeName,
+            params: parmas,
           }),
         ],
       })
@@ -607,7 +608,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         deviceTokenAPI(mePatient.id);
         callPhrNotificationApi(mePatient?.id);
         fireUserLoggedInEvent(mePatient, 'Login');
-        navigateTo(AppRoutes.ConsultRoom);
+        navigateTo(AppRoutes.ConsultRoom, {
+          previousRoute: 'Login',
+        });
       }
     } else {
       if (mePatient.firstName == '') {
@@ -622,7 +625,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         onCleverTapUserLogin(mePatient);
         deviceTokenAPI(mePatient.id);
         callPhrNotificationApi(mePatient?.id);
-        navigateTo(AppRoutes.ConsultRoom);
+        navigateTo(AppRoutes.ConsultRoom, {
+          previousRoute: 'Login',
+        });
         fireUserLoggedInEvent(mePatient, 'Login');
       }
     }
@@ -815,7 +820,10 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             Keyboard.dismiss();
             const { phoneNumber } = props.navigation.state.params!;
             const { loginId } = props.navigation.state.params!;
-
+            cleverTapEventForGetOTPonCall({
+              mobileNumber: phoneNumber,
+              loginId,
+            });
             getOtpOnCall('+91' + phoneNumber, loginId)
               .then((otpOnCallResult: any) => {
                 const phoneNumberFromParams = `+91${props.navigation.getParam('phoneNumber')}`;
@@ -856,6 +864,17 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     } catch (error) {
       setDisableOtpOnCallCta(false);
     }
+  };
+
+  const cleverTapEventForGetOTPonCall = (data: {
+    mobileNumber?: string | number;
+    loginId?: string | number;
+  }) => {
+    let eventAttributes = {
+      'Mobile Number': data.mobileNumber,
+      'Nav Source': 'Login Screen',
+    };
+    postCleverTapEvent(CleverTapEventName.GET_OTP_ON_CALL, eventAttributes);
   };
 
   const openWebView = () => {

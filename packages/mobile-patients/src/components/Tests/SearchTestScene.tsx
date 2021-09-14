@@ -1,7 +1,7 @@
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CartIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CartIcon, RemoveIconGrey } from '@aph/mobile-patients/src/components/ui/Icons';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -27,6 +27,7 @@ import {
   aphConsole,
   g,
   isEmptyObject,
+  isSmallDevice,
   isValidSearch,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -72,6 +73,7 @@ import {
   DiagnosticItemSearched,
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 
 export interface SearchTestSceneProps
   extends NavigationScreenProps<{
@@ -92,6 +94,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   >([]);
   const [popularArray, setPopularArray] = useState([]);
   const [searchQuery, setSearchQuery] = useState({});
+  const [isFocus, setIsFocus] = useState<boolean>(false);
 
   const { locationForDiagnostics, diagnosticServiceabilityData } = useAppCommonData();
 
@@ -112,6 +115,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const { cartItems: shopCartItems } = useShoppingCart();
   const { showAphAlert, setLoading: setGlobalLoading, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
+  const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
 
   //add the cityId in case of modifyFlow
@@ -279,7 +283,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       id,
       price,
       discountedPrice,
-      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.POPULAR_SEARCH
+      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.POPULAR_SEARCH,
+      currentPatient,
+      isDiagnosticCircleSubscription
     );
   };
 
@@ -287,7 +293,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     keyword: string,
     results: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
   ) => {
-    DiagnosticItemSearched(currentPatient, keyword, results);
+    DiagnosticItemSearched(currentPatient, keyword, results, isDiagnosticCircleSubscription);
   };
 
   const onAddCartItem = (
@@ -415,41 +421,59 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const renderSearchInput = () => {
     return (
       <View style={{ paddingHorizontal: 10, backgroundColor: theme.colors.WHITE }}>
-        <TextInputComponent
-          conatinerstyles={{ paddingBottom: 0 }}
-          inputStyle={[
-            styles.searchValueStyle,
-            isNoTestsFound ? { borderBottomColor: '#e50000' } : {},
-          ]}
-          textInputprops={{
-            ...(isNoTestsFound ? { selectionColor: '#e50000' } : {}),
-            autoFocus: true,
-          }}
-          value={searchText}
-          placeholder="Search tests &amp; packages"
-          underlineColorAndroid="transparent"
-          onChangeText={(value) => {
-            if (isValidSearch(value)) {
-              if (!g(locationForDiagnostics, 'cityId')) {
-                renderLocationNotServingPopup();
-                return;
-              }
-              setSearchText(value);
-              if (!(value && value.length > 2)) {
-                setDiagnosticResults([]);
-                return;
-              }
-              const search = _.debounce(onSearchTest, 300);
-              setSearchQuery((prevSearch: any) => {
-                if (prevSearch.cancel) {
-                  prevSearch.cancel();
+        <View style={{ flexDirection: 'row' }}>
+          <TextInputComponent
+            conatinerstyles={{ paddingBottom: 0 }}
+            inputStyle={[
+              styles.searchValueStyle,
+              isNoTestsFound ? { borderBottomColor: '#e50000' } : {},
+              isFocus ? { borderColor: colors.APP_GREEN } : {},
+            ]}
+            textInputprops={{
+              ...(isNoTestsFound ? { selectionColor: '#e50000' } : {}),
+              autoFocus: true,
+            }}
+            onFocus={() => setIsFocus(true)}
+            onBlur={() => setIsFocus(false)}
+            value={searchText}
+            placeholder="Search tests &amp; packages"
+            underlineColorAndroid="transparent"
+            onChangeText={(value) => {
+              if (isValidSearch(value)) {
+                if (!g(locationForDiagnostics, 'cityId')) {
+                  renderLocationNotServingPopup();
+                  return;
                 }
-                return search;
-              });
-              search(value);
-            }
-          }}
-        />
+                setSearchText(value);
+                if (!(value && value.length > 2)) {
+                  setDiagnosticResults([]);
+                  return;
+                }
+                const search = _.debounce(onSearchTest, 300);
+                setSearchQuery((prevSearch: any) => {
+                  if (prevSearch?.cancel) {
+                    prevSearch?.cancel();
+                  }
+                  return search;
+                });
+                search(value);
+              }
+            }}
+          />
+          {!!searchText && searchText?.length > 0 && (
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.crossIconTouch}
+              onPress={() => {
+                console.log('press');
+                setSearchText('');
+                setDiagnosticResults([]);
+              }}
+            >
+              <RemoveIconGrey style={styles.crossIconStyle} />
+            </TouchableOpacity>
+          )}
+        </View>
         {renderSorryMessage}
       </View>
     );
@@ -620,7 +644,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           <ScrollView showsVerticalScrollIndicator={false} style={styles.viewDefaultContainer}>
             {popularPackages?.length > 0 ? (
               <View>
-                <Text style={styles.headingSections}>Popular Packages</Text>
+                <Text style={styles.headingSections}>POPULAR PACKAGES</Text>
                 <View style={styles.defaultContainer}>
                   <FlatList
                     keyExtractor={(_, index) => `${index}`}
@@ -633,7 +657,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             ) : null}
             {popularTests?.length > 0 ? (
               <View>
-                <Text style={styles.headingSections}>Popular Tests</Text>
+                <Text style={styles.headingSections}>POPULAR TESTS</Text>
                 <View style={styles.defaultContainer}>
                   <FlatList
                     keyExtractor={(_, index) => `${index}`}
@@ -669,7 +693,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         loading={true}
         showSeparator={index !== diagnosticResults?.length - 1}
         style={{
-          marginHorizontal: 5,
           paddingBottom: index == diagnosticResults?.length - 1 ? 20 : 0,
         }}
         onPressRemoveFromCart={() => removeCartItem!(`${item?.diagnostic_item_id}`)}
@@ -774,7 +797,7 @@ const styles = StyleSheet.create({
     padding: 12,
     ...theme.fonts.IBMPlexSansSemiBold(14),
   },
-  headingSections: { ...theme.viewStyles.text('B', 14, '#01475B', 1, 22) },
+  headingSections: { ...theme.viewStyles.text('B', isSmallDevice ? 14 : 15, '#01475B', 1, 22) },
   viewDefaultContainer: {
     paddingVertical: 10,
     paddingHorizontal: 10,
@@ -788,5 +811,20 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     paddingVertical: 0,
     backgroundColor: 'white',
+  },
+  crossIconStyle: {
+    position: 'absolute',
+    right: 10,
+    height: 16,
+    width: 16,
+    alignSelf: 'center',
+  },
+  crossIconTouch: {
+    justifyContent: 'center',
+    height: 40,
+    width: 40,
+    position: 'absolute',
+    right: 10,
+    alignSelf: 'center',
   },
 });

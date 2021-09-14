@@ -7,6 +7,8 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import RNFetchBlob from 'rn-fetch-blob';
+import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import {
   ChatCallIcon,
   ChatSend,
@@ -119,6 +121,7 @@ import {
   getSecretaryDetailsByDoctor,
   getParticipantsLiveStatus,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { stat } from 'react-native-fs';
 import {
   WebEngageEventName,
   WebEngageEvents,
@@ -178,6 +181,7 @@ import {
   postCleverTapEvent,
   getNetStatus,
   postAppointmentCleverTapEvents,
+  fileToBase64,
 } from '../../helpers/helperFunctions';
 import { mimeType } from '../../helpers/mimeType';
 import { FeedbackPopup } from '../FeedbackPopup';
@@ -188,7 +192,7 @@ import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { CustomAlert } from '../ui/CustomAlert';
 import { Snackbar } from 'react-native-paper';
 import BackgroundTimer from 'react-native-background-timer';
-import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
+import { MAX_FILE_SIZE, UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
 import { ChatRoom_NotRecorded_Value } from '@aph/mobile-patients/src/strings/strings.json';
 import {
   LocationData,
@@ -1058,12 +1062,84 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   type messageType = 'PDF' | 'Text' | 'Image';
 
   useEffect(() => {
+    handleExternalFileShareUpload();
+
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     AsyncStorage.getItem('phoneNumber').then(setPhoneNumber);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
   }, []);
+
+  const handleExternalFileShareUpload = () => {
+    try {
+      const sharedFiles = props.navigation.getParam('sharedFilesList');
+
+      if (sharedFiles && sharedFiles.length > 0) {
+        let uploadFileTaskPromiseArray: any[] = [];
+
+        sharedFiles.map((file: any) => {
+          const taskPromise = new Promise((resolve, reject) => {
+            let conetentUri = file.contentUri;
+            let fileNameAndExtension = file.fileName;
+
+            let obtainedfFileType = fileNameAndExtension.substring(
+              fileNameAndExtension.lastIndexOf('.') + 1
+            );
+
+            if (conetentUri.startsWith('content://')) {
+              const RNFS = require('react-native-fs');
+
+              const destPath = `${RNFS.TemporaryDirectoryPath}/${fileNameAndExtension}`;
+              RNFS.copyFile(conetentUri, destPath)
+                .then((path: any) => {
+                  RNFetchBlob.fs
+                    .stat(destPath)
+                    .then((stats) => {
+                      let fileSize = stats?.size;
+                      if (fileSize > MAX_FILE_SIZE) {
+                        Alert.alert(
+                          strings.common.uhOh,
+                          `Invalid File Size. File size must be less than 25 MB.`
+                        );
+                        reject(undefined);
+                        return;
+                      }
+
+                      fileToBase64(destPath).then((fileBase64) => {
+                        const random8DigitNumber = Math.floor(Math.random() * 90000) + 20000000;
+
+                        let uploadFileItem = {
+                          base64: fileBase64,
+                          fileType: obtainedfFileType,
+                          title: obtainedfFileType.toUpperCase() + '_' + random8DigitNumber,
+                        };
+
+                        resolve(uploadFileItem);
+                      });
+                    })
+                    .catch((err) => {
+                      reject(undefined);
+                    });
+                })
+                .catch((err) => {
+                  reject(undefined);
+                });
+            }
+          });
+          uploadFileTaskPromiseArray.push(taskPromise);
+        });
+
+        Promise.all(uploadFileTaskPromiseArray)
+          .then((results) => {
+            uploadDocument(results, 'Gallery');
+          })
+          .catch((err) => {});
+      }
+    } catch (err) {
+      Alert.alert(strings.common.uhOh, `Something went wrong.`);
+    }
+  };
 
   const onCall = useRef<boolean>(false);
 
@@ -1164,13 +1240,25 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       ] = location;
     }
     if (type == WebEngageEventName.PATIENT_ENDED_CONSULT) {
-      const event = eventAttributes as WebEngageEvents[WebEngageEventName.PATIENT_ENDED_CONSULT]; 
+      const event = eventAttributes as WebEngageEvents[WebEngageEventName.PATIENT_ENDED_CONSULT];
       event['Doctor ID'] = g(appointmentData, 'doctorInfo', 'id')!;
       event['Doctor Number'] = g(appointmentData, 'doctorInfo', 'mobileNumber');
-      event['Doctor Facility ID'] = g(appointmentData,
-        'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'id');
-      event['Doctor Facility'] = g(appointmentData,
-        'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name');
+      event['Doctor Facility ID'] = g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'id'
+      );
+      event['Doctor Facility'] = g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'name'
+      );
       event['Appointment ID'] = g(appointmentData, 'id');
       event['Appointment Display ID'] = g(appointmentData, 'displayId');
       event['Patient Number'] = g(appointmentData, 'patientName');
@@ -1380,8 +1468,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       Platform: 'App',
       'Doctor ID': g(appointmentData, 'doctorInfo', 'id'),
       'Doctor Number': g(appointmentData, 'doctorInfo', 'mobileNumber'),
-      'Doctor Facility ID': g(appointmentData, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'id'),
-      'Doctor Facility': g(appointmentData, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name'),
+      'Doctor Facility ID': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'id'
+      ),
+      'Doctor Facility': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'name'
+      ),
       'Session ID': sessionId,
       'Call ID': token,
     };
@@ -1573,7 +1675,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const checkVitalQuestionsStatus = () => {
-    const isConsultPending =  appointmentData?.status == 'PENDING'; 
+    const isConsultPending = appointmentData?.status == 'PENDING';
     if (appointmentData.isAutomatedQuestionsComplete) {
       requestToJrDoctor();
       if (
@@ -1586,7 +1688,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         showAndUpdateNudgeScreenVisibility();
       }
     } else {
-      const displayQuestion = isConsultPending ? skipAutoQuestions.current ? false : true : false
+      const displayQuestion = isConsultPending ? (skipAutoQuestions.current ? false : true) : false;
       setDisplayChatQuestions(displayQuestion);
     }
   };
@@ -2778,8 +2880,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       'Doctor Type': g(appointmentData, 'doctorInfo', 'doctorType'),
       'Doctor Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id'),
       'Doctor Speciality': g(appointmentData, 'doctorInfo', 'specialty', 'name'),
-      'Doctor Facility ID':  g(appointmentData, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'id'),
-      'Doctor Facility':  g(appointmentData, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name'),
+      'Doctor Facility ID': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'id'
+      ),
+      'Doctor Facility': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'name'
+      ),
       'Appointment ID': g(appointmentData, 'id'),
       'Appointment Display ID': g(appointmentData, 'displayId'),
       'Patient Name': g(appointmentData, 'patientName'),
@@ -2788,10 +2904,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       'Call ID': token,
       'Error Name': errorName,
       'Error Data': JSON.stringify(errorData),
-      'reason': errorData?.reason || '',
-    }
+      reason: errorData?.reason || '',
+    };
     postCleverTapEvent(CleverTapEventName.OPENTOK_ERROR_RECEIVED, eventAttributes);
-  }
+  };
 
   const postOpentokEvent = (eventName: string, eventData: any) => {
     const eventAttributes: CleverTapEvents[CleverTapEventName.OPENTOK_EVENT_RECEIVED] = {
@@ -2801,8 +2917,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       'Doctor Type': g(appointmentData, 'doctorInfo', 'doctorType'),
       'Doctor Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id'),
       'Doctor Speciality': g(appointmentData, 'doctorInfo', 'specialty', 'name'),
-      'Doctor Facility ID':  g(appointmentData, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'id'),
-      'Doctor Facility':  g(appointmentData, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name'),
+      'Doctor Facility ID': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'id'
+      ),
+      'Doctor Facility': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'name'
+      ),
       'Appointment ID': g(appointmentData, 'id'),
       'Appointment Display ID': g(appointmentData, 'displayId'),
       'Patient Name': g(appointmentData, 'patientName'),
@@ -2811,10 +2941,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       'Call ID': token,
       'Event Name': eventName,
       'Event Data': JSON.stringify(eventData),
-      'reason': eventData?.reason || '',
-    }
+      reason: eventData?.reason || '',
+    };
     postCleverTapEvent(CleverTapEventName.OPENTOK_EVENT_RECEIVED, eventAttributes);
-  }
+  };
 
   const resetCurrentRetryAttempt = () => {
     isCallReconnecting.current = false;
@@ -3756,7 +3886,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             message,
             chatFormat: msgType,
             source: 'APP',
-        }},
+          },
+        },
       })
       .then(() => {})
       .catch((error) => {
@@ -6796,6 +6927,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
     for (let i = 0; i < resource?.length; i++) {
       const item = resource[i];
+
       if (
         item.fileType == 'jpg' ||
         item.fileType == 'jpeg' ||
@@ -6902,6 +7034,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 consultWebEngageEvents(WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM);
               }
             }
+
             uploadDocument(response, response[0].base64, response[0].fileType, type);
             //updatePhysicalPrescriptions(response);
           } else {
@@ -6997,8 +7130,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               } else if (_uploadedUrl) {
                 const fileName = item?.fileName || '';
                 const splitArr = _uploadedUrl.split('.');
-                const fileType = splitArr[splitArr.length-1];
-                if(fileType){
+                const fileType = splitArr[splitArr.length - 1];
+                if (fileType) {
                   postChatWebEngEvent(fileType == 'pdf' ? 'PDF' : 'Image', '');
                 }
                 await callAddChatDocumentApi(prism, _uploadedUrl, fileName);

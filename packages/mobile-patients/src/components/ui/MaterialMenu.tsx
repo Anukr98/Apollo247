@@ -87,6 +87,7 @@ export interface MaterialMenuProps {
   menuHidden?: () => void;
   showProfilePic?: boolean;
   showItemDifferentColor?: boolean;
+  profileClickCleverTapEvent?: () => void;
 }
 
 export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
@@ -103,6 +104,7 @@ export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
 
   const showMenu = () => {
     menuRef.current.show();
+    props.profileClickCleverTapEvent && props.profileClickCleverTapEvent();
   };
   const defOption: OptionsObject[] = (props.defaultOptions && props.defaultOptions) || [];
   let optionsObject: OptionsObject[] = props.options ? props.options : [];

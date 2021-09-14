@@ -107,6 +107,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const businessLine = props.navigation.getParam('businessLine');
   const isDiagnostic = businessLine === 'diagnostics';
   const disableCod = props.navigation.getParam('disableCOD');
+  const paymentCodMessage = props.navigation.getParam('paymentCodMessage');
   const { currentPatient } = useAllCurrentPatients();
   const [banks, setBanks] = useState<any>([]);
   const [isTxnProcessing, setisTxnProcessing] = useState<boolean>(false);
@@ -118,24 +119,24 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { authToken, setauthToken } = useAppCommonData();
-  const { grandTotal, cartItems, nonCodSKus } = useShoppingCart();
+  const { grandTotal } = useShoppingCart();
   const [HCSelected, setHCSelected] = useState<boolean>(false);
   const [burnHc, setburnHc] = useState<number>(0);
   const storeCode =
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
   const shoppingCart = useShoppingCart();
-  const { paymentCodMessage } = shoppingCart;
   const isDiagnosticModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const [showPrepaid, setShowPrepaid] = useState<boolean>(isDiagnostic ? false : true);
   const [showCOD, setShowCOD] = useState<boolean>(isDiagnostic ? false : true);
   const [showDiagnosticHCMsg, setShowDiagnosticHCMsg] = useState<string>('');
   const paymentType = useRef<string>('');
-  const [areNonCODSkus, setAreNonCODSkus] = useState(false);
   const { healthCredits } = useFetchHealthCredits(businessLine);
   const { paymentMethods, cardTypes, fetching } = useGetPaymentMethods(paymentId);
   const { savedCards } = useFetchSavedCards(customerId);
   const { clientAuthToken } = customerId && useGetClientAuthToken(customerId, businessLine);
   const [cred, setCred] = useState<any>(undefined);
+
+  const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
 
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
@@ -150,21 +151,13 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   useEffect(() => {
     if (isDiagnostic) {
-      DiagnosticPaymentPageViewed(currentPatient, amount);
+      DiagnosticPaymentPageViewed(currentPatient, amount, isDiagnosticCircleSubscription);
       //modify -> always show prepaid
       // modify -> not to show cod
       setShowPrepaid(AppConfig.Configuration.Enable_Diagnostics_Prepaid);
       isDiagnosticModify ? setShowCOD(false) : fetchDiagnosticPaymentMethods();
     }
   }, []);
-
-  useEffect(() => {
-    if (cartItems?.length) {
-      const skusNotForCod = cartItems?.find((item) => nonCodSKus?.includes(item?.id));
-      const areNonCodSkus = !!skusNotForCod?.id;
-      setAreNonCODSkus(areNonCodSkus);
-    }
-  }, [cartItems]);
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', () => {
@@ -748,7 +741,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         diagMsg={showDiagnosticHCMsg}
         pharmaDisableCod={disableCod}
         pharmaDisincentivizeCodMessage={paymentCodMessage}
-        areNonCodSkus={areNonCODSkus}
       />
     );
   };

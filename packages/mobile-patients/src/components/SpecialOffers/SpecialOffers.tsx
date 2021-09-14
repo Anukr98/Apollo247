@@ -55,7 +55,9 @@ export const SpecialOffersScreen: React.FC<SpecialOffersScreenProps> = (props) =
       const widget = [...widgetOrderData];
       const newArr = widget.sort((a, b) => a.widgetRank.localeCompare(b.widgetRank));
       const widgetArrayOrder = newArr.map((ele) => {
-        return ele.widgetTitle;
+        if (+ele.widgetRank > 0) {
+          return ele.widgetTitle;
+        }
       });
       setWidgetArray(widgetArrayOrder);
     }

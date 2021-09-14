@@ -1635,7 +1635,7 @@ export const postwebEngageAddToCartEvent = (
   }: Pick<MedicineProduct, 'sku' | 'name' | 'price' | 'special_price' | 'category_id'>,
   source: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Source'],
   sectionName?: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Section Name'],
-  categoryName?: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['category name'],
+  categoryName?: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Category Name'],
   pharmacyCircleAttributes?: PharmacyCircleEvent
 ) => {
   const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART] = {
@@ -1658,9 +1658,9 @@ export const postwebEngageAddToCartEvent = (
   const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART] = {
     'product name': name,
     'product id (SKUID)': sku,
-    'category name': categoryName || undefined,
+    'Category Name': categoryName || undefined,
     'Section Name': sectionName || undefined,
-    'category ID': category_id || undefined,
+    'Category ID': category_id || undefined,
     Price: price,
     'Discounted Price': Number(special_price) || undefined,
     Quantity: 1,
@@ -3501,7 +3501,7 @@ export const getCleverTapCheckoutCompletedEventAttributes = (
     'Service Area': 'Pharmacy',
     'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
     af_revenue: getFormattedAmount(grandTotal),
-    'Circle Cashback amount':
+    'Circle Cashback Amount':
       circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
     'Split Cart': orders?.length > 1 ? 'Yes' : 'No',
     'Prescription Option selected': uploadPrescriptionRequired
@@ -3518,7 +3518,7 @@ export const getCleverTapCheckoutCompletedEventAttributes = (
     'Order_ID(s)': ordersIds?.map((i) => i?.orderAutoId)?.join(','),
   };
   if (store) {
-    eventAttributes['Store Id'] = store.storeid;
+    eventAttributes['Store ID'] = store.storeid;
     eventAttributes['Store Name'] = store.storename;
     eventAttributes['Store Number'] = store.phone;
     eventAttributes['Store Address'] = store.address;
@@ -3575,6 +3575,15 @@ export const getIsMedicine = (typeId: string) => {
   };
   return medicineType[typeId] || '0';
 };
+
+export async function fileToBase64(uri: string) {
+  try {
+    return RNFetchBlob.fs.readFile(uri, 'base64');
+  } catch (e) {
+    console.warn('fileToBase64()', e.message);
+    return '';
+  }
+}
 export const removeWhiteSpaces = (item: any) => {
   const newItem = item?.replace(/\s/g, '');
   return newItem;

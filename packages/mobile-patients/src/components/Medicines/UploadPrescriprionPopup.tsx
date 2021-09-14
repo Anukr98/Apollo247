@@ -209,7 +209,7 @@ export interface UploadPrescriprionPopupRefProps {
   onPressGallery: () => void;
 }
 
-const MAX_FILE_SIZE = 25000000; // ~25MB
+export const MAX_FILE_SIZE = 25000000; // ~25MB
 
 export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
   UploadPrescriprionPopupProps
@@ -434,6 +434,7 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
     })
       .then((response) => {
         const images = response as ImageCropPickerResponse[];
+
         const isGreaterThanSpecifiedSize = !props.isProfileImage
           ? images.find(({ size }) => size > MAX_FILE_SIZE)
           : Number(images['size']) > MAX_FILE_SIZE;

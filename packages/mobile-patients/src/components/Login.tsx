@@ -244,6 +244,7 @@ export const Login: React.FC<LoginProps> = (props) => {
     // For handling the success event
     TRUECALLER.on('profileSuccessReponse', (profile: any) => {
       setLoading?.(false);
+      cleverTapEventForUserContinueThroughTrueCallerLogin();
       // add other logic here related to login/sign-up as per your use-case.
       oneTimeApiCall.current && verifyTrueCallerProfile(profile);
     });
@@ -332,6 +333,7 @@ export const Login: React.FC<LoginProps> = (props) => {
               ...errorAttributes,
               'Error Message': 'User pressed SKIP or USE ANOTHER NUMBER',
             };
+            cleverTapEventForUserSkippedFromTrueCallerLogin();
             truecallerWEBEngage(null, 'sdk error', errorAttributes);
             break;
           }
@@ -467,6 +469,9 @@ export const Login: React.FC<LoginProps> = (props) => {
               actions: [
                 NavigationActions.navigate({
                   routeName: AppRoutes.ConsultRoom,
+                  params: {
+                    previousRoute: 'Login',
+                  },
                 }),
               ],
             })
@@ -709,6 +714,7 @@ export const Login: React.FC<LoginProps> = (props) => {
 
   const loginWithTruecaller = () => {
     setLoading?.(true);
+    cleverTapEventForLoginViaTrueCaller();
     /**
      * If you are checking in local, then you need to change truecaller_appkey(debug key) from strings.xml file
      */
@@ -726,6 +732,30 @@ export const Login: React.FC<LoginProps> = (props) => {
         });
       }
     });
+  };
+
+  const cleverTapEventForLoginViaTrueCaller = () => {
+    let eventAttributes = {
+      'Nav src': 'App login screen',
+      'Page Name': 'Login Screen',
+    };
+    postCleverTapEvent(CleverTapEventName.LOGIN_VIA_TRUECALLER, eventAttributes);
+  };
+
+  const cleverTapEventForUserSkippedFromTrueCallerLogin = () => {
+    let eventAttributes = {
+      'Nav src': 'App login screen',
+      'Page Name': 'Login Screen',
+    };
+    postCleverTapEvent(CleverTapEventName.LOGIN_WITH_TRUECALLER_SKIPPED, eventAttributes);
+  };
+
+  const cleverTapEventForUserContinueThroughTrueCallerLogin = () => {
+    let eventAttributes = {
+      'Nav src': 'App login screen',
+      'Page Name': 'Login Screen',
+    };
+    postCleverTapEvent(CleverTapEventName.LOGIN_WITH_TRUECALLER_CONTINUE, eventAttributes);
   };
 
   return (
