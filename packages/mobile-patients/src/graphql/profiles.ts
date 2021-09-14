@@ -1510,6 +1510,7 @@ export const SAVE_MEDICINE_ORDER_OMS_V2 = gql`
       errorMessage
       transactionId
       isCodEligible
+      codMessage
       orders {
         id
         orderAutoId
@@ -1529,6 +1530,7 @@ export const SAVE_ORDER_WITH_SUBSCRIPTION = gql`
       errorMessage
       transactionId
       isCodEligible
+      codMessage
       orders {
         id
         orderAutoId

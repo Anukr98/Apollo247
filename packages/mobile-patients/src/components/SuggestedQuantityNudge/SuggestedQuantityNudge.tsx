@@ -33,7 +33,7 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
   const title = 'Recommended for monthy purchase';
   const mainText = 'It is recommended that you to buy ';
   const mainText1 = ' and stock this medicine for the next 30 days';
-  const itemQuantity = packForm ? `${suggested_qty} ${packForm}s` : `${suggested_qty} strips`;
+  const itemQuantity = packForm ? `${suggested_qty} ${packForm}s` : `${suggested_qty} items`;
 
   const onPressCloseBottomSheet = () => {
     setShownNudgeOnce(true);
@@ -119,7 +119,7 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
                     Add {selectedQuantity} {packForm}(s)
                   </Text>
                 ) : (
-                  <Text style={styles.addButtonTextStyles}>Add {selectedQuantity} Strip(s)</Text>
+                  <Text style={styles.addButtonTextStyles}>Add {selectedQuantity} Item(s)</Text>
                 )}
               </TouchableOpacity>
             </View>
