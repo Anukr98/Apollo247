@@ -25,7 +25,6 @@ import {
   setFirebaseUserId,
   setCrashlyticsAttributes,
   onCleverTapUserLogin,
-  setCleverTapAppsFlyerCustID,
   postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -49,6 +48,7 @@ import {
   AppStateStatus,
   TextInput,
 } from 'react-native';
+import { timeDifferenceInDays } from '@aph/mobile-patients/src/utils/dateUtil';
 import firebaseAuth from '@react-native-firebase/auth';
 import messaging from '@react-native-firebase/messaging';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
@@ -204,7 +204,7 @@ export interface OTPVerificationProps
     otpString: string;
     phoneNumber: string;
     loginId: string;
-  }> {}
+  }> { }
 
 export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
@@ -592,7 +592,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     setOpenFillerView(false);
     // commenting this to avoid setting of AppFlyerCustId twice
     // SetAppsFlyerCustID(mePatient.primaryPatientId);
-    setCleverTapAppsFlyerCustID();
     postOtpSuccessAppsflyerEvet(mePatient.primaryPatientId);
     if (mePatient && mePatient.uhid && mePatient.uhid !== '') {
       if (mePatient.relation == null) {
@@ -680,15 +679,23 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const getDeviceToken = async () => {
     const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
     const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    const deviceTokenTimeStamp = (await AsyncStorage.getItem('deviceTokenTimeStamp')) || '';
+    const currentDeviceTokenTimeStamp = deviceTokenTimeStamp ? JSON.parse(deviceTokenTimeStamp) : '';
     if (
       !currentDeviceToken ||
       typeof currentDeviceToken != 'string' ||
-      typeof currentDeviceToken == 'object'
+      typeof currentDeviceToken == 'object' ||
+      !currentDeviceTokenTimeStamp ||
+      currentDeviceTokenTimeStamp === '' ||
+      currentDeviceTokenTimeStamp?.length == 0 ||
+      typeof currentDeviceTokenTimeStamp != 'number' ||
+      timeDifferenceInDays(new Date().getTime(), currentDeviceTokenTimeStamp) > 6
     ) {
       messaging()
         .getToken()
         .then((token) => {
           AsyncStorage.setItem('deviceToken', JSON.stringify(token));
+          AsyncStorage.setItem('deviceTokenTimeStamp', JSON.stringify(new Date().getTime()));
           UnInstallAppsFlyer(token);
         })
         .catch((e) => {
@@ -700,20 +707,28 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const deviceTokenAPI = async (patientId: string) => {
     const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
     const deviceToken2 = deviceToken ? JSON.parse(deviceToken) : '';
-
+    const deviceTokenTimeStamp = (await AsyncStorage.getItem('deviceTokenTimeStamp')) || '';
+    const currentDeviceTokenTimeStamp = deviceTokenTimeStamp ? JSON.parse(deviceTokenTimeStamp) : '';
     if (
       !deviceToken2 ||
       deviceToken2 === '' ||
       deviceToken2.length == 0 ||
       typeof deviceToken2 != 'string' ||
-      typeof deviceToken2 == 'object'
+      typeof deviceToken2 == 'object' ||
+      !currentDeviceTokenTimeStamp ||
+      currentDeviceTokenTimeStamp === '' ||
+      currentDeviceTokenTimeStamp?.length == 0 ||
+      typeof currentDeviceTokenTimeStamp != 'number' ||
+      timeDifferenceInDays(new Date().getTime(), currentDeviceTokenTimeStamp) > 6
     ) {
       messaging()
         .getToken()
         .then((token) => {
           AsyncStorage.setItem('deviceToken', JSON.stringify(token));
           saveTokenDevice(client, token, patientId)
-            ?.then((resp) => {})
+            ?.then((resp) => {
+              AsyncStorage.setItem('deviceTokenTimeStamp', JSON.stringify(new Date().getTime()));
+            })
             .catch((e) => {
               CommonBugFender('OTPVerification_saveTokenDevice', e);
               AsyncStorage.setItem('deviceToken', '');
@@ -724,7 +739,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         });
     } else {
       saveTokenDevice(client, deviceToken2, patientId)
-        ?.then((resp) => {})
+        ?.then((resp) => { })
         .catch((e) => {
           CommonBugFender('OTPVerification_saveTokenDevice', e);
           AsyncStorage.setItem('deviceToken', '');
@@ -1042,7 +1057,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             {
               <TouchableOpacity
                 activeOpacity={1}
-                onPress={showResentTimer ? () => {} : onClickResend}
+                onPress={showResentTimer ? () => { } : onClickResend}
                 style={{ width: '50%', paddingLeft: 16, paddingTop: 12 }}
               >
                 <Text
