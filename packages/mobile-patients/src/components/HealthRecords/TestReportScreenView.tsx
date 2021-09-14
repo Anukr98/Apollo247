@@ -519,6 +519,11 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
           });
       } else if (!!data?.healthCheckDate) {
         downloadDocument(data.fileUrl);
+      } else if (
+        (data?.labTestSource == 'self' || data?.labTestSource == '247self') &&
+        data?.labTestResults?.length === 0
+      ) {
+        imagesArray?.length === 1 ? downloadDocument() : callConvertToZipApi();
       } else {
         client
           .query<getLabResultpdf, getLabResultpdfVariables>({
@@ -626,15 +631,6 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       });
   };
 
-  const disableButton = () => {
-    if (data?.labTestSource === 'self' || data?.labTestSource === '247self') {
-      const buttonDisable = data?.labTestResults?.length > 0 && imagesArray?.length > 0;
-      return buttonDisable;
-    } else {
-      return true;
-    }
-  };
-
   const renderDownloadButton = () => {
     const buttonTitle = 'TEST REPORT';
     const btnTitle = 'DOWNLOAD ';
@@ -645,10 +641,9 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         labResults ? downloadPDFTestReport() : callConvertToZipApi();
       }
     };
-    const buttonEnable = disableButton();
     return (
       <View style={{ marginHorizontal: 40, marginBottom: 15, marginTop: 33 }}>
-        <Button disabled={!buttonEnable} title={'SAVE AS PDF'} onPress={_callDownloadDocumentApi} />
+        <Button title={'SAVE AS PDF'} onPress={_callDownloadDocumentApi} />
       </View>
     );
   };
@@ -1025,12 +1020,10 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         ).format(string.common.date_placeholder_text)}`}</Text>
       );
     };
-    const buttonEnable = disableButton();
     return (
       <View style={styles.topView}>
         <View style={styles.shareIconRender}>
           <TouchableOpacity
-            disabled={!buttonEnable}
             onPress={() => (labResults ? downloadPDFTestReport(true) : downloadDocument())}
           >
             <ShareBlueIcon size={'md'} style={{ width: 22, height: 22 }} />
@@ -1191,9 +1184,9 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       minNumber = Number(rangeDecider[0]);
       maxNumber = Number(rangeDecider[1]);
     }
-    const lineData = arrResult.map((i) => Number(i));
-    const dateForRanges = arrDate.map((i) => Number(i));
-    return arrResult.length > 0 ? (
+    const lineData = arrResult?.map((i) => Number(i));
+    const dateForRanges = arrDate?.map((i) => Number(i));
+    return arrResult?.length > 0 ? (
       <CombinedBarChart
         title={sendParamName}
         onClickClose={() => setShowPopup(false)}
