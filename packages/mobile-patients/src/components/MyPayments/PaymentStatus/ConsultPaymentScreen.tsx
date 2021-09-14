@@ -399,9 +399,7 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
           styles.statusCardSubContainerStyle,
           (status == pending || status == failure) &&
           {
-            borderWidth: 1.5,
-            borderTopLeftRadius: 10,
-            borderTopRightRadius: 10,
+            ...styles.failureCardStyle,
             borderColor: status == failure ? theme.colors.APP_RED : theme.colors.PENDING_TEXT
           }]}>
           <View style={styles.centerHorizontal}>
@@ -969,4 +967,9 @@ const styles = StyleSheet.create({
     padding: 12,
     marginTop: 10,
   },
+  failureCardStyle: {
+    borderWidth: 1.5,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  }
 });
