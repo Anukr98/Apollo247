@@ -2205,6 +2205,8 @@ export const InitiateAppsFlyer = (
       devKey: 'pP3MjHNkZGiMCamkJ7YpbH',
       isDebug: false,
       appId: Platform.OS === 'ios' ? '1496740273' : 'com.apollo.patientapp',
+      onInstallConversionDataListener: true, //Optional
+      onDeepLinkListener: true, //Optional
     },
     (result) => { },
     (error) => { }
