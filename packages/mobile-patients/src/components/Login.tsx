@@ -60,6 +60,7 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { AuthButton } from '@aph/mobile-patients/src/components/ui/AuthButton';
 import { VERIFY_TRUECALLER_PROFILE } from '@aph/mobile-patients/src/graphql/profiles';
 import { useApolloClient } from 'react-apollo-hooks';
+import { timeDifferenceInDays } from '@aph/mobile-patients/src/utils/dateUtil';
 import {
   verifyTrueCallerProfile,
   verifyTrueCallerProfileVariables,
@@ -177,7 +178,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface LoginProps extends NavigationScreenProps {}
+export interface LoginProps extends NavigationScreenProps { }
 
 const isPhoneNumberValid = (number: string) => {
   const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(number)
@@ -495,19 +496,27 @@ export const Login: React.FC<LoginProps> = (props) => {
   const deviceTokenAPI = async (patientId: string) => {
     const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
     const deviceToken2 = deviceToken ? JSON.parse(deviceToken) : '';
-
+    const deviceTokenTimeStamp = (await AsyncStorage.getItem('deviceTokenTimeStamp')) || '';
+    const currentDeviceTokenTimeStamp = deviceTokenTimeStamp ? JSON.parse(deviceTokenTimeStamp) : '';
     if (
       !deviceToken2 ||
       deviceToken2 === '' ||
       deviceToken2.length == 0 ||
       typeof deviceToken2 != 'string' ||
-      typeof deviceToken2 == 'object'
+      typeof deviceToken2 == 'object' ||
+      !currentDeviceTokenTimeStamp ||
+      currentDeviceTokenTimeStamp === '' ||
+      currentDeviceTokenTimeStamp.length == 0 ||
+      typeof currentDeviceTokenTimeStamp != 'number' ||
+      timeDifferenceInDays(new Date().getTime(), currentDeviceTokenTimeStamp) > 6
     ) {
       messaging()
         .getToken()
         .then((token) => {
           saveTokenDevice(client, token, patientId)
-            ?.then((resp) => {})
+            ?.then((resp) => {
+              AsyncStorage.setItem('deviceTokenTimeStamp', JSON.stringify(new Date().getTime()));
+            })
             .catch((e) => {
               CommonBugFender('Login_saveTokenDevice', e);
               AsyncStorage.setItem('deviceToken', '');
@@ -518,7 +527,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         });
     } else {
       saveTokenDevice(client, deviceToken2, patientId)
-        ?.then((resp) => {})
+        ?.then((resp) => { })
         .catch((e) => {
           CommonBugFender('Login_saveTokenDevice', e);
           AsyncStorage.setItem('deviceToken', '');
@@ -650,7 +659,7 @@ export const Login: React.FC<LoginProps> = (props) => {
 
                   try {
                     signOut();
-                  } catch (error) {}
+                  } catch (error) { }
 
                   props.navigation.navigate(AppRoutes.OTPVerification, {
                     otpString,
@@ -671,7 +680,7 @@ export const Login: React.FC<LoginProps> = (props) => {
           setShowSpinner(false);
         }
       });
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const openWebView = () => {

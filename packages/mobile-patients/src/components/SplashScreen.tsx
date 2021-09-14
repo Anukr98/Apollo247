@@ -77,6 +77,7 @@ import {
   getProHealthHospitalBySlug,
   getProHealthHospitalBySlugVariables,
 } from '@aph/mobile-patients/src/graphql/types/getProHealthHospitalBySlug';
+import { timeDifferenceInDays } from '@aph/mobile-patients/src/utils/dateUtil';
 import firebaseAuth from '@react-native-firebase/auth';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import {
@@ -144,7 +145,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface SplashScreenProps extends NavigationScreenProps {}
+export interface SplashScreenProps extends NavigationScreenProps { }
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { APP_ENV } = AppConfig;
@@ -258,17 +259,25 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const getDeviceToken = async () => {
     const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
     const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    const deviceTokenTimeStamp = (await AsyncStorage.getItem('deviceTokenTimeStamp')) || '';
+    const currentDeviceTokenTimeStamp = deviceTokenTimeStamp ? JSON.parse(deviceTokenTimeStamp) : '';
     if (
       !currentDeviceToken ||
       currentDeviceToken === '' ||
       currentDeviceToken.length == 0 ||
       typeof currentDeviceToken != 'string' ||
-      typeof currentDeviceToken == 'object'
+      typeof currentDeviceToken == 'object' ||
+      !currentDeviceTokenTimeStamp ||
+      currentDeviceTokenTimeStamp === '' ||
+      currentDeviceTokenTimeStamp.length == 0 ||
+      typeof currentDeviceTokenTimeStamp != 'number' ||
+      timeDifferenceInDays(new Date().getTime(), currentDeviceTokenTimeStamp) > 6
     ) {
       messaging()
         .getToken()
         .then((token) => {
           AsyncStorage.setItem('deviceToken', JSON.stringify(token));
+          AsyncStorage.setItem('deviceTokenTimeStamp', JSON.stringify(new Date().getTime()));
           UnInstallAppsFlyer(token);
         })
         .catch((e) => {
