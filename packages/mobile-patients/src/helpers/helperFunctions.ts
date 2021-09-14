@@ -2204,7 +2204,9 @@ export const InitiateAppsFlyer = (
     {
       devKey: 'pP3MjHNkZGiMCamkJ7YpbH',
       isDebug: false,
-      appId: Platform.OS === 'ios' ? '1496740273' : '',
+      appId: Platform.OS === 'ios' ? '1496740273' : 'com.apollo.patientapp',
+      onInstallConversionDataListener: true, //Optional
+      onDeepLinkListener: true, //Optional
     },
     (result) => { },
     (error) => { }
@@ -3078,7 +3080,7 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
       break;
     default:
       statusString = '';
-      // statusString?.replace(/[_]/g, ' ');
+    // statusString?.replace(/[_]/g, ' ');
   }
   return statusString;
 };
