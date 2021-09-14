@@ -25,7 +25,6 @@ import {
   setFirebaseUserId,
   setCrashlyticsAttributes,
   onCleverTapUserLogin,
-  setCleverTapAppsFlyerCustID,
   postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -592,7 +591,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     setOpenFillerView(false);
     // commenting this to avoid setting of AppFlyerCustId twice
     // SetAppsFlyerCustID(mePatient.primaryPatientId);
-    setCleverTapAppsFlyerCustID();
     postOtpSuccessAppsflyerEvet(mePatient.primaryPatientId);
     if (mePatient && mePatient.uhid && mePatient.uhid !== '') {
       if (mePatient.relation == null) {

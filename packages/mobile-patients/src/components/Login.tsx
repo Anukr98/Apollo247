@@ -20,7 +20,6 @@ import {
   postWebEngageEvent,
   SetAppsFlyerCustID,
   onCleverTapUserLogin,
-  setCleverTapAppsFlyerCustID,
   postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { loginAPI } from '@aph/mobile-patients/src/helpers/loginCalls';
@@ -444,7 +443,6 @@ export const Login: React.FC<LoginProps> = (props) => {
     AsyncStorage.setItem('logginHappened', 'true');
     // commenting this to avoid setting of AppFlyerCustId twice
     // SetAppsFlyerCustID(mePatient.primaryPatientId);
-    setCleverTapAppsFlyerCustID();
     mePatient && (await AsyncStorage.setItem(LOGIN_PROFILE, JSON.stringify(mePatient)));
     if (mePatient && mePatient.uhid && mePatient.uhid !== '') {
       if (mePatient.relation == null) {
