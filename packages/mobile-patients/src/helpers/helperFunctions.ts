@@ -2199,7 +2199,7 @@ export const InitiateAppsFlyer = (
     } else {
     }
   });
-
+  setCleverTapAppsFlyerCustID()
   appsFlyer.initSdk(
     {
       devKey: 'pP3MjHNkZGiMCamkJ7YpbH',
@@ -2209,6 +2209,7 @@ export const InitiateAppsFlyer = (
     (result) => { },
     (error) => { }
   );
+
 
   onAppOpenAttributionCanceller = appsFlyer.onAppOpenAttribution(async (res) => {
     // for iOS universal links
