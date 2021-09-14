@@ -201,12 +201,15 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   pharmaCodMessage: {
-    ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1, 30),
+    ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1, 20),
     marginLeft: 7,
   },
   pharmaMessageContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     marginTop: 15,
+    width: '87%',
+    alignItems: 'center',
+    alignSelf: 'center',
   },
 });
