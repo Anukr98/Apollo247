@@ -632,7 +632,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           : null}
         {renderPricesCard()}
         {(orderDetails?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED && !isPrepaid) ||
-        (isPrepaid && DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY.includes(orderDetails?.orderStatus))
+        DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY.includes(orderDetails?.orderStatus)
           ? null
           : renderPaymentCard()}
       </View>

@@ -845,7 +845,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }}
         container={{
           marginBottom: 24,
-          marginTop: 20,
         }}
         titleStyle={{
           color: theme.colors.SHERPA_BLUE,
@@ -957,16 +956,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderSearchBar = () => {
     const styles = StyleSheet.create({
-      containerStyle: {
-        marginBottom: 20,
-        marginTop: 12,
-        alignSelf: 'center',
-      },
       searchNewInput: {
         borderColor: '#e7e7e7',
         borderRadius: 5,
         borderWidth: 1,
-        width: '95%',
+        width: '92%',
         alignSelf: 'center',
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -1347,7 +1341,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   {
                     ...theme.viewStyles.text(
                       'B',
-                      !!lengthOfTitle && lengthOfTitle > 20 ? 13 : 16,
+                      !!lengthOfTitle && lengthOfTitle > 20 ? 13.5 : 16,
                       theme.colors.SHERPA_BLUE,
                       1,
                       20
@@ -1368,7 +1362,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
                       }
                     : undefined
                 }
-                style={showViewAll ? { paddingBottom: 1 } : {}}
+                style={
+                  showViewAll
+                    ? { paddingBottom: 1, borderBottomWidth: 0 }
+                    : { borderBottomWidth: 0 }
+                }
               />
             )}
             {sectionLoading ? (
@@ -1421,7 +1419,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   {
                     ...theme.viewStyles.text(
                       'B',
-                      !!lengthOfTitle && lengthOfTitle > 20 ? 13 : 16,
+                      !!lengthOfTitle && lengthOfTitle > 20 ? 13.5 : 16,
                       theme.colors.SHERPA_BLUE,
                       1,
                       20
@@ -1442,7 +1440,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
                       }
                     : undefined
                 }
-                style={showViewAll ? { paddingBottom: 1 } : {}}
+                style={
+                  showViewAll
+                    ? { paddingBottom: 1, borderBottomWidth: 0 }
+                    : { borderBottomWidth: 0 }
+                }
               />
             )}
             {sectionLoading ? (
@@ -1470,8 +1472,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderWhyBookUs = () => {
     return (
-      <View style={{ marginBottom: -20 }}>
-        <View style={{ marginLeft: 32 }}>
+      <View style={{ marginBottom: -20, marginTop: 10 }}>
+        <View style={{ marginLeft: 16 }}>
           <Text style={styles.whyBookUsHeading}>
             {nameFormater(string.diagnostics.whyBookUs, 'upper')} ?
           </Text>
@@ -1487,7 +1489,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           autoplayDelay={AUTO_SCROLL_INTERVAL}
           autoplayInterval={AUTO_SCROLL_INTERVAL}
         />
-        <View style={[styles.landingBannerInnerView, { bottom: 30 }]}>
+        <View style={[styles.landingBannerInnerView, { bottom: 35 }]}>
           {whyBookUsArray?.map((_, index) =>
             index == bookUsSlideIndex ? renderDot(true) : renderDot(false)
           )}
@@ -1526,7 +1528,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         container={styles.stepsToBookContainer}
         title={string.diagnostics.stepsToBook}
         leftIcon={<WorkflowIcon />}
-        rightIcon={<ArrowRightYellow style={{ resizeMode: 'contain' }} />}
         titleStyle={styles.stepsToBookTitleStyle}
       />
     );
@@ -1607,7 +1608,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         titleText={string.diagnostics.certificateText}
         titleStyle={{
           color: colors.SHERPA_BLUE,
-          ...theme.fonts.IBMPlexSansMedium(13),
+          ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 12 : 13),
           lineHeight: 18,
         }}
         leftIcon={<ShieldIcon />}
@@ -1620,7 +1621,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginVertical: '4%' }}>
         {imagesArray.map((img) => (
-          <Image source={img} style={{ height: 36, width: 70 }} resizeMode={'contain'} />
+          <Image
+            source={img}
+            style={{ height: isSmallDevice ? 30 : 36, width: isSmallDevice ? 65 : 70 }}
+            resizeMode={'contain'}
+          />
         ))}
       </View>
     );
@@ -1932,7 +1937,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => {
-          if (diagnosticResults.length == 0 && !searchText) return;
+          if (diagnosticResults?.length == 0 && !searchText) return;
           setSearchText('');
           setDiagnosticResults([]);
         }}
@@ -2094,6 +2099,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
               cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
             });
           }}
+          style={
+            showViewAll ? { paddingBottom: 1, borderBottomWidth: 0 } : { borderBottomWidth: 0 }
+          }
         />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sectionView}>
           {data?.diagnosticWidgetData?.map((item: any) => (
@@ -2181,7 +2189,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
     const showViewAll = newGridData && newGridData?.length > 2;
     return (
-      <View style={{ marginTop: 10 }}>
+      <View style={{ marginBottom: 24 }}>
         <SectionHeader
           leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')} //nameFormater(data?.diagnosticWidgetTitle, 'upper')
           leftTextStyle={[
@@ -2199,6 +2207,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
             });
           }}
+          style={{ borderBottomWidth: 0, paddingBottom: 0 }}
         />
         <View style={styles.gridConatiner}>
           <FlatList
@@ -2273,12 +2282,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   container: {
-    marginTop: 20,
+    // marginTop: 20,
+    marginBottom: 24,
   },
   gridConatiner: {
-    width: '100%',
+    width: '92%',
     backgroundColor: 'white',
-    marginVertical: 20,
+    marginVertical: 16,
+    marginLeft: 16,
+    marginRight: 16,
   },
   imagePlaceholderStyle: {
     backgroundColor: '#f7f8f5',
@@ -2331,7 +2343,7 @@ const styles = StyleSheet.create({
   },
   viewAllText: { ...theme.viewStyles.text('B', 15, '#FCB716', 1, 20) },
   widgetViewAllText: {
-    ...theme.viewStyles.text('B', 14, theme.colors.APP_YELLOW, 1, 20),
+    ...theme.viewStyles.text('B', 15, theme.colors.APP_YELLOW, 1, 20),
     textAlign: 'right',
   },
   widgetHeading: {
@@ -2374,10 +2386,11 @@ const styles = StyleSheet.create({
   },
   serviceabilityMsg: { ...theme.viewStyles.text('R', 10, '#890000') },
   headerContainer: {
-    paddingHorizontal: 20,
     flexDirection: 'row',
     paddingTop: 16,
     backgroundColor: '#fff',
+    marginLeft: 16,
+    marginRight: 16,
   },
   stepsToBookModalView: {
     paddingLeft: 30,
@@ -2455,18 +2468,18 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   textStyle: {
-    ...theme.viewStyles.text('SB', 14, colors.SHERPA_BLUE, 1, 20, 0),
+    ...theme.viewStyles.text('SB', isSmallDevice ? 13 : 14, colors.SHERPA_BLUE, 1, 20, 0),
     paddingVertical: 5,
     textAlign: 'center',
     width: '100%',
   },
   widgetSpacing: {
-    marginVertical: 20,
+    marginVertical: 12, //20
   },
   whyBookUsOuterView: { marginBottom: 15, marginTop: '2%' },
   stepsToBookTitleStyle: {
     color: colors.SHERPA_BLUE,
-    ...theme.fonts.IBMPlexSansMedium(13),
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 12 : 13),
     lineHeight: 18,
   },
   homeIconStyle: { height: 33, width: 33, resizeMode: 'contain' },

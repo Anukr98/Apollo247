@@ -631,7 +631,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     flexDirection: 'row',
     marginTop: 20,
-    marginBottom: '2%',
+    marginBottom: '1%',
     minHeight: 40,
   },
   testForText: {

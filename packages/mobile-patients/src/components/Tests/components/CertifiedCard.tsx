@@ -27,7 +27,13 @@ const CertifiedCard: React.FC<CertifiedCardProps> = (props) => {
 export default React.memo(CertifiedCard);
 
 const styles = StyleSheet.create({
-  container: { ...theme.viewStyles.cardViewStyle, padding: 16, margin: 16 },
+  container: {
+    ...theme.viewStyles.cardViewStyle,
+    padding: 16,
+    margin: 16,
+    marginBottom: 24,
+    marginTop: 8,
+  },
   titleStyle: {
     color: theme.colors.SHERPA_BLUE,
     ...theme.fonts.IBMPlexSansMedium(17),

@@ -680,7 +680,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                   transform: [
                     { rotate: dropDownItemListIndex?.includes(index) ? '270deg' : '90deg' },
                   ],
-                  tintColor: 'black',
+                  tintColor: colors.LIGHT_BLUE,
                 }}
               />
             </TouchableOpacity>
@@ -760,7 +760,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                                 rotate: dropDownItemListIndex?.includes(index) ? '270deg' : '90deg',
                               },
                             ],
-                            tintColor: 'black',
+                            tintColor: colors.LIGHT_BLUE,
                           }}
                         />
                       </TouchableOpacity>
@@ -937,7 +937,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                         transform: [
                           { rotate: dropDownItemListIndex?.includes(index) ? '270deg' : '90deg' },
                         ],
-                        tintColor: 'black',
+                        tintColor: colors.LIGHT_BLUE,
                       }}
                     />
                   </>
@@ -957,7 +957,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                           transform: [
                             { rotate: dropDownItemListIndex?.includes(index) ? '270deg' : '90deg' },
                           ],
-                          tintColor: 'black',
+                          tintColor: colors.LIGHT_BLUE,
                         }}
                       />
                     </View>
@@ -1073,7 +1073,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                 <ArrowRight
                   style={{
                     transform: [{ rotate: showInclusionStatus ? '270deg' : '90deg' }],
-                    tintColor: 'black',
+                    tintColor: colors.LIGHT_BLUE,
                   }}
                 />
               </TouchableOpacity>
@@ -1160,7 +1160,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                 <ArrowRight
                   style={{
                     transform: [{ rotate: showInclusionStatus ? '270deg' : '90deg' }],
-                    tintColor: 'black',
+                    tintColor: colors.LIGHT_BLUE,
                   }}
                 />
               </TouchableOpacity>
@@ -1515,7 +1515,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE),
   },
-  verticalProgressLine: { flex: 1, width: 5, alignSelf: 'center' },
+  verticalProgressLine: { flex: 1, width: 4, alignSelf: 'center' },
   statusIconStyle: {
     height: 28,
     width: 28,

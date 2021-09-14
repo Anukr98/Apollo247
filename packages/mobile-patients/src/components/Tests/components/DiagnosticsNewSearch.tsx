@@ -110,5 +110,4 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   testNameText: { ...theme.viewStyles.text('M', 12, '#01475b', 1, 24, 0), width: '95%' },
-  imageIcon: { height: 40, width: 40 },
 });

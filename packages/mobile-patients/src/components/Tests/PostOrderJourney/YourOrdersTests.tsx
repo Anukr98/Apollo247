@@ -8,7 +8,6 @@ import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/Diagnost
 import {
   GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
   GET_PHLOBE_DETAILS,
-  DIAGNOSITC_EXOTEL_CALLING,
   GET_RESCHEDULE_AND_CANCELLATION_REASONS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -64,7 +63,6 @@ import {
   aphConsole,
   isSmallDevice,
   extractPatientDetails,
-  downloadDocument,
   removeWhiteSpaces,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
@@ -76,8 +74,6 @@ import {
   AppConfig,
   BLACK_LIST_CANCEL_STATUS_ARRAY,
   BLACK_LIST_RESCHEDULE_STATUS_ARRAY,
-  DIAGNOSTIC_ORDER_FAILED_STATUS,
-  DIAGNOSTIC_CONFIRMED_STATUS,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -88,7 +84,6 @@ import {
   DiagnosticPhleboCallingClicked,
   DiagnosticAddTestClicked,
   DiagnosticRescheduleOrder,
-  DiagnosticViewReportClicked,
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { OrderTestCard } from '@aph/mobile-patients/src/components/Tests/components/OrderTestCard';
 import {
@@ -108,11 +103,6 @@ import {
   getOrderPhleboDetailsBulk,
   getOrderPhleboDetailsBulkVariables,
 } from '@aph/mobile-patients/src/graphql/types/getOrderPhleboDetailsBulk';
-import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
-import {
-  diagnosticExotelCalling,
-  diagnosticExotelCallingVariables,
-} from '@aph/mobile-patients/src/graphql/types/diagnosticExotelCalling';
 import {
   getRescheduleAndCancellationReasons,
   getRescheduleAndCancellationReasonsVariables,
@@ -140,6 +130,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
     string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
   ];
+
+  const ALL = 'All';
 
   const {
     diagnosticSlot,
@@ -192,20 +184,18 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const client = useApolloClient();
   const [orders, setOrders] = useState<any>(props.navigation.getParam('orders'));
-  const [isPaitentList, setIsPaitentList] = useState<boolean>(false);
+  const [showPatientsOverlay, setShowPatientsOverlay] = useState<boolean>(false);
   const [activeOrder, setActiveOrder] = useState<orderList>();
-  const [selectedPaitent, setSelectedPaitent] = useState<string>('All');
-  const [selectedPaitentId, setSelectedPaitentId] = useState<string>('');
+  const [selectedPatient, setSelectedPatient] = useState<string>(ALL);
+  const [selectedPatientId, setSelectedPatientId] = useState<string>('');
   const [orderListData, setOrderListData] = useState<(orderListByMobile | null)[] | null>([]);
-  const [filteredOrderList, setFilteredOrderList] = useState<(orderListByMobile | null)[] | null>(
-    []
-  );
+
   const [slotInput, setSlotInput] = useState({});
   const [profileArray, setProfileArray] = useState<
     GetCurrentPatients_getCurrentPatients_patients[] | null
   >(allCurrentPatients);
   const [currentOffset, setCurrentOffset] = useState<number>(1);
-  const [resultList, setResultList] = useState<(orderListByMobile | null)[] | null>([]);
+  const [resultList, setResultList] = useState([] as any);
   const source = props.navigation.getParam('source');
 
   var rescheduleDate: Date,
@@ -246,13 +236,23 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   }, [currentPatient]);
 
+  //orderListData => next set of results
+  //orders => data to be shown (can have filter)
+  //resultList => entire list without filter
   useEffect(() => {
-    if (selectedPaitent == 'All') {
-      setOrders(filteredOrderList);
+    if (selectedPatient === ALL) {
+      setOrders(resultList); // set all the orders present.
     } else {
-      setOrders(fetchFilteredOrder());
+      setOrders(filterResultsForPatient(resultList));
     }
-  }, [selectedPaitentId]);
+  }, [selectedPatientId]);
+
+  function filterResultsForPatient(list: orderList[]) {
+    const getPatientFilteredResults = list?.filter(
+      (item: orderList) => item?.patientId === selectedPatientId
+    );
+    return getPatientFilteredResults;
+  }
 
   const refetchOrders = async () => {
     fetchOrders(true);
@@ -342,15 +342,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   };
 
-  const fetchFilteredOrder = () => {
-    let filteredList = filteredOrderList?.filter((item) => {
-      if (selectedPaitentId === item?.patientId) {
-        return item;
-      }
-    });
-    return filteredList;
-  };
-
   const getPhlobeOTP = (orderIdsArr: any, ordersList: any, isRefetch: boolean) => {
     try {
       setLoading?.(true);
@@ -403,12 +394,19 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                 order.phleboDetailsObj.allowCalling = findOrder?.allowCalling;
               }
             });
-            setOrders(ordersList);
-            setFilteredOrderList(ordersList);
-            setTimeout(() => setLoading?.(false), 1500);
+            //ordersList => contains all results.
+            if (selectedPatient === ALL) {
+              setOrders(ordersList); // set all the orders present.
+            } else {
+              setOrders(setOrders(filterResultsForPatient(ordersList)));
+            }
+            setTimeout(() => setLoading?.(false), 1000);
           } else {
-            setOrders(ordersList);
-            setFilteredOrderList(ordersList);
+            if (selectedPatient === ALL) {
+              setOrders(ordersList); // set all the orders present.
+            } else {
+              setOrders(setOrders(filterResultsForPatient(ordersList)));
+            }
             setLoading?.(false);
           }
         })
@@ -691,10 +689,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         <TouchableOpacity
           style={styles.activeFilterView}
           onPress={() => {
-            setIsPaitentList(true);
+            setShowPatientsOverlay(true);
           }}
         >
-          <Text style={styles.textSelectedPaitent}>{selectedPaitent}</Text>
+          <Text style={styles.textSelectedPatient}>{selectedPatient}</Text>
           <Down />
         </TouchableOpacity>
       </View>
@@ -1790,12 +1788,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
   const newProfileArray = [
     {
-      firstName: 'All',
+      firstName: ALL,
       lastName: '',
       gender: '',
       dateOfBirth: '',
     },
-    ...profileArray?.slice(0, profileArray.length - 1),
+    ...profileArray?.slice(0, profileArray?.length - 1),
   ];
   const renderError = () => {
     if (error) {
@@ -1812,40 +1810,71 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const renderModalView = (item: any, index: number) => {
+    const isSelected = selectedPatientId == item?.id;
     return (
       <TouchableOpacity
         onPress={() => {
-          setSelectedPaitent(item?.firstName == null ? '' : item?.firstName);
-          setSelectedPaitentId(item?.id);
-          setIsPaitentList(false);
-          setCurrentOffset(1);
+          setSelectedPatient(item?.firstName == null ? '' : item?.firstName);
+          setSelectedPatientId(item?.id);
+          setShowPatientsOverlay(false);
         }}
         style={[
-          styles.paitentItem,
+          styles.patientItem,
           {
-            backgroundColor: selectedPaitentId == item.id ? '#00B38E' : 'white',
+            backgroundColor: isSelected ? colors.APP_GREEN : colors.WHITE,
           },
         ]}
       >
-        <Text
-          style={[
-            styles.paitentText,
-            { color: selectedPaitentId == item.id ? 'white' : '#00B38E' },
-          ]}
-        >
+        <Text style={[styles.patientText, { color: isSelected ? colors.WHITE : colors.APP_GREEN }]}>
           {item?.firstName}
         </Text>
         {item?.gender && item?.dateOfBirth ? (
           <Text
-            style={[
-              styles.paitentSubText,
-              { color: selectedPaitentId == item.id ? 'white' : '#00B38E' },
-            ]}
+            style={[styles.patientSubText, { color: isSelected ? colors.WHITE : colors.APP_GREEN }]}
           >{`${item?.gender}, ${moment().diff(item?.dateOfBirth, 'years')}`}</Text>
         ) : null}
       </TouchableOpacity>
     );
   };
+
+  function _onPressClosePatientOverlay() {
+    setShowPatientsOverlay(false);
+  }
+
+  const renderPatientsOverlay = () => {
+    return (
+      <Overlay
+        onRequestClose={() => _onPressClosePatientOverlay()}
+        isVisible={showPatientsOverlay}
+        onBackdropPress={() => _onPressClosePatientOverlay()}
+        windowBackgroundColor={'rgba(0, 0, 0, 0.6)'}
+        containerStyle={{ marginBottom: 0 }}
+        fullScreen
+        transparent
+        overlayStyle={styles.overlayStyle}
+      >
+        <View style={{ flex: 1 }}>
+          <TouchableOpacity style={{ flex: 1 }} onPress={() => _onPressClosePatientOverlay()}>
+            <View style={styles.modalMainView}>
+              <View style={styles.paitentModalView}>
+                <Text style={styles.textHeadingModal}>Select Patient Name</Text>
+                <View style={styles.patientCard}>
+                  <FlatList
+                    bounces={false}
+                    data={newProfileArray}
+                    extraData={selectedPatientId}
+                    keyExtractor={(_, index) => `${index}`}
+                    renderItem={({ item, index }) => renderModalView(item, index)}
+                  />
+                </View>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </Overlay>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       {showDisplaySchedule && renderRescheduleOrderOverlay()}
@@ -1862,31 +1891,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         {renderError()}
         {renderOrders()}
         {showBottomOverlay && renderBottomPopUp()}
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={isPaitentList}
-          onRequestClose={() => {
-            setIsPaitentList(false);
-          }}
-          onDismiss={() => {
-            setIsPaitentList(false);
-          }}
-        >
-          <View style={styles.modalMainView}>
-            <View style={styles.paitentModalView}>
-              <Text style={styles.textHeadingModal}>Select Patient Name</Text>
-              <View style={styles.paitentCard}>
-                <FlatList
-                  data={newProfileArray}
-                  extraData={selectedPaitentId}
-                  keyExtractor={(_, index) => `${index}`}
-                  renderItem={({ item, index }) => renderModalView(item, index)}
-                />
-              </View>
-            </View>
-          </View>
-        </Modal>
+        {showPatientsOverlay && renderPatientsOverlay()}
       </SafeAreaView>
       {loading && !props?.showHeader ? null : loading && <Spinner />}
     </View>
@@ -2043,13 +2048,13 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 14, '#02475b'),
     // marginBottom: 5,
   },
-  textSelectedPaitent: {
-    ...theme.viewStyles.text('SB', 14, '#02475b'),
+  textSelectedPatient: {
+    ...theme.viewStyles.text('M', 14, colors.LIGHT_BLUE, 1),
     width: '85%',
   },
   activeFilterView: {
     ...theme.viewStyles.text('SB', 14, '#02475b'),
-    backgroundColor: '#F3F3F3',
+    backgroundColor: colors.WHITE,
     borderWidth: 1,
     borderColor: '#BDBDBD',
     borderRadius: 8,
@@ -2072,13 +2077,18 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
   },
-  paitentCard: {
-    backgroundColor: '#F7F8F5',
+  patientCard: {
+    backgroundColor: colors.DEFAULT_BACKGROUND_COLOR,
     padding: 10,
     borderRadius: 10,
     elevation: 2,
+    marginBottom: 30,
+    shadowColor: '#808080',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
   },
-  paitentItem: {
+  patientItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -2086,16 +2096,15 @@ const styles = StyleSheet.create({
     elevation: 2,
     backgroundColor: 'white',
     paddingHorizontal: 10,
-    paddingVertical: 20,
+    paddingVertical: 15,
     margin: 5,
   },
-  paitentText: {
-    ...theme.viewStyles.text('R', 16, '#00B38E'),
-    width: '80%',
+  patientText: {
+    ...theme.viewStyles.text('R', isSmallDevice ? 15 : 16, '#00B38E'),
+    width: isSmallDevice ? '72%' : '78%',
   },
-  paitentSubText: {
-    ...theme.viewStyles.text('R', 12, '#00B38E'),
-    width: '20%',
+  patientSubText: {
+    ...theme.viewStyles.text('R', isSmallDevice ? 11 : 12, '#00B38E'),
   },
   marginStyle: {
     marginLeft: 16,

@@ -4,7 +4,11 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Image } from 'react-native-elements';
-import { isEmptyObject, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  isEmptyObject,
+  isSmallDevice,
+  nameFormater,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 export interface DiagnosticsSearchSuggestionItemProps {
   onPress: () => void;
@@ -146,7 +150,7 @@ const styles = StyleSheet.create({
   },
   numberPlate: { ...theme.viewStyles.text('R', 10, '#01475b', 1, 18) },
   addCta: {
-    ...theme.viewStyles.text('B', 14, '#FCA317', 1, 18, 0),
+    ...theme.viewStyles.text('B', isSmallDevice ? 13 : 14, '#FCA317', 1, 18, 0),
     textTransform: 'uppercase',
     textAlign: 'right',
     width: 'auto',
@@ -164,7 +168,7 @@ const styles = StyleSheet.create({
   },
   cartViewContainer: {
     alignSelf: 'center',
-    width: '30%',
+    // width: '30%',
   },
   testNameText: { ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0), width: '95%' },
   imageIcon: { height: 40, width: 40 },

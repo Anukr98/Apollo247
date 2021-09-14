@@ -65,6 +65,8 @@ const styles = StyleSheet.create({
     margin: 16,
     width: winWidth - 32,
     minHeight: 200,
+    marginBottom: 20,
+    marginTop: 4,
   },
   rowStyles: { flexDirection: 'row', justifyContent: 'space-between' },
   heading1: { ...theme.viewStyles.text('M', 12.5, colors.SHERPA_BLUE, 1, 20) },
