@@ -1210,7 +1210,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
 
   const callBackTestReports = (selectedItem: any) => {
     setShowPopup(false);
-    setData(selectedItem);
+    selectedItem?.labTestResults?.length > 0 ? setData(selectedItem) : null;
   };
 
   const renderReadMore = (resultString: string) => {

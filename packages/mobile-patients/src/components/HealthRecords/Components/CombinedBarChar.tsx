@@ -22,9 +22,6 @@ import {
 import moment from 'moment';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import SwitchSelector from 'react-native-switch-selector';
-import { Colors } from 'react-native/Libraries/NewAppScreen';
-import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { Item } from 'react-native-paper/lib/typescript/src/components/List/List';
 
 const styles = StyleSheet.create({
   container: {
@@ -518,8 +515,11 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
 
   const renderBarChartView = () => {
     let rangeLog = props?.rangeDate?.map((x) => new Date(x));
-    let compareDates = moment(rangeLog[0]).format('YYYY-MM-DD');
-    console.log(compareDates, props.date);
+    let compareFirstDate = moment(rangeLog[0]).format('YYYY-MM-DD');
+    let compareLastDate;
+    if (!!rangeLog && rangeLog?.length > 1) {
+      compareLastDate = moment(rangeLog[rangeLog?.length - 1]).format('YYYY-MM-DD');
+    }
     return (
       <View style={styles.phrUploadOptionsViewStyle}>
         <Text style={styles.healthInsightsContainer}>{'HEALTH INSIGHTS'}</Text>
@@ -543,11 +543,11 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
         <View style={styles.barChartMainContainer}>
           <View style={{ height: 290 }}>
             <Text style={styles.dateContainer}>
-              {compareDates !== props.date
-                ? `\u25CF ${moment(rangeLog[0]).format(
+              {!!rangeLog && rangeLog?.length > 1
+                ? `\u25CF ${moment(compareFirstDate).format(
                     string.common.date_placeholder_text
-                  )} - ${moment(props.date).format(string.common.date_placeholder_text)}`
-                : `\u25CF ${moment(props.date).format(string.common.date_placeholder_text)}`}
+                  )} - ${moment(compareLastDate).format(string.common.date_placeholder_text)}`
+                : `\u25CF ${moment(compareFirstDate).format(string.common.date_placeholder_text)}`}
             </Text>
             <CombinedChart
               drawBorders={false}
