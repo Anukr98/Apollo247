@@ -828,11 +828,18 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       .format('DD MMM');
 
     const getConsultationSubTexts = () => {
-      return !item?.isConsultStarted
-        ? string.common.mentionReports
-        : !item?.isJdQuestionsComplete
+      const {
+        isAutomatedQuestionsComplete,
+        isSeniorConsultStarted, 
+        isConsultStarted
+      } = item || {};
+      return (!isAutomatedQuestionsComplete && !isSeniorConsultStarted) ||
+        !isConsultStarted ? string.common.fillVitalsText
+        : !isConsultStarted && isAutomatedQuestionsComplete
         ? string.common.gotoConsultRoomJuniorDrText
-        : string.common.gotoConsultRoomText || '';
+        : isSeniorConsultStarted
+        ? string.common.joinConsultRoom
+        : string.common.mentionReports
     };
 
     const getAppointmentStatusText = () => {
@@ -840,10 +847,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         return 'Cancelled';
       } else if (item?.status === STATUS.COMPLETED) {
         return 'Completed';
-      } else if (item?.status === STATUS.PENDING || item?.status === STATUS.IN_PROGRESS) {
-        return 'Active';
       } else if (item?.appointmentState === APPOINTMENT_STATE.RESCHEDULE) {
         return 'Rescheduled';
+      } else if (item?.status === STATUS.PENDING || item?.status === STATUS.IN_PROGRESS) {
+        return 'Active';
       } else if (item?.isFollowUp === 'true') {
         return 'Follow Up Appointment';
       } else {
@@ -1244,7 +1251,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 onPress={onPressActiveUpcomingButtons}
               >
                 <Text style={styles.prepareForConsult}>
-                  {item.isConsultStarted
+                  {item?.isSeniorConsultStarted
+                    ? string.common.consultRoom
+                    : item?.isConsultStarted && item?.isAutomatedQuestionsComplete
                     ? string.common.continueConsult
                     : string.common.prepareForConsult}
                 </Text>
