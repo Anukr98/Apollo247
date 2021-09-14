@@ -269,7 +269,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       typeof currentDeviceToken == 'object' ||
       !currentDeviceTokenTimeStamp ||
       currentDeviceTokenTimeStamp === '' ||
-      currentDeviceTokenTimeStamp.length == 0 ||
+      currentDeviceTokenTimeStamp?.length == 0 ||
       typeof currentDeviceTokenTimeStamp != 'number' ||
       timeDifferenceInDays(new Date().getTime(), currentDeviceTokenTimeStamp) > 6
     ) {

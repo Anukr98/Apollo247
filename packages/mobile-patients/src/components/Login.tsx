@@ -511,7 +511,7 @@ export const Login: React.FC<LoginProps> = (props) => {
       typeof deviceToken2 == 'object' ||
       !currentDeviceTokenTimeStamp ||
       currentDeviceTokenTimeStamp === '' ||
-      currentDeviceTokenTimeStamp.length == 0 ||
+      currentDeviceTokenTimeStamp?.length == 0 ||
       typeof currentDeviceTokenTimeStamp != 'number' ||
       timeDifferenceInDays(new Date().getTime(), currentDeviceTokenTimeStamp) > 6
     ) {
