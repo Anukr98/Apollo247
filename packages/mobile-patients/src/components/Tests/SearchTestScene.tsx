@@ -434,6 +434,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               autoFocus: true,
             }}
             onFocus={() => setIsFocus(true)}
+            onBlur={() => setIsFocus(false)}
             value={searchText}
             placeholder="Search tests &amp; packages"
             underlineColorAndroid="transparent"
@@ -461,8 +462,10 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           />
           {!!searchText && searchText?.length > 0 && (
             <TouchableOpacity
-              style={{ justifyContent: 'center' }}
+              activeOpacity={1}
+              style={styles.crossIconTouch}
               onPress={() => {
+                console.log('press');
                 setSearchText('');
                 setDiagnosticResults([]);
               }}
@@ -814,6 +817,14 @@ const styles = StyleSheet.create({
     right: 10,
     height: 16,
     width: 16,
+    alignSelf: 'center',
+  },
+  crossIconTouch: {
+    justifyContent: 'center',
+    height: 40,
+    width: 40,
+    position: 'absolute',
+    right: 10,
     alignSelf: 'center',
   },
 });
