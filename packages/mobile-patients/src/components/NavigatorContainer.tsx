@@ -152,6 +152,7 @@ import { CowinProfileSelection } from '@aph/mobile-patients/src/components/Healt
 import { PrescriptionCamera } from '@aph/mobile-patients/src/components/Tests/PrescriptionCamera';
 import { SubmittedPrescription } from '@aph/mobile-patients/src/components/Tests/SubmittedPrescription';
 import { SpecialOffersScreen } from '@aph/mobile-patients/src/components/SpecialOffers/SpecialOffers';
+import { PaymentConfirmation } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentConfirmaiton';
 
 export enum AppRoutes {
   Login = 'Login',
@@ -292,6 +293,7 @@ export enum AppRoutes {
   PrescriptionCamera = 'PrescriptionCamera',
   SubmittedPrescription = 'SubmittedPrescription',
   SpecialOffersScreen = 'SpecialOffersScreen',
+  PaymentConfirmation = 'PaymentConfirmation',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -745,6 +747,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.SpecialOffersScreen]: {
     screen: SpecialOffersScreen,
+  },
+  [AppRoutes.PaymentConfirmation]: {
+    screen: PaymentConfirmation,
   },
 };
 

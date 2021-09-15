@@ -5322,6 +5322,24 @@ export const GET_APPOINTMENT_INFO = gql`
   }
 `;
 
+export const GET_ORDER_INFO = gql`
+  query getOrderInternal($order_id: String!) {
+    getOrderInternal(order_id: $order_id) {
+      id
+      customer_id
+      payment_order_id
+      payment_status
+      total_amount
+      payment_status
+      PharmaOrderDetails {
+        medicineOrderDetails {
+          orderAutoId
+        }
+      }
+    }
+  }
+`;
+
 export const PROCESS_DIAG_COD_ORDER = gql`
   mutation processDiagnosticHCOrder($processDiagnosticHCOrderInput: ProcessDiagnosticHCOrderInput) {
     processDiagnosticHCOrder(processDiagnosticHCOrderInput: $processDiagnosticHCOrderInput) {
@@ -6213,99 +6231,93 @@ export const GET_DIAGNOSTIC_REPORT_TAT = gql`
 `;
 
 export const GET_PATIENT_PRESCRIPTIONS = gql`
-query {
-  getPatientPrescriptions(
-    patientId: $patientId
-    limit: 100
-  ) {
-    response {
-      doctorName
-      patientName
-      caseSheet {
-        notes
-        blobName
-        consultType
-        prescriptionGeneratedDate
-        diagnosis {
-          name
-          __typename
-        }
-        diagnosticPrescription {
-          itemname
-          __typename
-        }
-        doctorId
-        doctorType
-        followUp
-        followUpAfterInDays
-        followUpDate
-        followUpConsultType
-        id
-        medicinePrescription {
-          medicineConsumptionDurationInDays
-          medicineDosage
-          id
-          medicineCustomDetails
-          medicineConsumptionDurationUnit
-          medicineFormTypes
-          medicineFrequency
-          medicineInstructions
-          medicineName
-          medicineTimings
-          medicineToBeTaken
-          medicineUnit
-          routeOfAdministration
-          __typename
-        }
-        symptoms {
-          symptom
-          since
-          howOften
-          severity
-          details
-          __typename
-        }
-        otherInstructions {
-          instruction
-          __typename
-        }
-        __typename
-      }
-    }
-  }
-  getPatientPrismMedicalRecords_V2(
-    patientId: $patientId
-    records: [PRESCRIPTION]
-  ) {
-    prescriptions {
+  query {
+    getPatientPrescriptions(patientId: $patientId, limit: 100) {
       response {
-        id
-        prescriptionName
-        date
-        prescribedBy
-        notes
-        prescriptionSource
-        source
-        siteDisplayName
-        fileUrl
-        prescriptionFiles {
+        doctorName
+        patientName
+        caseSheet {
+          notes
+          blobName
+          consultType
+          prescriptionGeneratedDate
+          diagnosis {
+            name
+            __typename
+          }
+          diagnosticPrescription {
+            itemname
+            __typename
+          }
+          doctorId
+          doctorType
+          followUp
+          followUpAfterInDays
+          followUpDate
+          followUpConsultType
           id
-          fileName
-          mimeType
-          content
-          byteContent
+          medicinePrescription {
+            medicineConsumptionDurationInDays
+            medicineDosage
+            id
+            medicineCustomDetails
+            medicineConsumptionDurationUnit
+            medicineFormTypes
+            medicineFrequency
+            medicineInstructions
+            medicineName
+            medicineTimings
+            medicineToBeTaken
+            medicineUnit
+            routeOfAdministration
+            __typename
+          }
+          symptoms {
+            symptom
+            since
+            howOften
+            severity
+            details
+            __typename
+          }
+          otherInstructions {
+            instruction
+            __typename
+          }
           __typename
         }
+      }
+    }
+    getPatientPrismMedicalRecords_V2(patientId: $patientId, records: [PRESCRIPTION]) {
+      prescriptions {
+        response {
+          id
+          prescriptionName
+          date
+          prescribedBy
+          notes
+          prescriptionSource
+          source
+          siteDisplayName
+          fileUrl
+          prescriptionFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+            __typename
+          }
+          __typename
+        }
+        errorCode
+        errorMsg
+        errorType
         __typename
       }
-      errorCode
-      errorMsg
-      errorType
-      __typename
     }
   }
-}
-`
+`;
 
 export const ADD_PATIENT_PRESCRIPTION_RECORD = gql`
   mutation addPatientPrescriptionRecord($AddPrescriptionRecordInput: AddPrescriptionRecordInput) {
