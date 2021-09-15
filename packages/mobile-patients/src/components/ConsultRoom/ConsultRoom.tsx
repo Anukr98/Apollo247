@@ -770,7 +770,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [vaccinationSubscriptionName, setVaccinationSubscriptionName] = useState<string>('');
   const [vaccinationSubscriptionPlanId, setVaccinationSubscriptionPlanId] = useState<string>('');
   const [agreedToVaccineTnc, setAgreedToVaccineTnc] = useState<string>('');
-  const [userSubscriptionLoading, setUserSubscriptionLoading] = useState<boolean>(false);
 
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
@@ -1078,6 +1077,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setWEGUserAttributes();
       }
       getUserBanners();
+
       getUserSubscriptionsWithBenefits();
     } catch (e) {}
   }, [currentPatient]);
@@ -1672,7 +1672,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const getUserSubscriptionsWithBenefits = () => {
-    setUserSubscriptionLoading(true);
     const mobile_number = g(currentPatient, 'mobileNumber');
     mobile_number &&
       client
@@ -1748,10 +1747,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               setCircleSubscription && setCircleSubscription(circleSubscription);
             }
           }
-          setUserSubscriptionLoading(false);
         })
         .catch((e) => {
-          setUserSubscriptionLoading(false);
           CommonBugFender('ConsultRoom_getUserSubscriptionsWithBenefits', e);
         });
   };
@@ -3002,6 +2999,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           navigation={props.navigation}
           planActivationCallback={() => {
             getUserSubscriptionsByStatus();
+
             getUserSubscriptionsWithBenefits();
             getUserBanners();
             circleActivatedRef.current = false;
@@ -3463,47 +3461,40 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderRemoteConfigItems = (item: any, index: number) => {
-    const isCorporateLoading =
-      userSubscriptionLoading && item?.action === string.vaccineBooking.CORPORATE_VACCINATION;
-
     return (
       <View
         key={index}
         style={{ marginBottom: index === covidVaccineCtaV2?.data?.length - 1 ? 15 : 0 }}
       >
-        {isCorporateLoading ? (
-          CovidButtonShimmer()
-        ) : (
-          <CovidButton
-            iconStyle={styles.covidIconStyle}
-            iconUrl={item?.colorReverse ? item?.reverseIconPath : item?.iconPath}
-            buttonStyle={[
-              styles.covidBtn,
-              {
-                backgroundColor: item?.colorReverse ? theme.colors.APP_YELLOW : theme.colors.WHITE,
-              },
-            ]}
-            iconBase={VaccineTracker}
-            btnTitleStyle={[
-              styles.covidBtnTitle,
-              {
-                color: item?.colorReverse ? theme.colors.WHITE : theme.colors.APP_YELLOW,
-              },
-            ]}
-            title={
-              item?.title == 'Book Vaccination Slot'
-                ? corporateSubscriptions == undefined || corporateSubscriptions.length == 0
-                  ? 'Book Vaccination Slot'
-                  : corporateSubscriptions?.length >= 0 && !!vaccinationCmsIdentifier
-                  ? 'Book Vaccination Slot'
-                  : 'Book Vaccination Slot'
-                : item?.title
-            }
-            onPress={() => {
-              item?.docOnCall ? onPressCallDoctor(item) : handleCovidCTA(item);
-            }}
-          />
-        )}
+        <CovidButton
+          iconStyle={styles.covidIconStyle}
+          iconUrl={item?.colorReverse ? item?.reverseIconPath : item?.iconPath}
+          buttonStyle={[
+            styles.covidBtn,
+            {
+              backgroundColor: item?.colorReverse ? theme.colors.APP_YELLOW : theme.colors.WHITE,
+            },
+          ]}
+          iconBase={VaccineTracker}
+          btnTitleStyle={[
+            styles.covidBtnTitle,
+            {
+              color: item?.colorReverse ? theme.colors.WHITE : theme.colors.APP_YELLOW,
+            },
+          ]}
+          title={
+            item?.title == 'Book Vaccination Slot'
+              ? corporateSubscriptions == undefined || corporateSubscriptions.length == 0
+                ? 'Book Vaccination Slot'
+                : corporateSubscriptions?.length >= 0 && !!vaccinationCmsIdentifier
+                ? 'Book Vaccination Slot'
+                : 'Book Vaccination Slot'
+              : item?.title
+          }
+          onPress={() => {
+            item?.docOnCall ? onPressCallDoctor(item) : handleCovidCTA(item);
+          }}
+        />
       </View>
     );
   };
