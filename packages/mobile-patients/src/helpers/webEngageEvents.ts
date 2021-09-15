@@ -486,6 +486,7 @@ export enum WebEngageEventName {
   MEMBER_DETAILS_SAVED = 'Member Details Saved',
   VACCINE_REGISTRATION_COMPLETED = 'Vaccine Registeration Completed',
   ERROR_WHILE_FETCHING_JWT_TOKEN = 'Error while Fetching JWT token',
+  AUTHTOKEN_UPDATED = 'Authtoken Updated',
 }
 
 export interface PatientInfo {

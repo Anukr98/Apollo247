@@ -14,7 +14,7 @@ import _isEmpty from 'lodash/isEmpty';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
-import { Platform, Alert } from 'react-native';
+import { Platform, AppState, AppStateStatus } from 'react-native';
 import firebaseAuth from '@react-native-firebase/auth';
 import DeviceInfo from 'react-native-device-info';
 import {
@@ -110,6 +110,19 @@ const webengage = new WebEngage();
 export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
   const hasAuthToken = !_isEmpty(authToken);
+  const auth = firebaseAuth();
+
+  useEffect(() => {
+    AppState.addEventListener('change', handleAppStateChange);
+    return () => {
+      AppState.removeEventListener('change', handleAppStateChange);
+    };
+  }, []);
+
+  const handleAppStateChange = (nextAppState: AppStateStatus) => {
+    //validate authtoken when ever app moves from background state to active
+    nextAppState == 'active' && validateAuthToken();
+  };
 
   useEffect(() => {
     // listening to change in authtoken
@@ -122,6 +135,9 @@ export const AuthProvider: React.FC = (props) => {
           throw error;
         });
         setAuthToken(jwt);
+        postWebEngageEvent(WebEngageEventName.AUTHTOKEN_UPDATED, {
+          PatientId: currentPatientId,
+        });
       }
     });
     // unsubscribe on unmounting
@@ -167,20 +183,7 @@ export const AuthProvider: React.FC = (props) => {
       }
     }
   };
-  const validateAndUpdate = (authToken: any) => {
-    if (authToken) {
-      const jwtDecode = require('jwt-decode');
-      const millDate = jwtDecode(authToken).exp;
-      const currentTime = new Date().valueOf() / 1000;
-      if (millDate < currentTime) {
-        getFirebaseToken();
-      } else {
-        setAuthToken(authToken);
-      }
-    } else {
-      getFirebaseToken();
-    }
-  };
+
   const buildApolloClient = (authToken: string) => {
     if (authToken) {
       const jwtDecode = require('jwt-decode');
@@ -245,8 +248,6 @@ export const AuthProvider: React.FC = (props) => {
   const [signInError, setSignInError] = useState<AuthContextProps['signInError']>(false);
   const [mobileAPICalled, setMobileAPICalled] = useState<AuthContextProps['signInError']>(false);
 
-  const auth = firebaseAuth();
-
   const [allPatients, setAllPatients] = useState<AuthContextProps['allPatients']>(null);
 
   const { setSavePatientDetails, setSavePatientDetailsWithHistory } = useAppCommonData();
@@ -285,10 +286,6 @@ export const AuthProvider: React.FC = (props) => {
     }
   }, [auth]);
 
-  useEffect(() => {
-    validateAndUpdate(authToken);
-  }, [auth]);
-
   const getFirebaseToken = () => {
     try {
       return new Promise(async (resolve, reject) => {
@@ -297,7 +294,6 @@ export const AuthProvider: React.FC = (props) => {
           if (user && !authStateRegistered) {
             setIsSigningIn(true);
             authStateRegistered = true;
-
             const jwt = await user.getIdToken(true).catch((error) => {
               setIsSigningIn(false);
               setSignInError(true);
@@ -306,10 +302,11 @@ export const AuthProvider: React.FC = (props) => {
               reject(error);
               throw error;
             });
-
             setAuthToken(jwt);
+            postWebEngageEvent(WebEngageEventName.AUTHTOKEN_UPDATED, {
+              PatientId: currentPatientId,
+            });
             AsyncStorage.setItem('jwt', JSON.stringify(jwt));
-
             apolloClient = buildApolloClient(jwt);
             authStateRegistered = false;
             resolve(jwt);
