@@ -183,7 +183,6 @@ export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetail
 
 export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress {
   __typename: "MedicineOrderOMSDetailsResult";
-  tatBreached: Boolean;
   medicineOrderDetails: getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails | null;
 }
 

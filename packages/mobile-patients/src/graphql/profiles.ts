@@ -1510,6 +1510,7 @@ export const SAVE_MEDICINE_ORDER_OMS_V2 = gql`
       errorMessage
       transactionId
       isCodEligible
+      codMessage
       orders {
         id
         orderAutoId
@@ -1529,6 +1530,7 @@ export const SAVE_ORDER_WITH_SUBSCRIPTION = gql`
       errorMessage
       transactionId
       isCodEligible
+      codMessage
       orders {
         id
         orderAutoId
@@ -1918,7 +1920,6 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
       orderAutoId: $orderAutoId
       billNumber: $billNumber
     ) {
-      tatBreached
       medicineOrderDetails {
         id
         appointmentId
@@ -2224,7 +2225,6 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT = gql`
       orderAutoId: $orderAutoId
       billNumber: $billNumber
     ) {
-      tatBreached:Boolean
       medicineOrderDetails {
         medicineOrderShipments {
           trackingNo
