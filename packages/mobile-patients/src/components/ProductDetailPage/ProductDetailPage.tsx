@@ -101,6 +101,7 @@ import {
   pharmaSubstitutionVariables,
   pharmaSubstitution_pharmaSubstitution_substitutes,
 } from '@aph/mobile-patients/src/graphql/types/pharmaSubstitution';
+import { SuggestedQuantityNudge } from '@aph/mobile-patients/src/components/SuggestedQuantityNudge/SuggestedQuantityNudge';
 
 export type ProductPageViewedEventProps = Pick<
   WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED],
@@ -197,6 +198,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const [isPharma, setIsPharma] = useState<boolean>(false);
   const [userType, setUserType] = useState<string>('');
   const [circleID, setCircleID] = useState<string>('');
+  const [showSuggestedQuantityNudge, setShowSuggestedQuantityNudge] = useState<boolean>(false);
+  const [shownNudgeOnce, setShownNudgeOnce] = useState<boolean>(false);
+  const [currentProductIdInCart, setCurrentProductIdInCart] = useState<string>(null);
+  const [currentProductQuantityInCart, setCurrentProductQuantityInCart] = useState<number>(0);
 
   const { special_price, price, type_id, subcategory } = medicineDetails;
   const finalPrice = price - special_price ? special_price : price;
@@ -236,6 +241,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
     };
+    setShowSuggestedQuantityNudge(false);
   }, []);
 
   useEffect(() => {
@@ -307,6 +313,16 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       getProductSubstitutes(sku);
     }
   }, [sku, isPharma, pincode, props.navigation, medicineDetails]);
+
+  useEffect(() => {
+    if (cartItems.find(({ id }) => id?.toUpperCase() === currentProductIdInCart)) {
+      if (shownNudgeOnce === false) {
+        setShowSuggestedQuantityNudge(true);
+      }
+    }
+  }, [cartItems, currentProductQuantityInCart, currentProductIdInCart]);
+
+  useEffect(() => {}, [setShowSuggestedQuantityNudge]);
 
   const getMedicineDetails = (zipcode?: string, pinAcdxCode?: string, selectedSku?: string) => {
     setLoading(true);
@@ -555,7 +571,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         'product id (SKUID)': sku?.toUpperCase(),
         'product name': name,
         Stockavailability: stock_availability,
-        CategoryID: category_id || undefined,
+        'Category ID': category_id || undefined,
         CategoryName: productPageViewedEventProps?.CategoryName || undefined,
         'Section Name': productPageViewedEventProps?.SectionName || undefined,
         'Circle Member':
@@ -573,7 +589,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         MaxOrderQuantity: MaxOrderQty,
         MRP: price,
         SpecialPrice: special_price || undefined,
-        CircleCashback: Number(cashback) || 0,
+        'Circle Cashback': Number(cashback) || 0,
         SubCategory: subcategory || '',
       };
       if (movedFrom === 'deeplink') {
@@ -833,7 +849,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       })
       .finally(() => setLoading!(false));
   };
-
   const onAddCartItem = (
     item?: pharmaSubstitution_pharmaSubstitution_substitutes,
     isFromFastSubstitutes?: boolean
@@ -852,7 +867,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       url_key,
     } = medicine_details;
     if (cartItems.find(({ id }) => id?.toUpperCase() === sku?.toUpperCase())) {
-      updateCartItem?.({ id: sku, quantity: productQuantity });
+      updateCartItem?.({
+        id: sku,
+        quantity: productQuantity,
+      });
+      setCurrentProductQuantityInCart(productQuantity);
     } else {
       addCartItem!({
         id: sku,
@@ -874,6 +893,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         url_key,
         subcategory,
       });
+      setCurrentProductIdInCart(sku);
+      setCurrentProductQuantityInCart(productQuantity);
     }
     postwebEngageAddToCartEvent(
       medicineDetails,
@@ -1023,7 +1044,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_NOTIFY_ME] = {
       'product name': medicineDetails?.name,
       'product id': medicineDetails?.sku,
-      'category ID': medicineDetails?.category_id || undefined,
+      'Category ID': medicineDetails?.category_id || '',
       price: medicineDetails?.price,
       pincode: pincode,
       serviceable: notServiceable ? 'No' : 'Yes',
@@ -1216,6 +1237,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 />
               )}
               {renderDisclaimerMessage()}
+
               <View style={{ height: 130 }} />
             </KeyboardAwareScrollView>
           ) : (
@@ -1242,6 +1264,22 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         </View>
         {!loading && showProceedButton && renderBottomButton()}
       </SafeAreaView>
+      {showSuggestedQuantityNudge &&
+        shownNudgeOnce === false &&
+        !!medicineDetails?.suggested_qty &&
+        +medicineDetails?.suggested_qty > 1 &&
+        currentProductQuantityInCart < +medicineDetails?.suggested_qty && (
+          <SuggestedQuantityNudge
+            suggested_qty={medicineDetails?.suggested_qty}
+            sku={medicineDetails?.sku}
+            packForm={medicineDetails?.pack_form}
+            setShownNudgeOnce={setShownNudgeOnce}
+            showSuggestedQuantityNudge={showSuggestedQuantityNudge}
+            setShowSuggestedQuantityNudge={setShowSuggestedQuantityNudge}
+            setCurrentProductQuantityInCart={setCurrentProductQuantityInCart}
+          />
+        )}
+
       {showAddedToCart && (
         <Overlay
           onRequestClose={() => {}}

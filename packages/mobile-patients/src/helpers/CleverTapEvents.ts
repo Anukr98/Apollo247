@@ -175,9 +175,10 @@ export enum CleverTapEventName {
   DIAGNOSTIC_PHLEBO_CALLING_CLICKED = 'Diagnostic phlebo calling clicked',
   DIAGNOSTIC_TRACK_PHLEBO_CLICKED = 'Diagnostic track phlebo clicked',
   DIGNOSTIC_PAYMENT_ABORTED = 'Diagnostic payment aborted',
-  DIAGNOSITC_MODIFY_CLICKED = 'Diagnositic modify order clicked',
+  DIAGNOSITC_MODIFY_CLICKED = 'Diagnostic modify order clicked',
   DIAGNOSTIC_MODIFY_ORDER = 'Diagnostic modify order',
   DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED = 'Diagnostic product listing page viewed',
+  DIAGNOSTIC_PRESCRIPTION_SUBMITTED = 'Diagnostic prescription submitted',
 
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
@@ -515,6 +516,21 @@ export enum CleverTapEventName {
   PHR_CLICK_VACCINATION = 'PHR_CLICK_VACCINATION',
 
 
+
+  HOME_ICON_CLICKED = 'Homepage logo Clicked',
+  //Home Page Event
+  USER_PROFILE_IMAGE_NAME_CLICKED = 'User Profile Image name Clicked',
+  ADD_MEMBER_PROFILE_CLICKED = 'Add Members Profile Clicked',
+  SAVE_MEMBER_PROFILE_CLICKED = 'Save Member Profile Clicked',
+  CONFIRM_MEMBER_PROFILE_CLICKED = 'Confirm Member Profile Clicked',
+  LOGIN_DONE = 'Login Done',
+
+  //Auth Clever tap events
+  GET_OTP_ON_CALL = 'Get OTP On call Clicked',
+  LOGIN_VIA_TRUECALLER = 'Login Via Truecaller Clicked',
+  LOGIN_WITH_TRUECALLER_CONTINUE = 'Login with true caller continue clicked',
+  LOGIN_WITH_TRUECALLER_SKIPPED = 'Login with true caller skip clicked',
+
   //App Review and Rating on Playstore
   PLAYSTORE_APP_REVIEW_AND_RATING = 'Playstore app review and rating',
   APP_REVIEW_AND_RATING_TO_PLAYSTORE = 'Playstore review popup showed',
@@ -610,7 +626,7 @@ export interface ConsultRoomDoctorPatientInfo {
 }
 
 export interface AutoSelectLocation extends UserInfo {
-  serviceability: boolean;
+  Serviceability: boolean;
   pincode: string;
 }
 
@@ -776,6 +792,7 @@ export interface ItemSearchedOnLanding extends DiagnosticUserInfo {
   '# Results appeared': number;
   'Item in Results'?: object[];
   Popular?: 'Yes' | 'No';
+  'Circle user'?: string;
 }
 
 export interface ItemClickedOnLanding extends DiagnosticUserInfo {
@@ -786,6 +803,7 @@ export interface DiagnosticPinCode extends DiagnosticUserInfo {
   Mode: string;
   Pincode: number | string;
   Serviceability: 'Yes' | 'No';
+  'Circle user'?: string
 }
 
 export interface DoctorFilterClick {
@@ -1059,32 +1077,32 @@ export interface CleverTapEvents {
   [CleverTapEventName.PHARMACY_NOTIFY_ME]: {
     'product name': string;
     'product id': string; // (SKUID)
-    'category ID': string;
+    'Category ID': string;
     price: number;
     pincode: string;
     serviceable: YesOrNo;
   };
 
   [CleverTapEventName.PHARMACY_CATEGORY_VIEWED]: {
-    'category name'?: string;
-    'category ID'?: string;
+    'Category Name'?: string;
+    'Category ID'?: string;
     Source: 'Home' | 'Category Tree';
     'Section Name'?: string;
   };
   [CleverTapEventName.CATEGORY_FILTER_CLICKED]: {
-    'category name': string;
-    'category ID': string;
+    'Category Name': string;
+    'Category ID': string;
   };
   [CleverTapEventName.CATEGORY_FILTER_APPLIED]: {
-    'category name': string;
-    'category ID': string;
+    'Category Name': string;
+    'Category ID': string;
     discount: string;
     'sort by': string;
     price: string;
   };
   [CleverTapEventName.CATEGORY_LIST_GRID_VIEW]: {
-    'Category name'?: string;
-    'Category id'?: string;
+    'Category Name'?: string;
+    'Category ID'?: string;
     Type: 'Grid' | 'List';
     Source: 'Search' | 'Category';
   };
@@ -1097,7 +1115,7 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.PHARMACY_STORE_SELECTED_SUCCESS]: {
     Pincode: string;
-    'Store Id': string;
+    'Store ID': string;
     'Store Name': string;
     'Store Number': string;
     'Store Address': string;
@@ -1121,8 +1139,8 @@ export interface CleverTapEvents {
     | 'PDP Fast Substitutes';
     Brand?: string;
     'Brand ID'?: string;
-    'category name'?: string;
-    'category ID'?: string;
+    'Category Name'?: string;
+    'Category ID'?: string;
     Section?: string;
     'Section Name'?: string;
     af_revenue?: number;
@@ -1175,13 +1193,13 @@ export interface CleverTapEvents {
     'Delivery charge': number;
     'Shipping Charges': number;
     'Net after discount': number;
-    'Prescription Needed?': YesOrNo;
+    'Prescription Required?': YesOrNo;
     'Cart ID'?: string; // we don't have cartId before placing order
     'Mode of Delivery': 'Home' | 'Pickup' | 'Home Visit' | 'Clinic Visit';
     'Delivery Date Time'?: string; // Optional (only if Home)
-    'Pin Code': string | number;
+    'Pincode': string | number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
-    'Store Id'?: string;
+    'Store ID'?: string;
     'Store Name'?: string;
     'Popup Shown'?: boolean;
     'No. of out of stock items'?: number;
@@ -1271,7 +1289,7 @@ export interface CleverTapEvents {
     'Cart ID'?: string | number; // Optional
     'Service Area': 'Pharmacy' | 'Diagnostic';
     'Mode of Delivery'?: 'Home' | 'Pickup';
-    'Store Id'?: string;
+    'Store ID'?: string;
     'Store Name'?: string;
     'Store Number'?: string;
     'Store Address'?: string;
@@ -1279,7 +1297,7 @@ export interface CleverTapEvents {
     af_currency: string;
     'Circle Member'?: PharmacyCircleMemberValues;
     'Circle Membership Value'?: number | null;
-    'Circle Cashback amount': number;
+    'Circle Cashback Amount': number;
     'Cart Items'?: string | undefined;
     'User Type'?: PharmaUserStatus;
     'Split Cart'?: YesOrNo;
@@ -1299,7 +1317,7 @@ export interface CleverTapEvents {
     'Patient UHID': string;
     'Mobile Number': string;
     'Customer ID': string;
-    serviceability: string;
+    Serviceability: string;
     pincode: string;
     source: string;
   };
@@ -1336,7 +1354,7 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED]: {
     'Order amount': string | number;
-    'Order id': string;
+    'Order ID': string;
     'Order status'?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR]: DiagnosticPinCode;
@@ -1346,6 +1364,7 @@ export interface CleverTapEvents {
     Source: 'Home Page';
     'Section Name': string;
     'Category Name'?: string;
+    'Circle user'?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_TEST_DESCRIPTION]: {
     Source:
@@ -1363,12 +1382,13 @@ export interface CleverTapEvents {
     'Patient UHID': string;
     'Item ID': string | number;
     'Item Price'?: number | string;
+    'Circle user'?: string;
   };
 
   [CleverTapEventName.DIAGNOSTIC_CART_VIEWED]: {
     //this is already done
     'Total items in cart': number;
-    'Prescription Needed?': 'Yes' | 'No';
+    'Prescription Required?': 'Yes' | 'No';
     'Delivery charge'?: number;
     'Coupon code used'?: string;
     'Total Discount': number;
@@ -1376,6 +1396,7 @@ export interface CleverTapEvents {
     'Cart Items': object[];
     Pincode: string | number;
     UHID: string;
+    'Circle user': string;
   };
   [CleverTapEventName.DIAGNOSTIC_AREA_SELECTED]: {
     'Address Pincode': number;
@@ -1388,6 +1409,7 @@ export interface CleverTapEvents {
     'Slot selected': 'Manual' | 'Automatic';
     'Slot available': 'Yes' | 'No';
     UHID: string;
+    'Circle user': string;
   };
   [CleverTapEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED]: {
     'Patient Name selected': string;
@@ -1398,13 +1420,14 @@ export interface CleverTapEvents {
     'Prescription Uploaded?': boolean;
     'Prescription Mandatory?': boolean;
     'Mode of Sample Collection': 'Home Visit' | 'Clinic Visit';
-    'Pin Code': string | number;
+    'Pincode': string | number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
     'Area Name': string;
     'Area id': string | number;
     'Home collection charges'?: number;
     Discount?: number;
     'Collection Time Slot': string;
+    'Circle user': string;
   };
   [CleverTapEventName.DIAGNOSTIC_TRACK_ORDER_VIEWED]: {
     'Patient UHID': string;
@@ -1442,13 +1465,14 @@ export interface CleverTapEvents {
     | 'Category page'
     | 'Prescription';
     Section?: string;
+    'Circle user'?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order id': string | number;
     Pincode: string | number;
     'Patient UHID': string;
     'Order amount': number; // Optional
-    'Payment mode'?: 'Cash' | 'Prepaid'; // Optional
+    'Payment Mode'?: 'Cash' | 'Prepaid'; // Optional
     'Circle discount'?: number;
     'Appointment Date'?: string;
     'Appointment time'?: string;
@@ -1477,12 +1501,14 @@ export interface CleverTapEvents {
     position: number;
     itemId: number;
     'Banner title': string;
+    'Circle user': string;
   };
   [CleverTapEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE]: {
     'Selection type': 'New' | 'Existing';
     Serviceability: 'Yes' | 'No';
     Pincode: string | number;
     Source: 'Home page' | 'Cart page';
+    'Circle user': string,
   };
   [CleverTapEventName.DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE]: {
     'Item ID': string | number;
@@ -1500,10 +1526,12 @@ export interface CleverTapEvents {
     'Slot Time': string;
     'Slot Date': string;
     'Order id': string;
+    'Circle user': string;
   };
   [CleverTapEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED]: {
     UHID: string;
     'Order amount': number;
+    'Circle user': string;
   };
   [CleverTapEventName.DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED]: {
     Rating: string | number;
@@ -1532,12 +1560,19 @@ export interface CleverTapEvents {
     UHID: string;
     'Order id': string;
     'Order status': string;
+    'Circle user': string
   };
   [CleverTapEventName.DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED]: {
     Type: 'Category' | 'Widget';
     Source: 'Home' | 'Deeplink' | 'Details page' | 'Cart page';
-    'Category name': '';
+    'Category Name': '';
     'Section name': '';
+  };
+  [CleverTapEventName.DIAGNOSTIC_PRESCRIPTION_SUBMITTED]: {
+    Source: string;
+    'PrescriptionUrl': any;
+    'Item name': string;
+    'Circle user': string
   };
 
   // ********** ConsultEvents ********** \\
@@ -1892,7 +1927,7 @@ export interface CleverTapEvents {
     'Order date'?: string;
     'Order type': 'Non Cart' | 'Cart' | 'Offline';
     'Customer ID': string;
-    'Delivery date'?: string;
+    'Delivery Date'?: string;
     'Mobile number': string;
     'Order status': MEDICINE_ORDER_STATUS;
   };
@@ -2434,7 +2469,7 @@ export interface CleverTapEvents {
     /**
      * Category ID & Category Name is applicable if customers clicks on products from any category (all categories of shop by category or health areas)
      */
-    CategoryID?: string;
+    'Category ID'?: string;
     CategoryName?: string;
     /**
      * Section Name is applicable if customer clicked on the product from the homepage product widgets like Hot sellers, Recommended products
@@ -2452,7 +2487,7 @@ export interface CleverTapEvents {
     MaxOrderQuantity?: number;
     MRP?: number;
     SpecialPrice?: number | null;
-    CircleCashback?: number;
+    'Circle Cashback'?: number;
     SubCategory: string;
   };
   [CleverTapEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {

@@ -159,8 +159,8 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                         ? nameFormater(item?.diagnostics?.itemName!, 'title')
                         : ''}{' '}
                     </Text>
+                    {!!item?.editOrderID ? renderNewTag() : null}
                   </View>
-                  {!!item?.editOrderID ? renderNewTag() : null}
                   {index == 1 &&
                     filterOrderLineItem?.length - 2 > 0 &&
                     renderShowMore(filterOrderLineItem, item?.itemName!)}
@@ -349,6 +349,8 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       : false;
     const isCallingEnabled = !!phlObj ? phlObj?.allowCalling : false;
     const showVaccinationStatus = !!phlObj?.diagnosticPhlebotomists?.vaccinationStatus;
+    const isPhleboETAElapsed = !!phlObj && phlObj?.isPhleboETAElapsed;
+    const phleboETAElapsedMessage = phlObj?.phleboETAElapsedMessage;
 
     return (
       <>
@@ -404,7 +406,11 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
               <View style={styles.otpContainer}>
                 <View style={styles.etaContainer}>
                   <LocationOutline style={styles.locationIcon} />
-                  <Text style={styles.otpTextStyle}>Apollo agent will arrive by {phleboEta}</Text>
+                  <Text style={styles.otpTextStyle}>
+                    {isPhleboETAElapsed
+                      ? phleboETAElapsedMessage
+                      : `Apollo agent will arrive by ${phleboEta}`}
+                  </Text>
                 </View>
                 {phleboTrackLink ? (
                   <TouchableOpacity
@@ -641,7 +647,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     flexDirection: 'row',
     marginTop: 20,
-    marginBottom: '2%',
+    marginBottom: '1%',
     minHeight: 40,
   },
   testForText: {

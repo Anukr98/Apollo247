@@ -34,8 +34,9 @@ import {
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 const screenWidth = Dimensions.get('window').width;
-const CARD_WIDTH = screenWidth * 0.45;
+const CARD_WIDTH = screenWidth > 350 ? screenWidth * 0.45 : screenWidth * 0.5;
 const CARD_HEIGHT = 230; //210
 export interface ItemCardProps {
   onPress?: (item: any) => void;
@@ -71,6 +72,8 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     onPressAddToCartFromCart,
     onPressRemoveItemFromCart,
   } = props;
+  const { currentPatient } = useAllCurrentPatients();
+  const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
 
   let actualItemsToShow =
     source === 'Cart page'
@@ -259,7 +262,8 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     return (
       <View style={mainViewStyle}>
         <Text style={textStyle}>
-          {text} {string.common.Rs} {convertNumberToDecimal(price)}
+          {text} {string.common.Rs}
+          {convertNumberToDecimal(price)}
         </Text>
       </View>
     );
@@ -303,7 +307,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
       <View style={{ flexDirection: 'row', marginVertical: '5%' }}>
         {priceToShow ? (
           <Text style={styles.mainPriceText}>
-            {`${string.common.Rs} ${convertNumberToDecimal(priceToShow)}`}
+            {`${string.common.Rs}${convertNumberToDecimal(priceToShow)}`}
           </Text>
         ) : (
           renderItemPriceShimmer()
@@ -311,7 +315,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
         {(!isCircleSubscribed && promoteCircle && priceToShow == slashedPrice) ||
         priceToShow == slashedPrice ? null : slashedPrice ? (
           <Text style={styles.slashedPriceText}>
-            {`${string.common.Rs} ${convertNumberToDecimal(slashedPrice)}`}
+            {`${string.common.Rs}${convertNumberToDecimal(slashedPrice)}`}
           </Text>
         ) : null}
       </View>
@@ -339,7 +343,9 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
       widgetType === string.diagnosticCategoryTitle.categoryGrid ||
         widgetType == string.diagnosticCategoryTitle.category
         ? 'Category page'
-        : data?.diagnosticWidgetTitle
+        : data?.diagnosticWidgetTitle,
+      currentPatient,
+      isDiagnosticCircleSubscription
     );
     addCartItem?.({
       id: `${item?.itemId}`,
@@ -366,7 +372,14 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
   }
 
   function postHomePageWidgetClicked(name: string, id: string, section: string) {
-    DiagnosticHomePageWidgetClicked(section, name, id);
+    DiagnosticHomePageWidgetClicked(
+      currentPatient,
+      section,
+      name,
+      id,
+      '',
+      isDiagnosticCircleSubscription
+    );
   }
 
   function onPress(item: any, packageCalculatedMrp: number, pricesForItem: any) {
@@ -550,7 +563,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
     alignItems: 'flex-start',
     marginTop: 16,
-    marginBottom: 20,
+    marginBottom: 16,
   },
   imagePlaceholderStyle: { backgroundColor: '#f7f8f5', opacity: 0.5, borderRadius: 5 },
   imageStyle: { height: 40, width: 40, marginBottom: 8 },

@@ -40,6 +40,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import { CartIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { Badge } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import { SuggestedQuantityNudge } from '@aph/mobile-patients/src/components/SuggestedQuantityNudge/SuggestedQuantityNudge';
 
 type RecentSearch = getPatientPastMedicineSearches_getPatientPastMedicineSearches;
 
@@ -51,6 +52,12 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
   const [isSearchFocused, setSearchFocused] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [itemsAddingToCart, setItemsAddingToCart] = useState<{ [key: string]: boolean }>({});
+  const [showSuggestedQuantityNudge, setShowSuggestedQuantityNudge] = useState<boolean>(false);
+  const [shownNudgeOnce, setShownNudgeOnce] = useState<boolean>(false);
+  const [currentProductIdInCart, setCurrentProductIdInCart] = useState<string>(null);
+  const [currentProductQuantityInCart, setCurrentProductQuantityInCart] = useState<number>(0);
+  const [itemPackForm, setItemPackForm] = useState<string>('');
+  const [suggestedQuantity, setSuggestedQuantity] = useState<string>(null);
 
   const { currentPatient } = useAllCurrentPatients();
   const {
@@ -103,6 +110,22 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    if (cartItems.find(({ id }) => id?.toUpperCase() === currentProductIdInCart)) {
+      if (shownNudgeOnce === false) {
+        setShowSuggestedQuantityNudge(true);
+      }
+    }
+  }, [cartItems, currentProductQuantityInCart, currentProductIdInCart]);
+
+  useEffect(() => {
+    if (showSuggestedQuantityNudge === false) {
+      setShownNudgeOnce(false);
+    }
+  }, [currentProductIdInCart]);
+
+  useEffect(() => {}, [showSuggestedQuantityNudge]);
+
   const debounce = useRef(_.debounce(onSearch, 300));
 
   const fireSearchEvent = (keyword: string, results: number) => {
@@ -319,6 +342,10 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
         () => setItemsAddingToCart({ ...itemsAddingToCart, [item.sku]: false }),
         pharmacyCircleAttributes!
       );
+      setCurrentProductIdInCart(item.sku);
+      item.pack_form ? setItemPackForm(item.pack_form) : setItemPackForm('');
+      item.suggested_qty ? setSuggestedQuantity(item.suggested_qty) : setSuggestedQuantity(null);
+      setCurrentProductQuantityInCart(1);
     };
 
     const products: MedicineSearchSuggestionItemProps[] = searchResults.map((item) => {
@@ -327,10 +354,12 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       const onPressAdd = () => {
         if (qty < item.MaxOrderQty) {
           updateCartItem!({ id, quantity: qty + 1 });
+          setCurrentProductQuantityInCart(qty + 1);
         }
       };
       const onPressSubstract = () => {
         qty == 1 ? removeCartItem!(id) : updateCartItem!({ id, quantity: qty - 1 });
+        setCurrentProductQuantityInCart(qty - 1);
       };
 
       return {
@@ -357,6 +386,21 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
         {renderSections()}
         {renderOverlay()}
       </View>
+      {showSuggestedQuantityNudge &&
+        shownNudgeOnce === false &&
+        !!suggestedQuantity &&
+        +suggestedQuantity > 1 &&
+        currentProductQuantityInCart < +suggestedQuantity && (
+          <SuggestedQuantityNudge
+            suggested_qty={suggestedQuantity}
+            sku={currentProductIdInCart}
+            packForm={itemPackForm}
+            setShownNudgeOnce={setShownNudgeOnce}
+            showSuggestedQuantityNudge={showSuggestedQuantityNudge}
+            setShowSuggestedQuantityNudge={setShowSuggestedQuantityNudge}
+            setCurrentProductQuantityInCart={setCurrentProductQuantityInCart}
+          />
+        )}
     </SafeAreaView>
   );
 };

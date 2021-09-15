@@ -1,4 +1,6 @@
 rootProject.name = 'ApolloPatient'
+include ':react-native-receive-sharing-intent'
+project(':react-native-receive-sharing-intent').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-receive-sharing-intent/android')
 include ':react-native-user-agent'
 project(':react-native-user-agent').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-user-agent/android')
 include ':react-native-in-app-review'

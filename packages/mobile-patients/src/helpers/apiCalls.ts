@@ -48,6 +48,7 @@ export interface MedicineProduct {
   banned?: 'Yes' | 'No';
   subcategory?: string | null;
   merchandising?: number | null;
+  suggested_qty: string | null;
 }
 
 export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
@@ -1164,6 +1165,16 @@ export const validateConsultCoupon = (data: any): Promise<AxiosResponse<any>> =>
   const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
   let url = `${baseUrl}/validate?mobile=${mobile}&email=${email}`;
   return Axios.post(url, data);
+};
+
+export const fetchAutoApplyCoupon = (data: any): Promise<AxiosResponse<any>> => {
+  const { mobile, packageId, email, type } = data;
+  const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
+  let url = `${baseUrl}/autoapply?mobile=${mobile}&email=${email}&type=${type}`;
+  if (!!packageId) {
+    url += `&packageId=${packageId}`;
+  }  
+  return Axios.get(url);
 };
 
 export const userSpecificCoupon = (

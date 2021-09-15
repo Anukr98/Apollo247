@@ -224,7 +224,7 @@ const BUSINESS = {
   DIAGNOSTICS: 'Diagnostics',
 };
 
-export interface HelpChatProps extends NavigationScreenProps {}
+export interface HelpChatProps extends NavigationScreenProps { }
 
 export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
   let ticketId = props.navigation.getParam('ticketId');
@@ -494,7 +494,8 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
             ticket.
           </Text>
         ) : null}
-        {showWhatsappCTA ? renderWhatsapp() : null}
+        {/* Removing whatsapp support temporarily from help tickets */}
+        {/* {showWhatsappCTA ? renderWhatsapp() : null} */}
       </View>
     );
   };

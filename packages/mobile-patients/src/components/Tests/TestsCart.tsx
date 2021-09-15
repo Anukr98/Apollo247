@@ -713,7 +713,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       areaName,
       areaId,
       hcCharges,
-      slotTime
+      slotTime,
+      isDiagnosticCircleSubscription
     );
   }
 
@@ -1002,7 +1003,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               newAddressAddedCartPage != '' ? 'New' : 'Existing',
               'Yes',
               pinCodeFromAddress,
-              'Cart page'
+              'Cart page',
+              currentPatient,
+              isDiagnosticCircleSubscription
             );
             newAddressAddedCartPage != '' && setNewAddressAddedCartPage?.('');
           } else {
@@ -1025,7 +1028,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               newAddressAddedCartPage != '' ? 'New' : 'Existing',
               'No',
               pinCodeFromAddress,
-              'Cart page'
+              'Cart page',
+              currentPatient,
+              isDiagnosticCircleSubscription
             );
             newAddressAddedCartPage != '' && setNewAddressAddedCartPage?.('');
           }

@@ -152,12 +152,17 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
   const goToPaymentStatus = () => {
     const { status } = statusItemValues();
     const { item, paymentFor, patientId } = props;
-    props.navigationProps.navigate(AppRoutes.PaymentStatusScreen, {
+    const data = {
       item: item,
       paymentFor: paymentFor,
       status: status,
       patientId: patientId,
-    });
+    };
+    if(paymentFor == 'consult') {
+      props.navigationProps.navigate(AppRoutes.ConsultPaymentScreen, data);
+    } else {
+      props.navigationProps.navigate(AppRoutes.PaymentStatusScreen, data);
+    }
   };
   const { status } = statusItemValues();
   const borderRadiusValue = status === 'TXN_REFUND' ? 0 : 10;
