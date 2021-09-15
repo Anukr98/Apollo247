@@ -312,7 +312,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
   const renderTextInputAndCTAs = () => {
     const isDeliveryStatusQuery = selectedQueryId === helpSectionQueryId.deliveryStatus;
-    
+
     return [
       <TextInputComponent
         value={comments}
@@ -510,6 +510,19 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       data = data.filter((item) => item.id !== helpSectionQueryId.returnOrder);
     }
 
+    const showMessage = (tat: boolean) => {
+      if (tat) {
+        const str = string.needHelpQueryDetails.tatBreachedTrue;
+        const newStr = str.replace('{{medicineOrderStatus}}', medicineOrderStatus!);
+        return newStr;
+      } else {
+        const str = string.needHelpQueryDetails.tatBreachedFalse;
+        const newStr = str.replace('{{medicineOrderStatus}}', medicineOrderStatus!);
+        const finalStringToBeSend = newStr.replace('{{etd}}', etd);
+        return finalStringToBeSend;
+      }
+    };
+
     return (
       <>
         {orderDelayed ? (
@@ -517,11 +530,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
             {tatBreach ? (
               <>
                 <View style={styles.flatListContainer2}>
-                  <Text style={styles.flatListItem}>
-                    Your Order is {medicineOrderStatus}. Due to heavy order volumes, we are facing
-                    unexpected delays in shipping. We sincerely apologize for the inconvenience. We
-                    are working proactively to deliver at the earliest.
-                  </Text>
+                  <Text style={styles.flatListItem}>{showMessage(true)}</Text>
                   <TouchableOpacity
                     style={styles.trackStyle}
                     onPress={() => {
@@ -550,10 +559,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
             ) : (
               <>
                 <View style={styles.flatListContainer2}>
-                  <Text style={styles.flatListItem}>
-                    Your Order is {medicineOrderStatus}. You will receive your order by {etd}. We
-                    are working proactively to deliver at the earliest.
-                  </Text>
+                  <Text style={styles.flatListItem}>{showMessage(false)}</Text>
                   <TouchableOpacity
                     style={styles.trackStyle}
                     onPress={() => {
