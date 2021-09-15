@@ -65,7 +65,7 @@ import {
   getPatientPrescriptions,
   getPatientPrescriptionsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPatientPrescriptions';
-import { mimeType } from '../../helpers/mimeType';
+import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 const { width, height } = Dimensions.get('window');
 import LottieView from 'lottie-react-native';
 const GreenTickAnimation = '@aph/mobile-patients/src/components/Tests/greenTickAnimation.json'
