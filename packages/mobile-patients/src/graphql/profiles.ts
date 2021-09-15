@@ -5114,6 +5114,24 @@ export const GET_APPOINTMENT_INFO = gql`
   }
 `;
 
+export const GET_ORDER_INFO = gql`
+  query getOrderInternal($order_id: String!) {
+    getOrderInternal(order_id: $order_id) {
+      id
+      customer_id
+      payment_order_id
+      payment_status
+      total_amount
+      payment_status
+      PharmaOrderDetails {
+        medicineOrderDetails {
+          orderAutoId
+        }
+      }
+    }
+  }
+`;
+
 export const PROCESS_DIAG_COD_ORDER = gql`
   mutation processDiagnosticHCOrder($processDiagnosticHCOrderInput: ProcessDiagnosticHCOrderInput) {
     processDiagnosticHCOrder(processDiagnosticHCOrderInput: $processDiagnosticHCOrderInput) {

@@ -90,7 +90,13 @@ const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {
   source?: string;
-  businessLine: 'consult' | 'diagnostics' | 'pharma' | 'subscription' | 'vaccination';
+  businessLine:
+    | 'consult'
+    | 'diagnostics'
+    | 'pharma'
+    | 'subscription'
+    | 'vaccination'
+    | 'paymentLink';
 }
 
 export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
@@ -133,8 +139,11 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { healthCredits } = useFetchHealthCredits(businessLine);
   const { paymentMethods, cardTypes, fetching } = useGetPaymentMethods(paymentId);
   const { savedCards } = useFetchSavedCards(customerId);
-  const { clientAuthToken } = customerId && useGetClientAuthToken(customerId, businessLine);
+  const clientAuthToken = !!customerId
+    ? useGetClientAuthToken(customerId, businessLine)
+    : undefined;
   const [cred, setCred] = useState<any>(undefined);
+  const requestId = currentPatient?.id || customerId || 'apollo247';
 
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
 
@@ -328,8 +337,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const fecthPaymentOptions = async () => {
     const response: boolean = await isSDKInitialised();
     if (response) {
-      fetchPaymentMethods(currentPatient?.id);
-      fetchAvailableUPIApps(currentPatient?.id);
+      fetchPaymentMethods(requestId);
+      fetchAvailableUPIApps(requestId);
     }
   };
 
@@ -412,9 +421,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   async function onPressBank(bankCode: string) {
     triggerWebengege('NetBanking-' + bankCode, 'NB');
     const token = await getClientToken();
-    token
-      ? InitiateNetBankingTxn(currentPatient?.id, token, paymentId, bankCode)
-      : renderErrorPopup();
+    token ? InitiateNetBankingTxn(requestId, token, paymentId, bankCode) : renderErrorPopup();
   }
 
   async function onPressWallet(wallet: string) {
@@ -422,15 +429,15 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     const token = await getClientToken();
     token
       ? wallet == 'PHONEPE' && phonePeReady
-        ? InitiateUPISDKTxn(currentPatient?.id, token, paymentId, wallet, 'ANDROID_PHONEPE')
-        : InitiateWalletTxn(currentPatient?.id, token, paymentId, wallet)
+        ? InitiateUPISDKTxn(requestId, token, paymentId, wallet, 'ANDROID_PHONEPE')
+        : InitiateWalletTxn(requestId, token, paymentId, wallet)
       : renderErrorPopup();
   }
 
   async function onPressCred() {
     const token = await getClientToken();
     const mobileNo = currentPatient?.mobileNumber.substring(3);
-    token ? InitiateCredTxn(currentPatient?.id, token, paymentId, mobileNo) : renderErrorPopup();
+    token ? InitiateCredTxn(requestId, token, paymentId, mobileNo) : renderErrorPopup();
   }
 
   async function onPressUPIApp(app: any) {
@@ -451,8 +458,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           '';
     token
       ? sdkPresent
-        ? InitiateUPISDKTxn(currentPatient?.id, token, paymentId, paymentMethod, sdkPresent)
-        : InitiateUPIIntentTxn(currentPatient?.id, token, paymentId, paymentCode)
+        ? InitiateUPISDKTxn(requestId, token, paymentId, paymentMethod, sdkPresent)
+        : InitiateUPIIntentTxn(requestId, token, paymentId, paymentCode)
       : renderErrorPopup();
   }
 
@@ -463,7 +470,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       const response = await verifyVPA(VPA);
       if (response?.data?.verifyVPA?.status == 'VALID') {
         const token = await getClientToken();
-        token ? InitiateVPATxn(currentPatient?.id, token, paymentId, VPA) : renderErrorPopup();
+        token ? InitiateVPATxn(requestId, token, paymentId, VPA) : renderErrorPopup();
       } else {
         setisTxnProcessing(false);
         setisVPAvalid(false);
@@ -476,17 +483,13 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   async function onPressNewCardPayNow(cardInfo: any, saveCard: boolean) {
     triggerWebengege('Card', 'CARD');
     const token = await getClientToken();
-    token
-      ? InitiateCardTxn(currentPatient?.id, token, paymentId, cardInfo, saveCard)
-      : renderErrorPopup();
+    token ? InitiateCardTxn(requestId, token, paymentId, cardInfo, saveCard) : renderErrorPopup();
   }
 
   async function onPressSavedCardPayNow(cardInfo: any, cvv: string) {
     triggerWebengege('Card', 'CARD');
     const token = await getClientToken();
-    token
-      ? InitiateSavedCardTxn(currentPatient?.id, token, paymentId, cardInfo, cvv)
-      : renderErrorPopup();
+    token ? InitiateSavedCardTxn(requestId, token, paymentId, cardInfo, cvv) : renderErrorPopup();
   }
 
   async function onPressPayByCash() {
@@ -614,6 +617,13 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           paymentId: paymentId,
         });
         break;
+      case 'paymentLink':
+        props.navigation.navigate(AppRoutes.PaymentConfirmation, {
+          orderId: orderDetails?.orderId,
+          paymentStatus: paymentStatus,
+          paymentId: paymentId,
+          amount: amount,
+        });
     }
   };
 

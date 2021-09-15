@@ -40,6 +40,8 @@ import {
   onCleverTapUserLogin,
   getUTMdataFromURL,
   postCleverTapEvent,
+  navigateToScreenWithHomeScreeninStack,
+  navigateToHome,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -51,6 +53,7 @@ import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@ap
 import {
   GET_APPOINTMENT_DATA,
   GET_PROHEALTH_HOSPITAL_BY_SLUG,
+  GET_ORDER_INFO,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
@@ -83,6 +86,8 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import {
   preFetchSDK,
   createHyperServiceObject,
+  initiateSDK,
+  terminateSDK,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import CleverTap from 'clevertap-react-native';
 import { CleverTapEventName } from '../helpers/CleverTapEvents';
@@ -150,7 +155,7 @@ export interface SplashScreenProps extends NavigationScreenProps { }
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { APP_ENV } = AppConfig;
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
-  const { setAllPatients, setMobileAPICalled } = useAuth();
+  const { setAllPatients, setMobileAPICalled, validateAuthToken, buildApolloClient } = useAuth();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [appState, setAppState] = useState(AppState.currentState);
   const [takeToConsultRoom, settakeToConsultRoom] = useState<boolean>(false);
@@ -458,8 +463,56 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       }
     } else if (routeName == 'prohealth') {
       fetchProhealthHospitalDetails(id!);
+    } else if (routeName == 'PaymentMethods') {
+      !!id ? fetchOrderInfo(id) : getData(routeName, id, isCall, timeout, mediaSource);
     } else {
       getData(routeName, id, isCall, timeout, mediaSource);
+    }
+  };
+
+  const initiateHyperSDK = (cusId: any, merchantId: string) => {
+    try {
+      terminateSDK();
+      createHyperServiceObject();
+      initiateSDK(cusId, cusId, merchantId);
+    } catch (error) {
+      CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
+    }
+  };
+
+  const fetchOrderInfo = async (paymentId: string) => {
+    try {
+      const authToken: string = await validateAuthToken();
+      const apolloClient = buildApolloClient(authToken);
+      const response = await apolloClient.query({
+        query: GET_ORDER_INFO,
+        variables: { order_id: paymentId },
+        fetchPolicy: 'no-cache',
+      });
+      const paymentStatus = response?.data?.getOrderInternal?.payment_status;
+      if (paymentStatus == 'PAYMENT_NOT_INITIATED') {
+        const currentPatientId: any = await AsyncStorage.getItem('selectUserId');
+        const isPharmaOrder = !!response?.data?.getOrderInternal?.PharmaOrderDetails
+          ?.medicineOrderDetails?.length
+          ? true
+          : false;
+        const merchantId = isPharmaOrder
+          ? AppConfig.Configuration.pharmaMerchantId
+          : AppConfig.Configuration.merchantId;
+        initiateHyperSDK(currentPatientId, merchantId);
+        const params = {
+          paymentId: paymentId,
+          amount: response?.data?.getOrderInternal?.total_amount,
+          orderDetails: { orderId: response?.data?.getOrderInternal?.id },
+          businessLine: 'paymentLink',
+          customerId: response?.data?.getOrderInternal?.customer_id,
+        };
+        navigateToScreenWithHomeScreeninStack(props.navigation, AppRoutes.PaymentMethods, params);
+      } else {
+        navigateToHome(props.navigation);
+      }
+    } catch (error) {
+      navigateToHome(props.navigation);
     }
   };
 
