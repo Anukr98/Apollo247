@@ -135,12 +135,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   const renderExpectCall = () => {
     return (
       <View
-        style={{
-          backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
-          flexDirection: 'row',
-          padding: 10,
-          alignContent: 'center',
-        }}
+        style={styles.expectCallView}
       >
         <PrescriptionCallIcon style={{ margin: 10 }} />
         <Text style={styles.expectText}>
@@ -215,7 +210,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   const renderErrorMessage = () => {
     return (
       <View style={styles.errorMessageView}>
-        <Text style={{ ...theme.viewStyles.text('SB', 12, 'white', 1), padding: 10 }}>
+        <Text style={styles.errorMsgText}>
           Sorry cannot submit precription, an error occured
         </Text>
         <TouchableOpacity
@@ -223,7 +218,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
             setIsErrorOccured(false);
           }}
         >
-          <WhiteCross width={14} height={14} style={{ alignSelf: 'center', margin: 10 }} />
+          <WhiteCross width={14} height={14} style={styles.whiteCrossIcon} />
         </TouchableOpacity>
       </View>
     );
@@ -262,36 +257,20 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                     <View style={styles.presText}>
                       {phyPrescriptionsProp.map((item: any) => {
                         return (
-                          <View style={{ flexDirection: 'row', margin: 5, alignContent: 'center' }}>
+                          <View style={styles.phyView}>
                             <View
-                              style={{
-                                flexDirection: 'row',
-                                width: '90%',
-                                alignContent: 'center',
-                              }}
+                              style={styles.phyView2}
                             >
                               <View
-                                style={{
-                                  paddingLeft: 8,
-                                  paddingRight: 16,
-                                  width: 54,
-                                }}
+                                style={styles.phyView3}
                               >
                                 {item.fileType == 'pdf' ? (
                                   <FileBig
-                                    style={{
-                                      height: 45,
-                                      width: 30,
-                                      borderRadius: 5,
-                                    }}
+                                    style={styles.fileBigStyle}
                                   />
                                 ) : (
                                   <Image
-                                    style={{
-                                      height: 40,
-                                      width: 30,
-                                      borderRadius: 5,
-                                    }}
+                                    style={styles.imageView}
                                     source={{ uri: `data:image/jpeg;base64,${item.base64}` }}
                                   />
                                 )}
@@ -315,29 +294,17 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                         {ePrescriptionsProp.map((item: any) => {
                           return (
                             <View
-                              style={{ flexDirection: 'row', margin: 5, alignContent: 'center' }}
+                              style={styles.epresView}
                             >
                               <View
-                                style={{
-                                  flexDirection: 'row',
-                                  width: '90%',
-                                  alignContent: 'center',
-                                }}
+                                style={styles.epresView2}
                               >
                                 <View
-                                  style={{
-                                    paddingLeft: 8,
-                                    paddingRight: 16,
-                                    width: 54,
-                                  }}
+                                  style={styles.epresView3}
                                 >
                                   {item.fileType == 'pdf' ? (
                                     <FileBig
-                                      style={{
-                                        height: 45,
-                                        width: 30,
-                                        borderRadius: 5,
-                                      }}
+                                      style={styles.fileBigStyle}
                                     />
                                   ) : (
                                     <Image
@@ -425,6 +392,46 @@ const styles = StyleSheet.create({
     width: '85%',
     ...theme.viewStyles.text('SB', 12, theme.colors.SHERPA_BLUE, 1, 20),
     paddingHorizontal: 5,
+  },
+  expectCallView:{
+    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
+    flexDirection: 'row',
+    padding: 10,
+    alignContent: 'center',
+  },
+  errorMsgText:{ ...theme.viewStyles.text('SB', 12, 'white', 1), padding: 10 },
+  whiteCrossIcon:{ alignSelf: 'center', margin: 10 },
+  phyView:{ flexDirection: 'row', margin: 5, alignContent: 'center' },
+  phyView2:{
+    flexDirection: 'row',
+    width: '90%',
+    alignContent: 'center',
+  },
+  phyView3:{
+    paddingLeft: 8,
+    paddingRight: 16,
+    width: 54,
+  },
+  fileBigStyle:{
+    height: 45,
+    width: 30,
+    borderRadius: 5,
+  },
+  imageView:{
+    height: 40,
+    width: 30,
+    borderRadius: 5,
+  },
+  epresView:{ flexDirection: 'row', margin: 5, alignContent: 'center' },
+  epresView2:{
+    flexDirection: 'row',
+    width: '90%',
+    alignContent: 'center',
+  },
+  epresView3:{
+    paddingLeft: 8,
+    paddingRight: 16,
+    width: 54,
   },
   successText: {
     ...theme.viewStyles.text('B', 16, '#1084A9', 1),
