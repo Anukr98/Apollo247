@@ -94,6 +94,7 @@
     "jsc-android": "^250230.2.1",
     "jwt-decode": "^2.2.0",
     "lodash": "^4.17.15",
+    "lottie-react-native": "^4.0.3",
     "moment": "^2.24.0",
     "opentok-react-native": "0.17.2",
     "promise.allsettled": "^1.0.2",
