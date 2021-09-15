@@ -1706,6 +1706,10 @@ export const GreenCircleTick: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/greenCircleTick_3x.webp')} />
 );
 
+export const WhiteCross: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/white_cross_3x.webp')} />
+);
+
 export const InactiveCalenderIcon: React.FC<IconProps> = (props) => (
   <IconBase
     resizeMode="contain"
