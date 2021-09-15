@@ -153,7 +153,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [date, setDate] = useState<Date>(new Date());
   const [showDisplaySchedule, setDisplaySchedule] = useState<boolean>(false);
-  const [selectedOrderId, setSelectedOrderId] = useState<number>(0);
+  const [selectedOrderId, setSelectedOrderId] = useState<any>();
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
   const [todaySlotNotAvailable, setTodaySlotNotAvailable] = useState<boolean>(false);
@@ -964,7 +964,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           style={{ flexGrow: 1 }}
           bounces={false}
           data={multipleOrdersList}
-          extraData={selectedPaitentId}
+          extraData={selectedPatientId}
           keyExtractor={(_, index) => `${index}`}
           renderItem={({ item, index }) => renderList(item, index, count)}
         />
@@ -1851,7 +1851,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         transparent
         overlayStyle={styles.overlayStyle}
       >
-        <View style={{ flex: 1 }}>
+        <SafeAreaView style={{ flex: 1 }}>
           <TouchableOpacity style={{ flex: 1 }} onPress={() => _onPressClosePatientOverlay()}>
             <View style={styles.modalMainView}>
               <View style={styles.paitentModalView}>
@@ -1868,7 +1868,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               </View>
             </View>
           </TouchableOpacity>
-        </View>
+        </SafeAreaView>
       </Overlay>
     );
   };
@@ -2070,6 +2070,7 @@ const styles = StyleSheet.create({
   },
   paitentModalView: {
     backgroundColor: 'white',
+    height: height / 2,
     width: '100%',
     padding: 20,
     borderTopLeftRadius: 10,
