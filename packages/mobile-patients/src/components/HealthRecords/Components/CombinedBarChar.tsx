@@ -425,9 +425,9 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
           onPress={() => {
             if (!!showLabel) {
               props.allTestReports?.map((item: any) => {
-                if (item.data.labTestName === props.testReport) {
+                if (item?.data?.labTestName === props.testReport) {
                   item.data.labTestResults.map((items: any) => {
-                    const checktype = Number(items.resultDate);
+                    const checktype = Number(items?.resultDate);
                     if (checktype === props?.rangeDate[xAxisValue]) {
                       mergeArray.push(items);
                       if (item?.data?.testResultFiles?.length > 0) {
