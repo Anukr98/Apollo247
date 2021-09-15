@@ -116,6 +116,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const apolloClient = useApolloClient();
   const { getHelpSectionQueries } = NeedHelpHelpers;
 
+  const orderDelayTitle="My order is getting Delayed"
+
   React.useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', () => {
       if (orderDelayed) {
@@ -475,7 +477,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         setComments('');
       }
       !raiseOrderDelayQuery &&
-        item?.title === 'My order is getting Delayed' &&
+        item?.title === orderDelayTitle &&
         setOrderDelayed(true);
     };
     return (
@@ -484,11 +486,11 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           {item?.title}
         </Text>
         {item?.id === selectedQueryId
-          ? item?.title === 'My order is getting Delayed'
+          ? item?.title === orderDelayTitle
             ? null
             : renderTextInputAndCTAs()
           : null}
-        {item?.title === 'My order is getting Delayed' &&
+        {item?.title === orderDelayTitle &&
           item?.id === selectedQueryId &&
           raiseOrderDelayQuery &&
           renderTextInputAndCTAs()}
