@@ -872,8 +872,8 @@ export const GET_PATIENT_ACTIVE_FOLLOWUP_APPOINTMENTS = gql`
 `;
 
 export const GET_ALL_SPECIALTIES = gql`
-  query getAllSpecialties {
-    getAllSpecialties {
+  query getAllSpecialties($specialtyStatus: SPECIALTY_STATUS) {
+    getAllSpecialties(specialtyStatus: $specialtyStatus) {
       id
       name
       image

@@ -19,11 +19,12 @@ import {
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getAllSpecialties,
+  getAllSpecialtiesVariables,
   getAllSpecialties_getAllSpecialties,
 } from '@aph/mobile-patients/src/graphql/types/getAllSpecialties';
 import { getPastSearches_getPastSearches } from '@aph/mobile-patients/src/graphql/types/getPastSearches';
 import { getPatientPastSearches } from '@aph/mobile-patients/src/graphql/types/getPatientPastSearches';
-import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { SEARCH_TYPE, SPECIALTY_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import {
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors,
@@ -628,8 +629,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const fetchSpecialities = () => {
     setshowSpinner(true);
     client
-      .query<getAllSpecialties>({
+      .query<getAllSpecialties, getAllSpecialtiesVariables>({
         query: GET_ALL_SPECIALTIES,
+        variables: {
+          specialtyStatus: SPECIALTY_STATUS.TRUE
+        },
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {

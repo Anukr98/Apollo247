@@ -2089,6 +2089,11 @@ export interface PatientConsultEventToDoctorInput {
   chatFormat?: string | null;
 }
 
+export enum SPECIALTY_STATUS {
+  ALL = "ALL",
+  TRUE = "TRUE",
+}
+
 //==============================================================
 // END Enums and Input Objects
 //==============================================================
