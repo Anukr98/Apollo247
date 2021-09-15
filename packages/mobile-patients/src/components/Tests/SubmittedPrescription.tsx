@@ -177,11 +177,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   };
 
   
-
-  // console.log('ePrescriptionsProp :>> ', ePrescriptionsProp);
-  // console.log('phyPrescriptionsProp :>> ', phyPrescriptionsProp);
   const onSubmitPrescription = () => {
-    // setOnSumbitSuccess(true);
     const inputData: AddPrescriptionRecordInput = {
       id: ePrescriptionsProp?.[0]?.id,
       patientId: currentPatient?.id || '',
@@ -212,9 +208,8 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         setOnSumbitSuccess(true);
       })
       .catch((error) => {
-        // console.log('errors :>> ', error);
           setIsErrorOccured(true);
-        // CommonBugFender('SubmittedPrescription_ADD_PRESCRIPTION_RECORD', error);
+        CommonBugFender('SubmittedPrescription_ADD_PRESCRIPTION_RECORD', error);
       });
   };
   const renderErrorMessage = () => {
