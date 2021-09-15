@@ -116,7 +116,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const apolloClient = useApolloClient();
   const { getHelpSectionQueries } = NeedHelpHelpers;
 
-  const orderDelayTitle="My order is getting Delayed"
+  const orderDelayTitle = 'My order is getting Delayed';
 
   React.useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', () => {
@@ -404,7 +404,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
         <View style={styles.flatListContainer}>
           <TouchableOpacity
-            style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+            style={styles.titleView}
             onPress={() => {
               setSelectedQueryId(navigation.state.params?.queryIdLevel2 || '');
               setComments('');
@@ -476,9 +476,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         setRaiseOrderDelayQuery(false);
         setComments('');
       }
-      !raiseOrderDelayQuery &&
-        item?.title === orderDelayTitle &&
-        setOrderDelayed(true);
+      !raiseOrderDelayQuery && item?.title === orderDelayTitle && setOrderDelayed(true);
     };
     return (
       <>
@@ -525,68 +523,71 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       }
     };
 
+    const renderOrderStatus = () =>
+      tatBreach ? (
+        <>
+          <View style={styles.flatListContainer2}>
+            <Text style={styles.flatListItem}>{showMessage(true)}</Text>
+            <TouchableOpacity
+              style={styles.trackStyle}
+              onPress={() => {
+                navigation.navigate(AppRoutes.OrderDetailsScene, {
+                  orderAutoId: orderId,
+                });
+              }}
+            >
+              <Text style={styles.trackText}>TRACK ORDER</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.flatListContainer2}>
+            <TouchableOpacity
+              style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+              onPress={() => {
+                setRaiseOrderDelayQuery(true);
+                setOrderDelayed(false);
+                setComments('');
+              }}
+            >
+              <Text style={styles.txtBold}>My issue is still not resolved</Text>
+              <ArrowRight style={{ height: 18, width: 18 }} />
+            </TouchableOpacity>
+          </View>
+        </>
+      ) : (
+        <>
+          <View style={styles.flatListContainer2}>
+            <Text style={styles.flatListItem}>{showMessage(false)}</Text>
+            <TouchableOpacity
+              style={styles.trackStyle}
+              onPress={() => {
+                navigation.navigate(AppRoutes.OrderDetailsScene, {
+                  orderAutoId: orderId,
+                });
+              }}
+            >
+              <Text style={styles.trackText}>TRACK ORDER</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      );
+
     return (
       <>
-        {orderDelayed ? (
-          <>
-            {tatBreach ? (
-              <>
-                <View style={styles.flatListContainer2}>
-                  <Text style={styles.flatListItem}>{showMessage(true)}</Text>
-                  <TouchableOpacity
-                    style={styles.trackStyle}
-                    onPress={() => {
-                      navigation.navigate(AppRoutes.OrderDetailsScene, {
-                        orderAutoId: orderId,
-                      });
-                    }}
-                  >
-                    <Text style={styles.trackText}>TRACK ORDER</Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.flatListContainer2}>
-                  <TouchableOpacity
-                    style={{ flexDirection: 'row', justifyContent: 'space-between' }}
-                    onPress={() => {
-                      setRaiseOrderDelayQuery(true);
-                      setOrderDelayed(false);
-                      setComments('');
-                    }}
-                  >
-                    <Text style={styles.txtBold}>My issue is still not resolved</Text>
-                    <ArrowRight style={{ height: 18, width: 18 }} />
-                  </TouchableOpacity>
-                </View>
-              </>
-            ) : (
-              <>
-                <View style={styles.flatListContainer2}>
-                  <Text style={styles.flatListItem}>{showMessage(false)}</Text>
-                  <TouchableOpacity
-                    style={styles.trackStyle}
-                    onPress={() => {
-                      navigation.navigate(AppRoutes.OrderDetailsScene, {
-                        orderAutoId: orderId,
-                      });
-                    }}
-                  >
-                    <Text style={styles.trackText}>TRACK ORDER</Text>
-                  </TouchableOpacity>
-                </View>
-              </>
-            )}
-          </>
-        ) : (
-          <View style={styles.flatListContainer}>
-            <FlatList
-              data={data}
-              renderItem={renderItem}
-              keyExtractor={(_, i) => `${i}`}
-              bounces={false}
-              ItemSeparatorComponent={renderDivider}
-            />
-          </View>
-        )}
+        <SafeAreaView>
+          {orderDelayed ? (
+            <>{renderOrderStatus()}</>
+          ) : (
+            <View style={styles.flatListContainer}>
+              <FlatList
+                data={data}
+                renderItem={renderItem}
+                keyExtractor={(_, i) => `${i}`}
+                bounces={false}
+                ItemSeparatorComponent={renderDivider}
+              />
+            </View>
+          )}
+        </SafeAreaView>
       </>
     );
   };
@@ -705,5 +706,9 @@ const styles = StyleSheet.create({
   txtBold: {
     ...text('M', 14, LIGHT_BLUE, undefined, 19),
     fontWeight: 'bold',
+  },
+  titleView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
 });
