@@ -221,7 +221,8 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
                 },
               ]}
             >
-              {'Savings'} {string.common.Rs} {savingAmount}
+              {'Savings'} {string.common.Rs}
+              {savingAmount}
             </Text>
           </View>
         ) : null}
