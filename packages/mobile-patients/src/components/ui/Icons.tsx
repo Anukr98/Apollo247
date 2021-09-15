@@ -337,6 +337,18 @@ export const SearchAreaIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_search_area_icon.webp')} />
 );
 
+export const BarChar: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/barChart.webp')} />
+);
+
+export const RedArrow: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/Red_Up_Arrow.webp')} />
+);
+
+export const RedDownArrow: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/Red_Down_Arrow.webp')} />
+);
+
 export const TestTimeIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_test_time.webp')} />
 );
