@@ -67,9 +67,6 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
   const finalBookingFee = isBookingFeeExempted ? 0 : bookingFee;
   const isCirclePricing = !!circleSubscriptionId || planSelected;
 
-  const finalBookingFee = isBookingFeeExempted ? 0 : bookingFee;
-  const isCirclePricing = !!circleSubscriptionId || planSelected;
-
   const renderCareDoctorPricing = () => {
     return (
       <View style={styles.normalRowContainer}>
@@ -97,19 +94,6 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
         {string.common.Rs}
         {convertNumberToDecimal(Number(doctorFees))}
       </Text>
-    );
-  };
-
-  const renderBookingFee = () => {
-    return (
-      <View style={styles.normalRowContainer}>
-        {isBookingFeeExempted && (
-          <Text style={styles.slicedText}>{string.common.Rs + bookingFee}</Text>
-        )}
-        <Text style={styles.regularText}>
-          {string.common.Rs + (isBookingFeeExempted ? '0' : bookingFee)}
-        </Text>
-      </View>
     );
   };
 
