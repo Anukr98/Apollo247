@@ -518,6 +518,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
         : diagnosticWidgetData?.length > 0 &&
           diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
   }
+
   return (
     <>
       <View style={props.isVertical ? { alignSelf: 'center', marginLeft: '1.5%' } : {}}>

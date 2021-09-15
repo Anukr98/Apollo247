@@ -136,7 +136,19 @@
     "noDiagnosticsAvailable": "Unfortunately, we do not have any diagnostic(s) available right now.",
     "unableToSetDeliveryAddress": "We're sorry! Unable to set delivery address. Please try again after some time",
     "circleNoSubscriptionText": "No Subscription",
-    "bookingFee": "Booking Fee",
+    "memberCashback": " Membership Cashback ",
+    "cashbackInfo": "(Cashback can be used to buy medicines online as well as at physical Apollo Pharmacy stores. ",
+    "hcSavedOnConsultByCare": "You will get {amount} HC on this Consult",
+    "whatIsHc": "What are HCs?",
+    "hcShort": "HC is short for ",
+    "healthCredit": "Health credits",
+    "hcInfo": " which are rewarded to you on specific purchases and consults. HCs are calculated based on the total amount paid. In case a coupon is applied, HCs to be credited will be adjusted accordingly.",
+    "hcToRupee": "1 HC= ₹ 1",
+    "whyCashbackChanged": "Why did my Cashback (HCs) change?",
+    "hcCreditInfo": "HCs are calculated based on the total amount paid. In case a coupon is applied, HCs to be credited will be adjusted accordingly.",
+    "circleCashback": "CIRCLE CASHBACK",
+    "circleDiscount": "CIRCLE DISCOUNT",
+    "bookingFee": "Booking Fee"
   },
   "diagnosticsLocation":{
     "savedAddressText": "Saved Addresses",
@@ -390,7 +402,8 @@
     "click_here": "CLICK HERE",
     "reopen_ticket": "REOPEN TICKET",
     "whatsapp_with_us": "WHATSAPP WITH US",
-    "no_conversation_till_now": "No conversation till now !"
+    "no_conversation_till_now": "No conversation till now !",
+    "ticket_creation_lag_time": "It usually takes 10 seconds to submit your ticket, we will update you here once its done."
   },
   "doctor_search_listing": {
     "pleaseWait": "Please Wait!",
@@ -690,7 +703,9 @@
     "clickPhotos": "CLICK MORE PHOTOS",
     "order_medicine": "ORDER MEDICINES",
     "order_medicine_msg": "Try our Express Delivery in 2-4 hours",
-    "order_test": "ORDER TESTS",
+    "order_test": "BOOK TESTS NOW",
+    "slot_filling": "Slots filling fast!",
+    "order_medicines": "ORDER MEDICINES NOW",
     "book_follow_up": "BOOK FOLLOW-UP",
     "add_note_to_notify_users": "Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!",
     "tabs": [{
@@ -954,7 +969,7 @@
     "circlePlanAddedToCart": "Circle plan successfully added to cart.",
     "discountInfoReflectsOnCheckout": "Discount and other information will be reflected at checkout.",
     "forCareMembers": "for CARE members",
-    "circleSavings": "CIRCLE savings of ₹{amount}",
+    "circleSavings": "CIRCLE discount of ₹{amount}",
     "upgradeNow": "Upgrade now",
     "circleMembershipPlans": "Circle Membership Plans",
     "addToCart": "ADD TO CART",
@@ -977,7 +992,8 @@
     "returnToHomepage": "RETURN TO HOMEPAGE",
     "availableHealthCredits": "*Available Health Credits",
     "upgradeWithHC": "UPGRADE WITH {hc} HC",
-    "upgradeWithPrice": "UPGRADE WITH ₹{price}"
+    "upgradeWithPrice": "UPGRADE WITH ₹{price}",
+    "circleCashback": "CIRCLE cashback upto {amount} HC"
   },
   "circlePharmacy": {
     "modalDescription": "Enable Circle membership to get the best discounts, cashbacks, free delivery and more...",
@@ -1301,6 +1317,6 @@
     "stepTwo": "Consultation with Doctor via audio/video call.\nAccess your prescription in the Consult Room.",
     "stepThree": "If required, share necessary reports and text updates.",
     "viewGuideline": "View Consultation Guidelines \n",
-    "download": "Download",
+    "download": "Download"
   }
 }

@@ -775,7 +775,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const getGrandTotalFromShipments = () => {
     let total = 0;
     shipments.forEach((item: any) => (total = Number(Decimal.add(total, item.estimatedAmount))));
-    if (circleMembershipCharges) {
+    if (!circleSubscriptionId && circleMembershipCharges) {
       total = Number(Decimal.add(total, circleMembershipCharges));
     }
     return total;
@@ -790,7 +790,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
           deliveryCharges -
           couponDiscount -
           productDiscount +
-          (!!circleMembershipCharges ? circleMembershipCharges : 0)
+          (!circleSubscriptionId && !!circleMembershipCharges ? circleMembershipCharges : 0)
         ).toFixed(2)
       );
 
@@ -799,8 +799,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
     deliveryAddressId &&
     addresses?.length &&
     grandTotal &&
-    grandTotal !== deliveryCharges
-      ? grandTotal >= minimumCartValue
+    grandTotal - (circleMembershipCharges || 0) !== deliveryCharges
+      ? grandTotal - (circleMembershipCharges || 0) >= minimumCartValue
       : true;
 
   const uploadPrescriptionRequired =

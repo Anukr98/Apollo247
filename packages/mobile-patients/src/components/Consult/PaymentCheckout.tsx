@@ -205,7 +205,10 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     onlineConsultMRPPrice,
     physicalConsultMRPPrice,
     isCircleDoctorOnSelectedConsultMode,
+    cashbackAmount,
+    cashbackEnabled,
   } = circleDoctorDetails;
+  const onlineConsultPrice = cashbackEnabled ? onlineConsultMRPPrice : onlineConsultSlashedPrice;
   const { circleSubscriptionId, circlePlanSelected, hdfcSubscriptionId } = useShoppingCart();
   const [disabledCheckout, setDisabledCheckout] = useState<boolean>(
     isCircleDoctorOnSelectedConsultMode && !circleSubscriptionId
@@ -221,7 +224,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
         ? Number(
-            Decimal.sub(onlineConsultSlashedPrice, couponDiscountFees)
+            Decimal.sub(onlineConsultPrice, couponDiscountFees)
               .plus(!circleSubscriptionId ? Number(circlePlanSelected?.currentSellingPrice) : 0)
               .plus(consultBookingFee)
           )
@@ -234,7 +237,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const consultAmounttoPay =
     circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
-        ? Number(Decimal.sub(onlineConsultSlashedPrice, couponDiscountFees).plus(consultBookingFee))
+        ? Number(Decimal.sub(onlineConsultPrice, couponDiscountFees).plus(consultBookingFee))
         : Number(Decimal.sub(physicalConsultSlashedPrice, couponDiscountFees))
       : amount;
   const notSubscriberUserForCareDoctor =
@@ -251,7 +254,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const actualAmount =
     circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
-        ? onlineConsultSlashedPrice
+        ? onlineConsultPrice
         : physicalConsultSlashedPrice
       : Number(price);
   const [doctorDiscountedFees, setDoctorDiscountedFees] = useState<number>(actualAmount);
@@ -269,9 +272,11 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     (circleSubscriptionId || circlePlanSelected) && discountedPrice ? discountedPrice : 0;
   const { cusId, isfetchingId } = useGetJuspayId();
   const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
+  const isCirclePricing = circleSubscriptionId || circlePlanSelected;
 
   useEffect(() => {
     verifyCoupon();
+    setBookingAmount();
   }, [circlePlanSelected]);
 
   useEffect(() => {
@@ -297,12 +302,19 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   };
 
   const setBookingAmount = () => {
-    const onlineDrPricing = doctor?.doctorPricing.find(
-      (item: any) => item.available_to == 'ALL' && item.appointment_type == 'ONLINE'
+    let onlineDrPricing = doctor?.doctorPricing.find(
+      (item: any) => item.available_to == 'CARE_PLAN' && item.appointment_type == 'ONLINE'
     );
+    if (!isCirclePricing || !onlineDrPricing) {
+      onlineDrPricing = doctor?.doctorPricing.find(
+        (item: any) => item.available_to == 'ALL' && item.appointment_type == 'ONLINE'
+      );
+    }
     const { bookingFee, isBookingFeeExempted } = onlineDrPricing || {};
-    setBookingFee(bookingFee);
-    setIsBookingFeeExempted(isBookingFeeExempted);
+    if (bookingFee) {
+      setBookingFee(bookingFee);
+      setIsBookingFeeExempted(isBookingFeeExempted);
+    }
   };
 
   const bookAppointment = () => {
@@ -442,7 +454,13 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   };
 
   const renderCareMembershipAddedCard = () => {
-    return <CareMembershipAdded doctor={doctor} isOnlineConsult={isOnlineConsult} />;
+    return (
+      <CareMembershipAdded
+        doctor={doctor}
+        isOnlineConsult={isOnlineConsult}
+        couponDiscountFees={couponDiscountFees}
+      />
+    );
   };
 
   const renderPriceBreakup = () => {
@@ -624,6 +642,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         onEndApiCall={() => setDisabledCheckout(false)}
         from={string.banner_context.VC_CART}
         circleEventSource={'Cart(VC)'}
+        cashbackAmount={cashbackAmount}
+        cashbackEnabled={cashbackEnabled}
       />
     );
   };
@@ -688,7 +708,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     const billAmount =
       circlePlanSelected && isCircleDoctorOnSelectedConsultMode
         ? isOnlineConsult
-          ? onlineConsultSlashedPrice
+          ? onlineConsultPrice
           : physicalConsultSlashedPrice
         : Number(price);
     const timeSlot =
@@ -1282,9 +1302,15 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   };
 
   const getOriginalBookingAmt = () => {
-    const onlineDrPricing = doctor?.doctorPricing.find(
-      (item: any) => item.available_to == 'ALL' && item.appointment_type == 'ONLINE'
+    let onlineDrPricing = doctor?.doctorPricing.find(
+      (item: any) => item.available_to == 'CARE_PLAN' && item.appointment_type == 'ONLINE'
     );
+
+    if (!isCirclePricing || !onlineDrPricing) {
+      onlineDrPricing = doctor?.doctorPricing.find(
+        (item: any) => item.available_to == 'ALL' && item.appointment_type == 'ONLINE'
+      );
+    }
     let { bookingFee, isBookingFeeExempted } = onlineDrPricing || {};
     const billAmount =
       circlePlanSelected && isCircleDoctorOnSelectedConsultMode
@@ -1395,10 +1421,11 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         ]}
       >
         <Text style={styles.smallText}>
-          You could have{' '}
+          You could {cashbackEnabled ? 'get ' : ' '}
           <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.SEARCH_UNDERLINE_COLOR) }}>
-            saved {string.common.Rs}
-            {convertNumberToDecimal(discountedPrice)}
+            {cashbackEnabled
+              ? `upto ${cashbackAmount} HC`
+              : `save ${string.common.Rs + convertNumberToDecimal(discountedPrice)}`}
           </Text>{' '}
           on this purchase with
         </Text>

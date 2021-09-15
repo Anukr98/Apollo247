@@ -250,6 +250,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setLoading(true);
       getMedicineDetails();
+      if (sku && pincode) {
+        getProductSubstitutes(sku);
+      }
     });
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       setLoading(true);
@@ -303,7 +306,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     if (sku && pincode) {
       getProductSubstitutes(sku);
     }
-  }, [sku, isPharma, pincode]);
+  }, [sku, isPharma, pincode, props.navigation, medicineDetails]);
 
   const getMedicineDetails = (zipcode?: string, pinAcdxCode?: string, selectedSku?: string) => {
     setLoading(true);
@@ -400,6 +403,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         if (substitutes?.length) {
           setProductSubstitutes?.(substitutes);
         } else {
+          setProductSubstitutes?.([]);
           fetchSubstitutes();
         }
       })
@@ -522,6 +526,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         price,
         special_price,
         category_id,
+        subcategory,
       } = medicineDetails;
       const stock_availability =
         sell_online == 0 ? 'Not for Sale' : !!isProductInStock ? 'Yes' : 'No';
@@ -569,6 +574,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         MRP: price,
         SpecialPrice: special_price || undefined,
         CircleCashback: Number(cashback) || 0,
+        SubCategory: subcategory || '',
       };
       if (movedFrom === 'deeplink') {
         eventAttributes['Circle Membership Added'] = circleID
@@ -792,7 +798,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             const latLang = data.results[0].geometry.location || {};
             const response = getFormattedLocation(addrComponents, latLang, pinCode);
             const saveAddress = {
-              pincode: pincode,
+              pincode: pinCode,
               id: '',
               city: response?.city,
               state: response?.state,
@@ -828,7 +834,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       .finally(() => setLoading!(false));
   };
 
-  const onAddCartItem = (item?: pharmaSubstitution_pharmaSubstitution_substitutes) => {
+  const onAddCartItem = (
+    item?: pharmaSubstitution_pharmaSubstitution_substitutes,
+    isFromFastSubstitutes?: boolean
+  ) => {
     const medicine_details = item ? item : medicineDetails;
     const {
       sku,
@@ -868,7 +877,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     }
     postwebEngageAddToCartEvent(
       medicineDetails,
-      'Pharmacy PDP',
+      isFromFastSubstitutes ? 'PDP Fast Substitutes' : 'Pharmacy PDP',
       sectionName,
       '',
       pharmacyCircleAttributes!
@@ -1137,6 +1146,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   onNotifyMeClick={onNotifyMeClick}
                   isPharma={isPharma}
                   navigation={props.navigation}
+                  setShowSubstituteInfo={setShowSubstituteInfo}
                 />
               </View>
               {isPharma && (

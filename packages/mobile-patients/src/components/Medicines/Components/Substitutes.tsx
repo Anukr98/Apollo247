@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import {
@@ -9,11 +9,13 @@ import {
   ExpressDeliveryLogo,
   DownOrange,
   UpOrange,
+  PendingIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   productsThumbnailUrl,
   getMaxQtyForMedicineItem,
   nameFormater,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Image } from 'react-native-elements';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -22,19 +24,48 @@ import { QuantityButton } from '@aph/mobile-patients/src/components/ui/QuantityB
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  CleverTapEvents,
+  CleverTapEventName,
+  ProductPageViewedSource,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import moment from 'moment';
 
 export interface SubstitutesProps {
-  onPressAddToCart: (item: pharmaSubstitution_pharmaSubstitution_substitutes) => void;
+  sku: string;
+  name: string;
+  onPressAddToCart: (
+    item: pharmaSubstitution_pharmaSubstitution_substitutes,
+    isFromFastSubstitutes: boolean
+  ) => void;
   isProductInStock: boolean;
   isAlternative: boolean; // value will be true for pharma products, and false for non pharma products
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
+  setShowSubstituteInfo?: (show: boolean) => void;
 }
 
 export const Substitutes: React.FC<SubstitutesProps> = (props) => {
   const { cartItems, removeCartItem, updateCartItem, productSubstitutes } = useShoppingCart();
-  const { onPressAddToCart, isProductInStock, isAlternative } = props;
+  const {
+    sku,
+    name,
+    onPressAddToCart,
+    isProductInStock,
+    isAlternative,
+    setShowSubstituteInfo,
+  } = props;
   const [showSubstitues, setShowSubstitues] = useState<boolean>(!isProductInStock);
+
+  useEffect(() => {
+    setShowSubstitues(!isProductInStock);
+  }, [isProductInStock]);
+
+  useEffect(() => {
+    if (showSubstitues) {
+      fireCleverTapEvent();
+    }
+  }, [showSubstitues]);
 
   const renderHeading = () => (
     <TouchableOpacity
@@ -63,9 +94,18 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
           ))}
       </View>
       {!isAlternative && (
-        <Text style={styles.subHeading}>
-          Substitutes are products with same molecular composition
-        </Text>
+        <View style={styles.substituteMsgContainer}>
+          <Text style={styles.subHeading}>
+            Substitutes are products with same molecular composition
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              setShowSubstituteInfo && setShowSubstituteInfo(true);
+            }}
+          >
+            <PendingIcon style={styles.pendingIcon} />
+          </TouchableOpacity>
+        </View>
       )}
     </TouchableOpacity>
   );
@@ -94,7 +134,7 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
 
   const renderAddToCartView = (item: any) => {
     return (
-      <TouchableOpacity activeOpacity={1} onPress={() => onPressAddToCart(item)}>
+      <TouchableOpacity activeOpacity={1} onPress={() => onPressAddToCart(item, true)}>
         <Text style={theme.viewStyles.text('SB', 12, '#fc9916', 1, 24, 0)}>{'ADD TO CART'}</Text>
       </TouchableOpacity>
     );
@@ -142,8 +182,19 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
     <View style={styles.expressContainer}>
       <ExpressDeliveryLogo style={styles.expressLogo} />
       <Text
-        style={theme.viewStyles.text('SB', 14, '#02475B', 1, 25, 0.35)}
+        style={theme.viewStyles.text('SB', 13, '#02475B', 1, 25, 0.35)}
       >{`within ${tatDuration} hours`}</Text>
+    </View>
+  );
+
+  const renderDeliveryDateTime = (tat: string) => (
+    <View>
+      <Text style={theme.viewStyles.text('M', 12, '#01475b', 1, 15, 0)}>Delivery By</Text>
+      <Text style={theme.viewStyles.text('M', 12, '#01475b', 1, 15, 0)}>
+        {moment(new Date(tat), AppConfig.Configuration.MED_DELIVERY_DATE_TAT_API_FORMAT).format(
+          'D MMM | hh:mm A'
+        )}
+      </Text>
     </View>
   );
 
@@ -153,7 +204,7 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
     return (
       <View>
         {isTatPriceLess ? (
-          <View>
+          <View style={{ flex: 1 }}>
             <Text style={styles.priceStrikeOff}>{`MRP ${string.common.Rs}${price}`}</Text>
             <Text style={styles.discount}>{`${percentageDiscount.toFixed(1)}% off`}</Text>
             <Text style={styles.price}>
@@ -179,7 +230,7 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
         image,
         is_prescription_required,
         name,
-        is_express,
+        tat,
         tatDuration,
         price,
         tatPrice,
@@ -187,13 +238,15 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
       } = substitute;
       const quantity = getItemQuantity(sku);
       const manufacturerText = nameFormater(manufacturer, 'title');
+      const is_express =
+        parseInt(tatDuration?.[0]) <= AppConfig.Configuration.EXPRESS_MAXIMUM_HOURS;
       return (
         <TouchableOpacity
           onPress={() => {
-            props.navigation.replace(AppRoutes.ProductDetailPage, {
+            props.navigation.push(AppRoutes.ProductDetailPage, {
               urlKey: substitute?.url_key,
               sku: substitute?.sku,
-              movedFrom: ProductPageViewedSource.SUBSTITUTES,
+              movedFrom: ProductPageViewedSource.PDP_FAST_SUSBTITUTES,
             });
           }}
           style={styles.substituteCard}
@@ -203,11 +256,9 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
             <View style={styles.nameManufacturer}>
               <View>
                 {renderTitle(name)}
-                <Text style={theme.viewStyles.text('R', 13, '#01475B', 1, 27)}>
-                  {manufacturerText}
-                </Text>
+                <Text style={styles.manufacturerText}>{manufacturerText}</Text>
               </View>
-              {is_express && renderExpress(tatDuration[0])}
+              {is_express ? renderExpress(tatDuration[0]) : renderDeliveryDateTime(tat)}
             </View>
             <View style={{ justifyContent: 'space-between' }}>
               {renderPrice(price, tatPrice)}
@@ -220,6 +271,19 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
         </TouchableOpacity>
       );
     });
+  };
+
+  const fireCleverTapEvent = () => {
+    let cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_FAST_SUBSTITUTES_VIEWED] = {
+      'Product Code': sku || '',
+      'Product Name': name || '',
+      'Stock type': isProductInStock ? 'In stock' : 'Out of stock',
+      Type: isAlternative ? 'Pharma' : 'Non-Pharma',
+    };
+    postCleverTapEvent(
+      CleverTapEventName.PHARMACY_FAST_SUBSTITUTES_VIEWED,
+      cleverTapEventAttributes
+    );
   };
 
   return (
@@ -236,6 +300,7 @@ const styles = StyleSheet.create({
   cardStyle: {
     ...theme.viewStyles.cardViewStyle,
     marginVertical: 20,
+    marginHorizontal: 1,
     paddingVertical: 10,
   },
   heading: {
@@ -288,7 +353,7 @@ const styles = StyleSheet.create({
   },
   expressLogo: {
     resizeMode: 'contain',
-    width: 60,
+    width: 55,
     height: 20,
     marginRight: 3,
   },
@@ -312,7 +377,6 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
     color: '#01475b',
     opacity: 0.6,
-    paddingRight: 5,
     textAlign: 'right',
   },
   quantityView: {
@@ -338,8 +402,20 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 13, '#00B38E', 1, 20, 0.35),
   },
   price: {
-    ...theme.viewStyles.text('B', 14, '#02475B', 1, 17, 0.35),
+    ...theme.viewStyles.text('B', 14, '#02475B', 1, 20, 0.35),
     textAlign: 'right',
   },
   nameManufacturer: { justifyContent: 'space-between', flex: 0.9 },
+  manufacturerText: {
+    ...theme.viewStyles.text('R', 12, '#01475B', 1, 17),
+    marginTop: 2,
+    marginBottom: 7,
+  },
+  pendingIcon: {
+    resizeMode: 'contain',
+    width: 15,
+    height: 15,
+    marginTop: 8,
+  },
+  substituteMsgContainer: { flexDirection: 'row', justifyContent: 'space-between', width: '90%' },
 });

@@ -1,5 +1,5 @@
-import { Platform } from 'react-native';
-import { AddressObj, ConsultMode, patientAddressObj, PLAN } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { Alert, Platform } from 'react-native';
+import { AddressObj, ConsultMode, PLAN ,patientAddressObj} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { DIAGNOSTIC_GROUP_PLAN, GooglePlacesType } from '@aph/mobile-patients/src/helpers/apiCalls';
 import moment from 'moment';
 import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -30,7 +30,6 @@ export const calculateCircleDoctorPricing = (
   const onlineConsult = circleDoctors?.filter(
     (item: any) => item.appointment_type === ConsultMode.ONLINE
   );
-
   const physicalConsultMRPPrice = physicalConsult?.[0]?.mrp;
   const physicalConsultSlashedPrice = physicalConsult?.[0]?.slashed_price;
   const physicalConsultDiscountedPrice = physicalConsultMRPPrice - physicalConsultSlashedPrice;
@@ -60,7 +59,11 @@ export const calculateCircleDoctorPricing = (
   } else {
     isCircleDoctorOnSelectedConsultMode = isCircleDoctor;
   }
-
+  let cashbackEnabled, cashbackAmount;
+  if(onlineConsult?.[0]?.is_cashback_enabled){
+    cashbackEnabled = onlineConsult?.[0]?.is_cashback_enabled;
+    cashbackAmount = Math.round(onlineConsult?.[0]?.cashback_amount);
+  }
   return {
     isCircleDoctor,
     physicalConsultMRPPrice,
@@ -73,6 +76,8 @@ export const calculateCircleDoctorPricing = (
     minSlashedPrice,
     minDiscountedPrice,
     isCircleDoctorOnSelectedConsultMode,
+    cashbackEnabled,
+    cashbackAmount,
   };
 };
 

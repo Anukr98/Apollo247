@@ -25,6 +25,7 @@ export interface ProductQuantityProps {
   onNotifyMeClick: () => void;
   isPharma: boolean;
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
+  setShowSubstituteInfo?: (show: boolean) => void;
 }
 
 export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
@@ -45,6 +46,7 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
     productForm,
     onNotifyMeClick,
     isPharma,
+    setShowSubstituteInfo,
   } = props;
 
   const renderQuantity = () => {
@@ -114,10 +116,13 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
         {isSellOnline && !!packSize && !!productForm && !!packForm && renderPackSize()}
       </View>
       <Substitutes
+        sku={sku}
+        name={name}
         onPressAddToCart={onAddCartItem}
         isProductInStock={isInStock}
         isAlternative={!isPharma}
         navigation={props.navigation}
+        setShowSubstituteInfo={setShowSubstituteInfo}
       />
       {isSellOnline && !isBanned && renderCartCTA()}
     </View>

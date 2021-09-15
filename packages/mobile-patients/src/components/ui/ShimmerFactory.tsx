@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
   },
 
   banner1: {
-    height: 145,
+    height: 160,
     width: '100%',
   },
   medicineContainer: {
@@ -327,16 +327,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  consultCtaStyle: {
-    ...theme.viewStyles.cardViewStyle,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 15,
-    flexDirection: 'row',
-    minHeight: 59,
-    width: width / 2 - 22,
-    marginRight: 12,
-    marginBottom: 12,
-    alignItems: 'center',
+  pharmaFetchAddressTextShimmer: {
+    borderRadius: 10,
+    height: 150,
+    width: 150,
+    margin: 12,
   },
 });
 
@@ -527,17 +522,6 @@ export const renderMedicinesShimmer = () => {
         shimmerColors={shimmerColors}
         shimmerStyle={styles.medicinecCard2}
       />
-
-      <ShimmerPlaceHolder
-        LinearGradient={LinearGradient}
-        shimmerColors={shimmerColors}
-        shimmerStyle={styles.medicineCard3}
-      />
-      <View style={styles.sliderDotsContainer}>
-        <View style={styles.sliderDots} />
-        <View style={styles.sliderDots} />
-        <View style={styles.sliderDots} />
-      </View>
     </View>
   );
 };
@@ -864,12 +848,29 @@ export const renderDiagnosticWidgetHeadingShimmer = () => {
   );
 };
 
-export const consultWidgetShimmer = () => {
+export const renderPharmaFetchAddressHeadingShimmer = () => {
   return (
-    <ShimmerPlaceHolder
-      shimmerColors={shimmerColors}
-      LinearGradient={LinearGradient}
-      shimmerStyle={styles.consultCtaStyle}
-    />
+    <View style={[styles.rowStyle, { marginTop: 16 }]}>
+      <ShimmerPlaceHolder
+        LinearGradient={LinearGradient}
+        shimmerColors={shimmerColors}
+        shimmerStyle={styles.pharmaFetchAddressTextShimmer}
+      />
+      <ShimmerPlaceHolder
+        LinearGradient={LinearGradient}
+        shimmerColors={shimmerColors}
+        shimmerStyle={styles.pharmaFetchAddressTextShimmer}
+      />
+      <ShimmerPlaceHolder
+        LinearGradient={LinearGradient}
+        shimmerColors={shimmerColors}
+        shimmerStyle={styles.pharmaFetchAddressTextShimmer}
+      />
+      <ShimmerPlaceHolder
+        LinearGradient={LinearGradient}
+        shimmerColors={shimmerColors}
+        shimmerStyle={styles.pharmaFetchAddressTextShimmer}
+      />
+    </View>
   );
 };

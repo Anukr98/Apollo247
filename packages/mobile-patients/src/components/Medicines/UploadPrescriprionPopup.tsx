@@ -65,6 +65,7 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { postCleverTapUploadPrescriptionEvents } from '@aph/mobile-patients/src/components/UploadPrescription/Events';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -229,9 +230,7 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
   const actionSheetRef = useRef<ActionSheet>();
 
   const postUPrescriptionWEGEvent = (
-    source:
-      | WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
-      | CleverTapEvents[CleverTapEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
+    source: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED] = {
       Source: source,
@@ -241,18 +240,10 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
     postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED, eventAttributes);
   };
 
-  const postCleverTapUPrescriptionEvents = (
-    source: CleverTapEvents[CleverTapEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
-  ) => {
-    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED] = {
-      Source: source,
-      'User Type': pharmacyUserType || undefined,
-      Location: props.type == 'Non-cart' ? 'Noncart' : props.type,
-    };
-    postCleverTapEvent(
-      CleverTapEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED,
-      cleverTapEventAttributes
-    );
+  const postCleverTapUPrescriptionEvents = () => {
+    if (props.type == 'cartOrMedicineFlow') {
+      postCleverTapUploadPrescriptionEvents('Gallery', 'Cart');
+    }
   };
 
   useEffect(() => {
@@ -366,7 +357,7 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
 
   const onBrowseClicked = async () => {
     postUPrescriptionWEGEvent('Choose Gallery');
-    postCleverTapUPrescriptionEvents('Gallery');
+    postCleverTapUPrescriptionEvents();
     CommonLogEvent('UPLAOD_PRESCRIPTION_POPUP', 'Gallery opened');
 
     const eventAttributes: WebEngageEvents['Upload Photo'] = {
@@ -419,7 +410,7 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
 
   const openGallery = () => {
     postUPrescriptionWEGEvent('Choose Gallery');
-    postCleverTapUPrescriptionEvents('Gallery');
+    postCleverTapUPrescriptionEvents();
     CommonLogEvent('UPLAOD_PRESCRIPTION_POPUP', 'Gallery opened');
 
     const eventAttributes: WebEngageEvents['Upload Photo'] = {
@@ -598,7 +589,10 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
             style={[styles.cardContainer, getOptionStyle('E-PRESCRIPTION')]}
             onPress={() => {
               postUPrescriptionWEGEvent('E-Rx');
-              postCleverTapUPrescriptionEvents('My Prescription');
+              postCleverTapUPrescriptionEvents();
+              if (props.type == 'cartOrMedicineFlow') {
+                postCleverTapUploadPrescriptionEvents('My Prescription', 'Cart');
+              }
               props.onResponse('E-PRESCRIPTION', []);
             }}
           >

@@ -409,6 +409,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         }
         id
         hideHealthRecordNudge
+        discountedAmount
         patientId
         doctorId
         appointmentDateTime
@@ -578,6 +579,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         }
         id
         hideHealthRecordNudge
+        discountedAmount
         patientId
         doctorId
         appointmentDateTime
@@ -747,6 +749,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         }
         id
         hideHealthRecordNudge
+        discountedAmount
         patientId
         doctorId
         appointmentDateTime
@@ -916,6 +919,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         }
         id
         hideHealthRecordNudge
+        discountedAmount
         patientId
         doctorId
         appointmentDateTime
@@ -1149,6 +1153,9 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
         status
         mrp
         appointment_type
+        slashed_price
+        is_cashback_enabled
+        cashback_amount
         bookingFee
         isBookingFeeExempted
       }
@@ -1269,6 +1276,7 @@ export const GET_PLATINUM_DOCTOR = gql`
         doctorfacility
         fee
         specialistPluralTerm
+        languages
         specialistPluralTerm
         specialtydisplayName
         doctorType

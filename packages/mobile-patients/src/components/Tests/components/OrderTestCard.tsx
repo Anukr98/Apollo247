@@ -245,7 +245,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     const getPrepData = filterOrderLineItem?.map(
       (
         item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems
-      ) => item?.itemObj?.testPreparationData || item?.diagnostics?.testPreparationData!
+      ) => item?.itemObj?.testPreparationData
     );
     const filterData = [...new Set(getPrepData)];
     return (
@@ -319,7 +319,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         {!!props.showRescheduleCancel && props.showRescheduleCancel && !props.isHelp ? (
           <TouchableOpacity activeOpacity={1} onPress={props.onPressReschedule}>
             <Text style={[styles.yellowText, { fontSize: screenWidth > 380 ? 14 : 13 }]}>
-              RESCHEDULE
+              RESCHEDULE | CANCEL
             </Text>
           </TouchableOpacity>
         ) : null}

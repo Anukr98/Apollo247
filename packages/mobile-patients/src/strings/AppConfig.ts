@@ -175,6 +175,7 @@ const appStaticVariables = {
     diagnostic: '6ce8d555-9be5-48b5-b4de-06480f9c9cab',
     deliveryStatus: '3df5b586-ce39-478a-a5ec-1e525f5dc42a',
     vaccination: 'd73f3dc4-bc92-11eb-8529-0242ac130003',
+    refund: '9ae4ad26-f559-4350-b81d-8f751be8e33b',
   },
   MED_ORDER_NON_CART_CALL_ME_OPTION_WHATSAPP_LINK:
     'https://api.whatsapp.com/send?phone=914041894343&text=I%20want%20to%20inform%20the%20pharmacist%20regarding%20my%20medicines',
@@ -516,7 +517,7 @@ const PharmaApiConfig = {
     ],
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
     MED_CART_ITEMS_DETAILS: [`${apolloProdBaseUrl}/popcscrchcart_api.php`, pharmaToken201],
-    IMAGES_BASE_URL: [`https://d27zlipt1pllog.cloudfront.net/pub/media`],
+    IMAGES_BASE_URL: [`https://newassets.apollo247.com/pub/media`],
     GET_DELIVERY_TIME: [
       'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
       pharmaTokenYXV,
@@ -762,6 +763,10 @@ const ConfigurationQA3 = {
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
+  CIRCLE_CONSULT_URL: 'https://qathreepatients.apollo247.com/consult-landing?header=false',
+  CIRLCE_PHARMA_URL: 'https://qathreepatients.apollo247.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://qathreepatients.apollo247.com/test-landing?header=false',
+  CIRCLE_LANDING_URL: 'https://qathreepatients.apollo247.com/circle?header=false',
 };
 
 const ConfigurationQA5 = {

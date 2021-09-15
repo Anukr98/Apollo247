@@ -846,6 +846,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setPatientCartItems([]);
     setDeliveryAddressId('');
     setDeliveryAddressCityId('');
+    setDeliveryAddressStateId('');
     setPinCode('');
     setCoupon(null);
     setDiagnosticSlot(null);

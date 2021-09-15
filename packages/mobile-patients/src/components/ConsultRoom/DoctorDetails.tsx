@@ -84,6 +84,7 @@ import {
   InfoBlue,
   CircleLogo,
   ShareYellowDocIcon,
+  Tick,
 } from '../ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -103,6 +104,7 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import {Tooltip} from 'react-native-elements';
 
 const { height, width } = Dimensions.get('window');
 
@@ -320,6 +322,32 @@ const styles = StyleSheet.create({
     left: -3,
     top: -2,
   },
+  tickIcon: {
+    height: 8, 
+    width: 8, 
+    marginStart: 4
+  },
+  tooltipTitle: {
+    ...theme.viewStyles.text('M', 13, theme.colors.APP_YELLOW)
+  },
+  tootipDesc: {
+    ...theme.viewStyles.text('R', 10, theme.colors.LIGHT_BLUE, undefined, 12),
+    paddingTop: 4,
+  },
+  tipHcInfoText: {
+    ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE, undefined, 14),
+    paddingTop: 4,
+  },
+  hcBoldText: {
+    fontWeight: '500',
+  },
+  tooltipView: {
+    backgroundColor: theme.colors.WHITE,
+    shadowColor: theme.colors.SHADOW_GRAY,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8
+  },
   onlineCardView: {
     width: 200
   },
@@ -405,6 +433,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     onlineConsultMRPPrice,
     onlineConsultSlashedPrice,
     physicalConsultSlashedPrice,
+    cashbackEnabled,
+    cashbackAmount,
   } = circleDoctorDetails;
   const {
     circleSubscriptionId,
@@ -431,26 +461,26 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const rectangularIconHeight = isCircleDoctor
     ? Platform.OS == 'android'
       ? showCircleSubscribed
-        ? 154
-        : 164
+        ? 176
+        : 186
       : showCircleSubscribed
-      ? 149
-      : 159
+      ? 171
+      : 181
     : Platform.OS == 'android'
-    ? 134
-    : 129;
+    ? 156
+    : 151;
 
   const consultViewHeight = isCircleDoctor
     ? Platform.OS == 'android'
       ? showCircleSubscribed
-        ? 133
-        : 143
+        ? 149
+        : 159
       : showCircleSubscribed
-      ? 128
-      : 138
+      ? 144
+      : 154
     : Platform.OS == 'android'
-    ? 115
-    : 110;
+    ? 131
+    : 126;
 
   useEffect(() => {
     if (!currentPatient) {
@@ -654,7 +684,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     if (doctorId.length > 36) {
       return;
     }
-
     const input = {
       id: doctorId,
     };
@@ -850,7 +879,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         CommonBugFender('DoctorDetails_getNetStatus', e);
       });
   };
-
+  
   const renderCareDoctorPricing = (consultType: ConsultMode) => {
     return (
       <View style={{ paddingBottom: showCircleSubscribed ? 16 : 3 }}>
@@ -858,11 +887,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           style={[
             styles.carePrice,
             {
-              textDecorationLine: showCircleSubscribed ? 'line-through' : 'none',
+              textDecorationLine: showCircleSubscribed && 
+              (!cashbackEnabled || consultType === ConsultMode.PHYSICAL) ? 'line-through' : 'none',
               ...theme.viewStyles.text(
                 'M',
                 15,
-                showCircleSubscribed ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
+                showCircleSubscribed && (!cashbackEnabled || consultType === ConsultMode.PHYSICAL)
+                 ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
               ),
             },
           ]}
@@ -873,15 +904,37 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             : convertNumberToDecimal(physicalConsultMRPPrice)}
         </Text>
         <View style={styles.rowContainer}>
-          <Text style={styles.careDiscountedPrice}>
-            {string.common.Rs}
-            {consultType === ConsultMode.ONLINE
-              ? convertNumberToDecimal(onlineConsultSlashedPrice)
-              : convertNumberToDecimal(physicalConsultSlashedPrice)}
-          </Text>
-          {showCircleSubscribed ? (
-            <CircleLogo style={[styles.smallCareLogo, { height: 17 }]} />
-          ) : null}
+          <Tooltip
+              containerStyle={styles.tooltipView}
+              height={126}
+              width={264}
+              skipAndroidStatusBar={true}
+              toggleOnPress={!!cashbackEnabled}
+              pointerColor={theme.colors.WHITE}
+              overlayColor={theme.colors.CLEAR}
+              popover={
+                <View>
+                  <Text style={styles.tooltipTitle}>{string.common.whatIsHc}</Text>
+                  <Text style={styles.tootipDesc}>{string.common.hcShort}
+                  <Text style={styles.hcBoldText}>
+                    {string.common.healthCredit}
+                    </Text>
+                    {string.common.hcInfo}
+                    </Text>
+                  <Text style={styles.tipHcInfoText}>{string.common.hcToRupee}</Text>
+                </View>
+              }>
+            <Text style={styles.careDiscountedPrice}>
+              {consultType === ConsultMode.PHYSICAL ? string.common.Rs +
+              convertNumberToDecimal(physicalConsultSlashedPrice) : cashbackEnabled ?
+              `Upto ${cashbackAmount} HC` : string.common.Rs +
+              convertNumberToDecimal(onlineConsultSlashedPrice)}
+            </Text>
+          </Tooltip>
+          {showCircleSubscribed ? consultType === ConsultMode.PHYSICAL ? (
+            <CircleLogo style={[styles.smallCareLogo, { height: 17 }]} /> 
+          ) : cashbackEnabled ? <Tick style={styles.tickIcon} /> : 
+          <CircleLogo style={[styles.smallCareLogo, { height: 17 }]} /> : null}
         </View>
         {!showCircleSubscribed ? (
           <TouchableOpacity
@@ -895,6 +948,15 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             <InfoBlue style={styles.smallInfo} />
           </TouchableOpacity>
         ) : null}
+        {showCircleSubscribed && 
+          consultType === ConsultMode.ONLINE &&
+          cashbackEnabled &&
+          <View style={styles.rowContainer}>
+            <Text style={styles.smallText}>as a</Text>
+            <CircleLogo style={styles.smallCareLogo} />
+            <Text style={styles.smallText}>members</Text>
+          </View>
+          }
       </View>
     );
   };
@@ -1176,7 +1238,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                         )}
                         <AvailabilityCapsule
                           titleTextStyle={{ paddingHorizontal: 7 }}
-                          styles={{ marginTop: -5 }}
+                          styles={{ marginTop: cashbackEnabled ? 12 : -5}}
                           availableTime={physicalAvailableTime}
                           availNowText={ctaBannerText?.AVAILABLE_NOW || ''}
                         />

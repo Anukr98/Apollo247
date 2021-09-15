@@ -217,6 +217,13 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       setError(true);
     }
   };
+  const sampleCollectedArray = [
+    DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
+    DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
+    DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
+    DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
+    DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
+  ];
 
   async function callOrderLevelStatusApi(orderId: string) {
     try {
@@ -533,6 +540,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
               order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_MODIFIED &&
               DIAGNOSTIC_SUB_STATUS_TO_SHOW?.includes(order?.subStatus!);
 
+            const slotDate = moment(selectedOrder?.slotDateTimeInUTC).format('Do MMM');
+            const slotTime1 = moment(selectedOrder?.slotDateTimeInUTC).format('hh:mm A');
+            const slotTime2 = moment(selectedOrder?.slotDateTimeInUTC)
+              .add(slotDuration, 'minutes')
+              .format('hh:mm A');
             return (
               <>
                 {!!showStatus && showStatus ? (

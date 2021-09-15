@@ -56,6 +56,7 @@ import {
   getPackageIds,
   getIsMedicine,
   getNetStatus,
+  isCartPriceWithInSpecifiedRange,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   pinCodeServiceabilityApi247,
@@ -594,7 +595,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         const allowPriceUpdate =
           cartItem?.price !== storePrice
             ? updatePrices === 'ByPercentage'
-              ? isPricesWithInSpecifiedRange(
+              ? isCartPriceWithInSpecifiedRange(
                   cartItem?.price,
                   storePrice,
                   updatePricePercent,
@@ -1174,22 +1175,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     );
   };
   return <View style={{ flex: 1 }}>{cartItems?.length ? renderScreen() : renderEmptyCart()}</View>;
-};
-
-const isPricesWithInSpecifiedRange = (
-  num1: number,
-  num2: number,
-  maxRangePercentage: number,
-  minRangePercentage: number
-) => {
-  try {
-    const diff = num1 - num2;
-    const diffP = (diff / num1) * 100;
-    const result = Math.abs(diffP) >= minRangePercentage && Math.abs(diffP) <= maxRangePercentage;
-    return result;
-  } catch (error) {
-    return false;
-  }
 };
 
 const styles = StyleSheet.create({

@@ -142,6 +142,10 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     fetchWidgetsPrices(widgetsData);
   }, [widgetsData?.diagnosticWidgetData?.[0]]);
 
+  useEffect(() => {
+    fetchWidgetsPrices(widgetsData);
+  }, [widgetsData?.diagnosticWidgetData?.[0]]);
+
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
       query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
@@ -309,6 +313,53 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       </View>
     );
   };
+  let countDown: any;
+  const loadMoreFuction = () => {
+    if (widgetsData?.diagnosticWidgetData?.length > limit * currentOffset) {
+      setTestLength(widgetsData?.diagnosticWidgetData?.length);
+    } else {
+      setTestLength(limit * currentOffset);
+    }
+    setShowLoadMore(false);
+  };
+
+  const onEndReached = () => {
+    if (testLength <= widgetsData?.diagnosticWidgetData?.length) {
+      setCurrentOffset(currentOffset + 1);
+      setShowLoadMore(true);
+      countDown = setTimeout(function() {
+        loadMoreFuction();
+      }, 2000);
+    } else {
+      setCurrentOffset(currentOffset);
+      setShowLoadMore(false);
+      clearTimeout(countDown);
+    }
+  };
+
+  const renderEmptyMessage = () => {
+    return (
+      <View style={styles.emptyContainer}>
+        <Card
+          cardContainer={[styles.noDataCardEmpty]}
+          heading={string.common.uhOh}
+          description={string.common.noDiagnosticsAvailable}
+          descriptionTextStyle={{ fontSize: 14 }}
+          headingTextStyle={{ fontSize: 14 }}
+        />
+      </View>
+    );
+  };
+
+  const renderLoadMore = () => {
+    return (
+      <View style={styles.loadMoreView}>
+        <ActivityIndicator color="green" size="small" />
+        <Text style={styles.loadingMoreProducts}>Hold on, loading more products.</Text>
+      </View>
+    );
+  };
+
   let countDown: any;
   const loadMoreFuction = () => {
     if (widgetsData?.diagnosticWidgetData?.length > limit * currentOffset) {

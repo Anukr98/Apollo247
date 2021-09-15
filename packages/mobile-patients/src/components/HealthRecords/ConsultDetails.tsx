@@ -131,6 +131,7 @@ import {
   getDiagnosticSlotsCustomizedVariables,
 } from '../../graphql/types/getDiagnosticSlotsCustomized';
 import DeviceInfo from 'react-native-device-info';
+import { postCleverTapUploadPrescriptionEvents } from '@aph/mobile-patients/src/components/UploadPrescription/Events';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -298,6 +299,13 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE, 1, 16),
     paddingBottom: 10,
   },
+  tatDeliveryText: { color: theme.colors.APP_GREEN },
+  slotText: {
+    ...theme.viewStyles.text('R', 13, theme.colors.APP_RED, 1, 24),
+    flex: 1,
+    textAlign: 'right',
+    paddingEnd: 10,
+  },
 });
 
 export interface ConsultDetailsProps
@@ -385,12 +393,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     if (caseSheetDetails && !defaultAddress) {
       getAddressList();
     } else if (defaultAddress && !testIds.length) {
-      getPincodeServicibility(Number(defaultAddress?.zipcode));
       if (caseSheetDetails?.medicinePrescription?.length) {
         checkMedicineAvailability();
       }
     } else {
-      getNearestArea();
+      // Test Delivery slots api to be addded here in future
     }
   }, [caseSheetDetails, defaultAddress, testIds]);
 
@@ -441,9 +448,17 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           const addressList = data?.data?.getPatientAddressList?.addressList || [];
           if (addressList.length) {
             const address = addressList.find((address) => address?.defaultAddress);
-            address && address?.latitude && setDefaultAddress(address);
+            if (address) {
+              address?.latitude && setDefaultAddress(address);
+            } else {
+              setLoading && setLoading(false);
+              setPrescAvailability('unavailable');
+              setTestAvailability('unavailable');
+            }
           } else {
             setLoading && setLoading(false);
+            setPrescAvailability('unavailable');
+            setTestAvailability('unavailable');
           }
         }
       })
@@ -460,8 +475,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     if (medicineResponse.length) {
       const availableMedicines = medicineResponse.filter((item) => item?.exist);
       setPrescAvailability(availableMedicines.length == skus?.length ? 'available' : 'partial');
-      const skuItems = skus?.map((item) => {
-        return { sku: item, qty: 1 };
+      const skuItems = availableMedicines?.map((item) => {
+        return { sku: item?.sku, qty: 1 };
       })!;
       const data = await getDeliveryTAT({
         lat: defaultAddress?.latitude!,
@@ -472,10 +487,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       if (data?.data?.response) {
         const { tat } = data?.data?.response;
         setTat(moment(tat, 'DD-MMM-YYYY HH:mm').format('h:mm A, DD MMM YYYY'));
-      } else {
-        setLoading && setLoading(false);
       }
     }
+    setLoading && setLoading(false);
   };
 
   const getPincodeServicibility = (pinCodeFromAddress: number) => {
@@ -1001,6 +1015,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         addMultipleCartItems?.(cartItems);
         setEPrescriptions?.([presToAdd]);
         setLoading?.(false);
+        postCleverTapUploadPrescriptionEvents('Health Records', 'Cart');
         props.navigation.push(AppRoutes.MedicineCart);
       } catch (error) {
         setLoading?.(false);
@@ -1014,6 +1029,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     }
 
     setEPrescriptions?.([presToAdd]);
+    postCleverTapUploadPrescriptionEvents('Health Records', 'Non-Cart');
     props.navigation.navigate(AppRoutes.UploadPrescription, {
       ePrescriptionsProp: [presToAdd],
       type: 'E-Prescription',
@@ -1146,9 +1162,12 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     return prescAvailability !== 'unavailable' ? (
       <Text style={styles.tatText}>
         {prescAvailability == 'available'
-          ? isAllMedicineAtPincode + ` at (${defaultAddress?.zipcode}) by ${tat}`
-          : isPartialMedicineAtPincode + `at (${defaultAddress?.zipcode}) by ${tat}`}
+          ? isAllMedicineAtPincode + ' at '
+          : isPartialMedicineAtPincode + ' at '}
+        <Text style={styles.tatDeliveryText}>{`(${defaultAddress?.zipcode}) by ${tat}`}</Text>
       </Text>
+    ) : noPincode ? (
+      <Text style={styles.tatText}>{noPincode}</Text>
     ) : null;
   };
 
@@ -1159,9 +1178,12 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     return testAvailability !== 'unavailable' ? (
       <Text style={styles.tatText}>
         {testAvailability == 'available'
-          ? isPartialTestAtPincode + ` at (${defaultAddress?.zipcode}) by ${testSlot}`
-          : isAllTestAtPincode + `at (${defaultAddress?.zipcode}) by ${testSlot}`}
+          ? isPartialTestAtPincode + ' at '
+          : isAllTestAtPincode + ' at '}
+        <Text style={styles.tatDeliveryText}>{`(${defaultAddress?.zipcode}) by ${testSlot}`}</Text>
       </Text>
+    ) : noPincode ? (
+      <Text style={styles.tatText}>{noPincode}</Text>
     ) : null;
   };
 
@@ -1201,7 +1223,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                     </>
                   );
               })}
-              <View style={styles.tatContainer}>
+              <TouchableOpacity style={styles.tatContainer} onPress={onAddToCart}>
                 {tatContent.length ? (
                   <View>
                     {priscTatText()}
@@ -1210,14 +1232,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                     </Text>
                   </View>
                 ) : null}
-                <TouchableOpacity
-                  onPress={() => {
-                    onAddToCart();
-                  }}
-                >
-                  <Text style={styles.quickActionButtons}>ORDER MEDICINES</Text>
-                </TouchableOpacity>
-              </View>
+                <Text style={styles.quickActionButtons}>
+                  {strings.health_records_home.order_medicines}
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
         ) : (
@@ -1343,25 +1361,24 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 </>
               );
             })}
-            <View style={styles.tatContainer}>
+            <TouchableOpacity
+              style={styles.tatContainer}
+              onPress={() => {
+                postWEGEvent('test');
+                onAddTestsToCart();
+              }}
+            >
               {tatContent.length ? (
                 <View>
-                  {testTatText()}
                   <Text style={styles.tatText}>{testTat['discount']}</Text>
                   <Text style={styles.tatText}>{testTat['reportTime']}</Text>
                 </View>
               ) : null}
-              <TouchableOpacity
-                onPress={() => {
-                  postWEGEvent('test');
-                  onAddTestsToCart();
-                }}
-              >
-                <Text style={styles.quickActionButtons}>
-                  {strings.health_records_home.order_test}
-                </Text>
-              </TouchableOpacity>
-            </View>
+              <Text style={styles.quickActionButtons}>
+                {strings.health_records_home.order_test}
+              </Text>
+              <Text style={styles.slotText}>{strings.health_records_home.slot_filling}</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           renderNoData('No Tests')

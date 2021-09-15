@@ -6,6 +6,7 @@ import com.BV.LinearGradient.LinearGradientPackage;
 import com.apollopatient.appsignature.RNAppSignatureHelperPackage;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.bebnev.RNUserAgentPackage;
 import com.ibits.react_native_in_app_review.AppReviewPackage;
 import com.christopherdro.htmltopdf.RNHTMLtoPDFPackage;
 import com.horcrux.svg.SvgPackage;

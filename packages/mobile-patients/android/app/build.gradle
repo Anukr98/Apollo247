@@ -137,7 +137,7 @@ android {
         applicationId "com.apollo.patientapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 137
+        versionCode 138
         versionName "5.8.0"
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
@@ -215,6 +215,7 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-user-agent')
     implementation project(':react-native-in-app-review')
     implementation project(':react-native-html-to-pdf')
     implementation project(':react-native-svg')
@@ -314,6 +315,7 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.6.0")
     implementation("com.squareup.retrofit2:converter-gson:2.6.0")
     implementation("com.squareup.retrofit2:adapter-rxjava2:2.6.0")
+    
 // Glide
     implementation("com.github.bumptech.glide:glide:4.9.0")
     kapt("com.github.bumptech.glide:compiler:4.9.0")
