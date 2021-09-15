@@ -392,7 +392,8 @@
     "click_here": "CLICK HERE",
     "reopen_ticket": "REOPEN TICKET",
     "whatsapp_with_us": "WHATSAPP WITH US",
-    "no_conversation_till_now": "No conversation till now !"
+    "no_conversation_till_now": "No conversation till now !",
+    "ticket_creation_lag_time": "It usually takes 10 seconds to submit your ticket, we will update you here once its done."
   },
   "doctor_search_listing": {
     "pleaseWait": "Please Wait!",
