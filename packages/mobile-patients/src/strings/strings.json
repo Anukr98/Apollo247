@@ -141,6 +141,7 @@
     "noDiagnosticsAvailable": "Unfortunately, we do not have any diagnostic(s) available right now.",
     "unableToSetDeliveryAddress": "We're sorry! Unable to set delivery address. Please try again after some time",
     "circleNoSubscriptionText": "No Subscription",
+    "sharePHR": "Share all Files from Past Medical record with the Doctor",
     "memberCashback": " Membership Cashback ",
     "cashbackInfo": "(Cashback can be used to buy medicines online as well as at physical Apollo Pharmacy stores. ",
     "hcSavedOnConsultByCare": "You will get {amount} HC on this Consult",
