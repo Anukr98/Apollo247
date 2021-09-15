@@ -234,7 +234,7 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
   const [messageText, setMessageText] = useState<string>('');
   const [contentHeight, setContentHeight] = useState(40);
   const [isTicketClosed, setIsTicketClosed] = useState<boolean>(
-    ticket?.statusType?.toUpperCase() === 'CLOSED' ? true : false
+    ticket?.statusType?.toUpperCase() === 'CLOSED' || 'RESOLVED'? true : false
   );
   const [conversations, setConverstions] = useState<any>([]);
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
