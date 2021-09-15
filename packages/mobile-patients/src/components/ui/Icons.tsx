@@ -2175,3 +2175,10 @@ export const RemoveIconGrey: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/crossIcon.webp')}
   />
 );
+
+export const ConsultRefund: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/refund_new.webp')}
+  />
+);

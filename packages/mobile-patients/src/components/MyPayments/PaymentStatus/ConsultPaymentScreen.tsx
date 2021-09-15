@@ -12,6 +12,7 @@ import {
   EmailGray,
   Pdf,
   RightArrowBlue,
+  ConsultRefund,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -132,6 +133,8 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
       return <ConsultSuccess style={styles.statusIconStyles} />;
     } else if (status === failure) {
       return <ConsultFailure style={styles.statusIconStyles} />;
+    } else if(status == REFUND){
+      return <ConsultRefund style={styles.refundIconStyles} />;
     } else {
       return <ConsultPending style={styles.statusIconStyles} />;
     }
@@ -194,31 +197,35 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
   };
 
   const statusText = () => {
-    let message = 'PAYMENT PENDING';
+    let message = ' Payment Pending';
     let textColor = theme.colors.PENDING_TEXT;
     if (status === success) {
-      message = ' PAYMENT SUCCESSFUL';
+      message = ' Payment Successful';
       textColor = theme.colors.CONSULT_SUCCESS_TEXT;
     } else if (status === failure) {
-      message = ' PAYMENT FAILED';
+      message = ' Payment Failed';
       textColor = theme.colors.FAILURE_TEXT;
+    } else if (status == REFUND) {
+      message = ' Refund Processed'
+      textColor = theme.colors.DEEP_RED;
     }
     return textComponent(message, undefined, textColor, false);
   };
 
   const priceText = () => {
-    const priceText = `${string.common.Rs} ` + String(price);
     let textColor = theme.colors.PENDING_TEXT;
     if (status === success) {
       textColor = theme.colors.CONSULT_SUCCESS_TEXT;
     } else if (status === failure) {
       textColor = theme.colors.FAILURE_TEXT;
+    } else if (status == REFUND) {
+      textColor = theme.colors.DEEP_RED;
     }
-    return textComponent(priceText, undefined, textColor, false);
+    return textComponent(price, undefined, textColor, false);
   };
 
   const renderViewInvoice = () => {
-    if (status === success) {
+    if (status == success || status == REFUND) {
       return (
         <View style={styles.viewInvoice}>
           <TouchableOpacity
@@ -388,26 +395,35 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
     const {appointmentType, appointmentDateTime, doctor} = itemDetails || {};
     return (
       <View style={styles.statusCardStyle}>
-        <View style={styles.statusCardSubContainerStyle}>
-          {statusIcon()}
-          <View style={styles.statusView}>
-            {statusText()}
-            {priceText()}
+        <View style={[
+          styles.statusCardSubContainerStyle,
+          (status == pending || status == failure) &&
+          {
+            ...styles.failureCardStyle,
+            borderColor: status == failure ? theme.colors.APP_RED : theme.colors.PENDING_TEXT
+          }]}>
+          <View style={styles.centerHorizontal}>
+            {statusIcon()}
+            <View style={styles.statusView}>
+              {statusText()}
+              {priceText()}
+            </View>
+          </View>
+          <View style={styles.orderIdStyles}>
+            <Text style={theme.viewStyles.text('R', 10, theme.colors.SLATE_GRAY, 1, 20)}>
+              {orderIdText}
+            </Text>
           </View>
         </View>
-        <View style={styles.orderIdStyles}>
-          <Text style={theme.viewStyles.text('R', 10, theme.colors.SLATE_GRAY, 1, 20)}>
-            {orderIdText}
-          </Text>
-        </View>
-        <TouchableOpacity
-          style={styles.refStyles}
-          onPress={() => copyToClipboard(refId)}>
-          <Text style={theme.viewStyles.text('R', 10, theme.colors.SLATE_GRAY, 1, 20)}>
-            {'Payment Ref. Number - ' + refId}
-          </Text>
-          <Copy style={styles.iconStyle} />
-        </TouchableOpacity>
+        {(status == success || status == REFUND) &&
+          <TouchableOpacity
+            style={styles.refStyles}
+            onPress={() => copyToClipboard(refId)}>
+            <Text style={theme.viewStyles.text('R', 10, theme.colors.SLATE_GRAY, 1, 20)}>
+              {'Payment Ref. Number - ' + refId}
+            </Text>
+            <Copy style={styles.iconStyle} />
+          </TouchableOpacity>}
         <View>
           {renderViewInvoice()} 
           {renderEmailInputContainer()}
@@ -429,7 +445,7 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
           </Text>
           <Text style={theme.viewStyles.text('M', 12, theme.colors.CONSULT_SUCCESS_TEXT, 1, 20)}>
             {appointmentType.charAt(0).toUpperCase() + appointmentType.slice(1).toLowerCase()
-             + ' Consultation,' + getDate(appointmentDateTime)}
+            + ' Consultation,' + getDate(appointmentDateTime)}
           </Text>
           <Text style={theme.viewStyles.text('M', 12, theme.colors.BLACK_COLOR, 1, 20)}>
             {doctor?.name}
@@ -444,35 +460,11 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
     if (status === failure) {
       noteText =
         'Note : In case your account has been debited, you should get the refund in 1-7 working days.';
-    } else if (status != success && status != failure) {
+    } else if (status == pending) {
       noteText =
         'Note : Your payment is in progress and this may take a couple of minutes to confirm your booking. We’ll intimate you once your bank confirms the payment.';
     }
     return textComponent(noteText, undefined, theme.colors.SHADE_GREY, true);
-  };
-
-  const getButtonText = () => {
-    if (status == success) {
-      return 'Go To Consult Room';
-    } else if (status == failure) {
-      return 'TRY AGAIN';
-    } else {
-      return 'GO TO HOME';
-    }
-  };
-
-  const renderButton = () => {
-    return (
-      <TouchableOpacity
-        style={styles.buttonStyle}
-        onPress={() => {
-        }}
-      >
-        <Text style={{ ...theme.viewStyles.text('SB', 13, '#ffffff', 1, 24) }}>
-          {getButtonText()}
-        </Text>
-      </TouchableOpacity>
-    );
   };
 
   const renderAddedCirclePlanWithValidity = () => {
@@ -587,7 +579,16 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
       </View>
     )
   }
-
+  
+  const renderMedicineNote = () => {
+    return (
+      <View style={styles.medicineNoteView}>
+        <Text style={theme.viewStyles.text('R', 10, theme.colors.SLATE_GRAY)}>
+          {string.consultPayment.medicineNote}
+        </Text>
+      </View>
+    )
+  }
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
@@ -596,19 +597,20 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
         <View style={styles.container}>
             <ScrollView style={styles.container}>
               {renderStatusCard()}
-              {status == success && renderConsultInfo()}
+              {renderConsultInfo()}
               {circleSavings > 0 && !circleSubscriptionId
                 ? renderAddedCirclePlanWithValidity()
                 : null}
               {circleSavings > 0 && !!circleSubscriptionId ? renderCircleSavingsOnPurchase() : null}
               {renderNote()}
+              {renderMedicineNote()}
             </ScrollView>
             <View style={{backgroundColor: theme.colors.WHITE}}>
             <FooterButton
-            item={itemDetails}
-            paymentFor={paymentType}
-            navigationProps={props.navigation}
-          />
+              item={itemDetails}
+              paymentFor={paymentType}
+              navigationProps={props.navigation}
+            />
             </View>
           </View>
         {notificationAlert && (
@@ -661,7 +663,9 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.WHITE
   },
   statusCardSubContainerStyle: {
-    margin: 12,
+    padding: 12,
+  },
+  centerHorizontal: {
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -697,7 +701,8 @@ const styles = StyleSheet.create({
   },
   refStyles: {
     flexDirection: 'row',
-    marginStart: 12,
+    marginHorizontal: 12,
+    flexWrap: 'wrap'
   },
   iconStyle: {
     marginLeft: 6,
@@ -739,7 +744,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(11),
   },
   orderIdStyles: {
-    marginStart: 12,
+    marginTop: 12,
   },
   paymentRef: {
     justifyContent: 'flex-start',
@@ -951,4 +956,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  refundIconStyles: {
+    width: 36,
+    height: 40,
+  },
+  medicineNoteView: {
+    backgroundColor: theme.colors.WHITE,
+    marginHorizontal: 20,
+    borderRadius: 10,
+    padding: 12,
+    marginTop: 10,
+  },
+  failureCardStyle: {
+    borderWidth: 1.5,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  }
 });
