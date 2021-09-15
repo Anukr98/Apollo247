@@ -38,7 +38,15 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { FlatList, ListRenderItemInfo, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import {
+  BackHandler,
+  FlatList,
+  ListRenderItemInfo,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
 import { TouchableOpacity } from 'react-native';
@@ -66,6 +74,7 @@ export interface Props
     refund: any[];
     payment: any[];
     additionalInfo: boolean;
+    etd: any;
   }> {}
 
 export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
@@ -100,17 +109,35 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const isConsult = navigation.getParam('isConsult') || false;
   const [selectedQueryId, setSelectedQueryId] = useState<string>('');
   const [comments, setComments] = useState<string>('');
+  const [orderDelayed, setOrderDelayed] = React.useState<boolean>(false);
+  const [tatBreach, setTatBreach] = React.useState<Boolean>(true);
+  const [raiseOrderDelayQuery, setRaiseOrderDelayQuery] = React.useState<boolean>(false);
+  const [etd, setEtd] = React.useState<string>(navigation.getParam('etd'));
   const apolloClient = useApolloClient();
   const { getHelpSectionQueries } = NeedHelpHelpers;
+
+  React.useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', () => {
+      if (orderDelayed) {
+        setOrderDelayed(false);
+        return true;
+      } else navigation.goBack();
+    });
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', () => {
+        if (orderDelayed) {
+          setOrderDelayed(false);
+          return true;
+        } else navigation.goBack();
+      });
+    };
+  }, [orderDelayed]);
 
   useEffect(() => {
     if (!_queries) {
       fetchQueries();
     }
-    if (
-      queryIdLevel1 == helpSectionQueryId.pharmacy &&
-      navigation.getParam('refund') === undefined
-    ) {
+    if (queryIdLevel1 == helpSectionQueryId.pharmacy) {
       getOMSDetails();
     }
   }, []);
@@ -156,7 +183,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       variables: vars,
       fetchPolicy: 'no-cache',
     });
-
+    setTatBreach(data?.getMedicineOrderOMSDetailsWithAddress?.tatBreached);
     const order = data?.getMedicineOrderOMSDetailsWithAddress?.medicineOrderDetails;
     const paymentDetails = order?.medicineOrderPayments || [];
     const RefundTypes = ['REFUND_REQUEST_RAISED', 'REFUND_SUCCESSFUL'];
@@ -169,7 +196,12 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderHeader = () => {
-    const onPressBack = () => navigation.goBack();
+    const onPressBack = () => {
+      if (orderDelayed) {
+        return setOrderDelayed(false);
+      }
+      navigation.goBack();
+    };
     const pageTitle = string.help.toUpperCase();
     return <Header title={pageTitle} leftIcon="backArrow" onPressLeftIcon={onPressBack} />;
   };
@@ -215,7 +247,6 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       subject: '',
       ticketNumber: '',
     };
-
     if (ticketId) {
       navigation.navigate(AppRoutes.HelpChatScreen, {
         ticketId: ticketId,
@@ -281,7 +312,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
   const renderTextInputAndCTAs = () => {
     const isDeliveryStatusQuery = selectedQueryId === helpSectionQueryId.deliveryStatus;
-
+    
     return [
       <TextInputComponent
         value={comments}
@@ -440,15 +471,27 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         });
       } else {
         setSelectedQueryId(item.id!);
+        setRaiseOrderDelayQuery(false);
         setComments('');
       }
+      !raiseOrderDelayQuery &&
+        item?.title === 'My order is getting Delayed' &&
+        setOrderDelayed(true);
     };
     return (
       <>
         <Text onPress={onPress} style={styles.flatListItem}>
           {item?.title}
         </Text>
-        {item?.id === selectedQueryId ? renderTextInputAndCTAs() : null}
+        {item?.id === selectedQueryId
+          ? item?.title === 'My order is getting Delayed'
+            ? null
+            : renderTextInputAndCTAs()
+          : null}
+        {item?.title === 'My order is getting Delayed' &&
+          item?.id === selectedQueryId &&
+          raiseOrderDelayQuery &&
+          renderTextInputAndCTAs()}
       </>
     );
   };
@@ -468,15 +511,75 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     }
 
     return (
-      <View style={styles.flatListContainer}>
-        <FlatList
-          data={data}
-          renderItem={renderItem}
-          keyExtractor={(_, i) => `${i}`}
-          bounces={false}
-          ItemSeparatorComponent={renderDivider}
-        />
-      </View>
+      <>
+        {orderDelayed ? (
+          <>
+            {tatBreach ? (
+              <>
+                <View style={styles.flatListContainer2}>
+                  <Text style={styles.flatListItem}>
+                    Your Order is {medicineOrderStatus}. Due to heavy order volumes, we are facing
+                    unexpected delays in shipping. We sincerely apologize for the inconvenience. We
+                    are working proactively to deliver at the earliest.
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.trackStyle}
+                    onPress={() => {
+                      navigation.navigate(AppRoutes.OrderDetailsScene, {
+                        orderAutoId: orderId,
+                      });
+                    }}
+                  >
+                    <Text style={styles.trackText}>TRACK ORDER</Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.flatListContainer2}>
+                  <TouchableOpacity
+                    style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+                    onPress={() => {
+                      setRaiseOrderDelayQuery(true);
+                      setOrderDelayed(false);
+                      setComments('');
+                    }}
+                  >
+                    <Text style={styles.txtBold}>My issue is still not resolved</Text>
+                    <ArrowRight style={{ height: 18, width: 18 }} />
+                  </TouchableOpacity>
+                </View>
+              </>
+            ) : (
+              <>
+                <View style={styles.flatListContainer2}>
+                  <Text style={styles.flatListItem}>
+                    Your Order is {medicineOrderStatus}. You will receive your order by {etd}. We
+                    are working proactively to deliver at the earliest.
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.trackStyle}
+                    onPress={() => {
+                      navigation.navigate(AppRoutes.OrderDetailsScene, {
+                        orderAutoId: orderId,
+                      });
+                    }}
+                  >
+                    <Text style={styles.trackText}>TRACK ORDER</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </>
+        ) : (
+          <View style={styles.flatListContainer}>
+            <FlatList
+              data={data}
+              renderItem={renderItem}
+              keyExtractor={(_, i) => `${i}`}
+              bounces={false}
+              ItemSeparatorComponent={renderDivider}
+            />
+          </View>
+        )}
+      </>
     );
   };
 
@@ -486,6 +589,9 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
   const renderHeading = () => {
     const title = headingTitle;
+    if (orderDelayed) {
+      return;
+    }
     const text = orderId
       ? `HELP WITH ${isConsult ? 'APPOINTMENT' : 'ORDER'} #${orderId}`
       : `HELP WITH ${title?.toUpperCase()}`;
@@ -494,6 +600,13 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
   const renderSubHeading = () => {
     const text = 'SELECT YOUR ISSUE';
+    if (orderDelayed) {
+      return (
+        <Text style={[styles.subHeading, styles.txtBold, styles.subHeadingText]}>
+          My Order is getting delayed
+        </Text>
+      );
+    }
     return <Text style={styles.subHeading}>{text}</Text>;
   };
 
@@ -537,8 +650,13 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 150,
   },
+  flatListContainer2: {
+    ...card(),
+    marginTop: 10,
+    marginBottom: 10,
+  },
   flatListItem: {
-    ...text('M', 14, LIGHT_BLUE),
+    ...text('M', 14, LIGHT_BLUE, undefined, 22),
   },
   breadcrumb: {
     marginHorizontal: 20,
@@ -553,6 +671,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginTop: 10,
   },
+  subHeadingText: {
+    marginTop: 0,
+    marginBottom: 7,
+  },
   textInputContainer: {
     marginTop: 15,
   },
@@ -566,5 +688,14 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginBottom: 12,
     marginHorizontal: 5,
+  },
+  trackText: {
+    alignSelf: 'flex-end',
+    ...text('M', 14, APP_YELLOW),
+  },
+  trackStyle: { marginTop: 24 },
+  txtBold: {
+    ...text('M', 14, LIGHT_BLUE, undefined, 19),
+    fontWeight: 'bold',
   },
 });

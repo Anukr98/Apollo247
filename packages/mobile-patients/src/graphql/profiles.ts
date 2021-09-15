@@ -1918,6 +1918,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
       orderAutoId: $orderAutoId
       billNumber: $billNumber
     ) {
+      tatBreached
       medicineOrderDetails {
         id
         appointmentId
@@ -2223,6 +2224,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT = gql`
       orderAutoId: $orderAutoId
       billNumber: $billNumber
     ) {
+      tatBreached:Boolean
       medicineOrderDetails {
         medicineOrderShipments {
           trackingNo
