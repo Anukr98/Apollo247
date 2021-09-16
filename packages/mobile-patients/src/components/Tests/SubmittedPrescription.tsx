@@ -67,7 +67,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPatientPrescriptions';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 const { width, height } = Dimensions.get('window');
-// import LottieView from 'lottie-react-native';
+import LottieView from 'lottie-react-native';
 const GreenTickAnimation = '@aph/mobile-patients/src/components/Tests/greenTickAnimation.json'
 
 export interface SubmittedPrescriptionProps extends NavigationScreenProps {
@@ -228,13 +228,14 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   const renderSuccessUploadView = () => {
     return (
       <View style={styles.successView}>
-        {/* <LottieView
+        <LottieView
           source={require(GreenTickAnimation)}
           autoPlay
           loop={false}
           style={{ marginBottom: 80 }}
-        /> */}
-        <GreenCircleTick width={55} height={55} />
+        />
+        {/* This icon is used optional. Commented for future use */}
+        {/* <GreenCircleTick width={55} height={55} /> */}
         <Text style={styles.successText}>Prescription Successfully Uploaded</Text>
       </View>
     );
