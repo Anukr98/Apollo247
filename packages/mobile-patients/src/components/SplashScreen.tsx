@@ -188,8 +188,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   useEffect(() => {
     prefetchUserMetadata();
-
-    InitiateAppsFlyer(props.navigation);
     DeviceEventEmitter.addListener('accept', (params) => {
       if (getCurrentRoute() !== AppRoutes.ChatRoom) {
         voipCallType.current = params.call_type;
@@ -231,6 +229,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     handleDeepLink();
     getDeviceToken();
     initializeRealTimeUninstall();
+    InitiateAppsFlyer(props.navigation, (resources) => {
+      redirectRoute(
+        resources?.routeName,
+        resources?.id,
+        resources?.isCall,
+        resources?.timeout,
+        resources?.mediaSource,
+        resources?.data
+      );
+    });
   }, []);
 
   useEffect(() => {
@@ -369,10 +377,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           setBugFenderLog('DEEP_LINK_URL', url);
           if (url) {
             try {
-              if (Platform.OS === 'ios') InitiateAppsFlyer(props.navigation);
-              const data = handleOpenURL(url);
-              const { routeName, id, isCall, timeout, mediaSource } = data;
-              redirectRoute(routeName, id, isCall, timeout, mediaSource, data?.data);
+              const data: any = handleOpenURL(url);
+              redirectRoute(
+                data?.routeName,
+                data?.id,
+                data?.isCall,
+                data?.timeout,
+                data?.mediaSource,
+                data?.data
+              );
               fireAppOpenedEvent(url);
             } catch (e) {}
           } else {
@@ -387,10 +400,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       Linking.addEventListener('url', (event) => {
         try {
           setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
-          const data = handleOpenURL(event.url);
+          const data: any = handleOpenURL(event.url);
           triggerUTMCustomEvent(event.url);
-          const { routeName, id, isCall, timeout, mediaSource } = data;
-          redirectRoute(routeName, id, isCall, timeout, mediaSource, data?.data);
+          redirectRoute(
+            data?.routeName,
+            data?.id,
+            data?.isCall,
+            data?.timeout,
+            data?.mediaSource,
+            data?.data
+          );
           fireAppOpenedEvent(event.url);
         } catch (e) {}
       });

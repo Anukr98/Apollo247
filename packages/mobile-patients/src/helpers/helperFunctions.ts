@@ -108,17 +108,18 @@ import CleverTap from 'clevertap-react-native';
 import {
   CleverTapEvents,
   CleverTapEventName,
-  ReorderMedicines,
   PharmacyCircleMemberValues,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import Share from 'react-native-share';
 import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientAddressObj } from '../graphql/types/getDiagnosticOrderDetails';
+import { handleOpenURL, pushTheView } from './deeplinkRedirection';
 
 const width = Dimensions.get('window').width;
 
 const { RNAppSignatureHelper } = NativeModules;
 let onInstallConversionDataCanceller: any;
 let onAppOpenAttributionCanceller: any;
+let onDeepLinkCanceller: any;
 
 interface AphConsole {
   error(message?: any, ...optionalParams: any[]): void;
@@ -2173,8 +2174,20 @@ export const storagePermissions = (doRequest?: () => void) => {
 };
 
 export const InitiateAppsFlyer = (
-  navigation: NavigationScreenProp<NavigationRoute<object>, object>
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  redirectWithOutDeferred: (data: any) => void | undefined
 ) => {
+  appsFlyer.initSdk(
+    {
+      devKey: 'pP3MjHNkZGiMCamkJ7YpbH',
+      isDebug: false,
+      appId: Platform.OS === 'ios' ? '1496740273' : 'com.apollo.patientapp',
+      onInstallConversionDataListener: true, //Optional
+      onDeepLinkListener: true, //Optional
+    },
+    (result) => { },
+    (error) => { }
+  );
   onInstallConversionDataCanceller = appsFlyer.onInstallConversionData((res) => {
     if (JSON.parse(res.data.is_first_launch || 'null') == true) {
       try {
@@ -2200,17 +2213,7 @@ export const InitiateAppsFlyer = (
     }
   });
 
-  appsFlyer.initSdk(
-    {
-      devKey: 'pP3MjHNkZGiMCamkJ7YpbH',
-      isDebug: false,
-      appId: Platform.OS === 'ios' ? '1496740273' : 'com.apollo.patientapp',
-      onInstallConversionDataListener: true, //Optional
-      onDeepLinkListener: true, //Optional
-    },
-    (result) => { },
-    (error) => { }
-  );
+
 
   onAppOpenAttributionCanceller = appsFlyer.onAppOpenAttribution(async (res) => {
     // for iOS universal links
@@ -2233,7 +2236,41 @@ export const InitiateAppsFlyer = (
       } catch (error) { }
     }
   });
+  onDeepLinkCanceller = appsFlyer.onDeepLink(res => {
+    if (res.isDeferred === true) {
+      const url = handleOpenURL(res.data.deep_link_value);
+      AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url))
+    }
+    else if (res.data.deep_link_value && res.isDeferred === false) {
+      const url = handleOpenURL(res.data.deep_link_value);
+      AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url))
+      redirectWithOutDeferred(url)
+    }
+  })
 };
+
+
+
+
+
+export const deferredDeepLinkRedirectionData = async (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  failure: () => void,
+  success?: () => void
+) => {
+  const res = await AsyncStorage.getItem('deferred_deep_link_value');
+  if (res) {
+    const url = JSON.parse(res);
+    pushTheView(navigation, url?.routeName)
+    AsyncStorage.removeItem('deferred_deep_link_value')
+    success && success()
+  }
+  else {
+    failure()
+  }
+}
+
+
 
 export const UnInstallAppsFlyer = (newFirebaseToken: string) => {
   appsFlyer.updateServerUninstallToken(newFirebaseToken, (success) => { });
