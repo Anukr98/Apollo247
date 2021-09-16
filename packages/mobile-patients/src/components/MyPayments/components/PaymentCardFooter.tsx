@@ -4,10 +4,6 @@
  */
 import React, { FC, useEffect } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
-import {
-  CommonLogEvent,
-  CommonBugFender,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { colors } from '../../../theme/colors';
@@ -45,14 +41,18 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
       const {
         appointmentDateTime,
         appointmentPayments,
+        PaymentOrders,
         doctor,
         appointmentType,
         appointmentRefunds,
       } = item;
+      const { refund } = PaymentOrders;
+      const refundInfo = refund?.length ? refund : appointmentRefunds;
       leftHeaderText = 'Dr. ' + doctor.name;
       type = appointmentType === 'ONLINE' ? 'Online Consult' : 'Clinic Visit';
       aptType = appointmentType;
-      if (!appointmentPayments || !appointmentPayments.length) {
+      const paymentInfo = PaymentOrders?.paymentStatus ? PaymentOrders : appointmentPayments[0];
+      if (!paymentInfo) {
         status = 'PENDING';
         return {
           leftHeaderText: leftHeaderText,
@@ -61,7 +61,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
           status: status,
           aptType: aptType,
         };
-      } else if (appointmentRefunds.length) {
+      } else if (refundInfo?.length) {
         status = 'TXN_REFUND';
         return {
           leftHeaderText: leftHeaderText,
@@ -71,7 +71,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
           aptType: aptType,
         };
       } else {
-        status = appointmentPayments[0].paymentStatus;
+        status = paymentInfo?.paymentStatus;
         return {
           leftHeaderText: leftHeaderText,
           dateAndTime: getDate(appointmentDateTime),
@@ -81,10 +81,21 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
         };
       }
     } else {
-      const { medicineOrderPayments, orderAutoId, orderDateTime, currentStatus } = item;
+      const {
+        medicineOrderPayments,
+        orderAutoId,
+        orderDateTime,
+        currentStatus,
+        PaymentOrdersPharma,
+      } = item;
+      const { refund } = PaymentOrdersPharma;
+      const refundInfo = refund?.length ? refund : medicineOrderPayments[0]?.medicineOrderRefunds;
+      const paymentInfo = PaymentOrdersPharma?.paymentStatus
+        ? PaymentOrdersPharma
+        : medicineOrderPayments[0];
       orderID = orderAutoId;
       dateAndTime = orderDateTime;
-      if (!medicineOrderPayments || !medicineOrderPayments.length) {
+      if (!paymentInfo) {
         type = '';
         status = 'PENDING';
         return {
@@ -96,12 +107,10 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
           aptType: aptType,
         };
       } else {
-        const { paymentType, paymentMode, medicineOrderRefunds } = medicineOrderPayments[0];
+        const { paymentType, paymentMode } = paymentInfo;
         type = !paymentMode ? paymentType : PaymentModes[paymentMode];
         status =
-          currentStatus === 'CANCELLED' && medicineOrderRefunds.length
-            ? REFUND
-            : medicineOrderPayments[0].paymentStatus;
+          currentStatus === 'CANCELLED' && refundInfo?.length ? REFUND : paymentInfo?.paymentStatus;
         return {
           leftHeaderText: 'Order No. - ' + orderAutoId,
           dateAndTime: getDate(dateAndTime),
@@ -184,7 +193,6 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
         props.navigationProps.navigate(AppRoutes.MedicineCart, {});
       } else if (status === SUCCESS) {
         props.navigationProps.navigate(AppRoutes.OrderDetailsScene, {
-          goToHomeOnBack: true,
           orderAutoId: orderID,
         });
       } else {
@@ -197,8 +205,10 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
     const { status } = statusItemValues();
     const { buttonTitle } = getTitle();
     if (paymentFor === 'consult') {
-      const { appointmentRefunds } = item;
-      if ((status === SUCCESS || status === FAILED) && appointmentRefunds.length < 1) {
+      const { appointmentRefunds, PaymentOrders } = item;
+      const { refund } = PaymentOrders;
+      const refundInfo = refund?.length ? refund : appointmentRefunds;
+      if ((status === SUCCESS || status === FAILED) && refundInfo?.length < 1) {
         return <CardFooterButton buttonTitle={buttonTitle} onPressAction={navigateTo} />;
       } else {
         return null;

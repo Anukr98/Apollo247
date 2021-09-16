@@ -7,8 +7,6 @@ import React, { FC } from 'react';
 import { View, StyleSheet, Dimensions, Text } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { Payment } from '@aph/mobile-patients/src/strings/strings.json';
-import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
 import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
 import { textComponent } from './GenericText';
 
@@ -18,7 +16,6 @@ interface DetailsCardProps {
 }
 
 const windowWidth = Dimensions.get('window').width;
-const windowHeight = Dimensions.get('window').height;
 
 const DetailsCard: FC<DetailsCardProps> = (props) => {
   const PaymentModes: any = {
@@ -39,26 +36,23 @@ const DetailsCard: FC<DetailsCardProps> = (props) => {
     let doctorNameOrTime = '';
     let modeOfConsultOrPmt = '';
     if (paymentFor === 'pharmacy') {
-      const { orderDateTime, medicineOrderPayments, currentStatus } = item;
-      const {
-        paymentType,
-        paymentMode,
-        paymentStatus,
-        medicineOrderRefunds,
-      } = medicineOrderPayments[0];
-      if (!medicineOrderPayments.length) {
+      const { orderDateTime, medicineOrderPayments, currentStatus, PaymentOrdersPharma } = item;
+      const { refund } = PaymentOrdersPharma;
+      const refundInfo = refund?.length ? refund : medicineOrderPayments[0]?.medicineOrderRefunds;
+      const paymentInfo = PaymentOrdersPharma?.paymentStatus
+        ? PaymentOrdersPharma
+        : medicineOrderPayments[0];
+      const { paymentType, paymentMode, paymentStatus } = paymentInfo;
+      if (!paymentInfo) {
         status = 'PENDING';
       } else {
-        status =
-          currentStatus === 'CANCELLED' && medicineOrderRefunds.length
-            ? 'TXN_REFUND'
-            : paymentStatus;
+        status = currentStatus === 'CANCELLED' && refundInfo?.length ? 'TXN_REFUND' : paymentStatus;
         modeOfConsultOrPmt = !paymentMode ? paymentType : PaymentModes[paymentMode];
       }
       doctorNameOrTime = getDate(orderDateTime);
       rightHeaderText = 'Mode of Payment';
       if (status === 'TXN_REFUND') {
-        doctorNameOrTime = getDate(medicineOrderRefunds[0].createdDate);
+        doctorNameOrTime = getDate(refundInfo[0]?.txnTimestamp || refundInfo[0]?.createdDate);
         leftHeaderText = 'Date of Refund';
       } else {
         leftHeaderText = 'Order Date & Time';
@@ -82,13 +76,16 @@ const DetailsCard: FC<DetailsCardProps> = (props) => {
   const getUpperHeaderText = () => {
     if (paymentFor === 'consult') {
       let statusType = 'PENDING';
-      const { appointmentDateTime, appointmentPayments, appointmentRefunds } = item;
-      if (!appointmentPayments.length) {
+      const { appointmentDateTime, appointmentPayments, appointmentRefunds, PaymentOrders } = item;
+      const { refund } = PaymentOrders;
+      const refundInfo = refund?.length ? refund : appointmentRefunds;
+      const paymentInfo = PaymentOrders?.paymentStatus ? PaymentOrders : appointmentPayments[0];
+      if (!paymentInfo) {
         statusType = 'PENDING';
       } else {
-        statusType = appointmentPayments[0].paymentStatus;
+        statusType = paymentInfo?.paymentStatus;
       }
-      if (appointmentRefunds.length) {
+      if (refundInfo.length) {
         return (
           <View style={styles.upperContainerRefundStyle}>
             <View>
@@ -146,14 +143,18 @@ const DetailsCard: FC<DetailsCardProps> = (props) => {
     }
     if (paymentFor === 'pharmacy') {
       let statusType = '';
-      const { medicineOrderPayments, currentStatus } = item;
-      const { medicineOrderRefunds } = medicineOrderPayments[0];
-      if (!medicineOrderPayments.length) {
+      const { medicineOrderPayments, currentStatus, PaymentOrdersPharma } = item;
+      const { refund } = PaymentOrdersPharma;
+      const refundInfo = refund?.length ? refund : medicineOrderPayments[0]?.medicineOrderRefunds;
+      const paymentInfo = PaymentOrdersPharma?.paymentStatus
+        ? PaymentOrdersPharma
+        : medicineOrderPayments[0];
+      if (!paymentInfo) {
         statusType = 'PENDING';
-      } else if (currentStatus === 'CANCELLED' && medicineOrderRefunds.length) {
+      } else if (currentStatus === 'CANCELLED' && refundInfo?.length) {
         statusType = 'TXN_REFUND';
       } else {
-        statusType = medicineOrderPayments[0].paymentStatus;
+        statusType = paymentInfo.paymentStatus;
       }
       if (statusType === 'TXN_REFUND') {
         return (

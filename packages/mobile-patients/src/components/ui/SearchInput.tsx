@@ -19,12 +19,13 @@ export const SearchInput: React.FC<SearchInputProps> = (props) => {
         ...theme.fonts.IBMPlexSansMedium(18),
       },
       inputContainerStyle: {
+        backgroundColor: '#F7F8F5',
+        borderWidth: 1,
+        borderColor: 'rgba(0, 0, 0, 0.1)',
         borderRadius: 5,
-        backgroundColor: '#f7f8f5',
         marginHorizontal: 10,
         paddingHorizontal: 16,
         paddingRight: 12,
-        borderBottomWidth: 0,
       },
       rightIconContainerStyle: {
         height: 24,
@@ -44,7 +45,7 @@ export const SearchInput: React.FC<SearchInputProps> = (props) => {
 
     const rightSearchIcon = (
       <View>
-        <WhiteSearchIcon style={{ height: 24, width: 24 }} />
+        <WhiteSearchIcon />
       </View>
     );
 
@@ -68,13 +69,17 @@ export const SearchInput: React.FC<SearchInputProps> = (props) => {
           rightIconContainerStyle={[styles.rightIconContainerStyle, props.rightIconContainerStyle]}
           style={[styles.style, props.style]}
           containerStyle={[styles.containerStyle, props.containerStyle]}
-          errorStyle={[
-            {
-              ...theme.viewStyles.text('M', 14, '#02475b'),
-              marginHorizontal: 10,
-            },
-            props.errorStyle,
-          ]}
+          errorStyle={
+            props._itemsNotFound
+              ? [
+                  {
+                    ...theme.viewStyles.text('M', 14, '#02475b'),
+                    marginHorizontal: 10,
+                  },
+                  props.errorStyle,
+                ]
+              : { maxHeight: 0 }
+          }
           errorMessage={
             props._itemsNotFound ? `Hit enter to search for '${props.value}'` : undefined
           }

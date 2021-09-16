@@ -11,6 +11,9 @@ interface AlertPopupProps {
   onDismiss: () => void;
   title: string;
   onContinue: () => void;
+  leftButton?: string | '';
+  rightButton?: string | '';
+  showCloseIcon?: boolean;
 }
 
 export const AlertPopup: React.FC<AlertPopupProps> = (props) => {
@@ -28,7 +31,7 @@ export const AlertPopup: React.FC<AlertPopupProps> = (props) => {
     return (
       <View style={styles.row}>
         <Button
-          title="GO BACK"
+          title={props.leftButton}
           titleTextStyle={[styles.btnTxt, { color: colors.APP_YELLOW }]}
           style={styles.cancelBtn}
           onPress={() => {
@@ -36,7 +39,7 @@ export const AlertPopup: React.FC<AlertPopupProps> = (props) => {
           }}
         />
         <Button
-          title="CONTINUE"
+          title={props.rightButton}
           titleTextStyle={styles.btnTxt}
           style={styles.continueBtn}
           onPress={() => {
@@ -60,7 +63,7 @@ export const AlertPopup: React.FC<AlertPopupProps> = (props) => {
       overlayStyle={styles.overlayStyle}
     >
       <View>
-        {renderCloseIcon()}
+        {props.showCloseIcon ? renderCloseIcon() : null}
         <View style={styles.mainView}>
           <Text style={styles.title}>{props.title}</Text>
           {renderButtons()}
@@ -120,3 +123,9 @@ const styles = StyleSheet.create({
     top: -45,
   },
 });
+
+AlertPopup.defaultProps = {
+  leftButton: 'GO BACK',
+  rightButton: 'CONTINUE',
+  showCloseIcon: true,
+};

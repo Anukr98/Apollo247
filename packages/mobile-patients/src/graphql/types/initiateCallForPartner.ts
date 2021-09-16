@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 // ====================================================
@@ -18,4 +19,5 @@ export interface initiateCallForPartner {
 export interface initiateCallForPartnerVariables {
   mobileNumber: string;
   benefitId: string;
+  userSubscriptionId?: string | null;
 }

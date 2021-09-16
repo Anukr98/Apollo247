@@ -8,6 +8,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
+import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   CheckedIcon,
@@ -18,6 +19,7 @@ import {
   RadioButtonIcon,
   RadioButtonUnselectedIcon,
   SearchIcon,
+  FamilyDoctorIcon,
   RetryButtonIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -30,15 +32,17 @@ import {
   setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  DOCTOR_SPECIALITY_BY_FILTERS,
+  getPlatinumDoctor_getPlatinumDoctor_doctors,
+  getPlatinumDoctor,
+} from '@aph/mobile-patients/src/graphql/types/getPlatinumDoctor';
+import {
   GET_DOCTOR_LIST,
+  GET_PLATINUM_DOCTOR,
   GET_DOCTORLIST_FILTERS,
+  GET_PATIENT_ADDRESS_LIST,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
-  getDoctorsBySpecialtyAndFilters,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors,
-  getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsAvailability,
-  getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_specialty,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
 import { getDoctorList } from '@aph/mobile-patients/src/graphql/types/getDoctorList';
@@ -47,6 +51,7 @@ import {
   FilterDoctorInput,
   Range,
   SpecialtySearchType,
+  ZoneType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   autoCompletePlaceSearch,
@@ -64,7 +69,20 @@ import {
   postFirebaseEvent,
   postWebEngageEvent,
   setWebEngageScreenNames,
+  getDoctorShareMessage,
+  postDoctorShareWEGEvents,
+  getUserType,
+  postWEGPatientAPIError,
+  postCleverTapEvent,
+  postDoctorShareCleverTapEvents,
+  postConsultSearchCleverTapEvent,
+  getTimeDiff,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  getAllSpecialties,
+  getAllSpecialties_getAllSpecialties,
+} from '@aph/mobile-patients/src/graphql/types/getAllSpecialties';
+import { GET_ALL_SPECIALTIES } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEventName,
   WebEngageEvents,
@@ -73,8 +91,9 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
+
 import {
   BackHandler,
   Dimensions,
@@ -88,7 +107,7 @@ import {
   View,
   ViewStyle,
   Platform,
-  AsyncStorage,
+  Share,
 } from 'react-native';
 import {
   NavigationActions,
@@ -96,10 +115,29 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
+import AsyncStorage from '@react-native-community/async-storage';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { getValuesArray } from '@aph/mobile-patients/src/utils/commonUtils';
 import _ from 'lodash';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { CirclePlanAddedToCart } from '@aph/mobile-patients/src/components/ui/CirclePlanAddedToCart';
+import {
+  getPatientAddressList,
+  getPatientAddressListVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
+import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
+import { DoctorShareComponent } from '@aph/mobile-patients/src/components/ConsultRoom/Components/DoctorShareComponent';
+import { SKIP_LOCATION_PROMPT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
+import { BookingRequestOverlay } from '@aph/mobile-patients/src/components/ConsultRoom/BookingRequestOverlay';
+import { BookingRequestSubmittedOverlay } from '../ui/BookingRequestSubmittedOverlay';
+import {
+  consultUserLocationCleverTapEvents,
+  userLocationConsultWEBEngage,
+} from '@aph/mobile-patients/src/helpers/CommonEvents';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const searchFilters = require('@aph/mobile-patients/src/strings/filters');
 const { width: screenWidth } = Dimensions.get('window');
@@ -180,6 +218,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderBottomWidth: 4,
   },
+  rowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginBottom: 10,
+    marginTop: 20,
+  },
+  careLogo: {
+    width: 45,
+    height: 27,
+    marginHorizontal: 3,
+  },
+  careHeadingText: {
+    ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE),
+  },
+  linearGradient: {
+    flex: 1,
+    paddingTop: 16,
+    marginBottom: 20,
+  },
+  doctorOfTheHourTextStyle: {
+    ...theme.viewStyles.text('SB', 13, '#FFFFFF', 1, 16.9, 0.3),
+    textAlign: 'center',
+    paddingTop: 4,
+    paddingLeft: 20,
+  },
 });
 
 let latlng: locationType | null = null;
@@ -193,7 +257,6 @@ export type filterDataType = {
 
 export type locationType = { lat: number | string; lng: number | string };
 export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) => {
-  const specialistPluralTerm = props.navigation.getParam('specialistPluralTerm');
   const typeOfConsult = props.navigation.getParam('typeOfConsult');
   const doctorTypeFilter = props.navigation.getParam('doctorType');
   const cityFilter = props.navigation.getParam('city');
@@ -201,9 +264,16 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const scrollViewRef = React.useRef<ScrollView | null>(null);
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
+  const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
+  const [submittedDisplayOverlay, setSubmittedDisplayOverlay] = useState<boolean>(false);
   const [currentLocation, setcurrentLocation] = useState<string>('');
   const [locationSearchText, setLocationSearchText] = useState<string>('');
-
+  const [showCarePlanNotification, setShowCarePlanNotification] = useState<boolean>(false);
+  const fireLocationEvent = useRef<boolean>(false);
+  const [
+    platinumDoctor,
+    setPlatinumDoctor,
+  ] = useState<getPlatinumDoctor_getPlatinumDoctor_doctors | null>(null);
   const [doctorsList, setDoctorsList] = useState<
     (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[]
   >([]);
@@ -219,7 +289,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     []
   );
   const { locationForDiagnostics, locationDetails, setLocationDetails } = useAppCommonData();
-  const { clearCartInfo } = useDiagnosticsCart();
+  const { clearDiagnoticCartInfo } = useDiagnosticsCart();
   const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
 
   const [
@@ -233,13 +303,24 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [filterMode, setfilterMode] = useState<ConsultMode>(ConsultMode.BOTH);
   const [searchQuery, setSearchQuery] = useState({});
 
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
-  const { generalPhysicians, ent, Urology, Dermatology } = useAppCommonData();
   const [showLocations, setshowLocations] = useState<boolean>(false);
-  const [value, setValue] = useState<boolean>(false);
   const [sortValue, setSortValue] = useState<string>('');
   const [searchIconClicked, setSearchIconClicked] = useState<boolean>(false);
+  const [careDoctorsSwitch, setCareDoctorsSwitch] = useState<boolean>(false);
+  const [filterActionTaken, setFilterActionTaken] = useState<boolean>(false);
+  const [doctorShareData, setDoctorShareData] = useState<any>();
+  const [showDoctorSharePopup, setShowDoctorSharePopup] = useState<boolean>(false);
+  const [doctorShareRank, setDoctorShareRank] = useState<number>(1);
+  const [requestDoctorSelected, setRequestDoctorSelected] = useState<string>('');
+  const [requestDoctorSelectedDetails, setRequestDoctorSelectedDetails] = useState<any>({});
+  const [requestErrorMessage, setRequestErrorMessage] = useState<string>('');
+  const [requestError, setRequestError] = useState<boolean>(false);
+  const [specialityId, setSpecialityId] = useState<string>(
+    props.navigation.getParam('specialityId') || ''
+  );
+
   let DoctorsflatListRef: any;
   const filterOptions = (filters: any) => {
     let preFilters = filters;
@@ -289,21 +370,181 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [fetching, setfetching] = useState<boolean>(false);
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
 
+  const checkIsSpecialtyId = (uuid: string) => {
+    let s: any = uuid;
+    s = s.match('^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
+    if (s === null) {
+      return false;
+    }
+    return true;
+  };
+
   useEffect(() => {
     async function fetchFilter() {
       const retrievedFilterOptions: any = await AsyncStorage.getItem('FilterOptions');
       retrievedFilterOptions && setFilterData(filterOptions(JSON.parse(retrievedFilterOptions)));
     }
     fetchFilter();
+
+    let isSpecialtyId = checkIsSpecialtyId(specialityId);
+
+    if (isSpecialtyId == false) {
+      fetchAllSpecialities();
+    }
   }, []);
+
+  const fetchAllSpecialities = () => {
+    client
+      .query<getAllSpecialties>({
+        query: GET_ALL_SPECIALTIES,
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        try {
+          let specialitiesList = data.getAllSpecialties.filter(function(specialty) {
+            let obtainedSpecialtyId = specialityId;
+            obtainedSpecialtyId = obtainedSpecialtyId.replace('and', '&');
+
+            let specialityName: string = specialty?.name || '';
+            specialityName = specialityName.toLowerCase().replace(' ', '-');
+
+            let specialistPluralTerm: string = specialty?.specialistPluralTerm || '';
+            specialistPluralTerm = specialistPluralTerm.toLowerCase().replace(' ', '-');
+
+            let specialistSingularTerm: string = specialty?.specialistSingularTerm || '';
+            specialistSingularTerm = specialistSingularTerm.toLowerCase().replace(' ', '-');
+
+            return (
+              specialty?.slugName == obtainedSpecialtyId ||
+              specialityName == obtainedSpecialtyId ||
+              specialistPluralTerm == obtainedSpecialtyId ||
+              specialistSingularTerm == obtainedSpecialtyId
+            );
+          });
+
+          setSpecialityId(specialitiesList?.[0].id);
+          setDoctorSearch('');
+        } catch (error) {}
+      })
+      .catch((e) => {});
+  };
+
   useEffect(() => {
-    checkLocation();
+    fetchDoctorListByAvailability();
     setDeepLinkFilter();
     setDeepLinkDoctorTypeFilter();
     if (!currentPatient) {
       getPatientApiCall();
     }
   }, [currentPatient]);
+
+  useEffect(() => {
+    if (filterActionTaken) {
+      fetchSpecialityFilterData(
+        filterMode,
+        FilterData,
+        latlng,
+        sortValue,
+        undefined,
+        false,
+        doctorSearch
+      );
+    }
+  }, [careDoctorsSwitch]);
+
+  useEffect(() => {
+    if (showCarePlanNotification) {
+      setTimeout(() => {
+        setShowCarePlanNotification(false);
+      }, 10 * 1000);
+    }
+  }, [showCarePlanNotification]);
+
+  useEffect(() => {
+    if (doctorsType != 'PARTNERS') {
+      getDoctorOfTheHour(false);
+      fetchAddress(false, 'from effect');
+    }
+  }, []);
+
+  const getDoctorOfTheHour = async (partnerDoctor: boolean = false, state?: string) => {
+    client
+      .query<getPlatinumDoctor>({
+        query: GET_PLATINUM_DOCTOR,
+        fetchPolicy: 'no-cache',
+        variables: {
+          specialtyId: specialityId,
+          zoneType: ZoneType.STATE,
+          zone: state || locationDetails?.state,
+          partnerDoctor,
+        },
+      })
+      .then(({ data }) => {
+        const platinum_doctor = g(data, 'getPlatinumDoctor', 'doctors', '0' as any);
+        if (platinum_doctor) {
+          setPlatinumDoctor(platinum_doctor);
+          postPlatinumDoctorWEGEvents(platinum_doctor, WebEngageEventName.DOH_Viewed, state);
+          postPlatinumDoctorCleverTapEvents(
+            platinum_doctor,
+            CleverTapEventName.CONSULT_DOH_Viewed,
+            state
+          );
+        } else {
+          setPlatinumDoctor(null);
+        }
+      })
+      .catch((e) => {
+        postWEGPatientAPIError(
+          currentPatient,
+          '',
+          'DoctorSearchListing',
+          'GET_PLATINUM_DOCTOR',
+          JSON.stringify(e)
+        );
+        setPlatinumDoctor(null);
+        CommonBugFender('GET_PLATINUM_DOCTOR', e);
+      });
+  };
+
+  async function fetchAddress(partnerDoctor: boolean = false, from?: string) {
+    try {
+      if (locationDetails?.state) {
+        return;
+      }
+      const userId = g(currentPatient, 'id');
+      const response = await client.query<getPatientAddressList, getPatientAddressListVariables>({
+        query: GET_PATIENT_ADDRESS_LIST,
+        variables: { patientId: userId },
+        fetchPolicy: 'no-cache',
+      });
+      const { data } = response;
+      const addressList =
+        (data?.getPatientAddressList
+          ?.addressList as savePatientAddress_savePatientAddress_patientAddress[]) || [];
+      const state = addressList?.[0]?.state;
+      if (state) {
+        await getDoctorOfTheHour(partnerDoctor, state);
+      }
+      response?.data.getPatientAddressList
+        ? null
+        : postWEGPatientAPIError(
+            currentPatient,
+            '',
+            'DoctorSearchListing',
+            'GET_PATIENT_ADDRESS_LIST',
+            JSON.stringify(response)
+          );
+    } catch (error) {
+      postWEGPatientAPIError(
+        currentPatient,
+        '',
+        'DoctorSearchListing',
+        'GET_PATIENT_ADDRESS_LIST',
+        JSON.stringify(error)
+      );
+      CommonBugFender('DoctorSearchListing_fetchAddress', error);
+    }
+  }
 
   const vaueChange = (sort: any) => {
     if (sort === 'distance') {
@@ -419,11 +660,47 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
+  const onLocationAlertCloseIconPres = () => {
+    fireLocationPermissionEvent('Not provided');
+    AsyncStorage.setItem(SKIP_LOCATION_PROMPT, 'true');
+    hideAphAlert!();
+    fetchDoctorListByAvailability();
+  };
+
+  const fetchDoctorListByAvailability = () => {
+    setNearyByFlag(false);
+    setAvailabilityFlag(true);
+    setshowSpinner(false);
+
+    !doctorsList?.length &&
+      fetchSpecialityFilterData(
+        filterMode,
+        FilterData,
+        latlng,
+        'availability',
+        undefined,
+        false,
+        doctorSearch
+      );
+  };
+
   const checkLocation = (docTabSelected: boolean = false) => {
     if (!locationDetails) {
       showAphAlert!({
-        unDismissable: true,
+        unDismissable: false,
         title: 'Hi! :)',
+        onPressOutside: () => {
+          setSortValue('availability');
+          fetchSpecialityFilterData(
+            filterMode,
+            FilterData,
+            latlng,
+            'availability',
+            undefined,
+            false,
+            doctorSearch
+          );
+        },
         description:
           'We need to know your location to function better. Please allow us to auto detect your location or enter location manually.',
         children: (
@@ -440,18 +717,23 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               style={{ flex: 1, marginRight: 16 }}
               title={'ENTER MANUALLY'}
               onPress={() => {
+                fireLocationEvent.current = true;
                 hideAphAlert!();
                 setshowLocationpopup(true);
+                fireLocationPermissionEvent('Enter Manually');
               }}
             />
             <Button
               style={{ flex: 1 }}
               title={'ALLOW AUTO DETECT'}
               onPress={() => {
+                fireLocationPermissionEvent('Allow auto detect');
                 hideAphAlert!();
                 setLoadingContext!(true);
                 doRequestAndAccessLocationModified()
                   .then((response) => {
+                    fireLocationEvent.current = true;
+                    locationWebEngageEvent(response, 'Auto Detect');
                     response && setLocationDetails!(response);
                     response && setcurrentLocation(response.displayName);
                     response && setLocationSearchText(response.displayName);
@@ -464,17 +746,23 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                           lng: response.longitude || '',
                         },
                         'distance',
-                        response.pincode,
-                        docTabSelected,
+                        undefined,
+                        false,
                         doctorSearch
                       );
                   })
                   .catch((e) => {
                     CommonBugFender('DoctorSearchListing_ALLOW_AUTO_DETECT', e);
-                    showAphAlert!({
-                      title: 'Uh oh! :(',
-                      description: 'Unable to access location.',
-                    });
+                    setSortValue('availability');
+                    fetchSpecialityFilterData(
+                      filterMode,
+                      FilterData,
+                      latlng,
+                      'availability',
+                      undefined,
+                      false,
+                      doctorSearch
+                    );
                   })
                   .finally(() => {
                     setLoadingContext!(false);
@@ -483,8 +771,20 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             />
           </View>
         ),
+        showCloseIcon: true,
+        onCloseIconPress: onLocationAlertCloseIconPres,
       });
     }
+  };
+
+  const fireLocationPermissionEvent = (permissionType: string) => {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.LOCATION_PERMISSION]
+      | CleverTapEvents[CleverTapEventName.CONSULT_LOCATION_PERMISSION] = {
+      'Location permission': permissionType,
+    };
+    postWebEngageEvent(WebEngageEventName.LOCATION_PERMISSION, eventAttributes);
+    postCleverTapEvent(CleverTapEventName.CONSULT_LOCATION_PERMISSION, eventAttributes);
   };
 
   const fetchSpecialityFilterData = (
@@ -582,8 +882,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
     const FilterInput: FilterDoctorInput = {
       patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-      specialty: props.navigation.getParam('specialityId') || '',
-      // city: SearchData[0].selectedOptions,
+      specialty: specialityId,
       pincode: pinCode || g(locationDetails, 'pincode') || null,
       doctorType:
         brandFilter === undefined || brandFilter === null
@@ -599,16 +898,18 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       gender: SearchData[5].selectedOptions,
       language: SearchData[6].selectedOptions,
       ...availableNow,
-      // consultMode: filterMode,
       ...specialtyName,
       ...geolocation,
       sort: sort,
       pageNo: pageNo ? pageNo + 1 : 1,
       pageSize: pageSize,
       searchText: searchText,
+      isCare: careDoctorsSwitch,
     };
+
     setBugFenderLog('DOCTOR_FILTER_INPUT', JSON.stringify(FilterInput));
     !pageNo && setshowSpinner(true);
+
     client
       .query<getDoctorList>({
         query: GET_DOCTOR_LIST,
@@ -619,6 +920,15 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       })
       .then(({ data }) => {
         setfetching(false);
+        if (searchText?.length > 2) {
+          postConsultSearchCleverTapEvent(
+            searchText,
+            currentPatient,
+            allCurrentPatients,
+            data?.getDoctorList?.doctors?.length == 0,
+            'Doctor listing screen'
+          );
+        }
         pageNo ? setpageNo(pageNo + 1) : setpageNo(1);
         setData(data, docTabSelected, pageNo);
         !pageNo &&
@@ -630,21 +940,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           setPartnerDocsNumber(
             data.getDoctorList?.partnerDoctorCount ? data.getDoctorList?.partnerDoctorCount : 0
           ));
-        //log data
-
-        // const doctorInfo =
-        //   data &&
-        //   data.getDoctorsBySpecialtyAndFilters &&
-        //   data.getDoctorsBySpecialtyAndFilters.doctors === null
-        //     ? {}
-        //     : data &&
-        //       data.getDoctorsBySpecialtyAndFilters &&
-        //       data.getDoctorsBySpecialtyAndFilters.doctors &&
-        //       data.getDoctorsBySpecialtyAndFilters.doctors[0];
-        // filterOptions(data.getDoctorsBySpecialtyAndFilters.filters);
-
-        // setBugFenderLog('DOCTOR_FILTER_DATA', JSON.stringify(doctorInfo));
-        //end log data
       })
       .catch((e) => {
         CommonBugFender('DoctorSearchListing_fetchSpecialityFilterData', e);
@@ -714,7 +1009,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           city.toLowerCase() !=
           ((locationForDiagnostics && locationForDiagnostics.city) || '').toLowerCase()
         ) {
-          clearCartInfo && clearCartInfo();
+          clearDiagnoticCartInfo && clearDiagnoticCartInfo();
         }
         if (addrComponents.length > 0) {
           setcurrentLocation(item.name);
@@ -769,6 +1064,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                   pincode: findAddrComponents('postal_code', addrComponents),
                   lastUpdated: new Date().getTime(),
                 });
+                const locationAttribute = {
+                  ...locationData,
+                  pincode: findAddrComponents('postal_code', addrComponents),
+                };
+                locationWebEngageEvent(locationAttribute, 'Manual entry');
               }
             })
             .catch((error) => {
@@ -845,7 +1145,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const backDataFunctionality = () => {
-    BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
     const movedata = props.navigation.getParam('MoveDoctor') || '';
     if (movedata == 'MoveDoctor') {
       props.navigation.goBack();
@@ -871,7 +1170,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         }
       } catch (error) {}
     }
-    return false;
+    return true;
   };
 
   const renderTopView = () => {
@@ -888,7 +1187,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               onPress={() => {
                 setSearchIconClicked(!searchIconClicked);
                 setDoctorSearch('');
-                // filterDoctors(doctorsList, doctorsType, '');
                 if (searchIconClicked) {
                   fetchSpecialityFilterData(
                     filterMode,
@@ -915,26 +1213,92 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     );
   };
 
+  const postPlatinumDoctorWEGEvents = (
+    doctorData: any,
+    eventName: WebEngageEventName,
+    states?: any
+  ) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DOH_Viewed] = {
+      doctorId: doctorData?.id,
+      doctorName: doctorData?.displayName,
+      doctorType: doctorData?.doctorType,
+      specialtyId: specialityId,
+      specialtyName: props.navigation.getParam('specialityName') || '',
+      zone: states || locationDetails?.state || '',
+      userName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      userPhoneNumber: currentPatient?.mobileNumber,
+    };
+    postWebEngageEvent(eventName, eventAttributes);
+  };
+
+  const postPlatinumDoctorCleverTapEvents = (
+    doctorData: any,
+    eventName: CleverTapEventName,
+    states?: any
+  ) => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_DOH_Viewed] = {
+      doctorId: doctorData?.id,
+      doctorName: doctorData?.displayName,
+      doctorType: doctorData?.doctorType,
+      specialtyId: props.navigation.getParam('specialityId') || '',
+      specialtyName: props.navigation.getParam('specialityName') || '',
+      zone: states || locationDetails?.state || '',
+      userName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      userPhoneNumber: currentPatient?.mobileNumber,
+    };
+    postCleverTapEvent(eventName, eventAttributes);
+  };
+
   const postDoctorClickWEGEvent = (
     doctorDetails: any,
     source: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED]['Source'],
+    isTopDoc: boolean,
     type?: 'consult-now' | 'book-appointment'
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED] = {
-      'Doctor Name': doctorDetails.fullName!,
+      'Doctor Name': doctorDetails.displayName!,
       Source: source,
       'Doctor ID': doctorDetails.id,
-      'Speciality ID': props.navigation.getParam('specialityId') || '',
+      'Speciality ID': specialityId,
       'Doctor Category': doctorDetails.doctorType,
       Fee: Number(doctorDetails?.fee),
-      'Doctor Speciality': doctorDetails?.specialistSingularTerm,
+      'Doctor Speciality': doctorDetails?.specialtydisplayName,
+      Rank: doctorDetails?.rowId,
+      Is_TopDoc: !!isTopDoc ? 'Yes' : 'No',
+      User_Type: getUserType(allCurrentPatients),
+    };
+
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED] = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Doctor ID': g(doctorDetails, 'id')! || undefined,
+      'Doctor Name': g(doctorDetails, 'displayName')! || undefined,
+      'Speciality Name': doctorDetails?.specialtydisplayName,
+      'Speciality ID': props.navigation.getParam('specialityId') || '',
+      'Media Source': 'NA',
+      User_Type: getUserType(allCurrentPatients),
+      Fee: Number(doctorDetails?.onlineConsultationFees),
+      Source: 'Doctor Card clicked',
+      'Doctor card clicked': 'Yes',
+      Rank: doctorDetails?.rowId,
+      Is_TopDoc: !!isTopDoc ? 'Yes' : 'No',
+      DOTH: !!isTopDoc ? 'T' : 'F',
+      'Doctor Tab': doctorsType === 'PARTNERS' ? 'Doctor Partner Tab' : 'Apollo Tab',
+      'Doctor Category': doctorDetails?.doctorType,
+      'Search screen': doctorSearch?.length > 2 ? 'Doctor list screen' : 'NA',
+      'Appointment CTA': 'NA',
     };
 
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {
       DoctorName: doctorDetails.fullName!,
       Source: source,
       DoctorID: doctorDetails.id,
-      SpecialityID: props.navigation.getParam('specialityId') || '',
+      SpecialityID: specialityId,
       DoctorCategory: doctorDetails.doctorType,
       Fee: Number(doctorDetails?.fee),
       DoctorSpeciality: doctorDetails?.specialistSingularTerm,
@@ -945,12 +1309,41 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.CONSULT_NOW_CLICKED] = {
         'customer id': currentPatient ? currentPatient.id : '',
         'doctor id': doctorDetails.id,
-        'specialty id': props.navigation.getParam('specialityId') || '',
+        'specialty id': specialityId,
       };
       postAppsFlyerEvent(AppsFlyerEventName.CONSULT_NOW_CLICKED, appsflyereventAttributes);
       postFirebaseEvent(FirebaseEventName.CONSULT_NOW_CLICKED, eventAttributesFirebase);
     } else if (type == 'book-appointment') {
+      const _cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
+        'Patient name': currentPatient.firstName,
+        docId: doctorDetails?.id,
+        specialityId: doctorDetails?.specialty?.id,
+        specialityName: doctorDetails?.specialty?.name,
+        exp: Number(doctorDetails?.experience),
+        docHospital: doctorDetails?.doctorHospital?.[0]?.facility?.name,
+        docCity: doctorDetails?.doctorHospital?.[0]?.facility?.city,
+        availableInMins: getTimeDiff(doctorDetails?.slot),
+        Source: 'Doctor card doctor listing screen',
+        'Patient UHID': currentPatient.uhid,
+        Relation: currentPatient?.relation,
+        'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
+        'Patient gender': currentPatient.gender,
+        'Customer ID': currentPatient.id,
+        User_Type: getUserType(allCurrentPatients),
+        rank: doctorDetails.rowId || undefined,
+        onlineConsultFee:
+          Number(doctorDetails?.onlineConsultationFees) || Number(doctorDetails?.fee) || undefined,
+        physicalConsultFee:
+          Number(doctorDetails?.physicalConsultationFees) ||
+          Number(doctorDetails?.fee) ||
+          undefined,
+      };
+      eventAttributes['Source'] = 'List';
       postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
+      postCleverTapEvent(
+        CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED,
+        _cleverTapEventAttributes
+      );
       const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.BOOK_APPOINTMENT] = {
         'customer id': currentPatient ? currentPatient.id : '',
       };
@@ -958,6 +1351,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       postFirebaseEvent(FirebaseEventName.BOOK_APPOINTMENT, eventAttributesFirebase);
     } else {
       postWebEngageEvent(WebEngageEventName.DOCTOR_CLICKED, eventAttributes);
+      postCleverTapEvent(
+        CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED,
+        cleverTapEventAttributes
+      );
       const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.DOCTOR_CLICKED] = {
         'customer id': currentPatient ? currentPatient.id : '',
         'doctor id': doctorDetails.id,
@@ -969,11 +1366,15 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const postTabBarClickWEGEvent = (tab: 'APOLLO' | 'PARTNERS') => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.APOLLO_DOCTOR_TAB_CLICKED] = {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.APOLLO_DOCTOR_TAB_CLICKED]
+      | CleverTapEvents[CleverTapEventName.CONSULT_DOCTOR_TAB_CLICKED] = {
       'Patient UHID': g(currentPatient, 'uhid'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
+      Source: tab == 'APOLLO' ? 'Apollo Doctors' : 'Partner Doctors',
     };
+    postCleverTapEvent(CleverTapEventName.CONSULT_DOCTOR_TAB_CLICKED, eventAttributes);
     if (tab == 'APOLLO') {
       postWebEngageEvent(WebEngageEventName.APOLLO_DOCTOR_TAB_CLICKED, eventAttributes);
     } else {
@@ -981,35 +1382,64 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
+  const renderDoctorCard = (
+    rowData: any,
+    index: number,
+    styles: StyleProp<ViewStyle> = {},
+    filter?: ConsultMode
+  ) => {
+    return platinumDoctor?.id !== rowData?.id ? (
+      <DoctorCard
+        key={index}
+        rowId={index + 1}
+        rowData={rowData}
+        navigation={props.navigation}
+        style={styles}
+        availableModes={rowData.consultMode}
+        callSaveSearch={callSaveSearch}
+        onPressRequest={(arg: boolean) => {
+          setRequestDoctorSelected(rowData?.displayName);
+          setRequestDoctorSelectedDetails(rowData);
+          setdisplayoverlay(arg);
+        }}
+        onPress={() => {
+          postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List');
+          if (!rowData?.allowBookingRequest) {
+            props.navigation.navigate(AppRoutes.DoctorDetails, {
+              doctorId: rowData.id,
+              callSaveSearch: callSaveSearch,
+              consultModeSelected: rowData?.consultMode,
+            });
+          } else {
+            props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
+              doctorId: rowData.id,
+              callSaveSearch: callSaveSearch,
+            });
+          }
+        }}
+        onPressConsultNowOrBookAppointment={(type) => {
+          postDoctorClickWEGEvent(rowData, 'List', false, type);
+        }}
+        onPlanSelected={() => setShowCarePlanNotification(true)}
+        selectedConsultMode={filter}
+      />
+    ) : null;
+  };
+
   const renderSearchDoctorResultsRow = (
     rowData: any,
     index: number,
     styles: StyleProp<ViewStyle> = {},
-    numberOfLines?: number,
     filter?: ConsultMode
   ) => {
     if (rowData) {
-      return (
-        <DoctorCard
-          key={index}
-          rowId={index + 1}
-          rowData={rowData}
-          navigation={props.navigation}
-          style={styles}
-          numberOfLines={numberOfLines}
-          availableModes={rowData.consultMode}
-          callSaveSearch={callSaveSearch}
-          onPress={() => {
-            postDoctorClickWEGEvent(rowData, 'List');
-            props.navigation.navigate(AppRoutes.DoctorDetails, {
-              doctorId: rowData.id,
-              callSaveSearch: callSaveSearch,
-            });
-          }}
-          onPressConsultNowOrBookAppointment={(type) => {
-            postDoctorClickWEGEvent(rowData, 'List', type);
-          }}
-        />
+      return index === 0 && platinumDoctor ? (
+        <>
+          {renderPlatinumDoctorView(index)}
+          {renderDoctorCard(rowData, index, styles, filter)}
+        </>
+      ) : (
+        renderDoctorCard(rowData, index, styles, filter)
       );
     }
     return null;
@@ -1022,7 +1452,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             return obj?.consultMode == ConsultMode.BOTH || obj?.consultMode == filter;
           })
         : filteredDoctorsList;
-    if (doctors.length === 0 && !showSpinner) {
+    if (doctors.length === 0 && !showSpinner && !platinumDoctor) {
       const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_SPECIALITY_SEARCH_NO_RESULT] = {
         'Text Searched': doctorSearch,
         'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
@@ -1090,22 +1520,26 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         </View>
       );
     }
+
+    const renderCirclePlanAddedToCartView = () => <CirclePlanAddedToCart />;
+
     return (
       <View style={{ flex: 1 }}>
+        {doctorsType === 'APOLLO' && showCarePlanNotification && renderCirclePlanAddedToCartView()}
         {doctors.length > 0 && (
           <FlatList
             ref={(ref) => {
               DoctorsflatListRef = ref;
             }}
             contentContainerStyle={{
-              marginTop: 10,
+              marginTop: 20,
               marginBottom: 8,
               paddingTop: Platform.OS == 'android' ? 10 : 1,
             }}
             bounces={false}
             data={doctors}
             renderItem={({ item, index }) =>
-              renderSearchDoctorResultsRow(item, index, {}, undefined, filter)
+              renderSearchDoctorResultsRow(item, index, {}, filter)
             }
             keyExtractor={(item) => item!.id}
             onEndReachedThreshold={0.2}
@@ -1115,6 +1549,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             ListFooterComponent={renderListFooter()}
           />
         )}
+        {doctors.length === 0 && platinumDoctor ? renderPlatinumDoctorView(0, true) : null}
       </View>
     );
   };
@@ -1128,7 +1563,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const onEndReached = () => {
-    console.log('end reached');
     let totalDocs = doctorsType == 'APOLLO' ? apolloDocsNumber : partnerDocsNumber;
     if (!fetching && filteredDoctorsList.length < totalDocs) {
       setfetching(true);
@@ -1179,7 +1613,19 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             elevation: 15,
           }}
           onPress={() => {
-            setshowLocationpopup(false), !locationDetails && checkLocation();
+            locationWebEngageEvent(undefined, 'Manual entry');
+            setshowLocationpopup(false);
+            setshowSpinner(false);
+            !doctorsList?.length &&
+              fetchSpecialityFilterData(
+                filterMode,
+                FilterData,
+                latlng,
+                'availability',
+                undefined,
+                false,
+                doctorSearch
+              );
           }}
         >
           <View
@@ -1261,6 +1707,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
+  const locationWebEngageEvent = (location: any, type: 'Auto Detect' | 'Manual entry') => {
+    if (fireLocationEvent.current) {
+      userLocationConsultWEBEngage(currentPatient, location, 'Doctor list', type);
+      consultUserLocationCleverTapEvents(currentPatient, location, 'Doctor listing screen', type);
+    }
+    fireLocationEvent.current = false;
+  };
+
   const renderSearchLoadingView = () => {
     const getWidth = (percentage: number) => screenWidth * (percentage / 100);
     const localStyles = StyleSheet.create({
@@ -1289,7 +1743,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           <View style={{ width: getWidth(20) }} />
           <Image
             style={localStyles.imageStyle}
-            source={require('@aph/mobile-patients/src/images/doctor/doctor_search_filler_img.png')}
+            source={require('@aph/mobile-patients/src/images/doctor/doctor_search_filler_img.webp')}
           />
         </View>
         <Text style={localStyles.pleaseWaitTextStyle}>
@@ -1315,6 +1769,135 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       );
     }
   }, [doctorSearch]);
+
+  const renderPlatinumDoctorView = (index: number, setHeight: boolean = false) => {
+    const doctorCardStyle = {
+      backgroundColor: theme.colors.WHITE,
+      shadowColor: theme.colors.SHADOW_GRAY,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.4,
+      shadowRadius: 8,
+      elevation: 4,
+    };
+    const buttonStyle = {
+      backgroundColor: theme.colors.BUTTON_BG,
+      shadowColor: theme.colors.WHITE,
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0,
+      shadowRadius: 0,
+      elevation: 0,
+      height: 44,
+      borderRadius: 0,
+    };
+    const buttonTextStyle = {
+      color: theme.colors.BUTTON_TEXT,
+    };
+    const doctorOfHourText =
+      platinumDoctor?.availabilityTitle?.DOCTOR_OF_HOUR || 'Doctor of the Hour!';
+
+    return (
+      <LinearGradientComponent
+        style={[styles.linearGradient, setHeight && { minHeight: 310, flex: undefined }]}
+      >
+        <View style={{ flexDirection: 'row', alignSelf: 'center', marginBottom: 15 }}>
+          <FamilyDoctorIcon style={{ width: 16.58, height: 24 }} />
+          <Text style={styles.doctorOfTheHourTextStyle}>{doctorOfHourText}</Text>
+        </View>
+
+        <DoctorCard
+          rowData={platinumDoctor}
+          navigation={props.navigation}
+          availableModes={platinumDoctor?.consultMode}
+          callSaveSearch={callSaveSearch}
+          style={doctorCardStyle}
+          buttonViewStyle={{ overflow: 'hidden' }}
+          buttonStyle={buttonStyle}
+          buttonTextStyle={buttonTextStyle}
+          onPress={(id: string, onlineConsult: boolean) => {
+            postDoctorClickWEGEvent(platinumDoctor, 'List', true);
+            postPlatinumDoctorWEGEvents(platinumDoctor, WebEngageEventName.DOH_Clicked);
+            postPlatinumDoctorCleverTapEvents(
+              platinumDoctor,
+              CleverTapEventName.CONSULT_DOH_Clicked
+            );
+            props.navigation.navigate(AppRoutes.DoctorDetails, {
+              doctorId: platinumDoctor?.id,
+              callSaveSearch: callSaveSearch,
+              platinumDoctor: true,
+              consultModeSelected: onlineConsult ? ConsultMode.ONLINE : ConsultMode.PHYSICAL,
+            });
+          }}
+          onPressConsultNowOrBookAppointment={(type) => {
+            postDoctorClickWEGEvent(platinumDoctor, 'List', true, type);
+          }}
+          onPlanSelected={() => setShowCarePlanNotification(true)}
+        />
+      </LinearGradientComponent>
+    );
+  };
+
+  const onPressShareProfileButton = async (doctorData: any) => {
+    const shareDoctorMessage = getDoctorShareMessage(doctorData);
+    try {
+      const result = await Share.share({
+        message: shareDoctorMessage,
+      });
+      if (result.action === Share.sharedAction) {
+        postDoctorShareWEGEvents(
+          doctorData,
+          WebEngageEventName.SHARE_PROFILE_CLICKED_DOC_LIST,
+          currentPatient,
+          specialityId,
+          doctorShareRank
+        );
+        postDoctorShareCleverTapEvents(
+          doctorData,
+          CleverTapEventName.CONSULT_SHARE_PROFILE_CLICKED,
+          currentPatient,
+          specialityId,
+          doctorShareRank
+        );
+      } else if (result.action === Share.dismissedAction) {
+      }
+    } catch (error) {}
+  };
+
+  const onPressGoBackShareDoctor = (doctorData: any) => {
+    setShowDoctorSharePopup(false);
+    postDoctorShareWEGEvents(
+      doctorData,
+      WebEngageEventName.GO_BACK_CLICKED_DOC_LIST,
+      currentPatient,
+      specialityId,
+      doctorShareRank
+    );
+    postDoctorShareCleverTapEvents(
+      doctorData,
+      CleverTapEventName.CONSULT_GO_BACK_CLICKED,
+      currentPatient,
+      specialityId,
+      doctorShareRank
+    );
+  };
+
+  const renderDoctorShareComponent = () => {
+    const selectedMode = onlineCheckBox
+      ? physicalCheckBox
+        ? undefined
+        : ConsultMode.ONLINE
+      : physicalCheckBox
+      ? ConsultMode.PHYSICAL
+      : undefined;
+    return showDoctorSharePopup ? (
+      <DoctorShareComponent
+        doctorData={doctorShareData}
+        onPressGoBack={(doctorData) => onPressGoBackShareDoctor(doctorData)}
+        onPressSharePropfile={(doctorData) => onPressShareProfileButton(doctorData)}
+        selectedConsultMode={selectedMode}
+        availableModes={doctorShareData?.consultMode}
+      />
+    ) : null;
+  };
 
   const renderDoctorSearchBar = () => {
     return (
@@ -1373,6 +1956,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
         'Sort By': 'distance',
       });
+      postCleverTapEvent(CleverTapEventName.CONSULT_SORT, {
+        'sort names': 'Nearby',
+      });
       setSortValue('distance');
       if (locationDetails) {
         const coordinates = {
@@ -1390,6 +1976,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           doctorSearch
         );
       } else {
+        setDoctorsList([]);
         checkLocation(doctorTabsSelected);
       }
     }
@@ -1402,6 +1989,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       setshowSpinner(true);
       postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
         'Sort By': 'availability',
+      });
+      postCleverTapEvent(CleverTapEventName.CONSULT_SORT, {
+        'sort names': 'Availability',
       });
       setSortValue('availability');
       fetchSpecialityFilterData(
@@ -1416,6 +2006,40 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
+  const fireFilterWebengageEvent = (
+    filterApplied: string,
+    filterValue: string,
+    filterAppliedData?: any
+  ) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_LISTING_FILTER_APPLIED] = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      pincode: g(locationDetails, 'pincode') || '',
+      'Filter Applied': filterApplied || undefined,
+      'Filter Value': filterValue || undefined,
+      ...filterAppliedData,
+    };
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_FILTER_APPLIED] = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      pincode: g(locationDetails, 'pincode') || undefined,
+      User_Type: getUserType(allCurrentPatients),
+      docCategoryTab: doctorsType || undefined,
+      selectedCity: g(locationDetails, 'city') || undefined,
+      filtersApplied: filterApplied || undefined,
+      'Filter Value': filterValue || undefined,
+      ...filterAppliedData,
+    };
+    postWebEngageEvent(WebEngageEventName.DOCTOR_LISTING_FILTER_APPLIED, eventAttributes);
+    postCleverTapEvent(CleverTapEventName.CONSULT_FILTER_APPLIED, cleverTapEventAttributes);
+  };
+
   const renderBottomOptions = () => {
     const doctors_partners = doctorsType === 'PARTNERS' ? true : false;
     return (
@@ -1425,7 +2049,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           <View style={styles.bottomItemContainer}>
             <TouchableOpacity
               activeOpacity={1}
-              onPress={() => onPressNearByRadioButton(doctors_partners)}
+              onPress={() => {
+                fireFilterWebengageEvent(
+                  string.doctor_search_listing.near,
+                  nearyByFlag ? 'True' : 'False'
+                );
+                onPressNearByRadioButton(doctors_partners);
+              }}
             >
               <View
                 style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
@@ -1450,7 +2080,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             <TouchableOpacity
               activeOpacity={1}
               style={{ marginLeft: 8 }}
-              onPress={() => onPressAvailabiltyRadioButton(doctors_partners)}
+              onPress={() => {
+                fireFilterWebengageEvent(
+                  string.doctor_search_listing.avaliablity,
+                  availabilityFlag ? 'True' : 'False'
+                );
+                onPressAvailabiltyRadioButton(doctors_partners);
+              }}
             >
               <View
                 style={{
@@ -1482,6 +2118,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
+                  fireFilterWebengageEvent(
+                    string.doctor_search_listing.online,
+                    onlineCheckBox ? 'True' : 'False'
+                  );
                   setOnlineCheckbox(!onlineCheckBox);
                   if (!physicalCheckBox) {
                     setPhysicalCheckbox(!physicalCheckBox);
@@ -1516,6 +2156,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
+                  fireFilterWebengageEvent(
+                    string.doctor_search_listing.inperson,
+                    physicalCheckBox ? 'True' : 'False'
+                  );
                   setPhysicalCheckbox(!physicalCheckBox);
                   if (!onlineCheckBox) {
                     setOnlineCheckbox(!onlineCheckBox);
@@ -1568,10 +2212,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     if (doctorsType != 'APOLLO') {
       postTabBarClickWEGEvent('APOLLO');
       setDoctorsType('APOLLO');
-      // onPressAvailabiltyRadioButton();
       setFilteredDoctorsList([]);
       filterDoctors(doctorsList, 'APOLLO');
       scrollToTop();
+      setPlatinumDoctor(null);
+      getDoctorOfTheHour();
+      fetchAddress(false, 'from apollo button press'); // this will get called when locationDetails?.state is null
     }
   };
 
@@ -1579,10 +2225,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     if (doctorsType != 'PARTNERS') {
       postTabBarClickWEGEvent('PARTNERS');
       setDoctorsType('PARTNERS');
-      // onPressNearByRadioButton(true);
       setFilteredDoctorsList([]);
       filterDoctors(doctorsList, 'PARTNERS');
       scrollToTop();
+      setPlatinumDoctor(null);
+      getDoctorOfTheHour(true);
+      fetchAddress(true, 'from partner button press');
     }
   };
 
@@ -1632,23 +2280,28 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       );
     }
   };
+
+  const filterCircleWebEngage = () => {
+    const eventAttributes = {
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(WebEngageEventName.VC_CIRCLE_FILTER, eventAttributes);
+  };
+
   return (
     <View style={styles.mainContainer}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderTopView()}
         {searchIconClicked && renderDoctorSearchBar()}
         {renderTopTabBar()}
+        {renderDoctorShareComponent()}
         <ScrollView bounces={false} ref={scrollViewRef} contentContainerStyle={{ flex: 1 }}>
           {showSpinner ? (
             renderSearchLoadingView()
           ) : (
             <View style={{ flex: 1 }}>
-              <Text style={styles.consultHeadingText}>
-                {string.doctor_search_listing.consultBest.replace(
-                  '{0}',
-                  specialistPluralTerm || 'Doctors'
-                )}
-              </Text>
               {renderDoctorSearches(
                 onlineCheckBox
                   ? physicalCheckBox
@@ -1664,12 +2317,42 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         </ScrollView>
         {renderBottomOptions()}
       </SafeAreaView>
+      {displayoverlay && (
+        <BookingRequestOverlay
+          setdisplayoverlay={(arg0: boolean, arg1: string, arg2: boolean) => {
+            setRequestError(arg0);
+            setRequestErrorMessage(arg1);
+            setdisplayoverlay(arg2);
+          }}
+          onRequestComplete={(arg: boolean) => setSubmittedDisplayOverlay(arg)}
+          navigation={props.navigation}
+          doctor={requestDoctorSelectedDetails}
+          hospitalId={''}
+        />
+      )}
+      {submittedDisplayOverlay && (
+        <BookingRequestSubmittedOverlay
+          setdisplayoverlay={() => setSubmittedDisplayOverlay(false)}
+          navigation={props.navigation}
+          doctor={requestDoctorSelected}
+          error={requestError}
+          errorMessage={requestErrorMessage || 'Something went wrong! \nPlease try again'}
+        />
+      )}
       {displayFilter ? (
         <FilterScene
           onClickClose={() => {
             setDisplayFilter(false);
           }}
           setData={(selecteddata) => {
+            let selectedOptionsObj: any = {};
+            selecteddata.forEach((value) => {
+              const { label, selectedOptions } = value;
+              if (selectedOptions.length) {
+                selectedOptionsObj[`${label}`] = selectedOptions?.join();
+              }
+            });
+            fireFilterWebengageEvent('', '', selectedOptionsObj);
             setshowSpinner(true);
             setFilterData(selecteddata);
             getNetStatus()

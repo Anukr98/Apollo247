@@ -20,7 +20,7 @@ export const SuggestProducts: React.FC<SuggestProductsProps> = (props) => {
   const renderHeader = () => {
     return (
       <View style={styles.amountHeader}>
-        <Text style={styles.amountHeaderText}>YOU SHOULD ALSO ADD</Text>
+        <Text style={styles.amountHeaderText}>PEOPLE ALSO BOUGHT</Text>
       </View>
     );
   };

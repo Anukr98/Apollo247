@@ -27,5 +27,17 @@
   ],
   "fee": [{ "name": "0-500" }, { "name": "500-1000" }, { "name": "501-1000" }, { "name": "1000+" }],
   "gender": [{ "name": "MALE" }, { "name": "FEMALE" }],
-  "language": [{ "name": "Hindi" }, { "name": "English" }, { "name": "Telugu" }]
+  "language": [
+    { "name": "English"},
+    { "name": "Hindi" },
+    { "name": "Telugu" },
+    { "name": "Punjabi" },
+    { "name": "Bengali" },
+    { "name": "Marathi" },
+    { "name": "Urdu" },
+    { "name": "Gujarati" },
+    { "name": "Tamil" },
+    { "name": "Kannada" },
+    { "name": "Oriya" },
+    { "name": "Persian" }]
 }

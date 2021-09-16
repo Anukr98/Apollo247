@@ -16,6 +16,7 @@ import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   orderIDViewStyle: {
@@ -129,13 +130,11 @@ export interface OrderModifiedScreenProps
 
 export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) => {
   const orderDetails = props.navigation.getParam('orderDetails');
-  const offlineOrderNumber = g(orderDetails, 'billNumber');
   const orderedItems = orderDetails.medicineOrderLineItems || [];
   const orderAutoId = `Your order #${orderDetails.orderAutoId} has been modified.`;
   const [removedItems, setRemovedItems] = useState([]);
   const [addedItems, setAddedItems] = useState([]);
   const [updatedItems, setUpdatedItems] = useState([]);
-  console.log('orderedItems', orderedItems);
   const itemDetails = g(
     orderDetails,
     'medicineOrderShipments',
@@ -146,7 +145,6 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
   );
 
   const billedItems = itemDetails ? JSON.parse(itemDetails) : null;
-  console.log('billedItems', billedItems, JSON.stringify(billedItems));
 
   useEffect(() => {
     sortItems();
@@ -159,22 +157,22 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
     let addedItems = billedItems.filter((item: any) => {
       return orderedItemIds.indexOf(item.itemId) < 0;
     });
-    console.log('addedItems--', addedItems);
     setAddedItems(addedItems);
 
     let removedItems = orderedItems.filter((item: any) => {
       return billedItemIds.indexOf(item.medicineSKU) < 0;
     });
-    console.log('removedItems--', removedItems);
     setRemovedItems(removedItems);
 
     let updatedItems: any = [];
     billedItems.forEach((item: any) => {
       orderedItems.forEach((product: any) => {
         if (item.itemId == product.medicineSKU) {
-          if (item.mrp != product.mrp || Math.ceil(item.issuedQty) != product.quantity) {
-            if (item.mrp != product.mrp) {
-              console.log('hi');
+          if (
+            Math.ceil(item.mrp) != Math.ceil(product.mrp) ||
+            Math.ceil(item.issuedQty) != product.quantity
+          ) {
+            if (Math.ceil(item.mrp) != Math.ceil(product.mrp)) {
               item['updatedprice'] = true;
               item['originalPrice'] = product.mrp;
             }
@@ -187,7 +185,6 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
         }
       });
     });
-    console.log('updatedItems--', updatedItems);
     setUpdatedItems(updatedItems);
   };
 
@@ -285,7 +282,7 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
           >
             {item.updatedprice && (
               <Text style={styles.mrpQtyOrgValueTextStyle}>
-                {'Rs. ' + (item.originalPrice! || 0).toFixed(2)}
+                {`${string.common.Rs} ` + (item.originalPrice! || 0).toFixed(2)}
               </Text>
             )}
             {item.updatedquantity && (
@@ -302,7 +299,7 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
           >
             {item.updatedprice && (
               <Text style={styles.mrpQtyRevValueTextStyle}>
-                {'Rs.' + (item.mrp! || 0).toFixed(2)}
+                {`${string.common.Rs}` + (item.mrp! || 0).toFixed(2)}
               </Text>
             )}
             {item.updatedquantity && (
@@ -312,7 +309,6 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
             )}
           </View>
         </View>
-        {/* <View style={[styles.blueLineViewStyle, { marginHorizontal: 3.5, marginBottom: 15 }]} /> */}
       </View>
     );
   };

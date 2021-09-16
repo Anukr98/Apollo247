@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import {
   Symptomtracker,
   LinkedUhidIcon,
@@ -26,7 +26,11 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  postCleverTapEvent,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
   WebEngageEvents,
@@ -50,6 +54,10 @@ import {
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AlertPopup } from '@aph/mobile-patients/src/components/ui/AlertPopup';
 import { Overlay } from 'react-native-elements';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const roundCountViewDimension = 30;
 const howItWorksArrData = [
@@ -71,7 +79,9 @@ interface Symptoms {
   name: string;
 }
 
-interface SymptomTrackerProps extends NavigationScreenProps {}
+interface SymptomTrackerProps extends NavigationScreenProps {
+  symptomData?: string;
+}
 
 export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   const [showProfilePopUp, setShowProfilePopUp] = useState<boolean>(false);
@@ -79,7 +89,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [selectedPatient, setSelectedPatient] = useState<any>();
-  const [showHowItWorks, setShowHowItWorks] = useState<boolean>(true);
+  const [showHowItWorks, setShowHowItWorks] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [symptoms, setSymptoms] = useState<Symptoms[]>([]);
   const [specialities, setSpecialities] = useState<SymptomsSpecialities[]>([]);
@@ -89,7 +99,8 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   const [restartVisible, setRestartVisible] = useState<boolean>(false);
   const [showInfo, setShowInfo] = useState<boolean>(false);
   const flatlistRef = useRef<any>(null);
-
+  const isLoadDataOneTime = useRef<boolean>(true);
+  const symptomData = props.navigation.getParam('symptomData');
   const patientInfoAttributes = {
     'Patient UHID': g(currentPatient, 'uhid'),
     'Patient ID': g(currentPatient, 'id'),
@@ -105,35 +116,30 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
     return function cleanup() {
       insertMessage = [];
     };
-  }, []);
+  }, [currentPatient]);
 
   const loadData = async () => {
     const symptomTrackerStarted = await AsyncStorage.getItem('symptomTrackerStarted');
     if (symptomTrackerStarted) {
       if (currentPatient) {
         setSelectedPatient(currentPatient);
+        if (isLoadDataOneTime.current) {
+          // This has been done to avoid duplicate calls on change patient
+          initializeChat(currentPatient);
+        }
+        isLoadDataOneTime.current = false;
       }
-      initializeChat(currentPatient);
-      setShowHowItWorks(false);
+    } else {
+      setShowHowItWorks(true);
+      AsyncStorage.setItem('symptomTrackerStarted', JSON.stringify(true));
     }
-    AsyncStorage.setItem('symptomTrackerStarted', JSON.stringify(true));
   };
 
   const backDataFunctionality = async () => {
     try {
       BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
       CommonLogEvent(AppRoutes.SymptomTracker, 'Go back clicked');
-      props.navigation.dispatch(
-        StackActions.reset({
-          index: 0,
-          key: null,
-          actions: [
-            NavigationActions.navigate({
-              routeName: AppRoutes.ConsultRoom,
-            }),
-          ],
-        })
-      );
+      props.navigation.goBack();
     } catch (error) {}
     return false;
   };
@@ -143,7 +149,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
       <View>
         <Header
           container={{ borderBottomWidth: 0 }}
-          title={'SYMPTOM TRACKER'}
+          title={'SYMPTOM CHECKER'}
           leftIcon="backArrow"
           onPressLeftIcon={() => backDataFunctionality()}
           rightComponent={
@@ -152,9 +158,15 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
                 style={styles.infoIconView}
                 onPress={() => {
                   setShowInfo(true);
-                  const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_INFO_CLICKED] = patientInfoAttributes;
+                  const eventAttributes:
+                    | WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_INFO_CLICKED]
+                    | CleverTapEvents[CleverTapEventName.SYMPTOM_TRACKER_INFO_CLICKED] = patientInfoAttributes;
                   postWebEngageEvent(
                     WebEngageEventName.SYMPTOM_TRACKER_INFO_CLICKED,
+                    eventAttributes
+                  );
+                  postCleverTapEvent(
+                    CleverTapEventName.SYMPTOM_TRACKER_INFO_CLICKED,
                     eventAttributes
                   );
                 }}
@@ -280,6 +292,10 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
           insertMessage = [{ text: res.data.dialogue.text }];
         } else {
           insertMessage = insertMessage.concat({ text: res.data.dialogue.text });
+        }
+        if (symptomData) {
+          // coming from props
+          updateUserChat(symptomData, res?.data?.id, insertMessage);
         }
         setMessages(insertMessage);
         setChatId(res.data.id);
@@ -452,6 +468,10 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
               WebEngageEventName.SYMPTOM_TRACKER_SELECT_ANOTHER_MEMBER_CLICKED,
               eventAttributes
             );
+            postCleverTapEvent(
+              CleverTapEventName.SYMPTOM_TRACKER_SELECT_OTHER_MEMBER_CLICKED,
+              eventAttributes
+            );
             setShowProfilePopUp(true);
           }}
         >
@@ -526,16 +546,22 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
                     eventAttributes
                   );
                 } else {
-                  const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_MOST_TROUBLING_SYMPTOM_CLICKED] = patientInfoAttributes;
+                  const eventAttributes:
+                    | WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_MOST_TROUBLING_SYMPTOM_CLICKED]
+                    | CleverTapEvents[CleverTapEventName.SYMPTOM_TRACKER_MOST_TROUBLING_SYMPTOM_CLICKED] = patientInfoAttributes;
 
                   postWebEngageEvent(
                     WebEngageEventName.SYMPTOM_TRACKER_MOST_TROUBLING_SYMPTOM_CLICKED,
                     eventAttributes
                   );
+                  postCleverTapEvent(
+                    CleverTapEventName.SYMPTOM_TRACKER_MOST_TROUBLING_SYMPTOM_CLICKED,
+                    eventAttributes
+                  );
                 }
                 props.navigation.navigate(AppRoutes.SymptomSelection, {
                   chatId: chatId,
-                  goBackCallback: goBackCallback,
+                  goBackCallback: updateUserChat,
                   defaultSymptoms: defaultSymptoms,
                   storedMessages: messages,
                 });
@@ -552,9 +578,15 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
             <TouchableOpacity
               style={styles.plainBtn}
               onPress={() => {
-                const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_NO_OTHER_SYMPTOM_CLICKED] = patientInfoAttributes;
+                const eventAttributes:
+                  | WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_NO_OTHER_SYMPTOM_CLICKED]
+                  | CleverTapEvents[CleverTapEventName.SYMPTOM_TRACKER_NO_OTHER_SYMPTOM_CLICKED] = patientInfoAttributes;
                 postWebEngageEvent(
                   WebEngageEventName.SYMPTOM_TRACKER_NO_OTHER_SYMPTOM_CLICKED,
+                  eventAttributes
+                );
+                postCleverTapEvent(
+                  CleverTapEventName.SYMPTOM_TRACKER_NO_OTHER_SYMPTOM_CLICKED,
                   eventAttributes
                 );
                 insertMessage = insertMessage.concat({
@@ -603,7 +635,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
     }
   };
 
-  const goBackCallback = async (data: any, chat_id: string, storedMessages: any) => {
+  const updateUserChat = async (data: any, chat_id: string, storedMessages: any) => {
     insertMessage = storedMessages.concat({ text: data.name, isSentByPatient: true });
     setMessages(insertMessage);
     const body: UpdateSymptomTrackerChatRequest = {
@@ -640,19 +672,10 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
         {chatEnded && symptoms.length > 0 ? (
           <View>
             <View style={styles.symptomsContainer}>
-              <View style={styles.seperatorLine}>
-                <Text style={styles.patientDetailsTitle}>{string.symptomChecker.symptoms}</Text>
-              </View>
-              {symptoms &&
-                symptoms.length > 0 &&
-                symptoms.map((item, index) => {
-                  return (
-                    <View key={index} style={[styles.itemRowStyle, styles.itemRowMargin]}>
-                      <View style={styles.bullet} />
-                      <Text style={styles.patientDetailsText}>{item.name}</Text>
-                    </View>
-                  );
-                })}
+              {renderSymptomsListTitle(string.symptomChecker.symptoms)}
+              {renderSymptomsList(symptoms)}
+              {renderSymptomsListTitle(string.symptomChecker.topSpecialities, 20)}
+              {renderSymptomsList(specialities)}
             </View>
           </View>
         ) : (
@@ -662,17 +685,43 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
     );
   };
 
+  const renderSymptomsListTitle = (title: string, marginTop: number = 13) => {
+    return (
+      <View style={[styles.seperatorLine, { marginTop }]}>
+        <Text style={styles.patientDetailsTitle}>{title}</Text>
+      </View>
+    );
+  };
+
+  const renderSymptomsList = (data: Symptoms[] | SymptomsSpecialities[]) => {
+    return (
+      <View>
+        {data?.map((item: Symptoms | SymptomsSpecialities, index: number) => {
+          return (
+            <View key={index} style={[styles.itemRowStyle, styles.itemRowMargin]}>
+              <View style={styles.bullet} />
+              <Text style={styles.patientDetailsText}>{item?.name}</Text>
+            </View>
+          );
+        })}
+      </View>
+    );
+  };
+
   const renderBottomButtons = () => {
     return (
       <View style={styles.bottomView}>
         <TouchableOpacity
           onPress={() => {
-            const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_RESTART_CLICKED] = {
+            const eventAttributes:
+              | WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_RESTART_CLICKED]
+              | CleverTapEvents[CleverTapEventName.SYMPTOM_TRACKER_RESTART_CLICKED] = {
               ...patientInfoAttributes,
               symptoms: symptoms,
               specialities: specialities,
             };
             postWebEngageEvent(WebEngageEventName.SYMPTOM_TRACKER_RESTART_CLICKED, eventAttributes);
+            postCleverTapEvent(CleverTapEventName.SYMPTOM_TRACKER_RESTART_CLICKED, eventAttributes);
             setRestartVisible(true);
           }}
         >
@@ -682,13 +731,19 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
           title={string.symptomChecker.consultDoctor}
           style={[styles.proceedBtn, styles.consultDoctorMargin]}
           onPress={() => {
-            const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_CONSULT_DOCTOR_CLICKED] = {
+            const eventAttributes:
+              | WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_CONSULT_DOCTOR_CLICKED]
+              | CleverTapEvents[CleverTapEventName.SYMPTOM_TRACKER_CONSULT_DOCTOR_CLICKED] = {
               ...patientInfoAttributes,
               symptoms: symptoms,
               specialities: specialities,
             };
             postWebEngageEvent(
               WebEngageEventName.SYMPTOM_TRACKER_CONSULT_DOCTOR_CLICKED,
+              eventAttributes
+            );
+            postCleverTapEvent(
+              CleverTapEventName.SYMPTOM_TRACKER_CONSULT_DOCTOR_CLICKED,
               eventAttributes
             );
             const filteredSpecialities: string[] = specialities?.map((item: any) => {
@@ -733,7 +788,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
       <Overlay
         onRequestClose={() => setShowInfo(false)}
         isVisible={showInfo}
-        windowBackgroundColor={'rgba(0, 0, 0, 0.8)'}
+        windowBackgroundColor={'rgba(0, 0, 0, 0.31)'}
         containerStyle={styles.overlayContainerStyle}
         fullScreen
         transparent
@@ -822,7 +877,6 @@ const styles = StyleSheet.create({
   proceedBtn: {
     marginTop: 20,
     width: 155,
-    backgroundColor: colors.LIGHT_BLUE,
     alignSelf: 'center',
   },
   mainView: {
@@ -920,10 +974,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(2, 71, 91, 0.1)',
     paddingRight: 20,
     paddingLeft: 25,
-    paddingVertical: 13,
+    paddingBottom: 13,
     borderRadius: 10,
     marginRight: 20,
     marginLeft: 40,
+    borderWidth: 0.5,
+    borderColor: theme.colors.LIGHT_BLUE,
   },
   patientDetailsTitle: {
     ...theme.fonts.IBMPlexSansMedium(16),
@@ -1015,7 +1071,7 @@ const styles = StyleSheet.create({
     opacity: 0.3,
   },
   restartBtnTxt: {
-    color: colors.SKY_BLUE,
+    color: colors.APP_YELLOW,
     ...theme.fonts.IBMPlexSansMedium(14),
   },
   infoIcon: {

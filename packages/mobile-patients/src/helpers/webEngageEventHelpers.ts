@@ -3,11 +3,26 @@ import {
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
-import { postWebEngageEvent, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  postWebEngageEvent,
+  g,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
+  postCleverTapEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Store } from '@aph/mobile-patients/src/helpers/apiCalls';
 import moment from 'moment';
-
-type MyOrdersClicked = WebEngageEvents[WebEngageEventName.MY_ORDERS_CLICKED];
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import { AppsFlyerEventName } from './AppsFlyerEvents';
+import { PharmacyCircleEvent } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { PharmacyUserTypeEvent } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+type MyOrdersClicked =
+  | WebEngageEvents[WebEngageEventName.MY_ORDERS_CLICKED]
+  | CleverTapEvents[CleverTapEventName.PHARMACY_MY_ORDERS_CLICKED];
 
 export const postMyOrdersClicked = (
   source: MyOrdersClicked['Source'],
@@ -19,9 +34,12 @@ export const postMyOrdersClicked = (
     'Mobile Number': g(customer, 'mobileNumber')!,
   };
   postWebEngageEvent(WebEngageEventName.MY_ORDERS_CLICKED, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.PHARMACY_MY_ORDERS_CLICKED, eventAttributes);
 };
 
-type PharmacyMyOrderTrackingClicked = WebEngageEvents[WebEngageEventName.PHARMACY_MY_ORDER_TRACKING_CLICKED];
+type PharmacyMyOrderTrackingClicked =
+  | WebEngageEvents[WebEngageEventName.PHARMACY_MY_ORDER_TRACKING_CLICKED]
+  | CleverTapEvents[CleverTapEventName.PHARMACY_MY_ORDER_TRACKING_CLICKED];
 
 export const postPharmacyMyOrderTrackingClicked = (
   orderId: PharmacyMyOrderTrackingClicked['Order ID'],
@@ -41,15 +59,19 @@ export const postPharmacyMyOrderTrackingClicked = (
     'Mobile Number': g(customer, 'mobileNumber')!,
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_MY_ORDER_TRACKING_CLICKED, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.PHARMACY_MY_ORDER_TRACKING_CLICKED, eventAttributes);
 };
 
-type PharmacyAddNewAddressClick = WebEngageEvents[WebEngageEventName.PHARMACY_ADD_NEW_ADDRESS_CLICK];
+type PharmacyAddNewAddressClick =
+  | WebEngageEvents[WebEngageEventName.PHARMACY_ADD_NEW_ADDRESS_CLICK]
+  | CleverTapEvents[CleverTapEventName.PHARMACY_PROCEED_TO_ADD_NEW_ADDRESS_CLICK];
 
 export const postPharmacyAddNewAddressClick = (source: PharmacyAddNewAddressClick['Source']) => {
   const eventAttributes: PharmacyAddNewAddressClick = {
     Source: source,
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_NEW_ADDRESS_CLICK, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.PHARMACY_PROCEED_TO_ADD_NEW_ADDRESS_CLICK, eventAttributes);
 };
 
 type PharmacyAddNewAddressCompleted = WebEngageEvents[WebEngageEventName.PHARMACY_ADD_NEW_ADDRESS_COMPLETED];
@@ -60,7 +82,7 @@ export const postPharmacyAddNewAddressCompleted = (
   deliveryAddress: PharmacyAddNewAddressCompleted['Delivery address'],
   tat: PharmacyAddNewAddressCompleted['TAT Displayed'],
   deliveryTat: PhamracyCartAddressSelectedSuccess['Delivery TAT'],
-  success?: PharmacyAddNewAddressCompleted['Success'],
+  success?: PharmacyAddNewAddressCompleted['Success']
 ) => {
   const eventAttributes: PharmacyAddNewAddressCompleted = {
     Source: source,
@@ -70,6 +92,18 @@ export const postPharmacyAddNewAddressCompleted = (
     'TAT Displayed': tat,
     'Delivery TAT': deliveryTat,
   };
+  const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_NEW_ADDRESS_COMPLETED] = {
+    Source: source,
+    Success: success,
+    'Delivery address': deliveryAddress,
+    Pincode: pincode,
+    'TAT Displayed': tat,
+    'Delivery TAT': deliveryTat,
+  };
+  postCleverTapEvent(
+    CleverTapEventName.PHARMACY_ADD_NEW_ADDRESS_COMPLETED,
+    cleverTapEventAttributes
+  );
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_NEW_ADDRESS_COMPLETED, eventAttributes);
 };
 
@@ -80,16 +114,58 @@ export const postPhamracyCartAddressSelectedSuccess = (
   deliveryAddress: PhamracyCartAddressSelectedSuccess['Delivery Address'],
   success: PhamracyCartAddressSelectedSuccess['Delivery Successful'],
   tatDisplayed: PhamracyCartAddressSelectedSuccess['TAT Displayed'],
-  deliveryTat: PhamracyCartAddressSelectedSuccess['Delivery TAT']
+  deliveryTat: PhamracyCartAddressSelectedSuccess['Delivery TAT'],
+  pharmacyCircleEvent: PharmacyCircleEvent,
+  tatHrs: PhamracyCartAddressSelectedSuccess['TAT_Hrs'],
+  pharmacyUserTypeAttribute: PharmacyUserTypeEvent,
+  itemsInCart: string,
+  isSplitCart?: boolean,
+  splitOrderDetails?: any
 ) => {
   const eventAttributes: PhamracyCartAddressSelectedSuccess = {
     'TAT Displayed': tatDisplayed,
     'Delivery Successful': success,
     'Delivery Address': deliveryAddress,
     Pincode: pincode,
-    'Delivery TAT': deliveryTat
+    'Delivery TAT': deliveryTat,
+    TAT_Hrs: tatHrs,
+    'Split Cart': !!isSplitCart ? 'Yes' : 'No',
+    'Cart Items': itemsInCart || '',
+    ...pharmacyCircleEvent,
+    ...pharmacyUserTypeAttribute,
+    ...splitOrderDetails,
   };
+  const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS] = {
+    'TAT Displayed': tatDisplayed,
+    'Delivery Successful': success,
+    'Delivery Address': deliveryAddress,
+    Pincode: pincode,
+    'Delivery TAT': deliveryTat,
+    TAT_Hrs: tatHrs,
+    'Split Cart': !!isSplitCart ? 'Yes' : 'No',
+    'Cart Items': itemsInCart || undefined,
+    'Circle Membership Added': pharmacyCircleEvent?.['Circle Membership Added'],
+    'Circle Membership Value': pharmacyCircleEvent?.['Circle Membership Value'] || undefined,
+    'User Type': pharmacyUserTypeAttribute?.User_Type || undefined,
+    ...splitOrderDetails,
+  };
+  postCleverTapEvent(
+    CleverTapEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS,
+    cleverTapEventAttributes
+  );
   postWebEngageEvent(WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS, eventAttributes);
+
+  const firebaseAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS] = {
+    TATDisplayed: tatDisplayed,
+    DeliverySuccessful: success,
+    DeliveryAddress: deliveryAddress,
+    Pincode: pincode,
+    DeliveryTAT: deliveryTat,
+    LOB: 'Pharmacy',
+    ...pharmacyCircleEvent,
+  };
+  postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS, firebaseAttributes);
+  postFirebaseEvent(FirebaseEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS, firebaseAttributes);
 };
 
 type PhamracyCartAddressSelectedFailure = WebEngageEvents[WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_FAILURE];

@@ -50,6 +50,7 @@ import {
   dataSavedUserID,
   g,
   getNetStatus,
+  postAppointmentCleverTapEvents,
   postWebEngageEvent,
   statusBarHeight,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -72,8 +73,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '../../graphql/types/getPatientAllAppointments';
+import { NavigationScreenProps } from 'react-navigation';
+import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments } from '../../graphql/types/getPatientAllAppointments';
+import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const { width, height } = Dimensions.get('window');
 
@@ -145,8 +148,8 @@ type rescheduleType = {
 export interface AppointmentDetailsProps extends NavigationScreenProps {}
 
 export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => {
-  const data: getPatientAllAppointments_getPatientAllAppointments_appointments = props.navigation
-    .state.params!.data;
+  const data: getPatientAllAppointments_getPatientAllAppointments_activeAppointments = props
+    .navigation.state.params!.data;
   const doctorDetails = data.doctorInfo!;
 
   const movedFrom = props.navigation.state.params!.from;
@@ -162,7 +165,6 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   const { currentPatient } = useAllCurrentPatients();
   const [appointmentTime, setAppointmentTime] = useState<string>('');
   const [resheduleoverlay, setResheduleoverlay] = useState<boolean>(false);
-  const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
   const [rescheduleApICalled, setRescheduleApICalled] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [belowThree, setBelowThree] = useState<boolean>(false);
@@ -171,9 +173,6 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   const [networkStatus, setNetworkStatus] = useState<boolean>(false);
   const [bottompopup, setBottompopup] = useState<boolean>(false);
   const [secretaryData, setSecretaryData] = useState<any>([]);
-
-  // const [consultStarted, setConsultStarted] = useState<boolean>(false);
-  // const [sucesspopup, setSucessPopup] = useState<boolean>(false);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const minutes = moment.duration(moment(data.appointmentDateTime).diff(new Date())).asMinutes();
@@ -181,7 +180,6 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   useEffect(() => {
     getSecretaryData();
     if (!currentPatient) {
-      console.log('No current patients available');
       getPatientApiCall();
     }
 
@@ -200,7 +198,6 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
     getNetStatus()
       .then((status) => {
         if (status) {
-          console.log('nextAvailableSlot called');
           if (isAwaitingReschedule) {
             getAppointmentNextSlotInitiatedByDoctor();
           } else {
@@ -220,8 +217,6 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
     const dateValidate = moment(moment().format('YYYY-MM-DD')).diff(
       moment(data.appointmentDateTime).format('YYYY-MM-DD')
     );
-    console.log('dateValidate', dateValidate);
-
     if (dateValidate == 0) {
       const time = `Today, ${moment
         .utc(data.appointmentDateTime)
@@ -240,14 +235,10 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   const getSecretaryData = () => {
     getSecretaryDetailsByDoctor(client, doctorDetails.id)
       .then((apiResponse: any) => {
-        console.log('apiResponse', apiResponse);
         const secretaryDetails = g(apiResponse, 'data', 'data', 'getSecretaryDetailsByDoctorId');
         setSecretaryData(secretaryDetails);
-        console.log('apiResponse');
       })
-      .catch((error) => {
-        console.log('error', error);
-      });
+      .catch((error) => {});
   };
 
   const todayDate = moment
@@ -261,7 +252,6 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
       .then(({ data }: any) => {
         setshowSpinner(false);
         try {
-          console.log(data, 'nextavailable res');
           data[0] && setAvailability(data[0].physicalAvailableSlot);
         } catch (error) {
           CommonBugFender('AppointmentDetails_nextAvailableSlot_try', error);
@@ -272,7 +262,6 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         CommonBugFender('AppointmentDetails_nextAvailableSlot', e);
         setshowSpinner(false);
         const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while GetDoctorNextAvailableSlot', error);
       })
       .finally(() => {
         checkIfReschedule();
@@ -308,7 +297,6 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         })
         .then((_data: any) => {
           const result = _data.data.checkIfReschedule;
-          console.log('checfReschedulesuccess', result);
           setshowSpinner(false);
 
           try {
@@ -333,7 +321,6 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
           CommonBugFender('AppointmentDetails_checkIfReschedule', e);
           setshowSpinner(false);
           const error = JSON.parse(JSON.stringify(e));
-          console.log('Error occured while checkIfRescheduleprofile', error);
         })
         .finally(() => {
           setResheduleoverlay(true);
@@ -341,13 +328,10 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
     } catch (error) {
       CommonBugFender('AppointmentDetails_checkIfReschedule_try', error);
       setshowSpinner(false);
-      console.log(error, 'error');
     }
   };
 
   const rescheduleAPI = (availability: any) => {
-    console.log('availability', availability);
-
     const bookRescheduleInput = {
       appointmentId: data.id,
       doctorId: doctorDetails.id,
@@ -366,8 +350,6 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
       rescheduledId: '',
     };
 
-    console.log(bookRescheduleInput, 'bookRescheduleInput');
-    // if (!rescheduleApICalled) {
     setshowSpinner(true);
     setRescheduleApICalled(true);
     client
@@ -378,48 +360,34 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         },
         fetchPolicy: 'no-cache',
       })
-      .then((data: any) => {
-        postAppointmentWEGEvents('Rescheduled by Customer');
-        console.log(data, 'data');
-        setshowSpinner(false);
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [
-              NavigationActions.navigate({
-                routeName: AppRoutes.TabBar,
-                params: {
-                  Data:
-                    data.data &&
-                    data.data.bookRescheduleAppointment &&
-                    data.data.bookRescheduleAppointment.appointmentDetails,
-                  DoctorName:
-                    props.navigation.state.params!.data &&
-                    props.navigation.state.params!.data.doctorInfo &&
-                    props.navigation.state.params!.data.doctorInfo.fullName,
-                },
-              }),
-            ],
-          })
+      .then((_data: any) => {
+        postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER);
+        postAppointmentCleverTapEvents(
+          CleverTapEventName.CONSULT_RESCHEDULED_BY_THE_PATIENT,
+          data,
+          currentPatient,
+          secretaryData
         );
+        setshowSpinner(false);
+        const params = {
+          Data: _data?.data?.bookRescheduleAppointment?.appointmentDetails,
+          DoctorName: props.navigation.state.params?.data?.doctorInfo?.fullName,
+        };
+        navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar, params);
       })
       .catch((e) => {
         CommonBugFender('AppointmentDetails_rescheduleAPI', e);
         setBottompopup(true);
       });
-    // }
   };
   const acceptChange = () => {
     try {
-      console.log('acceptChange');
       setResheduleoverlay(false);
       AsyncStorage.setItem('showSchduledPopup', 'true');
 
       rescheduleAPI(availability);
     } catch (error) {
       CommonBugFender('AppointmentDetails_rescheduleAPI_try', error);
-      console.log(error, 'error');
     }
   };
 
@@ -434,7 +402,6 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
       | WebEngageEventName.CONTINUE_CONSULTATION_CLICKED
       | WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER
       | WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER
-    // data: getPatinetAppointments_getPatinetAppointments_patinetAppointments
   ) => {
     const eventAttributes:
       | WebEngageEvents[WebEngageEventName.RESCHEDULE_CLICKED]
@@ -477,8 +444,6 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
       cancelledById: userId ? userId : data.patientId,
     };
 
-    console.log(appointmentTransferInput, 'appointmentTransferInput');
-
     client
       .mutate<cancelAppointment, cancelAppointmentVariables>({
         mutation: CANCEL_APPOINTMENT,
@@ -487,17 +452,20 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         },
         fetchPolicy: 'no-cache',
       })
-      .then((data: any) => {
+      .then((_data: any) => {
         postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER);
+        postAppointmentCleverTapEvents(
+          CleverTapEventName.CONSULT_CANCELLED_BY_PATIENT,
+          data,
+          currentPatient,
+          secretaryData
+        );
         setshowSpinner(false);
-        console.log(data, 'data');
-        // setSucessPopup(true);
         showAppointmentCancellSuccessAlert();
       })
       .catch((e: any) => {
         CommonBugFender('AppointmentDetails_cancelAppointmentApi', e);
         setshowSpinner(false);
-        console.log('Error occured while adding Doctor', e);
         const message = e.message ? e.message.split(':')[1].trim() : '';
         if (message == 'INVALID_APPOINTMENT_ID') {
           showAphAlert!({
@@ -510,7 +478,6 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
 
   const showAppointmentCancellSuccessAlert = () => {
     setShowCancelPopup(false);
-    // setSucessPopup(false);
     const appointmentNum = g(data, 'displayId');
     const doctorName = g(data, 'doctorInfo', 'displayName');
     showAphAlert!({
@@ -519,13 +486,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
       unDismissable: true,
       onPressOk: () => {
         hideAphAlert!();
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-          })
-        );
+        navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar);
       },
     });
   };
@@ -664,6 +625,12 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               }}
               onPress={() => {
                 postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
+                postAppointmentCleverTapEvents(
+                  CleverTapEventName.CONSULT_RESCHEDULE_CLICKED,
+                  data,
+                  currentPatient,
+                  secretaryData
+                );
                 if (data.status == STATUS.COMPLETED) {
                   showAphAlert!({
                     title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
@@ -695,15 +662,21 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   marginLeft: 8,
                 }}
                 onPress={() => {
-                  data.isConsultStarted &&
+                  if (data?.isConsultStarted) {
                     postAppointmentWEGEvents(WebEngageEventName.CONTINUE_CONSULTATION_CLICKED);
+                    postAppointmentCleverTapEvents(
+                      CleverTapEventName.CONSULT_CONTINUE_CONSULTATION_CLICKED,
+                      data,
+                      currentPatient,
+                      secretaryData
+                    );
+                  }
                   CommonLogEvent(AppRoutes.AppointmentDetails, 'START_CONSULTATION_CLICKED');
                   props.navigation.navigate(AppRoutes.ChatRoom, {
                     data: data,
                     callType: '',
                     prescription: '',
                   });
-                  // setConsultStarted(true);
                 }}
               />
             ) : null}
@@ -820,6 +793,12 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   style={styles.gotItStyles}
                   onPress={() => {
                     postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
+                    postAppointmentCleverTapEvents(
+                      CleverTapEventName.CONSULT_RESCHEDULE_CLICKED,
+                      data,
+                      currentPatient,
+                      secretaryData
+                    );
                     setShowCancelPopup(false);
                     NextAvailableSlotAPI(isAwaitingReschedule);
                   }}
@@ -832,6 +811,12 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   style={styles.gotItStyles}
                   onPress={() => {
                     postAppointmentWEGEvents(WebEngageEventName.CANCEL_CONSULTATION_CLICKED);
+                    postAppointmentCleverTapEvents(
+                      CleverTapEventName.CONSULT_CANCEL_CLICKED_BY_PATIENT,
+                      data,
+                      currentPatient,
+                      secretaryData
+                    );
                     CommonLogEvent(
                       AppRoutes.AppointmentDetails,
                       'AppointmentDetails  Cancel Concsult Clicked'
@@ -846,41 +831,6 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             </View>
           </BottomPopUp>
         )}
-        {/* {sucesspopup && (
-          <BottomPopUp
-            title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
-            description={'Appointment sucessfully cancelled'}
-          >
-            <View
-              style={{
-                flexDirection: 'row',
-                marginHorizontal: 20,
-                //justifyContent: 'space-between',
-                alignItems: 'flex-end',
-                justifyContent: 'flex-end',
-              }}
-            >
-              <View style={{ height: 60 }}>
-                <TouchableOpacity
-                  style={styles.gotItStyles}
-                  onPress={() => {
-                    setShowCancelPopup(false);
-                    setSucessPopup(false);
-                    props.navigation.dispatch(
-                      StackActions.reset({
-                        index: 0,
-                        key: null,
-                        actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-                      })
-                    );
-                  }}
-                >
-                  <Text style={styles.gotItTextStyles}>{'OK, GOT IT'}</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </BottomPopUp>
-        )} */}
         {networkStatus && <NoInterNetPopup onClickClose={() => setNetworkStatus(false)} />}
         <View
           style={{

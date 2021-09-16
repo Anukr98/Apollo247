@@ -1,118 +1,142 @@
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import {
-  LocationData,
-  useAppCommonData,
-  SubscriptionData,
+  BenefitCtaAction,
+  CicleSubscriptionData,
+  CircleGroup,
+  CirclePlanSummary,
   GroupPlan,
   PlanBenefits,
-  BenefitCtaAction,
-  bannerType,
+  SubscriptionData,
+  useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
+import { WebView } from 'react-native-webview';
+import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
+import { dateFormatterDDMM } from '@aph/mobile-patients/src/utils/dateUtil';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { AppRoutes, getCurrentRoute } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NotificationListener } from '@aph/mobile-patients/src/components/NotificationListener';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
+import CovidButton from '@aph/mobile-patients/src/components/ConsultRoom/Components/CovidStyles';
+import firebaseAuth from '@react-native-firebase/auth';
+import ReceiveSharingIntent from 'react-native-receive-sharing-intent';
+
 import {
   CartIcon,
   ConsultationRoom,
+  CovidOrange,
   CovidRiskLevel,
+  DashedLine,
   Diabetes,
   DoctorIcon,
   DropdownGreen,
+  FemaleCircleIcon,
+  FemaleIcon,
   KavachIcon,
+  HealthyLife,
   LatestArticle,
   LinkedUhidIcon,
-  Mascot,
+  MaleCircleIcon,
+  MaleIcon,
   MedicineCartIcon,
   MedicineIcon,
   MyHealth,
   NotificationIcon,
   Person,
   PrescriptionMenu,
-  Scan,
   Symptomtracker,
   TestsCartIcon,
   TestsIcon,
-  ThumbsUp,
-  LastStepIcon,
-  BackArrowWhite,
-  SadFaceYellow,
-  HdfcBankLogo,
-  CovidOrange,
-  DashedLine,
+  WhiteArrowRightIcon,
+  VaccineTracker,
+  CrossPopup,
+  ProHealthIcon,
+  BackArrow,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  BannerDisplayType,
+  BookingSource,
+  BookingStatus,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { dateFormatter } from '@aph/mobile-patients/src/utils/dateUtil';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
+import { CircleMembershipActivation } from '@aph/mobile-patients/src/components/ui/CircleMembershipActivation';
 import {
   CommonBugFender,
   CommonLogEvent,
-  CommonSetUserBugsnag,
   DeviceHelper,
-  setBugFenderLog,
   isIos,
+  setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
-  SAVE_DEVICE_TOKEN,
-  SAVE_VOIP_DEVICE_TOKEN,
   GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
-  IDENTIFY_HDFC_CUSTOMER,
-  VALIDATE_HDFC_OTP,
-  CREATE_USER_SUBSCRIPTION,
-  GET_ALL_GROUP_BANNERS_OF_USER,
+  GET_CASHBACK_DETAILS_OF_PLAN_ID,
+  GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
+  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+  SAVE_VOIP_DEVICE_TOKEN,
+  GET_USER_PROFILE_TYPE,
+  GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
+  GET_ONEAPOLLO_USER,
+  GET_PLAN_DETAILS_BY_PLAN_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GetAllUserSubscriptionsWithPlanBenefitsV2,
+  GetAllUserSubscriptionsWithPlanBenefitsV2Variables,
+} from '@aph/mobile-patients/src/graphql/types/GetAllUserSubscriptionsWithPlanBenefitsV2';
+import { GetCashbackDetailsOfPlanById } from '@aph/mobile-patients/src/graphql/types/GetCashbackDetailsOfPlanById';
+import { getUserProfileType } from '@aph/mobile-patients/src/graphql/types/getUserProfileType';
 import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
 import {
-  GetAllUserSubscriptionsWithPlanBenefits,
-  GetAllUserSubscriptionsWithPlanBenefitsVariables,
-} from '@aph/mobile-patients/src/graphql/types/GetAllUserSubscriptionsWithPlanBenefits';
-import {
-  identifyHdfcCustomer,
-  identifyHdfcCustomerVariables,
-} from '@aph/mobile-patients/src/graphql/types/identifyHdfcCustomer';
-import {
-  validateHdfcOTP,
-  validateHdfcOTPVariables,
-} from '@aph/mobile-patients/src/graphql/types/validateHdfcOTP';
-import {
-  CreateUserSubscription,
-  CreateUserSubscriptionVariables,
-} from '@aph/mobile-patients/src/graphql/types/CreateUserSubscription';
-import {
-  GetAllGroupBannersOfUser,
-  GetAllGroupBannersOfUserVariables,
-} from '@aph/mobile-patients/src/graphql/types/GetAllGroupBannersOfUser';
-import { DEVICE_TYPE, Relation, STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  saveDeviceToken,
-  saveDeviceTokenVariables,
-} from '@aph/mobile-patients/src/graphql/types/saveDeviceToken';
+  GetSubscriptionsOfUserByStatus,
+  GetSubscriptionsOfUserByStatusVariables,
+} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
+import { Gender, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   GenerateTokenforCM,
   notifcationsApi,
   pinCodeServiceabilityApi247,
+  GenrateVitalsToken_CM,
+  GetAllUHIDSForNumber_CM,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
+import UserAgent from 'react-native-user-agent';
+import {
+  getAllProHealthAppointments,
+  getUserBannersList,
+  saveTokenDevice,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   FirebaseEventName,
   PatientInfoFirebase,
   PatientInfoWithSourceFirebase,
 } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
-  distanceBwTwoLatLng,
+  checkPermissions,
   doRequestAndAccessLocationModified,
   g,
-  getlocationDataFromLatLang,
+  getPhrNotificationAllCount,
+  overlyCallPermissions,
   postFirebaseEvent,
   postWebEngageEvent,
   setWebEngageScreenNames,
-  overlyCallPermissions,
-  followUpChatDaysCaseSheet,
-  checkPermissions,
+  timeDiffDaysFromNow,
+  setCircleMembershipType,
+  apiCallEnums,
+  getUserType,
+  persistHealthCredits,
+  getHealthCredits,
+  postCleverTapEvent,
+  getCleverTapCircleMemberValues,
+  getAge,
+  removeObjectNullUndefinedProperties,
+  fileToBase64,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -126,11 +150,14 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
+import { USER_AGENT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
+import messaging from '@react-native-firebase/messaging';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Dimensions,
+  Image,
   ImageBackground,
   Linking,
   NativeModules,
@@ -143,23 +170,45 @@ import {
   TouchableOpacityProps,
   View,
   ViewStyle,
-  TextInput,
-  Image,
-  AppState,
-  AppStateStatus,
+  Keyboard,
 } from 'react-native';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ScrollView } from 'react-native-gesture-handler';
-import WebEngage from 'react-native-webengage';
-import { NavigationScreenProps } from 'react-navigation';
-import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../../graphql/types/getPatientPersonalizedAppointments';
-import { getPatientPersonalizedAppointmentList } from '../../helpers/clientCalls';
-import { ConsultPersonalizedCard } from '../ui/ConsultPersonalizedCard';
 import VoipPushNotification from 'react-native-voip-push-notification';
-import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
-import { addVoipPushToken, addVoipPushTokenVariables } from '../../graphql/types/addVoipPushToken';
-import Carousel from 'react-native-snap-carousel';
-import { HdfcConnectPopup } from '../HdfcSubscription/HdfcConnectPopup';
-import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import WebEngage from 'react-native-webengage';
+import { NavigationScreenProps, FlatList } from 'react-navigation';
+import {
+  addVoipPushToken,
+  addVoipPushTokenVariables,
+} from '@aph/mobile-patients/src/graphql/types/addVoipPushToken';
+import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
+
+import { CircleTypeCard1 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard1';
+import { CircleTypeCard2 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard2';
+import { CircleTypeCard3 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard3';
+import { CircleTypeCard4 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard4';
+import { CircleTypeCard5 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard5';
+import { CircleTypeCard6 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard6';
+import { Overlay } from 'react-native-elements';
+import { HdfcConnectPopup } from '@aph/mobile-patients/src/components/SubscriptionMembership/HdfcConnectPopup';
+import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
+import {
+  renderCovidVaccinationShimmer,
+  renderCircleShimmer,
+  renderBannerShimmer,
+  CovidButtonShimmer,
+} from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import { ConsultedDoctorsCard } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultedDoctorsCard';
+import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
+import { AuthContextProps } from '@aph/mobile-patients/src/components/AuthProvider';
+import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+  HomeScreenAttributes,
+  PatientInfo as PatientInfoObj,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { getUniqueId } from 'react-native-device-info';
 
 const { Vitals } = NativeModules;
 
@@ -210,36 +259,59 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   hiTextStyle: {
-    marginLeft: 20,
+    marginLeft: 10,
     color: '#02475b',
-    ...theme.fonts.IBMPlexSansSemiBold(36),
+    ...theme.fonts.IBMPlexSansSemiBold(26),
   },
   nameTextContainerStyle: {
-    maxWidth: '75%',
+    maxWidth: '70%',
   },
   nameTextStyle: {
-    marginLeft: 5,
+    marginLeft: 7,
     color: '#02475b',
-    ...theme.fonts.IBMPlexSansSemiBold(36),
+    ...theme.fonts.IBMPlexSansSemiBold(26),
   },
   seperatorStyle: {
     height: 2,
     backgroundColor: '#00b38e',
-    //marginTop: 5,
     marginHorizontal: 5,
     marginBottom: 6,
   },
   descriptionTextStyle: {
-    marginLeft: 20,
-    marginTop: 0,
-    color: theme.colors.SKY_BLUE,
-    ...theme.fonts.IBMPlexSansMedium(17),
-    lineHeight: 24,
+    marginHorizontal: 16,
+    marginTop: 6,
+    ...theme.viewStyles.text('M', 14, theme.colors.SKY_BLUE),
+  },
+  readArticleStyle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    height: 50,
+  },
+  covidContainer: {
+    marginHorizontal: 20,
+    ...theme.viewStyles.cardViewStyle,
+    marginVertical: 20,
+  },
+  covidTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+    marginHorizontal: 10,
+  },
+  covidTitle: {
+    ...theme.viewStyles.text('M', 13, theme.colors.SHERPA_BLUE),
+    marginLeft: 10,
+    width: width - 100,
+  },
+  covidIcon: {
+    width: 20,
+    height: 20,
   },
   labelView: {
     position: 'absolute',
-    top: -3,
-    right: -3,
+    top: -10,
+    right: -8,
     backgroundColor: '#ff748e',
     height: 14,
     width: 14,
@@ -289,7 +361,313 @@ const styles = StyleSheet.create({
   plainLine: {
     width: '100%',
     height: 1,
-    marginVertical: 16,
+    marginVertical: 20,
+  },
+  badgelabelView: {
+    position: 'absolute',
+    top: -4,
+    right: -6,
+    backgroundColor: '#E50000',
+    height: 15,
+    width: 15,
+    borderRadius: 7.5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badgelabelText: {
+    ...theme.fonts.IBMPlexSansBold(9),
+    color: theme.colors.WHITE,
+  },
+  tabBarMainViewStyle: {
+    backgroundColor: 'transparent',
+    flexDirection: 'row',
+    width: width,
+    shadowColor: 'black',
+    shadowOffset: { width: 0, height: -10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  tabBarViewStyle: {
+    width: width / 5,
+    height: 57,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabBarTitleStyle: {
+    ...theme.fonts.IBMPlexSansSemiBold(7),
+    letterSpacing: 0.5,
+    textAlign: 'center',
+    marginTop: 8,
+    color: '#02475b',
+  },
+  bottomAlertTitle: {
+    height: 60,
+    paddingRight: 25,
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+  },
+  profileIcon: {
+    width: 38,
+    height: 38,
+    marginLeft: 16,
+  },
+  linearGradientView: {
+    ...theme.viewStyles.cardViewStyle,
+    width: width - 32,
+    marginBottom: 12,
+    height: 60,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'yellow',
+  },
+  topImageView: {
+    paddingLeft: 16,
+    flexDirection: 'row',
+    flex: 1,
+  },
+  topTextStyle: {
+    ...theme.viewStyles.text('SB', 15, theme.colors.WHITE, 1, 18),
+    textAlign: 'center',
+    alignSelf: 'center',
+    marginHorizontal: 10,
+  },
+  bottomCardView: {
+    ...theme.viewStyles.cardViewStyle,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 15,
+    flexDirection: 'row',
+    minHeight: 59,
+    width: width / 2 - 22,
+    marginRight: 12,
+    marginBottom: 12,
+  },
+  bottomImageView: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 10,
+    flex: 0.5,
+  },
+  bottomTextView: {
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    marginRight: 6,
+    flex: 1,
+  },
+  covidSubContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  readArticleSubContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginTop: 3,
+    height: 80,
+    backgroundColor: 'red',
+    width: '100%',
+  },
+  goToConsultRoom: {
+    height: 60,
+    paddingRight: 25,
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+  },
+  renderContent: {
+    shadowColor: '#4c808080',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 5,
+    elevation: 5,
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    height: 0.06 * height,
+    marginTop: 16,
+    borderRadius: 10,
+    flex: 1,
+  },
+  renderSubContent: {
+    flex: 0.17,
+    borderTopLeftRadius: 10,
+    borderBottomLeftRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  congratulationsDescriptionPhysical: {
+    marginHorizontal: 24,
+    marginTop: 8,
+    color: theme.colors.SKY_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(17),
+    lineHeight: 24,
+  },
+  circleContainer: {
+    backgroundColor: theme.colors.WHITE,
+    marginTop: 15,
+    marginBottom: 10,
+    padding: 6,
+    width: '100%',
+    alignSelf: 'center',
+    paddingTop: 15,
+  },
+
+  circleCardsContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: 4,
+    marginVertical: 8,
+  },
+  circleCards: {
+    ...theme.viewStyles.cardViewStyle,
+    shadowOffset: { width: 1, height: 2 },
+    elevation: 4,
+    flexDirection: 'row',
+    height: 88,
+    width: width / 2.27,
+    marginHorizontal: 3,
+    marginBottom: 2,
+    borderWidth: 1.2,
+    borderStyle: 'solid',
+    borderColor: '#FC9916',
+    padding: 8,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  circleCardsTexts: {
+    flex: 0.6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    padding: 8,
+  },
+  circleCardsImages: {
+    flex: 0.4,
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 34,
+    height: 34,
+  },
+  circleCardsImage: {
+    alignSelf: 'center',
+    width: '100%',
+    height: '100%',
+  },
+  circleRowsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 5,
+    flex: 1,
+  },
+  circleButtonLeft: {
+    width: 25,
+    height: 25,
+    borderColor: '#f5f0f0',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderStyle: 'solid',
+    backgroundColor: '#fff',
+    shadowColor: '#fff',
+    shadowOffset: { width: 0.2, height: 0.2 },
+    shadowOpacity: 0.3,
+    elevation: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    left: -4,
+    top: 36,
+    zIndex: 1,
+  },
+  circleButtonRight: {
+    width: 25,
+    height: 25,
+    borderColor: '#f5f0f0',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderStyle: 'solid',
+    backgroundColor: '#fff',
+    shadowColor: '#fff',
+    shadowOffset: { width: 0.2, height: 0.2 },
+    shadowOpacity: 0.3,
+    elevation: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    right: -3,
+    top: 36,
+    zIndex: 1,
+  },
+  circleButtonImage: { width: 7, height: 12 },
+  covidBtn: {
+    minHeight: 40,
+    height: 'auto',
+    width: width / 2 - 35,
+    marginLeft: 10,
+    marginTop: 10,
+  },
+  activeAppointmentsContainer: {
+    marginTop: 20,
+    marginBottom: 20,
+    shadowColor: '#4c808080',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  covidIconStyle: {
+    marginLeft: 10,
+  },
+  covidBtnTitle: {
+    ...theme.viewStyles.text('SB', 11, theme.colors.APP_YELLOW),
+    marginLeft: 8,
+    width: width / 2 - 80,
+  },
+  overlayStyle: {
+    width: width,
+    height: 'auto',
+    padding: 0,
+    backgroundColor: 'transparent',
+    elevation: 0,
+    flex: 1,
+    justifyContent: 'center',
+  },
+  viewWebStyles: {
+    position: 'absolute',
+    width: width,
+    height: height,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    elevation: 20,
+  },
+  webViewCompo: {
+    flex: 1,
+    backgroundColor: '#666666',
+    width: width,
+  },
+  nestedWebView: {
+    flex: 1,
+    overflow: 'hidden',
+    backgroundColor: 'white',
+  },
+  proHealthBannerTouch: {
+    backgroundColor: theme.colors.CLEAR,
+    borderRadius: 12,
+    marginTop: 10,
+    marginHorizontal: 28,
+    marginBottom: 15,
+    padding: 0,
+    width: width - 40,
+    alignSelf: 'center',
+    height: 180,
+  },
+  proHealthBannerImage: {
+    height: 180,
+    width: '100%',
   },
 });
 
@@ -306,7 +684,7 @@ type TabBarOptions = {
   image: React.ReactNode;
 };
 
-const tabBarOptions: TabBarOptions[] = [
+export const tabBarOptions: TabBarOptions[] = [
   {
     id: 1,
     title: 'APPOINTMENTS',
@@ -324,7 +702,7 @@ const tabBarOptions: TabBarOptions[] = [
   },
   {
     id: 4,
-    title: 'TESTS',
+    title: 'LAB TESTS',
     image: <TestsIcon />,
   },
   {
@@ -340,137 +718,206 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const {
     setLocationDetails,
     locationDetails,
-    isCurrentLocationFetched,
     setCurrentLocationFetched,
     notificationCount,
     setNotificationCount,
     setAllNotifications,
-    setisSelected,
-    appointmentsPersonalized,
-    setAppointmentsPersonalized,
     setHdfcUserSubscriptions,
     hdfcUserSubscriptions,
+    bannerDataHome,
+    setBannerDataHome,
     bannerData,
     setBannerData,
+    phrNotificationData,
+    setCircleSubscription,
+    setHdfcUpgradeUserSubscriptions,
+    setAxdcCode,
+    setCirclePlanId,
+    healthCredits,
+    setHealthCredits,
+    setIsRenew,
+    setHdfcPlanId,
+    setCircleStatus,
+    circleStatus,
+    setHdfcStatus,
+    hdfcStatus,
+    setPharmacyUserType,
+    pharmacyUserTypeAttribute,
+    covidVaccineCtaV2,
+    apisToCall,
+    homeScreenParamsOnPop,
+    setActiveUserSubscriptions,
+    corporateSubscriptions,
+    setCorporateSubscriptions,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
+  const [membershipPlans, setMembershipPlans] = useState<any>([]);
+  const [circleDataLoading, setCircleDataLoading] = useState<boolean>(true);
+  const { getPatientApiCall } = useAuth();
   const [selectedProfile, setSelectedProfile] = useState<string>('');
   const [isLocationSearchVisible, setLocationSearchVisible] = useState(false);
   const [showList, setShowList] = useState<boolean>(false);
   const [isFindDoctorCustomProfile, setFindDoctorCustomProfile] = useState<boolean>(false);
+  const [upgradePlans, setUpgradePlans] = useState<SubscriptionData[]>([]);
+  const [showCorporateVaccinationCta, setShowCorporateVaccinationCta] = useState<boolean>(false);
+  const [vaccinationCmsIdentifier, setVaccinationCmsIdentifier] = useState<string>('');
+  const [vaccinationSubscriptionId, setVaccinationSubscriptionId] = useState<string>('');
+  const [vaccinationSubscriptionInclusionId, setVaccinationSubscriptionInclusionId] = useState<
+    string
+  >('');
+  const [vaccinationSubscriptionName, setVaccinationSubscriptionName] = useState<string>('');
+  const [vaccinationSubscriptionPlanId, setVaccinationSubscriptionPlanId] = useState<string>('');
+  const [agreedToVaccineTnc, setAgreedToVaccineTnc] = useState<string>('');
 
-  const { cartItems } = useDiagnosticsCart();
-  const { cartItems: shopCartItems, setHdfcPlanName, setIsFreeDelivery } = useShoppingCart();
+  const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
+
+  const {
+    cartItems: shopCartItems,
+    setHdfcPlanName,
+    setIsFreeDelivery,
+    setCircleSubscriptionId,
+    setCirclePlanSelected,
+    setIsCircleSubscription,
+    setCircleCashback,
+    circleSubscriptionId,
+    setHdfcSubscriptionId,
+    setCorporateSubscription,
+    corporateSubscription,
+    setCirclePlanValidity,
+    circlePlanValidity,
+    setCirclePaymentReference,
+    pharmacyCircleAttributes,
+    setIsCircleExpired,
+  } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
-  const { analytics } = useAuth();
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
-  const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
   const [menuViewOptions, setMenuViewOptions] = useState<number[]>([]);
   const [currentAppointments, setCurrentAppointments] = useState<string>('0');
+  const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const [appointmentLoading, setAppointmentLoading] = useState<boolean>(false);
   const [enableCM, setEnableCM] = useState<boolean>(true);
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [isWEGFired, setWEGFired] = useState(false);
   const [serviceable, setserviceable] = useState<String>('');
-  const [personalizedData, setPersonalizedData] = useState<any>([]);
-  const [isPersonalizedCard, setisPersonalizedCard] = useState(false);
+  const [renewNow, setRenewNow] = useState<String>('');
+  const [isCircleMember, setIsCircleMember] = useState<String>('');
+  const [circleSavings, setCircleSavings] = useState<number>(-1);
+  const [showCircleActivationcr, setShowCircleActivationcr] = useState<boolean>(false);
+  const [showWebView, setShowWebView] = useState<any>({ action: false });
   const [voipDeviceToken, setVoipDeviceToken] = useState<string>('');
-  const [consultations, setconsultations] = useState<
-    getPatientAllAppointments_getPatientAllAppointments_appointments[]
-  >([]);
   const [profileChange, setProfileChange] = useState<boolean>(false);
-
-  const [showHdfcWidget, setShowHdfcWidget] = useState<boolean>(false);
-  const [showHdfcConnectWidget, setShowHdfcConnectWidget] = useState<boolean>(false);
   const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
-  const [hdfcToken, setHdfcToken] = useState<string | null>('');
-  const [hdfcLoading, setHdfcLoading] = useState<boolean>(false);
-  const [showHdfcOtpView, setShowHdfcOtpView] = useState<boolean>(false);
-  const [hdfcOtpValue, setHdfcOtpValue] = useState<string>('');
-  const [showErrorBottomLine, setshowErrorBottomLine] = useState<boolean>(false);
-  const [hdfcErrorMessage, setHdfcErrorMessage] = useState<string>('');
-  const [showCongratulations, setShowCongratulations] = useState<boolean>(false);
-  const [isValidOtp, setIsValidOtp] = useState<boolean>(false);
-  const [showNotHdfcCustomer, setShowNotHdfcCustomer] = useState<boolean>(false);
-  const [slideIndex, setSlideIndex] = useState(0);
-  const [benefitId, setbenefitId] = useState<string>('');
-  const [showSavingsAccountButton, setShowSavingsAccountButton] = useState<boolean>(false);
+  const [bannerLoading, setBannerLoading] = useState<boolean>(false);
+  let circleActivated = props.navigation.getParam('circleActivated');
+  const circleActivatedRef = useRef<boolean>(circleActivated);
 
+  //prohealth
+  const [isProHealthActive, setProHealthActive] = useState<boolean>(false);
+  const [isSigningIn, setIsSigningIn] = useState<AuthContextProps['isSigningIn']>(false);
+  const [signInError, setSignInError] = useState<AuthContextProps['signInError']>(false);
+  const [authToken, setAuthToken] = useState<string>('');
+  const auth = firebaseAuth();
+
+  const planValiditycr = useRef<string>('');
+  const planPurchasedcr = useRef<boolean | undefined>(false);
   const webengage = new WebEngage();
   const client = useApolloClient();
   const hdfc_values = string.Hdfc_values;
 
-  const _handleAppStateChange = (nextAppState: AppStateStatus) => {
-    if (nextAppState === 'active') {
-      getUserSubscriptionsWithBenefits();
-      getUserBanners();
+  const saveDeviceNotificationToken = async (id: string) => {
+    try {
+      const oneTimeApiCall = await AsyncStorage.getItem('saveTokenDeviceApiCall');
+      let token = await messaging().getToken();
+
+      if (
+        !token ||
+        token === '' ||
+        token.length == 0 ||
+        typeof token != 'string' ||
+        typeof token == 'object'
+      ) {
+        token = await messaging().getToken(); //again retry
+      }
+
+      if (!oneTimeApiCall) {
+        saveTokenDevice(client, token, id);
+        await AsyncStorage.setItem('saveTokenDeviceApiCall', 'called');
+      }
+    } catch (error) {}
+  };
+
+  useEffect(() => {
+    //Getting shared file path
+    ReceiveSharingIntent.getReceivedFiles(
+      (files: any) => {
+        props.navigation.navigate(AppRoutes.PostShareAppointmentSelectorScreen, {
+          sharedFiles: files,
+        });
+      },
+      (error: any) => {},
+      'ShareMedia' // share url protocol (must be unique to your app, suggest using your apple bundle id)
+    );
+
+    getPatientApiCall();
+    setVaccineLoacalStorageData();
+    cleverTapEventForLoginDone();
+    fetchUserAgent();
+  }, []);
+
+  const fetchUserAgent = () => {
+    try {
+      let userAgent = UserAgent?.getUserAgent();
+      AsyncStorage.setItem(USER_AGENT, userAgent);
+    } catch {}
+  };
+
+  //for prohealth option
+  useEffect(() => {
+    //for new users, patient uhid was coming as blank
+    if (currentPatient?.id && currentPatient?.uhid) {
+      checkIsProhealthActive(currentPatient); //to show prohealth option
+      getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
+    }
+  }, [currentPatient]);
+
+  //to be called only when the user lands via app launch
+  const logHomePageViewed = async (attributes: any) => {
+    const isAppOpened = await AsyncStorage.getItem('APP_OPENED');
+    if (isAppOpened) {
+      postHomeWEGEvent(WebEngageEventName.HOME_VIEWED, undefined, attributes);
+      postHomeCleverTapEvent(CleverTapEventName.HOME_VIEWED, undefined, attributes);
     }
   };
 
-  const updateLocation = async (locationDetails: LocationData) => {
-    try {
-      // Don't ask location if it's updated less than 10 minutes ago
-      if (
-        locationDetails.lastUpdated &&
-        moment(locationDetails.lastUpdated).add(10, 'minutes') > moment()
-      ) {
-        return;
+  //to be called only when the user moved away from homepage
+  const logHomePageMovedAway = async () => {
+    const isMovedAwayFromHome = await AsyncStorage.getItem('APP_OPENED');
+    if (isMovedAwayFromHome) {
+      postHomeWEGEvent(WebEngageEventName.MOVED_AWAY_FROM_HOME);
+      try {
+        AsyncStorage.removeItem('APP_OPENED');
+      } catch (error) {
+        CommonBugFender('ConsultRoom_logHomePageMovedAwayError', error);
       }
-      const { latitude, longitude } = await doRequestAndAccessLocationModified(true);
-      const isSameLatLng =
-        locationDetails.latitude &&
-        locationDetails.longitude &&
-        latitude == locationDetails.latitude &&
-        longitude == locationDetails.longitude;
-      // Check if same latLng or distance b/w co-ordinates is less than 2kms
-      if (
-        isSameLatLng ||
-        distanceBwTwoLatLng(
-          latitude!,
-          longitude!,
-          locationDetails.latitude!,
-          locationDetails.longitude!
-        ) < 2
-      ) {
-        return;
-      }
-      const loc = await getlocationDataFromLatLang(latitude!, longitude!);
-      setLocationDetails!(loc);
-    } catch (e) {
-      CommonBugFender('ConsultRoom_updateLocation', e);
     }
   };
+
+  useEffect(() => {
+    if (currentPatient?.id) {
+      saveDeviceNotificationToken(currentPatient.id);
+    }
+  }, [currentPatient]);
+  const phrNotificationCount = getPhrNotificationAllCount(phrNotificationData!);
 
   useEffect(() => {
     //TODO: if deeplinks is causing issue comment handleDeepLink here and uncomment in SplashScreen useEffect
     // handleDeepLink(props.navigation);
     isserviceable();
   }, [locationDetails, currentPatient]);
-
-  useEffect(() => {
-    if (hdfcUserSubscriptions && g(hdfcUserSubscriptions, '_id')) {
-      const subscriptionName = g(hdfcUserSubscriptions, 'name')
-        ? g(hdfcUserSubscriptions, 'name')
-        : '';
-      if (g(hdfcUserSubscriptions, 'isActive')) {
-        setHdfcPlanName && setHdfcPlanName(subscriptionName);
-      }
-      if (
-        subscriptionName === hdfc_values.PLATINUM_PLAN &&
-        !!g(hdfcUserSubscriptions, 'isActive')
-      ) {
-        setIsFreeDelivery && setIsFreeDelivery(true);
-      }
-      setShowHdfcWidget(false);
-      setShowHdfcConnectWidget(true);
-    } else if (g(currentPatient, 'partnerId') === hdfc_values.REFERRAL_CODE) {
-      setShowHdfcWidget(true);
-    }
-  }, [hdfcUserSubscriptions]);
 
   const askLocationPermission = () => {
     showAphAlert!({
@@ -519,7 +966,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (locationDetails && locationDetails.pincode) {
       await pinCodeServiceabilityApi247(locationDetails.pincode!)
         .then(({ data: { response } }) => {
-          if (response) {
+          const { servicable, axdcCode } = response;
+          setAxdcCode && setAxdcCode(axdcCode);
+          if (servicable) {
             setserviceable('Yes');
           } else {
             setserviceable('No');
@@ -527,13 +976,122 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         })
         .catch((e) => {
           setserviceable('No');
-          console.log('pincode_checkServicability', e);
         });
     }
   }
 
+  const setVaccineLoacalStorageData = () => {
+    AsyncStorage.getItem('hasAgreedVaccineTnC').then((data) => {
+      setAgreedToVaccineTnc(data);
+    });
+
+    AsyncStorage.getItem('VaccinationCmsIdentifier').then((data) => {
+      setVaccinationCmsIdentifier(data);
+    });
+
+    AsyncStorage.getItem('VaccinationSubscriptionId').then((data) => {
+      setVaccinationSubscriptionId(data);
+    });
+
+    AsyncStorage.getItem('VaccinationSubscriptionInclusionId').then((data) => {
+      setVaccinationSubscriptionInclusionId(data);
+    });
+  };
+
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      setVaccineLoacalStorageData();
+      checkApisToCall();
+      getUserBanners();
+
+      AsyncStorage.getItem('verifyCorporateEmailOtpAndSubscribe').then((data) => {
+        if (JSON.parse(data || 'false') === true) {
+          getUserSubscriptionsWithBenefits();
+        }
+      });
+    });
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+      apisToCall.current = [];
+      homeScreenParamsOnPop.current = null;
+    });
+
+    return () => {
+      didBlur && didBlur.remove();
+      didFocus && didFocus.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+      circleActivatedRef.current = false;
+      logHomePageMovedAway();
+    });
+
+    return () => {
+      didBlur && didBlur.remove();
+    };
+  });
+
   useEffect(() => {
     const params = props.navigation.state.params;
+    if (!params?.isFreeConsult && !params?.isReset && currentPatient) {
+      // reset will be true only from the payment screen(fill medical details)
+      checkPermissions(['camera', 'microphone']).then((response: any) => {
+        const { camera, microphone } = response;
+        if (camera !== 'authorized' || microphone !== 'authorized') {
+          fetchInProgressAppointments();
+        }
+      });
+    }
+
+    if (params?.isFreeConsult) {
+      checkPermissions(['camera', 'microphone']).then((response: any) => {
+        const { camera, microphone } = response;
+        if (camera === 'authorized' && microphone === 'authorized') {
+          showFreeConsultOverlay(params);
+        } else if (!params?.isPhysicalConsultBooked) {
+          overlyCallPermissions(
+            currentPatient!.firstName!,
+            params?.doctorName,
+            showAphAlert,
+            hideAphAlert,
+            true,
+            () => {
+              if (params?.doctorName) {
+                showFreeConsultOverlay(params);
+              }
+            },
+            'Home Screen'
+          );
+        } else {
+          if (params?.doctorName) showFreeConsultOverlay(params);
+        }
+      });
+    }
+  }, [profileChange]);
+
+  useEffect(() => {
+    try {
+      if (currentPatient && !isWEGFired) {
+        setWEGFired(true);
+        setWEGUserAttributes();
+      }
+      getUserBanners();
+
+      getUserSubscriptionsWithBenefits();
+    } catch (e) {}
+  }, [currentPatient]);
+
+  useEffect(() => {
+    if (upgradePlans.length) {
+      setHdfcUpgradeUserSubscriptions && setHdfcUpgradeUserSubscriptions(upgradePlans);
+    }
+  }, [upgradePlans]);
+
+  const checkApisToCall = () => {
+    isserviceable();
+    currentPatient && saveDeviceNotificationToken(currentPatient.id);
+    const params = homeScreenParamsOnPop.current;
     if (!params?.isFreeConsult && !params?.isReset && currentPatient) {
       // reset will be true only from the payment screen(fill medical details)
       checkPermissions(['camera', 'microphone']).then((response: any) => {
@@ -547,8 +1105,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       checkPermissions(['camera', 'microphone']).then((response: any) => {
         const { camera, microphone } = response;
         if (camera === 'authorized' && microphone === 'authorized') {
-          showFreeConsultOverlay(params?.doctorName);
-        } else {
+          showFreeConsultOverlay(params);
+        } else if (!params?.isPhysicalConsultBooked) {
           overlyCallPermissions(
             currentPatient!.firstName!,
             params?.doctorName,
@@ -557,28 +1115,64 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             true,
             () => {
               if (params?.doctorName) {
-                showFreeConsultOverlay(params?.doctorName);
+                showFreeConsultOverlay(params);
               }
-            }
+            },
+            'Home Screen'
           );
+        } else {
+          if (params?.doctorName) showFreeConsultOverlay(params);
         }
       });
     }
-  }, [profileChange]);
 
-  useEffect(() => {
-    try {
-      if (currentPatient && g(currentPatient, 'relation') == Relation.ME && !isWEGFired) {
-        setWEGFired(true);
-        setWEGUserAttributes();
+    apisToCall?.current?.forEach((item: any) => {
+      const {
+        circleSavings,
+        patientAppointmentsCount,
+        getAllBanners,
+        getUserSubscriptions,
+        getUserSubscriptionsV2,
+        oneApollo,
+        pharmacyUserType,
+        getPlans,
+        plansCashback,
+      } = apiCallEnums;
+      switch (item) {
+        case circleSavings:
+          fetchCircleSavings();
+          break;
+        case patientAppointmentsCount:
+          getAppointmentsCount();
+          break;
+        case getAllBanners:
+          getUserBanners();
+          break;
+        case getUserSubscriptions:
+          getUserSubscriptionsByStatus();
+          break;
+        case getUserSubscriptionsV2:
+          getUserSubscriptionsWithBenefits();
+          break;
+        case oneApollo:
+          fetchHealthCredits();
+          break;
+        case pharmacyUserType:
+          getUserProfileType();
+          break;
+        case getPlans:
+          fetchCarePlans();
+          break;
+        case plansCashback:
+          getProductCashbackDetails();
+          break;
+        default:
+          break;
       }
-      getUserSubscriptionsWithBenefits();
-      getUserBanners();
-    } catch (e) {}
-  }, [currentPatient]);
+    });
+  };
 
   const fetchInProgressAppointments = async () => {
-    setLoading && setLoading(true);
     try {
       const res = await client.query<getPatientFutureAppointmentCount>({
         query: GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
@@ -587,49 +1181,101 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           patientId: currentPatient?.id,
         },
       });
-      if (res?.data?.getPatientFutureAppointmentCount) {
-        const inProgressAppointments =
-          g(res, 'data', 'getPatientFutureAppointmentCount', 'activeAndInProgressConsultsCount') ||
-          0;
-        if (inProgressAppointments > 0) {
+      const appointmentCount = res?.data?.getPatientFutureAppointmentCount;
+
+      if (appointmentCount) {
+        const upcomingConsultsCount = appointmentCount?.upcomingConsultsCount || 0;
+        const upcomingPhysicalConsultsCount = appointmentCount?.upcomingPhysicalConsultsCount || 0;
+
+        if (
+          upcomingConsultsCount - upcomingPhysicalConsultsCount > 0 &&
+          getCurrentRoute() !== AppRoutes.ChatRoom
+        ) {
           overlyCallPermissions(
             currentPatient!.firstName!,
             'the doctor',
             showAphAlert,
             hideAphAlert,
-            true
+            true,
+            () => {},
+            'Home Screen'
           );
         }
-        setLoading && setLoading(false);
       }
     } catch (error) {
-      setLoading && setLoading(false);
       CommonBugFender('ConsultRoom_getPatientFutureAppointmentCount', error);
     }
   };
 
-  const showFreeConsultOverlay = (doctorName: string) => {
+  const showFreeConsultOverlay = (params: any) => {
+    const { isJdQuestionsComplete, appointmentDateTime, doctorInfo } = params?.appointmentData;
+    const { skipAutoQuestions, isPhysicalConsultBooked } = params;
+    const doctorName = params?.doctorName?.includes('Dr')
+      ? params?.doctorName
+      : `Dr ${params?.doctorName}`;
+    let physical = false;
+    const appointmentDate = moment(appointmentDateTime).format('Do MMMM YYYY');
+    const appointmentTime = moment(appointmentDateTime).format('h:mm A');
+    const diffMins = Math.ceil(moment(appointmentDateTime).diff(moment(), 'minutes', true));
+    let hospitalLocation = '';
+    let description = `Your online appointment with ${doctorName} is confirmed for ${appointmentDate} at ${appointmentTime}. You can expect your appointment to start between ${moment(
+      appointmentDateTime
+    ).format('h:mm A')} - ${moment(appointmentDateTime)
+      .add('15', 'minutes')
+      .format('h:mm A')} via an audio/video call.`;
+    if (diffMins >= 30 && !isJdQuestionsComplete) {
+      description = `${description} Please go to the consult to answer a few medical questions.`;
+    }
+    if (isPhysicalConsultBooked) {
+      hospitalLocation = doctorInfo?.doctorHospital?.[0]?.facility?.name;
+      description = ``;
+      physical = true;
+    }
     showAphAlert!({
-      unDismissable: true,
+      unDismissable: false,
       title: 'Appointment Confirmation',
-      description: `Your appointment has been successfully booked with Dr. ${doctorName}. Please go to consult room 10-15 minutes prior to your appointment. Answering a few medical questions in advance will make your appointment process quick and smooth :)`,
+      description: description,
+      physical: physical,
+      physicalText: (
+        <Text style={styles.congratulationsDescriptionPhysical}>
+          Your appointment has been successfully booked with {doctorName} for{' '}
+          <Text style={{ color: '#02475B' }}>
+            {dateFormatter(appointmentDateTime)} at {hospitalLocation + '.\n\n'}
+          </Text>
+          Please note that you will need to pay{' '}
+          <Text style={{ color: '#02475B' }}>
+            ₹{doctorInfo.physicalConsultationFees} + One-time registration charges
+          </Text>{' '}
+          (For new users) at the hospital Reception.
+        </Text>
+      ),
       children: (
         <View style={{ height: 60, alignItems: 'flex-end' }}>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={{
-              height: 60,
-              paddingRight: 25,
-              backgroundColor: 'transparent',
-              justifyContent: 'center',
-            }}
-            onPress={() => {
-              hideAphAlert!();
-              props.navigation.navigate(AppRoutes.TabBar);
-            }}
-          >
-            <Text style={theme.viewStyles.yellowTextStyle}>GO TO CONSULT ROOM</Text>
-          </TouchableOpacity>
+          {isPhysicalConsultBooked ? (
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.bottomAlertTitle}
+              onPress={() => {
+                hideAphAlert!();
+                props.navigation.navigate('APPOINTMENTS');
+              }}
+            >
+              <Text style={theme.viewStyles.yellowTextStyle}>VIEW DETAILS</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.goToConsultRoom}
+              onPress={() => {
+                hideAphAlert!();
+                props.navigation.navigate(AppRoutes.ChatRoom, {
+                  data: params?.appointmentData,
+                });
+              }}
+            >
+              <Text style={theme.viewStyles.yellowTextStyle}>GO TO CONSULT ROOM</Text>
+            </TouchableOpacity>
+          )}
         </View>
       ),
     });
@@ -646,9 +1292,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const postHomeWEGEvent = (
     eventName: WebEngageEventName,
-    source?: PatientInfoWithSource['Source']
+    source?: PatientInfoWithSource['Source'],
+    attributes?: any
   ) => {
-    const eventAttributes: PatientInfo = {
+    let eventAttributes: PatientInfo = {
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
@@ -658,6 +1305,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
     };
     if (
       source &&
@@ -676,14 +1324,158 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       (eventAttributes as PatientInfoWithSource)['Pincode'] = locationDetails.pincode;
       (eventAttributes as PatientInfoWithSource)['Serviceability'] = serviceable;
     }
+    if (eventName == WebEngageEventName.BUY_MEDICINES) {
+      eventAttributes = {
+        ...eventAttributes,
+        ...pharmacyCircleAttributes,
+        ...pharmacyUserTypeAttribute,
+      };
+    }
+    if (eventName == WebEngageEventName.BOOK_DOCTOR_APPOINTMENT) {
+      eventAttributes = { ...eventAttributes, ...pharmacyCircleAttributes };
+    }
+    if (eventName == WebEngageEventName.HDFC_HEALTHY_LIFE) {
+      const subscription_name = hdfcUserSubscriptions?.name;
+      const newAttributes = {
+        HDFCMembershipState: !!g(hdfcUserSubscriptions, 'isActive') ? 'Active' : 'Inactive',
+        HDFCMembershipLevel: subscription_name?.substring(0, subscription_name?.indexOf('+')),
+        Circle_Member: !!circleSubscriptionId ? 'Yes' : 'No',
+      };
+      eventAttributes = { ...eventAttributes, ...newAttributes };
+    }
+    if (eventName == WebEngageEventName.HOME_VIEWED) {
+      eventAttributes = { ...eventAttributes, ...attributes };
+    }
+    if (eventName == WebEngageEventName.COVID_VACCINATION_SECTION_CLICKED) {
+      eventAttributes = { ...eventAttributes, ...attributes };
+    }
     postWebEngageEvent(eventName, eventAttributes);
+  };
+
+  const postHomeCleverTapEvent = (
+    eventName: CleverTapEventName,
+    source?: HomeScreenAttributes['Source'],
+    attributes?: any
+  ) => {
+    let eventAttributes: HomeScreenAttributes = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
+      'Nav src': source === 'Home Screen' ? 'hero banner' : 'Bottom bar',
+      'Page Name': 'Home Screen',
+    };
+    if (
+      source &&
+      (eventName == CleverTapEventName.BUY_MEDICINES ||
+        eventName == CleverTapEventName.ORDER_TESTS ||
+        eventName == CleverTapEventName.VIEW_HELATH_RECORDS ||
+        eventName == CleverTapEventName.NEED_HELP)
+    ) {
+      (eventAttributes as HomeScreenAttributes)['Source'] = source;
+    }
+    if (
+      locationDetails &&
+      locationDetails.pincode &&
+      eventName == CleverTapEventName.BUY_MEDICINES
+    ) {
+      (eventAttributes as HomeScreenAttributes)['Pincode'] = locationDetails?.pincode || undefined;
+      (eventAttributes as HomeScreenAttributes)['Serviceability'] = serviceable || undefined;
+    }
+    if (eventName == CleverTapEventName.BUY_MEDICINES) {
+      eventAttributes = {
+        ...eventAttributes,
+        'Circle Member':
+          getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+          undefined,
+        'Circle Membership Value':
+          pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
+        User_Type: pharmacyUserTypeAttribute?.User_Type || undefined,
+      };
+    }
+    if (eventName == CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED) {
+      eventAttributes = {
+        ...eventAttributes,
+        isConsulted: getUserType(allCurrentPatients),
+      };
+    }
+    if (eventName == CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS) {
+      eventAttributes = {
+        ...eventAttributes,
+        'Nav src': source === 'Home Screen' ? 'homepage bar' : 'Bottom bar',
+      };
+    }
+    if (eventName == CleverTapEventName.HDFC_HEALTHY_LIFE) {
+      const subscription_name = hdfcUserSubscriptions?.name;
+      const newAttributes = {
+        HDFCMembershipState: !!g(hdfcUserSubscriptions, 'isActive') ? 'Active' : 'Inactive',
+        HDFCMembershipLevel: subscription_name?.substring(0, subscription_name?.indexOf('+')),
+        Circle_Member: !!circleSubscriptionId ? 'Yes' : 'No',
+      };
+      eventAttributes = { ...eventAttributes, ...newAttributes };
+    }
+    if (eventName == CleverTapEventName.HOME_VIEWED) {
+      eventAttributes = {
+        ...removeObjectNullUndefinedProperties(attributes),
+        ...eventAttributes,
+        'Nav src': 'app launch',
+      };
+    }
+    if (eventName == CleverTapEventName.COVID_VACCINATION_SECTION_CLICKED) {
+      eventAttributes = { ...eventAttributes, ...attributes };
+    }
+    postCleverTapEvent(eventName, eventAttributes);
+  };
+
+  const postVaccineWidgetEvents = (
+    eventName: CleverTapEventName,
+    navSrc?: HomeScreenAttributes['Nav src']
+  ) => {
+    let eventAttributes: HomeScreenAttributes = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
+      'Nav src': navSrc || 'Vaccine Widget',
+      'Page Name': 'Home Screen',
+    };
+    if (
+      eventName === CleverTapEventName.KAVACH_PROGRAM_CLICKED ||
+      eventName === CleverTapEventName.EXPLORE_CORPORATE_MEMBERSHIP_CLICKED ||
+      eventName === CleverTapEventName.CHECK_RISK_LEVEL_CLICKED
+    ) {
+      eventAttributes['Nav src'] = undefined;
+    }
+    postCleverTapEvent(eventName, eventAttributes);
+  };
+
+  const fireFirstTimeLanded = () => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.NON_CIRCLE_HOMEPAGE_VIEWED] = {
+      'Patient UHID': currentPatient?.uhid,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer ID': currentPatient?.id,
+      'Circle Member': 'No',
+    };
+    postWebEngageEvent(WebEngageEventName.NON_CIRCLE_HOMEPAGE_VIEWED, eventAttributes);
   };
 
   const postHomeFireBaseEvent = (
     eventName: FirebaseEventName,
     source?: PatientInfoWithSourceFirebase['Source']
   ) => {
-    const eventAttributes: PatientInfoFirebase = {
+    let eventAttributes: PatientInfoFirebase = {
       PatientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       PatientUHID: g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
@@ -703,6 +1495,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       (eventAttributes as PatientInfoWithSourceFirebase)['Pincode'] = locationDetails.pincode;
       (eventAttributes as PatientInfoWithSourceFirebase)['Serviceability'] = serviceable;
     }
+    if (eventName == FirebaseEventName.BUY_MEDICINES) {
+      eventAttributes = { ...eventAttributes, ...pharmacyCircleAttributes };
+    }
     postFirebaseEvent(eventName, eventAttributes);
   };
 
@@ -715,84 +1510,90 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
-  const showProfileSelectionAlert = () => {
-    showAphAlert!({
-      title: 'Hi!',
-      description: 'Who is the patient today?',
-      ctaContainerStyle: { marginTop: 50 },
-      CTAs: [
-        {
-          text: 'MYSELF',
-          onPress: () => {
-            hideAphAlert!();
-            props.navigation.navigate(AppRoutes.DoctorSearch);
-          },
-        },
-        {
-          type: 'white-button',
-          text: 'SOMEONE ELSE',
-          onPress: () => {
-            setShowList(true);
-            hideAphAlert!();
-            setFindDoctorCustomProfile(true);
-          },
-        },
-      ],
-    });
+  const renderBadgeView = () => {
+    return phrNotificationCount ? (
+      <View style={[styles.badgelabelView]}>
+        <Text style={styles.badgelabelText}>{phrNotificationCount}</Text>
+      </View>
+    ) : null;
   };
 
-  const listValues: menuOptions[] = [
+  const listOptions: menuOptions[] = [
     {
       id: 1,
-      title: 'Book Doctor Appointment',
-      image: <DoctorIcon style={styles.menuOptionIconStyle} />,
+      title: 'Book Apollo Doctor Appointment',
+      image: <DoctorIcon style={[styles.menuOptionIconStyle]} />,
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
-        postHomeWEGEvent(WebEngageEventName.FIND_A_DOCTOR);
+        postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
+        postHomeCleverTapEvent(
+          CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED,
+          'Home Screen'
+        );
         props.navigation.navigate(AppRoutes.DoctorSearch);
-        // showProfileSelectionAlert();
+        //props.navigation.navigate(AppRoutes.PostShareAppointmentSelectorScreen);
       },
     },
     {
       id: 2,
-      title: 'Medicines & Essentials',
-      image: <MedicineCartIcon style={styles.menuOptionIconStyle} />,
+      title: 'Buy Medicines & Essentials',
+      image: <MedicineCartIcon style={[styles.menuOptionIconStyle]} />,
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Home Screen');
+        postHomeCleverTapEvent(CleverTapEventName.BUY_MEDICINES, 'Home Screen');
         props.navigation.navigate('MEDICINES', { focusSearch: true });
-        const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
+        const eventAttributes:
+          | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
+          | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
           source: 'app home',
         };
+        setTimeout(
+          () => postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED, eventAttributes),
+          500
+        );
         postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
       },
     },
     {
       id: 3,
-      title: 'Order Tests',
+      title: 'Book Lab Tests',
       image: <TestsCartIcon style={styles.menuOptionIconStyle} />,
       onPress: () => {
+        const homeScreenAttributes = {
+          'Nav src': 'hero banner',
+          'Page Name': 'Home Screen',
+        };
         postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Home Screen');
-        props.navigation.navigate('TESTS', { focusSearch: true });
+        props.navigation.navigate('TESTS', { focusSearch: true, homeScreenAttributes });
       },
     },
     {
       id: 4,
-      title: 'Manage Diabetes',
-      image: <Diabetes style={styles.menuOptionIconStyle} />,
+      title: 'View Health Records',
+      image: (
+        <View>
+          <PrescriptionMenu style={styles.menuOptionIconStyle} />
+          {renderBadgeView()}
+        </View>
+      ),
       onPress: () => {
-        postHomeFireBaseEvent(FirebaseEventName.MANAGE_DIABETES, 'Home Screen');
-        postHomeWEGEvent(WebEngageEventName.MANAGE_DIABETES);
-        getTokenforCM();
+        postHomeFireBaseEvent(FirebaseEventName.VIEW_HELATH_RECORDS, 'Home Screen');
+        postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Home Screen');
+        postHomeCleverTapEvent(CleverTapEventName.VIEW_HELATH_RECORDS, 'Home Screen');
+        props.navigation.navigate('HEALTH RECORDS');
       },
     },
+
     {
       id: 5,
-      title: 'Track Symptoms',
+      title: 'Book Doctor by Symptoms',
       image: <Symptomtracker style={styles.menuOptionIconStyle} />,
       onPress: () => {
-        const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_PAGE_CLICKED] = {
+        const eventAttributes:
+          | WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_PAGE_CLICKED]
+          | CleverTapEvents[CleverTapEventName.SYMPTOM_TRACKER_PAGE_CLICKED] = {
           'Patient UHID': g(currentPatient, 'uhid'),
           'Patient ID': g(currentPatient, 'id'),
           'Patient Name': g(currentPatient, 'firstName'),
@@ -804,22 +1605,40 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         postWebEngageEvent(WebEngageEventName.SYMPTOM_TRACKER_PAGE_CLICKED, eventAttributes);
         postHomeFireBaseEvent(FirebaseEventName.TRACK_SYMPTOMS, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.TRACK_SYMPTOMS);
+        postHomeCleverTapEvent(CleverTapEventName.TRACK_SYMPTOMS, 'Home Screen');
         props.navigation.navigate(AppRoutes.SymptomTracker);
-      },
-    },
-    {
-      id: 6,
-      title: 'View Health Records',
-      image: <PrescriptionMenu style={styles.menuOptionIconStyle} />,
-      onPress: () => {
-        postHomeFireBaseEvent(FirebaseEventName.VIEW_HELATH_RECORDS, 'Home Screen');
-        postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Home Screen');
-        props.navigation.navigate('HEALTH RECORDS');
       },
     },
   ];
 
-  // const [listValues, setListValues] = useState<menuOptions[]>(menuOptions);
+  const listValues: menuOptions[] = [
+    ...listOptions,
+    {
+      id: 6,
+      title: 'Manage Diabetes',
+      image: <Diabetes style={styles.menuOptionIconStyle} />,
+      onPress: () => {
+        postHomeFireBaseEvent(FirebaseEventName.MANAGE_DIABETES, 'Home Screen');
+        postHomeWEGEvent(WebEngageEventName.MANAGE_DIABETES);
+        postHomeCleverTapEvent(CleverTapEventName.MANAGE_DIABETES, 'Home Screen');
+        getTokenforCM();
+      },
+    },
+  ];
+
+  const listValuesForProHealth: menuOptions[] = [
+    ...listOptions,
+    {
+      id: 6,
+      title: 'ProHealth',
+      image: <ProHealthIcon style={styles.menuOptionIconStyle} />,
+      onPress: () => {
+        postHomeFireBaseEvent(FirebaseEventName.PROHEALTH, 'Home Screen');
+        postHomeWEGEvent(WebEngageEventName.PROHEALTH);
+        getTokenForProhealthCM();
+      },
+    },
+  ];
 
   useEffect(() => {
     if (enableCM) {
@@ -830,223 +1649,191 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, [enableCM]);
 
   useEffect(() => {
-    // call hdfc apis on appstate change
-    AppState.addEventListener('change', _handleAppStateChange);
-    return () => {
-      AppState.removeEventListener('change', _handleAppStateChange);
-    };
-  }, []);
-
-  useEffect(() => {
     AsyncStorage.removeItem('deeplink');
     AsyncStorage.removeItem('deeplinkReferalCode');
     storePatientDetailsTOBugsnag();
     callAPIForNotificationResult();
     setWebEngageScreenNames('Home Screen');
+    fetchCircleSavings();
+    fetchHealthCredits();
+    fetchCarePlans();
+    getUserSubscriptionsByStatus(true);
+    checkCircleSelectedPlan();
+    setBannerData && setBannerData([]);
   }, []);
 
-  const identifyHdfcCustomer = () => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_OTP_GENERATE_CLICKED] = {
-      'Patient UHID': g(currentPatient, 'uhid'),
-      'Customer ID': g(currentPatient, 'id'),
-      'Patient Name': g(currentPatient, 'firstName'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Date of Birth': g(currentPatient, 'dateOfBirth'),
-      Email: g(currentPatient, 'emailAddress'),
-    };
-    postWebEngageEvent(WebEngageEventName.HDFC_OTP_GENERATE_CLICKED, eventAttributes);
-    setHdfcLoading(true);
-    setShowHdfcOtpView(false);
-    setShowNotHdfcCustomer(false);
-    const mobileNumber = g(currentPatient, 'mobileNumber');
-    mobileNumber &&
-      client
-        .query<identifyHdfcCustomer, identifyHdfcCustomerVariables>({
-          query: IDENTIFY_HDFC_CUSTOMER,
-          variables: {
-            mobileNumber: g(currentPatient, 'mobileNumber'),
-            DOB: moment(g(currentPatient, 'dateOfBirth')).format('YYYY-MM-DD'),
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then((data) => {
-          setHdfcLoading(false);
-          const hdfcCustomerData = g(data, 'data', 'identifyHdfcCustomer');
-          const hdfcStatus = g(hdfcCustomerData, 'status');
-          const hdfcToken = g(hdfcCustomerData, 'token') || '';
-          if (hdfcStatus === hdfc_values.OTP_GENERATED_STATUS) {
-            setShowHdfcOtpView(true);
-            setShowNotHdfcCustomer(false);
-            setHdfcToken(hdfcToken);
-          } else {
-            setShowHdfcOtpView(true);
-            setShowNotHdfcCustomer(true);
-            if (hdfcStatus === hdfc_values.OTP_NOT_GENERATED) {
-              setShowSavingsAccountButton(false);
-              setHdfcErrorMessage(hdfc_values.HDFC_ERROR_MESSAGE);
-            } else {
-              setShowSavingsAccountButton(true);
-              const errorMessage = `${hdfc_values.HDFC_CARD_CAPTION}. ${hdfc_values.NOT_HDFC_CUSTOMER_MESSAGE}`;
-              setHdfcErrorMessage(errorMessage);
-            }
-          }
-        })
-        .catch((e) => {
-          setHdfcLoading(false);
-          CommonBugFender('ConsultRoom_identifyHdfcCustomer', e);
-        });
-  };
-
-  const validateHdfcOtp = () => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_OTP_VERIFY_CLICKED] = {
-      'Patient UHID': g(currentPatient, 'uhid'),
-      'Customer ID': g(currentPatient, 'id'),
-      'Patient Name': g(currentPatient, 'firstName'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Date of Birth': g(currentPatient, 'dateOfBirth'),
-      Email: g(currentPatient, 'emailAddress'),
-    };
-    postWebEngageEvent(WebEngageEventName.HDFC_OTP_VERIFY_CLICKED, eventAttributes);
-    setHdfcLoading(true);
-    setshowErrorBottomLine(false);
-    hdfcToken &&
-      client
-        .query<validateHdfcOTP, validateHdfcOTPVariables>({
-          query: VALIDATE_HDFC_OTP,
-          variables: {
-            otp: hdfcOtpValue,
-            token: hdfcToken,
-            dateOfBirth: moment(g(currentPatient, 'dateOfBirth')).format('YYYY-MM-DD'),
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then((data) => {
-          const validateOtpData = g(data, 'data', 'validateHdfcOTP');
-          if (validateOtpData!.status && validateOtpData!.defaultPlan) {
-            if (validateOtpData!.defaultPlan)
-              createUserHdfcSubscription(validateOtpData!.defaultPlan);
-          } else {
-            setHdfcLoading(false);
-            setshowErrorBottomLine(true);
-          }
-        })
-        .catch((e) => {
-          setHdfcLoading(false);
-          CommonBugFender('ConsultRoom_validateHdfcOtp', e);
-        });
-  };
-
-  const createUserHdfcSubscription = (plan: string) => {
-    const storeCode = Platform.OS === 'ios' ? 'IOSCUS' : 'ANDCUS';
-    client
-      .mutate<CreateUserSubscription, CreateUserSubscriptionVariables>({
-        mutation: CREATE_USER_SUBSCRIPTION,
-        variables: {
-          userSubscription: {
-            mobile_number: g(currentPatient, 'mobileNumber'),
-            plan_id: plan,
-            storeCode,
-            FirstName: g(currentPatient, 'firstName'),
-            LastName: g(currentPatient, 'lastName'),
-          },
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((data) => {
-        const createSubscriptionData = g(data, 'data', 'CreateUserSubscription');
-        setHdfcLoading(false);
-        if (createSubscriptionData!.success) {
-          setShowHdfcOtpView(false);
-          setShowCongratulations(true);
-          const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_PLAN_SUSBCRIBED] = {
-            'Mobile Number': g(currentPatient, 'mobileNumber'),
-            DOB: g(currentPatient, 'dateOfBirth'),
-            'Email ID': g(currentPatient, 'emailAddress'),
-            'Plan Name': g(createSubscriptionData, 'response', 'group_plan', 'name'),
-            'Partner ID': g(currentPatient, 'partnerId'),
-          };
-          postWebEngageEvent(WebEngageEventName.HDFC_PLAN_SUSBCRIBED, eventAttributes);
-          // getUserSubscriptionsWithBenefits();
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('ConsultRoom_createUserHdfcSubscription', e);
-      });
-  };
-
-  const getUserBanners = () => {
-    setHdfcLoading(true);
-    const mobile_number = g(currentPatient, 'mobileNumber');
-    mobile_number &&
-      client
-        .query<GetAllGroupBannersOfUser, GetAllGroupBannersOfUserVariables>({
-          query: GET_ALL_GROUP_BANNERS_OF_USER,
-          variables: { mobile_number },
-          fetchPolicy: 'no-cache',
-        })
-        .then((data) => {
-          setHdfcLoading(false);
-          const bannersData = g(data, 'data', 'GetAllGroupBannersOfUser', 'response');
-          const banners: bannerType[] = [];
-          if (bannersData && bannersData.length) {
-            bannersData.forEach((value) => {
-              const { _id, is_active, banner, cta_action, meta } = value;
-              banners.push({
-                _id,
-                is_active: !!is_active,
-                banner,
-                cta_action,
-                meta,
-              });
-            });
-            setBannerData && setBannerData(banners);
-          }
-        })
-        .catch((e) => {
-          setHdfcLoading(false);
-          CommonBugFender('ConsultRoom_GetAllGroupBannersOfUser', e);
-        });
+  const checkCircleSelectedPlan = async () => {
+    const plan = await AsyncStorage.getItem('circlePlanSelected');
+    if (plan) {
+      setCirclePlanSelected && setCirclePlanSelected(JSON.parse(plan));
+    } else {
+      setCirclePlanSelected && setCirclePlanSelected(null);
+    }
   };
 
   const getUserSubscriptionsWithBenefits = () => {
-    setHdfcLoading(true);
     const mobile_number = g(currentPatient, 'mobileNumber');
     mobile_number &&
       client
         .query<
-          GetAllUserSubscriptionsWithPlanBenefits,
-          GetAllUserSubscriptionsWithPlanBenefitsVariables
+          GetAllUserSubscriptionsWithPlanBenefitsV2,
+          GetAllUserSubscriptionsWithPlanBenefitsV2Variables
         >({
           query: GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
           variables: { mobile_number },
           fetchPolicy: 'no-cache',
         })
         .then((data) => {
-          setHdfcLoading(false);
-          const groupPlans = g(data, 'data', 'GetAllUserSubscriptionsWithPlanBenefits', 'response');
-          if (groupPlans && groupPlans.length) {
-            const plan = groupPlans[0];
-            const subscription = setSubscriptionData(plan);
-            setHdfcUserSubscriptions && setHdfcUserSubscriptions(subscription);
-            const subscriptionName = g(subscription, 'name') ? g(subscription, 'name') : '';
-            if (g(subscription, 'isActive')) {
-              setHdfcPlanName && setHdfcPlanName(subscriptionName);
+          const groupPlans = g(
+            data,
+            'data',
+            'GetAllUserSubscriptionsWithPlanBenefitsV2',
+            'response'
+          );
+          if (groupPlans) {
+            const hdfcPlan = groupPlans?.HDFC;
+            const circlePlan = groupPlans?.APOLLO;
+
+            let corporatePlan: SubscriptionData[] = [];
+            Object.keys(groupPlans).forEach((plan_name) => {
+              if (plan_name !== 'APOLLO' && plan_name !== 'HDFC') {
+                groupPlans[plan_name]?.forEach((subscription) => {
+                  const plan = setSubscriptionData(subscription, false, true);
+                  corporatePlan.push(plan);
+                });
+              }
+            });
+            if (corporatePlan.length) {
+              AsyncStorage.setItem('isCorporateSubscribed', 'yes');
+            } else {
+              AsyncStorage.setItem('isCorporateSubscribed', 'no');
             }
-            if (subscriptionName === hdfc_values.PLATINUM_PLAN && !!g(subscription, 'isActive')) {
-              setIsFreeDelivery && setIsFreeDelivery(true);
+            setCorporateSubscriptions && setCorporateSubscriptions(corporatePlan);
+
+            if (hdfcPlan) {
+              const hdfcSubscription = setSubscriptionData(hdfcPlan[0]);
+              setHdfcUserSubscriptions && setHdfcUserSubscriptions(hdfcSubscription!);
+
+              const subscriptionName = g(hdfcSubscription, 'name')
+                ? g(hdfcSubscription, 'name')
+                : '';
+              if (g(hdfcSubscription, 'isActive')) {
+                setHdfcPlanName && setHdfcPlanName(subscriptionName!);
+              }
+              if (
+                subscriptionName === hdfc_values.PLATINUM_PLAN &&
+                !!g(hdfcSubscription, 'isActive')
+              ) {
+                setIsFreeDelivery && setIsFreeDelivery(true);
+              }
             }
-            getUserBanners();
-            setShowHdfcWidget(false);
-            setShowHdfcConnectWidget(true);
+
+            if (circlePlan) {
+              const circleSubscription = setCircleSubscriptionData(circlePlan[0]);
+              if (!!circlePlan[0]?._id) {
+                if (circlePlan[0]?.status === 'active') {
+                  AsyncStorage.setItem('circleSubscriptionId', circlePlan[0]?.subscription_id);
+                  setCircleSubscriptionId &&
+                    setCircleSubscriptionId(circlePlan[0]?.subscription_id);
+                  setIsCircleSubscription && setIsCircleSubscription(true);
+                }
+                if (circlePlan[0]?.status === 'disabled') {
+                  setIsCircleExpired && setIsCircleExpired(true);
+                  setNonCircleValues();
+                } else {
+                  setIsCircleExpired && setIsCircleExpired(false);
+                }
+              }
+              setCircleSubscription && setCircleSubscription(circleSubscription);
+            }
           }
         })
         .catch((e) => {
-          setHdfcLoading(false);
-          CommonBugFender('ConsultRoom_getSubscriptionsOfUserByStatus', e);
+          CommonBugFender('ConsultRoom_getUserSubscriptionsWithBenefits', e);
         });
   };
 
-  const setSubscriptionData = (plan) => {
+  const setCircleSubscriptionData = (plan: any) => {
+    const planSummary: CirclePlanSummary[] = [];
+    const summary = plan?.plan_summary;
+    if (summary && summary.length) {
+      summary.forEach((value: any) => {
+        const plan_summary: CirclePlanSummary = {
+          price: value?.price,
+          renewMode: value?.renew_mode,
+          starterPack: !!value?.starter_pack,
+          benefitsWorth: value?.benefits_worth,
+          availableForTrial: !!value?.available_for_trial,
+          specialPriceEnabled: value?.special_price_enabled,
+          subPlanId: value?.subPlanId,
+          durationInMonth: value?.durationInMonth,
+          currentSellingPrice: value?.currentSellingPrice,
+          icon: value?.icon,
+        };
+        planSummary.push(plan_summary);
+      });
+    }
+
+    const group = plan?.group;
+    const groupDetailsData: CircleGroup = {
+      _id: group?._id,
+      name: group?.name,
+      isActive: group?.is_active,
+    };
+
+    const benefits = plan.benefits;
+    const circleBenefits: PlanBenefits[] = [];
+    if (benefits && benefits.length) {
+      benefits.forEach((item: any) => {
+        const ctaAction = item?.cta_action;
+        const benefitCtaAction: BenefitCtaAction = {
+          type: ctaAction?.type,
+          action: ctaAction?.meta?.action,
+          message: ctaAction?.meta?.message,
+          webEngageEvent: ctaAction?.meta?.webEngage,
+        };
+        const benefit: PlanBenefits = {
+          _id: item?._id,
+          attribute: item?.attribute,
+          headerContent: item?.header_content,
+          description: item?.description,
+          ctaLabel: item?.cta_label,
+          ctaAction: item?.cta_action?.cta_action,
+          benefitCtaAction,
+          attributeType: item?.attribute_type,
+          availableCount: item?.available_count,
+          refreshFrequency: item?.refresh_frequency,
+          icon: item?.icon,
+        };
+        circleBenefits.push(benefit);
+      });
+    }
+
+    const circleSubscptionData: CicleSubscriptionData = {
+      _id: plan?._id,
+      name: plan?.name,
+      planId: plan?.plan_id,
+      activationModes: plan?.activation_modes,
+      status: plan?.status,
+      subscriptionStatus: plan?.subscriptionStatus,
+      subPlanIds: plan?.sub_plan_ids,
+      planSummary: planSummary,
+      groupDetails: groupDetailsData,
+      benefits: circleBenefits,
+      endDate: plan?.subscriptionEndDate,
+      startDate: plan?.start_date,
+    };
+
+    if (plan?.subscriptionStatus === 'disabled') {
+      setIsCircleExpired && setIsCircleExpired(true);
+    } else {
+      setIsCircleExpired && setIsCircleExpired(false);
+    }
+
+    return circleSubscptionData;
+  };
+
+  const setSubscriptionData = (plan: any, isUpgradePlan?: boolean, isCorporatePlan?: boolean) => {
     try {
       const group = plan.group;
       const groupData: GroupPlan = {
@@ -1057,8 +1844,21 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       const benefits = plan.benefits;
       const planBenefits: PlanBenefits[] = [];
       if (benefits && benefits.length) {
-        benefits.forEach((item) => {
+        benefits.forEach((item: any) => {
           const ctaAction = g(item, 'cta_action');
+          if (g(ctaAction, 'meta', 'action') === string.common.CorporateVaccineBenefit) {
+            setShowCorporateVaccinationCta(true);
+
+            setVaccinationCmsIdentifier(item?.cms_identifier);
+            AsyncStorage.setItem('VaccinationCmsIdentifier', item?.cms_identifier);
+            AsyncStorage.setItem('VaccinationSubscriptionInclusionId', item?._id);
+            AsyncStorage.setItem('VaccinationSubscriptionId', plan?.subscription_id);
+
+            setVaccinationSubscriptionId(plan?.subscription_id);
+            setVaccinationSubscriptionInclusionId(item?._id);
+            setVaccinationSubscriptionName(plan?.name);
+            setVaccinationSubscriptionPlanId(plan?.plan_id);
+          }
           const benefitCtaAction: BenefitCtaAction = {
             type: g(ctaAction, 'type'),
             action: g(ctaAction, 'meta', 'action'),
@@ -1077,11 +1877,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             availableCount: item!.available_count,
             refreshFrequency: item!.refresh_frequency,
             icon: item!.icon,
+            cmsIdentifier: item?.cms_identifier,
           };
           planBenefits.push(benefit);
         });
       }
-      const upgradeToPlan = g(plan, 'can_upgrade_to');
       const isActive = plan!.subscriptionStatus === hdfc_values.ACTIVE_STATUS;
       const subscription: SubscriptionData = {
         _id: plan!._id || '',
@@ -1090,28 +1890,303 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         benefitsWorth: plan!.benefits_worth || '',
         activationModes: plan!.activation_modes,
         price: plan!.price,
-        minTransactionValue: plan!.min_transaction_value,
+        minTransactionValue: plan?.plan_summary?.[0]?.min_transaction_value,
         status: plan!.status || '',
         subscriptionStatus: plan!.subscriptionStatus || '',
         isActive,
         group: groupData,
         benefits: planBenefits,
         coupons: plan!.coupons ? plan!.coupons : [],
-        canUpgradeTo: g(upgradeToPlan, '_id') ? setSubscriptionData(upgradeToPlan) : {},
-        upgradeTransactionValue: plan!.upgrade_transaction_value,
+        upgradeTransactionValue: plan?.plan_summary?.[0]?.upgrade_transaction_value,
+        isCorporate: !!isCorporatePlan,
+        corporateIcon: !!isCorporatePlan ? plan?.group_logo_url?.mobile_version : '',
       };
+      const upgradeToPlan = g(plan, 'can_upgrade_to');
+      if (g(upgradeToPlan, '_id')) {
+        setSubscriptionData(upgradeToPlan, true);
+      }
+
+      if (!!isUpgradePlan) {
+        setUpgradePlans([...upgradePlans, subscription]);
+      }
       return subscription;
-    } catch (e) {
-      console.log('ERROR: ', e);
+    } catch (e) {}
+  };
+
+  const getUserSubscriptionsByStatus = async (onAppLoad?: boolean) => {
+    setCircleDataLoading(true);
+    try {
+      const query: GetSubscriptionsOfUserByStatusVariables = {
+        mobile_number: g(currentPatient, 'mobileNumber'),
+        status: ['active', 'deferred_active', 'deferred_inactive', 'disabled'],
+      };
+      const res = await client.query<GetSubscriptionsOfUserByStatus>({
+        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+        fetchPolicy: 'no-cache',
+        variables: query,
+      });
+
+      const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+      if (data) {
+        let activeSubscriptions = {};
+        Object.keys(data).forEach((subscription) => {
+          data[subscription].forEach((item) => {
+            let subscriptionData = [];
+            if (item?.status?.toLowerCase() === 'active') {
+              subscriptionData.push(item);
+              activeSubscriptions[subscription] = subscriptionData;
+            }
+          });
+        });
+        setActiveUserSubscriptions && setActiveUserSubscriptions(activeSubscriptions);
+        const circleData = data?.APOLLO?.[0];
+        if (circleData?._id) {
+          const paymentRef = circleData?.payment_reference;
+          const paymentStoredVal =
+            typeof paymentRef == 'string' ? JSON.parse(paymentRef) : paymentRef;
+          AsyncStorage.setItem('isCircleMember', 'yes');
+
+          circleData?.status === 'disabled'
+            ? AsyncStorage.setItem('isCircleMembershipExpired', 'yes')
+            : AsyncStorage.setItem('isCircleMembershipExpired', 'no');
+
+          setIsCircleMember && setIsCircleMember('yes');
+          AsyncStorage.removeItem('circlePlanSelected');
+          let WEGAttributes = {};
+          if (circleData?.status === 'active') {
+            const circleMembershipType = setCircleMembershipType(
+              circleData?.start_date!,
+              circleData?.end_date!
+            );
+            WEGAttributes = {
+              'Circle Member': 'Yes',
+              'Circle Plan type': circleMembershipType,
+            };
+
+            AsyncStorage.setItem('circleSubscriptionId', circleData?._id);
+            setCircleSubscriptionId && setCircleSubscriptionId(circleData?._id);
+            setIsCircleSubscription && setIsCircleSubscription(true);
+            setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+          } else {
+            WEGAttributes = {
+              'Circle Member': 'No',
+              'Circle Plan type': '',
+            };
+          }
+          onAppLoad && logHomePageViewed(WEGAttributes);
+
+          if (circleData?.status === 'disabled') {
+            AsyncStorage.setItem('isCircleMembershipExpired', 'yes');
+            setIsCircleExpired && setIsCircleExpired(true);
+            setNonCircleValues();
+          } else {
+            setIsCircleExpired && setIsCircleExpired(false);
+          }
+
+          const planValidity = {
+            startDate: circleData?.start_date,
+            endDate: circleData?.end_date,
+            expiry: circleData?.expires_in,
+            plan_id: circleData?.plan_id,
+            source_identifier: circleData?.source_meta_data?.source_identifier,
+          };
+          setCirclePlanValidity && setCirclePlanValidity(planValidity);
+          setRenewNow(circleData?.renewNow ? 'yes' : 'no');
+          setCirclePlanId && setCirclePlanId(circleData?.plan_id);
+          setCircleStatus && setCircleStatus(circleData?.status);
+          paymentStoredVal &&
+            setCirclePaymentReference &&
+            setCirclePaymentReference(paymentStoredVal);
+        } else {
+          setNonCircleValues();
+          setIsCircleMember('no');
+          setCirclePlanValidity && setCirclePlanValidity(null);
+          setCirclePaymentReference && setCirclePaymentReference(null);
+          setCirclePlanId && setCirclePlanId('');
+          fireFirstTimeLanded();
+          setCircleStatus && setCircleStatus('');
+          const WEGAttributes = {
+            'Circle Member': 'No',
+            'Circle Plan type': '',
+          };
+          onAppLoad && logHomePageViewed(WEGAttributes);
+        }
+
+        for (let key of Object.keys(data)) {
+          if (key !== 'APOLLO' && key !== 'HDFC') setCorporateSubscription(true);
+        }
+
+        if (data?.HDFC?.[0]._id) {
+          setHdfcSubscriptionId && setHdfcSubscriptionId(data?.HDFC?.[0]._id);
+
+          const planName = data?.HDFC?.[0].name;
+          setHdfcPlanName && setHdfcPlanName(planName);
+          setHdfcPlanId && setHdfcPlanId(data?.HDFC?.[0].plan_id);
+          setHdfcStatus && setHdfcStatus(data?.HDFC?.[0].status);
+
+          if (planName === hdfc_values.PLATINUM_PLAN && data?.HDFC?.[0].status === 'active') {
+            setIsFreeDelivery && setIsFreeDelivery(true);
+          }
+        } else {
+          setHdfcSubscriptionId && setHdfcSubscriptionId('');
+          setHdfcPlanName && setHdfcPlanName('');
+          setHdfcStatus && setHdfcStatus('');
+        }
+      }
+    } catch (error) {
+      CommonBugFender('ConsultRoom_GetSubscriptionsOfUserByStatus', error);
+      const WEGAttributes = {
+        'Circle Member': 'No',
+        'Circle Plan type': '',
+      };
+      onAppLoad && logHomePageViewed(WEGAttributes);
     }
+    setCircleDataLoading(false);
+  };
+
+  const setNonCircleValues = () => {
+    AsyncStorage.setItem('isCircleMember', 'no');
+    AsyncStorage.removeItem('circleSubscriptionId');
+    setCircleSubscriptionId && setCircleSubscriptionId('');
+    setIsCircleSubscription && setIsCircleSubscription(false);
+    setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+    fireFirstTimeLanded();
+  };
+
+  const fetchCarePlans = async () => {
+    try {
+      const res = await client.query<GetPlanDetailsByPlanId>({
+        query: GET_PLAN_DETAILS_BY_PLAN_ID,
+        fetchPolicy: 'no-cache',
+        variables: {
+          plan_id: AppConfig.Configuration.CIRCLE_PLAN_ID,
+        },
+      });
+      const membershipPlans = res?.data?.GetPlanDetailsByPlanId?.response?.plan_summary;
+      if (membershipPlans) {
+        setMembershipPlans(membershipPlans);
+      }
+    } catch (error) {
+      CommonBugFender('CircleMembershipPlans_GetPlanDetailsByPlanId', error);
+    }
+  };
+
+  const fetchCircleSavings = async () => {
+    try {
+      const res = await client.query({
+        query: GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
+        variables: {
+          mobile_number: currentPatient?.mobileNumber,
+        },
+        fetchPolicy: 'no-cache',
+      });
+      const savings = res?.data?.GetCircleSavingsOfUserByMobile?.response?.savings;
+      const circlebenefits = res?.data?.GetCircleSavingsOfUserByMobile?.response?.benefits;
+      const consultSavings = savings?.consult || 0;
+      const pharmaSavings = savings?.pharma || 0;
+      const diagnosticsSavings = savings?.diagnostics || 0;
+      const deliverySavings = savings?.delivery || 0;
+      const totalSavings = consultSavings + pharmaSavings + diagnosticsSavings + deliverySavings;
+      setCircleSavings && setCircleSavings(Math.ceil(totalSavings));
+    } catch (error) {
+      CommonBugFender('MyMembership_fetchCircleSavings', error);
+    }
+  };
+  const fetchHealthCredits = async () => {
+    var cachedHealthCredit: any = await getHealthCredits();
+    if (cachedHealthCredit != null) {
+      setHealthCredits && setHealthCredits(cachedHealthCredit.healthCredit);
+      return; // no need to call api
+    }
+
+    try {
+      const res = await client.query({
+        query: GET_ONEAPOLLO_USER,
+        variables: {
+          patientId: g(currentPatient, 'id'),
+        },
+        fetchPolicy: 'no-cache',
+      });
+
+      const credits = res?.data?.getOneApolloUser?.availableHC;
+      setHealthCredits && setHealthCredits(credits);
+      persistHealthCredits(credits);
+    } catch (error) {
+      CommonBugFender('MyMembership_fetchCircleSavings', error);
+    }
+  };
+
+  const getUserBanners = async () => {
+    setBannerLoading(true);
+    try {
+      const res: any = await getUserBannersList(
+        client,
+        currentPatient,
+        string.banner_context.HOME,
+        [BannerDisplayType.banner, BannerDisplayType.card]
+      );
+      setBannerLoading(false);
+      if (res) {
+        setBannerDataHome && setBannerDataHome(res);
+        setBannerData && setBannerData(res);
+      }
+    } catch (error) {
+      setBannerLoading(false);
+      setBannerDataHome && setBannerDataHome([]);
+      setBannerData && setBannerData([]);
+    }
+  };
+
+  const getProductCashbackDetails = () => {
+    client
+      .query<GetCashbackDetailsOfPlanById>({
+        query: GET_CASHBACK_DETAILS_OF_PLAN_ID,
+        variables: { plan_id: AppConfig.Configuration.CIRCLE_PLAN_ID },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data) => {
+        const cashback = g(
+          data,
+          'data',
+          'GetCashbackDetailsOfPlanById',
+          'response',
+          'meta',
+          'cashback'
+        );
+        setCircleCashback && setCircleCashback(cashback);
+      })
+      .catch((e) => {
+        CommonBugFender('ConsultRoom_GetCashbackDetailsOfPlanById', e);
+      });
+  };
+
+  const getUserProfileType = () => {
+    client
+      .query<getUserProfileType>({
+        query: GET_USER_PROFILE_TYPE,
+        variables: { mobileNumber: g(currentPatient, 'mobileNumber') },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data) => {
+        const profileType = data?.data?.getUserProfileType?.profile;
+        if (!!profileType) {
+          setPharmacyUserType && setPharmacyUserType(profileType);
+          AsyncStorage.setItem('PharmacyUserType', profileType);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('ConsultRoom_getUserProfileType', e);
+      });
   };
 
   const storePatientDetailsTOBugsnag = async () => {
     try {
+      if (currentPatient?.isConsulted === undefined) getPatientApiCall();
+
       let allPatients: any;
 
       const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-      const item = JSON.parse(retrievedItem);
+      const item = JSON.parse(retrievedItem || 'null');
 
       const callByPrism: any = await AsyncStorage.getItem('callByPrism');
 
@@ -1132,15 +2207,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         : null;
 
       const array: any = await AsyncStorage.getItem('allNotification');
-      const arraySelected = JSON.parse(array);
+      const arraySelected = JSON.parse(array || 'null');
       const selectedCount = arraySelected.filter((item: any) => {
         return item.isActive === true;
       });
       setNotificationCount && setNotificationCount(selectedCount.length);
-
-      CommonSetUserBugsnag(
-        patientDetails ? (patientDetails.mobileNumber ? patientDetails.mobileNumber : '') : ''
-      );
     } catch (error) {}
   };
 
@@ -1151,7 +2222,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       phone: '91' + storedPhoneNumber,
       size: 40,
     };
-    console.log('params', params);
     notifcationsApi(params)
       .then(async (repsonse: any) => {
         try {
@@ -1160,8 +2230,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
           if (array !== null) {
             const arraySelected = JSON.parse(array);
-            // console.log('arraySelected.......', arraySelected);
-
             arrayNotification = repsonse.data.data.map((el: any) => {
               const o = Object.assign({}, el);
 
@@ -1169,12 +2237,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 return obj._id == el._id;
               });
               if (result.length === 0) {
-                // console.log('result.length', result);
                 o.isActive = true;
               } else {
                 o.isActive = result[0].isActive;
-                // console.log('result', result);
-                // console.log('result.isActive', result[0].isActive);
               }
               return o;
             });
@@ -1189,7 +2254,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           const tempArray: any[] = [];
           const filteredNotifications = arrayNotification.filter((el: any) => {
             // If it is not a duplicate and accepts these conditions, return true
-            const val = JSON.parse(el.notificatio_details.push_notification_content);
+            const val = JSON.parse(el.notificatio_details.push_notification_content || 'null');
             const event = val.cta;
             if (event) {
               const actionLink = decodeURIComponent(event.actionLink);
@@ -1228,16 +2293,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           AsyncStorage.setItem('allNotification', JSON.stringify(filteredNotifications));
         } catch (error) {}
       })
-      .catch((error: Error) => {
-        console.log('error', error);
-      });
+      .catch((error: Error) => {});
   };
 
   const buildName = () => {
     switch (apiRoutes.graphql()) {
-      case 'https://aph.dev.api.popcornapps.com//graphql':
+      case 'https://aph-dev-api.apollo247.com//graphql':
         return 'DEV';
-      case 'https://aph.staging.api.popcornapps.com//graphql':
+      case 'https://aph-staging-api.apollo247.com//graphql':
         return 'QA';
       case 'https://stagingapi.apollo247.com//graphql':
         return 'VAPT';
@@ -1255,38 +2318,38 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   useEffect(() => {
-    console.log('consultroom', currentPatient);
-
     currentPatient && setshowSpinner(false);
     if (!currentPatient) {
       // getPatientApiCall();
     } else {
       AsyncStorage.setItem('selectedProfileId', JSON.stringify(currentPatient.id));
       if (selectedProfile !== currentPatient.id) {
-        getPersonalizesAppointments();
-        setAppointmentLoading(true);
+        getAppointmentsCount();
         setSelectedProfile(currentPatient.id);
-        client
-          .query<getPatientFutureAppointmentCount>({
-            query: GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
-            fetchPolicy: 'no-cache',
-            variables: {
-              patientId: currentPatient.id,
-            },
-          })
-          .then((data) => {
-            setCurrentAppointments(
-              (g(data, 'data', 'getPatientFutureAppointmentCount', 'consultsCount') || 0).toString()
-            );
-            setAppointmentLoading(false);
-          })
-          .catch((e) => {
-            CommonBugFender('ConsultRoom_getPatientFutureAppointmentCount', e);
-          })
-          .finally(() => setAppointmentLoading(false));
       }
     }
-  }, [currentPatient, analytics, props.navigation.state.params]);
+  }, [currentPatient, props.navigation.state.params]);
+
+  const getAppointmentsCount = () => {
+    setAppointmentLoading(true);
+    client
+      .query<getPatientFutureAppointmentCount>({
+        query: GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
+        fetchPolicy: 'no-cache',
+        variables: {
+          patientId: currentPatient?.id,
+        },
+      })
+      .then((data) => {
+        const count = data?.data?.getPatientFutureAppointmentCount?.activeConsultsCount || 0;
+        setCurrentAppointments(`${count}`);
+        setAppointmentLoading(false);
+      })
+      .catch((e) => {
+        CommonBugFender('ConsultRoom_getPatientFutureAppointmentCount', e);
+      })
+      .finally(() => setAppointmentLoading(false));
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -1301,8 +2364,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           AsyncStorage.setItem('gotIt', 'true');
         }, 5000);
       }
-      const CMEnabled = await AsyncStorage.getItem('CMEnable');
-      const eneabled = CMEnabled ? JSON.parse(CMEnabled) : false;
+      const eneabled = AppConfig.Configuration.ENABLE_CONDITIONAL_MANAGEMENT;
       setEnableCM(eneabled);
     }
     fetchData();
@@ -1312,6 +2374,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (isIos()) {
       initializeVoip();
     }
+
+    getProductCashbackDetails();
+    getUserProfileType();
   }, []);
 
   const initializeVoip = () => {
@@ -1347,13 +2412,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       .then((data: any) => {})
       .catch((e) => {
         CommonBugFender('ConsultRoom_callDeviceVoipTokenAPI', e);
-        console.log('Error occured while sending voip token', e);
       });
   };
 
   const getTokenforCM = async () => {
     const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-    const item = JSON.parse(retrievedItem);
+    const item = JSON.parse(retrievedItem || 'null');
 
     const callByPrism: any = await AsyncStorage.getItem('callByPrism');
 
@@ -1374,9 +2438,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           : null;
     }
 
-    const patientDetails = allPatients
+    const patientDetails_primary = allPatients
       ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
       : null;
+
+    const patientDetails = currentPatient;
 
     const fullName = `${g(patientDetails, 'firstName') || ''}%20${g(patientDetails, 'lastName') ||
       ''}`;
@@ -1384,7 +2450,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const patientUHID = patientDetails ? (patientDetails.uhid ? patientDetails.uhid : '') : '';
 
     if (patientUHID) {
-      setshowSpinner(true);
+      setLoading?.(true);
 
       GenerateTokenforCM(
         patientDetails ? patientDetails.uhid : '',
@@ -1394,24 +2460,20 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         patientDetails ? (patientDetails.mobileNumber ? patientDetails.mobileNumber : '') : ''
       )
         .then((token: any) => {
-          console.log(token, 'getTokenforCM');
-
           async function fetchTokenData() {
-            setshowSpinner(false);
+            setLoading?.(false);
 
             const tokenValue = token.data.vitaToken; //await AsyncStorage.getItem('token');
             const buildSpecify = buildName();
             let keyHash;
             if (buildSpecify === 'QA' || buildSpecify === 'DEV' || buildSpecify === 'DEVReplica') {
-              keyHash = '7729FD68-C552-4C90-B31E-98AA6C84FEBF~247Android';
+              keyHash = AppConfig.Configuration.QA_DIABETES_MGMT_HashKey;
             } else {
-              keyHash = '4d4efe1a-cec8-4647-939f-09c25492721e~Apollo247';
+              keyHash = AppConfig.Configuration.Prod_DIABETES_MGMT_HashKey;
             }
-            console.log('tokenValue', tokenValue, keyHash);
-
             if (Platform.OS === 'ios') {
               if (tokenValue) {
-                Vitals.vitalsToExport(tokenValue, buildSpecify);
+                Vitals.vitalsToExport(tokenValue, buildSpecify, '247');
                 setTimeout(() => {
                   Vitals.goToReactNative(tokenValue);
                 }, 500);
@@ -1429,7 +2491,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   fullName,
                   keyHash,
                   buildSpecify,
-                  currentDeviceToken
+                  currentDeviceToken,
+                  AppConfig.Configuration.DIABETES_MGMT_CM_PROGRAM_ID
                 );
             }
           }
@@ -1438,86 +2501,183 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         })
         .catch((e) => {
           CommonBugFender('ConsultRoom_getTokenforCM', e);
-          setshowSpinner(false);
+          setLoading?.(false);
         });
     } else {
-      setshowSpinner(false);
+      setLoading?.(false);
       showAphAlert &&
         showAphAlert({
-          title: 'Hi :)',
-          description: 'We’re setting up your profile. Please check back soon!',
+          title: string.common.hiWithSmiley,
+          description: string.common.settingProfileTxt,
         });
     }
   };
 
-  const getPersonalizesAppointments = async () => {
-    // const uhid = g(details, 'uhid');
-
-    const storedUhid: any = await AsyncStorage.getItem('selectUserUHId');
-
-    const selectedUHID = storedUhid ? storedUhid : g(currentPatient, 'uhid');
-
-    const uhidSelected = await AsyncStorage.getItem('UHIDused');
-    // console.log('selectedUHID', selectedUHID);
-    // console.log('selectUserId', selectUserId);
-
-    if (uhidSelected !== null) {
-      if (uhidSelected === selectedUHID) {
-        if (Object.keys(appointmentsPersonalized).length != 0) {
-          // console.log('appointmentsPersonalized', appointmentsPersonalized);
-
-          setPersonalizedData(appointmentsPersonalized as any);
-          setisPersonalizedCard(true);
+  //token for prohealth - CM
+  const getTokenForProhealthCM = async () => {
+    const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
+    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    try {
+      setLoading?.(true);
+      let vitaTokenResponse = await GenrateVitalsToken_CM('ask_apollo', currentPatient?.uhid);
+      if (vitaTokenResponse?.data && vitaTokenResponse?.data?.message.includes('Successfully')) {
+        let vitaToken = vitaTokenResponse?.data?.vitaToken;
+        const buildSpecify = buildName();
+        let keyHash;
+        if (
+          buildSpecify === 'QA' ||
+          buildSpecify === 'DEV' ||
+          buildSpecify === 'DEVReplica' ||
+          buildSpecify === 'VAPT'
+        ) {
+          keyHash = AppConfig.Configuration.QA_PROHEALTH_MGMT_HashKey;
+        } else {
+          keyHash = AppConfig.Configuration.Prod_PROHEALTH_MGMT_HashKey;
+        }
+        setLoading?.(false);
+        //call the sdk.
+        if (Platform.OS === 'ios') {
+          if (vitaToken) {
+            Vitals.vitalsToExport(vitaToken, buildSpecify, 'prohealth');
+            setTimeout(() => {
+              Vitals.goToReactNative(vitaToken);
+            }, 500);
+          }
+        } else {
+          const fullName = `${g(currentPatient, 'firstName') || ''}%20${g(
+            currentPatient,
+            'lastName'
+          ) || ''}`;
+          const UHID = `${g(currentPatient, 'uhid') || ''}`;
+          vitaToken &&
+            KotlinBridge.show(
+              vitaToken,
+              UHID,
+              fullName,
+              keyHash,
+              buildSpecify,
+              currentDeviceToken,
+              AppConfig.Configuration.PROHEALTH_MGMT_CM_PROGRAM_ID
+            );
         }
       } else {
-        setPersonalizedData([]);
-        setisPersonalizedCard(false);
+        setLoading?.(false);
+        setProHealthActive(false);
+        showAphAlert &&
+          showAphAlert({
+            title: string.common.hiWithSmiley,
+            description: string.common.settingProfileTxt,
+          });
       }
+    } catch (error) {
+      CommonBugFender('getTokenForProhealthCM_error_ConsultRoom', error);
+      setProHealthActive(false);
+      setLoading?.(false);
     }
+  };
 
-    getPatientPersonalizedAppointmentList(client, selectedUHID)
-      .then((data: any) => {
-        const appointmentsdata =
-          g(data, 'data', 'data', 'getPatientPersonalizedAppointments', 'appointmentDetails') || [];
-        console.log('appointmentsdata', appointmentsdata);
-        AsyncStorage.setItem('UHIDused', selectedUHID);
+  //check if user has any prohealth bookings
+  const checkIsProhealthActive = async (currentPatientDetails: any) => {
+    const storedUhid: any = await AsyncStorage.getItem('selectUserUHId');
+    const selectedUHID = storedUhid ? storedUhid : g(currentPatient, 'uhid');
 
-        if (appointmentsdata.doctorId !== null) {
-          console.log('appointmentsdata_if', appointmentsdata);
-          setPersonalizedData(appointmentsdata as any);
-          setisPersonalizedCard(true);
-          setAppointmentsPersonalized &&
-            setAppointmentsPersonalized(
-              appointmentsdata as getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails[]
+    const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
+    const item = JSON.parse(retrievedItem || 'null');
+    const callByPrism: any = await AsyncStorage.getItem('callByPrism');
+    let allPatients;
+    if (callByPrism === 'false') {
+      allPatients =
+        !!item && item?.data?.getPatientByMobileNumber
+          ? item?.data?.getPatientByMobileNumber?.patients
+          : null;
+    } else {
+      allPatients =
+        !!item && item?.data?.getCurrentPatients ? item?.data?.getCurrentPatients?.patients : null;
+    }
+    const patientDetails = allPatients
+      ? allPatients?.find((patient: any) => patient?.relation === Relation.ME) || allPatients?.[0]
+      : null;
+    const patientUHID = patientDetails ? (patientDetails?.uhid ? patientDetails?.uhid : '') : '';
+    if (patientUHID) {
+      setshowSpinner(true);
+      try {
+        const getPhoneNumber =
+          patientDetails?.mobileNumber?.length > 10
+            ? patientDetails?.mobileNumber?.slice(patientDetails?.mobileNumber?.length - 10)
+            : patientDetails?.mobileNumber;
+        const res: any = await GetAllUHIDSForNumber_CM(getPhoneNumber! || '');
+        if (res?.data?.response && res?.data?.errorCode === 0) {
+          let resultData = res?.data?.response?.signUpUserData;
+          if (resultData?.length > 0) {
+            let getCurrentProfile = resultData?.find(
+              (item: any) => item?.uhid == (selectedUHID! || currentPatientDetails?.uhid)
             );
-        } else {
-          setPersonalizedData([]);
-          setisPersonalizedCard(false);
-          setAppointmentsPersonalized && setAppointmentsPersonalized([]);
-          console.log('appointmentsdata_null_else', appointmentsdata);
+            //get status for active chron.
+            let isActive = getCurrentProfile?.isChronActive;
+            isActive ? setProHealthActive(true) : setProHealthActive(false);
+          }
+        } //error code
+        setshowSpinner(false);
+      } catch (error) {
+        CommonBugFender('ProHealth_checkIsProhealthActive_error_ConsultRoom', error);
+        setProHealthActive(false);
+        setshowSpinner(false);
+      }
+    } else {
+      setshowSpinner(false);
+      setProHealthActive(false);
+      showAphAlert?.({
+        title: string.common.hiWithSmiley,
+        description: string.common.settingProfileTxt,
+      });
+    }
+  };
+
+  const [proHealthActiveAppointmentCount, setProHealthActiveAppointmentCount] = useState<
+    string | number
+  >('' || 0);
+
+  const [proActiveAppointments, setProHealthActiveAppointment] = useState([] as any);
+
+  const getActiveProHealthAppointments = async (currentDetails: any) => {
+    //or can use storeUhid, and then call api getPatientsByUhid.
+    getAllProHealthAppointments(client, currentDetails?.id)
+      .then((data: any) => {
+        if (data?.data?.data?.getAllProhealthAppointments) {
+          let getAllAppointments = data?.data?.data?.getAllProhealthAppointments?.appointments;
+          if (getAllAppointments?.length > 0) {
+            let getUpcomingAppointments = getAllAppointments?.filter(
+              (item: any) =>
+                (item?.status ===
+                  (!!BookingStatus.COMPLETED ? BookingStatus.COMPLETED : 'COMPLETED') ||
+                  (item?.status === !!BookingStatus?.INPROGRESS
+                    ? BookingStatus?.INPROGRESS
+                    : 'INPROGRESS')) &&
+                moment(item?.appointmentStartDateTimeUTC).diff(moment(), 'minutes') > 0
+            );
+            if (getUpcomingAppointments?.length > 0) {
+              setProHealthActiveAppointmentCount(getUpcomingAppointments?.length);
+              setProHealthActiveAppointment(getUpcomingAppointments);
+            } else {
+              setProHealthActiveAppointmentCount('0');
+              setProHealthActiveAppointment([]);
+            }
+          } else {
+            setProHealthActiveAppointmentCount('0');
+            setProHealthActiveAppointment([]);
+          }
         }
       })
       .catch((e) => {
-        setPersonalizedData([]);
-        setisPersonalizedCard(false);
+        CommonBugFender('inside the getProHealthAppointemnt', e);
+        setProHealthActiveAppointmentCount('0');
+        setProHealthActiveAppointment([]);
       });
   };
 
   const renderBottomTabBar = () => {
     return (
-      <View
-        style={{
-          backgroundColor: 'transparent',
-          flexDirection: 'row',
-          width: width,
-          height: showPopUp ? 0 : isIphoneX() ? 87 : 57,
-          shadowColor: 'black',
-          shadowOffset: { width: 0, height: -10 },
-          shadowOpacity: 0.2,
-          shadowRadius: 10,
-          elevation: 10,
-        }}
-      >
+      <View style={[styles.tabBarMainViewStyle, { height: showPopUp ? 0 : isIphoneX() ? 87 : 57 }]}>
         {tabBarOptions.map((tabBarOptions, i) => (
           <View key={i}>
             <TouchableOpacity
@@ -1527,28 +2687,46 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 if (i === 0) {
                   postHomeFireBaseEvent(FirebaseEventName.TABBAR_APPOINTMENTS_CLICKED, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED, 'Menu');
+                  postHomeCleverTapEvent(CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS, 'Menu');
                   CommonLogEvent(AppRoutes.ConsultRoom, 'APPOINTMENTS clicked');
                   props.navigation.navigate('APPOINTMENTS');
                 } else if (i == 1) {
                   postHomeFireBaseEvent(FirebaseEventName.VIEW_HELATH_RECORDS, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Menu');
+                  postHomeCleverTapEvent(CleverTapEventName.VIEW_HELATH_RECORDS, 'Menu');
                   CommonLogEvent(AppRoutes.ConsultRoom, 'HEALTH_RECORDS clicked');
                   props.navigation.navigate('HEALTH RECORDS');
                 } else if (i == 2) {
                   postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Menu');
+                  postHomeCleverTapEvent(CleverTapEventName.BUY_MEDICINES, 'Menu');
                   CommonLogEvent(AppRoutes.ConsultRoom, 'MEDICINES clicked');
-                  const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
+                  const eventAttributes:
+                    | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
+                    | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
                     source: 'app home',
                   };
+                  setTimeout(
+                    () =>
+                      postCleverTapEvent(
+                        CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED,
+                        eventAttributes
+                      ),
+                    500
+                  );
                   postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
                   props.navigation.navigate('MEDICINES');
                 } else if (i == 3) {
+                  const homeScreenAttributes = {
+                    'Nav src': 'Bottom bar',
+                    'Page Name': 'Home Screen',
+                  };
                   postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Menu');
                   CommonLogEvent(AppRoutes.ConsultRoom, 'TESTS clicked');
-                  props.navigation.navigate('TESTS');
+                  props.navigation.navigate('TESTS', { homeScreenAttributes });
                 } else if (i == 4) {
+                  postHomeCleverTapEvent(CleverTapEventName.MY_ACCOUNT, 'Menu');
                   postHomeFireBaseEvent(FirebaseEventName.MY_ACCOUNT, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.MY_ACCOUNT);
                   CommonLogEvent(AppRoutes.ConsultRoom, 'MY_ACCOUNT clicked');
@@ -1556,28 +2734,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 }
               }}
             >
-              <View
-                style={{
-                  width: width / 5,
-                  height: 57,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-                key={i}
-              >
-                {tabBarOptions.image}
-                <Text
-                  style={{
-                    fontFamily: 'IBMPlexSans-SemiBold',
-                    fontSize: 7,
-                    letterSpacing: 0.5,
-                    textAlign: 'center',
-                    marginTop: 8,
-                    color: '#02475b',
-                  }}
-                >
-                  {tabBarOptions.title}
-                </Text>
+              <View style={styles.tabBarViewStyle} key={i}>
+                <View>
+                  {tabBarOptions.image}
+                  {i === 1 && renderBadgeView()}
+                </View>
+                <Text style={styles.tabBarTitleStyle}>{tabBarOptions.title}</Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -1593,29 +2755,33 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         onProfileChange={onProfileChange}
         navigation={props.navigation}
         saveUserChange={true}
+        cleverTapProfileClickEvent={() => cleverTapEventForProfileClick()}
+        cleverTapEventForAddMemberClick={() => cleverTapEventForAddMemberClick()}
         childView={
           <View
             style={{
               flexDirection: 'row',
               paddingRight: 8,
               borderRightWidth: 0,
-              // paddingTop: 80,
-              // marginTop: 30,
               borderRightColor: 'rgba(2, 71, 91, 0.2)',
-              backgroundColor: theme.colors.CLEAR,
             }}
           >
+            {currentPatient?.gender === Gender.MALE ? (
+              !!circleSubscriptionId ? (
+                <MaleCircleIcon style={styles.profileIcon} />
+              ) : (
+                <MaleIcon style={styles.profileIcon} />
+              )
+            ) : !!circleSubscriptionId ? (
+              <FemaleCircleIcon style={styles.profileIcon} />
+            ) : (
+              <FemaleIcon style={styles.profileIcon} />
+            )}
             <Text style={styles.hiTextStyle}>{'hi'}</Text>
             <View style={styles.nameTextContainerStyle}>
               <View style={{ flexDirection: 'row', flex: 1 }}>
-                <Text
-                  style={[
-                    styles.nameTextStyle,
-                    { maxWidth: Platform.OS === 'ios' ? '85%' : '75%' },
-                  ]}
-                  numberOfLines={1}
-                >
-                  {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+                <Text style={styles.nameTextStyle} numberOfLines={1}>
+                  {currentPatient?.firstName || ''}
                 </Text>
                 {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
                   <LinkedUhidIcon
@@ -1628,7 +2794,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     resizeMode={'contain'}
                   />
                 ) : null}
-                <View style={{ paddingTop: 15, marginLeft: 6 }}>
+                <View style={{ paddingTop: 12, marginLeft: 6 }}>
                   <DropdownGreen />
                 </View>
               </View>
@@ -1636,43 +2802,118 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             </View>
           </View>
         }
-        // setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
         unsetloaderDisplay={true}
       />
     );
   };
 
-  const renderListView = () => {
+  const cleverTapEventForProfileClick = () => {
+    let eventAttributes = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
+      'Nav src': 'Homepage',
+      'Circle Member':
+        getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+        undefined,
+      'Device Id': getUniqueId(),
+    };
+    postCleverTapEvent(CleverTapEventName.USER_PROFILE_IMAGE_NAME_CLICKED, eventAttributes);
+  };
+
+  const cleverTapEventForLoginDone = () => {
+    if (!props.navigation.state.params?.previousRoute) {
+      return null;
+    } else if (props.navigation.state.params?.previousRoute == 'Login') {
+      let eventAttributes = {
+        'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+        'Patient UHID': g(currentPatient, 'uhid'),
+        Relation: g(currentPatient, 'relation'),
+        'Patient age': Math.round(
+          moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+        ),
+        'Patient gender': g(currentPatient, 'gender'),
+        'Mobile Number': g(currentPatient, 'mobileNumber'),
+        'Customer ID': g(currentPatient, 'id'),
+        User_Type: getUserType(allCurrentPatients),
+        'Nav src': 'Login screen',
+        'Circle Member':
+          getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+          undefined,
+        'Device Id': getUniqueId(),
+      };
+      postCleverTapEvent(CleverTapEventName.LOGIN_DONE, eventAttributes);
+    }
+  };
+
+  const cleverTapEventForAddMemberClick = () => {
+    let eventAttributes = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
+      'Nav src': 'Profile Picture',
+      'Circle Member':
+        getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+        undefined,
+      'Device Id': getUniqueId(),
+    };
+    postCleverTapEvent(CleverTapEventName.ADD_MEMBER_PROFILE_CLICKED, eventAttributes);
+  };
+
+  const renderListView = (text: string, source: string) => {
+    let counts = source == 'prohealth' ? proHealthActiveAppointmentCount : currentAppointments;
+    let sortedActiveAppointments = [...proActiveAppointments];
+    let getRecentUpcomingBooking =
+      sortedActiveAppointments?.length > 0 &&
+      (sortedActiveAppointments?.sort(
+        (a: any, b: any) => a?.appointmentStartDateTimeUTC - b?.appointmentStartDateTimeUTC
+      ) as any);
+    const orderIdToShow = getRecentUpcomingBooking?.[0]?.displayId;
     return (
       <View>
         <ListCard
-          container={{
-            marginTop: 20,
-            marginBottom: 32,
-            shadowColor: '#4c808080',
-            shadowOffset: { width: 0, height: 5 },
-            shadowOpacity: 0.4,
-            shadowRadius: 5,
-            elevation: 5,
-          }}
-          title={'Active Appointments'}
-          leftIcon={renderListCount(currentAppointments)}
+          container={[
+            styles.activeAppointmentsContainer,
+            {
+              marginTop: source == 'prohealth' ? 3 : 20,
+              marginBottom: source == 'prohealth' ? 3 : 20,
+            },
+          ]}
+          title={text}
+          leftIcon={renderListCount(counts)}
           onPress={() => {
-            postHomeWEGEvent(WebEngageEventName.ACTIVE_APPOINTMENTS);
-            props.navigation.navigate('APPOINTMENTS');
+            if (source == 'prohealth') {
+              if (proActiveAppointments?.length > 0) {
+                postHomeWEGEvent(WebEngageEventName.ACTIVE_PROHEALTH_APPOINTMENTS);
+                //call the jwt token again.
+                regenerateJWTToken('orders', orderIdToShow);
+              }
+            } else {
+              postHomeWEGEvent(WebEngageEventName.ACTIVE_APPOINTMENTS);
+              postHomeCleverTapEvent(CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS, 'Home Screen');
+              props.navigation.navigate('APPOINTMENTS');
+            }
           }}
         />
-        {/* <ListCard
-          container={{ marginTop: 14 }}
-          title={'Active Orders'}
-          leftIcon={renderListCount(2)}
-          onPress={() => props.navigation.navigate(AppRoutes.YourOrdersScene)}
-        /> */}
       </View>
     );
   };
 
-  const renderListCount = (count: string) => {
+  const renderListCount = (count: string | number) => {
     return (
       <View
         style={{
@@ -1696,6 +2937,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderMenuOptions = () => {
+    let arrayList = isProHealthActive ? listValuesForProHealth : listValues;
     return (
       <View
         style={{
@@ -1706,567 +2948,445 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           marginBottom: 8,
         }}
       >
-        {listValues.map((item) => {
+        {arrayList.map((item) => {
           if (menuViewOptions.findIndex((i) => i === item.id) >= 0) {
-            return (
-              <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
-                <View
-                  style={{
-                    ...theme.viewStyles.cardViewStyle,
-                    shadowOffset: { width: 0, height: 5 },
-                    elevation: 15,
-                    flexDirection: 'row',
-                    minHeight: 59,
-                    width: width / 2 - 22,
-                    marginRight: 12,
-                    marginBottom: 12,
-                  }}
-                >
-                  <View
-                    style={{
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginHorizontal: 10,
-                      flex: 0.5,
-                    }}
+            if (item?.id < 3) {
+              return (
+                <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
+                  <LinearGradientComponent
+                    style={[
+                      styles.linearGradientView,
+                      { shadowOffset: { width: 0, height: 5 }, elevation: 15 },
+                    ]}
                   >
-                    {item.image}
+                    <View style={styles.topImageView}>
+                      {item.image}
+                      <Text style={styles.topTextStyle}>{item.title}</Text>
+                    </View>
+                    <View style={{ marginRight: 10 }}>
+                      <WhiteArrowRightIcon />
+                    </View>
+                  </LinearGradientComponent>
+                </TouchableOpacity>
+              );
+            } else {
+              return (
+                <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
+                  <View style={styles.bottomCardView}>
+                    <View style={styles.bottomImageView}>{item.image}</View>
+                    <View style={styles.bottomTextView}>
+                      <Text
+                        style={[theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 18)]}
+                      >
+                        {item.title}
+                      </Text>
+                    </View>
                   </View>
-                  <View
-                    style={{
-                      alignItems: 'flex-start',
-                      justifyContent: 'center',
-                      marginRight: 6,
-                      flex: 1,
-                    }}
-                  >
-                    <Text style={[theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 18)]}>
-                      {item.title}
-                    </Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            );
+                </TouchableOpacity>
+              );
+            }
           }
         })}
       </View>
     );
   };
 
-  const renderHdfcLogo = () => {
-    return (
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          marginBottom: 10,
-        }}
-      >
-        <Text style={theme.viewStyles.text('B', 15, '#164884', 1, 28, 0.35)}>
-          #ApolloHealthyLife
-        </Text>
-        <HdfcBankLogo style={styles.hdfcLogo} />
-      </View>
-    );
-  };
-
-  const renderHdfcConnect = () => {
-    return (
-      <View style={styles.hdfcConnectContainer}>
-        {renderHdfcLogo()}
-        {hdfcLoading ? (
-          <View>
-            <Spinner
-              style={{
-                marginVertical: 30,
-                backgroundColor: theme.colors.WHITE,
-              }}
-            />
-          </View>
-        ) : showCongratulations ? (
-          renderCongratulationsWidget()
-        ) : (
-          renderHDFCOtpView()
-        )}
-      </View>
-    );
-  };
-
-  const renderCongratulationsWidget = () => {
-    const isMembershipActive = g(hdfcUserSubscriptions, 'isActive');
-    const membershipType = g(hdfcUserSubscriptions, 'name');
-    const membershipName = membershipType.replace('PLAN', 'Member');
-    return (
-      <View>
-        <View
-          style={{
-            flexDirection: 'row',
-          }}
-        >
-          <ThumbsUp
-            style={{
-              width: 70,
-              height: 70,
-              resizeMode: 'contain',
-            }}
-          />
-          <View style={{ marginLeft: 15 }}>
-            <Text style={theme.viewStyles.text('B', 22, '#02475B', 1, 35, 0.35)}>
-              Congratulations!
-            </Text>
-            <Text>
-              <Text
-                style={{
-                  ...theme.viewStyles.text('R', 15, '#02475B', 1, 20, 0.35),
-                  marginTop: 25,
-                }}
-              >
-                You are now a
-              </Text>
-              <Text style={theme.viewStyles.text('B', 15, '#D3A047', 1, 20, 0.35)}>
-                {' '}
-                {membershipName}
-              </Text>
-            </Text>
-          </View>
-        </View>
-        <TouchableOpacity
-          onPress={() => {
-            getUserSubscriptionsWithBenefits();
-            props.navigation.navigate(AppRoutes.MembershipDetails, {
-              membershipType,
-              isActive: isMembershipActive,
-            });
-            const subscription_name = hdfcUserSubscriptions.name;
-            const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_EXPLORE_BENEFITS_CLICKED] = {
-              'Patient UHID': g(currentPatient, 'uhid'),
-              'Customer ID': g(currentPatient, 'id'),
-              'Patient Name': g(currentPatient, 'firstName'),
-              'Mobile Number': g(currentPatient, 'mobileNumber'),
-              'Date of Birth': g(currentPatient, 'dateOfBirth'),
-              Email: g(currentPatient, 'emailAddress'),
-              HDFCMembershipLevel: subscription_name.substring(0, subscription_name.indexOf('+')),
-              'Partner ID': g(currentPatient, 'partnerId'),
-              HDFCMembershipState: !!g(hdfcUserSubscriptions, 'isActive') ? 'Active' : 'Inactive',
-            };
-            postWebEngageEvent(WebEngageEventName.HDFC_EXPLORE_BENEFITS_CLICKED, eventAttributes);
-          }}
-        >
-          <Text style={styles.hdfcConnectButton}>EXPLORE BENEFITS</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
-  const renderHDFCOtpView = () => {
-    return (
-      <View>
-        {showHdfcOtpView
-          ? showNotHdfcCustomer
-            ? renderNotHdfcView()
-            : renderOtpInput()
-          : renderGenerateOtp()}
-      </View>
-    );
-  };
-
-  const renderGenerateOtp = () => {
-    return (
-      <View>
-        <View
-          style={{
-            flexDirection: 'row',
-          }}
-        >
-          <LastStepIcon
-            style={{
-              resizeMode: 'contain',
-              width: 60,
-              height: 70,
-              marginRight: 20,
-            }}
-          />
-          <View>
-            <Text style={theme.viewStyles.text('B', 17, '#02475B', 1, 30, 0.35)}>
-              One last step to start your
-            </Text>
-            <Text style={theme.viewStyles.text('B', 17, '#02475B', 1, 30, 0.35)}>
-              HealthyLife journey
-            </Text>
-          </View>
-        </View>
-        <TouchableOpacity
-          onPress={() => {
-            identifyHdfcCustomer();
-          }}
-        >
-          <Text style={styles.hdfcConnectButton}>GENERATE OTP</Text>
-        </TouchableOpacity>
-        <Text style={theme.viewStyles.text('LI', 12, '#01475B', 1, 20, 0.35)}>
-          {hdfc_values.HDFC_CARD_CAPTION}
-        </Text>
-      </View>
-    );
-  };
-
-  const renderOtpInput = () => {
-    const otpViewStyle = StyleSheet.create({
-      otpInputStyle: {
-        borderBottomWidth: 2,
-        width: '100%',
-        margin: 0,
-        height: 48,
-        borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-        ...theme.fonts.IBMPlexSansMedium(18),
-        color: theme.colors.LIGHT_BLUE,
-        textAlign: 'center',
-      },
-      inputView: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-      },
-      resendOtpButton: {
-        ...theme.viewStyles.text('SB', 14, '#FC9916', 1, 35, 0.35),
-        textAlign: 'left',
-        marginTop: 10,
-      },
-      sendOtpButton: {
-        position: 'absolute',
-        bottom: -40,
-        right: 0,
-        width: 50,
-        height: 50,
-        borderRadius: 50,
-        alignItems: 'center',
-      },
-      arrowStyle: {
-        transform: [{ rotate: '180deg' }],
-        width: 30,
-        resizeMode: 'contain',
-      },
-    });
-
-    return (
-      <View>
-        <Text style={theme.viewStyles.text('B', 15, '#02475B', 1, 20, 0.35)}>
-          Please enter the OTP sent by HDFC Bank
-        </Text>
-        <View style={otpViewStyle.inputView}>
-          <TextInput
-            style={[
-              otpViewStyle.otpInputStyle,
-              {
-                borderColor: showErrorBottomLine
-                  ? theme.colors.INPUT_BORDER_FAILURE
-                  : theme.colors.INPUT_BORDER_SUCCESS,
-              },
-            ]}
-            value={hdfcOtpValue}
-            onChangeText={isOtpValid}
-            keyboardType="numeric"
-            textContentType={'oneTimeCode'}
-            maxLength={6}
-          />
-        </View>
-        <TouchableOpacity
-          onPress={() => {
-            identifyHdfcCustomer();
-          }}
-        >
-          <Text style={otpViewStyle.resendOtpButton}>RESEND OTP</Text>
-        </TouchableOpacity>
-        {showErrorBottomLine && (
-          <Text style={theme.viewStyles.text('SB', 13, '#ED1C24', 1, 20, 0.35)}>
-            Oops ! Re-enter the OTP
-          </Text>
-        )}
-        <TouchableOpacity
-          style={[
-            otpViewStyle.sendOtpButton,
-            { backgroundColor: isValidOtp ? '#FC9916' : '#FFC67B' },
-          ]}
-          activeOpacity={0.6}
-          disabled={!isValidOtp}
-          onPress={() => {
-            if (isValidOtp) validateHdfcOtp();
-          }}
-        >
-          <BackArrowWhite style={otpViewStyle.arrowStyle} />
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
-  const renderNotHdfcView = () => {
-    return (
-      <View>
-        <View
-          style={{
-            flexDirection: 'row',
-          }}
-        >
-          <SadFaceYellow
-            style={{
-              resizeMode: 'contain',
-              width: 30,
-            }}
-          />
-          <Text
-            style={{
-              ...theme.viewStyles.text('B', 17, '#02475B', 1, 20, 0.35),
-              marginTop: 15,
-              marginLeft: 15,
-            }}
-          >
-            Sorry!
-          </Text>
-        </View>
-        <Text
-          style={{
-            ...theme.viewStyles.text('R', 12, '#02475B', 1, 20, 0.35),
-          }}
-        >
-          {hdfcErrorMessage}
-        </Text>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'flex-end',
-            marginTop: 10,
-          }}
-        >
-          {showSavingsAccountButton && (
-            <TouchableOpacity
-              onPress={() => {
-                Linking.openURL(hdfc_values.ENROLL_URL);
-              }}
-            >
-              <Text
-                style={{
-                  ...theme.viewStyles.text('B', 14, '#FC9916', 1, 35, 0.35),
-                  marginRight: 20,
-                }}
-              >
-                OPEN SAVINGS ACCOUNT
-              </Text>
-            </TouchableOpacity>
-          )}
-          <TouchableOpacity
-            onPress={() => {
-              identifyHdfcCustomer();
-            }}
-          >
-            <Text style={theme.viewStyles.text('B', 14, '#FC9916', 1, 35, 0.35)}>RECHECK OTP</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
-
-  const isOtpValid = (otp: string) => {
-    if (otp.match(/[0-9]/) || otp === '') {
-      setshowErrorBottomLine(false);
-      setHdfcOtpValue(otp);
-      setIsValidOtp(otp.length === 6);
-    }
-  };
-
-  const renderHDFCConnectWidget = () => {
-    const isMembershipActive = g(hdfcUserSubscriptions, 'isActive');
-    const minimumTransaction = g(hdfcUserSubscriptions, 'minTransactionValue');
-    const membershipType = g(hdfcUserSubscriptions, 'name');
-    return isMembershipActive ? (
-      renderHdfcCarousel()
-    ) : (
-      <View style={styles.hdfcConnectContainer}>
-        {renderHdfcLogo()}
-        <View>
-          <Text style={theme.viewStyles.text('B', 24, '#02475B', 1, 35, 0.35)}>Hey !</Text>
-          <Text style={theme.viewStyles.text('SB', 15, '#01475B', 1, 20, 0.35)}>
-            You are missing out on a world of exclusive benefits
-          </Text>
-          <Text
-            style={{
-              ...theme.viewStyles.text('L', 13, '#01475B', 1, 20, 0.35),
-              marginTop: 10,
-            }}
-          >
-            {`Just book a Doctor Consultation or order Pharmacy products worth Rs ${minimumTransaction} or more to join the club!`}
-          </Text>
-          <TouchableOpacity
-            onPress={() => {
-              props.navigation.navigate(AppRoutes.MembershipDetails, {
-                membershipType,
-                isActive: isMembershipActive,
-              });
-            }}
-          >
-            <Text style={styles.hdfcConnectButton}>TELL ME MORE</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
-
-  const renderHdfcCarousel = () => {
-    const showBanner = bannerData && bannerData.length ? true : false;
+  const renderBannersCarousel = () => {
+    const showBanner = !!bannerData?.length;
     if (showBanner) {
       return (
-        <View>
-          <Carousel
-            onSnapToItem={setSlideIndex}
-            data={bannerData}
-            renderItem={renderHdfcSliderItem}
-            sliderWidth={width}
-            itemWidth={width}
-            loop={true}
-            autoplay={false}
-          />
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'center',
-              position: 'absolute',
-              bottom: 10,
-              alignSelf: 'center',
-            }}
-          >
-            {bannerData.map((_, index) =>
-              index == slideIndex ? renderDot(true) : renderDot(false)
-            )}
-          </View>
-        </View>
+        <CarouselBanners
+          navigation={props.navigation}
+          planActivationCallback={() => {
+            getUserSubscriptionsByStatus();
+
+            getUserSubscriptionsWithBenefits();
+            getUserBanners();
+            circleActivatedRef.current = false;
+          }}
+          circleActivated={circleActivatedRef.current}
+          circlePlanValidity={circlePlanValidity}
+          from={string.banner_context.HOME}
+          source={string.banner_context.HOME}
+          successCallback={() => {
+            getUserSubscriptionsWithBenefits();
+          }}
+          circleEventSource={'Landing Home Page banners'}
+        />
       );
     }
   };
 
-  const renderDot = (active: boolean) => (
-    <View
-      style={{
-        height: 8,
-        width: active ? 18 : 8,
-        borderRadius: 4,
-        marginHorizontal: 4,
-        marginTop: 9,
-        backgroundColor: active ? '#aaa' : 'white',
-        justifyContent: 'flex-start',
+  const dataBannerCards = (darktheme: any) => {
+    const datatoadd = bannerDataHome?.filter((item: any) => item?.banner_display_type === 'card');
+
+    let datatosend = [] as any;
+    datatosend = datatoadd?.map((item: any) => ({
+      imageUrl: { uri: darktheme ? getMobileURL(item?.banner) : item?.banner },
+      title: item?.banner_template_info?.headerText1,
+      value: item?.banner_template_info?.headerText2,
+      action: {
+        url: item?.cta_action?.url || item?.cta_action?.meta?.url,
+        type: item?.cta_action?.type,
+        cta_action: item?.cta_action?.meta?.action,
+      },
+    }));
+    return datatosend;
+  };
+
+  const navigateCTAActions = (action: any, url: string) => {
+    if (action?.type == 'REDIRECT') {
+      if (action.cta_action == 'SPECIALITY_LISTING') {
+        props.navigation.navigate(AppRoutes.DoctorSearch);
+      } else if (action.cta_action == 'PHARMACY_LANDING') {
+        props.navigation.navigate('MEDICINES');
+      } else if (action.cta_action == 'PRO-HEALTH') {
+        setShowWebView({ action: true, url: 'https://www.apollo247.com/apollo-pro-health' });
+      } else if (action.cta_action == 'PHR') {
+        props.navigation.navigate('HealthRecords');
+      } else if (action.cta_action == 'DIAGNOSTICS_LANDING') {
+        props.navigation.navigate('TESTS');
+      } else if (action.cta_action == 'MEMBERSHIP_DETAIL_CIRCLE') {
+        props.navigation.navigate('MembershipDetails', {
+          membershipType: 'CIRCLE PLAN',
+          isActive: true,
+          comingFrom: 'Circle Benifits(Home Screen)',
+        });
+      } else if (action?.cta_action === string.Hdfc_values.ABSOLUTE_URL) {
+        openWebViewFromBanner(url || action?.url);
+      }
+    } else if (action?.type == string.Hdfc_values.WEB_VIEW) {
+      openWebViewFromBanner(url || action?.url);
+    }
+  };
+
+  const openWebViewFromBanner = async (url: string) => {
+    const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
+    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    let updatedUrl: string = '';
+    if (url?.includes('apollo-pro-health')) {
+      updatedUrl = url?.concat(
+        '?utm_source=mobile_app',
+        '&utm_token=',
+        currentDeviceToken,
+        '&utm_mobile_number=',
+        currentPatient?.mobileNumber || ''
+      );
+    } else {
+      updatedUrl = url?.concat('?utm_source=mobile_app');
+    }
+    props.navigation.navigate(AppRoutes.CommonWebView, {
+      url: updatedUrl,
+    });
+  };
+
+  const openWebView = (url: any) => {
+    Keyboard.dismiss();
+    return (
+      <View style={styles.viewWebStyles}>
+        <Header
+          title={'Circle Membership Benefits'}
+          leftIcon="close"
+          container={{
+            borderBottomWidth: 0,
+          }}
+          onPressLeftIcon={() => setShowWebView({ action: false })}
+        />
+        <View style={styles.nestedWebView}>
+          <WebView
+            source={{
+              uri: url,
+            }}
+            style={styles.webViewCompo}
+            onLoadStart={() => {
+              setshowSpinner(true);
+            }}
+            onLoadEnd={() => {
+              setshowSpinner(false);
+            }}
+            onLoad={() => {
+              setshowSpinner(false);
+            }}
+          />
+        </View>
+      </View>
+    );
+  };
+
+  const renderCircleCards = (item: any, darktheme: boolean, renew: boolean) => {
+    /**
+     * darktheme -> expired case
+     * renew -> expiring in x days
+     */
+    return (
+      <View style={styles.circleCardsContainer}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => {
+            !darktheme ? navigateCTAActions(item?.action, item?.url) : null;
+            const membershipState = darktheme
+              ? 'Expired'
+              : renew
+              ? 'About to Expire'
+              : 'Not Expiring';
+            onClickCircleBenefits(membershipState, item?.action);
+          }}
+        >
+          <View
+            style={
+              darktheme ? [styles.circleCards, { borderColor: '#666666' }] : styles.circleCards
+            }
+          >
+            <View style={styles.circleCardsTexts}>
+              <Text
+                style={
+                  darktheme
+                    ? [
+                        { ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) },
+                        { alignSelf: 'flex-start' },
+                      ]
+                    : [
+                        { ...theme.viewStyles.text('M', 12, '#02475B', 1, 16) },
+                        { alignSelf: 'flex-start' },
+                      ]
+                }
+              >
+                {item?.title}
+              </Text>
+              {item?.value && (
+                <Text
+                  style={
+                    darktheme
+                      ? [
+                          { ...theme.viewStyles.text('M', 16, '#666666', 0.6, 18) },
+                          {
+                            alignSelf: 'flex-start',
+                            marginTop: 5,
+                          },
+                        ]
+                      : [
+                          { ...theme.viewStyles.text('M', 16, '#02475B', 1, 18) },
+                          {
+                            alignSelf: 'flex-start',
+                            marginTop: 5,
+                          },
+                        ]
+                  }
+                >
+                  {item?.value}
+                </Text>
+              )}
+            </View>
+            <Image source={item?.imageUrl} resizeMode="contain" style={styles.circleCardsImages} />
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderCircleSubscriptionPlans = () => {
+    return (
+      <CircleMembershipPlans
+        navigation={props.navigation}
+        isModal={true}
+        closeModal={() => setShowCirclePlans(false)}
+        buyNow={true}
+        membershipPlans={membershipPlans}
+        source={'Consult'}
+        from={string.banner_context.HOME}
+        healthCredits={healthCredits}
+        onPurchaseWithHCCallback={(res: any) => {
+          fireCirclePurchaseEvent(
+            currentPatient,
+            res?.data?.CreateUserSubscription?.response?.end_date
+          );
+          planPurchasedcr.current =
+            res?.data?.CreateUserSubscription?.response?.status === 'PAYMENT_FAILED' ? false : true;
+          planValiditycr.current = res?.data?.CreateUserSubscription?.response?.end_date;
+
+          setShowCircleActivationcr(true);
+        }}
+        circleEventSource={'Landing Home Page banners'}
+      />
+    );
+  };
+
+  const renderCircleActivation = () => (
+    <CircleMembershipActivation
+      visible={showCircleActivationcr}
+      closeModal={(planActivated) => {
+        setShowCircleActivationcr(false);
       }}
+      defaultCirclePlan={{}}
+      navigation={props.navigation}
+      circlePaymentDone={planPurchasedcr?.current}
+      circlePlanValidity={{ endDate: planValiditycr?.current }}
+      source={'Consult'}
+      from={string.banner_context.MEMBERSHIP_DETAILS}
+      circleEventSource={'Landing Home Page'}
     />
   );
 
   const getMobileURL = (url: string) => {
-    const txt = url.split('.png')[0];
+    const ext = url?.includes('.jpg') ? '.jpg' : url?.includes('.jpeg') ? 'jpeg' : '.png';
+    const txt = url.split(ext)[0];
     const path = txt.split('/');
     path.pop();
-    const name = url.split('.png')[0].split('/')[txt.split('/').length - 1];
-    const mPath = path.join('/').concat('/mweb_'.concat(name).concat('.png'));
+    const name = url.split(ext)[0].split('/')[txt.split('/').length - 1];
+    const mPath = path.join('/').concat('/d_'.concat(name).concat(ext));
     return mPath;
   };
 
-  const renderHdfcSliderItem = ({ item }) => {
-    const { cta_action } = item;
-
-    const bannerUri = getMobileURL(item.banner);
-    let imageHeight = 144;
-    Image.getSize(
-      bannerUri,
-      (width, height) => {
-        imageHeight = height;
-      },
-      (error) => {
-        console.log(error);
-      }
-    );
-    return (
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={() =>
-          handleOnBannerClick(cta_action.type, cta_action.meta.action, cta_action.meta.message)
-        }
-        style={styles.hdfcBanner}
-      >
-        <Image
-          style={{
-            height: imageHeight,
-          }}
-          source={{
-            uri: bannerUri,
-          }}
-          resizeMode={'contain'}
-        />
-      </TouchableOpacity>
+  const onClickCircleBenefits = (
+    membershipState: 'Expired' | 'About to Expire' | 'Not Expiring',
+    action: any
+  ) => {
+    postCircleWEGEvent(
+      currentPatient,
+      membershipState,
+      action,
+      circlePlanValidity,
+      circleSubscriptionId
     );
   };
 
-  const renderAlert = (message: string) => {
-    showAphAlert!({
-      title: 'Hi',
-      description: message,
-      onPressOk: () => {
-        hideAphAlert!();
-      },
-    });
-  };
+  const renderCircle = () => {
+    const expiry = circlePlanValidity ? timeDiffDaysFromNow(circlePlanValidity?.endDate) : '';
 
-  const handleOnBannerClick = (type: any, action: any, message: any) => {
-    const subscription_name = hdfcUserSubscriptions.name;
-    const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_HOMEPAGE_CAROUSEL_CLICKED] = {
-      'Patient UHID': g(currentPatient, 'uhid'),
-      'Customer ID': g(currentPatient, 'id'),
-      'Patient Name': g(currentPatient, 'firstName'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Date of Birth': g(currentPatient, 'dateOfBirth'),
-      Email: g(currentPatient, 'emailAddress'),
-      HDFCMembershipLevel: subscription_name.substring(0, subscription_name.indexOf('+')),
-      'Partner ID': g(currentPatient, 'partnerId'),
-      HDFCMembershipState: !!g(hdfcUserSubscriptions, 'isActive') ? 'Active' : 'Inactive',
-    };
-    postWebEngageEvent(WebEngageEventName.HDFC_HOMEPAGE_CAROUSEL_CLICKED, eventAttributes);
-    if (type == hdfc_values.REDIRECT) {
-      if (action == hdfc_values.SPECIALITY_LISTING) {
-        props.navigation.navigate(AppRoutes.DoctorSearch);
-      } else if (action == hdfc_values.PHARMACY_LANDING) {
-        props.navigation.navigate('MEDICINES');
-      } else if (action == hdfc_values.PHR) {
-        props.navigation.navigate('HEALTH RECORDS');
-      } else if (action == hdfc_values.DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED) {
-        props.navigation.navigate(AppRoutes.DoctorSearch);
-      } else if (action == hdfc_values.DIAGNOSTICS_LANDING) {
-        props.navigation.navigate('TESTS');
-      } else if (action == hdfc_values.MEMBERSHIP_DETAIL) {
-        props.navigation.navigate(AppRoutes.MembershipDetails, {
-          membershipType: g(hdfcUserSubscriptions, 'name'),
-          isActive: g(hdfcUserSubscriptions, 'isActive'),
-        });
-      } else if ((action = hdfc_values.DIETECIAN_LANDING)) {
-        props.navigation.navigate('DoctorSearchListing', {
-          specialities: hdfc_values.DIETICS_SPECIALITY_NAME,
-        });
-      } else {
-        props.navigation.navigate(AppRoutes.ConsultRoom);
-      }
-    } else if (type == hdfc_values.CALL_API) {
-      if (action == hdfc_values.CALL_EXOTEL_API) {
-        const benefits = g(hdfcUserSubscriptions, 'benefits');
-        const currentBenefit = benefits.filter((value) => {
-          return g(value, 'benefitCtaAction', 'type') === type;
-        });
-        const availableCount = currentBenefit.length ? currentBenefit[0].availableCount : 0;
-        const benefit_id = currentBenefit.length ? currentBenefit[0]._id : '';
-        setbenefitId(benefit_id);
-        if (availableCount > 0) {
-          setShowHdfcConnectPopup(true);
-        } else {
-          renderAlert(
-            'Hey, looks like you have exhausted the monthly usage limit for this benefit. If you feel this is an error, please raise a ticket on the Help section.'
-          );
-        }
-      }
-    } else if (type == hdfc_values.WHATSAPP_OPEN_CHAT) {
-      Linking.openURL(`whatsapp://send?text=${message}&phone=91${action}`);
-    } else {
-      props.navigation.navigate(AppRoutes.ConsultRoom);
+    const renew = renewNow !== '' && renewNow === 'yes' ? true : false;
+    renew ? setIsRenew && setIsRenew(true) : setIsRenew && setIsRenew(false);
+    const darktheme = circleStatus === 'disabled' ? true : false;
+    const cardlist = dataBannerCards(darktheme);
+
+    const expired = circlePlanValidity
+      ? dateFormatterDDMM(circlePlanValidity?.endDate, 'DD/MM')
+      : '';
+
+    {
+      /**
+       * CircleTypeCard1 && CircleTypeCard2 -> expiring in x days
+       * CircleTypeCard3 && CircleTypeCard4 -> active plans
+       * CircleTypeCard5 && CircleTypeCard6 -> expired plans
+       */
     }
+    return (
+      <View style={styles.circleContainer}>
+        {expiry > 0 && circleStatus === 'active' && renew && circleSavings > 0 ? (
+          <CircleTypeCard1
+            onButtonPress={() => {
+              setShowCirclePlans(true);
+              onClickCircleBenefits('About to Expire', 'renew');
+            }}
+            savings={circleSavings}
+            credits={healthCredits}
+            expiry={circlePlanValidity?.expiry}
+          />
+        ) : expiry > 0 && circleStatus === 'active' && renew ? (
+          <CircleTypeCard2
+            onButtonPress={() => {
+              setShowCirclePlans(true);
+              onClickCircleBenefits('About to Expire', 'renew');
+            }}
+            credits={healthCredits}
+            expiry={circlePlanValidity?.expiry}
+          />
+        ) : expiry > 0 && circleStatus === 'active' && !renew && circleSavings > 0 ? (
+          <CircleTypeCard3
+            onButtonPress={() => {
+              onClickCircleBenefits('Not Expiring', string.Hdfc_values.MEMBERSHIP_DETAIL_CIRCLE);
+              props.navigation.navigate(AppRoutes.MembershipDetails, {
+                membershipType: 'CIRCLE PLAN',
+                isActive: true,
+                comingFrom: 'Circle Benifits(Home Screen)',
+                circleEventSource: 'Landing Home Page',
+              });
+            }}
+            credits={healthCredits}
+            savings={circleSavings}
+          />
+        ) : expiry > 0 && circleStatus === 'active' && !renew ? (
+          <CircleTypeCard4
+            onButtonPress={() => {
+              onClickCircleBenefits('Not Expiring', string.Hdfc_values.MEMBERSHIP_DETAIL_CIRCLE);
+              props.navigation.navigate(AppRoutes.MembershipDetails, {
+                membershipType: 'CIRCLE PLAN',
+                isActive: true,
+                comingFrom: 'Circle Benifits(Home Screen)',
+                circleEventSource: 'Landing Home Page',
+              });
+            }}
+            credits={healthCredits}
+            savings={circleSavings}
+          />
+        ) : circleStatus === 'disabled' && circleSavings > 0 ? (
+          <CircleTypeCard5
+            onButtonPress={() => {
+              setShowCirclePlans(true);
+              onClickCircleBenefits('Expired', 'renew');
+            }}
+            savings={circleSavings}
+            credits={healthCredits}
+            expired={expired}
+          />
+        ) : circleStatus === 'disabled' ? (
+          <CircleTypeCard6
+            onButtonPress={() => {
+              setShowCirclePlans(true);
+              onClickCircleBenefits('Expired', 'renew');
+            }}
+            savings={circleSavings}
+            credits={healthCredits}
+            expired={expired}
+          />
+        ) : null}
+
+        {cardlist?.length > 0 ? (
+          <View style={[styles.circleRowsContainer, { paddingRight: 10 }]}>
+            <View style={styles.circleButtonLeft}>
+              <ImageBackground
+                style={styles.circleButtonImage}
+                source={require('../ui/icons/PathLeft.webp')}
+              />
+            </View>
+
+            <FlatList
+              horizontal={true}
+              data={cardlist}
+              renderItem={({ item }) => renderCircleCards(item, darktheme, renew)}
+              keyExtractor={(item, index) => index.toString() + 'circle'}
+            />
+
+            <View style={styles.circleButtonRight}>
+              <ImageBackground
+                style={styles.circleButtonImage}
+                source={require('../ui/icons/PathRight.webp')}
+              />
+            </View>
+          </View>
+        ) : null}
+
+        <View style={styles.circleRowsContainer}>
+          {expiry > 0 && circleSavings <= 0 ? (
+            <Text>
+              <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
+                Circle Member{' '}
+              </Text>
+              <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 1, 16) }}>
+                saves ₹848 per month.
+              </Text>
+              <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
+                {' '}
+                You can too{renew ? ' - Renew now!' : '.'}
+              </Text>
+            </Text>
+          ) : circleStatus === 'disabled' ? (
+            <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
+              You’re missing out on benefits - Renew your membership now!!!{' '}
+            </Text>
+          ) : null}
+        </View>
+      </View>
+    );
   };
 
   const renderCovidMainView = () => {
@@ -2293,9 +3413,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       <TouchableOpacity activeOpacity={0.5} onPress={onButtonClick} style={styles.covidToucahble}>
         <View style={styles.covidIconView}>{buttonIcon}</View>
         <View style={styles.covidTitleView}>
-          <Text style={{ ...theme.viewStyles.text('M', 14, theme.colors.WHITE, 1, 18) }}>
-            {title}
-          </Text>
+          <Text style={{ ...theme.viewStyles.text('M', 14, theme.colors.WHITE) }}>{title}</Text>
         </View>
       </TouchableOpacity>
     );
@@ -2307,7 +3425,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <ImageBackground
           style={{ overflow: 'hidden', width: '100%', height: 150 }}
           resizeMode={'stretch'}
-          source={require('@aph/mobile-patients/src/images/home/healthcareEcosystem.png')}
+          source={require('@aph/mobile-patients/src/images/home/healthcareEcosystem.webp')}
         >
           <View style={{ paddingVertical: 16, paddingHorizontal: 16 }}>
             <Text
@@ -2326,9 +3444,75 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         {/* <Image style={{ position: 'absolute', top: 24, alignSelf: 'center', width: 80, height: 80 }} source={require('@aph/mobile-patients/src/images/home/coronavirus_image.png')} /> */}
         <View style={{ padding: 16, paddingTop: 24 }}>
           {renderContent(string.common.healthBlog, string.common.healthBlogDescription)}
-          {renderContent(string.common.covid19VaccineInfo, string.common.covidDescription)}
           {renderCovidHelpButtons()}
         </View>
+      </View>
+    );
+  };
+  // Read Article Container Styling
+  const renderReadArticleContent = () => {
+    return (
+      <CovidButton
+        iconBase={LatestArticle}
+        title={string.common.readLatestArticles}
+        onPress={() => onPressReadArticles()}
+      />
+    );
+  };
+
+  const renderRemoteConfigItems = (item: any, index: number) => {
+    return (
+      <View
+        key={index}
+        style={{ marginBottom: index === covidVaccineCtaV2?.data?.length - 1 ? 15 : 0 }}
+      >
+        <CovidButton
+          iconStyle={styles.covidIconStyle}
+          iconUrl={item?.colorReverse ? item?.reverseIconPath : item?.iconPath}
+          buttonStyle={[
+            styles.covidBtn,
+            {
+              backgroundColor: item?.colorReverse ? theme.colors.APP_YELLOW : theme.colors.WHITE,
+            },
+          ]}
+          iconBase={VaccineTracker}
+          btnTitleStyle={[
+            styles.covidBtnTitle,
+            {
+              color: item?.colorReverse ? theme.colors.WHITE : theme.colors.APP_YELLOW,
+            },
+          ]}
+          title={
+            item?.title == 'Book Vaccination Slot'
+              ? corporateSubscriptions == undefined || corporateSubscriptions.length == 0
+                ? 'Book Vaccination Slot'
+                : corporateSubscriptions?.length >= 0 && !!vaccinationCmsIdentifier
+                ? 'Book Vaccination Slot'
+                : 'Book Vaccination Slot'
+              : item?.title
+          }
+          onPress={() => {
+            item?.docOnCall ? onPressCallDoctor(item) : handleCovidCTA(item);
+          }}
+        />
+      </View>
+    );
+  };
+
+  // Covid Information Container styling
+  const renderCovidContainer = () => {
+    return (
+      <View style={styles.covidContainer}>
+        <View style={styles.covidTitleContainer}>
+          <CovidOrange style={styles.covidIcon} />
+          <Text style={styles.covidTitle}>{covidVaccineCtaV2?.mainTitle}</Text>
+        </View>
+        <FlatList
+          data={covidVaccineCtaV2?.data}
+          numColumns={2}
+          keyExtractor={(_, index: Number) => `${index}`}
+          renderItem={({ item, index }) => renderRemoteConfigItems(item, index)}
+        />
       </View>
     );
   };
@@ -2340,10 +3524,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <Text style={{ ...theme.viewStyles.text('M', 12, '#01475b', 0.6, 18), marginTop: 16 }}>
           {description}
         </Text>
-        {renderContentButton(title)}
-        {title === string.common.covid19VaccineInfo
-          ? renderContentButton(string.common.covidVaccineTracker)
-          : null}
+        {renderReadArticleContent()}
         {renderDashedLine()}
       </View>
     );
@@ -2351,6 +3532,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderDashedLine = () => {
     return <DashedLine style={styles.plainLine} />;
+  };
+
+  const onPressCallDoctor = async (item: any) => {
+    const attibutes = {
+      'CTA Clicked': item?.title,
+    };
+    postVaccineWidgetEvents(CleverTapEventName.VACCINATION_CALL_A_DOCTOR_CLICKED);
+    postHomeWEGEvent(WebEngageEventName.COVID_VACCINATION_SECTION_CLICKED, undefined, attibutes);
+    setShowHdfcConnectPopup(true);
   };
 
   const renderCovidHelpButtons = () => {
@@ -2364,16 +3554,27 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         >
           {string.common.covidYouCanText}
         </Text>
+
+        {/* {renderCovidBlueButtons(
+          onPressHealthPro,
+          <ApolloHealthProIcon style={{ width: 28, height: 28 }} resizeMode="stretch" />,
+          'Explore Apollo ProHealth'
+        )} */}
         {renderCovidBlueButtons(
           onPressRiskLevel,
           <CovidRiskLevel style={{ width: 24, height: 24 }} />,
           'Check your risk level'
         )}
         {/* {renderCovidBlueButtons(
-          onPressMentalHealth,
-          <CovidHealthScan style={{ width: 24, height: 24 }} />,
-          'Take a mental health scan'
+          onPressHealthyLife,
+          <HealthyLife style={{ width: 24, height: 24 }} />,
+          `${AppConfig.Configuration.HdfcHealthLifeText}`
         )} */}
+        {renderCovidBlueButtons(
+          onPressCorporateMembership,
+          <HealthyLife style={{ width: 24, height: 24 }} />,
+          `${AppConfig.Configuration.CorporateMembershipText}`
+        )}
         {renderCovidBlueButtons(
           onPressKavach,
           <KavachIcon style={{ width: 24, height: 24 }} />,
@@ -2383,76 +3584,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const renderContentButton = (title: string) => {
-    const btnTitle =
-      title === string.common.covidVaccineTracker
-        ? string.common.covidVaccineTracker
-        : title === string.common.healthBlog
-        ? string.common.readLatestArticles
-        : title === string.common.covid19VaccineInfo
-        ? string.common.learnAboutCovid
-        : '';
-    return (
-      <TouchableOpacity
-        activeOpacity={0.5}
-        style={{
-          shadowColor: '#4c808080',
-          shadowOffset: { width: 0, height: 5 },
-          shadowOpacity: 0.4,
-          shadowRadius: 5,
-          elevation: 5,
-          backgroundColor: '#fff',
-          flexDirection: 'row',
-          height: 0.06 * height,
-          marginTop: 16,
-          borderRadius: 10,
-          flex: 1,
-        }}
-        onPress={() => {
-          btnTitle === string.common.covidVaccineTracker
-            ? onPressVaccineTracker()
-            : btnTitle === string.common.readLatestArticles
-            ? onPressReadArticles()
-            : btnTitle === string.common.learnAboutCovid
-            ? onPressLearnAboutCovid()
-            : null;
-        }}
-      >
-        <View
-          style={{
-            flex: 0.17,
-            borderTopLeftRadius: 10,
-            borderBottomLeftRadius: 10,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          {btnTitle === string.common.covidVaccineTracker ? (
-            <CovidRiskLevel style={{ width: 20, height: 20 }} />
-          ) : btnTitle === string.common.readLatestArticles ? (
-            <LatestArticle style={{ width: 20, height: 20 }} />
-          ) : btnTitle === string.common.learnAboutCovid ? (
-            <CovidOrange style={{ width: 20, height: 20 }} />
-          ) : null}
-        </View>
-        <View
-          style={{
-            flex: 0.83,
-            borderTopRightRadius: 10,
-            borderBottomRightRadius: 10,
-            justifyContent: 'center',
-            alignItems: 'flex-start',
-          }}
-        >
-          <Text style={[theme.viewStyles.text('SB', 14, theme.colors.APP_YELLOW, 1, 18)]}>
-            {btnTitle}
-          </Text>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
   const onPressReadArticles = () => {
+    postVaccineWidgetEvents(CleverTapEventName.READ_BLOG_VIEWED, 'Blog Widget');
     postHomeWEGEvent(WebEngageEventName.READ_ARTICLES);
     try {
       const openUrl = AppConfig.Configuration.BLOG_URL;
@@ -2462,35 +3595,115 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     } catch (e) {}
   };
 
-  const onPressVaccineTracker = () => {
-    postHomeWEGEvent(WebEngageEventName.COVID_VACCINE_TRACKER);
+  const handleCovidCTA = async (item: any) => {
+    const attibutes = {
+      'CTA Clicked': item?.title,
+    };
+    postHomeWEGEvent(WebEngageEventName.COVID_VACCINATION_SECTION_CLICKED, undefined, attibutes);
+
     try {
-      const userMobNo = g(currentPatient, 'mobileNumber');
-      const openUrl = `${AppConfig.Configuration.COVID_VACCINE_TRACKER_URL}?utm_source=mobile_app&user_mob=${userMobNo}`;
-      console.log('openUrl', openUrl);
-      props.navigation.navigate(AppRoutes.CovidScan, {
-        covidUrl: openUrl,
-      });
+      if (item?.action === string.vaccineBooking.CORPORATE_VACCINATION) {
+        postVaccineWidgetEvents(CleverTapEventName.VACCINATION_BOOK_SLOT_CLICKED);
+        AsyncStorage.setItem('verifyCorporateEmailOtpAndSubscribe', 'false');
+        if (corporateSubscriptions?.length) {
+          if (!!vaccinationCmsIdentifier) {
+            if (agreedToVaccineTnc === 'yes') {
+              props.navigation.navigate(AppRoutes.BookedVaccineScreen, {
+                cmsIdentifier: vaccinationCmsIdentifier || '',
+                subscriptionId: vaccinationSubscriptionId || '',
+                subscriptionInclusionId: vaccinationSubscriptionInclusionId || '',
+                isVaccineSubscription: !!vaccinationCmsIdentifier,
+                isCorporateSubscription: !!corporateSubscriptions?.length,
+              });
+              sendBookVaccinationSlotCTAEvent();
+            } else {
+              props.navigation.navigate(AppRoutes.VaccineTermsAndConditions, {
+                isCorporateSubscription: !!corporateSubscriptions?.length,
+              });
+            }
+          } else {
+            props.navigation.navigate(AppRoutes.BookedVaccineScreen, {
+              cmsIdentifier: vaccinationCmsIdentifier || '',
+              subscriptionId: vaccinationSubscriptionId || '',
+              subscriptionInclusionId: vaccinationSubscriptionInclusionId || '',
+              isVaccineSubscription: !!vaccinationCmsIdentifier,
+              isCorporateSubscription: !!corporateSubscriptions?.length,
+            });
+            sendBookVaccinationSlotCTAEvent();
+          }
+        } else {
+          props.navigation.navigate(AppRoutes.BookedVaccineScreen, {
+            cmsIdentifier: vaccinationCmsIdentifier || '',
+            subscriptionId: vaccinationSubscriptionId || '',
+            subscriptionInclusionId: vaccinationSubscriptionId || '',
+            isVaccineSubscription: !!vaccinationCmsIdentifier,
+            isCorporateSubscription: !!corporateSubscriptions?.length,
+          });
+          sendBookVaccinationSlotCTAEvent();
+        }
+      } else if (item?.url?.includes('apollopatients://')) {
+        postVaccineWidgetEvents(CleverTapEventName.VACCINATION_CONSULT_CLICKED);
+        // handling speciality deeplink only on this phase
+        const data = handleOpenURL(item?.url);
+        const { routeName, id, isCall, mediaSource } = data;
+        const isCircleMember: any = await AsyncStorage.getItem('isCircleMember');
+        const isCircleMembershipExpired: any = await AsyncStorage.getItem(
+          'isCircleMembershipExpired'
+        );
+        pushTheView(
+          props.navigation,
+          routeName,
+          id ? id : undefined,
+          isCall,
+          isCircleMember === 'yes',
+          isCircleMembershipExpired === 'yes',
+          mediaSource
+        );
+      } else {
+        postVaccineWidgetEvents(CleverTapEventName.FAQs_ARTICLES_CLICKED);
+        regenerateJWTToken('vaccine', item?.url);
+      }
     } catch (e) {}
   };
 
-  const onPressLearnAboutCovid = async () => {
+  const sendBookVaccinationSlotCTAEvent = () => {
+    try {
+      const eventAttributes = {
+        'Patient ID': currentPatient?.id || '',
+        'Patient First Name': currentPatient?.firstName.trim(),
+        'Patient Last Name': currentPatient?.lastName.trim(),
+        'Patient UHID': currentPatient?.uhid,
+        'Patient Number': currentPatient?.mobileNumber,
+        'Patient Gender': currentPatient?.gender,
+        'Pateint Age ': getAge(currentPatient?.dateOfBirth),
+        'Source ': Platform.OS === 'ios' ? 'ios' : 'android',
+      };
+      postWebEngageEvent(WebEngageEventName.BOOK_VACCINATION_SLOT, eventAttributes);
+    } catch (error) {}
+  };
+
+  const onPressHealthPro = async () => {
     const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
     const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
-    const covidUrlWithPrm = AppConfig.Configuration.COVID_LATEST_ARTICLES_URL.concat(
+    const healthProWithParams = AppConfig.Configuration.APOLLO_PRO_HEALTH_URL.concat(
       '&utm_token=',
       currentDeviceToken,
       '&utm_mobile_number=',
       currentPatient && g(currentPatient, 'mobileNumber') ? currentPatient.mobileNumber : ''
     );
+    postHomeWEGEvent(WebEngageEventName.APOLLO_PRO_HEALTH);
 
-    postHomeWEGEvent(WebEngageEventName.LEARN_MORE_ABOUT_CORONAVIRUS);
-    props.navigation.navigate(AppRoutes.CovidScan, {
-      covidUrl: covidUrlWithPrm,
-    });
+    try {
+      props.navigation.navigate(AppRoutes.CovidScan, {
+        covidUrl: healthProWithParams,
+      });
+    } catch (e) {
+      setBugFenderLog('CONSULT_ROOM_FAILED_OPEN_URL', healthProWithParams);
+    }
   };
 
   const onPressRiskLevel = () => {
+    postVaccineWidgetEvents(CleverTapEventName.CHECK_RISK_LEVEL_CLICKED);
     postHomeWEGEvent(WebEngageEventName.CHECK_YOUR_RISK_LEVEL);
     const urlToOpen = AppConfig.Configuration.COVID_RISK_LEVEL_URL;
     try {
@@ -2505,6 +3718,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       } else {
         props.navigation.navigate(AppRoutes.CovidScan, {
           covidUrl: urlToOpen,
+          requestMicroPhonePermission: true,
         });
       }
     } catch (e) {
@@ -2512,7 +3726,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
+  const onPressCorporateMembership = async () => {
+    postVaccineWidgetEvents(CleverTapEventName.EXPLORE_CORPORATE_MEMBERSHIP_CLICKED);
+    props.navigation.navigate(AppRoutes.MyMembership);
+  };
+
   const onPressKavach = () => {
+    postVaccineWidgetEvents(CleverTapEventName.KAVACH_PROGRAM_CLICKED);
     postHomeWEGEvent(WebEngageEventName.APOLLO_KAVACH_PROGRAM);
     try {
       const openUrl = AppConfig.Configuration.KAVACH_URL;
@@ -2522,51 +3742,21 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     } catch (e) {}
   };
 
-  const renderCovidScanBanner = () => {
-    return (
-      <TouchableOpacity
-        activeOpacity={0.5}
-        onPress={() => {
-          {
-            props.navigation.navigate(AppRoutes.CovidScan);
-          }
-        }}
-        style={{
-          height: 0.06 * height,
-          marginHorizontal: 20,
-          marginTop: 16,
-          borderRadius: 10,
-          flex: 1,
-          flexDirection: 'row',
-          backgroundColor: '#02475b',
-        }}
-      >
-        <View
-          style={{
-            flex: 0.17,
-            borderTopLeftRadius: 10,
-            borderBottomLeftRadius: 10,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <Scan style={{ height: 28, width: 21 }} />
-        </View>
-        <View
-          style={{
-            flex: 0.83,
-            borderTopRightRadius: 10,
-            borderBottomRightRadius: 10,
-            justifyContent: 'center',
-            alignItems: 'flex-start',
-          }}
-        >
-          <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 20) }}>
-            {AppConfig.Configuration.HOME_SCREEN_COVIDSCAN_BANNER_TEXT}
-          </Text>
-        </View>
-      </TouchableOpacity>
-    );
+  const onPressHealthyLife = () => {
+    postHomeWEGEvent(WebEngageEventName.HDFC_HEALTHY_LIFE);
+    if (hdfcUserSubscriptions != null && hdfcStatus == 'active') {
+      props.navigation.navigate(AppRoutes.MembershipDetails, {
+        membershipType: g(hdfcUserSubscriptions, 'name'),
+        isActive: g(hdfcUserSubscriptions, 'isActive'),
+      });
+    } else {
+      try {
+        const openUrl = AppConfig.Configuration.HDFC_HEALTHY_LIFE_URL;
+        props.navigation.navigate(AppRoutes.CovidScan, {
+          covidUrl: openUrl,
+        });
+      } catch (e) {}
+    }
   };
 
   const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
@@ -2578,31 +3768,40 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderTopIcons = () => {
+    const onPressCart = () => {
+      postVaccineWidgetEvents(CleverTapEventName.MY_CART_CLICKED, 'Top bar');
+      const route =
+        (shopCartItems.length && cartItems.length) || (!shopCartItems.length && !cartItems.length)
+          ? AppRoutes.MedAndTestCart
+          : shopCartItems.length
+          ? AppRoutes.MedicineCart
+          : AppRoutes.TestsCart;
+      props.navigation.navigate(route);
+    };
+
     return (
       <View
         style={{
           justifyContent: 'space-between',
           flexDirection: 'row',
           paddingTop: 16,
-          paddingHorizontal: 20,
+          paddingHorizontal: 16,
           backgroundColor: theme.colors.CLEAR,
+          paddingBottom: 15,
         }}
       >
         <TouchableOpacity activeOpacity={1} onPress={() => {}}>
           <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
         </TouchableOpacity>
         <View style={{ flexDirection: 'row' }}>
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => props.navigation.navigate(AppRoutes.MedAndTestCart)}
-            // style={{ right: 20 }}
-          >
+          <TouchableOpacity activeOpacity={1} onPress={onPressCart}>
             <CartIcon />
             {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
           </TouchableOpacity>
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
+              postVaccineWidgetEvents(CleverTapEventName.NOTIFICATION_CENTER_CLICKED, 'Top bar');
               postHomeWEGEvent(WebEngageEventName.NOTIFICATION_ICON);
               props.navigation.navigate(AppRoutes.NotificationScreen);
             }}
@@ -2615,38 +3814,134 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const renderAppointmentWidget = () => {
+  const renderProhealthBanner = () => {
     return (
-      <View>
-        <ConsultPersonalizedCard
-          rowData={personalizedData}
-          onClickButton={() => {
-            const { doctorDetails } = personalizedData;
-            const eventAttributes: WebEngageEvents[WebEngageEventName.HOMEPAGE_WIDGET_FOLLOWUP_CLICK] = {
-              'Doctor ID': personalizedData.doctorId,
-              'Speciality ID': doctorDetails.specialty.id,
-              'Hospital City': personalizedData.hospitalLocation,
-              'Consult Mode': personalizedData.appointmentType,
-              'Doctor Speciality': doctorDetails.specialty.name,
-              'Customer ID': currentPatient.id,
-              'Patient Name': currentPatient.firstName,
-              'Patient Age': Math.round(
-                moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-              ),
-              'Patient Gender': currentPatient.gender,
-              'Patient UHID': currentPatient.uhid,
-            };
-            postWebEngageEvent(WebEngageEventName.HOMEPAGE_WIDGET_FOLLOWUP_CLICK, eventAttributes);
-            console.log('personalizedData.doctorDetails.id ', personalizedData.doctorDetails.id);
-            props.navigation.navigate(AppRoutes.DoctorDetails, {
-              doctorId: personalizedData ? personalizedData.doctorDetails.id : '',
-              showBookAppointment: true,
-              consultedWithDoctorBefore: true,
-            });
-          }}
-        />
-      </View>
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={() => _navigateProHealth()}
+        style={styles.proHealthBannerTouch}
+      >
+        <ImageBackground
+          style={styles.proHealthBannerImage}
+          source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_2.webp')}
+          resizeMode={'stretch'}
+          borderRadius={5}
+        ></ImageBackground>
+      </TouchableOpacity>
     );
+  };
+
+  async function _navigateProHealth() {
+    //call the jwt token again.
+    regenerateJWTToken('bookings');
+  }
+
+  const regenerateJWTToken = async (source: string, id?: string) => {
+    let deviceType =
+      Platform.OS == 'android'
+        ? !!BookingSource?.Apollo247_Android
+          ? BookingSource?.Apollo247_Android
+          : 'Apollo247_Android'
+        : !!BookingSource?.Apollo247_Ios
+        ? BookingSource?.Apollo247_Ios
+        : 'Apollo247_Ios';
+    setLoading?.(true);
+    const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+    if (userLoggedIn == 'true') {
+      // no need to refresh jwt token on login
+      try {
+        firebaseAuth().onAuthStateChanged(async (user) => {
+          if (user) {
+            const jwt = await user.getIdToken(true).catch((error) => {
+              setIsSigningIn(false);
+              setSignInError(true);
+              setAuthToken('');
+              throw error;
+            });
+            setAuthToken(jwt);
+            source == 'vaccine'
+              ? initiateVaccinationWebView(id, jwt)
+              : source === 'bookings'
+              ? initiateProHealthWebView(jwt, deviceType)
+              : initiateOrdersProHealthWebView(id!, jwt, deviceType);
+          }
+        });
+      } catch (e) {
+        setLoading?.(false);
+        CommonBugFender('regenerateJWTToken_ConsultRoom', e);
+      }
+    }
+    setLoading?.(false);
+  };
+
+  function initiateVaccinationWebView(url: any, jwtToken: string) {
+    const userMobNo = g(currentPatient, 'mobileNumber');
+    const openUrl = `${url}?utm_source=mobile_app&utm_mobile_number=${userMobNo}&utm_token=${jwtToken}`;
+    props.navigation.navigate(AppRoutes.CommonWebView, {
+      url: openUrl,
+    });
+  }
+
+  function initiateProHealthWebView(jwtToken: string, deviceType: string) {
+    try {
+      const openUrl = AppConfig.Configuration.PROHEALTH_BOOKING_URL;
+      let finalUrl = openUrl.concat(
+        '?utm_token=',
+        jwtToken,
+        '&utm_mobile_number=',
+        currentPatient && g(currentPatient, 'mobileNumber') ? currentPatient.mobileNumber : '',
+        '&deviceType=',
+        deviceType
+      );
+      !!jwtToken &&
+        jwtToken != '' &&
+        props.navigation.navigate(AppRoutes.ProHealthWebView, {
+          covidUrl: finalUrl,
+          goBackCallback: webViewGoBack,
+        });
+      setLoading?.(false);
+    } catch (e) {
+      setLoading?.(false);
+      CommonBugFender('opening_ProHealthwebView_ConsultRoom', e);
+    }
+  }
+
+  function webViewGoBack() {
+    //call the api.
+    getPatientApiCall(); //to check if new user is added
+    checkIsProhealthActive(currentPatient); //to show prohealth option
+    getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
+  }
+
+  function initiateOrdersProHealthWebView(displayId: string, jwtToken: string, deviceType: string) {
+    try {
+      const openUrl = AppConfig.Configuration.PROHEALTH_BOOKING_URL;
+      let finalUrl = openUrl.concat(
+        '-success',
+        '/',
+        displayId,
+        '?utm_token=',
+        jwtToken,
+        '&utm_mobile_number=',
+        currentPatient && g(currentPatient, 'mobileNumber') ? currentPatient.mobileNumber : '',
+        '&deviceType=',
+        deviceType
+      );
+      !!displayId && displayId != ''
+        ? props.navigation.navigate(AppRoutes.ProHealthWebView, {
+            covidUrl: finalUrl,
+            goBackCallback: webViewGoBack,
+          })
+        : null;
+      setLoading?.(false);
+    } catch (e) {
+      setLoading?.(false);
+      CommonBugFender('opening_ProHealthwebView_ConsultRoom', e);
+    }
+  }
+
+  const renderAllConsultedDoctors = () => {
+    return <ConsultedDoctorsCard navigation={props.navigation} />;
   };
 
   return (
@@ -2655,43 +3950,47 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <ScrollView style={{ flex: 1 }} bounces={false}>
           <View style={{ width: '100%' }}>
             <View style={styles.viewName}>
-              <ImageBackground
-                style={{ width: '100%' }}
-                imageStyle={{ width: width }}
-                source={require('@aph/mobile-patients/src/images/apollo/img_doctorimage.png')}
-              >
-                {renderTopIcons()}
-                <View style={{ height: 100 }} />
-                <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
-              </ImageBackground>
-              {/* <Text style={styles.descriptionTextStyle}>{string.home.description}</Text> */}
-              {isPersonalizedCard && renderAppointmentWidget()}
+              {renderTopIcons()}
+              <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
+              <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text>
               {renderMenuOptions()}
-              {showHdfcWidget && (
-                <View style={{ backgroundColor: '#f0f1ec' }}>{renderHdfcConnect()}</View>
+
+              {circleDataLoading && renderCircleShimmer()}
+              <View style={{ backgroundColor: '#f0f1ec' }}>
+                {isCircleMember === 'yes' && !circleDataLoading && renderCircle()}
+              </View>
+              {showCirclePlans && renderCircleSubscriptionPlans()}
+              {showCircleActivationcr && renderCircleActivation()}
+              {!covidVaccineCtaV2?.data && renderCovidVaccinationShimmer()}
+              <View style={{ backgroundColor: '#f0f1ec' }}>
+                {covidVaccineCtaV2?.data?.length > 0 && renderCovidContainer()}
+              </View>
+              {bannerLoading && renderBannerShimmer()}
+              <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
+              {/**added prohealth banner */}
+              {proActiveAppointments?.length == 0 && (
+                <View style={{ backgroundColor: '#f0f1ec' }}>{renderProhealthBanner()}</View>
               )}
-              {showHdfcConnectWidget && (
-                <View style={{ backgroundColor: '#f0f1ec' }}>{renderHDFCConnectWidget()}</View>
+              {proActiveAppointments?.length > 0 && (
+                <View style={{ backgroundColor: '#f0f1ec' }}>
+                  {renderListView(
+                    proActiveAppointments?.length == 1
+                      ? 'ProHealth Appointment'
+                      : 'ProHealth Appointments',
+                    'prohealth'
+                  )}
+                </View>
               )}
-              <View style={{ backgroundColor: '#f0f1ec' }}>{renderListView()}</View>
+              <View style={{ backgroundColor: '#f0f1ec' }}>
+                {renderListView('Active Appointments', 'normal')}
+              </View>
+              <View style={{ backgroundColor: '#f0f1ec' }}>{renderAllConsultedDoctors()}</View>
               {renderCovidMainView()}
-              {/* {renderCovidHeader()}
-              {renderCovidCardView()} 
-              {renderCovidScanBanner()}
-              {renderEmergencyCallBanner()}*/}
             </View>
           </View>
-          {/* <View style={{ backgroundColor: '#f0f1ec' }}>
-            <NeedHelpAssistant
-              containerStyle={{ marginTop: 16, marginBottom: 32 }}
-              navigation={props.navigation}
-              onNeedHelpPress={() => {
-                postHomeWEGEvent(WebEngageEventName.NEED_HELP, 'Home Screen');
-              }}
-            />
-          </View> */}
         </ScrollView>
       </SafeAreaView>
+      {showWebView?.action && openWebView(showWebView?.url)}
       {renderBottomTabBar()}
       {showPopUp && (
         <>
@@ -2718,13 +4017,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           />
         </>
       )}
-      {showSpinner && <Spinner />}
-      {showHdfcConnectPopup && (
-        <HdfcConnectPopup
-          onClose={() => setShowHdfcConnectPopup(false)}
-          benefitId={benefitId || ''}
-        />
-      )}
       {isLocationSearchVisible && (
         <LocationSearchPopup
           onPressLocationSearchItem={() => {
@@ -2739,6 +4031,21 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         />
       )}
       <NotificationListener navigation={props.navigation} />
+      <Overlay
+        isVisible={showHdfcConnectPopup}
+        windowBackgroundColor={'rgba(0, 0, 0, 0.31)'}
+        overlayStyle={styles.overlayStyle}
+        onRequestClose={() => setShowHdfcConnectPopup(false)}
+      >
+        <HdfcConnectPopup
+          helplineNumber={'040-482-12515'}
+          onClose={() => setShowHdfcConnectPopup(false)}
+          isVaccineDocOnCall={true}
+          postWEGEvent={() =>
+            postHomeWEGEvent(WebEngageEventName.VACCINATION_PROCEED_TO_CONNECT_A_DOCTOR_CLICKED)
+          }
+        />
+      </Overlay>
     </View>
   );
 };

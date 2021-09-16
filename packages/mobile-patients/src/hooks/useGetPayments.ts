@@ -52,8 +52,9 @@ export const useGetPayments = (
         const { consultOrders } = data;
         const { appointments } = consultOrders;
         const { meta } = consultOrders;
-        console.log('payments-->', appointments.length);
-        setPayments(appointments);
+        const freshAppointments = appointments?.filter((item) => item.appointmentType === 'ONLINE');
+        setPayments(freshAppointments);
+
         setmeta(meta);
         setLoading(false);
       })
@@ -84,7 +85,6 @@ export const useGetPayments = (
         setPayments(pharmaOrders);
         setmeta(meta);
         setLoading(false);
-        // console.log('paymentsPharma-->', pharmaOrders);
       })
       .catch((error) => {
         setLoading(false);
@@ -98,12 +98,8 @@ export const useGetPayments = (
     if (type === 'consult') {
       //TODO: consult gql
       getConsultPaymentsAPI();
-      const paymentsResponse: any = [];
-      // setPayments(require('../components/MyPayments/fixtures.json'));
       return;
     }
-    // const paymentsResponse: any = [];
-    // setPayments(paymentsResponse);
     if (type === 'pharmacy') {
       getPharmacyPaymentsAPI();
     }

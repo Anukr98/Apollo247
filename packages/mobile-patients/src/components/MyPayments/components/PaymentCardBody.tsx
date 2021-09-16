@@ -20,6 +20,8 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import PaymentStatusConstants from '../constants';
 import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 interface PaymentCardBodyProps {
   item: any;
@@ -42,36 +44,44 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
     let refId = '';
     let price = 0;
     if (paymentFor === 'consult') {
-      const { appointmentPayments, actualAmount, discountedAmount, appointmentRefunds } = item;
-      if (!appointmentPayments.length) {
+      const {
+        appointmentPayments,
+        PaymentOrders,
+        actualAmount,
+        discountedAmount,
+        appointmentRefunds,
+      } = item;
+      const { refund } = PaymentOrders;
+      const refundInfo = refund?.length ? refund : appointmentRefunds;
+      const paymentInfo = PaymentOrders?.paymentStatus ? PaymentOrders : appointmentPayments[0];
+      if (!paymentInfo) {
         status = 'PENDING';
-      } else if (appointmentRefunds.length) {
-        const { paymentRefId, amountPaid } = appointmentPayments[0];
+      } else if (refundInfo.length) {
+        const { paymentRefId, amountPaid } = paymentInfo;
         refId = paymentRefId;
         price = amountPaid;
         status = REFUND;
       } else {
-        const { paymentStatus, paymentRefId, amountPaid } = appointmentPayments[0];
+        const { paymentStatus, paymentRefId, amountPaid } = paymentInfo;
         status = paymentStatus;
         refId = paymentRefId;
         price = amountPaid;
       }
       return { status: status, refId: refId, price: price };
     } else {
-      const { medicineOrderPayments, devliveryCharges, estimatedAmount, currentStatus } = item;
-      if (!medicineOrderPayments.length) {
+      const { medicineOrderPayments, PaymentOrdersPharma, currentStatus } = item;
+      const { refund } = PaymentOrdersPharma;
+      const refundInfo = refund?.length ? refund : medicineOrderPayments[0]?.medicineOrderRefunds;
+      const paymentInfo = PaymentOrdersPharma?.paymentStatus
+        ? PaymentOrdersPharma
+        : medicineOrderPayments[0];
+      if (!paymentInfo) {
         status = 'PENDING';
       } else {
-        const {
-          paymentStatus,
-          paymentRefId,
-          amountPaid,
-          medicineOrderRefunds,
-        } = medicineOrderPayments[0];
+        const { paymentStatus, paymentRefId, amountPaid } = paymentInfo;
         refId = paymentRefId;
         price = amountPaid;
-        status =
-          currentStatus === 'CANCELLED' && medicineOrderRefunds.length ? REFUND : paymentStatus;
+        status = currentStatus === 'CANCELLED' && refundInfo?.length ? REFUND : paymentStatus;
       }
       return { status: status, refId: refId, price: price };
     }
@@ -107,7 +117,7 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
         </View>
         <View>
           <Text style={{ ...theme.viewStyles.text('M', 14, colors.CARD_HEADER, 1, 20) }}>
-            Rs. {price}
+            {string.common.Rs} {convertNumberToDecimal(price)}
           </Text>
         </View>
       </View>
@@ -142,12 +152,17 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
   const goToPaymentStatus = () => {
     const { status } = statusItemValues();
     const { item, paymentFor, patientId } = props;
-    props.navigationProps.navigate(AppRoutes.PaymentStatusScreen, {
+    const data = {
       item: item,
       paymentFor: paymentFor,
       status: status,
       patientId: patientId,
-    });
+    };
+    if(paymentFor == 'consult') {
+      props.navigationProps.navigate(AppRoutes.ConsultPaymentScreen, data);
+    } else {
+      props.navigationProps.navigate(AppRoutes.PaymentStatusScreen, data);
+    }
   };
   const { status } = statusItemValues();
   const borderRadiusValue = status === 'TXN_REFUND' ? 0 : 10;

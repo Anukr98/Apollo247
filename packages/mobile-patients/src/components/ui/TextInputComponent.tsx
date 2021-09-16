@@ -85,12 +85,14 @@ export interface TextInputComponentProps {
   autoCapitalize?: TextInputProps['autoCapitalize'];
   autoFocus?: boolean;
   onSubmitEditing?: TextInputProps['onSubmitEditing'];
+  secureTextEntry?: boolean;
 }
 
 export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => {
   const renderTextInput = () => {
     return (
       <TextInput
+        secureTextEntry={props.secureTextEntry || false}
         value={props.value}
         editable={props.editable}
         placeholder={props.placeholder ? props.placeholder : ''}
@@ -111,7 +113,6 @@ export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => 
         autoCapitalize={props.autoCapitalize}
         autoFocus={props.autoFocus}
         selection={props.selection}
-        autoFocus={props.autoFocus}
         onSubmitEditing={props.onSubmitEditing}
       />
     );

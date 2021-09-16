@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { CreateUserSubscriptionInput, SubscriptionStatus } from "./globalTypes";
@@ -16,6 +17,7 @@ export interface CreateUserSubscription_CreateUserSubscription_response_group_pl
 
 export interface CreateUserSubscription_CreateUserSubscription_response {
   __typename: "UserSubscription";
+  _id: string | null;
   mobile_number: string;
   status: SubscriptionStatus;
   start_date: any;

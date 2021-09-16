@@ -1,12 +1,20 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
-import { APPOINTMENT_TYPE, STATUS, APPOINTMENT_STATE, DoctorType } from "./globalTypes";
+import { APPOINTMENT_TYPE, STATUS, APPOINTMENT_STATE, Gender, DoctorType, MEDICINE_UNIT, MEDICINE_TIMINGS, MEDICINE_CONSUMPTION_DURATION } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getAppointmentData
 // ====================================================
+
+export interface getAppointmentData_getAppointmentData_appointmentsHistory_patientInfo {
+  __typename: "Patient";
+  firstName: string | null;
+  lastName: string | null;
+  gender: Gender | null;
+}
 
 export interface getAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo_specialty {
   __typename: "DoctorSpecialties";
@@ -64,11 +72,34 @@ export interface getAppointmentData_getAppointmentData_appointmentsHistory_appoi
   orderId: string;
 }
 
+export interface getAppointmentData_getAppointmentData_appointmentsHistory_caseSheet_medicinePrescription {
+  __typename: "MedicinePrescription";
+  id: string | null;
+  medicineName: string | null;
+  medicineUnit: MEDICINE_UNIT | null;
+  medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
+  medicineDosage: string | null;
+  medicineCustomDosage: string | null;
+  medicineConsumptionDurationInDays: string | null;
+  medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
+}
+
+export interface getAppointmentData_getAppointmentData_appointmentsHistory_caseSheet_diagnosticPrescription {
+  __typename: "DiagnosticPrescription";
+  itemname: string | null;
+  testInstruction: string | null;
+}
+
 export interface getAppointmentData_getAppointmentData_appointmentsHistory_caseSheet {
   __typename: "CaseSheet";
   id: string | null;
   blobName: string | null;
   sentToPatient: boolean | null;
+  version: number | null;
+  followUpAfterInDays: string | null;
+  doctorType: DoctorType | null;
+  medicinePrescription: (getAppointmentData_getAppointmentData_appointmentsHistory_caseSheet_medicinePrescription | null)[] | null;
+  diagnosticPrescription: (getAppointmentData_getAppointmentData_appointmentsHistory_caseSheet_diagnosticPrescription | null)[] | null;
 }
 
 export interface getAppointmentData_getAppointmentData_appointmentsHistory {
@@ -85,7 +116,9 @@ export interface getAppointmentData_getAppointmentData_appointmentsHistory {
   rescheduleCount: number | null;
   appointmentState: APPOINTMENT_STATE | null;
   isJdQuestionsComplete: boolean | null;
+  isAutomatedQuestionsComplete: boolean | null;
   isSeniorConsultStarted: boolean | null;
+  patientInfo: getAppointmentData_getAppointmentData_appointmentsHistory_patientInfo | null;
   doctorInfo: getAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo | null;
   appointmentPayments: (getAppointmentData_getAppointmentData_appointmentsHistory_appointmentPayments | null)[] | null;
   caseSheet: (getAppointmentData_getAppointmentData_appointmentsHistory_caseSheet | null)[] | null;

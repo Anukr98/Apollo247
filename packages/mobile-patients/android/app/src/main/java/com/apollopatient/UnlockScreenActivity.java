@@ -1,20 +1,21 @@
 package com.apollopatient;
 
 
-import android.app.Activity;
-import android.app.ActivityManager;
+import android.app.KeyguardManager;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.media.MediaPlayer;
+import android.media.AudioManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
@@ -22,6 +23,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
 import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
@@ -30,47 +32,29 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.facebook.react.ReactActivity;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
-import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.modules.core.DeviceEventManagerModule;
-import com.google.gson.JsonObject;
-import com.pubnub.api.PNConfiguration;
-import com.pubnub.api.PubNub;
-import com.pubnub.api.callbacks.PNCallback;
-import com.pubnub.api.models.consumer.PNPublishResult;
-import com.pubnub.api.models.consumer.PNStatus;
-
-import java.util.Iterator;
-import java.util.List;
 
 
 public class UnlockScreenActivity extends ReactActivity implements UnlockScreenActivityInterface {
-    //PubNub start
-    PNConfiguration pnConfiguration = new PNConfiguration();
-    PubNub pubnub = new PubNub(pnConfiguration);
-    //PubNub end
-
     private static final String TAG = "MessagingService";
     private Ringtone ringtone;
+    private Vibrator vibrator;
+    RelativeLayout unlockRelativeLayout;
     LocalBroadcastManager mLocalBroadcastManager;
     BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(intent.getAction().equals("com.unlockscreenactivity.action.close")){
+            if (intent.getAction().equals("com.unlockscreenactivity.action.close")) {
                 finish();
             }
         }
     };
+
     @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //pubkey=pub-c-75e6dc17-2d81-4969-8410-397064dae70e
-        //subkey=sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b
-        pnConfiguration.setSubscribeKey("sub-c-517dafbc-d955-11e9-aa3a-6edd521294c5");
-        pnConfiguration.setPublishKey("pub-c-e275fde3-09e1-44dd-bc32-5c3d04c3b2ef");
-        pnConfiguration.setSecure(true);
 
         mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
         IntentFilter mIntentFilter = new IntentFilter();
@@ -83,34 +67,57 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
         setContentView(R.layout.activity_call_incoming);
 
         Intent intent = getIntent();
-        String call_type=intent.getStringExtra("MESSAGE_TYPE");
-        String incomingCallDisconnect="call_disconnected";
-        String incomingCallStart="call_started";
+        String call_type = intent.getStringExtra("MESSAGE_TYPE");
+        String incomingCallDisconnect = "call_disconnected";
+        String incomingCallStart = "call_started";
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         String notifMessageType = sharedPref.getString("NOTIF_MESSAGE_TYPE", "call_started");
+        Integer notifID = intent.getIntExtra("NOTIFICATION_ID", -1);
 
         //ringtoneManager start
-        Uri incoming_call_notif = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-        this.ringtone= RingtoneManager.getRingtone(getApplicationContext(), incoming_call_notif);
+        Uri incoming_call_notif = RingtoneManager.getActualDefaultRingtoneUri(getApplicationContext(), RingtoneManager.TYPE_RINGTONE);
+        this.ringtone = RingtoneManager.getRingtone(getApplicationContext(), incoming_call_notif);
+        this.vibrator = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
+
+        unlockRelativeLayout=findViewById(R.id.unlockLayout);
+        KeyguardManager km = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
+        if( km.inKeyguardRestrictedInputMode() ) {
+            unlockRelativeLayout.setVisibility(View.VISIBLE);
+        } else {
+            //it is not locked
+            unlockRelativeLayout.setVisibility(View.GONE);
+        }
+
         //ringtoneManager end
 
-        Boolean fallBack = intent.getBooleanExtra("FALL_BACK",true);
-        if(notifMessageType.equals(incomingCallStart)){
-            if(!fallBack) {
+        Boolean fallBack = intent.getBooleanExtra("FALL_BACK", true);
+        if (notifMessageType.equals(incomingCallStart)) {
+            if (!fallBack) {
                 ringtone.setLooping(true);
                 ringtone.play();
+                try {
+                    NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                    Boolean isDndOn = Settings.Global.getInt(getContentResolver(), "zen_mode") != 0;
+                    Boolean isVibrationOn = !isDndOn && (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).getRingerMode() == AudioManager.RINGER_MODE_VIBRATE ||
+                            (Settings.System.getInt(getBaseContext().getContentResolver(), "vibrate_when_ringing", 0) == 1));
+                    if (isVibrationOn) {
+                        long[] pattern = new long[]{100, 200, 300, 400, 500, 400, 300, 200};
+                        vibrator.vibrate(pattern, 0);
+                    }
+                } catch (Exception e) {
+                    Log.e("vibration error", e.getMessage() + "\n" + e.toString());
+                }
             }
-        }
-        else if(notifMessageType.equals(incomingCallDisconnect)){
-                finish();
+        } else if (notifMessageType.equals(incomingCallDisconnect)) {
+            finish();
         }
 
         String host_name = intent.getStringExtra("DOCTOR_NAME");
-        String appointment_id=intent.getStringExtra("APPOINTMENT_ID");
-        String incoming_call_type=intent.getStringExtra("CALL_TYPE");
-        Boolean isAppRuning=intent.getBooleanExtra("APP_STATE",false);
+        String appointment_id = intent.getStringExtra("APPOINTMENT_ID");
+        String incoming_call_type = intent.getStringExtra("CALL_TYPE");
+        Boolean isAppRuning = intent.getBooleanExtra("APP_STATE", false);
 
-        TextView tvName = (TextView)findViewById(R.id.callerName);
+        TextView tvName = (TextView) findViewById(R.id.callerName);
         tvName.setText(host_name);
 
         //
@@ -123,18 +130,17 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
             public void onClick(View view) {
                 WritableMap params = Arguments.createMap();
                 params.putBoolean("done", true);
-                params.putString("appointment_id",appointment_id);
-                params.putString("call_type",incoming_call_type);
+                params.putString("appointment_id", appointment_id);
+                params.putString("call_type", incoming_call_type);
+                removeNotification(fallBack, notifID);
+                String deeplinkUri = "apollopatients://DoctorCall?" + appointment_id + '+' + incoming_call_type;
+                Uri uri = Uri.parse(deeplinkUri);
+                Log.e("deeplinkUri", uri.toString());
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
 
-                
-                    String deeplinkUri="apollopatients://DoctorCall?"+appointment_id+'+'+incoming_call_type;
-                    Uri uri = Uri.parse(deeplinkUri);
-                    Log.e("deeplinkUri", uri.toString());
-                    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                    finish();
-                    startActivity(intent);
-                
-         
+                finish();
+
+                startActivity(intent);
             }
         });
 
@@ -144,21 +150,15 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
             public void onClick(View view) {
                 WritableMap params = Arguments.createMap();
                 params.putBoolean("done", true);
-                params.putString("appointment_id",appointment_id);
-                params.putString("call_type",incoming_call_type);
-                onDisconnected(appointment_id);
-                if(isAppRuning){
-                    Intent intent = new Intent(UnlockScreenActivity.this, MainActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY );
-                    intent.putExtra("APPOINTMENT_ID",appointment_id);
-                    intent.putExtra("CALL_TYPE",incoming_call_type);
-                    finish();
-                    startActivity(intent);
-                }
-                else{
-                    sendEvent(reactContext, "reject", params);
-                    finish();
-                }
+                params.putString("appointment_id", appointment_id);
+                params.putString("call_type", incoming_call_type);
+                removeNotification(fallBack, notifID);
+                String doctorCallRejectedDeepLink = "apollopatients://DoctorCallRejected?" + appointment_id + '+' + incoming_call_type;
+                Uri uri = Uri.parse(doctorCallRejectedDeepLink);
+                Log.e("deeplinkUri", uri.toString());
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                finish();
+                startActivity(intent);
             }
         });
 
@@ -178,6 +178,21 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
         super.onDestroy();
         mLocalBroadcastManager.unregisterReceiver(mBroadcastReceiver);
         ringtone.stop();
+        vibrator.cancel();
+        if(Build.VERSION.SDK_INT >= 26){
+            Log.d("csk","sdk--"+Build.VERSION.SDK_INT);
+            KeyguardManager km = (KeyguardManager)getSystemService(Context.KEYGUARD_SERVICE);
+            km.requestDismissKeyguard(this, null);
+
+        }
+        else
+        {
+
+            Log.d("csk","sdk--"+Build.VERSION.SDK_INT);
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+        }
+
+
     }
 
     @Override
@@ -190,7 +205,6 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
         });
     }
 
-
     @Override
     public void onConnectFailure() {
 
@@ -201,28 +215,11 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
 
     }
 
-    private void onDisconnected(String appointmentID) {
-        String notifyMessage="^^#PATIENT_REJECTED_CALL";
-        pubnub.publish()
-                .message(notifyMessage)
-                .channel(appointmentID)
-                .shouldStore(true)
-                .usePOST(true)
-                .async(new PNCallback<PNPublishResult>() {
-                    public void onResponse(PNPublishResult result, PNStatus status) {
-                        // handle publish result, status always present, result if successful
-                        // status.isError() to see if error happened
-                        if(!status.isError()) {
-                            System.out.println("pub timetoken: " + result.getTimetoken());
-                        }
-                        System.out.println("pub status code: " + status.getStatusCode());
-                    }
-                });
+    private void removeNotification(Boolean fallBack, Integer notifID) {
+        if (fallBack) {
+            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            manager.cancelAll();
+        }
     }
 
-    private void sendEvent(ReactContext reactContext, String eventName, WritableMap params) {
-        reactContext
-                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                .emit(eventName, params);
-    }
 }

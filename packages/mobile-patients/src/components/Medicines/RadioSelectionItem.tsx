@@ -28,6 +28,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(14),
     lineHeight: 20,
     color: theme.colors.SHERPA_BLUE,
+    marginTop: 5,
   },
   separator: {
     height: 1,
@@ -73,6 +74,7 @@ export const RadioSelectionItem: React.FC<RadioSelectionItemProps> = (props) => 
           </TouchableOpacity>
         ) : null}
       </TouchableOpacity>
+      {props.radioSubBody && props.radioSubBody}
     </>
   );
 };

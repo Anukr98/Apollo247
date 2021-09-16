@@ -13,6 +13,7 @@ import {
   OneApolloPlatinum,
   OneApolloLockIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   subHeading: {
@@ -102,22 +103,6 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
               style={{
                 display: 'flex',
                 flexDirection: 'row',
-              }}
-            >
-              <MembershipBenefitsOne style={styles.benefitsImage} />
-              <View
-                style={{
-                  alignSelf: 'center',
-                }}
-              >
-                <Text style={styles.benefitsHeading}>Apollo Clinics</Text>
-                <Text style={styles.benefitsDescription}>Free home sample collections</Text>
-              </View>
-            </View>
-            <View
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
                 marginTop: 15,
               }}
             >
@@ -184,9 +169,17 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             <TriangleGreyBulletPoint style={styles.bulletPoint} />
             <Text style={styles.bulletText}>10% of pharmaceutical products</Text>
           </View>
+          {/**
+           * silver - 10%
+           * gold - 15%
+           * platinum - 20%
+           */}
           <View style={styles.pointsContainer}>
             <TriangleGreyBulletPoint style={styles.bulletPoint} />
-            <Text style={styles.bulletText}>10% of Apollo brand products</Text>
+            <Text style={styles.bulletText}>
+              {membershipType === 'Silver' ? '10' : membershipType === 'Gold' ? '15' : '20'}% of
+              Apollo brand products
+            </Text>
           </View>
           <Text
             style={{
@@ -346,8 +339,8 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             <TriangleGreyBulletPoint style={styles.bulletPoint} />
             <Text style={[styles.bulletText, { color: theme.colors.PLATINUM_GREY }]}>
               {showGoldContent
-                ? 'Spend Rs. 75,000 in one year period'
-                : 'Spend Rs. 2,00,000 in one year period'}
+                ? `Spend ${string.common.Rs} 75,000 in one year period`
+                : `Spend ${string.common.Rs} 2,00,000 in one year period`}
             </Text>
           </View>
           <View style={styles.pointsContainer}>

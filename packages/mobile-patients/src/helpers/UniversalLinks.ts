@@ -119,6 +119,18 @@ export const handleUniversalLinks = (
         pushTheView('ConsultDetails', navigation, data.length === 2 ? linkId : undefined);
         break;
 
+      case 'vaccinebooking':
+        pushTheView('VaccineBooking', navigation);
+
+      case 'VaccineBooking':
+        pushTheView('VaccineBooking', navigation, data.length === 2 ? linkId : undefined);
+
+      case 'vaccinebookingdetail':
+        pushTheView('VaccineBookingDetail', navigation, data.length === 2 ? linkId : undefined);
+
+      case 'VaccineBookingDetail':
+        pushTheView('VaccineBookingDetail', navigation, data.length === 2 ? linkId : undefined);
+
       default:
         pushTheView('ConsultRoom', navigation, undefined);
         break;
@@ -149,7 +161,7 @@ const pushTheView = (
       break;
 
     case 'MedicineDetail':
-      navigation.navigate(AppRoutes.MedicineDetailsScene, {
+      navigation.navigate(AppRoutes.ProductDetailPage, {
         sku: id,
         movedFrom: ProductPageViewedSource.DEEP_LINK,
       });
@@ -203,7 +215,7 @@ const pushTheView = (
       if (id) {
         const [itemId, name] = id.split(',');
 
-        navigation.navigate(AppRoutes.SearchByBrand, {
+        navigation.navigate(AppRoutes.MedicineListing, {
           category_id: itemId,
           title: `${name ? name : 'Products'}`.toUpperCase(),
           movedFrom: 'deeplink',
@@ -250,12 +262,24 @@ const pushTheView = (
     case 'TestDetails':
       navigation.navigate(AppRoutes.TestDetails, {
         itemId: id,
+        comingFrom: 'deeplink',
       });
       break;
 
     case 'ConsultDetails':
       navigation.navigate(AppRoutes.ConsultDetails, {
         CaseSheet: id,
+      });
+      break;
+
+    case 'VaccineBooking':
+      navigation.navigate(AppRoutes.VaccineBookingScreen, {});
+      break;
+
+    case 'VaccineBookingDetail':
+      navigation.navigate(AppRoutes.VaccineBookingConfirmationScreen, {
+        bookingId: id,
+        comingFrom: 'deeplink',
       });
       break;
 

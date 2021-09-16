@@ -7,7 +7,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CartIcon, Filter, SearchSendIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CartIcon, SearchSendIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { SearchMedicineCard } from '@aph/mobile-patients/src/components/ui/SearchMedicineCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
@@ -42,18 +42,16 @@ import {
   ViewStyle,
   ActivityIndicator,
 } from 'react-native';
-import { Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps, NavigationActions, StackActions } from 'react-navigation';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { ProductPageViewedEventProps } from '@aph/mobile-patients/src/components/Medicines/MedicineDetailsScene';
 import {
   isValidSearch,
   postWebEngageEvent,
-  postwebEngageAddToCartEvent,
-  postAppsFlyerAddToCartEvent,
   addPharmaItemToCart,
   g,
   getMaxQtyForMedicineItem,
+  getIsMedicine,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   ProductPageViewedSource,
@@ -65,6 +63,7 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import { MedicineSearchSuggestionItem } from '@aph/mobile-patients/src/components/Medicines/MedicineSearchSuggestionItem';
 import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
 import _ from 'lodash';
+import { MedicineSearchEvents } from '@aph/mobile-patients/src/components/MedicineSearch/MedicineSearchEvents';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -82,8 +81,8 @@ const styles = StyleSheet.create({
   },
   labelView: {
     position: 'absolute',
-    top: -3,
-    right: -3,
+    top: -10,
+    right: -8,
     backgroundColor: '#ff748e',
     height: 14,
     width: 14,
@@ -133,7 +132,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   const [productsList, setProductsList] = useState<MedicineProduct[]>(products || []);
   const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(products ? false : true);
-  const [showListView, setShowListView] = useState<boolean>(false);
+  const [showListView, setShowListView] = useState<boolean>(true);
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
   const medicineListRef = useRef<FlatList<MedicineProduct> | null>();
   const [pageCount, setPageCount] = useState<number>(1);
@@ -144,11 +143,25 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   const [searchQuery, setSearchQuery] = useState({});
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const { addCartItem, removeCartItem, updateCartItem, cartItems } = useShoppingCart();
+  const {
+    addCartItem,
+    removeCartItem,
+    updateCartItem,
+    cartItems,
+    pinCode,
+    pharmacyCircleAttributes,
+    asyncPincode,
+  } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { getPatientApiCall } = useAuth();
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
-  const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
+  const {
+    locationDetails,
+    pharmacyLocation,
+    isPharmacyLocationServiceable,
+    axdcCode,
+    pharmacyUserType,
+  } = useAppCommonData();
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
 
   useEffect(() => {
@@ -171,9 +184,8 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     if (products) {
       return;
     }
-    getProductsByCategoryApi(category_id, pageCount)
+    getProductsByCategoryApi(category_id, pageCount, null, null, axdcCode, pinCode)
       .then(({ data }) => {
-        console.log(data, 'getProductsByCategoryApi');
         const products = data.products || [];
         setProductsList(products);
         if (products.length < 10) {
@@ -184,7 +196,6 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       })
       .catch((err) => {
         CommonBugFender('SearchByBrand_getProductsByCategoryApi', err);
-        console.log(err, 'errr');
       })
       .finally(() => {
         setIsLoading(false);
@@ -226,6 +237,8 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       thumbnail,
       type_id,
       MaxOrderQty,
+      url_key,
+      subcategory,
     } = item;
     suggestionItem && setItemsLoading({ ...itemsLoading, [sku]: true });
     addPharmaItemToCart(
@@ -240,21 +253,25 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
             : special_price
           : undefined,
         prescriptionRequired: is_prescription_required == '1',
-        isMedicine: (type_id || '').toLowerCase() == 'pharma',
+        isMedicine: getIsMedicine(type_id?.toLowerCase()) || '0',
         quantity: 1,
         thumbnail,
         isInStock: true,
         maxOrderQty: MaxOrderQty,
         productType: type_id,
+        url_key,
+        subcategory,
       },
-      pharmacyPincode!,
+      asyncPincode?.pincode || pharmacyPincode!,
       addCartItem,
       suggestionItem ? null : globalLoading,
       props.navigation,
       currentPatient,
       !!isPharmacyLocationServiceable,
       { source: 'Pharmacy List', categoryId: category_id },
-      suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined
+      JSON.stringify(cartItems),
+      suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined,
+      pharmacyCircleAttributes!
     );
   };
 
@@ -313,7 +330,6 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           try {
             const MoveDoctor = props.navigation.getParam('movedFrom') || '';
 
-            console.log('MoveDoctor', MoveDoctor);
             if (MoveDoctor === 'registration') {
               props.navigation.dispatch(
                 StackActions.reset({
@@ -343,7 +359,8 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     return (
       <MedicineSearchSuggestionItem
         onPress={() => {
-          props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+          props.navigation.navigate(AppRoutes.ProductDetailPage, {
+            urlKey: item?.url_key,
             sku: item.sku,
             movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
           });
@@ -480,7 +497,8 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {
             // handleGraphQlError(e);
           });
-          props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+          props.navigation.navigate(AppRoutes.ProductDetailPage, {
+            urlKey: medicine?.url_key,
             sku: medicine.sku,
             movedFrom: ProductPageViewedSource.CATEGORY_OR_LISTING,
           });
@@ -519,6 +537,8 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         isPrescriptionRequired={medicine.is_prescription_required == '1'}
         removeCartItem={() => removeCartItem!(medicine.sku)}
         maxOrderQty={getMaxQtyForMedicineItem(medicine.MaxOrderQty)}
+        type_id={medicine.type_id}
+        is_express={medicine.is_express}
       />
     );
   };
@@ -550,8 +570,9 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {
             // handleGraphQlError(e);
           });
-          props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+          props.navigation.navigate(AppRoutes.ProductDetailPage, {
             sku: medicine.sku,
+            urlKey: medicine?.url_key,
             movedFrom: ProductPageViewedSource.CATEGORY_OR_LISTING,
             productPageViewedEventProps: {
               'Category ID': category_id,
@@ -589,6 +610,8 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         isPrescriptionRequired={medicine.is_prescription_required == '1'}
         removeCartItem={() => removeCartItem!(medicine.sku)}
         maxOrderQty={getMaxQtyForMedicineItem(medicine.MaxOrderQty)}
+        type_id={medicine.type_id}
+        is_express={medicine.is_express}
       />
     );
   };
@@ -757,7 +780,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           onEndReached={() => {
             if (!listFetching && !endReached) {
               setListFetching(true);
-              getProductsByCategoryApi(category_id, pageCount)
+              getProductsByCategoryApi(category_id, pageCount, null, null, axdcCode, pinCode)
                 .then(({ data }) => {
                   const products = data.products || [];
                   if (prevData && JSON.stringify(prevData) !== JSON.stringify(products)) {
@@ -856,7 +879,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
 
   const onSearchMedicine = (_searchText: string) => {
     setsearchSate('load');
-    getMedicineSearchSuggestionsApi(_searchText)
+    getMedicineSearchSuggestionsApi(_searchText, axdcCode, pinCode)
       .then(({ data }) => {
         const products = data.products || [];
         setMedicineList(products);
@@ -865,8 +888,15 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           keyword: _searchText,
           Source: 'Pharmacy Home',
           resultsdisplayed: products.length,
+          User_Type: pharmacyUserType,
         };
         postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
+        MedicineSearchEvents.pharmacySearch({
+          keyword: _searchText,
+          source: 'Pharmacy Home',
+          results: products.length,
+          'User Type': pharmacyUserType,
+        });
       })
       .catch((e) => {
         CommonBugFender('SearchByBrand_onSearchMedicine', e);

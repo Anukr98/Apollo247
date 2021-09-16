@@ -33,6 +33,8 @@ import {
   addPharmaItemToCart,
   g,
   getMaxQtyForMedicineItem,
+  postCleverTapEvent,
+  getIsMedicine,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -72,6 +74,11 @@ import Axios from 'axios';
 import { StickyBottomComponent } from '../ui/StickyBottomComponent';
 import { Button } from '../ui/Button';
 import _ from 'lodash';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { MedicineSearchEvents } from '@aph/mobile-patients/src/components/MedicineSearch/MedicineSearchEvents';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -90,8 +97,8 @@ const styles = StyleSheet.create({
   },
   labelView: {
     position: 'absolute',
-    top: -3,
-    right: -3,
+    top: -10,
+    right: -8,
     backgroundColor: '#ff748e',
     height: 14,
     width: 14,
@@ -170,11 +177,25 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   const [searchQuery, setSearchQuery] = useState({});
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const { addCartItem, removeCartItem, updateCartItem, cartItems } = useShoppingCart();
+  const {
+    addCartItem,
+    removeCartItem,
+    updateCartItem,
+    cartItems,
+    pinCode,
+    pharmacyCircleAttributes,
+    asyncPincode,
+  } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
-  const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
+  const {
+    locationDetails,
+    pharmacyLocation,
+    isPharmacyLocationServiceable,
+    axdcCode,
+    pharmacyUserType,
+  } = useAppCommonData();
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
 
   const getSpecialPrice = (special_price?: string | number) =>
@@ -232,7 +253,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
 
   const onSearchMedicine = (_searchText: string) => {
     setsearchSate('load');
-    getMedicineSearchSuggestionsApi(_searchText)
+    getMedicineSearchSuggestionsApi(_searchText, axdcCode, pinCode)
       .then(({ data }) => {
         const products = data.products || [];
         setMedicineList(products);
@@ -241,8 +262,15 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           keyword: _searchText,
           Source: 'Pharmacy Home',
           resultsdisplayed: products.length,
+          User_Type: pharmacyUserType,
         };
         postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
+        MedicineSearchEvents.pharmacySearch({
+          keyword: _searchText,
+          source: 'Pharmacy Home',
+          results: products.length,
+          'User Type': pharmacyUserType,
+        });
       })
       .catch((e) => {
         CommonBugFender('SearchByBrand_onSearchMedicine', e);
@@ -261,7 +289,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       }
       setShowMatchingMedicines(true);
       setProductsIsLoading(true);
-      searchMedicineApi(_searchText)
+      searchMedicineApi(_searchText, pageCount, sortBy, {}, axdcCode, pinCode)
         .then(async ({ data }) => {
           const products = data.products || [];
           setSearchHeading(data.search_heading!);
@@ -277,13 +305,23 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             keyword: _searchText,
             Source: 'Pharmacy List',
             resultsdisplayed: products.length,
+            User_Type: pharmacyUserType,
           };
+          MedicineSearchEvents.pharmacySearch({
+            keyword: _searchText,
+            source: 'Pharmacy List',
+            results: products.length,
+            'User Type': pharmacyUserType,
+          });
           postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
-          const searchEventAttribute: WebEngageEvents[WebEngageEventName.SEARCH_ENTER_CLICK] = {
+          const searchEventAttribute:
+            | WebEngageEvents[WebEngageEventName.SEARCH_ENTER_CLICK]
+            | CleverTapEvents[CleverTapEventName.PHARMACY_SEARCH_ENTER_CLICK] = {
             keyword: searchText,
-            numberofresults: data.product_count,
+            'No of results': data.product_count,
           };
           postWebEngageEvent(WebEngageEventName.SEARCH_ENTER_CLICK, searchEventAttribute);
+          postCleverTapEvent(CleverTapEventName.PHARMACY_SEARCH_ENTER_CLICK, searchEventAttribute);
 
           try {
             trackTagalysEvent(
@@ -343,6 +381,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       type_id,
       MaxOrderQty,
       category_id,
+      url_key,
+      subcategory,
     } = item;
     savePastSeacrh(sku, name).catch((e) => {
       aphConsole.log({ e });
@@ -361,21 +401,25 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             : special_price
           : undefined,
         prescriptionRequired: is_prescription_required == '1',
-        isMedicine: (type_id || '').toLowerCase() == 'pharma',
+        isMedicine: getIsMedicine(type_id?.toLowerCase()) || '0',
         quantity: 1,
         thumbnail,
         isInStock: true,
         maxOrderQty: MaxOrderQty,
         productType: type_id,
+        url_key,
+        subcategory,
       },
-      pharmacyPincode!,
+      asyncPincode?.pincode || pharmacyPincode!,
       addCartItem,
       suggestionItem ? null : globalLoading,
       props.navigation,
       currentPatient,
       !!isPharmacyLocationServiceable,
       { source: 'Pharmacy Full Search', categoryId: category_id },
-      suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined
+      JSON.stringify(cartItems),
+      suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined,
+      pharmacyCircleAttributes!
     );
   };
 
@@ -542,7 +586,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         key={pastSeacrh.typeId!}
         style={[styles.pastSearchItemStyle, containerStyle]}
         onPress={() => {
-          props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+          props.navigation.navigate(AppRoutes.ProductDetailPage, {
             sku: pastSeacrh.typeId,
             movedFrom: ProductPageViewedSource.FULL_SEARCH,
           });
@@ -596,8 +640,9 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         containerStyle={[medicineCardContainerStyle, {}]}
         onPress={() => {
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {});
-          props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+          props.navigation.navigate(AppRoutes.ProductDetailPage, {
             sku: medicine.sku,
+            urlKey: medicine?.url_key,
             movedFrom: ProductPageViewedSource.FULL_SEARCH,
           });
         }}
@@ -635,6 +680,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         isPrescriptionRequired={medicine.is_prescription_required == '1'}
         removeCartItem={() => removeCartItem!(medicine.sku)}
         maxOrderQty={getMaxQtyForMedicineItem(medicine.MaxOrderQty)}
+        type_id={medicine.type_id}
+        is_express={medicine.is_express}
       />
     );
   };
@@ -670,8 +717,9 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         containerStyle={[medicineCardContainerStyle, {}]}
         onPress={() => {
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {});
-          props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+          props.navigation.navigate(AppRoutes.ProductDetailPage, {
             sku: medicine.sku,
+            urlKey: medicine?.url_key,
             movedFrom: ProductPageViewedSource.FULL_SEARCH,
           });
         }}
@@ -705,6 +753,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         isPrescriptionRequired={medicine.is_prescription_required == '1'}
         removeCartItem={() => removeCartItem!(medicine.sku)}
         maxOrderQty={getMaxQtyForMedicineItem(medicine.MaxOrderQty)}
+        type_id={medicine.type_id}
+        is_express={medicine.is_express}
       />
     );
   };
@@ -801,7 +851,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
                 onEndReached={() => {
                   if (!listFetching && !endReached) {
                     setListFetching(true);
-                    searchMedicineApi(searchText, pageCount)
+                    searchMedicineApi(searchText, pageCount, sortBy, {}, axdcCode, pinCode)
                       .then(({ data }) => {
                         const products = data.products || [];
                         if (prevData && JSON.stringify(prevData) !== JSON.stringify(products)) {
@@ -819,7 +869,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
                       })
                       .catch((err) => {
                         CommonBugFender('SearchByBrand_getProductsByCategoryApi', err);
-                        console.log(err, 'errr');
                       })
                       .finally(() => {
                         setIsLoading(false);
@@ -968,8 +1017,9 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     return (
       <MedicineSearchSuggestionItem
         onPress={() => {
-          props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+          props.navigation.navigate(AppRoutes.ProductDetailPage, {
             sku: item.sku,
+            urlKey: item?.url_key,
             movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
           });
           resetSearchState();

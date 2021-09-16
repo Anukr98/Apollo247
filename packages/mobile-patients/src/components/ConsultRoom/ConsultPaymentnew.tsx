@@ -6,18 +6,25 @@ import {
   StyleSheet,
   View,
   KeyboardAvoidingView,
-  ActivityIndicator,
+  SafeAreaView,
   StatusBar,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { WebView } from 'react-native-webview';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import AsyncStorage from '@react-native-community/async-storage';
+import { ONE_APOLLO_STORE_CODE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  calculateCircleDoctorPricing,
+  isPhysicalConsultation,
+} from '@aph/mobile-patients/src/utils/commonUtils';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 export interface ConsultPaymentnewProps extends NavigationScreenProps {}
 
@@ -33,15 +40,36 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const bankCode = props.navigation.getParam('bankCode')
     ? props.navigation.getParam('bankCode')
     : null;
+  const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
+  const selectedTab = props.navigation.getParam('selectedTab');
   const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
+  const cleverTapConsultBookedEventAttributes = props.navigation.getParam(
+    'cleverTapConsultBookedEventAttributes'
+  );
   const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
+  const planSelected = props.navigation.getParam('planSelected');
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
-  const mobileNumber = currentPatient && currentPatient.mobileNumber;
   const [loading, setLoading] = useState(true);
   const displayID = props.navigation.getParam('displayID');
   let WebViewRef: any;
+  const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
+  const storeCode =
+    Platform.OS === 'ios' ? ONE_APOLLO_STORE_CODE.IOSCUS : ONE_APOLLO_STORE_CODE.ANDCUS;
+  const isOnlineConsult =
+    selectedTab === string.consultModeTab.VIDEO_CONSULT ||
+    selectedTab === string.consultModeTab.CONSULT_ONLINE;
+
+  const isPhysicalConsult = isPhysicalConsultation(selectedTab);
+
+  const circleDoctorDetails = calculateCircleDoctorPricing(
+    doctor,
+    isOnlineConsult,
+    isPhysicalConsult
+  );
+  const { isCircleDoctorOnSelectedConsultMode } = circleDoctorDetails;
+  const { circleSubscriptionId } = useShoppingCart();
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -58,9 +86,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
         'APPOINTMENTS_CONSULTED_WITH_DOCTOR_BEFORE',
         JSON.stringify([...appointmentIds, appointmentId])
       );
-    } catch (error) {
-      console.log({ error });
-    }
+    } catch (error) {}
   };
 
   const navigatetoStatusscreen = (status: string) => {
@@ -79,15 +105,17 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
       displayID: displayID,
       status: status,
       webEngageEventAttributes: webEngageEventAttributes,
+      cleverTapConsultBookedEventAttributes: cleverTapConsultBookedEventAttributes,
       fireBaseEventAttributes: fireBaseEventAttributes,
       appsflyerEventAttributes: appsflyerEventAttributes,
+      paymentTypeID: paymentTypeID,
+      isDoctorsOfTheHourStatus,
+      isCircleDoctor: isCircleDoctorOnSelectedConsultMode,
     });
   };
 
   const onWebViewStateChange = (data: NavState) => {
     const redirectedUrl = data.url;
-    console.log({ data, redirectedUrl });
-    console.log(`RedirectedUrl: ${redirectedUrl}`);
 
     if (
       redirectedUrl &&
@@ -99,12 +127,13 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   };
 
   const renderwebView = () => {
-    console.log(JSON.stringify(paymentTypeID));
     const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
-    const url = `${baseUrl}/consultpayment?appointmentId=${appointmentId}&patientId=${currentPatiendId}&price=${price}&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
+    let url = `${baseUrl}/consultpayment?appointmentId=${appointmentId}&patientId=${currentPatiendId}&price=${price}&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
       bankCode ? '&bankCode=' + bankCode : ''
     }`;
-    console.log(url);
+    if (planSelected && isCircleDoctorOnSelectedConsultMode && circleSubscriptionId == '') {
+      url = `${url}&planId=${planId}&subPlanId=${planSelected?.subPlanId}&storeCode=${storeCode}`;
+    }
     return (
       <WebView
         ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
@@ -127,14 +156,6 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
         onPress: () => {
           WebViewRef && WebViewRef.stopLoading();
           props.navigation.goBack();
-          // props.navigation.navigate(AppRoutes.ConsultPaymentStatus, {
-          //   orderId: appointmentId,
-          //   price: price,
-          //   doctorName: doctorName,
-          //   appointmentDateTime: appointmentInput.appointmentDateTime,
-          //   appointmentType: appointmentInput.appointmentType,
-          //   status: 'PENDING',
-          // });
         },
       },
     ]);
@@ -144,15 +165,16 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
-      <Header leftIcon="backArrow" title="PAYMENT" onPressLeftIcon={() => handleBack()} />
-      {Platform.OS == 'android' ? (
-        <KeyboardAvoidingView style={styles.container} behavior={'height'}>
-          {renderwebView()}
-        </KeyboardAvoidingView>
-      ) : (
-        renderwebView()
-      )}
-
+      <SafeAreaView style={styles.container}>
+        <Header leftIcon="backArrow" title="PAYMENT" onPressLeftIcon={() => handleBack()} />
+        {Platform.OS == 'android' ? (
+          <KeyboardAvoidingView style={styles.container} behavior={'height'}>
+            {renderwebView()}
+          </KeyboardAvoidingView>
+        ) : (
+          renderwebView()
+        )}
+      </SafeAreaView>
       {loading && <Spinner />}
     </View>
   );

@@ -4,16 +4,23 @@ import {
   MedicineIcon,
   MedicineRxIcon,
   OfferIcon,
+  ExpressDeliveryLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   getDiscountPercentage,
   productsThumbnailUrl,
+  calculateCashbackForItem,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, TouchableOpacityProps, View } from 'react-native';
 import { Divider, Image } from 'react-native-elements';
+import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 export interface Props extends MedicineProduct {
   onPress: () => void;
@@ -24,6 +31,7 @@ export interface Props extends MedicineProduct {
   quantity: number;
   containerStyle?: TouchableOpacityProps['style'];
   onCartScreen?: boolean;
+  onPressCashback?: () => void;
 }
 
 export const ProductCard: React.FC<Props> = ({
@@ -31,27 +39,42 @@ export const ProductCard: React.FC<Props> = ({
   price,
   special_price,
   thumbnail,
+  subcategory,
+  sku,
   image,
   sell_online,
   is_prescription_required,
   MaxOrderQty,
+  type_id,
   quantity,
   containerStyle,
   onPress,
   onPressAddToCart,
   onPressAddQty,
   onPressSubtractQty,
+  is_express,
+  onPressCashback,
 }) => {
+  const { circleSubscription } = useAppCommonData();
+  const { isCircleSubscription } = useShoppingCart();
   const isPrescriptionRequired = is_prescription_required == 1;
   const discount = getDiscountPercentage(price, special_price);
 
   const renderPrice = () => {
-    const strikeOffPrice = `(Rs. ${price})`;
-    const finalPrice = `  Rs. ${discount ? special_price : price}`;
+    const mrp = 'MRP ';
+    const strikeOffPrice = `(${mrp}${string.common.Rs}${convertNumberToDecimal(price)})`;
+    const finalPrice = `${string.common.Rs}${convertNumberToDecimal(
+      discount ? special_price : price
+    )} `;
     return (
       <View style={styles.priceContainer}>
-        {!!discount && <Text style={styles.priceStrikeOff}>{strikeOffPrice}</Text>}
+        {!discount && <Text style={styles.finalPrice}>{mrp}</Text>}
         <Text style={styles.finalPrice}>{finalPrice}</Text>
+        {!!discount && (
+          <View style={styles.specialPriceContainer}>
+            <Text style={styles.priceStrikeOff}>{strikeOffPrice}</Text>
+          </View>
+        )}
       </View>
     );
   };
@@ -68,18 +91,27 @@ export const ProductCard: React.FC<Props> = ({
         addToCart={onPressAddQty}
         removeItemFromCart={onPressSubtractQty}
         removeFromCart={onPressSubtractQty}
+        containerStyle={{
+          width: '49%',
+        }}
       />
     );
 
   const renderNotForSaleTag = () => <NotForSaleBadge />;
 
   const renderImage = () => (
-    <Image
-      placeholderStyle={styles.imagePlaceHolder}
-      PlaceholderContent={isPrescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
-      source={{ uri: productsThumbnailUrl(image || thumbnail) }}
-      style={styles.image}
-    />
+    <View
+      style={{
+        alignSelf: 'flex-start',
+      }}
+    >
+      <Image
+        placeholderStyle={styles.imagePlaceHolder}
+        PlaceholderContent={isPrescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
+        source={{ uri: productsThumbnailUrl(image || thumbnail) }}
+        style={styles.image}
+      />
+    </View>
   );
 
   const renderTitle = () => (
@@ -96,7 +128,37 @@ export const ProductCard: React.FC<Props> = ({
       </View>
     );
 
+  const renderExpressFlag = () => {
+    return (
+      <View style={[styles.expressContainer, { top: !!discount ? 40 : 10 }]}>
+        <ExpressDeliveryLogo style={styles.expressLogo} />
+      </View>
+    );
+  };
+
   const renderDivider = () => <Divider style={styles.divider} />;
+
+  const renderCareCashback = () => {
+    const finalPrice = discount ? special_price : price;
+    const cashback = calculateCashbackForItem(Number(finalPrice), type_id, subcategory, sku);
+    if (!!cashback) {
+      return (
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => {
+            if (!circleSubscription?._id || !isCircleSubscription) {
+              // if not a circle member open circle webview
+              onPressCashback && onPressCashback();
+            }
+          }}
+        >
+          <CareCashbackBanner bannerText={`extra ₹${cashback} cashback`} />
+        </TouchableOpacity>
+      );
+    } else {
+      return <></>;
+    }
+  };
 
   const renderProductActions = () =>
     sell_online ? renderAddToCartButton() : renderNotForSaleTag();
@@ -104,10 +166,12 @@ export const ProductCard: React.FC<Props> = ({
   return (
     <TouchableOpacity activeOpacity={1} style={[styles.card, containerStyle]} onPress={onPress}>
       {renderDiscountTag()}
+      {is_express === 'Yes' && renderExpressFlag()}
       {renderImage()}
       {renderTitle()}
       {renderDivider()}
       {renderPrice()}
+      {renderCareCashback()}
       {renderProductActions()}
     </TouchableOpacity>
   );
@@ -117,9 +181,8 @@ const { text } = theme.viewStyles;
 const styles = StyleSheet.create({
   card: {
     ...theme.viewStyles.card(12, 0),
-    alignItems: 'center',
     width: 168,
-    height: 232,
+    height: 245,
   },
   image: {
     resizeMode: 'contain',
@@ -129,7 +192,6 @@ const styles = StyleSheet.create({
   },
   title: {
     ...text('M', 14, '#01475B', 1, 17),
-    textAlign: 'center',
     height: 51,
   },
   divider: {
@@ -139,7 +201,10 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   priceContainer: {
-    paddingVertical: 10,
+    paddingVertical: 5,
+    flexDirection: 'row',
+  },
+  specialPriceContainer: {
     flexDirection: 'row',
   },
   finalPrice: {
@@ -147,10 +212,14 @@ const styles = StyleSheet.create({
   },
   priceStrikeOff: {
     ...text('M', 13, '#01475b', 0.6, 24),
+    textAlign: 'center',
     textDecorationLine: 'line-through',
   },
   addToCart: {
-    ...text('B', 12, '#FC9916', 1, 24),
+    position: 'absolute',
+    bottom: 15,
+    left: 10,
+    ...text('B', 12, '#FC9916', 1, 18),
   },
   imagePlaceHolder: { backgroundColor: 'transparent' },
   discountTagView: {
@@ -161,7 +230,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   discountTagText: {
-    ...theme.viewStyles.text('B', 12, '#ffffff', 1, 24),
+    ...theme.viewStyles.text('B', 10, '#ffffff', 1, 24),
     flex: 1,
     position: 'absolute',
     left: 0,
@@ -169,5 +238,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     textAlign: 'center',
+  },
+  expressContainer: {
+    position: 'absolute',
+    right: 12,
+  },
+  expressLogo: {
+    resizeMode: 'contain',
+    width: 50,
+    height: 25,
   },
 });

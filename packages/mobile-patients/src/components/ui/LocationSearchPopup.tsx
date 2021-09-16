@@ -72,7 +72,7 @@ export const LocationSearchPopup: React.FC<LocationSearchPopupProps> = (props) =
     []
   );
   const { setLocationDetails, locationForDiagnostics } = useAppCommonData();
-  const { clearCartInfo } = useDiagnosticsCart();
+  const { clearDiagnoticCartInfo } = useDiagnosticsCart();
   const [showLocations, setshowLocations] = useState<boolean>(false);
 
   const autoSearch = (searchText: string) => {
@@ -104,7 +104,6 @@ export const LocationSearchPopup: React.FC<LocationSearchPopupProps> = (props) =
             })
             .catch((error) => {
               CommonBugFender('LocationSearchPopup_autoSearch', error);
-              console.log(error);
             });
         }
       })
@@ -124,7 +123,7 @@ export const LocationSearchPopup: React.FC<LocationSearchPopupProps> = (props) =
           loc.city.toLowerCase() !=
           ((locationForDiagnostics && locationForDiagnostics.city) || '').toLowerCase()
         ) {
-          clearCartInfo && clearCartInfo();
+          clearDiagnoticCartInfo && clearDiagnoticCartInfo();
         }
         if (addrComponents.length > 0) {
           const locationData: LocationData = { ...loc, displayName: item.name };
@@ -149,7 +148,6 @@ export const LocationSearchPopup: React.FC<LocationSearchPopupProps> = (props) =
       })
       .catch((error) => {
         CommonBugFender('LocationSearchPopup_saveLatlong', error);
-        console.log('saveLatlong error\n', error);
       });
   };
 

@@ -1,17 +1,13 @@
 import React from 'react';
-import {
-  StyleSheet,
-  Text,
-  Dimensions,
-  View,
-  TouchableOpacity,
-  FlatList,
-  ScrollView,
-} from 'react-native';
+import { StyleSheet, Text, Dimensions, View, TouchableOpacity, ScrollView } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { GpsIcon, Location } from '@aph/mobile-patients/src/components/ui/Icons';
+import { AddIconBlue, GpsIcon, Location } from '@aph/mobile-patients/src/components/ui/Icons';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { AddressCard } from '@aph/mobile-patients/src/components/Medicines/Components/AddressCard';
+import { AppRoutes } from '../../NavigatorContainer';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { renderPharmaFetchAddressHeadingShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -22,6 +18,9 @@ export interface AccessLocationProps {
   onPressPincode: () => void;
   onPressEditAddress: (address: savePatientAddress_savePatientAddress_patientAddress) => void;
   onPressSelectAddress: (address: savePatientAddress_savePatientAddress_patientAddress) => void;
+  source?: string;
+  hidePincodeCurrentLocation?: boolean;
+  isAddressLoading: boolean;
 }
 
 export const AccessLocation: React.FC<AccessLocationProps> = (props) => {
@@ -32,13 +31,17 @@ export const AccessLocation: React.FC<AccessLocationProps> = (props) => {
     onPressSelectAddress,
     onPressCurrentLocaiton,
     onPressPincode,
+    source,
+    hidePincodeCurrentLocation,
   } = props;
+
+  const isFromTest = source == AppRoutes.Tests;
 
   function sortAddresses(addresses: savePatientAddress_savePatientAddress_patientAddress[]) {
     if (addresses) {
-      const array1 = addresses.filter((item) => item.defaultAddress);
-      const array2 = addresses.filter((item) => !item.defaultAddress);
-      const sortedAddresses = array1.concat(array2);
+      const array1 = addresses?.filter((item) => item?.defaultAddress);
+      const array2 = addresses?.filter((item) => !item?.defaultAddress);
+      const sortedAddresses = array1?.concat(array2);
       return sortedAddresses;
     } else {
       return [];
@@ -46,13 +49,13 @@ export const AccessLocation: React.FC<AccessLocationProps> = (props) => {
   }
 
   const renderHeader = () => {
-    return <Text style={styles.addressHeader}>Select delivery location</Text>;
+    return <Text style={styles.addressHeader}>{string.accessLocationPopUp.headerMessage}</Text>;
   };
   const renderCurrentLocationAccess = () => {
     return (
       <TouchableOpacity style={styles.buttonContainer} onPress={onPressCurrentLocaiton}>
         <GpsIcon />
-        <Text style={styles.currentLocation}>Use my current location</Text>
+        <Text style={styles.currentLocation}>{string.accessLocationPopUp.currentLocationText}</Text>
       </TouchableOpacity>
     );
   };
@@ -64,15 +67,21 @@ export const AccessLocation: React.FC<AccessLocationProps> = (props) => {
         onPress={onPressPincode}
       >
         <Location style={{ width: 15, height: 15 }} />
-        <Text style={styles.currentLocation}>Enter Delivery Pincode</Text>
+        <Text style={styles.currentLocation}>
+          {isFromTest
+            ? string.accessLocationPopUp.testPincodeText
+            : string.accessLocationPopUp.defaultPincodeText}
+        </Text>
       </TouchableOpacity>
     );
   };
 
   const renderAddresses = () => {
-    return (
+    return props.isAddressLoading ? (
+      renderPharmaFetchAddressHeadingShimmer()
+    ) : (
       <View>
-        <Text style={styles.addressHeader}>Choose from saved addresses</Text>
+        <Text style={styles.addressHeader}>{string.accessLocationPopUp.chooseFromAddressText}</Text>
         <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
           {sortAddresses(addresses).map((item) => {
             return (
@@ -83,7 +92,7 @@ export const AccessLocation: React.FC<AccessLocationProps> = (props) => {
               />
             );
           })}
-          {renderAddAddress()}
+          {!isFromTest ? renderAddAddress() : null}
         </ScrollView>
       </View>
     );
@@ -104,12 +113,27 @@ export const AccessLocation: React.FC<AccessLocationProps> = (props) => {
     );
   };
 
+  const renderAddAddressText = () => {
+    return (
+      <View style={{ marginVertical: '3%' }}>
+        <View style={styles.horizontalLine} />
+        <TouchableOpacity style={{ width: '60%' }} onPress={onPressAddAddress}>
+          <View style={{ flexDirection: 'row' }}>
+            <AddIconBlue style={styles.addAddressIcon} />
+            <Text style={styles.addressHeader}>{string.accessLocationPopUp.addNewAddressText}</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   return (
     <View style={{ paddingHorizontal: 20 }}>
-      {renderHeader()}
-      {renderCurrentLocationAccess()}
-      {renderDeliveryPincode()}
+      {isFromTest ? <View style={{ marginTop: '5%' }} /> : renderHeader()}
+      {hidePincodeCurrentLocation ? null : renderCurrentLocationAccess()}
+      {hidePincodeCurrentLocation ? null : renderDeliveryPincode()}
       {renderAddresses()}
+      {isFromTest ? renderAddAddressText() : null}
     </View>
   );
 };
@@ -150,5 +174,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(1, 71, 91, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  addAddressIcon: {
+    height: 20,
+    width: 20,
+    marginVertical: 15,
+    tintColor: colors.SHERPA_BLUE,
+    marginRight: '3%',
+  },
+  horizontalLine: {
+    height: 2,
+    backgroundColor: colors.SHERPA_BLUE,
+    opacity: 0.1,
+    marginHorizontal: '2%',
+    marginBottom: '2%',
   },
 });

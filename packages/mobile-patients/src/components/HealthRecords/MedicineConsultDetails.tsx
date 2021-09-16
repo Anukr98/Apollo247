@@ -1,36 +1,21 @@
-import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  Download,
-  FileBig,
-  MedicineRxIcon,
-  PrescriptionThumbnail,
-  ShareGreen,
-  MedicalIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { Download, MedicineRxIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
   Platform,
   Alert,
-  Linking,
-  CameraRoll,
   PermissionsAndroid,
-  Dimensions,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import RNFetchBlob from 'rn-fetch-blob';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import {
-  useShoppingCart,
-  ShoppingCartItem,
-} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import moment from 'moment';
@@ -40,7 +25,6 @@ import {
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useApolloClient } from 'react-apollo-hooks';
-import { DownloadDocumentsInput } from '../../graphql/types/globalTypes';
 import { DOWNLOAD_DOCUMENT } from '../../graphql/profiles';
 import { downloadDocuments } from '../../graphql/types/downloadDocuments';
 import { useUIElements } from '../UIElementsProvider';
@@ -48,74 +32,13 @@ import { RenderPdf } from '../ui/RenderPdf';
 import { mimeType } from '../../helpers/mimeType';
 import { Image } from 'react-native-elements';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
-import { postWebEngageEvent, g } from '../../helpers/helperFunctions';
-
-const { width, height } = Dimensions.get('window');
-const styles = StyleSheet.create({
-  imageView: {
-    ...theme.viewStyles.cardViewStyle,
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 20,
-    backgroundColor: theme.colors.WHITE,
-  },
-  doctorNameStyle: {
-    paddingBottom: 2,
-    ...theme.fonts.IBMPlexSansSemiBold(23),
-    color: theme.colors.LIGHT_BLUE,
-  },
-  timeStyle: {
-    paddingBottom: 16,
-    ...theme.fonts.IBMPlexSansMedium(12),
-    color: theme.colors.SKY_BLUE,
-    letterSpacing: 0.04,
-    lineHeight: 20,
-  },
-  doctorDetailsStyle: {
-    ...theme.viewStyles.cardContainer,
-    backgroundColor: theme.colors.CARD_BG,
-    paddingTop: 20,
-    paddingHorizontal: 20,
-  },
-  labelStyle: {
-    color: theme.colors.SHERPA_BLUE,
-    lineHeight: 24,
-    ...theme.fonts.IBMPlexSansMedium(14),
-  },
-  descriptionStyle: {
-    color: theme.colors.SKY_BLUE,
-    lineHeight: 24,
-    ...theme.fonts.IBMPlexSansMedium(14),
-  },
-  labelViewStyle: {
-    borderBottomWidth: 0.5,
-    borderBottomColor: theme.colors.SEPARATOR_LINE,
-  },
-  cardViewStyle: {
-    ...theme.viewStyles.cardViewStyle,
-    marginTop: 16,
-    marginBottom: 24,
-    marginHorizontal: 20,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-  },
-  labelTextStyle: {
-    color: theme.colors.SHERPA_BLUE,
-    lineHeight: 20,
-    ...theme.fonts.IBMPlexSansMedium(12),
-    paddingTop: 8,
-    paddingBottom: 3,
-  },
-  valuesTextStyle: {
-    color: theme.colors.SKY_BLUE,
-    lineHeight: 20,
-    ...theme.fonts.IBMPlexSansMedium(14),
-    paddingBottom: 16,
-  },
-});
+import {
+  postWebEngageEvent,
+  g,
+  formatToCartItem,
+  postCleverTapEvent,
+} from '../../helpers/helperFunctions';
+import { CleverTapEventName, CleverTapEvents } from '../../helpers/CleverTapEvents';
 
 export interface RecordDetailsProps
   extends NavigationScreenProps<{
@@ -128,7 +51,6 @@ export interface RecordDetailsProps
 export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const data = props.navigation.state.params ? props.navigation.state.params.data : {};
-  console.log('a', data);
   const [url, setUrls] = useState<string[]>([]);
   const me = props.navigation.state.params ? props.navigation.state.params.medicineDate : {};
   const blobURL: string = props.navigation.state.params
@@ -142,14 +64,10 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   const { addCartItem, addEPrescription } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  // console.log('prismPrescriptionFileId', prismFile.split(','));
   const [pdfUri, setPDFUri] = useState<string>('');
   const [pdfView, setPDFView] = useState<boolean>(false);
 
   useEffect(() => {
-    // if (prismFile == null || prismFile == '') {
-    //   Alert.alert('There is no prism filed ');
-    // } else {
     const blobUrls = blobURL && blobURL.split(',');
     if (prismFile) {
       client
@@ -164,18 +82,15 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           },
         })
         .then(({ data }) => {
-          console.log(data, 'DOWNLOAD_DOCUMENT');
           let uploadUrlscheck = data.downloadDocuments.downloadPaths!.map(
             (item, index) =>
               item || (blobUrls && blobUrls.length <= index + 1 ? blobUrls[index] : '')
           );
-          console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
 
           uploadUrlscheck && setUrls(uploadUrlscheck);
         })
         .catch((e) => {
           CommonBugFender('MedicineConsultDetails_downloadDocuments', e);
-          console.log('Error occured', e);
         })
         .finally(() => {});
     } else if (blobUrls) {
@@ -198,19 +113,8 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           Alert.alert('Alert', 'This item is out of stock.');
           return;
         }
-        addCartItem!({
-          id: medicineDetails.sku,
-          mou: medicineDetails.mou,
-          price: medicineDetails.price,
-          specialPrice: medicineDetails.special_price && Number(medicineDetails.special_price),
-          quantity: data.quantity,
-          name: data.medicineName,
-          prescriptionRequired: medicineDetails.is_prescription_required == '1',
-          isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
-          isInStock: true,
-          maxOrderQty: medicineDetails.MaxOrderQty,
-          productType: medicineDetails.type_id,
-        } as ShoppingCartItem);
+        const cartItem = formatToCartItem({ ...medicineDetails, image: '' });
+        addCartItem!({ ...cartItem, quantity: Number(data.quantity) || 1 });
         if (medicineDetails.is_prescription_required == '1') {
           addEPrescription!({
             id: data!.id,
@@ -234,6 +138,21 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           'Mobile Number': g(currentPatient, 'mobileNumber'),
           'Customer ID': g(currentPatient, 'id'),
         };
+        const cleverTapeEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_RE_ORDER_MEDICINE] = {
+          orderType: 'Cart',
+          source: 'PHR',
+          'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+          'Patient UHID': g(currentPatient, 'uhid'),
+          Relation: g(currentPatient, 'relation'),
+          'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+          'Patient Gender': g(currentPatient, 'gender'),
+          'Mobile Number': g(currentPatient, 'mobileNumber'),
+          'Customer ID': g(currentPatient, 'id'),
+        };
+        postCleverTapEvent(
+          CleverTapEventName.PHARMACY_RE_ORDER_MEDICINE,
+          cleverTapeEventAttributes
+        );
         postWebEngageEvent(WebEngageEventName.RE_ORDER_MEDICINE, eventAttributes);
 
         props.navigation.navigate(AppRoutes.MedicineCart);
@@ -241,7 +160,6 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
       .catch((err) => {
         CommonBugFender('MedicineConsultDetails_addToCart', err);
         setLoading && setLoading(false);
-        console.log(err, 'MedicineDetailsScene err');
         Alert.alert('Alert', 'No medicines found.');
       });
   };
@@ -257,7 +175,6 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
         description: 'Downloaded : ' + files[0].name,
         onPressOk: () => {
           hideAphAlert!();
-          console.log('this file is opened', files);
           Platform.OS === 'ios'
             ? RNFetchBlob.ios.previewDocument(files[0].path)
             : RNFetchBlob.android.actionViewIntent(files[0].path, mimeType(files[0].path));
@@ -287,7 +204,6 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
       }
     } catch (error) {
       CommonBugFender('MedicineConsultDetails_requestReadSmsPermission_try', error);
-      console.log('error', error);
     }
   };
   return (
@@ -303,9 +219,6 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           rightComponent={
             prismFile && (
               <View style={{ flexDirection: 'row' }}>
-                {/* <TouchableOpacity activeOpacity={1} style={{ marginRight: 20 }} onPress={() => {}}>
-                <ShareGreen />
-              </TouchableOpacity> */}
                 <TouchableOpacity
                   activeOpacity={1}
                   onPress={() => {
@@ -313,7 +226,6 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                       if (!url || url === '[object Object]') {
                         Alert.alert('No Image');
                       } else {
-                        console.log('download data', arr);
                         let dirs = RNFetchBlob.fs.dirs;
                         let fileDownloaded: { path: string; name: string }[] = [];
                         arr.forEach((item) => {
@@ -352,11 +264,9 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                             })
                             .catch((err) => {
                               CommonBugFender('MedicineConsultDetails_DOWNLOAD', err);
-                              console.log('error ', err);
                               setLoading && setLoading(false);
                             });
                         });
-                        console.log(fileDownloaded, 'files download');
                       }
                     } catch (error) {
                       CommonBugFender('MedicineConsultDetails_DOWNLOAD_try', error);
@@ -421,29 +331,10 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                       'Open File' +
                       (item.indexOf('fileName=') > -1 ? ': ' + item.split('fileName=').pop() : '')
                     }
-                    onPress={
-                      () => {
-                        setPDFUri(item);
-                        setPDFView(true);
-                      }
-                      // (
-                      //   <RenderPdf
-                      //     uri={item}
-                      //     title={
-                      //       item.indexOf('fileName=') > -1
-                      //         ? item.split('fileName=').pop() || 'Document'
-                      //         : 'Document'
-                      //     }
-                      //     isPopup={true}
-                      //     navigation={props.navigation}
-                      //   ></RenderPdf>
-                      // )
-                      // props.navigation.navigate(AppRoutes.RenderPdf, {
-                      //   uri: item,
-                      //   title: item.indexOf('fileName=') > -1 ? item.split('fileName=').pop() : '',
-                      //   isPopup: true,
-                      // })
-                    }
+                    onPress={() => {
+                      setPDFUri(item);
+                      setPDFView(true);
+                    }}
                   ></Button>
                 </View>
               );

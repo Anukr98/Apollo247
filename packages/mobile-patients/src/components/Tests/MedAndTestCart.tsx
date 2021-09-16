@@ -32,7 +32,6 @@ type ArrayTest = {
   title: string;
   descripiton: string;
   image: Element;
-  // ImageSourcePropType;
   cartCount: number;
 };
 
@@ -44,7 +43,6 @@ export interface MedAndTestCartProps
 export const MedAndTestCart: React.FC<MedAndTestCartProps> = (props) => {
   const { cartItems } = useShoppingCart();
   const { cartItems: testCartItems } = useDiagnosticsCart();
-  console.log('length : ' + cartItems.length, testCartItems.length);
   const backDataFunctionality = async () => {
     BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
     props.navigation.goBack();

@@ -1,10 +1,18 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 // ====================================================
 // GraphQL query operation: pharmaPaymentStatus
 // ====================================================
+
+export interface pharmaPaymentStatus_pharmaPaymentStatus_planPurchaseDetails {
+  __typename: "PLAN_PURCHASE_DETAIL";
+  planPurchased: boolean | null;
+  totalCashBack: number | null;
+  planValidity: any | null;
+}
 
 export interface pharmaPaymentStatus_pharmaPaymentStatus {
   __typename: "PharmaPaymentDetails";
@@ -15,6 +23,7 @@ export interface pharmaPaymentStatus_pharmaPaymentStatus {
   paymentDateTime: any | null;
   orderDateTime: any;
   paymentMode: string | null;
+  planPurchaseDetails: pharmaPaymentStatus_pharmaPaymentStatus_planPurchaseDetails | null;
 }
 
 export interface pharmaPaymentStatus {

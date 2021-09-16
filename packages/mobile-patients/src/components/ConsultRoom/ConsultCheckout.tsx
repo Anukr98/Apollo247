@@ -11,14 +11,18 @@ import {
   Image,
   StatusBar,
   ScrollView,
-  ActivityIndicator,
   FlatList,
 } from 'react-native';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { g, postFirebaseEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  postFirebaseEvent,
+  getUserType,
+  postCleverTapEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import { bookAppointment } from '@aph/mobile-patients/src/graphql/types/bookAppointment';
 import { BOOK_APPOINTMENT } from '@aph/mobile-patients/src/graphql/profiles';
@@ -26,6 +30,10 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import moment from 'moment';
 import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -34,9 +42,14 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import { fetchPaymentOptions } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
-import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  postWebEngageEvent,
+  postAppsFlyerEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { saveSearchDoctor, saveSearchSpeciality } from '../../helpers/clientCalls';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -55,12 +68,15 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
   const appointmentInput = props.navigation.getParam('appointmentInput');
   const price = props.navigation.getParam('price');
   const doctorName = props.navigation.getParam('doctorName');
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [loading, setLoading] = useState(true);
   const { showAphAlert } = useUIElements();
   const couponApplied = props.navigation.getParam('couponApplied');
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
   const patientId = props.navigation.getParam('patientId');
+  const planSelected = props.navigation.getParam('planSelected');
+  const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
+  const circleDiscountedPrice = props.navigation.getParam('circleDiscount');
 
   type bankOptions = {
     name: string;
@@ -91,7 +107,6 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     fetchPaymentOptions()
       .then((res: any) => {
-        console.log(JSON.stringify(res), 'objobj');
         let options: paymentOptions[] = [];
         res.data.forEach((item: any) => {
           if (item && item.enabled && item.paymentMode != 'NB') {
@@ -124,9 +139,8 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('fetchingPaymentOptions', error);
-        console.log(error);
         props.navigation.navigate(AppRoutes.DoctorSearch);
-        renderErrorPopup(`Something went wrong, plaease try again after sometime`);
+        renderErrorPopup(string.common.tryAgainLater);
       });
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -135,19 +149,18 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
 
   const getConsultationBookedEventAttributes = (time: string, id: string) => {
     const localTimeSlot = moment(new Date(time));
-    console.log(localTimeSlot.format('DD MMM YYYY, h:mm A'));
-    let date = new Date(time);
-    // date = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
+    let date = moment(time).toDate();
     const doctorClinics = (g(doctor, 'doctorHospital') || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
         return item.facility.facilityType === 'HOSPITAL';
     });
 
-    const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULTATION_BOOKED] = {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.CONSULTATION_BOOKED]
+      | CleverTapEvents[CleverTapEventName.CONSULTATION_BOOKED] = {
       name: g(doctor, 'fullName'),
       specialisation: g(doctor, 'specialty', 'name'),
       category: g(doctor, 'doctorType'), // send doctorType
-      // time: localTimeSlot.format('DD-MM-YYY, hh:mm A'),
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
@@ -156,10 +169,13 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       ),
       'Patient Gender': g(currentPatient, 'gender'),
       'Customer ID': g(currentPatient, 'id'),
-      'Consult ID': id,
+      consultId: id,
       'Speciality ID': g(doctor, 'specialty', 'id'),
-      'Consult Date Time': date,
-      'Consult Mode': tabs[0].title === selectedTab ? 'Online' : 'Physical',
+      consultDateTime: date,
+      consultMode:
+        tabs[0].title === selectedTab || selectedTab === string.consultModeTab.VIDEO_CONSULT
+          ? 'Online'
+          : 'Physical',
       'Hospital Name':
         doctorClinics.length > 0 && doctor!.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics[0].facility.name}`
@@ -173,27 +189,84 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       'Net Amount': price,
       af_revenue: price,
       af_currency: 'INR',
+      'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
+      'Circle discount': circleDiscountedPrice,
+      User_Type: getUserType(allCurrentPatients),
     };
     return eventAttributes;
   };
 
-  const getConsultationBookedAppsFlyerEventAttributes = (id: string) => {
+  const getConsultationBookedCleverTapEventAttributes = (time: string, id: string) => {
+    const localTimeSlot = moment(new Date(time));
+    let date = moment(time).toDate();
+    const doctorClinics = (g(doctor, 'doctorHospital') || []).filter((item) => {
+      if (item && item.facility && item.facility.facilityType)
+        return item.facility.facilityType === 'HOSPITAL';
+    });
+
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULTATION_BOOKED] = {
+      name: g(doctor, 'fullName'),
+      specialisation: g(doctor, 'specialty', 'name'),
+      category: g(doctor, 'doctorType'), // send doctorType
+      patientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      relation: g(currentPatient, 'relation'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      patientGender: g(currentPatient, 'gender'),
+      'Customer ID': g(currentPatient, 'id'),
+      consultId: id,
+      'Speciality ID': g(doctor, 'specialty', 'id'),
+      consultDateTime: date,
+      consultMode:
+        tabs[0].title === selectedTab || selectedTab === string.consultModeTab.VIDEO_CONSULT
+          ? 'ONLINE'
+          : 'PHYSICAL',
+      hospitalName:
+        doctorClinics.length > 0 && doctor!.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics[0].facility.name}`
+          : '',
+      'Hospital City':
+        doctorClinics.length > 0 && doctor!.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics[0].facility.city}`
+          : '',
+      'Doctor ID': g(doctor, 'id')!,
+      doctorName: g(doctor, 'fullName')!,
+      'Net Amount': price,
+      af_revenue: price,
+      af_currency: 'INR',
+      'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
+      circleSavings: circleDiscountedPrice,
+      userType: getUserType(allCurrentPatients),
+      patientNumber: g(currentPatient, 'mobileNumber'),
+      doctorNumber: g(doctor, 'mobileNumber')! || undefined,
+    };
+    return eventAttributes;
+  };
+
+  const getConsultationBookedAppsFlyerEventAttributes = (id: string, displayId: number) => {
     const eventAttributes: AppsFlyerEvents[AppsFlyerEventName.CONSULTATION_BOOKED] = {
       'customer id': g(currentPatient, 'id'),
       'doctor id': g(doctor, 'id')!,
       'specialty id': g(doctor, 'specialty', 'id')!,
-      'consult type': 'Consult Online' === selectedTab ? 'online' : 'clinic',
+      'consult type':
+        'Consult Online' === selectedTab || selectedTab === string.consultModeTab.VIDEO_CONSULT
+          ? 'online'
+          : 'clinic',
       af_revenue: price,
       af_currency: 'INR',
       'consult id': id,
+      displayId: `${displayId}`,
       'coupon applied': couponApplied,
+      'Circle discount': circleDiscountedPrice,
+      User_Type: getUserType(allCurrentPatients),
     };
     return eventAttributes;
   };
 
   const getConsultationBookedFirebaseEventAttributes = (time: string, id: string) => {
     const localTimeSlot = moment(new Date(time));
-    console.log(localTimeSlot.format('DD-MM-YYY, hh:mm A'));
 
     const doctorClinics = (g(doctor, 'doctorHospital') || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
@@ -205,7 +278,10 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       specialisation: g(doctor, 'specialty', 'userFriendlyNomenclature')!,
       category: g(doctor, 'doctorType')!, // send doctorType
       time: localTimeSlot.format('DD-MM-YYY, hh:mm A'),
-      consultType: tabs[0].title === selectedTab ? 'online' : 'clinic',
+      consultType:
+        tabs[0].title === selectedTab || selectedTab === string.consultModeTab.VIDEO_CONSULT
+          ? 'online'
+          : 'clinic',
       clinic_name: g(doctor, 'doctorHospital', '0' as any, 'facility', 'name')!,
       clinic_address:
         doctorClinics.length > 0 && doctor!.doctorType !== DoctorType.PAYROLL
@@ -223,12 +299,12 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       Consult_ID: id,
       af_revenue: price,
       af_currency: 'INR',
+      'Circle discount': circleDiscountedPrice,
     };
     return eventAttributes;
   };
 
   const initiatePayment = (item) => {
-    console.log('appointmentInput---------------', appointmentInput);
     setLoading && setLoading(true);
     client
       .mutate<bookAppointment>({
@@ -239,7 +315,6 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
-        console.log(JSON.stringify(data));
         try {
           if (callSaveSearch !== 'true') {
             saveSearchDoctor(client, doctor ? doctor.id : '', patientId);
@@ -252,18 +327,25 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           }
           const paymentEventAttributes = {
             Payment_Mode: item.paymentMode,
-            Type: 'Consultation',
+            LOB: 'Consultation',
             Appointment_Id: g(data, 'data', 'bookAppointment', 'appointment', 'id'),
             Mobile_Number: g(currentPatient, 'mobileNumber'),
           };
           postWebEngageEvent(WebEngageEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
           postFirebaseEvent(FirebaseEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
-
-          const paymentModeEventAttribute: WebEngageEvents[WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED] = {
+          postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
+          const paymentModeEventAttribute:
+            | WebEngageEvents[WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED]
+            | CleverTapEvents[CleverTapEventName.CONSULT_PAYMENT_MODE_SELECTED] = {
             'Payment Mode': item.paymentMode,
+            User_Type: getUserType(allCurrentPatients),
           };
           postWebEngageEvent(
             WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED,
+            paymentModeEventAttribute
+          );
+          postCleverTapEvent(
+            CleverTapEventName.CONSULT_PAYMENT_MODE_SELECTED,
             paymentModeEventAttribute
           );
         } catch (error) {}
@@ -283,13 +365,21 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                 g(apptmt, 'appointmentDateTime'),
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
               ),
-              appsflyerEventAttributes: getConsultationBookedAppsFlyerEventAttributes(
+              cleverTapConsultBookedEventAttributes: getConsultationBookedCleverTapEventAttributes(
+                g(apptmt, 'appointmentDateTime'),
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
+              ),
+              appsflyerEventAttributes: getConsultationBookedAppsFlyerEventAttributes(
+                g(data, 'data', 'bookAppointment', 'appointment', 'id')!,
+                g(data, 'data', 'bookAppointment', 'appointment', 'displayId')!
               ),
               fireBaseEventAttributes: getConsultationBookedFirebaseEventAttributes(
                 g(apptmt, 'appointmentDateTime'),
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
               ),
+              planSelected: planSelected,
+              isDoctorsOfTheHourStatus,
+              selectedTab,
             })
           : props.navigation.navigate(AppRoutes.ConsultPaymentnew, {
               consultedWithDoctorBefore: consultedWithDoctorBefore,
@@ -305,13 +395,21 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                 g(apptmt, 'appointmentDateTime'),
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
               ),
-              appsflyerEventAttributes: getConsultationBookedAppsFlyerEventAttributes(
+              cleverTapConsultBookedEventAttributes: getConsultationBookedCleverTapEventAttributes(
+                g(apptmt, 'appointmentDateTime'),
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
+              ),
+              appsflyerEventAttributes: getConsultationBookedAppsFlyerEventAttributes(
+                g(data, 'data', 'bookAppointment', 'appointment', 'id')!,
+                g(data, 'data', 'bookAppointment', 'appointment', 'displayId')!
               ),
               fireBaseEventAttributes: getConsultationBookedFirebaseEventAttributes(
                 g(apptmt, 'appointmentDateTime'),
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
               ),
+              planSelected: planSelected,
+              isDoctorsOfTheHourStatus,
+              selectedTab,
             });
         setLoading && setLoading(false);
       })
@@ -383,7 +481,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           }}
         >
           <Text style={{ ...theme.viewStyles.text('SB', 15, theme.colors.SHERPA_BLUE, 1, 20) }}>
-            Rs. {price}
+            {string.common.Rs} {convertNumberToDecimal(price)}
           </Text>
         </View>
       </View>
@@ -556,7 +654,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       {
         text: 'Yes',
         onPress: () => {
-          props.navigation.navigate(AppRoutes.DoctorSearch);
+          props.navigation.goBack();
         },
       },
     ]);

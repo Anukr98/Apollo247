@@ -5,10 +5,8 @@ import { CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import {
-  BOOK_APPOINTMENT,
   GET_AVAILABLE_SLOTS,
   BOOK_APPOINTMENT_RESCHEDULE,
-  CHECK_IF_RESCHDULE,
   BOOK_FOLLOWUP_APPOINTMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { bookRescheduleAppointment } from '@aph/mobile-patients/src/graphql/types/bookRescheduleAppointment';
@@ -19,12 +17,15 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
   APPOINTMENT_TYPE,
-  BookAppointmentInput,
   BookRescheduleAppointmentInput,
   TRANSFER_INITIATED_TYPE,
   APPOINTMENT_STATE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { divideSlots, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  divideSlots,
+  handleGraphQlError,
+  postAppointmentCleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import { Mutation } from 'react-apollo';
@@ -33,22 +34,21 @@ import { Dimensions, Platform, Text, TouchableOpacity, View, Alert } from 'react
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import {
-  checkIfReschedule,
-  checkIfRescheduleVariables,
-} from '@aph/mobile-patients/src/graphql/types/checkIfReschedule';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 import {
   BookFollowUpAppointment,
   BookFollowUpAppointmentVariables,
 } from '@aph/mobile-patients/src/graphql/types/BookFollowUpAppointment';
-import { StackActions } from 'react-navigation';
-import { NavigationActions } from 'react-navigation';
 import {
   CommonLogEvent,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import AsyncStorage from '@react-native-community/async-storage';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { CleverTapEventName } from '../../helpers/CleverTapEvents';
+import { useAllCurrentPatients } from '../../hooks/authHooks';
 
 const { width, height } = Dimensions.get('window');
 
@@ -71,10 +71,11 @@ export interface OverlayRescheduleViewProps extends NavigationScreenProps {
   KeyFollow: string;
   isfollowupcount: number;
   isInitiatedByDoctor: boolean;
-  // availableSlots: string[] | null;
+  secretaryData?: any;
 }
 export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (props) => {
   const tabs = [{ title: 'Reschedule' }];
+  const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const [timeArray, settimeArray] = useState<TimeArray>([
     { label: 'Morning', time: [] },
@@ -109,17 +110,11 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
 
   const setTimeArrayData = (availableSlots: string[]) => {
     const array = divideSlots(availableSlots, date);
-    // console.log(array, 'array', timeArray, 'timeArray.......');
     if (array !== timeArray) settimeArray(array);
   };
 
   const availableDate = date.toISOString().split('T')[0];
 
-  console.log(props.bookFollowUp, 'bookFollowUp');
-  console.log(props.rescheduleCount, 'propsrescheduleCount');
-  console.log(props.data, 'back');
-
-  console.log(availableDate, 'dateeeeeeee', props.doctorId, 'doctorId');
   const availabilityData = useQuery<getDoctorAvailableSlots>(GET_AVAILABLE_SLOTS, {
     fetchPolicy: 'no-cache',
     variables: {
@@ -131,9 +126,7 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
   });
 
   if (availabilityData.error) {
-    console.log('error', availabilityData.error);
   } else {
-    // console.log(availabilityData.data, 'availableSlots');
     if (
       availabilityData &&
       availabilityData.data &&
@@ -142,47 +135,21 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
       availableSlots !== availabilityData.data.getDoctorAvailableSlots.availableSlots
     ) {
       setTimeArrayData(availabilityData.data.getDoctorAvailableSlots.availableSlots);
-      // console.log(availableSlots, 'availableSlots1111');
-
       setavailableSlots(availabilityData.data.getDoctorAvailableSlots.availableSlots);
     }
   }
 
   const navigateToView = () => {
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-      })
-    );
+    navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar);
   };
 
   const navigateToViewRescdule = (data: any) => {
     AsyncStorage.setItem('showSchduledPopup', 'true');
-    console.log('navigateToView', data);
-    console.log('doctorname', props.doctor);
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [
-          NavigationActions.navigate({
-            routeName: AppRoutes.TabBar,
-            params: {
-              Data:
-                data &&
-                data.bookRescheduleAppointment &&
-                data.bookRescheduleAppointment.appointmentDetails,
-              DoctorName:
-                props.navigation.state.params!.data &&
-                props.navigation.state.params!.data.doctorInfo &&
-                props.navigation.state.params!.data.doctorInfo.fullName,
-            },
-          }),
-        ],
-      })
-    );
+    const params = {
+      Data: data?.bookRescheduleAppointment?.appointmentDetails,
+      DoctorName: props.navigation.state.params?.data?.doctorInfo?.fullName,
+    };
+    navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar, params);
   };
 
   const renderBottomButton = () => {
@@ -201,14 +168,14 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
               title={
                 props.KeyFollow == 'RESCHEDULE'
                   ? props.rescheduleCount.isPaid === 1
-                    ? `PAY Rs. ${props.data.doctorInfo &&
-                        props.data.doctorInfo.onlineConsultationFees &&
-                        props.data.doctorInfo.onlineConsultationFees}`
+                    ? `PAY ${string.common.Rs} ${convertNumberToDecimal(
+                        props?.data?.doctorInfo?.onlineConsultationFees
+                      )}`
                     : `CONFIRM RESCHEDULE`
                   : props.isfollowupcount === 1
-                  ? `PAY Rs. ${props.doctor &&
-                      props.doctor.onlineConsultationFees &&
-                      props.doctor.onlineConsultationFees}`
+                  ? `PAY ${string.common.Rs} ${convertNumberToDecimal(
+                      Number(props?.doctor?.onlineConsultationFees)
+                    )}`
                   : `BOOK FOLLOWUP`
               }
               disabled={
@@ -244,7 +211,6 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                     0 < availableInMin!
                       ? nextAvailableSlot
                       : selectedTimeSlot;
-                  console.log('bookfollowupapicalled');
                   const input = {
                     patientId: props.patientId,
                     doctorId: props.doctorId,
@@ -253,8 +219,6 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                     hospitalId: hospitalId,
                     followUpParentId: props.appointmentId,
                   };
-                  console.log('inputfollowup', props.appointmentId);
-                  console.log('uin', input);
                   client
                     .mutate<BookFollowUpAppointment, BookFollowUpAppointmentVariables>({
                       mutation: BOOK_FOLLOWUP_APPOINTMENT,
@@ -264,12 +228,10 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                       fetchPolicy: 'no-cache',
                     })
                     .then((_data: any) => {
-                      console.log('BookFollowUpAppointment', _data);
                       navigateToView();
                     })
                     .catch((e: any) => {
                       CommonBugFender('OverlayRescheduleView_BOOK_FOLLOWUP_APPOINTMENT', e);
-                      console.log('Error occured while BookFollowUpAppointment ', { e });
                       handleGraphQlError(e);
                     });
                 } else {
@@ -302,7 +264,6 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                     patientId: props.patientId,
                     rescheduledId: '',
                   };
-                  console.log(appointmentInput, 'bookAppointmentReschedule');
                   mutate({
                     variables: {
                       bookRescheduleAppointmentInput: appointmentInput,
@@ -313,14 +274,18 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
               }}
             >
               {data
-                ? (console.log('bookAppointment data', data),
-                  props.setdisplayoverlay(false),
+                ? (props.setdisplayoverlay(false),
                   setshowSpinner(false),
                   setshowSuccessPopUp(true),
+                  postAppointmentCleverTapEvents(
+                    CleverTapEventName.CONSULT_RESCHEDULED_BY_THE_PATIENT,
+                    props?.data,
+                    currentPatient,
+                    props?.secretaryData
+                  ),
                   navigateToViewRescdule(data))
                 : null}
-              {/* {loading ? setVerifyingPhoneNumber(false) : null} */}
-              {error ? console.log('bookAppointment error', error, setshowSpinner(false)) : null}
+              {error ? <></> : null}
             </Button>
           )}
         </Mutation>
@@ -344,7 +309,6 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
       <View style={{ paddingHorizontal: showSpinner ? 0 : 20 }}>
         <View
           style={{
-            // backgroundColor: 'white',
             alignItems: 'flex-end',
           }}
         >
@@ -370,11 +334,6 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
           }}
         >
           <View
-            // isVisible={props.dispalyoverlay}
-            // windowBackgroundColor="rgba(0, 0, 0, .41)"
-            // overlayBackgroundColor={theme.colors.DEFAULT_BACKGROUND_COLOR}
-
-            // onBackdropPress={() => props.setdisplayoverlay(false)}
             style={{
               backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
               marginTop: 16,
@@ -382,7 +341,6 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
               height: 'auto',
               maxHeight: height - 98,
               padding: 0,
-              // margin: 0,
               borderRadius: 10,
               overflow: 'hidden',
             }}
@@ -406,13 +364,13 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
               </Text>
             </View>
             <ScrollView bounces={false} ref={scrollViewRef}>
-              {props.renderTab === 'Consult Online' ? (
+              {props.renderTab === string.consultModeTab.VIDEO_CONSULT ||
+              string.consultModeTab.CONSULT_ONLINE ? (
                 <ConsultDoctorOnline
                   doctor={props.doctor}
                   timeArray={timeArray}
                   date={date}
                   setDate={(date) => {
-                    console.log(date, 'setDate');
                     setDate(date);
                   }}
                   nextAvailableSlot={nextAvailableSlot}
@@ -432,7 +390,6 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                   doctor={props.doctor}
                   clinics={props.clinics}
                   setDate={(date) => {
-                    console.log(date, 'setDate');
                     setDate(date);
                     scrollToSlots(350);
                   }}

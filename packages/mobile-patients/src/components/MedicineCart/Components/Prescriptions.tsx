@@ -1,25 +1,38 @@
-import React, { useState } from 'react';
 import {
+  PhysicalPrescriptionCard,
+  PhysicalPrescriptionCardProps,
+} from '@aph/mobile-patients/src/components/MedicineCart/Components/PhysicalPrescriptionCard';
+import { PrescriptionInfoView } from '@aph/mobile-patients/src/components/MedicineCart/Components/PrescriptionInfoView';
+import {
+  EPrescription,
+  PhysicalPrescription,
+  useShoppingCart,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import {
+  EPrescriptionCard,
+  EPrescriptionCardProps,
+} from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
+import { PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import React from 'react';
+import {
+  ScrollView,
+  StyleProp,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  ScrollView,
-  StyleProp,
   ViewStyle,
 } from 'react-native';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import {
-  useShoppingCart,
-  PhysicalPrescription,
-  EPrescription,
-} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { PrescriptionIcon, GreenTickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
-import { EPrescriptionCard } from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
-import { PhysicalPrescriptionCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/PhysicalPrescriptionCard';
+
 export interface PrescriptionsProps {
-  onPressUploadMore: () => void;
-  screen?: string;
+  onPressUploadMore?: () => void;
+  ePresProps?: Partial<EPrescriptionCardProps>;
+  myPresProps?: Partial<PhysicalPrescriptionCardProps>;
+  hideHeader?: boolean;
+  showSelectedOption?: boolean;
+  isPlainStyle?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -29,32 +42,35 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
     ePrescriptions,
     removeEPrescription,
     removePhysicalPrescription,
+    prescriptionType,
+    consultProfile,
   } = useShoppingCart();
-  const { onPressUploadMore, screen, style } = props;
+  const {
+    onPressUploadMore,
+    ePresProps,
+    myPresProps,
+    style,
+    hideHeader,
+    showSelectedOption,
+    isPlainStyle,
+  } = props;
+  const { currentPatient } = useAllCurrentPatients();
 
   const renderHeader = () => {
     return (
-      <View style={styles.Header}>
-        <Text style={styles.HeaderText}>UPLOAD PRESCRIPTION</Text>
-      </View>
+      !hideHeader && (
+        <View style={styles.Header}>
+          <Text style={styles.HeaderText}>UPLOAD PRESCRIPTION</Text>
+        </View>
+      )
     );
   };
-  const renderLabel = (label: string, rightText?: string) => {
+  const renderLabel = (label: string, mediumFont?: boolean) => {
     return (
       <View style={styles.labelView}>
-        <Text style={styles.labelTextStyle}>{label}</Text>
-        {rightText && <Text style={styles.labelTextStyle}>{rightText}</Text>}
+        <Text style={[styles.labelTextStyle, mediumFont && styles.mediumFontStyle]}>{label}</Text>
       </View>
     );
-  };
-  const renderPrescriptionMessage = () => {
-    return screen == 'summary' ? (
-      <View style={styles.prescriptionMsgCard}>
-        <Text style={styles.prescriptionMsg}>
-          Items in your cart marked with 'Rx' need prescriptions
-        </Text>
-      </View>
-    ) : null;
   };
 
   const PhysicalPrescription = (item: PhysicalPrescription, i: number, arrayLength: number) => {
@@ -66,6 +82,7 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
         onRemove={() => {
           removePhysicalPrescription && removePhysicalPrescription(item.title);
         }}
+        {...myPresProps}
       />
     );
   };
@@ -73,7 +90,7 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
   const renderPhysicalPrescriptions = () => {
     return (
       <View style={{ flex: 1 }}>
-        {renderLabel(`Physical Prescription${physicalPrescriptions.length == 1 ? '' : 's'}`)}
+        {renderLabel(`Physical Prescription${physicalPrescriptions.length == 1 ? '' : 's'}`, true)}
         <ScrollView>
           {physicalPrescriptions.map((item, index, array) => {
             return PhysicalPrescription(item, index, array.length);
@@ -98,6 +115,7 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
         onRemove={() => {
           removeEPrescription && removeEPrescription(item.id);
         }}
+        {...ePresProps}
       />
     );
   };
@@ -105,7 +123,7 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
   const renderEprescriptions = () => {
     return (
       <View style={{ flex: 1 }}>
-        {renderLabel(`Prescription${ePrescriptions.length == 1 ? '' : 's'} From Health Records`)}
+        {renderLabel(`My Prescription${ePrescriptions.length == 1 ? '' : 's'}`, true)}
         <ScrollView>
           {ePrescriptions.map((item, index, array) => {
             return EPrescription(item, index, array.length);
@@ -117,10 +135,37 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
 
   const renderUploadMore = () => {
     return (
-      <TouchableOpacity onPress={onPressUploadMore}>
-        <Text style={styles.upload}>UPLOAD MORE</Text>
-      </TouchableOpacity>
+      !!onPressUploadMore && (
+        <TouchableOpacity onPress={onPressUploadMore}>
+          <Text style={styles.upload}>UPLOAD MORE</Text>
+        </TouchableOpacity>
+      )
     );
+  };
+
+  const renderPrescriptionInfo = () => {
+    const isPrescriptionLater = prescriptionType === PrescriptionType.LATER;
+    const name = consultProfile?.firstName || currentPatient?.firstName;
+    const title = isPrescriptionLater
+      ? 'Share Prescription Later Selected'
+      : `Doctor Consult Option Selected for ${name}`;
+    const description = isPrescriptionLater
+      ? 'You have to share prescription later for order to be verified successfully.'
+      : 'An Apollo doctor will call you soon as they are available!';
+    const note = isPrescriptionLater
+      ? 'Delivery TAT will be on hold till the prescription is submitted.'
+      : 'Delivery TAT will be on hold till the consult is completed.';
+
+    return prescriptionType && showSelectedOption ? (
+      <PrescriptionInfoView
+        onPressUpload={() => {
+          onPressUploadMore?.();
+        }}
+        title={title}
+        description={description}
+        note={note}
+      />
+    ) : null;
   };
 
   function showPresritionCard() {
@@ -130,14 +175,14 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
   return showPresritionCard() ? (
     <View style={[styles.container, style]}>
       {renderHeader()}
-      <View style={styles.card}>
+      <View style={isPlainStyle ? null : styles.card}>
         {physicalPrescriptions.length > 0 && renderPhysicalPrescriptions()}
         {ePrescriptions.length > 0 && renderEprescriptions()}
         {renderUploadMore()}
       </View>
     </View>
   ) : (
-    <View>{renderPrescriptionMessage()}</View>
+    renderPrescriptionInfo()
   );
 };
 
@@ -152,29 +197,14 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderColor: 'rgba(2,71,91, 0.3)',
     marginHorizontal: 20,
+    marginBottom: 15,
   },
   HeaderText: {
     color: theme.colors.FILTER_CARD_LABEL,
     ...theme.fonts.IBMPlexSansBold(13),
   },
-  prescriptionMsgCard: {
-    ...theme.viewStyles.cardViewStyle,
-    marginHorizontal: 13,
-    borderRadius: 5,
-    flexDirection: 'row',
-    paddingHorizontal: 10,
-    backgroundColor: '#F7F8F5',
-  },
-  prescriptionMsg: {
-    marginLeft: 13,
-    ...theme.fonts.IBMPlexSansMedium(12),
-    lineHeight: 24,
-    color: '#02475B',
-    marginVertical: 6,
-  },
   card: {
     ...theme.viewStyles.cardViewStyle,
-    marginTop: 15,
     marginHorizontal: 13,
     borderRadius: 10,
     marginBottom: 9,
@@ -202,8 +232,7 @@ const styles = StyleSheet.create({
     color: theme.colors.FILTER_CARD_LABEL,
     ...theme.fonts.IBMPlexSansBold(13),
   },
-  yellowTextStyle: {
-    ...theme.viewStyles.yellowTextStyle,
-    padding: 16,
+  mediumFontStyle: {
+    ...theme.fonts.IBMPlexSansMedium(13),
   },
 });

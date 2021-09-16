@@ -1,33 +1,38 @@
+import _ from 'lodash';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
+import { JoinWaitingRoomView } from '@aph/mobile-patients/src/components/Consult/JoinWaitingRoomView';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
-import { UploadPrescriprionChatPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionChatPopup';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import RNFetchBlob from 'rn-fetch-blob';
+import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import {
-  BackCameraIcon,
   ChatCallIcon,
-  ChatIcon,
   ChatSend,
-  ChatWithNotification,
   CrossPopup,
   DoctorImage,
   DoctorPlaceholderImage,
-  EndCallIcon,
   FileBig,
-  FrontCameraIcon,
-  FullScreenIcon,
   Loader,
   Mascot,
   MissedCallIcon,
-  MuteIcon,
-  PickCallIcon,
-  UnMuteIcon,
-  VideoOffIcon,
   UploadHealthRecords,
   FreeArrowIcon,
-  VideoOnIcon,
+  CallCollapseIcon,
+  CallCameraIcon,
+  AudioActiveIcon,
+  AudioInactiveIcon,
+  VideoActiveIcon,
+  VideoInactiveIcon,
+  WhiteCallIcon,
+  UserThumbnailIcon,
+  CopyIcon,
+  ExternalMeetingVideoCall,
+  InactiveCalenderIcon,
+  ActiveCalenderIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -35,19 +40,20 @@ import {
   CommonBugFender,
   CommonLogEvent,
   DeviceHelper,
-  setBugFenderLog,
   isIos,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   BOOK_APPOINTMENT_RESCHEDULE,
   BOOK_APPOINTMENT_TRANSFER,
-  CANCEL_APPOINTMENT,
   UPDATE_APPOINTMENT_SESSION,
-  UPLOAD_CHAT_FILE_PRISM,
   ADD_CHAT_DOCUMENTS,
-  UPLOAD_MEDIA_DOCUMENT_PRISM,
+  UPLOAD_MEDIA_DOCUMENT_V2,
   SEND_PATIENT_WAIT_NOTIFICATION,
   UPDATE_HEALTH_RECORD_NUDGE_STATUS,
+  GET_APPOINTMENT_DATA,
+  GET_DOCTOR_DETAILS_BY_ID,
+  CALL_CONNECTION_UPDATES,
+  POST_WEB_ENGAGE,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   bookRescheduleAppointment,
@@ -61,7 +67,19 @@ import {
   updateHealthRecordNudgeStatus,
   updateHealthRecordNudgeStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/updateHealthRecordNudgeStatus';
-import { getAppointmentData_getAppointmentData_appointmentsHistory } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
+import {
+  checkCallConnection,
+  checkCallConnectionVariables,
+} from '@aph/mobile-patients/src/graphql/types/checkCallConnection';
+import {
+  addChatDocument,
+  addChatDocumentVariables,
+} from '@aph/mobile-patients/src/graphql/types/addChatDocument';
+import {
+  getAppointmentData,
+  getAppointmentDataVariables,
+  getAppointmentData_getAppointmentData_appointmentsHistory,
+} from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import { getPatinetAppointments_getPatinetAppointments_patinetAppointments } from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
 import {
   APPOINTMENT_STATE,
@@ -81,6 +99,10 @@ import {
   MediaPrescriptionFileProperties,
   Gender,
   USER_STATUS,
+  CheckCallConnectionInput,
+  WebEngageEvent,
+  ConsultMode,
+  PatientConsultEventToDoctorInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updateAppointmentSession,
@@ -90,7 +112,6 @@ import {
   addToConsultQueue,
   addToConsultQueueWithAutomatedQuestions,
   checkIfRescheduleAppointment,
-  endCallSessionAppointment,
   getAppointmentDataDetails,
   getNextAvailableSlots,
   getPrismUrls,
@@ -100,10 +121,15 @@ import {
   getSecretaryDetailsByDoctor,
   getParticipantsLiveStatus,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { stat } from 'react-native-fs';
 import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -117,7 +143,6 @@ import {
   Alert,
   AppState,
   AppStateStatus,
-  BackHandler,
   Dimensions,
   FlatList,
   Image as ImageReact,
@@ -125,7 +150,6 @@ import {
   KeyboardEvent,
   Linking,
   NativeModules,
-  PermissionsAndroid,
   Platform,
   SafeAreaView,
   StatusBar,
@@ -134,25 +158,30 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Clipboard,
+  BackHandler,
 } from 'react-native';
 import CryptoJS from 'crypto-js';
 import { Image } from 'react-native-elements';
 import KeepAwake from 'react-native-keep-awake';
 import SoftInputMode from 'react-native-set-soft-input-mode';
 import { WebView } from 'react-native-webview';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import RNFetchBlob from 'rn-fetch-blob';
-import {
-  cancelAppointment,
-  cancelAppointmentVariables,
-} from '../../graphql/types/cancelAppointment';
-import { uploadChatDocumentToPrism } from '../../graphql/types/uploadChatDocumentToPrism';
+import { NavigationScreenProps } from 'react-navigation';
 import {
   callPermissions,
   g,
   postWebEngageEvent,
   nameFormater,
   followUpChatDaysCaseSheet,
+  addTestsToCart,
+  doRequestAndAccessLocation,
+  handleGraphQlError,
+  formatToCartItem,
+  getPrescriptionItemQuantity,
+  postCleverTapEvent,
+  getNetStatus,
+  postAppointmentCleverTapEvents,
+  fileToBase64,
 } from '../../helpers/helperFunctions';
 import { mimeType } from '../../helpers/mimeType';
 import { FeedbackPopup } from '../FeedbackPopup';
@@ -163,12 +192,43 @@ import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { CustomAlert } from '../ui/CustomAlert';
 import { Snackbar } from 'react-native-paper';
 import BackgroundTimer from 'react-native-background-timer';
-import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
+import { MAX_FILE_SIZE, UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
 import { ChatRoom_NotRecorded_Value } from '@aph/mobile-patients/src/strings/strings.json';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  LocationData,
+  useAppCommonData,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import RNCallKeep from 'react-native-callkeep';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import { convertMinsToHrsMins } from '@aph/mobile-patients/src/utils/dateUtil';
+import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet_medicinePrescription } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import {
+  EPrescription,
+  useShoppingCart,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_diagnosticPrescription } from '@aph/mobile-patients/src/graphql/types/getSDLatestCompletedCaseSheet';
+import {
+  DiagnosticsCartItem,
+  useDiagnosticsCart,
+} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { ConsultProgressBar } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultProgressBar';
+import { getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
+import { RescheduleCancelPopup } from '@aph/mobile-patients/src/components/Consult/RescheduleCancelPopup';
+import { CancelAppointmentPopup } from '@aph/mobile-patients/src/components/Consult/CancelAppointmentPopup';
+import { CancelReasonPopup } from '@aph/mobile-patients/src/components/Consult/CancelReasonPopup';
+import { CheckReschedulePopup } from '@aph/mobile-patients/src/components/Consult/CheckReschedulePopup';
+import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { FollowUpChatGuideLines } from '@aph/mobile-patients/src/components/Consult/Components/FollowUpChatGuideLines';
+import { ChatDisablePrompt } from '@aph/mobile-patients/src/components/Consult/Components/ChatDisablePrompt';
+import { getMedicineDetailsApi, MedicineProductDetailsResponse } from '../../helpers/apiCalls';
+import { AxiosResponse } from 'axios';
+import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/Events';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  postDoctorConsultEvent,
+  postDoctorConsultEventVariables,
+} from '../../graphql/types/postDoctorConsultEvent';
+import { postCleverTapUploadPrescriptionEvents } from '@aph/mobile-patients/src/components/UploadPrescription/Events';
 
 interface OpentokStreamObject {
   connection: {
@@ -205,20 +265,25 @@ const { height, width } = Dimensions.get('window');
 
 const timer: number = 900;
 let timerId: any;
+let reconnectTimerId: any;
+let appointmentDiffMinTimerId: any;
+var networkCheckInterval: any = [];
 let notificationTimerId: any;
 let notificationIntervalId: any;
 let notify_async_key = 'notify_async';
 let joinTimerId: any;
 let diffInHours: number;
-// let callAbandonmentTimer: any;
-// let callAbandonmentStoppedTimer: number = 620;
-// let messageSent: string;
 let rescheduleInitiatedBy: string;
 let callhandelBack: boolean = true;
-let jdCount: any = 1;
+// let jdCount: any = 1;          // For now jd is assigned from backend
 let isJdAllowed: boolean = true;
 let abondmentStarted = false;
 let jdAssigned: boolean = false;
+const bottomBtnContainerWidth = 267;
+const maxRetryAttempt: number = 15;
+let currentRetryAttempt: number = 1;
+let savedTime: any;
+let currentTime: any;
 
 type rescheduleType = {
   rescheduleCount: number;
@@ -228,6 +293,8 @@ type rescheduleType = {
   isPaid: number;
 };
 
+const { text } = theme.viewStyles;
+const { LIGHT_BLUE } = theme.colors;
 const styles = StyleSheet.create({
   rescheduleTextStyles: {
     ...theme.viewStyles.yellowTextStyle,
@@ -260,40 +327,26 @@ const styles = StyleSheet.create({
   },
   mainView: {
     backgroundColor: theme.colors.CARD_BG,
-    paddingTop: 12,
-    paddingHorizontal: 20,
+    paddingTop: 10,
     ...theme.viewStyles.shadowStyle,
   },
-  // displayId: {
-  //   ...theme.fonts.IBMPlexSansMedium(12),
-  //   color: theme.colors.SEARCH_EDUCATION_COLOR,
-  //   paddingBottom: 4,
-  //   marginTop: 10,
-  // },
-  // separatorStyle: {
-  //   borderBottomWidth: 0.5,
-  //   borderBottomColor: 'rgba(2, 71, 91, 0.2)',
-  // },
   displayId: {
     ...theme.fonts.IBMPlexSansMedium(13),
     color: theme.colors.SEARCH_EDUCATION_COLOR,
     paddingBottom: 4,
-    // marginTop: 10,
     letterSpacing: 0.33,
   },
   separatorStyle: {
-    // borderBottomWidth: 0.5,
-    // borderBottomColor: 'rgba(2, 71, 91, 0.2)',
     backgroundColor: '#02475b',
     opacity: 0.2,
     height: 0.5,
-    // marginBottom: 6,
   },
   doctorNameStyle: {
     paddingTop: 8,
-    paddingBottom: 0,
+    paddingBottom: 5,
+    paddingHorizontal: 20,
     textTransform: 'capitalize',
-    ...theme.fonts.IBMPlexSansSemiBold(23),
+    ...theme.fonts.IBMPlexSansSemiBold(16),
     color: theme.colors.LIGHT_BLUE,
   },
   doctorSpecialityStyle: {
@@ -304,9 +357,10 @@ const styles = StyleSheet.create({
     lineHeight: 15,
   },
   timeStyle: {
-    paddingBottom: 20,
     ...theme.fonts.IBMPlexSansMedium(16),
     color: theme.colors.SKY_BLUE,
+    marginBottom: 11,
+    paddingHorizontal: 20,
   },
   imageView: {
     width: 80,
@@ -344,16 +398,14 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   callHeaderView: {
-    backgroundColor: theme.colors.HEADER_GREY,
-    height: 60,
     ...theme.viewStyles.shadowStyle,
-    paddingHorizontal: 20,
     justifyContent: 'center',
+    marginBottom: 15,
   },
   joinRoomDescriptionText: {
     color: theme.colors.SHERPA_BLUE,
     ...theme.fonts.IBMPlexSansMedium(13),
-    width: '65%',
+    width: '45%',
   },
   callHeaderRow: {
     flexDirection: 'row',
@@ -365,14 +417,9 @@ const styles = StyleSheet.create({
     height: 40,
   },
   centerTxt: {
-    position: 'absolute',
-    left: 20,
-    top: '50%',
-    width: width - 40,
-    color: 'white',
-    ...theme.fonts.IBMPlexSansSemiBold(13),
+    ...text('M', 15, LIGHT_BLUE),
     textAlign: 'center',
-    zIndex: 1,
+    marginTop: 15,
   },
   textInputContainerStyles: {
     backgroundColor: 'white',
@@ -415,6 +462,333 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 5,
   },
+  MsgCont: {
+    backgroundColor: 'transparent',
+    width: 282,
+    borderRadius: 10,
+    marginVertical: 8,
+    alignSelf: 'flex-start',
+  },
+  iconCont: {
+    width: 32,
+    height: 32,
+    bottom: 0,
+    position: 'absolute',
+    left: 0,
+  },
+  iconStyle: {
+    width: 32,
+    height: 32,
+    bottom: 0,
+    position: 'absolute',
+    left: 0,
+  },
+  MsgTextCont: {
+    width: 244,
+    backgroundColor: '#fff',
+    marginLeft: 38,
+    borderRadius: 10,
+    marginBottom: 4,
+    paddingHorizontal: 15,
+  },
+  MsgText: {
+    marginTop: 12,
+    lineHeight: 22,
+    color: '#0087BA',
+    ...theme.fonts.IBMPlexSansMedium(15),
+    marginBottom: 5,
+  },
+  stickyButtonCont: {
+    paddingHorizontal: 0,
+    marginBottom: 4,
+    backgroundColor: 'transparent',
+    shadowColor: 'transparent',
+  },
+  buttonStyle: {
+    marginVertical: 5,
+    backgroundColor: '#fff',
+    ...theme.viewStyles.cardViewStyle,
+  },
+  timeStamp: {
+    color: '#0087BA',
+    marginLeft: 27,
+    textAlign: 'right',
+    ...theme.fonts.IBMPlexSansMedium(10),
+    lineHeight: 24,
+    letterSpacing: 0.04,
+    marginTop: 5,
+  },
+  joinBtnTxt: {
+    ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW),
+  },
+  headerShadowView: {
+    borderBottomWidth: 0,
+    zIndex: 100,
+    ...theme.viewStyles.cardViewStyle,
+    borderRadius: 0,
+  },
+  headerView: {
+    borderBottomWidth: 0,
+    zIndex: 100,
+    borderRadius: 0,
+  },
+  calenderIcon: {
+    width: 20,
+    height: 22,
+  },
+  callBottomButtonsStyle: {
+    ...theme.viewStyles.cardViewStyle,
+    position: 'absolute',
+    left: width / 2 - bottomBtnContainerWidth / 2,
+    bottom: 20,
+    width: bottomBtnContainerWidth,
+    zIndex: 1000,
+    backgroundColor: theme.colors.CALL_LIGHT_GRAY,
+    height: 57,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 7,
+  },
+  disconnectViewStyle: {
+    backgroundColor: theme.colors.APP_RED,
+    height: '100%',
+    width: bottomBtnContainerWidth / 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderTopRightRadius: 7,
+    borderBottomRightRadius: 7,
+  },
+  endCallIcon: {
+    width: 32,
+    height: 12,
+  },
+  cameraIcon: {
+    width: 32,
+    height: 28,
+  },
+  muteActiveIcon: {
+    width: 23,
+    height: 32,
+  },
+  muteInactiveIcon: {
+    width: 28,
+    height: 31,
+  },
+  videoActiveIcon: {
+    width: 32,
+    height: 22,
+  },
+  videoInactiveIcon: {
+    width: 30,
+    height: 30,
+  },
+  btnActionContainer: {
+    width: bottomBtnContainerWidth / 4,
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tapToReturnToCallView: {
+    ...theme.viewStyles.cardViewStyle,
+    width: width,
+    height: 44,
+    backgroundColor: theme.colors.SEARCH_UNDERLINE_COLOR,
+    paddingHorizontal: 20,
+    justifyContent: 'center',
+    borderRadius: 0,
+    zIndex: 1,
+  },
+  tapText: {
+    ...theme.viewStyles.text('SB', 14, theme.colors.WHITE),
+  },
+  disableVideoSubscriber: {
+    ...theme.viewStyles.cardViewStyle,
+    position: 'absolute',
+    right: 20,
+    width: 95,
+    height: 120,
+    zIndex: 1000,
+    borderRadius: 12,
+    backgroundColor: '#e1e1e1',
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  disabledVideoAudioText: {
+    ...theme.viewStyles.text('SB', 10, theme.colors.APP_RED),
+    textAlign: 'center',
+  },
+  audioDisableContainer: {
+    width: 85,
+    alignSelf: 'center',
+    backgroundColor: theme.colors.CALL_BG_GRAY,
+    borderRadius: 4,
+    paddingVertical: 2,
+    marginTop: 'auto',
+  },
+  userThumbnailView: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+    top: height / 2 - 81,
+    width: width,
+  },
+  userThumbnailIcon: {
+    width: 90,
+    height: 132,
+  },
+  connectingText: {
+    ...theme.viewStyles.text('M', 14, theme.colors.SEARCH_UNDERLINE_COLOR),
+    textAlign: 'center',
+    bottom: 115,
+    position: 'absolute',
+    zIndex: 1,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  connectingDoctorName: {
+    position: 'absolute',
+    marginHorizontal: 20,
+    width: width - 40,
+    color: theme.colors.LIGHT_BLUE,
+    ...theme.fonts.IBMPlexSansSemiBold(20),
+    textAlign: 'center',
+    left: 0,
+    zIndex: 1001,
+  },
+  connectingTextStyle: {
+    ...theme.viewStyles.text('SB', 12, theme.colors.SEARCH_UNDERLINE_COLOR),
+    marginTop: 10,
+    position: 'absolute',
+    zIndex: 1,
+    textAlign: 'center',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  subscriberConnectedView: {
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    position: 'absolute',
+    zIndex: 1,
+  },
+  connectedDoctorName: {
+    ...theme.viewStyles.text('SB', 12, theme.colors.LIGHT_BLUE),
+    textAlign: 'center',
+  },
+  subscriberConnectedInnerView: {
+    ...theme.viewStyles.cardViewStyle,
+    backgroundColor: theme.colors.CAROUSEL_INACTIVE_DOT,
+    borderRadius: 8,
+    padding: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  doctorStatusContainer: {
+    bottom: 115,
+    position: 'absolute',
+    zIndex: 1,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  doctorStatusInnerContainer: {
+    backgroundColor: theme.colors.CALL_BG_GRAY,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 2,
+  },
+  headerText: {
+    marginHorizontal: 5,
+    ...theme.fonts.IBMPlexSansMedium(13),
+    lineHeight: 17,
+    color: '#01475B',
+    marginBottom: 10,
+    textAlign: 'center',
+    flex: 1,
+    flexWrap: 'wrap',
+  },
+  externalMeetingLinkContainer: {
+    backgroundColor: 'transparent',
+    borderRadius: 10,
+    maxWidth: '85%',
+  },
+
+  externalMeetingLinkImage: {
+    alignSelf: 'center',
+    width: 78,
+    height: 58,
+    marginTop: 15,
+    marginBottom: 11,
+  },
+  externalMeetingLinkTextContainer: {
+    backgroundColor: '#0087ba',
+    marginLeft: 38,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+
+  externalMeetingLinkText: {
+    ...theme.viewStyles.text('M', 15, theme.colors.WHITE),
+    textAlign: 'center',
+  },
+  externalMeetingLinkSubText: {
+    ...theme.viewStyles.text('M', 15, theme.colors.WHITE),
+    textAlign: 'center',
+    marginVertical: 12,
+  },
+  externalMeetingLinkCTAWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  externalMeetingLinkMeetingCTAContainer: {
+    backgroundColor: theme.colors.WHITE,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+  },
+  exeternalMeetingLinkMeetingCTAText: {
+    ...theme.viewStyles.text('M', 11, theme.colors.APP_YELLOW),
+    textTransform: 'uppercase',
+  },
+  externalMeetingLinkTnC: {
+    ...theme.viewStyles.text('M', 8, theme.colors.WHITE),
+    marginVertical: 9,
+  },
+  publisherStyles: {
+    position: 'absolute',
+    top: 44,
+    right: 20,
+    width: 1,
+    height: 1,
+    zIndex: 1000,
+  },
+  callingView: {
+    position: 'absolute',
+    left: 0,
+    width: width,
+    height: 24,
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
+  manageCTAView: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  manageBtn: {
+    width: 68,
+    height: 24,
+    borderRadius: 5,
+    right: 0,
+  },
 });
 
 const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/;
@@ -422,28 +796,36 @@ const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG
 export interface ChatRoomProps extends NavigationScreenProps {}
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
+  const [startCallConnectionUpdateBT, setStartCallConnectionUpdateBT] = useState<number>(0);
   const fromIncomingCall = props.navigation.state.params!.isCall;
   const { isIphoneX } = DeviceHelper();
   const [contentHeight, setContentHeight] = useState(40);
-
+  const [callMinimize, setCallMinimize] = useState<boolean>(false);
+  const followChatLimit = AppConfig.Configuration.FollowUp_Chat_Limit || 4;
+  const [availableMessages, setavailableMessages] = useState(followChatLimit);
+  const [currentCaseSheet, setcurrentCaseSheet] = useState<any>([]);
   let appointmentData: any = props.navigation.getParam('data');
   const caseSheet = followUpChatDaysCaseSheet(appointmentData.caseSheet);
+  const followUpChatDaysCurrentCaseSheet = followUpChatDaysCaseSheet(currentCaseSheet);
   const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
-  const followUpAfterInDays =
-    caseSheetChatDays || caseSheetChatDays === '0'
-      ? caseSheetChatDays === '0'
-        ? 0
-        : Number(caseSheetChatDays) - 1
-      : 6;
+
+  const currentCaseSheetChatDays = g(
+    followUpChatDaysCurrentCaseSheet,
+    '0' as any,
+    'followUpAfterInDays'
+  );
+  const followupDays = caseSheetChatDays || currentCaseSheetChatDays;
+  const followUpAfterInDays = caseSheetChatDays ? Number(caseSheetChatDays) : 7;
   const fromSearchAppointmentScreen =
     props.navigation.getParam('fromSearchAppointmentScreen') || false;
   const disableChat =
     props.navigation.getParam('disableChat') ||
     moment(new Date(appointmentData.appointmentDateTime))
       .add(followUpAfterInDays, 'days')
-      .startOf('day')
-      .isBefore(moment(new Date()).startOf('day'));
-  // console.log('appointmentData >>>>', appointmentData);
+      .isSameOrBefore(moment(new Date()));
+  const isInFuture = moment(props.navigation.state.params!.data.appointmentDateTime).isAfter(
+    moment(new Date())
+  );
 
   const callType = props.navigation.state.params!.callType
     ? props.navigation.state.params!.callType
@@ -455,18 +837,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const isVoipCall = props.navigation.state.params!.isVoipCall;
 
-  let dateIsAfter = moment(new Date()).isAfter(moment(appointmentData.appointmentDateTime));
-
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const otSessionRef = React.createRef();
-  const textInput = React.createRef();
 
   const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState<string>('');
   const [heightList, setHeightList] = useState<number>(
     isIphoneX() ? height - 166 : Platform.OS === 'ios' ? height - 141 : height - 141
   );
-  const [status, setStatus] = useState<STATUS>(appointmentData.status);
+  const status = useRef<STATUS>(appointmentData.status);
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
   const [cameraPosition, setCameraPosition] = useState<string>('front');
@@ -476,16 +855,39 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [isCall, setIsCall] = useState<boolean>(false);
   const [onSubscribe, setOnSubscribe] = useState<boolean>(false);
   const isAudio = useRef<boolean>(false);
+  const callKitAppointmentId = useRef<string>('');
   const [isAudioCall, setIsAudioCall] = useState<boolean>(false);
-  const [showAudioPipView, setShowAudioPipView] = useState<boolean>(true);
   const [showPopup, setShowPopup] = useState(false);
   const [showCallAbandmentPopup, setShowCallAbandmentPopup] = useState(false);
   const [showConnectAlertPopup, setShowConnectAlertPopup] = useState(false);
-  const { setDoctorJoinedChat, doctorJoinedChat, locationDetails } = useAppCommonData(); //setting in context since we are updating this in NotificationListener
+  const [isConsultedWithDoctorBefore, setConsultedWithDoctorBefore] = useState(false);
+  const MedicinePrescriptions = currentCaseSheet?.filter(
+    (item: any) => item?.medicinePrescription !== null
+  );
+  const TestPrescriptions = currentCaseSheet?.filter(
+    (item: any) => item?.diagnosticPrescription !== null
+  );
+  const {
+    setDoctorJoinedChat,
+    doctorJoinedChat,
+    locationDetails,
+    setLocationDetails,
+    diagnosticLocation,
+    pharmacyLocation,
+  } = useAppCommonData(); //setting in context since we are updating this in NotificationListener
+  const {
+    addMultipleCartItems: addMultipleTestCartItems,
+    addMultipleEPrescriptions: addMultipleTestEPrescriptions,
+  } = useDiagnosticsCart();
+  const { setEPrescriptions, addMultipleCartItems } = useShoppingCart();
   const [name, setname] = useState<string>('');
+  const [showRescheduleCancel, setShowRescheduleCancel] = useState<boolean>(false);
+  const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
+  const [showReschedulePopup, setShowReschedulePopup] = useState<boolean>(false);
+  const [isCancelVisible, setCancelVisible] = useState<boolean>(false);
   const [talkStyles, setTalkStyles] = useState<object>({
     flex: 1,
-    backgroundColor: 'black',
+    backgroundColor: theme.colors.CALL_BG_GRAY,
     position: 'absolute',
     top: 0,
     bottom: 0,
@@ -499,38 +901,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   });
   const [publisherStyles, setPublisherStyles] = useState<object>({
     position: 'absolute',
-    top: isIphoneX() ? 74 : 44,
+    top: isIphoneX() ? 70 : 44,
     right: 20,
-    width: 148,
-    height: 112,
+    width: 95,
+    height: 120,
     zIndex: 1000,
-    borderRadius: 30,
-  });
-  const [audioCallStyles, setAudioCallStyles] = useState<object>({
-    flex: 1,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 100,
-    backgroundColor: 'black',
-  });
-  const [audioCallImageStyles, setAudioCallImageStyles] = useState<object>({
-    width,
-    height,
-  });
-
-  const [timerStyles, setTimerStyles] = useState<object>({
-    position: 'absolute',
-    marginHorizontal: 20,
-    marginTop: isIphoneX() ? 91 : 81,
-    width: width - 40,
-    color: 'white',
-    ...theme.fonts.IBMPlexSansSemiBold(12),
-    textAlign: 'center',
-    letterSpacing: 0.46,
-    zIndex: 1005,
+    borderRadius: 12,
+    ...theme.viewStyles.cardViewStyle,
   });
 
   const disAllowReschedule =
@@ -539,7 +916,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [remainingTime, setRemainingTime] = useState<number>(900);
   const [consultStarted, setConsultStarted] = useState<boolean>(true);
   const [callTimer, setCallTimer] = useState<number>(0);
-  const [joinCounter, setJoinCounter] = useState<number>(0);
   const [callAccepted, setCallAccepted] = useState<boolean>(false);
   const [hideStatusBar, setHideStatusBar] = useState<boolean>(false);
   const [isDropdownVisible, setDropdownVisible] = useState(false);
@@ -559,7 +935,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [transferData, setTransferData] = useState<any>([]);
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [doctorScheduleId, setDoctorScheduleId] = useState<string>('');
-  const [dropDownBottomStyle, setDropDownBottomStyle] = useState<number>(isIphoneX() ? 50 : 15);
+  const callStatus = useRef<string>('');
+  const callToastStatus = useRef<string>('');
+  const isCallReconnecting = useRef<boolean>(false);
+  const maxCallRetryAttempt: number = AppConfig.Configuration.MaxCallRetryAttempt;
+  const currentCallRetryAttempt = useRef<number>(1);
+  const isErrorToast = useRef<boolean>(false);
   const jrDoctorJoined = useRef<boolean>(false); // using ref to get the current updated values on event listeners
   const [displayChatQuestions, setDisplayChatQuestions] = useState<boolean>(false);
   const [displayUploadHealthRecords, setDisplayUploadHealthRecords] = useState<boolean>(false);
@@ -581,14 +962,29 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [showPDF, setShowPDF] = useState<boolean>(false);
   const [fileNamePDF, setFileNamePDF] = useState<string>('');
   const [textChange, setTextChange] = useState(false);
-  const [sendMessageToDoctor, setSendMessageToDoctor] = useState<boolean>(false);
   const [callerAudio, setCallerAudio] = useState<boolean>(true);
   const [callerVideo, setCallerVideo] = useState<boolean>(true);
   const [downgradeToAudio, setDowngradeToAudio] = React.useState<boolean>(false);
   const patientJoinedCall = useRef<boolean>(false); // using ref to get the current values on listener events
   const subscriberConnected = useRef<boolean>(false);
   const [secretaryData, setSecretaryData] = useState<any>([]);
+  const [callDuration, setCallDuration] = useState<number>(0);
+  const hasDrJoined = useRef<boolean>(false);
+  hasDrJoined.current = doctorJoinedChat;
+  const isConsultStarted = useRef<boolean>(false);
+  const makeUpdateAppointmentCall = useRef<boolean>(true);
+  const isPaused = subscriberConnected.current
+    ? !callerAudio && !callerVideo
+      ? 'audio/video'
+      : !callerVideo
+      ? 'video'
+      : !callerAudio
+      ? 'audio'
+      : ''
+    : '';
 
+  const doctorProfileUrl = appointmentData?.doctorInfo?.photoUrl;
+  const showDoctorProfile = !subscriberConnected.current || !callerVideo;
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
   const acceptedCallMsg = '^^callme`accept^^';
@@ -618,7 +1014,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const patientRejectedCall = '^^#PATIENT_REJECTED_CALL';
   const exotelCall = '^^#exotelCall';
   const vitalsCompletedByPatient = '^^#vitalsCompletedByPatient'; // ignore msg used by p-web
+  const doctorWillConnectShortly = '^^#DoctorWillConnectShortly';
+  const rescheduleOrCancelAppointment = '^^#RescheduleOrCancelAppointment';
+  const appointmentStartsInFifteenMin = '^^#appointmentStartsInFifteenMin';
+  const appointmentStartsInTenMin = '^^#appointmentStartsInTenMin';
+  const sectionHeader = '^^#sectionHeader';
+  const followUpChatGuideLines = '^^#followUpChatGuideLines';
+  const externalMeetingLink = '^^#externalMeetingLink';
+  const jdAutoAssign = '^^#JdInfoMsg';
 
+  const disconnecting = 'Disconnecting...';
+  const callConnected = 'Call Connected';
+  const connectingCall = 'Connecting Call...';
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
   const doctorId = appointmentData.doctorInfo.id;
@@ -629,13 +1036,153 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   let minuteTimer: any;
 
   const { getPatientApiCall } = useAuth();
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, currentPatientWithHistory } = useAllCurrentPatients();
 
   const [patientImageshow, setPatientImageshow] = useState<boolean>(false);
   const [showweb, setShowWeb] = useState<boolean>(false);
   const [url, setUrl] = useState('');
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const [handlerMessage, setHandlerMessage] = useState('');
+  const skipAutoQuestions = useRef<boolean | null | undefined>(null);
+  const isProgressBarVisible = useRef<boolean>(true);
+  const currentProgressBarPosition = useRef<number>(0);
+  const showProgressBarOnHeader = useRef<boolean>(false);
+  const isJdAllowedToAssign = useRef<boolean | null | undefined>(null);
+  const [appointmentDiffMin, setAppointmentDiffMin] = useState<number>(0);
+  const [phoneNumber, setPhoneNumber] = useState<string | null>('');
+  let cancelAppointmentTitle = '';
+  if (appointmentDiffMin >= 15) {
+    cancelAppointmentTitle =
+      "Since you're cancelling 15 minutes before your appointment, we'll issue you a full refund!";
+  } else {
+    cancelAppointmentTitle = 'We regret the inconvenience caused. We’ll issue you a full refund.';
+  }
+  const isAppointmentStartsInFifteenMin = appointmentDiffMin <= 15 && appointmentDiffMin > 0;
+  const isAppointmentExceedsTenMin = appointmentDiffMin <= 0 && appointmentDiffMin > -10;
+  type messageType = 'PDF' | 'Text' | 'Image';
+
+  useEffect(() => {
+    handleExternalFileShareUpload();
+
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    AsyncStorage.getItem('phoneNumber').then(setPhoneNumber);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
+
+  const handleExternalFileShareUpload = () => {
+    try {
+      const sharedFiles = props.navigation.getParam('sharedFilesList');
+
+      if (sharedFiles && sharedFiles.length > 0) {
+        let uploadFileTaskPromiseArray: any[] = [];
+
+        sharedFiles.map((file: any) => {
+          const taskPromise = new Promise((resolve, reject) => {
+            let conetentUri = file.contentUri;
+            let fileNameAndExtension = file.fileName;
+
+            let obtainedfFileType = fileNameAndExtension.substring(
+              fileNameAndExtension.lastIndexOf('.') + 1
+            );
+
+            if (conetentUri.startsWith('content://')) {
+              const RNFS = require('react-native-fs');
+
+              const destPath = `${RNFS.TemporaryDirectoryPath}/${fileNameAndExtension}`;
+              RNFS.copyFile(conetentUri, destPath)
+                .then((path: any) => {
+                  RNFetchBlob.fs
+                    .stat(destPath)
+                    .then((stats) => {
+                      let fileSize = stats?.size;
+                      if (fileSize > MAX_FILE_SIZE) {
+                        Alert.alert(
+                          strings.common.uhOh,
+                          `Invalid File Size. File size must be less than 25 MB.`
+                        );
+                        reject(undefined);
+                        return;
+                      }
+
+                      fileToBase64(destPath).then((fileBase64) => {
+                        const random8DigitNumber = Math.floor(Math.random() * 90000) + 20000000;
+
+                        let uploadFileItem = {
+                          base64: fileBase64,
+                          fileType: obtainedfFileType,
+                          title: obtainedfFileType.toUpperCase() + '_' + random8DigitNumber,
+                        };
+
+                        resolve(uploadFileItem);
+                      });
+                    })
+                    .catch((err) => {
+                      reject(undefined);
+                    });
+                })
+                .catch((err) => {
+                  reject(undefined);
+                });
+            }
+          });
+          uploadFileTaskPromiseArray.push(taskPromise);
+        });
+
+        Promise.all(uploadFileTaskPromiseArray)
+          .then((results) => {
+            uploadDocument(results, 'Gallery');
+          })
+          .catch((err) => {});
+      }
+    } catch (err) {
+      Alert.alert(strings.common.uhOh, `Something went wrong.`);
+    }
+  };
+
+  const onCall = useRef<boolean>(false);
+
+  const handleBack = () => {
+    if (onCall.current) {
+      minimiseCall();
+      return true;
+    } else {
+      props.navigation.goBack();
+      return true;
+    }
+  };
+
+  useEffect(() => {
+    currentCaseSheet && followupDays && analyzeMessages(messages);
+  }, [currentCaseSheet]);
+
+  useEffect(() => {
+    onCall.current = isCall || isAudioCall;
+  }, [isCall, isAudioCall]);
+
+  const minimiseCall = () => {
+    setCallMinimize(true);
+    setTalkStyles({
+      height: 0,
+      width: 0,
+    });
+
+    setSubscriberStyles({
+      width: 0,
+      height: 0,
+    });
+
+    setPublisherStyles({
+      width: 0,
+      height: 0,
+    });
+
+    setPipView(true);
+    setChatReceived(false);
+    setHideStatusBar(false);
+  };
+
   const postAppointmentWEGEvent = (
     type:
       | WebEngageEventName.COMPLETED_AUTOMATED_QUESTIONS
@@ -692,6 +1239,34 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         'City'
       ] = location;
     }
+    if (type == WebEngageEventName.PATIENT_ENDED_CONSULT) {
+      const event = eventAttributes as WebEngageEvents[WebEngageEventName.PATIENT_ENDED_CONSULT];
+      event['Doctor ID'] = g(appointmentData, 'doctorInfo', 'id')!;
+      event['Doctor Number'] = g(appointmentData, 'doctorInfo', 'mobileNumber');
+      event['Doctor Facility ID'] = g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'id'
+      );
+      event['Doctor Facility'] = g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'name'
+      );
+      event['Appointment ID'] = g(appointmentData, 'id');
+      event['Appointment Display ID'] = g(appointmentData, 'displayId');
+      event['Patient Number'] = g(appointmentData, 'patientName');
+      event['Session ID'] = sessionId;
+      event['Call ID'] = token;
+      event['Did doctor Join'] = 'string';
+    }
+    postCleverTapEvent(type, eventAttributes);
     postWebEngageEvent(type, eventAttributes);
   };
 
@@ -701,13 +1276,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       | WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM
       | WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM
       | WebEngageEventName.UPLOAD_PHR_CLICK_CHATROOM
+      | CleverTapEventName.CONSULT_REPORT_UPLOAD_IN_CHATROOM,
+    Source?: string
   ) => {
     const eventAttributes:
       | WebEngageEvents[WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM]
       | WebEngageEvents[WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM]
       | WebEngageEvents[WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM]
-      | WebEngageEvents[WebEngageEventName.UPLOAD_PHR_CLICK_CHATROOM] = {
-      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      | WebEngageEvents[WebEngageEventName.UPLOAD_PHR_CLICK_CHATROOM]
+      | CleverTapEvents[CleverTapEventName.CONSULT_REPORT_UPLOAD_IN_CHATROOM] = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       'Patient Age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
@@ -733,8 +1311,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         'facility',
         'city'
       )!,
+      ...(Source && { Source: Source }),
     };
     postWebEngageEvent(type, eventAttributes);
+    if (Source) {
+      postCleverTapEvent(type, eventAttributes);
+    }
   };
 
   const openTokWebEngageEvents = (
@@ -809,7 +1391,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const postConsultCardEvents = (
     type:
       | WebEngageEventName.CHAT_WITH_DOCTOR
-      | WebEngageEventName.PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT
+      | WebEngageEventName.PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT,
+    chatFormat: messageType
   ) => {
     try {
       const eventAttributes:
@@ -850,41 +1433,271 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         'Secretary Name': g(secretaryData, 'name'),
         'Secretary Mobile Number': g(secretaryData, 'mobileNumber'),
         'Doctor Mobile Number': g(appointmentData, 'doctorInfo', 'mobileNumber')!,
+        'Doctor ID': g(appointmentData, 'doctorInfo', 'id')!,
+        'Display ID': g(appointmentData, 'displayId')!,
+        'Chat Format': chatFormat,
       };
       postWebEngageEvent(type, eventAttributes);
+      postCleverTapEvent(type, eventAttributes);
     } catch (error) {}
+  };
+
+  const fireWebengageEventForCallAnswer = (
+    eventName:
+      | WebEngageEventName.PATIENT_ANSWERED_CALL
+      | WebEngageEventName.PATIENT_DECLINED_CALL
+      | WebEngageEventName.PATIENT_MISSED_CALL
+      | WebEngageEventName.CALL_DROPPED_UNKNOWN_REASON
+  ) => {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.PATIENT_ANSWERED_CALL]
+      | WebEngageEvents[WebEngageEventName.PATIENT_DECLINED_CALL]
+      | WebEngageEvents[WebEngageEventName.PATIENT_MISSED_CALL]
+      | WebEngageEvents[WebEngageEventName.CALL_DROPPED_UNKNOWN_REASON] = {
+      'Patient User ID': g(currentPatient, 'id'),
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient mobile number': g(currentPatient, 'mobileNumber'),
+      'Appointment Date time': moment(g(appointmentData, 'appointmentDateTime')).toDate(),
+      'Appointment display ID': g(appointmentData, 'displayId')!,
+      'Appointment ID': g(appointmentData, 'id')!,
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+      'Speciality Name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
+      'Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id')!,
+      'Doctor Type': g(appointmentData, 'doctorInfo', 'doctorType')!,
+      'Mode of Call': isAudioCall ? 'Audio' : 'Video',
+      Platform: 'App',
+      'Doctor ID': g(appointmentData, 'doctorInfo', 'id'),
+      'Doctor Number': g(appointmentData, 'doctorInfo', 'mobileNumber'),
+      'Doctor Facility ID': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'id'
+      ),
+      'Doctor Facility': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'name'
+      ),
+      'Session ID': sessionId,
+      'Call ID': token,
+    };
+    postCleverTapEvent(eventName, eventAttributes);
+    postWebEngageEvent(eventName, eventAttributes);
   };
 
   useEffect(() => {
     if (!currentPatient) {
-      console.log('No current patients available');
       getPatientApiCall();
     }
   }, [currentPatient]);
 
   useEffect(() => {
-    const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      BackHandler.addEventListener('hardwareBackPress', backDataFunctionality);
-    });
+    if (Platform.OS === 'android') {
+      handleAndroidCallAcceptListeners();
+    } else if (Platform.OS === 'ios') {
+      handleCallkitEventListeners();
+      handleVoipEventListeners();
+    }
+  }, []);
 
-    const willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
-    });
-    if (!disableChat && status !== STATUS.COMPLETED) {
+  useEffect(() => {
+    !isVoipCall && !fromIncomingCall && fetchAppointmentData();
+    checkAutoTriggerMessagePostAppointmentTime();
+    return function cleanup() {
+      BackgroundTimer.clearInterval(appointmentDiffMinTimerId);
+    };
+  }, []);
+
+  const playJoinSound = () => {
+    try {
+      maxVolume();
+      if (joinAudioTrack) {
+        joinAudioTrack.play();
+      }
+    } catch (e) {
+      CommonBugFender('playing_callertune__failed', e);
+    }
+  };
+
+  const playDisconnectSound = () => {
+    try {
+      maxVolume();
+      if (disconnectAudioTrack) {
+        disconnectAudioTrack.play();
+        AsyncStorage.setItem('leftSoundPlayed', 'true');
+      }
+    } catch (e) {
+      CommonBugFender('playing_callertune__failed', e);
+    }
+  };
+
+  const stopSound = () => {
+    callStatus.current = '';
+    callToastStatus.current = '';
+    isErrorToast.current = false;
+    try {
+      setPrevVolume();
+      if (joinAudioTrack) {
+        joinAudioTrack.stop();
+      }
+      if (disconnectAudioTrack) {
+        disconnectAudioTrack.stop();
+      }
+    } catch (e) {
+      CommonBugFender('playing_callertune__failed', e);
+    }
+  };
+
+  const checkAutoTriggerMessagePostAppointmentTime = () => {
+    const diffMin = Math.ceil(
+      moment(appointmentData?.appointmentDateTime).diff(moment(), 'minutes', true)
+    );
+    setAppointmentDiffMin(diffMin);
+    if (diffMin <= 30 && diffMin >= -15) {
+      appointmentDiffMinTimerId = BackgroundTimer.setInterval(() => {
+        const updatedDiffMin = Math.ceil(
+          moment(appointmentData?.appointmentDateTime).diff(moment(), 'minutes', true)
+        );
+        setAppointmentDiffMin(updatedDiffMin);
+        if (updatedDiffMin === -5) {
+          const doctorConnectShortly = insertText.filter((obj: any) => {
+            return obj.message === doctorWillConnectShortly;
+          });
+          if (doctorConnectShortly?.length === 0) {
+            doctorWillConnectShortlyAutomatedText();
+          }
+        }
+        if (updatedDiffMin === -15) {
+          const rescheduleOrCancelAppointmnt = insertText.filter((obj: any) => {
+            return obj.message === rescheduleOrCancelAppointment;
+          });
+          if (rescheduleOrCancelAppointmnt?.length === 0) {
+            // rescheduleOrCancelAppointmentAutomatedText();
+          }
+          BackgroundTimer.clearInterval(appointmentDiffMinTimerId);
+        }
+      }, 40000);
+    }
+  };
+
+  useEffect(() => {
+    if (!currentPatientWithHistory) {
+      getPatientApiCallWithHistory();
+    }
+  }, [currentPatientWithHistory, displayChatQuestions]);
+
+  useEffect(() => {
+    if (!disableChat && status.current !== STATUS.COMPLETED && isInFuture && !fromIncomingCall) {
       callPermissions();
     }
-    return () => {
-      didFocusSubscription && didFocusSubscription.remove();
-      willBlurSubscription && willBlurSubscription.remove();
-    };
   }, []);
 
   useEffect(() => {
     if (isVoipCall || fromIncomingCall) {
       joinCallHandler();
     }
+
+    if (fromIncomingCall === true) {
+      fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_ANSWERED_CALL);
+    } else {
+      fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_DECLINED_CALL);
+    }
     updateNumberOfParticipants();
+    fetchDoctorDetails();
+    isProgressBarVisible.current = appointmentData.status !== STATUS.COMPLETED;
   }, []);
+
+  useEffect(() => {
+    messages?.length && analyzeMessages(messages);
+  }, [messages]);
+  const [guidelinesAdded, setguidelinesAdded] = useState<boolean>(false);
+
+  function analyzeMessages(messages: any) {
+    const prescUploadIndex = messages
+      .reverse()
+      .findIndex((item: any) => item?.id == doctorId && item?.message == followupconsult);
+    messages.reverse();
+    const guideLinesIndex = messages
+      .reverse()
+      .findIndex((item: any) => item?.id == doctorId && item?.message == followUpChatGuideLines);
+    messages.reverse();
+    if (prescUploadIndex == -1) {
+      return;
+    } else if (prescUploadIndex != -1 && guideLinesIndex == -1) {
+      sendFollowUpChatGuideLines();
+      return;
+    }
+    const lastDocMsgIndex = messages
+      .reverse()
+      .findIndex((item: any) => item?.id == doctorId && !item?.automatedText);
+    messages.reverse();
+    let msgsByPatient = 0;
+    if (lastDocMsgIndex && lastDocMsgIndex < prescUploadIndex) {
+      const latestFollowUpChat = messages.slice(-lastDocMsgIndex);
+      msgsByPatient = latestFollowUpChat.filter(
+        (item: any) => item?.id == patientId && item?.message != imageconsult
+      )?.length;
+    } else if (lastDocMsgIndex == 0 || guideLinesIndex == 0) {
+      msgsByPatient = 0;
+    } else {
+      const latestFollowUpChat = messages.slice(-guideLinesIndex);
+      msgsByPatient = latestFollowUpChat.filter(
+        (item: any) => item?.id == patientId && item?.message != imageconsult
+      )?.length;
+    }
+    msgsByPatient >= 0 && msgsByPatient <= followChatLimit
+      ? setavailableMessages(followChatLimit - msgsByPatient)
+      : msgsByPatient > followChatLimit
+      ? setavailableMessages(0)
+      : setavailableMessages(followChatLimit);
+  }
+
+  const fetchDoctorDetails = async () => {
+    const input = {
+      id: doctorId,
+    };
+    const res = await client.query<getDoctorDetailsById>({
+      query: GET_DOCTOR_DETAILS_BY_ID,
+      variables: input,
+      fetchPolicy: 'no-cache',
+    });
+    const skipQuestions = res?.data?.getDoctorDetailsById?.skipAutoQuestions;
+    isJdAllowedToAssign.current = res?.data?.getDoctorDetailsById?.isJdAllowed;
+    skipAutoQuestions.current = skipQuestions;
+    checkVitalQuestionsStatus();
+    getHistory(0);
+  };
+
+  const checkVitalQuestionsStatus = () => {
+    const isConsultPending = appointmentData?.status == 'PENDING';
+    if (appointmentData.isAutomatedQuestionsComplete) {
+      requestToJrDoctor();
+      if (
+        !disableChat &&
+        status.current !== STATUS.COMPLETED &&
+        !appointmentData.hideHealthRecordNudge &&
+        !isVoipCall &&
+        !fromIncomingCall
+      ) {
+        showAndUpdateNudgeScreenVisibility();
+      }
+    } else {
+      const displayQuestion = isConsultPending ? (skipAutoQuestions.current ? false : true) : false;
+      setDisplayChatQuestions(displayQuestion);
+    }
+  };
+
+  const getPatientApiCallWithHistory = async () => {
+    if (!disableChat && status.current !== STATUS.COMPLETED && displayChatQuestions) {
+      getPatientApiCall(true);
+    }
+  };
 
   const updateNumberOfParticipants = async (status: USER_STATUS = USER_STATUS.ENTERING) => {
     /**
@@ -897,32 +1710,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         jrDoctorJoined.current = false;
         setDoctorJoined(true);
         setDoctorJoinedChat && setDoctorJoinedChat(true);
+        setTextChange(true);
+        isConsultStarted.current = true;
         setTimeout(() => {
           setDoctorJoined(false);
         }, 10000);
-      }
-    }
-  };
-
-  const backDataFunctionality = () => {
-    try {
-      console.log(callhandelBack, 'is back called');
-      if (callhandelBack) {
-        // handleCallTheEdSessionAPI();
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-          })
-        );
-        return true;
       } else {
-        return true;
+        setTextChange(false);
+
+        AsyncStorage.getItem('startCallConnectionUpdateBT').then((data) => {
+          BackgroundTimer.clearInterval(Number.parseInt(data || '0'));
+        });
+        BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
       }
-    } catch (error) {
-      CommonBugFender('ChatRoom_backDataFunctionality_try', error);
-      console.log(error, 'error');
     }
   };
 
@@ -931,21 +1731,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     setuserName(userName);
     setUserAnswers({ appointmentId: channel });
-    if (!disableChat && status !== STATUS.COMPLETED) {
+    if (!disableChat && status.current !== STATUS.COMPLETED) {
       getAppointmentCount();
     }
     getSecretaryData();
-    // requestToJrDoctor();
-    // updateSessionAPI();
-    if (isIos()) {
-      handleCallkitEventListeners();
-      handleVoipEventListeners();
-    }
   }, []);
 
   useEffect(() => {
-    console.log('didmout');
-    Platform.OS === 'android' && requestReadSmsPermission();
     Platform.OS === 'android' && SoftInputMode.set(SoftInputMode.ADJUST_RESIZE);
     KeepAwake.activate();
     AppState.addEventListener('change', _handleAppStateChange);
@@ -961,41 +1753,87 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       const payload = notification && notification.getData();
       if (payload && payload.appointmentId) {
         isAudio.current = notification.getData().isVideo ? false : true;
+        callKitAppointmentId.current = payload.appointmentId;
       }
     });
   };
 
   const onAnswerCallAction = () => {
-    joinCallHandler();
-  };
-
-  const playSound = () => {
-    try {
-      maxVolume();
-      if (audioTrack) {
-        audioTrack.play();
-        audioTrack.setNumberOfLoops(15);
-        console.log('call audioTrack');
-      }
-    } catch (e) {
-      CommonBugFender('playing_callertune__failed', e);
+    if (callKitAppointmentId.current === channel) {
+      joinCallHandler();
+    } else {
+      navigateToAnotherAppointment(
+        callKitAppointmentId.current,
+        isAudio.current ? 'AUDIO' : 'VIDEO'
+      );
     }
   };
 
-  const stopSound = () => {
+  const navigateToAnotherAppointment = async (appointmentId: string, callType: string) => {
     try {
-      setPrevVolume();
-      if (audioTrack) {
-        audioTrack.stop();
+      setLoading!(true);
+      const response = await client.query<getAppointmentData, getAppointmentDataVariables>({
+        query: GET_APPOINTMENT_DATA,
+        variables: { appointmentId },
+        fetchPolicy: 'no-cache',
+      });
+      const appointmentData = response.data?.getAppointmentData?.appointmentsHistory?.[0];
+      if (appointmentData?.doctorInfo) {
+        setLoading!(false);
+        props.navigation.goBack();
+        props.navigation.navigate(AppRoutes.ChatRoom, {
+          data: appointmentData,
+          isCall: true,
+          callType,
+          prescription: '',
+        });
+      } else {
+        throw new Error('Doctor info is required to process the request.');
       }
-    } catch (e) {
-      CommonBugFender('playing_callertune__failed', e);
+    } catch (error) {
+      setLoading!(false);
+      showAphAlert!({
+        title: string.common.uhOh,
+        description: string.appointmentDataError,
+        CTAs: [
+          { text: 'CANCEL', onPress: () => hideAphAlert!(), type: 'white-button' },
+          {
+            text: 'RETRY',
+            onPress: () => {
+              hideAphAlert!();
+              navigateToAnotherAppointment(appointmentId, callType);
+            },
+            type: 'orange-button',
+          },
+        ],
+      });
+      CommonBugFender(`${AppRoutes.ChatRoom}_Navigate_To_Another_Appointment`, error);
     }
+  };
+
+  const handleAndroidCallAcceptListeners = () => {
+    Linking.addEventListener('url', (event) => {
+      try {
+        const deeplinkBaseUrl = 'apollopatients://DoctorCall?';
+        const index = event.url.indexOf(deeplinkBaseUrl);
+        const isDoctorCall = index > -1;
+        const params = event.url?.substring(index + deeplinkBaseUrl.length)?.split('+');
+        const appointmentId = params[0];
+        const callType = params[1];
+        isAudio.current = callType === 'AUDIO';
+        if (isDoctorCall) {
+          if (appointmentId === channel) {
+            joinCallHandler();
+          } else {
+            navigateToAnotherAppointment(appointmentId, callType);
+          }
+        }
+      } catch (e) {}
+    });
   };
 
   useEffect(() => {
-    console.log('callType', callType);
-    if (callType) {
+    if (callType && !fromIncomingCall) {
       AsyncStorage.setItem('callDisconnected', 'false');
 
       callPermissions(() => {
@@ -1007,7 +1845,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           isAudio.current = true;
           callhandelBack = false;
         }
-        isVoipCall || fromIncomingCall ? null : playSound();
       });
     }
     if (prescription) {
@@ -1017,17 +1854,72 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const client = useApolloClient();
 
+  const checkNetworkStatus = () => {
+    currentTime = new Date().getTime() / 1000; // in seconds
+    if (!savedTime || currentTime - savedTime >= 4) {
+      /**
+       *  In order to work retry logic correctly, we are checking time diff because in few of the cases this
+       *  is getting called twice because of event listeners.
+       * */
+      if (isCallReconnecting.current) {
+        if (currentCallRetryAttempt.current < maxCallRetryAttempt) {
+          currentCallRetryAttempt.current++;
+          // retrying
+          getNetStatus()
+            .then((status) => {
+              if (status) {
+                clearNetworkCheckInterval();
+                joinCallHandler();
+              }
+            })
+            .catch((e) => {
+              CommonBugFender('ChatRoom_checkNetworkStatus', e);
+            });
+        } else {
+          //retry time out
+          hideCallUI();
+          if (isAudio.current) {
+            handleEndAudioCall(false, false);
+          } else {
+            handleEndCall(false, false);
+          }
+          clearNetworkCheckInterval();
+        }
+      } else {
+        clearNetworkCheckInterval();
+      }
+    }
+    savedTime = currentTime;
+  };
+
+  const clearNetworkCheckInterval = () => {
+    networkCheckInterval?.map((intervalId: any) => {
+      BackgroundTimer.clearInterval(intervalId);
+      networkCheckInterval = [];
+    });
+  };
+
+  const hideCallUI = () => {
+    const zeroDimension = {
+      height: 0,
+      width: 0,
+    };
+    setTalkStyles(zeroDimension);
+    setSubscriberStyles(zeroDimension);
+    setPublisherStyles(zeroDimension);
+    setPipView(true);
+    setChatReceived(false);
+    setHideStatusBar(false);
+    resetCurrentRetryAttempt();
+  };
+
   const getSecretaryData = () => {
     getSecretaryDetailsByDoctor(client, doctorId)
       .then((apiResponse: any) => {
-        console.log('apiResponse', apiResponse);
         const secretaryDetails = g(apiResponse, 'data', 'data', 'getSecretaryDetailsByDoctorId');
         setSecretaryData(secretaryDetails);
-        console.log('apiResponse');
       })
-      .catch((error) => {
-        console.log('error', error);
-      });
+      .catch((error) => {});
   };
 
   const getAppointmentCount = async () => {
@@ -1041,13 +1933,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         const yesCount = g(data, 'data', 'data', 'getPastAppointmentsCount', 'yesCount');
         if (yesCount && yesCount > 0) {
           setShowConnectAlertPopup(false);
+          setConsultedWithDoctorBefore(true);
         } else {
           setShowConnectAlertPopup(true);
         }
       });
-    } catch (error) {
-      console.log('getAppointmentCount_error', error);
-    }
+    } catch (error) {}
   };
 
   const getUpdateExternalConnect = (connected: boolean) => {
@@ -1056,23 +1947,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       ConsultedBefore: connected ? 'Yes' : 'No',
     };
     postWebEngageEvent(WebEngageEventName.CONSULTED_WITH_DOCTOR_BEFORE, eventAttributes);
+    setConsultedWithDoctorBefore(connected);
     setLoading(true);
 
     updateExternalConnect(client, doctorId, patientId, connected, channel)
       .then((data) => {
         setLoading(false);
-        console.log('getUpdateExternalConnect', data);
       })
       .catch((error) => {
         setLoading(false);
-        console.log('InsertMessageToDoctor_error', error);
       });
   };
 
   const InsertMessageToDoctor = (message: string) => {
-    // if (status !== STATUS.COMPLETED) return;
-    // if (!sendMessageToDoctor) return;
-
     SendAutoMatedMessageToDoctorAPI();
 
     const ciphertext = CryptoJS.AES.encrypt(
@@ -1091,12 +1978,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     };
 
     insertMessage(client, messageInput)
-      .then((data) => {
-        console.log('InsertMessageToDoctor', data);
-      })
-      .catch((error) => {
-        console.log('InsertMessageToDoctor_error', error);
-      });
+      .then((data) => {})
+      .catch((error) => {});
   };
 
   const SendAutoMatedMessageToDoctorAPI = async () => {
@@ -1108,18 +1991,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           sendDate: new Date(),
         },
       ];
-      console.log('saveAppointment', saveAppointment);
 
       const storedAppointmentData = (await AsyncStorage.getItem('saveAppointment')) || '';
       const saveAppointmentData = storedAppointmentData ? JSON.parse(storedAppointmentData) : '';
-      console.log('saveAppointmentDataAsyncStorage', saveAppointmentData);
 
       if (saveAppointmentData) {
         const result = saveAppointmentData.filter((obj: any) => {
           return obj.appointmentId === appointmentData.id;
         });
-        console.log('saveAppointmentDataresult', saveAppointmentData);
-
         if (result.length > 0) {
           if (result[0].appointmentId === appointmentData.id) {
             const index = saveAppointmentData.findIndex(
@@ -1130,11 +2009,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               moment(saveAppointmentData[index].sendDate).diff(new Date())
             );
             const diffInMins = diff.asMinutes();
-            console.log('chatdiffInMins', diffInMins);
-            if (diffInMins <= -10) {
+            if (diffInMins <= -30) {
               sendDcotorChatMessage();
               saveAppointmentData[index].sendDate = new Date();
               saveAppointmentData[index].date = moment().format('YYYY-MM-DD');
+            } else {
+              sendAutoMsg();
             }
 
             AsyncStorage.setItem('saveAppointment', JSON.stringify(saveAppointmentData));
@@ -1151,22 +2031,30 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     } catch (error) {}
   };
 
+  const sendAutoMsg = () => {
+    const prescUploadIndex = messages
+      .reverse()
+      .findIndex((item: any) => item?.id == doctorId && item?.message == followupconsult);
+    messages.reverse();
+    const guideLinesIndex = messages
+      .reverse()
+      .findIndex((item: any) => item?.id == doctorId && item?.message == followUpChatGuideLines);
+    messages.reverse();
+    if (prescUploadIndex == -1) {
+      return;
+    }
+    const lastDocMsgIndex = messages
+      .reverse()
+      .findIndex((item: any) => item?.id == doctorId && item?.sentBy == 'DOCTOR');
+    messages.reverse();
+    if (guideLinesIndex && prescUploadIndex && lastDocMsgIndex == 0) {
+      sendDcotorChatMessage();
+    }
+  };
+
   const sendDcotorChatMessage = () => {
-    pubnub.publish(
-      {
-        channel: channel,
-        message: {
-          message: doctorAutoResponse,
-          automatedText: `We have notified the query you raised to ${appointmentData.doctorInfo.displayName}. Doctor will get back to you within 24 hours. In case of any emergency, it is advisable to contact a nearby hospital!`,
-          id: doctorId,
-          isTyping: true,
-          messageDate: new Date(),
-        },
-        storeInHistory: true,
-        sendByPost: true,
-      },
-      (status, response) => {}
-    );
+    const automatedText = `We have notified the query you raised to ${appointmentData.doctorInfo.displayName}. You will get a response from the doctor at the earliest.`;
+    sendMessage(sectionHeader, doctorId, automatedText);
   };
 
   const setSendAnswers = (val: number) => {
@@ -1186,7 +2074,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       (status, response) => {}
     );
   };
-  const setAnswerData = (value: { k: string; v: string[] }[]) => {
+  const setAnswerData = (value: { k: string; v: string[] }[], isQuestionaireComplete?: boolean) => {
     const data = userAnswers || ({} as ConsultQueueInput);
     value.forEach((item) => {
       switch (item.k) {
@@ -1201,7 +2089,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setMessageText('');
             !isSendAnswers[9] && sendAnswerMessage(text);
             setSendAnswers(9);
-            console.log('isSendAnswers[2]', isSendAnswers[2]);
           } catch (error) {
             CommonBugFender('ChatRoom_Answers11_try', error);
           }
@@ -1223,7 +2110,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           break;
         case 'height':
           data.height = item.v[0] !== '' ? item.v.join(' ') : ChatRoom_NotRecorded_Value;
-          console.log('data.height:', 'data.height:' + data.height);
           try {
             const text = {
               id: patientId,
@@ -1411,9 +2297,65 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
     });
     setUserAnswers(data);
+    if (isQuestionaireComplete) {
+      if (isJdAllowedToAssign.current) {
+        doctorWillJoinAutomatedText();
+      }
+      describeYourMedicalConditionAutomatedText();
+    }
+
     if (isSendAnswers.find((item) => item === false) === undefined) {
       requestToJrDoctor();
     }
+  };
+
+  const doctorWillJoinAutomatedText = () => {
+    setTimeout(() => {
+      const successSteps = [
+        `A doctor from ${appointmentData.doctorInfo.displayName}'s team will connect with you to gather details about your health and symptoms. We request your cooperation`,
+      ];
+      pubnub.publish(
+        {
+          channel: channel,
+          message: {
+            message: consultPatientStartedMsg,
+            automatedText: successSteps,
+            id: doctorId,
+            isTyping: true,
+            messageDate: new Date(),
+          },
+          storeInHistory: true,
+          sendByPost: true,
+        },
+        (status, response) => {}
+      );
+    }, 2000);
+  };
+
+  const describeYourMedicalConditionAutomatedText = (time?: number) => {
+    setTimeout(
+      () => {
+        const successSteps = [
+          'Please describe your medical condition and upload pictures/reports if required. The same will be available for your reference in the health records section',
+        ];
+        pubnub.publish(
+          {
+            channel: channel,
+            message: {
+              message: consultPatientStartedMsg,
+              automatedText: successSteps,
+              id: doctorId,
+              isTyping: true,
+              messageDate: new Date(),
+            },
+            storeInHistory: true,
+            sendByPost: true,
+          },
+          (status, response) => {}
+        );
+      },
+      time ? time : 7000
+    );
   };
 
   const showAndUpdateNudgeScreenVisibility = async () => {
@@ -1432,38 +2374,47 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
+  const updateStatusOfCall = async (input: CheckCallConnectionInput) => {
+    let data;
+    try {
+      data = await client.mutate<checkCallConnection, checkCallConnectionVariables>({
+        mutation: CALL_CONNECTION_UPDATES,
+        variables: { CheckCallConnectionInput: input },
+      });
+    } catch (error) {
+      CommonBugFender('ChatRoom_updateCallConnectionStatus', error);
+      console.log(error, JSON.stringify(data));
+    }
+  };
+
   const requestToJrDoctor = async () => {
     //new code
     if (userAnswers) {
       addToConsultQueueWithAutomatedQuestions(client, userAnswers)
         .then(({ data }: any) => {
           getPatientApiCall();
-
+          getPatientApiCallWithHistory();
           postAppointmentWEGEvent(WebEngageEventName.COMPLETED_AUTOMATED_QUESTIONS);
-          console.log(data, 'data res, adding');
-          jdCount = parseInt(
-            data.data.addToConsultQueueWithAutomatedQuestions.totalJuniorDoctorsOnline,
-            10
-          );
+          // jdCount = parseInt(
+          //   data.data.addToConsultQueueWithAutomatedQuestions.totalJuniorDoctorsOnline,
+          //   10
+          // );
           isJdAllowed = data.data.addToConsultQueueWithAutomatedQuestions.isJdAllowed;
           jdAssigned = data.data.addToConsultQueueWithAutomatedQuestions.isJdAssigned;
         })
         .catch((e) => {
           CommonBugFender('ChatRoom_addToConsultQueueWithAutomatedQuestions', e);
-          console.log('Error occured, adding ', e);
         })
         .finally(() => startJoinTimer(0));
     } else {
       addToConsultQueue(client, appointmentData.id)
         .then(({ data }: any) => {
-          console.log(data, 'data res');
-          jdCount = parseInt(data.data.addToConsultQueue.totalJuniorDoctorsOnline, 10);
+          // jdCount = parseInt(data.data.addToConsultQueue.totalJuniorDoctorsOnline, 10);
           isJdAllowed = data.data.addToConsultQueue.isJdAllowed;
           jdAssigned = data.data.addToConsultQueue.isJdAssigned;
         })
         .catch((e) => {
           CommonBugFender('ChatRoom_addToConsultQueue', e);
-          console.log('Error occured ', e);
         })
         .finally(() => startJoinTimer(0));
     }
@@ -1471,7 +2422,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'background' || nextAppState === 'inactive') {
-      console.log('nextAppState :' + nextAppState, abondmentStarted);
       if (onSubscribe) {
         props.navigation.setParams({ callType: isAudio.current ? 'AUDIO' : 'VIDEO' });
       }
@@ -1488,19 +2438,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               isAudio.current = true;
               callhandelBack = false;
             }
-            playSound();
             !jrDoctorJoined.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
           } else {
             if (onSubscribe) {
               setOnSubscribe(false);
-              stopTimer();
-              startTimer(0);
               setCallAccepted(true);
               setHideStatusBar(true);
               setChatReceived(false);
               Keyboard.dismiss();
-              stopSound();
-              changeAudioStyles();
               setConvertVideo(false);
               setDowngradeToAudio(false);
               setCallerAudio(true);
@@ -1510,7 +2455,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               if (token) {
                 PublishAudioVideo();
               } else {
-                APICallAgain();
+                makeUpdateAppointmentCall.current = true;
+                APICallAgain(true);
               }
             }
           }
@@ -1520,143 +2466,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
-  // APP-2803: removed No show logic
-
-  // const handleCallTheEdSessionAPI = () => {
-  //   console.log('API not Called');
-
-  //   if (abondmentStarted == true) {
-  //     if (appointmentData.status === STATUS.COMPLETED) return;
-  //     if (appointmentData.status === STATUS.NO_SHOW) return;
-  //     if (appointmentData.status === STATUS.CALL_ABANDON) return;
-  //     if (appointmentData.status === STATUS.CANCELLED) return;
-  //     if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
-  //     if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
-  //     if (status === STATUS.COMPLETED) return;
-
-  //     console.log('API Called');
-  //     endCallAppointmentSessionAPI(STATUS.NO_SHOW);
-  //   }
-  // };
-
-  // const endCallAppointmentSessionAPI = async (status: STATUS) => {
-  //   console.log('endCallAppointmentSessionAPI called');
-
-  //   const APICalled = await AsyncStorage.getItem('endAPICalled');
-  //   console.log(APICalled, 'APICalled endCallAppointmentSessionAPI');
-
-  //   if (APICalled === 'true') {
-  //     setBugFenderLog('Chat_Room_APICalled', APICalled);
-  //     // stopCallAbondmentTimer();
-  //     return;
-  //   }
-
-  //   console.log(APICalled, 'afterAPICalled endCallAppointmentSessionAPI');
-
-  //   endCallSessionAppointment(client, appointmentData.id, status, REQUEST_ROLES.DOCTOR)
-  //     .then(({ data }: any) => {
-  //       console.log(data, 'data endCallAppointmentSessionAPI');
-  //       setStatus(STATUS.COMPLETED);
-  //       AsyncStorage.setItem('endAPICalled', 'true');
-  //       // stopCallAbondmentTimer();
-  //     })
-  //     .catch((e) => {
-  //       CommonBugFender('ChatRoom_endCallSessionAppointment', e);
-  //       console.log('Error endCallAppointmentSessionAPI ', e);
-  //     });
-  // };
-
-  const cancelAppointmentApi = () => {
-    setLoading(true);
-    const appointmentTransferInput = {
-      appointmentId: appointmentData.id,
-      cancelReason: '',
-      cancelledBy: REQUEST_ROLES.DOCTOR, //appointmentDate,
-      cancelledById: appointmentData.doctorId,
-    };
-    console.log(appointmentTransferInput, 'appointmentTransferInput');
-
-    client
-      .mutate<cancelAppointment, cancelAppointmentVariables>({
-        mutation: CANCEL_APPOINTMENT,
-        variables: {
-          cancelAppointmentInput: appointmentTransferInput,
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((data: any) => {
-        setLoading(false);
-        setSucessPopup(true);
-        console.log(data, 'datacancel');
-      })
-      .catch((e: any) => {
-        CommonBugFender('ChatRoom_cancelAppointmentApi', e);
-        setLoading(false);
-        console.log('Error occured while adding Doctor', e);
-        const message = e.message ? e.message.split(':')[1].trim() : '';
-        if (
-          message == 'INVALID_APPOINTMENT_ID' ||
-          message == 'JUNIOR_DOCTOR_CONSULTATION_INPROGRESS'
-        ) {
-          showAphAlert!({
-            title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
-            description: 'Ongoing / Completed appointments cannot be cancelled.',
-          });
-        }
-      });
-  };
-
-  const requestReadSmsPermission = async () => {
-    try {
-      const resuts = await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-      ]);
-      if (
-        resuts[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] !==
-        PermissionsAndroid.RESULTS.GRANTED
-      ) {
-        console.log(resuts, 'WRITE_EXTERNAL_STORAGE');
-      }
-      if (
-        resuts[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] !==
-        PermissionsAndroid.RESULTS.GRANTED
-      ) {
-        console.log(resuts, 'READ_EXTERNAL_STORAGE');
-      }
-      if (resuts) {
-        console.log(resuts, 'READ_EXTERNAL_STORAGE');
-      }
-    } catch (error) {
-      CommonBugFender('ChatRoom_requestReadSmsPermission_try', error);
-      console.log('error', error);
-    }
-  };
-
   const updateSessionAPI = () => {
-    console.log('apiCalled', apiCalled);
-
     if (!apiCalled) {
-      console.log('createsession', appointmentData.id);
       const input = {
         appointmentId: appointmentData.id,
         requestRole: 'PATIENT',
       };
 
-      console.log('input', input);
-
       CheckDoctorPresentInChat();
-
-      // setDoctorJoined(true);
-      setTextChange(true);
 
       setTimeout(() => {
         setApiCalled(true);
       }, 1000);
-
-      // setTimeout(() => {
-      //   setDoctorJoined(false);
-      // }, 10000);
 
       client
         .mutate<updateAppointmentSession, updateAppointmentSessionVariables>({
@@ -1666,19 +2487,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           },
         })
         .then((sessionInfo: any) => {
-          console.log('createsession', sessionInfo);
           setsessionId(sessionInfo.data.updateAppointmentSession.sessionId);
           settoken(sessionInfo.data.updateAppointmentSession.appointmentToken);
         })
         .catch((e) => {
           CommonBugFender('ChatRoom_updateSessionAPI', e);
-          console.log('Error occured while adding Doctor', e);
         });
     }
   };
 
   const CheckDoctorPresentInChat = () => {
-    if (status === STATUS.COMPLETED) return; // no need to show join button if consultation has been completed
+    if (status.current === STATUS.COMPLETED) return; // no need to show join button if consultation has been completed
 
     updateNumberOfParticipants(USER_STATUS.ENTERING);
     pubnub
@@ -1687,7 +2506,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         includeUUIDs: true,
       })
       .then((response: HereNowResponse) => {
-        console.log('hereNowresponse', response);
         const data: any =
           response.channels &&
           response.channels[appointmentData.id] &&
@@ -1702,9 +2520,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           jrDoctorJoined.current = true;
         }
       })
-      .catch((error) => {
-        console.log(error);
-      });
+      .catch((error) => {});
   };
 
   const startInterval = (timer: number) => {
@@ -1713,10 +2529,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       timer = timer - 1;
       stoppedTimer = timer;
       setRemainingTime(timer);
-      // console.log('descriptionTextStyle remainingTime', timer);
 
       if (timer == 0) {
-        // console.log('descriptionTextStyles remainingTime', timer);
         setRemainingTime(0);
         BackgroundTimer.clearInterval(intervalId);
       }
@@ -1728,10 +2542,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       timer = timer + 1;
       stoppedTimer = timer;
       setCallTimer(timer);
-      // console.log('uptimer', timer);
+      setCallDuration(timer);
 
       if (timer == 0) {
-        console.log('uptimer', timer);
         setCallTimer(0);
         BackgroundTimer.clearInterval(timerId);
       }
@@ -1739,7 +2552,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const stopTimer = () => {
-    console.log('stopTimer', timerId);
     setCallTimer(0);
     timerId && BackgroundTimer.clearInterval(timerId);
   };
@@ -1748,8 +2560,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     joinTimerId = BackgroundTimer.setInterval(() => {
       timer = timer + 1;
       stoppedTimer = timer;
-      setJoinCounter(timer);
-      // console.log('uptimer join', timer);
       if (timer === 30) {
         thirtySecondCall();
       } else if (timer === 90) {
@@ -1758,16 +2568,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         stopJoinTimer();
       }
       if (timer == 0) {
-        // console.log('uptimer join', timer);
-        setJoinCounter(0);
         BackgroundTimer.clearInterval(joinTimerId);
       }
     }, 1000);
   };
 
   const stopJoinTimer = () => {
-    console.log('stopTimer join', joinTimerId);
-    setJoinCounter(0);
     joinTimerId && BackgroundTimer.clearInterval(joinTimerId);
   };
 
@@ -1790,83 +2596,103 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
   const publisherEventHandlers = {
     streamCreated: (event: string) => {
-      console.log('Publisher stream created!', event);
+      postOpentokEvent('Publisher Stream Created', event);
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_PUBLISHER_STREAM_CREATED,
         JSON.stringify(event)
       );
-      stopSound();
+      stopTimer();
+      startTimer(0);
+
+      startCallConnectionUpdateFx();
     },
     streamDestroyed: (event: string) => {
-      console.log('Publisher stream destroyed!', event);
+      postOpentokEvent('Publisher Stream Destroyed', event);
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_PUBLISHER_STREAM_DESTROYED,
         JSON.stringify(event)
       );
-
       patientJoinedCall.current = false;
-      subscriberConnected.current = false;
+      // subscriberConnected.current = false;
       endVoipCall();
+      AsyncStorage.getItem('startCallConnectionUpdateBT').then((data) => {
+        BackgroundTimer.clearInterval(Number.parseInt(data || '0'));
+      });
+      BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
     },
     error: (error: string) => {
+      postOpentokError('Publisher Error', error);
       openTokErrorWebEngageEvents(
         WebEngageEventName.PATIENT_PUBLISHER_ERROR,
         JSON.stringify(error)
       );
+      setCallMinimize(false);
       AsyncStorage.setItem('callDisconnected', 'true');
       setSnackBar();
-      console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
     },
     otrnError: (error: string) => {
+      postOpentokError('Publisher OTRN Error', error);
       openTokErrorWebEngageEvents(
         WebEngageEventName.PATIENT_PUBLISHER_OTRNERROR,
         JSON.stringify(error)
       );
+      setCallMinimize(false);
       AsyncStorage.setItem('callDisconnected', 'true');
       setSnackBar();
-      console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
     },
   };
 
   const subscriberEventHandlers = {
     error: (error: string) => {
+      postOpentokError('Subscriber Error', error);
       setSnackBar();
-      console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
       openTokErrorWebEngageEvents(
         WebEngageEventName.DOCTOR_SUBSCRIBER_ERROR,
         JSON.stringify(error)
       );
     },
     connected: (event: string) => {
+      postOpentokEvent('Subscriber Connected', event);
       openTokWebEngageEvents(WebEngageEventName.DOCTOR_SUBSCRIBER_CONNECTED, JSON.stringify(event));
       setSnackbarState(false);
-      console.log('Subscribe stream connected!', event);
+      playJoinSound();
+      callToastStatus.current = callConnected;
+
+      //Intentionally commentted
+      // if (!subscriberConnected.current) {
+      //   playJoinSound();
+      //   callToastStatus.current = callConnected;
+      // }
       subscriberConnected.current = true;
-      stopSound();
+      setTimeout(() => {
+        callToastStatus.current = '';
+      }, 3000);
     },
     disconnected: (event: string) => {
-      // setSnackbarState(true);
-      // setHandlerMessage('Falling back to audio due to bad network!!');
+      postOpentokEvent('Subscriber Disonnected', event);
+      callEndWebengageEvent('Network');
       openTokWebEngageEvents(
         WebEngageEventName.DOCTOR_SUBSCRIBER_DISCONNECTED,
         JSON.stringify(event)
       );
-      console.log('Subscribe stream disconnected!', event);
       patientJoinedCall.current = false;
       subscriberConnected.current = false;
       endVoipCall();
+      AsyncStorage.getItem('startCallConnectionUpdateBT').then((data) => {
+        BackgroundTimer.clearInterval(Number.parseInt(data || '0'));
+      });
+      BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
     },
     otrnError: (error: string) => {
+      postOpentokError('Subscriber OTRN Error', error);
       openTokErrorWebEngageEvents(
         WebEngageEventName.DOCTOR_SUBSCRIBER_OTRNERROR,
         JSON.stringify(error)
       );
       setSnackBar();
-      console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
     },
     videoDisabled: (error: any) => {
-      console.log(`videoDisabled subscriberEventHandlers: ${JSON.stringify(error)}`, error.reason);
-      console.log('error.reason', error.reason, error.reason === 'quality');
+      postOpentokEvent('Subscriber Video Disabled', error);
       openTokWebEngageEvents(
         WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_DISABLED,
         JSON.stringify(error)
@@ -1878,26 +2704,32 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
     },
     videoEnabled: (error: any) => {
-      console.log(`videoEnabled: ${JSON.stringify(error)}`);
+      postOpentokEvent('Subscriber Video Enabled', error);
       openTokWebEngageEvents(
         WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_ENABLED,
         JSON.stringify(error)
       );
+      setDowngradeToAudio(false);
       if (error.reason === 'quality') {
         setSnackbarState(false);
-        setDowngradeToAudio(false);
       }
     },
     videoDisableWarning: (error: string) => {
-      // console.log(`videoDisableWarning subscriberEventHandlers: ${JSON.stringify(error)}`);
+      postOpentokEvent('Subscriber Video Disable Warning', error);
+      callToastStatus.current =
+        'Internet connection at the doctor’s end appears to be unstable if the problem persists, the video will be automatically turned off.';
     },
     videoDisableWarningLifted: (error: string) => {
-      // console.log(`videoDisableWarningLifted subscriberEventHandlers: ${JSON.stringify(error)}`);
+      postOpentokEvent('Subscriber Video Disable Warning Lifted', error);
+      callToastStatus.current = '';
+      setDowngradeToAudio(false);
     },
   };
 
   const sessionEventHandlers = {
     error: (error: OpentokError) => {
+      postOpentokError('Session Error', error);
+      setCallMinimize(false);
       AsyncStorage.setItem('callDisconnected', 'true');
       if (
         [
@@ -1917,7 +2749,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           WebEngageEventName.PATIENT_SESSION_ERROR,
           JSON.stringify(error)
         );
-        eventsAfterConnectionDestroyed();
+        fireWebengageEventForCallAnswer(WebEngageEventName.CALL_DROPPED_UNKNOWN_REASON);
+        callEndWebengageEvent('Network');
         setTimeout(() => {
           setSnackbarState(true);
           setHandlerMessage('Check the network connection.');
@@ -1925,17 +2758,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else {
         setSnackBar();
       }
-      console.log(`There was an error with the sessionEventHandlers: ${JSON.stringify(error)}`);
     },
     connectionCreated: (event: string) => {
+      postOpentokEvent('Session Connection Created', event);
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_SESSION_CONNECTION_CREATED,
         JSON.stringify(event)
       );
+      resetCurrentRetryAttempt();
       setSnackbarState(false);
-      console.log('session stream connectionCreated!', event);
     },
     connectionDestroyed: (event: string) => {
+      postOpentokEvent('Session Connection Destroyed', event);
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_SESSION_CONNECTION_DESTROYED,
         JSON.stringify(event)
@@ -1943,73 +2777,87 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setTimeout(() => {
         AsyncStorage.getItem('callDisconnected').then((data) => {
           if (!JSON.parse(data || 'false')) {
-            setSnackbarState(true);
-            setHandlerMessage('Call disconnected due to Network issues at the Doctor side');
+            callEndWebengageEvent('Network');
           }
         });
       }, 2000);
-      console.log('session stream connectionDestroyed!', event);
-      eventsAfterConnectionDestroyed();
     },
     sessionConnected: (event: string) => {
+      postOpentokEvent('Session Connected', event);
       openTokWebEngageEvents(WebEngageEventName.PATIENT_SESSION_CONNECTED, JSON.stringify(event));
       setSnackbarState(false);
-      console.log('session stream sessionConnected!', event);
       KeepAwake.activate();
     },
     sessionDisconnected: (event: string) => {
+      postOpentokEvent('Session Disconnected', event);
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_SESSION_DISCONNECTED,
         JSON.stringify(event)
       );
-      console.log('session stream sessionDisconnected!', event);
+      endVoipCall();
       eventsAfterConnectionDestroyed();
     },
     sessionReconnected: (event: string) => {
+      postOpentokEvent('Session Reconnected', event);
       openTokWebEngageEvents(WebEngageEventName.PATIENT_SESSION_RECONNECTED, JSON.stringify(event));
       setSnackbarState(false);
-      console.log('session stream sessionReconnected!', event);
+      resetCurrentRetryAttempt();
+      callToastStatus.current = 'Reconnected';
+      callStatus.current = 'Connected';
+      subscriberConnected.current = true;
+      setTimeout(() => {
+        callToastStatus.current = '';
+      }, 2000);
       KeepAwake.activate();
     },
     sessionReconnecting: (event: string) => {
+      postOpentokEvent('Session Reconnecting', event);
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_SESSION_RECONNECTING,
         JSON.stringify(event)
       );
-      console.log('session stream sessionReconnecting!', event);
+      isCallReconnecting.current = true;
+      callStatus.current = 'Reconnecting...';
+      callToastStatus.current = 'Reconnecting Call...';
       setSessionReconnectMsg();
       KeepAwake.activate();
     },
-    signal: (event: string) => {
-      console.log('session stream signal!', event);
-    },
     streamCreated: (event: string) => {
+      postOpentokEvent('Session Stream Created', event);
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_SESSION_STREAM_CREATED,
         JSON.stringify(event)
       );
-      console.log('session streamCreated created!', event);
     },
     streamDestroyed: (event: string) => {
+      postOpentokEvent('Session Stream Destroyed', event);
+      callEndWebengageEvent(
+        g(appointmentData, 'doctorInfo', 'doctorType') === 'JUNIOR'
+          ? 'Junior Doctor'
+          : 'Senior Doctor'
+      );
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_SESSION_STREAM_DESTROYED,
         JSON.stringify(event)
       );
-      console.log('session streamDestroyed destroyed!', event); // is called when the doctor network is disconnected
-      eventsAfterConnectionDestroyed();
     },
     streamPropertyChanged: (event: OptntokChangeProp) => {
+      postOpentokEvent('Session Stream Property Changed', event);
+      callEndWebengageEvent('Network');
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_SESSION_STREAM_PROPERTY_CHANGED,
         JSON.stringify(event)
       );
-      console.log('session streamPropertyChanged!', event); // is called when the doctor network is disconnected
       if (event.stream.name !== (g(currentPatient, 'firstName') || 'patient')) {
-        setCallerAudio(event.stream.hasAudio);
-        setCallerVideo(event.stream.hasVideo);
+        const hasAudio = event?.stream?.hasAudio;
+        const hasVideo = event?.stream?.hasVideo;
+        setCallerAudio(hasAudio);
+        setCallerVideo(hasVideo);
+        hasVideo && setDowngradeToAudio(false);
       }
     },
     otrnError: (error: string) => {
+      postOpentokError('Session OTRN Error', error);
       openTokErrorWebEngageEvents(
         WebEngageEventName.PATIENT_SESSION_OTRNERROR,
         JSON.stringify(error)
@@ -2019,39 +2867,135 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           setSnackBar();
         }
       });
+      setCallMinimize(false);
       AsyncStorage.setItem('callDisconnected', 'true');
-      console.log(
-        `There was an error with the otrnError sessionEventHandlers: ${JSON.stringify(error)}`
-      );
     },
   };
 
+  const postOpentokError = (errorName: string, errorData: any) => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.OPENTOK_ERROR_RECEIVED] = {
+      'Doctor ID': g(appointmentData, 'doctorInfo', 'id')!,
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName'),
+      'Doctor Number': g(appointmentData, 'doctorInfo', 'mobileNumber'),
+      'Doctor Type': g(appointmentData, 'doctorInfo', 'doctorType'),
+      'Doctor Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id'),
+      'Doctor Speciality': g(appointmentData, 'doctorInfo', 'specialty', 'name'),
+      'Doctor Facility ID': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'id'
+      ),
+      'Doctor Facility': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'name'
+      ),
+      'Appointment ID': g(appointmentData, 'id'),
+      'Appointment Display ID': g(appointmentData, 'displayId'),
+      'Patient Name': g(appointmentData, 'patientName'),
+      'Patient Number': g(appointmentData, 'patientName'),
+      'Session ID': sessionId,
+      'Call ID': token,
+      'Error Name': errorName,
+      'Error Data': JSON.stringify(errorData),
+      reason: errorData?.reason || '',
+    };
+    postCleverTapEvent(CleverTapEventName.OPENTOK_ERROR_RECEIVED, eventAttributes);
+  };
+
+  const postOpentokEvent = (eventName: string, eventData: any) => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.OPENTOK_EVENT_RECEIVED] = {
+      'Doctor ID': g(appointmentData, 'doctorInfo', 'id')!,
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName'),
+      'Doctor Number': g(appointmentData, 'doctorInfo', 'mobileNumber'),
+      'Doctor Type': g(appointmentData, 'doctorInfo', 'doctorType'),
+      'Doctor Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id'),
+      'Doctor Speciality': g(appointmentData, 'doctorInfo', 'specialty', 'name'),
+      'Doctor Facility ID': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'id'
+      ),
+      'Doctor Facility': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'name'
+      ),
+      'Appointment ID': g(appointmentData, 'id'),
+      'Appointment Display ID': g(appointmentData, 'displayId'),
+      'Patient Name': g(appointmentData, 'patientName'),
+      'Patient Number': g(appointmentData, 'patientName'),
+      'Session ID': sessionId,
+      'Call ID': token,
+      'Event Name': eventName,
+      'Event Data': JSON.stringify(eventData),
+      reason: eventData?.reason || '',
+    };
+    postCleverTapEvent(CleverTapEventName.OPENTOK_EVENT_RECEIVED, eventAttributes);
+  };
+
+  const resetCurrentRetryAttempt = () => {
+    isCallReconnecting.current = false;
+    currentCallRetryAttempt.current = 1;
+  };
+
+  const callEndWebengageEvent = (
+    source: WebEngageEvents[WebEngageEventName.CALL_ENDED]['Ended by'],
+    data:
+      | getAppointmentData_getAppointmentData_appointmentsHistory
+      | getPatinetAppointments_getPatinetAppointments_patinetAppointments = appointmentData
+  ) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.CALL_ENDED] = {
+      'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
+      'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
+      'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
+      'Consult Date Time': moment(g(data, 'appointmentDateTime')).toDate(),
+      'Consult ID': g(data, 'id')!,
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Display ID': g(data, 'displayId')!,
+      'Ended by': source,
+      'Call Duration': callDuration,
+    };
+    postWebEngageEvent(WebEngageEventName.CALL_ENDED, eventAttributes);
+  };
+
   const eventsAfterConnectionDestroyed = () => {
-    setIsCall(false);
-    setIsAudioCall(false);
-    stopTimer();
-    setCallAccepted(false);
-    setHideStatusBar(false);
-    setConvertVideo(false);
-    setDowngradeToAudio(false);
-    KeepAwake.activate();
-    setIsPublishAudio(true);
-    setShowVideo(true);
-    setCameraPosition('front');
-    setChatReceived(false);
-    setCallerAudio(true);
-    setCallerVideo(true);
-    setTimerStyles({
-      position: 'absolute',
-      marginHorizontal: 20,
-      marginTop: isIphoneX() ? 91 : 81,
-      width: width - 40,
-      color: 'white',
-      ...theme.fonts.IBMPlexSansSemiBold(12),
-      textAlign: 'center',
-      letterSpacing: 0.46,
-      zIndex: 1005,
-    });
+    setTimeout(() => {
+      setIsCall(false);
+      setIsAudioCall(false);
+      stopTimer();
+      setCallAccepted(false);
+      setHideStatusBar(false);
+      setConvertVideo(false);
+      setDowngradeToAudio(false);
+      KeepAwake.activate();
+      setIsPublishAudio(true);
+      setShowVideo(true);
+      setCameraPosition('front');
+      setChatReceived(false);
+      setCallerAudio(true);
+      setCallerVideo(true);
+      if (isCallReconnecting.current) {
+        networkCheckInterval.push(
+          BackgroundTimer.setInterval(() => {
+            checkNetworkStatus();
+          }, 5000)
+        );
+      }
+    }, 2000);
   };
 
   const config: Pubnub.PubnubConfig = {
@@ -2070,25 +3014,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     console.ignoredYellowBox = ['Warning: Each', 'Warning: Failed'];
     console.disableYellowBox = true;
 
-    // AsyncStorage.removeItem('endAPICalled');  // APP-2803: removed No show logic
-
     pubnub.subscribe({
       channels: [channel],
-      // withPresence: true,  // APP-2803: removed No show logic
     });
-
-    getHistory(0);
-
-    // registerForPushNotification();
 
     pubnub.addListener({
       status: (statusEvent) => {
-        console.log('statusEvent', statusEvent);
-
         if (statusEvent.category === Pubnub.CATEGORIES.PNConnectedCategory) {
-          console.log(statusEvent.category);
         } else if (statusEvent.operation === Pubnub.OPERATIONS.PNAccessManagerAudit) {
-          console.log(statusEvent.operation);
         }
       },
       message: (message) => {
@@ -2096,6 +3029,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
         if (messageType == followupconsult) {
           // setStatus(STATUS.COMPLETED);  //Uncomment it if you are not getting the automated message
+          sendFollowUpChatGuideLines();
           postAppointmentWEGEvent(WebEngageEventName.PRESCRIPTION_RECEIVED);
         } else if (messageType == stopConsultJr) {
           postAppointmentWEGEvent(WebEngageEventName.JD_COMPLETED);
@@ -2109,76 +3043,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         messageType === startConsultjr && setname('JUNIOR');
         pubNubMessages(message);
       },
-      // presence: (presenceEvent) => {    // APP-2803: removed No show logic
-
-      //   // if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
-      //   // console.log('presenceEvent', presenceEvent);
-
-      //   dateIsAfter = moment(new Date()).isAfter(moment(appointmentData.appointmentDateTime));
-
-      //   const diff = moment.duration(moment(appointmentData.appointmentDateTime).diff(new Date()));
-      //   const diffInMins = diff.asMinutes();
-      //   // console.log('diffInMins', diffInMins);
-
-      //   pubnub
-      //     .hereNow({
-      //       channels: [channel],
-      //       includeUUIDs: true,
-      //     })
-      //     .then((response: HereNowResponse) => {
-      //       // console.log('hereNowresponse', response);
-
-      //       const data: any = response.channels[appointmentData.id].occupants;
-
-      //       const occupancyDoctor = data.filter((obj: any) => {
-      //         return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
-      //       });
-
-      //       // const startConsultResult = insertText.filter((obj: any) => {
-      //       //   return obj.message === startConsultMsg;
-      //       // });
-      //       // console.log('callAbondmentMethodoccupancyDoctor -------> ', occupancyDoctor);
-      //       if (response.totalOccupancy >= 2) {
-      //         setSendMessageToDoctor(false);
-
-      //         // if (callAbandonmentStoppedTimer == 620) return;  // APP-2803: removed No show logic
-      //         // if (callAbandonmentStoppedTimer < 620) {
-      //         //   // console.log('calljoined');
-      //         //   APIForUpdateAppointmentData(true);
-      //         // }
-      //       } else {
-      //         if (response.totalOccupancy == 1 && occupancyDoctor.length == 0) {
-      //           // console.log('abondmentStarted -------> ', abondmentStarted);
-      //           setSendMessageToDoctor(true);
-
-      //           // if (abondmentStarted == false) {         // APP-2803: removed No show logic
-      //           //   if (startConsultResult.length > 0) {
-      //           //     console.log('callAbondmentMethod', abondmentStarted);
-      //           //   } else {
-      //           //     if (diffInMins < 15) {
-      //           //       // console.log('doctorNoshow', abondmentStarted);
-      //           //       if (appointmentData.appointmentType !== APPOINTMENT_TYPE.PHYSICAL) {
-      //           //         callAbondmentMethod(false);
-      //           //       }
-      //           //     }
-      //           //   }
-      //           //   eventsAfterConnectionDestroyed();
-      //           // }
-      //         }
-      //       }
-      //     })
-      //     .catch((error) => {
-      //       CommonBugFender('ChatRoom_PUBNUB_PRESENCE', error);
-      //       console.log(error);
-      //     });
-      // },
     });
 
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', keyboardDidShow);
     const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', keyboardDidHide);
 
     return function cleanup() {
-      console.log('didmount clean up chatroom');
       pubnub.unsubscribe({ channels: [channel] });
       pubnub.stop();
       keyboardDidShowListener.remove();
@@ -2189,21 +3059,52 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       thirtySecondTimer && clearTimeout(thirtySecondTimer);
       timerId && BackgroundTimer.clearInterval(timerId);
       intervalId && BackgroundTimer.clearInterval(intervalId);
+      clearNetworkCheckInterval();
       abondmentStarted = false;
       stopJoinTimer();
-      // stopCallAbondmentTimer();
       updateNumberOfParticipants(USER_STATUS.LEAVING);
       try {
         AppState.removeEventListener('change', _handleAppStateChange);
-        BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
       } catch (error) {
         CommonBugFender('ChatRoom_cleanup_try', error);
       }
     };
   }, []);
 
+  const sendFollowUpChatGuideLines = () => {
+    if (guidelinesAdded || !followupDays || (followupDays && Number(followupDays) === 0)) {
+      return;
+    }
+    setguidelinesAdded(true);
+    const headerText = `If you have further queries related to your consultation, you may reach out to ${
+      appointmentData?.doctorInfo?.displayName
+    } via texts for the next ${Number(followupDays)} day${Number(followupDays) > 1 ? 's' : ''}.`;
+    sendMessage(sectionHeader, doctorId, headerText);
+    setTimeout(() => {
+      sendMessage(followUpChatGuideLines, doctorId);
+    }, 1000);
+  };
+
+  const sendMessage = (message: string, id: string, automatedText?: string) => {
+    pubnub.publish(
+      {
+        channel: channel,
+        message: {
+          message: message,
+          automatedText: automatedText,
+          id: id,
+          isTyping: true,
+          messageDate: new Date(),
+        },
+        storeInHistory: true,
+        sendByPost: true,
+      },
+      (status, response) => {}
+    );
+  };
+
   const HereNowPubnub = (message: string) => {
-    if (status !== STATUS.COMPLETED) return;
+    if (status.current !== STATUS.COMPLETED) return;
 
     pubnub
       .hereNow({
@@ -2211,167 +3112,29 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         includeUUIDs: true,
       })
       .then((response: HereNowResponse) => {
-        console.log('hereNowresponse', response);
-
         const data: any = response.channels[appointmentData.id].occupants;
 
         const occupancyDoctor = data.filter((obj: any) => {
           return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
         });
-
-        console.log('callAbondmentMethodoccupancyDoctor -------> ', occupancyDoctor);
-        if (response.totalOccupancy >= 2) {
-          setSendMessageToDoctor(false);
-        } else {
-          if (response.totalOccupancy == 1 && occupancyDoctor.length == 0) {
-            setSendMessageToDoctor(true);
-            InsertMessageToDoctor(message);
-          }
-        }
+        InsertMessageToDoctor(message);
       })
       .catch((error) => {
         CommonBugFender('ChatRoom_PUBNUB_PRESENCE', error);
-        console.log(error);
       });
   };
 
   const [showDoctorNoShowAlert, setShowDoctorNoShowAlert] = useState<boolean>(false);
 
-  // APP-2803: removed No show logic
-
-  // const callAbondmentMethod = async (isSeniorConsultStarted: boolean) => {
-  //   if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
-
-  //   const startConsultJRResult = insertText.filter((obj: any) => {
-  //     return obj.message === startConsultjr;
-  //   });
-
-  //   const stopConsultJRResult = insertText.filter((obj: any) => {
-  //     return obj.message === stopConsultJr;
-  //   });
-
-  //   if (isSeniorConsultStarted) {
-  //     console.log('callAbondmentMethod scenario');
-  //     if (appointmentData.status === STATUS.COMPLETED) return;
-  //     if (appointmentData.status === STATUS.NO_SHOW) return;
-  //     if (appointmentData.status === STATUS.CALL_ABANDON) return;
-  //     if (appointmentData.status === STATUS.CANCELLED) return;
-  //     if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
-  //     if (status === STATUS.COMPLETED) return;
-  //   } else {
-  //     console.log(
-  //       'doctor no show scenario',
-  //       startConsultJRResult.length,
-  //       stopConsultJRResult.length,
-  //       dateIsAfter,
-  //       isSeniorConsultStarted
-  //     );
-
-  //     if (
-  //       startConsultJRResult.length >= 0 &&
-  //       stopConsultJRResult.length >= 0 &&
-  //       dateIsAfter &&
-  //       !isSeniorConsultStarted
-  //     ) {
-  //       if (appointmentData.status === STATUS.COMPLETED) return;
-  //       if (appointmentData.status === STATUS.NO_SHOW) return;
-  //       if (appointmentData.status === STATUS.CALL_ABANDON) return;
-  //       if (appointmentData.status === STATUS.CANCELLED) return;
-  //       if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
-  //       if (status === STATUS.COMPLETED) return;
-  //       if (callAbandonmentStoppedTimer < 620) return;
-
-  //       const APICalled = await AsyncStorage.getItem('endAPICalled');
-
-  //       if (APICalled === 'true') {
-  //         setBugFenderLog('Chat_Room_NO_SHOW_DOCTOR', APICalled);
-  //         setStatus(STATUS.COMPLETED);
-  //         stopCallAbondmentTimer();
-  //         return;
-  //       }
-
-  //       abondmentStarted = true;
-  //       startCallAbondmentTimer(620, false);
-  //     } else {
-  //       abondmentStarted = false;
-  //     }
-  //   }
-  // };
-
-  // const startCallAbondmentTimer = (timer: number, isCallAbandment: boolean) => {
-  //   try {
-  //     startNoShow(timer, () => {
-  //       console.log('Trigger no ShowAPi');
-  //       setTransferData(appointmentData);
-
-  //       if (isCallAbandment) {
-  //       } else {
-  //         setShowDoctorNoShowAlert(true);
-  //         endCallAppointmentSessionAPI(STATUS.NO_SHOW);
-  //       }
-  //     });
-  //   } catch (error) {
-  //     CommonBugFender('ChatRoom_startCallAbondmentTimer_try', error);
-  //     console.log('error in call abandoment', error);
-  //   }
-  // };
-
-  // const startNoShow = (timer: number, callback?: () => void) => {
-  //   stopCallAbondmentTimer();
-  //   setTransferData(appointmentData);
-  //   callAbandonmentTimer = BackgroundTimer.setInterval(() => {
-  //     try {
-  //       timer = timer - 1;
-  //       callAbandonmentStoppedTimer = timer;
-
-  //       console.log('callAbandonmentStoppedTimer', callAbandonmentStoppedTimer);
-  //       if (timer < 1) {
-  //         stopCallAbondmentTimer();
-  //         callback && callback();
-  //       }
-  //     } catch (error) {
-  //       CommonBugFender('ChatRoom_startCallAbondmentTimer_crash', error);
-  //       stopCallAbondmentTimer();
-  //     }
-  //   }, 1000);
-  // };
-
-  // const stopCallAbondmentTimer = () => {
-  //   console.log('stopCallAbondmentTimer', callAbandonmentTimer);
-  //   callAbandonmentTimer && BackgroundTimer.clearInterval(callAbandonmentTimer);
-  //   callAbandonmentStoppedTimer = 620;
-  //   abondmentStarted = false;
-  // };
-
   const APIForUpdateAppointmentData = (toStopTimer: boolean) => {
     getAppointmentDataDetails(client, appointmentData.id)
       .then(({ data }: any) => {
         try {
-          console.log(data, 'data APIForUpdateAppointmentData');
           const appointmentSeniorDoctorStarted =
             data.data.getAppointmentData.appointmentsHistory[0].isSeniorConsultStarted;
-          // console.log(
-          //   appointmentSeniorDoctorStarted,
-          //   data.data.getAppointmentData.appointmentsHistory[0],
-          //   'appointmentSeniorDoctorStarted APIForUpdateAppointmentData'
-          // );
 
           appointmentData = data.data.getAppointmentData.appointmentsHistory[0];
-          console.log(appointmentData, 'appointmentData APIForUpdateAppointmentData');
-          setStatus(data.data.getAppointmentData.appointmentsHistory[0].status);
-
-          // APP-2803: removed No show logic
-
-          // if (toStopTimer) {
-          //   if (appointmentSeniorDoctorStarted) {
-          //     stopCallAbondmentTimer();
-          //     abondmentStarted = false;
-          //   }
-          // } else {
-          //   if (appointmentData.appointmentType !== APPOINTMENT_TYPE.PHYSICAL) {
-          //     callAbondmentMethod(appointmentSeniorDoctorStarted);
-          //   }
-          // }
+          status.current = data.data.getAppointmentData.appointmentsHistory[0].status;
         } catch (error) {
           CommonBugFender('ChatRoom_APIForUpdateAppointmentData_try', error);
         }
@@ -2379,60 +3142,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       .catch((e) => {
         CommonBugFender('ChatRoom_APIForUpdateAppointmentData', e);
         abondmentStarted = false;
-        console.log('Error APIForUpdateAppointmentData ', e);
       });
   };
 
-  const registerForPushNotification = () => {
-    console.log('registerForPushNotification:');
-    if (Platform.OS === 'ios') {
-      ExportDeviceToken.getPushNotificationToken(handlePushNotification);
-    } else {
-      handlePushNotification('');
-    }
-  };
-
-  const handlePushNotification = async (deviceToken: string) => {
-    console.log('Device Token Received', deviceToken);
-    try {
-      const fcmToken = (await AsyncStorage.getItem('deviceToken')) || '';
-      const androidToken = fcmToken ? JSON.parse(fcmToken) : '';
-      console.log('android:', androidToken.deviceToken);
-
-      if (Platform.OS === 'ios') {
-        pubnub.push.addChannels(
-          {
-            channels: [channel],
-            device: deviceToken,
-            pushGateway: 'apns',
-          },
-          (status: any) => {
-            if (status.error) {
-              console.log('operation failed w/ error:', status);
-            } else {
-              console.log('operation done!');
-            }
-          }
-        );
-        console.log('ios:', token);
-        // Send iOS Notification from debug console: {"pn_apns":{"aps":{"alert":"Hello World."}}}
-      } else {
-        console.log('androidtoken:', token);
-        pubnub.push.addChannels({
-          channels: [channel],
-          device: androidToken,
-          pushGateway: 'gcm', // apns, gcm, mpns
-        });
-        // Send Android Notification from debug console: {"pn_gcm":{"data":{"message":"Hello World."}}}
-      }
-    } catch (error) {
-      CommonBugFender('ChatRoom_handlePushNotification_try', error);
-      console.log('ioserror:', error);
-    }
-  };
-
   let insertText: object[] = [];
-  const newmessage: { message: string }[] = [];
+  const newmessage: {
+    message: string;
+    duration: string;
+  }[] = [];
 
   const getHistory = (timetoken: number) => {
     setLoading(true);
@@ -2449,8 +3166,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           const end: any = res.endTimeToken ? res.endTimeToken : 1;
 
           const msgs = res.messages;
-          console.log('msgs', msgs);
-
           res.messages.forEach((element, index) => {
             let item = element.entry;
             if (item.prismId) {
@@ -2464,36 +3179,38 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }
             newmessage[newmessage.length] = item;
           });
-          // console.log('newmessage', newmessage);
           setLoading(false);
 
           if (messages.length !== newmessage.length) {
-            if (newmessage[newmessage.length - 1].message === startConsultMsg) {
+            const lastMessage = newmessage[newmessage.length - 1];
+            if (lastMessage.message === startConsultMsg) {
               jrDoctorJoined.current = false;
               updateSessionAPI();
               checkingAppointmentDates();
             }
-            if (newmessage[newmessage.length - 1].message === startConsultjr) {
+            if (lastMessage.message === startConsultjr) {
               jrDoctorJoined.current = true;
               updateSessionAPI();
               checkingAppointmentDates();
             }
 
-            // console.log('newmessage', newmessage);
+            if (
+              (lastMessage.message === 'Audio call ended' ||
+                lastMessage.message === 'Video call ended') &&
+              lastMessage.duration === '00 : 00'
+            ) {
+              fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_MISSED_CALL);
+            }
+
             if (msgs.length == 100) {
-              console.log('hihihihihi');
               getHistory(end);
               return;
             }
-
-            // setTimeout(() => {
-            console.log('inserting');
 
             insertText = newmessage;
             setMessages(newmessage as []);
             checkAutomatedPatientText();
             checkForRescheduleMessage(newmessage);
-            // }, 100);
 
             setTimeout(() => {
               flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
@@ -2504,7 +3221,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         } catch (error) {
           CommonBugFender('ChatRoom_getHistory_try', error);
           setLoading(false);
-          console.log('error', error);
         }
       }
     );
@@ -2520,6 +3236,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (result.length === 0 && startConsultResult.length === 0) {
       automatedTextFromPatient();
     }
+    const diffMin = Math.ceil(
+      moment(appointmentData?.appointmentDateTime).diff(moment(), 'minutes', true)
+    );
+    const doctorConnectShortly = insertText.filter((obj: any) => {
+      return obj.message === doctorWillConnectShortly;
+    });
+    const rescheduleOrCancelAppointmnt = insertText.filter((obj: any) => {
+      return obj.message === rescheduleOrCancelAppointment;
+    });
+    if (doctorConnectShortly?.length === 0 && diffMin <= -5) {
+      doctorWillConnectShortlyAutomatedText();
+    }
+    if (rescheduleOrCancelAppointmnt?.length === 0 && diffMin <= -15) {
+      // rescheduleOrCancelAppointmentAutomatedText();
+    }
   };
 
   const automatedTextFromPatient = () => {
@@ -2531,16 +3262,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     } else {
       step5 = `No follow Up via text is provided`;
     }
-    const successSteps = [
-      'Let’s get you feeling better by following simple steps :)\n',
-      '1. Answer some quick questions\n',
-      '2. Please be present in this consult room at the time of consult\n',
-      '3. Connect with your doctor via In-App Audio/Video call\n',
-      '4. Get a prescription and meds, if necessary\n',
-      `5. ${step5}\n\n`,
-      `A doctor from ${appointmentData.doctorInfo.displayName}’s team will join you shortly to collect your medical details. These details are essential for ${appointmentData.doctorInfo.displayName} to help you and will take around 3-5 minutes.`,
+    let successSteps = [
+      'Please follow these simple steps for your appointment: \n',
+      '1. Answer a few questions about your medical history\n',
+      '2. Be present here in the consult room at the time of appointment \n',
+      '3. Wait for the doctor to connect with you via audio/video call\n',
     ];
-
+    if (appointmentData.isAutomatedQuestionsComplete || skipAutoQuestions.current) {
+      successSteps = [
+        'Please follow these simple steps for your appointment: \n',
+        '1. Be present here in the consult room at the time of appointment \n',
+        '2. Wait for the doctor to connect with you via audio/video call  \n',
+      ];
+    }
     pubnub.publish(
       {
         channel: channel,
@@ -2556,60 +3290,114 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       },
       (status, response) => {}
     );
+    if (skipAutoQuestions.current) {
+      if (isJdAllowedToAssign.current) {
+        doctorWillJoinAutomatedText();
+      }
+      describeYourMedicalConditionAutomatedText();
+    } else {
+      if (appointmentData.isAutomatedQuestionsComplete) {
+        const result = insertText.filter((obj: any) => {
+          return obj.message === consultPatientStartedMsg;
+        });
+        const startConsultResult = insertText.filter((obj: any) => {
+          return obj.message === startConsultMsg;
+        });
+        const diffMin = Math.ceil(
+          moment(appointmentData?.appointmentDateTime).diff(moment(), 'minutes', true)
+        );
+        if (result.length === 0 && startConsultResult.length === 0 && diffMin > 0 && diffMin < 30) {
+          describeYourMedicalConditionAutomatedText(5000);
+        }
+      }
+    }
   };
 
-  useEffect(() => {
-    if (appointmentData.isJdQuestionsComplete) {
-      console.log({});
-      requestToJrDoctor();
+  const doctorWillConnectShortlyAutomatedText = () => {
+    setTimeout(() => {
       if (
-        !disableChat &&
-        status !== STATUS.COMPLETED &&
-        !appointmentData.hideHealthRecordNudge &&
-        !isVoipCall &&
-        !fromIncomingCall
+        hasDrJoined.current ||
+        status.current === STATUS.COMPLETED ||
+        status.current === STATUS.IN_PROGRESS ||
+        isConsultStarted.current
       ) {
-        showAndUpdateNudgeScreenVisibility();
+        return;
       }
-      // startJoinTimer(0);
-      // thirtySecondCall();
-      // minuteCaller();
-    } else {
-      setDisplayChatQuestions(true);
-    }
-  }, []);
+      const automatedText = [
+        'Please wait while the doctor connects with you shortly. Thanks for your patience.',
+      ];
+      pubnub.publish(
+        {
+          channel: channel,
+          message: {
+            message: doctorWillConnectShortly,
+            automatedText: automatedText,
+            id: doctorId,
+            isTyping: true,
+            messageDate: new Date(),
+          },
+          storeInHistory: true,
+          sendByPost: true,
+        },
+        (status, response) => {}
+      );
+    }, 2000);
+  };
+
+  const rescheduleOrCancelAppointmentAutomatedText = () => {
+    setTimeout(() => {
+      if (
+        hasDrJoined.current ||
+        status.current === STATUS.COMPLETED ||
+        status.current === STATUS.IN_PROGRESS ||
+        isConsultStarted.current
+      ) {
+        return;
+      }
+      const automatedText = [
+        'We are sorry to keep you waiting. You can  reschedule/cancel this appointment by clicking on the icon at the top right of this screen.',
+      ];
+      pubnub.publish(
+        {
+          channel: channel,
+          message: {
+            message: rescheduleOrCancelAppointment,
+            automatedText: automatedText,
+            id: doctorId,
+            isTyping: true,
+            messageDate: new Date(),
+          },
+          storeInHistory: true,
+          sendByPost: true,
+        },
+        (status, response) => {}
+      );
+    }, 4000);
+  };
 
   const thirtySecondCall = () => {
     if (jrDoctorJoined.current == false) {
-      // console.log('Alert Shows After 30000 Seconds of Delay.');
-
       const result = insertText.filter((obj: any) => {
-        // console.log('resultinsertText', obj.message);
         return obj.message === firstMessage;
       });
 
       const startConsultResult = insertText.filter((obj: any) => {
-        // console.log('resultinsertText', obj.message);
         return obj.message === startConsultMsg;
       });
 
       const startConsultjrResult = insertText.filter((obj: any) => {
-        // console.log('resultinsertText', obj.message);
         return obj.message === startConsultjr;
       });
 
       const jdThankyouResult = insertText.filter((obj: any) => {
-        // console.log('resultinsertText', obj.message);
         return obj.message === jdThankyou;
       });
 
       const stopConsultjrResult = insertText.filter((obj: any) => {
-        // console.log('resultinsertText', obj.message);
         return obj.message === stopConsultJr;
       });
 
       const languageQueueResult = insertText.filter((obj: any) => {
-        // console.log('resultinsertText', obj.message);
         return obj.message === languageQue;
       });
 
@@ -2620,11 +3408,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         jdThankyouResult.length === 0 &&
         stopConsultjrResult.length === 0 &&
         languageQueueResult.length === 0 &&
-        !appointmentData.isJdQuestionsComplete &&
-        jdCount > 0 &&
+        !appointmentData.isAutomatedQuestionsComplete &&
+        // jdCount > 0 &&
         isJdAllowed === true
       ) {
-        // console.log('result.length ', result);
         pubnub.publish(
           {
             channel: channel,
@@ -2653,35 +3440,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const minuteCaller = () => {
     if (jrDoctorJoined.current == false) {
-      // console.log('Alert Shows After 60000 Seconds of Delay.');
-
       const result = insertText.filter((obj: any) => {
-        // console.log('resultinsertText', obj.message);
         return obj.message === secondMessage;
       });
 
       const startConsultResult = insertText.filter((obj: any) => {
-        // console.log('resultinsertText', obj.message);
         return obj.message === startConsultMsg;
       });
 
       const startConsultjrResult = insertText.filter((obj: any) => {
-        // console.log('resultinsertText', obj.message);
         return obj.message === startConsultjr;
       });
 
       const jdThankyouResult = insertText.filter((obj: any) => {
-        // console.log('resultinsertText', obj.message);
         return obj.message === jdThankyou;
       });
 
       const stopConsultjrResult = insertText.filter((obj: any) => {
-        // console.log('resultinsertText', obj.message);
         return obj.message === stopConsultJr;
       });
 
       const languageQueueResult = insertText.filter((obj: any) => {
-        // console.log('resultinsertText', obj.message);
         return obj.message === languageQue;
       });
 
@@ -2692,14 +3471,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         jdThankyouResult.length === 0 &&
         stopConsultjrResult.length === 0 &&
         languageQueueResult.length === 0 &&
-        !appointmentData.isJdQuestionsComplete &&
-        jdCount > 0 &&
+        !appointmentData.isAutomatedQuestionsComplete &&
+        // jdCount > 0 &&
         isJdAllowed === true &&
         !!(textChange && !jrDoctorJoined.current) &&
-        status !== STATUS.COMPLETED &&
+        status.current !== STATUS.COMPLETED &&
         jdAssigned
       ) {
-        // console.log('result.length ', result);
         pubnub.publish(
           {
             channel: channel,
@@ -2726,7 +3504,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const checkWhatsappNotificationAPI = async () => {
     const stopCallingNoticationApi =
       (await AsyncStorage.getItem(notify_async_key + appointmentData.id)) || '';
-    if (stopCallingNoticationApi != appointmentData.id + appointmentData.appointmentDateTime) {
+    if (
+      status.current === STATUS.PENDING &&
+      stopCallingNoticationApi != appointmentData.id + appointmentData.appointmentDateTime
+    ) {
       notificationIntervalId = BackgroundTimer.setInterval(() => {
         const diffMin = moment(appointmentData.appointmentDateTime).diff(moment(), 'minutes', true);
         if (!doctorJoined && diffMin <= 0) {
@@ -2755,7 +3536,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               .catch((e) => {
                 BackgroundTimer.clearTimeout(notificationTimerId);
                 CommonBugFender('ChatRoom_getPrismUrls_uploadDocument', e);
-                console.log('Error occured', e);
               })
               .finally(() => {
                 setLoading(false);
@@ -2786,17 +3566,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
       const diff = moment.duration(moment(appointmentTime).diff(currentTime));
       diffInHours = diff.asMinutes();
-      console.log('duration', diffInHours);
-      console.log('appointmentTime', appointmentTime);
-
       if (diffInHours > 0) {
       } else {
         diffInHours = diffInHours * 60;
-        console.log('duration', diffInHours);
-
         const startingTime = 900 + diffInHours;
-        console.log('startingTime', startingTime);
-
         if (startingTime > 0) {
           startInterval(startingTime);
         }
@@ -2806,10 +3579,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
+  const [callEndEventDebounce, setCallEndEventDebounce] = useState({});
   const [showFeedback, setShowFeedback] = useState(false);
-  const { showAphAlert, audioTrack, setPrevVolume, maxVolume, hideAphAlert } = useUIElements();
+  const {
+    showAphAlert,
+    setPrevVolume,
+    maxVolume,
+    hideAphAlert,
+    joinAudioTrack,
+    disconnectAudioTrack,
+  } = useUIElements();
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
-    console.log('pubNubMessages', message.message.sentBy);
     if (message.message.isTyping) {
       if (message.message.message === audioCallMsg && !patientJoinedCall.current) {
         // if patient has not joined meeting room
@@ -2817,7 +3597,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setOnSubscribe(true);
         callhandelBack = false;
         // stopCallAbondmentTimer();
-        playSound();
         !jrDoctorJoined.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
       } else if (message.message.message === videoCallMsg && !patientJoinedCall.current) {
         // if patient has not joined meeting room
@@ -2825,7 +3604,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         callhandelBack = false;
         isAudio.current = false;
         // stopCallAbondmentTimer();
-        playSound();
         !jrDoctorJoined.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
       } else if (message.message.message === startConsultMsg) {
         jrDoctorJoined.current = false;
@@ -2834,8 +3612,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         updateSessionAPI();
         checkingAppointmentDates();
         addMessages(message);
+        setDisplayChatQuestions(false);
       } else if (message.message.message === stopConsultJr) {
-        console.log('listener remainingTime', remainingTime);
         stopInterval();
         thirtySecondTimer && clearTimeout(thirtySecondTimer);
         minuteTimer && clearTimeout(minuteTimer);
@@ -2845,7 +3623,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         //setShowFeedback(true);
         // ************* SHOW FEEDBACK POUP ************* \\
       } else if (message.message.message === stopConsultMsg) {
-        console.log('listener remainingTime', remainingTime);
         stopInterval();
         setConvertVideo(false);
         setDowngradeToAudio(false);
@@ -2862,26 +3639,48 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         message.message.message === 'Audio call ended' ||
         message.message.message === 'Video call ended'
       ) {
-        AsyncStorage.setItem('callDisconnected', 'true');
-        setOnSubscribe(false);
-        callhandelBack = true;
-        setIsCall(false);
-        setIsAudioCall(false);
-        stopSound();
-        addMessages(message);
+        if (message?.message?.id !== currentPatient?.id) {
+          // call has been ended by doctor
+
+          AsyncStorage.getItem('startCallConnectionUpdateBT').then((data) => {
+            BackgroundTimer.clearInterval(Number.parseInt(data || '0'));
+          });
+
+          // Disconnecting the call as doctor disconnected --------- */
+          callStatus.current = disconnecting;
+          callToastStatus.current = 'Call has been ended by doctor.';
+          isErrorToast.current = true;
+          setTimeout(() => {
+            hideCallUI();
+          }, 2000);
+
+          if (isAudio.current) {
+            handleEndAudioCall();
+          } else {
+            handleEndCall();
+          }
+          ////------------ */
+        }
+        //resetCurrentRetryAttempt();
+        setTimeout(() => {
+          //Intentionally commentted
+          // setCallMinimize(false);
+          // AsyncStorage.setItem('callDisconnected', 'true');
+          // setOnSubscribe(false);
+          // callhandelBack = true;
+          // setIsCall(false);
+          // setIsAudioCall(false);
+          addMessages(message);
+        }, 2000);
       } else if (message.message.message === covertVideoMsg) {
-        console.log('covertVideoMsg', covertVideoMsg);
         setConvertVideo(true);
         // setDowngradeToAudio(false);
       } else if (message.message.message === covertAudioMsg) {
-        console.log('covertVideoMsg', covertAudioMsg);
         setConvertVideo(false);
         // setDowngradeToAudio(false);
       } else if (message.message.message === consultPatientStartedMsg) {
-        console.log('consultPatientStartedMsg');
         addMessages(message);
       } else if (message.message.message === startConsultjr) {
-        console.log('succss1');
         jrDoctorJoined.current = true;
         updateSessionAPI();
         checkingAppointmentDates();
@@ -2890,78 +3689,97 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         minuteTimer && clearTimeout(minuteTimer);
         addMessages(message);
       } else if (message.message.message === doctorAutoResponse) {
-        console.log('doctorAutoResponse');
         addMessages(message);
       } else if (message.message.message === imageconsult) {
-        console.log('imageconsult');
         addMessages(message);
       } else if (message.message.message === firstMessage) {
-        console.log('firstMessage');
         addMessages(message);
       } else if (message.message.message === secondMessage) {
-        console.log('secondMessage');
         addMessages(message);
       } else if (message.message.message === languageQue) {
-        console.log('languageQue');
         thirtySecondTimer && clearTimeout(thirtySecondTimer);
         minuteTimer && clearTimeout(minuteTimer);
         addMessages(message);
       } else if (message.message.message === jdThankyou) {
-        console.log('jdThankyou');
         thirtySecondTimer && clearTimeout(thirtySecondTimer);
         minuteTimer && clearTimeout(minuteTimer);
         addMessages(message);
       } else if (message.message.message === cancelConsultInitiated) {
-        console.log('cancelConsultInitiated');
         setShowPopup(true);
-        // setTimeout(() => {
-        // stopCallAbondmentTimer();
-        // }, 1000);
       } else if (message.message.message === rescheduleConsultMsg) {
-        console.log('rescheduleConsultMsg', message.message);
         checkForRescheduleMessage(message.message);
-        // setTimeout(() => {
-        // stopCallAbondmentTimer();
-        // }, 1000);
         addMessages(message);
       } else if (message.message.message === callAbandonment) {
-        console.log('callAbandonment');
         setShowCallAbandmentPopup(true);
       } else if (message.message.message === appointmentComplete) {
         setTextChange(false);
-        setStatus(STATUS.COMPLETED);
+        // setStatus(STATUS.COMPLETED);
+        status.current = STATUS.COMPLETED;
         APIForUpdateAppointmentData(true);
         setDoctorJoinedChat && setDoctorJoinedChat(false);
         setDoctorJoined(false);
       } else if (message.message.message === leaveChatRoom) {
+        setTextChange(false);
         setDoctorJoinedChat && setDoctorJoinedChat(false);
         setDoctorJoined(false);
       } else if (message.message.message === endCallMsg) {
-        AsyncStorage.setItem('callDisconnected', 'true');
+        AsyncStorage.getItem('startCallConnectionUpdateBT').then((data) => {
+          BackgroundTimer.clearInterval(Number.parseInt(data || '0'));
+        });
+        BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
+
+        //Intentionally commented
+        //resetCurrentRetryAttempt();
+        // callStatus.current = disconnecting;
+        // callToastStatus.current = '';
+        // subscriberConnected.current = false;
+        setTimeout(() => {
+          try {
+            const event = _.debounce(() => {
+              callEndWebengageEvent('Doctor');
+            }, 300);
+            setCallEndEventDebounce((prevEvent: any) => {
+              if (prevEvent.cancel) {
+                prevEvent.cancel();
+              }
+              return event;
+            });
+            event();
+          } catch (error) {}
+          //Intentionally commentted
+          // setCallMinimize(false);
+          // AsyncStorage.setItem('callDisconnected', 'true');
+          // AsyncStorage.getItem('leftSoundPlayed').then((data) => {
+          //   if (!JSON.parse(data || 'false')) {
+          //     stopSound();
+          //     playDisconnectSound();
+          //   }
+          // });
+        }, 2000);
       } else if (message.message.message === exotelCall) {
+        addMessages(message);
+      } else {
         addMessages(message);
       }
     } else {
-      console.log('succss');
       addMessages(message);
     }
   };
 
+  const fetchAppointmentData = async () => {
+    try {
+      const response = await client.query<getAppointmentData, getAppointmentDataVariables>({
+        query: GET_APPOINTMENT_DATA,
+        variables: { appointmentId: channel },
+        fetchPolicy: 'no-cache',
+      });
+      setcurrentCaseSheet(response.data?.getAppointmentData?.appointmentsHistory?.[0]?.caseSheet);
+    } catch (error) {
+      CommonBugFender(`${AppRoutes.ChatRoom}_fetchAppointmentData`, error);
+    }
+  };
+
   const addMessages = (message: Pubnub.MessageEvent) => {
-    console.log('addMessages', message);
-    // console.log('startConsultjr', message.message.message);
-
-    // if (message.message.id !== patientId) {
-    //   stopCallAbondmentTimer();
-    // }
-
-    // const timeStamp = parseInt(message.timetoken) / parseInt('10000000');
-    // console.log('timeStamp', timeStamp);
-
-    // let dateObj = new Date(timeStamp * 1000);
-    // let utcString = dateObj.toLocaleString();
-    // console.log('utcString', utcString);
-
     insertText[insertText.length] = message.message;
     setMessages(() => [...(insertText as [])]);
     if (!isCall || !isAudioCall) {
@@ -2977,13 +3795,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const checkForRescheduleMessage = (newmessage: any) => {
-    // console.log('newmessage ', newmessage, newmessage.length);
     try {
       let result;
 
       if (newmessage.length > 1) {
         result = newmessage.filter((obj: any) => {
-          // console.log('resultinsertText', obj.message);
           return obj.message === rescheduleConsultMsg;
         });
       } else {
@@ -2991,7 +3807,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
 
       if (result) {
-        console.log('checkForRescheduleMessage ', result);
         NextAvailableSlot(result[0] ? result[0] : result, 'Transfer', false);
       }
     } catch (error) {
@@ -3007,13 +3822,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         ? height - e.endCoordinates.height - 141
         : height - e.endCoordinates.height - 141
     );
-    setDropDownBottomStyle(
-      isIphoneX()
-        ? height - e.endCoordinates.height - 200
-        : Platform.OS === 'ios'
-        ? height - e.endCoordinates.height - 190
-        : height - e.endCoordinates.height
-    );
 
     setTimeout(() => {
       flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: false });
@@ -3022,7 +3830,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const keyboardDidHide = () => {
     setHeightList(isIphoneX() ? height - 166 : Platform.OS === 'ios' ? height - 141 : height - 141);
-    setDropDownBottomStyle(isIphoneX() ? 50 : 15);
   };
 
   const send = (textMessage: string) => {
@@ -3049,28 +3856,49 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
         }
       );
-
-      if (status !== STATUS.COMPLETED) {
-        postConsultCardEvents(WebEngageEventName.CHAT_WITH_DOCTOR);
-      } else {
-        postConsultCardEvents(WebEngageEventName.PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT);
-      }
+      postChatWebEngEvent('Text', text.message);
     } catch (error) {
       CommonBugFender('ChatRoom_send_try', error);
     }
   };
 
-  let leftComponent = 0;
-  let rightComponent = 0;
-
-  const saveimageIos = (url: any) => {
-    if (Platform.OS === 'ios') {
-      Linking.openURL(url).catch((err) => console.error('An error occurred', err));
+  const postChatWebEngEvent = (msgType: messageType, message: string) => {
+    if (status.current !== STATUS.COMPLETED) {
+      postConsultCardEvents(WebEngageEventName.CHAT_WITH_DOCTOR, msgType);
+    } else {
+      postBackendWebEngage(msgType, message);
+      postConsultCardEvents(WebEngageEventName.PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT, msgType);
     }
   };
 
+  const postBackendWebEngage = async (msgType: messageType, message: string) => {
+    client
+      .mutate<postDoctorConsultEvent, postDoctorConsultEventVariables>({
+        mutation: POST_WEB_ENGAGE,
+        variables: {
+          doctorConsultEventInput: {
+            mobileNumber: g(appointmentData, 'doctorInfo', 'mobileNumber'),
+            eventName: WebEngageEvent.CONSULT_PATIENT_SENT_MESSAGE,
+            consultID: g(appointmentData, 'id')!,
+            displayId: String(g(appointmentData, 'displayId')!),
+            consultMode: ConsultMode.ONLINE,
+            doctorFullName: g(appointmentData, 'doctorInfo', 'fullName')!,
+            message,
+            chatFormat: msgType,
+            source: 'APP',
+          },
+        },
+      })
+      .then(() => {})
+      .catch((error) => {
+        CommonBugFender('postConsultEventToDoctor', error);
+      });
+  };
+
+  let leftComponent = 0;
+  let rightComponent = 0;
+
   const transferReschedule = (rowData: any, index: number) => {
-    // console.log('transferReschedule', rowData);
     return (
       <>
         {rowData.message === transferConsultMsg ? (
@@ -3280,8 +4108,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         existingAppointmentId: channel,
                         transferId: transferdataid, //rowData.transferInfo.transferId,
                       };
-                      console.log(appointmentTransferInput, 'AcceptApi Input');
-
                       transferAppointmentAPI(rowData, appointmentTransferInput);
                     } catch (error) {
                       CommonBugFender('ChatRoom_ACCEPT_try', error);
@@ -3297,7 +4123,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             {rowData.message === rescheduleConsultMsg ? (
               <View>{checkReschudule && reschduleLoadView(rowData, index, 'Reschedule')}</View>
             ) : (
-              <View>{followUpView(rowData, index, 'Followup')}</View>
+              <View>
+                {followUpView(rowData, index, 'Followup')}
+                {orderMedicine(rowData, index)}
+              </View>
             )}
           </>
         )}
@@ -3306,8 +4135,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const followUpView = (rowData: any, index: number, type: string) => {
-    // console.log('followUpView', rowData);
-
     return (
       <>
         <View
@@ -3343,11 +4170,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <View
             style={{
               width: 244,
-              // height: 176,
               backgroundColor: '#0087ba',
               marginLeft: 38,
               borderRadius: 10,
-              // marginTop: 16,
               marginBottom: 4,
             }}
           >
@@ -3360,7 +4185,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 ...theme.fonts.IBMPlexSansMedium(15),
               }}
             >
-              {`Hello ${userName},\nHope your consultation went well. Here is your prescription. View and order medicines now`}
+              {`Hello ${userName},\nYour prescription has been shared by the doctor.`}
             </Text>
             <StickyBottomComponent
               style={{
@@ -3370,90 +4195,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 shadowColor: 'transparent',
               }}
             >
-              {/* <Button
-                title={'DOWNLOAD'}
-                style={{
-                  flex: 0.5,
-                  marginLeft: 16,
-                  marginRight: 5,
-                  backgroundColor: '#0087ba',
-                  borderWidth: 2,
-                  borderColor: '#fcb715',
-                }}
-                titleTextStyle={{ color: 'white' }}
-                onPress={() => {
-                  try {
-                    postAppointmentWEGEvent(WebEngageEventName.DOWNLOAD_PRESCRIPTION);
-                    CommonLogEvent(AppRoutes.ChatRoom, 'PDF Url');
-                    console.log('pdf url', rowData.transferInfo && rowData.transferInfo.pdfUrl);
-
-                    let dirs = RNFetchBlob.fs.dirs;
-                    console.log('dirs', dirs);
-                    if (Platform.OS == 'ios') {
-                    }
-                    let fileName: string =
-                      rowData.transferInfo &&
-                      rowData.transferInfo.pdfUrl &&
-                      rowData.transferInfo.pdfUrl.split('/').pop();
-                    fileName = fileName.substring(0, fileName.indexOf('.pdf')) + '.pdf';
-                    console.log(
-                      'pdf downloadDest',
-                      rowData.transferInfo &&
-                        rowData.transferInfo.pdfUrl &&
-                        rowData.transferInfo.pdfUrl.split('/').pop()
-                    );
-                    const downloadPath =
-                      Platform.OS === 'ios'
-                        ? (dirs.DocumentDir || dirs.MainBundleDir) +
-                          '/' +
-                          (fileName || 'Apollo_Prescription.pdf')
-                        : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf');
-                    setLoading(true);
-                    RNFetchBlob.config({
-                      fileCache: true,
-                      path: downloadPath,
-                      addAndroidDownloads: {
-                        title: fileName,
-                        useDownloadManager: true,
-                        notification: true,
-                        mime: mimeType(downloadPath),
-                        path: downloadPath,
-                        description: 'File downloaded by download manager.',
-                      },
-                    })
-                      .fetch('GET', rowData.transferInfo.pdfUrl, {
-                        //some headers ..
-                      })
-                      .then((res: any) => {
-                        setLoading(false);
-                        // the temp file path
-                        console.log('The file saved to res ', res);
-                        console.log('The file saved to ', res.path());
-                        // saveimageIos(rowData.transferInfo.pdfUrl);
-                        // RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
-                        // RNFetchBlob.ios.openDocument(res.path());
-                        // if (Platform.OS === 'android') {
-                        //   Alert.alert('Download Complete');
-                        // }
-                        Platform.OS === 'ios'
-                          ? RNFetchBlob.ios.previewDocument(res.path())
-                          : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
-                      })
-                      .catch((err: Error) => {
-                        CommonBugFender('ChatRoom_DOWNLOAD_PRESS', err);
-                        console.log('error ', err);
-                        setLoading(false);
-                        // ...
-                      });
-                  } catch (error) {
-                    CommonBugFender('ChatRoom_DOWNLOAD_PRESS_try', error);
-                  }
-                }}
-              /> */}
-
               <Button
                 title={'VIEW PRESCRIPTION'}
-                style={{ flex: 1, marginRight: 16, marginLeft: 16 }}
+                style={{ flex: 1, marginRight: 16, marginLeft: 16, marginTop: 5 }}
                 onPress={() => {
                   try {
                     postAppointmentWEGEvent(
@@ -3461,8 +4205,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     );
                     CommonLogEvent(AppRoutes.ChatRoom, 'Navigate to consult details');
 
-                    console.log('Followupdata', rowData.transferInfo.caseSheetId);
-                    console.log('rowdata', rowData);
                     props.navigation.navigate(AppRoutes.ConsultDetails, {
                       CaseSheet: rowData.transferInfo.appointmentId,
                       DoctorInfo: rowData.transferInfo.doctorInfo,
@@ -3495,141 +4237,252 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               {convertChatTime(rowData)}
             </Text>
           </View>
-          {/* {rowData.transferInfo.folloupDateTime.length == 0 ? null : (
-            <View
-              style={{
-                width: 244,
-                height: 206,
-                backgroundColor: '#0087ba',
-                marginLeft: 38,
-                borderRadius: 10,
-                marginBottom: 4,
-              }}
-            >
-              <Text
-                style={{
-                  color: 'white',
-                  lineHeight: 22,
-                  ...theme.fonts.IBMPlexSansMedium(15),
-                  textAlign: 'left',
-                  marginHorizontal: 16,
-                  marginTop: 12,
-                }}
-              >
-                I’ve also scheduled a{' '}
-                <Text
-                  style={{
-                    color: 'white',
-                    lineHeight: 22,
-                    ...theme.fonts.IBMPlexSansBold(15),
-                    textAlign: 'left',
-                  }}
-                >
-                  free follow-up{' '}
-                </Text>
-                <Text
-                  style={{
-                    color: 'white',
-                    lineHeight: 22,
-                    ...theme.fonts.IBMPlexSansMedium(15),
-                    textAlign: 'left',
-                  }}
-                >
-                  for you —
-                </Text>
-              </Text>
-              <View
-                style={{
-                  marginHorizontal: 16,
-                  marginTop: 9,
-                  opacity: 0.5,
-                  height: 2,
-                  borderStyle: 'dashed',
-                  borderWidth: 1,
-                  borderRadius: 1,
-                  borderColor: '#ffffff',
-                  overflow: 'hidden',
-                }}
-              />
-              <Text
-                style={{
-                  marginHorizontal: 16,
-                  marginTop: 9,
-                  lineHeight: 22,
-                  ...theme.fonts.IBMPlexSansSemiBold(15),
-                  color: 'white',
-                }}
-              >
-                {moment(rowData.transferInfo.folloupDateTime).format('Do MMMM, dddd \nhh:mm A')}
-              </Text>
-              <View
-                style={{
-                  marginHorizontal: 16,
-                  marginTop: 10,
-                  opacity: 0.5,
-                  height: 2,
-                  borderStyle: 'dashed',
-                  borderWidth: 1,
-                  borderRadius: 1,
-                  borderColor: '#ffffff',
-                  overflow: 'hidden',
-                }}
-              />
-              <StickyBottomComponent
-                style={{
-                  paddingHorizontal: 0,
-                  backgroundColor: 'transparent',
-                  shadowColor: 'transparent',
-                  paddingTop: 13,
-                }}
-              >
-                <Button
-                  title={'RESCHEDULE'}
-                  style={{
-                    flex: 0.5,
-                    marginLeft: 16,
-                    marginRight: 5,
-                    backgroundColor: '#0087ba',
-                    borderWidth: 2,
-                    borderColor: '#fcb715',
-                  }}
-                  titleTextStyle={{ color: 'white' }}
-                  onPress={() => {
-                    CommonLogEvent(AppRoutes.ChatRoom, 'Chat reschedule follow up');
+        </View>
+      </>
+    );
+  };
 
-                    console.log('Button Clicked');
-                    NextAvailableSlot(rowData, 'Followup', false);
-                    setTransferData(rowData.transferInfo);
-                    setTimeout(() => {
-                      flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
-                    }, 200);
-                  }}
-                />
-              </StickyBottomComponent>
-              <Text
-                style={{
-                  color: '#ffffff',
-                  marginLeft: 27,
-                  textAlign: 'right',
-                  ...theme.fonts.IBMPlexSansMedium(10),
-                  lineHeight: 24,
-                  letterSpacing: 0.04,
-                  marginTop: 50,
-                  marginRight: 16,
-                }}
-              >
-                {convertChatTime(rowData)}
-              </Text>
+  const UserInfo = {
+    'Patient UHID': currentPatient?.uhid,
+    'Mobile Number': currentPatient?.mobileNumber,
+    'Customer ID': currentPatient?.id,
+  };
+
+  const onAddToCart = async () => {
+    const prrescriptions = caseSheet?.[0]?.medicinePrescription || MedicinePrescriptions || [];
+    const medPrescription = prrescriptions.filter((item: any) => item!.id);
+    const isCartOrder = medPrescription?.length === prrescriptions.length;
+    const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(
+      caseSheet?.[0]?.blobName! || currentCaseSheet?.[0]?.blobName!
+    );
+    const presToAdd = {
+      id: appointmentData?.id,
+      appointmentId: appointmentData?.id,
+      date: moment(appointmentData?.appointmentDateTime).format('DD MMM YYYY'),
+      doctorName: appointmentData?.doctorInfo?.displayName || '',
+      forPatient: currentPatient?.firstName || '',
+      medicines: (medPrescription || []).map((item: any) => item!.medicineName).join(', '),
+      uploadedUrl: docUrl,
+    } as EPrescription;
+    postWebEngageEvent(WebEngageEventName.ORDER_MEDICINES_IN_CONSULT_ROOM, {
+      ...UserInfo,
+      'Order Type': isCartOrder ? 'Cart' : 'Non-Cart',
+    });
+
+    if (isCartOrder) {
+      try {
+        setLoading(true);
+        const response: AxiosResponse<MedicineProductDetailsResponse>[] = await Promise.all(
+          medPrescription.map((item) => getMedicineDetailsApi(item?.id!))
+        );
+        const cartItems = response
+          .filter(({ data }) => {
+            const medicine = data?.productdp?.[0];
+            return medicine?.id && medicine?.sku;
+          })
+          .map(({ data }, index) => ({
+            ...formatToCartItem({ ...data?.productdp?.[0]!, image: '' }),
+            quantity: getPrescriptionItemQuantity(
+              medPrescription?.[index]?.medicineUnit,
+              medPrescription?.[index]?.medicineTimings,
+              medPrescription?.[index]?.medicineDosage,
+              medPrescription?.[index]?.medicineCustomDosage,
+              medPrescription?.[index]?.medicineConsumptionDurationInDays,
+              medPrescription?.[index]?.medicineConsumptionDurationUnit,
+              parseInt(data?.productdp?.[0]?.mou || '1', 10)
+            ),
+          }));
+        addMultipleCartItems?.(cartItems);
+        setEPrescriptions?.([presToAdd]);
+        setLoading(false);
+        postCleverTapUploadPrescriptionEvents('Consult Room', 'Cart');
+        props.navigation.push(AppRoutes.MedicineCart);
+      } catch (error) {
+        setLoading(false);
+        showAphAlert?.({
+          title: string.common.uhOh,
+          description: string.common.somethingWentWrong,
+        });
+        CommonBugFender(`${AppRoutes.ChatRoom}_onAddToCart`, error);
+      }
+      return;
+    }
+    setEPrescriptions?.([presToAdd]);
+    postCleverTapUploadPrescriptionEvents('Consult Room', 'Non-Cart');
+    props.navigation.navigate(AppRoutes.UploadPrescription, {
+      ePrescriptionsProp: [presToAdd],
+      type: 'E-Prescription',
+    });
+    postWebEngageEvent(WebEngageEventName.ORDER_MEDICINES_IN_CONSULT_ROOM, {
+      ...UserInfo,
+      'Order Type': isCartOrder ? 'Cart' : 'Non-Cart',
+    });
+    postCleverTapEvent(CleverTapEventName.CONSULT_ORDER_MEDICINES_IN_CHATROOM_CLICKED, {
+      ...UserInfo,
+      'Order Type': isCartOrder ? 'Cart' : 'Non-Cart',
+    });
+  };
+
+  function postDiagnosticAddToCart(itemId: string, itemName: string) {
+    DiagnosticAddToCartEvent(
+      itemName,
+      itemId,
+      0, //add price
+      0, //add price
+      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.CONSULT_ROOM
+    );
+  }
+
+  const onAddTestsToCart = async () => {
+    postWebEngageEvent(WebEngageEventName.BOOK_TESTS_IN_CONSULT_ROOM, UserInfo);
+    postCleverTapEvent(CleverTapEventName.CONSULT_BOOK_TESTS_IN_CHATROOM, UserInfo);
+    let location: LocationData | null = null;
+    setLoading && setLoading(true);
+
+    if (!locationDetails) {
+      try {
+        location = await doRequestAndAccessLocation();
+        location && setLocationDetails!(location);
+      } catch (error) {
+        setLoading && setLoading(false);
+        Alert.alert(
+          'Uh oh.. :(',
+          'Unable to get location. We need your location in order to add tests to your cart.'
+        );
+        return;
+      }
+    }
+
+    const testPrescription = (caseSheet?.[0]?.diagnosticPrescription! ||
+      TestPrescriptions?.[0]?.diagnosticPrescription ||
+      []) as getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_diagnosticPrescription[];
+    const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(
+      caseSheet?.[0]?.blobName! || currentCaseSheet?.[0]?.blobName!
+    );
+
+    if (!testPrescription?.length) {
+      Alert.alert('Uh oh.. :(', 'No items are available in your location for now.');
+      setLoading && setLoading(false);
+      return;
+    }
+    const presToAdd = {
+      id: caseSheet?.[0]?.id || currentCaseSheet?.[0].id,
+      date: moment(appointmentData?.appointmentDateTime).format('DD MMM YYYY'),
+      doctorName: appointmentData?.doctorInfo?.displayName || '',
+      forPatient: (currentPatient && currentPatient.firstName) || '',
+      medicines: '',
+      uploadedUrl: docUrl,
+    } as EPrescription;
+    // Adding tests to DiagnosticsCart
+    addTestsToCart(
+      testPrescription,
+      client,
+      g(diagnosticLocation || pharmacyLocation || locationDetails || location, 'pincode') || ''
+    )
+      .then((tests: DiagnosticsCartItem[]) => {
+        // Adding ePrescriptions to DiagnosticsCart
+        const unAvailableItemsArray = testPrescription?.filter(
+          (item) => !tests?.find((val) => val?.name!.toLowerCase() == item?.itemname!.toLowerCase())
+        );
+        const unAvailableItems = unAvailableItemsArray?.map((item) => item?.itemname)?.join(', ');
+        const getItemNames = tests?.map((item) => item?.name)?.join(', ');
+        const getItemIds = tests?.map((item) => Number(item?.id))?.join(', ');
+
+        if (tests?.length) {
+          addMultipleTestCartItems?.(tests);
+          addMultipleTestEPrescriptions?.([
+            {
+              ...presToAdd,
+              medicines: (tests as DiagnosticsCartItem[])?.map((item) => item?.name)?.join(', '),
+            },
+          ]);
+        }
+        if (testPrescription?.length == unAvailableItemsArray?.length) {
+          showAphAlert?.({
+            title: string.common.uhOh,
+            description: string.common.noDiagnosticsAvailable,
+            onPressOk: () => {
+              _navigateToTestCart();
+            },
+            onPressOutside: () => {
+              _navigateToTestCart();
+            },
+          });
+        } else {
+          //in case of if any unavailable items or all are present
+          const lengthOfAvailableItems = tests?.length;
+          const testAdded = tests?.map((item) => nameFormater(item?.name), 'title').join('\n');
+          showAphAlert?.({
+            title:
+              !!lengthOfAvailableItems && lengthOfAvailableItems > 0
+                ? `${lengthOfAvailableItems} ${
+                    lengthOfAvailableItems > 1 ? 'items' : 'item'
+                  } added to your cart`
+                : string.common.uhOh,
+            description: unAvailableItems
+              ? `Below items are added to your cart: \n${testAdded} \nSearch for the remaining diagnositc tests and add to the cart.`
+              : `Below items are added to your cart: \n${testAdded}`,
+            onPressOk: () => {
+              _navigateToTestCart();
+            },
+            onPressOutside: () => {
+              _navigateToTestCart();
+            },
+          });
+        }
+        postDiagnosticAddToCart(getItemIds, getItemNames);
+        setLoading?.(false);
+      })
+      .catch((e) => {
+        setLoading?.(false);
+        handleGraphQlError(e);
+      });
+  };
+
+  function _navigateToTestCart() {
+    hideAphAlert?.();
+    props.navigation.push(AppRoutes.TestsCart, { comingFrom: AppRoutes.ConsultDetails });
+  }
+
+  const orderMedicine = (rowData: any, index: number) => {
+    return (
+      <>
+        <View style={styles.MsgCont}>
+          {leftComponent === 1 && (
+            <View style={styles.iconCont}>
+              <Mascot style={styles.iconStyle} />
             </View>
-          )} */}
-          {/* {checkReschudule && reschduleLoadView(rowData, index, 'Followup')} */}
+          )}
+          <View style={styles.MsgTextCont}>
+            <Text style={styles.MsgText}>
+              {
+                'Order Medicines in one click and get free home delivery in 2-4 hours. We also have home sample collections for diagnostic tests.'
+              }
+            </Text>
+            {(caseSheet?.[0]?.medicinePrescription || MedicinePrescriptions?.length > 0) && (
+              <Button
+                title={'ORDER MEDICINES'}
+                titleTextStyle={{ color: '#FC9916' }}
+                style={styles.buttonStyle}
+                onPress={() => onAddToCart()}
+              />
+            )}
+            {(caseSheet?.[0]?.diagnosticPrescription || TestPrescriptions?.length > 0) && (
+              <Button
+                title={'BOOK DIAGNOSTIC TESTS'}
+                titleTextStyle={{ color: '#FC9916' }}
+                style={{ ...styles.buttonStyle, marginBottom: 0 }}
+                onPress={() => onAddTestsToCart()}
+              />
+            )}
+            <Text style={styles.timeStamp}>{convertChatTime(rowData)}</Text>
+          </View>
         </View>
       </>
     );
   };
 
   const reschduleLoadView = (rowData: any, index: number, type: string) => {
-    // console.log('reschduleLoadView', rowData);
     return (
       <>
         <View
@@ -3665,7 +4518,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <View
             style={{
               width: 244,
-              // height: 130,
               backgroundColor: '#0087ba',
               marginLeft: 38,
               borderRadius: 10,
@@ -3682,11 +4534,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
             >
               {
-                // newRescheduleCount && newRescheduleCount!.rescheduleCount < 3
-                //   ? `We’re sorry that you have to reschedule. You can reschedule up to ${newRescheduleCount} times for free.`
-                //   :
                 "We're sorry that doctor is not available and you have to reschedule this appointment, however you can reschedule it for free."
-                // : `Since you hace already rescheduled 3 times with ${appointmentData.doctorInfo.displayName}, we will consider this a new paid appointment.`
               }
             </Text>
             <Text
@@ -3726,7 +4574,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             >
               {appointmentData.doctorInfo.displayName} has suggested the below slot for rescheduling
               this appointment
-              {/* Next slot for {appointmentData.doctorInfo.displayName} is available on — */}
             </Text>
             <View
               style={{
@@ -3755,9 +4602,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   ? rowData.transferInfo.folloupDateTime
                   : rowData.transferInfo.transferDateTime
               ).format('Do MMMM, dddd \nhh:mm A')}
-
-              {/* {moment(nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')} */}
-              {/* {moment(rowData.transferDateTime ? rowData.transferDateTime : nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')} */}
             </Text>
             <View
               style={{
@@ -3782,7 +4626,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             >
               <Button
                 title={'CHANGE SLOT'}
-                // disabled={disAllowReschedule}
                 disabledStyle={{
                   backgroundColor: '#0087ba',
                   opacity: 0.8,
@@ -3802,14 +4645,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     rescheduleInitiatedBy = REQUEST_ROLES.PATIENT;
                     setTransferData(rowData.transferInfo);
                     setdisplayoverlay(true);
-                  } else {
-                    // props.navigation.navigate(AppRoutes.DoctorDetails, {
-                    //   doctorId: rowData.transferInfo.doctorInfo.id,
-                    //   PatientId: patientId,
-                    //   appointmentType: appointmentData.appointmentType,
-                    //   appointmentId: appointmentData.id,
-                    //   showBookAppointment: true,
-                    // });
                   }
                 }}
               />
@@ -3837,7 +4672,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         patientId: patientId,
                         rescheduledId: '',
                       };
-                      console.log('bookRescheduleInput', bookRescheduleInput);
                       rescheduleAPI(rowData, bookRescheduleInput);
                     } else if (type === 'Reschedule') {
                       const bookRescheduleInput = {
@@ -3851,7 +4685,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         patientId: patientId,
                         rescheduledId: rowData.transferInfo.reschduleId,
                       };
-                      console.log('bookRescheduleInput', bookRescheduleInput);
                       rescheduleAPI(rowData, bookRescheduleInput);
                     } else {
                       const datettimeval = rowData.transferInfo.transferDateTime;
@@ -3864,8 +4697,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         existingAppointmentId: channel,
                         transferId: transferdataid, //rowData.transferInfo.transferId,
                       };
-                      console.log(appointmentTransferInput, 'AcceptApi Input');
-
                       transferAppointmentAPI(rowData, appointmentTransferInput);
                     }
                   } catch (error) {
@@ -3950,21 +4781,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (rowData.prismId) {
         getPrismUrls(client, patientId, rowData.prismId)
           .then((data: any) => {
-            console.log(data, 'finaldata');
             openImageZoomViewer(rowData.url, rowData.fileName || 'Image');
             setUrl(rowData.url);
             setLoading(false);
             setPatientImageshow(false);
-            // Linking.openURL((data && data.urls[0]) || rowData.url).catch((err) =>
-            // console.error('An error occurred', err)
-            // );
           })
           .catch(() => {
             openImageZoomViewer(rowData.url, rowData.fileName || 'Image');
             setUrl(rowData.url);
             setLoading(false);
             setPatientImageshow(false);
-            //Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err));
           })
           .finally(() => {
             setLoading(false);
@@ -3975,9 +4801,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setUrl(rowData.url);
         setLoading(false);
         setPatientImageshow(false);
-        // Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err));
       }
     }
+  };
+
+  const sectionHeaderView = (rowData: any) => {
+    return (
+      <View>
+        <Text style={styles.headerText}>{rowData.automatedText}</Text>
+      </View>
+    );
   };
 
   const messageView = (rowData: any, index: number) => {
@@ -3988,7 +4821,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           width: rowData.message !== null ? 282 : 0,
           borderRadius: 10,
           marginVertical: 2,
-          // alignSelf: 'flex-start',
         }}
       >
         {leftComponent === 1 && (
@@ -4033,7 +4865,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               {rowData.url.match(/\.(jpeg|jpg|gif|png|jfif)$/) || rowData.fileType === 'image' ? (
                 <TouchableOpacity
                   onPress={() => {
-                    console.log('IMAGE', rowData.url);
                     openPopUp(rowData);
                   }}
                   activeOpacity={1}
@@ -4072,10 +4903,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <TouchableOpacity
                   activeOpacity={1}
                   onPress={() => {
-                    console.log('pdf', rowData.url);
                     openPopUp(rowData);
-                    // setShowWeb(true);
-                    // setPatientImageshow(true);
                   }}
                 >
                   <View
@@ -4140,7 +4968,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
               </>
             </View>
-          ) : rowData.message === '^^#startconsultJr' ? (
+          ) : rowData.message === startConsultjr ? (
             <View
               style={{
                 backgroundColor: '#0087ba',
@@ -4177,7 +5005,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 </>
               ) : null}
             </View>
-          ) : rowData.message === '^^#startconsult' ? (
+          ) : rowData.message === startConsultMsg ? (
             <View
               style={{
                 backgroundColor: '#0087ba',
@@ -4710,18 +5538,49 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
     index: number
   ) => {
+    // starts with ^^# (display only known automated messages)
+    const automatedCodesToRender = [
+      transferConsultMsg,
+      followupconsult,
+      rescheduleConsultMsg,
+      consultPatientStartedMsg,
+      doctorAutoResponse,
+      firstMessage,
+      secondMessage,
+      languageQue,
+      jdThankyou,
+      doctorWillConnectShortly,
+      rescheduleOrCancelAppointment,
+      appointmentStartsInFifteenMin,
+      appointmentStartsInTenMin,
+      sectionHeader,
+      followUpChatGuideLines,
+      externalMeetingLink,
+      imageconsult,
+      appointmentComplete,
+      startConsultjr,
+      startConsultMsg,
+      stopConsultJr,
+      exotelCall,
+    ];
+
+    // starts with ^^
+    const callRelatedCodes = [
+      videoCallMsg,
+      audioCallMsg,
+      acceptedCallMsg,
+      endCallMsg,
+      covertAudioMsg,
+      covertVideoMsg,
+    ];
+
     if (
-      rowData.message === typingMsg ||
-      rowData.message === endCallMsg ||
-      rowData.message === audioCallMsg ||
-      rowData.message === videoCallMsg ||
-      rowData.message === acceptedCallMsg ||
-      rowData.message === stopConsultMsg ||
-      rowData.message === cancelConsultInitiated ||
-      rowData.message === callAbandonment ||
-      rowData.message === vitalsCompletedByPatient ||
-      rowData.message === patientRejectedCall ||
-      rowData === patientRejectedCall
+      !rowData?.message ||
+      patientRejectedCall === (rowData as any) ||
+      callRelatedCodes.includes(rowData?.message) ||
+      (!automatedCodesToRender.includes(rowData?.message) && rowData?.message?.startsWith('^^#')) ||
+      (rowData?.automatedText === consultPatientStartedMsg && rowData?.message == 'welcome') ||
+      rowData?.automatedText === jdAutoAssign
     ) {
       return null;
     }
@@ -4736,7 +5595,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               style={{
                 backgroundColor: 'transparent',
                 width: width,
-                // marginVertical: 8,
               }}
             />
           )}
@@ -4756,8 +5614,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   ) : rowData.message === firstMessage ||
                     rowData.message === secondMessage ||
                     rowData.message === languageQue ||
-                    rowData.message === jdThankyou ? (
+                    rowData.message === jdThankyou ||
+                    rowData.message === doctorWillConnectShortly ||
+                    rowData.message === rescheduleOrCancelAppointment ||
+                    rowData.message === appointmentStartsInFifteenMin ||
+                    rowData.message === appointmentStartsInTenMin ? (
                     <>{doctorAutomatedMessage(rowData, index)}</>
+                  ) : rowData.message === sectionHeader ? (
+                    <>{sectionHeaderView(rowData)}</>
+                  ) : rowData.message === followUpChatGuideLines ? (
+                    <>
+                      <FollowUpChatGuideLines followChatLimit={followChatLimit} />
+                    </>
+                  ) : rowData.message === externalMeetingLink ? (
+                    renderExternalMeetingLink(rowData)
                   ) : (
                     <>{messageView(rowData, index)}</>
                   )}
@@ -4837,7 +5707,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     <TouchableOpacity
                       activeOpacity={1}
                       onPress={() => {
-                        console.log('IMAGE', rowData.url);
                         openPopUp(rowData);
                       }}
                     >
@@ -4877,7 +5746,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     <TouchableOpacity
                       activeOpacity={1}
                       onPress={() => {
-                        console.log('pdf', rowData.url);
                         openPopUp(rowData);
                       }}
                     >
@@ -4949,6 +5817,65 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
+  const renderExternalMeetingLink = (rowData: any) => {
+    return (
+      <View style={styles.externalMeetingLinkContainer}>
+        <View style={styles.externalMeetingLinkTextContainer}>
+          <ExternalMeetingVideoCall style={styles.externalMeetingLinkImage} />
+          <Text style={styles.externalMeetingLinkText}>
+            {strings.externalMeetingLink.click_to_open.replace(
+              'XYZ',
+              g(appointmentData, 'doctorInfo', 'fullName')
+            )}
+          </Text>
+
+          <View style={styles.externalMeetingLinkCTAWrapper}>
+            <TouchableOpacity
+              style={[styles.externalMeetingLinkMeetingCTAContainer, { flex: 0.9 }]}
+              onPress={() => onMeetingLinkClicked(rowData)}
+            >
+              <Text style={styles.exeternalMeetingLinkMeetingCTAText}>{rowData.url}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={{ flex: 0.1 }} onPress={() => onLinkCopyClicked(rowData)}>
+              <CopyIcon />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.externalMeetingLinkTnC}>{strings.externalMeetingLink.tnc}</Text>
+        </View>
+      </View>
+    );
+  };
+
+  const onMeetingLinkClicked = (rowData: any) => {
+    try {
+      Linking.openURL(rowData.url);
+
+      postWebEngageEvent(WebEngageEventName.PATIENT_EXTERNAL_MEETING_LINK_CLICKED, {
+        'Doctor name': appointmentData?.doctorInfo?.fullName,
+        'Patient name': `${appointmentData?.patientInfo?.firstName} ${appointmentData?.patientInfo?.lastName}`,
+        'Patient ID': appointmentData?.patientInfo?.id,
+        'Doctor ID': appointmentData?.doctorInfo?.id,
+        'Appointment ID': appointmentData?.id,
+        'Link URL': rowData.url || '',
+        'Doctor number': appointmentData?.doctorInfo?.mobileNumber,
+        'Patient number': appointmentData?.patientInfo?.mobileNumber,
+        'Solution Used': 'Zoom',
+      } as WebEngageEvents[WebEngageEventName.PATIENT_EXTERNAL_MEETING_LINK_CLICKED]);
+    } catch (error) {
+      CommonBugFender('ChatRoom_rederExternalMeetingLink_onMeetingLinkClickedd', error);
+    }
+  };
+
+  const onLinkCopyClicked = (rowData: any) => {
+    try {
+      Clipboard.setString(rowData.url);
+      setHandlerMessage(strings.externalMeetingLink.copied_to_clipboard + ' ' + rowData.url);
+      setSnackbarState(true);
+    } catch (error) {
+      CommonBugFender('ChatRoom_rederExternalMeetingLink_onLinkCopyClicked', error);
+    }
+  };
+
   const convertChatTime = (timeStamp: any) => {
     let utcString;
     if (timeStamp.messageDate) {
@@ -4974,7 +5901,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     rowData: any,
     appointmentTransferInput: BookTransferAppointmentInput
   ) => {
-    console.log(rowData, 'rowData');
     setLoading(true);
 
     client
@@ -4986,8 +5912,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((data: any) => {
-        console.log('Accept Api', data);
-        console.log('time', data.data.bookTransferAppointment.appointment.appointmentDateTime);
         setLoading(false);
 
         setTransferAccept(true),
@@ -4996,22 +5920,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setTransferAccept(false);
           }, 1000);
         AsyncStorage.setItem('showTransferPopup', 'true');
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [
-              NavigationActions.navigate({
-                routeName: AppRoutes.TabBar,
-                params: {
-                  TransferData: rowData.transferInfo,
-                  TranferDateTime:
-                    data.data.bookTransferAppointment.appointment.appointmentDateTime,
-                },
-              }),
-            ],
-          })
-        );
+        const params = {
+          TransferData: rowData?.transferInfo,
+          TranferDateTime: data?.data?.bookTransferAppointment?.appointment?.appointmentDateTime,
+        };
+        navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar, params);
       })
       .catch((e) => {
         CommonBugFender('ChatRoom_transferAppointmentAPI', e);
@@ -5029,19 +5942,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     try {
       let checkAppointmentId;
       let checkAppointmentDate;
-      console.log(rowData, 'rowDatacheckIfReschduleApi');
-      console.log(Value, 'Value');
 
       if (isAutomatic) {
         checkAppointmentId = channel;
 
         checkAppointmentDate = nextSlotAvailable;
-        console.log(
-          'checkIfReschedulesuccess',
-          checkAppointmentId,
-          checkAppointmentDate,
-          isAutomatic
-        );
       } else {
         checkAppointmentId = rowData.transferInfo.appointmentId;
 
@@ -5049,12 +5954,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           Value === 'Followup'
             ? rowData.transferInfo.folloupDateTime
             : rowData.transferInfo.transferDateTime;
-        console.log(
-          'checkIfReschedulesuccess',
-          checkAppointmentId,
-          checkAppointmentDate,
-          isAutomatic
-        );
       }
 
       setLoading(true);
@@ -5063,7 +5962,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           setLoading(false);
           try {
             const result = _data.data.data.checkIfReschedule;
-            console.log('checkIfReschedulesuccess', result);
             const data: rescheduleType = {
               rescheduleCount: result.rescheduleCount + 1,
               appointmentState: result.appointmentState,
@@ -5084,10 +5982,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           CommonBugFender('ChatRoom_checkIfRescheduleAppointment', e);
           setLoading(false);
           const error = JSON.parse(JSON.stringify(e));
-          console.log('checkIfRescheduleerror', error);
         })
         .finally(() => {
-          console.log('checkIfReschedulesuccessfinally transferData', transferData);
           if (isAutomatic) {
             rescheduleInitiatedBy = REQUEST_ROLES.DOCTOR;
             setdisplayoverlay(true);
@@ -5097,12 +5993,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         });
     } catch (error) {
       CommonBugFender('ChatRoom_checkIfReschduleApi_try', error);
-      console.log('creash in checkIfReschduleApi', error);
     }
   };
 
   const NextAvailableSlot = (rowData: any, Value: string, isAutomatic: boolean) => {
-    console.log('NextAvailableSlot', rowData, rowData.length);
     try {
       if (rowData.length > 0) setLoading(true);
       let todayDate;
@@ -5127,16 +6021,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           Value === 'Followup' ? rowData.transferInfo.doctorId : rowData.transferInfo.doctorInfo.id;
       }
 
-      console.log('todayDate', todayDate);
-      console.log('slotDoctorId', slotDoctorId);
-
       setDoctorScheduleId(slotDoctorId);
 
       getNextAvailableSlots(client, slotDoctorId, todayDate)
         .then(({ data }: any) => {
           setLoading(false);
           try {
-            console.log(data, 'nextavailable res');
             setNextSlotAvailable(data[0].availableSlot);
             checkIfReschduleApi(rowData, Value, isAutomatic, data[0].availableSlot);
           } catch (error) {
@@ -5147,20 +6037,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         .catch((e) => {
           CommonBugFender('ChatRoom_getNextAvailableSlots', e);
           setLoading(false);
-          console.log('Error occured ', e);
         })
         .finally(() => {});
     } catch (error) {
       CommonBugFender('ChatRoom_NextAvailableSlot_try', error);
-      console.log('crash in NextAvailableSlot', error);
     }
   };
 
   const rescheduleAPI = (rowData: any, bookRescheduleInput: any) => {
-    console.log('rescheduleAPI', rowData);
     setLoading(true);
 
-    console.log(bookRescheduleInput, 'bookRescheduleInput');
     client
       .mutate<bookRescheduleAppointment, bookRescheduleAppointmentVariables>({
         mutation: BOOK_APPOINTMENT_RESCHEDULE,
@@ -5170,34 +6056,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((data: any) => {
-        console.log(data, 'data');
         setLoading(false);
         AsyncStorage.setItem('showSchduledPopup', 'true');
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [
-              NavigationActions.navigate({
-                routeName: AppRoutes.TabBar,
-                params: {
-                  Data:
-                    data.data &&
-                    data.data.bookRescheduleAppointment &&
-                    data.data.bookRescheduleAppointment.appointmentDetails,
-                  DoctorName:
-                    props.navigation.state.params!.data &&
-                    props.navigation.state.params!.data.doctorInfo &&
-                    props.navigation.state.params!.data.doctorInfo.fullName,
-                },
-              }),
-            ],
-          })
-        );
+        const params = {
+          Data: data?.data?.bookRescheduleAppointment?.appointmentDetails,
+          DoctorName: props.navigation.state.params?.data?.doctorInfo?.fullName,
+        };
+        navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar, params);
       })
       .catch((e) => {
         CommonBugFender('ChatRoom_rescheduleAPI', e);
-        console.log(e, 'error');
         setLoading(false);
         setBottompopup(true);
       });
@@ -5209,92 +6077,107 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const diffMin = Math.ceil(moment(appointmentTime).diff(moment(), 'minutes', true));
     const diffHours = Math.floor(moment(appointmentTime).diff(moment(), 'hours', true));
     const diffDays = Math.round(moment(appointmentTime).diff(moment(), 'days', true));
-    // console.log(diffMin, diffHours, diffDays, diffMonths, 'difference');
+    const isPrescriptionReady = messages?.filter((item) => item?.message === followupconsult);
+    // checkAutomatedPatientText();
     if (textChange && !jrDoctorJoined.current) {
-      time = 'Consult is In-progress';
+      // Consult in Progress
+      currentProgressBarPosition.current = 1;
     } else {
-      if (status === STATUS.COMPLETED) {
-        time = `Consult is completed`;
-      } else if (diffMin <= 0) {
-        time = `Will be joining soon`;
-      } else if (diffMin > 0 && diffMin < 60 && diffHours <= 1) {
-        time = `Joining in ${diffMin} minute${diffMin === 1 ? '' : 's'}`;
+      if (status.current === STATUS.COMPLETED) {
+        if (!isProgressBarVisible.current) {
+          time = `Consult is completed`;
+        }
+        currentProgressBarPosition.current = 2;
+      } else if (appointmentDiffMin <= 0) {
+        time = `Joining soon. Please wait!`;
+      } else if (appointmentDiffMin > 0 && appointmentDiffMin < 60 && diffHours <= 1) {
+        time = `Expected to join in ${appointmentDiffMin} minute${
+          appointmentDiffMin === 1 ? '' : 's'
+        }`;
       } else if (diffHours >= 0 && diffHours < 24 && diffDays <= 1) {
-        time = `Joining in ${convertMinsToHrsMins(diffMin)}`;
+        time = `Expected to join in ${convertMinsToHrsMins(appointmentDiffMin)}`;
       } else {
         time = `Consult on ${moment(appointmentTime).format('DD/MM')} at ${moment(
           appointmentTime
         ).format('h:mm A')}`;
       }
     }
+    if (isPrescriptionReady?.length > 0) {
+      currentProgressBarPosition.current = 3;
+    }
+    showProgressBarOnHeader.current =
+      !doctorJoinedChat &&
+      !time &&
+      !(currentProgressBarPosition.current === 0 || !isProgressBarVisible.current);
+    if (!showProgressBarOnHeader.current) {
+      return (
+        <View style={styles.mainView}>
+          {currentProgressBarPosition.current === 0 || !isProgressBarVisible.current ? (
+            <Text style={[styles.doctorNameStyle, { paddingBottom: time ? 5 : 11 }]}>
+              {appointmentData.doctorInfo.displayName}
+            </Text>
+          ) : (
+            <></>
+          )}
+          {time ? <Text style={styles.timeStyle}>{time}</Text> : <View />}
+          {!showProgressBarOnHeader.current &&
+            isProgressBarVisible.current &&
+            renderProgressBar(currentProgressBarPosition.current)}
+          {doctorJoinedChat && renderJoinCallHeader()}
+        </View>
+      );
+    }
+    return <></>;
+  };
+
+  const isFilesUploadedByPatient = messages?.find((m) => m.message === imageconsult);
+  const isVitalsCompleted =
+    !displayChatQuestions || messages?.find((m) => m.message === vitalsCompletedByPatient);
+  const isDoctorAttemptedCall = messages?.find((m) => m.message === endCallMsg);
+  const isDrCheckingRecords =
+    !isDoctorAttemptedCall &&
+    (isFilesUploadedByPatient || isVitalsCompleted || isConsultedWithDoctorBefore);
+  const avgTimeForDoctorToJoinInMinutes = 5;
+
+  const renderJoinCallHeader = () => {
+    const doctor = appointmentData?.doctorInfo?.displayName;
+    const text = isDrCheckingRecords
+      ? `${doctor} is online and going through your records!`
+      : `${doctor} is Online!`;
+    const ctaHeading = isDrCheckingRecords ? 'JOIN CALL ROOM' : 'JOIN CALL';
+
     return (
-      <View style={styles.mainView}>
-        <View style={{ maxWidth: '40%' }}>
-          <Text style={styles.displayId} numberOfLines={1}>
-            #{appointmentData.displayId}
-          </Text>
-          <View style={styles.separatorStyle} />
-        </View>
-        <View
-          style={{
-            flexDirection: 'row',
-          }}
-        >
-          <View style={{ flex: 1 }}>
-            <Text style={styles.doctorNameStyle}>{appointmentData.doctorInfo.displayName}</Text>
-            <Text style={styles.doctorSpecialityStyle}>{`${g(
-              appointmentData,
-              'doctorInfo',
-              'specialty',
-              'userFriendlyNomenclature'
-            )} | MCI Reg. No. ${g(appointmentData, 'doctorInfo', 'registrationNumber')}`}</Text>
-            <Text style={styles.timeStyle}>{time}</Text>
-          </View>
-          <View style={styles.imageView}>
-            <View style={styles.imageContainer}>
-              {appointmentData.doctorInfo.thumbnailUrl &&
-              appointmentData.doctorInfo.thumbnailUrl.match(urlRegEx) ? (
-                <Image
-                  source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
-                  resizeMode={'contain'}
-                  style={styles.doctorImage}
-                />
-              ) : (
-                <DoctorPlaceholderImage style={styles.doctorImage} />
-              )}
-            </View>
-          </View>
-        </View>
-      </View>
+      !loading && (
+        <JoinWaitingRoomView
+          onPress={() => onPressJoinBtn()}
+          title={text}
+          rightBtnTitle={ctaHeading}
+          onPressJoin={() => onPressJoinBtn()}
+        />
+      )
     );
   };
 
-  const renderJoinCallHeader = () => {
-    return (
-      <View style={styles.callHeaderView}>
-        <View style={styles.callHeaderRow}>
-          <Text style={styles.joinRoomDescriptionText}>
-            {strings.common.joinConsultRoomDescription} {appointmentData.doctorInfo.displayName}
-          </Text>
-          <Button
-            title="JOIN"
-            style={styles.joinBtn}
-            onPress={() => {
-              patientJoinedCall.current = true;
-              joinCallHandler();
-              postAppointmentWEGEvent(WebEngageEventName.PATIENT_JOINED_CONSULT);
-            }}
-          />
-        </View>
-      </View>
-    );
+  const startCallConnectionUpdateFx = () => {
+    const startCallConnectionUpdateBT = BackgroundTimer.setInterval(() => {
+      updateStatusOfCall({ appointmentId: appointmentData.id, patientId: patientId });
+    }, 30000);
+    setStartCallConnectionUpdateBT(startCallConnectionUpdateBT);
+    AsyncStorage.setItem('startCallConnectionUpdateBT', startCallConnectionUpdateBT.toString());
+  };
+
+  const onPressJoinBtn = () => {
+    patientJoinedCall.current = true;
+    joinCallHandler();
+    postAppointmentWEGEvent(WebEngageEventName.PATIENT_JOINED_CONSULT);
   };
 
   const joinCallHandler = () => {
     callPermissions(() => {
+      AsyncStorage.setItem('leftSoundPlayed', 'false');
+      callStatus.current = '';
+      callToastStatus.current = '';
       setLoading(true);
-      stopTimer();
-      startTimer(0);
       setCallAccepted(true);
       setHideStatusBar(true);
       setChatReceived(false);
@@ -5302,87 +6185,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       changeVideoStyles();
       setDropdownVisible(false);
       setCallerVideo(true);
-      if (token) {
-        PublishAudioVideo();
-      } else {
-        APICallAgain();
-      }
+      makeUpdateAppointmentCall.current = true;
+      APICallAgain(true);
     });
+    //startCallConnectionUpdate();
   };
-
-  // const renderChatHeader = () => {
-  //   let time = '';
-  //   const diffMin = Math.ceil(
-  //     moment(appointmentData.appointmentDateTime).diff(moment(), 'minutes', true)
-  //   );
-  //   const diffHours = Math.ceil(
-  //     moment(appointmentData.appointmentDateTime).diff(moment(), 'hours', true)
-  //   );
-  //   const diffDays = Math.ceil(
-  //     moment(appointmentData.appointmentDateTime).diff(moment(), 'days', true)
-  //   );
-  //   const diffMonths = Math.ceil(
-  //     moment(appointmentData.appointmentDateTime).diff(moment(), 'months', true)
-  //   );
-  //   // console.log(diffMin, diffHours, diffDays, diffMonths, 'difference');
-
-  //   if (textChange && !jrDoctorJoined) {
-  //     time = 'Consult is In-progress';
-  //   } else {
-  //     if (status === STATUS.COMPLETED) {
-  //       time = `Consult is completed`;
-  //     } else if (diffMin <= 0) {
-  //       time = `Will be joining soon`;
-  //     } else if (diffMin > 0 && diffMin < 60 && diffHours <= 1) {
-  //       time = `Joining in ${diffMin} minute${diffMin === 1 ? '' : 's'}`;
-  //     } else if (diffHours > 0 && diffHours < 24 && diffDays <= 1) {
-  //       time = `Joining in ${diffHours} hour${diffHours === 1 ? '' : 's'}`;
-  //     } else if (diffDays > 0 && diffDays < 31 && diffMonths <= 1) {
-  //       time = `Joining in ${diffDays} day${diffDays === 1 ? '' : 's'}`;
-  //     } else {
-  //       time = `Joining in ${diffMonths} month${diffMonths === 1 ? '' : 's'}`;
-  //     }
-  //   }
-  //   return (
-  //     <View style={styles.mainView}>
-  //       <View
-  //         style={{
-  //           flexDirection: 'row',
-  //         }}
-  //       >
-  //         <View style={{ flex: 1 }}>
-  //           <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
-  //           <Text style={styles.displayId}>#{appointmentData.displayId}</Text>
-  //           <View style={styles.separatorStyle} />
-  //           <Text style={styles.doctorNameStyle}>{appointmentData.doctorInfo.displayName}</Text>
-  //           <Text style={styles.doctorSpecialityStyle}>{`${g(
-  //             appointmentData,
-  //             'doctorInfo',
-  //             'specialty',
-  //             'userFriendlyNomenclature'
-  //           )}  |  MCI Reg. No. ${g(appointmentData, 'doctorInfo', 'registrationNumber')}`}</Text>
-  //           <Text style={styles.timeStyle}>{time}</Text>
-  //         </View>
-  //         <View style={styles.imageView}>
-  //           <View style={styles.imageContainer}>
-  //             {appointmentData.doctorInfo.thumbnailUrl &&
-  //             appointmentData.doctorInfo.thumbnailUrl.match(
-  //               /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
-  //             ) ? (
-  //               <Image
-  //                 source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
-  //                 resizeMode={'contain'}
-  //                 style={styles.doctorImage}
-  //               />
-  //             ) : (
-  //               <DoctorPlaceholderImage style={styles.doctorImage} />
-  //             )}
-  //           </View>
-  //         </View>
-  //       </View>
-  //     </View>
-  //   );
-  // };
 
   const chatDisabled = () => {
     return (
@@ -5395,35 +6202,107 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         </Text>
         <TouchableOpacity
           onPress={() => {
-            props.navigation.navigate(AppRoutes.DoctorDetails, {
-              doctorId: doctorId,
-            });
+            fireWebengageEvent(appointmentData);
+            appointmentData?.doctorInfo?.allowBookingRequest
+              ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
+                  doctorId: doctorId,
+                  cleverTapAppointmentAttributes: {
+                    source: 'Appointment CTA',
+                    appointmentCTA: 'Inside consult room',
+                  },
+                })
+              : props.navigation.navigate(AppRoutes.DoctorDetails, {
+                  doctorId: doctorId,
+                  cleverTapAppointmentAttributes: {
+                    source: 'Appointment CTA',
+                    appointmentCTA: 'Inside consult room',
+                  },
+                });
           }}
         >
           <Text style={theme.viewStyles.text('B', 13, theme.colors.APP_YELLOW)}>
-            {strings.common.book_apointment}
+            {appointmentData?.doctorInfo?.allowBookingRequest
+              ? 'REQUEST APPOINTMENT'
+              : strings.common.book_apointment}
           </Text>
         </TouchableOpacity>
       </View>
     );
   };
 
+  const fireWebengageEvent = (
+    item: getPatinetAppointments_getPatinetAppointments_patinetAppointments
+  ) => {
+    const medicinePrescription = g(item, 'caseSheet', '0' as any, 'medicinePrescription');
+    const getMedicines = (
+      medicines: (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet_medicinePrescription | null)[]
+    ) =>
+      medicines
+        ? medicines
+            .filter((i) => i?.medicineName)
+            .map((i) => i?.medicineName)
+            .join(', ')
+        : null;
+    const followUpMedicineNameText = getMedicines(medicinePrescription!);
+    const eventAttributesFollowUp:
+      | WebEngageEvents[WebEngageEventName.BOOK_AGAIN_CANCELLED_APPOINTMENT]
+      | WebEngageEvents[WebEngageEventName.PAST_APPOINTMENT_BOOK_FOLLOW_UP_CLICKED] = {
+      'Customer ID': g(currentPatient, 'id'),
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Doctor ID': g(item, 'doctorId') || '',
+      'Doctor Name': g(item, 'doctorInfo', 'fullName') || '',
+      'Doctor Category': g(item, 'doctorInfo', 'doctorType'),
+      'Doctor City': g(item, 'doctorInfo', 'city') || '',
+      'Speciality ID': g(item, 'doctorInfo', 'specialty', 'id') || '',
+      'Speciality Name': g(item, 'doctorInfo', 'specialty', 'name') || '',
+      'Consult ID': g(item, 'id') || '',
+      'Consult Date Time': moment(g(item, 'appointmentDateTime')).toDate(),
+      'Consult Mode': g(item, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
+      isConsultStarted: !!g(item, 'isConsultStarted'),
+      Prescription: followUpMedicineNameText || '',
+      Source: 'Inside consult room',
+    };
+
+    postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT_CHAT_ROOM, eventAttributesFollowUp);
+    const cleverTapEventAttributesFollowUp: CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
+      'Customer ID': g(currentPatient, 'id'),
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      docId: g(item, 'doctorId') || undefined,
+      docName: g(item, 'doctorInfo', 'fullName') || undefined,
+      docCity: g(item, 'doctorInfo', 'city') || undefined,
+      specialityId: g(item, 'doctorInfo', 'specialty', 'id') || undefined,
+      specialityName: g(item, 'doctorInfo', 'specialty', 'name') || undefined,
+      'Doctor Category': g(item, 'doctorInfo', 'doctorType') || undefined,
+      'Consult ID': g(item, 'id') || '',
+      'Consult Date Time': moment(g(item, 'appointmentDateTime')).toDate(),
+      'Consult Mode': g(item, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
+      isConsultStarted: !!g(item, 'isConsultStarted'),
+      Prescription: followUpMedicineNameText || '',
+      Source: 'Inside Consult Room',
+    };
+    postCleverTapEvent(
+      CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED,
+      cleverTapEventAttributesFollowUp
+    );
+  };
   const renderChatView = () => {
     return (
       <View style={{ width: width, height: heightList, marginTop: 0, flex: 1 }}>
         <FlatList
-          style={{
-            flex: 1,
-            marginBottom: 80,
-          }}
-          // ListHeaderComponent={renderChatHeader()}
+          style={{ flex: 1, marginBottom: 65 }}
           keyboardShouldPersistTaps="always"
           keyboardDismissMode="on-drag"
-          // stickyHeaderIndices={[0]}
           removeClippedSubviews={false}
           ref={(ref) => (flatListRef.current = ref)}
           contentContainerStyle={{
-            // marginHorizontal: 20,
             marginTop: 0,
           }}
           bounces={false}
@@ -5439,7 +6318,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             if (disableChat) {
               return chatDisabled();
             } else {
-              return null;
+              return <View style={{ height: 150 }}></View>;
             }
           }}
         />
@@ -5447,654 +6326,255 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
-  const doctorName =
-    name == 'JUNIOR'
-      ? appointmentData.doctorInfo.displayName + '`s' + ' team doctor '
-      : appointmentData.doctorInfo.displayName;
+  const drDisplayName = appointmentData.doctorInfo.displayName;
+  const drName = drDisplayName?.includes('Dr') ? drDisplayName : `Dr ${drDisplayName}`;
+  const doctorName = name == 'JUNIOR' ? drName + '`s' + ' team doctor ' : drName;
+
   const VideoCall = () => {
     return (
       <View style={[talkStyles, { zIndex: 1001 }]}>
-        {downgradeToAudio && (
-          <View>
-            {appointmentData.doctorInfo.photoUrl ? (
-              <View style={[audioCallImageStyles, { backgroundColor: 'white' }]}>
-                <Image
-                  source={{ uri: appointmentData.doctorInfo.photoUrl }}
-                  style={audioCallImageStyles}
-                  resizeMode={'contain'}
-                />
-              </View>
-            ) : (
-              <View
-                style={[
-                  audioCallImageStyles,
-                  {
-                    backgroundColor: 'black',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    opacity: 0.6,
-                  },
-                ]}
-              >
-                <DoctorPlaceholderImage />
-              </View>
-            )}
-          </View>
-        )}
-        {isCall && (
-          <View style={{ flex: 1, flexDirection: 'row' }}>
-            <OTSession
-              // apiKey={'46401302'}
-              apiKey={AppConfig.Configuration.PRO_TOKBOX_KEY}
-              sessionId={sessionId}
-              token={token}
-              eventHandlers={sessionEventHandlers}
-              ref={otSessionRef}
-              options={{
-                androidZOrder: 'onTop', // Android only - valid options are 'mediaOverlay' or 'onTop'
-                androidOnTop: 'publisher', // Android only - valid options are 'publisher' or 'subscriber'
-                useTextureViews: true, // Android only - default is false
-                isCamera2Capable: true, // Android only - default is false
-              }}
-            >
-              <OTPublisher
-                style={
-                  !downgradeToAudio
-                    ? publisherStyles
-                    : {
-                        position: 'absolute',
-                        top: 44,
-                        right: 20,
-                        width: 1,
-                        height: 1,
-                        zIndex: 1000,
-                      }
-                }
-                properties={{
-                  cameraPosition: cameraPosition,
-                  publishVideo: !downgradeToAudio ? showVideo : false,
-                  publishAudio: isPublishAudio,
-                  videoTrack: !downgradeToAudio ? showVideo : false,
-                  audioTrack: isPublishAudio,
-                  audioVolume: 100,
-                  name: g(currentPatient, 'firstName') || 'patient',
-                  resolution: '640x480', // setting this resolution to avoid over heating of device
-                  audioBitrate: 30000,
-                  frameRate: 15,
-                }}
-                eventHandlers={publisherEventHandlers}
-              />
-              <OTSubscriber
-                style={
-                  !downgradeToAudio
-                    ? subscriberStyles
-                    : {
-                        width: 1,
-                        height: 1,
-                      }
-                }
-                // subscribeToSelf={true}
-                eventHandlers={subscriberEventHandlers}
-                properties={{
-                  subscribeToAudio: true,
-                  subscribeToVideo: !downgradeToAudio ? true : false,
-                  audioVolume: 100,
-                }}
-              />
-            </OTSession>
-
-            {!PipView && (
-              <>
-                <View
-                  style={{
-                    position: 'absolute',
-                    top: isIphoneX() ? 24 : 0,
-                    left: 0,
-                    width: width,
-                    height: 24,
-                    backgroundColor: 'transparent',
-                    // opacity: 0.6,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 1000,
-                  }}
-                >
-                  <Text style={{ color: 'transparent', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
-                    Time Left {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
-                    {seconds.toString().length < 2 ? '0' + seconds : seconds}
-                  </Text>
-                </View>
-                <Text
-                  style={{
-                    position: 'absolute',
-                    marginHorizontal: 20,
-                    marginTop: isIphoneX() ? 64 : 44,
-                    width: width - 40,
-                    color: 'white',
-                    ...theme.fonts.IBMPlexSansSemiBold(20),
-                    textAlign: 'center',
-                    left: 0,
-                    zIndex: 1001,
-                  }}
-                >
-                  {doctorName}
-                </Text>
-              </>
-            )}
-
-            <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
-            {waitAndEndCall()}
-            {patientJoinedCall.current && !subscriberConnected.current && (
-              <Text style={styles.centerTxt}>
-                {strings.common.waitForDoctirToJoinCall.replace('doctor_name', doctorName)}
-              </Text>
-            )}
-
-            {renderBusyMessages(!PipView, isIphoneX() ? 171 : 161)}
-
-            {PipView && renderOnCallPipButtons('video')}
-            {!PipView && renderChatNotificationIcon()}
-            {!PipView && renderBottomButtons()}
-          </View>
-        )}
-      </View>
-    );
-  };
-
-  const callMinutes = Math.floor(callTimer / 60);
-  const callSeconds = callTimer - callMinutes * 60;
-
-  const callTimerStarted = `${
-    callMinutes.toString().length < 2 ? '0' + callMinutes : callMinutes
-  } : ${callSeconds.toString().length < 2 ? '0' + callSeconds : callSeconds}`;
-
-  const isPaused = !callerAudio
-    ? !callerVideo && isCall
-      ? 'Audio/Video'
-      : 'Audio'
-    : !callerVideo && isCall
-    ? 'Video'
-    : '';
-
-  //  {isCall && VideoCall()}
-  //   {isAudioCall && AudioCall()}
-
-  const AudioCall = () => {
-    return (
-      <View style={audioCallStyles}>
-        {!convertVideo && (
-          <View>
-            {appointmentData.doctorInfo.photoUrl ? (
-              <View style={[audioCallImageStyles, { backgroundColor: 'white' }]}>
-                <Image
-                  source={{ uri: appointmentData.doctorInfo.photoUrl }}
-                  style={audioCallImageStyles}
-                  resizeMode={'contain'}
-                />
-              </View>
-            ) : (
-              <DoctorImage style={audioCallImageStyles} />
-            )}
-          </View>
-        )}
-        {/* {!convertVideo && <DoctorCall style={audioCallImageStyles} />} */}
-        <View
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'black',
-            opacity: 0.6,
-          }}
-        />
-        <OTSession
-          apiKey={AppConfig.Configuration.PRO_TOKBOX_KEY}
-          sessionId={sessionId}
-          token={token}
-          eventHandlers={sessionEventHandlers}
-          ref={otSessionRef}
-          options={{
-            androidZOrder: 'onTop', // Android only - valid options are 'mediaOverlay' or 'onTop'
-            androidOnTop: 'publisher', // Android only - valid options are 'publisher' or 'subscriber'
-            useTextureViews: true, // Android only - default is false
-            isCamera2Capable: true, // Android only - default is false
-          }}
-        >
-          <OTPublisher
-            style={
-              convertVideo
-                ? publisherStyles
-                : {
-                    position: 'absolute',
-                    top: 44,
-                    right: 20,
-                    width: 1,
-                    height: 1,
-                    zIndex: 1000,
-                  }
-            }
-            properties={{
-              cameraPosition: cameraPosition,
-              publishVideo: convertVideo ? true : false,
-              publishAudio: isPublishAudio,
-              audioVolume: 100,
-              videoTrack: convertVideo ? true : false,
-              audioTrack: isPublishAudio,
-              name: g(currentPatient, 'firstName') || 'patient',
-              // resolution: '352x288',
-            }}
-            eventHandlers={publisherEventHandlers}
-          />
-          <OTSubscriber
-            style={
-              convertVideo
-                ? subscriberStyles
-                : {
-                    width: 1,
-                    height: 1,
-                  }
-            }
-            eventHandlers={subscriberEventHandlers}
-            // subscribeToSelf={true}
-            properties={{
-              subscribeToAudio: true,
-              subscribeToVideo: convertVideo ? true : false,
-              audioVolume: 100,
-            }}
-          />
-        </OTSession>
-        {showAudioPipView && (
-          <View
-            style={{
-              position: 'absolute',
-              top: isIphoneX() ? 24 : 0,
-              left: 0,
-              width: width,
-              height: 24,
-              backgroundColor: 'transparent',
-              // opacity: 0.6,
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 1001,
+        <View style={{ flex: 1, flexDirection: 'row' }}>
+          <OTSession
+            // apiKey={'46401302'}
+            apiKey={AppConfig.Configuration.PRO_TOKBOX_KEY}
+            sessionId={sessionId}
+            token={token}
+            eventHandlers={sessionEventHandlers}
+            ref={otSessionRef}
+            options={{
+              androidZOrder: 'onTop', // Android only - valid options are 'mediaOverlay' or 'onTop'
+              androidOnTop: 'publisher', // Android only - valid options are 'publisher' or 'subscriber'
+              useTextureViews: true, // Android only - default is false
+              isCamera2Capable: true, // Android only - default is false
             }}
           >
-            <Text style={{ color: 'transparent', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
-              Time Left {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
-              {seconds.toString().length < 2 ? '0' + seconds : seconds}
-            </Text>
-          </View>
-        )}
-        <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
-        {renderBusyMessages(showAudioPipView, isIphoneX() ? 121 : 101)}
-        {showAudioPipView && renderAudioCallButtons()}
-        {!showAudioPipView && renderOnCallPipButtons('audio')}
-        {!showAudioPipView && renderAudioFullScreen()}
+            {renderOTPublisher()}
+            <OTSubscriber
+              style={
+                showDoctorProfile
+                  ? { width: 0, height: 0 }
+                  : !downgradeToAudio
+                  ? subscriberStyles
+                  : {
+                      width: 1,
+                      height: 1,
+                    }
+              }
+              // subscribeToSelf={true}
+              eventHandlers={subscriberEventHandlers}
+              properties={{
+                subscribeToAudio: true,
+                subscribeToVideo: !downgradeToAudio ? true : false,
+                audioVolume: 100,
+              }}
+            />
+          </OTSession>
+          {callingScreenUI()}
+        </View>
       </View>
     );
   };
+
+  const callingScreenUI = () => {
+    return (
+      <>
+        {!PipView && (
+          <>
+            <View style={[styles.callingView, { top: isIphoneX() ? 24 : 0 }]}>
+              <Text style={{ color: 'transparent', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
+                Time Left {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
+                {seconds.toString().length < 2 ? '0' + seconds : seconds}
+              </Text>
+            </View>
+            {!subscriberConnected.current && (
+              <Text
+                numberOfLines={1}
+                style={[styles.connectingDoctorName, { marginTop: isIphoneX() ? 64 : 44 }]}
+              >
+                {doctorName}
+              </Text>
+            )}
+          </>
+        )}
+        {!isPublishAudio && showVideo && renderShowNoAudioView()}
+        {subscriberConnected.current && renderSubscriberConnectedInfo()}
+
+        {showDoctorProfile &&
+          !subscriberConnected.current &&
+          !patientJoinedCall.current &&
+          renderTextConnecting()}
+        {!subscriberConnected.current || isPaused !== '' || callToastStatus.current
+          ? renderToastMessages()
+          : null}
+        {!showVideo && renderDisableVideoSubscriber()}
+        {showDoctorProfile && renderNoSubscriberConnectedThumbnail()}
+        {!PipView && renderChatNotificationIcon()}
+        {!PipView && renderBottomButtons()}
+      </>
+    );
+  };
+
+  const renderOTPublisher = () => {
+    return (
+      <OTPublisher
+        style={!showVideo ? {} : !downgradeToAudio ? publisherStyles : styles.publisherStyles}
+        properties={{
+          cameraPosition: cameraPosition,
+          publishVideo: !downgradeToAudio ? showVideo : false,
+          publishAudio: isPublishAudio,
+          audioVolume: 100,
+          name: g(currentPatient, 'firstName') || 'patient',
+          resolution: '640x480', // setting this resolution to avoid over heating of device
+          audioBitrate: 30000,
+          frameRate: 15,
+        }}
+        eventHandlers={publisherEventHandlers}
+      />
+    );
+  };
+
+  const renderShowNoAudioView = () => {
+    return (
+      <View
+        style={[
+          styles.disableVideoSubscriber,
+          {
+            backgroundColor: showVideo ? 'clear' : '#e1e1e1',
+            top: isIphoneX() ? 64 : 44,
+          },
+        ]}
+      >
+        <View style={styles.audioDisableContainer}>
+          <Text style={styles.disabledVideoAudioText}>Your audio is off</Text>
+        </View>
+      </View>
+    );
+  };
+  const renderTextConnecting = () => {
+    return (
+      <Text
+        style={[
+          styles.connectingTextStyle,
+          {
+            marginTop: isIphoneX() ? 100 : 80,
+          },
+        ]}
+      >
+        {callStatus.current ? callStatus.current : 'Connecting...'}
+      </Text>
+    );
+  };
+
+  const renderSubscriberConnectedInfo = () => {
+    return (
+      <View style={[styles.subscriberConnectedView, { marginTop: isIphoneX() ? 64 : 44 }]}>
+        <View style={styles.subscriberConnectedInnerView}>
+          <Text style={styles.connectedDoctorName}>{doctorName}</Text>
+          <Text style={styles.connectedDoctorName}>
+            {callStatus.current ? callStatus.current : 'Connected'} {'  '}
+            {!callStatus.current ? callTimerStarted : ''}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
+  const renderDisableVideoSubscriber = () => {
+    const title =
+      !showVideo && !isPublishAudio
+        ? 'Your audio & video are off'
+        : !showVideo
+        ? 'Your video is off'
+        : 'Your audio is off';
+
+    return (
+      <View style={[styles.disableVideoSubscriber, { top: isIphoneX() ? 64 : 44 }]}>
+        <Text style={styles.disabledVideoAudioText}>{title}</Text>
+      </View>
+    );
+  };
+
+  const renderNoSubscriberConnectedThumbnail = () => {
+    return (
+      <View style={styles.userThumbnailView}>
+        {doctorProfileUrl ? (
+          <Image
+            source={{ uri: doctorProfileUrl }}
+            style={styles.userThumbnailIcon}
+            resizeMode={'contain'}
+          />
+        ) : (
+          <UserThumbnailIcon style={styles.userThumbnailIcon} />
+        )}
+        {patientJoinedCall.current && !subscriberConnected.current && (
+          <Text style={styles.centerTxt}>
+            {callTimer > avgTimeForDoctorToJoinInMinutes * 60
+              ? 'Unfortunately, it appears that\nthe doctor is still busy.\nYou will receive a call shortly!'
+              : isDrCheckingRecords
+              ? `${doctorName} is going through your details.\nOn average, it takes ${avgTimeForDoctorToJoinInMinutes} minutes!`
+              : `${doctorName} is yet to Join!`}
+          </Text>
+        )}
+      </View>
+    );
+  };
+
+  const callTimerStarted = moment.utc(callTimer * 1000).format('mm : ss');
+
+  const renderToastMessages = () => {
+    if (
+      (callStatus.current === disconnecting && callToastStatus.current === '') ||
+      (patientJoinedCall.current && !subscriberConnected.current)
+    ) {
+      return;
+    }
+    return (
+      <View style={styles.doctorStatusContainer}>
+        <View style={styles.doctorStatusInnerContainer}>
+          <Text
+            style={{
+              ...theme.viewStyles.text(
+                'M',
+                14,
+                isErrorToast.current ? theme.colors.APP_RED : theme.colors.LIGHT_BLUE
+              ),
+              textAlign: 'center',
+            }}
+          >
+            {callToastStatus.current
+              ? callToastStatus.current
+              : !subscriberConnected.current
+              ? connectingCall
+              : isPaused !== ''
+              ? showMessage(isPaused)
+              : ''}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
   const showMessage = (isPaused: any) => {
     if (downgradeToAudio) {
       return `Falling back to audio due to bad network!!`;
     }
-    return `Doctor’s ${isPaused} ${isPaused.indexOf('/') > -1 ? 'are' : 'is'} Paused`;
-  };
-  const renderBusyMessages = (showPip: boolean, insetTop: any) => {
-    return (
-      <>
-        {isPaused !== '' ? (
-          <View
-            style={{
-              position: 'absolute',
-              marginTop: showPip ? insetTop : 25,
-              zIndex: 1005,
-              justifyContent: showPip ? 'center' : 'flex-start',
-              width: showPip ? width : 155,
-              alignItems: showPip ? 'center' : 'flex-start',
-            }}
-          >
-            <View
-              style={{
-                backgroundColor: 'white',
-                paddingTop: 2,
-                paddingBottom: Platform.OS === 'ios' ? 3 : 5,
-                justifyContent: showPip ? 'center' : 'flex-start',
-                alignItems: showPip ? 'center' : 'flex-start',
-                paddingHorizontal: 10,
-                marginTop: 2,
-                marginHorizontal: 16,
-                borderRadius: 100,
-              }}
-            >
-              <Text
-                style={{
-                  color: theme.colors.APP_RED,
-                  ...theme.fonts.IBMPlexSansSemiBold(12),
-                  textAlign: 'center',
-                  padding: 0,
-                  flexWrap: 'wrap',
-                }}
-              >
-                {showMessage(isPaused)}
-              </Text>
-            </View>
-          </View>
-        ) : null}
-      </>
-    );
-  };
-
-  const renderAudioFullScreen = () => {
-    return (
-      <View
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          height: 205,
-          width: 155,
-          backgroundColor: 'transparent',
-        }}
-      >
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={() => {
-            changeAudioStyles();
-            setHideStatusBar(true);
-          }}
-        >
-          <View
-            style={{
-              height: 205,
-              width: 155,
-              backgroundColor: 'transparent',
-            }}
-          />
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
-  const changeAudioStyles = () => {
-    setAudioCallStyles({
-      flex: 1,
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      zIndex: 100,
-      backgroundColor: 'black',
-    });
-    setAudioCallImageStyles({
-      width,
-      height,
-    });
-    setShowAudioPipView(true);
-    setTimerStyles({
-      position: 'absolute',
-      marginHorizontal: 20,
-      marginTop: isIphoneX() ? 91 : 81,
-      width: width - 40,
-      color: 'white',
-      ...theme.fonts.IBMPlexSansSemiBold(12),
-      textAlign: 'center',
-      letterSpacing: 0.46,
-      zIndex: 1005,
-    });
-    setChatReceived(false);
-    setSubscriberStyles({
-      width,
-      height,
-    });
-    setPublisherStyles({
-      position: 'absolute',
-      top: isIphoneX() ? 74 : 44,
-      right: 20,
-      width: 148,
-      height: 112,
-      zIndex: 1000,
-      borderRadius: 30,
-    });
-    Keyboard.dismiss();
-    setDropdownVisible(false);
-  };
-
-  const renderAudioCallButtons = () => {
-    return (
-      <>
-        <Text
-          style={{
-            position: 'absolute',
-            marginHorizontal: 20,
-            marginTop: isIphoneX() ? 64 : 44,
-            width: width - 40,
-            color: 'white',
-            ...theme.fonts.IBMPlexSansSemiBold(20),
-            textAlign: 'center',
-            left: 0,
-            zIndex: 1001,
-          }}
-          numberOfLines={2}
-        >
-          {name == 'JUNIOR'
-            ? appointmentData.doctorInfo.displayName + '`s' + ' team doctor '
-            : appointmentData.doctorInfo.displayName}
-        </Text>
-        <View
-          style={{
-            position: 'absolute',
-            top: isIphoneX() ? 64 : 44,
-            left: 20,
-            zIndex: 1006,
-          }}
-        >
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => {
-              setHideStatusBar(false);
-              setChatReceived(false);
-              setSubscriberStyles({
-                width: 155,
-                height: 205,
-              });
-
-              setPublisherStyles({
-                position: 'absolute',
-                top: 1,
-                right: 1,
-                width: 1,
-                height: 1,
-                zIndex: 1000,
-              });
-
-              setAudioCallStyles({
-                flex: 1,
-                position: 'absolute',
-                top: 88,
-                right: 8,
-                height: 205,
-                width: 155,
-                backgroundColor: 'black',
-              });
-              setAudioCallImageStyles({
-                height: 205,
-                width: 155,
-              });
-              setShowAudioPipView(false);
-              setTimerStyles({
-                position: 'absolute',
-                marginHorizontal: 5,
-                marginTop: 5,
-                width: 155,
-                color: 'white',
-                ...theme.fonts.IBMPlexSansSemiBold(12),
-                textAlign: 'center',
-                letterSpacing: 0.46,
-                zIndex: 1005,
-              });
-            }}
-          >
-            {chatReceived ? (
-              <ChatWithNotification style={{ height: 88, width: 88, left: -20, top: -20 }} />
-            ) : (
-              <ChatIcon style={{ height: 48, width: 48 }} />
-            )}
-          </TouchableOpacity>
-        </View>
-        <View
-          style={{
-            position: 'absolute',
-            bottom: 16,
-            left: 58,
-            right: 58,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            width: width - 116,
-          }}
-        >
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => {
-              isPublishAudio === true ? setIsPublishAudio(false) : setIsPublishAudio(true);
-            }}
-          >
-            {isPublishAudio === true ? (
-              <UnMuteIcon style={{ height: 60, width: 60 }} />
-            ) : (
-              <MuteIcon style={{ height: 60, width: 60 }} />
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => {
-              AsyncStorage.setItem('callDisconnected', 'true');
-              setIsAudioCall(false);
-              stopTimer();
-              setHideStatusBar(false);
-              setIsPublishAudio(true);
-              setShowVideo(true);
-              setCameraPosition('front');
-              postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
-              pubnub.publish(
-                {
-                  message: {
-                    isTyping: true,
-                    message: 'Audio call ended',
-                    duration: callTimerStarted,
-                    id: patientId,
-                    messageDate: new Date(),
-                  },
-                  channel: channel,
-                  storeInHistory: true,
-                },
-                (status, response) => {}
-              );
-
-              pubnub.publish(
-                {
-                  message: {
-                    isTyping: true,
-                    message: endCallMsg,
-                    id: patientId,
-                    messageDate: new Date(),
-                  },
-                  channel: channel,
-                  storeInHistory: true,
-                },
-                (status, response) => {}
-              );
-            }}
-          >
-            <EndCallIcon style={{ width: 60, height: 60 }} />
-          </TouchableOpacity>
-        </View>
-      </>
-    );
+    return `${doctorName} has turned off the ${isPaused}`;
   };
 
   const endVoipCall = () => {
     if (isIos()) {
       RNCallKeep.endAllCalls();
     }
-  };
-
-  const renderOnCallPipButtons = (pipType: 'audio' | 'video') => {
-    return (
-      <View
-        style={{
-          position: 'absolute',
-          bottom: 16,
-          left: 16,
-          zIndex: 1002,
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-        }}
-      >
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={() => {
-            pipType === 'audio' && changeAudioStyles();
-            pipType === 'video' && changeVideoStyles();
-            setHideStatusBar(true);
-          }}
-        >
-          <FullScreenIcon style={{ width: 40, height: 40 }} />
-        </TouchableOpacity>
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={() => {
-            AsyncStorage.setItem('callDisconnected', 'true');
-            pipType === 'audio' && setIsAudioCall(false);
-            pipType === 'video' && setIsCall(false);
-            setIsPublishAudio(true);
-            setShowVideo(true);
-            setCameraPosition('front');
-            stopTimer();
-            setHideStatusBar(false);
-            postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
-            pubnub.publish(
-              {
-                message: {
-                  isTyping: true,
-                  message: pipType === 'audio' ? 'Audio call ended' : 'Video call ended',
-                  duration: callTimerStarted,
-                  id: patientId,
-                  messageDate: new Date(),
-                },
-                channel: channel,
-                storeInHistory: true,
-              },
-              (status, response) => {}
-            );
-
-            pubnub.publish(
-              {
-                message: {
-                  isTyping: true,
-                  message: endCallMsg,
-                  id: patientId,
-                  messageDate: new Date(),
-                },
-                channel: channel,
-                storeInHistory: true,
-              },
-              (status, response) => {}
-            );
-          }}
-        >
-          <EndCallIcon style={{ width: 40, height: 40, marginLeft: 43 }} />
-        </TouchableOpacity>
-      </View>
-    );
+    AsyncStorage.getItem('startCallConnectionUpdateBT').then((data) => {
+      BackgroundTimer.clearInterval(Number.parseInt(data || '0'));
+    });
+    BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
   };
 
   const changeVideoStyles = () => {
     setTalkStyles({
       flex: 1,
-      backgroundColor: 'black',
+      backgroundColor: theme.colors.CALL_BG_GRAY,
       position: 'absolute',
       top: 0,
       bottom: 0,
@@ -6108,25 +6588,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     });
     setPublisherStyles({
       position: 'absolute',
-      top: isIphoneX() ? 74 : 44,
+      top: isIphoneX() ? 70 : 44,
       right: 20,
-      width: 148,
-      height: 112,
+      width: 95,
+      height: 120,
       zIndex: 1000,
-      borderRadius: 30,
+      borderRadius: 12,
+      ...theme.viewStyles.cardViewStyle,
     });
     setPipView(false);
-    setTimerStyles({
-      position: 'absolute',
-      marginHorizontal: 20,
-      marginTop: isIphoneX() ? 91 : 81,
-      width: width - 40,
-      color: 'white',
-      ...theme.fonts.IBMPlexSansSemiBold(12),
-      textAlign: 'center',
-      letterSpacing: 0.46,
-      zIndex: 1005,
-    });
     setChatReceived(false);
     Keyboard.dismiss();
     setDropdownVisible(false);
@@ -6146,39 +6616,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
+            setCallMinimize(true);
             setTalkStyles({
-              flex: 1,
-              backgroundColor: 'black',
-              position: 'absolute',
-              top: 88,
-              right: 20,
-              width: 155,
-              height: 205,
+              height: 0,
+              width: 0,
             });
 
             setSubscriberStyles({
-              width: 155,
-              height: 205,
+              width: 0,
+              height: 0,
             });
 
             setPublisherStyles({
-              position: 'absolute',
-              top: 1,
-              right: 1,
-              width: 1,
-              height: 1,
-              zIndex: 1000,
-            });
-            setTimerStyles({
-              position: 'absolute',
-              marginHorizontal: 5,
-              marginTop: 5,
-              width: 155,
-              color: 'white',
-              ...theme.fonts.IBMPlexSansSemiBold(12),
-              textAlign: 'center',
-              letterSpacing: 0.46,
-              zIndex: 1005,
+              width: 0,
+              height: 0,
             });
 
             setPipView(true);
@@ -6186,11 +6637,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setHideStatusBar(false);
           }}
         >
-          {chatReceived ? (
-            <ChatWithNotification style={{ height: 88, width: 88, left: -20, top: -20 }} />
-          ) : (
-            <ChatIcon style={{ height: 48, width: 48 }} />
-          )}
+          <CallCollapseIcon />
         </TouchableOpacity>
       </View>
     );
@@ -6198,227 +6645,210 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const renderBottomButtons = () => {
     return (
-      <View
-        style={{
-          position: 'absolute',
-          bottom: 20,
-          left: 0,
-          right: 0,
-          zIndex: 1000,
-        }}
-      >
-        <View
-          style={{
-            marginHorizontal: Platform.OS === 'ios' ? 30 : 20,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+      <View style={styles.callBottomButtonsStyle}>
+        <TouchableOpacity
+          style={styles.btnActionContainer}
+          activeOpacity={1}
+          onPress={() => {
+            cameraPosition === 'front' ? setCameraPosition('back') : setCameraPosition('front');
           }}
         >
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => {
-              cameraPosition === 'front' ? setCameraPosition('back') : setCameraPosition('front');
-            }}
-          >
-            {cameraPosition === 'front' ? (
-              <BackCameraIcon style={{ height: 60, width: 60 }} />
-            ) : (
-              <FrontCameraIcon style={{ height: 60, width: 60 }} />
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => {
-              showVideo === true ? setShowVideo(false) : setShowVideo(true);
-            }}
-          >
-            {showVideo === true ? (
-              <VideoOnIcon style={{ height: 60, width: 60 }} />
-            ) : (
-              <VideoOffIcon style={{ height: 60, width: 60 }} />
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => {
-              isPublishAudio === true ? setIsPublishAudio(false) : setIsPublishAudio(true);
-            }}
-          >
-            {isPublishAudio === true ? (
-              <UnMuteIcon style={{ height: 60, width: 60 }} />
-            ) : (
-              <MuteIcon style={{ height: 60, width: 60 }} />
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity activeOpacity={1} onPress={() => handleEndCall()}>
-            <EndCallIcon style={{ height: 60, width: 60 }} />
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
-
-  const waitAndEndCall = () => {
-    if (patientJoinedCall.current && !subscriberConnected.current && callMinutes === 5) {
-      handleEndCall();
-    }
-  };
-
-  const handleEndCall = () => {
-    AsyncStorage.setItem('callDisconnected', 'true');
-    setIsCall(false);
-    setIsPublishAudio(true);
-    setShowVideo(true);
-    setCameraPosition('front');
-    stopTimer();
-    setHideStatusBar(false);
-    setChatReceived(false);
-    postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
-    pubnub.publish(
-      {
-        message: {
-          isTyping: true,
-          message: 'Video call ended',
-          duration: callTimerStarted,
-          id: patientId,
-          messageDate: new Date(),
-        },
-        channel: channel,
-        storeInHistory: true,
-      },
-      (status, response) => {}
-    );
-
-    pubnub.publish(
-      {
-        message: {
-          isTyping: true,
-          message: endCallMsg,
-          id: patientId,
-          messageDate: new Date(),
-        },
-        channel: channel,
-        storeInHistory: true,
-      },
-      (status, response) => {}
-    );
-  };
-
-  const IncomingCallView = () => {
-    return (
-      <View
-        style={{
-          position: 'absolute',
-          top: 88,
-          right: 8,
-          width: 155,
-          height: 205,
-          borderRadius: 30,
-          backgroundColor: 'black',
-        }}
-      >
-        {appointmentData.doctorInfo.photoUrl &&
-        appointmentData.doctorInfo.photoUrl.match(urlRegEx) ? (
-          <Image
-            source={{ uri: appointmentData.doctorInfo.photoUrl }}
-            resizeMode={'contain'}
-            style={{
-              width: 155,
-              height: 205,
-              opacity: 0.8,
-              borderRadius: 30,
-            }}
-          />
-        ) : (
-          <DoctorPlaceholderImage
-            style={{
-              width: 155,
-              height: 205,
-              opacity: 0.8,
-              borderRadius: 30,
-            }}
-          />
-        )}
-        {/* <DoctorCall
-          style={{
-            width: 155,
-            height: 205,
-            opacity: 0.5,
-            borderRadius: 30,
-          }}
-        /> */}
-        <Text
-          style={{
-            position: 'absolute',
-            marginLeft: 0,
-            marginTop: 16,
-            width: 155,
-            color: 'white',
-            ...theme.fonts.IBMPlexSansMedium(14),
-            textAlign: 'center',
-            letterSpacing: 0,
-          }}
-        >
-          Incoming Call
-        </Text>
+          <CallCameraIcon style={styles.cameraIcon} />
+        </TouchableOpacity>
         <TouchableOpacity
           activeOpacity={1}
-          style={{
-            width: 40,
-            height: 40,
-            bottom: 16,
-            left: 58,
-            position: 'absolute',
-          }}
+          style={styles.btnActionContainer}
           onPress={() => {
-            callPermissions(() => {
-              AsyncStorage.setItem('callDisconnected', 'false');
-              setOnSubscribe(false);
-              stopTimer();
-              startTimer(0);
-              setCallAccepted(true);
-              setHideStatusBar(true);
-              setChatReceived(false);
-              Keyboard.dismiss();
-              stopSound();
-              changeAudioStyles();
-              setConvertVideo(false);
-              setDowngradeToAudio(false);
-              changeVideoStyles();
-              setDropdownVisible(false);
-              setCallerAudio(true);
-              setCallerVideo(true);
-              if (token) {
-                PublishAudioVideo();
-              } else {
-                APICallAgain();
-              }
-            });
-            postAppointmentWEGEvent(WebEngageEventName.PATIENT_JOINED_CONSULT);
+            isPublishAudio === true ? setIsPublishAudio(false) : setIsPublishAudio(true);
           }}
         >
-          <PickCallIcon
-            style={{
-              width: 40,
-              height: 40,
-              top: 0,
-              left: 0,
-              // position: 'absolute',
-            }}
-          />
+          {isPublishAudio === true ? (
+            <AudioActiveIcon style={styles.muteActiveIcon} />
+          ) : (
+            <AudioInactiveIcon style={styles.muteInactiveIcon} />
+          )}
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.btnActionContainer}
+          activeOpacity={1}
+          onPress={() => {
+            setShowVideo(!showVideo);
+          }}
+        >
+          {showVideo ? (
+            <VideoActiveIcon style={styles.videoActiveIcon} />
+          ) : (
+            <VideoInactiveIcon style={styles.videoInactiveIcon} />
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.disconnectViewStyle}
+          activeOpacity={1}
+          onPress={() => {
+            callStatus.current = disconnecting;
+            callToastStatus.current = 'You Disconnected the call';
+            isErrorToast.current = true;
+            setTimeout(() => {
+              hideCallUI();
+            }, 2000);
+
+            if (isAudio.current) {
+              handleEndAudioCall();
+            } else {
+              handleEndCall();
+            }
+          }}
+        >
+          <WhiteCallIcon style={styles.endCallIcon} />
         </TouchableOpacity>
       </View>
     );
   };
 
-  const APICallAgain = () => {
+  //Intentionally commentted
+  // useEffect(() => {
+  //   if (
+  //     patientJoinedCall.current &&
+  //     !subscriberConnected.current &&
+  //     callTimer === avgTimeForDoctorToJoinInMinutes * 60
+  //   ) {
+  //     callStatus.current = ' ';
+  //     callToastStatus.current = disconnecting;
+  //     isErrorToast.current = true;
+  //     setTimeout(() => {
+  //       if (isAudio.current) {
+  //         handleEndAudioCall();
+  //       } else {
+  //         console.log('check onPress useEffect callTimer -- ');
+  //         handleEndCall();
+  //       }
+  //     }, 1000);
+  //   }
+  // }, [callTimer]);
+
+  const handleEndCall = (playSound: boolean = true, publishPubnub: boolean = true) => {
+    AsyncStorage.getItem('startCallConnectionUpdateBT').then((data) => {
+      BackgroundTimer.clearInterval(Number.parseInt(data || '0'));
+    });
+    BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
+
+    APICallAgain(false);
+    resetCurrentRetryAttempt();
+    setTimeout(() => {
+      makeUpdateAppointmentCall.current = false;
+      setCallMinimize(false);
+      AsyncStorage.setItem('callDisconnected', 'true');
+      stopSound();
+      playSound && playDisconnectSound();
+      setIsCall(false);
+      setIsPublishAudio(true);
+      setShowVideo(true);
+      setCameraPosition('front');
+      stopTimer();
+      setHideStatusBar(false);
+      setChatReceived(false);
+      postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
+      callEndWebengageEvent('Patient');
+
+      if (publishPubnub && patientId == currentPatient?.id) {
+        pubnub.publish(
+          {
+            message: {
+              isTyping: true,
+              message: 'Video call ended',
+              duration: callTimerStarted,
+              id: patientId,
+              messageDate: new Date(),
+            },
+            channel: channel,
+            storeInHistory: true,
+          },
+          (status, response) => {}
+        );
+
+        pubnub.publish(
+          {
+            message: {
+              isTyping: true,
+              message: endCallMsg,
+              id: patientId,
+              messageDate: new Date(),
+            },
+            channel: channel,
+            storeInHistory: true,
+          },
+          (status, response) => {}
+        );
+      }
+    }, 2000);
+  };
+
+  const handleEndAudioCall = (playSound: boolean = true, publishPubnub: boolean = true) => {
+    AsyncStorage.getItem('startCallConnectionUpdateBT').then((data) => {
+      BackgroundTimer.clearInterval(Number.parseInt(data || '0'));
+    });
+    BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
+
+    BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
+    APICallAgain(false);
+    resetCurrentRetryAttempt();
+    setTimeout(() => {
+      makeUpdateAppointmentCall.current = false;
+      setCallMinimize(false);
+      AsyncStorage.setItem('callDisconnected', 'true');
+      stopSound();
+      playSound && playDisconnectSound();
+      setIsAudioCall(false);
+      stopTimer();
+      setHideStatusBar(false);
+      setIsPublishAudio(true);
+      setShowVideo(true);
+      setCameraPosition('front');
+      postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
+      callEndWebengageEvent('Patient');
+      if (publishPubnub && patientId == currentPatient?.id) {
+        pubnub.publish(
+          {
+            message: {
+              isTyping: true,
+              message: 'Audio call ended',
+              duration: callTimerStarted,
+              id: patientId,
+              messageDate: new Date(),
+            },
+            channel: channel,
+            storeInHistory: true,
+          },
+          (status, response) => {}
+        );
+
+        pubnub.publish(
+          {
+            message: {
+              isTyping: true,
+              message: endCallMsg,
+              id: patientId,
+              messageDate: new Date(),
+            },
+            channel: channel,
+            storeInHistory: true,
+          },
+          (status, response) => {}
+        );
+      }
+    }, 2000);
+  };
+
+  const APICallAgain = (isUserJoining?: boolean) => {
+    if (!makeUpdateAppointmentCall.current) {
+      return;
+    }
     const input = {
       appointmentId: appointmentData.id,
       requestRole: 'PATIENT',
+      isUserJoining,
     };
-
-    console.log('input', input);
 
     client
       .mutate<updateAppointmentSession, updateAppointmentSessionVariables>({
@@ -6428,27 +6858,24 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         },
       })
       .then((sessionInfo: any) => {
-        console.log('createsession', sessionInfo);
         setsessionId(sessionInfo.data.updateAppointmentSession.sessionId);
         settoken(sessionInfo.data.updateAppointmentSession.appointmentToken);
 
-        PublishAudioVideo();
+        isUserJoining && PublishAudioVideo();
       })
       .catch((e) => {
         CommonBugFender('ChatRoom_APICallAgain', e);
-        console.log('Error occured while adding Doctor', e);
       });
   };
 
   const PublishAudioVideo = () => {
-    console.log('PublishAudioVideo');
-
     pubnub.publish(
       {
         message: {
           isTyping: true,
           message: !patientJoinedCall.current ? acceptedCallMsg : patientJoinedMeetingRoom,
           messageDate: new Date(),
+          platform: 'mobile',
         },
         channel: channel,
         storeInHistory: false,
@@ -6457,14 +6884,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
     AsyncStorage.setItem('callDisconnected', 'false');
     if (isAudio.current && !patientJoinedCall.current) {
+      setShowVideo(false);
+      setCallerVideo(false);
       setIsAudioCall(true);
     } else {
+      setShowVideo(true);
       setIsCall(true);
-      if (patientJoinedCall.current) {
-        setTimeout(() => {
-          setShowVideo(false);
-        }, 1000);
-      }
     }
     setLoading(false);
   };
@@ -6477,9 +6902,32 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
   };
 
-  const uploadDocument = (resource: any, base66: any, type: any) => {
+  const callUploadMediaDocumentApiV2 = (inputData: MediaPrescriptionUploadRequest) =>
+    client.mutate({
+      mutation: UPLOAD_MEDIA_DOCUMENT_V2,
+      fetchPolicy: 'no-cache',
+      variables: {
+        MediaPrescriptionUploadRequest: inputData,
+        uhid: g(currentPatient, 'uhid'),
+        appointmentId: appointmentData.id,
+      },
+    });
+
+  const uploadDocument = async (
+    resource: any,
+    base66?: any,
+    type?: any,
+    selectedOptionType?: 'Camera' | 'Gallery'
+  ) => {
     CommonLogEvent(AppRoutes.ChatRoom, 'Upload document');
-    resource.map((item: any) => {
+    setLoading(true);
+    consultWebEngageEvents(
+      CleverTapEventName.CONSULT_REPORT_UPLOAD_IN_CHATROOM,
+      selectedOptionType
+    );
+    for (let i = 0; i < resource?.length; i++) {
+      const item = resource[i];
+
       if (
         item.fileType == 'jpg' ||
         item.fileType == 'jpeg' ||
@@ -6500,175 +6948,69 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           prescriptionSource: mediaPrescriptionSource.SELF,
           prescriptionFiles: [prescriptionFile],
         };
-        console.log('MediaPrescriptionUploadRequest', inputData);
-        setLoading(true);
-        client
-          .mutate({
-            mutation: UPLOAD_MEDIA_DOCUMENT_PRISM,
-            fetchPolicy: 'no-cache',
-            variables: {
-              MediaPrescriptionUploadRequest: inputData,
-              uhid: g(currentPatient, 'uhid'),
-              appointmentId: appointmentData.id,
-            },
-          })
-          .then((data) => {
-            console.log('upload data', data);
-            setLoading(false);
-            const recordId = g(data.data!, 'uploadMediaDocument', 'recordId');
-            if (recordId) {
-              getPrismUrls(client, patientId, [recordId])
-                .then((data: any) => {
-                  console.log('api call data', data);
-                  const text = {
-                    id: patientId,
-                    message: imageconsult,
-                    fileType: item.fileType == 'pdf' ? 'pdf' : 'image',
-                    fileName: item.title + '.' + item.fileType,
-                    prismId: recordId,
-                    url: (data.urls && data.urls[0]) || '',
-                    messageDate: new Date(),
-                  };
-                  pubnub.publish(
-                    {
-                      channel: channel,
-                      message: text,
-                      storeInHistory: true,
-                      sendByPost: true,
-                    },
-                    (status, response) => {
-                      if (status.statusCode == 200) {
-                        HereNowPubnub('ImageUploaded');
-                      }
-                    }
-                  );
-                  KeepAwake.activate();
-                })
-                .catch((e) => {
-                  CommonBugFender('ChatRoom_getPrismUrls_uploadDocument', e);
-                  console.log('Error occured', e);
-                })
-                .finally(() => {
-                  setLoading(false);
-                });
-            } else {
-              Alert.alert('Upload document failed');
-            }
-          })
-          .catch((e) => {
-            CommonBugFender('ChatRoom_uploadDocument', e);
-            setLoading(false);
+        try {
+          const response = await callUploadMediaDocumentApiV2(inputData);
+
+          if (
+            response?.data?.uploadMediaDocumentV2 &&
+            Array.isArray(response.data.uploadMediaDocumentV2) &&
+            response.data.uploadMediaDocumentV2.length &&
+            response.data.uploadMediaDocumentV2[0]?.fileUrl
+          ) {
+            const fileType = item.fileType == 'pdf' ? 'pdf' : 'image';
+            const text = {
+              id: patientId,
+              message: imageconsult,
+              fileType,
+              fileName: item.title + '.' + item.fileType,
+              url: response.data.uploadMediaDocumentV2[0].fileUrl || '',
+              messageDate: new Date(),
+            };
+            pubnub.publish(
+              {
+                channel: channel,
+                message: text,
+                storeInHistory: true,
+                sendByPost: true,
+              },
+              (status, response) => {
+                if (status.statusCode == 200) {
+                  HereNowPubnub('ImageUploaded');
+                }
+              }
+            );
+            postChatWebEngEvent(fileType == 'pdf' ? 'PDF' : 'Image', text.message);
             KeepAwake.activate();
-            console.log('upload data error', e);
-          });
+          } else {
+            Alert.alert('Upload document failed');
+            CommonLogEvent('ChatRoom_callUploadMediaDocumentApiV2_Failed', response);
+          }
+        } catch (e) {
+          // adding retry
+          currentRetryAttempt <= maxRetryAttempt && uploadDocument([resource[i]]);
+          currentRetryAttempt++;
+          CommonBugFender('ChatRoom_uploadDocument', e);
+          setLoading(false);
+          KeepAwake.activate();
+        }
       } else {
         setwrongFormat(true);
+        setLoading(false);
       }
-    });
-
-    // const textin = {
-    //   fileType: type,
-    //   base64FileInput: base66, //resource.data,
-    //   appointmentId: channel,
-    // };
-    // console.log('textin', textin);
-    // client
-    //   .mutate<uploadChatDocumentToPrism>({
-    //     mutation: UPLOAD_CHAT_FILE_PRISM,
-    //     fetchPolicy: 'no-cache',
-    //     variables: {
-    //       fileType: UPLOAD_FILE_TYPES.JPEG, //type.toUpperCase(),
-    //       base64FileInput: base66, //resource.data,
-    //       appointmentId: channel,
-    //       patientId: currentPatient && currentPatient.id,
-    //     },
-    //   })
-    //   .then((data) => {
-    //     console.log('upload data', data);
-    //     setLoading(false);
-
-    //     // const text = {
-    //     //   id: patientId,
-    //     //   message: imageconsult,
-    //     //   fileType: 'image',
-    //     //   url: data.data && data.data.uploadChatDocument.filePath,
-    //     // };
-
-    //     // pubnub.publish(
-    //     //   {
-    //     //     channel: channel,
-    //     //     message: text,
-    //     //     storeInHistory: true,
-    //     //     sendByPost: true,
-    //     //   },
-    //     //   (status, response) => {}
-    //     // );
-    //     // KeepAwake.activate();
-    //   })
-    //   .catch((e) => {
-    //     setLoading(false);
-    //     KeepAwake.activate();
-    //     console.log('upload data error', e);
-    //   });
-    // try {
-    //   const fileType = resource.uri!.substring(resource.uri!.lastIndexOf('.') + 1);
-    //   console.log('upload fileType', fileType);
-    //   setLoading(true);
-    //   console.log('upload fileType', base66);
-    //   console.log('upload fileType', type);
-    //   console.log('upload fileType', channel);
-    //   client
-    //     .mutate<uploadChatDocument, uploadChatDocumentVariables>({
-    //       mutation: UPLOAD_CHAT_FILE,
-    //       fetchPolicy: 'no-cache',
-    //       variables: {
-    //         fileType: type,
-    //         base64FileInput: base66, //resource.data,
-    //         appointmentId: channel,
-    //       },
-    //     })
-    //     .then((data) => {
-    //       console.log('upload data', data);
-    //       setLoading(false);
-
-    //       const text = {
-    //         id: patientId,
-    //         message: imageconsult,
-    //         fileType: 'image',
-    //         url: data.data && data.data.uploadChatDocument.filePath,
-    //       };
-
-    //       pubnub.publish(
-    //         {
-    //           channel: channel,
-    //           message: text,
-    //           storeInHistory: true,
-    //           sendByPost: true,
-    //         },
-    //         (status, response) => {}
-    //       );
-    //       KeepAwake.activate();
-    //     })
-    //     .catch((e) => {
-    //       setLoading(false);
-    //       KeepAwake.activate();
-    //       console.log('upload data error', e);
-    //     });
-    // } catch (error) {
-    //   setLoading(false);
-    // }
+    }
+    setLoading(false);
   };
 
   const uploadPrescriptionPopup = () => {
     return (
       <UploadPrescriprionPopup
-        type={'nonCartFlow'}
+        type={'Consult Flow'}
         heading="Attach File(s)"
         instructionHeading="Instructions For Uploading Files"
         instructions={[
           'Take clear Picture of your entire file.',
           'Doctor details & date of the test should be clearly visible.',
-          'Only JPG / PNG type files up to 2 mb are allowed',
+          'Only JPG / PNG / PDF type files up to 25 MB are allowed',
         ]}
         isVisible={isDropdownVisible}
         disabledOption={'NONE'}
@@ -6676,23 +7018,24 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         blockCameraMessage={strings.alerts.Open_camera_in_video_call}
         optionTexts={{
           camera: 'TAKE A PHOTO',
-          gallery: 'CHOOSE FROM\nGALLERY',
+          gallery: 'CHOOSE FROM\nDEVICE',
           prescription: 'UPLOAD\nFROM PHR',
         }}
         hideTAndCs={true}
         onClickClose={() => setDropdownVisible(false)}
         onResponse={(selectedType, response, type) => {
-          console.log('res', response);
           setDropdownVisible(false);
           if (selectedType == 'CAMERA_AND_GALLERY') {
-            console.log('ca');
             if (type !== undefined) {
-              if (type === 'Camera')
+              if (type === 'Camera') {
                 consultWebEngageEvents(WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM);
-              if (type === 'Gallery')
+              }
+              if (type === 'Gallery') {
                 consultWebEngageEvents(WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM);
+              }
             }
-            uploadDocument(response, response[0].base64, response[0].fileType);
+
+            uploadDocument(response, response[0].base64, response[0].fileType, type);
             //updatePhysicalPrescriptions(response);
           } else {
             setSelectPrescriptionVisible(true);
@@ -6702,76 +7045,96 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       />
     );
   };
+
+  const callAddChatDocumentApi = async (
+    _prismFileId: string,
+    _fileUrl: string,
+    _fileName: string
+  ) => {
+    try {
+      const response = await client.mutate<addChatDocument, addChatDocumentVariables>({
+        mutation: ADD_CHAT_DOCUMENTS,
+        fetchPolicy: 'no-cache',
+        variables: {
+          prismFileId: _prismFileId,
+          documentPath: _fileUrl,
+          appointmentId: appointmentData?.id,
+          fileName: _fileName || '',
+        },
+      });
+      const prismFieldId = g(response, 'data', 'addChatDocument', 'prismFileId');
+      const documentPath = g(response, 'data', 'addChatDocument', 'documentPath');
+      const text = {
+        id: patientId,
+        message: imageconsult,
+        fileType: _fileName
+          ? _fileName?.toLowerCase()?.endsWith('.pdf')
+            ? 'pdf'
+            : 'image'
+          : (documentPath ? documentPath : _fileUrl).match(/\.(pdf)$/)
+          ? 'pdf'
+          : 'image',
+        fileName: _fileName,
+        prismId: (prismFieldId ? prismFieldId : _prismFileId) || '',
+        url: documentPath ? documentPath : _fileUrl,
+        messageDate: new Date(),
+      };
+      pubnub.publish(
+        {
+          channel: channel,
+          message: text,
+          storeInHistory: true,
+          sendByPost: true,
+        },
+        (status, response) => {}
+      );
+      KeepAwake.activate();
+    } catch (e) {
+      setLoading(false);
+      CommonBugFender('ChatRoom_callAddChatDocumentApi_ADD_CHAT_DOCUMENTSt', e);
+    }
+  };
+
   const renderPrescriptionModal = () => {
     return (
       <SelectEPrescriptionModal
         displayPrismRecords={true}
+        showLabResults
         navigation={props.navigation}
         onSubmit={(selectedEPres) => {
-          console.log('selectedEPres', selectedEPres);
           setSelectPrescriptionVisible(false);
           if (selectedEPres.length == 0) {
             return;
           } else {
-            selectedEPres.forEach((item) => {
-              console.log(item, 'from selected');
-
-              const url = item.uploadedUrl ? item.uploadedUrl : '';
-              const prism = item.prismPrescriptionFileId ? item.prismPrescriptionFileId : '';
-              const fileName = item.fileName ? item.fileName : '';
-              // url &&
-              //   url.map((item, index) => {
-              if (url) {
-                setLoading(true);
-                client
-                  .mutate({
-                    mutation: ADD_CHAT_DOCUMENTS,
-                    fetchPolicy: 'no-cache',
-                    variables: {
-                      prismFileId: prism,
-                      documentPath: url,
-                      appointmentId: appointmentData.id,
-                    },
-                  })
-                  .then((data) => {
-                    console.log('ADD_CHAT_DOCUMENTS data', data);
-                    const prismFieldId = g(data.data!, 'addChatDocument', 'prismFileId');
-                    const documentPath = g(data.data!, 'addChatDocument', 'documentPath');
-
-                    const text = {
-                      id: patientId,
-                      message: imageconsult,
-                      fileType: fileName
-                        ? fileName.toLowerCase().endsWith('.pdf')
-                          ? 'pdf'
-                          : 'image'
-                        : (documentPath ? documentPath : url).match(/\.(pdf)$/)
-                        ? 'pdf'
-                        : 'image',
-                      fileName: fileName,
-                      prismId: (prismFieldId ? prismFieldId : prism) || '',
-                      url: documentPath ? documentPath : url,
-                      messageDate: new Date(),
-                    };
-                    pubnub.publish(
-                      {
-                        channel: channel,
-                        message: text,
-                        storeInHistory: true,
-                        sendByPost: true,
-                      },
-                      (status, response) => {}
-                    );
-                    KeepAwake.activate();
-                    setLoading(false);
-                  })
-                  .catch((e) => {
-                    CommonBugFender('ChatRoom_getPrismUrls_uploadDocument', e);
-                    console.log('Error occured', e);
-                  })
-                  .finally(() => {
-                    setLoading(false);
-                  });
+            setLoading(true);
+            consultWebEngageEvents(
+              CleverTapEventName.CONSULT_REPORT_UPLOAD_IN_CHATROOM,
+              'PHR Section'
+            );
+            selectedEPres.forEach(async (item) => {
+              CommonLogEvent('ChatRoom_ADD_CHAT_DOCUMENTSt', item);
+              const _uploadedUrl = item.uploadedUrl ? item.uploadedUrl : '';
+              const uploadedUrlArray = item?.uploadedUrlArray || [];
+              const prism = item?.prismPrescriptionFileId ? item?.prismPrescriptionFileId : '';
+              if (uploadedUrlArray?.length) {
+                try {
+                  const uploadedUrlArrayResponse = await Promise.all(
+                    uploadedUrlArray?.map(async (_item) => {
+                      await callAddChatDocumentApi(prism, _item?.file_Url, _item?.fileName);
+                    })
+                  );
+                } catch (e) {
+                  setLoading(false);
+                  CommonBugFender('ChatRoom_renderPrescriptionModal_ADD_CHAT_DOCUMENTSt', e);
+                }
+              } else if (_uploadedUrl) {
+                const fileName = item?.fileName || '';
+                const splitArr = _uploadedUrl.split('.');
+                const fileType = splitArr[splitArr.length - 1];
+                if (fileType) {
+                  postChatWebEngEvent(fileType == 'pdf' ? 'PDF' : 'Image', '');
+                }
+                await callAddChatDocumentApi(prism, _uploadedUrl, fileName);
               }
               // });
               item.message &&
@@ -6790,15 +7153,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   (status, response) => {
                     if (status.statusCode == 200) {
                       HereNowPubnub('EprescriptionUploaded');
-                      // InsertMessageToDoctor('EprescriptionUploaded');
                     }
                   }
                 );
+              setLoading(false);
             });
           }
-          //setEPrescriptions && setEPrescriptions([...selectedEPres]);
         }}
-        //selectedEprescriptionIds={ePrescriptions.map((item) => item.id)}
         isVisible={true}
       />
     );
@@ -6911,7 +7272,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       | getAppointmentData_getAppointmentData_appointmentsHistory
       | getPatinetAppointments_getPatinetAppointments_patinetAppointments = appointmentData
   ) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_FEEDBACK_GIVEN] = {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.CONSULT_FEEDBACK_GIVEN]
+      | CleverTapEvents[CleverTapEventName.CONSULT_FEEDBACK_GIVEN] = {
       'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
       'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
       'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
@@ -6933,6 +7296,174 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       'Rating Reason': reason,
     };
     postWebEngageEvent(WebEngageEventName.CONSULT_FEEDBACK_GIVEN, eventAttributes);
+    postCleverTapEvent(CleverTapEventName.CONSULT_FEEDBACK_GIVEN, eventAttributes);
+  };
+
+  const postAppointmentWEGEvents = (
+    type:
+      | WebEngageEventName.RESCHEDULE_CLICKED
+      | WebEngageEventName.CANCEL_CONSULTATION_CLICKED
+      | WebEngageEventName.CONTINUE_CONSULTATION_CLICKED
+      | WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER
+      | WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER
+  ) => {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.RESCHEDULE_CLICKED]
+      | WebEngageEvents[WebEngageEventName.CANCEL_CONSULTATION_CLICKED]
+      | WebEngageEvents[WebEngageEventName.CONTINUE_CONSULTATION_CLICKED]
+      | WebEngageEvents[WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER]
+      | WebEngageEvents[WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER] = {
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+      'Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id')!,
+      'Speciality Name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
+      'Doctor Category': g(appointmentData, 'doctorInfo', 'doctorType')!,
+      'Consult Date Time': moment(g(appointmentData, 'appointmentDateTime')).toDate(),
+      'Consult Mode':
+        g(appointmentData, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
+      'Hospital Name': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'name'
+      )!,
+      'Hospital City': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'city'
+      )!,
+      'Consult ID': g(appointmentData, 'id')!,
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Customer ID': g(currentPatient, 'id'),
+      'Secretary Name': g(secretaryData, 'name'),
+      'Secretary Mobile Number': g(secretaryData, 'mobileNumber'),
+      'Doctor Mobile Number': g(appointmentData, 'doctorInfo', 'mobileNumber')!,
+    };
+    postWebEngageEvent(type, eventAttributes);
+  };
+
+  const renderProgressBar = (position: number) => {
+    return (
+      <ConsultProgressBar
+        style={{ marginTop: position === 0 ? 0 : 5 }}
+        currentPosition={position}
+      />
+    );
+  };
+
+  const onPressCalender = () => {
+    setShowRescheduleCancel(true);
+    if (isAppointmentStartsInFifteenMin) {
+      autoTriggerFifteenMinToAppointmentTimeMsg();
+    }
+    if (isAppointmentExceedsTenMin) {
+      autoTriggerTenMinToAppointmentTimeMsg();
+    }
+  };
+
+  const autoTriggerTenMinToAppointmentTimeMsg = () => {
+    const checkMsgResult = messages.filter((obj: any) => {
+      return obj.message === appointmentStartsInTenMin;
+    });
+    if (checkMsgResult?.length === 0) {
+      const postTenMinAppointmentTime = moment(appointmentData?.appointmentDateTime)
+        .add(10, 'minutes')
+        .toDate();
+
+      const automatedText = [
+        `You are requested to wait till ${moment(postTenMinAppointmentTime).format(
+          'h:mm a'
+        )} for the doctor to start the consult.`,
+      ];
+      pubnub.publish(
+        {
+          channel: channel,
+          message: {
+            message: appointmentStartsInTenMin,
+            automatedText: automatedText,
+            id: doctorId,
+            isTyping: true,
+            messageDate: new Date(),
+          },
+          storeInHistory: true,
+          sendByPost: true,
+        },
+        (status, response) => {}
+      );
+    }
+  };
+
+  const autoTriggerFifteenMinToAppointmentTimeMsg = () => {
+    const checkMsgResult = messages.filter((obj: any) => {
+      return obj.message === appointmentStartsInFifteenMin;
+    });
+    if (checkMsgResult?.length === 0) {
+      const automatedText = [
+        `Since your appointment with ${appointmentData?.doctorInfo?.displayName} is expected to start in less than 15 minutes you are requested to wait in the consult room. Please bear with us in case of slight delay.`,
+      ];
+      pubnub.publish(
+        {
+          channel: channel,
+          message: {
+            message: appointmentStartsInFifteenMin,
+            automatedText: automatedText,
+            id: doctorId,
+            isTyping: true,
+            messageDate: new Date(),
+          },
+          storeInHistory: true,
+          sendByPost: true,
+        },
+        (status, response) => {}
+      );
+    }
+  };
+
+  const renderTapToReturnToCallView = () => {
+    return (
+      <TouchableOpacity
+        style={styles.tapToReturnToCallView}
+        onPress={() => {
+          setCallMinimize(false);
+          changeVideoStyles();
+          setHideStatusBar(true);
+        }}
+      >
+        <Text style={styles.tapText}>Tap to return to call</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderReconnectingView = () => {
+    return (
+      <View style={[talkStyles, { zIndex: 1001 }]}>
+        <View style={{ flex: 1, flexDirection: 'row' }}>{callingScreenUI()}</View>
+      </View>
+    );
+  };
+
+  const renderManageCTA = (isDisabled: boolean = false) => {
+    return (
+      <View style={styles.manageCTAView}>
+        <Button
+          disabled={isDisabled}
+          title={'MANAGE'}
+          style={styles.manageBtn}
+          titleTextStyle={theme.viewStyles.text('SB', 12, theme.colors.WHITE)}
+          onPress={() => onPressCalender()}
+        />
+      </View>
+    );
   };
 
   return (
@@ -7038,26 +7569,50 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <Header
           title={'CONSULT ROOM'}
           leftIcon="backArrow"
-          container={{ borderBottomWidth: 0, zIndex: 100 }}
+          container={showProgressBarOnHeader.current ? styles.headerView : styles.headerShadowView}
           onPressLeftIcon={() => {
-            if (fromSearchAppointmentScreen) {
-              props.navigation.goBack();
-            } else if (callhandelBack) {
-              // handleCallTheEdSessionAPI();
+            props.navigation.goBack();
+            if (!fromSearchAppointmentScreen && callhandelBack) {
               setDoctorJoinedChat && setDoctorJoinedChat(false);
-              props.navigation.dispatch(
-                StackActions.reset({
-                  index: 0,
-                  key: null,
-                  actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-                })
-              );
             }
           }}
-          // onPressLeftIcon={() => props.navigation.goBack()}
+          rightIcon={
+            <TouchableOpacity
+              disabled={doctorJoinedChat || status.current === STATUS.COMPLETED}
+              onPress={() => onPressCalender()}
+            >
+              {doctorJoinedChat || status.current === STATUS.COMPLETED
+                ? renderManageCTA(true)
+                : renderManageCTA()}
+            </TouchableOpacity>
+          }
         />
+        {showProgressBarOnHeader.current ? (
+          <View
+            style={{ backgroundColor: 'white', ...theme.viewStyles.cardViewStyle, borderRadius: 0 }}
+          >
+            {isProgressBarVisible.current && renderProgressBar(currentProgressBarPosition.current)}
+          </View>
+        ) : null}
         {renderChatHeader()}
-        {doctorJoinedChat && renderJoinCallHeader()}
+        {callMinimize && renderTapToReturnToCallView()}
+        {isCancelVisible && (
+          <CancelReasonPopup
+            isCancelVisible={isCancelVisible}
+            closePopup={() => setCancelVisible(false)}
+            data={appointmentData}
+            cancelSuccessCallback={() => {
+              postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER);
+              postAppointmentCleverTapEvents(
+                CleverTapEventName.CONSULT_CANCELLED_BY_PATIENT,
+                appointmentData,
+                currentPatient,
+                secretaryData
+              );
+            }}
+            navigation={props.navigation}
+          />
+        )}
         {doctorJoined ? (
           <View
             style={{
@@ -7117,7 +7672,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 </Text>
               </TouchableOpacity>
             ) : null}
-            <View style={[styles.inputMainContainer, { opacity: disableChat ? 0.5 : 1 }]}>
+            {availableMessages == 0 && <ChatDisablePrompt followChatLimit={followChatLimit} />}
+            <View
+              style={[
+                styles.inputMainContainer,
+                { opacity: disableChat || availableMessages == 0 ? 0.5 : 1 },
+              ]}
+            >
               <View style={styles.textInputContainerStyles}>
                 <TextInput
                   autoCorrect={false}
@@ -7136,7 +7697,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     setDropdownVisible(false);
                   }}
                   onFocus={() => setDropdownVisible(false)}
-                  editable={!disableChat}
+                  editable={!disableChat && availableMessages != 0}
                 />
                 <View
                   style={{
@@ -7151,11 +7712,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               {displayChatQuestions && Platform.OS === 'ios' && (
                 <ChatQuestions
                   onItemDone={(value: { k: string; v: string[] }) => {
-                    console.log('and....', value);
                     setAnswerData([value]);
                   }}
                   onDonePress={(values: { k: string; v: string[] }[]) => {
-                    setAnswerData(values);
+                    setAnswerData(values, true);
                     setDisplayChatQuestions(false);
                     setDisplayUploadHealthRecords(true);
                   }}
@@ -7188,6 +7748,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </>
         ) : (
           <>
+            {availableMessages == 0 && <ChatDisablePrompt followChatLimit={followChatLimit} />}
             <TouchableOpacity
               activeOpacity={1}
               style={[styles.uploadButtonStyles, { bottom: 0, opacity: disableChat ? 0.5 : 1 }]}
@@ -7213,7 +7774,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               </Text>
             </TouchableOpacity>
             <View
-              style={[styles.inputMainContainer, { bottom: 0, opacity: disableChat ? 0.5 : 1 }]}
+              style={[
+                styles.inputMainContainer,
+                { bottom: 0, opacity: disableChat || availableMessages == 0 ? 0.5 : 1 },
+              ]}
             >
               <View style={styles.textInputContainerStyles}>
                 <TextInput
@@ -7233,7 +7797,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     setDropdownVisible(false);
                   }}
                   onFocus={() => setDropdownVisible(false)}
-                  editable={!disableChat}
+                  editable={!disableChat && availableMessages != 0}
                 />
                 <View
                   style={{
@@ -7252,7 +7816,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               onPress={async () => {
                 if (!disableChat) {
                   const textMessage = messageText.trim();
-
                   if (textMessage.length == 0) {
                     Alert.alert('Apollo', 'Please write something to send message.');
                     CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
@@ -7273,20 +7836,119 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         {displayChatQuestions && Platform.OS === 'android' && (
           <ChatQuestions
             onItemDone={(value: { k: string; v: string[] }) => {
-              console.log('and', value);
               setAnswerData([value]);
             }}
             onDonePress={(values: { k: string; v: string[] }[]) => {
-              setAnswerData(values);
+              setAnswerData(values, true);
               setDisplayChatQuestions(false);
               setDisplayUploadHealthRecords(true);
             }}
           />
         )}
       </SafeAreaView>
-      {onSubscribe && IncomingCallView()}
-      {isCall && VideoCall()}
-      {isAudioCall && AudioCall()}
+      {showRescheduleCancel && (
+        <RescheduleCancelPopup
+          onPressCancelAppointment={() => {
+            CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CancelAppointment Clicked');
+            setShowCancelPopup(true);
+            setShowRescheduleCancel(false);
+          }}
+          onPressRescheduleAppointment={() => {
+            postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
+            postAppointmentCleverTapEvents(
+              CleverTapEventName.CONSULT_RESCHEDULE_CLICKED,
+              appointmentData,
+              currentPatient,
+              secretaryData
+            );
+            appointmentData?.doctorInfo?.allowBookingRequest
+              ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
+                  doctorId: doctorId,
+                  cleverTapAppointmentAttributes: {
+                    source: 'Appointment CTA',
+                    appointmentCTA: 'Inside consult room',
+                  },
+                })
+              : setShowReschedulePopup(true);
+            setShowRescheduleCancel(false);
+          }}
+          closeModal={() => setShowRescheduleCancel(false)}
+          appointmentDiffMin={appointmentDiffMin}
+          appointmentDateTime={appointmentData?.appointmentDateTime}
+          isAppointmentStartsInFifteenMin={isAppointmentStartsInFifteenMin}
+          isAppointmentExceedsTenMin={isAppointmentExceedsTenMin}
+        />
+      )}
+      {showCancelPopup && (
+        <CancelAppointmentPopup
+          data={appointmentData}
+          navigation={props.navigation}
+          title={cancelAppointmentTitle}
+          onPressBack={() => setShowCancelPopup(false)}
+          onPressReschedule={() => {
+            postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
+            postAppointmentCleverTapEvents(
+              CleverTapEventName.CONSULT_RESCHEDULE_CLICKED,
+              appointmentData,
+              currentPatient,
+              secretaryData
+            );
+            CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'RESCHEDULE_INSTEAD_Clicked');
+            setShowCancelPopup(false);
+            appointmentData?.doctorInfo?.allowBookingRequest
+              ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
+                  doctorId: doctorId,
+                  cleverTapAppointmentAttributes: {
+                    source: 'Appointment CTA',
+                    appointmentCTA: 'Inside consult room',
+                  },
+                })
+              : setShowReschedulePopup(true);
+          }}
+          onPressCancel={() => {
+            postAppointmentWEGEvents(WebEngageEventName.CANCEL_CONSULTATION_CLICKED);
+            postAppointmentCleverTapEvents(
+              CleverTapEventName.CONSULT_CANCEL_CLICKED_BY_PATIENT,
+              appointmentData,
+              currentPatient,
+              secretaryData
+            );
+            CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CANCEL CONSULT_CLICKED');
+            setShowCancelPopup(false);
+            setCancelVisible(true); //to show the reasons for cancelling the consultation
+          }}
+        />
+      )}
+      {showReschedulePopup && (
+        <CheckReschedulePopup
+          data={appointmentData}
+          navigation={props.navigation}
+          secretaryData={secretaryData}
+          closeModal={() => setShowReschedulePopup(false)}
+          cancelSuccessCallback={() => {
+            postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER);
+            postAppointmentCleverTapEvents(
+              CleverTapEventName.CONSULT_CANCELLED_BY_PATIENT,
+              appointmentData,
+              currentPatient,
+              secretaryData
+            );
+            setShowCancelPopup(false);
+          }}
+          rescheduleSuccessCallback={() => {
+            postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER);
+            postAppointmentCleverTapEvents(
+              CleverTapEventName.CONSULT_RESCHEDULED_BY_THE_PATIENT,
+              appointmentData,
+              currentPatient,
+              secretaryData
+            );
+          }}
+        />
+      )}
+      {(isCall || isAudioCall) && VideoCall()}
+      {isCallReconnecting.current && renderReconnectingView()}
+      {/* {isAudioCall && AudioCall()} */}
       {transferAccept && (
         <BottomPopUp
           title={'Please wait :)'}
@@ -7319,17 +7981,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
               onPress={() => {
                 setBottompopup(false);
-                props.navigation.dispatch(
-                  StackActions.reset({
-                    index: 0,
-                    key: null,
-                    actions: [
-                      NavigationActions.navigate({
-                        routeName: AppRoutes.TabBar,
-                      }),
-                    ],
-                  })
-                );
+                navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar);
               }}
             >
               <Text
@@ -7425,17 +8077,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
               onPress={() => {
                 setBottompopup(false);
-                props.navigation.dispatch(
-                  StackActions.reset({
-                    index: 0,
-                    key: null,
-                    actions: [
-                      NavigationActions.navigate({
-                        routeName: AppRoutes.TabBar,
-                      }),
-                    ],
-                  })
-                );
+                navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar);
               }}
             >
               <Text
@@ -7465,17 +8107,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
               onPress={() => {
                 setBottompopup(false);
-                props.navigation.dispatch(
-                  StackActions.reset({
-                    index: 0,
-                    key: null,
-                    actions: [
-                      NavigationActions.navigate({
-                        routeName: AppRoutes.TabBar,
-                      }),
-                    ],
-                  })
-                );
+                navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar);
               }}
             >
               <Text
@@ -7506,13 +8138,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 style={styles.gotItStyles}
                 onPress={() => {
                   setSucessPopup(false);
-                  props.navigation.dispatch(
-                    StackActions.reset({
-                      index: 0,
-                      key: null,
-                      actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-                    })
-                  );
+                  navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar);
                 }}
               >
                 <Text style={styles.gotItTextStyles}>{'OK, GOT IT'}</Text>
@@ -7544,6 +8170,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 : transferData.id
               : appointmentData.id
           }
+          secretaryData={secretaryData}
           data={transferData ? transferData : appointmentData}
           bookFollowUp={false}
           KeyFollow={'RESCHEDULE'}
@@ -7557,6 +8184,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       {showweb && showWeimageOpen()}
       <FeedbackPopup
         onComplete={(ratingStatus, ratingOption) => {
+          fetchAppointmentData();
           postRatingGivenWEGEvent(ratingStatus!, ratingOption);
           setShowFeedback(false);
           showAphAlert!({

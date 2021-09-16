@@ -1,12 +1,31 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
-import { DoctorType, ConsultMode, WeekDay } from "./globalTypes";
+import { DoctorType, Gender, ConsultMode, PLAN, PLAN_STATUS, APPOINTMENT_TYPE, WeekDay } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getDoctorDetailsById
 // ====================================================
+
+export interface getDoctorDetailsById_getDoctorDetailsById_doctorPricing {
+  __typename: "DoctorPricing";
+  slashed_price: number | null;
+  available_to: PLAN | null;
+  status: PLAN_STATUS | null;
+  mrp: number | null;
+  appointment_type: APPOINTMENT_TYPE | null;
+  is_cashback_enabled: boolean | null;
+  cashback_amount: number | null;
+}
+
+export interface getDoctorDetailsById_getDoctorDetailsById_availabilityTitle {
+  __typename: "AvailabilityTitle";
+  AVAILABLE_NOW: string | null;
+  CONSULT_NOW: string | null;
+  DOCTOR_OF_HOUR: string | null;
+}
 
 export interface getDoctorDetailsById_getDoctorDetailsById_specialty {
   __typename: "DoctorSpecialties";
@@ -119,9 +138,18 @@ export interface getDoctorDetailsById_getDoctorDetailsById_doctorNextAvailSlots 
   physicalSlot: string | null;
 }
 
+export interface getDoctorDetailsById_getDoctorDetailsById_doctorCardActiveCTA {
+  __typename: "DoctorCardActiveCTA";
+  ONLINE: string | null;
+  PHYSICAL: string | null;
+  DEFAULT: string | null;
+}
+
 export interface getDoctorDetailsById_getDoctorDetailsById {
   __typename: "DoctorDetails";
   id: string;
+  skipAutoQuestions: boolean | null;
+  isJdAllowed: boolean | null;
   salutation: string | null;
   firstName: string;
   lastName: string;
@@ -129,6 +157,7 @@ export interface getDoctorDetailsById_getDoctorDetailsById {
   displayName: string | null;
   doctorType: DoctorType;
   chatDays: number | null;
+  doctorsOfTheHourStatus: boolean | null;
   qualification: string | null;
   mobileNumber: string;
   experience: string | null;
@@ -136,8 +165,14 @@ export interface getDoctorDetailsById_getDoctorDetailsById {
   languages: string | null;
   city: string | null;
   awards: string | null;
+  gender: Gender | null;
+  profile_deeplink: string | null;
   photoUrl: string | null;
   availableModes: (ConsultMode | null)[] | null;
+  bookingFee: number | null;
+  isBookingFeeExempted: boolean | null;
+  doctorPricing: (getDoctorDetailsById_getDoctorDetailsById_doctorPricing | null)[] | null;
+  availabilityTitle: getDoctorDetailsById_getDoctorDetailsById_availabilityTitle | null;
   specialty: getDoctorDetailsById_getDoctorDetailsById_specialty | null;
   registrationNumber: string;
   onlineConsultationFees: string;
@@ -147,6 +182,7 @@ export interface getDoctorDetailsById_getDoctorDetailsById {
   starTeam: (getDoctorDetailsById_getDoctorDetailsById_starTeam | null)[] | null;
   consultHours: (getDoctorDetailsById_getDoctorDetailsById_consultHours | null)[] | null;
   doctorNextAvailSlots: getDoctorDetailsById_getDoctorDetailsById_doctorNextAvailSlots | null;
+  doctorCardActiveCTA: getDoctorDetailsById_getDoctorDetailsById_doctorCardActiveCTA | null;
 }
 
 export interface getDoctorDetailsById {

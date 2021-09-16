@@ -11,24 +11,34 @@ import {
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
   EPrescription,
-  ShoppingCartItem,
   useShoppingCart,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { Download } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  MedicineRxIcon,
+  PHRFollowUpDarkIcon,
+  LabTestIcon,
+  PhrSymptomIcon,
+  PhrDiagnosisIcon,
+  PhrGeneralAdviceIcon,
+  WhiteDownloadIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
   CommonBugFender,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  CHECK_IF_FOLLOWUP_BOOKED,
+  GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
+  GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+  GET_DIAGNOSTIC_NEAREST_AREA,
+  GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
+  GET_PATIENT_ADDRESS_LIST,
   GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { checkIfFollowUpBooked } from '@aph/mobile-patients/src/graphql/types/checkIfFollowUpBooked';
+import { ProfileImageComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/ProfileImageComponent';
 import { getAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import {
   getSDLatestCompletedCaseSheet,
@@ -46,23 +56,25 @@ import {
   MEDICINE_FREQUENCY,
   MEDICINE_TIMINGS,
   MEDICINE_TO_BE_TAKEN,
-  MEDICINE_UNIT,
-  ConsultMode,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   addTestsToCart,
   doRequestAndAccessLocation,
+  formatToCartItem,
   g,
+  getPrescriptionItemQuantity,
   handleGraphQlError,
   medUnitFormatArray,
   nameFormater,
   postWebEngageEvent,
-  postWebEngagePHR,
+  postCleverTapPHR,
+  postCleverTapEvent,
+  getCleverTapCircleMemberValues,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
-  WebEngageEventName,
-  WebEngageEvents,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
@@ -73,56 +85,59 @@ import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
   Dimensions,
-  Image,
   Platform,
   SafeAreaView,
+  BackHandler,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import {
-  NavigationActions,
-  NavigationScreenProps,
-  ScrollView,
-  StackActions,
-} from 'react-navigation';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
 import { mimeType } from '../../helpers/mimeType';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { ListItem } from 'react-native-elements';
+import _ from 'lodash';
+import { AxiosResponse } from 'axios';
+import {
+  availabilityApi247,
+  getDeliveryTAT,
+  getDiagnosticDoctorPrescriptionResults,
+  getMedicineDetailsApi,
+  getTatStaticContent,
+  MedicineProductDetailsResponse,
+} from '../../helpers/apiCalls';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/Events';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
+import InAppReview from 'react-native-in-app-review';
+import {
+  getPatientAddressList,
+  getPatientAddressListVariables,
+  getPatientAddressList_getPatientAddressList_addressList,
+} from '../../graphql/types/getPatientAddressList';
+import {
+  getPincodeServiceability,
+  getPincodeServiceabilityVariables,
+} from '../../graphql/types/getPincodeServiceability';
+import {
+  findDiagnosticsByItemIDsAndCityID,
+  findDiagnosticsByItemIDsAndCityIDVariables,
+} from '../../graphql/types/findDiagnosticsByItemIDsAndCityID';
+import { getNearestArea, getNearestAreaVariables } from '../../graphql/types/getNearestArea';
+import {
+  getDiagnosticSlotsCustomized,
+  getDiagnosticSlotsCustomizedVariables,
+} from '../../graphql/types/getDiagnosticSlotsCustomized';
+import DeviceInfo from 'react-native-device-info';
+import { postCleverTapUploadPrescriptionEvents } from '@aph/mobile-patients/src/components/UploadPrescription/Events';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
+const slotFetchCount = 3;
 
 const styles = StyleSheet.create({
-  imageView: {
-    width: 80,
-    marginLeft: 20,
-  },
-  doctorNameStyle: {
-    paddingTop: 8,
-    paddingBottom: 2,
-    textTransform: 'capitalize',
-    ...theme.fonts.IBMPlexSansSemiBold(23),
-    color: theme.colors.LIGHT_BLUE,
-  },
-  timeStyle: {
-    paddingBottom: 16,
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.SKY_BLUE,
-    letterSpacing: 0.04,
-  },
-  descriptionStyle: {
-    paddingTop: 7,
-    ...theme.fonts.IBMPlexSansMedium(12),
-    color: theme.colors.TEXT_LIGHT_BLUE,
-  },
-  doctorDetailsStyle: {
-    ...theme.viewStyles.cardContainer,
-    backgroundColor: theme.colors.CARD_BG,
-    paddingTop: 20,
-    paddingHorizontal: 20,
-  },
   cardViewStyle: {
     ...theme.viewStyles.cardViewStyle,
     marginTop: 16,
@@ -140,29 +155,20 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     ...theme.fonts.IBMPlexSansMedium(14),
   },
-  skyBluelabelStyle: {
-    paddingBottom: 4,
-    color: theme.colors.SKY_BLUE,
-    lineHeight: 24,
-    ...theme.fonts.IBMPlexSansMedium(14),
-  },
-  subLabelStyle: {
-    paddingBottom: 4,
-    color: 'rgba(0,0,0,0.4)',
-    ...theme.fonts.IBMPlexSansMedium(9),
-  },
-  prescDateTextStyle: {
-    marginTop: 7,
-    marginBottom: 10,
-    color: theme.colors.LIGHT_BLUE,
-    ...theme.fonts.IBMPlexSansMedium(12),
-  },
   dataTextStyle: {
     color: theme.colors.SKY_BLUE,
     lineHeight: 24,
     ...theme.fonts.IBMPlexSansMedium(14),
     paddingTop: 7,
     paddingBottom: 12,
+  },
+  orderMedicineMsg: {
+    textAlign: 'right',
+    color: theme.colors.SKY_BLUE,
+    lineHeight: 14,
+    ...theme.fonts.IBMPlexSansMedium(12),
+    paddingTop: 5,
+    paddingBottom: 10,
   },
   subDataTextStyle: {
     color: theme.colors.SKY_BLUE,
@@ -182,6 +188,124 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     ...theme.viewStyles.yellowTextStyle,
   },
+  topCardViewStyle: {
+    ...theme.viewStyles.cardViewStyle,
+    marginTop: 10,
+    marginBottom: 15,
+    marginHorizontal: 8,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 9,
+  },
+  separatorLineStyle: {
+    backgroundColor: '#02475B',
+    opacity: 0.2,
+    height: 0.5,
+    marginBottom: 7,
+    marginTop: 16,
+  },
+  collapseCardLabelViewStyle: {
+    marginTop: 20,
+    marginLeft: 20,
+    marginRight: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderBottomWidth: 0,
+    borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+  },
+  blueCirleViewStyle: {
+    backgroundColor: '#02475B',
+    opacity: 0.6,
+    width: 5,
+    marginTop: 7,
+    alignSelf: 'flex-start',
+    height: 5,
+    borderRadius: 2.5,
+    marginRight: 12,
+  },
+  listItemContainerStyle: {
+    paddingLeft: 18,
+    paddingRight: 10,
+    paddingBottom: 10,
+    paddingTop: 0,
+  },
+  topViewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  quickActionButtons: {
+    ...theme.fonts.IBMPlexSansBold(13),
+    lineHeight: 24,
+    color: '#FC9916',
+    alignSelf: 'flex-end',
+    marginRight: 10,
+  },
+  orderMedicinesButton: {
+    backgroundColor: theme.colors.BUTTON_BG,
+    borderRadius: 10,
+    marginVertical: 13,
+    alignItems: 'center',
+    paddingHorizontal: 65,
+    paddingVertical: 6,
+    shadowColor: 'rgba(0,0,0,0.2)',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  orderMedicineText: {
+    ...theme.fonts.IBMPlexSansBold(13),
+    lineHeight: 24,
+    color: '#fff',
+  },
+  etaMsg: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    lineHeight: 16,
+    color: '#fff',
+  },
+  bottomButtonContainer: {
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkupDateTextStyle: { ...theme.viewStyles.text('R', 14, '#67909C', 1, 18.2), marginTop: 6 },
+  downloadBtnViewStyle: {
+    alignSelf: 'flex-end',
+    backgroundColor: theme.colors.BUTTON_BG,
+    borderRadius: 10,
+    paddingVertical: 7,
+    paddingLeft: 18,
+    paddingRight: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  downloadBtnTextStyle: {
+    ...theme.viewStyles.text('B', 13, theme.colors.WHITE, 1, 16.9),
+    marginLeft: 2,
+  },
+  downloadIconStyle: { width: 20, height: 20 },
+  phrGeneralIconStyle: { width: 20, height: 24.84, marginRight: 12 },
+  tatContainer: {
+    paddingHorizontal: 13,
+    borderColor: theme.colors.APP_GREEN,
+    borderWidth: 2,
+    borderRadius: 5,
+    paddingVertical: 10,
+    borderStyle: 'dashed',
+    marginHorizontal: 6,
+  },
+  tatText: {
+    ...theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE, 1, 16),
+    paddingBottom: 10,
+  },
+  tatDeliveryText: { color: theme.colors.APP_GREEN },
+  slotText: {
+    ...theme.viewStyles.text('R', 13, theme.colors.APP_RED, 1, 24),
+    flex: 1,
+    textAlign: 'right',
+    paddingEnd: 10,
+  },
 });
 
 export interface ConsultDetailsProps
@@ -190,9 +314,7 @@ export interface ConsultDetailsProps
     DoctorInfo:
       | getDoctorDetailsById_getDoctorDetailsById
       | getAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo;
-    // PatientId: any;
     appointmentType: APPOINTMENT_TYPE | AppointmentType;
-    // appointmentDate: any;
     DisplayId: any;
     Displayoverlay: any;
     isFollowcount: any;
@@ -207,20 +329,17 @@ type rescheduleType = {
   isPaid: number;
 };
 
+type availability = 'available' | 'partial' | 'unavailable';
+
 export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const data = props.navigation.getParam('DoctorInfo');
   const appointmentType = props.navigation.getParam('appointmentType');
   const appointmentId = props.navigation.getParam('CaseSheet');
 
-  // const [loading, setLoading && setLoading] = useState<boolean>(true);
-  const { loading, setLoading } = useUIElements();
+  const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
 
   const client = useApolloClient();
-  const [showsymptoms, setshowsymptoms] = useState<boolean>(true);
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
-  const [showDiagnosis, setshowDiagnosis] = useState<boolean>(true);
-  const [showgeneral, setShowGeneral] = useState<boolean>(true);
-  const [showFollowUp, setshowFollowUpl] = useState<boolean>(true);
   const [caseSheetDetails, setcaseSheetDetails] = useState<
     getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails
   >();
@@ -232,19 +351,55 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     props.navigation.getParam('isFollowcount')
   );
   const [rescheduleType, setRescheduleType] = useState<rescheduleType>();
-  const [testShow, setTestShow] = useState<boolean>(true);
   const [showNotExistAlert, setshowNotExistAlert] = useState<boolean>(false);
   const [APICalled, setAPICalled] = useState<boolean>(false);
   const [showReferral, setShowReferral] = useState<boolean>(true);
-
+  const [defaultAddress, setDefaultAddress] = useState<
+    getPatientAddressList_getPatientAddressList_addressList
+  >();
+  const [cityId, setCityId] = useState<number>(0);
+  const [testIds, setTestIds] = useState<number[]>([]);
+  const [testAvailability, setTestAvailability] = useState<availability>('unavailable');
+  const [prescAvailability, setPrescAvailability] = useState<availability>('unavailable');
+  const [tatContent, setTatContent] = useState<any[]>([]);
+  const [tat, setTat] = useState<string>('');
+  const [testSlot, setTestSlot] = useState<string>('');
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
+
+  const { pharmacyUserTypeAttribute } = useAppCommonData();
+  const { pharmacyCircleAttributes } = useShoppingCart();
 
   useEffect(() => {
     if (!currentPatient) {
       getPatientApiCall();
     }
   }, [currentPatient]);
+
+  const handleBack = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    props.navigation.goBack();
+    return true;
+  };
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (caseSheetDetails && !defaultAddress) {
+      getAddressList();
+    } else if (defaultAddress && !testIds.length) {
+      if (caseSheetDetails?.medicinePrescription?.length) {
+        checkMedicineAvailability();
+      }
+    } else {
+      // Test Delivery slots api to be addded here in future
+    }
+  }, [caseSheetDetails, defaultAddress, testIds]);
 
   useEffect(() => {
     setLoading && setLoading(true);
@@ -260,24 +415,220 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         setLoading && setLoading(false);
         props.navigation.state.params!.DisplayId = _data.data.getSDLatestCompletedCaseSheet!.caseSheetDetails!.appointment!.displayId;
         setcaseSheetDetails(_data.data.getSDLatestCompletedCaseSheet!.caseSheetDetails!);
+        appReviewAndRating(_data.data.getSDLatestCompletedCaseSheet!.caseSheetDetails!);
         setAPICalled(true);
       })
       .catch((error) => {
         CommonBugFender('ConsultDetails_GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS', error);
         setLoading && setLoading(false);
         const errorMessage = error && error.message.split(':')[1].trim();
-        console.log(errorMessage, 'err');
         if (errorMessage === 'NO_CASESHEET_EXIST') {
           setshowNotExistAlert(true);
         }
       });
   }, []);
 
-  const postWEGEvent = (type: 'medicine' | 'test' | 'download prescription') => {
+  const getAddressList = () => {
+    setLoading && setLoading(true);
+    client
+      .query<getPatientAddressList, getPatientAddressListVariables>({
+        query: GET_PATIENT_ADDRESS_LIST,
+
+        variables: {
+          patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(async (data) => {
+        const tatData = await getTatStaticContent();
+        if (tatData?.data) {
+          setTatContent(tatData?.data?.data?.response);
+        }
+        if (data) {
+          const addressList = data?.data?.getPatientAddressList?.addressList || [];
+          if (addressList.length) {
+            const address = addressList.find((address) => address?.defaultAddress);
+            if (address) {
+              address?.latitude && setDefaultAddress(address);
+            } else {
+              setLoading && setLoading(false);
+              setPrescAvailability('unavailable');
+              setTestAvailability('unavailable');
+            }
+          } else {
+            setLoading && setLoading(false);
+            setPrescAvailability('unavailable');
+            setTestAvailability('unavailable');
+          }
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('AddressBook__getAddressList', error);
+        setLoading && setLoading(false);
+      });
+  };
+
+  const checkMedicineAvailability = async () => {
+    const skus = caseSheetDetails?.medicinePrescription?.map((item: any) => item?.id);
+    const data = await availabilityApi247(defaultAddress?.zipcode || '', skus?.join(','));
+    const medicineResponse = data?.data?.response;
+    if (medicineResponse.length) {
+      const availableMedicines = medicineResponse.filter((item) => item?.exist);
+      setPrescAvailability(availableMedicines.length == skus?.length ? 'available' : 'partial');
+      const skuItems = availableMedicines?.map((item) => {
+        return { sku: item?.sku, qty: 1 };
+      })!;
+      const data = await getDeliveryTAT({
+        lat: defaultAddress?.latitude!,
+        lng: defaultAddress?.longitude!,
+        pincode: defaultAddress?.zipcode!,
+        items: skuItems,
+      });
+      if (data?.data?.response) {
+        const { tat } = data?.data?.response;
+        setTat(moment(tat, 'DD-MMM-YYYY HH:mm').format('h:mm A, DD MMM YYYY'));
+      }
+    }
+    setLoading && setLoading(false);
+  };
+
+  const getPincodeServicibility = (pinCodeFromAddress: number) => {
+    client
+      .query<getPincodeServiceability, getPincodeServiceabilityVariables>({
+        query: GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
+        variables: {
+          pincode: pinCodeFromAddress,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(async (data) => {
+        const { cityID } = data?.data?.getPincodeServiceability || {};
+        if (cityID) {
+          setCityId(cityID);
+          const items = caseSheetDetails?.diagnosticPrescription
+            ?.filter((val) => val?.itemname)
+            ?.map((item) => item?.itemname);
+          const formattedItemNames = items?.map((item) => item)?.join('|');
+
+          const diagnosticResults = await getDiagnosticDoctorPrescriptionResults(
+            formattedItemNames || ''
+          );
+          const itemIds = diagnosticResults?.data?.data?.map((item: any) =>
+            Number(item?.diagnostic_item_id)
+          );
+          getTestCityServicibility(itemIds, cityID);
+        }
+      })
+      .catch((error) => {
+        setLoading && setLoading(false);
+        CommonBugFender('Pincode_servicibility', error);
+      });
+  };
+
+  const getTestCityServicibility = (testIds: number[], cityId: number) => {
+    client
+      .query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
+        query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+
+        variables: {
+          cityID: cityId,
+          itemIDs: testIds,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data) => {
+        const { diagnostics } = data?.data?.findDiagnosticsByItemIDsAndCityID || {};
+        if (diagnostics?.length) {
+          setTestAvailability(diagnostics?.length == testIds.length ? 'available' : 'partial');
+          const availableTestIds = diagnostics?.map((item: any) => item?.itemId);
+          setTestIds(availableTestIds);
+        } else {
+          setLoading && setLoading(false);
+        }
+      })
+      .catch((error) => {
+        setLoading && setLoading(false);
+        CommonBugFender('FindDiagnostics_byItem', error);
+      });
+  };
+
+  const getNearestArea = () => {
+    client
+      .query<getNearestArea, getNearestAreaVariables>({
+        query: GET_DIAGNOSTIC_NEAREST_AREA,
+        variables: {
+          patientAddressId: defaultAddress?.id || '',
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(async (data) => {
+        const areaId = data?.data?.getNearestArea?.area?.id;
+        if (areaId) {
+          for (let i = 0; i < slotFetchCount; i++) {
+            const response = await getDiagnosticSlots(
+              areaId,
+              moment(new Date())
+                .add(i, 'days')
+                .format('YYYY-MM-DD')
+            );
+            const { slots } = response?.data.getDiagnosticSlotsCustomized || {};
+            if (slots?.length) {
+              const slotDateTime =
+                moment(slots[0]?.Timeslot, ['HH:mm']).format('h:mm A, ') +
+                moment(new Date())
+                  .add(i, 'days')
+                  .format('DD MMM YYYY');
+              setTestSlot(slotDateTime);
+              setLoading && setLoading(false);
+              break;
+            }
+          }
+        }
+      })
+      .catch((error) => {
+        setLoading && setLoading(false);
+        CommonBugFender('NearestArea', error);
+      });
+  };
+
+  const getDiagnosticSlots = async (areaID: number, date: string) => {
+    const res = await client.query<
+      getDiagnosticSlotsCustomized,
+      getDiagnosticSlotsCustomizedVariables
+    >({
+      query: GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
+      fetchPolicy: 'no-cache',
+      variables: {
+        selectedDate: date,
+        areaID,
+        itemIds: testIds,
+        patientAddressObj: {
+          addressLine1: defaultAddress?.addressLine1,
+          addressLine2: defaultAddress?.addressLine2,
+          addressType: defaultAddress?.addressType,
+          city: defaultAddress?.city,
+          landmark: defaultAddress?.landmark,
+          latitude: defaultAddress?.latitude,
+          longitude: defaultAddress?.longitude,
+          state: defaultAddress?.state,
+          zipcode: defaultAddress?.zipcode,
+        },
+      },
+    });
+    return res;
+  };
+
+  const postWEGEvent = (
+    type: 'medicine' | 'test' | 'download prescription',
+    medOrderType?: CleverTapEvents[CleverTapEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS]['Order Type']
+  ) => {
+    const requireCasesheetDetails =
+      caseSheetDetails?.doctorType !== 'JUNIOR' ? caseSheetDetails : {};
     const eventAttributes:
-      | WebEngageEvents[WebEngageEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS]
-      | WebEngageEvents[WebEngageEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS]
-      | WebEngageEvents[WebEngageEventName.DOWNLOAD_PRESCRIPTION] = {
+      | CleverTapEvents[CleverTapEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS]
+      | CleverTapEvents[CleverTapEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS]
+      | CleverTapEvents[CleverTapEventName.DOWNLOAD_PRESCRIPTION] = {
+      ...requireCasesheetDetails,
       'Doctor Name': g(data, 'fullName')!,
       'Speciality ID': g(data, 'specialty', 'id')!,
       'Speciality Name': g(data, 'specialty', 'name')!,
@@ -299,168 +650,213 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       'Customer ID': g(currentPatient, 'id'),
     };
     if (type == 'download prescription') {
-      (eventAttributes as WebEngageEvents[WebEngageEventName.DOWNLOAD_PRESCRIPTION])[
+      (eventAttributes as CleverTapEvents[CleverTapEventName.DOWNLOAD_PRESCRIPTION])[
         'Download Screen'
       ] = 'Prescription Details';
     }
+    if (type == 'medicine' && medOrderType) {
+      (eventAttributes as CleverTapEvents[CleverTapEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS])[
+        'Order Type'
+      ] = medOrderType;
+    }
     postWebEngageEvent(
       type == 'medicine'
-        ? WebEngageEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS
+        ? CleverTapEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS
         : type == 'test'
-        ? WebEngageEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS
-        : WebEngageEventName.DOWNLOAD_PRESCRIPTION,
+        ? CleverTapEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS
+        : CleverTapEventName.DOWNLOAD_PRESCRIPTION,
+      eventAttributes
+    );
+    postCleverTapEvent(
+      type == 'medicine'
+        ? CleverTapEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS
+        : type == 'test'
+        ? CleverTapEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS
+        : CleverTapEventName.DOWNLOAD_PRESCRIPTION,
+      eventAttributes
+    );
+    if (type == 'medicine') {
+      postWebEngageEvent(CleverTapEventName.Order_Medicine_From_View_Prescription, {
+        'Booking Source': 'APP',
+      });
+    }
+
+    if (type == 'test') {
+      postWebEngageEvent(CleverTapEventName.Book_Tests_From_View_Prescription, {
+        'Booking Source': 'APP',
+      });
+    }
+
+    postCleverTapEvent(
+      type == 'medicine'
+        ? CleverTapEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS
+        : type == 'test'
+        ? CleverTapEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS
+        : CleverTapEventName.DOWNLOAD_PRESCRIPTION,
       eventAttributes
     );
   };
 
-  const renderDoctorDetails = () => {
-    return (
-      <View style={styles.doctorDetailsStyle}>
-        {!g(caseSheetDetails, 'appointment', 'doctorInfo') ? null : (
-          <View
-            style={{
-              flexDirection: 'row',
-            }}
-          >
-            <View style={{ flex: 1 }}>
-              <Text
-                style={{
-                  ...theme.fonts.IBMPlexSansMedium(12),
-                  color: theme.colors.SEARCH_EDUCATION_COLOR,
-                  paddingBottom: 4,
-                }}
-              >
-                {'#' + g(caseSheetDetails, 'appointment', 'displayId')}
-              </Text>
-              <View style={theme.viewStyles.lightSeparatorStyle} />
-              <Text style={styles.doctorNameStyle}>
-                {g(caseSheetDetails, 'appointment', 'doctorInfo', 'displayName')}
-              </Text>
-              <View style={{ flexDirection: 'row' }}>
-                <Text style={styles.timeStyle}>
-                  {caseSheetDetails &&
-                    moment(caseSheetDetails!.appointment!.appointmentDateTime).format(
-                      'DD MMM YYYY'
-                    )}
-                </Text>
-                <Text style={styles.timeStyle}>{','}</Text>
-
-                <Text style={styles.timeStyle}>
-                  {g(caseSheetDetails, 'appointment', 'appointmentType') == 'ONLINE'
-                    ? 'Online'
-                    : 'Physical'}{' '}
-                  Consult
-                </Text>
-              </View>
-              <View style={theme.viewStyles.lightSeparatorStyle} />
-            </View>
-            <View style={styles.imageView}>
-              {g(caseSheetDetails, 'appointment', 'doctorInfo', 'photoUrl') ? (
-                <Image
-                  source={{
-                    uri: g(caseSheetDetails, 'appointment', 'doctorInfo', 'photoUrl'),
-                  }}
-                  style={{
-                    width: 80,
-                    height: 80,
-                    borderRadius: 40,
-                  }}
-                />
-              ) : null}
-            </View>
-          </View>
-        )}
-        {!!caseSheetDetails?.prescriptionGeneratedDate && (
-          <Text style={styles.prescDateTextStyle}>
-            Prescription generated on{' '}
-            {moment(caseSheetDetails!.prescriptionGeneratedDate).format(
-              AppConfig.Configuration.CASESHEET_PRESCRIPTION_DATE_FORMAT
-            )}{' '}
-            at{' '}
-            {moment(caseSheetDetails!.prescriptionGeneratedDate).format(
-              AppConfig.Configuration.CASESHEET_PRESCRIPTION_TIME_FORMAT
-            )}
+  const postCleverTapEventForTrackingAppReview = async () => {
+    const uniqueId = await DeviceInfo.getUniqueId();
+    const eventAttributes: CleverTapEvents[CleverTapEventName.PLAYSTORE_APP_REVIEW_AND_RATING] = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'User Type': pharmacyUserTypeAttribute?.User_Type || '',
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      'CT Source': Platform.OS,
+      'Device ID': uniqueId,
+      'Circle Member':
+        getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+        '',
+      'Page Name': 'Consultation Details',
+      'NAV Source': 'Consult',
+    };
+    postCleverTapEvent(
+      Platform.OS == 'android'
+        ? CleverTapEventName.APP_REVIEW_AND_RATING_TO_PLAYSTORE
+        : CleverTapEventName.APP_REVIEW_AND_RATING_TO_APPSTORE,
+      eventAttributes
+    );
+  };
+  const renderTopDetailsView = () => {
+    return !g(caseSheetDetails, 'appointment', 'doctorInfo') ? null : (
+      <View style={styles.topCardViewStyle}>
+        <View style={styles.topViewHeader}>
+          <Text style={{ ...theme.viewStyles.text('SB', 23, '#02475B', 1, 30) }}>
+            {'Prescription'}
           </Text>
-        )}
-        {caseSheetDetails && caseSheetDetails.followUp ? (
-          <View>
-            {/* <Text style={styles.descriptionStyle}>
-              This is a follow-up consult to the {props.navigation.state.params!.appointmentType}{' '}
-              Visit on{' '}
-              {caseSheetDetails && moment(caseSheetDetails.followUpDate).format('DD MMM YYYY')}
-            </Text> */}
-            <Text
-              style={[theme.viewStyles.yellowTextStyle, { textAlign: 'right', paddingBottom: 16 }]}
-              onPress={() => {
-                CommonLogEvent('CONSULT_DETAILS', 'Go back to tab bar'),
-                  props.navigation.dispatch(
-                    StackActions.reset({
-                      index: 0,
-                      key: null,
-                      actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-                    })
-                  );
-              }}
-            >
-              {strings.health_records_home.view_consult}
-            </Text>
-          </View>
-        ) : null}
+        </View>
+        <Text style={{ ...theme.viewStyles.text('M', 16, '#0087BA', 1, 21), marginTop: 6 }}>
+          {g(caseSheetDetails, 'appointment', 'doctorInfo', 'displayName')}
+        </Text>
+        <Text style={styles.checkupDateTextStyle}>
+          {g(caseSheetDetails, 'appointment', 'appointmentType') == 'ONLINE'
+            ? 'Online'
+            : 'Physical'}{' '}
+          Consult
+        </Text>
+        <Text style={styles.checkupDateTextStyle}>
+          {'Checkup Date on '}
+          {caseSheetDetails?.appointment?.appointmentDateTime
+            ? moment(caseSheetDetails?.appointment?.appointmentDateTime).format('DD MMM, YYYY')
+            : ''}
+        </Text>
+        <View style={styles.separatorLineStyle} />
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => onPressDownloadPrescripiton()}
+          style={styles.downloadBtnViewStyle}
+        >
+          <WhiteDownloadIcon style={styles.downloadIconStyle} />
+          <Text style={styles.downloadBtnTextStyle}>{'DOWNLOAD'}</Text>
+        </TouchableOpacity>
       </View>
     );
+  };
+
+  const appReviewAndRating = async (data: any) => {
+    try {
+      if (g(data, 'appointment', 'doctorInfo')) {
+        if (InAppReview.isAvailable()) {
+          await InAppReview.RequestInAppReview()
+            .then((hasFlowFinishedSuccessfully) => {
+              if (hasFlowFinishedSuccessfully) {
+                postCleverTapEventForTrackingAppReview();
+              }
+            })
+            .catch((error) => {
+              CommonBugFender('inAppReviewForDoctorConsult', error);
+            });
+        }
+      }
+    } catch (error) {
+      CommonBugFender('inAppRevireAfterGettingPrescription', error);
+    }
   };
 
   const renderSymptoms = () => {
     return (
-      <View
-        style={{
-          marginTop: 24,
-        }}
-      >
-        <CollapseCard
-          heading="SYMPTOMS"
-          collapse={showsymptoms}
-          onPress={() => setshowsymptoms(!showsymptoms)}
-        >
-          <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
-            {caseSheetDetails!.symptoms && caseSheetDetails!.symptoms !== null ? (
-              <View>
-                {caseSheetDetails!.symptoms!.map((item) => {
-                  if (item && item.symptom)
-                    return (
-                      <View>
-                        <View style={styles.labelViewStyle}>
-                          <Text style={styles.labelStyle}>{item.symptom}</Text>
-                        </View>
-                        {!!item?.since && (
-                          <Text style={styles.dataTextStyle}>Since: {item.since}</Text>
-                        )}
-                        {!!item?.howOften && (
-                          <Text style={styles.subDataTextStyle}>How Often: {item.howOften}</Text>
-                        )}
-                        {!!item?.severity && (
-                          <Text style={styles.subDataTextStyle}>Severity: {item.severity}</Text>
-                        )}
+      <>
+        {renderHeadingView(
+          'Symptoms',
+          <PhrSymptomIcon style={{ width: 19.98, height: 20, marginRight: 12 }} />
+        )}
+        {caseSheetDetails?.symptoms !== null ? (
+          <View>
+            {caseSheetDetails?.symptoms?.map((item) => {
+              if (item?.symptom)
+                return (
+                  <View style={{ marginTop: 28 }}>
+                    <Text
+                      style={{
+                        ...theme.viewStyles.text('SB', 16, '#00B38E', 1, 20.8),
+                        marginLeft: 30,
+                        flex: 1,
+                      }}
+                    >
+                      {item.symptom}
+                    </Text>
+                    {!!item?.since ? (
+                      <View style={{ marginLeft: 0, marginTop: 20 }}>
+                        {renderListItem('Duration', 'Active')}
+                        <Text
+                          style={{
+                            ...theme.viewStyles.text('R', 13, '#0087BA', 1, 15),
+                            paddingLeft: 35,
+                            flex: 1,
+                          }}
+                        >
+                          {item.since}
+                        </Text>
                       </View>
-                    );
-                })}
-              </View>
-            ) : (
-              <View>
-                <Text style={styles.labelStyle}>No Symptoms</Text>
-              </View>
-            )}
+                    ) : null}
+                    {!!item?.howOften ? renderListItem(item?.howOften, 'Acute', 17) : null}
+                    {!!item?.severity ? (
+                      <View style={{ marginLeft: 0, marginTop: 20 }}>
+                        {renderListItem('Medically Relevant Details', '')}
+                        <Text
+                          style={{
+                            ...theme.viewStyles.text('R', 13, '#0087BA', 1, 15),
+                            paddingLeft: 35,
+                            paddingRight: 14,
+                            flex: 1,
+                          }}
+                        >
+                          {item.severity}
+                        </Text>
+                      </View>
+                    ) : null}
+                  </View>
+                );
+            })}
           </View>
-        </CollapseCard>
-      </View>
+        ) : (
+          renderNoData('No Symptoms')
+        )}
+      </>
     );
   };
-  const { addMultipleCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
+  const { setEPrescriptions, addMultipleCartItems } = useShoppingCart();
   const {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
-  const { locationDetails, setLocationDetails } = useAppCommonData();
+  const {
+    locationDetails,
+    setLocationDetails,
+    diagnosticLocation,
+    pharmacyLocation,
+  } = useAppCommonData();
+
+  function postDiagnosticAddToCart(itemId: string, itemName: string) {
+    DiagnosticAddToCartEvent(itemName, itemId, 0, 0, DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PHR);
+  }
 
   const onAddTestsToCart = async () => {
     let location: LocationData | null = null;
@@ -499,14 +895,19 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     } as EPrescription;
 
     // Adding tests to DiagnosticsCart
-    addTestsToCart(testPrescription, client, g(locationDetails || location, 'city') || '')
+    addTestsToCart(
+      testPrescription,
+      client,
+      g(diagnosticLocation || pharmacyLocation || locationDetails || location, 'pincode') || ''
+    )
       .then((tests: DiagnosticsCartItem[]) => {
         // Adding ePrescriptions to DiagnosticsCart
         const unAvailableItemsArray = testPrescription.filter(
-          (item) => !tests.find((val) => val.name == item.itemname!)
+          (item) => !tests.find((val) => val?.name!.toLowerCase() == item?.itemname!.toLowerCase())
         );
-
         const unAvailableItems = unAvailableItemsArray.map((item) => item.itemname).join(', ');
+        const getItemNames = tests?.map((item) => item?.name)?.join(', ');
+        const getItemIds = tests?.map((item) => Number(item?.id))?.join(', ');
 
         if (tests.length) {
           addMultipleTestCartItems!(tests);
@@ -518,24 +919,51 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           ]);
         }
         if (testPrescription.length == unAvailableItemsArray.length) {
-          Alert.alert(
-            'Uh oh.. :(',
-            `Unfortunately, we do not have any diagnostic(s) available right now.`
-          );
-        } else if (unAvailableItems) {
-          Alert.alert(
-            'Uh oh.. :(',
-            `Out of ${testPrescription.length} diagnostic(s), you are trying to order, following diagnostic(s) are not available.\n\n${unAvailableItems}\n`
-          );
+          showAphAlert?.({
+            title: string.common.uhOh,
+            description: string.common.noDiagnosticsAvailable,
+            onPressOk: () => {
+              _navigateToTestCart();
+            },
+            onPressOutside: () => {
+              _navigateToTestCart();
+            },
+          });
+        } else {
+          //in case of if any unavailable items or all are present
+          const lengthOfAvailableItems = tests?.length;
+          const testAdded = tests?.map((item) => nameFormater(item?.name), 'title').join('\n');
+          showAphAlert?.({
+            title:
+              !!lengthOfAvailableItems && lengthOfAvailableItems > 0
+                ? `${lengthOfAvailableItems} ${
+                    lengthOfAvailableItems > 1 ? 'items' : 'item'
+                  } added to your cart`
+                : string.common.uhOh,
+            description: unAvailableItems
+              ? `Below items are added to your cart: \n${testAdded} \nSearch for the remaining diagnositc tests and add to the cart.`
+              : `Below items are added to your cart: \n${testAdded}`,
+            onPressOk: () => {
+              _navigateToTestCart();
+            },
+            onPressOutside: () => {
+              _navigateToTestCart();
+            },
+          });
         }
-        setLoading!(false);
-        props.navigation.push(AppRoutes.TestsCart);
+        setLoading?.(false);
+        postDiagnosticAddToCart(getItemIds, getItemNames);
       })
       .catch((e) => {
-        setLoading!(false);
+        setLoading?.(false);
         handleGraphQlError(e);
       });
   };
+
+  function _navigateToTestCart() {
+    hideAphAlert?.();
+    props.navigation.push(AppRoutes.TestsCart, { comingFrom: AppRoutes.ConsultDetails });
+  }
 
   const getDaysCount = (type: MEDICINE_CONSUMPTION_DURATION | null) => {
     return type == MEDICINE_CONSUMPTION_DURATION.MONTHS
@@ -546,77 +974,62 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       : 1;
   };
 
-  const getQuantity = (
-    medicineUnit: MEDICINE_UNIT | null,
-    medicineTimings: (MEDICINE_TIMINGS | null)[] | null,
-    medicineDosage: string | null,
-    medicineCustomDosage: string | null /** E.g: (1-0-1/2-0.5), (1-0-2\3-3) etc.*/,
-    medicineConsumptionDurationInDays: string | null,
-    medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null,
-    mou: number // how many tablets per strip
-  ) => {
-    if (medicineUnit == MEDICINE_UNIT.TABLET || medicineUnit == MEDICINE_UNIT.CAPSULE) {
-      const medicineDosageMapping = medicineCustomDosage
-        ? medicineCustomDosage.split('-').map((item) => {
-            if (item.indexOf('/') > -1) {
-              const dosage = item.split('/').map((item) => Number(item));
-              return (dosage[0] || 1) / (dosage[1] || 1);
-            } else if (item.indexOf('\\') > -1) {
-              const dosage = item.split('\\').map((item) => Number(item));
-              return (dosage[0] || 1) / (dosage[1] || 1);
-            } else {
-              return Number(item);
-            }
-          })
-        : medicineDosage
-        ? Array.from({ length: 4 }).map(() => Number(medicineDosage))
-        : [1, 1, 1, 1];
-
-      const medicineTimingsPerDayCount =
-        (medicineTimings || []).reduce(
-          (currTotal, currItem) =>
-            currTotal +
-            (currItem == MEDICINE_TIMINGS.MORNING
-              ? medicineDosageMapping[0]
-              : currItem == MEDICINE_TIMINGS.NOON
-              ? medicineDosageMapping[1]
-              : currItem == MEDICINE_TIMINGS.EVENING
-              ? medicineDosageMapping[2]
-              : currItem == MEDICINE_TIMINGS.NIGHT
-              ? medicineDosageMapping[3]
-              : (medicineDosage && Number(medicineDosage)) || 1),
-          0
-        ) || 1;
-
-      console.log({ medicineTimingsPerDayCount });
-
-      const totalTabletsNeeded =
-        medicineTimingsPerDayCount *
-        Number(medicineConsumptionDurationInDays || '1') *
-        getDaysCount(medicineConsumptionDurationUnit);
-
-      console.log({ totalTabletsNeeded });
-
-      return Math.ceil(totalTabletsNeeded / mou);
-    } else {
-      // 1 for other than tablet or capsule
-      return 1;
-    }
-  };
-
-  const onAddToCart = () => {
+  const onAddToCart = async () => {
     const medPrescription = (caseSheetDetails!.medicinePrescription || []).filter(
       (item) => item!.id
     );
     const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!);
     const presToAdd = {
       id: caseSheetDetails!.id,
+      appointmentId: appointmentId,
       date: moment(caseSheetDetails!.appointment!.appointmentDateTime).format('DD MMM YYYY'),
       doctorName: g(data, 'displayName') || '',
       forPatient: (currentPatient && currentPatient.firstName) || '',
       medicines: (medPrescription || []).map((item) => item!.medicineName).join(', '),
       uploadedUrl: docUrl,
     } as EPrescription;
+    const isCartOrder = medPrescription?.length === caseSheetDetails?.medicinePrescription?.length;
+    postWEGEvent('medicine', isCartOrder ? 'Cart' : 'Non-Cart');
+
+    if (isCartOrder) {
+      try {
+        setLoading?.(true);
+        const response: AxiosResponse<MedicineProductDetailsResponse>[] = await Promise.all(
+          medPrescription.map((item) => getMedicineDetailsApi(item?.id!))
+        );
+        const cartItems = response
+          .filter(({ data }) => data?.productdp?.[0]?.id && data?.productdp?.[0]?.sku)
+          .map(({ data }, index) => ({
+            ...formatToCartItem({ ...data?.productdp?.[0]!, image: '' }),
+            quantity: getPrescriptionItemQuantity(
+              medPrescription?.[index]?.medicineUnit!,
+              medPrescription?.[index]?.medicineTimings!,
+              medPrescription?.[index]?.medicineDosage!,
+              medPrescription?.[index]?.medicineCustomDosage!,
+              medPrescription?.[index]?.medicineConsumptionDurationInDays!,
+              medPrescription?.[index]?.medicineConsumptionDurationUnit!,
+              parseInt(data?.productdp?.[0]?.mou || '1', 10)
+            ),
+          }));
+
+        addMultipleCartItems?.(cartItems);
+        setEPrescriptions?.([presToAdd]);
+        setLoading?.(false);
+        postCleverTapUploadPrescriptionEvents('Health Records', 'Cart');
+        props.navigation.push(AppRoutes.MedicineCart);
+      } catch (error) {
+        setLoading?.(false);
+        showAphAlert?.({
+          title: string.common.uhOh,
+          description: string.common.somethingWentWrong,
+        });
+        CommonBugFender(`${AppRoutes.ConsultDetails}_onAddToCart`, error);
+      }
+      return;
+    }
+
+    setEPrescriptions?.([presToAdd]);
+    postCleverTapUploadPrescriptionEvents('Health Records', 'Non-Cart');
     props.navigation.navigate(AppRoutes.UploadPrescription, {
       ePrescriptionsProp: [presToAdd],
       type: 'E-Prescription',
@@ -738,337 +1151,254 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                         .join(', ') + ' ')
                 : ''
             }`
-      }${
-        item.routeOfAdministration
-          ? `\nTo be taken: ${nameFormater(item.routeOfAdministration, 'title')}`
-          : ''
       }${item.medicineInstructions ? '\nInstructions: ' + item.medicineInstructions : ''}`;
     }
   };
 
+  const priscTatText = () => {
+    const { isAllMedicineAtPincode, isPartialMedicineAtPincode, noPincode } = tatContent.find(
+      (item) => item.isMedicine
+    );
+    return prescAvailability !== 'unavailable' ? (
+      <Text style={styles.tatText}>
+        {prescAvailability == 'available'
+          ? isAllMedicineAtPincode + ' at '
+          : isPartialMedicineAtPincode + ' at '}
+        <Text style={styles.tatDeliveryText}>{`(${defaultAddress?.zipcode}) by ${tat}`}</Text>
+      </Text>
+    ) : noPincode ? (
+      <Text style={styles.tatText}>{noPincode}</Text>
+    ) : null;
+  };
+
+  const testTatText = () => {
+    const { isPartialTestAtPincode, isAllTestAtPincode, noPincode } = tatContent.find(
+      (item) => item.isTest
+    );
+    return testAvailability !== 'unavailable' ? (
+      <Text style={styles.tatText}>
+        {testAvailability == 'available'
+          ? isPartialTestAtPincode + ' at '
+          : isAllTestAtPincode + ' at '}
+        <Text style={styles.tatDeliveryText}>{`(${defaultAddress?.zipcode}) by ${testSlot}`}</Text>
+      </Text>
+    ) : noPincode ? (
+      <Text style={styles.tatText}>{noPincode}</Text>
+    ) : null;
+  };
+
   const renderPrescriptions = () => {
     return (
-      <View>
-        <CollapseCard
-          heading="PRESCRIPTION"
-          collapse={showPrescription}
-          onPress={() => setshowPrescription(!showPrescription)}
-        >
-          <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
-            {caseSheetDetails!.medicinePrescription &&
-            caseSheetDetails!.medicinePrescription.length !== 0 &&
-            caseSheetDetails!.doctorType !== 'JUNIOR' ? (
-              <View>
-                {caseSheetDetails!.medicinePrescription.map((item) => {
-                  if (item)
-                    return (
+      <>
+        {renderHeadingView(
+          'Medicines',
+          <MedicineRxIcon style={{ width: 20, height: 20, marginRight: 12 }} />
+        )}
+        {caseSheetDetails?.medicinePrescription &&
+        caseSheetDetails?.medicinePrescription?.length !== 0 &&
+        caseSheetDetails?.doctorType !== 'JUNIOR' ? (
+          <View style={{ marginTop: 28 }}>
+            <View>
+              {caseSheetDetails?.medicinePrescription?.map((item) => {
+                if (item)
+                  return (
+                    <>
                       <View>
-                        <View style={styles.labelViewStyle}>
-                          <Text style={styles.labelStyle}>{item.medicineName}</Text>
-                          {!!item?.includeGenericNameInPrescription && (
-                            <Text style={styles.subLabelStyle}>{item.genericName}</Text>
-                          )}
-                        </View>
-                        <Text style={styles.dataTextStyle}>{medicineDescription(item)}</Text>
+                        {renderListItem(
+                          item?.medicineName!,
+                          _.capitalize(item?.routeOfAdministration!)
+                        )}
+                        <Text
+                          style={{
+                            ...theme.viewStyles.text('R', 13, '#0087BA', 1, 15),
+                            paddingLeft: 35,
+                            paddingRight: 15,
+                            paddingBottom: 20,
+                            flex: 1,
+                          }}
+                        >
+                          {medicineDescription(item)}
+                        </Text>
                       </View>
-                    );
-                })}
-                <TouchableOpacity
-                  onPress={() => {
-                    postWEGEvent('medicine');
-                    onAddToCart();
-                  }}
-                >
-                  <Text
-                    style={[
-                      theme.viewStyles.yellowTextStyle,
-                      { textAlign: 'right', paddingBottom: 16 },
-                    ]}
-                  >
-                    {strings.health_records_home.order_medicine}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View>
-                <Text style={styles.labelStyle}>No Medicines</Text>
-              </View>
-            )}
+                    </>
+                  );
+              })}
+              <TouchableOpacity style={styles.tatContainer} onPress={onAddToCart}>
+                {tatContent.length ? (
+                  <View>
+                    {priscTatText()}
+                    <Text style={styles.tatText}>
+                      {tatContent.find((item) => item.isMedicine)['discount']}
+                    </Text>
+                  </View>
+                ) : null}
+                <Text style={styles.quickActionButtons}>
+                  {strings.health_records_home.order_medicines}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </CollapseCard>
-      </View>
+        ) : (
+          renderNoData('No Medicines')
+        )}
+      </>
     );
   };
 
   const renderDiagnosis = () => {
     return (
-      <View>
-        <CollapseCard
-          heading={`Diagnosis`}
-          collapse={showDiagnosis}
-          onPress={() => setshowDiagnosis(!showDiagnosis)}
-          // headingStyle={[{ ...theme.fonts.IBMPlexSansBold(12) }]}
-        >
-          <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
-            {caseSheetDetails!.diagnosis && caseSheetDetails!.diagnosis! !== null ? (
-              <View>
-                <Text style={styles.labelStyle}>
-                  {caseSheetDetails!.diagnosis!.map((item) => item && item.name).join(', ')}
-                </Text>
-              </View>
-            ) : (
-              <View>
-                <Text style={styles.labelStyle}>No diagnosis</Text>
-              </View>
-            )}
+      <>
+        {renderHeadingView(
+          'Diagnosis',
+          <PhrDiagnosisIcon style={{ width: 20, height: 20, marginRight: 12 }} />
+        )}
+        {caseSheetDetails?.diagnosis !== null ? (
+          <View style={{ marginTop: 28 }}>
+            {caseSheetDetails?.diagnosis?.map((item) => {
+              return renderListItem(item?.name!, '');
+            })}
           </View>
-        </CollapseCard>
-      </View>
+        ) : (
+          renderNoData('No diagnosis')
+        )}
+      </>
+    );
+  };
+
+  const renderGenerealAdvice = () => {
+    let listOfAdvices =
+      caseSheetDetails?.otherInstructions?.map((item, i) => {
+        if (item?.instruction !== '') {
+          return `${item?.instruction}`;
+        }
+      }) || [];
+    const listStrings = listOfAdvices.join('\n');
+    return (
+      <>
+        {renderHeadingView(
+          'General Advice',
+          <PhrGeneralAdviceIcon style={styles.phrGeneralIconStyle} />
+        )}
+        {caseSheetDetails?.otherInstructions !== null ? (
+          <View style={{ marginTop: 28 }}>{renderListItem(listStrings || '', '')}</View>
+        ) : (
+          renderNoData('No advice')
+        )}
+      </>
     );
   };
 
   const renderReferral = () => {
     return (
-      <View>
-        <CollapseCard
-          heading={`Referral`}
-          collapse={showReferral}
-          onPress={() => setShowReferral(!showReferral)}
-        >
-          <View style={[styles.cardViewStyle, styles.bottomPaddingTwelve]}>
-            {!!caseSheetDetails?.referralSpecialtyName ? (
-              <View>
-                <Text style={styles.labelStyle}>{caseSheetDetails!.referralSpecialtyName}</Text>
-                {!!caseSheetDetails?.referralDescription && (
-                  <Text style={styles.dataTextStyle}>{caseSheetDetails!.referralDescription}</Text>
-                )}
-                <TouchableOpacity
-                  style={{ marginTop: 12 }}
-                  onPress={() => {
-                    props.navigation.navigate(AppRoutes.DoctorSearch);
-                  }}
-                >
-                  <Text
-                    style={[
-                      theme.viewStyles.yellowTextStyle,
-                      { textAlign: 'right', paddingBottom: 16 },
-                    ]}
-                  >
-                    {strings.common.book_apointment}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View>
-                <Text style={styles.labelStyle}>No referral</Text>
-              </View>
+      <>
+        {renderHeadingView('Referral', <PhrGeneralAdviceIcon style={styles.phrGeneralIconStyle} />)}
+        {caseSheetDetails?.otherInstructions !== null ? (
+          <View style={{ marginTop: 28 }}>
+            {renderListItem('Consult \n' + caseSheetDetails?.referralSpecialtyName, '')}
+            {renderListItem(
+              'Reason for Referral\n' + caseSheetDetails?.referralDescription || '',
+              ''
             )}
           </View>
-        </CollapseCard>
-      </View>
-    );
-  };
-
-  const renderGenerealAdvice = () => {
-    // if (
-    //   caseSheetDetails &&
-    //   caseSheetDetails.otherInstructions &&
-    //   caseSheetDetails.otherInstructions.length > 0
-    // )
-    return (
-      <View>
-        <CollapseCard
-          heading="GENERAL ADVICE"
-          collapse={showgeneral}
-          onPress={() => setShowGeneral(!showgeneral)}
-        >
-          <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
-            {caseSheetDetails!.otherInstructions && caseSheetDetails!.otherInstructions !== null ? (
-              <View>
-                <Text style={[styles.skyBluelabelStyle]}>
-                  {caseSheetDetails!
-                    .otherInstructions!.map((item, i) => {
-                      if (item && item.instruction !== '') {
-                        return `${i + 1}. ${item.instruction}`;
-                      }
-                    })
-                    .join('\n')}
-                </Text>
-              </View>
-            ) : (
-              <View>
-                <Text style={styles.labelStyle}>No advice</Text>
-              </View>
-            )}
-          </View>
-        </CollapseCard>
-      </View>
+        ) : (
+          renderNoData('No advice')
+        )}
+      </>
     );
   };
 
   const renderFollowUp = () => {
     return (
-      <View>
-        <CollapseCard
-          heading="FOLLOW-UP"
-          collapse={showFollowUp}
-          onPress={() => setshowFollowUpl(!showFollowUp)}
-        >
-          <View style={[styles.cardViewStyle, styles.bottomPaddingTwelve]}>
-            {caseSheetDetails &&
-            caseSheetDetails!.followUp &&
-            caseSheetDetails!.doctorType !== 'JUNIOR' ? (
-              <View>
-                <View>
-                  <View style={styles.labelViewStyle}>
-                    <Text style={styles.labelStyle}>
-                      {caseSheetDetails!.consultType === ConsultMode.PHYSICAL
-                        ? 'Clinic Visit'
-                        : 'Online Consult'}{' '}
-                      with {'\n'}
-                      {props.navigation.state.params!.DoctorInfo?.displayName}
-                    </Text>
-                  </View>
-                  {caseSheetDetails!.followUpAfterInDays! <= '7' ? (
-                    <Text style={styles.dataTextStyle}>
-                      Recommended after {caseSheetDetails!.followUpAfterInDays} days
-                    </Text>
-                  ) : (
-                    <Text style={styles.dataTextStyle}>
-                      Follow up on {moment(caseSheetDetails!.followUpDate).format('DD MMM YYYY')}{' '}
-                    </Text>
-                  )}
-                </View>
-                <TouchableOpacity
-                  onPress={() => {
-                    CommonLogEvent('CONSULT_DETAILS', 'Check if follow book api called');
-
-                    client
-                      .query<checkIfFollowUpBooked>({
-                        query: CHECK_IF_FOLLOWUP_BOOKED,
-                        variables: {
-                          appointmentId: props.navigation.state.params!.CaseSheet,
-                        },
-                        fetchPolicy: 'no-cache',
-                      })
-                      .then(({ data }) => {
-                        console.log('checkIfFollowUpBooked', data);
-                        console.log('checkIfFollowUpBookedcount', data.checkIfFollowUpBooked);
-                        setIsfollowucount(data.checkIfFollowUpBooked);
-
-                        setdisplayoverlay(true);
-                      })
-                      .catch((error) => {
-                        CommonBugFender('ConsultDetails_renderFollowUp', error);
-                        console.log('Error occured', { error });
-                      });
-                  }}
-                >
-                  <Text
-                    style={[
-                      theme.viewStyles.yellowTextStyle,
-                      { textAlign: 'right', paddingBottom: 16 },
-                    ]}
-                  >
-                    {strings.health_records_home.book_follow_up}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View>
-                <Text style={styles.labelStyle}>No followup</Text>
-              </View>
-            )}
+      <>
+        {renderHeadingView(
+          'Follow up',
+          <PHRFollowUpDarkIcon style={{ width: 20, height: 17.5, marginRight: 12 }} />
+        )}
+        {caseSheetDetails?.doctorType !== 'JUNIOR' ? (
+          <View>
+            {caseSheetDetails?.followUpAfterInDays
+              ? renderListItem(
+                  `Recommended after ${caseSheetDetails?.followUpAfterInDays} days`,
+                  '',
+                  28
+                )
+              : renderNoData('No followup')}
           </View>
-        </CollapseCard>
-      </View>
+        ) : (
+          renderNoData('No followup')
+        )}
+      </>
     );
   };
 
   const renderTestNotes = () => {
+    const testTat = tatContent.length && tatContent.find((item) => item.isTest);
     return (
-      <View>
-        <CollapseCard
-          heading="PRESCRIBED TESTS"
-          collapse={testShow}
-          onPress={() => setTestShow(!testShow)}
-        >
-          <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
-            {caseSheetDetails!.diagnosticPrescription &&
-            caseSheetDetails!.diagnosticPrescription !== null ? (
-              <View>
-                {caseSheetDetails!.diagnosticPrescription.map((item, index, array) => {
-                  return (
-                    <>
-                      <Text style={styles.labelStyle}>{item!.itemname}</Text>
-                      <Spearator style={{ marginBottom: index == array.length - 1 ? 2.5 : 11.5 }} />
-                      {item!.testInstruction ? (
-                        <Text style={styles.dataTextStyle}>
-                          Instructions: {item!.testInstruction}
-                        </Text>
-                      ) : null}
-                    </>
-                  );
-                })}
-                <TouchableOpacity
-                  style={{ marginTop: 12 }}
-                  onPress={() => {
-                    postWEGEvent('test');
-                    onAddTestsToCart();
-                  }}
-                >
-                  <Text
-                    style={[
-                      theme.viewStyles.yellowTextStyle,
-                      { textAlign: 'right', paddingBottom: 16 },
-                    ]}
-                  >
-                    {strings.health_records_home.order_test}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View>
-                <Text style={styles.labelStyle}>No Tests</Text>
-              </View>
-            )}
+      <>
+        {renderHeadingView(
+          'Tests',
+          <LabTestIcon style={{ width: 20, height: 21.13, marginRight: 12 }} />
+        )}
+        {caseSheetDetails?.diagnosticPrescription !== null ? (
+          <View style={{ marginTop: 28 }}>
+            {caseSheetDetails?.diagnosticPrescription?.map((item, index, array) => {
+              return (
+                <>
+                  {renderListItem(item?.itemname!, '')}
+                  {item?.testInstruction ? (
+                    <Text
+                      style={{
+                        ...theme.viewStyles.text('R', 13, '#0087BA', 1, 15),
+                        paddingLeft: 35,
+                        paddingRight: 15,
+                        paddingBottom: 20,
+                        flex: 1,
+                      }}
+                    >
+                      {item?.testInstruction}
+                    </Text>
+                  ) : null}
+                </>
+              );
+            })}
+            <TouchableOpacity
+              style={styles.tatContainer}
+              onPress={() => {
+                postWEGEvent('test');
+                onAddTestsToCart();
+              }}
+            >
+              {tatContent.length ? (
+                <View>
+                  <Text style={styles.tatText}>{testTat['discount']}</Text>
+                  <Text style={styles.tatText}>{testTat['reportTime']}</Text>
+                </View>
+              ) : null}
+              <Text style={styles.quickActionButtons}>
+                {strings.health_records_home.order_test}
+              </Text>
+              <Text style={styles.slotText}>{strings.health_records_home.slot_filling}</Text>
+            </TouchableOpacity>
           </View>
-        </CollapseCard>
-      </View>
+        ) : (
+          renderNoData('No Tests')
+        )}
+      </>
     );
   };
 
   const renderPlaceorder = () => {
-    if (
-      caseSheetDetails!.medicinePrescription &&
-      caseSheetDetails!.medicinePrescription.length !== 0 &&
-      caseSheetDetails!.doctorType !== 'JUNIOR' &&
-      g(caseSheetDetails, 'blobName')
-    ) {
+    if (caseSheetDetails!.doctorType !== 'JUNIOR' && g(caseSheetDetails, 'blobName')) {
       return (
-        <View
-          style={{
-            height: 0.1 * windowHeight,
-            backgroundColor: theme.colors.HEX_WHITE,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <Button
-            style={{
-              height: 0.06 * windowHeight,
-              width: 0.75 * windowWidth,
-              backgroundColor: theme.colors.BUTTON_BG,
-              borderRadius: 10,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-            title={'ORDER MEDICINES NOW'}
+        <View style={styles.bottomButtonContainer}>
+          <TouchableOpacity
+            style={styles.orderMedicinesButton}
             onPress={() => {
-              postWEGEvent('medicine');
               onAddToCart();
             }}
-          />
+          >
+            <Text style={styles.orderMedicineText}>ORDER MEDICINES NOW</Text>
+          </TouchableOpacity>
         </View>
       );
     }
@@ -1092,19 +1422,140 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     }
   };
 
-  const renderData = () => {
+  const renderDetailsFinding = () => {
     if (caseSheetDetails)
       return (
-        <View>
-          {renderSymptoms()}
-          {renderPrescriptions()}
-          {renderTestNotes()}
-          {renderDiagnosis()}
-          {renderReferral()}
-          {renderGenerealAdvice()}
-          {renderFollowUp()}
+        <View style={{ marginBottom: 20 }}>
+          <CollapseCard
+            heading="DETAILED FINDINGS"
+            collapse={showPrescription}
+            containerStyle={
+              !showPrescription && {
+                ...theme.viewStyles.cardViewStyle,
+                marginHorizontal: 8,
+              }
+            }
+            headingStyle={{ ...theme.viewStyles.text('SB', 18, '#02475B', 1, 23) }}
+            labelViewStyle={styles.collapseCardLabelViewStyle}
+            onPress={() => setshowPrescription(!showPrescription)}
+          >
+            <View style={{ marginTop: 11, marginBottom: 20 }}>
+              <View
+                style={[
+                  styles.topCardViewStyle,
+                  { marginTop: 4, marginBottom: 4, paddingTop: 16, paddingHorizontal: 0 },
+                ]}
+              >
+                {renderSymptoms()}
+                {renderPrescriptions()}
+                {renderTestNotes()}
+                {renderDiagnosis()}
+                {renderGenerealAdvice()}
+                {caseSheetDetails && caseSheetDetails?.referralSpecialtyName !== null
+                  ? renderReferral()
+                  : null}
+                {/* {renderFollowUp()} */}
+              </View>
+            </View>
+          </CollapseCard>
         </View>
       );
+  };
+
+  const onPressDownloadPrescripiton = () => {
+    if (g(caseSheetDetails, 'blobName') == null) {
+      Alert.alert('No Image');
+      CommonLogEvent('CONSULT_DETAILS', 'No image');
+    } else {
+      postWEGEvent('download prescription');
+      postCleverTapPHR(
+        currentPatient,
+        CleverTapEventName.PHR_DOWNLOAD_DOCTOR_CONSULTATION,
+        'Doctor Consultation',
+        caseSheetDetails
+      );
+      const dirs = RNFetchBlob.fs.dirs;
+
+      const fileName: string = getFileName();
+
+      const downloadPath =
+        Platform.OS === 'ios'
+          ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + (fileName || 'Apollo_Prescription.pdf')
+          : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf');
+      setLoading && setLoading(true);
+      RNFetchBlob.config({
+        fileCache: true,
+        path: downloadPath,
+        addAndroidDownloads: {
+          title: fileName,
+          useDownloadManager: true,
+          notification: true,
+          path: downloadPath,
+          mime: mimeType(downloadPath),
+          description: 'File downloaded by download manager.',
+        },
+      })
+        .fetch(
+          'GET',
+          AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!),
+          {
+            //some headers ..
+          }
+        )
+        .then((res) => {
+          setLoading && setLoading(false);
+          Platform.OS === 'ios'
+            ? RNFetchBlob.ios.previewDocument(res.path())
+            : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+        })
+        .catch((err) => {
+          CommonBugFender('ConsultDetails_renderFollowUp', err);
+          setLoading && setLoading(false);
+        });
+    }
+  };
+
+  const renderHeadingView = (title: string, icon: React.ReactNode) => {
+    return (
+      <View style={{ flexDirection: 'row', marginHorizontal: 10, marginTop: 22 }}>
+        {icon}
+        <Text style={{ ...theme.viewStyles.text('SB', 16, '#02475B', 1, 20.8) }}>{title}</Text>
+      </View>
+    );
+  };
+
+  const renderNoData = (noDataText: string) => {
+    return (
+      <View style={{ marginLeft: 30, marginTop: 20 }}>
+        <Text style={styles.labelStyle}>{noDataText}</Text>
+      </View>
+    );
+  };
+
+  const renderListItem = (title: string, rightTitle: string, marginTop: number = 0) => {
+    const renderListItemRightComponent = () => {
+      return (
+        <Text
+          style={{
+            ...theme.viewStyles.text('SB', 14, '#0087BA', 1, 18.2),
+          }}
+        >
+          {rightTitle}
+        </Text>
+      );
+    };
+    return title ? (
+      <ListItem
+        title={title}
+        titleStyle={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2) }}
+        pad={0}
+        containerStyle={[styles.listItemContainerStyle, { marginTop: marginTop }]}
+        underlayColor={'#FFFFFF'}
+        activeOpacity={1}
+        leftElement={<View style={styles.blueCirleViewStyle} />}
+        rightElement={renderListItemRightComponent()}
+      />
+    ) : null;
   };
 
   if (g(caseSheetDetails, 'appointment', 'doctorInfo')) {
@@ -1116,88 +1567,20 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       >
         <SafeAreaView style={{ flex: 1 }}>
           <Header
-            title="PRESCRIPTION DETAILS"
+            title={'DOCTOR CONSULTATIONS DETAILS'}
             leftIcon="backArrow"
             onPressLeftIcon={() => props.navigation.goBack()}
             rightComponent={
-              <View style={{ flexDirection: 'row' }}>
-                {/* <TouchableOpacity activeOpacity={1} style={{ marginRight: 20 }} onPress={() => {}}>
-                  <ShareGreen />
-                </TouchableOpacity> */}
-                <TouchableOpacity
-                  activeOpacity={1}
-                  onPress={() => {
-                    if (g(caseSheetDetails, 'blobName') == null) {
-                      Alert.alert('No Image');
-                      CommonLogEvent('CONSULT_DETAILS', 'No image');
-                    } else {
-                      postWEGEvent('download prescription');
-                      postWebEngagePHR(
-                        'Prescription',
-                        WebEngageEventName.PHR_DOWNLOAD_PRESCRIPTIONS
-                      );
-                      const dirs = RNFetchBlob.fs.dirs;
-
-                      const fileName: string = getFileName();
-
-                      const downloadPath =
-                        Platform.OS === 'ios'
-                          ? (dirs.DocumentDir || dirs.MainBundleDir) +
-                            '/' +
-                            (fileName || 'Apollo_Prescription.pdf')
-                          : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf');
-                      setLoading && setLoading(true);
-                      RNFetchBlob.config({
-                        fileCache: true,
-                        path: downloadPath,
-                        addAndroidDownloads: {
-                          title: fileName,
-                          useDownloadManager: true,
-                          notification: true,
-                          path: downloadPath,
-                          mime: mimeType(downloadPath),
-                          description: 'File downloaded by download manager.',
-                        },
-                      })
-                        .fetch(
-                          'GET',
-                          AppConfig.Configuration.DOCUMENT_BASE_URL.concat(
-                            caseSheetDetails!.blobName!
-                          ),
-                          {
-                            //some headers ..
-                          }
-                        )
-                        .then((res) => {
-                          setLoading && setLoading(false);
-                          // if (Platform.OS === 'android') {
-                          //   Alert.alert('Download Complete');
-                          // }
-                          Platform.OS === 'ios'
-                            ? RNFetchBlob.ios.previewDocument(res.path())
-                            : RNFetchBlob.android.actionViewIntent(
-                                res.path(),
-                                mimeType(res.path())
-                              );
-                        })
-                        .catch((err) => {
-                          CommonBugFender('ConsultDetails_renderFollowUp', err);
-                          console.log('error ', err);
-                          setLoading && setLoading(false);
-                          // ...
-                        });
-                    }
-                  }}
-                >
-                  {g(caseSheetDetails, 'blobName') ? <Download /> : null}
-                </TouchableOpacity>
-              </View>
+              <ProfileImageComponent
+                onPressProfileImage={() => props.navigation.pop(2)}
+                currentPatient={currentPatient}
+              />
             }
           />
 
           <ScrollView bounces={false}>
-            {caseSheetDetails && renderDoctorDetails()}
-            {renderData()}
+            {caseSheetDetails && renderTopDetailsView()}
+            {renderDetailsFinding()}
           </ScrollView>
           {caseSheetDetails && renderPlaceorder()}
           {displayoverlay && props.navigation.state.params!.DoctorInfo && (
@@ -1257,18 +1640,19 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     );
   } else {
     return (
-      <SafeAreaView
-        style={{
-          ...theme.viewStyles.container,
-        }}
-      >
+      <SafeAreaView style={{ ...theme.viewStyles.container }}>
         <Header
-          title="PRESCRIPTION DETAILS"
+          title={'DOCTOR CONSULTATIONS DETAILS'}
           leftIcon="backArrow"
           onPressLeftIcon={() => props.navigation.goBack()}
+          rightComponent={
+            <ProfileImageComponent
+              onPressProfileImage={() => props.navigation.pop(2)}
+              currentPatient={currentPatient}
+            />
+          }
         />
       </SafeAreaView>
     );
   }
-  return null;
 };

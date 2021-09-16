@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 // ====================================================
@@ -8,8 +9,9 @@
 
 export interface getPatientFutureAppointmentCount_getPatientFutureAppointmentCount {
   __typename: "AppointmentsCount";
-  consultsCount: number | null;
-  activeAndInProgressConsultsCount: number | null;
+  activeConsultsCount: number | null;
+  upcomingConsultsCount: number | null;
+  upcomingPhysicalConsultsCount: number | null;
 }
 
 export interface getPatientFutureAppointmentCount {

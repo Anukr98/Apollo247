@@ -6,17 +6,24 @@ import {
   PhysicalPrescription,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { CrossYellow, FileBig, Check, UnCheck } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  CrossYellow,
+  FileBig,
+  Check,
+  UnCheck,
+  GreenTickIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 
 export interface PhysicalPrescriptionCardProps {
   i: number;
   arrayLength: number;
   item: PhysicalPrescription;
   onRemove?: () => void;
+  showTick?: boolean;
 }
 
 export const PhysicalPrescriptionCard: React.FC<PhysicalPrescriptionCardProps> = (props) => {
-  const { arrayLength, i, item, onRemove } = props;
+  const { arrayLength, i, item, onRemove, showTick } = props;
   const { removePhysicalPrescription } = useShoppingCart();
   return (
     <View key={i} style={{}}>
@@ -48,6 +55,14 @@ export const PhysicalPrescriptionCard: React.FC<PhysicalPrescriptionCardProps> =
               value={item.title}
             />
           </View>
+          {showTick && (
+            <GreenTickIcon
+              style={{
+                width: 20,
+                paddingHorizontal: 8,
+              }}
+            />
+          )}
           <TouchableOpacity
             activeOpacity={1}
             style={{
@@ -56,7 +71,7 @@ export const PhysicalPrescriptionCard: React.FC<PhysicalPrescriptionCardProps> =
             }}
             onPress={onRemove}
           >
-            <CrossYellow />
+            {!showTick && <CrossYellow />}
           </TouchableOpacity>
         </View>
       </TouchableOpacity>

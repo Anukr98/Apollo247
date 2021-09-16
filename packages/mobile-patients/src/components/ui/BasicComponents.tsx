@@ -1,15 +1,6 @@
-import React, { useState } from 'react';
-import {
-  StyleProp,
-  StyleSheet,
-  Text,
-  TextStyle,
-  View,
-  ViewStyle,
-  ImagePropsBase,
-} from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { Image } from 'react-native-elements';
+import React from 'react';
+import { StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle } from 'react-native';
 
 export interface SectionHeaderProps {
   leftText: string;
@@ -69,7 +60,7 @@ export const Spearator: React.FC<SpearatorProps> = (props) => {
 };
 
 export interface BadgeProps {
-  label: number;
+  label?: number;
   containerStyle?: StyleProp<ViewStyle>;
   badgeLabelStyle?: StyleProp<ViewStyle>;
 }
@@ -78,8 +69,8 @@ export const Badge: React.FC<BadgeProps> = (props) => {
   const styles = StyleSheet.create({
     labelView: {
       position: 'absolute',
-      top: -3,
-      right: -3,
+      top: -10,
+      right: -8,
       backgroundColor: '#ff748e',
       height: 14,
       width: 14,
@@ -97,38 +88,5 @@ export const Badge: React.FC<BadgeProps> = (props) => {
     <View style={[styles.labelView, props.containerStyle]}>
       <Text style={[styles.labelText, props.badgeLabelStyle]}>{props.label}</Text>
     </View>
-  );
-};
-
-export const ImagePlaceholderView = () => {
-  return (
-    <View
-      style={{
-        height: '100%',
-        width: '100%',
-        borderRadius: 5,
-        backgroundColor: 'rgba(0,0,0,0.2)',
-      }}
-    >
-      {/* <ApolloLogo resizeMode="contain" style={{ flex: 1, height: 'auto', width: 'auto' }} /> */}
-    </View>
-  );
-};
-
-interface AphImageProps extends ImagePropsBase {
-  errorPlaceholderView: Element;
-}
-export const AphImage: React.FC<AphImageProps> = (props) => {
-  const [source, setSource] = useState(props.source);
-  const { errorPlaceholderView, ...attributes } = props;
-
-  return (
-    <Image
-      source={source}
-      onError={(error) => {
-        setSource({ uri: '' });
-      }}
-      {...attributes}
-    />
   );
 };

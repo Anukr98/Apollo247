@@ -1,10 +1,23 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
-import { StyleProp, StyleSheet, Text, View, ViewStyle, LayoutChangeEvent } from 'react-native';
+import {
+  StyleProp,
+  StyleSheet,
+  Text,
+  View,
+  ViewStyle,
+  LayoutChangeEvent,
+  TouchableOpacityProps,
+  TouchableOpacity,
+} from 'react-native';
 import {
   OrderPlacedIcon,
   OrderTrackerSmallIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { ChatWithUs } from '@aph/mobile-patients/src/components/ui/ChatWithUs';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { MEDICINE_ORDER_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { AppConfig } from '../../strings/AppConfig';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -57,12 +70,23 @@ const styles = StyleSheet.create({
     marginRight: 18,
   },
   verticalProgressLine: { flex: 1, width: 4, alignSelf: 'center' },
+  newItemsOuterView: { paddingHorizontal: 16, flexDirection: 'row' },
+  descriptionSubtextText: {
+    ...theme.viewStyles.text('R', 12, '#02475b', 1, 13, 0.03),
+  },
+  newItemsTouch: { alignSelf: 'flex-end', marginVertical: 6, paddingBottom: 5 },
+  customOrangeOption: { ...theme.viewStyles.text('B', 14, '#FC9916') },
 });
 
 interface OrderDescription {
   heading?: string;
   description?: string;
   onPress?: () => void;
+  component?: React.FC;
+}
+
+interface NewOrderDescription extends OrderDescription {
+  showOption?: boolean;
 }
 
 export interface OrderProgressCardProps {
@@ -76,6 +100,17 @@ export interface OrderProgressCardProps {
   description?: string; // if falsy value it renders date & time
   style?: StyleProp<ViewStyle>;
   onLayout?: (event: LayoutChangeEvent) => void;
+  showReUploadPrescription?: boolean;
+  showChatWithUs?: boolean;
+  reUploadPrescription?: TouchableOpacityProps['onPress'];
+  isOnHold?: boolean;
+  showDescriptionChatOption?: boolean | null;
+  showNewItemsDescription?: boolean | null;
+  newItemsDescription?: NewOrderDescription | null;
+  onPressViewSummary?: TouchableOpacityProps['onPress'];
+  shouldShowReUploadOption?: boolean | null;
+  orderType?: string | null;
+  isPrescriptionUploaded?: string | null;
 }
 
 export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
@@ -113,6 +148,30 @@ export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
     );
   };
 
+  const renderUploadPrescription = () => {
+    return (
+      <View
+        style={[styles.newItemsTouch, { paddingBottom: 0 }]}
+        pointerEvents={props.shouldShowReUploadOption ? 'auto' : 'none'}
+      >
+        <Text
+          onPress={props.reUploadPrescription}
+          style={{
+            ...theme.viewStyles.text(
+              'B',
+              14,
+              props.shouldShowReUploadOption ? '#FC9916' : '#c4c2bc'
+            ),
+          }}
+        >
+          RE-UPLOAD PRESCRIPTION
+        </Text>
+      </View>
+    );
+  };
+  const headingColor = props.isOnHold ? '#890000' : '#00b38e';
+  const orderStatusForNewItems =
+    props.orderType! == MEDICINE_ORDER_TYPE.CART_ORDER ? 'Order Verified' : 'Order Placed';
   return (
     <View style={{ flexDirection: 'row' }} onLayout={(event) => props.onLayout!(event)}>
       {renderGraphicalStatus()}
@@ -161,23 +220,49 @@ export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
           props.getOrderDescription.description != '' && (
             <View style={{ paddingHorizontal: 16, flexDirection: 'row' }}>
               <Text
-                style={{ ...theme.viewStyles.text('R', 12, '#00b38e', 1, 13, 0.03) }}
+                style={{ ...theme.viewStyles.text('R', 12, headingColor, 1, 13, 0.03) }}
                 {...(props.getOrderDescription.onPress
                   ? { onPress: props.getOrderDescription.onPress }
                   : {})}
               >
                 {props.getOrderDescription.heading}
-                <Text
-                  style={{
-                    ...theme.viewStyles.text('R', 12, '#02475b', 1, 13, 0.03),
-                  }}
-                >
+                <Text style={styles.descriptionSubtextText}>
                   {props.getOrderDescription.description}
                 </Text>
               </Text>
             </View>
           )}
+        {props.showCurrentStatusDesc && props.getOrderDescription?.component
+          ? props.getOrderDescription?.component
+          : null}
+        {props.showCurrentStatusDesc && props.showReUploadPrescription
+          ? renderUploadPrescription()
+          : null}
+        {props.status == orderStatusForNewItems && props.showNewItemsDescription && (
+          <View>
+            <View style={styles.newItemsOuterView}>
+              <Text style={{ ...theme.viewStyles.text('R', 12, headingColor, 1, 13, 0.03) }}>
+                {props.newItemsDescription?.heading!}
+                <Text style={styles.descriptionSubtextText}>
+                  {props.newItemsDescription?.description}
+                </Text>
+              </Text>
+            </View>
+            {props.newItemsDescription?.showOption ? (
+              <View>
+                <TouchableOpacity onPress={props.onPressViewSummary} style={styles.newItemsTouch}>
+                  <Text style={styles.customOrangeOption}>VIEW ORDER SUMMARY</Text>
+                </TouchableOpacity>
+              </View>
+            ) : null}
+          </View>
+        )}
       </View>
     </View>
   );
+};
+
+OrderProgressCard.defaultProps = {
+  showReUploadPrescription: false,
+  showChatWithUs: false,
 };

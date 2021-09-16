@@ -21,11 +21,36 @@ import { UploadPrescription } from '@aph/mobile-patients/src/components/Medicine
 import { Prescriptions } from '@aph/mobile-patients/src/components/MedicineCart/Components/Prescriptions';
 import { PickUpProceedBar } from '@aph/mobile-patients/src/components/MedicineCart/Components/PickUpProceedBar';
 import { postwebEngageProceedToPayEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
-import { UPLOAD_DOCUMENT } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  UPLOAD_DOCUMENT,
+  SAVE_MEDICINE_ORDER_OMS,
+  CREATE_INTERNAL_ORDER,
+  SAVE_PICKUP_ORDER_WITH_SUBSCRIPTION,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  saveMedicineOrderOMS,
+  saveMedicineOrderOMSVariables,
+} from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderOMS';
+import {
+  createOrderInternal,
+  createOrderInternalVariables,
+} from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
+import { useGetOrderInfo } from '@aph/mobile-patients/src/components/MedicineCart/Hooks/useGetOrderInfo';
+import { OrderVerticals, OrderCreate } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  initiateSDK,
+  createHyperServiceObject,
+  terminateSDK,
+} from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
+import { getCheckoutCompletedEventAttributes } from '@aph/mobile-patients/src//helpers/helperFunctions';
 
 export interface PickUpCartSummaryProps extends NavigationScreenProps {}
 
@@ -37,6 +62,11 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
     ePrescriptions,
     stores: storesFromContext,
     setPhysicalPrescriptions,
+    pharmacyCircleAttributes,
+    circleSubscriptionId,
+    circlePlanSelected,
+    grandTotal,
+    circleMembershipCharges,
   } = useShoppingCart();
   const client = useApolloClient();
   const { showAphAlert, hideAphAlert } = useUIElements();
@@ -45,10 +75,81 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>(false);
   const shoppingCart = useShoppingCart();
+  const { pharmacyUserTypeAttribute, setauthToken } = useAppCommonData();
+  const { pickUpOrderInfo, SubscriptionInfo } = useGetOrderInfo();
+  const { cusId, isfetchingId } = useGetJuspayId();
+  const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
+
+  const getFormattedAmount = (num: number) => Number(num.toFixed(2));
+  const estimatedAmount = !!circleMembershipCharges
+    ? getFormattedAmount(grandTotal - circleMembershipCharges)
+    : getFormattedAmount(grandTotal);
 
   useEffect(() => {
     onFinishUpload();
   }, [isPhysicalUploadComplete]);
+
+  useEffect(() => {
+    !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
+  }, [isfetchingId]);
+
+  const initiateHyperSDK = async (cusId: any) => {
+    try {
+      const merchantId = AppConfig.Configuration.pharmaMerchantId;
+      terminateSDK();
+      createHyperServiceObject();
+      initiateSDK(cusId, cusId, merchantId);
+      setHyperSdkInitialized(true);
+    } catch (error) {
+      CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
+    }
+  };
+
+  const saveOrder = () =>
+    client.mutate<saveMedicineOrderOMS, saveMedicineOrderOMSVariables>({
+      mutation: SAVE_MEDICINE_ORDER_OMS,
+      variables: pickUpOrderInfo,
+    });
+
+  const saveOrderWithSubscription = () => {
+    const orderSubscriptionInput = {
+      ...pickUpOrderInfo,
+      ...SubscriptionInfo,
+    };
+    return client.mutate({
+      mutation: SAVE_PICKUP_ORDER_WITH_SUBSCRIPTION,
+      variables: orderSubscriptionInput,
+      fetchPolicy: 'no-cache',
+    });
+  };
+
+  const createOrderInternal = (orderAutoId: any, subscriptionId?: string) => {
+    const pharmaOrder = [
+      {
+        order_id: JSON.stringify(orderAutoId),
+        amount: estimatedAmount,
+        patient_id: currentPatient?.id,
+      },
+    ];
+    const orders: OrderVerticals = { pharma: pharmaOrder };
+    if (subscriptionId) {
+      orders['subscription'] = [
+        {
+          order_id: subscriptionId,
+          amount: Number(circlePlanSelected?.currentSellingPrice),
+          patient_id: currentPatient?.id,
+        },
+      ];
+    }
+    const orderInput: OrderCreate = {
+      orders: orders,
+      total_amount: grandTotal,
+    };
+    return client.mutate<createOrderInternal, createOrderInternalVariables>({
+      mutation: CREATE_INTERNAL_ORDER,
+      variables: { order: orderInput },
+    });
+  };
 
   const onFinishUpload = () => {
     if (isPhysicalUploadComplete) {
@@ -103,7 +204,7 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
         setPhysicalPrescriptions && setPhysicalPrescriptions([...newuploadedPrescriptions]);
         setisPhysicalUploadComplete(true);
       } catch (error) {
-        CommonBugFender('YourCart_physicalPrescriptionUpload', error);
+        CommonBugFender('PickUpCartSummary_physicalPrescriptionUpload', error);
         setloading!(false);
         renderAlert('Error occurred while uploading prescriptions.');
       }
@@ -113,9 +214,60 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
   }
 
   function onPressProceedtoPay() {
-    props.navigation.navigate(AppRoutes.CheckoutSceneNew, { isStorePickup: true });
-    postwebEngageProceedToPayEvent(shoppingCart, false);
+    // props.navigation.navigate(AppRoutes.CheckoutSceneNew, { isStorePickup: true });
+    initiateOrder();
+    postwebEngageProceedToPayEvent(
+      shoppingCart,
+      false,
+      '',
+      pharmacyCircleAttributes!,
+      pharmacyUserTypeAttribute!
+    );
   }
+
+  const initiateOrder = async () => {
+    setloading(true);
+    try {
+      const response =
+        !circleSubscriptionId && circlePlanSelected
+          ? await saveOrderWithSubscription()
+          : await saveOrder();
+      const { orderId, orderAutoId, errorCode } = response?.data?.saveMedicineOrderOMS;
+      const subscriptionId = response?.data?.CreateUserSubscription?.response?._id;
+      const data = await createOrderInternal(orderAutoId, subscriptionId);
+      const orders = [{ id: orderId, orderAutoId: orderAutoId, estimatedAmount: estimatedAmount }];
+      if (data?.data?.createOrderInternal?.success) {
+        setauthToken?.('');
+        const paymentId = data?.data?.createOrderInternal?.payment_order_id!;
+        props.navigation.navigate(AppRoutes.PaymentMethods, {
+          paymentId: paymentId,
+          amount: grandTotal,
+          orderDetails: getOrderDetails(orders),
+          businessLine: 'pharma',
+          customerId: cusId,
+          checkoutEventAttributes: getCheckoutCompletedEventAttributes(
+            shoppingCart,
+            paymentId,
+            pharmacyUserTypeAttribute
+          ),
+        });
+      }
+      setloading(false);
+    } catch (error) {
+      setloading(false);
+      renderAlert('Something went wrong. Please try again after some time');
+    }
+  };
+
+  const getOrderDetails = (orders: any) => {
+    const orderDetails = {
+      orders: orders,
+      orderInfo: pickUpOrderInfo,
+      // deliveryTime: deliveryTime,
+      isStorePickup: true,
+    };
+    return orderDetails;
+  };
 
   const renderAlert = (message: string) => {
     showAphAlert!({
@@ -140,7 +292,11 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
 
   const renderAddress = () => {
     return (
-      <SelectedAddress orderType={'StorePickUp'} onPressChange={() => props.navigation.goBack()} />
+      <SelectedAddress
+        orderType={'StorePickUp'}
+        onPressChange={() => props.navigation.goBack()}
+        showChangeAddress={true}
+      />
     );
   };
 
@@ -154,7 +310,7 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
         showPopUp={showPopUp}
         onClickClose={() => setshowPopUp(false)}
         navigation={props.navigation}
-        type={'cartOrMedicineFlow'}
+        type={'Cart'}
       />
     );
   };
@@ -194,7 +350,7 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
         </ScrollView>
         {renderuploadPrescriptionPopup()}
         {renderButton()}
-        {loading && <Spinner />}
+        {(loading || !hyperSdkInitialized) && <Spinner />}
       </SafeAreaView>
     </View>
   );

@@ -19,6 +19,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  BackHandler,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 
@@ -84,12 +85,17 @@ export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
     } else {
       fetchAllBrands();
     }
+    BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
+    };
   }, []);
+
+  const onPressHardwareBack = () => props.navigation.goBack();
 
   const fetchAllBrands = () => {
     getAllBrands()
       .then((res) => {
-        console.log(res, 'fetchAllBrands');
         if (res && res.data && res.data.brands) {
           setallBrands(res.data.brands);
           setAllBrandData(res.data.brands);
@@ -97,7 +103,6 @@ export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
       })
       .catch((err) => {
         CommonBugFender('ShopByBrand_getAllBrands', err);
-        console.log(err, 'errr');
       })
       .finally(() => {
         setshowSpinner(false);
@@ -165,7 +170,7 @@ export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
                   activeOpacity={1}
                   onPress={() => {
                     CommonLogEvent(AppRoutes.ShopByBrand, 'Naviagte to search by brand view');
-                    props.navigation.navigate(AppRoutes.SearchByBrand, {
+                    props.navigation.navigate(AppRoutes.MedicineListing, {
                       title: item.title,
                       category_id: item.category_id,
                     });
@@ -205,7 +210,6 @@ export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
             top: 0,
             left: 0,
             right: 0,
-            // height: 54,
             zIndex: 10,
             elevation: 10,
           }}

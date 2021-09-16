@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { SaveDeviceTokenInput, DEVICE_TYPE } from "./globalTypes";
@@ -16,6 +17,7 @@ export interface saveDeviceToken_saveDeviceToken_deviceToken {
   deviceToken: string;
   createdDate: any;
   updatedDate: any | null;
+  appVersion:string;
 }
 
 export interface saveDeviceToken_saveDeviceToken {

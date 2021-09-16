@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 // ====================================================
@@ -21,4 +22,5 @@ export interface addChatDocumentVariables {
   appointmentId: string;
   documentPath?: string | null;
   prismFileId?: string | null;
+  fileName?: string | null;
 }

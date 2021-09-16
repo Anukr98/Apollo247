@@ -7,7 +7,58 @@
     "edit_profile_imp_text": "You cannot edit Name, Age, Date of Birth \nand Gender!",
     "new_profile_confirmation_text": "You cannot edit these details once you \nhave saved them. They will appear on all \nyour medical documents. Do you wish to \nconfirm?",
     "uhOh": "Uh oh.. :(",
+    "hiWithSmiley": "Hi :)",
+    "return_text": "I want to return my order",
+    "return_policy_text": "Return Policy",
+    "return_policy_message1": "Apollo Pharmacy has a 2 day return policy, and we can allow returns  due to the following reasons:",
+    "return_policy_message2": "• Received a defective item;\n• The ordered item(s) is damaged during transit;\n• The ordered item(s) is past its expiry date;\n• Product(s)/Medicines(s) delivered do not match the order/prescription.",
+    "why_return_order_text": "Why are you returning this order?",
+    "select_returning_reason": "Select reason for returning",
+    "upload_image_text": "Upload Image",
+    "upload_image_file_size_text": "File size max upto 2MB. File type jpeg, jpg & png",
+    "add_comment_text": "Add Comments (Optional)",
+    "return_order_comment_text": "Enter your comments here…",
+    "delete_report_text": "Delete Report",
+    "delete_report_confirm_text": "Are you sure you want to delete the selected {0}?",
+    "upload": "UPLOAD",
+    "submit_request": "SUBMIT REQUEST",
+    "continue": "CONTINUE",
+    "vaccinationQueries": "Vaccination Queries",
+    "faqsArticles": "FAQs & Articles",
+    "chatWithUs": "Chat with us",
+    "upload_more": "+ UPLOAD MORE",
+    "date_placeholder_text": "DD MMM, YYYY",
+    "select_text": "Select",
+    "doctor_name_text": "Doctor name",
+    "end_date_text": "End Date",
+    "enter_doctor_name_text": "Enter name of doctor",
+    "enter_date_text": "Enter end date of {0}",
+    "enter_name_of_text": "Enter name of {0}",
+    "additional_text": "Additional Notes",
+    "enter_additional_text": "Enter Additional Notes",
+    "clicnical_document_text": "Self upload",
+    "patient_uploaded_text": "Patient Uploaded",
+    "error_enter_number_text": "Please enter numeric values (eg. 0,1...)",
+    "addPrescriptionText": "ADD PRESCRIPTION",
+    "addVaccinationText": "ADD VACCINATION",
+    "addTestReportText": "ADD TEST REPORT",
+    "cowinDelayMessage": "There might be some delay in receiving the OTP due to heavy traffic.",
+    "cowinPhoneAlertMessage": "Note: In case you are already registered on CoWIN enter the phone number linked with your CoWIN registration.",
+    "cowinSelectProfile": "Select the profile for downloading the Vaccine Certificate. Please note that only provisional certificate is available if you have taken only 1 Dose",
+    "doctorConsultPHRText": "For privacy reasons, reports uploaded here are for your view only. To share with doctors, please upload selected reports in your chat with the doctor.",
+    "addDischargeSummaryText": "ADD DISCHARGE SUMMARY",
+    "addHealthConditionText": "ADD HEALTH CONDITIONS",
+    "addBillText": "ADD BILL",
+    "addInsuranceText": "ADD INSURANCE",
+    "uploadPrescriptionText": "UPLOAD PRESCRIPTION",
+    "uploadTestReportText": "UPLOAD TEST REPORT",
+    "uploadDischargeSummaryText": "UPLOAD DISCHARGE SUMMARY",
+    "uploadHealthConditionText": "UPLOAD HEALTH CONDITIONS",
+    "uploadBillText": "UPLOAD BILL",
+    "uploadInsuranceText": "UPLOAD INSURANCE",
+    "uploadVaccinationText": "UPLOAD VACCINATION",
     "best_doctor_text": "Here are our best ",
+    "phr_api_error_text": "We are really sorry, something went wrong !!!",
     "all_consults": "All Consults",
     "distance": "Distance",
     "consult_now": "CONSULT NOW",
@@ -16,18 +67,27 @@
     "greatPopup": "Great! :)",
     "prepareForConsult": "FILL MEDICAL DETAILS",
     "continueConsult": "GO TO CONSULT ROOM",
+    "consultRoom": "CONTINUE CONSULT",
     "fillVitalsText": "Fill vitals to get started with the consult journey",
+    "bookAnotherSlot": "Book another slot with the doctor to complete your consultation",
+    "bookFollowUp": "Book your slot with the doctor for a follow up consultation",
+    "mentionReports": "Mention your condition and upload reports before the consultation starts ",
     "gotoConsultRoomText": "Connect with doctor to start the consult",
     "gotoConsultRoomJuniorDrText": "Connect with Junior Doctor before final consult",
+    "joinConsultRoom": "Join the Consult room to continue your consultation",
     "pickAnotherSlotText": "Sorry, we had to reschedule this appointment. Please pick another slot.",
+    "DisclaimerTextBookingRequest": "This is not a confirmation of the Booking. Our Executives will reach you regarding Booking Confirmation. It is subjected to availability.",
     "DisclaimerText": "By proceeding, I agree that I have read and understood the Terms & Conditions of usage of 247 and consent to the same. I am voluntarily availing of the services provided on this platform. I am fully aware that I will not be undergoing a physical examination by a physician prior to a physician recommending  medical tests and/or treatment and/or the prescribing of OTC drugs. I am also aware that  the consultation on 247 Application does not preclude my rights to visit a physician and opt for a physical examination at any point in time and I am free at any time during the consultation to request for the same.",
+    "agreePhysicalConsultTC": "By proceeding, I agree that I have read and understood the Terms & Conditions of usage of 247 and consent to the same.",
     "covidContactText": "Contact our Coronavirus Helpline",
+    "oneTimePhysicalCharge": "One-time Hospital Registration Charges might be \napplicable for new users.",
     "covidScanBannerText": "Take the Coronavirus Risk Scan",
     "covidHeading": "Worried about Coronavirus?",
     "covidHelpText": "We are here to help you.",
     "covidMessageText": "Apollo 247 has curated fact-based information from reputed sources on Coronavirus. Now you can get reliable answers to common questions at one place.",
     "covidYouCanText": "You can also",
     "Rs": "₹",
+    "DegreeSymbol": "º",
     "KavachText": "Explore the Apollo Kavach Program",
     "joinConsultRoomDescription": "Please click here to\n Join the Call with",
     "waitForDoctirToJoinCall": "Please wait while Dr. doctor_name is going through your medical records. This might take a while. Advice you to stay in the consult room!",
@@ -46,10 +106,55 @@
     "readLatestArticles": "Read the latest articles",
     "covidDescription": "The latest Coronavirus information to keep you safe and healthy.",
     "learnAboutCovid": "Learn about COVID-19 Vaccines",
-    "covidVaccineTracker": "COVID-19 Vaccine Tracker",
+    "covidVaccineTracker": "Vaccine Tracker",
     "getCovidVaccineUpdates": "Get updates and know which is the first vaccine to come out.",
     "knowMore": "KNOW MORE",
-    "covid19VaccineInfo": "COVID-19 AND VACCINE INFORMATION"
+    "covid19VaccineInfo": "COVID-19 AND VACCINE INFORMATION",
+    "proceedToCheckout": "Proceed to Checkout",
+    "optedForOnlineConsultation": "You have opted for an Online Consultation on -",
+    "optedForClinicConsultation": "You have opted for a Clinic Visit at -",
+    "amountToPay": "Amount to Pay",
+    "amountSavedByCare": "You save ₹ {amount} by using CARE",
+    "amountSavedOnConsultByCare": "You will save ₹ {amount} on this Consult",
+    "totalCharges": "TOTAL CHARGES",
+    "subtotal": "Subtotal",
+    "toPay": "To Pay",
+    "membershipDiscount": "Membership Discount",
+    "savingsOnBill": "Savings of ₹ {amount} on the bill",
+    "couponApplied": "Coupon Applied",
+    "careMembership": "CIRCLE Membership",
+    "tryAgainLater": "Something went wrong, please try again after sometime",
+    "weAreHereToHelpYou": "Always caring about your health, we are here to help you!",
+    "consultFee": "Consult Fee",
+    "consultedDoctors": "Consulted Doctors",
+    "pastSearches": "Past Searches",
+    "topSpecialities": "Top Specialities",
+    "HdfcHealthLifeText": "Explore HDFC HealthyLife",
+    "CorporateMembershipText": "Explore Corporate Membership",
+    "contactCustomerCare1": "We are unable to confirm your order, since dob is missing against this profile. Please contact customer care to get it updated",
+    "contactCustomerCare2": "We are unable to confirm your order, since gender is missing against this profile. Please contact customer care to get it updated",
+    "somethingWentWrong": "Something went wrong.",
+    "settingProfileTxt": "We’re setting up your profile. Please check back soon!",
+    "couldNotLoadText": "Uh oh.. could't load!",
+    "lowNetworkText": "We were unable to load the page properly because of low network. Please try again",
+    "CorporateVaccineBenefit": "DEPENDENT_VACCINATION_REG",
+    "noDiagnosticsAvailable": "Unfortunately, we do not have any diagnostic(s) available right now.",
+    "unableToSetDeliveryAddress": "We're sorry! Unable to set delivery address. Please try again after some time",
+    "circleNoSubscriptionText": "No Subscription",
+    "sharePHR": "Share all Files from Past Medical record with the Doctor",
+    "memberCashback": " Membership Cashback ",
+    "cashbackInfo": "(Cashback can be used to buy medicines online as well as at physical Apollo Pharmacy stores. ",
+    "hcSavedOnConsultByCare": "You will get {amount} HC on this Consult",
+    "whatIsHc": "What are HCs?",
+    "hcShort": "HC is short for ",
+    "healthCredit": "Health credits",
+    "hcInfo": " which are rewarded to you on specific purchases and consults. HCs are calculated based on the total amount paid. In case a coupon is applied, HCs to be credited will be adjusted accordingly.",
+    "hcToRupee": "1 HC= ₹ 1",
+    "whyCashbackChanged": "Why did my Cashback (HCs) change?",
+    "hcCreditInfo": "HCs are calculated based on the total amount paid. In case a coupon is applied, HCs to be credited will be adjusted accordingly.",
+    "circleCashback": "CIRCLE CASHBACK",
+    "circleDiscount": "CIRCLE DISCOUNT",
+    "bookingFee": "Booking Fee"
   },
   "components": {
     "medicineDetails": {
@@ -68,6 +173,52 @@
       }
     }
   },
+  "lookingForBoughtPreviously": "Looking for an item you bought previously?",
+  "trackYourShipment": "TRACK YOUR SHIPMENT",
+  "reportIssue": "REPORT ISSUE",
+  "submit": "Submit",
+  "retry": "Retry",
+  "help": "Help",
+  "cancel": "Cancel",
+  "needHelp": "Need Help",
+  "return_order_submit_message": "Your return request has been submitted. Someone from our team will call you soon.",
+  "needHelpSubmitMessage": "Thank you for bringing this to our notice. We’ll gather the details regarding your issue and immediately after that someone from our team will call you.",
+  "recentConsults": "RECENT CONSULTS",
+  "recentOrders": "RECENT ORDERS",
+  "pharmacy": "Pharmacy",
+  "consult": "Consult",
+  "productDetail": "Product Detail",
+  "pleaseProvideMoreDetails": "Please provide more details",
+  "chooseFromPreviousConsults": "Choose from previous consultations",
+  "otherIssueNotMyConsults": "Other issue not related to consult",
+  "chooseFromPreviousOrders": "Choose from previous orders",
+  "otherIssueNotMyOrders": "Other issue not related to My Orders",
+  "ifYourOrderFailed": "If your order transaction failed report issue in this section:",
+  "ifYourConsultTransactionFailed": "If your consult transaction failed you may find your issue in this section:",
+  "buyAgain": "Buy Again",
+  "sorryNoProductsHere": "Sorry, no products available here.",
+  "genericError": "Oops! seems like we are having an issue. Please try again.",
+  "selectFromOrderedItems": "Select from your previously ordered items",
+  "proceedToCheckoutItems": "Proceed to Checkout ({0} items)",
+  "proceedToCheckout": "Proceed to Checkout",
+  "specialOffers": "Special Offers",
+  "notInStockInYourArea": "Not in stock in your area",
+  "notForSale": "Not for sale",
+  "outOfStock": "Out of stock",
+  "removeUnavailableItems": "REMOVE UNAVAILABLE ITEMS",
+  "selectDeliveryAddress": "SELECT DELIVERY ADDRESS",
+  "addDeliveryAddress": "ADD DELIVERY ADDRESS",
+  "proceed": "PROCEED",
+  "proceedToPay": "PROCEED TO PAY",
+  "reviewOrder": "REVIEW ORDER",
+  "placeOrder": "PLACE ORDER",
+  "microphone": "microphone",
+  "enableMicrophoneToRecordCough": "Enable microphone from settings to record your cough.",
+  "BORJourney": {
+    "point1": "Register your Request through the Form.\n\nIf request is accepted, we will contact you for the Appointment booking and Payment.",
+    "point2": "If Appointment can not be booked, you can book another doctor",
+    "point3": "After Confirmation, you will receive the Booking Details on the Apollo 247 App/Web"
+  },
   "consultType": {
     "mainHeading": "How would you like to consult with",
     "checkBoxText": "I have consulted with {0} before",
@@ -83,12 +234,12 @@
       "point7": "Follow Up via text - valid for 7 days"
     },
     "inperson": {
-      "heading": "MEET IN PERSON",
-      "question": "How to consult in person?",
+      "heading": "HOSPITAL VISIT",
+      "question": "How to consult at Hospital?",
       "point1": "Choose the doctor",
       "point2": "Book a slot",
-      "point3": "Make payment",
-      "point4": "Visit the doctor at Hospital/Clinic",
+      "point3": "Visit the doctor at Hospital/Clinic",
+      "point4": "Make payment",
       "point5": "Receive prescriptions instantly",
       "point6": "Follow Up via text - valid for 7 days"
     },
@@ -99,7 +250,7 @@
   },
   "login": {
     "hello": "hello!",
-    "please_enter_no": "Please enter your number to get access to an entire hospital on your phone!",
+    "please_enter_no": "Please enter your phone number to get access to Apollo Doctors and Apollo Pharmacy online! ",
     "otp_sent_to": "An OTP will be sent to this number",
     "wrong_number": "This seems like a wrong number",
     "numberPrefix": "+91",
@@ -247,6 +398,14 @@
       ]
     }
   },
+  "needHelpScreen": {
+    "view_previous_tickets": "To view previous tickets ",
+    "click_here": "CLICK HERE",
+    "reopen_ticket": "REOPEN TICKET",
+    "whatsapp_with_us": "WHATSAPP WITH US",
+    "no_conversation_till_now": "No conversation till now !",
+    "ticket_creation_lag_time": "It usually takes 10 seconds to submit your ticket, we will update you here once its done."
+  },
   "doctor_search_listing": {
     "pleaseWait": "Please Wait!",
     "lookingForBestDoctors": "We are looking for the\nbest doctors for you :)",
@@ -279,7 +438,20 @@
       },
       {
         "label": "Language",
-        "options": ["Hindi", "English", "Telugu"]
+        "options": [
+          "Hindi",
+          "English",
+          "Telugu",
+          "Punjabi",
+          "Bengali",
+          "Marathi",
+          "Urdu",
+          "Gujarati",
+          "Tamil",
+          "Kannada",
+          "Oriya",
+          "Persian"
+        ]
       }
     ]
   },
@@ -297,9 +469,14 @@
     "addItemsForStoresAlert": "Please add items to your cart to view the list of stores available.",
     "storeItemsAvailabilityApiFailMsg": "Sorry! We’re unable to check availability of cart items for the selected store. Please try later or opt for Home Delivery.",
     "cartItemsNotAvailableInStore": "The item(s) you have selected are not available in the nearby stores. Kindly opt for Home Delivery and we will deliver them to you directly at your doorstep.",
-    "PickupStoreUnavailable": "Sorry! We’re working hard to get to this area! In the meantime, you can try next nearest pincode."
+    "PickupStoreUnavailable": "Sorry! We’re working hard to get to this area! In the meantime, you can try next nearest pincode.",
+    "orderDetailsExpectedDeliverySubTextNonCartOrder": "Delivery date will be updated after successful verification",
+    "noInternetMessage": "There is no internet. Please check your internet connection.",
+    "missingItemsAlertMessage": "Sorry, the following items are unavailable at your location and will be removed from the cart:"
   },
   "diagnostics": {
+    "locationPermissionText": "Allow us to serve you better by entering your area pincode below.",
+    "serviceabilityFailureText": "Something went wrong. We're unable to check diagnostics serviceability for your location.",
     "nonServiceableMsg": "Diagnostic services are not available in {{city_name}} for now.",
     "nonServiceablePinCodeMsg": "Diagnostic services are not available for this pincode.",
     "nonServiceableConfigPinCodeMsg": "Diagnostic services are not available in Pincode - {{pincode}} for now.",
@@ -307,20 +484,173 @@
     "disabledDiagnosticsFailureMsg": "Sorry, we are unable to verify items in your cart right now. Please try again later.",
     "removeThisTestCTA": "Remove this test from cart",
     "removeTheseTestsCTA": "Remove these tests from cart",
-    "itemsAddedSuccessfullyCTA": " Item successfully added",
+    "itemsAddedSuccessfullyCTA": " Item successfully added in cart",
     "proceedToCartCTA": "PROCEED TO CART",
     "noPreparationRequiredText": "No special preparation required",
-    "priceNotificationForCovidText":"Extra charges for Phlebotomist Protection Kit and Home Collection may apply for COVID Test. You will be informed of the charges after booking of the order."
+    "noTestDescription": "No test description available",
+    "priceNotificationForCovidText": "Extra charges for Apollo agent Protection Kit and Home Collection may apply for COVID Test. You will be informed of the charges after booking of the order.",
+    "cashOnDeliverySubText": "Currently we have Cash on delivery as a payment option.",
+    "bookingOrderFailedMessage": "We're sorry :(  There's been a problem with your booking. Please book again.",
+    "bookingOrderDuplicateFailedMessage": "Few of the tests are added twice. Please remove duplicates and proceed to place order",
+    "pricesChangedMessage": "Few tests prices might have updated or are not available for this address",
+    "areaNotAvailableMessage": "Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.",
+    "itemAlreadyExist": " added more than once in your cart. Please remove and proceed to pay.",
+    "specialDiscountText": "TESTS247 coupon pre-applied",
+    "unableToOpenReport": "We are facing some issue in opening the report. Please try again later.",
+    "responseUnavailableForReport": "Report is not yet available to download. Please try after some time.",
+    "disclaimerText": [
+      {
+        "text": "Rescheduling can be done upto 3 times only"
+      }
+    ],
+    "reschduleCountExceed": "You have rescheduled thrice. You're out of reschedule attempts.",
+    "rescheduleCountText": "You can reschedule to a maximum of 3 times. If you click ok, you will have {{setRescheduleCount}} reschedule attempt(s) left.",
+    "reasonForCancel_TestOrder": {
+      "notArrived": "Apollo agent did not arrive",
+      "latePhelbo": "Apollo agent arrived late",
+      "priceHigh": "Prices are high comparatively",
+      "editOrder": "Need to Modify Order Details",
+      "homeChargesHigh": "Home collection charges are high",
+      "changePlans": "Change in travel plans",
+      "symptomsSubdued": "My symptoms have subdued",
+      "missedFasting": "Missed the fasting requirement",
+      "waitingDocPrescription": "Waiting for doctor prescription",
+      "deniedSample": "Executive denied sample collection",
+      "userUnavailable": "I am not available at location",
+      "bookedByMistake": "Booked by Mistake",
+      "lesserPrice": "Got lesser price elsewhere",
+      "urgentReport": "Need Report Urgently",
+      "needModifyPatient": "Need to modify patient details",
+      "needModifyOrder": "Need to modify test details",
+      "anotherChannel": "Booked from other channel",
+      "needMorningSlot": "Need an early morning slot",
+      "otherReasons": "Others (Please specify)"
+    },
+    "reasonForReschedule_TestOrder": {
+      "latePhelbo": "Apollo agent did not arrive on time",
+      "unavailable": "I am not available right now",
+      "guidelinesNotFollowed": "I did not follow fasting requirement",
+      "unableToProvideSample": "Not feeling well to provide sample",
+      "slotMistake": "I picked a wrong slot"
+    },
+    "patientNameText": "PATIENT NAME",
+    "changeText": "CHANGE",
+    "testReportMsgText": "Test reports will be generated by this name",
+    "homeVisitText": "HOME VISIT ADDRESS",
+    "selectPatientNameText": "Select Patient Name",
+    "patientTestOrderMsg": "An order can be placed for only a single patient, make separate purchases to order for a different patient.",
+    "addMemberText": "+ADD MEMBER",
+    "selectAddressText": "SELECT ADDRESS",
+    "selectAreaText": "SELECT AREA",
+    "changeAddressText": "CHANGE ADDRESS",
+    "selectAreaLocalityText": "Select Area/Locality",
+    "areaText": "AREA",
+    "addAddressText": "ADD ADDRESS",
+    "totalAmountText": "Total Amount",
+    "timeSlotText": "APPOINTMENT TIME",
+    "noSlotSelectedText": "No slot selected",
+    "selectSlotText": "SELECT SLOT",
+    "minorAgeText": "Lab tests cannot be booked for below 10 years",
+    "sameSlotError": "Cannot book same slot",
+    "refundInitiateText": "Your refund for amount ₹{{refundAmount}} has been initiated. It takes 4-5 working days for processing.",
+    "refundSuccessText": "₹{{refundAmount}} has been refunded to your account.",
+    "collectionFromText": "Sample collection address",
+    "orderCancelledSuccessText": "Your order has been cancelled successfully!",
+    "orderRescheduleSuccessText": "Your order has been rescheduled for {{dateTime}}!",
+    "stepsToBook": "3 simple steps to get a lab test done",
+    "certificateText": "Certified safety and quality fullfiled by Apollo Diagnostics.",
+    "stepsToBookHeading": "How it works",
+    "bookOnline": "Book Online",
+    "bookOnlineSubText": "Select a test or package and book appointment on Apollo 247",
+    "hcSample": "Home Sample Collection",
+    "hcSampleSubText": "Certified Apollo agent visits your home for sample collection at selected slot time",
+    "fastReport": "Fast & Accurate Reports",
+    "fastReportSubText": "Get reports in 12 to 24 hours. View or download on app anytime",
+    "orderSuccessPhaleboText": "*The Apollo agent will call you prior to starting his journey to confirm your availability",
+    "invoiceTimelineText": "Invoice will be available to download after the sample is submitted in the lab",
+    "unableToFetchStatus": "Something went wrong. We are unable to fetch status",
+    "noSlotAvailable": "Sorry! There are no slots available on {{date}}. Please choose another date.",
+    "updateAddressLatLngMessage": "Unable to locate address. Please update.",
+    "processingOrder": "We are taking longer than usual to confirm your order. Please check your order status after few minutes",
+    "cartPhelboTxt": "Sample collection executive to reach your home within 45 mins of your appointment time",
+    "incorrectUserReport": "This report does not belongs to this user.",
+    "unableToFetchReport": "We could not fetch your report. Please view report in my order section",
+    "reasonForReschedulingText": "Reason for Rescheduling",
+    "reasonForCancellationText": "Reason for Cancellation",
+    "promoteCashbackHeading": "You are missing out on ₹100 Cashback if you cancel",
+    "whatWudLikeText": "What would you like to do?",
+    "rescheduleBookingText": "Reschedule Booking",
+    "cancelBookingText": "Cancel Booking",
+    "sureCancelText": "Are you sure you want to Cancel the booking?",
+    "rateYourExperience": "RATE YOUR DELIVERY EXPERIENCE",
+    "valueFeedbackTxt": "We value your feedback! :)",
+    "howWasExpTxt": "How was your overall experience -",
+    "feedbackSubTxt": "Your feedback has been submitted. Thanks for your time.",
+    "homeHomeCollectionDisclaimerTxt": "Home collection charges of upto ₹100 would be levied in case of order value less than ₹500",
+    "itDoseCancelledText": "Canceled by Apollo agent as per the request",
+    "orderCancelledReasonText": "Order was cancelled : ",
+    "wantToReschedule": "• Do you want to Reschedule Appointment ?",
+    "sampleSubmitted": "Sample Submitted",
+    "reportGenrated": "Reports Ready",
+    "partialReportsReady": "Partial Reports Ready",
+    "bookingFor": "Lab Test Booking",
+    "sampleSubmittedContent": "Sample has been submitted to the lab. You will get your Reports by {{reportTat}}.",
+    "viewReportContent": "All your reports have been generated. You can view, download or share your reports.",
+    "partialReportContent": "Partial reports have been generated. All reports will be generated by {{reportTat}}.",
+    "collectionAppointmentContent": "Sample Collection appointment on {{collectionTime}}.",
+    "noPrepRequiredText": "No special preparation is required.",
+    "viewReportText": "View Report",
+    "sampleCollectedText": "Check Status",
+    "collectionText": "Track Order",
+    "trackPhleboText": "Track Apollo agent",
+    "codDisableText": "We are currently not allowing Cash On Delivery for home sample collections.",
+    "phleboCallingError": "Error while connecting to Apollo agent. Please try again later.",
+    "modifyItemAlreadyExist": "Your cart has been updated, since it had duplicate items",
+    "previousCharges": "Previous Charges",
+    "currentCharges": "Current Charges",
+    "modifyDiscardText": "You were trying to modify the order. Would you like to discard and go back to home page?",
+    "sampleCollected": "Sample Collected",
+    "sampleCollectedContent": "Our Apollo agent has successfully collected the samples.",
+    "agent": "Apollo agent"
+  },
+  "diagnosticCategoryTitle": {
+    "category": "category",
+    "categoryGrid": "category_Scroll"
   },
   "orders": {
     "urOrders": "MY ORDERS",
+    "ratingHeader": "FEEDBACK",
+    "ratingDetailHeader": "Rate your Experience with our Apollo agent",
     "trackOrder": "Track Order",
     "viewBill": "Order Summary",
     "call_us": "CALL US",
     "add_to_cart": "ADD TO CART",
     "test_prec_req": "This test requires doctor’s prescription",
-    "test_prec_not_req": "This test doesn't requires doctor’s prescription"
+    "test_prec_not_req": "This test doesn't requires doctor’s prescription",
+    "go_to_help": "GO TO HELP"
   },
+  "defaultReasonList": [
+    {
+      "title": "Arrived very Late"
+    },
+    {
+      "title": "Did not seem Well-Trained"
+    },
+    {
+      "title": "Apollo agent was not Polite"
+    },
+    {
+      "title": "Didn’t Wear the PPE Kit or Gloves"
+    },
+    {
+      "title": "I have other Feedback"
+    }
+  ],
+  "positiveReasonList": [
+    {
+      "title": "I have Positive Feedback"
+    }
+  ],
   "OrderSummery": {
     "total": "Total",
     "order": "ORDER",
@@ -351,11 +681,21 @@
     "discount_total": "Discount Total",
     "amount_to_be_paid_on_delivery": "Amount to be paid on delivery"
   },
+  "Report": {
+    "view": "View Report",
+    "download": "Download Report PDF",
+    "share": "Share on Whatsapp",
+    "copy": "Copy Link to PDF"
+  },
   "health_records_home": {
     "description": "Find all your health record(s) & prescription(s) in one place.",
     "view_consult": "VIEW CONSULT",
+    "clickPhotos": "CLICK MORE PHOTOS",
     "order_medicine": "ORDER MEDICINES",
-    "order_test": "ORDER TESTS",
+    "order_medicine_msg": "Try our Express Delivery in 2-4 hours",
+    "order_test": "BOOK TESTS NOW",
+    "slot_filling": "Slots filling fast!",
+    "order_medicines": "ORDER MEDICINES NOW",
     "book_follow_up": "BOOK FOLLOW-UP",
     "add_note_to_notify_users": "Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!",
     "tabs": [
@@ -377,6 +717,10 @@
       }
     ]
   },
+  "HyperSDKStatus": {
+    "success": "success",
+    "pending": "pending"
+  },
   "Payment": {
     "success": "PAYMENT_SUCCESS",
     "failure": "PAYMENT_FAILED",
@@ -385,6 +729,12 @@
     "aborted": "PAYMENT_ABORTED",
     "askPermission1": "To make sure that you do not miss the call from Dr.",
     "askPermission2": " for your consultation, Apollo 247 needs to have \"full screen overlay\" permission to display call notifications."
+  },
+  "NewPaymentStatuses": {
+    "success": "TXN_SUCCESS",
+    "failure": "TXN_FAILURE",
+    "pending": "PENDING",
+    "refund": "AUTO_REFUNDED"
   },
   "PharmaPayment": {
     "success": "TXN_SUCCESS",
@@ -452,6 +802,7 @@
     ]
   },
   "ChatRoom_NotRecorded_Value": "Not Recorded",
+  "appointmentDataError": "An error occurred while processing the request, do you want to try again?",
   "Hdfc_values": {
     "TnC": [
       "The HealthyLife offering is the marketing program offered by Apollo 24|7, an app managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank customers.",
@@ -487,6 +838,7 @@
     "SPECIALITY_LISTING": "SPECIALITY_LISTING",
     "PHARMACY_LANDING": "PHARMACY_LANDING",
     "DIETECIAN_LANDING": "DIETECIAN_LANDING",
+    "PRO_HEALTH": "PRO-HEALTH",
     "PHR": "PHR",
     "DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED": "DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED",
     "DIAGNOSTICS_LANDING": "DIAGNOSTICS_LANDING",
@@ -507,6 +859,68 @@
       "HDFCDigitalVaultClick": "HDFCDigitalVaultClick",
       "HDFC7000DoctorsClick": "HDFC7000DoctorsClick",
       "HDFCFreeMedClick": "HDFCFreeMedClick"
+    },
+    "ONE_TOUCH": "ONE-TOUCH",
+    "UPGRADE_CIRCLE": "UPGRADE_CIRCLE",
+    "MEMBERSHIP_DETAIL_CIRCLE": "MEMBERSHIP_DETAIL_CIRCLE",
+    "ABSOLUTE_URL": "ABSOLUTE_URL",
+    "WEB_VIEW": "WEB_VIEW",
+    "MEDICINE_LISTING": "MEDICINE_LISTING",
+    "ADVANCED_DIABETES": "POP-UP",
+    "FILL_FORM": "LEAD-FORM",
+    "DIABETES_CONSENT": {
+      "HEADING": "Our Team will reach out to you on call to activate the Free Trial of Advanced Diabetes Management.",
+      "SUBHEADING": "Please confirm if you would like to go ahead.",
+      "CTA": "CONFIRM"
+    },
+    "ADVANCE_DIABETES_QUESTIONAIRE": {
+      "HEADING": "THANK YOU  !!",
+      "SUBHEADING": "In order to assist you in the best possible way, please answer these questions",
+      "QUESTIONAIRE": [
+        {
+          "QUESTION": "Q1. Which type of diabetes are you living with?",
+          "OPTIONS": [
+            {
+              "key": "Pre-Diabetes",
+              "value": "Pre-Diabetes"
+            },
+            {
+              "key": "Type-1-Diabetes",
+              "value": "Type 1 Diabetes"
+            },
+            {
+              "key": "Type-2-Diabetes",
+              "value": "Type 2 Diabetes"
+            },
+            {
+              "key": "Gestational-Diabetes",
+              "value": "Gestational Diabetes"
+            }
+          ]
+        },
+        {
+          "QUESTION": "Q2. For how many years have you lived with diabetes?",
+          "OPTIONS": [
+            {
+              "key": "lessThan2Years",
+              "value": "Less than 2 years"
+            },
+            {
+              "key": "between2-5Years",
+              "value": "Between 2-5 years"
+            },
+            {
+              "key": "between5-10Years",
+              "value": "Between 5-10 years"
+            },
+            {
+              "key": "over10Years",
+              "value": "Over 10 Years"
+            }
+          ]
+        }
+      ],
+      "CTA": "SUBMIT"
     }
   },
   "symptomChecker": {
@@ -526,7 +940,8 @@
     "restartSymptomTrackerDiscription": "This will end your symptom tracking and you’ll have to start it again. Do you want to continue tracking your symptoms or go back?",
     "symptomTracker": "Symptom Tracker",
     "addAnotherSymptom": "Would you like to report another symptom?",
-    "removeSelectionPlaceholder": "Remove selection to type your own symptom"
+    "removeSelectionPlaceholder": "Remove selection to type your own symptom",
+    "topSpecialities": "Top Specialities"
   },
   "callRelatedPermissions": {
     "allPermissions": "For a smooth consultation experience with {0} and to ensure that you do not miss out your doctor's call, Apollo 247 needs your camera, microphone and call display permissions.",
@@ -545,6 +960,372 @@
     "bookedForWrongUser": "Booked with wrong user details",
     "doctorDeniedMode": "Doctor denied your preferable mode of consult",
     "audioVideoIssue": "Audio Video Issues",
-    "otherReasons": "Others (Please specifiy)"
+    "otherReasons": "Others (Please specify)"
+  },
+  "circleDoctors": {
+    "care": "CARE",
+    "circleMemberPays": "CIRCLE MEMBER PAYS",
+    "circlePlanAddedToCart": "Circle plan successfully added to cart.",
+    "discountInfoReflectsOnCheckout": "Discount and other information will be reflected at checkout.",
+    "forCareMembers": "for CARE members",
+    "circleSavings": "CIRCLE discount of ₹{amount}",
+    "upgradeNow": "Upgrade now",
+    "circleMembershipPlans": "Circle Membership Plans",
+    "addToCart": "ADD TO CART",
+    "consultCircleOfferDescription": "Enable Circle membership to get the best offers on all transactions you make with us",
+    "getCircleMembershipOffersDescription": "Enable Circle membership to get the best discounts, cashbacks, free delivery and more...",
+    "successfullyPurchashedCircleSubscription": "Congrats! You have successfully upgraded to Circle.",
+    "validTill": "Valid till:",
+    "subscriptionID": "Subscription ID",
+    "upgrade": "UPGRADE",
+    "billTotal": "BILL TOTAL",
+    "membershipPlan": "Membership Plan",
+    "total": "TOTAL",
+    "greatChoice": "Great choice!",
+    "upgradingWithHealthCredits": "We are upgrading you to Circle with your Health Credits to the amount of {credits}HC",
+    "upgradingWithHealthCreditsDesc": "We are upgrading you to Circle with your Health Credits",
+    "goAhead": "SURE! GO AHEAD",
+    "useAnotherPaymentMethod": "USE ANOTHER PAYMENT METHOD",
+    "membershipActivated": "Circle Membership Activated!",
+    "healthCreditsRemaining": "Health Credits remaining",
+    "returnToHomepage": "RETURN TO HOMEPAGE",
+    "availableHealthCredits": "*Available Health Credits",
+    "upgradeWithHC": "UPGRADE WITH {hc} HC",
+    "upgradeWithPrice": "UPGRADE WITH ₹{price}",
+    "circleCashback": "CIRCLE cashback upto {amount} HC"
+  },
+  "circlePharmacy": {
+    "modalDescription": "Enable Circle membership to get the best discounts, cashbacks, free delivery and more...",
+    "enabledCircleMembership": "We have enabled Circle membership to give you the best discounts",
+    "enableCircleToGetBestOffers": "Enable Circle membership to get the best offers on all transactions you make with us",
+    "instantCashback": "Instant cashback",
+    "freeDelivery": "Free delivery"
+  },
+  "circleDiagnostics": {
+    "nonSubscribedText": "WHATEVER YOUR TEST, WE'LL MAKE IT EASIER.",
+    "nonSubscribedSubText": "Special prices on diagnostic tests."
+  },
+  "reachUsOut": "If you have any queries please reach out to us",
+  "Diagnostics_Feedback_Others": "Others (Please specify)",
+  "Circle": {
+    "planName": "CIRCLE PLAN",
+    "CARE_PLAN": "CARE_PLAN",
+    "CIRCLEPlan": "CIRCLEPlan",
+    "DOC_ON_CALL": "Doc on Call",
+    "TnC": [
+      "Circle is the marketing program offered by Apollo 24/7, a digital platform managed by Apollo Hospitals Enterprise Limited (AHEL)",
+      "The validity of the program (“Term”) will be as per the plan selected by the customer.",
+      "The discounts offered under Circle program shall be applied at the time of payment checkout by the customer.",
+      "The offerings under the program will vary with the different categories under it.",
+      "The Circle program is non-transferable.",
+      "The activation of the benefits for the Circle program will be completed 24 hours post the service delivery/fulfillment of the qualifying transaction.",
+      "By enrolling for the Circle program, a member consents to allow use and disclosure of his/her personal and other information as provided by the member at the time of enrolment and/or upto subsequently by Apollo Hospitals Group ",
+      "As a prerequisite to becoming a member, a customer is required to provide mandatory information including full name, valid and active Indian mobile number. He/she shall be governed by such terms and conditions as may be prescribed for membership from time to time.",
+      "The Circle membership program will be issued solely at the discretion of the management and the final discretion on all matters relating to the membership shall rest with Apollo 24/7(AHEL).",
+      "Apollo 24/7 reserves the right to add, alter, amend and revise terms and conditions without prior notice and intimation.",
+      "Benefits and offers available through the program may change or be withdrawn without prior intimation. Apollo 24/7 will not be responsible for any liability arising from such situations or use of such offers.",
+      "Any disputes arising out of the program shall be subject to arbitration by a sole arbitrator appointed by Apollo 24/7 for this purpose. The proceedings of the arbitration shall be conducted as per the provisions of Arbitration and Conciliation Act, 1996. The place of arbitration shall be at Chennai and language of arbitration shall be English. The existence of a dispute, if at all, shall not constitute a claim against Apollo 24/7."
+    ],
+    "FAQ": [
+      {
+        "faqQuestion": "What is the Apollo 24|7 CIRCLE Membership program?",
+        "faqAnswer": "Apollo 24|7 CIRCLE membership is a one-of-its-kind program designed to give the best care and value to its members. Once you sign up by choosing the plan that suits your needs, you will receive benefits like an emergency doctor-on-call, cashback on medicines, discounts on doctor consultations, and diagnostics. Did we also tell you that all your deliveries will be done free of cost and on a priority basis?"
+      },
+      {
+        "faqQuestion": "Sounds good. Tell me more about the plans?",
+        "faqAnswer": "There are 3 plans available for you to choose from: INR 49 for 2 months, INR 249 for 6 months, and INR 349 for 12 months."
+      },
+      {
+        "faqQuestion": "How Do I Sign Up for a Circle Membership?",
+        "faqAnswer": "It’s simple! If you’re a part of Apollo 24|7 already, you can click on the link above and sign up. If you’re new to Apollo 24|7, download the app today and get started."
+      },
+      {
+        "faqQuestion": "Is annual membership better than the monthly membership?",
+        "faqAnswer": "Yes, if you’re big on savings! The yearly membership only costs you INR 349, which translates to INR 29 per month!"
+      },
+      {
+        "faqQuestion": "Can I buy Circle Membership using my health credits?",
+        "faqAnswer": "Yes, you can! If you have Health Credits that equal the price of the membership. If not, you can always pay via our easy payment methods."
+      },
+      {
+        "faqQuestion": "Where will I get the Circle cashback?",
+        "faqAnswer": "You will be eligible for Circle cashback every time you buy medicines or Apollo products. We also have discounts on selected doctor consultations and diagnostic tests. Cashback will be credited to your OneApollo Health Credits as soon as a transaction gets completed."
+      },
+      {
+        "faqQuestion": "How can I use Circle cashback?",
+        "faqAnswer": "You can use your Circle cashback as Health Credits to buy medicines and Apollo branded products on Apollo 24|7"
+      },
+      {
+        "faqQuestion": "Can I cancel Circle membership after purchasing it?",
+        "faqAnswer": "Circle membership is non-refundable, however you can contact us using the Need Help section in My Account and we will try our best to help you out."
+      },
+      {
+        "faqQuestion": "Can the offers change after I buy the membership?",
+        "faqAnswer": "Yes, it’s possible but we will always aim to upgrade benefits so that you get the best out of your Circle membership"
+      },
+      {
+        "faqQuestion": "What does Circle Cashback mean? Is it different from One Apollo Cashback?",
+        "faqAnswer": "Every time you make a transaction through Circle, you will be rewarded with Circle Cashback that you can use to purchase medicines and Apollo-branded products. It’s the same as OneApollo Cashback."
+      },
+      {
+        "faqQuestion": "Can Circle cashback be used to pay for a Virtual Consultation?",
+        "faqAnswer": "Not yet, but you can use your Circle cashback as Health Credits to re-order medicines or any healthcare products from Apollo 247."
+      },
+      {
+        "faqQuestion": "What is URLife Program offering?",
+        "faqAnswer": "The URLife Program will be available on Circle soon. Stay tuned!"
+      },
+      {
+        "faqQuestion": "Will some of these features be part of the Apollo Hospital experience as well?",
+        "faqAnswer": "Not as of now, but we are working towards it so you get the best out of Circle"
+      }
+    ],
+    "video_links": [
+      "https://www.youtube.com/embed/vTEJT52hNRw",
+      "https://www.youtube.com/embed/c0egNatC16I",
+      "https://www.youtube.com/embed/rsFlGsOBMuM",
+      "https://www.youtube.com/embed/0-TlHa7rLxo"
+    ],
+    "EXPIRED_STATUS": "disabled"
+  },
+  "banner_context": {
+    "HOME": "HOME",
+    "PHARMACY_HOME": "PHARMACY_HOME",
+    "DIAGNOSTIC_HOME": "DIAGNOSTIC_HOME",
+    "MEMBERSHIP_DETAILS": "MEMBERSHIP_DETAILS",
+    "PHARMACY_HOME_STICKY": "PHARMACY_HOME_STICKY",
+    "VC_DOCTOR_PROFILE": "VC_DOCTOR_PROFILE",
+    "PHARMA_CART": "PHARMA_CART",
+    "VC_CART": "VC_CART"
+  },
+  "user_type": {
+    "NEW": "New",
+    "REPEAT": "Repeat"
+  },
+  "circleMembershipBenefits": {
+    "PHARMA_CASHBACK": "Pharma Cashback",
+    "FREE_DELIVERY": "Free Delivery",
+    "DOCTOR_HELPLINE": "Slashed Consults",
+    "DIAGNOSTICS_SAMPLE_COLLECTION": "Diagnostic Collection",
+    "DIAGNOSTICS_DISCOUNT": "Diagnostic Discounts",
+    "DOC_ON_CALL": "Doc on Call",
+    "PRO_HEALTH": "Pro Health",
+    "ADVANCE_DIABETES": "Advanced Diabetes",
+    "COVID_CARE": "CovidCare",
+    "DIGITALIZATION_PHR": "DigitizationPHR"
+  },
+  "productDetailPage": {
+    "SIMILAR_PRODUCTS": "View Similar Products",
+    "ALSO_BOUGHT": "Customers Also Bought",
+    "PRODUCT_SUBSTITUTES": "Product Substitutes"
+  },
+  "addressSelection": {
+    "USE_CURRENT_LOCATION_TEXT": "Use current location",
+    "USE_GPS_TEXT": "Using GPS",
+    "NO_RESULTS_FOUND": "No Results Found",
+    "MARKER_TEXT": "MOVE MAP TO ADJUST",
+    "HELP_US_LOCATE_TEXT": "Identify your delivery location",
+    "CONFIRM_LOCATION_AND_PROCEED": "CONFIRM LOCATION AND PROCEED"
+  },
+  "accessLocationPopUp": {
+    "chooseFromAddressText": "Choose from saved addresses",
+    "headerMessage": "Select delivery location",
+    "currentLocationText": "Use my current location",
+    "defaultPincodeText": "Enter Delivery Pincode",
+    "testPincodeText": "Enter pincode here",
+    "addNewAddressText": "Add New Address"
+  },
+  "aboutApolloList": [
+    {
+      "title": "About Us",
+      "url": "https://www.apollo247.com/aboutUs?isMobile=true"
+    },
+    {
+      "title": "Contact Us",
+      "url": "https://www.apollo247.com/contact?isMobile=true"
+    },
+    {
+      "title": "FAQs",
+      "url": "https://www.apollo247.com/faq?isMobile=true"
+    },
+    {
+      "title": "Terms and Conditions",
+      "url": "https://www.apollo247.com/terms?isMobile=true"
+    },
+    {
+      "title": "Returns Policy",
+      "url": "https://www.apollo247.com/returns?isMobile=true"
+    },
+    {
+      "title": "Privacy Policy",
+      "url": "https://www.apollo247.com/privacy?isMobile=true"
+    }
+  ],
+  "truecaller": {
+    "networkProblem": "There is a problem with network connection.",
+    "userNotVerified": "User is not verified on truecaller.",
+    "appNotInstalledOrUserNotLoggedIn": "Either truecaller app is not installed or user is not logged in.",
+    "tryAgainLater": "Something went wrong, please try again after sometime",
+    "errorTitle": "Uh oh.. :("
+  },
+  "externalMeetingLink": {
+    "click_to_open": "Dr. XYZ is inviting you to join a Zoom meeting. Please click here to join your consultation on the Zoom App or your browser.",
+    "tnc": "By Clicking on this link, you will provide a confirmation to join a recorded Audio/Video meeting on the external platform.",
+    "copied_to_clipboard": "Copied ",
+    "tryAgainLater": "Something went wrong, please try again after sometime"
+  },
+  "splash": {
+    "CAPSULE": "CAPSULE",
+    "SYRINGE": "SYRINGE",
+    "STETHO": "STETHO"
+  },
+  "consultModeTab": {
+    "CONSULT_ONLINE": "Consult Online",
+    "MEET_IN_PERSON": "Meet In Person",
+    "VIDEO_CONSULT": "Video Consult",
+    "HOSPITAL_VISIT": "Hospital Visit"
+  },
+  "vaccineBooking": {
+    "covid_vaccine_booking": "COVID VACCINE BOOKING",
+    "vaccine_details_bread_crumb": "Vaccine Details",
+    "booking_details": "Booking Details",
+    "select_city_mandatory": "Select City (Mandatory)",
+    "search_city": "Search city",
+    "select_a_hospital_clininc": "Select a Vaccination Site (Mandatory)",
+    "search_for_hospital_clinic": "Search for hospitals or clinic",
+    "select_preferred_date_for_getting_vaccinated": "Select the preferred date for getting vaccinated?",
+    "disclaimer": "Disclaimer",
+    "confirm_details": "Confirm details",
+    "proceed": "Proceed",
+    "done": "DONE",
+    "dose_2_info": "*Dose 2 auto selected. Based on Dose 1 selection",
+    "detail_confirmation": "Detail Confirmation",
+    "edit": "EDIT",
+    "hospital": "HOSPITAL",
+    "date_and_slot": "DATE & SLOT",
+    "slot_will_be_conveyed_before": "Slot will be conveyed 24 hours before date of vaccination ",
+    "who_is_the_patient": "Who is the patient?",
+    "name_of_the_paient_to_be_vaccinated": "Name of the person to be vaccinated",
+    "request_submitted": "Request Submitted",
+    "request_submission_failed": "Vaccination Booking Failed",
+    "request_submission_failed_message_1": "Booking couldn't be done. Please try again.",
+    "confirm_message": " We have taken your request and will confirm your booking in 24 - 48 hours.",
+    "download_details": "DOWNLOAD DETAILS",
+    "share_qr_code": "SHARE ",
+    "time_slot_info": "*Time slot for vaccination will be conveyed 24 hours before the date of vaccination",
+    "booking_number": "Booking Number",
+    "amount": "Amount",
+    "date_of_vaccination": "Date of vaccination",
+    "mode": "Mode",
+    "station": "Station",
+    "order_details": "ORDER DETAILS",
+    "hospitals_n_clinic_near_you": "HOSPITALS & CLINICS NEAR YOU",
+    "all_hospitals_n_clinc": "ALL HOSPITALS & CLINICS",
+    "no_sites_in_city": "Oops ! no available site in selected city ",
+    "no_slots": "Oops,no slots for this date.",
+    "choose_vaccination_dose_number": "Choose vaccination dose number (Mandatory)",
+    "select_vaccine_type_mandatory": "Select Vaccine type (Mandatory)",
+    "select_vaccine_type": "Select Vaccine type",
+    "select_vaccine_dose": "Choose vaccination dose number",
+    "title_dose_1": "Dose 1",
+    "title_dose_2": "Dose 2",
+    "select_vaccine_type_opt": "Select Vaccine type (Optional)",
+    "vaccine_type": "Vaccine type",
+    "title_no_booking": "NO BOOKINGS",
+    "no_vaccination_booking": "No Vaccination booking has been made for you or your family.",
+    "title_new_booking": "BOOK A SLOT",
+    "title_book_another_slot": "BOOK ANOTHER SLOT",
+    "view_qr_code_booking_details": "VIEW QR CODE & BOOKING DETAILS",
+    "date_and_time_slot": "Date & Slot of Vaccination",
+    "vaccine_details": "Vaccine details",
+    "slot_title": "Slot",
+    "dose_title": "Dose",
+    "choose_slot": "Choose slot",
+    "booking_has_been_confirmed": "Your booking has been confirmed !",
+    "booking_has_been_cancelled": "Your booking has been cancelled !",
+    "appointment_details": "APPOINTMENT DETAILS",
+    "site": "Site",
+    "resend_vaccine_booking_sms": "RESEND CONFIRMATION SMS",
+    "resend_confirmation_message": "In case this booking is for another family member you can send an SMS to their phone number here:",
+    "register_on_cowin": "REGISTER ON COWIN",
+    "cancel_booking": "CANCEL BOOKING",
+    "vaccination_site": "Vaccination Site",
+    "select_person_name": "Select Person’s Name",
+    "profile_selection_info": "Only 1 active appointment is allowed per user. If you are looking to reschedule, please cancel the existing appointment and book again.",
+    "error_title": "Oops !",
+    "cancel_title": "Booking cancelled",
+    "error_cancel_message": "Couldn't cancel the booking,please retry",
+    "cancel_success_message": "Your booking has been cancelled ",
+    "no_vaccination_sites_available": "Currently, Vaccination sites  are not available for this city or vaccine type. Kindly select another city or vaccine type.",
+    "no_slots_available": "There are no available slots for this vaccination location. Kindly select another location.",
+    "no_date_slots_available": "Please choose a date to see the available slots.",
+    "cowin_enroll_text": "We do not have vaccine benefits enabled for your company. You can click on the button below to book a vaccination slot on CoWin. If you believe that you should be able to book, please raise a concern through your HR/Benefits team",
+    "cowin_cta_text": "ENROL ON COWIN",
+    "retail_vaccination_booking": "VACCINATION BOOKING",
+    "retail_customer_cowin_text": "For booking vaccination as a regular Apollo247 user, click below:",
+    "retail_customer_corporate_text": "If your corporate has tied up with Apollo please click below to enrol for Corporate Vaccination",
+    "enroll_corporate_cta_text": "ENROL FOR CORPORATE MEMBERSHIP",
+    "tnc_header_text": "Terms & Conditions",
+    "tnc_heading": "terms & conditions",
+    "tnc_subheading": "Please read all of our terms and conditions before doing anything.",
+    "tnc_subtext_1": "Apollo 24|7  Covid – 19 Vaccination Program registration and covered services are voluntary in nature.",
+    "tnc_subtext_2": "On accepting to proceed with the Apollo 24|7 Covid – 19 vaccination program, I agree and give my consent to the following:",
+    "tnc_content": [
+      "To receive/administer for myself the COVID – 19 vaccine, which is being facilitated by Apollo.",
+      "To voluntarily availing the Covid-19 vaccination out of my own free will, consent and risk and this is not being administered under duress, coercion or as an employment condition.",
+      "To assume full responsibility for taking the vaccination and for any reactions/ side effects/ contingency/consequences whatsoever arising from administering the vaccination.",
+      "To acknowledge and understand that Apollo makes no warranties, express or implied, including but not limited to, implied warranties of merchantability or fitness for a particular purpose regarding the vaccine or its effectiveness.",
+      "That I, for myself and my heirs, administrators, trustees, executors, assigns and successors in interest do hereby agree to release and hold harmless Apollo, its subsidiaries, affiliates, assigns, officers, employees, volunteers and agents from and against any and all contingencies, consequences, demands, damages, losses, costs, expenses, obligations, liabilities, claims, actions and cause of action (whether any of which is groundless or otherwise) of any nature whatsoever (including, without limitation, reasonable attorney’s fees and court costs) by reason of or resulting, in any way, from any and all acts, accidents, events, occurrences, omissions and the like related to, or arising out of, directly or indirectly, my receiving this COVID-19 vaccine."
+    ],
+    "tnc_error": "Without agreeing to the Terms and Conditions, you’ll not be able to register for vaccination. For any other query, please raise your issue in the help section.",
+    "instruction_heading": "INSTRUCTIONS FOR THE DAY OF VACCINATION",
+    "instruction_sub_heading": "Show this QR code or the Booking ID at the vaccination centre along with the following original documents:",
+    "instuction_document_list": [
+      "Government ID card",
+      "CoWIN Reference ID",
+      "Corporate ID card (if applicable)",
+      "Dose 1 certificate (if applicable)"
+    ],
+    "vaccination_instruction_url": "https://pages.apollo247.com/vaccination-instructions/",
+    "cowin_url": "https://selfregistration.cowin.gov.in",
+    "govt_guidlines_text_1": "As per government guidelines, it is mandatory to REGISTER yourself on CoWIN platform as well.",
+    "govt_guidlines_text_2": "You only need to register on CoWIN and share the registration ID at the Vaccination Centre",
+    "govt_guidlines_text_3": "Booking a slot is not required as you already have a confirmed slot with us.",
+    "not_eligible_for_corporate_benefits": "Given email ID is not eligible for corporate benefits. If you believe that this is not right, please raise a concern through your HR team.",
+    "sent_an_otp": "We have sent an OTP to your corporate email id. Please also check your spam folder, in case you don't see it in inbox.",
+    "not_able_sent_otp": "We are not able to send OTP to the given email ID. Please try again after some time. If this issue persists, send an email to corporate-helpdesk@apollo247.com and attach the screenshot of this error.",
+    "benefit_activated": "Your company benefit package has been activated. Please click below to access the same.",
+    "wrong_otp": "Seems you have entered wrong OTP.Please try with right one.",
+    "unable_to_validate": "We are unable to validate OTP right now. Please try again after some time. If this issue persists, send an email to corporate-helpdesk@apollo247.com and attach the screenshot of this error.",
+    "CORPORATE_VACCINATION": "CORPORATE_VACCINATION",
+    "booking_detail_pdf": "DOWNLOAD PDF",
+    "unable_to_generate_pdf": "Unable to generate booking pdf.",
+    "unable_to_generate_invoice_pdf": "Unable to generate invoice pdf.",
+    "success_generate_pdf": "Successfully generated vaccination booking PDF ",
+    "success_generate_invoice_pdf": "Successfully generated vaccination invoice.",
+    "dose_2_alert": "Please make sure that the difference between 1st and 2nd dose is as per Govt. guidelines. If difference in 2nd dose is less than Govt. guideline, you will not be given 2nd dose.",
+    "verify_title": "VERIFY",
+    "submit_title": "SUBMIT "
+  },
+  "consultPayment": {
+    "appointmentDetails": "Appointment Details",
+    "knowConsultation": "Know About Your Consultation",
+    "receiveCallText": "You will receive a call from the doctor on the Apollo247 App.",
+    "beforeConsultation": "Before Consultation",
+    "consultation": "Consultation",
+    "postConsultation": "Post Consultation",
+    "detailedGuidelines": "* For detailed consultation guidelines",
+    "stepOne": "Join Consult Room and upload your medical records \n",
+    "stepOneSubheading": "* Reschedule & Cancellation allowed upto 15 mins prior to the appointment time.",
+    "stepTwo": "Consultation with Doctor via audio/video call.\nAccess your prescription in the Consult Room.",
+    "stepThree": "If required, share necessary reports and text updates.",
+    "viewGuideline": "View Consultation Guidelines \n",
+    "download": "Download",
+    "medicineNote": "Seamlessly, order here your medicines and get deliveries in 2 hours. Also, same day home sample collection facility available for tests prescribed. T&C Apply."
+  },
+  "specialOffersScreen": {
+    "couponKnowMore": "How you can redeem this offer:",
+    "brandDealsSubHeading": "Select any of the brands below to see its products on offer",
+    "readTermsAndConditions": "Read the Terms & Conditions"
   }
 }

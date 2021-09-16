@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { REFUND_STATUS } from "./globalTypes";
@@ -37,6 +38,24 @@ export interface pharmacyOrders_pharmacyOrders_pharmaOrders_medicineOrderPayment
   medicineOrderRefunds: (pharmacyOrders_pharmacyOrders_pharmaOrders_medicineOrderPayments_medicineOrderRefunds | null)[] | null;
 }
 
+export interface pharmacyOrders_pharmacyOrders_pharmaOrders_PaymentOrdersPharma_refund {
+  __typename: "Refunds";
+  refundId: string | null;
+  refundAmount: number | null;
+  refundStatus: REFUND_STATUS | null;
+  txnTimestamp: any | null;
+}
+
+export interface pharmacyOrders_pharmacyOrders_pharmaOrders_PaymentOrdersPharma {
+  __typename: "PaymentOrdersResponse";
+  paymentRefId: string | null;
+  paymentStatus: string | null;
+  paymentDateTime: any | null;
+  amountPaid: number | null;
+  paymentMode: string | null;
+  refund: (pharmacyOrders_pharmacyOrders_pharmaOrders_PaymentOrdersPharma_refund | null)[] | null;
+}
+
 export interface pharmacyOrders_pharmacyOrders_pharmaOrders {
   __typename: "PharmaResponse";
   id: string | null;
@@ -50,6 +69,7 @@ export interface pharmacyOrders_pharmacyOrders_pharmaOrders {
   orderDateTime: any | null;
   quoteDateTime: any | null;
   medicineOrderPayments: (pharmacyOrders_pharmacyOrders_pharmaOrders_medicineOrderPayments | null)[] | null;
+  PaymentOrdersPharma: pharmacyOrders_pharmacyOrders_pharmaOrders_PaymentOrdersPharma | null;
 }
 
 export interface pharmacyOrders_pharmacyOrders {

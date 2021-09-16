@@ -6,8 +6,6 @@ import AsyncStorage from '@react-native-community/async-storage';
 
 const useAuthContext = () => useContext(AuthContext);
 
-export const useAnalytics = () => useContext(AuthContext).analytics!;
-
 export const useAuth = () => {
   const sendOtp = useAuthContext().sendOtp!;
   const sendOtpError = useAuthContext().sendOtpError;
@@ -17,7 +15,6 @@ export const useAuth = () => {
   const isSigningIn = useAuthContext().isSigningIn;
   const signOut = useAuthContext().signOut!;
 
-  const analytics = useAnalytics();
   const allPatients = useAuthContext().allPatients!;
   const setAllPatients = useAuthContext().setAllPatients!;
 
@@ -29,6 +26,10 @@ export const useAuth = () => {
 
   const getFirebaseToken = useAuthContext().getFirebaseToken;
 
+  const authToken = useAuthContext().authToken;
+  const validateAuthToken = useAuthContext().validateAuthToken;
+  const buildApolloClient = useAuthContext().buildApolloClient;
+
   return {
     sendOtp,
     sendOtpError,
@@ -38,7 +39,6 @@ export const useAuth = () => {
     isSigningIn,
     signOut,
 
-    analytics,
     allPatients,
     setAllPatients,
 
@@ -48,21 +48,19 @@ export const useAuth = () => {
     mobileAPICalled,
     setMobileAPICalled,
     getFirebaseToken,
+    authToken,
+    validateAuthToken,
+    buildApolloClient,
   };
 };
 
 export const useCurrentPatient = () => useAllCurrentPatients().currentPatient;
 
 export const useAllCurrentPatients = () => {
-  // const patientsArray = useAuthContext().allPatients;
-  // const mobileAPICalled = useAuthContext().mobileAPICalled;
-
-  // console.log('patientsArray', patientsArray);
   const getNewSelectedPatient = async () => {
     try {
       const isNewProfile = await AsyncStorage.getItem('isNewProfile');
       if (isNewProfile === 'yes') {
-        // console.log('allCurrentPatients==>', allCurrentPatients);
         const retrievedItem: any = await AsyncStorage.getItem('selectUserId');
         Promise.all([retrievedItem]).then((values) => {
           values[0] && setCurrentPatientId(values[0]);
@@ -73,45 +71,30 @@ export const useAllCurrentPatients = () => {
 
   const setCurrentPatientId = useAuthContext().setCurrentPatientId!;
   const currentPatientId = useAuthContext().currentPatientId;
-  // let allCurrentPatients: any;
   let currentPatient;
   let profileAllPatients;
+  let currentPatientWithHistory;
 
-  const { savePatientDetails } = useAppCommonData();
-
-  // useEffect(() => {
-  //   console.log('savePatientDetails', savePatientDetails);
-  // }, [savePatientDetails]);
+  const { savePatientDetails, savePatientDetailsWithHistory } = useAppCommonData();
 
   const allCurrentPatients = savePatientDetails;
-
-  // if (mobileAPICalled) {
-  //   allCurrentPatients =
-  //     patientsArray && patientsArray.data && patientsArray.data.getCurrentPatients
-  //       ? patientsArray.data.getCurrentPatients.patients
-  //       : null;
-  // } else {
-  //   allCurrentPatients =
-  //     patientsArray && patientsArray.data && patientsArray.data.getPatientByMobileNumber
-  //       ? patientsArray.data.getPatientByMobileNumber.patients
-  //       : null;
-  // }
+  const allCurrentPatientsWithHistory = savePatientDetailsWithHistory;
 
   if (allCurrentPatients) {
     profileAllPatients = allCurrentPatients.filter((obj: any) => {
       return obj.isLinked === false;
     });
 
-    // console.log('unLinkedProfiles', allCurrentPatients);
-
     currentPatient = allCurrentPatients
       ? allCurrentPatients.find((patient: any) => patient.id === currentPatientId) ||
         allCurrentPatients.find((patient: any) => patient.isUhidPrimary === true)
       : null;
-  }
 
-  // console.log('currentPatient', currentPatient);
-  // console.log('allCurrentPatients', allCurrentPatients);
+    currentPatientWithHistory = allCurrentPatientsWithHistory
+      ? allCurrentPatientsWithHistory.find((patient: any) => patient.id === currentPatientId) ||
+        allCurrentPatientsWithHistory.find((patient: any) => patient.isUhidPrimary === true)
+      : null;
+  }
 
   useEffect(() => {
     getNewSelectedPatient();
@@ -122,8 +105,6 @@ export const useAllCurrentPatients = () => {
           allCurrentPatients[0]
         : null;
       setCurrentPatientId(defaultCurrentPatient ? defaultCurrentPatient.id : null);
-      // console.log('currentPatientId', currentPatientId);
-      // console.log('defaultCurrentPatient', defaultCurrentPatient);
     }
   }, [allCurrentPatients, currentPatientId, setCurrentPatientId]);
 
@@ -133,5 +114,6 @@ export const useAllCurrentPatients = () => {
     setCurrentPatientId,
     currentPatientId,
     profileAllPatients,
+    currentPatientWithHistory,
   };
 };

@@ -1,9 +1,11 @@
+$RNFirebaseAsStaticFramework = true
+
 # Uncomment the next line to define a global platform for your project
  platform :ios, '9.0'
 
 target 'ApolloPatient' do
   # Comment the next line if you don't want to use dynamic frameworks
-   use_frameworks!
+  use_frameworks!
 
   # Pods for ApolloPatient
   
@@ -40,61 +42,51 @@ target 'ApolloPatient' do
   pod 'glog', :podspec => '../node_modules/react-native/third-party-podspecs/glog.podspec'
   pod 'Folly', :podspec => '../node_modules/react-native/third-party-podspecs/Folly.podspec'
 
-  pod 'Firebase/Core', '~> 6.2.0'
-  pod 'Firebase/Analytics'
-  pod 'Firebase/Auth'
   pod 'GoogleAppMeasurement'
-  pod 'Firebase/Messaging', '~> 6.2.0'
   pod 'GoogleIDFASupport', '~> 3.14.0'
-  pod 'Firebase/RemoteConfig', '~> 6.2.0'
-  pod 'Firebase/Database', '~> 6.2.0'
  
   pod 'ReverseExtension'
   pod 'SDWebImage', '~> 5.0'
   pod 'FMDB'
   pod 'AFNetworking', '~> 3.2.1'
-  pod 'Charts', '~> 3.0.4'
+  pod 'Charts', '~> 3.3.0'
   pod 'TGFoursquareLocationDetail'
   pod 'IQKeyboardManager'
   pod 'youtube-ios-player-helper', '~> 0.1.4'
   pod 'TwilioChatClient', '2.6.6'
   pod 'JWTDecode', '~> 2.4'
-  pod 'OpenTok', '2.17.0'
   pod 'Stylish'
  
   pod 'rn-fetch-blob', :path => '../node_modules/rn-fetch-blob'
-  pod 'BugsnagReactNative', :path => '../node_modules/bugsnag-react-native'
   pod 'react-native-pdf', :path => '../node_modules/react-native-pdf'
   pod 'RNGestureHandler', :path => '../node_modules/react-native-gesture-handler'
-  pod 'react-native-image-picker', :path => '../node_modules/react-native-image-picker'
   pod 'RNImageCropPicker', :path => '../node_modules/react-native-image-crop-picker'
   pod 'react-native-keep-awake', :path => '../node_modules/react-native-keep-awake'
-  pod 'ReactNativeIncallManager', :path => '../node_modules/react-native-incall-manager'
   pod 'RNDeviceInfo', :path => '../node_modules/react-native-device-info'
   pod 'ReactNativePermissions', :path => '../node_modules/react-native-permissions'
-  pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
   pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
   pod 'react-native-webview', :path => '../node_modules/react-native-webview'
-  pod 'react-native-geolocation', :path => '../node_modules/@react-native-community/geolocation'
+  pod 'RNFBApp', :path => '../node_modules/@react-native-firebase/app'
+  pod 'RNFBAuth', :path => '../node_modules/@react-native-firebase/auth'
+  pod 'RNFBMessaging', :path => '../node_modules/@react-native-firebase/messaging'
+  pod 'RNFBRemoteConfig', :path => '../node_modules/@react-native-firebase/remote-config'
+  pod 'RNFBCrashlytics', :path => '../node_modules/@react-native-firebase/crashlytics'
+  pod 'RNFBAnalytics', :path => '../node_modules/@react-native-firebase/analytics'
   pod 'react-native-netinfo', :path => '../node_modules/@react-native-community/netinfo'
-  pod 'RNFirebase', :path => '../node_modules/react-native-firebase/ios'
   pod 'opentok-react-native', :path => '../node_modules/opentok-react-native'
-  pod 'ReactNativeExceptionHandler', :path => '../node_modules/react-native-exception-handler'
   pod 'react-native-webengage', :path => '../node_modules/react-native-webengage'
-  pod 'WebEngage'
+  pod 'RNCharts', :path => '../node_modules/react-native-charts-wrapper'
+  pod 'WebEngage', '~> 5.0.2'
 
   pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-community/async-storage'
-  pod 'react-native-appsflyer', :path => '../node_modules/react-native-appsflyer'
-  pod 'react-native-fbsdk', :path => '../node_modules/react-native-fbsdk'
-  pod 'RNBugfender', :path => '../node_modules/@bugfender/rn-bugfender'
   pod 'RCTSystemSetting', :path => '../node_modules/react-native-system-setting'
   pod 'RNSound', :path => '../node_modules/react-native-sound'
-  pod 'react-native-video', :path => '../node_modules/react-native-video'
   pod 'react-native-background-timer', :path => '../node_modules/react-native-background-timer'
   pod 'CodePush', :path => '../node_modules/react-native-code-push'
   pod 'RNDateTimePicker', :path => '../node_modules/@react-native-community/datetimepicker'
   pod 'RNCallKeep', :path => '../node_modules/react-native-callkeep'
   pod 'RNVoipPushNotification', :path => '../node_modules/react-native-voip-push-notification'
+  pod 'react-native-geolocation-service', path: '../node_modules/react-native-geolocation-service'
 
   # React Native Maps dependencies
   rn_maps_path = '../node_modules/react-native-maps'
@@ -109,6 +101,28 @@ target 'ApolloPatient' do
   pod 'react-native-progress-view', :path => '../node_modules/@react-native-community/progress-view'
 
   pod 'react-native-progress-bar-android', :path => '../node_modules/@react-native-community/progress-bar-android'
+
+  pod 'BVLinearGradient', :path => '../node_modules/react-native-linear-gradient'
+
+  pod 'react-native-camera', :path => '../node_modules/react-native-camera'
+
+  pod 'hyper-sdk-react', :path => '../node_modules/hyper-sdk-react'
+
+  pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
+
+  pod 'react-native-receive-sharing-intent', :path => '../node_modules/react-native-receive-sharing-intent'
+  pod 'RNShare', :path => '../node_modules/react-native-share/RNShare.podspec'
+
+  pod 'RNSVG', :path => '../node_modules/react-native-svg'
+  pod 'ReactNativeWebPFormat', :path => '../node_modules/react-native-webp-format'
+  pod 'react-native-appsflyer', :path => '../node_modules/react-native-appsflyer'
+
+  pod 'react-native-html-to-pdf', :path => '../node_modules/react-native-html-to-pdf'
+
+  pod 'clevertap-react-native', :path => '../node_modules/clevertap-react-native'
+
+  pod 'react-native-user-agent', :path => '../node_modules/react-native-user-agent'
+  pod 'react-native-in-app-review', :path => '../node_modules/react-native-in-app-review'
 
   target 'NotificationService' do
       platform :ios, '10.0'
@@ -127,9 +141,26 @@ pre_install do |installer|
   Pod::Installer::Xcode::TargetValidator.send(:define_method, :verify_no_static_framework_transitive_dependencies) {}
 end
 
-post_install do |installer|
-  rnfirebase = installer.pods_project.targets.find { |target| target.name == 'RNFirebase' }
-  rnfirebase.build_configurations.each do |config|
-    config.build_settings['HEADER_SEARCH_PATHS'] = '$(inherited) ${PODS_ROOT}/Headers/Public/**'
-  end
-end  
+# post_install do |installer|
+#   ## Fix for XCode 12.5
+#   find_and_replace("../node_modules/react-native/React/CxxBridge/RCTCxxBridge.mm",
+#   "_initializeModules:(NSArray<id<RCTBridgeModule>> *)modules", "_initializeModules:(NSArray<Class> *)modules")
+
+#   find_and_replace("../node_modules/react-native/React/CxxBridge/RCTCxxBridge.mm",
+#   "_initializeModules:(NSArray<id<RCTBridgeModule>> *)modules", "_initializeModules:(NSArray<Class> *)modules")
+#   find_and_replace("../node_modules/react-native/ReactCommon/turbomodule/core/platform/ios/RCTTurboModuleManager.mm",
+#   "RCTBridgeModuleNameForClass(module))", "RCTBridgeModuleNameForClass(Class(module)))")
+# end
+
+# def find_and_replace(dir, findstr, replacestr)
+#   Dir[dir].each do |name|
+#       text = File.read(name)
+#       replace = text.gsub(findstr,replacestr)
+#       if text != replace
+#           puts "Fix: " + name
+#           File.open(name, "w") { |file| file.puts replace }
+#           STDOUT.flush
+#       end
+#   end
+#   Dir[dir + '*/'].each(&method(:find_and_replace))
+# end

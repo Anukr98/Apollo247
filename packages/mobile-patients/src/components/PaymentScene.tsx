@@ -3,32 +3,26 @@ import {
   Alert,
   SafeAreaView,
   StyleSheet,
-  Text,
   Platform,
-  TouchableOpacity,
   View,
   KeyboardAvoidingView,
   BackHandler,
   NavState,
 } from 'react-native';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CheckedIcon, MedicineIcon, UnCheck } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
-  getParameterByName,
-  g,
   postWebEngageEvent,
   postAppsFlyerEvent,
   postFirebaseEvent,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import moment from 'moment';
 import { WebView } from 'react-native-webview';
 import {
   WebEngageEvents,
@@ -40,20 +34,15 @@ import {
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { FirebaseEvents, FirebaseEventName } from '../helpers/firebaseEvents';
 import { ShoppingCartItem } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { trackTagalysEvent } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
+import { saveMedicineOrderOMSVariables } from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderOMS';
+import { ONE_APOLLO_STORE_CODE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const styles = StyleSheet.create({
-  popupButtonStyle: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  popupButtonTextStyle: {
-    ...theme.fonts.IBMPlexSansBold(13),
-    color: theme.colors.APP_YELLOW,
-    lineHeight: 24,
-  },
   container: {
     flex: 1,
     backgroundColor: '#f0f1ec',
@@ -62,40 +51,55 @@ const styles = StyleSheet.create({
 
 export interface PaymentSceneProps
   extends NavigationScreenProps<{
-    orderId: string;
-    orderAutoId: number;
-    token: string;
+    orders: any;
+    transactionId: number;
     amount: number;
     burnHC: number;
     deliveryTime: string;
     paymentTypeID: string;
     bankCode: any;
     checkoutEventAttributes?: WebEngageEvents[WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED];
-    appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED];
+    cleverTapCheckoutEventAttributes?: CleverTapEvents[CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED];
     coupon: any;
     cartItems: ShoppingCartItem[];
+    orderInfo: saveMedicineOrderOMSVariables;
+    planId?: string;
+    subPlanId?: string;
+    isStorePickup: boolean;
   }> {}
 
 export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
-  const { clearCartInfo } = useShoppingCart();
+  const {
+    circleMembershipCharges,
+    isCircleSubscription,
+    circleSubscriptionId,
+    pharmacyCircleAttributes,
+    grandTotal,
+    cartTotalCashback,
+  } = useShoppingCart();
   const totalAmount = props.navigation.getParam('amount');
   const burnHC = props.navigation.getParam('burnHC');
-  const orderAutoId = props.navigation.getParam('orderAutoId');
-  const orderId = props.navigation.getParam('orderId');
-  const authToken = props.navigation.getParam('token');
+  const orders = props.navigation.getParam('orders');
+  const transactionId = props.navigation.getParam('transactionId');
   const deliveryTime = props.navigation.getParam('deliveryTime');
   const paymentTypeID = props.navigation.getParam('paymentTypeID');
   const bankCode = props.navigation.getParam('bankCode');
+  const isStorePickup = props.navigation.getParam('isStorePickup');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
-  const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
+  const cleverTapCheckoutEventAttributes = props.navigation.getParam(
+    'cleverTapCheckoutEventAttributes'
+  );
   const coupon = props.navigation.getParam('coupon');
   const cartItems = props.navigation.getParam('cartItems');
+  const orderInfo = props.navigation.getParam('orderInfo');
+  const planId = props.navigation.getParam('planId');
+  const subPlanId = props.navigation.getParam('subPlanId');
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
-  const [isRemindMeChecked, setIsRemindMeChecked] = useState(true);
-  const { showAphAlert, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [isfocused, setisfocused] = useState<boolean>(false);
+  const { pharmacyUserTypeAttribute } = useAppCommonData();
 
   const handleBack = async () => {
     Alert.alert('Alert', 'Are you sure you want to change your payment mode?', [
@@ -105,20 +109,18 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     return true;
   };
 
-  // useEffect(() => {
-  //   const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-  //     BackHandler.addEventListener('hardwareBackPress', handleBack);
-  //   });
-
-  //   const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
-  //     BackHandler.removeEventListener('hardwareBackPress', handleBack);
-  //   });
-
-  //   return () => {
-  //     _didFocusSubscription && _didFocusSubscription.remove();
-  //     _willBlurSubscription && _willBlurSubscription.remove();
-  //   };
-  // }, []);
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      setisfocused(true);
+    });
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+      setisfocused(false);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      didBlur && didBlur.remove();
+    };
+  }, []);
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -129,21 +131,11 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
 
   useEffect(() => {
     if (!currentPatient) {
-      console.log('No current patients available');
       getPatientApiCall();
     }
   }, [currentPatient]);
 
-  const navigateToOrderDetails = (showOrderSummaryTab: boolean) => {
-    hideAphAlert!();
-    props.navigation.navigate(AppRoutes.OrderDetailsScene, {
-      goToHomeOnBack: true,
-      showOrderSummaryTab,
-      orderAutoId,
-    });
-  };
-
-  const firePurchaseEvent = () => {
+  const firePurchaseEvent = (orderId: string) => {
     let items: any = [];
     cartItems.forEach((item, index) => {
       let itemObj: any = {};
@@ -164,255 +156,155 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       items: items,
       transaction_id: orderId,
       value: totalAmount,
+      LOB: 'Pharma',
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };
 
-  const handleOrderSuccess = async () => {
-    // BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    try {
-      if (checkoutEventAttributes) {
-        const paymentEventAttributes = {
-          order_Id: orderId,
-          order_AutoId: orderAutoId,
-          Type: 'Pharmacy',
-          Payment_Status: 'PAYMENT_SUCCESS',
-        };
-        postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
-        postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, checkoutEventAttributes);
-        postAppsFlyerEvent(
-          AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED,
-          appsflyerEventAttributes
-        );
-        firePurchaseEvent();
-        try {
-          Promise.all(
-            cartItems.map((cartItem) =>
-              trackTagalysEvent(
-                {
-                  event_type: 'product_action',
-                  details: {
-                    sku: cartItem.id,
-                    action: 'buy',
-                    quantity: cartItem.quantity,
-                    order_id: `${orderAutoId}`,
-                  } as Tagalys.ProductAction,
-                },
-                g(currentPatient, 'id')!
-              )
-            )
-          );
-        } catch (error) {
-          CommonBugFender(`${AppRoutes.PaymentScene}_trackTagalysEvent`, error);
-        }
+  const fireOrderFailedEvent = (orderId: string) => {
+    const eventAttributes: FirebaseEvents[FirebaseEventName.ORDER_FAILED] = {
+      OrderID: orderId,
+      Price: totalAmount,
+      CouponCode: coupon,
+      PaymentType: paymentTypeID,
+      LOB: 'Pharmacy',
+    };
+    postAppsFlyerEvent(AppsFlyerEventName.ORDER_FAILED, eventAttributes);
+    postFirebaseEvent(FirebaseEventName.ORDER_FAILED, eventAttributes);
+  };
+
+  const getFormattedAmount = (num: number) => Number(num.toFixed(2));
+
+  const getPrepaidCheckoutCompletedAppsFlyerEventAttributes = (
+    orderId: string,
+    orderAutoId: string
+  ) => {
+    const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED] = {
+      'customer id': currentPatient ? currentPatient.id : '',
+      'cart size': cartItems.length,
+      af_revenue: getFormattedAmount(grandTotal),
+      af_currency: 'INR',
+      'order id': orderId,
+      orderAutoId: orderAutoId,
+      'coupon applied': coupon ? true : false,
+      'Circle Cashback amount':
+        circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
+      ...pharmacyCircleAttributes!,
+      ...pharmacyUserTypeAttribute,
+      TransactionId: isStorePickup ? '' : transactionId,
+    };
+    return appsflyerEventAttributes;
+  };
+
+  const fireOrderEvent = (isSuccess: boolean, orderId: string, orderAutoId: number) => {
+    if (checkoutEventAttributes && cleverTapCheckoutEventAttributes) {
+      const paymentEventAttributes = {
+        order_Id: orderId,
+        order_AutoId: orderAutoId,
+        LOB: 'Pharmacy',
+        Payment_Status: !!isSuccess ? 'PAYMENT_SUCCESS' : 'PAYMENT_PENDING',
+      };
+      postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
+      postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_STATUS, paymentEventAttributes);
+      postFirebaseEvent(FirebaseEventName.PAYMENT_STATUS, paymentEventAttributes);
+      postAppsFlyerEvent(
+        AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED,
+        getPrepaidCheckoutCompletedAppsFlyerEventAttributes(orderId, `${orderAutoId}`)
+      );
+      firePurchaseEvent(orderId);
+      if (!!isSuccess) {
+        postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, {
+          ...checkoutEventAttributes,
+          'Cart Items': JSON.stringify(cartItems),
+        });
+        postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, {
+          ...cleverTapCheckoutEventAttributes,
+          'Cart Items': JSON.stringify(cartItems) || undefined,
+        });
       }
-    } catch (error) {}
-
-    setLoading!(false);
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      })
-    );
-    const deliveryTimeMomentFormat = moment(
-      deliveryTime,
-      AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT
-    );
-    showAphAlert!({
-      // unDismissable: true,
-      title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
-      description:
-        'Your order has been placed successfully. We will confirm the order in a few minutes.',
-      children: (
-        <View
-          style={{
-            margin: 20,
-            marginTop: 16,
-            padding: 16,
-            backgroundColor: '#f7f8f5',
-            borderRadius: 10,
-          }}
-        >
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <MedicineIcon />
-            <Text
-              style={{
-                flex: 1,
-                ...theme.fonts.IBMPlexSansMedium(17),
-                lineHeight: 24,
-                color: '#01475b',
-              }}
-            >
-              Medicines
-            </Text>
-            <Text
-              style={{
-                flex: 1,
-                ...theme.fonts.IBMPlexSansMedium(14),
-                lineHeight: 24,
-                color: '#01475b',
-                textAlign: 'right',
-              }}
-            >
-              {`#${orderAutoId}`}
-            </Text>
-          </View>
-          {deliveryTimeMomentFormat.isValid() && (
-            <>
-              <View
-                style={{
-                  height: 1,
-                  backgroundColor: '#02475b',
-                  opacity: 0.1,
-                  marginBottom: 7.5,
-                  marginTop: 15.5,
-                }}
-              />
-              <View>
-                <Text
-                  style={{
-                    ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
-                  }}
-                >
-                  {deliveryTime &&
-                    `Delivery By: ${deliveryTimeMomentFormat.format(
-                      AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT
-                    )}`}
-                </Text>
-              </View>
-            </>
-          )}
-          {/* <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginTop: 7.5
-              }}
-            >
-              <Text
-                style={{
-                  // flex: 1,
-                  ...theme.fonts.IBMPlexSansMedium(14),
-                  lineHeight: 24,
-                  color: '#01475b',
-                }}
-              >
-                Remind me to take medicines
-              </Text>
-              <TouchableOpacity style={{}} onPress={() => setIsRemindMeChecked(!isRemindMeChecked)}>
-                {isRemindMeChecked ? <CheckedIcon /> : <UnCheck />}
-              </TouchableOpacity>
-            </View> */}
-          <View
-            style={{
-              height: 1,
-              backgroundColor: '#02475b',
-              opacity: 0.1,
-              marginBottom: 15.5,
-              marginTop: 7.5,
-            }}
-          />
-          <View style={styles.popupButtonStyle}>
-            <TouchableOpacity style={{ flex: 1 }} onPress={() => navigateToOrderDetails(true)}>
-              <Text style={styles.popupButtonTextStyle}>VIEW INVOICE</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{ flex: 1, alignItems: 'flex-end' }}
-              onPress={() => navigateToOrderDetails(false)}
-            >
-              <Text style={styles.popupButtonTextStyle}>TRACK ORDER</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      ),
-    });
+    }
   };
 
-  const handleOrderFailure = () => {
-    props.navigation.goBack();
-    showAphAlert!({
-      title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
-      description: `We're sorry. :(  There's been a problem with your order. If money was debited from your account, it will be refunded automatically in 5-7 working days.`,
-    });
-  };
-
-  const onWebViewStateChange = (data: NavState) => {
-    const redirectedUrl = data.url;
-    console.log({ redirectedUrl, data });
-    if (
-      redirectedUrl &&
-      redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_SUCCESS_PATH) > -1
-    ) {
-      handleOrderSuccess();
-      clearCartInfo && clearCartInfo();
-    } else if (
-      redirectedUrl &&
-      redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_ERROR_PATH) > -1
-    ) {
-      props.navigation.navigate(AppRoutes.PaymentStatus, {
-        orderId: orderId,
-        orderAutoId: orderAutoId,
-        amount: totalAmount,
-        paymentTypeID: paymentTypeID,
+  const fireCleverTapOrderEvent = (isSuccess: boolean) => {
+    if (!!isSuccess) {
+      postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, {
+        ...cleverTapCheckoutEventAttributes,
+        'Cart Items': JSON.stringify(cartItems) || undefined,
       });
     }
-    // const isMatchesSuccessUrl =
-    //   (redirectedUrl &&
-    //     redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_SUCCESS_PATH) > -1) ||
-    //   false;
-    // const isMatchesFailUrl =
-    //   (redirectedUrl &&
-    //     redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_ERROR_PATH) > -1) ||
-    //   false;
+  };
 
-    // if (isMatchesSuccessUrl) {
-    //   const tk = getParameterByName('tk', redirectedUrl!);
-    //   const status = getParameterByName('status', redirectedUrl!);
-    //   console.log('Consult PG isMatchesSuccessUrl:\n', { tk, status });
-    //   handleOrderSuccess();
-    //   clearCartInfo && clearCartInfo();
-    // }
-    // if (isMatchesFailUrl) {
-    //   const responseMessage = getParameterByName('responseMessage', redirectedUrl!);
-    //   const responseCode = getParameterByName('responseCode', redirectedUrl!);
-    //   console.log({ responseMessage, responseCode });
-    //   if (responseCode == '141' && responseMessage == 'User has not completed transaction.') {
-    //     // To handle Paytm PG page back button
-    //     props.navigation.goBack();
-    //   } else {
-    //     handleOrderFailure();
-    //   }
-    // }
+  const navigationToPaymentStatus = (status: string) => {
+    props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
+      status: status,
+      price: totalAmount,
+      transId: transactionId,
+      orders: orders,
+      orderInfo: orderInfo,
+      deliveryTime: deliveryTime,
+      checkoutEventAttributes: checkoutEventAttributes,
+      cleverTapCheckoutEventAttributes,
+      isStorePickup: isStorePickup,
+    });
+  };
+
+  const onWebViewStateChange = (data: NavState, WebViewRef: any) => {
+    const redirectedUrl = data.url;
+    const loading = data.loading;
+    if (
+      redirectedUrl &&
+      redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_SUCCESS_PATH) > -1 &&
+      loading
+    ) {
+      navigationToPaymentStatus('PAYMENT_SUCCESS');
+      fireCleverTapOrderEvent(true);
+      orders?.forEach((order: any) => {
+        fireOrderEvent(true, order?.id!, order?.orderAutoId);
+      });
+      WebViewRef.stopLoading();
+    } else if (
+      redirectedUrl &&
+      redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_ERROR_PATH) > -1 &&
+      loading
+    ) {
+      if (!!circleMembershipCharges) {
+        navigationToPaymentStatus('PAYMENT_FAILED');
+      } else {
+        navigationToPaymentStatus('PAYMENT_PENDING');
+      }
+      orders?.forEach((order: any) => {
+        fireOrderFailedEvent(order?.id!);
+      });
+      WebViewRef.stopLoading();
+    }
   };
 
   const renderWebView = () => {
     const baseUrl = AppConfig.Configuration.PAYMENT_GATEWAY_BASE_URL;
-    const url = `${baseUrl}/paymed?amount=${totalAmount}&oid=${orderAutoId}&pid=${currentPatiendId}&source=mobile&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
+    const storeCode =
+      Platform.OS == 'android' ? ONE_APOLLO_STORE_CODE.ANDCUS : ONE_APOLLO_STORE_CODE.IOSCUS;
+    let url = `${baseUrl}/${isStorePickup ? 'paymed' : 'paymedv2'}?amount=${totalAmount}&${
+      isStorePickup ? 'oid' : 'transId'
+    }=${transactionId}&pid=${currentPatiendId}&source=mobile&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
       burnHC ? '&hc=' + burnHC : ''
     }${bankCode ? '&bankCode=' + bankCode : ''}`;
 
-    // PATH: /paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=mobile
-    // SUCCESS_PATH: /mob?tk=<>&status=<>
-    console.log({ totalAmount, orderAutoId, authToken, url });
-    console.log(`%cMEDICINE_PG_URL:\t${url}`, 'color: #bada55');
+    if (!circleSubscriptionId && isCircleSubscription) {
+      url += `${planId ? '&planId=' + planId : ''}${
+        subPlanId ? '&subPlanId=' + subPlanId : ''
+      }${'&storeCode=' + storeCode}`;
+    }
 
+    let WebViewRef: any;
     return (
       <WebView
+        ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
         onLoadStart={() => setLoading!(true)}
         onLoadEnd={() => setLoading!(false)}
         bounces={false}
         useWebKit={true}
         source={{ uri: url }}
-        onNavigationStateChange={onWebViewStateChange}
+        onNavigationStateChange={(data) => onWebViewStateChange(data, WebViewRef)}
       />
     );
   };
@@ -423,10 +315,10 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
         <Header leftIcon="backArrow" title="PAYMENT" onPressLeftIcon={() => handleBack()} />
         {Platform.OS == 'android' ? (
           <KeyboardAvoidingView style={styles.container} behavior={'height'}>
-            {renderWebView()}
+            {isfocused && renderWebView()}
           </KeyboardAvoidingView>
         ) : (
-          renderWebView()
+          isfocused && renderWebView()
         )}
       </SafeAreaView>
       {loading && <Spinner />}

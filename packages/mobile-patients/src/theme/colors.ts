@@ -28,9 +28,14 @@ const platinumGrey = '#525252';
 const bondi_blue = '#0187ba';
 const lightGray2 = '#cccccc';
 const lightYellow = '#fbe9be';
+const light_grey_blue = '#67919D';
+const careRed = '#F0533B';
+const light_blue = '#E7F2FF';
+const blue_color = '#337FC5';
 
 const platinumWhiteGrey = '#E6E6E6';
 const red = '#e50000';
+const text_light_yellow = 'rgba(252, 153, 22, 0.5)';
 
 const TabBar = {
   TAB_BAR_ACTIVE_TINT_COLOR: white,
@@ -49,6 +54,7 @@ const Card = {
   CARD_DESCRIPTION: sky_blue,
   CARD_INFO: tangerine_yellow,
   FILTER_CARD_LABEL: app_light_blue,
+  CARD_SUBTEXT: light_grey_blue,
 };
 
 const Common = {
@@ -59,6 +65,8 @@ const Common = {
   WHITE: white,
   HEX_WHITE: hexWhite,
   SHERPA_BLUE: APP_Sherpa_Blue,
+  BLUMINE: '#14657A',
+  BLUE_BAYOUX: '#4B717C',
   APP_YELLOW_COLOR: '#fcb716',
   APP_YELLOW: tangerine_yellow,
   SHADOW_GRAY: shadowGray,
@@ -86,9 +94,41 @@ const Common = {
   APP_RED: red,
   TURQUOISE_BLUE: '#0589BB',
   EXTREME_LIGHT_BLUE: '#2096C2',
+  SILVER_LIGHT: 'rgba(1, 71, 91, 0.6)',
   OFF_WHITE: '#F7F7F7',
   LIGHT_YELLOW: lightYellow,
   GREEN: '#07AE8B',
+  TURQUOISE_LIGHT_BLUE: '#007C9D',
+  CARE_RED: careRed,
+  CAROUSEL_INACTIVE_DOT: '#C4C4C4',
+  ORANGE_BORDER: '#FA9E3E',
+  GRAY: '#6A6A6A',
+  DISABLE_TEXT: '#BCBCBC',
+  RED: '#C5411E',
+  LIGHTISH_GRAY: '#93B7C5',
+  LIGHT_ORANGE: '#FCB716',
+  CALL_BG_GRAY: '#E5E5E5',
+  CALL_LIGHT_GRAY: '#EAEAEA',
+  DISCOUNT_LIGHT_BLUE: light_blue,
+  DISCOUNT_BLUE_COLOR: blue_color,
+  REMOVE_RED: '#E31E24',
+  PURPLE: '#393487',
+  TRUECALLER_THEME: '#3780F6',
+  TEST_CARD_BUTTOM_BG: '#FCFDDA',
+  FAILURE_STATUS_TEXT: '#BF2600',
+  FAILURE_STATUS_BGK: '#FFEBE6',
+  COMPLETE_STATUS_TEXT: '#006644',
+  COMPLETE_STATUS_BGK: '#E3FCEF',
+  INTERMITTENT_STATUS_BGK: '#FFF0B3',
+  ICE_BERG: '#DFF4F4',
+  GRAYED: '#CBCBCB',
+  SLATE_GRAY: '#68919D',
+  NILE_BLUE: '#1C4659',
+  CONSULT_SUCCESS_TEXT: '#00B38E',
+  AQUA_BLUE: '#E3F2F8',
+  TANGERINE_YELLOW: tangerine_yellow,
+  TEXT_LIGHT_YELLOW: text_light_yellow,
+  DEEP_RED: deepRed,
 };
 
 const Header = {
@@ -129,6 +169,7 @@ const TextInput = {
   INPUT_FAILURE_TEXT: '#890000',
   INPUT_INFO: tangerine_yellow,
   placeholderTextColor: 'rgba(1,48,91, 0.3)',
+  searchAreaPlaceholderTextColor: 'rgba(1,71,91,0.6)',
   light_label: '#658f9b',
 };
 

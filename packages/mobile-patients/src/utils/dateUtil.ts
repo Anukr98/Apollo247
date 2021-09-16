@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 export const getDate = (date: string) => {
-  let formattedDate = format(date, 'DD MMM YYYY, h:mm A');
+  let formattedDate = format(date || new Date(), 'DD MMM YYYY, h:mm A');
   return formattedDate;
 };
 
@@ -39,3 +39,30 @@ export const convertMinsToHrsMins = (min: number) => {
     }`
   );
 };
+
+export const dateFormatter = (dateTime: Date) => {
+  let tommorowDate = new Date();
+  tommorowDate.setDate(tommorowDate.getDate() + 1);
+
+  if (new Date(dateTime).toLocaleDateString() == new Date().toLocaleDateString()) {
+    return `Today, ${format(dateTime, 'h:mm A')}`;
+  } else if (new Date(dateTime).toLocaleDateString() == tommorowDate.toLocaleDateString()) {
+    return `Tomorrow, ${format(dateTime, 'h:mm A')}`;
+  } else {
+    return `${format(dateTime, 'DD MMM YYYY, h:mm A')}`;
+  }
+};
+
+export const dateFormatterDDMM = (dateTime: string, form: string) => {
+  let dateF = new Date(dateTime);
+    return `${format(dateF, form)}`;
+};
+
+/**
+ * Function to calculate the time(days) difference between two timeStamps
+ * @param T1 (number)
+ * @param T2 (number)
+ */
+export const timeDifferenceInDays = (T1: number, T2: number) => {
+  return (T1 - T2) / (1000 * 3600 * 24);
+}

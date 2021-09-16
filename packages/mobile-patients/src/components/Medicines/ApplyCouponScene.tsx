@@ -9,29 +9,22 @@ import {
   RadioButtonIcon,
   RadioButtonUnselectedIcon,
   SearchSendIcon,
+  PendingIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  GET_PHARMA_COUPON_LIST,
-  VALIDATE_PHARMA_COUPON,
-} from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  CouponCategoryApplicable,
-  OrderLineItems,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+  g,
+  postWebEngageEvent,
+  getPackageIds,
+  postCleverTapEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { useApolloClient, useQuery } from 'react-apollo-hooks';
+import { useApolloClient } from 'react-apollo-hooks';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { getPharmaCouponList } from '../../graphql/types/getPharmaCouponList';
-import {
-  validatePharmaCoupon,
-  validatePharmaCouponVariables,
-} from '../../graphql/types/validatePharmaCoupon';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { useUIElements } from '../UIElementsProvider';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
@@ -42,6 +35,10 @@ import {
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {
@@ -101,6 +98,22 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     letterSpacing: 0.04,
   },
+  careMessageContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    marginHorizontal: 20,
+    marginTop: 20,
+    padding: 10,
+    flexDirection: 'row',
+  },
+  pendingIconStyle: {
+    marginRight: 10,
+    marginTop: 5,
+  },
+  careMessage: {
+    ...theme.viewStyles.text('R', 13, '#01475B', 1, 20),
+    width: '90%',
+  },
 });
 export interface pharma_coupon {
   coupon: string;
@@ -110,7 +123,7 @@ export interface pharma_coupon {
 export interface ApplyCouponSceneProps extends NavigationScreenProps {}
 
 export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
-  // const isTest = props.navigation.getParam('isTest');
+  const isDiag = props.navigation.getParam('isDiag');
   const [couponText, setCouponText] = useState<string>('');
   const [couponMsg, setcouponMsg] = useState<string>('');
   const [couponError, setCouponError] = useState<string>('');
@@ -122,29 +135,39 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     cartItems,
     cartTotal,
     setCouponProducts,
+    pinCode,
+    addresses,
+    deliveryAddressId,
+    isCircleSubscription,
+    setIsCircleSubscription,
+    circleMembershipCharges,
+    setIsFreeDelivery,
+    productDiscount,
+    circlePlanSelected,
   } = useShoppingCart();
   const { showAphAlert } = useUIElements();
   const [loading, setLoading] = useState<boolean>(true);
   const client = useApolloClient();
   const isEnableApplyBtn = couponText.length >= 4;
-  const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
-
-  let packageId = '';
-  if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
-    packageId =
-      g(hdfcUserSubscriptions, 'group', 'name') + ':' + g(hdfcUserSubscriptions, 'planId');
-  }
+  const { locationDetails, pharmacyLocation, activeUserSubscriptions } = useAppCommonData();
+  const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
+  const pharmacyPincode =
+    selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
 
   useEffect(() => {
-    fetchConsultCoupons(packageId)
+    const data = {
+      packageId: getPackageIds(activeUserSubscriptions)?.join(),
+      mobile: g(currentPatient, 'mobileNumber'),
+      email: g(currentPatient, 'emailAddress'),
+      type: isDiag ? 'Diag' : 'Pharmacy',
+    };
+    fetchConsultCoupons(data)
       .then((res: any) => {
-        console.log(JSON.stringify(res.data), 'objobj');
         setcouponList(res.data.response);
         setLoading(false);
       })
       .catch((error) => {
         CommonBugFender('fetchingConsultCoupons', error);
-        console.log(error);
         props.navigation.goBack();
         showAphAlert!({
           title: string.common.uhOh,
@@ -158,9 +181,9 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     setLoading(true);
     const data = {
       mobile: g(currentPatient, 'mobileNumber'),
-      billAmount: cartTotal.toFixed(2),
+      billAmount: (cartTotal - productDiscount).toFixed(2),
       coupon: coupon,
-      pinCode: locationDetails && locationDetails.pincode,
+      pinCode: pharmacyPincode,
       products: cartItems.map((item) => ({
         sku: item.id,
         categoryId: item.productType,
@@ -168,15 +191,16 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
         quantity: item.quantity,
         specialPrice: item.specialPrice || item.price,
       })),
-      packageId: packageId,
+      packageIds: getPackageIds(activeUserSubscriptions),
       email: g(currentPatient, 'emailAddress'),
     };
     validateConsultCoupon(data)
       .then((resp: any) => {
         if (resp.data.errorCode == 0) {
           if (resp.data.response.valid) {
-            console.log(g(resp.data, 'response'));
+            setIsCircleSubscription && setIsCircleSubscription(false);
             setCoupon!({ ...g(resp.data, 'response')!, message: couponMsg });
+            setIsFreeDelivery?.(!!resp?.data?.response?.freeDelivery);
             props.navigation.goBack();
           } else {
             setCouponError(g(resp.data, 'response', 'reason'));
@@ -196,7 +220,17 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
               ? g(resp.data, 'response', 'discount')
               : 'Not Applicable',
             'Customer ID': g(currentPatient, 'id'),
+            'Cart Items': JSON.stringify(cartItems),
           };
+          const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CART_COUPON_APPLIED] = {
+            'Coupon Code': coupon || undefined,
+            'Discounted amount': g(resp.data, 'response', 'valid')
+              ? g(resp.data, 'response', 'discount')
+              : 'Not Applicable',
+            'Customer ID': g(currentPatient, 'id'),
+            'Cart Items': cartItems?.length || undefined,
+          };
+          // postCleverTapEvent(CleverTapEventName.CART_COUPON_APPLIED, cleverTapEventAttributes);
           postWebEngageEvent(WebEngageEventName.CART_COUPON_APPLIED, eventAttributes);
         } else {
           CommonBugFender('validatingPharmaCoupon', g(resp.data, 'errorMsg'));
@@ -205,7 +239,6 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('validatingPharmaCoupon', error);
-        console.log(error);
         setCouponError('Sorry, unable to validate coupon right now.');
       })
       .finally(() => setLoading!(false));
@@ -327,6 +360,15 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     );
   };
 
+  const renderCareDiscountBanner = () => (
+    <View style={styles.careMessageContainer}>
+      <PendingIcon style={styles.pendingIconStyle} />
+      <Text style={styles.careMessage}>
+        You can either use CIRCLE discount or apply a Coupon code
+      </Text>
+    </View>
+  );
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -337,6 +379,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
           onPressLeftIcon={() => props.navigation.goBack()}
         />
         <ScrollView style={{ marginBottom: 80 }} bounces={false}>
+          {(isCircleSubscription || !!circleMembershipCharges) && renderCareDiscountBanner()}
           {renderCouponCard()}
         </ScrollView>
         {renderBottomButtons()}

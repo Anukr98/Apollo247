@@ -13,6 +13,14 @@ import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
 import AsyncStorage from '@react-native-community/async-storage';
 import { g } from '../../helpers/helperFunctions';
 import { useAppCommonData } from '../AppCommonDataProvider';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  phrNotificationCountApi,
+  updatePatientAppVersion,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
+import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { HEALTH_CREDITS } from '../../utils/AsyncStorageKey';
 
 const styles = StyleSheet.create({
   placeholderViewStyle: {
@@ -31,6 +39,22 @@ const styles = StyleSheet.create({
     maxWidth: '95%',
     color: '#01475b',
     ...theme.fonts.IBMPlexSansMedium(18),
+  },
+  lastContainerStyle: {
+    height: 38,
+    borderBottomWidth: 0,
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end',
+  },
+  lastTextStyle: {
+    alignSelf: 'flex-start',
+    paddingBottom: 5,
+    textTransform: 'uppercase',
+    ...theme.viewStyles.text('M', 12, '#fc9916'),
+  },
+  selectedTextStyle: {
+    ...theme.viewStyles.text('M', 13, '#00b38e'),
+    alignSelf: 'flex-start',
   },
 });
 
@@ -53,6 +77,9 @@ export interface ProfileListProps {
   onProfileChange?: (profile: GetCurrentPatients_getCurrentPatients_patients) => void;
   screenName?: string;
   editProfileCallback?: (patient: any) => void;
+  showProfilePic?: boolean;
+  cleverTapProfileClickEvent?: () => void;
+  cleverTapEventForAddMemberClick?: () => void;
 }
 
 export const ProfileList: React.FC<ProfileListProps> = (props) => {
@@ -64,13 +91,14 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     selectedProfile,
     setDisplayAddProfile,
     listContainerStyle,
-    // unsetloaderDisplay,
+    showProfilePic,
   } = props;
   const addString = '+ADD MEMBER';
   const addBoolen = false;
   const { getPatientApiCall } = useAuth();
   const shopCart = useShoppingCart();
   const diagCart = useDiagnosticsCart();
+  const { setDoctorJoinedChat } = useAppCommonData();
   const {
     allCurrentPatients,
     setCurrentPatientId,
@@ -78,6 +106,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     profileAllPatients,
   } = useAllCurrentPatients();
   const { width, height } = Dimensions.get('window');
+  const client = useApolloClient();
 
   const [profile, setProfile] = useState<
     GetCurrentPatients_getCurrentPatients_patients | undefined
@@ -86,7 +115,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     GetCurrentPatients_getCurrentPatients_patients[] | null
   >(allCurrentPatients);
 
-  const { isUHID } = useAppCommonData();
+  const { isUHID, setPhrNotificationData, setPhrSession } = useAppCommonData();
 
   const titleCase = (str: string) => {
     var splitStr = str.toLowerCase().split(' ');
@@ -107,6 +136,8 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
           value: titleCase(i.firstName || i.lastName || ''),
           isPrimary: i.isUhidPrimary,
           uhid: i.uhid,
+          photoUrl: i.photoUrl,
+          relation: titleCase(i.relation || ''),
         };
       })) ||
     [];
@@ -137,6 +168,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
             setCurrentPatientId!(g(profilePatients[0], 'id')),
               AsyncStorage.setItem('selectUserId', g(profilePatients[0], 'id')),
               AsyncStorage.setItem('selectUserUHId', g(profilePatients[0], 'uhid')),
+              AsyncStorage.setItem(HEALTH_CREDITS, ''),
               setAddressList(g(profilePatients[0], 'id'));
           }
         } catch (error) {}
@@ -145,10 +177,8 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   }, [isUHID]);
 
   useEffect(() => {
-    // AsyncStorage.removeItem('selectUserId');
     const getDataFromTree = async () => {
       const storeVallue = await AsyncStorage.getItem('selectUserId');
-      console.log('storeVallue : uuh', storeVallue, currentPatient);
       if (storeVallue) {
         setCurrentPatientId(storeVallue);
         storeVallue &&
@@ -160,6 +190,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
       } else if (currentPatient) {
         AsyncStorage.setItem('selectUserId', currentPatient!.id);
         AsyncStorage.setItem('selectUserUHId', currentPatient!.uhid),
+          AsyncStorage.setItem(HEALTH_CREDITS, ''),
           setAddressList(currentPatient!.id);
       }
     };
@@ -171,14 +202,14 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   }, [!currentPatient]);
 
   useEffect(() => {
-    currentPatient && setProfile(currentPatient);
+    if (currentPatient) {
+      setProfile(currentPatient);
+      updatePatientAppVersion(client, currentPatient);
+    }
   }, [currentPatient]);
 
   useEffect(() => {
     setProfileArray(addNewProfileText(profileAllPatients!));
-    // if (profileAllPatients) {
-    //   setLoading && setLoading(false);
-    // }
   }, [profileAllPatients]);
 
   useEffect(() => {
@@ -190,6 +221,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     diagCart.setDeliveryAddressId!('');
     shopCart.setAddresses!([]);
     diagCart.setAddresses!([]);
+    setDoctorJoinedChat!(false);
   };
 
   const isNewEntry = (
@@ -224,15 +256,12 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
         dateOfBirth: addString,
         emailAddress: addString,
         photoUrl: addString,
-        patientMedicalHistory: null,
         athsToken: addString,
         referralCode: addString,
         isLinked: addBoolen,
         isUhidPrimary: addBoolen,
         primaryUhid: addString,
         primaryPatientId: addString,
-        familyHistory: null,
-        lifeStyle: null,
         whatsAppMedicine: null,
         whatsAppConsult: null,
       });
@@ -240,15 +269,34 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     return pArray;
   };
 
+  const callPhrNotificationApi = async (currentPatient: any) => {
+    phrNotificationCountApi(client, currentPatient || '')
+      .then((newRecordsCount) => {
+        if (newRecordsCount) {
+          setPhrNotificationData &&
+            setPhrNotificationData(
+              newRecordsCount! as getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount
+            );
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('SplashcallPhrNotificationApi', error);
+      });
+  };
+
   const renderPicker = () => {
     const usersList = moveSelectedToTop();
     return (
       <MaterialMenu
+        showProfilePic={showProfilePic}
         showMenu={props.showList}
         menuHidden={() => {
           props.menuHidden && props.menuHidden();
         }}
         options={usersList[0] === undefined ? pickerData : usersList}
+        profileClickCleverTapEvent={() =>
+          props.cleverTapProfileClickEvent && props.cleverTapProfileClickEvent()
+        }
         defaultOptions={[]}
         selectedText={profile && profile!.id}
         menuContainerStyle={[
@@ -259,27 +307,19 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
           },
           listContainerStyle,
         ]}
-        itemContainer={{ height: 44.8, marginHorizontal: 12, width: width / 2 }}
+        itemContainer={{
+          height: showProfilePic ? 70.8 : 44.8,
+          marginHorizontal: 12,
+          width: width / 2,
+        }}
         itemTextStyle={{ ...theme.viewStyles.text('M', 13, '#01475b'), paddingHorizontal: 0 }}
-        selectedTextStyle={{
-          ...theme.viewStyles.text('M', 13, '#00b38e'),
-          alignSelf: 'flex-start',
-        }}
-        lastTextStyle={{
-          alignSelf: 'flex-start',
-          paddingBottom: 5,
-          textTransform: 'uppercase',
-          ...theme.viewStyles.text('M', 12, '#fc9916'),
-        }}
-        bottomPadding={{ paddingBottom: 20 }}
-        lastContainerStyle={{
-          height: 38,
-          borderBottomWidth: 0,
-          alignItems: 'flex-end',
-          justifyContent: 'flex-end',
-        }}
+        selectedTextStyle={styles.selectedTextStyle}
+        lastTextStyle={!showProfilePic && styles.lastTextStyle}
+        bottomPadding={{ paddingBottom: props.showProfilePic ? 0 : 20 }}
+        lastContainerStyle={showProfilePic ? { borderBottomWidth: 0 } : styles.lastContainerStyle}
         onPress={(selectedUser) => {
           if (selectedUser.key === addString) {
+            props.cleverTapEventForAddMemberClick && props.cleverTapEventForAddMemberClick();
             const pfl = profileArray!.find((i) => selectedUser.key === i.id);
             props.onProfileChange && props.onProfileChange(pfl!);
             props.navigation.navigate(AppRoutes.EditProfile, {
@@ -291,17 +331,20 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
             });
             setDisplayAddProfile && setDisplayAddProfile(true);
           } else {
-            console.log(' selectedUser.key', selectedUser.key, selectedUser);
             const pfl = profileArray!.find((i) => selectedUser.key === i.id);
             props.onProfileChange && props.onProfileChange(pfl!);
             profileArray && setProfile(pfl);
-            console.log(' pfl.key', pfl);
+            if (pfl?.id) {
+              callPhrNotificationApi(pfl?.id);
+              setPhrSession?.('');
+            }
           }
           saveUserChange &&
             selectedUser.key !== addString &&
             (setCurrentPatientId!(selectedUser!.key),
             AsyncStorage.setItem('selectUserId', selectedUser!.key),
             AsyncStorage.setItem('selectUserUHId', selectedUser!.uhid),
+            AsyncStorage.setItem(HEALTH_CREDITS, ''),
             setAddressList(selectedUser!.key));
         }}
       >

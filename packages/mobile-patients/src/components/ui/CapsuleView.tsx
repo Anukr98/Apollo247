@@ -14,7 +14,8 @@ const styles = StyleSheet.create({
   containerStyles: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 10,
+    borderTopRightRadius: 10,
+    borderTopLeftRadius: 10,
     backgroundColor: theme.colors.CAPSULE_ACTIVE_BG,
   },
   disabledStyle: {
@@ -29,7 +30,7 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
   },
   disabledTextStyle: {
-    color: theme.colors.CAPSULE_INACTIVE_TEXT,
+    color: theme.colors.SKY_BLUE,
   },
 });
 
@@ -48,8 +49,6 @@ export const CapsuleView: React.FC<CapsuleViewProps> = (props) => {
       <TouchableOpacity
         activeOpacity={1}
         style={[styles.containerStyles, props.style, !props.isActive ? styles.disabledStyle : null]}
-        // onPress={props.isActive ? () => {} : props.onPress}
-        // activeOpacity={props.isActive ? 1 : 0.6}
       >
         <Text
           style={[

@@ -8,7 +8,7 @@ import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails,
@@ -16,8 +16,11 @@ import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
 } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { DiscountIcon, OneApollo } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CircleLogo, DiscountIcon, OneApollo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { PaymentModes } from '@aph/mobile-patients/src/strings/strings.json';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
+import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   horizontalline: {
@@ -35,7 +38,6 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(12),
     color: '#01475b',
     letterSpacing: 0,
-    // lineHeight: 20,
   },
   orderStyles: {
     ...theme.fonts.IBMPlexSansSemiBold(13),
@@ -127,6 +129,27 @@ const styles = StyleSheet.create({
     lineHeight: 15,
     marginLeft: 3,
   },
+  cashBackView: {
+    ...theme.viewStyles.cardViewStyle,
+    marginTop: 10,
+    borderRadius: 5,
+    marginBottom: 16,
+    paddingHorizontal: 15,
+    paddingVertical: 9,
+    borderColor: '#00B38E',
+    borderWidth: 2,
+    borderStyle: 'dashed',
+  },
+  cashBackInnerView: { flexDirection: 'row', alignItems: 'center' },
+  circleIcon: { height: 25, width: 40, resizeMode: 'center' },
+  cashBackText: {
+    ...theme.viewStyles.text('R', 13, '#01475b'),
+    marginHorizontal: 5,
+  },
+  highlightedCashBackText: {
+    ...theme.viewStyles.text('SB', 13, '#00B38E'),
+    marginHorizontal: 5,
+  },
 });
 
 export interface OrderSummaryViewProps {
@@ -138,15 +161,43 @@ export interface OrderSummaryViewProps {
 
 export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   orderDetails,
-  isTest,
   addressData,
   onBillChangesClick,
 }) => {
   const medicineOrderLineItems = orderDetails.medicineOrderLineItems || [];
+  const medicineOrderShipments = orderDetails.medicineOrderShipments || [];
   const medicineOrderStatus = orderDetails.medicineOrdersStatus || [];
   const deliveredOrder = medicineOrderStatus.find(
     (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
   );
+  const statusToShowNewItems = [
+    MEDICINE_ORDER_STATUS.ORDER_PLACED,
+    MEDICINE_ORDER_STATUS.VERIFICATION_DONE,
+    MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+  ];
+  const [shipmentItems, setShipmentItems] = useState([]);
+
+  const orderInvoice = g(
+    orderDetails,
+    'medicineOrderShipments',
+    '0' as any,
+    'medicineOrderInvoice'
+  );
+  const itemsFromMedicineShipment = orderInvoice?.length
+    ? g(orderDetails, 'medicineOrderShipments', '0' as any, 'itemDetails')
+    : '';
+
+  const item_details_from_shipments = itemsFromMedicineShipment!
+    ? JSON.parse(itemsFromMedicineShipment!)
+    : null;
+
+  const isCartItemsUpdated =
+    statusToShowNewItems.includes(orderDetails?.currentStatus!) &&
+    orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER &&
+    orderDetails.orderTat! &&
+    item_details_from_shipments!
+      ? true
+      : false;
   const item_details = g(
     orderDetails,
     'medicineOrderShipments',
@@ -155,8 +206,32 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
     '0' as any,
     'itemDetails'
   );
-  const itemDetails = item_details ? JSON.parse(item_details) : null;
-  // console.log('itemDetails', itemDetails, JSON.stringify(itemDetails));
+  const [itemDetails, setItemDetails] = useState(item_details ? JSON.parse(item_details) : []);
+
+  useEffect(() => {
+    if (itemDetails?.length) {
+      Promise.all(itemDetails?.map((item) => getMedicineDetailsApi(item?.itemId)))
+        .then((result) => {
+          const shipmentDetails = result?.map(({ data: { productdp } }, index) => {
+            const medicineDetails = (productdp && productdp[0]) || {};
+            const mou = medicineDetails?.mou || itemDetails?.[index]?.mou;
+            const qty = (itemDetails?.[index]?.issuedQty * itemDetails?.[index]?.mou) / mou;
+            return {
+              itemId: medicineDetails?.sku || itemDetails?.[index]?.itemId,
+              medicineName: medicineDetails?.name || itemDetails?.[index]?.itemName,
+              quantity: Math.ceil(qty),
+              mrp: (itemDetails?.[index]?.mrp * mou) / itemDetails?.[index]?.mou,
+              total: itemDetails?.[index]?.mrp * itemDetails?.[index]?.issuedQty || 0,
+            };
+          });
+          setShipmentItems(shipmentDetails);
+        })
+        .catch((e) => {
+          CommonBugFender('OrderSummaryView_getMedicineDetailsApi', e);
+        });
+    }
+  }, [itemDetails]);
+
   const billDetails = g(
     orderDetails,
     'medicineOrderShipments',
@@ -166,7 +241,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
     'billDetails'
   );
   const billingDetails = billDetails ? JSON.parse(billDetails) : null;
-  // console.log('biilingDetails', billingDetails, JSON.stringify(billingDetails));
   const orderBilledAndPacked = medicineOrderStatus.find(
     (item) =>
       item!.orderStatus == MEDICINE_ORDER_STATUS.READY_AT_STORE ||
@@ -174,29 +248,46 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
       item!.orderStatus == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY ||
       item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
   );
+
   let item_quantity: string;
-  if (!orderBilledAndPacked && medicineOrderLineItems.length == 1) {
-    item_quantity = medicineOrderLineItems.length + ' item ';
-  } else if (orderBilledAndPacked && itemDetails && itemDetails.length == 1) {
-    item_quantity = itemDetails.length + ' item ';
+  if (isCartItemsUpdated && !orderBilledAndPacked && medicineOrderShipments.length > 0) {
+    item_quantity =
+      item_details_from_shipments?.length +
+      (item_details_from_shipments?.length > 1 ? ' item(s) ' : ' items ');
+  } else if (!orderBilledAndPacked && medicineOrderLineItems?.length == 1) {
+    item_quantity = medicineOrderLineItems?.length + ' item ';
+  } else if (orderBilledAndPacked && itemDetails && itemDetails?.length == 1) {
+    item_quantity = itemDetails?.length + ' item ';
   } else {
     item_quantity =
       orderBilledAndPacked && itemDetails
-        ? orderBilledAndPacked && itemDetails.length + ' item(s) '
-        : medicineOrderLineItems.length + ' item(s) ';
+        ? orderBilledAndPacked && itemDetails?.length + ' item(s) '
+        : medicineOrderLineItems?.length + ' item(s) ';
   }
-  const mrpTotal = medicineOrderLineItems.reduce(
+  const mrpTotal = medicineOrderLineItems?.reduce(
     (acc, currentVal) => acc + currentVal!.mrp! * currentVal!.quantity!,
     0
   );
+
+  const updatedItemMrpTotal = item_details_from_shipments?.reduce(
+    (acc, currentVal) => acc + currentVal!.mrp! * currentVal!.quantity!,
+    0
+  );
+
   const billedMrpTotal =
     orderBilledAndPacked &&
     itemDetails &&
-    itemDetails.reduce((acc, currentVal) => acc + currentVal!.mrp! * currentVal!.issuedQty!, 0);
+    itemDetails?.reduce((acc, currentVal) => acc + currentVal?.mrp * currentVal?.issuedQty, 0);
 
   const product_discount = orderDetails.productDiscount || 0;
   const coupon_discount = orderDetails.couponDiscount || 0;
   const packaging_charges = orderDetails.packagingCharges;
+  const cartItemsUpdatedTotal =
+    (packaging_charges || 0) +
+    (orderDetails.devliveryCharges || 0) +
+    updatedItemMrpTotal -
+    coupon_discount -
+    product_discount;
   const paymentMethod = g(orderDetails, 'medicineOrderPayments', '0' as any, 'paymentType');
   const paymentMode =
     g(orderDetails, 'medicineOrderPayments', '0' as any, 'paymentMode') || paymentMethod;
@@ -217,7 +308,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
       : 'COD';
 
   const isPrepaid = paymentMethod == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS;
-
   const prepaidBilledValue = isPrepaid
     ? orderBilledAndPacked &&
       billingDetails &&
@@ -225,12 +315,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
       ? billingDetails.invoiceValue - orderDetails.estimatedAmount!
       : billDetails && orderDetails.estimatedAmount! - billingDetails.invoiceValue
     : 0;
-  // console.log(
-  //   'prepaidBilledValue',
-  //   prepaidBilledValue,
-  //   Math.round(billingDetails && billingDetails.discountValue),
-  //   billingDetails && billingDetails.invoiceValue > billingDetails.prepaidValue
-  // );
 
   const noAdditionalDiscount =
     orderBilledAndPacked &&
@@ -254,8 +338,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
     orderDetails.medicineOrderShipments &&
     billingDetails &&
     billingDetails.discountValue != undefined;
-  // console.log('prescriptionUpload', prescriptionUpload, billingDiscount);
-  // console.log('newOrders', newOrders);
   const getOrderDifferenceAmounts = (
     paymentMethod: MEDICINE_ORDER_PAYMENT_TYPE,
     orderInfo: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails
@@ -272,7 +354,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
       'billDetails'
     );
     const billingDetails = billDetails ? JSON.parse(billDetails) : null;
-    // console.log('biilingDetails', billingDetails, JSON.stringify(billingDetails));
     const billedDiscount = billingDetails.discountValue || 0;
     const billedValue = billingDetails.invoiceValue || 0;
 
@@ -313,9 +394,12 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   const renderMedicineRow = (
     item: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems
   ) => {
-    const isTablet = (item.medicineName || '').includes('TABLET');
-    const medicineName = `${item.medicineName}${
-      item.mou! > 1 ? ` (${item.mou}${isTablet ? ' tabs' : ''})` : ''
+    const selectedAttribute = isCartItemsUpdated ? item.articleName! : item.medicineName;
+    const isTablet = (selectedAttribute || '').includes('TABLET');
+    const medicineName = `${selectedAttribute}${
+      (isCartItemsUpdated ? item.packSize! : item.mou!) > 1
+        ? ` (${isCartItemsUpdated ? item.packSize! : item.mou!}${isTablet ? ' tabs' : ''})`
+        : ''
     }`;
     return (
       <View
@@ -351,7 +435,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
           }}
         >
           <Text style={styles.medicineText1}>
-            Rs. {(item.mrp! * item.quantity! || 0).toFixed(2)}
+            {string.common.Rs} {(item.mrp! * item.quantity! || 0).toFixed(2)}
           </Text>
         </View>
       </View>
@@ -359,13 +443,16 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   };
 
   const renderOrderBilledMedicineRow = (item: any) => {
-    const isTablet = (item.itemName || '').includes('TABLET');
-    const medicineName = `${item.itemName}${
-      item.mou! > 1 ? ` (${item.mou}${isTablet ? ' tabs' : ''})` : ''
+    const isTablet = (item?.itemName || '').includes('TABLET');
+    const medicineName = `${item?.itemName}${
+      item?.mou > 1 ? ` (${item?.mou}${isTablet ? ' tabs' : ''})` : ''
     }`;
+    const quantity = Math.ceil(item?.issuedQty);
+    const mrp = (item?.mrp * item?.issuedQty || 0).toFixed(2);
+    const billedTotal = (mrp * quantity).toFixed(2);
     return (
       <View
-        key={item.itemId!}
+        key={item?.itemId!}
         style={{ flexDirection: 'row', paddingLeft: 11, paddingRight: 16, marginBottom: 8 }}
       >
         <View
@@ -375,8 +462,9 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             borderRightColor: 'rgba(2, 71, 91, 0.3)',
           }}
         >
-          <Text numberOfLines={2} style={styles.medicineText1}>
-            {medicineName}
+          <Text style={styles.medicineText1}>{item?.medicineName || medicineName}</Text>
+          <Text style={styles.medicineText1}>
+            (MRP. {string.common.Rs} {item?.mrp?.toFixed(2) || mrp})
           </Text>
         </View>
         <View
@@ -386,7 +474,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             borderRightColor: 'rgba(2, 71, 91, 0.3)',
           }}
         >
-          <Text style={styles.medicineText1}>{Math.ceil(item.issuedQty)}</Text>
+          <Text style={styles.medicineText1}>{item?.quantity || quantity}</Text>
         </View>
         <View
           style={{
@@ -395,7 +483,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
           }}
         >
           <Text style={styles.medicineText1}>
-            Rs. {(item.mrp! * item.issuedQty! || 0).toFixed(2)}
+            {string.common.Rs} {item?.total?.toFixed(2) || billedTotal}
           </Text>
         </View>
       </View>
@@ -417,6 +505,24 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
     return moment(statusDate).format('ddd, D MMMM, hh:mm A');
   };
 
+  const renderCircleSaving = () => {
+    return (
+      <View style={styles.cashBackView}>
+        <View style={styles.cashBackInnerView}>
+          <CircleLogo style={styles.circleIcon} />
+          <Text style={styles.cashBackText}>
+            cashback of{' '}
+            <Text style={styles.highlightedCashBackText}>
+              {string.common.Rs}
+              {convertNumberToDecimal(orderDetails?.totalCashBack!)} earned{' '}
+            </Text>
+            on your order
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
   const isStorePickup = orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP;
   const userName = `${g(orderDetails, 'patient', 'firstName')} ${g(
     orderDetails,
@@ -428,7 +534,10 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   const offlineOrderNumber = g(orderDetails, 'billNumber');
   const offlineOrdeDiscount = (offlineOrderNumber && g(orderDetails, 'productDiscount')) || 0;
   const offlineOrdeRedeemedAmount = (offlineOrderNumber && g(orderDetails, 'redeemedAmount')) || 0;
-
+  const isNewItemsAdded =
+    statusToShowNewItems.includes(orderDetails.currentStatus!) &&
+    orderDetails.medicineOrderLineItems!.length > 0 &&
+    orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION;
   return (
     <View>
       <View style={{ marginHorizontal: 20, marginVertical: 16 }}>
@@ -443,9 +552,11 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             <Text style={styles.totalTextStyle}> {string.OrderSummery.total} </Text>
             <Text style={styles.totalPriceStyle}>
               {' '}
-              Rs.{' '}
+              {string.common.Rs}{' '}
               {orderBilledAndPacked && newOrders && billingDetails
                 ? (billingDetails.invoiceValue || 0).toFixed(2)
+                : isCartItemsUpdated
+                ? (cartItemsUpdatedTotal || 0).toFixed(2)
                 : (orderDetails.estimatedAmount || 0).toFixed(2)}
             </Text>
           </View>
@@ -500,6 +611,9 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             marginBottom: 8,
             paddingTop: 13,
             paddingBottom: 29,
+            borderColor:
+              isNewItemsAdded || isCartItemsUpdated ? 'rgba(79, 176, 144,0.8)' : 'transparent',
+            borderWidth: isNewItemsAdded || isCartItemsUpdated ? 2 : 0,
           }}
         >
           <View
@@ -511,13 +625,28 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
               marginBottom: 9,
             }}
           >
-            <Text
-              style={{
-                ...theme.viewStyles.text('SB', 13, '#01475b'),
-              }}
-            >
-              {'ITEM DETAILS'}
-            </Text>
+            <View style={{ flexDirection: 'row' }}>
+              <Text
+                style={{
+                  ...theme.viewStyles.text('SB', 13, '#01475b'),
+                }}
+              >
+                {'ITEM DETAILS'}
+              </Text>
+
+              {isNewItemsAdded && (
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('SB', 10, 'white'),
+                    padding: 2,
+                    marginHorizontal: 5,
+                    backgroundColor: 'rgba(79, 176, 144,1)',
+                  }}
+                >
+                  NEW
+                </Text>
+              )}
+            </View>
             {!!deliveredOrder && (
               <Text style={theme.viewStyles.text('M', 13, '#01475b')}>
                 {'Delivered ' + getDeliveredDate(deliveredOrder)}
@@ -577,188 +706,181 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                 alignItems: 'flex-end',
               }}
             >
-              <Text style={styles.medicineText}>{'MRP VALUE'}</Text>
+              <Text style={styles.medicineText}>{'MRP TOTAL'}</Text>
             </View>
           </View>
           {orderBilledAndPacked && newOrders && itemDetails
-            ? itemDetails.map((item) => renderOrderBilledMedicineRow(item!))
-            : medicineOrderLineItems.map((item) => renderMedicineRow(item!))}
+            ? shipmentItems?.map((item) => renderOrderBilledMedicineRow(item!))
+            : isCartItemsUpdated
+            ? item_details_from_shipments?.map((item) => renderMedicineRow(item!))
+            : medicineOrderLineItems?.map((item) => renderMedicineRow(item!))}
         </View>
 
-        <View style={styles.paymentCard}>
-          <View style={{ paddingHorizontal: 10, paddingTop: 17, paddingBottom: 9 }}>
-            <Text style={styles.paymentDetailText}>{string.OrderSummery.paymentDetails}</Text>
-          </View>
-          <View style={[styles.horizontalline]} />
-          <View
-            style={{
-              paddingHorizontal: 16,
-              paddingTop: 7,
-              paddingBottom: 20,
-            }}
-          >
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Text style={styles.paymentLeftText}>{string.OrderSummery.mrp_total}</Text>
-              <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                {orderBilledAndPacked && newOrders && itemDetails
-                  ? billedMrpTotal.toFixed(2)
-                  : mrpTotal.toFixed(2)}
-              </Text>
+        {orderDetails?.totalCashBack! > 0 && renderCircleSaving()}
+        {orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER ||
+        (orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION &&
+          orderBilledAndPacked) ? (
+          <View style={styles.paymentCard}>
+            <View style={{ paddingHorizontal: 10, paddingTop: 17, paddingBottom: 9 }}>
+              <Text style={styles.paymentDetailText}>{string.OrderSummery.paymentDetails}</Text>
             </View>
-            {!newOrders && product_discount > 0 ? (
+            <View style={[styles.horizontalline]} />
+            <View
+              style={{
+                paddingHorizontal: 16,
+                paddingTop: 7,
+                paddingBottom: 20,
+              }}
+            >
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={styles.paymentLeftText}>{string.OrderSummery.product_discount}</Text>
+                <Text style={styles.paymentLeftText}>{string.OrderSummery.mrp_total}</Text>
                 <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                  - Rs. {product_discount.toFixed(2)}
+                  {orderBilledAndPacked && newOrders && itemDetails
+                    ? billedMrpTotal.toFixed(2)
+                    : isCartItemsUpdated
+                    ? updatedItemMrpTotal.toFixed(2)
+                    : mrpTotal.toFixed(2)}
                 </Text>
               </View>
-            ) : null}
-            {orderBilledAndPacked &&
-            newOrders &&
-            billingDetails &&
-            billingDetails.discountValue > 0 ? (
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={styles.paymentLeftText}>{string.OrderSummaryText.discount_total}</Text>
-                <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                  - Rs. {billingDetails.discountValue.toFixed(2)}
-                </Text>
-              </View>
-            ) : null}
-            {coupon_discount > 0 ? (
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={styles.paymentLeftText}>{string.OrderSummery.coupon_discount}</Text>
-                <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                  - Rs. {coupon_discount.toFixed(2)}
-                </Text>
-              </View>
-            ) : null}
-            {!newOrders && !offlineOrderNumber ? (
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={styles.paymentLeftText}>{string.OrderSummery.delivery_charges}</Text>
-                <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                  + Rs. {(orderDetails.devliveryCharges || 0).toFixed(2)}
-                </Text>
-              </View>
-            ) : null}
-            {orderBilledAndPacked && newOrders && billingDetails ? (
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={styles.paymentLeftText}>{string.OrderSummery.delivery_charges}</Text>
-                <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                  + Rs. {(billingDetails.deliveryCharges || 0).toFixed(2)}
-                </Text>
-              </View>
-            ) : null}
-            {!offlineOrderNumber && (
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={styles.paymentLeftText}>{string.OrderSummery.packaging_charges}</Text>
-                <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                  + Rs. {(packaging_charges || 0).toFixed(2)}
-                </Text>
-              </View>
-            )}
-            {!!offlineOrderNumber && (
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={styles.paymentLeftText}>{string.OrderSummaryText.discount_total}</Text>
-                <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                  - Rs. {(offlineOrdeDiscount || 0).toFixed(2)}
-                </Text>
-              </View>
-            )}
-            {!!offlineOrderNumber && (
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={styles.paymentLeftText}>{string.OrderSummery.redeemed_amount}</Text>
-                <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                  - Rs. {(offlineOrdeRedeemedAmount || 0).toFixed(2)}
-                </Text>
-              </View>
-            )}
-            <View style={[styles.horizontalline, { marginTop: 4, marginBottom: 7 }]} />
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Text style={[styles.boldTotal]}>{string.OrderSummery.total.toUpperCase()}</Text>
-              <Text style={[styles.boldTotal, { textAlign: 'right' }]}>
-                Rs.{' '}
-                {orderBilledAndPacked && newOrders && billingDetails
-                  ? (billingDetails.invoiceValue || 0).toFixed(2)
-                  : (orderDetails.estimatedAmount || 0).toFixed(2)}
-              </Text>
-            </View>
-            {!offlineOrderNumber && !billingDetails && (
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={styles.paymentMethodText}>{string.OrderSummery.paymentMethod}</Text>
-                <Text style={[styles.paymentMethodText, { textAlign: 'right' }]}>
-                  {/* {paymentMethodToDisplay} */}
-                </Text>
-              </View>
-            )}
-            {!offlineOrderNumber && healthCreditsRedeemed != 0 && !billingDetails && (
-              <View>
+              {!orderBilledAndPacked && !newOrders && product_discount > 0 ? (
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <OneApollo style={{ height: 17, width: 22, marginRight: 4 }} />
-                    <Text style={styles.paymentLeftText}>Health Credits</Text>
-                  </View>
-
+                  <Text style={styles.paymentLeftText}>{string.OrderSummery.product_discount}</Text>
                   <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                    Rs. {(healthCreditsRedeemed || 0).toFixed(2)}
+                    - {string.common.Rs} {product_discount.toFixed(2)}
                   </Text>
                 </View>
-                <Text style={styles.redeemText}>(Will be Redeemed after delivery)</Text>
-              </View>
-            )}
-            {!offlineOrderNumber && amountPaid != 0 && !billingDetails && (
+              ) : null}
+              {orderBilledAndPacked &&
+              newOrders &&
+              billingDetails &&
+              billingDetails.discountValue > 0 ? (
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={styles.paymentLeftText}>
+                    {string.OrderSummaryText.discount_total}
+                  </Text>
+                  <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
+                    - {string.common.Rs} {billingDetails.discountValue.toFixed(2)}
+                  </Text>
+                </View>
+              ) : null}
+              {!orderBilledAndPacked && coupon_discount > 0 ? (
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={styles.paymentLeftText}>{string.OrderSummery.coupon_discount}</Text>
+                  <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
+                    - {string.common.Rs} {coupon_discount.toFixed(2)}
+                  </Text>
+                </View>
+              ) : null}
+              {!newOrders && !offlineOrderNumber ? (
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={styles.paymentLeftText}>{string.OrderSummery.delivery_charges}</Text>
+                  <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
+                    + {string.common.Rs} {(orderDetails.devliveryCharges || 0).toFixed(2)}
+                  </Text>
+                </View>
+              ) : null}
+              {orderBilledAndPacked && newOrders && billingDetails ? (
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={styles.paymentLeftText}>{string.OrderSummery.delivery_charges}</Text>
+                  <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
+                    + {string.common.Rs} {(billingDetails.deliveryCharges || 0).toFixed(2)}
+                  </Text>
+                </View>
+              ) : null}
+              {!offlineOrderNumber && (
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={styles.paymentLeftText}>
+                    {string.OrderSummery.packaging_charges}
+                  </Text>
+                  <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
+                    + {string.common.Rs} {(packaging_charges || 0).toFixed(2)}
+                  </Text>
+                </View>
+              )}
+              {!!offlineOrderNumber && (
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={styles.paymentLeftText}>
+                    {string.OrderSummaryText.discount_total}
+                  </Text>
+                  <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
+                    - {string.common.Rs} {(offlineOrdeDiscount || 0).toFixed(2)}
+                  </Text>
+                </View>
+              )}
+              {!!offlineOrderNumber && (
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={styles.paymentLeftText}>{string.OrderSummery.redeemed_amount}</Text>
+                  <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
+                    - {string.common.Rs} {(offlineOrdeRedeemedAmount || 0).toFixed(2)}
+                  </Text>
+                </View>
+              )}
+              <View style={[styles.horizontalline, { marginTop: 4, marginBottom: 7 }]} />
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={styles.paymentLeftText}>{PaymentModes[paymentMode]}</Text>
-                <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                  Rs. {(amountPaid || 0).toFixed(2)}
+                <Text style={[styles.boldTotal]}>{string.OrderSummery.total.toUpperCase()}</Text>
+                <Text style={[styles.boldTotal, { textAlign: 'right' }]}>
+                  {string.common.Rs}{' '}
+                  {orderBilledAndPacked && newOrders && billingDetails
+                    ? (billingDetails.invoiceValue || 0).toFixed(2)
+                    : isCartItemsUpdated
+                    ? (cartItemsUpdatedTotal || 0).toFixed(2)
+                    : (orderDetails.estimatedAmount || 0).toFixed(2)}
                 </Text>
               </View>
-            )}
-            {orderBilledAndPacked &&
-            newOrders &&
-            !prescriptionUpload &&
-            !noAdditionalDiscount &&
-            billingDetails ? (
-              <>
-                <View style={[styles.horizontalline, { marginTop: 7, marginBottom: 11 }]} />
+              {!offlineOrderNumber && !billingDetails && (
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <Text style={{ ...theme.viewStyles.text('SB', 14, '#01475b', 0.7, 24, 0) }}>
-                    {string.OrderSummaryText.total_order_billed}
-                  </Text>
-                  <Text
-                    style={[
-                      {
-                        ...theme.viewStyles.text('SB', 14, '#01475b', 0.7, 24, 0),
-                        textAlign: 'right',
-                      },
-                    ]}
-                  >
-                    Rs. {(orderDetails.estimatedAmount || 0).toFixed(2)}
+                  <Text style={styles.paymentMethodText}>{string.OrderSummery.paymentMethod}</Text>
+                  <Text style={[styles.paymentMethodText, { textAlign: 'right' }]}></Text>
+                </View>
+              )}
+              {!offlineOrderNumber && healthCreditsRedeemed != 0 && !billingDetails && (
+                <View>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <OneApollo style={{ height: 17, width: 22, marginRight: 4 }} />
+                      <Text style={styles.paymentLeftText}>Health Credits</Text>
+                    </View>
+
+                    <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
+                      {string.common.Rs} {(healthCreditsRedeemed || 0).toFixed(2)}
+                    </Text>
+                  </View>
+                  <Text style={styles.redeemText}>(Will be Redeemed after delivery)</Text>
+                </View>
+              )}
+              {!offlineOrderNumber && amountPaid != 0 && !billingDetails && (
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={styles.paymentLeftText}>{PaymentModes[paymentMode]}</Text>
+                  <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
+                    {string.common.Rs}{' '}
+                    {isCartItemsUpdated
+                      ? (cartItemsUpdatedTotal || 0).toFixed(2)
+                      : (amountPaid - healthCreditsRedeemed || 0).toFixed(2)}
                   </Text>
                 </View>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    marginTop: 4,
-                  }}
-                >
-                  <Text style={{ ...theme.viewStyles.text('SB', 14, '#01475b', 0.7, 24, 0) }}>
-                    {string.OrderSummaryText.total_billed_value}
-                  </Text>
-                  <Text
-                    style={[
-                      {
-                        ...theme.viewStyles.text('SB', 14, '#01475b', 0.7, 24, 0),
-                        textAlign: 'right',
-                      },
-                    ]}
-                  >
-                    Rs. {billingDetails && (billingDetails.invoiceValue || 0).toFixed(2)}
-                  </Text>
-                </View>
-                <View style={[styles.horizontalline, { marginTop: 9, marginBottom: 9 }]} />
-                {billingDetails.invoiceValue > orderDetails.estimatedAmount! ||
-                paymentMethod == MEDICINE_ORDER_PAYMENT_TYPE.COD ? (
+              )}
+              {orderBilledAndPacked &&
+              newOrders &&
+              !prescriptionUpload &&
+              !noAdditionalDiscount &&
+              billingDetails ? (
+                <>
+                  <View style={[styles.horizontalline, { marginTop: 7, marginBottom: 11 }]} />
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text style={{ ...theme.viewStyles.text('SB', 14, '#01475b', 0.7, 24, 0) }}>
+                      {string.OrderSummaryText.total_order_billed}
+                    </Text>
+                    <Text
+                      style={[
+                        {
+                          ...theme.viewStyles.text('SB', 14, '#01475b', 0.7, 24, 0),
+                          textAlign: 'right',
+                        },
+                      ]}
+                    >
+                      {string.common.Rs} {(orderDetails.estimatedAmount || 0).toFixed(2)}
+                    </Text>
+                  </View>
                   <View
                     style={{
                       flexDirection: 'row',
@@ -766,43 +888,69 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                       marginTop: 4,
                     }}
                   >
-                    <Text
-                      style={
-                        billingDetails.invoiceValue > orderDetails.estimatedAmount!
-                          ? { ...theme.viewStyles.text('SB', 14, '#01475b', 1, 24, 0) }
-                          : { ...theme.viewStyles.text('M', 14, '#01475b', 1, 24, 0) }
-                      }
-                    >
-                      {billingDetails.invoiceValue > orderDetails.estimatedAmount!
-                        ? string.OrderSummaryText.amount_to_be_paid_on_delivery
-                        : paymentMethod == MEDICINE_ORDER_PAYMENT_TYPE.COD
-                        ? string.OrderSummaryText.cod_amount_to_pay
-                        : string.OrderSummaryText.refund_amount}
+                    <Text style={{ ...theme.viewStyles.text('SB', 14, '#01475b', 0.7, 24, 0) }}>
+                      {string.OrderSummaryText.total_billed_value}
                     </Text>
                     <Text
                       style={[
-                        billingDetails.invoiceValue > orderDetails.estimatedAmount!
-                          ? {
-                              ...theme.viewStyles.text('SB', 14, '#01475b', 1, 24, 0),
-                              textAlign: 'right',
-                            }
-                          : {
-                              ...theme.viewStyles.text('M', 14, '#01475b', 1, 24, 0),
-                              textAlign: 'right',
-                            },
+                        {
+                          ...theme.viewStyles.text('SB', 14, '#01475b', 0.7, 24, 0),
+                          textAlign: 'right',
+                        },
                       ]}
                     >
-                      Rs.{' '}
-                      {isPrepaid
-                        ? (prepaidBilledValue || 0).toFixed(2)
-                        : (billingDetails.invoiceValue || 0).toFixed(2)}
+                      {string.common.Rs}{' '}
+                      {billingDetails && (billingDetails.invoiceValue || 0).toFixed(2)}
                     </Text>
                   </View>
-                ) : null}
-              </>
-            ) : null}
+                  <View style={[styles.horizontalline, { marginTop: 9, marginBottom: 9 }]} />
+                  {billingDetails.invoiceValue > orderDetails.estimatedAmount! ||
+                  paymentMethod == MEDICINE_ORDER_PAYMENT_TYPE.COD ? (
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        marginTop: 4,
+                      }}
+                    >
+                      <Text
+                        style={
+                          billingDetails.invoiceValue > orderDetails.estimatedAmount!
+                            ? { ...theme.viewStyles.text('SB', 14, '#01475b', 1, 24, 0) }
+                            : { ...theme.viewStyles.text('M', 14, '#01475b', 1, 24, 0) }
+                        }
+                      >
+                        {billingDetails.invoiceValue > orderDetails.estimatedAmount!
+                          ? string.OrderSummaryText.amount_to_be_paid_on_delivery
+                          : paymentMethod == MEDICINE_ORDER_PAYMENT_TYPE.COD
+                          ? string.OrderSummaryText.cod_amount_to_pay
+                          : string.OrderSummaryText.refund_amount}
+                      </Text>
+                      <Text
+                        style={[
+                          billingDetails.invoiceValue > orderDetails.estimatedAmount!
+                            ? {
+                                ...theme.viewStyles.text('SB', 14, '#01475b', 1, 24, 0),
+                                textAlign: 'right',
+                              }
+                            : {
+                                ...theme.viewStyles.text('M', 14, '#01475b', 1, 24, 0),
+                                textAlign: 'right',
+                              },
+                        ]}
+                      >
+                        {string.common.Rs}{' '}
+                        {isPrepaid
+                          ? (prepaidBilledValue || 0).toFixed(2)
+                          : (billingDetails.invoiceValue || 0).toFixed(2)}
+                      </Text>
+                    </View>
+                  ) : null}
+                </>
+              ) : null}
+            </View>
           </View>
-        </View>
+        ) : null}
         {additionalDisount && newOrders && !prescriptionUpload ? (
           <View
             style={[
@@ -829,7 +977,9 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                 {'YAY!'}
               </Text>
               <Text style={{ ...theme.viewStyles.text('M', 12, '#00b38e', 1, undefined, 0) }}>
-                {`You got an additional discount of Rs. ${billingDiscount.toFixed(2)}`}
+                {`You got an additional discount of ${string.common.Rs} ${billingDiscount.toFixed(
+                  2
+                )}`}
               </Text>
             </View>
           </View>

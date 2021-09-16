@@ -1,19 +1,26 @@
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import {
   Afternoon,
   CurrencyIcon,
   EditIconNew,
   Invoice,
+  LinkedUhidIcon,
   Location,
   ManageProfileIcon,
-  NeedHelpIcon,
-  OneApollo,
-  LinkedUhidIcon,
   MyMembershipIcon,
+  NeedHelpIcon,
+  Apollo247Icon,
+  OneApollo,
+  ArrowRight,
+  Down,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { TabHeader } from '@aph/mobile-patients/src/components/ui/TabHeader';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DELETE_DEVICE_TOKEN } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -21,12 +28,23 @@ import {
   deleteDeviceTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/deleteDeviceToken';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
-import { g, getNetStatus, statusBarHeight } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import {
+  g,
+  getNetStatus,
+  getUserType,
+  postAppsFlyerEvent,
+  postCleverTapEvent,
+  postFirebaseEvent,
+  statusBarHeight,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { setTagalysConfig } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
-import Moment from 'moment';
 import { differenceInYears, parse } from 'date-fns';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -43,6 +61,7 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
+import codePush from 'react-native-code-push';
 import WebEngage from 'react-native-webengage';
 import {
   NavigationActions,
@@ -50,12 +69,17 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { TabHeader } from '@aph/mobile-patients/src/components/ui/TabHeader';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import codePush from 'react-native-code-push';
-import { setTagalysConfig } from '@aph/mobile-patients/src/helpers/Tagalys';
-
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import {
+  SKIP_LOCATION_PROMPT,
+  HEALTH_CREDITS,
+} from '@aph/mobile-patients/src/utils/AsyncStorageKey';
+import { LOGIN_PROFILE } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
+import {
+  CleverTapEventName,
+  HomeScreenAttributes,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import moment from 'moment';
 const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -63,7 +87,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     ...theme.viewStyles.cardViewStyle,
     borderRadius: 0,
-    // marginTop: 160,
   },
   detailsViewStyle: {
     margin: 20,
@@ -89,9 +112,6 @@ const styles = StyleSheet.create({
   editIcon: {
     width: 40,
     height: 40,
-    // bottom: 16,
-    // right: 0,
-    // position: 'absolute',
   },
   editIconstyles: {
     bottom: 16,
@@ -100,29 +120,13 @@ const styles = StyleSheet.create({
     marginRight: 20,
     marginBottom: 17,
   },
-  // noteIcon: {
-  //   width: 24,
-  //   height: 24,
-  //   bottom: 0,
-  //   right: 0,
-  //   top: 0,
-  //   position: 'absolute',
-  // },
-  // noteIconstyles: {
-  //   // marginRight: 20,
-  //   // marginBottom: 17,
-  // },
-  // cartIconstyles: {
-  //   // marginRight: 24,
-  // },
-  // cartIcon: {
-  //   width: 24,
-  //   height: 24,
-  //   // bottom: 0,
-  //   // right: 24,
-  //   // top: 0,
-  //   // position: 'absolute',
-  // },
+  aboutContainer: {
+    marginLeft: 40,
+    marginVertical: 12,
+  },
+  aboutTextItem: {
+    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE),
+  },
 });
 type Appointments = {
   date: string;
@@ -145,21 +149,35 @@ const Appointments: Appointments[] = [
 
 export interface MyAccountProps extends NavigationScreenProps {}
 export const MyAccount: React.FC<MyAccountProps> = (props) => {
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [codePushVersion, setCodePushVersion] = useState<string>('');
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [networkStatus, setNetworkStatus] = useState<boolean>(false);
+  const [showAboutUsSection, setShowAboutUsSection] = useState<boolean>(false);
   const [profileDetails, setprofileDetails] = useState<
     GetCurrentPatients_getCurrentPatients_patients | null | undefined
   >(currentPatient);
   const { signOut, getPatientApiCall } = useAuth();
   const {
     setSavePatientDetails,
-    setAppointmentsPersonalized,
-    hdfcUserSubscriptions,
     setHdfcUserSubscriptions,
     setBannerData,
+    setCircleSubscription,
+    setPhrSession,
+    setCorporateSubscriptions,
   } = useAppCommonData();
+  const { setIsDiagnosticCircleSubscription, clearDiagnoticCartInfo } = useDiagnosticsCart();
+  const {
+    setIsCircleSubscription,
+    setCircleMembershipCharges,
+    setCircleSubscriptionId,
+    setCorporateSubscription,
+    corporateSubscription,
+    circleSubscriptionId,
+    hdfcSubscriptionId,
+    clearCartInfo,
+    isCircleExpired,
+  } = useShoppingCart();
 
   useEffect(() => {
     updateCodePushVersioninUi();
@@ -167,8 +185,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
 
   const updateCodePushVersioninUi = async () => {
     try {
-      const version = (await codePush.getUpdateMetadata())!.label;
-      setCodePushVersion(version.replace('v', 'H'));
+      const version = (await codePush.getUpdateMetadata())?.label;
+      version && setCodePushVersion(version.replace('v', 'H'));
     } catch (error) {
       CommonBugFender(`${AppRoutes.MyAccount}_codePush.getUpdateMetadata`, error);
     }
@@ -178,7 +196,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     if (!currentPatient) {
       getPatientApiCall();
     }
-    // currentPatient && AsyncStorage.setItem('phoneNumber', currentPatient.mobileNumber.substring(3));
     currentPatient && setprofileDetails(currentPatient);
   }, [currentPatient]);
 
@@ -266,11 +283,33 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     return null;
   };
 
+  const postMyAccountCleverTapEvents = (eventName: CleverTapEventName) => {
+    let eventAttributes: HomeScreenAttributes = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
+      'Nav src': 'my account',
+      'Page Name': 'My Account Screen',
+    };
+    postCleverTapEvent(eventName, eventAttributes);
+  };
+
   const onPressLogout = () => {
     try {
+      postMyAccountCleverTapEvents(CleverTapEventName.MY_ACCOUNT_USER_LOGOUT);
       const webengage = new WebEngage();
       webengage.user.logout();
+      postAppsFlyerEvent(AppsFlyerEventName.USER_LOGGED_OUT, {});
+      postFirebaseEvent(FirebaseEventName.USER_LOGGED_OUT, {});
       AsyncStorage.setItem('userLoggedIn', 'false');
+      AsyncStorage.setItem('createCleverTapProifle', 'false');
       AsyncStorage.setItem('multiSignUp', 'false');
       AsyncStorage.setItem('signUp', 'false');
       AsyncStorage.setItem('selectUserId', '');
@@ -279,13 +318,34 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       AsyncStorage.setItem('logginHappened', 'false');
       AsyncStorage.removeItem('deeplink');
       AsyncStorage.removeItem('deeplinkReferalCode');
+      AsyncStorage.removeItem('isCircleMember');
+      AsyncStorage.removeItem('saveTokenDeviceApiCall');
+      AsyncStorage.removeItem(LOGIN_PROFILE);
+      AsyncStorage.removeItem('PharmacyLocationPincode');
+      AsyncStorage.setItem(SKIP_LOCATION_PROMPT, 'false');
+      AsyncStorage.setItem(HEALTH_CREDITS, '');
       setSavePatientDetails && setSavePatientDetails('');
       setHdfcUserSubscriptions && setHdfcUserSubscriptions(null);
       setBannerData && setBannerData([]);
-      setAppointmentsPersonalized && setAppointmentsPersonalized([]);
+      setIsCircleSubscription && setIsCircleSubscription(false);
+      setCircleMembershipCharges && setCircleMembershipCharges(0);
+      setCircleSubscription && setCircleSubscription(null);
+      setCorporateSubscriptions && setCorporateSubscriptions([]);
       signOut();
       setTagalysConfig(null);
-
+      setCircleSubscriptionId && setCircleSubscriptionId('');
+      setPhrSession?.('');
+      AsyncStorage.removeItem('circlePlanSelected');
+      AsyncStorage.removeItem('circleSubscriptionId');
+      AsyncStorage.removeItem('isCorporateSubscribed');
+      AsyncStorage.removeItem('VaccinationCmsIdentifier');
+      AsyncStorage.removeItem('VaccinationSubscriptionId');
+      AsyncStorage.removeItem('hasAgreedVaccineTnC');
+      AsyncStorage.removeItem('circleSubscriptionId');
+      AsyncStorage.removeItem('diagnosticUserType');
+      clearCartInfo && clearCartInfo();
+      clearDiagnoticCartInfo && clearDiagnoticCartInfo();
+      setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
       props.navigation.dispatch(
         StackActions.reset({
           index: 0,
@@ -308,7 +368,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       deviceToken: currentDeviceToken,
       patientId: currentPatient ? currentPatient && currentPatient.id : '',
     };
-    console.log('deleteDeviceTokenInput', input);
 
     client
       .mutate<deleteDeviceToken, deleteDeviceTokenVariables>({
@@ -317,14 +376,12 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((data: any) => {
-        console.log('deleteDeviceTokendata', data);
         setshowSpinner(false);
         onPressLogout();
       })
       .catch((e) => {
         CommonBugFender('MyAccount_deleteDeviceToken', e);
         try {
-          console.log('deleteDeviceTokenerror', e);
           setshowSpinner(false);
           onPressLogout();
         } catch (err) {
@@ -355,8 +412,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             profileDetails.photoUrl &&
             profileDetails.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) ? (
               <Image
-                // source={require('@aph/mobile-patients/src/components/ui/icons/no-photo-icon-round.png')}
-
                 source={{ uri: profileDetails.photoUrl }}
                 onLoad={(value) => {
                   const { height, width } = value.nativeEvent.source;
@@ -367,7 +422,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               />
             ) : (
               <Image
-                source={require('@aph/mobile-patients/src/components/ui/icons/no-photo-icon-round.png')}
+                source={require('@aph/mobile-patients/src/components/ui/icons/no-photo-icon-round.webp')}
                 style={{ top: 10, height: 200, width: '100%' }}
                 resizeMode={'contain'}
               />
@@ -394,7 +449,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   const [scrollOffset, setScrollOffset] = useState<number>(0);
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    // console.log(`scrollOffset, ${event.nativeEvent.contentOffset.y}`);
     setScrollOffset(event.nativeEvent.contentOffset.y);
   };
 
@@ -415,13 +469,48 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           };
     return (
       <TabHeader
-        // hideHomeIcon={!(scrollOffset > 1)}
         containerStyle={[
           containerStyle,
           { position: 'absolute', top: statusBarHeight(), width: '100%' },
         ]}
         navigation={props.navigation}
+        screenAsSource={'My Account'}
       />
+    );
+  };
+
+  const fireProfileAccessedEvent = (type: string) => {
+    const eventAttributes: FirebaseEvents[FirebaseEventName.PROFILE_ACCESSED] = {
+      Type: type,
+    };
+    postAppsFlyerEvent(AppsFlyerEventName.PROFILE_ACCESSED, eventAttributes);
+    postFirebaseEvent(FirebaseEventName.PROFILE_ACCESSED, eventAttributes);
+  };
+
+  const renderAboutApollo = () => {
+    return (
+      <View>
+        {string.aboutApolloList.map((item, index) => {
+          return (
+            <TouchableOpacity
+              style={[
+                styles.aboutContainer,
+                {
+                  marginTop: index === 0 ? 20 : 12,
+                },
+              ]}
+              key={index}
+              onPress={() => {
+                props.navigation.navigate(AppRoutes.CommonWebView, {
+                  url: item.url,
+                });
+              }}
+            >
+              <Text style={styles.aboutTextItem}>{item.title}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
     );
   };
 
@@ -432,66 +521,86 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           container={{ marginTop: 14 }}
           title={'Manage Family Members'}
           leftIcon={<ManageProfileIcon />}
-          onPress={() =>
+          onPress={() => {
+            postMyAccountCleverTapEvents(CleverTapEventName.MY_ACCOUNT_FAMILY_MEMBER_CLICK);
             props.navigation.navigate(AppRoutes.ManageProfile, {
               mobileNumber: profileDetails && profileDetails.mobileNumber,
-            })
-          }
+            });
+            fireProfileAccessedEvent('Manage Family Members');
+          }}
         />
         <ListCard
           container={{ marginTop: 4 }}
           title={'Address Book'}
           leftIcon={<Location />}
-          onPress={() => props.navigation.navigate(AppRoutes.AddressBook)}
+          onPress={() => {
+            postMyAccountCleverTapEvents(CleverTapEventName.MY_ACCOUNT_ADDRESS_BOOK_CLICKED);
+            props.navigation.navigate(AppRoutes.AddressBook);
+            fireProfileAccessedEvent('Address Book');
+          }}
         />
         <ListCard
           title={'My Orders'}
           leftIcon={<Invoice />}
           onPress={() => {
+            postMyAccountCleverTapEvents(CleverTapEventName.MY_ACCOUNT_ORDERS_CLICKED);
             postMyOrdersClicked('My Account', currentPatient);
-            props.navigation.navigate(AppRoutes.YourOrdersScene);
-          }}
-        />
-        <ListCard
-          title={'My Payments'}
-          leftIcon={<CurrencyIcon />}
-          onPress={() => {
-            props.navigation.navigate(AppRoutes.MyPaymentsScreen, {
+            props.navigation.navigate(AppRoutes.MyOrdersScreen, {
               patientId: currentPatient.id,
               fromNotification: false,
             });
+            fireProfileAccessedEvent('My Orders');
           }}
         />
         <ListCard
-          title={'OneApollo Membership'}
-          leftIcon={<OneApollo style={{ height: 20, width: 26 }} />}
+          title={'Transactions and Payments'}
+          leftIcon={<CurrencyIcon />}
           onPress={() => {
-            props.navigation.navigate(AppRoutes.OneApolloMembership);
+            postMyAccountCleverTapEvents(CleverTapEventName.MY_ACCOUNT_PAYMENT_CLICKED);
+            props.navigation.navigate(AppRoutes.TxnsandPayments, {
+              patientId: currentPatient.id,
+              fromNotification: false,
+            });
+            fireProfileAccessedEvent('Transactions and Payments');
           }}
         />
-        {hdfcUserSubscriptions && g(hdfcUserSubscriptions, '_id') && (
-          <ListCard
-            title={'My Memberships'}
-            leftIcon={<MyMembershipIcon style={{ height: 20, width: 26 }} />}
-            onPress={() => {
-              props.navigation.navigate(AppRoutes.MyMembership);
-            }}
-          />
-        )}
+        <ListCard
+          title={'OneApollo Memberships'}
+          leftIcon={<OneApollo style={{ height: 20, width: 26 }} />}
+          onPress={() => {
+            postMyAccountCleverTapEvents(
+              CleverTapEventName.MY_ACCOUNT_ONE_APOLLO_MEMBERSHIP_CLICKED
+            );
+            props.navigation.navigate(AppRoutes.OneApolloMembership);
+            fireProfileAccessedEvent('OneApollo Membership');
+          }}
+        />
+        <ListCard
+          title={'My Memberships'}
+          leftIcon={<MyMembershipIcon style={{ height: 20, width: 26 }} />}
+          onPress={() => {
+            postMyAccountCleverTapEvents(CleverTapEventName.MY_ACCOUNT_MEMBERSHIP_CLICKED);
+            props.navigation.navigate(AppRoutes.MyMembership);
+            fireProfileAccessedEvent('My Memberships');
+          }}
+        />
         <ListCard
           title={'Need Help'}
           leftIcon={<NeedHelpIcon />}
           onPress={() => {
+            postMyAccountCleverTapEvents(CleverTapEventName.MY_ACCOUNT_NEED_HELP_CLICKED);
             props.navigation.navigate(AppRoutes.MobileHelp);
+            fireProfileAccessedEvent('Need Help');
           }}
         />
-        {/* <ListCard
-          // container={{ marginBottom: 32 }}
-          container={{ marginTop: 4 }}
-          title={'Notification Settings'}
-          leftIcon={<NotificaitonAccounts />}
-          onPress={() => props.navigation.navigate(AppRoutes.NotificationSettings)}
-        /> */}
+        <ListCard
+          container={{ height: 'auto' }}
+          title={'About Apollo 247'}
+          leftIcon={<Apollo247Icon />}
+          rightIcon={showAboutUsSection ? <Down /> : <ArrowRight />}
+          onPress={() => setShowAboutUsSection(!showAboutUsSection)}
+          children={showAboutUsSection ? renderAboutApollo() : null}
+        />
         <ListCard
           container={{ marginBottom: 32 }}
           title={'Logout'}
@@ -519,12 +628,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           {renderAnimatedHeader()}
           {profileDetails && renderDetails()}
           {renderRows()}
-          {/* <NeedHelpAssistant
-            navigation={props.navigation}
-            onNeedHelpPress={() => {
-              postWEGNeedHelpEvent(currentPatient, 'My Account');
-            }}
-          /> */}
           <View style={{ height: 92, marginBottom: 0 }}>
             <Text
               style={{

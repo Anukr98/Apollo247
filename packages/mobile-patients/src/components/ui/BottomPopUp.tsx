@@ -9,7 +9,7 @@ import {
   TextStyle,
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { Mascot } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Mascot, CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
 
 const styles = StyleSheet.create({
   showPopUp: {
@@ -54,24 +54,37 @@ const styles = StyleSheet.create({
 export interface ButtonProps {
   title?: string;
   description?: string;
+  physicalText?: string;
   titleStyle?: StyleProp<TextStyle>;
   style?: StyleProp<ViewStyle>;
   children?: React.ReactNode;
   onPressBack?: () => void;
   removeTopIcon?: boolean;
+  physical?: boolean;
+  showCloseIcon?: boolean;
+  onCloseIconPress?: () => void;
 }
 
 export const BottomPopUp: React.FC<ButtonProps> = (props) => {
   return (
     <View style={[styles.showPopUp, props.style]}>
       <TouchableOpacity activeOpacity={1} style={styles.container} onPress={props.onPressBack}>
+        {props.showCloseIcon && (
+          <View style={{ top: 150, left: 10 }}>
+            <TouchableOpacity style={{ width: 40, height: 40 }} onPress={props.onCloseIconPress}>
+              <CrossPopup style={{ width: 28, height: 28 }} />
+            </TouchableOpacity>
+          </View>
+        )}
         <TouchableOpacity activeOpacity={1} style={styles.subViewPopup} onPress={() => {}}>
           {!!props.title && (
             <Text style={[styles.congratulationsTextStyle, props.titleStyle]}>{props.title}</Text>
           )}
-          {!!props.description && (
-            <Text style={styles.congratulationsDescriptionStyle}>{props.description}</Text>
-          )}
+          {props.physical
+            ? props.physicalText
+            : !!props.description && (
+                <Text style={styles.congratulationsDescriptionStyle}>{props.description}</Text>
+              )}
           {props.children}
           {!props.removeTopIcon && <Mascot style={{ position: 'absolute', top: -32, right: 20 }} />}
         </TouchableOpacity>

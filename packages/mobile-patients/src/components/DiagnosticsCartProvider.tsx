@@ -5,8 +5,7 @@ import {
   TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
-import { Clinic } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { Clinic, DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import {
@@ -15,15 +14,25 @@ import {
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import AsyncStorage from '@react-native-community/async-storage';
+import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList } from '../graphql/types/getDiagnosticOrdersListByMobile';
 
+export interface orderList
+  extends getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList {}
 export interface DiagnosticsCartItem {
   id: string;
   name: string;
   mou: number; // package of how many tests (eg. 10)
-  price: number;
+  price: number; //mrp
   thumbnail: string | null;
-  specialPrice?: number;
-  collectionMethod: TEST_COLLECTION_TYPE; // Home or Clinic (most probably `H` will not be an option)
+  specialPrice?: number | null; //price
+  circlePrice?: number | null; //mrp
+  circleSpecialPrice?: number | null; //price
+  discountPrice?: number | null; //mrp
+  discountSpecialPrice?: number | null; //price
+  collectionMethod: TEST_COLLECTION_TYPE;
+  groupPlan?: string;
+  packageMrp?: number;
+  inclusions?: any[];
 }
 
 export interface DiagnosticClinic extends Clinic {
@@ -31,7 +40,7 @@ export interface DiagnosticClinic extends Clinic {
 }
 
 export interface DiagnosticSlot {
-  employeeSlotId: number;
+  employeeSlotId: number | string;
   diagnosticBranchCode: string;
   diagnosticEmployeeCode: string;
   slotStartTime: string;
@@ -43,6 +52,11 @@ export interface DiagnosticSlot {
 export interface DiagnosticArea {
   key: number | string;
   value: string;
+}
+
+export interface TestBreadcrumbLink {
+  title: string;
+  onPress?: () => void;
 }
 
 export interface DiagnosticsCartContextProps {
@@ -59,11 +73,19 @@ export interface DiagnosticsCartContextProps {
     | null;
 
   cartTotal: number;
+  totalPriceExcludingAnyDiscounts: number;
+  cartSaving: number;
+  normalSaving: number;
+  discountSaving: number;
+  circleSaving: number;
   couponDiscount: number;
   deliveryCharges: number;
 
   hcCharges: number;
   setHcCharges: ((id: number) => void) | null;
+
+  modifyHcCharges: number;
+  setModifyHcCharges: ((id: number) => void) | null;
 
   grandTotal: number;
 
@@ -88,6 +110,11 @@ export interface DiagnosticsCartContextProps {
   addAddress: ((address: savePatientAddress_savePatientAddress_patientAddress) => void) | null;
   deliveryAddressId: string;
   setDeliveryAddressId: ((id: string) => void) | null;
+  deliveryAddressCityId: string;
+  setDeliveryAddressCityId: ((id: string) => void) | null;
+  deliveryAddressStateId: string;
+  setDeliveryAddressStateId: ((id: string) => void) | null;
+
   addresses: savePatientAddress_savePatientAddress_patientAddress[];
   setAddresses:
     | ((addresses: savePatientAddress_savePatientAddress_patientAddress[]) => void)
@@ -106,7 +133,7 @@ export interface DiagnosticsCartContextProps {
   setCoupon: ((id: getCoupons_getCoupons_coupons) => void) | null;
 
   deliveryType: MEDICINE_DELIVERY_TYPE | null;
-  clearCartInfo: (() => void) | null;
+  clearDiagnoticCartInfo: (() => void) | null;
 
   diagnosticSlot: DiagnosticSlot | null;
   setDiagnosticSlot: ((item: DiagnosticSlot | null) => void) | null;
@@ -119,6 +146,40 @@ export interface DiagnosticsCartContextProps {
 
   diagnosticClinic: DiagnosticClinic | null;
   setDiagnosticClinic: ((item: DiagnosticClinic) => void) | null;
+
+  isDiagnosticCircleSubscription: boolean;
+  setIsDiagnosticCircleSubscription: ((value: boolean) => void) | null;
+
+  showSelectPatient: boolean;
+  setShowSelectPatient: ((value: boolean) => void) | null;
+
+  getUniqueId: string;
+  setUniqueId: ((value: string) => void) | null;
+
+  testListingBreadCrumbs: TestBreadcrumbLink[] | undefined;
+  setTestListingBreadCrumbs: ((items: TestBreadcrumbLink[]) => void) | null;
+
+  testDetailsBreadCrumbs: TestBreadcrumbLink[] | undefined;
+  setTestDetailsBreadCrumbs: ((items: TestBreadcrumbLink[]) => void) | null;
+
+  newAddressAddedHomePage: string;
+  setNewAddressAddedHomePage: ((value: string) => void) | null;
+  newAddressAddedCartPage: string;
+  setNewAddressAddedCartPage: ((value: string) => void) | null;
+
+  showSelectedArea: boolean;
+  setShowSelectedArea: ((value: boolean) => void) | null;
+
+  isCartPagePopulated: boolean;
+  setCartPagePopulated: ((value: boolean) => void) | null;
+
+  asyncDiagnosticPincode: any;
+  setAsyncDiagnosticPincode: ((pincode: any) => void) | null;
+
+  modifiedOrderItemIds: [];
+  setModifiedOrderItemIds: ((items: any | []) => void) | null;
+  modifiedOrder: any;
+  setModifiedOrder: ((items: orderList | any | {}) => void) | null;
 }
 
 export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>({
@@ -132,11 +193,19 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   removeCartItem: null,
   updateCartItem: null,
   cartTotal: 0,
+  totalPriceExcludingAnyDiscounts: 0,
+  cartSaving: 0,
+  normalSaving: 0,
+  discountSaving: 0,
+  circleSaving: 0,
   couponDiscount: 0,
   deliveryCharges: 0,
 
   hcCharges: 0,
   setHcCharges: null,
+
+  modifyHcCharges: 0,
+  setModifyHcCharges: null,
 
   grandTotal: 0,
 
@@ -162,6 +231,13 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
 
   deliveryAddressId: '',
   setDeliveryAddressId: null,
+
+  deliveryAddressCityId: '',
+  setDeliveryAddressCityId: null,
+
+  deliveryAddressStateId: '',
+  setDeliveryAddressStateId: null,
+
   addresses: [],
   setAddresses: null,
   addAddress: null,
@@ -172,7 +248,7 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   pinCode: '',
   setPinCode: null,
 
-  clearCartInfo: null,
+  clearDiagnoticCartInfo: null,
 
   diagnosticClinic: null,
   diagnosticSlot: null,
@@ -182,6 +258,32 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   setAreaSelected: null,
   diagnosticAreas: [],
   setDiagnosticAreas: null,
+  isDiagnosticCircleSubscription: false,
+  setIsDiagnosticCircleSubscription: null,
+  showSelectPatient: false,
+  setShowSelectPatient: null,
+  getUniqueId: '',
+  setUniqueId: null,
+  testListingBreadCrumbs: [],
+  setTestListingBreadCrumbs: null,
+  testDetailsBreadCrumbs: [],
+  setTestDetailsBreadCrumbs: null,
+
+  newAddressAddedHomePage: '',
+  setNewAddressAddedHomePage: null,
+  newAddressAddedCartPage: '',
+  setNewAddressAddedCartPage: null,
+
+  showSelectedArea: false,
+  setShowSelectedArea: null,
+  isCartPagePopulated: false,
+  setCartPagePopulated: null,
+  asyncDiagnosticPincode: null,
+  setAsyncDiagnosticPincode: null,
+  modifiedOrderItemIds: [],
+  setModifiedOrderItemIds: null,
+  modifiedOrder: {},
+  setModifiedOrder: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -189,8 +291,7 @@ const showGenericAlert = (message: string) => {
 };
 
 export const DiagnosticsCartProvider: React.FC = (props) => {
-  // const { currentPatient } = useAllCurrentPatients();
-  const id = ''; //(currentPatient && currentPatient.id) || '';
+  const id = '';
   const AsyncStorageKeys = {
     cartItems: `diagnosticsCartItems${id}`,
     ePrescriptions: `diagnosticsEPrescriptions${id}`,
@@ -220,6 +321,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
 
   const [hcCharges, setHcCharges] = useState<DiagnosticsCartContextProps['hcCharges']>(0);
 
+  const [modifyHcCharges, setModifyHcCharges] = useState<
+    DiagnosticsCartContextProps['modifyHcCharges']
+  >(0);
+
   const [deliveryType, setDeliveryType] = useState<DiagnosticsCartContextProps['deliveryType']>(
     null
   );
@@ -232,6 +337,14 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     DiagnosticsCartContextProps['ePrescriptions']
   >([]);
 
+  const [newAddressAddedHomePage, setNewAddressAddedHomePage] = useState<
+    DiagnosticsCartContextProps['newAddressAddedHomePage']
+  >('');
+
+  const [newAddressAddedCartPage, setNewAddressAddedCartPage] = useState<
+    DiagnosticsCartContextProps['newAddressAddedCartPage']
+  >('');
+
   const [diagnosticClinic, _setDiagnosticClinic] = useState<
     DiagnosticsCartContextProps['diagnosticClinic']
   >(null);
@@ -241,14 +354,39 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   >(null);
 
   const [areaSelected, setAreaSelected] = useState<DiagnosticsCartContextProps['areaSelected']>({});
+  const [deliveryAddressCityId, setDeliveryAddressCityId] = useState<
+    DiagnosticsCartContextProps['deliveryAddressCityId']
+  >('');
+  const [deliveryAddressStateId, setDeliveryAddressStateId] = useState<
+    DiagnosticsCartContextProps['deliveryAddressStateId']
+  >('');
   const [diagnosticAreas, setDiagnosticAreas] = useState<
     DiagnosticsCartContextProps['diagnosticAreas']
   >([]);
+  const [getUniqueId, setUniqueId] = useState<DiagnosticsCartContextProps['getUniqueId']>('');
+
+  const [testListingBreadCrumbs, setTestListingBreadCrumbs] = useState<
+    DiagnosticsCartContextProps['testListingBreadCrumbs']
+  >();
+
+  const [testDetailsBreadCrumbs, setTestDetailsBreadCrumbs] = useState<
+    DiagnosticsCartContextProps['testDetailsBreadCrumbs']
+  >();
+
+  const [asyncDiagnosticPincode, setAsyncDiagnosticPincode] = useState<
+    DiagnosticsCartContextProps['asyncDiagnosticPincode']
+  >();
+
+  const [modifiedOrder, setModifiedOrder] = useState<DiagnosticsCartContextProps['modifiedOrder']>(
+    {}
+  );
 
   const setDiagnosticClinic: DiagnosticsCartContextProps['setDiagnosticClinic'] = (item) => {
     _setDiagnosticClinic(item);
     _setDiagnosticSlot(null);
     _setDeliveryAddressId('');
+    setDeliveryAddressCityId('');
+    setDeliveryAddressStateId('');
   };
 
   const setDiagnosticSlot: DiagnosticsCartContextProps['setDiagnosticSlot'] = (item) => {
@@ -283,21 +421,39 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setEPrescriptions(newItems);
   };
 
+  const [isDiagnosticCircleSubscription, setIsDiagnosticCircleSubscription] = useState<
+    DiagnosticsCartContextProps['isDiagnosticCircleSubscription']
+  >(false);
+
+  const [showSelectPatient, setShowSelectPatient] = useState<
+    DiagnosticsCartContextProps['showSelectPatient']
+  >(false);
+
   const addMultipleEPrescriptions: DiagnosticsCartContextProps['addMultipleEPrescriptions'] = (
     itemsToAdd
   ) => {
     const existingFilteredEPres = ePrescriptions.filter(
       (item) => !itemsToAdd.find((val) => val.id == item.id)
     );
-    // console.log('existingFilteredEPres\n', { existingFilteredEPres });
     const updatedEPres = [...existingFilteredEPres, ...itemsToAdd];
-    // console.log('updatedEPres\n', { updatedEPres });
     setEPrescriptions(updatedEPres);
   };
 
   const addAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
     setAddresses([address, ...addresses]);
   };
+
+  const [showSelectedArea, setShowSelectedArea] = useState<
+    DiagnosticsCartContextProps['showSelectedArea']
+  >(false);
+
+  const [isCartPagePopulated, setCartPagePopulated] = useState<
+    DiagnosticsCartContextProps['isCartPagePopulated']
+  >(false);
+
+  const [modifiedOrderItemIds, setModifiedOrderItemIds] = useState<
+    DiagnosticsCartContextProps['modifiedOrderItemIds']
+  >([]);
 
   const setCartItems: DiagnosticsCartContextProps['setCartItems'] = (cartItems) => {
     _setCartItems(cartItems);
@@ -307,15 +463,13 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   };
 
   const addCartItem: DiagnosticsCartContextProps['addCartItem'] = (itemToAdd) => {
-    if (cartItems.find((item) => item.id == itemToAdd.id)) {
+    if (cartItems.find((item) => item?.id == itemToAdd?.id)) {
       return;
     }
     const newCartItems = [itemToAdd, ...cartItems];
     setCartItems(newCartItems);
     //empty the slots and areas everytime due to dependency of api.
     setDiagnosticSlot(null);
-    setAreaSelected!({});
-    setDiagnosticAreas([]);
   };
 
   const addMultipleCartItems: DiagnosticsCartContextProps['addMultipleCartItems'] = (
@@ -325,52 +479,108 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     const existingFilteredCartItems = cartItems.filter(
       (item) => !itemsToAdd.find((val) => val.id == item.id)
     );
-    // console.log('existingFilteredCartItems\n', { existingFilteredCartItems });
     const newCartItems = [
       ...existingFilteredCartItems,
       ...itemsToAdd.filter((v, i, a) => a.findIndex((t) => t.id === v.id) === i),
     ];
-    // console.log('newCartItems\n', { newCartItems });
     setCartItems(newCartItems);
   };
 
   const removeCartItem: DiagnosticsCartContextProps['removeCartItem'] = (id) => {
-    const newCartItems = cartItems.filter((item) => item.id !== id);
+    const newCartItems = cartItems?.filter((item) => Number(item?.id) !== Number(id));
     //empty the slots and areas everytime due to dependency of api.
     setDiagnosticSlot(null);
-    setAreaSelected!({});
-    setDiagnosticAreas!([]);
     setCartItems(newCartItems);
   };
   const updateCartItem: DiagnosticsCartContextProps['updateCartItem'] = (itemUpdates) => {
-    const foundIndex = cartItems.findIndex((item) => item.id == itemUpdates.id);
+    const foundIndex = cartItems?.findIndex((item) => item?.id == itemUpdates?.id);
     if (foundIndex !== -1) {
       cartItems[foundIndex] = { ...cartItems[foundIndex], ...itemUpdates };
       setCartItems([...cartItems]);
     }
   };
 
+  const withDiscount = cartItems?.filter(
+    (item) => item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+  );
+
+  const withAll = cartItems?.filter((item) =>
+    isDiagnosticCircleSubscription
+      ? item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.ALL
+      : item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.CIRCLE ||
+        item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
+  );
+  const discountSaving: DiagnosticsCartContextProps['discountSaving'] = withDiscount?.reduce(
+    (currTotal, currItem) =>
+      currTotal +
+      (currItem?.packageMrp && currItem?.packageMrp > currItem?.discountSpecialPrice!
+        ? currItem?.packageMrp! - currItem?.discountSpecialPrice!
+        : currItem?.price! - currItem?.discountSpecialPrice!),
+    0
+  );
+  const normalSaving: DiagnosticsCartContextProps['normalSaving'] = withAll?.reduce(
+    (currTotal, currItem) =>
+      currTotal +
+      (currItem?.packageMrp && currItem?.packageMrp > currItem?.specialPrice!
+        ? currItem?.packageMrp! - currItem?.specialPrice!
+        : currItem?.price! - currItem?.specialPrice!),
+    0
+  );
+
   const cartTotal: DiagnosticsCartContextProps['cartTotal'] = parseFloat(
+    cartItems?.reduce((currTotal, currItem) => currTotal + currItem?.price, 0).toFixed(2)
+  );
+
+  //this takes packageMrp if exists or mrp
+  const totalPriceExcludingAnyDiscounts: DiagnosticsCartContextProps['totalPriceExcludingAnyDiscounts'] = parseFloat(
     cartItems
-      .reduce((currTotal, currItem) => currTotal + (currItem.specialPrice || currItem.price), 0)
+      ?.reduce(
+        (currTotal, currItem) =>
+          currTotal +
+          (currItem?.packageMrp! > currItem?.price ? currItem?.packageMrp! : currItem?.price),
+        0
+      )
+      .toFixed(2)
+  );
+
+  const cartSaving: DiagnosticsCartContextProps['cartTotal'] = discountSaving + normalSaving;
+  const circleSaving: DiagnosticsCartContextProps['circleSaving'] = parseFloat(
+    cartItems
+      ?.reduce(
+        (currTotal, currItem) =>
+          currTotal +
+          (currItem?.groupPlan == 'CIRCLE'
+            ? (currItem?.packageMrp! > currItem?.circlePrice!
+                ? currItem?.packageMrp!
+                : currItem?.circlePrice!) - currItem?.circleSpecialPrice!
+            : 0 || 0),
+        0
+      )
       .toFixed(2)
   );
 
   const deliveryCharges =
-    deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP ? 0 : cartTotal > 0 ? hcCharges : 0;
+    deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP ? 0 : cartTotal > 0 ? modifyHcCharges : 0;
 
-  const grandTotal = parseFloat((cartTotal + deliveryCharges - couponDiscount).toFixed(2));
+  //carttotal
+  const grandTotal = parseFloat(
+    (
+      totalPriceExcludingAnyDiscounts +
+      deliveryCharges +
+      couponDiscount -
+      cartSaving -
+      (isDiagnosticCircleSubscription ? circleSaving : 0)
+    ).toFixed(2)
+  );
 
   const setClinicId = (id: DiagnosticsCartContextProps['clinicId']) => {
     setDeliveryType(MEDICINE_DELIVERY_TYPE.STORE_PICKUP);
     _setClinicId(id);
-    // _setDeliveryAddressId('');
   };
 
   const setDeliveryAddressId = (id: DiagnosticsCartContextProps['deliveryAddressId']) => {
     setDeliveryType(MEDICINE_DELIVERY_TYPE.HOME_DELIVERY);
     _setDeliveryAddressId(id);
-    // _setClinicId('');
   };
 
   const addPhysicalPrescription: DiagnosticsCartContextProps['addPhysicalPrescription'] = (
@@ -404,11 +614,13 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setEPrescriptions([...newItems]);
   };
 
-  const clearCartInfo = () => {
+  const clearDiagnoticCartInfo = () => {
     setPhysicalPrescriptions([]);
     setEPrescriptions([]);
     setCartItems([]);
     setDeliveryAddressId('');
+    setDeliveryAddressCityId('');
+    setDeliveryAddressStateId('');
     setClinicId('');
     setPinCode('');
     setClinics([]);
@@ -416,6 +628,15 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setDiagnosticSlot(null);
     setAreaSelected({});
     setDiagnosticAreas([]);
+    setModifiedOrderItemIds([]);
+    setHcCharges?.(0);
+    setModifyHcCharges?.(0);
+    setNewAddressAddedHomePage('');
+    setNewAddressAddedHomePage('');
+    setShowSelectPatient(false);
+    setShowSelectedArea(false);
+    setCartPagePopulated(false);
+    setModifiedOrder({});
   };
 
   useEffect(() => {
@@ -472,7 +693,6 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
       value={{
         forPatientId,
         setPatientId,
-
         cartItems,
         setCartItems,
         addCartItem,
@@ -480,6 +700,11 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         removeCartItem,
         updateCartItem,
         cartTotal,
+        totalPriceExcludingAnyDiscounts,
+        cartSaving,
+        discountSaving,
+        normalSaving,
+        circleSaving,
         grandTotal,
         couponDiscount,
         deliveryCharges,
@@ -489,45 +714,66 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         diagnosticAreas,
         hcCharges,
         setHcCharges,
-
+        modifyHcCharges,
+        setModifyHcCharges,
         uploadPrescriptionRequired: false,
-
         ePrescriptions,
         addEPrescription,
         addMultipleEPrescriptions,
         removeEPrescription,
         setEPrescriptions,
-
         physicalPrescriptions,
         setPhysicalPrescriptions,
         addPhysicalPrescription,
         updatePhysicalPrescription,
         removePhysicalPrescription,
-
         addresses,
         setAddresses,
         addAddress,
         deliveryAddressId,
         setDeliveryAddressId,
+        deliveryAddressCityId,
+        setDeliveryAddressCityId,
+        deliveryAddressStateId,
+        setDeliveryAddressStateId,
         deliveryType,
         coupon,
         setCoupon,
-
         clinics,
         setClinics,
-
         clinicId,
         setClinicId,
-
         pinCode,
         setPinCode,
-
-        clearCartInfo,
-
+        clearDiagnoticCartInfo,
         diagnosticClinic,
         setDiagnosticClinic,
         diagnosticSlot,
         setDiagnosticSlot,
+        isDiagnosticCircleSubscription,
+        setIsDiagnosticCircleSubscription,
+        showSelectPatient,
+        setShowSelectPatient,
+        getUniqueId,
+        setUniqueId,
+        testListingBreadCrumbs,
+        setTestListingBreadCrumbs,
+        testDetailsBreadCrumbs,
+        setTestDetailsBreadCrumbs,
+        newAddressAddedHomePage,
+        setNewAddressAddedHomePage,
+        newAddressAddedCartPage,
+        setNewAddressAddedCartPage,
+        showSelectedArea,
+        setShowSelectedArea,
+        isCartPagePopulated,
+        setCartPagePopulated,
+        asyncDiagnosticPincode,
+        setAsyncDiagnosticPincode,
+        modifiedOrderItemIds,
+        setModifiedOrderItemIds,
+        modifiedOrder,
+        setModifiedOrder,
       }}
     >
       {props.children}

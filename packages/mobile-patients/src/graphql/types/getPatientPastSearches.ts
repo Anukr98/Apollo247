@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { SEARCH_TYPE } from "./globalTypes";
@@ -14,6 +15,9 @@ export interface getPatientPastSearches_getPatientPastSearches {
   typeId: string | null;
   name: string | null;
   image: string | null;
+  specialty: string | null;
+  symptoms: string | null;
+  allowBookingRequest: boolean | null;
 }
 
 export interface getPatientPastSearches {

@@ -21,27 +21,34 @@ const FooterButton: FC<FooterButtonProps> = (props) => {
     let status = 'PENDING';
     let orderID = 0;
     if (paymentFor === 'consult') {
-      const { appointmentPayments, appointmentRefunds } = item;
-      if (!appointmentPayments.length) {
+      const { appointmentPayments, appointmentRefunds, PaymentOrders } = item;
+      const { refund } = PaymentOrders;
+      const refundInfo = refund?.length ? refund : appointmentRefunds;
+      const paymentInfo = PaymentOrders?.paymentStatus ? PaymentOrders : appointmentPayments[0];
+      if (!paymentInfo) {
         status = 'PENDING';
-      } else if (appointmentRefunds.length) {
+      } else if (refundInfo.length) {
         status = REFUND;
       } else {
-        status = appointmentPayments[0].paymentStatus;
+        status = paymentInfo?.paymentStatus;
       }
       return {
         status: status,
       };
     } else {
-      const { medicineOrderPayments, orderAutoId, currentStatus } = item;
-      const { medicineOrderRefunds } = medicineOrderPayments[0];
+      const { medicineOrderPayments, orderAutoId, currentStatus, PaymentOrdersPharma } = item;
+      const { refund } = PaymentOrdersPharma;
+      const refundInfo = refund?.length ? refund : medicineOrderPayments[0]?.medicineOrderRefunds;
+      const paymentInfo = PaymentOrdersPharma?.paymentStatus
+        ? PaymentOrdersPharma
+        : medicineOrderPayments[0];
       orderID = orderAutoId;
-      if (!medicineOrderPayments.length) {
+      if (!paymentInfo) {
         status = 'PENDING';
-      } else if (currentStatus === 'CANCELLED' && medicineOrderRefunds.length) {
+      } else if (currentStatus === 'CANCELLED' && refundInfo?.length) {
         status = REFUND;
       } else {
-        status = medicineOrderPayments[0].paymentStatus;
+        status = paymentInfo.paymentStatus;
       }
       return {
         status: status,
@@ -58,7 +65,7 @@ const FooterButton: FC<FooterButtonProps> = (props) => {
         buttonTitle = 'TRY AGAIN';
         return { buttonTitle: buttonTitle };
       } else if (status === SUCCESS) {
-        buttonTitle = 'VIEW CONSULT DETAILS';
+        buttonTitle = 'GO TO CONSULT ROOM';
         return { buttonTitle: buttonTitle };
       } else {
         buttonTitle = 'GO TO HOME';
@@ -93,7 +100,6 @@ const FooterButton: FC<FooterButtonProps> = (props) => {
         props.navigationProps.navigate(AppRoutes.MedicineCart, {});
       } else if (status === SUCCESS) {
         props.navigationProps.navigate(AppRoutes.OrderDetailsScene, {
-          goToHomeOnBack: true,
           orderAutoId: orderID,
         });
       } else {

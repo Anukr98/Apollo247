@@ -1,6 +1,6 @@
 import { colors } from './colors';
 import { fonts, getTextStyle } from './fonts';
-import { ViewStyle } from 'react-native';
+import { Dimensions, ViewStyle } from 'react-native';
 
 export const viewStyles = {
   container: {
@@ -14,7 +14,6 @@ export const viewStyles = {
     opacity: 0.1,
   },
   shadow: {
-    // shadowColor: colors.SHADOW_COLOR,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.8,
     shadowRadius: 5,
@@ -93,4 +92,10 @@ export const viewStyles = {
     backgroundColor: '#eee',
     borderRadius: 5,
   },
+  overlayStyle: {
+    position: 'absolute',
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  } as ViewStyle,
 };

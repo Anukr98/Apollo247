@@ -1,12 +1,25 @@
 <resources>
     <string name="app_name">Apollo 247</string>
     <string name="default_notification_channel_id" translatable="false">fcm_FirebaseNotifiction_default_channel</string>
-    <string name="facebook_app_id">215389816346094</string>
-    <string name="fb_login_protocol_scheme">fb215389816346094</string>
 
     <string name="incoming_call">Apollo 247 Incoming Call</string>
+    <string name="unlock_text">Unlock screen to receive call</string>
 
     <string moduleConfig="true" name="CodePushDeploymentKey">ncBcxm590r0jEGT4BjQFTAW0_rkHKvF5xYUDX</string>
     <string name="default_notification_channel_name">fcm_FirebaseNotifiction_default_channel_name</string>
+    <!-- debug mode key -->
+    <!-- Uncomment this for debug mode(if needed to make any changes or to debug anything) -->
+    <!-- <string name="truecaller_appkey">ktGEl0c35c53a83c543f59216ac9f6b303d4a</string> -->
+    
+    <!-- release mode key -->
+    <!-- <string name="truecaller_appkey">IZ1oT03fb161e4b594117ab8b7220fd9aed97</string> -->
 
+    <!-- play store key -->
+    <string name="truecaller_appkey">ZI9TSf24b50579dfd4a39bfd1156b07189ac2</string>
+    <!-- clevertap debug keys -->
+    <!-- <string name="clevertap_account_id">TEST-KK4-4K4-6R6Z</string> -->
+    <!-- <string name="clevertap_token">TEST-434-433</string> -->
+    <!-- clevertap production keys -->
+    <string name="clevertap_account_id">679-WZ9-4W6Z</string>
+    <string name="clevertap_token">c10-ca6</string>
 </resources>

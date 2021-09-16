@@ -1,0 +1,828 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  StyleProp,
+  ViewStyle,
+  TouchableOpacity,
+  Linking,
+} from 'react-native';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { isSmallDevice, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { DIAGNOSTIC_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import moment from 'moment';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components/StatusCard';
+import {
+  InfoIconRed,
+  WhiteProfile,
+  OrangeCall,
+  LocationOutline,
+  StarEmpty,
+  ClockIcon,
+  StarFillGreen,
+} from '@aph/mobile-patients/src/components/ui/Icons';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { isIphone5s, setBugFenderLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  DIAGNOSTIC_ORDER_FAILED_STATUS,
+  DIAGNOSTIC_ORDER_FOR_PREPDATA,
+  DIAGNOSTIC_SHOW_OTP_STATUS,
+} from '@aph/mobile-patients/src/strings/AppConfig';
+import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
+import {
+  DiagnosticPhleboCallingClicked,
+  DiagnosticTrackPhleboClicked,
+} from '@aph/mobile-patients/src/components/Tests/Events';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+
+const screenWidth = Dimensions.get('window').width;
+interface OrderTestCardProps {
+  orderId: string | number;
+  key: string;
+  createdOn: string | Date;
+  orderLevelStatus: DIAGNOSTIC_ORDER_STATUS;
+  patientName: string;
+  gender: string;
+  showAddTest: boolean;
+  ordersData: any;
+  showPretesting: boolean;
+  dateTime: string;
+  slotTime: string;
+  isPrepaid: boolean;
+  price: string | number;
+  style?: StyleProp<ViewStyle>;
+  isCancelled?: boolean;
+  cancelledReason?: any;
+  showRescheduleCancel?: boolean;
+  showReportOption: boolean;
+  showAdditonalView: boolean;
+  additonalRejectedInfo?: any;
+  onPressCard: () => void;
+  onPressReschedule: () => void;
+  onPressViewDetails: () => void;
+  onPressAddTest?: () => void;
+  onPressViewReport: () => void;
+  phelboObject?: any;
+  isHelp?: boolean;
+  orderAttributesObj?: any;
+  slotDuration?: any;
+  onPressRatingStar: (star: number) => void;
+  onPressCallOption: (name: string, number: string) => void;
+}
+
+export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
+  const [moreTests, setMoreTests] = useState<boolean>(false);
+  const { ordersData } = props;
+  //added if item is removed from phelbo app.
+  const filterOrderLineItem =
+    !!ordersData &&
+    ordersData?.filter(
+      (
+        item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems
+      ) => !item?.isRemoved
+    );
+
+  const bookedOn = moment(props?.createdOn)?.format('Do MMM') || null;
+  const { currentPatient } = useAllCurrentPatients();
+  const renderTopView = () => {
+    return (
+      <View style={styles.horizontalRow}>
+        <View style={{ flex: 0.8 }}>
+          {!!props.orderId && <Text style={styles.orderIdText}>Order ID #{props.orderId}</Text>}
+          {!!bookedOn && <Text style={styles.bookedOnText}>Booked on {bookedOn}</Text>}
+        </View>
+        {!!props?.orderLevelStatus && <StatusCard titleText={props?.orderLevelStatus!} />}
+      </View>
+    );
+  };
+
+  const renderMidView = () => {
+    return (
+      <View style={styles.midViewContainer}>
+        {!!props.patientName && (
+          <View style={styles.patientNameView}>
+            <Text style={styles.testForText}>
+              Tests for {props.gender != '' && props.gender} {props.patientName}
+            </Text>
+          </View>
+        )}
+        {props.showAddTest ? (
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={props.onPressAddTest}
+            style={styles.addTestTouch}
+          >
+            <Text style={styles.yellowText}>ADD MORE TEST</Text>
+          </TouchableOpacity>
+        ) : null}
+      </View>
+    );
+  };
+
+  const renderTestListView = () => {
+    return (
+      <View style={styles.listViewContainer}>
+        {renderTestNames()}
+        {props.showReportOption ? renderViewReport() : null}
+      </View>
+    );
+  };
+
+  const renderTestNames = () => {
+    return (
+      <>
+        {filterOrderLineItem?.map(
+          (
+            item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems,
+            index: number
+          ) => (
+            <View style={styles.rowStyle}>
+              {index < 2 && !moreTests ? (
+                <>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      minWidth: 0,
+                      maxWidth: !!item?.editOrderID ? (screenWidth > 350 ? '68%' : '57%') : '80%',
+                    }}
+                  >
+                    <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
+                    <Text style={styles.testName}>
+                      {!!item?.itemName
+                        ? nameFormater(item?.itemName!, 'title')
+                        : !!item?.diagnostics?.itemName
+                        ? nameFormater(item?.diagnostics?.itemName!, 'title')
+                        : ''}{' '}
+                    </Text>
+                    {!!item?.editOrderID ? renderNewTag() : null}
+                  </View>
+                  {index == 1 &&
+                    filterOrderLineItem?.length - 2 > 0 &&
+                    renderShowMore(filterOrderLineItem, item?.itemName!)}
+                </>
+              ) : null}
+            </View>
+          )
+        )}
+        {moreTests &&
+          filterOrderLineItem?.map(
+            (
+              item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems,
+              index: number
+            ) => (
+              <>
+                <View style={{ flexDirection: 'row', width: '86%' }}>
+                  <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
+                  <Text style={styles.testName}>
+                    {!!item?.itemName ? nameFormater(item?.itemName!, 'title') : ''}{' '}
+                  </Text>
+                  {!!item?.editOrderID ? renderNewTag() : null}
+                </View>
+              </>
+            )
+          )}
+        {moreTests && (
+          <Text onPress={() => setMoreTests(!moreTests)} style={styles.showLessText}>
+            SHOW LESS
+          </Text>
+        )}
+      </>
+    );
+  };
+
+  const renderNewTag = () => {
+    return (
+      <View style={styles.newItemView}>
+        <Text style={styles.newText}>NEW</Text>
+      </View>
+    );
+  };
+
+  const renderShowMore = (orderData: any, name: string) => {
+    return (
+      <Text
+        onPress={() => setMoreTests(!moreTests)}
+        style={[
+          styles.moreText,
+          {
+            ...theme.viewStyles.text(
+              'SB',
+              isSmallDevice ? (name?.length > 25 ? 10 : 12) : name?.length > 25 ? 11 : 13,
+              theme.colors.APP_YELLOW,
+              1,
+              18
+            ),
+          },
+        ]}
+      >
+        {'   '}
+        {!moreTests && `+${orderData?.length - 2} MORE`}
+      </Text>
+    );
+  };
+
+  const renderViewReport = () => {
+    return (
+      <Button
+        title={'VIEW REPORT'}
+        style={styles.viewReport}
+        titleTextStyle={{
+          ...theme.viewStyles.text('SB', isIphone5s() ? 12 : 14, theme.colors.BUTTON_TEXT),
+        }}
+        onPress={props.onPressViewReport}
+      />
+    );
+  };
+
+  const renderPreparationData = () => {
+    //remove duplicate test prep data.
+    const getPrepData = filterOrderLineItem?.map(
+      (
+        item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems
+      ) => item?.itemObj?.testPreparationData
+    );
+    const filterData = [...new Set(getPrepData)];
+    return (
+      <>
+        {filterData?.map((item: any) => {
+          return (
+            <>
+              {item != '' && (
+                <View style={styles.preparationViewContainer}>
+                  <InfoIconRed style={styles.infoIconStyle} />
+                  <Text style={styles.preparationText}>{nameFormater(item, 'default')}</Text>
+                </View>
+              )}
+            </>
+          );
+        })}
+      </>
+    );
+  };
+
+  const renderBottomView = () => {
+    const bookedForDate = !!props.dateTime
+      ? moment(props.dateTime)?.format('ddd, DD MMM YYYY') || null
+      : null;
+
+    const bookedForTime = moment(props.slotTime)?.format('hh:mm A');
+    const rangeAddedTime = moment(props.slotTime)
+      ?.add(props.slotDuration, 'minutes')
+      ?.format('hh:mm A');
+
+    return (
+      <View style={styles.bottomContainer}>
+        {(!!bookedForTime || !!bookedForDate) && (
+          <View>
+            <Text style={styles.headingText}>Test Slot</Text>
+            {!!bookedForTime ? (
+              <Text style={styles.slotText}>
+                {bookedForTime} - {rangeAddedTime}
+              </Text>
+            ) : null}
+            {!!bookedForDate ? <Text style={styles.slotText}>{bookedForDate}</Text> : null}
+          </View>
+        )}
+        <View>
+          <Text style={styles.headingText}>Payment</Text>
+          <Text style={[styles.slotText, { textAlign: 'right' }]}>
+            {props.isPrepaid ? 'ONLINE' : 'COD'}
+          </Text>
+          {!!props?.price ? (
+            <Text style={[styles.slotText, { textAlign: 'right' }]}>
+              {string.common.Rs}
+              {convertNumberToDecimal(props?.price)}
+            </Text>
+          ) : null}
+        </View>
+      </View>
+    );
+  };
+
+  const renderCTAsView = () => {
+    return (
+      <View
+        style={[
+          styles.ctaContainer,
+          {
+            justifyContent:
+              props.showRescheduleCancel && !props.isHelp ? 'space-between' : 'flex-end',
+          },
+        ]}
+      >
+        {!!props.showRescheduleCancel && props.showRescheduleCancel && !props.isHelp ? (
+          <TouchableOpacity activeOpacity={1} onPress={props.onPressReschedule}>
+            <Text style={[styles.yellowText, { fontSize: screenWidth > 380 ? 14 : 13 }]}>
+              RESCHEDULE | CANCEL
+            </Text>
+          </TouchableOpacity>
+        ) : null}
+        <TouchableOpacity activeOpacity={1} onPress={props.onPressViewDetails}>
+          <Text style={[styles.yellowText, { fontSize: screenWidth > 380 ? 14 : 13 }]}>
+            {props.isHelp ? `HELP` : `VIEW DETAILS`}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const showDetailOTPContainer = () => {
+    const phlObj = props?.phelboObject;
+    const otpToShow = !!phlObj && phlObj?.phleboOTP;
+    const phoneNumber = !!phlObj && phlObj?.diagnosticPhlebotomists?.mobile;
+    const name = !!phlObj && phlObj?.diagnosticPhlebotomists?.name;
+    const phleboTrackLink = !!phlObj && phlObj?.phleboTrackLink;
+    const orderId = props.orderId.toString();
+    const checkEta = !!phlObj?.checkinDateTime;
+    let phleboEta = '';
+    if (checkEta) {
+      phleboEta = moment(phlObj?.checkinDateTime).format('hh:mm A');
+    }
+    const slotime = !!props.slotTime ? moment(props?.slotTime) || null : null;
+    const showDetailedInfo = !!slotime
+      ? slotime.diff(moment(), 'minutes') < 60 && slotime.diff(moment(), 'minutes') > 0
+      : false;
+    const isCallingEnabled = !!phlObj ? phlObj?.allowCalling : false;
+    const showVaccinationStatus = !!phlObj?.diagnosticPhlebotomists?.vaccinationStatus;
+    const isPhleboETAElapsed = !!phlObj && phlObj?.isPhleboETAElapsed;
+    const phleboETAElapsedMessage = phlObj?.phleboETAElapsedMessage;
+
+    return (
+      <>
+        {!!otpToShow && DIAGNOSTIC_SHOW_OTP_STATUS.includes(props.orderLevelStatus) ? (
+          <>
+            {showDetailedInfo ||
+            props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN ? (
+              <View style={styles.otpCallContainer}>
+                <View style={styles.detailContainer}>
+                  {phoneNumber ? (
+                    <View style={{ opacity: isCallingEnabled ? 1 : 0.5 }}>
+                      <TouchableOpacity
+                        style={styles.callContainer}
+                        onPress={() => {
+                          isCallingEnabled ? props.onPressCallOption(name, phoneNumber) : {};
+                        }}
+                      >
+                        <WhiteProfile />
+                        <OrangeCall size="sm" style={styles.profileCircle} />
+                      </TouchableOpacity>
+                    </View>
+                  ) : null}
+                  {name ? (
+                    <View style={styles.nameContainer}>
+                      <Text style={styles.nameTextHeadingStyles}>
+                        {string.diagnostics.agent} Details
+                      </Text>
+                      <View style={styles.rowCenter}>
+                        <Text style={styles.nameTextStyles}>{name}</Text>
+                        {!!showVaccinationStatus && showVaccinationStatus && (
+                          <View style={styles.vaccinationContainer}>
+                            <Text style={styles.vaccinationText}>
+                              {phlObj?.diagnosticPhlebotomists?.vaccinationStatus}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                    </View>
+                  ) : null}
+                </View>
+                {otpToShow ? (
+                  <View style={styles.otpBoxConatiner}>
+                    <Text style={styles.otpBoxTextStyle}>{'OTP'}</Text>
+                    <Text style={styles.otpBoxTextStyle}>{otpToShow}</Text>
+                  </View>
+                ) : null}
+              </View>
+            ) : (
+              showOnlyOTPContainer()
+            )}
+
+            {checkEta && props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN ? (
+              <View style={styles.otpContainer}>
+                <View style={styles.etaContainer}>
+                  <LocationOutline style={styles.locationIcon} />
+                  <Text style={styles.otpTextStyle}>
+                    {isPhleboETAElapsed
+                      ? phleboETAElapsedMessage
+                      : `Apollo agent will arrive by ${phleboEta}`}
+                  </Text>
+                </View>
+                {phleboTrackLink ? (
+                  <TouchableOpacity
+                    onPress={() => {
+                      try {
+                        Linking.canOpenURL(phleboTrackLink).then((supported) => {
+                          if (supported) {
+                            DiagnosticTrackPhleboClicked(
+                              orderId,
+                              'My Order',
+                              currentPatient,
+                              'Yes'
+                            );
+                            Linking.openURL(phleboTrackLink);
+                          } else {
+                            DiagnosticTrackPhleboClicked(orderId, 'My Order', currentPatient, 'No');
+                            setBugFenderLog('FAILED_OPEN_URL', phleboTrackLink);
+                          }
+                        });
+                      } catch (e) {
+                        DiagnosticTrackPhleboClicked(orderId, 'My Order', currentPatient, 'No');
+                        setBugFenderLog('FAILED_OPEN_URL', phleboTrackLink);
+                      }
+                    }}
+                  >
+                    <Text style={styles.trackStyle}>
+                      {nameFormater('Track Apollo agent ', 'upper')}
+                    </Text>
+                  </TouchableOpacity>
+                ) : null}
+              </View>
+            ) : null}
+          </>
+        ) : null}
+      </>
+    );
+  };
+
+  const showOnlyOTPContainer = () => {
+    const phlObj = props?.phelboObject;
+    const otpToShow = !!phlObj && phlObj?.phleboOTP;
+    return (
+      <View style={styles.ratingContainer}>
+        <Text style={styles.otpBoxTextStyle}>OTP : {otpToShow}</Text>
+      </View>
+    );
+  };
+
+  const showRatingView = () => {
+    const starCount = [1, 2, 3, 4, 5];
+    const phlObj = props?.phelboObject;
+    const phleboRating = !!phlObj && phlObj?.phleboRating;
+    let checkRating = starCount.includes(phleboRating);
+    const ratedStarCount = starCount.slice(0, phleboRating);
+    const unRatedStarCount = starCount.slice(phleboRating, starCount.length);
+    return props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED ? (
+      <View style={styles.ratingContainer}>
+        <Text style={styles.ratingTextStyle}>
+          {!!checkRating
+            ? 'You have successfully rated the Phlebo Experience'
+            : 'How was your Experience with Phlebo'}
+        </Text>
+        <View style={styles.startContainer}>
+          {!!checkRating ? (
+            <>
+              {ratedStarCount.map((item, index) => (
+                <View>
+                  <StarFillGreen style={{ margin: 5 }} />
+                </View>
+              ))}
+              {unRatedStarCount.map((item, index) => (
+                <View>
+                  <StarEmpty style={{ margin: 5 }} />
+                </View>
+              ))}
+            </>
+          ) : (
+            starCount.map((item) => (
+              <TouchableOpacity
+                onPress={() => {
+                  props.onPressRatingStar(item);
+                }}
+              >
+                <StarEmpty style={{ margin: 5 }} />
+              </TouchableOpacity>
+            ))
+          )}
+        </View>
+      </View>
+    ) : null;
+  };
+  const showReportTat = () => {
+    const report = !!props?.orderAttributesObj?.reportTATMessage
+      ? props?.orderAttributesObj?.reportTATMessage
+      : !!props?.orderAttributesObj?.reportGenerationTime
+      ? props?.orderAttributesObj?.reportGenerationTime
+      : '';
+    const prepData = !!props?.orderAttributesObj?.preTestingRequirement
+      ? props?.orderAttributesObj?.preTestingRequirement
+      : '';
+    return props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED &&
+      (report || prepData) ? (
+      <View style={styles.ratingContainer}>
+        {report ? (
+          <View style={styles.reporttatContainer}>
+            <ClockIcon />
+            <Text style={styles.reportTextStyle}>{`${report}`}</Text>
+          </View>
+        ) : null}
+        {prepData ? (
+          <View style={styles.reporttatContainer}>
+            <InfoIconRed />
+            <Text style={styles.reportTextStyle}>{prepData}</Text>
+          </View>
+        ) : null}
+      </View>
+    ) : null;
+  };
+
+  const renderAdditionalInfoView = () => {
+    const isPresent =
+      (!!props.additonalRejectedInfo && props.additonalRejectedInfo?.length > 0) ||
+      (props.isCancelled && props.cancelledReason != null);
+    const consRejectedString = isPresent && props.additonalRejectedInfo?.join(', ');
+    let textToShow =
+      props.isCancelled && props.cancelledReason != null
+        ? `${string.diagnostics.orderCancelledReasonText} ${
+            !!props.cancelledReason?.comments && props.cancelledReason?.comments != ''
+              ? props.cancelledReason?.comments
+              : props.cancelledReason.cancellationReason === 'DIAGNOSTIC_STATUS_UPDATED_FROM_ITDOSE'
+              ? string.diagnostics.itDoseCancelledText
+              : props.cancelledReason?.cancellationReason
+          }`
+        : `Sample for ${consRejectedString} ${
+            props.additonalRejectedInfo?.length > 1 ? 'are' : 'is'
+          } rejected`;
+    return (
+      <>
+        {isPresent ? (
+          <View style={styles.preparationViewContainer}>
+            <Text style={styles.preparationText}>{nameFormater(textToShow, 'default')}</Text>
+          </View>
+        ) : null}
+      </>
+    );
+  };
+
+  return (
+    <TouchableOpacity
+      activeOpacity={1}
+      onPress={props.onPressCard}
+      style={[styles.containerStyle, props.style]}
+      key={props?.orderId}
+    >
+      <View key={props?.orderId} style={{ padding: 16, paddingBottom: 12 }}>
+        {renderTopView()}
+        {renderMidView()}
+        {!!ordersData && !!filterOrderLineItem && filterOrderLineItem?.length
+          ? renderTestListView()
+          : null}
+        {!!ordersData &&
+        !!filterOrderLineItem &&
+        filterOrderLineItem?.length &&
+        DIAGNOSTIC_ORDER_FOR_PREPDATA.includes(props.orderLevelStatus)
+          ? renderPreparationData()
+          : null}
+        {!!props.orderLevelStatus && DIAGNOSTIC_ORDER_FAILED_STATUS.includes(props.orderLevelStatus)
+          ? null
+          : renderBottomView()}
+        {renderCTAsView()}
+      </View>
+      {props.showAdditonalView || props.isCancelled ? renderAdditionalInfoView() : null}
+
+      {showDetailOTPContainer()}
+      {showRatingView()}
+      {showReportTat()}
+    </TouchableOpacity>
+  );
+};
+
+const styles = StyleSheet.create({
+  containerStyle: {
+    ...theme.viewStyles.cardViewStyle,
+    margin: 16,
+  },
+  titleStyle: {
+    color: theme.colors.SHERPA_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(17),
+    paddingHorizontal: 16,
+  },
+  bulletStyle: {
+    color: '#007C9D',
+    fontSize: 5,
+    alignSelf: 'flex-start',
+    marginTop: 4,
+  },
+  testName: {
+    ...theme.viewStyles.text('M', isSmallDevice ? 11.5 : 12, '#007C9D', 1, 17),
+    letterSpacing: 0,
+    marginBottom: '1.5%',
+    marginHorizontal: '3%',
+  },
+  moreText: {
+    ...theme.viewStyles.text('SB', isSmallDevice ? 12 : 13, theme.colors.APP_YELLOW, 1, 15),
+    letterSpacing: 0.25,
+    marginBottom: '1.5%',
+  },
+  showLessText: {
+    ...theme.viewStyles.text('M', isSmallDevice ? 12 : 13, theme.colors.APP_YELLOW, 1, 15),
+    letterSpacing: 0.25,
+    marginBottom: '1.5%',
+    marginTop: '2%',
+    marginLeft: '5%',
+  },
+  infoIconStyle: { resizeMode: 'contain', height: 18, width: 18 },
+  headingText: {
+    ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18),
+    letterSpacing: 0.3,
+    marginBottom: '2%',
+  },
+  slotText: {
+    ...theme.viewStyles.text('R', 12, colors.SHERPA_BLUE, 1, 18),
+    letterSpacing: 0.01,
+    marginVertical: '1%',
+  },
+  itemHeading: {
+    ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1, 15),
+    letterSpacing: 0.28,
+  },
+  horizontalRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  orderIdText: { ...theme.viewStyles.text('M', 13, colors.SHERPA_BLUE, 1, 18) },
+  bookedOnText: { ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 0.5, 14) },
+  midViewContainer: {
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    marginTop: 20,
+    marginBottom: '1%',
+    minHeight: 40,
+  },
+  testForText: {
+    ...theme.viewStyles.text('SB', 13, colors.SHERPA_BLUE, 1, 18),
+    letterSpacing: 0.3,
+  },
+  yellowText: { ...theme.viewStyles.yellowTextStyle, fontSize: screenWidth > 380 ? 13 : 12 },
+  listViewContainer: {
+    backgroundColor: '#F9F9F9',
+    borderRadius: 5,
+    flex: 1,
+    padding: 10,
+  },
+  rowStyle: { flexDirection: 'row' },
+  preparationViewContainer: {
+    flexDirection: 'row',
+    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
+    flex: 1,
+    padding: 10,
+  },
+  preparationText: {
+    ...theme.fonts.IBMPlexSansMedium(10),
+    lineHeight: 18,
+    letterSpacing: 0.1,
+    color: theme.colors.SHERPA_BLUE,
+    opacity: 0.7,
+    marginHorizontal: '2%',
+  },
+  ctaContainer: {
+    marginVertical: '3%',
+    flexDirection: 'row',
+  },
+  bottomContainer: { justifyContent: 'space-between', flexDirection: 'row', marginTop: '6%' },
+  viewReport: {
+    width: '40%',
+    marginBottom: 5,
+    alignSelf: 'flex-start',
+    marginTop: 10,
+    height: 40,
+  },
+  otpTextStyle: {
+    alignSelf: 'center',
+    paddingHorizontal: 10,
+    color: theme.colors.LIGHT_BLUE,
+    ...theme.fonts.IBMPlexSansRegular(10),
+  },
+  otpContainer: {
+    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    height: 40,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    borderRadius: 10,
+    padding: 10,
+  },
+  locationIcon: {
+    width: 15,
+    height: 15,
+    alignSelf: 'center',
+  },
+  otpCallContainer: {
+    backgroundColor: 'white',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderTopWidth: 0.5,
+    borderColor: '#000000',
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    borderRadius: 10,
+    padding: 10,
+  },
+  detailContainer: {
+    flexDirection: 'row',
+    width: '80%',
+    borderBottomLeftRadius: 4,
+    borderBottomRightRadius: 4,
+  },
+  profileCircle: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+  },
+  callContainer: {
+    margin: 0,
+    height: 55,
+    width: 55,
+  },
+  nameContainer: {
+    justifyContent: 'flex-start',
+    alignContent: 'center',
+    padding: 10,
+    width: '80%',
+  },
+  nameTextHeadingStyles: {
+    ...theme.viewStyles.text('SB', 13, colors.SHERPA_BLUE, 1, 18),
+  },
+  nameTextStyles: {
+    ...theme.viewStyles.text('R', 13, colors.SHERPA_BLUE, 1, 18),
+  },
+  otpBoxConatiner: {
+    width: 45,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 5,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#000000',
+  },
+  otpBoxTextStyle: {
+    ...theme.viewStyles.text('SB', 13, colors.SHERPA_BLUE, 1, 18),
+  },
+  etaContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  trackStyle: {
+    ...theme.viewStyles.text('SB', 12, colors.APP_YELLOW, 1, 18),
+  },
+  ratingContainer: {
+    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    borderRadius: 10,
+    padding: 10,
+  },
+  reporttatContainer: {
+    marginVertical: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  startContainer: {
+    flexDirection: 'row',
+    margin: 5,
+  },
+  reportTextStyle: {
+    marginHorizontal: 10,
+    ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 1, 16),
+  },
+  ratingTextStyle: {
+    ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 1, 16),
+  },
+  addTestTouch: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  patientNameView: { width: '65%', justifyContent: 'center' },
+  newItemView: {
+    backgroundColor: '#4CAF50',
+    height: 18,
+    width: 40,
+    borderRadius: 2,
+    borderColor: '#4CAF50',
+    justifyContent: 'center',
+  },
+  newText: {
+    ...theme.viewStyles.text('SB', 10, 'white'),
+    textAlign: 'center',
+  },
+  rowCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  vaccinationContainer: {
+    backgroundColor: colors.TURQUOISE_LIGHT_BLUE,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: 'transparent',
+    padding: 4,
+    marginHorizontal: 8,
+    maxWidth: '60%',
+  },
+  vaccinationText: { ...theme.viewStyles.text('M', 12, colors.WHITE, 1, 15) },
+});

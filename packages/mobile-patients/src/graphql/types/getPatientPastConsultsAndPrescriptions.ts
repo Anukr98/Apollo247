@@ -1,8 +1,9 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
-import { PatientConsultsAndOrdersInput, APPOINTMENT_TYPE, APPOINTMENT_STATE, DoctorType, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION, STATUS, MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_STATUS, MEDICINE_ORDER_TYPE } from "./globalTypes";
+import { PatientConsultsAndOrdersInput, APPOINTMENT_TYPE, APPOINTMENT_STATE, DoctorType, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION, STATUS, MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_STATUS_CONSULT, MEDICINE_ORDER_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getPatientPastConsultsAndPrescriptions
@@ -50,6 +51,7 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
   notes: string | null;
   blobName: string | null;
   consultType: string | null;
+  prescriptionGeneratedDate: any | null;
   diagnosis: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_diagnosis | null)[] | null;
   diagnosticPrescription: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_diagnosticPrescription | null)[] | null;
   doctorId: string | null;
@@ -134,7 +136,7 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
   orderDateTime: any | null;
   quoteDateTime: any | null;
   deliveryType: MEDICINE_DELIVERY_TYPE | null;
-  currentStatus: MEDICINE_ORDER_STATUS | null;
+  currentStatus: MEDICINE_ORDER_STATUS_CONSULT | null;
   orderType: MEDICINE_ORDER_TYPE | null;
   estimatedAmount: number | null;
   prescriptionImageUrl: string | null;

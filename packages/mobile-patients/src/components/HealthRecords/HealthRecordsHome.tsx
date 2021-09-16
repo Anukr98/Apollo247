@@ -1,91 +1,118 @@
 import { filterDataType } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearchListing';
-import { FilterHealthRecordScene } from '@aph/mobile-patients/src/components/FilterHealthRecordScene';
-import { HealthConsultView } from '@aph/mobile-patients/src/components/HealthRecords/HealthConsultView';
-import { MedicalRecords } from '@aph/mobile-patients/src/components/HealthRecords/MedicalRecords';
-import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
+  AccountCircleDarkIcon,
+  BloodIcon,
+  HeightIcon,
+  WeightIcon,
+  ArrowRight,
+  HealthConditionPhrIcon,
+  LabTestIcon,
+  ClinicalDocumentPhrIcon,
+  PrescriptionPhrIcon,
+  BillPhrIcon,
+  InsurancePhrIcon,
+  HospitalPhrIcon,
+  CrossPopup,
   DropdownGreen,
-  Filter,
-  LinkedUhidIcon,
-  AddFileIcon,
-  NoData,
+  PhrArrowRightIcon,
+  PhrSearchIcon,
+  PrescriptionPhrSearchIcon,
+  LabTestPhrSearchIcon,
+  BillPhrSearchIcon,
+  InsurancePhrSearchIcon,
+  HospitalPhrSearchIcon,
+  HealthConditionPhrSearchIcon,
+  Vaccination,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
-import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
+import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  CommonBugFender,
-  CommonLogEvent,
-  isIphone5s,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {
-  CHECK_IF_FOLLOWUP_BOOKED,
-  GET_MEDICAL_PRISM_RECORD,
   GET_PAST_CONSULTS_PRESCRIPTIONS,
-  SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS,
-  UPLOAD_DOCUMENT,
+  UPDATE_PATIENT_MEDICAL_PARAMETERS,
+  GET_PRISM_AUTH_TOKEN,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { checkIfFollowUpBooked } from '@aph/mobile-patients/src/graphql/types/checkIfFollowUpBooked';
+import {
+  getPrismAuthTokenVariables,
+  getPrismAuthToken,
+} from '@aph/mobile-patients/src/graphql/types/getPrismAuthToken';
+import { BloodGroups, MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
   getPatientPastConsultsAndPrescriptions,
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults as ConsultsType,
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders as medicineOrders,
 } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
-import { savePrescriptionMedicineOrderOMSVariables } from '@aph/mobile-patients/src/graphql/types/savePrescriptionMedicineOrderOMS';
 import {
   g,
   handleGraphQlError,
   postWebEngageEvent,
+  postCleverTapEvent,
+  phrSortByDate,
+  isValidSearch,
+  HEALTH_CONDITIONS_TITLE,
+  getPhrHighlightText,
+  phrSearchCleverTapEvents,
+  removeObjectNullUndefinedProperties,
+  getUserType,
+  getCleverTapCircleMemberValues,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
-  WebEngageEventName,
-  WebEngageEvents,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
-import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import {
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  Platform,
   SafeAreaView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
-  ViewStyle,
   ScrollView,
+  Image,
+  TouchableOpacity,
+  Keyboard,
+  TextInput,
+  Platform,
   FlatList,
+  Dimensions,
+  BackHandler,
 } from 'react-native';
+import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
+import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
+import { searchPHRApiWithAuthToken } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { NavigationScreenProps } from 'react-navigation';
 import {
-  getPatientPrismMedicalRecords,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response,
-} from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
-import {
-  BOOKING_SOURCE,
-  DEVICE_TYPE,
-  MEDICINE_DELIVERY_TYPE,
-  PRISM_DOCUMENT_CATEGORY,
-  UPLOAD_FILE_TYPES,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  uploadDocument,
-  uploadDocumentVariables,
-} from '@aph/mobile-patients/src/graphql/types/uploadDocument';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { TabHeader } from '@aph/mobile-patients/src/components/ui/TabHeader';
+  getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_healthChecks_response,
+  getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_labResults_response,
+  getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_prescriptions_response,
+} from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V3';
+import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import _ from 'lodash';
+import { ListItem, Overlay } from 'react-native-elements';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { renderHealthRecordShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import { useShoppingCart } from '../ShoppingCartProvider';
+import { getUniqueId } from 'react-native-device-info';
+
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
+  containerStyle: {
+    flex: 1,
+    backgroundColor: '#E5E5E5',
+  },
   filterViewStyle: {
     height: 60,
     ...theme.viewStyles.lightSeparatorStyle,
@@ -97,7 +124,7 @@ const styles = StyleSheet.create({
   },
   hiTextStyle: {
     marginLeft: 20,
-    color: '#02475b',
+    color: theme.colors.LIGHT_BLUE,
     ...theme.fonts.IBMPlexSansSemiBold(36),
   },
   nameTextContainerStyle: {
@@ -105,7 +132,7 @@ const styles = StyleSheet.create({
   },
   nameTextStyle: {
     marginLeft: 5,
-    color: '#02475b',
+    color: theme.colors.LIGHT_BLUE,
     ...theme.fonts.IBMPlexSansSemiBold(36),
   },
   seperatorStyle: {
@@ -125,90 +152,405 @@ const styles = StyleSheet.create({
   },
   notifyUsersTextStyle: {
     ...theme.fonts.IBMPlexSansSemiBold(12),
-    color: '#0087BA',
+    color: theme.colors.SKY_BLUE,
     fontWeight: '500',
     paddingHorizontal: 20,
     marginBottom: 16,
   },
+  selectedMemberTextStyle: {
+    ...theme.viewStyles.text('B', isIphone5s() ? 11 : 13, '#FC9916', 1, 24),
+    marginLeft: 8,
+  },
+  userHeightTextStyle: {
+    ...theme.viewStyles.text('SB', 16, theme.colors.LIGHT_BLUE, 1, 20.8),
+    paddingLeft: 10,
+    flex: 1,
+    paddingTop: 0,
+    paddingBottom: 0,
+  },
+  userBloodTextStyle: {
+    ...theme.viewStyles.text('R', 12, '#00B38E', 1, 16),
+  },
+  profileDetailsMainViewStyle: {
+    backgroundColor: '#FFFFFF',
+    paddingTop: 26,
+    paddingHorizontal: 18,
+    paddingBottom: 70,
+  },
+  profileDetailsCardView: {
+    ...theme.viewStyles.cardViewStyle,
+    width: '100%',
+    position: 'absolute',
+    alignSelf: 'center',
+    bottom: -22,
+  },
+  profileDetailsViewStyle: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 14,
+    marginBottom: 18,
+    marginLeft: 22,
+    marginRight: 25,
+  },
+  heightWeightViewStyle: {
+    flexDirection: 'row',
+    flex: 1,
+    alignItems: 'center',
+  },
+  separatorLineStyle: {
+    width: 0.5,
+    backgroundColor: 'rgba(2,71,91,0.2)',
+    marginHorizontal: 10,
+    marginBottom: 0,
+  },
+  listItemTitleStyle: {
+    ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 21),
+    paddingHorizontal: 6,
+    paddingLeft: 14,
+  },
+  listItemViewStyle: {
+    paddingLeft: 0,
+    paddingRight: 3,
+    marginTop: 7,
+    borderBottomColor: 'rgba(2,71,91,0.2)',
+    borderBottomWidth: 0.5,
+  },
+  listItemCardStyle: {
+    ...theme.viewStyles.cardViewStyle,
+    marginTop: 11,
+    paddingLeft: 18,
+    paddingRight: 25,
+  },
+  clinicalDocumentViewStyle: {
+    ...theme.viewStyles.cardViewStyle,
+    marginTop: 11,
+    paddingLeft: 18,
+    paddingRight: 25,
+    marginBottom: 50,
+    marginHorizontal: 20,
+  },
+  phrOverlayStyle: {
+    padding: 0,
+    margin: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+  },
+  phrUploadOptionsViewStyle: {
+    backgroundColor: '#F7F8F5',
+    paddingHorizontal: 29,
+    borderRadius: 10,
+    paddingVertical: 34,
+  },
+  overlayViewStyle: {
+    width: '100%',
+    backgroundColor: 'transparent',
+    position: 'absolute',
+  },
+  overlaySafeAreaViewStyle: {
+    flex: 1,
+    backgroundColor: 'transparent',
+    marginHorizontal: 20,
+  },
+  updateTitleTextStyle: {
+    ...theme.viewStyles.text('R', 12, '#00B38E', 1, 16),
+    textAlign: 'center',
+  },
+  menuContainerStyle: {
+    alignItems: 'flex-end',
+    marginTop: 60,
+    marginLeft: -40,
+  },
+  itemTextStyle: {
+    ...theme.viewStyles.text('M', 16, '#01475b'),
+    paddingHorizontal: 0,
+  },
+  selectedTextStyle: {
+    ...theme.viewStyles.text('M', 16, '#00b38e'),
+    alignSelf: 'flex-start',
+  },
+  placeholderViewStyle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    paddingTop: 0,
+    paddingBottom: 3,
+    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
+  },
+  placeholderStyle: {
+    color: theme.colors.placeholderTextColor,
+  },
+  placeholderTextStyle: {
+    textAlign: 'center',
+    alignSelf: 'center',
+    ...theme.viewStyles.text('SB', 36, '#01475b', 1, 46.8),
+  },
+  textInputTextStyle: {
+    paddingBottom: 0,
+    paddingTop: Platform.OS === 'ios' ? 13 : 8.5,
+    width: '73%',
+  },
+  kgsTextStyle: {
+    ...theme.fonts.IBMPlexSansMedium(18),
+    color: theme.colors.SHERPA_BLUE,
+    marginLeft: 10,
+  },
+  overlayMainViewStyle: {
+    width: 160,
+    marginBottom: 37,
+    alignSelf: 'center',
+    alignItems: 'center',
+    marginTop: 26,
+    backgroundColor: '#FFFFFF',
+  },
+  closeIconViewStyle: {
+    alignSelf: 'flex-end',
+    backgroundColor: 'transparent',
+    marginBottom: 16,
+  },
+  profileNameTextStyle: { ...theme.viewStyles.text('SB', 36, theme.colors.LIGHT_BLUE, 1, 47) },
+  moreHealthViewStyle: { marginHorizontal: 20, marginBottom: 39 },
+  profileNameViewStyle: { flexDirection: 'row', alignItems: 'center' },
+  notificationViewStyle: {
+    backgroundColor: '#00B38E',
+    borderRadius: 10,
+    justifyContent: 'center',
+    height: 15,
+  },
+  notificationMainViewStyle: { flexDirection: 'row', alignItems: 'center' },
+  notificationCountTextStyle: {
+    ...theme.viewStyles.text('M', 10, '#FFFFFF', 1, 13),
+    paddingHorizontal: 6,
+  },
+  errorPopupViewStyle: {
+    ...theme.viewStyles.cardViewStyle,
+    paddingTop: 28,
+    paddingLeft: 33,
+    paddingRight: 24,
+    paddingBottom: 21,
+    borderRadius: 2,
+  },
+  uhHoTextStyle: { ...theme.viewStyles.text('SB', 18, '#000000', 1, 23.4) },
+  validTextStyle: { ...theme.viewStyles.text('M', 13, '#880200', 1, 16.9), marginTop: 16 },
+  errorOKTextStyle: {
+    ...theme.viewStyles.text('M', 13, '#0B8178', 1, 16.9),
+    marginTop: 16,
+    textAlign: 'right',
+  },
+  textInputStyle: {
+    ...theme.viewStyles.text('R', 14, theme.colors.SHERPA_BLUE, 1, 18),
+    flex: 1,
+    paddingHorizontal: 10,
+    paddingTop: 0,
+    paddingBottom: 1,
+  },
+  searchBarMainViewStyle: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    alignItems: 'center',
+  },
+  searchBarViewStyle: {
+    backgroundColor: theme.colors.CARD_BG,
+    flexDirection: 'row',
+    padding: 10,
+    flex: 1,
+    alignItems: 'center',
+    borderRadius: 5,
+  },
+  cancelTextStyle: {
+    ...theme.viewStyles.text('M', 12, theme.colors.SKY_BLUE, 1, 15.6),
+    marginLeft: 18,
+  },
+  healthRecordTypeTextStyle: {
+    ...theme.viewStyles.text('R', 12, theme.colors.SILVER_LIGHT, 1, 21),
+    marginHorizontal: 13,
+  },
+  healthRecordTypeViewStyle: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
+  searchListHeaderViewStyle: { marginHorizontal: 17, marginVertical: 15 },
+  searchListHeaderTextStyle: { ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 21) },
+  loaderViewStyle: { justifyContent: 'center', flex: 1, alignItems: 'center' },
+  loaderStyle: { height: 100, backgroundColor: 'transparent', alignSelf: 'center' },
+  phrNodataMainViewStyle: { marginTop: 59, backgroundColor: 'transparent' },
 });
 
-const filterData: filterDataType[] = [
-  {
-    label: 'See Only',
-    options: ['All Consults', 'Online', 'Physical'],
-    selectedOptions: [],
-  },
-];
-type rescheduleType = {
-  rescheduleCount: number;
-  appointmentState: string;
-  isCancel: number;
-  isFollowUp: number;
-  isPaid: number;
+type BloodGroupArray = {
+  key: BloodGroups;
+  title: string;
 };
-type PickerImage = any;
 
-let selectOptions: string[] = [];
+type HeightArray = {
+  key: string;
+  title: string;
+};
 
-export interface HealthRecordsHomeProps extends NavigationScreenProps {}
+const bloodGroupArray: BloodGroupArray[] = [
+  { key: BloodGroups.APositive, title: 'A+' },
+  { key: BloodGroups.ANegative, title: 'A-' },
+  { key: BloodGroups.BPositive, title: 'B+' },
+  { key: BloodGroups.BNegative, title: 'B-' },
+  { key: BloodGroups.ABPositive, title: 'AB+' },
+  { key: BloodGroups.ABNegative, title: 'AB-' },
+  { key: BloodGroups.OPositive, title: 'O+' },
+  { key: BloodGroups.ONegative, title: 'O-' },
+];
+
+enum HEIGHT_ARRAY {
+  CM = 'cm',
+  FT = 'ft',
+}
+
+const heightArray: HeightArray[] = [
+  { key: HEIGHT_ARRAY.CM, title: HEIGHT_ARRAY.CM },
+  { key: HEIGHT_ARRAY.FT, title: HEIGHT_ARRAY.FT },
+];
+
+export interface HealthRecordsHomeProps extends NavigationScreenProps {
+  movedFrom?: string;
+}
 
 export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
-  const tabs = strings.health_records_home.tabs;
-
   const [healthChecksNew, setHealthChecksNew] = useState<
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response | null)[]
-    | null
-    | undefined
-  >([]);
-  const [hospitalizationsNew, setHospitalizationsNew] = useState<
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response | null)[]
+    | (getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_healthChecks_response | null)[]
     | null
     | undefined
   >([]);
   const [labResults, setLabResults] = useState<
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response | null)[]
+    | (getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_labResults_response | null)[]
     | null
     | undefined
   >([]);
   const [prescriptions, setPrescriptions] = useState<
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response | null)[]
+    | (getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_prescriptions_response | null)[]
     | null
     | undefined
   >([]);
 
-  const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
-  const [FilterData, setFilterData] = useState<filterDataType[]>(filterData);
-  const [displayFilter, setDisplayFilter] = useState<boolean>(false);
-  const [displayOrderPopup, setdisplayOrderPopup] = useState<boolean>(false);
-  const [consultsData, setConsultsData] = useState<(ConsultsType | null)[] | null>(null);
-  const [medicineOrders, setMedicineOrders] = useState<(medicineOrders | null)[] | null>(null);
-  const [combination, setCombination] = useState<{ type: string; data: any }[]>();
+  const movedFrom = props.navigation.getParam('movedFrom');
+  const [testAndHealthCheck, setTestAndHealthCheck] = useState<{ type: string; data: any }[]>();
   const { loading, setLoading } = useUIElements();
-  const [filterSelected, setFilterSelected] = useState(false);
-  const [filterSelectedOptions, setFilterSelectedOptions] = useState(selectOptions);
   const [prismdataLoader, setPrismdataLoader] = useState<boolean>(false);
   const [pastDataLoader, setPastDataLoader] = useState<boolean>(false);
-  const [arrayValues, setarrayValues] = useState<any>();
+  const [arrayValues, setarrayValues] = useState<any>([]);
   const client = useApolloClient();
   const { getPatientApiCall } = useAuth();
-  const { currentPatient } = useAllCurrentPatients();
+  const { phrNotificationData, setPhrNotificationData } = useAppCommonData();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
-  const { showAphAlert } = useUIElements();
-  const { deliveryAddressId, storeId } = useShoppingCart();
+  const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
+  const [callApi, setCallApi] = useState(true);
+  const [callPrescriptionApi, setCallPrescriptionApi] = useState(false);
+  const [callTestReportApi, setCallTestReportApi] = useState(false);
+  const [updatePatientDetailsApi, setUpdatePatientDetailsApi] = useState(true);
+  const [showUpdateProfilePopup, setShowUpdateProfilePopup] = useState(false);
+  const [showUpdateProfileErrorPopup, setShowUpdateProfileErrorPopup] = useState(false);
+  const [currentUpdatePopupId, setCurrentUpdatePopupId] = useState(0);
+  const [weight, setWeight] = useState('');
+  const [height, setHeight] = useState('');
+  const [searchText, setSearchText] = useState('');
+  const [isSearchFocus, SetIsSearchFocus] = useState(false);
+  const [searchLoading, setSearchLoading] = useState<boolean>(false);
+  const [pageLoading, setPageLoading] = useState<boolean>(false);
+  const _searchInputRef = useRef(null);
+  const [healthRecordSearchResults, setHealthRecordSearchResults] = useState<any>([]);
+  const [prismAuthToken, setPrismAuthToken] = useState<string>('');
+  const loadRecordsEvent = useRef<boolean>(true);
+  const [errorPopupText, setErrorPopupText] = useState<string>(
+    string.common.error_enter_number_text
+  );
+  const [selectedBloodGroupArray, setSelectedBloodGroupArray] = useState<BloodGroupArray[]>(
+    bloodGroupArray
+  );
+  const [heightArrayValue, setHeightArrayValue] = useState<HEIGHT_ARRAY | string>(HEIGHT_ARRAY.CM);
+  const [bloodGroup, setBloodGroup] = useState<BloodGroupArray>();
+  const [overlaySpinner, setOverlaySpinner] = useState(false);
+  const [searchQuery, setSearchQuery] = useState({});
+  const isHeightAvailable =
+    currentPatient?.patientMedicalHistory?.height &&
+    currentPatient?.patientMedicalHistory?.height !== 'No Idea' &&
+    currentPatient?.patientMedicalHistory?.height !== 'Not Recorded';
+  const isWeightAvailable =
+    currentPatient?.patientMedicalHistory?.weight &&
+    currentPatient?.patientMedicalHistory?.weight !== 'No Idea' &&
+    currentPatient?.patientMedicalHistory?.weight !== 'Not Recorded';
+
+  const { pharmacyCircleAttributes } = useShoppingCart();
 
   useEffect(() => {
+    removeObjectNullUndefinedProperties(currentPatient);
     currentPatient && setProfile(currentPatient!);
     if (!currentPatient) {
       getPatientApiCall();
     }
+    setPatientHistoryValues();
   }, [currentPatient]);
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
+
+  const handleBack = () => {
+    navigateToHome(props.navigation, {}, movedFrom === 'deeplink');
+    return true;
+  };
+
+  useEffect(() => {
+    if (currentPatient) {
+      getAuthToken();
+    }
+  }, [currentPatient]);
+
+  const getAuthToken = async () => {
+    client
+      .query<getPrismAuthToken, getPrismAuthTokenVariables>({
+        query: GET_PRISM_AUTH_TOKEN,
+        fetchPolicy: 'no-cache',
+        variables: {
+          uhid: currentPatient?.uhid || '',
+        },
+      })
+      .then(({ data }) => {
+        const prism_auth_token = g(data, 'getPrismAuthToken', 'response');
+        if (prism_auth_token) {
+          setPrismAuthToken(prism_auth_token);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
+      });
+  };
+
   useEffect(() => {
     if (prismdataLoader || pastDataLoader) {
-      !loading && setLoading!(true);
+      setPageLoading!(true);
     } else {
-      loading && setLoading!(false);
+      setPageLoading!(false);
     }
   }, [prismdataLoader, pastDataLoader]);
+
+  const setPatientHistoryValues = () => {
+    setHeight(isHeightAvailable ? currentPatient?.patientMedicalHistory?.height : '');
+    setWeight(isWeightAvailable ? currentPatient?.patientMedicalHistory?.weight : '');
+    setBloodGroup(
+      currentPatient?.patientMedicalHistory?.bloodGroup
+        ? {
+            key: getBloodGroupValue(
+              currentPatient?.patientMedicalHistory?.bloodGroup
+            ) as BloodGroups,
+            title: getBloodGroupValue(
+              currentPatient?.patientMedicalHistory?.bloodGroup?.toString()
+            ),
+          }
+        : undefined
+    );
+  };
 
   const fetchPastData = (filters: filterDataType[] = []) => {
     const filterArray = [];
@@ -220,7 +562,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       !filterArray.includes('ONLINE') && filterArray.push('ONLINE');
       !filterArray.includes('PHYSICAL') && filterArray.push('PHYSICAL');
     }
-    setFilterSelectedOptions(filterArray);
     setPastDataLoader(true);
     client
       .query<getPatientPastConsultsAndPrescriptions>({
@@ -228,24 +569,21 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         fetchPolicy: 'no-cache',
         variables: {
           consultsAndOrdersInput: {
-            patient: currentPatient && currentPatient.id ? currentPatient.id : '',
+            patient: currentPatient?.id || '',
             filter: filterArray,
           },
         },
       })
       .then((_data) => {
-        const consults = _data.data.getPatientPastConsultsAndPrescriptions!.consults || [];
-        const medOrders = _data.data.getPatientPastConsultsAndPrescriptions!.medicineOrders || [];
+        const consults = _data?.data?.getPatientPastConsultsAndPrescriptions?.consults || [];
+        const medOrders = _data?.data?.getPatientPastConsultsAndPrescriptions?.medicineOrders || [];
         const consultsAndMedOrders: { [key: string]: any } = {};
-        setConsultsData(consults);
-        setMedicineOrders(medOrders);
         consults.forEach((c) => {
           consultsAndMedOrders[c!.bookingDate] = {
             ...consultsAndMedOrders[c!.bookingDate],
             ...c,
           };
         });
-
         medOrders.forEach((c) => {
           consultsAndMedOrders[c!.quoteDateTime] = {
             ...consultsAndMedOrders[c!.quoteDateTime],
@@ -271,579 +609,1299 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       })
       .catch((e) => {
         CommonBugFender('HealthRecordsHome_fetchPastData', e);
-        const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while fetching Heath records', error);
       })
       .finally(() => setPastDataLoader(false));
   };
 
-  const sortByDate = (array: { type: string; data: any }[]) => {
-    return array.sort(({ data: data1 }, { data: data2 }) => {
-      let date1 = new Date(data1.date || data1.bookingDate || data1.quoteDateTime);
-      let date2 = new Date(data2.date || data2.bookingDate || data2.quoteDateTime);
-      return date1 > date2 ? -1 : date1 < date2 ? 1 : data2.id - data1.id;
-    });
+  const getBloodGroupValue = (bloodGroup: BloodGroups) => {
+    switch (bloodGroup) {
+      case BloodGroups.APositive:
+        return 'A+';
+      case BloodGroups.ANegative:
+        return 'A-';
+      case BloodGroups.BPositive:
+        return 'B+';
+      case BloodGroups.BNegative:
+        return 'B-';
+      case BloodGroups.ABPositive:
+        return 'AB+';
+      case BloodGroups.ABNegative:
+        return 'AB-';
+      case BloodGroups.OPositive:
+        return 'O+';
+      case BloodGroups.ONegative:
+        return 'O-';
+    }
   };
 
-  const fetchTestData = useCallback(() => {
-    client
-      .query<getPatientPrismMedicalRecords>({
-        query: GET_MEDICAL_PRISM_RECORD,
-        variables: {
-          patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then(({ data }) => {
-        const labResultsData = g(data, 'getPatientPrismMedicalRecords', 'labResults', 'response');
+  const fetchPrescriptionAndTestReportData = useCallback(() => {
+    setPrismdataLoader(true);
+    getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [
+      MedicalRecordType.PRESCRIPTION,
+      MedicalRecordType.TEST_REPORT,
+      MedicalRecordType.HEALTHCHECK,
+    ])
+      .then((data: any) => {
+        const labResultsData = g(
+          data,
+          'getPatientPrismMedicalRecords_V3',
+          'labResults',
+          'response'
+        );
         const prescriptionsData = g(
           data,
-          'getPatientPrismMedicalRecords',
+          'getPatientPrismMedicalRecords_V3',
           'prescriptions',
           'response'
         );
-        const healthChecksNewData = g(
+        const healthChecksData = g(
           data,
-          'getPatientPrismMedicalRecords',
-          'healthChecksNew',
+          'getPatientPrismMedicalRecords_V3',
+          'healthChecks',
           'response'
         );
-        const hospitalizationsNewData = g(
-          data,
-          'getPatientPrismMedicalRecords',
-          'hospitalizationsNew',
-          'response'
-        );
+        loadRecordsEvent.current &&
+          tabsClickedCleverTapEvent(CleverTapEventName.PHR_LOAD_HEALTH_RECORDS);
+        loadRecordsEvent.current = false;
         setLabResults(labResultsData);
         setPrescriptions(prescriptionsData);
-        setHealthChecksNew(healthChecksNewData);
-        setHospitalizationsNew(hospitalizationsNewData);
+        setHealthChecksNew(healthChecksData);
       })
       .catch((error) => {
         CommonBugFender('HealthRecordsHome_fetchTestData', error);
-        console.log('Error occured', { error });
         currentPatient && handleGraphQlError(error);
       })
       .finally(() => setPrismdataLoader(false));
   }, [currentPatient]);
 
-  useEffect(() => {
-    setPastDataLoader(true);
+  const fetchTestReportsData = useCallback(() => {
     setPrismdataLoader(true);
-    fetchPastData();
-    fetchTestData();
-  }, [currentPatient]);
+    getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [
+      MedicalRecordType.TEST_REPORT,
+      MedicalRecordType.HEALTHCHECK,
+    ])
+      .then((data: any) => {
+        const labResultsData = g(
+          data,
+          'getPatientPrismMedicalRecords_V3',
+          'labResults',
+          'response'
+        );
+        const healthChecksData = g(
+          data,
+          'getPatientPrismMedicalRecords_V3',
+          'healthChecks',
+          'response'
+        );
+        setLabResults(labResultsData);
+        setHealthChecksNew(healthChecksData);
+      })
+      .catch((error) => {
+        CommonBugFender('HealthRecordsHome_fetchTestReportsData', error);
+        currentPatient && handleGraphQlError(error);
+      })
+      .finally(() => setPrismdataLoader(false));
+  }, []);
+
+  const fetchPrescriptionData = useCallback(() => {
+    setPrismdataLoader(true);
+    getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [MedicalRecordType.PRESCRIPTION])
+      .then((data: any) => {
+        const prescriptionsData = g(
+          data,
+          'getPatientPrismMedicalRecords_V3',
+          'prescriptions',
+          'response'
+        );
+        setPrescriptions(prescriptionsData);
+      })
+      .catch((error) => {
+        CommonBugFender('HealthRecordsHome_fetchPrescriptionData', error);
+        currentPatient && handleGraphQlError(error);
+      })
+      .finally(() => setPrismdataLoader(false));
+  }, []);
+
+  useEffect(() => {
+    if (updatePatientDetailsApi) {
+      setPastDataLoader(true);
+      setPrismdataLoader(true);
+      fetchPastData();
+      fetchPrescriptionAndTestReportData();
+    }
+  }, [currentPatient, updatePatientDetailsApi]);
 
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      fetchPastData();
-      fetchTestData();
-      setFilterData(FilterData);
-      setDisplayFilter(false);
+      if (callApi) {
+        fetchPastData();
+        fetchPrescriptionAndTestReportData();
+      } else if (callPrescriptionApi) {
+        fetchPrescriptionData();
+      } else if (callTestReportApi) {
+        fetchTestReportsData();
+      }
+    });
+    const didBlurSubsription = props.navigation.addListener('didBlur', (payload) => {
+      setCallApi(true);
+      setCallPrescriptionApi(false);
+      setCallTestReportApi(false);
+      loadRecordsEvent.current = true;
+      setPhrNotificationData && setPhrNotificationData(null);
     });
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
+      didBlurSubsription && didBlurSubsription.remove();
     };
-  }, [props.navigation, currentPatient]);
+  }, [props.navigation, currentPatient, callApi, callTestReportApi, callPrescriptionApi]);
 
   useEffect(() => {
-    if (consultsData && medicineOrders && prescriptions) {
-      const prescriptionSelect = filterSelected
-        ? filterSelectedOptions?.length > 0
-          ? filterSelectedOptions?.includes('ONLINE') && filterSelectedOptions?.includes('PHYSICAL')
-            ? false
-            : filterSelectedOptions?.includes('ONLINE')
-          : true
-        : false;
-      let mergeArray: { type: string; data: any }[] = [];
-      arrayValues?.forEach((item: any) => {
-        mergeArray.push({ type: 'pastConsults', data: item });
-      });
-      if (!prescriptionSelect || filterSelectedOptions?.length === 0) {
-        prescriptions?.forEach((c) => {
-          mergeArray.push({ type: 'prescriptions', data: c });
+    let mergeArray: { type: string; data: any }[] = [];
+    labResults?.forEach((c) => {
+      mergeArray.push({ type: 'testReports', data: c });
+    });
+    healthChecksNew?.forEach((c) => {
+      mergeArray.push({ type: 'healthCheck', data: c });
+    });
+    setTestAndHealthCheck(phrSortByDate(mergeArray));
+  }, [labResults, healthChecksNew]);
+
+  const tabsClickedCleverTapEvent = (cleverTapEventName: CleverTapEventName) => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.MEDICAL_RECORDS] = {
+      ...removeObjectNullUndefinedProperties(currentPatient),
+    };
+    postWebEngageEvent(cleverTapEventName, eventAttributes);
+    postCleverTapEvent(cleverTapEventName, eventAttributes);
+  };
+
+  const updateMedicalParametersCleverTapEvents = (
+    cleverTapEventName: CleverTapEventName,
+    type: string,
+    value: string
+  ) => {
+    const eventAttributes = {
+      type,
+      value,
+      ...removeObjectNullUndefinedProperties(currentPatient),
+    };
+    postWebEngageEvent(cleverTapEventName, eventAttributes);
+    postCleverTapEvent(cleverTapEventName, eventAttributes);
+  };
+
+  const updateMedicalParameters = (height: string, weight: string, bloodGroup: string) => {
+    Keyboard.dismiss();
+    if (currentPatient?.id) {
+      setOverlaySpinner(true);
+      client
+        .query({
+          query: UPDATE_PATIENT_MEDICAL_PARAMETERS,
+          variables: {
+            patientMedicalParameters: {
+              patientId: currentPatient?.id || '',
+              height: height,
+              weight: weight,
+              bloodGroup: bloodGroup,
+            },
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }) => {
+          getPatientApiCall();
+          setUpdatePatientDetailsApi(false);
+          setTimeout(() => {
+            setShowUpdateProfilePopup(false);
+            setOverlaySpinner(false);
+          }, 1800);
+        })
+        .catch((e) => {
+          CommonBugFender('HealthRecordsHome_UPDATE_PATIENT_MEDICAL_PARAMETERS', e);
+          setShowUpdateProfilePopup(false);
+          setOverlaySpinner(false);
+          loading && setLoading!(false);
         });
-      }
-      setCombination(sortByDate(mergeArray));
-    }
-  }, [arrayValues, prescriptions]);
-
-  const [scrollOffset, setScrollOffset] = useState<number>(0);
-
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const offset = event.nativeEvent.contentOffset.y;
-    if (!(offset > 1 && scrollOffset > 1)) {
-      setScrollOffset(event.nativeEvent.contentOffset.y);
     }
   };
 
-  const renderTopView = () => {
-    const containerStyle: ViewStyle =
-      scrollOffset > 1
-        ? {
-            shadowColor: '#808080',
-            shadowOffset: { width: 0, height: 0 },
-            zIndex: 1,
-            shadowOpacity: 0.4,
-            shadowRadius: 5,
-            elevation: 5,
-          }
-        : {};
-    return <TabHeader containerStyle={containerStyle} navigation={props.navigation} />;
-  };
-
-  const renderProfileChangeView = () => {
-    return (
-      <View style={{ backgroundColor: theme.colors.WHITE }}>
-        <ProfileList
-          navigation={props.navigation}
-          saveUserChange={true}
-          childView={
-            <View
-              style={{
-                flexDirection: 'row',
-                paddingRight: 8,
-                borderRightWidth: 0,
-                borderRightColor: 'rgba(2, 71, 91, 0.2)',
-                backgroundColor: theme.colors.WHITE,
-                paddingBottom: 8,
-              }}
-            >
-              <Text style={styles.hiTextStyle}>{'hi'}</Text>
-              <View style={styles.nameTextContainerStyle}>
-                <View style={{ flexDirection: 'row', flex: 1 }}>
-                  <Text
-                    style={[
-                      styles.nameTextStyle,
-                      { maxWidth: Platform.OS === 'ios' ? '85%' : '75%' },
-                    ]}
-                    numberOfLines={1}
-                  >
-                    {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
-                  </Text>
-                  {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
-                    <LinkedUhidIcon
-                      style={{
-                        width: 22,
-                        height: 20,
-                        marginLeft: 5,
-                        marginTop: Platform.OS === 'ios' ? 16 : 20,
-                      }}
-                      resizeMode={'contain'}
-                    />
-                  ) : null}
-                  <View style={{ paddingTop: 15, marginLeft: 6 }}>
-                    <DropdownGreen />
-                  </View>
-                </View>
-                {currentPatient && <View style={styles.seperatorStyle} />}
-              </View>
-            </View>
-          }
-          selectedProfile={profile}
-          setDisplayAddProfile={() => {}}
-          unsetloaderDisplay={true}
-        ></ProfileList>
-        <Text style={styles.descriptionTextStyle}>{strings.health_records_home.description}</Text>
-        <Text style={styles.notifyUsersTextStyle}>
-          {strings.health_records_home.add_note_to_notify_users}
-        </Text>
-      </View>
-    );
-  };
-
-  const tabsClickedWebEngageEvent = (webEngageEventName: WebEngageEventName) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.MEDICAL_RECORDS] = {
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient UHID': g(currentPatient, 'uhid'),
-      Relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Customer ID': g(currentPatient, 'id'),
-    };
-    postWebEngageEvent(webEngageEventName, eventAttributes);
-  };
-
-  const renderTabSwitch = () => {
-    return (
-      <TabsComponent
+  const renderProfileImage = () => {
+    return currentPatient?.photoUrl?.match(
+      /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/
+    ) ? (
+      <Image
+        source={{ uri: currentPatient?.photoUrl }}
+        style={{ height: 30, width: 30, borderRadius: 15, marginTop: 8 }}
+      />
+    ) : (
+      <AccountCircleDarkIcon
         style={{
-          ...theme.viewStyles.cardViewStyle,
-          borderRadius: 0,
-          backgroundColor: theme.colors.CARD_BG,
-          shadowRadius: 2,
+          height: 36,
+          width: 36,
+          borderRadius: 18,
+          marginTop: 5,
         }}
-        titleStyle={{
-          fontSize: isIphone5s() ? 10 : 12,
-        }}
-        selectedTitleStyle={{
-          fontSize: isIphone5s() ? 10 : 12,
-        }}
-        height={44}
-        data={tabs}
-        onChange={(selectedTab: string) => {
-          setselectedTab(selectedTab);
-          if (selectedTab === tabs[0].title) {
-            tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_PRESCRIPTIONS);
-          } else if (selectedTab === tabs[1].title) {
-            tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_LAB_TESTS);
-          } else if (selectedTab === tabs[2].title) {
-            tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_HEALTH_CHECKS);
-          } else {
-            tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_HOSPITALIZATIONS);
-          }
-        }}
-        selectedTab={selectedTab}
       />
     );
   };
 
-  const renderFilter = () => {
+  const renderHeader = () => {
     return (
-      <View style={styles.filterViewStyle}>
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={() =>
-            props.navigation.navigate(AppRoutes.AddRecord, {
-              navigatedFrom: 'Medical Records',
-            })
-          }
-        >
-          <AddFileIcon />
-        </TouchableOpacity>
-        <TouchableOpacity activeOpacity={1} onPress={() => setDisplayFilter(true)}>
-          <Filter />
-        </TouchableOpacity>
-      </View>
+      <Header
+        title={'HEALTH RECORDS'}
+        leftIcon={'homeIcon'}
+        container={{ borderBottomWidth: 0 }}
+        onPressLeftIcon={() => {
+          setPhrNotificationData && setPhrNotificationData(null);
+          navigateToHome(props.navigation);
+          cleverTapEventForHomeIconClick();
+        }}
+      />
     );
   };
 
-  const doctorType = (item: any) => {
-    return (
-      item.caseSheet &&
-      item.caseSheet.find((obj: any) => {
-        return (
-          obj.doctorType === 'STAR_APOLLO' ||
-          obj.doctorType === 'APOLLO' ||
-          obj.doctorType === 'PAYROLL'
-        );
-      })
-    );
-  };
-
-  const postConsultCardClickEvent = (consultId: string) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHR_CONSULT_CARD_CLICK] = {
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+  const cleverTapEventForHomeIconClick = () => {
+    let eventAttributes = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
-      'Patient Gender': g(currentPatient, 'gender'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
-      'Consult ID': consultId,
+      User_Type: getUserType(allCurrentPatients),
+      'Nav src': 'Health record',
+      'Circle Member':
+        getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+        undefined,
+      'Device Id': getUniqueId(),
     };
-    postWebEngageEvent(WebEngageEventName.PHR_CONSULT_CARD_CLICK, eventAttributes);
+    postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);
   };
 
-  const renderConsult = (item: any, index: number) => {
-    return (
-      <HealthConsultView
-        key={index}
-        onPressOrder={() => {
-          CommonLogEvent('HEALTH_RECORD_HOME', 'Display order popup');
-          setdisplayOrderPopup(true);
-        }}
-        onClickCard={() => {
-          if (item.data.doctorInfo) {
-            postConsultCardClickEvent(item.data.id);
-            props.navigation.navigate(AppRoutes.ConsultDetails, {
-              CaseSheet: item.data.id,
-              DoctorInfo: item.data.doctorInfo,
-              FollowUp: item.data.isFollowUp,
-              appointmentType: item.data.appointmentType,
-              DisplayId: item.data.displayId,
-              BlobName: g(doctorType(item.data), 'blobName'),
-            });
-          } else if (item.data.date) {
-            props.navigation.navigate(AppRoutes.RecordDetails, {
-              data: item.data,
-            });
-          }
-        }}
-        PastData={item.data}
-        navigation={props.navigation}
-        onFollowUpClick={() => {
-          if (item.data.doctorInfo) {
-            onFollowUpClick(item.data);
-          }
-        }}
-      />
-    );
-  };
-  const renderEmptyConsult = () => {
-    if (!loading) {
+  const renderProfileDetailsView = () => {
+    const separatorLineView = () => {
+      return <View style={styles.separatorLineStyle} />;
+    };
+
+    const patientTextView = (text: string, style: any = {}) => {
       return (
-        <View style={{ justifyContent: 'center', flexDirection: 'column' }}>
-          {renderFilter()}
-          <View
-            style={{
-              marginTop: 38,
-              height: 60,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <NoData />
+        <Text
+          numberOfLines={1}
+          style={[styles.userHeightTextStyle, text === '-' && { paddingRight: 50 }, style]}
+        >
+          {text}
+        </Text>
+      );
+    };
+
+    const arrowRightIcon = () => {
+      return <PhrArrowRightIcon style={{ width: 20, height: 20 }} />;
+    };
+
+    const renderProfileNameView = () => {
+      if (pageLoading) {
+        return renderHealthRecordShimmer();
+      } else {
+        return (
+          <View style={styles.profileNameViewStyle}>
+            <Text style={styles.profileNameTextStyle} numberOfLines={1}>
+              {'hi ' + (currentPatient?.firstName?.toLowerCase() + '!') || ''}
+            </Text>
+            <DropdownGreen />
           </View>
-          <Text
-            style={{
-              ...theme.fonts.IBMPlexSansMedium(12),
-              color: '#02475b',
-              marginBottom: 25,
-              alignItems: 'center',
-              textAlign: 'center',
-            }}
-          >
-            You don’t have any records with us right now. {'\n'}Add a record to keep everything
-            handy in one place!
-          </Text>
-          <View style={{ marginLeft: 60, marginRight: 60, marginBottom: 20 }}>
-            <Button
-              title="ADD RECORD"
-              onPress={() => {
-                const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {
-                  Source: 'Consult & RX',
-                };
-                postWebEngageEvent(WebEngageEventName.ADD_RECORD, eventAttributes);
-                props.navigation.navigate(AppRoutes.AddRecord, {
-                  navigatedFrom: 'Consult & RX',
-                });
-              }}
-            />
+        );
+      }
+    };
+
+    return (
+      <View style={styles.profileDetailsMainViewStyle}>
+        <View style={{ flexDirection: 'row' }}>
+          {renderProfileImage()}
+          <View style={{ marginLeft: 8, flex: 1, marginRight: 18 }}>
+            <ProfileList
+              showProfilePic={true}
+              navigation={props.navigation}
+              saveUserChange={true}
+              childView={renderProfileNameView()}
+              listContainerStyle={{ marginLeft: 0, marginTop: 44 }}
+              selectedProfile={profile}
+              setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+              onProfileChange={() => setUpdatePatientDetailsApi(true)}
+              unsetloaderDisplay={true}
+            ></ProfileList>
+            <View>
+              <Text style={{ ...theme.viewStyles.text('R', 18, '#67919D', 1, 21) }}>
+                {moment(currentPatient?.dateOfBirth).format('DD MMM YYYY')}
+                {'    |    '}
+                {_.capitalize(currentPatient?.gender) || ''}
+              </Text>
+            </View>
           </View>
         </View>
-      );
-    }
-  };
-
-  const renderConsults = () => {
-    return (
-      <View>
-        {combination && combination.length !== 0 && renderFilter()}
-        <FlatList
-          data={combination || []}
-          renderItem={({ item, index }) => renderConsult(item, index)}
-          ListEmptyComponent={renderEmptyConsult()}
-        />
+        <View style={styles.profileDetailsCardView}>
+          <View style={styles.profileDetailsViewStyle}>
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => {
+                setCurrentUpdatePopupId(1);
+                setShowUpdateProfilePopup(true);
+              }}
+              style={{ flex: 1 }}
+            >
+              <View style={[styles.profileNameViewStyle, { paddingLeft: 30 }]}>
+                <Text style={styles.userBloodTextStyle}>{'Height'}</Text>
+                {arrowRightIcon()}
+              </View>
+              <View style={styles.heightWeightViewStyle}>
+                <HeightIcon style={{ width: 14, height: 22.14 }} />
+                {isHeightAvailable
+                  ? patientTextView(
+                      currentPatient?.patientMedicalHistory?.height?.includes('’') ||
+                        currentPatient?.patientMedicalHistory?.height?.includes("'")
+                        ? currentPatient?.patientMedicalHistory?.height
+                        : currentPatient?.patientMedicalHistory?.height + ' cms',
+                      { paddingLeft: 7 }
+                    )
+                  : patientTextView('-')}
+              </View>
+            </TouchableOpacity>
+            {separatorLineView()}
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => {
+                setCurrentUpdatePopupId(2);
+                setShowUpdateProfilePopup(true);
+              }}
+              style={{ flex: 1 }}
+            >
+              <View style={[styles.profileNameViewStyle, { paddingLeft: 25 }]}>
+                <Text style={styles.userBloodTextStyle}>{'Weight'}</Text>
+                {arrowRightIcon()}
+              </View>
+              <View style={styles.heightWeightViewStyle}>
+                <WeightIcon style={{ width: 14, height: 14, paddingBottom: 8 }} />
+                {isWeightAvailable
+                  ? patientTextView(
+                      currentPatient?.patientMedicalHistory?.weight
+                        ? currentPatient?.patientMedicalHistory?.weight + ' kgs'
+                        : '-'
+                    )
+                  : patientTextView('-')}
+              </View>
+            </TouchableOpacity>
+            {separatorLineView()}
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => {
+                setCurrentUpdatePopupId(3);
+                setShowUpdateProfilePopup(true);
+              }}
+              style={{ flex: 1 }}
+            >
+              <View style={[styles.profileNameViewStyle, { paddingLeft: 23 }]}>
+                <Text style={styles.userBloodTextStyle}>{'Blood'}</Text>
+                {arrowRightIcon()}
+              </View>
+              <View style={styles.heightWeightViewStyle}>
+                <BloodIcon style={{ width: 14, height: 15.58 }} />
+                {currentPatient?.patientMedicalHistory?.bloodGroup
+                  ? patientTextView(
+                      getBloodGroupValue(currentPatient?.patientMedicalHistory?.bloodGroup)
+                    )
+                  : patientTextView('-')}
+              </View>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
     );
   };
 
-  const onFollowUpClick = (item: any) => {
-    let dataval = doctorType(item);
+  const onBackArrowPressed = () => {
+    setCallApi(false);
+  };
 
-    client
-      .query<checkIfFollowUpBooked>({
-        query: CHECK_IF_FOLLOWUP_BOOKED,
-        variables: {
-          appointmentId: item.id,
-        },
-        fetchPolicy: 'no-cache',
-      })
+  const onBackPrescriptionPressed = () => {
+    setCallApi(false);
+    setCallTestReportApi(false);
+    setCallPrescriptionApi(true);
+  };
+
+  const onBackTestReportPressed = () => {
+    setCallApi(false);
+    setCallPrescriptionApi(false);
+    setCallTestReportApi(true);
+  };
+
+  const renderListItemView = (title: string, id: number) => {
+    const renderLeftAvatar = () => {
+      switch (id) {
+        case 1:
+          return <PrescriptionPhrIcon style={{ height: 23, width: 20 }} />;
+        case 2:
+          return <LabTestIcon style={{ height: 21.3, width: 20 }} />;
+        case 3:
+          return <HospitalPhrIcon style={{ height: 23.3, width: 20 }} />;
+        case 4:
+          return <HealthConditionPhrIcon style={{ height: 24.94, width: 20 }} />;
+        case 5:
+          return <Vaccination style={{ height: 20, width: 20 }} />;
+        case 6:
+          return <BillPhrIcon style={{ height: 18.63, width: 24 }} />;
+        case 7:
+          return <InsurancePhrIcon style={{ height: 16.71, width: 20 }} />;
+        case 8:
+          return <ClinicalDocumentPhrIcon style={{ height: 27.92, width: 20 }} />;
+      }
+    };
+
+    const onPressListItem = () => {
+      switch (id) {
+        case 1:
+          tabsClickedCleverTapEvent(CleverTapEventName.PHR_CLICK_DOCTOR_CONSULTATIONS);
+          props.navigation.navigate(AppRoutes.ConsultRxScreen, {
+            consultArray: arrayValues,
+            prescriptionArray: prescriptions,
+            authToken: prismAuthToken,
+            onPressBack: onBackArrowPressed,
+            callPrescriptionsApi: onBackPrescriptionPressed,
+          });
+          break;
+        case 2:
+          tabsClickedCleverTapEvent(CleverTapEventName.PHR_CLICK_TEST_REPORTS);
+          props.navigation.navigate(AppRoutes.TestReportScreen, {
+            testReportsData: testAndHealthCheck,
+            authToken: prismAuthToken,
+            onPressBack: onBackArrowPressed,
+            callTestReportsApi: onBackTestReportPressed,
+          });
+          break;
+        case 3:
+          tabsClickedCleverTapEvent(CleverTapEventName.PHR_CLICK_HOSPITALIZATIONS);
+          props.navigation.navigate(AppRoutes.HospitalizationScreen, {
+            authToken: prismAuthToken,
+            onPressBack: onBackArrowPressed,
+          });
+          break;
+        case 4:
+          tabsClickedCleverTapEvent(CleverTapEventName.PHR_CLICK_HEALTH_CONDITIONS);
+          props.navigation.navigate(AppRoutes.HealthConditionScreen, {
+            authToken: prismAuthToken,
+            onPressBack: onBackArrowPressed,
+          });
+          break;
+        case 5:
+          tabsClickedCleverTapEvent(CleverTapEventName.PHR_CLICK_VACCINATION);
+          props.navigation.navigate(AppRoutes.VaccinationScreen, {
+            authToken: prismAuthToken,
+            onPressBack: onBackArrowPressed,
+          });
+          break;
+        case 6:
+          tabsClickedCleverTapEvent(CleverTapEventName.PHR_CLICK_BILLS);
+          props.navigation.navigate(AppRoutes.BillScreen, {
+            authToken: prismAuthToken,
+            onPressBack: onBackArrowPressed,
+          });
+          break;
+        case 7:
+          tabsClickedCleverTapEvent(CleverTapEventName.PHR_CLICK_INSURANCES);
+          props.navigation.navigate(AppRoutes.InsuranceScreen, {
+            authToken: prismAuthToken,
+            onPressBack: onBackArrowPressed,
+          });
+          break;
+        case 8:
+          props.navigation.navigate(AppRoutes.ClinicalDocumentScreen);
+          break;
+      }
+    };
+
+    const getNotificationCount = () => {
+      switch (id) {
+        case 1:
+          return phrNotificationData?.Prescription || 0;
+        case 2:
+          return (phrNotificationData?.LabTest || 0) + (phrNotificationData?.HealthCheck || 0);
+        case 3:
+          return phrNotificationData?.Hospitalization || 0;
+        case 4:
+          return (
+            (phrNotificationData?.Allergy || 0) +
+            (phrNotificationData?.MedicalCondition || 0) +
+            (phrNotificationData?.Medication || 0) +
+            (phrNotificationData?.Restriction || 0)
+          );
+        case 5:
+          return phrNotificationData?.Bill || 0;
+        case 6:
+          return phrNotificationData?.Insurance || 0;
+        case 7:
+          return 0;
+      }
+    };
+
+    const renderRightElement = () => {
+      return (
+        <View style={styles.notificationMainViewStyle}>
+          {getNotificationCount() !== 0 ? (
+            <View style={styles.notificationViewStyle}>
+              <Text style={styles.notificationCountTextStyle}>
+                {getNotificationCount() + ' New'}
+              </Text>
+            </View>
+          ) : null}
+          <ArrowRight style={{ height: 24, width: 24 }} />
+        </View>
+      );
+    };
+
+    return (
+      <ListItem
+        title={title}
+        titleProps={{ numberOfLines: 1 }}
+        titleStyle={styles.listItemTitleStyle}
+        pad={0}
+        containerStyle={[
+          styles.listItemViewStyle,
+          (id === 7 || id === 5) && { borderBottomWidth: 0 },
+        ]}
+        underlayColor={'#FFFFFF'}
+        activeOpacity={1}
+        onPress={onPressListItem}
+        leftAvatar={renderLeftAvatar()}
+        rightAvatar={renderRightElement()}
+      />
+    );
+  };
+
+  const renderHealthCategoriesView = () => {
+    return (
+      <View style={{ marginTop: 54, marginHorizontal: 20, marginBottom: 25 }}>
+        <Text style={{ ...theme.viewStyles.text('B', 18, theme.colors.LIGHT_BLUE, 1, 21) }}>
+          {'Health Categories'}
+        </Text>
+        <View style={styles.listItemCardStyle}>
+          {pageLoading
+            ? renderHealthRecordShimmer()
+            : renderListItemView('Doctor Consultations', 1)}
+          {pageLoading ? renderHealthRecordShimmer() : renderListItemView('Test Reports', 2)}
+          {renderListItemView('Hospitalization', 3)}
+          {renderListItemView('Health Conditions', 4)}
+          {renderListItemView('Vaccination', 5)}
+        </View>
+      </View>
+    );
+  };
+
+  const renderBillsInsuranceView = () => {
+    return (
+      <View style={styles.moreHealthViewStyle}>
+        <Text style={{ ...theme.viewStyles.text('B', 18, theme.colors.LIGHT_BLUE, 1, 21) }}>
+          {'More From Health'}
+        </Text>
+        <View style={styles.listItemCardStyle}>
+          {renderListItemView('Bills', 6)}
+          {renderListItemView('Insurance', 7)}
+        </View>
+      </View>
+    );
+  };
+
+  const renderClinicalDocumentsView = () => {
+    return (
+      <View style={styles.clinicalDocumentViewStyle}>
+        {renderListItemView('Clinical Documents', 8)}
+      </View>
+    );
+  };
+
+  const renderBloodGroup = () => {
+    const bloodGroupData = selectedBloodGroupArray.map((i) => {
+      return { key: i.key, value: i.title };
+    });
+    return (
+      <MaterialMenu
+        options={bloodGroupData}
+        selectedText={bloodGroup?.key?.toString() || ''}
+        menuContainerStyle={styles.menuContainerStyle}
+        itemContainer={{ height: 44.8, marginHorizontal: 12, width: 150 / 2 }}
+        itemTextStyle={styles.itemTextStyle}
+        selectedTextStyle={styles.selectedTextStyle}
+        lastContainerStyle={{ borderBottomWidth: 0 }}
+        bottomPadding={{ paddingBottom: 10 }}
+        onPress={(selected) => {
+          setBloodGroup({
+            key: selected.key as BloodGroups,
+            title: selected.value.toString(),
+          });
+        }}
+      >
+        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+          <View style={styles.placeholderViewStyle}>
+            <Text
+              style={[
+                styles.placeholderTextStyle,
+                bloodGroup !== undefined ? null : styles.placeholderStyle,
+              ]}
+            >
+              {bloodGroup !== undefined ? bloodGroup.title : 'Select'}
+            </Text>
+            <View style={[{ flex: 1, alignItems: 'flex-end', marginLeft: 22 }]}>
+              <DropdownGreen />
+            </View>
+          </View>
+        </View>
+      </MaterialMenu>
+    );
+  };
+
+  const renderHeightView = () => {
+    const heightArrayData = heightArray?.map((i) => {
+      return { key: i.key, value: i.title };
+    });
+    return (
+      <View style={{ flexDirection: 'row' }}>
+        <TextInputComponent
+          conatinerstyles={styles.textInputTextStyle}
+          placeholder={'Enter Height'}
+          value={height}
+          numberOfLines={1}
+          keyboardType={'numbers-and-punctuation'}
+          onChangeText={(text) => {
+            setHeight(text);
+          }}
+        />
+        <MaterialMenu
+          options={heightArrayData}
+          selectedText={heightArrayValue}
+          menuContainerStyle={styles.menuContainerStyle}
+          itemContainer={{ height: 44.8, marginHorizontal: 12, width: 150 / 2 }}
+          itemTextStyle={styles.itemTextStyle}
+          selectedTextStyle={styles.selectedTextStyle}
+          lastContainerStyle={{ borderBottomWidth: 0 }}
+          bottomPadding={{ paddingBottom: 0 }}
+          onPress={(selected) => {
+            setHeightArrayValue(selected?.key);
+          }}
+        >
+          <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+            <View style={[styles.placeholderViewStyle, { marginLeft: 10 }]}>
+              <Text style={[styles.placeholderTextStyle, { lineHeight: 36 }]}>
+                {heightArrayValue}
+              </Text>
+              <View style={[{ flex: 1, alignItems: 'flex-end', marginLeft: 22 }]}>
+                <DropdownGreen />
+              </View>
+            </View>
+          </View>
+        </MaterialMenu>
+      </View>
+    );
+  };
+
+  const formatWeightNumber = (value: string) => {
+    let number =
+      value.indexOf('.') === value.length - 1 ||
+      value.indexOf('0', value.length - 1) === value.length - 1
+        ? value
+        : parseFloat(value);
+    return number || 0;
+  };
+
+  const setWeightValue = (text: string) => {
+    let format_number = formatWeightNumber(text);
+    setWeight((format_number || '').toString());
+  };
+
+  const renderWeightView = () => {
+    return (
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <TextInputComponent
+          placeholder={'Enter Weight'}
+          value={weight}
+          numberOfLines={1}
+          maxLength={3}
+          keyboardType={Platform.OS === 'ios' ? 'numbers-and-punctuation' : 'numeric'}
+          onChangeText={(text) => {
+            setWeightValue(text);
+          }}
+        />
+        <Text style={styles.kgsTextStyle}>{'Kgs'}</Text>
+      </View>
+    );
+  };
+
+  const renderCloseIcon = () => {
+    return (
+      <View style={styles.closeIconViewStyle}>
+        <TouchableOpacity
+          onPress={() => {
+            setPatientHistoryValues();
+            setShowUpdateProfilePopup(false);
+          }}
+        >
+          <CrossPopup style={{ marginRight: 1, width: 28, height: 28 }} />
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderUpdateProfileDetailsPopup = () => {
+    const title =
+      currentUpdatePopupId === 1
+        ? 'Update Height'
+        : currentUpdatePopupId === 2
+        ? 'Update Weight'
+        : 'Update Blood Group';
+
+    const onPressUpdate = () => {
+      if (currentUpdatePopupId === 1) {
+        if (heightArrayValue === HEIGHT_ARRAY.CM) {
+          if (
+            isNaN(Number(height)) ||
+            !height ||
+            !/^[0-9\.]*$/.test(height) ||
+            (heightArrayValue === HEIGHT_ARRAY.CM && Number(height) >= 400)
+          ) {
+            setShowUpdateProfileErrorPopup(true);
+            setErrorPopupText(string.common.error_enter_number_text);
+          } else {
+            updateMedicalParameters(
+              height,
+              currentPatient?.patientMedicalHistory?.weight,
+              currentPatient?.patientMedicalHistory?.bloodGroup
+            );
+            isHeightAvailable
+              ? updateMedicalParametersCleverTapEvents(
+                  CleverTapEventName.PHR_UPDATE_HEIGHT,
+                  'Height',
+                  height
+                )
+              : updateMedicalParametersCleverTapEvents(
+                  CleverTapEventName.PHR_ADD_HEIGHT,
+                  'Height',
+                  height
+                );
+          }
+        } else {
+          if (
+            parseFloat(height) <= 0 ||
+            !height ||
+            (heightArrayValue === HEIGHT_ARRAY.FT &&
+              !/^(\d{1,2})[\'’]?((\d)|([0-1][0-2]))?[\"”]?$/.test(height))
+          ) {
+            setShowUpdateProfileErrorPopup(true);
+            setErrorPopupText('Please enter correct height(ft)');
+          } else {
+            updateMedicalParameters(
+              height,
+              currentPatient?.patientMedicalHistory?.weight,
+              currentPatient?.patientMedicalHistory?.bloodGroup
+            );
+            isHeightAvailable
+              ? updateMedicalParametersCleverTapEvents(
+                  CleverTapEventName.PHR_UPDATE_HEIGHT,
+                  'Height',
+                  height
+                )
+              : updateMedicalParametersCleverTapEvents(
+                  CleverTapEventName.PHR_ADD_HEIGHT,
+                  'Height',
+                  height
+                );
+          }
+        }
+      } else if (currentUpdatePopupId === 2) {
+        if (parseFloat(weight) <= 0 || !weight) {
+          setShowUpdateProfileErrorPopup(true);
+        } else {
+          updateMedicalParameters(
+            currentPatient?.patientMedicalHistory?.height,
+            weight,
+            currentPatient?.patientMedicalHistory?.bloodGroup
+          );
+          isWeightAvailable
+            ? updateMedicalParametersCleverTapEvents(
+                CleverTapEventName.PHR_UPDATE_WEIGHT,
+                'Weight',
+                weight
+              )
+            : updateMedicalParametersCleverTapEvents(
+                CleverTapEventName.PHR_ADD_WEIGHT,
+                'Weight',
+                weight
+              );
+        }
+      } else {
+        updateMedicalParameters(
+          currentPatient?.patientMedicalHistory?.height,
+          currentPatient?.patientMedicalHistory?.weight,
+          bloodGroup?.key?.toString() || ''
+        );
+        currentPatient?.patientMedicalHistory?.bloodGroup
+          ? updateMedicalParametersCleverTapEvents(
+              CleverTapEventName.PHR_UPDATE_BLOOD_GROUP,
+              'BloodGroup',
+              bloodGroup?.title || ''
+            )
+          : updateMedicalParametersCleverTapEvents(
+              CleverTapEventName.PHR_ADD_BLOOD_GROUP,
+              'BloodGroup',
+              bloodGroup?.title || ''
+            );
+      }
+    };
+
+    return (
+      <Overlay
+        onRequestClose={() => setShowUpdateProfilePopup(false)}
+        isVisible={showUpdateProfilePopup}
+        windowBackgroundColor={'rgba(0, 0, 0, 0.2)'}
+        containerStyle={{ marginBottom: 0 }}
+        fullScreen
+        overlayStyle={styles.phrOverlayStyle}
+      >
+        <>
+          {overlaySpinner ? <Spinner /> : null}
+          <View style={styles.overlayViewStyle}>
+            <View style={styles.overlaySafeAreaViewStyle}>
+              {renderCloseIcon()}
+              <View style={{ ...theme.viewStyles.cardViewStyle, paddingTop: 20 }}>
+                <Text style={styles.updateTitleTextStyle}>{title}</Text>
+                <View style={styles.overlayMainViewStyle}>
+                  {currentUpdatePopupId === 3
+                    ? renderBloodGroup()
+                    : currentUpdatePopupId === 1
+                    ? renderHeightView()
+                    : renderWeightView()}
+                  {renderErrorPopup()}
+                  <Button
+                    title={'UPDATE'}
+                    onPress={onPressUpdate}
+                    style={{ width: '100%', marginTop: 40 }}
+                  />
+                </View>
+              </View>
+            </View>
+          </View>
+        </>
+      </Overlay>
+    );
+  };
+
+  const renderErrorPopup = () => {
+    return (
+      <Overlay
+        onRequestClose={() => setShowUpdateProfileErrorPopup(false)}
+        isVisible={showUpdateProfileErrorPopup}
+        windowBackgroundColor={'rgba(0, 0, 0, 0.2)'}
+        containerStyle={{ marginBottom: 0 }}
+        fullScreen
+        overlayStyle={styles.phrOverlayStyle}
+      >
+        <View style={styles.overlayViewStyle}>
+          <View style={styles.overlaySafeAreaViewStyle}>
+            <View style={styles.errorPopupViewStyle}>
+              <Text style={styles.uhHoTextStyle}>{string.common.uhOh}</Text>
+              <Text style={styles.validTextStyle}>{errorPopupText}</Text>
+              <Text
+                style={styles.errorOKTextStyle}
+                onPress={() => setShowUpdateProfileErrorPopup(false)}
+              >
+                {'OK'}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </Overlay>
+    );
+  };
+
+  const onSearchHealthRecords = (_searchText: string) => {
+    setSearchLoading(true);
+    searchPHRApiWithAuthToken(_searchText, prismAuthToken)
       .then(({ data }) => {
-        props.navigation.push(AppRoutes.ConsultDetails, {
-          CaseSheet: item.id,
-          DoctorInfo: item.doctorInfo,
-          FollowUp: dataval.followUp,
-          appointmentType: item.appointmentType,
-          DisplayId: item.displayId,
-          Displayoverlay: true,
-          isFollowcount: data.checkIfFollowUpBooked,
-          BlobName: dataval.blobName,
-        });
+        setHealthRecordSearchResults([]);
+        if (data?.response) {
+          const recordData = data.response;
+          const finalData: any[] = [];
+          recordData.forEach((recordData: any) => {
+            const { healthrecordType } = recordData;
+            switch (healthrecordType) {
+              case 'PRESCRIPTION':
+                finalData.push({ healthkey: MedicalRecordType.PRESCRIPTION, value: recordData });
+                break;
+              case 'LABTEST':
+                finalData.push({ healthkey: MedicalRecordType.TEST_REPORT, value: recordData });
+                break;
+              case 'HOSPITALIZATION':
+                finalData.push({ healthkey: MedicalRecordType.HOSPITALIZATION, value: recordData });
+                break;
+              case 'ALLERGY':
+                finalData.push({ healthkey: MedicalRecordType.ALLERGY, value: recordData });
+                break;
+              case 'MEDICATION':
+                finalData.push({ healthkey: MedicalRecordType.MEDICATION, value: recordData });
+                break;
+              case 'MEDICALCONDITION':
+                finalData.push({
+                  healthkey: MedicalRecordType.MEDICALCONDITION,
+                  value: recordData,
+                });
+                break;
+              case 'RESTRICTION':
+                finalData.push({
+                  healthkey: MedicalRecordType.HEALTHRESTRICTION,
+                  value: recordData,
+                });
+                break;
+              case 'INSURANCE':
+                finalData.push({
+                  healthkey: MedicalRecordType.MEDICALINSURANCE,
+                  value: recordData,
+                });
+                break;
+              case 'BILLS':
+                finalData.push({ healthkey: MedicalRecordType.MEDICALBILL, value: recordData });
+                break;
+              case 'FAMILYHISTORY':
+                finalData.push({ healthkey: MedicalRecordType.FAMILY_HISTORY, value: recordData });
+                break;
+            }
+          });
+          setHealthRecordSearchResults(finalData);
+          setSearchLoading(false);
+          phrSearchCleverTapEvents(
+            CleverTapEventName.PHR_NO_OF_USERS_SEARCHED_GLOBAL,
+            currentPatient,
+            _searchText
+          );
+        } else {
+          getAuthToken();
+          setSearchLoading(false);
+        }
       })
       .catch((error) => {
-        CommonBugFender('HealthRecordsHome_onFollowUpClick', error);
-        console.log('Error occured', { error });
+        CommonBugFender('HealthRecordsHome_searchPHRApiWithAuthToken', error);
+        getAuthToken();
+        setSearchLoading(false);
       });
   };
-  const renderErrorAlert = (desc: string) =>
-    showAphAlert!({
-      title: 'Uh oh.. :(',
-      description: desc,
-      unDismissable: true,
-    });
 
-  const renderSuccessPopup = () => {
-    fetchPastData();
-    showAphAlert!({
-      title: 'Hi:)',
-      description: 'Your prescriptions have been submitted successfully.',
-      unDismissable: true,
-    });
+  const onCancelTextClick = () => {
+    if (_searchInputRef.current) {
+      setSearchText('');
+      SetIsSearchFocus(false);
+      _searchInputRef?.current?.clear();
+      setHealthRecordSearchResults([]);
+      Keyboard.dismiss();
+    }
   };
 
-  const submitPrescriptionMedicineOrder = (
-    variables: savePrescriptionMedicineOrderOMSVariables
-  ) => {
-    setLoading!(true);
-    client
-      .mutate({
-        mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS,
-        variables,
-      })
-      .then(({ data }) => {
-        setLoading!(false);
-        setdisplayOrderPopup(false);
-        const { errorCode } = g(data, 'SavePrescriptionMedicineOrder')! || {};
-
-        if (errorCode) {
-          renderErrorAlert(`Something went wrong, unable to place order.`);
-          return;
+  const onSearchTextChange = (value: string) => {
+    SetIsSearchFocus(true);
+    if (isValidSearch(value)) {
+      setSearchText(value);
+      if (!(value && value.length > 2)) {
+        setHealthRecordSearchResults([]);
+        return;
+      }
+      setSearchLoading(true);
+      const search = _.debounce(onSearchHealthRecords, 500);
+      setSearchQuery((prevSearch: any) => {
+        if (prevSearch.cancel) {
+          prevSearch.cancel();
         }
-        props.navigation.goBack();
-        renderSuccessPopup();
-      })
-      .catch((e) => {
-        console.log({ e });
-        renderErrorAlert(`Something went wrong, please try later.`);
-      })
-      .finally(() => {
-        setLoading!(false);
+        return search;
       });
+      search(value);
+    }
   };
 
-  const UploadPrescriptionData = (uploadata: any) => {
-    uploadata.map((item: any) => {
-      const variables = {
-        UploadDocumentInput: {
-          base64FileInput: item.base64,
-          category: PRISM_DOCUMENT_CATEGORY.HealthChecks,
-          fileType:
-            item.fileType == 'jpg'
-              ? UPLOAD_FILE_TYPES.JPEG
-              : item.fileType == 'png'
-              ? UPLOAD_FILE_TYPES.PNG
-              : item.fileType == 'pdf'
-              ? UPLOAD_FILE_TYPES.PDF
-              : UPLOAD_FILE_TYPES.JPEG,
-          patientId: g(currentPatient, 'id')!,
-        },
-      };
-      setLoading!(true);
-      client
-        .mutate<uploadDocument, uploadDocumentVariables>({
-          mutation: UPLOAD_DOCUMENT,
-          fetchPolicy: 'no-cache',
-          variables,
-        })
-        .then((data) => {
-          setLoading!(false);
-          setdisplayOrderPopup(false);
-          const fieldId = data && data.data!.uploadDocument.fileId;
-          if (fieldId) {
-            const prescriptionMedicineInput: savePrescriptionMedicineOrderOMSVariables = {
-              prescriptionMedicineOMSInput: {
-                patientId: (currentPatient && currentPatient.id) || '',
-                medicineDeliveryType: deliveryAddressId
-                  ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
-                  : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
-                shopId: storeId || '0',
-                appointmentId: '',
-                patinetAddressId: deliveryAddressId || '',
-                prescriptionImageUrl: data.data!.uploadDocument.filePath || '',
-                prismPrescriptionFileId: data.data!.uploadDocument.fileId || '',
-                isEprescription: 0, // if atleat one prescription is E-Prescription then pass it as one.
-                bookingSource: BOOKING_SOURCE.MOBILE,
-                deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
-              },
-            };
-            submitPrescriptionMedicineOrder(prescriptionMedicineInput);
-          }
-        })
-        .catch((error) => {
-          console.log(error, 'error');
+  const renderSearchLoader = () => {
+    return (
+      <View style={styles.loaderViewStyle}>
+        <Spinner style={styles.loaderStyle} />
+      </View>
+    );
+  };
+
+  const renderSearchBar = () => {
+    return (
+      <View
+        style={[
+          styles.searchBarMainViewStyle,
+          { backgroundColor: isSearchFocus ? 'rgba(0,0,0,0.05)' : 'transparent' },
+        ]}
+      >
+        <View style={styles.searchBarViewStyle}>
+          <PhrSearchIcon style={{ width: 20, height: 20 }} />
+          <TextInput
+            placeholder={'Search'}
+            autoCapitalize={'none'}
+            style={styles.textInputStyle}
+            selectionColor={theme.colors.TURQUOISE_LIGHT_BLUE}
+            numberOfLines={1}
+            ref={_searchInputRef}
+            onFocus={() => SetIsSearchFocus(true)}
+            value={searchText}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            underlineColorAndroid={'transparent'}
+            onChangeText={(value) => onSearchTextChange(value)}
+          />
+        </View>
+        {isSearchFocus ? (
+          <Text style={styles.cancelTextStyle} onPress={onCancelTextClick}>
+            {'Cancel'}
+          </Text>
+        ) : null}
+      </View>
+    );
+  };
+
+  const renderHealthRecordSearchItem = (item: any, index: number) => {
+    const healthCardTopView = () => {
+      switch (item?.healthkey) {
+        case MedicalRecordType.PRESCRIPTION:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <PrescriptionPhrSearchIcon style={{ width: 12, height: 13 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Doctor Consultations'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.TEST_REPORT:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <LabTestPhrSearchIcon style={{ width: 14, height: 15 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Test Reports'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.HOSPITALIZATION:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <HospitalPhrSearchIcon style={{ width: 13, height: 15.17 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Hospitalizations'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.MEDICALBILL:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <BillPhrSearchIcon style={{ width: 16, height: 13 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Bills'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.MEDICALINSURANCE:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <InsurancePhrSearchIcon style={{ width: 15.55, height: 13 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Insurance'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.ALLERGY:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <HealthConditionPhrSearchIcon style={{ width: 13, height: 16 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Health Conditions > Allergies'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.MEDICATION:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <HealthConditionPhrSearchIcon style={{ width: 13, height: 16 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Health Conditions > Medications'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.HEALTHRESTRICTION:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <HealthConditionPhrSearchIcon style={{ width: 13, height: 16 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Health Conditions > Health Restrictions'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.MEDICALCONDITION:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <HealthConditionPhrSearchIcon style={{ width: 13, height: 16 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Health Conditions > Medical Conditions'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.FAMILY_HISTORY:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <HealthConditionPhrSearchIcon style={{ width: 13, height: 16 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Health Conditions > Family History'}
+              </Text>
+            </View>
+          );
+      }
+    };
+    const dateText = `${moment(item?.value?.date).format('DD MMM YYYY')} - `;
+    const healthMoreText = getPhrHighlightText(item?.value?.highlight || '');
+    return (
+      <SearchHealthRecordCard
+        dateText={dateText}
+        healthRecordTitle={item?.value?.title}
+        healthRecordMoreText={healthMoreText}
+        searchHealthCardTopView={healthCardTopView()}
+        item={item}
+        index={index}
+        onSearchHealthCardPress={(item) => onClickSearchHealthCard(item)}
+      />
+    );
+  };
+
+  const onClickSearchHealthCard = (item: any) => {
+    const { healthrecordId } = item?.value;
+    switch (item?.healthkey) {
+      case MedicalRecordType.PRESCRIPTION:
+        const prescription_item = item?.value?.healthRecord
+          ? JSON.parse(item?.value?.healthRecord || '{}')
+          : {};
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.PRESCRIPTION,
+          prescriptions: true,
+          prescriptionSource: prescription_item?.source,
+          onPressBack: onBackArrowPressed,
         });
-    });
+      case MedicalRecordType.TEST_REPORT:
+        return props.navigation.navigate(AppRoutes.TestReportViewScreen, {
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.TEST_REPORT,
+          labResults: true,
+          onPressBack: onBackArrowPressed,
+        });
+      case MedicalRecordType.HOSPITALIZATION:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.HOSPITALIZATION,
+          hospitalization: true,
+          onPressBack: onBackArrowPressed,
+        });
+      case MedicalRecordType.MEDICALBILL:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.MEDICALBILL,
+          medicalBill: true,
+          onPressBack: onBackArrowPressed,
+        });
+      case MedicalRecordType.MEDICALINSURANCE:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.MEDICALINSURANCE,
+          medicalInsurance: true,
+          onPressBack: onBackArrowPressed,
+        });
+      case MedicalRecordType.ALLERGY:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.ALLERGY,
+          healthCondition: true,
+          healthHeaderTitle: HEALTH_CONDITIONS_TITLE.ALLERGY,
+          onPressBack: onBackArrowPressed,
+        });
+      case MedicalRecordType.MEDICATION:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.MEDICATION,
+          healthCondition: true,
+          healthHeaderTitle: HEALTH_CONDITIONS_TITLE.MEDICATION,
+          onPressBack: onBackArrowPressed,
+        });
+      case MedicalRecordType.HEALTHRESTRICTION:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.HEALTHRESTRICTION,
+          healthCondition: true,
+          healthHeaderTitle: HEALTH_CONDITIONS_TITLE.HEALTH_RESTRICTION,
+          onPressBack: onBackArrowPressed,
+        });
+      case MedicalRecordType.MEDICALCONDITION:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.MEDICALCONDITION,
+          healthCondition: true,
+          healthHeaderTitle: HEALTH_CONDITIONS_TITLE.MEDICAL_CONDITION,
+          onPressBack: onBackArrowPressed,
+        });
+      case MedicalRecordType.FAMILY_HISTORY:
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          healthrecordId: healthrecordId,
+          healthRecordType: MedicalRecordType.FAMILY_HISTORY,
+          healthCondition: true,
+          healthHeaderTitle: HEALTH_CONDITIONS_TITLE.FAMILY_HISTORY,
+          onPressBack: onBackArrowPressed,
+        });
+    }
+  };
+
+  const searchListHeaderView = () => {
+    const search_result_text =
+      healthRecordSearchResults?.length === 1
+        ? `${healthRecordSearchResults?.length} search result for \‘${searchText}\’`
+        : `${healthRecordSearchResults?.length} search results for \‘${searchText}\’`;
+    return (
+      <View style={styles.searchListHeaderViewStyle}>
+        <Text style={styles.searchListHeaderTextStyle}>{search_result_text}</Text>
+      </View>
+    );
+  };
+
+  const renderHealthRecordSearchResults = () => {
+    return searchLoading ? (
+      renderSearchLoader()
+    ) : (
+      <FlatList
+        keyExtractor={(_, index) => `${index}`}
+        bounces={false}
+        data={healthRecordSearchResults}
+        ListEmptyComponent={
+          <PhrNoDataComponent mainViewStyle={styles.phrNodataMainViewStyle} phrSearchList />
+        }
+        ListHeaderComponent={searchListHeaderView}
+        renderItem={({ item, index }) => renderHealthRecordSearchItem(item, index)}
+      />
+    );
   };
 
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
-        {renderTopView()}
-        <ScrollView
-          style={{ flex: 1 }}
-          bounces={false}
-          stickyHeaderIndices={[1]}
-          onScroll={handleScroll}
-          scrollEventThrottle={20}
-        >
-          {renderProfileChangeView()}
-          {renderTabSwitch()}
-          {selectedTab === tabs[0].title && renderConsults()}
-          {selectedTab === tabs[1].title && (
-            <MedicalRecords navigation={props.navigation} labResultsData={labResults} />
-          )}
-          {selectedTab === tabs[2].title && (
-            <MedicalRecords navigation={props.navigation} healthChecksNewData={healthChecksNew} />
-          )}
-          {selectedTab === tabs[3].title && (
-            <MedicalRecords
-              navigation={props.navigation}
-              hospitalizationsNewData={hospitalizationsNew}
-            />
-          )}
-        </ScrollView>
+        {renderUpdateProfileDetailsPopup()}
+        {renderHeader()}
+        {renderSearchBar()}
+        {searchText?.length > 2 ? (
+          renderHealthRecordSearchResults()
+        ) : (
+          <ScrollView style={{ flex: 1 }} bounces={false}>
+            {renderProfileDetailsView()}
+            {renderHealthCategoriesView()}
+            {renderBillsInsuranceView()}
+            {/* PHR Phase 2 UI */}
+            {/* {renderClinicalDocumentsView()} */}
+          </ScrollView>
+        )}
       </SafeAreaView>
-      {displayFilter && (
-        <FilterHealthRecordScene
-          onClickClose={(data: filterDataType[]) => {
-            setDisplayFilter(false);
-          }}
-          onResetClick={() => {
-            setPastDataLoader(false);
-          }}
-          setData={(data) => {
-            setFilterData(data);
-            setFilterSelected(true);
-            fetchPastData(data);
-          }}
-          data={JSON.parse(JSON.stringify(FilterData))}
-          filterLength={() => {
-            setFilterSelected(false);
-            setTimeout(() => {
-              setLoading && setLoading(false);
-            }, 500);
-          }}
-        />
-      )}
-      {displayOrderPopup && (
-        <UploadPrescriprionPopup
-          isVisible={displayOrderPopup}
-          disabledOption="NONE"
-          type="nonCartFlow"
-          heading={'Upload Prescription(s)'}
-          instructionHeading={'Instructions For Uploading Prescriptions'}
-          instructions={[
-            'Take clear picture of your entire prescription.',
-            'Doctor details & date of the prescription should be clearly visible.',
-            'Medicines will be dispensed as per prescription.',
-          ]}
-          optionTexts={{
-            camera: 'TAKE A PHOTO',
-            gallery: 'CHOOSE\nFROM GALLERY',
-          }}
-          onClickClose={() => setdisplayOrderPopup(false)}
-          onResponse={(selectedType, response) => {
-            setdisplayOrderPopup(false);
-            if (selectedType == 'CAMERA_AND_GALLERY') {
-              if (response.length == 0) return;
-              UploadPrescriptionData(response);
-            }
-          }}
-        />
-      )}
     </View>
   );
 };

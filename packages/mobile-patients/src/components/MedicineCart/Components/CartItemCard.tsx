@@ -1,19 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Dimensions } from 'react-native';
 import { Image } from 'react-native-elements';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { ShoppingCartItem } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   MedicineIcon,
   MedicineRxIcon,
   DropdownGreen,
   DeleteIcon,
   DeleteBoldIcon,
+  PrescriptionRequiredIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
-import { getMaxQtyForMedicineItem } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  getMaxQtyForMedicineItem,
+  productsThumbnailUrl,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 
 export interface CartItemCardProps {
   item: ShoppingCartItem;
@@ -23,49 +28,47 @@ export interface CartItemCardProps {
   onPressProduct: () => void;
 }
 
+const { width } = Dimensions.get('window');
+
 export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
-  const { coupon } = useShoppingCart();
+  const {
+    coupon,
+    isProuctFreeCouponApplied,
+    isCircleSubscription,
+    circleMembershipCharges,
+  } = useShoppingCart();
   const { item, onUpdateQuantity, onPressDelete, onPressProduct } = props;
   const [discountedPrice, setDiscountedPrice] = useState<any>(undefined);
   const [mrp, setmrp] = useState<number>(0);
+  const itemAvailable = !item.unserviceable && !item.unavailableOnline;
 
   useEffect(() => {
     setmrp(item.price);
     item.couponPrice || item.couponPrice == 0
-      ? setDiscountedPrice(item.couponPrice)
+      ? item.isFreeCouponProduct && item.quantity > 1
+        ? setDiscountedPrice(item.specialPrice)
+        : setDiscountedPrice(item.couponPrice)
       : item.specialPrice || item.specialPrice == 0
       ? setDiscountedPrice(item.specialPrice)
       : setDiscountedPrice(undefined);
   }, [item]);
 
-  function getImageUrl(item: ShoppingCartItem) {
-    let imageUrl = item.prescriptionRequired
-      ? ''
-      : item.thumbnail && !item.thumbnail.includes('/default/placeholder')
-      ? item.thumbnail.startsWith('http')
-        ? item.thumbnail
-        : `${AppConfig.Configuration.IMAGES_BASE_URL}${item.thumbnail}`
-      : '';
-    return imageUrl;
-  }
-
   const renderImage = () => {
-    const imageUrl = getImageUrl(item);
+    const imageUrl = productsThumbnailUrl(item?.thumbnail!);
     return (
-      <View style={{ width: 50, justifyContent: 'center', opacity: !item.unserviceable ? 1 : 0.3 }}>
-        {imageUrl ? (
-          <Image
-            PlaceholderContent={item.prescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
-            placeholderStyle={{ backgroundColor: 'transparent' }}
-            source={{ uri: imageUrl }}
-            style={{ height: 40, width: 40 }}
-            resizeMode="contain"
-          />
-        ) : item.prescriptionRequired ? (
-          <MedicineRxIcon style={{ marginLeft: 10 }} />
-        ) : (
-          <MedicineIcon style={{ marginLeft: 10 }} />
+      <View style={[styles.imageContainer, { opacity: itemAvailable ? 1 : 0.3 }]}>
+        {item?.prescriptionRequired && (
+          <View style={styles.rxSymbolContainer}>
+            <PrescriptionRequiredIcon style={styles.rxSymbol} />
+          </View>
         )}
+        <Image
+          PlaceholderContent={item?.prescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
+          placeholderStyle={{ backgroundColor: 'transparent' }}
+          source={{ uri: imageUrl }}
+          style={{ height: 75, width: 75 }}
+          resizeMode="contain"
+        />
       </View>
     );
   };
@@ -76,18 +79,19 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
         <View style={{ flexDirection: 'row', marginBottom: 5 }}>
           <View style={{ flex: 0.85 }}>
             <TouchableOpacity onPress={onPressProduct}>
-              <Text style={{ ...styles.itemName, opacity: !item.unserviceable ? 1 : 0.3 }}>
+              <Text style={{ ...styles.itemName, opacity: itemAvailable ? 1 : 0.3 }}>
                 {item.name}
               </Text>
             </TouchableOpacity>
             {item.mou && (
               <Text
-                style={{ ...styles.info, opacity: !item.unserviceable ? 1 : 0.3 }}
+                style={{ ...styles.info, opacity: itemAvailable ? 1 : 0.3 }}
               >{`(Pack of ${item.mou})`}</Text>
             )}
           </View>
           <TouchableOpacity onPress={onPressDelete} style={styles.delete}>
-            {!item.unserviceable ? <DeleteIcon /> : <DeleteBoldIcon />}
+            {/* {!item?.isFreeCouponProduct ? renderDelete() : null} */}
+            {renderDelete()}
           </TouchableOpacity>
         </View>
         {renderLowerCont()}
@@ -95,15 +99,56 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     );
   };
 
+  const renderDelete = () => {
+    return itemAvailable ? (
+      (!item?.isFreeCouponProduct || item?.quantity > 1) && <DeleteIcon />
+    ) : (
+      <DeleteBoldIcon />
+    );
+  };
+
   const renderLowerCont = () => {
     return (
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <View>
+      <View style={styles.lowerCountContainer}>
+        <View style={styles.lowerCountInnerView}>
           {renderQuantity()}
-          {!item.unserviceable && coupon && renderCoupon()}
+          {itemAvailable && !isProuctFreeCouponApplied && !!coupon && renderCoupon()}
+          {(isCircleSubscription || !!circleMembershipCharges) && renderCareCashback()}
         </View>
-        {discountedPrice || discountedPrice == 0 ? renderPrice(discountedPrice) : renderPrice(mrp)}
+        {!item?.isFreeCouponProduct
+          ? discountedPrice || discountedPrice == 0
+            ? renderPrice(discountedPrice)
+            : renderPrice(mrp)
+          : item?.quantity > 1
+          ? renderPrice(discountedPrice)
+          : renderFree()}
       </View>
+    );
+  };
+
+  const renderCareCashback = () => {
+    if (!!item.circleCashbackAmt && (!coupon || coupon.circleBenefits)) {
+      return (
+        <CareCashbackBanner
+          bannerText={`Extra ₹${item.circleCashbackAmt.toFixed(2)} Cashback`}
+          textStyle={styles.careText}
+          logoStyle={{
+            resizeMode: 'contain',
+            width: 40,
+            height: 30,
+          }}
+        />
+      );
+    } else {
+      return <></>;
+    }
+  };
+
+  const renderFree = () => {
+    return (
+      <Text style={{ ...theme.fonts.IBMPlexSansMedium(14), lineHeight: 20, color: '#00B38E' }}>
+        FREE
+      </Text>
     );
   };
 
@@ -117,37 +162,43 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     }).map((_, i) => {
       return { key: (i + 1).toString(), value: i + 1 };
     });
-    return (
-      <View>
-        <View style={{ ...styles.quantityContainer, opacity: !item.unserviceable ? 1 : 0.3 }}>
-          <MaterialMenu
-            options={opitons}
-            selectedText={item.quantity!.toString()}
-            selectedTextStyle={{ ...theme.viewStyles.text('M', 16, '#00b38e') }}
-            onPress={(selectedQuantity) => {
-              !item.unserviceable && onUpdateQuantity(selectedQuantity.value as number);
-            }}
-          >
-            <View style={{ flexDirection: 'row' }}>
-              <View style={{ justifyContent: 'center' }}>
-                <Text style={styles.quantity}>{`QTY : ${item.quantity}`}</Text>
-              </View>
-              <DropdownGreen />
+    return !item?.isFreeCouponProduct || item?.quantity > 1 ? (
+      <View style={{ ...styles.quantityContainer, opacity: itemAvailable ? 1 : 0.3 }}>
+        <MaterialMenu
+          options={opitons}
+          selectedText={item.quantity!.toString()}
+          selectedTextStyle={{ ...theme.viewStyles.text('M', 16, '#00b38e') }}
+          onPress={(selectedQuantity) => {
+            itemAvailable && onUpdateQuantity(selectedQuantity.value as number);
+          }}
+        >
+          <View style={{ flexDirection: 'row' }}>
+            <View style={{ justifyContent: 'center' }}>
+              <Text style={styles.quantity}>{`QTY : ${item.quantity}`}</Text>
             </View>
-          </MaterialMenu>
-        </View>
+            <DropdownGreen />
+          </View>
+        </MaterialMenu>
+      </View>
+    ) : (
+      <View style={styles.quantityContainer}>
+        <Text style={styles.quantity}>{`QTY : ${item.quantity}`}</Text>
       </View>
     );
   };
 
   const renderCoupon = () => {
-    return item.couponPrice || item.couponPrice == 0 ? (
+    return item.couponPrice || item.couponPrice == 0 || isProuctFreeCouponApplied ? (
       <View style={styles.coupon}>
         <Text style={styles.couponText}>{`${coupon?.coupon} Applied`}</Text>
       </View>
     ) : (
       <View style={{ ...styles.coupon, backgroundColor: 'rgba(137,0,0,0.2)' }}>
-        <Text style={styles.couponText}>{`${coupon?.coupon} Not Applicable`}</Text>
+        <Text style={styles.couponText}>
+          {!item?.applicable
+            ? `${coupon?.coupon} Not Applicable`
+            : 'Item already at higher discount'}
+        </Text>
       </View>
     );
   };
@@ -158,27 +209,37 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const renderDiscount = () => {
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <Text style={styles.dicountPercent}>{`${getDiscountPercent()}%off`}</Text>
+        {!item.isFreeCouponProduct && (
+          <Text style={styles.dicountPercent}>{`${getDiscountPercent()}%off`}</Text>
+        )}
+        <Text style={styles.mrp}>{`MRP `}</Text>
         <Text style={styles.initialPrice}>{`₹${(mrp * item.quantity).toFixed(2)}`}</Text>
       </View>
     );
   };
   const renderSavings = () => {
+    const savingsAmount =
+      item.isFreeCouponProduct && item.quantity > 1
+        ? discountedPrice
+        : ((mrp - discountedPrice) * item.quantity).toFixed(2);
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <Text style={styles.Savings}>Savings</Text>
-        <Text style={styles.savingsValue}>{`₹${((mrp - discountedPrice) * item.quantity).toFixed(
-          2
-        )}`}</Text>
+        <Text style={styles.savingsValue}>{`₹${savingsAmount}`}</Text>
       </View>
     );
   };
   const renderPrice = (price: number) => {
-    return !item.unserviceable ? (
+    const discount = !!(discountedPrice || discountedPrice == 0);
+    const finalAmount =
+      item.isFreeCouponProduct && item.quantity > 1
+        ? (price * item.quantity - discountedPrice).toFixed(2)
+        : (price * item.quantity).toFixed(2);
+    return itemAvailable ? (
       <View style={{ alignItems: 'flex-end' }}>
-        {(discountedPrice || discountedPrice == 0) && renderDiscount()}
-        <Text style={styles.finalPrice}>{`₹${(price * item.quantity).toFixed(2)}`}</Text>
-        {(discountedPrice || discountedPrice == 0) && renderSavings()}
+        {discount && renderDiscount()}
+        <Text style={styles.finalPrice}>{`${discount ? '' : 'MRP '} ₹${finalAmount}`}</Text>
+        {discount && renderSavings()}
       </View>
     ) : (
       renderNoStock()
@@ -188,13 +249,15 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const renderNoStock = () => {
     return (
       <View style={styles.noStockCont}>
-        <Text style={styles.noStockTxt}>Not in stock in your area</Text>
+        <Text style={styles.noStockTxt}>
+          {item.unavailableOnline ? string.notForSale : string.notInStockInYourArea}
+        </Text>
       </View>
     );
   };
 
   return (
-    <View style={{ ...styles.card, backgroundColor: !item.unserviceable ? '#fff' : '#F0F1EC' }}>
+    <View style={{ ...styles.card, backgroundColor: itemAvailable ? '#fff' : '#F0F1EC' }}>
       {renderImage()}
       {renderProduct()}
     </View>
@@ -214,8 +277,8 @@ const styles = StyleSheet.create({
   },
   itemName: {
     color: 'rgb(1,28,36)',
-    ...theme.fonts.IBMPlexSansMedium(16),
-    lineHeight: 20,
+    ...theme.fonts.IBMPlexSansMedium(14),
+    lineHeight: 18,
   },
   info: {
     ...theme.fonts.IBMPlexSansRegular(11),
@@ -247,6 +310,11 @@ const styles = StyleSheet.create({
   },
   initialPrice: {
     textDecorationLine: 'line-through',
+    ...theme.fonts.IBMPlexSansRegular(11),
+    color: '#02475B',
+    opacity: 0.7,
+  },
+  mrp: {
     ...theme.fonts.IBMPlexSansRegular(11),
     color: '#02475B',
     opacity: 0.7,
@@ -302,5 +370,32 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     height: 18,
     justifyContent: 'center',
+  },
+  careText: {
+    ...theme.viewStyles.text('M', 10, '#00A0E3', 1, 15),
+    paddingVertical: 7,
+  },
+  lowerCountContainer: {
+    flexDirection: 'row',
+    justifyContent: width <= 360 ? 'space-around' : 'space-between',
+  },
+  lowerCountInnerView: {
+    flex: 1,
+  },
+  rxSymbolContainer: {
+    position: 'absolute',
+    top: 50,
+    left: 25,
+    zIndex: 9,
+  },
+  rxSymbol: {
+    resizeMode: 'contain',
+    width: 15,
+    height: 15,
+  },
+  imageContainer: {
+    width: 80,
+    justifyContent: 'center',
+    marginRight: 7,
   },
 });

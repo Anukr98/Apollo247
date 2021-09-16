@@ -6,18 +6,28 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import moment from 'moment';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { format } from 'date-fns';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export interface TatCardProps {
   deliveryTime: string;
   deliveryAddress: string;
   onPressChangeAddress: () => void;
   onPressTatCard?: () => void;
+  isNonCartOrder?: boolean;
 }
 
 export const TatCard: React.FC<TatCardProps> = (props) => {
-  const { deliveryTime, deliveryAddress, onPressChangeAddress, onPressTatCard } = props;
-  const { cartItems } = useShoppingCart();
-  const unServiceable = cartItems.find((item) => item.unserviceable);
+  const {
+    deliveryTime,
+    deliveryAddress,
+    onPressChangeAddress,
+    onPressTatCard,
+    isNonCartOrder,
+  } = props;
+  const { cartItems, orders } = useShoppingCart();
+  const { nonCartTatText } = useAppCommonData();
+  const unServiceable = isNonCartOrder ? false : cartItems?.find((item) => item?.unserviceable);
+  const isSplitCart: boolean = orders?.length > 1 ? true : false;
 
   function getGenericDate() {
     const genericServiceableDate = moment()
@@ -33,30 +43,62 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
     tommorowDate.setDate(tommorowDate.getDate() + 1);
 
     if (new Date(deliveryTime).toLocaleDateString() == new Date().toLocaleDateString()) {
-      return <Text style={styles.dateTime}> {`${format(deliveryTime, 'h:mm A')}, Today!`}</Text>;
+      return !!isNonCartOrder ? (
+        <Text style={styles.dateTime}> {`Today!`}</Text>
+      ) : (
+        <Text style={styles.dateTime}> {`${format(deliveryTime, 'h:mm A')}, Today!`}</Text>
+      );
     } else if (new Date(deliveryTime).toLocaleDateString() == tommorowDate.toLocaleDateString()) {
-      return <Text style={styles.dateTime}> {`${format(deliveryTime, 'h:mm A')}, Tomorrow!`}</Text>;
+      return !!isNonCartOrder ? (
+        <Text style={styles.dateTime}> {`Tomorrow!`}</Text>
+      ) : (
+        <Text style={styles.dateTime}> {`${format(deliveryTime, 'h:mm A')}, Tomorrow!`}</Text>
+      );
     } else {
       return <Text style={styles.dateTime}>{`${format(deliveryTime, 'D-MMM-YYYY')}`}</Text>;
     }
   }
+
+  const renderViewDelivery = () => {
+    return (
+      <TouchableOpacity onPress={onPressTatCard} style={styles.viewDeliveryView}>
+        <Text style={styles.viewDelivery}>View delivery time</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const getNonCartDeliveryTatText = () => {
+    if (nonCartTatText) {
+      return <Text style={styles.deliveryText}>{nonCartTatText}</Text>;
+    } else {
+      return (
+        <Text style={styles.deliveryText}>
+          {`Expected Delivery by `}
+          {deliveryTime ? getDeliveryDate() : getGenericDate()}
+        </Text>
+      );
+    }
+  };
+
   return (
-    <TouchableOpacity
-      activeOpacity={1}
-      onPress={onPressTatCard}
-      style={{ backgroundColor: '#02475B', paddingHorizontal: 13 }}
-    >
+    <View style={{ backgroundColor: '#02475B', paddingHorizontal: 13 }}>
       <View
         style={{
           ...styles.subCont1,
           justifyContent: !unServiceable ? 'space-between' : 'flex-end',
         }}
       >
-        {!unServiceable && (
-          <Text style={styles.delivery}>
-            Deliver by : {deliveryTime ? getDeliveryDate() : getGenericDate()}
-          </Text>
-        )}
+        {!unServiceable &&
+          (!!isNonCartOrder ? (
+            getNonCartDeliveryTatText()
+          ) : !isSplitCart ? (
+            <Text style={styles.delivery}>
+              {`Deliver by :`}
+              {deliveryTime ? getDeliveryDate() : getGenericDate()}
+            </Text>
+          ) : (
+            renderViewDelivery()
+          ))}
         <TouchableOpacity
           style={{ flexDirection: 'row', alignItems: 'center' }}
           onPress={() => onPressChangeAddress()}
@@ -70,7 +112,7 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
           Deliver to : <Text style={styles.dateTime}>{deliveryAddress}</Text>
         </Text>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 };
 
@@ -96,5 +138,23 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(14),
     lineHeight: 18,
     marginRight: 7,
+  },
+  viewDelivery: {
+    ...theme.fonts.IBMPlexSansMedium(10),
+    lineHeight: 13,
+    color: '#D4D4D4',
+  },
+  viewDeliveryView: {
+    paddingHorizontal: 7,
+    paddingVertical: 5,
+    borderWidth: 0.5,
+    borderColor: '#D4D4D4',
+    borderRadius: 5,
+  },
+  deliveryText: {
+    width: '79%',
+    color: '#F7F8F5',
+    ...theme.fonts.IBMPlexSansRegular(14),
+    lineHeight: 18,
   },
 });

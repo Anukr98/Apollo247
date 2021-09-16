@@ -14,16 +14,24 @@ import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Me
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { postWebEngageEvent, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import string from '@aph/mobile-patients/src/strings/strings.json';
+import {
+  postWebEngageEvent,
+  g,
+  isSmallDevice,
+  postCleverTapEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postShowPrescriptionAtStoreSelected } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -76,8 +84,8 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const { currentPatient } = useAllCurrentPatients();
+  const { pharmacyUserType } = useAppCommonData();
 
-  const { showAphAlert } = useUIElements();
   const {
     uploadPrescriptionRequired,
     setPhysicalPrescriptions,
@@ -307,7 +315,16 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
               // since this component being used in two places hence condition isTest
               const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED] = {
                 Source: 'Cart',
+                User_Type: pharmacyUserType,
               };
+              const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED] = {
+                Source: 'Cart',
+                'User Type': pharmacyUserType,
+              };
+              postCleverTapEvent(
+                CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED,
+                cleverTapEventAttributes
+              );
               postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED, eventAttributes);
             }
             setShowPopup(true);
@@ -386,7 +403,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
               >
                 <Text
                   style={{
-                    ...theme.fonts.IBMPlexSansMedium(16),
+                    ...theme.fonts.IBMPlexSansMedium(isTest && isSmallDevice ? 14.5 : 16),
                     lineHeight: 24,
                     color: theme.colors.SKY_BLUE,
                     padding: 16,

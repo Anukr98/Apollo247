@@ -7,7 +7,6 @@ import React, { FC, useState } from 'react';
 import { View, StyleSheet, Dimensions, TouchableOpacity, Clipboard } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { Payment } from '@aph/mobile-patients/src/strings/strings.json';
 import { Success, Failure, Pending, Refund } from '@aph/mobile-patients/src/components/ui/Icons';
 import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
 import { textComponent } from './GenericText';
@@ -15,6 +14,7 @@ import ViewInvoice from './ViewInvoice';
 import PaymentStatusConstants from '../../constants';
 import { Copy } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Snackbar } from 'react-native-paper';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 interface StatusCardProps {
   item: any;
@@ -23,12 +23,10 @@ interface StatusCardProps {
 }
 
 const windowWidth = Dimensions.get('window').width;
-const windowHeight = Dimensions.get('window').height;
 
 const StatusCard: FC<StatusCardProps> = (props) => {
   const { SUCCESS, FAILED, REFUND } = PaymentStatusConstants;
   const { paymentFailed, paymentPending, paymentSuccessful, paymentRefund } = LocalStrings;
-  const [copiedText, setCopiedText] = useState('');
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
@@ -44,21 +42,25 @@ const StatusCard: FC<StatusCardProps> = (props) => {
     if (paymentFor === 'consult') {
       const {
         appointmentPayments,
+        PaymentOrders,
         actualAmount,
         displayId,
         discountedAmount,
         appointmentRefunds,
       } = item;
+      const { refund } = PaymentOrders;
+      const refundInfo = refund?.length ? refund : appointmentRefunds;
       orderID = 'Order ID: ' + String(displayId);
-      if (!appointmentPayments.length) {
+      const paymentInfo = PaymentOrders?.paymentStatus ? PaymentOrders : appointmentPayments[0];
+      if (!paymentInfo) {
         status = 'PENDING';
-      } else if (appointmentRefunds.length) {
-        const { paymentRefId, amountPaid } = appointmentPayments[0];
+      } else if (refundInfo.length) {
+        const { paymentRefId, amountPaid } = paymentInfo;
         refId = paymentRefId;
         price = amountPaid;
         status = REFUND;
       } else {
-        const { paymentStatus, paymentRefId, amountPaid } = appointmentPayments[0];
+        const { paymentStatus, paymentRefId, amountPaid } = paymentInfo;
         status = paymentStatus;
         refId = paymentRefId;
         price = amountPaid;
@@ -66,34 +68,33 @@ const StatusCard: FC<StatusCardProps> = (props) => {
       return {
         status: status,
         refId: refId,
-        price: 'Rs. ' + String(price),
+        price: `${string.common.Rs} ` + String(price),
         orderID: orderID,
       };
     } else {
-      const { medicineOrderPayments, orderAutoId, currentStatus } = item;
+      const { medicineOrderPayments, orderAutoId, currentStatus, PaymentOrdersPharma } = item;
+      const { refund } = PaymentOrdersPharma;
+      const refundInfo = refund?.length ? refund : medicineOrderPayments[0]?.medicineOrderRefunds;
+      const paymentInfo = PaymentOrdersPharma?.paymentStatus
+        ? PaymentOrdersPharma
+        : medicineOrderPayments[0];
       orderID = 'Order ID: ' + String(orderAutoId);
-      if (!medicineOrderPayments.length) {
+      if (!paymentInfo) {
         status = 'PENDING';
       } else {
-        const {
-          paymentStatus,
-          paymentRefId,
-          amountPaid,
-          medicineOrderRefunds,
-        } = medicineOrderPayments[0];
+        const { paymentStatus, paymentRefId, amountPaid } = paymentInfo;
         status = paymentStatus;
         refId =
-          currentStatus === 'CANCELLED' && medicineOrderRefunds.length
-            ? medicineOrderRefunds[0].refundId
+          currentStatus === 'CANCELLED' && refundInfo?.length
+            ? refundInfo[0]?.refundId
             : paymentRefId;
         price = amountPaid;
-        status =
-          currentStatus === 'CANCELLED' && medicineOrderRefunds.length ? REFUND : paymentStatus;
+        status = currentStatus === 'CANCELLED' && refundInfo?.length ? REFUND : paymentStatus;
       }
       return {
         status: status,
         refId: refId,
-        price: 'Rs. ' + String(price),
+        price: `${string.common.Rs} ` + String(price),
         orderID: orderID,
       };
     }

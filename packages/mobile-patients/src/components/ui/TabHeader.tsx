@@ -5,19 +5,25 @@ import { CartIcon, HomeIcon } from '@aph/mobile-patients/src/components/ui/Icons
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
-import {
-  NavigationActions,
-  NavigationRoute,
-  NavigationScreenProp,
-  StackActions,
-} from 'react-navigation';
+import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
 import { LocationSearchHeader } from '@aph/mobile-patients/src/components/ui/LocationSearchHeader';
+import {
+  g,
+  getCleverTapCircleMemberValues,
+  getUserType,
+  navigateToHome,
+  postCleverTapEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAllCurrentPatients } from '../../hooks/authHooks';
+import moment from 'moment';
+import { getUniqueId } from 'react-native-device-info';
+import { CleverTapEventName } from '../../helpers/CleverTapEvents';
 
 const styles = StyleSheet.create({
   labelView: {
     position: 'absolute',
-    top: -3,
-    right: -3,
+    top: -10,
+    right: -8,
     backgroundColor: '#ff748e',
     height: 14,
     width: 14,
@@ -37,12 +43,15 @@ export interface TabHeaderProps {
   locationVisible?: boolean;
   onLocationPress?: () => void;
   navigation: NavigationScreenProp<NavigationRoute<{}>, {}>;
+  screenAsSource?: string;
 }
 
 export const TabHeader: React.FC<TabHeaderProps> = (props) => {
   const { cartItems } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const { pharmacyCircleAttributes } = useShoppingCart();
 
   const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
     return (
@@ -50,6 +59,27 @@ export const TabHeader: React.FC<TabHeaderProps> = (props) => {
         <Text style={styles.labelText}>{count}</Text>
       </View>
     );
+  };
+
+  const cleverTapEventForHomeIconClick = () => {
+    let eventAttributes = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
+      'Nav src': props.screenAsSource,
+      'Circle Member':
+        getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+        undefined,
+      'Device Id': getUniqueId(),
+    };
+    postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);
   };
 
   return (
@@ -68,15 +98,9 @@ export const TabHeader: React.FC<TabHeaderProps> = (props) => {
     >
       <TouchableOpacity
         activeOpacity={1}
-        // onPress={() => props.navigation.popToTop()}
         onPress={() => {
-          props.navigation.dispatch(
-            StackActions.reset({
-              index: 0,
-              key: null,
-              actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-            })
-          );
+          navigateToHome(props.navigation);
+          cleverTapEventForHomeIconClick();
         }}
       >
         {!props.hideHomeIcon ? <HomeIcon /> : null}
@@ -90,12 +114,10 @@ export const TabHeader: React.FC<TabHeaderProps> = (props) => {
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => props.navigation.navigate(AppRoutes.MedAndTestCart)}
-          // style={{ right: 20 }}
         >
           <CartIcon style={{}} />
           {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
         </TouchableOpacity>
-        {/* <NotificationIcon /> */}
       </View>
     </View>
   );

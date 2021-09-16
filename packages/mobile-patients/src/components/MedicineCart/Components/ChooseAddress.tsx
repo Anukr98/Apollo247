@@ -45,7 +45,6 @@ export const ChooseAddress: React.FC<ChooseAddressProps> = (props) => {
   };
 
   const renderAddress = (item: savePatientAddress_savePatientAddress_patientAddress) => {
-    console.log(item);
     return (
       <View style={{ ...styles.addressCard, borderWidth: item.id == deliveryAddressId ? 1 : 0 }}>
         <TouchableOpacity onPress={() => onPressSelectAddress(item)}>

@@ -26,11 +26,14 @@ import {
   searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 
-import { getPackageData, PackageInclusion } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { PackageInclusion } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   g,
   isValidSearch,
   postWebEngageEvent,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -54,6 +57,11 @@ import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import _ from 'lodash';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -71,8 +79,8 @@ const styles = StyleSheet.create({
   },
   labelView: {
     position: 'absolute',
-    top: -3,
-    right: -3,
+    top: -10,
+    right: -8,
     backgroundColor: '#ff748e',
     height: 14,
     width: 14,
@@ -152,19 +160,24 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADD_TO_CART] = {
       'product name': name,
       'product id': id,
-      Source: 'Diagnostic',
+      Source: 'Search',
       Price: price,
       'Discounted Price': discountedPrice,
       Quantity: 1,
-      // 'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      // 'Patient UHID': g(currentPatient, 'uhid'),
-      // Relation: g(currentPatient, 'relation'),
-      // 'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
-      // 'Patient Gender': g(currentPatient, 'gender'),
-      // 'Mobile Number': g(currentPatient, 'mobileNumber'),
-      // 'Customer ID': g(currentPatient, 'id'),
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
+    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
+
+    const firebaseAttributes: FirebaseEvents[FirebaseEventName.DIAGNOSTIC_ADD_TO_CART] = {
+      productname: name,
+      productid: id,
+      Source: 'Diagnostic',
+      Price: price,
+      DiscountedPrice: discountedPrice,
+      Quantity: 1,
+    };
+    postFirebaseEvent(FirebaseEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
   };
 
   const errorAlert = () => {
@@ -174,26 +187,26 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
     });
   };
 
-  const fetchPackageInclusion = (id: string, func: (tests: PackageInclusion[]) => void) => {
-    setGlobalLoading!(true);
-    getPackageData(id)
-      .then(({ data }) => {
-        console.log('getPackageData\n', { data });
-        const product = g(data, 'data');
+  const fetchPackageInclusion = async (id: string, func: (tests: PackageInclusion[]) => void) => {
+    try {
+      const arrayOfId = [Number(id)];
+      setGlobalLoading!(true);
+      const res: any = await getPackageInclusions(client, arrayOfId);
+      if (res) {
+        const data = g(res, 'data', 'getInclusionsOfMultipleItems', 'inclusions');
+        setGlobalLoading!(false);
+        const product = data;
         if (product && product.length) {
           func && func(product);
         } else {
           errorAlert();
         }
-      })
-      .catch((e) => {
-        CommonBugFender('TestsByCategory_fetchPackageInclusion', e);
-        console.log({ e });
-        errorAlert();
-      })
-      .finally(() => {
-        setGlobalLoading!(false);
-      });
+      }
+    } catch (e) {
+      CommonBugFender('Tests_fetchPackageInclusion', e);
+      setGlobalLoading!(false);
+      errorAlert();
+    }
   };
 
   const onAddCartItem = (
@@ -241,7 +254,6 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity
               activeOpacity={1}
-              // style={{ marginRight: 24 }}
               onPress={() => {
                 props.navigation.navigate(AppRoutes.MedAndTestCart);
               }}
@@ -249,9 +261,6 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
               <CartIcon />
               {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
             </TouchableOpacity>
-            {/* <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-              <Filter />
-            </TouchableOpacity> */}
           </View>
         }
         onPressLeftIcon={() => props.navigation.goBack()}
@@ -307,7 +316,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
             {data.name}
           </Text>
           <Text style={{ ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04) }}>
-            Rs. {data.price}
+            {string.common.Rs} {convertNumberToDecimal(data?.price)}
           </Text>
         </View>
       );
@@ -318,7 +327,6 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
         <View style={localStyles.iconOrImageContainerStyle}>
           {data.imgUri ? (
             <Image
-              // placeholderStyle={styles.imagePlaceholderStyle}
               source={{ uri: data.imgUri }}
               style={{ height: 40, width: 40 }}
               resizeMode="contain"
@@ -361,6 +369,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
       testPreparationData,
       toAgeInDays,
       itemType,
+      testDescription,
     } = item;
     return renderSearchSuggestionItem({
       onPress: () => {
@@ -374,6 +383,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
             ToAgeInDays: toAgeInDays,
             collectionType: collectionType,
             preparation: testPreparationData,
+            testDescription: testDescription,
             source: 'Landing Page',
             type: itemType,
           } as TestPackageForDetails,
@@ -400,17 +410,9 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
       inputContainerStyle: {
         borderBottomColor: '#00b38e',
         borderBottomWidth: 2,
-        // marginHorizontal: 10,
       },
       rightIconContainerStyle: {
         height: 24,
-      },
-      style: {
-        // paddingBottom: 18.5,
-      },
-      containerStyle: {
-        // marginBottom: 19,
-        // marginTop: 18,
       },
     });
 
@@ -490,11 +492,6 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
     const foundMedicineInCart = cartItems.find((item) => item.id == `${medicine.itemId}`);
     const price = medicine.rate;
     const testsIncluded = g(foundMedicineInCart, 'mou') || 1;
-    // const specialPrice = medicine.special_price
-    //   ? typeof medicine.special_price == 'string'
-    //     ? parseInt(medicine.special_price)
-    //     : medicine.special_price
-    //   : undefined;
     const specialPrice = undefined;
 
     return (
@@ -509,16 +506,17 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
           props.navigation.navigate(AppRoutes.TestDetails, {
             title: medicine.itemName,
             testDetails: {
-              Rate: medicine!.rate,
-              Gender: medicine!.gender,
-              ItemID: `${medicine!.itemId}`,
-              ItemName: medicine!.itemName,
-              collectionType: medicine!.collectionType,
-              FromAgeInDays: medicine!.fromAgeInDays,
-              ToAgeInDays: medicine!.toAgeInDays,
-              preparation: medicine!.testPreparationData,
+              Rate: medicine?.rate,
+              Gender: medicine?.gender,
+              ItemID: `${medicine?.itemId}`,
+              ItemName: medicine?.itemName,
+              collectionType: medicine?.collectionType,
+              FromAgeInDays: medicine?.fromAgeInDays,
+              ToAgeInDays: medicine?.toAgeInDays,
+              preparation: medicine?.testPreparationData,
+              testDescription: medicine?.testDescription,
               source: 'Landing Page',
-              type: medicine!.itemType,
+              type: medicine?.itemType,
             } as TestPackageForDetails,
           });
         }}
@@ -658,7 +656,6 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
           searchText.length > 2 && (
             <FlatList
               keyboardShouldPersistTaps="always"
-              // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
               bounces={false}
               keyExtractor={(_, index) => `${index}`}
               showsVerticalScrollIndicator={false}

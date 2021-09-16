@@ -8,11 +8,12 @@ import {
   StatusBar,
   Dimensions,
   Clipboard,
+  SafeAreaView,
 } from 'react-native';
 import { Copy } from '@aph/mobile-patients/src/components/ui/Icons';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import React, { useEffect, useState } from 'react';
-import { NavigationScreenProps, NavigationActions, StackActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { Success, Failure, Pending } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -20,14 +21,20 @@ import { Payment } from '@aph/mobile-patients/src/strings/strings.json';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  makeAppointmentPayment,
-  makeAppointmentPaymentVariables,
-} from '@aph/mobile-patients/src/graphql/types/makeAppointmentPayment';
-import { GET_PHARMA_TRANSACTION_STATUS } from '@aph/mobile-patients/src/graphql/profiles';
+  GET_PHARMA_TRANSACTION_STATUS,
+  SAVE_MEDICINE_ORDER_PAYMENT,
+  SAVE_MEDICINE_ORDER_OMS,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  postWebEngageEvent,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
+  apiCallEnums,
+  postCleverTapEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -37,6 +44,23 @@ import { AppsFlyerEventName } from '../helpers/AppsFlyerEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
 import { Snackbar } from 'react-native-paper';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import {
+  SaveMedicineOrderPaymentMq,
+  SaveMedicineOrderPaymentMqVariables,
+} from '@aph/mobile-patients/src/graphql/types/SaveMedicineOrderPaymentMq';
+import {
+  saveMedicineOrderOMS,
+  saveMedicineOrderOMSVariables,
+} from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderOMS';
+
+import { MEDICINE_ORDER_PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { OrderPlacedPopUp } from '@aph/mobile-patients/src/components/ui/OrderPlacedPopUp';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -49,19 +73,28 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const [refNo, setrefNo] = useState<string>('');
   const [orderDateTime, setorderDateTime] = useState('');
   const [paymentMode, setPaymentMode] = useState<string>('');
-  // const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
-  // const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
-
   const client = useApolloClient();
-  const { success, failure, pending, aborted } = Payment;
-  const { showAphAlert } = useUIElements();
+  const { success, failure, aborted } = Payment;
+  const { showAphAlert, hideAphAlert } = useUIElements();
   const totalAmount = props.navigation.getParam('amount');
   const orderId = props.navigation.getParam('orderId');
   const orderAutoId = props.navigation.getParam('orderAutoId');
   const paymentTypeID = props.navigation.getParam('paymentTypeID');
+  const orderInfo = props.navigation.getParam('orderInfo');
+  const deliveryTime = props.navigation.getParam('deliveryTime');
+  const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
+  const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
+  const [codOrderProcessing, setcodOrderProcessing] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
-  const [copiedText, setCopiedText] = useState('');
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
+  const { apisToCall } = useAppCommonData();
+  const {
+    clearCartInfo,
+    cartItems,
+    coupon,
+    orders,
+    uploadPrescriptionRequired,
+  } = useShoppingCart();
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
     setSnackbarState(true);
@@ -94,7 +127,6 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
     });
 
   useEffect(() => {
-    // getTxnStatus(orderId)
     client
       .query({
         query: GET_PHARMA_TRANSACTION_STATUS,
@@ -104,14 +136,15 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((res) => {
-        console.log(res.data.pharmaPaymentStatus);
         const paymentEventAttributes = {
           order_Id: orderId,
           order_AutoId: orderAutoId,
-          Type: 'Pharmacy',
+          LOB: 'Pharmacy',
           Payment_Status: res.data.pharmaPaymentStatus.paymentStatus,
         };
         postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
+        postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_STATUS, paymentEventAttributes);
+        postFirebaseEvent(FirebaseEventName.PAYMENT_STATUS, paymentEventAttributes);
         setorderDateTime(res.data.pharmaPaymentStatus.orderDateTime);
         setrefNo(res.data.pharmaPaymentStatus.paymentRefId);
         setStatus(res.data.pharmaPaymentStatus.paymentStatus);
@@ -120,19 +153,8 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('fetchingTxnStutus', error);
-        console.log(error);
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [
-              NavigationActions.navigate({
-                routeName: AppRoutes.ConsultRoom,
-              }),
-            ],
-          })
-        );
-        renderErrorPopup(`Something went wrong, plaease try again after sometime`);
+        moveToHome();
+        renderErrorPopup(string.common.tryAgainLater);
       });
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
@@ -141,18 +163,160 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   }, []);
 
   const handleBack = () => {
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [
-          NavigationActions.navigate({
-            routeName: AppRoutes.ConsultRoom,
-          }),
-        ],
-      })
-    );
+    moveToHome();
     return true;
+  };
+
+  const moveToHome = () => {
+    // use apiCallsEnum values here in order to make that api call in home screen
+    apisToCall.current = [apiCallEnums.circleSavings];
+    navigateToHome(props.navigation);
+  };
+
+  const getFormattedAmount = (num: number) => Number(num.toFixed(2));
+
+  const saveOrder = (orderInfo: saveMedicineOrderOMSVariables) =>
+    client.mutate<saveMedicineOrderOMS, saveMedicineOrderOMSVariables>({
+      mutation: SAVE_MEDICINE_ORDER_OMS,
+      variables: orderInfo,
+    });
+
+  const savePayment = (paymentInfo: SaveMedicineOrderPaymentMqVariables) =>
+    client.mutate<SaveMedicineOrderPaymentMq, SaveMedicineOrderPaymentMqVariables>({
+      mutation: SAVE_MEDICINE_ORDER_PAYMENT,
+      variables: paymentInfo,
+    });
+
+  const placeOrder = async (orderAutoId: number) => {
+    const paymentInfo: SaveMedicineOrderPaymentMqVariables = {
+      medicinePaymentMqInput: {
+        orderAutoId: orderAutoId,
+        amountPaid: getFormattedAmount(totalAmount),
+        paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,
+        paymentStatus: 'success',
+        responseCode: '',
+        responseMessage: '',
+      },
+    };
+    try {
+      const response = await savePayment(paymentInfo);
+      const { data } = response;
+      const { errorCode, errorMessage } = data?.SaveMedicineOrderPaymentMq || {};
+      if (errorCode || errorMessage) {
+        errorPopUp();
+      } else {
+        handleOrderSuccess(`${orderAutoId}`);
+        clearCartInfo?.();
+      }
+    } catch (error) {
+      CommonBugFender('PaymentStatusScreen_savePayment', error);
+      errorPopUp();
+    }
+  };
+
+  const initiateOrder = async () => {
+    setcodOrderProcessing(true);
+    try {
+      const response = await saveOrder(orderInfo);
+      const { data } = response;
+      const { orderId, orderAutoId, errorCode, errorMessage } = data?.saveMedicineOrderOMS || {};
+      if (errorCode || errorMessage) {
+        errorPopUp();
+        setcodOrderProcessing(false);
+        return;
+      } else {
+        placeOrder(orderAutoId!);
+      }
+    } catch (error) {
+      CommonBugFender('PaymentStatusScreen_saveOrder', error);
+      setcodOrderProcessing(false);
+      errorPopUp();
+    }
+  };
+
+  const errorPopUp = () => {
+    showAphAlert!({
+      title: `Hi ${currentPatient?.firstName || ''}!`,
+      description: `Your order failed due to some temporary issue :( Please submit the order again.`,
+    });
+  };
+
+  const handleOrderSuccess = (orderAutoId: string) => {
+    moveToHome();
+    fireOrderSuccessEvent(orderAutoId);
+    showAphAlert!({
+      title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
+      description:
+        'Your order has been placed successfully. We will confirm the order in a few minutes.',
+      children: (
+        <OrderPlacedPopUp
+          deliveryTime={deliveryTime}
+          orderAutoId={orderAutoId}
+          onPressViewInvoice={() => navigateToOrderDetails(true, orderAutoId)}
+          onPressTrackOrder={() => navigateToOrderDetails(false, orderAutoId)}
+        />
+      ),
+    });
+  };
+
+  const navigateToOrderDetails = (showOrderSummaryTab: boolean, orderAutoId: string) => {
+    hideAphAlert!();
+    props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+      goToHomeOnBack: true,
+      showOrderSummaryTab,
+      orderAutoId: orderAutoId,
+    });
+  };
+
+  const fireOrderSuccessEvent = (newOrderId: string) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD] = {
+      'Payment failed order id': orderAutoId,
+      'Payment Success Order Id': newOrderId,
+    };
+    postWebEngageEvent(WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD, eventAttributes);
+    const pharmaCheckoutEventAttributes = {
+      ...checkoutEventAttributes,
+      'Split Cart': orders?.length > 1 ? 'Yes' : 'No',
+      'Prescription Option selected': uploadPrescriptionRequired
+        ? 'Prescription Upload'
+        : 'Not Applicable',
+    };
+    postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, {
+      ...pharmaCheckoutEventAttributes,
+      'Cart Items': JSON.stringify(cartItems),
+    });
+    postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, {
+      ...pharmaCheckoutEventAttributes,
+      'Cart Items': cartItems?.length,
+    });
+    postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, appsflyerEventAttributes);
+    firePurchaseEvent();
+  };
+
+  const firePurchaseEvent = () => {
+    let items: any = [];
+    cartItems.forEach((item, index) => {
+      let itemObj: any = {};
+      itemObj.item_name = item.name; // Product Name or Doctor Name
+      itemObj.item_id = item.id; // Product SKU or Doctor ID
+      itemObj.price = item.specialPrice ? item.specialPrice : item.price; // Product Price After discount or Doctor VC price (create another item in array for PC price)
+      itemObj.item_brand = ''; // Product brand or Apollo (for Apollo doctors) or Partner Doctors (for 3P doctors)
+      itemObj.item_category = 'Pharmacy'; // 'Pharmacy' or 'Consultations'
+      itemObj.item_category2 = item.isMedicine ? 'Drug' : 'FMCG'; // FMCG or Drugs (for Pharmacy) or Specialty Name (for Consultations)
+      itemObj.item_variant = 'Default'; // "Default" (for Pharmacy) or Virtual / Physcial (for Consultations)
+      itemObj.index = index + 1; // Item sequence number in the list
+      itemObj.quantity = item.quantity; // "1" or actual quantity
+      items.push(itemObj);
+    });
+    const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
+      coupon: coupon?.coupon,
+      currency: 'INR',
+      items: items,
+      transaction_id: orderId,
+      value: totalAmount,
+      LOB: 'Pharma',
+    };
+    postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };
 
   const statusIcon = () => {
@@ -213,7 +377,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const renderStatusCard = () => {
     const refNumberText = String(refNo != '' && refNo != null ? refNo : '--');
     const orderIdText = 'Order ID: ' + String(orderAutoId);
-    const priceText = 'Rs. ' + String(totalAmount);
+    const priceText = `${string.common.Rs} ` + String(totalAmount);
     return (
       <View style={[styles.statusCardStyle, { backgroundColor: statusCardColour() }]}>
         <View style={styles.statusCardSubContainerStyle}>{statusIcon()}</View>
@@ -271,14 +435,6 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
         {textComponent('ORDER DETAILS', undefined, theme.colors.ASTRONAUT_BLUE, false)}
       </View>
     );
-  };
-
-  const getdateTime = () => {
-    const newdate = new Date(orderDateTime);
-    newdate.setHours(newdate.getHours() - 5);
-    newdate.setMinutes(newdate.getMinutes() - 30);
-    return getDate(String(newdate));
-    // return newdate.toDateString() + '  ' + newdate.toLocaleTimeString();
   };
 
   const orderCard = () => {
@@ -344,28 +500,13 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
     } else if (status == failure || status == aborted) {
       navigate(AppRoutes.MedicineCart);
     } else {
-      props.navigation.dispatch(
-        StackActions.reset({
-          index: 0,
-          key: null,
-          actions: [
-            NavigationActions.navigate({
-              routeName: AppRoutes.ConsultRoom,
-            }),
-          ],
-        })
-      );
+      moveToHome();
     }
   };
 
   const renderButton = () => {
     return (
-      <TouchableOpacity
-        style={styles.buttonStyle}
-        onPress={() => {
-          handleButton();
-        }}
-      >
+      <TouchableOpacity style={styles.buttonStyle} onPress={() => handleButton()}>
         <Text style={{ ...theme.viewStyles.text('SB', 13, '#ffffff', 1, 24) }}>
           {getButtonText()}
         </Text>
@@ -373,22 +514,55 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
     );
   };
 
+  const renderCODNote = () => {
+    let noteText = "Your order wasn't placed as payment could not be processed. Please try again";
+    return status == failure ? <Text style={styles.codText}>{noteText}</Text> : null;
+  };
+
+  const renderCODButton = () => {
+    return status == failure ? (
+      <View style={{ marginHorizontal: 0.06 * windowWidth, marginBottom: 0.06 * windowWidth }}>
+        <Button
+          style={{ height: 0.06 * windowHeight }}
+          title={`PAY CASH ON DELIVERY`}
+          onPress={() => initiateOrder()}
+          disabled={false}
+        />
+      </View>
+    ) : null;
+  };
+
+  const renderRetryPayment = () => {
+    return (
+      <View style={styles.retryPayment}>
+        <TouchableOpacity onPress={() => handleButton()}>
+          <Text style={styles.clickText}>Click here</Text>
+        </TouchableOpacity>
+        <Text style={styles.retryText}>{' to retry your payment'}</Text>
+      </View>
+    );
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
-      <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
-
-      {!loading ? (
-        <ScrollView style={styles.container}>
-          {renderStatusCard()}
-          {appointmentHeader()}
-          {orderCard()}
-          {renderNote()}
-          {renderButton()}
-        </ScrollView>
-      ) : (
-        <Spinner />
-      )}
+      <SafeAreaView style={styles.container}>
+        <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
+        {!loading ? (
+          <ScrollView style={styles.container}>
+            {renderStatusCard()}
+            {renderCODNote()}
+            {renderCODButton()}
+            {appointmentHeader()}
+            {orderCard()}
+            {renderNote()}
+            {status == failure ? renderRetryPayment() : renderButton()}
+          </ScrollView>
+        ) : (
+          <Spinner />
+        )}
+        {codOrderProcessing && <Spinner />}
+      </SafeAreaView>
     </View>
   );
 };
@@ -472,5 +646,23 @@ const styles = StyleSheet.create({
     marginTop: 5,
     width: 9,
     height: 10,
+  },
+  codText: {
+    ...theme.viewStyles.text('SB', 13, theme.colors.SHADE_GREY, 1, 17),
+    textAlign: 'center',
+    marginHorizontal: 0.1 * windowWidth,
+    marginBottom: 8,
+  },
+  retryPayment: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 13,
+  },
+  clickText: {
+    ...theme.viewStyles.text('SB', 13, '#fcb716', 1, 17, 0.04),
+  },
+  retryText: {
+    ...theme.viewStyles.text('R', 13, '#02475b', 1, 17, 0.04),
   },
 });

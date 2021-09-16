@@ -1,6 +1,7 @@
 import Axios, { AxiosResponse, Canceler } from 'axios';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { getTagalysConfig, Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
+import { string } from '../strings/string';
 
 export interface MedicineProduct {
   category_id?: string;
@@ -21,6 +22,33 @@ export interface MedicineProduct {
   thumbnail: string;
   type_id: 'FMCG' | 'Pharma' | 'PL';
   url_key: string;
+  careCashback?: number | null;
+  is_express?: 'Yes' | 'No';
+  dc_availability?: 'Yes' | 'No';
+  is_in_contract?: 'Yes' | 'No';
+  is_returnable?: 'Yes' | 'No';
+  marketer_address?: string | null;
+  unit_of_measurement?: string | null;
+  vegetarian?: 'Yes' | 'No';
+  storage?: string | null;
+  key_ingredient?: string | null;
+  key_benefits?: string | null;
+  safety_information?: string | null;
+  size?: string | null;
+  flavour_fragrance?: string | null;
+  colour?: string | null;
+  variant?: string | null;
+  expiry_date?: string | null;
+  composition?: string | null;
+  consume_type?: string | null;
+  dose_form_variant?: string | null;
+  pack_form?: string | null;
+  product_form?: string | null;
+  pack_size?: string | null;
+  banned?: 'Yes' | 'No';
+  subcategory?: string | null;
+  merchandising?: number | null;
+  suggested_qty: string | null;
 }
 
 export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
@@ -32,6 +60,11 @@ export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
 }
 
 export type Doseform = 'TABLET' | 'INJECTION' | 'SYRUP' | '';
+export enum DIAGNOSTIC_GROUP_PLAN {
+  ALL = 'ALL',
+  CIRCLE = 'CIRCLE',
+  SPECIAL_DISCOUNT = 'SPECIALDISCOUNTS',
+}
 
 interface PharmaOverview {
   generic: string;
@@ -43,6 +76,39 @@ interface PharmaOverview {
     Caption: string;
     CaptionDesc: string;
   }[]; // type can be string if information not available
+  NewPharmaOverview: NewPharmaOverview;
+}
+
+export interface NewPharmaOverview {
+  Storage: string;
+  StoragePlace: string;
+  ColdChain: string;
+  AboutProduct: string;
+  HowToTake: string;
+  LiverTag: string;
+  LiverContent: string;
+  KidneyTag: string;
+  KidneyContent: string;
+  PregnancyTag: string;
+  PregnancyContent: string;
+  BreastfeedingMothersTag: string;
+  BreastfeedingMothersContent: string;
+  AlcoholTag: string;
+  AlcoholContent: string;
+  DrivingTag: string;
+  DrivingContent: string;
+  WarningsAndPrecautions: string;
+  CompositionContentFAQs: PharmaFAQ[];
+  SideEffects: string;
+  DiseaseConditionGlossary?: string;
+  DietAndLifestyle?: string;
+  SpecialAdvise?: string;
+  HabitForming?: string;
+}
+
+export interface PharmaFAQ {
+  field_question: string;
+  field_answer: string;
 }
 
 export interface MedicineProductDetailsResponse {
@@ -59,12 +125,58 @@ export interface MedicineOrderBilledItem {
   mrp: number;
 }
 
-export interface MedicineProductsResponse {
-  product_count: number;
-  products: MedicineProduct[];
-  search_heading?: string;
+export interface SearchSuggestion {
+  name: string;
+  categoryId: string;
+  queryName: string;
+  superQuery?: string;
 }
 
+export interface MedicineSearchQueryFilter {
+  query: string[];
+  filter: {
+    __categories: string[];
+  };
+}
+
+export interface MedicineProductsResponse {
+  queries?: MedicineSearchQueryFilter[];
+  products: MedicineProduct[];
+  product_count?: number;
+  count?: number;
+}
+
+export interface CategoryProductsApiResponse {
+  products: MedicineProduct[];
+  count: number;
+  filters: MedFilter[];
+  sort_by: Value[];
+}
+
+export interface PopcSrchPrdApiResponse {
+  products: MedicineProduct[];
+  product_count: number;
+  search_heading: string;
+  filters: MedFilter[];
+  sort_by: Value[];
+}
+
+interface Value {
+  id: string;
+  name: string;
+  child?: {
+    category_id: string;
+    title: string;
+  }[];
+}
+export interface MedFilter {
+  name: string;
+  attribute: string; // 'category' | 'brand' ...
+  select_type: 'single' | 'multi';
+  min?: number;
+  max?: number;
+  values?: Value[];
+}
 export interface Brand {
   category_id: string;
   image_url: number;
@@ -120,6 +232,17 @@ export interface GetStoreInventoryResponse {
 }
 
 export interface TatApiInput247 {
+  pincode: string;
+  lat: number;
+  lng: number;
+  items: {
+    sku: string;
+    qty: number;
+  }[];
+  userType: 'regular' | 'circle';
+}
+
+export interface TatApiInput {
   pincode: string;
   lat: number;
   lng: number;
@@ -281,7 +404,16 @@ export interface MedicinePageProducts {
   category_id?: number;
 }
 
+export interface Category {
+  category_id: string;
+  title: string;
+  url_key: string;
+  image_url?: string;
+  Child: Category[];
+}
+
 export interface MedicinePageAPiResponse {
+  categories: Category[];
   mainbanners: OfferBannerSection[];
   healthareas: MedicinePageSection[];
   deals_of_the_day: DealsOfTheDaySection[];
@@ -302,11 +434,13 @@ export interface MedicinePageAPiResponse {
 }
 
 export interface PackageInclusion {
+  requiredAttachment?: string;
+  itemId?: number;
   TestInclusion: string;
-  SampleRemarks: string;
-  SampleTypeName: string;
-  TestParameters: string;
-  TestName?: string; // getting TestInclusion value in TestName from API
+  sampleRemarks: string;
+  sampleTypeName: string;
+  testParameters: string;
+  name?: string;
 }
 
 export interface TestPackage {
@@ -322,6 +456,7 @@ export interface TestPackage {
   ToAgeInDays: number;
   Gender: string;
   PackageInClussion: PackageInclusion[];
+  testDescription: string;
 }
 
 export interface TestsPackageResponse {
@@ -424,14 +559,98 @@ export interface SymptomsSpecialities {
   name: string;
 }
 
+export interface ProceduresAndSymptomsParams {
+  text: string;
+}
+
+interface ProceduresAndSymptomsResponse {
+  hits?: number;
+  results: ProceduresAndSymptomsResult[];
+  status?: string;
+}
+
+export interface ProceduresAndSymptomsResult {
+  description?: string;
+  id?: string;
+  name: string;
+  speciality?: string;
+  tag: string;
+}
+
+export interface SpecialOfferWidgetsData {
+  widgetTitle: string;
+  widgetRank: string;
+}
+
+export interface SpecialOffersWidgetsApiResponse {
+  success: string;
+  msg: string;
+  data: SpecialOfferWidgetsData[]
+}
+
+export interface SpecialOffersCouponsData {
+  couponCode: string;
+  description: string;
+  startDate: number;
+  endDate: number;
+  header: string;
+  logo: string;
+  knowMore: string;
+  terms: string;
+  redirectUrl: string;
+  skus?: [] | null;
+}
+
+export interface SpecialOffersCouponsApiResponse {
+  errorCode: number;
+  errorMsg?: null;
+  errorType?: null;
+  response?: SpecialOffersCouponsData[];
+}
+
+export interface SpecialOffersCategoryApiResponse {
+  category_id: number;
+  title: string;
+  url_key: string;
+  image_url: string;
+  specialoffer_position: string;
+}
+
+export interface SpecialOffersBrandsApiResponse {
+  id: number;
+  title: string;
+  url_key: string;
+  image: string;
+  position: string;
+  promotional_message: string;
+  discount: string;
+  sorting_option: string;
+}
+
+export interface SpecialOffersBrandsProductsApiResponse {
+  filters?: [] | null;
+  sort_by?: [] | null;
+  products: MedicineProduct[];
+  product_count: number;
+  search_heading: string;
+}
+
+
+
 const config = AppConfig.Configuration;
 
 export const getMedicineDetailsApi = (
-  productSku: string
+  productSku: string,
+  axdcCode?: string,
+  pincode?: string
 ): Promise<AxiosResponse<MedicineProductDetailsResponse>> => {
   return Axios.post(
     `${config.MED_DETAIL[0]}/popcsrchpdp_api.php`,
-    { params: productSku },
+    {
+      params: productSku,
+      axdcCode: axdcCode || '',
+      pincode: pincode || '',
+    },
     {
       headers: {
         Authorization: config.MED_DETAIL[1],
@@ -440,31 +659,68 @@ export const getMedicineDetailsApi = (
   );
 };
 
-let cancelSearchMedicineApi: Canceler | undefined;
+export const getMedicineDetailsApiV2 = (
+  urlKey: string,
+  axdcCode?: string,
+  pincode?: string
+): Promise<AxiosResponse<MedicineProductDetailsResponse>> => {
+  return Axios.post(
+    `${config.MED_DETAIL[0]}/popcsrchpdpv2_api.php`,
+    {
+      params: urlKey,
+      axdcCode: axdcCode || '',
+      pincode: pincode || '',
+    },
+    {
+      headers: {
+        Authorization: config.MED_DETAIL[1],
+      },
+    }
+  );
+};
 
+let cancelSearchMedicineApi247: Canceler | undefined;
 export const searchMedicineApi = async (
   searchText: string,
-  pageId: number = 1
-): Promise<AxiosResponse<MedicineProductsResponse>> => {
+  pageId: number = 1,
+  sortBy: string | null,
+  filters: { [key: string]: string[] } | null,
+  axdcCode?: string | null,
+  pincode?: string | null
+): Promise<AxiosResponse<PopcSrchPrdApiResponse>> => {
   const CancelToken = Axios.CancelToken;
-  cancelSearchMedicineApi && cancelSearchMedicineApi();
-
+  cancelSearchMedicineApi247 && cancelSearchMedicineApi247();
   return Axios({
     url: config.MED_SEARCH[0],
     method: 'POST',
     data: {
       params: searchText,
       page_id: pageId,
+      sort_by: sortBy,
+      filters,
+      axdcCode: `${axdcCode}`,
+      pincode: `${pincode}`,
     },
     headers: {
       Authorization: config.MED_SEARCH[1],
     },
     cancelToken: new CancelToken((c) => {
-      // An executor function receives a cancel function as a parameter
-      cancelSearchMedicineApi = c;
+      cancelSearchMedicineApi247 = c;
     }),
   });
 };
+
+export const formatFilters = (filters: { [key: string]: string[] } | null) =>
+  filters &&
+  Object.keys(filters).reduce(
+    (prevVal, currKey) => ({
+      ...prevVal,
+      ...(filters[currKey]?.length
+        ? { [currKey]: filters[currKey]?.length === 1 ? filters[currKey][0] : filters[currKey] } // to convert to string if array of length 1
+        : {}),
+    }),
+    {}
+  );
 
 export const searchPickupStoresApi = async (
   pincode: string
@@ -516,19 +772,35 @@ export const getStoreInventoryApi = (
 export const pinCodeServiceabilityApi247 = (
   pincode: string
 ): Promise<AxiosResponse<{ response: boolean }>> => {
-  const url = `${config.UATTAT_CONFIG[0]}/serviceable?pincode=${pincode}`;
+  const url = `${config.SERVICEABLE_CONFIG[0]}/${pincode}`;
   return Axios.get(url, {
     headers: {
-      Authorization: config.UATTAT_CONFIG[1],
+      Authorization: config.SERVICEABLE_CONFIG[1],
     },
   });
 };
+
+let cancelAvailabilityApi247: Canceler | undefined;
 
 export const availabilityApi247 = (
   pincode: string,
   sku: string
 ): Promise<AxiosResponse<GetAvailabilityResponse247>> => {
+  const CancelToken = Axios.CancelToken;
+  cancelAvailabilityApi247 && cancelAvailabilityApi247();
   const url = `${config.UATTAT_CONFIG[0]}/availability?sku=${sku}&pincode=${pincode}`;
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.UATTAT_CONFIG[1],
+    },
+    cancelToken: new CancelToken((c) => {
+      cancelAvailabilityApi247 = c;
+    }),
+  });
+};
+
+export const nonCartTatApi247 = (pincode: string): Promise<AxiosResponse<>> => {
+  const url = `${config.UATTAT_CONFIG[0]}/noncarttat?pin=${pincode}`;
   return Axios.get(url, {
     headers: {
       Authorization: config.UATTAT_CONFIG[1],
@@ -566,57 +838,138 @@ export const trackTagalysEvent = (
   });
 };
 
-let cancelSearchSuggestionsApi: Canceler | undefined;
-
+let cancelGetMedicineSearchSuggestionsApi: Canceler | undefined;
 export const getMedicineSearchSuggestionsApi = (
-  searchText: string
+  searchText: string,
+  axdcCode?: string | null,
+  pincode?: string | null
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
   const CancelToken = Axios.CancelToken;
-  cancelSearchSuggestionsApi && cancelSearchSuggestionsApi();
-
+  cancelGetMedicineSearchSuggestionsApi && cancelGetMedicineSearchSuggestionsApi();
   return Axios({
     url: config.MED_SEARCH_SUGGESTION[0],
     method: 'POST',
     data: {
       params: searchText,
+      axdcCode: `${axdcCode}`,
+      pincode: `${pincode}`,
     },
     headers: {
       Authorization: config.MED_SEARCH_SUGGESTION[1],
     },
     cancelToken: new CancelToken((c) => {
-      // An executor function receives a cancel function as a parameter
-      cancelSearchSuggestionsApi = c;
+      cancelGetMedicineSearchSuggestionsApi = c;
     }),
   });
 };
 
 export const getProductsByCategoryApi = (
   categoryId: string,
-  pageId: number = 1
-): Promise<AxiosResponse<MedicineProductsResponse>> => {
+  pageId: number = 1,
+  sortBy: string | null,
+  filters: { [key: string]: string[] } | null,
+  axdcCode?: string | null,
+  pincode?: string | null
+): Promise<AxiosResponse<CategoryProductsApiResponse>> => {
   return Axios.post(
-    `${config.PRODUCTS_BY_CATEGORY[0]}?category_id=${categoryId}&page_id=${pageId}&type=category`,
+    config.PRODUCTS_BY_CATEGORY[0],
     {
-      category_id: categoryId,
+      category_id: `${categoryId}`,
       page_id: pageId,
+      sort_by: sortBy,
+      filters,
+      axdcCode: `${axdcCode}`,
+      pincode: `${pincode}`,
     },
     {
       headers: {
         Authorization: config.PRODUCTS_BY_CATEGORY[1],
       },
+      transformResponse: (_reponse: any) => {
+        const reponse = JSON.parse(_reponse || '{}');
+
+        const modifiedFilters = reponse?.filters?.map((f: any) => {
+          const modifiedValues = f?.values?.map((item: any) => ({
+            id: item.value,
+            name: item.label,
+            child: item.child,
+          }));
+          return { ...f, values: modifiedValues };
+        });
+
+        const modifiedSortBy = reponse?.sort_by?.values?.map((v: any) => {
+          return { ...v, id: v.value, name: v.label };
+        });
+
+        return { ...reponse, filters: modifiedFilters || [], sort_by: modifiedSortBy || [] };
+      },
     }
   );
 };
 
-export const getMedicinePageProducts = (): Promise<AxiosResponse<MedicinePageAPiResponse>> => {
-  return Axios.post(
-    `${config.MEDICINE_PAGE[0]}`,
-    {},
+export const getMedicinePageProducts = (
+  axdcCode?: string | null,
+  pincode?: string | null
+): Promise<AxiosResponse<MedicinePageAPiResponse>> => {
+  let url = `${config.MEDICINE_PAGE[0]}`;
+  if (axdcCode) {
+    url += `&axdcCode=${axdcCode}`;
+  }
+  if (pincode) {
+    url += `&pincode=${pincode}`;
+  }
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.MEDICINE_PAGE[1],
+    },
+  });
+};
+
+export const getSpecialOffersPageWidgets = (): Promise<AxiosResponse<SpecialOffersWidgetsApiResponse>> => {
+  const url = `${config.SPECIAL_OFFERS_PAGE_WIDGETS[0]}`;
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.SPECIAL_OFFERS_PAGE_WIDGETS[1],
+    },
+  });
+};
+
+export const getSpecialOffersPageCoupons = (): Promise<AxiosResponse<SpecialOffersCouponsApiResponse>> => {
+  const url = `${config.SPECIAL_OFFERS_PAGE_COUPONS[0]}`;
+  return Axios.get(url, {
+    headers: {},
+  });
+};
+
+export const getSpecialOffersPageCategory = (): Promise<AxiosResponse<SpecialOffersCategoryApiResponse>> => {
+  const url = `${config.SPECIAL_OFFERS_CATEGORY[0]}`;
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.SPECIAL_OFFERS_CATEGORY[1],
+    },
+  });
+};
+
+export const getSpecialOffersPageBrands = (): Promise<AxiosResponse<SpecialOffersBrandsApiResponse>> => {
+  const url = `${config.SPECIAL_OFFERS_BRANDS[0]}`;
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.SPECIAL_OFFERS_BRANDS[1],
+    },
+  });
+};
+
+export const getSpecialOffersPageBrandsProducts = (activeBrand: string, discount_percentage: object) 
+:Promise<AxiosResponse<SpecialOffersBrandsProductsApiResponse>> => {
+  const url = `${config.SPECIAL_OFFERS_BRANDS_PRODUCTS[0]}`;
+  return Axios.post(url,
     {
-      headers: {
-        Authorization: config.MEDICINE_PAGE[1],
-      },
-    }
+      params: activeBrand,
+      filter: { discount_percentage}
+    },
+    {headers: {
+      Authorization: config.SPECIAL_OFFERS_BRANDS_PRODUCTS[1],
+    }},
   );
 };
 
@@ -647,35 +1000,23 @@ export const getPlaceInfoByPlaceId = (
 export const getLatLongFromAddress = (
   address: string
 ): Promise<AxiosResponse<PlacesApiResponse>> => {
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${googlePlacesApiKey}`;
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${googlePlacesApiKey}&components=country:IN`;
   return Axios.get(url);
 };
-
-// let cancelAutoCompletePlaceSearchApi: Canceler | undefined;
 
 export const autoCompletePlaceSearch = (
   searchText: string
 ): Promise<AxiosResponse<AutoCompleteApiResponse>> => {
-  // const CancelToken = Axios.CancelToken;
-  // cancelAutoCompletePlaceSearchApi && cancelAutoCompletePlaceSearchApi();
-
   const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}&components=country:in&key=${googlePlacesApiKey}`;
-  return Axios.get(url, {
-    // cancelToken: new CancelToken((c) => {
-    //   // An executor function receives a cancel function as a parameter
-    //   cancelSearchSuggestionsApi = c;
-    // }),
-  });
+  return Axios.get(url, {});
 };
 
 let cancelGetDeliveryTAT247: Canceler | undefined;
 
-export const getDeliveryTAT247 = (
-  params: TatApiInput247
-): Promise<AxiosResponse<GetTatResponse247>> => {
+export const getDeliveryTAT247 = (params: TatApiInput247): Promise<AxiosResponse<any>> => {
   const CancelToken = Axios.CancelToken;
   cancelGetDeliveryTAT247 && cancelGetDeliveryTAT247();
-  const url = `${config.UATTAT_CONFIG[0]}/tat`;
+  const url = `${config.UATTAT_CONFIG[0]}/v2/tat`;
   return Axios.post(url, params, {
     headers: {
       Authorization: config.UATTAT_CONFIG[1],
@@ -684,6 +1025,16 @@ export const getDeliveryTAT247 = (
     cancelToken: new CancelToken((c) => {
       cancelGetDeliveryTAT247 = c;
     }),
+  });
+};
+
+export const getDeliveryTAT = (params: TatApiInput): Promise<AxiosResponse<any>> => {
+  const url = `${config.UATTAT_CONFIG[0]}/tat`;
+  return Axios.post(url, params, {
+    headers: {
+      Authorization: config.UATTAT_CONFIG[1],
+    },
+    timeout: config.TAT_API_TIMEOUT_IN_SEC * 1000,
   });
 };
 
@@ -749,7 +1100,6 @@ export const GenerateTokenforCM = (
   phoneNumber: string
 ): Promise<AxiosResponse<any>> => {
   const url = `${config.CONDITIONAL_MANAGENET_BASE_URL}/getCmToken?appUserId=${uhid}&userName=${userName}&gender=${gender}&emailId=${emailId}&phoneNumber=${phoneNumber}`;
-  console.log('GenerateTokenforCMurl', url);
   return Axios.get(url);
 };
 
@@ -800,28 +1150,39 @@ export const getTxnStatus = (orderID: string): Promise<AxiosResponse<any>> => {
   return Axios.post(url, { orderID: orderID });
 };
 
-export const fetchConsultCoupons = (packageId: string): Promise<AxiosResponse<any>> => {
+export const fetchConsultCoupons = (data: any): Promise<AxiosResponse<any>> => {
+  const { mobile, packageId, email, type } = data;
   const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
-  let url = `${baseUrl}/frontend`;
+  let url = `${baseUrl}/frontend?mobile=${mobile}&email=${email}&type=${type}`;
   if (!!packageId) {
-    url += `?packageId=${packageId}`;
+    url += `&packageId=${packageId}`;
   }
   return Axios.get(url);
 };
 
 export const validateConsultCoupon = (data: any): Promise<AxiosResponse<any>> => {
-  const { mobile, packageId, email } = data;
+  const { mobile, email } = data;
   const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
   let url = `${baseUrl}/validate?mobile=${mobile}&email=${email}`;
-  if (!!packageId) {
-    url += `&packageId=${packageId}`;
-  }
   return Axios.post(url, data);
 };
 
-export const userSpecificCoupon = (mobileNumber: string): Promise<AxiosResponse<any>> => {
+export const fetchAutoApplyCoupon = (data: any): Promise<AxiosResponse<any>> => {
+  const { mobile, packageId, email, type } = data;
   const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
-  const url = `${baseUrl}/availableCoupons?mobile=${mobileNumber}`;
+  let url = `${baseUrl}/autoapply?mobile=${mobile}&email=${email}&type=${type}`;
+  if (!!packageId) {
+    url += `&packageId=${packageId}`;
+  }  
+  return Axios.get(url);
+};
+
+export const userSpecificCoupon = (
+  mobileNumber: string,
+  type: string
+): Promise<AxiosResponse<any>> => {
+  const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
+  const url = `${baseUrl}/availableCoupons?mobile=${mobileNumber}&type=${type}`;
   return Axios.get(url);
 };
 
@@ -857,5 +1218,190 @@ export const getSymptomsTrackerResult = (
 ): Promise<AxiosResponse<SymptomsTrackerResultResponse>> => {
   const baseUrl = AppConfig.Configuration.SYMPTOM_TRACKER;
   const url = `${baseUrl}/${chatId}/specialities`;
+  return Axios.get(url);
+};
+
+export const getMedicineCategoryIds = (
+  skuKey: string,
+  level: string
+): Promise<AxiosResponse<any>> => {
+  return Axios({
+    url: config.GET_SKU[0],
+    method: 'POST',
+    data: {
+      params: skuKey,
+      level,
+    },
+    headers: {
+      Authorization: config.GET_SKU[1],
+    },
+  });
+};
+
+export const searchPHRApi = (
+  searchText: string,
+  uhid: string,
+  healthRecordType: string = ''
+): Promise<AxiosResponse<any>> => {
+  const searchPHRUrl = `${AppConfig.Configuration.PHR_BASE_URL}/apollo/healthrecord/search?accessToken=KeyOf247&uhid=${uhid}&healthrecordType=${healthRecordType}&searchTerm=${searchText}`;
+  return Axios.get(searchPHRUrl);
+};
+
+export const searchPHRApiWithAuthToken = (
+  searchText: string,
+  authToken: string,
+  healthRecordType: string = ''
+): Promise<AxiosResponse<any>> => {
+  const searchPHRUrlWithAuthToke = `${AppConfig.Configuration.PHR_BASE_URL}/searchhealthrecord?authToken=${authToken}&healthrecordType=${healthRecordType}&searchTerm=${searchText}`;
+  return Axios.get(searchPHRUrlWithAuthToke);
+};
+
+export const getCorporateMembershipData = (planId: string): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const corporateCmsUrl = `${baseurl}/corporate-package-benefit/${planId}`;
+  return Axios.get(corporateCmsUrl, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};
+
+export const getLandingPageBanners = (
+  pageName: string,
+  cityId: number
+): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getBanners = `${baseurl}/banner/${pageName}?city=${cityId}`;
+  return Axios.get(getBanners, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};
+
+export const getDiagnosticsSearchResults = (
+  pageName: string,
+  keyword: string,
+  cityId: number
+): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getSearchResults = `${baseurl}/${pageName}/item-search?keyword=${keyword}&city=${cityId}`;
+  return Axios.get(getSearchResults, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};
+export const getDiagnosticsPopularResults = (
+  pageName: string,
+  cityId: number
+): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getSearchResults = `${baseurl}/${pageName}/popular-test-search?city=${cityId}`;
+  return Axios.get(getSearchResults, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};
+
+export const getDiagnosticHomePageWidgets = (pageName: string,  cityId: number): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getWidgets = `${baseurl}/${pageName}/getwidgets?city=${cityId}`;
+  return Axios.get(getWidgets, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};
+
+export const searchProceduresAndSymptoms = (
+  params: ProceduresAndSymptomsParams
+): Promise<AxiosResponse<ProceduresAndSymptomsResponse>> => {
+  const url = AppConfig.Configuration.PROCEDURE_SYMPTOMS_SEARCH_URL;
+  return Axios.get(url, {
+    params: params,
+  });
+};
+
+export const getDiagnosticTestDetails = (
+  pageName: string,
+  itemId: number,
+  itemName: string,
+  cityId: number
+): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getDetails = `${baseurl}/${pageName}/${itemId}?ctag=${itemName}&cityId=${cityId}`;
+  return Axios.get(getDetails, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};
+
+export const getDiagnosticListingWidget = (
+  pageName: string,
+  widgetName: string
+): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getWidgets = `${baseurl}/${pageName}/${widgetName}`;
+  return Axios.get(getWidgets, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};
+
+export const GetAllUHIDSForNumber_CM = (phoneNumber: string): Promise<AxiosResponse<any>> => {
+  const url = `${config.CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL}/askapollo/user/uhids?phoneNumber=${phoneNumber}`;
+  console.log('GetAllUHIDSForNumber_CM_Url', url);
+  return Axios.get(url);
+};
+
+export const GenrateVitalsToken_CM = (
+  appId: string,
+  userId: string
+): Promise<AxiosResponse<any>> => {
+  const url = `${config.CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL}/vitauser/vitatoken?appId=${appId}&appUserId=${userId}`;
+  console.log('GetAllUHIDSForNumber_CM_Url', url);
+  return Axios.get(url);
+};
+
+export const getDiagnosticCartItemReportGenDetails = (
+  itemIds: string,
+  cityId: number
+): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getReportGenDetails = `${baseurl}/diagnostic/cart-items?itemId=${itemIds}&cityId=${cityId}`;
+  return Axios.get(getReportGenDetails, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};
+
+export const getDiagnosticDoctorPrescriptionResults = (
+  itemNames: string,
+  cityId?: number
+): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getSearchResults = `${baseurl}/diagnostic/diagnosticdoctoritemsearch`;
+  return Axios.post(
+    getSearchResults,
+    {
+      keyword: itemNames,
+    },
+    {
+      headers: {
+        Authorization: config.DRUPAL_CONFIG[1],
+      },
+    }
+  );
+};
+
+export const getTatStaticContent = (
+): Promise<AxiosResponse<any>> => {
+  const baseUrl = config.assetsBaseurl;
+  const url = `${baseUrl}/tatCtaStaticContent.json`;
   return Axios.get(url);
 };

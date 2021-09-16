@@ -1,4 +1,9 @@
-import { BackArrow, BackArrowWhite, Remove } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  BackArrow,
+  BackArrowWhite,
+  Remove,
+  HomeIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import React from 'react';
 import {
   StyleProp,
@@ -51,6 +56,7 @@ type leftText = {
 };
 
 type rightText = {
+  style?: StyleProp<TextStyle>;
   isBack?: boolean;
   title?: string;
   onPress?: TextProps['onPress'];
@@ -62,7 +68,7 @@ export interface HeaderProps {
   title?: string;
   titleStyle?: StyleProp<TextStyle>;
   titleComponent?: React.ReactNode;
-  leftIcon?: 'backArrow' | 'close' | 'backArrowWhite' | 'logo';
+  leftIcon?: 'backArrow' | 'close' | 'backArrowWhite' | 'logo' | 'homeIcon';
   rightIcon?: string;
   rightComponent?: React.ReactNode;
   container?: StyleProp<ViewStyle>;
@@ -106,6 +112,7 @@ export const Header: React.FC<HeaderProps> = (props) => {
             {leftIcon === 'backArrow' && <BackArrow />}
             {leftIcon === 'close' && <Remove />}
             {leftIcon === 'backArrowWhite' && <BackArrowWhite />}
+            {leftIcon === 'homeIcon' && <HomeIcon />}
             {leftIcon === 'logo' && (
               <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
             )}
@@ -127,7 +134,7 @@ export const Header: React.FC<HeaderProps> = (props) => {
       </View>
       <View style={{ flexGrow: 1, alignItems: 'flex-end' }}>
         {rightText && (
-          <Text style={styles.rightTextStyle} onPress={rightText.onPress}>
+          <Text style={[styles.rightTextStyle, rightText.style]} onPress={rightText.onPress}>
             {rightText.title}
           </Text>
         )}

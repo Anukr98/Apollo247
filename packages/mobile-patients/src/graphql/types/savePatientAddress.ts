@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { PatientAddressInput, PATIENT_ADDRESS_TYPE } from "./globalTypes";
@@ -26,6 +27,7 @@ export interface savePatientAddress_savePatientAddress_patientAddress {
   longitude: number | null;
   stateCode: string | null;
   name: string | null;
+  defaultAddress: boolean | null;
 }
 
 export interface savePatientAddress_savePatientAddress {

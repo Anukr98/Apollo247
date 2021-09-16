@@ -58,6 +58,8 @@ import {
   getNetStatus,
   postWebEngageEvent,
   statusBarHeight,
+  navigateToScreenWithEmptyStack,
+  postAppointmentCleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -78,9 +80,11 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { NavigationScreenProps } from 'react-navigation';
+import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { CancelConsultation } from '../../strings/AppConfig';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const OTHER_REASON = string.ReasonFor_Cancel_Consultation.otherReasons;
 const { width, height } = Dimensions.get('window');
@@ -254,13 +258,11 @@ type rescheduleType = {
 export interface AppointmentOnlineDetailsProps extends NavigationScreenProps {}
 
 export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> = (props) => {
-  const data: getPatientAllAppointments_getPatientAllAppointments_appointments = props.navigation
-    .state.params!.data;
+  const data: getPatientAllAppointments_getPatientAllAppointments_activeAppointments = props
+    .navigation.state.params!.data;
   const doctorDetails = data.doctorInfo!;
   const movedFrom = props.navigation.state.params!.from;
   const cancellationReasons = CancelConsultation.reason;
-  console.log('******DATA*********', { data, doctorDetails });
-
   const fifteenMinutesLater = new Date();
   const dateIsAfter = moment(data.appointmentDateTime).isAfter(
     moment(fifteenMinutesLater.setMinutes(fifteenMinutesLater.getMinutes() + 15))
@@ -276,7 +278,6 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [resheduleoverlay, setResheduleoverlay] = useState<boolean>(false);
   const [appointmentTime, setAppointmentTime] = useState<string>('');
-  const [rescheduleApICalled, setRescheduleApICalled] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [belowThree, setBelowThree] = useState<boolean>(false);
   const [newRescheduleCount, setNewRescheduleCount] = useState<any>();
@@ -331,14 +332,10 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const getSecretaryData = () => {
     getSecretaryDetailsByDoctor(client, doctorDetails.id)
       .then((apiResponse: any) => {
-        console.log('apiResponse', apiResponse);
         const secretaryDetails = g(apiResponse, 'data', 'data', 'getSecretaryDetailsByDoctorId');
         setSecretaryData(secretaryDetails);
-        console.log('apiResponse');
       })
-      .catch((error) => {
-        console.log('error', error);
-      });
+      .catch((error) => {});
   };
 
   const NextAvailableSlotAPI = (isAwaitingReschedule?: boolean) => {
@@ -423,6 +420,12 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       })
       .then(() => {
         postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER);
+        postAppointmentCleverTapEvents(
+          CleverTapEventName.CONSULT_CANCELLED_BY_PATIENT,
+          data,
+          currentPatient,
+          secretaryData
+        );
         setshowSpinner(false);
         showAppointmentCancellSuccessAlert();
       })
@@ -452,13 +455,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       unDismissable: true,
       onPressOk: () => {
         hideAphAlert!();
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-          })
-        );
+        navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar);
       },
     });
   };
@@ -483,7 +480,6 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
     };
 
     setshowSpinner(true);
-    setRescheduleApICalled(true);
     client
       .mutate<bookRescheduleAppointment, bookRescheduleAppointmentVariables>({
         mutation: BOOK_APPOINTMENT_RESCHEDULE,
@@ -492,30 +488,20 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
         },
         fetchPolicy: 'no-cache',
       })
-      .then((data: any) => {
+      .then((_data: any) => {
         postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER);
-        setshowSpinner(false);
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [
-              NavigationActions.navigate({
-                routeName: AppRoutes.TabBar,
-                params: {
-                  Data:
-                    data.data &&
-                    data.data.bookRescheduleAppointment &&
-                    data.data.bookRescheduleAppointment.appointmentDetails,
-                  DoctorName:
-                    props.navigation.state.params!.data &&
-                    props.navigation.state.params!.data.doctorInfo &&
-                    props.navigation.state.params!.data.doctorInfo.fullName,
-                },
-              }),
-            ],
-          })
+        postAppointmentCleverTapEvents(
+          CleverTapEventName.CONSULT_RESCHEDULED_BY_THE_PATIENT,
+          data,
+          currentPatient,
+          secretaryData
         );
+        setshowSpinner(false);
+        const params = {
+          Data: _data?.data?.bookRescheduleAppointment?.appointmentDetails,
+          DoctorName: props.navigation.state.params?.data?.doctorInfo?.fullName,
+        };
+        navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar, params);
       })
       .catch((e) => {
         CommonBugFender('AppointmentOnlineDetails_rescheduleAPI', e);
@@ -818,7 +804,9 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                   <Text style={styles.descriptionStyle}>
                     {g(data, 'appointmentPayments', '0' as any, 'amountPaid') ===
                     Number(doctorDetails.onlineConsultationFees) ? (
-                      <Text>{`Rs. ${doctorDetails.onlineConsultationFees}`}</Text>
+                      <Text>{`${string.common.Rs} ${convertNumberToDecimal(
+                        Number(doctorDetails?.onlineConsultationFees)
+                      )}`}</Text>
                     ) : (
                       <>
                         <Text
@@ -827,9 +815,17 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                             textDecorationStyle: 'solid',
                           }}
                         >
-                          {`(Rs. ${doctorDetails.onlineConsultationFees})`}
+                          {`(${string.common.Rs} ${convertNumberToDecimal(
+                            Number(doctorDetails?.onlineConsultationFees)
+                          )})`}
                         </Text>
-                        <Text> Rs. {g(data, 'appointmentPayments', '0' as any, 'amountPaid')}</Text>
+                        <Text>
+                          {' '}
+                          {string.common.Rs}{' '}
+                          {convertNumberToDecimal(
+                            g(data, 'appointmentPayments', '0' as any, 'amountPaid') || null
+                          )}
+                        </Text>
                       </>
                     )}
                   </Text>
@@ -867,6 +863,12 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
               }}
               onPress={() => {
                 postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
+                postAppointmentCleverTapEvents(
+                  CleverTapEventName.CONSULT_RESCHEDULE_CLICKED,
+                  data,
+                  currentPatient,
+                  secretaryData
+                );
                 if (data.status == STATUS.COMPLETED) {
                   showAphAlert!({
                     title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
@@ -892,8 +894,15 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                 title={data.isConsultStarted ? 'CONTINUE CONSULTATION' : 'START CONSULTATION'}
                 style={styles.startConsultText}
                 onPress={() => {
-                  data.isConsultStarted &&
+                  if (data?.isConsultStarted) {
                     postAppointmentWEGEvents(WebEngageEventName.CONTINUE_CONSULTATION_CLICKED);
+                    postAppointmentCleverTapEvents(
+                      CleverTapEventName.CONSULT_CONTINUE_CONSULTATION_CLICKED,
+                      data,
+                      currentPatient,
+                      secretaryData
+                    );
+                  }
                   CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'START_CONSULTATION_CLICKED');
                   props.navigation.navigate(AppRoutes.ChatRoom, {
                     data: data,
@@ -991,6 +1000,12 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                   style={styles.gotItStyles}
                   onPress={() => {
                     postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
+                    postAppointmentCleverTapEvents(
+                      CleverTapEventName.CONSULT_RESCHEDULE_CLICKED,
+                      data,
+                      currentPatient,
+                      secretaryData
+                    );
                     CommonLogEvent(
                       AppRoutes.AppointmentOnlineDetails,
                       'RESCHEDULE_INSTEAD_Clicked'
@@ -1007,6 +1022,12 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                   style={styles.gotItStyles}
                   onPress={() => {
                     postAppointmentWEGEvents(WebEngageEventName.CANCEL_CONSULTATION_CLICKED);
+                    postAppointmentCleverTapEvents(
+                      CleverTapEventName.CONSULT_CANCEL_CLICKED_BY_PATIENT,
+                      data,
+                      currentPatient,
+                      secretaryData
+                    );
                     CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CANCEL CONSULT_CLICKED');
                     setShowCancelPopup(false);
                     setCancelVisible(true); //to show the reasons for cancelling the consultation

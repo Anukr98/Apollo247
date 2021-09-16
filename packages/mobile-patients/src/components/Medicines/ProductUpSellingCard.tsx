@@ -5,6 +5,7 @@ import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   getDiscountPercentage,
   productsThumbnailUrl,
+  calculateCashbackForItem,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
@@ -17,6 +18,9 @@ import {
   View,
 } from 'react-native';
 import { Divider, Image } from 'react-native-elements';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 
 export interface Props extends MedicineProduct {
   onPress: () => void;
@@ -34,6 +38,8 @@ export const ProductUpSellingCard: React.FC<Props> = ({
   price,
   special_price,
   thumbnail,
+  subcategory,
+  sku,
   is_in_stock,
   sell_online,
   is_prescription_required,
@@ -45,9 +51,19 @@ export const ProductUpSellingCard: React.FC<Props> = ({
   onPressNotify,
   onPressAddQty,
   onPressSubtractQty,
-  onCartScreen,
+  type_id,
 }) => {
   const isPrescriptionRequired = is_prescription_required == 1;
+
+  const renderCareCashback = () => {
+    const finalPrice = Number(special_price) || price;
+    const cashback = calculateCashbackForItem(Number(finalPrice), type_id, subcategory, sku);
+    if (!!cashback && type_id) {
+      return <CareCashbackBanner bannerText={`extra ${string.common.Rs}${cashback} cashback`} />;
+    } else {
+      return <></>;
+    }
+  };
 
   const renderImageAndTitle = () => (
     <View style={styles.imageAndTitle}>
@@ -67,21 +83,24 @@ export const ProductUpSellingCard: React.FC<Props> = ({
 
   const renderPriceAndAddToCartButton = () => {
     const discount = getDiscountPercentage(price, special_price);
+    const mrp = 'MRP  ';
     return (
       <View style={styles.priceAndAddToCartContainer}>
+        {!!type_id && renderCareCashback()}
         {!!discount && (
-          <View style={{ flexDirection: 'row' }}>
-            <Text style={{ ...styles.priceStrikeOff }}>
-              {onCartScreen ? `(₹${price})` : `(Rs. ${price})`}
+          <Text>
+            <Text style={styles.mrp}>{mrp}</Text>
+            <Text style={styles.priceStrikeOff}>
+              ({string.common.Rs}
+              {convertNumberToDecimal(price)})
             </Text>
-            <Text
-              style={{ ...styles.discountPercentage, color: onCartScreen ? '#00B38E' : '#01475B' }}
-            >{`  ${discount}% off`}</Text>
-          </View>
+            <Text style={styles.discountPercentage}>{`  ${discount}% off`}</Text>
+          </Text>
         )}
         <View style={[styles.priceAndAddToCartButton, { marginTop: !!discount ? 0 : 12 }]}>
-          <Text style={styles.price}>
-            {(onCartScreen ? '₹' : 'Rs.') + (discount ? special_price : price)}
+          <Text>
+            {!discount && <Text style={styles.price}>{mrp}</Text>}
+            <Text style={styles.price}>{`₹${discount ? special_price : price}`}</Text>
           </Text>
           {sell_online
             ? is_in_stock
@@ -131,7 +150,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     width: Dimensions.get('window').width * 0.55,
   },
-  imageAndTitle: { flexDirection: 'row', alignItems: 'center' },
+  imageAndTitle: { flexDirection: 'row', alignItems: 'center', flex: 1 },
   image: {
     height: 50,
     width: 50,
@@ -148,13 +167,17 @@ const styles = StyleSheet.create({
   },
   priceAndAddToCartContainer: {
     justifyContent: 'center',
-    height: 50,
+    height: 60,
   },
   priceAndAddToCartButton: {
     flex: 1,
     justifyContent: 'space-between',
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  mrp: {
+    ...theme.viewStyles.text('B', 11, '#01475B', 1, 24),
+    flex: 1,
   },
   price: {
     ...theme.viewStyles.text('B', 14, '#01475B', 1, 24),

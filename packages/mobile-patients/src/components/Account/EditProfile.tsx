@@ -1,5 +1,4 @@
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -8,6 +7,15 @@ import {
   EditIcon,
   EditProfilePlaceHolder,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  postWebEngageEvent,
+  getAge,
+  g,
+  getUserType,
+  getCleverTapCircleMemberValues,
+  postCleverTapEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -62,6 +70,9 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { getRelations } from '../../helpers/helperFunctions';
 import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
+import { useShoppingCart } from '../ShoppingCartProvider';
+import { getUniqueId } from 'react-native-device-info';
+import { CleverTapEventName } from '../../helpers/CleverTapEvents';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -262,10 +273,6 @@ const GenderOptions: genderOptions[] = [
     name: Gender.FEMALE,
     title: 'Female',
   },
-  // {
-  //   name: Gender.OTHER,
-  //   title: 'Other',
-  // },
 ];
 
 type RelationArray = {
@@ -313,6 +320,7 @@ export interface EditProfileProps extends NavigationScreenProps {
   isEdit: boolean;
   isPoptype?: boolean;
   screenName?: string;
+  isForVaccination: boolean;
 }
 {
 }
@@ -324,7 +332,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const relationArray: RelationArray[] = getRelations() || selectedGenderRelationArray;
   const isEdit = props.navigation.getParam('isEdit');
   const screenName = props.navigation.getParam('screenName');
-  const isPoptype = props.navigation.getParam('isPoptype');
   const { width, height } = Dimensions.get('window');
   const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
@@ -346,7 +353,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const [relation, setRelation] = useState<RelationArray>();
   const [email, setEmail] = useState<string>('');
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
-
+  const { pharmacyCircleAttributes } = useShoppingCart();
   const { isIphoneX } = DeviceHelper();
   const client = useApolloClient();
 
@@ -389,28 +396,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     relation.key === profileData.relation &&
     email === profileData.emailAddress &&
     photoUrl === profileData.photoUrl;
-
-  useEffect(() => {
-    const _didFocus = props.navigation.addListener('didFocus', (payload) => {
-      BackHandler.addEventListener('hardwareBackPress', handleBack);
-    });
-
-    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-      return () => {
-        _didFocus && _didFocus.remove();
-        _willBlur && _willBlur.remove();
-      };
-    });
-  }, []);
-
-  const handleBack = async () => {
-    BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    isEditProfile
-      ? props.navigation.goBack()
-      : props.navigation.navigate(AppRoutes.ConsultRoom, {});
-    return false;
-  };
 
   useEffect(() => {
     if (profileData) {
@@ -585,6 +570,13 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     }
   }, [gender]);
 
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', _onPressLeftIcon);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', _onPressLeftIcon);
+    };
+  }, []);
+
   const deleteConfirmation = () => {
     showAphAlert!({
       title: 'Hi!',
@@ -731,13 +723,24 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       })
       .then((data) => {
         setLoading && setLoading(false);
-        getPatientApiCall();
+        getPatientApiCall().then(() => {
+          if (screenName === string.consult) {
+            const { navigation } = props;
+            navigation.goBack();
+          }
+        });
         if (screenName === string.symptomChecker.symptomTracker) {
           const { navigation } = props;
           navigation.goBack();
           navigation.state.params!.goBackCallback(data.data!.addNewProfile.patient);
         } else {
           props.navigation.goBack();
+          props.navigation.state.params?.onNewProfileAdded &&
+            props.navigation.state.params?.onNewProfileAdded({
+              added: true,
+              id: data.data!.addNewProfile?.patient?.id,
+              profileData: data?.data?.addNewProfile?.patient,
+            });
         }
         selectUser(data.data!.addNewProfile.patient);
       })
@@ -754,6 +757,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const renderUploadSelection = () => {
     return (
       <UploadPrescriprionPopup
+        type={'Non-cart'}
         isVisible={uploadVisible}
         isProfileImage={true}
         heading="Upload Profile Picture"
@@ -766,7 +770,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           setUploadVisible(false);
         }}
         onResponse={(type, response) => {
-          console.log('profile data', type, response);
           response.forEach((item) =>
             client
               .mutate<uploadFile, uploadFileVariables>({
@@ -778,7 +781,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
                 },
               })
               .then((data) => {
-                console.log(data);
                 data!.data!.uploadFile && setPhotoUrl(data!.data!.uploadFile!.filePath!);
                 setUploadVisible(false);
               })
@@ -792,6 +794,13 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     );
   };
 
+  const _onPressLeftIcon = () => {
+    props.navigation.goBack();
+    props.navigation.state.params?.onPressBackButton &&
+      props.navigation.state.params?.onPressBackButton();
+    return true;
+  };
+
   const renderHeader = () => {
     return (
       <Header
@@ -802,11 +811,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         leftIcon={'backArrow'}
         title={isEditProfile ? 'EDIT PROFILE' : 'ADD NEW FAMILY MEMBER'}
         rightComponent={null}
-        onPressLeftIcon={() =>
-          isEditProfile
-            ? props.navigation.goBack()
-            : props.navigation.navigate(AppRoutes.ConsultRoom, {})
-        }
+        onPressLeftIcon={_onPressLeftIcon}
       />
     );
   };
@@ -1029,6 +1034,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
             onPress={() => {
               setNewProfileConfirmPopupVisible(false);
               newProfile();
+              cleverTapEventForClickOnConfirm();
             }}
             title={'CONFIRM'}
             style={styles.bottomButtonStyle}
@@ -1082,7 +1088,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       allCurrentPatients!.map((item) => {
         return item.relation === Relation.ME;
       });
-    console.log(presentRelation, 'presentRelation');
 
     const isValid = isSelfRelation!.find((i) => i === true) === undefined;
 
@@ -1203,11 +1208,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       <StickyBottomComponent style={styles.stickyBottomStyle} defaultBG>
         <View style={styles.bottonButtonContainer}>
           <Button
-            onPress={() => {
-              isEditProfile
-                ? props.navigation.goBack()
-                : props.navigation.navigate(AppRoutes.ConsultRoom, {});
-            }}
+            onPress={_onPressLeftIcon}
             title={'CANCEL'}
             style={styles.bottomWhiteButtonStyle}
             titleTextStyle={styles.bottomWhiteButtonTextStyle}
@@ -1235,7 +1236,12 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
                 if (validationMessage) {
                   showAphAlert && showAphAlert({ title: 'Alert!', description: validationMessage });
                 } else {
+                  cleverTapEventForClickOnSave();
                   isEditProfile ? updateUserProfile() : setNewProfileConfirmPopupVisible(true);
+                }
+
+                if (props.navigation.state.params?.isForVaccination) {
+                  sendVaccinationAddProfileEvent();
                 }
               }}
               title={'SAVE'}
@@ -1245,6 +1251,68 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         </View>
       </StickyBottomComponent>
     );
+  };
+
+  const cleverTapEventForClickOnSave = () => {
+    let eventAttributes = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
+      'Nav src': 'Profile Picture',
+      'Circle Member':
+        getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+        undefined,
+      'Device Id': getUniqueId(),
+    };
+    postCleverTapEvent(CleverTapEventName.SAVE_MEMBER_PROFILE_CLICKED, eventAttributes);
+  };
+
+  const cleverTapEventForClickOnConfirm = () => {
+    let eventAttributes = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
+      'Nav src': 'Profile Picture',
+      'Circle Member':
+        getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+        undefined,
+      'Device Id': getUniqueId(),
+    };
+    postCleverTapEvent(CleverTapEventName.CONFIRM_MEMBER_PROFILE_CLICKED, eventAttributes);
+  };
+
+  const sendVaccinationAddProfileEvent = () => {
+    if (isEditProfile) {
+      return;
+    }
+
+    try {
+      const eventAttributes = {
+        'Patient ID': currentPatient?.id || '',
+        'Patient First Name': currentPatient?.firstName.trim(),
+        'Patient Last Name': currentPatient?.lastName.trim(),
+        'Patient UHID': currentPatient?.uhid,
+        'Patient Number': currentPatient?.mobileNumber,
+        'Patient Gender': currentPatient?.gender,
+        'Patient Age ': getAge(currentPatient?.dateOfBirth),
+        'Source ': Platform.OS === 'ios' ? 'ios' : 'android',
+      };
+      postWebEngageEvent(WebEngageEventName.MEMBER_DETAILS_SAVED, eventAttributes);
+    } catch (error) {}
   };
 
   const renderDeleteButton = () => {

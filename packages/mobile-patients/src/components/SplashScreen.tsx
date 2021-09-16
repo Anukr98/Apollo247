@@ -1,50 +1,61 @@
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import React, { useEffect, useState, useRef } from 'react';
 import {
   StyleSheet,
   View,
   Platform,
-  ActivityIndicator,
   Linking,
   AppStateStatus,
   AppState,
   DeviceEventEmitter,
+  NativeModules,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import firebase from 'react-native-firebase';
+import { AppRoutes, getCurrentRoute } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import remoteConfig from '@react-native-firebase/remote-config';
 import SplashScreenView from 'react-native-splash-screen';
-import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { useAuth } from '../hooks/authHooks';
-import { AppConfig, updateAppConfig, PharmacyHomepageInfo, AppEnv } from '../strings/AppConfig';
+import { Relation, BookingSource } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { useAuth, useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { AppConfig, updateAppConfig, AppEnv } from '../strings/AppConfig';
 import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
 import { Button } from './ui/Button';
 import { useUIElements } from './UIElementsProvider';
-import { apiRoutes } from '../helpers/apiRoutes';
 import {
   CommonBugFender,
   setBugFenderLog,
-  setBugfenderPhoneNumber,
   isIos,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   doRequestAndAccessLocation,
   InitiateAppsFlyer,
-  APPStateInActive,
   APPStateActive,
   postWebEngageEvent,
   callPermissions,
+  UnInstallAppsFlyer,
+  postFirebaseEvent,
+  setCrashlyticsAttributes,
+  onCleverTapUserLogin,
+  getUTMdataFromURL,
+  postCleverTapEvent,
+  navigateToScreenWithHomeScreeninStack,
+  navigateToHome,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   getAppointmentData as getAppointmentDataQuery,
   getAppointmentDataVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
-import { GET_APPOINTMENT_DATA } from '@aph/mobile-patients/src/graphql/profiles';
+import { phrNotificationCountApi } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import {
-  ProductPageViewedSource,
+  GET_APPOINTMENT_DATA,
+  GET_PROHEALTH_HOSPITAL_BY_SLUG,
+  GET_ORDER_INFO,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -52,12 +63,35 @@ import isLessThan from 'semver/functions/lt';
 import coerce from 'semver/functions/coerce';
 import RNCallKeep from 'react-native-callkeep';
 import VoipPushNotification from 'react-native-voip-push-notification';
-import { string } from '../strings/string';
-import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
+import { string as localStrings } from '../strings/string';
 import Pubnub from 'pubnub';
-
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import messaging from '@react-native-firebase/messaging';
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
+import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
+import { Animated, Easing } from 'react-native';
+import {
+  SplashCapsule,
+  SplashSyringe,
+  SplashStethoscope,
+} from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  getProHealthHospitalBySlug,
+  getProHealthHospitalBySlugVariables,
+} from '@aph/mobile-patients/src/graphql/types/getProHealthHospitalBySlug';
+import { timeDifferenceInDays } from '@aph/mobile-patients/src/utils/dateUtil';
+import firebaseAuth from '@react-native-firebase/auth';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import {
+  preFetchSDK,
+  createHyperServiceObject,
+  initiateSDK,
+  terminateSDK,
+} from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import CleverTap from 'clevertap-react-native';
+import { CleverTapEventName } from '../helpers/CleverTapEvents';
+import analytics from '@react-native-firebase/analytics';
 
 (function() {
   /**
@@ -68,11 +102,7 @@ import Pubnub from 'pubnub';
    * [ Update ] => In the next version it will part of SDK, user will not be required to add this code-block
    */
   let globalObject;
-  // if (typeof global !== 'undefined') {
   globalObject = global;
-  // } else if (typeof window !== 'undefined' && window.document) {
-  // globalObject = window;
-  // }
   if (typeof Promise.prototype['finally'] === 'function') {
     return;
   }
@@ -97,54 +127,87 @@ const styles = StyleSheet.create({
   mainView: {
     flex: 1,
     alignItems: 'center',
+    backgroundColor: '#fff',
     alignSelf: 'center',
     justifyContent: 'center',
   },
+  splashLogo: {
+    width: 152,
+    height: 117,
+    ...Platform.select({
+      android: {
+        top: -2,
+      },
+    }),
+  },
+  loaderContainer: {
+    position: 'absolute',
+    bottom: 50,
+  },
+  loader: {
+    width: 70,
+    height: 70,
+  },
 });
 
-export interface SplashScreenProps extends NavigationScreenProps {}
+export interface SplashScreenProps extends NavigationScreenProps { }
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { APP_ENV } = AppConfig;
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
-  const { setAllPatients, setMobileAPICalled } = useAuth();
-  const { showAphAlert, hideAphAlert } = useUIElements();
+  const { setAllPatients, setMobileAPICalled, validateAuthToken, buildApolloClient } = useAuth();
+  const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [appState, setAppState] = useState(AppState.currentState);
+  const [takeToConsultRoom, settakeToConsultRoom] = useState<boolean>(false);
   const client = useApolloClient();
   const voipAppointmentId = useRef<string>('');
   const voipPatientId = useRef<string>('');
   const voipCallType = useRef<string>('');
+  const voipDoctorName = useRef<string>('');
 
-  const config: Pubnub.PubnubConfig = {
-    subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
-    publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
-    ssl: true,
-    uuid: `PATIENT_${voipPatientId.current}`,
-    restore: true,
-    keepAlive: true,
-    // autoNetworkDetection: true,
-    // listenToBrowserNetworkEvents: true,
-    // presenceTimeout: 20,
-    heartbeatInterval: 20,
-  };
-  const pubnub = new Pubnub(config);
+  const [userLoggedIn, setUserLoggedIn] = useState<any | null>(null);
+  const [createCleverTapProifle, setCreateCleverTapProifle] = useState<any | null>(null);
 
-  // const { setVirtualConsultationFee } = useAppCommonData();
+  const [spinValue, setSpinValue] = useState(new Animated.Value(0));
+  const [animatedValue, setAnimatedValue] = useState(new Animated.Value(0));
+  const [springValue, setSpringAnimation] = useState(new Animated.Value(0));
+  const CONST_SPLASH_LOADER = [string.splash.CAPSULE, string.splash.SYRINGE, string.splash.STETHO];
+  const [selectedAnimationIndex, setSelectedAnimationIndex] = useState(0);
+  const { currentPatient } = useAllCurrentPatients();
+
+  const { setPhrNotificationData } = useAppCommonData();
 
   useEffect(() => {
-    getData('ConsultRoom', undefined, false); // no need to set timeout on didMount
+    takeToConsultRoom && getData('ConsultRoom', undefined, false);
+    configureAnimation();
+  }, [takeToConsultRoom]);
+
+  useEffect(() => {
+    if (CONST_SPLASH_LOADER[selectedAnimationIndex] == string.splash.SYRINGE) {
+      spinObject();
+    } else if (CONST_SPLASH_LOADER[selectedAnimationIndex] == string.splash.STETHO) {
+      springAnimation();
+    } else {
+      spinObject();
+    }
+  }, [selectedAnimationIndex]);
+
+  useEffect(() => {
+    prefetchUserMetadata();
+
     InitiateAppsFlyer(props.navigation);
     DeviceEventEmitter.addListener('accept', (params) => {
-      console.log('Accept Params', params);
-      voipCallType.current = params.call_type;
-      callPermissions();
-      getAppointmentDataAndNavigate(params.appointment_id, true);
+      if (getCurrentRoute() !== AppRoutes.ChatRoom) {
+        voipCallType.current = params.call_type;
+        callPermissions();
+        getAppointmentDataAndNavigate(params.appointment_id, true);
+      }
     });
     DeviceEventEmitter.addListener('reject', (params) => {
-      console.log('Reject Params', params);
-      getAppointmentDataAndNavigate(params.appointment_id, false);
+      if (getCurrentRoute() !== AppRoutes.ChatRoom) {
+        getAppointmentDataAndNavigate(params.appointment_id, false);
+      }
     });
-    setBugfenderPhoneNumber();
     AppState.addEventListener('change', _handleAppStateChange);
     checkForVersionUpdate();
 
@@ -152,7 +215,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       PrefetchAPIReuqest({
         clientId: AppConfig.Configuration.PRAKTISE_API_KEY,
       })
-        .then((res: any) => console.log(res, 'PrefetchAPIReuqest'))
+        .then((res: any) => {})
         .catch((e: Error) => {
           CommonBugFender('SplashScreen_PrefetchAPIReuqest', e);
         });
@@ -160,10 +223,20 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     } catch (error) {
       CommonBugFender('SplashScreen_PrefetchAPIReuqest_catch', error);
     }
+
+    try {
+      AsyncStorage.setItem('APP_OPENED', 'true');
+    } catch (error) {
+      CommonBugFender('SplashScreen_App_opend_error', error);
+    }
   }, []);
 
   useEffect(() => {
+    // clearing it so that save firebase token to DB gets call every first time
+    AsyncStorage.removeItem('saveTokenDeviceApiCall');
     handleDeepLink();
+    getDeviceToken();
+    initializeRealTimeUninstall();
   }, []);
 
   useEffect(() => {
@@ -173,10 +246,55 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
   }, []);
 
+  useEffect(() => {
+    preFetchSDK(currentPatient?.id);
+    try {
+      createHyperServiceObject();
+    } catch (error) {
+      CommonBugFender('ErrorWhilecreatingHyperServiceObject', error);
+    }
+  }, []);
+
+  const initializeRealTimeUninstall = () => {
+    CleverTap.profileGetCleverTapID((error, res) => {
+      analytics().setUserProperty('ct_objectId', `${res}`);
+    });
+  };
+
+  const getDeviceToken = async () => {
+    const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
+    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    const deviceTokenTimeStamp = (await AsyncStorage.getItem('deviceTokenTimeStamp')) || '';
+    const currentDeviceTokenTimeStamp = deviceTokenTimeStamp ? JSON.parse(deviceTokenTimeStamp) : '';
+    if (
+      !currentDeviceToken ||
+      currentDeviceToken === '' ||
+      currentDeviceToken.length == 0 ||
+      typeof currentDeviceToken != 'string' ||
+      typeof currentDeviceToken == 'object' ||
+      !currentDeviceTokenTimeStamp ||
+      currentDeviceTokenTimeStamp === '' ||
+      currentDeviceTokenTimeStamp?.length == 0 ||
+      typeof currentDeviceTokenTimeStamp != 'number' ||
+      timeDifferenceInDays(new Date().getTime(), currentDeviceTokenTimeStamp) > 6
+    ) {
+      messaging()
+        .getToken()
+        .then((token) => {
+          AsyncStorage.setItem('deviceToken', JSON.stringify(token));
+          AsyncStorage.setItem('deviceTokenTimeStamp', JSON.stringify(new Date().getTime()));
+          UnInstallAppsFlyer(token);
+        })
+        .catch((e) => {
+          CommonBugFender('SplashScreen_getDeviceToken', e);
+        });
+    }
+  };
+
   const initializeCallkit = () => {
     const callkeepOptions = {
       ios: {
-        appName: string.LocalStrings.appName,
+        appName: localStrings.LocalStrings.appName,
         imageName: 'callkitAppIcon.png',
       },
     };
@@ -200,21 +318,36 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         voipAppointmentId.current = notification.getData().appointmentId;
         voipPatientId.current = notification.getData().patientId;
         voipCallType.current = notification.getData().isVideo ? 'Video' : 'Audio';
+        voipDoctorName.current = notification.getData().name;
       }
     });
   };
 
-  const onAnswerCallAction = () => {
-    voipAppointmentId.current && getAppointmentDataAndNavigate(voipAppointmentId.current, false);
+  const onAnswerCallAction = async () => {
+    if (getCurrentRoute() !== AppRoutes.ChatRoom) {
+      voipAppointmentId.current && getAppointmentDataAndNavigate(voipAppointmentId.current, false);
+    }
   };
 
   const onDisconnetCallAction = () => {
+    fireWebengageEventForCallDecline();
     RNCallKeep.endAllCalls();
+    const config: Pubnub.PubnubConfig = {
+      origin: 'apollo.pubnubapi.com',
+      subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
+      publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
+      restore: true,
+      ssl: true,
+      uuid: `PATIENT_${voipPatientId?.current}`,
+    };
+    const pubnub = new Pubnub(config);
+
     pubnub.publish(
       {
-        message: '^^#PATIENT_REJECTED_CALL',
+        message: { message: '^^#PATIENT_REJECTED_CALL' },
         channel: voipAppointmentId.current,
         storeInHistory: true,
+        sendByPost: true,
       },
       (status, response) => {
         voipAppointmentId.current = '';
@@ -224,16 +357,41 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     );
   };
 
+  const fireWebengageEventForCallDecline = () => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PATIENT_DECLINED_CALL] = {
+      'Patient User ID': voipPatientId.current,
+      'Patient name': '',
+      'Patient mobile number': '',
+      'Appointment Date time': null,
+      'Appointment display ID': null,
+      'Appointment ID': voipAppointmentId.current,
+      'Doctor Name': voipDoctorName.current,
+      'Speciality Name': '',
+      'Speciality ID': '',
+      'Doctor Type': '',
+      'Mode of Call': voipCallType.current === 'Video' ? 'Video' : 'Audio',
+      Platform: 'App',
+    };
+    postWebEngageEvent(WebEngageEventName.PATIENT_DECLINED_CALL, eventAttributes);
+  };
+
   const handleDeepLink = () => {
     try {
       Linking.getInitialURL()
         .then((url) => {
+          triggerUTMCustomEvent(url);
           setBugFenderLog('DEEP_LINK_URL', url);
           if (url) {
             try {
-              handleOpenURL(url);
-              console.log('linking', url);
+              if (Platform.OS === 'ios') InitiateAppsFlyer(props.navigation);
+              const data = handleOpenURL(url);
+              const { routeName, id, isCall, timeout, mediaSource } = data;
+              redirectRoute(routeName, id, isCall, timeout, mediaSource, data?.data);
+              fireAppOpenedEvent(url);
             } catch (e) {}
+          } else {
+            settakeToConsultRoom(true);
+            fireAppOpenedEvent('');
           }
         })
         .catch((e) => {
@@ -242,9 +400,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       Linking.addEventListener('url', (event) => {
         try {
-          console.log('event', event);
           setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
-          handleOpenURL(event.url);
+          const data = handleOpenURL(event.url);
+          triggerUTMCustomEvent(event.url);
+          const { routeName, id, isCall, timeout, mediaSource } = data;
+          redirectRoute(routeName, id, isCall, timeout, mediaSource, data?.data);
+          fireAppOpenedEvent(event.url);
         } catch (e) {}
       });
       AsyncStorage.removeItem('location');
@@ -252,170 +413,185 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       CommonBugFender('SplashScreen_Linking_URL_try', error);
     }
   };
-  const handleOpenURL = (event: any) => {
-    try {
-      if (Platform.OS === 'ios') {
-        // for ios universal links
-        InitiateAppsFlyer(props.navigation);
-      }
-      let route;
 
-      route = event.replace('apollopatients://', '');
-
-      const data = route.split('?');
-      setBugFenderLog('DEEP_LINK_DATA', data);
-      route = data[0];
-
-      // console.log(data, 'data');
-
-      let linkId = '';
-
-      try {
-        if (data.length >= 2) {
-          linkId = data[1].split('&');
-          if (linkId.length > 0) {
-            linkId = linkId[0];
-            setBugFenderLog('DEEP_LINK_SPECIALITY_ID', linkId);
-          }
+  const redirectRoute = (
+    routeName: string,
+    id?: string,
+    timeout?: boolean,
+    isCall?: boolean,
+    mediaSource?: string,
+    data?: any
+  ) => {
+    if (routeName === 'ChatRoom' && data?.length >= 1) {
+      getAppointmentDataAndNavigate(id!, false);
+    } else if (
+      routeName === 'DoctorCall' &&
+      data?.length >= 1 &&
+      getCurrentRoute() !== AppRoutes.ChatRoom
+    ) {
+      const params = id?.split('+');
+      voipCallType.current = params?.[1]!;
+      getAppointmentDataAndNavigate(params?.[0]!, true);
+    } else if (routeName == 'prohealth') {
+      fetchProhealthHospitalDetails(id);
+    } else if (routeName === 'DoctorCallRejected') {
+      setLoading!(true);
+      const appointmentId = id?.split('+')?.[0];
+      const config: Pubnub.PubnubConfig = {
+        origin: 'apollo.pubnubapi.com',
+        subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
+        publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
+        ssl: true,
+        restore: true,
+        uuid: `PATIENT_${currentPatient?.id}`,
+      };
+      const pubnub = new Pubnub(config);
+      pubnub.publish(
+        {
+          message: { message: '^^#PATIENT_REJECTED_CALL' },
+          channel: appointmentId,
+          storeInHistory: true,
+          sendByPost: true,
+        },
+        (status, response) => {
+          setLoading!(false);
         }
-      } catch (error) {}
-      console.log(linkId, 'linkId');
-
-      switch (route) {
-        case 'Consult':
-          console.log('Consult');
-          getData('Consult', data.length === 2 ? linkId : undefined);
-          break;
-
-        case 'Medicine':
-          console.log('Medicine');
-          getData('Medicine', data.length === 2 ? linkId : undefined);
-          break;
-
-        case 'UploadPrescription':
-          getData('UploadPrescription', data.length === 2 ? linkId : undefined);
-          break;
-
-        case 'MedicineRecommendedSection':
-          getData('MedicineRecommendedSection');
-          break;
-
-        case 'Test':
-          console.log('Test');
-          getData('Test');
-          break;
-
-        case 'Speciality':
-          console.log('Speciality handleopen');
-          if (data.length === 2) getData('Speciality', linkId);
-          break;
-
-        case 'Doctor':
-          console.log('Doctor handleopen');
-          if (data.length === 2) getData('Doctor', linkId);
-          break;
-
-        case 'DoctorSearch':
-          console.log('DoctorSearch handleopen');
-          getData('DoctorSearch');
-          break;
-
-        case 'MedicineSearch':
-          console.log('MedicineSearch handleopen');
-          getData('MedicineSearch', data.length === 2 ? linkId : undefined);
-          break;
-
-        case 'MedicineDetail':
-          console.log('MedicineDetail handleopen');
-          getData('MedicineDetail', data.length === 2 ? linkId : undefined);
-          break;
-
-        case 'MedicineCart':
-          console.log('MedicineCart handleopen');
-          getData('MedicineCart', data.length === 2 ? linkId : undefined);
-          break;
-
-        case 'ChatRoom':
-          if (data.length === 2) getAppointmentDataAndNavigate(linkId, false);
-          break;
-
-        case 'DoctorCall':
-          if (data.length === 2) {
-            const params = linkId.split('+');
-            voipCallType.current = params[1];
-            callPermissions();
-            getAppointmentDataAndNavigate(params[0], true);
-          }
-          break;
-
-        case 'Order':
-          if (data.length === 2) getData('Order', linkId);
-          break;
-
-        case 'MyOrders':
-          getData('MyOrders');
-          break;
-
-        case 'webview':
-          if (data.length === 2) {
-            let url = data[1].replace('param=', '');
-            getData('webview', url);
-          }
-          break;
-        case 'FindDoctors':
-          if (data.length === 2) getData('FindDoctors', linkId);
-          break;
-
-        case 'HealthRecordsHome':
-          console.log('HealthRecordsHome handleopen');
-          getData('HealthRecordsHome');
-          break;
-
-        case 'ManageProfile':
-          console.log('ManageProfile handleopen');
-          getData('ManageProfile');
-          break;
-
-        case 'OneApolloMembership':
-          getData('OneApolloMembership');
-          break;
-
-        case 'TestDetails':
-          getData('TestDetails', data.length === 2 ? linkId : undefined);
-          break;
-
-        case 'ConsultDetails':
-          getData('ConsultDetails', data.length === 2 ? linkId : undefined);
-          break;
-
-        default:
-          getData('ConsultRoom', undefined, true);
-          // webengage event
-          const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
-            source: 'deeplink',
-          };
-          postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
-          break;
+      );
+      const params = id?.split('+');
+      if (getCurrentRoute() !== AppRoutes.ChatRoom) {
+        getAppointmentDataAndNavigate(params?.[0]!, false);
       }
-      console.log('route', route);
-    } catch (error) {}
+    } else if (routeName == 'prohealth') {
+      fetchProhealthHospitalDetails(id!);
+    } else if (routeName == 'PaymentMethods') {
+      !!id ? fetchOrderInfo(id) : getData(routeName, id, isCall, timeout, mediaSource);
+    } else {
+      getData(routeName, id, isCall, timeout, mediaSource);
+    }
   };
 
-  const getData = (routeName: String, id?: String, timeout?: boolean, isCall?: boolean) => {
+  const initiateHyperSDK = (cusId: any, merchantId: string) => {
+    try {
+      terminateSDK();
+      createHyperServiceObject();
+      initiateSDK(cusId, cusId, merchantId);
+    } catch (error) {
+      CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
+    }
+  };
+
+  const fetchOrderInfo = async (paymentId: string) => {
+    try {
+      const authToken: string = await validateAuthToken();
+      const apolloClient = buildApolloClient(authToken);
+      const response = await apolloClient.query({
+        query: GET_ORDER_INFO,
+        variables: { order_id: paymentId },
+        fetchPolicy: 'no-cache',
+      });
+      const paymentStatus = response?.data?.getOrderInternal?.payment_status;
+      if (paymentStatus == 'PAYMENT_NOT_INITIATED') {
+        const currentPatientId: any = await AsyncStorage.getItem('selectUserId');
+        const isPharmaOrder = !!response?.data?.getOrderInternal?.PharmaOrderDetails
+          ?.medicineOrderDetails?.length
+          ? true
+          : false;
+        const merchantId = isPharmaOrder
+          ? AppConfig.Configuration.pharmaMerchantId
+          : AppConfig.Configuration.merchantId;
+        initiateHyperSDK(currentPatientId, merchantId);
+        const params = {
+          paymentId: paymentId,
+          amount: response?.data?.getOrderInternal?.total_amount,
+          orderDetails: { orderId: response?.data?.getOrderInternal?.id },
+          businessLine: 'paymentLink',
+          customerId: response?.data?.getOrderInternal?.customer_id,
+        };
+        navigateToScreenWithHomeScreeninStack(props.navigation, AppRoutes.PaymentMethods, params);
+      } else {
+        navigateToHome(props.navigation);
+      }
+    } catch (error) {
+      navigateToHome(props.navigation);
+    }
+  };
+
+  const callPhrNotificationApi = async (currentPatient: any) => {
+    phrNotificationCountApi(client, currentPatient?.id || '')
+      .then((newRecordsCount) => {
+        if (newRecordsCount) {
+          setPhrNotificationData &&
+            setPhrNotificationData(
+              newRecordsCount! as getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount
+            );
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('SplashcallPhrNotificationApi', error);
+      });
+  };
+
+  async function fireAppOpenedEvent(event: any) {
+    const a = event.indexOf('apollopatients://');
+    const b = event.indexOf('https://www.apollo247.com');
+    let attributes: FirebaseEvents[FirebaseEventName.APP_OPENED] = {
+      utm_source: 'not set',
+      utm_medium: 'not set',
+      utm_campaign: 'not set',
+      utm_term: 'not set',
+      utm_content: 'not set',
+      referrer: 'not set',
+    };
+    if (a == 0) {
+      const route = event.replace('apollopatients://', '');
+      const data = route.split('?');
+      if (data.length >= 2) {
+        const params = data[1].split('&');
+        const utmParams = params.map((item: any) => item.split('='));
+        utmParams.forEach((item: any) => item?.length == 2 && (attributes[item[0]] = item[1]));
+        postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
+      }
+    } else if (b == 0) {
+      const route = event.replace('https://www.apollo247.com/', '');
+      const data = route.split('?');
+      if (data.length >= 2) {
+        const params = data[1].split('&');
+        const utmParams = params.map((item: any) => item.split('='));
+        utmParams.forEach((item: any) => item?.length == 2 && (attributes[item[0]] = item[1]));
+        postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
+      } else {
+        const referrer = await NativeModules.GetReferrer.referrer();
+        attributes['referrer'] = referrer;
+        postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
+      }
+    } else {
+      postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
+    }
+  }
+  const getData = (
+    routeName: string,
+    id?: string,
+    timeout?: boolean,
+    isCall?: boolean,
+    mediaSource?: string
+  ) => {
     async function fetchData() {
-      firebase.analytics().setAnalyticsCollectionEnabled(true);
-      // const onboarding = await AsyncStorage.getItem('onboarding');
-      const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
-      const signUp = await AsyncStorage.getItem('signUp');
-      const multiSignUp = await AsyncStorage.getItem('multiSignUp');
+      //we are prefetching the userLoggedIn because reading it from async storage was taking 400-500 ms
+      let userLoggedInState = userLoggedIn;
+      if (userLoggedInState == null) {
+        // if uninitilized then only read from Async Storage
+        userLoggedInState = await AsyncStorage.getItem('userLoggedIn');
+      }
+
       AsyncStorage.setItem('showSchduledPopup', 'false');
 
       const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-      const item = JSON.parse(retrievedItem);
+      const item = JSON.parse(retrievedItem || 'null');
 
+      const currentPatientId: any = await AsyncStorage.getItem('selectUserId');
       const callByPrism: any = await AsyncStorage.getItem('callByPrism');
-      let allPatients;
 
+      let allPatients;
       if (callByPrism === 'false') {
         allPatients =
           item && item.data && item.data.getPatientByMobileNumber
@@ -434,22 +610,63 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       const mePatient = allPatients
         ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
         : null;
-
+      const currentPatient = allPatients
+        ? allPatients?.find((patient: any) => patient?.id === currentPatientId) ||
+          allPatients?.find((patient: any) => patient?.isUhidPrimary === true)
+        : null;
       setAllPatients(allPatients);
 
       setTimeout(
-        () => {
-          if (userLoggedIn == 'true') {
+        async () => {
+          if (userLoggedInState == 'true') {
             setshowSpinner(false);
-
             if (mePatient) {
               if (mePatient.firstName !== '') {
-                pushTheView(routeName, id ? id : undefined, isCall);
+                const isCircleMember: any = await AsyncStorage.getItem('isCircleMember');
+                const isCircleMembershipExpired: any = await AsyncStorage.getItem(
+                  'isCircleMembershipExpired'
+                );
+                const isCorporateSubscribed: any = await AsyncStorage.getItem(
+                  'isCorporateSubscribed'
+                );
+                const vaccinationCmsIdentifier: any = await AsyncStorage.getItem(
+                  'VaccinationCmsIdentifier'
+                );
+                const vaccinationSubscriptionId: any = await AsyncStorage.getItem(
+                  'VaccinationSubscriptionId'
+                );
+
+                if (routeName == 'prohealth' && id) {
+                  id = id?.replace('mobileNumber', currentPatient?.mobileNumber || '');
+                }
+                pushTheView(
+                  props.navigation,
+                  routeName,
+                  id ? id : undefined,
+                  isCall,
+                  isCircleMember === 'yes',
+                  isCircleMembershipExpired === 'yes',
+                  mediaSource,
+                  voipCallType.current,
+                  voipAppointmentId,
+                  isCorporateSubscribed === 'yes',
+                  vaccinationCmsIdentifier,
+                  vaccinationSubscriptionId
+                );
+                let _createCleverTapProifle = createCleverTapProifle;
+                if (_createCleverTapProifle == null) {
+                  _createCleverTapProifle = await AsyncStorage.getItem('createCleverTapProifle');
+                  if (_createCleverTapProifle == 'false') onCleverTapUserLogin(mePatient);
+                }
+                callPhrNotificationApi(currentPatient);
+                setCrashlyticsAttributes(mePatient);
               } else {
                 props.navigation.replace(AppRoutes.Login);
               }
             }
           } else {
+            const signUp: any = await AsyncStorage.getItem('signUp');
+            const multiSignUp: any = await AsyncStorage.getItem('multiSignUp');
             setshowSpinner(false);
 
             if (signUp == 'true') {
@@ -467,230 +684,184 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         timeout ? 2000 : 0
       );
     }
+
     fetchData();
   };
-  const handleEncodedURI = (encodedString: string) => {
-    const decodedString = decodeURIComponent(encodedString);
-    const splittedString = decodedString.split('+');
-    if (splittedString.length > 1) {
-      return splittedString;
-    } else {
-      return encodedString.split('%20');
-    }
-  };
-  const getAppointmentDataAndNavigate = (appointmentID: string, isCall: boolean) => {
-    client
-      .query<getAppointmentDataQuery, getAppointmentDataVariables>({
-        query: GET_APPOINTMENT_DATA,
-        variables: {
-          appointmentId: appointmentID,
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((_data) => {
-        const appointmentData: any = _data.data.getAppointmentData!.appointmentsHistory;
-        if (appointmentData[0]!.doctorInfo !== null) {
-          getData('ChatRoom', appointmentData[0], true, isCall);
-        }
-      })
-      .catch((error) => {
-        CommonBugFender('SplashFetchingAppointmentData', error);
-      });
-  };
 
-  const pushTheView = (routeName: String, id?: any, isCall?: boolean) => {
-    console.log('pushTheView', routeName);
-    setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
-    switch (routeName) {
-      case 'Consult':
-        console.log('Consult');
-        // if (id) {
-        //   props.navigation.navigate(AppRoutes.ConsultDetailsById, { id: id });
-        // } else
-        props.navigation.navigate('APPOINTMENTS');
-        break;
-
-      case 'Medicine':
-        console.log('Medicine');
-        props.navigation.navigate('MEDICINES');
-        break;
-
-      case 'UploadPrescription':
-        props.navigation.navigate('MEDICINES', { showUploadPrescriptionPopup: true });
-        break;
-
-      case 'MedicineRecommendedSection':
-        props.navigation.navigate('MEDICINES', { showRecommendedSection: true });
-        break;
-
-      case 'MedicineDetail':
-        console.log('MedicineDetail');
-        props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
-          sku: id,
-          movedFrom: ProductPageViewedSource.DEEP_LINK,
-        });
-        break;
-
-      case 'Test':
-        console.log('Test');
-        props.navigation.navigate('TESTS');
-        break;
-
-      case 'ConsultRoom':
-        console.log('ConsultRoom');
-        props.navigation.replace(AppRoutes.ConsultRoom);
-        break;
-
-      case 'Speciality':
-        setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', id);
-        const filtersData = id ? handleEncodedURI(id) : '';
-        console.log('filtersData============', filtersData);
-        props.navigation.navigate(AppRoutes.DoctorSearchListing, {
-          specialityId: filtersData[0] ? filtersData[0] : '',
-          typeOfConsult: filtersData.length > 1 ? filtersData[1] : '',
-          doctorType: filtersData.length > 2 ? filtersData[2] : '',
-        });
-        // props.navigation.replace(AppRoutes.DoctorSearchListing, {
-        //   specialityId: id ? id : '',
-        // });
-        break;
-      case 'FindDoctors':
-        const cityBrandFilter = id ? handleEncodedURI(id) : '';
-        console.log('cityBrandFilter', cityBrandFilter);
-        props.navigation.navigate(AppRoutes.DoctorSearchListing, {
-          specialityId: cityBrandFilter[0] ? cityBrandFilter[0] : '',
-          city:
-            cityBrandFilter.length > 1 && !isUpperCase(cityBrandFilter[1])
-              ? cityBrandFilter[1]
-              : null,
-          brand:
-            cityBrandFilter.length > 2
-              ? cityBrandFilter[2]
-              : isUpperCase(cityBrandFilter[1])
-              ? cityBrandFilter[1]
-              : null,
-        });
-        break;
-      case 'Doctor':
-        props.navigation.navigate(AppRoutes.DoctorDetails, {
-          doctorId: id,
-        });
-        break;
-
-      case 'DoctorSearch':
-        props.navigation.navigate(AppRoutes.DoctorSearch);
-        break;
-
-      case 'MedicineSearch':
-        if (id) {
-          const [itemId, name] = id.split(',');
-          console.log(itemId, name);
-
-          props.navigation.navigate(AppRoutes.SearchByBrand, {
-            category_id: itemId,
-            title: `${name ? name : 'Products'}`.toUpperCase(),
-            movedFrom: 'deeplink',
+  const triggerUTMCustomEvent = async (url: string | null) => {
+    try {
+      if (url) {
+        const { utm_source, utm_medium, utm_campaign, appUrl } = getUTMdataFromURL(url);
+        if (utm_source || utm_medium || utm_campaign) {
+          postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
+            utm_source,
+            utm_medium,
+            utm_campaign,
+            appUrl,
+          });
+        } else {
+          postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
+            appUrl,
+            deeplink: 'Deeplink',
           });
         }
-        break;
-
-      case 'MedicineCart':
-        console.log('MedicineCart handleopen');
-        props.navigation.navigate(AppRoutes.MedicineCart, {
-          movedFrom: 'splashscreen',
+      } else {
+        postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
+          source: 'Organic',
         });
-        break;
-      case 'ChatRoom':
-        props.navigation.navigate(AppRoutes.ChatRoom, {
-          data: id,
-          callType: voipCallType.current ? voipCallType.current.toUpperCase() : '',
-          prescription: '',
-          isCall: isCall,
-          isVoipCall: voipAppointmentId.current ? true : false,
-        });
-        break;
-      case 'Order':
-        props.navigation.navigate(AppRoutes.OrderDetailsScene, {
-          goToHomeOnBack: true,
-          orderAutoId: isNaN(id) ? '' : id,
-          billNumber: isNaN(id) ? id : '',
-        });
-        break;
-      case 'MyOrders':
-        props.navigation.navigate(AppRoutes.YourOrdersScene);
-        break;
-      case 'webview':
-        props.navigation.navigate(AppRoutes.CommonWebView, {
-          url: id,
-        });
-        break;
+      }
+    } catch (error) {}
+  };
 
-      case 'HealthRecordsHome':
-        props.navigation.navigate('HEALTH RECORDS');
-        break;
+  const prefetchUserMetadata = async () => {
+    const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+    setUserLoggedIn(userLoggedIn);
+    const _createCleverTapProifle = await AsyncStorage.getItem('createCleverTapProifle');
+    setCreateCleverTapProifle(_createCleverTapProifle);
+  };
 
-      case 'ManageProfile':
-        props.navigation.navigate(AppRoutes.ManageProfile);
-        break;
-
-      case 'OneApolloMembership':
-        props.navigation.navigate(AppRoutes.OneApolloMembership);
-        break;
-
-      case 'TestDetails':
-        props.navigation.navigate(AppRoutes.TestDetails, {
-          itemId: id,
-        });
-        break;
-
-      case 'ConsultDetails':
-        props.navigation.navigate(AppRoutes.ConsultDetails, {
-          CaseSheet: id,
-        });
-        break;
-      case 'DoctorCall':
-        props.navigation.navigate(AppRoutes.ChatRoom, {
-          data: id,
-          callType: voipCallType.current ? voipCallType.current.toUpperCase() : '',
-          prescription: '',
-          isCall: true,
-          isVoipCall: false,
-        });
-        break;
-
-      default:
-        break;
+  const getAppointmentDataAndNavigate = async (appointmentId: string, isCall: boolean) => {
+    try {
+      setLoading!(true);
+      const response = await client.query<getAppointmentDataQuery, getAppointmentDataVariables>({
+        query: GET_APPOINTMENT_DATA,
+        variables: { appointmentId },
+        fetchPolicy: 'no-cache',
+      });
+      const appointmentData: any = response.data?.getAppointmentData?.appointmentsHistory?.[0];
+      if (appointmentData?.doctorInfo) {
+        getData('ChatRoom', appointmentData, false, isCall);
+      } else {
+        throw new Error('Doctor info is required to process the request.');
+      }
+      setLoading!(false);
+    } catch (error) {
+      setLoading!(false);
+      showAphAlert!({
+        title: string.common.uhOh,
+        description: string.appointmentDataError,
+        CTAs: [
+          {
+            text: 'CANCEL',
+            onPress: () => {
+              hideAphAlert!();
+              props.navigation.navigate(AppRoutes.ConsultRoom);
+            },
+            type: 'white-button',
+          },
+          {
+            text: 'RETRY',
+            onPress: () => {
+              hideAphAlert!();
+              getAppointmentDataAndNavigate(appointmentId, isCall);
+            },
+            type: 'orange-button',
+          },
+        ],
+      });
+      CommonBugFender('SplashFetchingAppointmentData', error);
     }
   };
 
-  // useEffect(() => {
-  //   console.log('SplashScreen signInError', signInError);
+  const fetchProhealthHospitalDetails = async (slugName: string) => {
+    setLoading?.(true);
+    try {
+      const response = await client.query<
+        getProHealthHospitalBySlug,
+        getProHealthHospitalBySlugVariables
+      >({
+        query: GET_PROHEALTH_HOSPITAL_BY_SLUG,
+        variables: {
+          hospitalSlug: slugName,
+        },
+        fetchPolicy: 'no-cache',
+      });
+      const { data } = response;
+      if (data?.getProHealthHospitalBySlug?.hospitals?.length) {
+        const getHospitalId = data?.getProHealthHospitalBySlug?.hospitals?.[0]?.id;
+        regenerateJWTToken(getHospitalId);
+      } else {
+        regenerateJWTToken();
+      }
+    } catch (error) {
+      regenerateJWTToken();
+      CommonBugFender('SplashScreen_fetchProhealthHospitalDetails', error);
+    }
+  };
 
-  //   firebase.analytics().setCurrentScreen('SplashScreen');
+  const regenerateJWTToken = async (id?: string) => {
+    let deviceType =
+      Platform.OS == 'android' ? BookingSource?.Apollo247_Android : BookingSource?.Apollo247_Ios;
+    const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
 
-  //   if (signInError) {
-  //     setshowSpinner(false);
-
-  //     AsyncStorage.setItem('userLoggedIn', 'false');
-  //     AsyncStorage.setItem('multiSignUp', 'false');
-  //     AsyncStorage.setItem('signUp', 'false');
-  //     signOut();
-  //     props.navigation.replace(AppRoutes.Login);
-  //   }
-
-  //   SplashScreenView.hide();
-  // }, [props.navigation, signInError, signOut]);
+    if (userLoggedIn == 'true') {
+      try {
+        firebaseAuth().onAuthStateChanged(async (user) => {
+          if (user) {
+            const jwtToken = await user.getIdToken(true).catch((error) => {
+              CommonBugFender('SplashScreen_regenerateJWTToken', error);
+            });
+            const openUrl = AppConfig.Configuration.PROHEALTH_BOOKING_URL;
+            let finalUrl;
+            if (!!id) {
+              finalUrl = openUrl.concat(
+                '?hospital_id=',
+                id,
+                '&utm_token=',
+                jwtToken,
+                '&utm_mobile_number=',
+                'mobileNumber',
+                '&deviceType=',
+                deviceType
+              );
+            } else {
+              finalUrl = openUrl.concat(
+                '?utm_token=',
+                jwtToken,
+                '&utm_mobile_number=',
+                'mobileNumber',
+                '&deviceType=',
+                deviceType
+              );
+            }
+            setLoading?.(false);
+            !!jwtToken && jwtToken != '' && getData('prohealth', finalUrl);
+          }
+        });
+      } catch (e) {
+        CommonBugFender('regenerateJWTToken_deepLink', e);
+      }
+    }
+  };
 
   const {
     setLocationDetails,
     setNeedHelpToContactInMessage,
+    setNeedHelpReturnPharmaOrderSuccessMessage,
     setSavePatientDetails,
+    setCovidVaccineCta,
+    setLoginSection,
+    setCovidVaccineCtaV2,
+    setCartBankOffer,
+    setUploadPrescriptionOptions,
+    setExpectCallText,
+    setNonCartTatText,
+    setNonCartDeliveryText,
   } = useAppCommonData();
+  const {
+    setMinimumCartValue,
+    setMinCartValueForCOD,
+    setMaxCartValueForCOD,
+    setCartPriceNotUpdateRange,
+    setPdpDisclaimerMessage,
+    setPharmaHomeNudgeMessage,
+    setPharmaCartNudgeMessage,
+    setPharmaPDPNudgeMessage,
+  } = useShoppingCart();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
       try {
         const settingsCalled: string | null = await AsyncStorage.getItem('settingsCalled');
-        console.log(settingsCalled, 'redolocartions');
         if (settingsCalled && settingsCalled === 'true') {
           doRequestAndAccessLocation()
             .then((response) => {
@@ -706,9 +877,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             });
         }
       } catch {}
-    }
-    if (appState.match(/inactive|background/) && nextAppState === 'active') {
-      APPStateInActive();
     }
     if (appState.match(/active|foreground/) && nextAppState === 'background') {
       APPStateActive();
@@ -757,10 +925,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Pharmacy_Delivery_Charges: {
       PROD: 'Pharmacy_Delivery_Charges',
     },
+    Min_Value_For_Pharmacy_Free_Packaging: {
+      PROD: 'Min_Value_For_Pharmacy_Free_Packaging',
+    },
+    Pharmacy_Packaging_Charges: {
+      PROD: 'Pharmacy_Packaging_Charges',
+    },
     top6_specailties: {
-      QA: 'QA_top6_specailties',
-      DEV: 'DEV_top6_specailties',
-      PROD: 'top6_specailties',
+      QA: 'QA_top_specialties',
+      DEV: 'DEV_top_specialties',
+      PROD: 'top_specialties',
     },
     min_value_to_nudge_users_to_avail_free_delivery: {
       QA: 'QA_min_value_to_nudge_users_to_avail_free_delivery',
@@ -773,9 +947,156 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Doctors_Page_Size: {
       PROD: 'Doctors_Page_Size',
     },
+    Need_Help_Return_Order_Sub_Reason: {
+      QA: 'QA_Need_Help_Return_Order_Sub_Reason',
+      PROD: 'Need_Help_Return_Order_Sub_Reason',
+    },
+    Need_Help_Return_Pharma_Order_Success_Message: {
+      PROD: 'Need_Help_Return_Pharma_Order_Success_Message',
+    },
+    Cart_Update_Price_Config: {
+      QA: 'Cart_Update_Price_Config_QA',
+      PROD: 'Cart_Update_Price_Config',
+    },
+    Covid_Vaccine_Cta_Key: {
+      QA: 'Covid_Vaccine_CTA_QA',
+      PROD: 'Covid_Vaccine_CTA',
+    },
+    Cart_Prescription_Options: {
+      QA: 'QA_Cart_Prescription_Options',
+      PROD: 'Cart_Prescription_Options',
+    },
+    Login_Section_Key: {
+      QA: 'Login_Section_QA',
+      PROD: 'Login_Section',
+    },
+    Covid_Vaccine_Cta_Key_V2: {
+      QA: 'Covid_Vaccine_CTA_V3_QA',
+      PROD: 'Covid_Vaccine_CTA_V3',
+    },
+    Covid_Items: {
+      QA: 'QA_Covid_Items',
+      PROD: 'Covid_Items',
+    },
+    Covid_Max_Slot_Days: {
+      QA: 'QA_Covid_Max_Slot_Days',
+      PROD: 'Covid_Max_Slot_Days',
+    },
+    Non_Covid_Max_Slot_Days: {
+      QA: 'QA_Non_Covid_Max_Slot_Days',
+      PROD: 'Non_Covid_Max_Slot_Days',
+    },
+    Cart_Bank_Offer_Text: {
+      QA: 'QA_CART_BANK_OFFER_TEXT',
+      PROD: 'CART_BANK_OFFER_TEXT',
+    },
+    followUp_Chat: {
+      QA: 'QA_FollowUp_Chat_Limit',
+      PROD: 'FollowUp_Chat_Limit',
+    },
+    uploadPrescription_Options: {
+      QA: 'QA_UploadPrescription_Options',
+      PROD: 'UploadPrescription_Options',
+    },
+    Health_Credit_Expiration_Time: {
+      QA: 'Health_Credit_Expiration_Time_QA',
+      PROD: 'Health_Credit_Expiration_Time_Prod',
+    },
+    Expect_Call_Text: {
+      QA: 'QA_Expect_Call_Text',
+      PROD: 'Expect_Call_Text',
+    },
+    Non_Cart_TAT_Text: {
+      QA: 'QA_Non_Cart_TAT_Text',
+      PROD: 'Non_Cart_TAT_Text',
+    },
+    Non_Cart_Delivery_Text: {
+      QA: 'QA_Non_Cart_Delivery_Text',
+      PROD: 'Non_Cart_Delivery_Text',
+    },
+    Mininum_Cart_Values: {
+      QA: 'QA_Mininum_Cart_Values',
+      PROD: 'Mininum_Cart_Values',
+    },
+    Helpdesk_Chat_Confim_Msg: {
+      QA: 'Helpdesk_Chat_Confim_Msg_QA',
+      PROD: 'Helpdesk_Chat_Confim_Msg_Prod',
+    },
+    Reopen_Help_Max_Time: {
+      QA: 'Reopen_Help_Max_Time_QA',
+      PROD: 'Reopen_Help_Max_Time_Prod',
+    },
+    Vaccination_Cities: {
+      QA: 'Vaccination_Cities_QA',
+      PROD: 'Vaccination_Cities_Prod',
+    },
+    Vaccine_Type: {
+      QA: 'Vaccine_Type_QA',
+      PROD: 'Vaccine_Type_Prod',
+    },
+    Cancel_Threshold_Pre_Vaccination: {
+      QA: 'Cancel_Threshold_Pre_Vaccination_QA',
+      PROD: 'Cancel_Threshold_Pre_Vaccination_Prod',
+    },
+    Used_Up_Alotted_Slot_Msg: {
+      QA: 'Used_Up_Alotted_Slot_Msg_QA',
+      PROD: 'Used_Up_Alotted_Slot_Msg_Prod',
+    },
+    Vacc_City_Rule: {
+      QA: 'Vacc_City_Rule_QA',
+      PROD: 'Vacc_City_Rule_Prod',
+    },
+    Enable_Diagnostics_COD: {
+      QA: 'QA_Enable_Diagnostics_COD',
+      PROD: 'Enable_Diagnostics_COD',
+    },
+    Enable_Diagnostics_Cancellation_Policy: {
+      QA: 'QA_Diagnostic_Cancellation_Policy',
+      PROD: 'Diagnostic_Cancellation_Policy',
+    },
+    Diagnostics_Cancel_Policy_Text_Msg: {
+      QA: 'QA_Diagnostics_Cancel_Policy_Text',
+      PROD: 'Diagnostics_Cancel_Policy_Text',
+    },
+    MaxCallRetryAttempt: {
+      QA: 'QA_Max_Call_Retry_Attempt',
+      PROD: 'Max_Call_Retry_Attempt',
+    },
+    Enable_Diagnostics_Prepaid: {
+      QA: 'QA_Enable_Diagnostics_Prepaid',
+      PROD: 'Enable_Diagnostics_Prepaid',
+    },
+    Diagnostics_CityLevel_Payment_Option: {
+      QA: 'QA_Diagnostics_City_Level_Payment_Option',
+      PROD: 'Diagnostics_City_Level_Payment_Option',
+    },
+    Covid_Risk_Level_Url: {
+      QA: 'QA_Covid_Risk_Level_Url',
+      PROD: 'Covid_Risk_Level_Url',
+    },
+    Diagnostics_Help_NonOrder_Queries: {
+      QA: 'QA_Diagnostics_Help_NonOrder_Queries',
+      PROD: 'Diagnostics_Help_NonOrder_Queries',
+    },
+    Pharma_Discailmer_Message: {
+      QA: 'QA_Pharma_PDP_Disclaimer',
+      PROD: 'Pharma_PDP_Disclaimer',
+    },
+    Nudge_Message_Pharmacy_Home: {
+      QA: 'QA_Show_nudge_on_pharma_home',
+      PROD: 'Show_nudge_on_pharma_home',
+    },
+    Nudge_Message_Pharmacy_PDP: {
+      QA: 'QA_Show_nudge_on_pharma_pdp',
+      PROD: 'Show_nudge_on_pharma_pdp',
+    },
+    Nudge_Message_Pharmacy_Cart: {
+      QA: 'QA_Show_nudge_on_pharma_cart',
+      PROD: 'Show_nudge_on_pharma_cart',
+    },
   };
 
-  const getConfigStringBasedOnEnv = (
+  const getKeyBasedOnEnv = (
     currentEnv: AppEnv,
     config: typeof RemoteConfigKeys,
     _key: keyof typeof RemoteConfigKeys
@@ -783,114 +1104,283 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     const valueBasedOnEnv = config[_key] as RemoteConfigKeysType;
     return currentEnv === AppEnv.PROD
       ? valueBasedOnEnv.PROD
-      : currentEnv === AppEnv.QA || currentEnv === AppEnv.QA2
+      : currentEnv === AppEnv.QA ||
+        currentEnv === AppEnv.QA2 ||
+        currentEnv === AppEnv.QA3 ||
+        currentEnv === AppEnv.QA5
       ? valueBasedOnEnv.QA || valueBasedOnEnv.PROD
       : valueBasedOnEnv.DEV || valueBasedOnEnv.QA || valueBasedOnEnv.PROD;
   };
 
-  const getRemoteConfigKeys = (): string[] => {
-    return (Object.keys(RemoteConfigKeys) as (keyof typeof RemoteConfigKeys)[]).map((configKey) =>
-      getConfigStringBasedOnEnv(APP_ENV, RemoteConfigKeys, configKey)
-    );
-  };
-
   const getRemoteConfigValue = (
     remoteConfigKey: keyof typeof RemoteConfigKeys,
-    snapshot: {
-      [key: string]: { val(): any };
-    }
-  ) => snapshot[getConfigStringBasedOnEnv(APP_ENV, RemoteConfigKeys, remoteConfigKey)].val();
+    processValue: (key: string) => any
+  ) => {
+    const key = getKeyBasedOnEnv(APP_ENV, RemoteConfigKeys, remoteConfigKey);
+    return processValue(key);
+  };
 
   const setAppConfig = (
     remoteConfigKey: keyof typeof RemoteConfigKeys,
     appConfigKey: keyof typeof AppConfig.Configuration,
-    snapshot: {
-      [key: string]: { val(): any };
-    },
-    processValue?: (val: string | number) => any
+    processValue: (key: string) => any
   ) => {
-    const _val = snapshot[
-      getConfigStringBasedOnEnv(APP_ENV, RemoteConfigKeys, remoteConfigKey)
-    ].val();
-    const finalValue = processValue ? processValue(_val) : _val;
-    updateAppConfig(appConfigKey, finalValue);
+    const key = getKeyBasedOnEnv(APP_ENV, RemoteConfigKeys, remoteConfigKey);
+    const value = processValue(key);
+    updateAppConfig(appConfigKey, value);
   };
 
-  const checkForVersionUpdate = () => {
-    console.log('checkForVersionUpdate');
-
+  const checkForVersionUpdate = async () => {
     try {
-      if (__DEV__) {
-        firebase.config().enableDeveloperMode();
+      // Note: remote config values will be cached for the specified duration in development mode, update below value if necessary.
+      const minimumFetchIntervalMillis = __DEV__ ? 0 : 0;
+      await remoteConfig().setConfigSettings({ minimumFetchIntervalMillis });
+      await remoteConfig().fetchAndActivate();
+      const config = remoteConfig();
+      const needHelpToContactInMessage = getRemoteConfigValue('Need_Help_To_Contact_In', (key) =>
+        config.getString(key)
+      );
+      needHelpToContactInMessage && setNeedHelpToContactInMessage!(needHelpToContactInMessage);
+
+      const covidVaccineCta = getRemoteConfigValue(
+        'Covid_Vaccine_Cta_Key',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.COVID_VACCINE_SECTION
+      );
+      covidVaccineCta && setCovidVaccineCta!(covidVaccineCta);
+
+      const covidVaccineCtaV2 = getRemoteConfigValue(
+        'Covid_Vaccine_Cta_Key_V2',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.COVID_VACCINE_SECTION
+      );
+      covidVaccineCtaV2 && setCovidVaccineCtaV2!(covidVaccineCtaV2);
+
+      const loginSection = getRemoteConfigValue(
+        'Login_Section_Key',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.LOGIN_SECTION
+      );
+      loginSection && setLoginSection!(loginSection);
+
+      const needHelpReturnPharmaOrderSuccessMessage = getRemoteConfigValue(
+        'Need_Help_Return_Pharma_Order_Success_Message',
+        (key) => config.getString(key)
+      );
+      needHelpReturnPharmaOrderSuccessMessage &&
+        setNeedHelpReturnPharmaOrderSuccessMessage!(needHelpReturnPharmaOrderSuccessMessage);
+
+      const bankOfferText = getRemoteConfigValue('Cart_Bank_Offer_Text', (key) =>
+        config.getString(key)
+      );
+      bankOfferText && setCartBankOffer!(bankOfferText);
+
+      const uploadPrescriptionOptions = getRemoteConfigValue(
+        'uploadPrescription_Options',
+        (key) => JSON.parse(config.getString(key)) || []
+      );
+      uploadPrescriptionOptions && setUploadPrescriptionOptions!(uploadPrescriptionOptions);
+
+      const expectCallText = getRemoteConfigValue('Expect_Call_Text', (key) =>
+        config.getString(key)
+      );
+      expectCallText && setExpectCallText?.(expectCallText);
+
+      const nonCartTatText = getRemoteConfigValue('Non_Cart_TAT_Text', (key) =>
+        config.getString(key)
+      );
+      nonCartTatText && setNonCartTatText?.(nonCartTatText);
+
+      const nonCartDeliveryText = getRemoteConfigValue('Non_Cart_Delivery_Text', (key) =>
+        config.getString(key)
+      );
+      nonCartDeliveryText && setNonCartDeliveryText?.(nonCartDeliveryText);
+
+      const minMaxCartValues = getRemoteConfigValue(
+        'Mininum_Cart_Values',
+        (key) => JSON.parse(config.getString(key)) || {}
+      );
+
+      minMaxCartValues?.minCartValue && setMinimumCartValue?.(minMaxCartValues?.minCartValue);
+      minMaxCartValues?.minCartValueCOD &&
+        setMinCartValueForCOD?.(minMaxCartValues?.minCartValueCOD);
+      minMaxCartValues?.maxCartValueCOD &&
+        setMaxCartValueForCOD?.(minMaxCartValues?.maxCartValueCOD);
+      minMaxCartValues?.priceNotUpdateRange &&
+        setCartPriceNotUpdateRange?.(minMaxCartValues?.priceNotUpdateRange);
+
+      const disclaimerMessagePdp = getRemoteConfigValue('Pharma_Discailmer_Message', (key) =>
+        config.getString(key)
+      );
+      setPdpDisclaimerMessage?.(disclaimerMessagePdp);
+
+      setAppConfig(
+        'Min_Value_For_Pharmacy_Free_Delivery',
+        'MIN_CART_VALUE_FOR_FREE_DELIVERY',
+        (key) => config.getNumber(key)
+      );
+
+      setAppConfig(
+        'min_value_to_nudge_users_to_avail_free_delivery',
+        'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
+        (key) => config.getNumber(key)
+      );
+
+      setAppConfig('Pharmacy_Delivery_Charges', 'DELIVERY_CHARGES', (key) => config.getNumber(key));
+
+      setAppConfig('Pharmacy_Packaging_Charges', 'PACKAGING_CHARGES', (key) =>
+        config.getNumber(key)
+      );
+
+      setAppConfig('Doctor_Partner_Text', 'DOCTOR_PARTNER_TEXT', (key) => config.getString(key));
+
+      setAppConfig('Doctors_Page_Size', 'Doctors_Page_Size', (key) => config.getNumber(key));
+
+      setAppConfig(
+        'top6_specailties',
+        'TOP_SPECIALITIES',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.TOP_SPECIALITIES
+      );
+
+      setAppConfig(
+        'Min_Value_For_Pharmacy_Free_Packaging',
+        'MIN_CART_VALUE_FOR_FREE_PACKAGING',
+        (key) => config.getNumber(key)
+      );
+
+      setAppConfig(
+        'Cart_Update_Price_Config',
+        'CART_UPDATE_PRICE_CONFIG',
+        (key) =>
+          JSON.parse(config.getString(key)) || AppConfig.Configuration.CART_UPDATE_PRICE_CONFIG
+      );
+
+      setAppConfig(
+        'Cart_Prescription_Options',
+        'CART_PRESCRIPTION_OPTIONS',
+        (key) =>
+          JSON.parse(config.getString(key) || 'null') ||
+          AppConfig.Configuration.CART_PRESCRIPTION_OPTIONS
+      );
+
+      setAppConfig(
+        'Need_Help_Return_Order_Sub_Reason',
+        'RETURN_ORDER_SUB_REASON',
+        (key) =>
+          JSON.parse(config.getString(key)) || AppConfig.Configuration.RETURN_ORDER_SUB_REASON
+      );
+
+      setAppConfig('Enable_Conditional_Management', 'ENABLE_CONDITIONAL_MANAGEMENT', (key) =>
+        config.getBoolean(key)
+      );
+
+      setAppConfig('Health_Credit_Expiration_Time', 'Health_Credit_Expiration_Time', (key) =>
+        config.getNumber(key)
+      );
+
+      setAppConfig('Reopen_Help_Max_Time', 'Reopen_Help_Max_Time', (key) => {
+        config.getNumber(key);
+      });
+
+      setAppConfig('Vaccination_Cities', 'Vaccination_Cities_List', (key) => {
+        return JSON.parse(config.getString(key)) || AppConfig.Configuration.Vaccination_Cities_List;
+      });
+
+      setAppConfig('Vaccine_Type', 'Vaccine_Type', (key) => {
+        return JSON.parse(config.getString(key)) || AppConfig.Configuration.Vaccine_Type;
+      });
+
+      setAppConfig('Vacc_City_Rule', 'Vacc_City_Rule', (key) => {
+        return JSON.parse(config.getString(key));
+      });
+
+      setAppConfig('Cancel_Threshold_Pre_Vaccination', 'Cancel_Threshold_Pre_Vaccination', (key) =>
+        config.getNumber(key)
+      );
+
+      setAppConfig('Helpdesk_Chat_Confim_Msg', 'Helpdesk_Chat_Confim_Msg', (key) =>
+        config.getString(key)
+      );
+
+      setAppConfig('Used_Up_Alotted_Slot_Msg', 'Used_Up_Alotted_Slot_Msg', (key) =>
+        config.getString(key)
+      );
+
+      setAppConfig('Covid_Items', 'Covid_Items', (key) => config.getString(key));
+      setAppConfig('Covid_Max_Slot_Days', 'Covid_Max_Slot_Days', (key) => config.getNumber(key));
+      setAppConfig('Non_Covid_Max_Slot_Days', 'Non_Covid_Max_Slot_Days', (key) =>
+        config.getNumber(key)
+      );
+      setAppConfig('followUp_Chat', 'FollowUp_Chat_Limit', (key) => config.getNumber(key));
+      setAppConfig('Enable_Diagnostics_COD', 'Enable_Diagnostics_COD', (key) =>
+        config.getBoolean(key)
+      );
+      setAppConfig(
+        'Enable_Diagnostics_Cancellation_Policy',
+        'Enable_Diagnostics_Cancellation_Policy',
+        (key) => config.getBoolean(key)
+      );
+      setAppConfig(
+        'Diagnostics_Cancel_Policy_Text_Msg',
+        'Diagnostics_Cancel_Policy_Text_Msg',
+        (key) => config.getString(key)
+      );
+      setAppConfig('MaxCallRetryAttempt', 'MaxCallRetryAttempt', (key) => config.getNumber(key));
+
+      setAppConfig('Enable_Diagnostics_Prepaid', 'Enable_Diagnostics_Prepaid', (key) =>
+        config.getBoolean(key)
+      );
+      setAppConfig(
+        'Diagnostics_CityLevel_Payment_Option',
+        'DIAGNOSTICS_CITY_LEVEL_PAYMENT_OPTION',
+        (key) =>
+          JSON.parse(config.getString(key)) ||
+          AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_PAYMENT_OPTION
+      );
+
+      setAppConfig('Covid_Risk_Level_Url', 'COVID_RISK_LEVEL_URL', (key) => config.getString(key));
+      setAppConfig(
+        'Diagnostics_Help_NonOrder_Queries',
+        'Diagnostics_Help_NonOrder_Queries',
+        (key) => config.getString(key)
+      );
+
+      const nudgeMessagePharmacyHome = getRemoteConfigValue(
+        'Nudge_Message_Pharmacy_Home',
+        (key) => JSON.parse(config.getString(key)) || null
+      );
+
+      nudgeMessagePharmacyHome && setPharmaHomeNudgeMessage?.(nudgeMessagePharmacyHome);
+
+      const nudgeMessagePharmacyCart = getRemoteConfigValue(
+        'Nudge_Message_Pharmacy_Cart',
+        (key) => JSON.parse(config.getString(key)) || null
+      );
+
+      nudgeMessagePharmacyCart && setPharmaCartNudgeMessage?.(nudgeMessagePharmacyCart);
+
+      const nudgeMessagePharmacyPDP = getRemoteConfigValue(
+        'Nudge_Message_Pharmacy_PDP',
+        (key) => JSON.parse(config.getString(key)) || null
+      );
+
+      nudgeMessagePharmacyPDP && setPharmaPDPNudgeMessage?.(nudgeMessagePharmacyPDP);
+
+      const { iOS_Version, Android_Version } = AppConfig.Configuration;
+      const isIOS = Platform.OS === 'ios';
+      const appVersion = coerce(isIOS ? iOS_Version : Android_Version)?.version;
+      const appLatestVersionFromConfig = getRemoteConfigValue(
+        isIOS ? 'ios_Latest_version' : 'android_latest_version',
+        (key) => config.getString(key)
+      );
+      const appLatestVersion = coerce(appLatestVersionFromConfig)?.version;
+      const isMandatory: boolean = getRemoteConfigValue(
+        isIOS ? 'ios_mandatory' : 'Android_mandatory',
+        (key) => config.getBoolean(key)
+      );
+
+      if (appVersion && appLatestVersion && isLessThan(appVersion, appLatestVersion)) {
+        showUpdateAlert(isMandatory);
       }
-
-      firebase
-        .config()
-        .fetch(30 * 0) // 30 min
-        .then(() => {
-          return firebase.config().activateFetched();
-        })
-        .then(() => {
-          return firebase.config().getValues(getRemoteConfigKeys());
-        })
-        .then((snapshot) => {
-          const needHelpToContactInMessage = getRemoteConfigValue(
-            'Need_Help_To_Contact_In',
-            snapshot
-          );
-          needHelpToContactInMessage && setNeedHelpToContactInMessage!(needHelpToContactInMessage);
-
-          setAppConfig(
-            'Min_Value_For_Pharmacy_Free_Delivery',
-            'MIN_CART_VALUE_FOR_FREE_DELIVERY',
-            snapshot
-          );
-
-          setAppConfig(
-            'min_value_to_nudge_users_to_avail_free_delivery',
-            'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
-            snapshot
-          );
-
-          setAppConfig('Pharmacy_Delivery_Charges', 'DELIVERY_CHARGES', snapshot);
-
-          setAppConfig('Doctor_Partner_Text', 'DOCTOR_PARTNER_TEXT', snapshot);
-
-          setAppConfig('Doctors_Page_Size', 'Doctors_Page_Size', snapshot);
-          setAppConfig('top6_specailties', 'TOP_SPECIALITIES', snapshot, (val: any) =>
-            JSON.parse(val)
-          );
-
-          try {
-            AsyncStorage.setItem(
-              'CMEnable',
-              JSON.stringify(getRemoteConfigValue('Enable_Conditional_Management', snapshot))
-            );
-          } catch (error) {}
-
-          const { iOS_Version, Android_Version } = AppConfig.Configuration;
-          const isIOS = Platform.OS === 'ios';
-          const appVersion = coerce(isIOS ? iOS_Version : Android_Version)?.version;
-          const appLatestVersionFromConfig = getRemoteConfigValue(
-            isIOS ? 'ios_Latest_version' : 'android_latest_version',
-            snapshot
-          );
-          const appLatestVersion = coerce(appLatestVersionFromConfig)?.version;
-          const isMandatory: boolean = getRemoteConfigValue(
-            isIOS ? 'ios_mandatory' : 'Android_mandatory',
-            snapshot
-          );
-
-          if (appVersion && appLatestVersion && isLessThan(appVersion, appLatestVersion)) {
-            showUpdateAlert(isMandatory);
-          }
-        })
-        .catch((error) => {
-          CommonBugFender('SplashScreen_checkForVersionUpdate', error);
-          console.log(`Error processing config: ${error}`);
-        });
     } catch (error) {
-      CommonBugFender('SplashScreen_checkForVersionUpdate_try', error);
+      CommonBugFender('SplashScreen - Error processing remote config', error);
     }
   };
 
@@ -932,7 +1422,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                 Platform.OS === 'ios'
                   ? 'https://apps.apple.com/in/app/apollo247/id1496740273'
                   : 'https://play.google.com/store/apps/details?id=com.apollo.patientapp'
-              ).catch((err) => console.log('An error occurred', err));
+              ).catch((err) => {});
             }}
           />
         </View>
@@ -940,27 +1430,90 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     });
   };
 
+  const configureAnimation = () => {
+    const randomIndex = Math.floor(Math.random() * CONST_SPLASH_LOADER.length);
+    setSelectedAnimationIndex(randomIndex);
+    logoAnimation();
+  };
+
+  const spinObject = () => {
+    Animated.loop(
+      Animated.timing(spinValue, {
+        toValue: 1,
+        duration: 1000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    ).start();
+  };
+
+  let spin = spinValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  const springAnimation = () => {
+    Animated.loop(
+      Animated.spring(springValue, {
+        toValue: 1.4,
+        friction: 1,
+        useNativeDriver: true,
+      })
+    ).start();
+  };
+
+  const logoAnimation = () => {
+    Animated.timing(animatedValue, {
+      toValue: 1,
+      duration: 1300,
+      useNativeDriver: true,
+    }).start(() => {});
+  };
+
   return (
     <View style={styles.mainView}>
-      <SplashLogo
+      <Animated.View
         style={{
-          width: 152,
-          height: 117,
-          ...Platform.select({
-            android: {
-              top: 12,
+          transform: [
+            {
+              scale: animatedValue.interpolate({
+                inputRange: [0, 0.5, 1],
+                outputRange: [1, 1.6, 1],
+              }),
             },
-          }),
+          ],
         }}
-        resizeMode="contain"
-      />
-      {showSpinner ? (
-        <ActivityIndicator
-          animating={showSpinner}
-          size="large"
-          color="green"
-          style={{ bottom: 60, position: 'absolute' }}
-        />
+      >
+        <SplashLogo style={styles.splashLogo} resizeMode="contain" />
+      </Animated.View>
+
+      {CONST_SPLASH_LOADER[selectedAnimationIndex] == string.splash.STETHO ? (
+        <Animated.View
+          style={[
+            styles.loaderContainer,
+            {
+              transform: [
+                {
+                  scale: springValue,
+                },
+              ],
+            },
+          ]}
+        >
+          <SplashStethoscope style={styles.loader} />
+        </Animated.View>
+      ) : null}
+
+      {CONST_SPLASH_LOADER[selectedAnimationIndex] == string.splash.CAPSULE ? (
+        <Animated.View style={[styles.loaderContainer, { transform: [{ rotate: spin }] }]}>
+          <SplashCapsule style={styles.loader} />
+        </Animated.View>
+      ) : null}
+
+      {CONST_SPLASH_LOADER[selectedAnimationIndex] == string.splash.SYRINGE ? (
+        <Animated.View style={[styles.loaderContainer, { transform: [{ rotate: spin }] }]}>
+          <SplashSyringe style={styles.loader} />
+        </Animated.View>
       ) : null}
     </View>
   );

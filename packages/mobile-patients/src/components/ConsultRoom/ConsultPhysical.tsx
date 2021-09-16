@@ -2,11 +2,8 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
   Afternoon,
   AfternoonUnselected,
-  DropdownGreen,
   Evening,
   EveningUnselected,
-  Location,
-  LocationOff,
   Morning,
   MorningUnselected,
   Night,
@@ -21,39 +18,25 @@ import {
 import { getDoctorPhysicalAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorPhysicalAvailableSlots';
 import {
   divideSlots,
-  getNetStatus,
   timeTo12HrFormat,
-  doRequestAndAccessLocation,
   g,
   postWebEngageEvent,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import Axios from 'axios';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import {
-  PermissionsAndroid,
-  Platform,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import Permissions from 'react-native-permissions';
+import { StyleSheet, Text, View } from 'react-native';
 import { CalendarView, CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
 import moment from 'moment';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
-import {
-  CommonLogEvent,
-  CommonScreenLog,
-  CommonBugFender,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { useAppCommonData } from '../AppCommonDataProvider';
-import { useUIElements } from '../UIElementsProvider';
-import AsyncStorage from '@react-native-community/async-storage';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { WebEngageEventName, WebEngageEvents } from '../../helpers/webEngageEvents';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const styles = StyleSheet.create({
   optionsView: {
@@ -148,10 +131,8 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
     },
   ];
   const [selectedtiming, setselectedtiming] = useState<string>(timings[0].title);
-  const [distance, setdistance] = useState<string>('');
   const [date, setDate] = useState<Date>(new Date());
   const [type, setType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.MONTH);
-  const [showPopup, setShowPopup] = useState<boolean>(false);
   const [availableSlots, setavailableSlots] = useState<string[] | null>([]);
   const [NextAvailableSlot, setNextAvailableSlot] = useState<string>('');
 
@@ -161,8 +142,6 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   ] = useState<getDoctorDetailsById_getDoctorDetailsById_doctorHospital | null>(
     props.clinics && props.clinics.length > 0 ? props.clinics[0] : null
   );
-  const { locationForDiagnostics, locationDetails, setLocationDetails } = useAppCommonData();
-  const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
 
   const client = useApolloClient();
@@ -175,10 +154,10 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   ]);
 
   useEffect(() => {
-    CommonScreenLog('Consult Physical', 'Consult Physical');
     if (NextAvailableSlot && timeArray) {
       for (const i in timeArray) {
         if (timeArray[i].time.length > 0) {
+          props.setshowSpinner?.(false);
           if (timeArray[i].time.includes(NextAvailableSlot)) {
             setselectedtiming(timeArray[i].label);
             props.setselectedTimeSlot(NextAvailableSlot);
@@ -196,7 +175,6 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
     getNextAvailableSlots(client, props.doctor ? [props.doctor.id] : [], todayDate)
       .then(({ data }: any) => {
         try {
-          props.setshowSpinner && props.setshowSpinner(false);
           if (data[0] && data[0]!.physicalAvailableSlot) {
             const nextSlot = data[0]!.physicalAvailableSlot;
             const date2: Date = new Date(nextSlot);
@@ -207,121 +185,22 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
           }
         } catch (e) {
           CommonBugFender('ConsultPhysical_checkAvailabilitySlot_try', e);
+          props.setshowSpinner?.(false);
         }
       })
       .catch((e: any) => {
         CommonBugFender('ConsultPhysical_checkAvailabilitySlot', e);
         props.setshowSpinner && props.setshowSpinner(false);
-        console.log('error', e);
       });
   };
-
-  const findDistance = (searchstring: string) => {
-    const key = AppConfig.Configuration.GOOGLE_API_KEY;
-
-    const destination = selectedClinic
-      ? `${selectedClinic.facility.latitude},${selectedClinic.facility.longitude}` //`${selectedClinic.facility.streetLine1}, ${selectedClinic.facility.city}`
-      : '';
-    const distanceUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${searchstring}&destinations=${destination}&mode=driving&language=pl-PL&sensor=true&key=${key}`;
-    console.log(distanceUrl, 'distanceUrl');
-
-    Axios.get(distanceUrl)
-      .then((obj) => {
-        console.log(obj, 'objobj');
-
-        if (obj.data.rows.length > 0 && obj.data.rows[0].elements.length > 0) {
-          const value = obj.data.rows[0].elements[0].distance
-            ? obj.data.rows[0].elements[0].distance.value
-            : 0;
-          setdistance(`${(value / 1000).toFixed(1)} Kms`);
-        }
-      })
-      .catch((error) => {
-        CommonBugFender('ConsultPhysical_findDistance', error);
-        console.log(error);
-      });
-  };
-
-  const fetchLocation = useCallback(() => {
-    if (!locationDetails) {
-      doRequestAndAccessLocation()
-        .then((response) => {
-          console.log('response', { response });
-          response && setLocationDetails!(response);
-          response && findDistance(`${response.latitude}, ${response.longitude}`);
-        })
-        .catch((e) => {
-          CommonBugFender('ConsultPhysical_fetchLocation', e);
-          showAphAlert!({
-            title: 'Uh oh! :(',
-            description: 'Unable to access location.',
-          });
-        });
-    } else {
-      findDistance(`${locationDetails.latitude}, ${locationDetails.longitude}`);
-    }
-
-    // AsyncStorage.getItem('location').then(async (item) => {
-    //   const location = item ? JSON.parse(item) : null;
-    //   console.log(location, 'location');
-
-    //   if (location && location.latlong) {
-    //     findDistance(`${location.latlong.lat}, ${location.latlong.lng}`);
-    //   } else {
-    //     await Permissions.request('location')
-    //       .then((response) => {
-    //         if (response === 'authorized') {
-    //           Geolocation.getCurrentPosition(
-    //             (position) => {
-    //               findDistance(position.coords.latitude + ',' + position.coords.longitude);
-    //             },
-    //             (error) => console.log(JSON.stringify(error)),
-    //             { enableHighAccuracy: false, timeout: 2000 }
-    //           );
-    //         }
-    //       })
-    //       .catch((error) => {
-    //         console.log(error, 'error permission');
-    //       });
-    //   }
-    // });
-  }, [selectedClinic]);
-
-  const requestLocationPermission = useCallback(async () => {
-    try {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-      );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('You can use the location', granted);
-        fetchLocation();
-      } else {
-        console.log('location permission denied');
-      }
-    } catch (err) {
-      CommonBugFender('ConsultPhysical_requestLocationPermission_try', err);
-      console.log(err);
-    }
-  }, [fetchLocation]);
 
   useEffect(() => {
     fetchPhysicalSlots(date);
     checkAvailabilitySlot();
   }, []);
 
-  useEffect(() => {
-    getNetStatus()
-      .then((status) => {
-        if (status) {
-          Platform.OS === 'android' ? requestLocationPermission() : fetchLocation();
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('ConsultPhysical_getNetStatus', e);
-      });
-  }, [requestLocationPermission, fetchLocation]);
-
   const setTimeArrayData = async (availableSlots: string[], selectedDate: Date = date) => {
+    if (availableSlots?.length === 0) props.setshowSpinner?.(false);
     setselectedtiming(timeArray[0].label);
     const array = await divideSlots(availableSlots, selectedDate);
     settimeArray(array);
@@ -349,18 +228,17 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
             data.getDoctorPhysicalAvailableSlots &&
             data.getDoctorPhysicalAvailableSlots.availableSlots
           ) {
-            props.setshowSpinner(false);
             setTimeArrayData(data.getDoctorPhysicalAvailableSlots.availableSlots, selectedDate);
             setavailableSlots(data.getDoctorPhysicalAvailableSlots.availableSlots);
           }
         } catch (e) {
           CommonBugFender('ConsultPhysical_fetchPhysicalSlots_try', e);
+          props.setshowSpinner?.(false);
         }
       })
       .catch((e: any) => {
         CommonBugFender('ConsultPhysical_fetchPhysicalSlots', e);
         props.setshowSpinner(false);
-        console.log('error', e);
       });
   };
 
@@ -370,18 +248,18 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
     }
     const selectedTabSlots = (timeArray || []).find((item) => item.label == selectedtiming);
     if (selectedTabSlots && selectedTabSlots.time.length == 0) {
-      console.log('NO_SLOTS_FOUND - ConsultPhysical', selectedtiming);
       const data: getDoctorDetailsById_getDoctorDetailsById = props.doctor!;
-      const eventAttributes: WebEngageEvents[WebEngageEventName.NO_SLOTS_FOUND] = {
+      const eventAttributes:
+        | WebEngageEvents[WebEngageEventName.NO_SLOTS_FOUND]
+        | CleverTapEvents[CleverTapEventName.CONSULT_NO_SLOTS_FOUND] = {
         'Doctor Name': g(data, 'fullName')!,
         'Speciality ID': g(data, 'specialty', 'id')!,
         'Speciality Name': g(data, 'specialty', 'name')!,
         'Doctor Category': g(data, 'doctorType')!,
-        'Consult Date Time': new Date(),
+        'Consult Date Time': moment().toDate(),
         'Consult Mode': 'Physical',
         'Hospital Name': g(data, 'doctorHospital', '0' as any, 'facility', 'name')!,
         'Hospital City': g(data, 'doctorHospital', '0' as any, 'facility', 'city')!,
-        // 'Consult ID': g(data, 'id')!,
         'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
         'Patient UHID': g(currentPatient, 'uhid'),
         Relation: g(currentPatient, 'relation'),
@@ -392,6 +270,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
         'Customer ID': g(currentPatient, 'id'),
       };
       postWebEngageEvent(WebEngageEventName.NO_SLOTS_FOUND, eventAttributes);
+      postCleverTapEvent(CleverTapEventName.CONSULT_NO_SLOTS_FOUND, eventAttributes);
     }
   }, [selectedtiming, timeArray]);
 
@@ -455,64 +334,6 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
     );
   };
 
-  const renderLocation = () => {
-    return (
-      <View style={{ marginTop: 10 }}>
-        <View style={{ paddingTop: 5, paddingBottom: 10 }}>
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => {
-              CommonLogEvent('CONSULT_PHYSICAL', 'Login clicked');
-              setShowPopup(!showPopup);
-            }}
-          >
-            <View style={styles.placeholderViewStyle}>
-              <Text style={[styles.placeholderTextStyle]}>
-                {selectedClinic ? selectedClinic.facility.name : ''}
-              </Text>
-              <DropdownGreen size="sm" />
-            </View>
-          </TouchableOpacity>
-          {showPopup && Popup()}
-        </View>
-        <View style={{ marginTop: 6, marginBottom: 4, flexDirection: 'row' }}>
-          <View style={{ flex: 1 }}>
-            <Text
-              style={{
-                color: theme.colors.SHERPA_BLUE,
-                ...theme.fonts.IBMPlexSansMedium(13),
-                paddingTop: 5,
-                lineHeight: 20,
-              }}
-            >
-              {selectedClinic
-                ? `${selectedClinic.facility.streetLine1}, ${
-                    selectedClinic.facility.streetLine2
-                      ? `${selectedClinic.facility.streetLine2}, `
-                      : ''
-                  }${selectedClinic.facility.city}`
-                : ''}
-            </Text>
-          </View>
-          <View style={styles.horizontalSeparatorStyle} />
-          <View style={{ width: 70, alignItems: 'flex-end' }}>
-            {distance === '' ? <LocationOff /> : <Location />}
-            <Text
-              style={{
-                color: theme.colors.SHERPA_BLUE,
-                ...theme.fonts.IBMPlexSansMedium(12),
-                paddingTop: 2,
-                lineHeight: 20,
-              }}
-            >
-              {distance}
-            </Text>
-          </View>
-        </View>
-      </View>
-    );
-  };
-
   const renderCalendar = () => {
     return (
       <CalendarView
@@ -529,39 +350,6 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
           setType(type);
         }}
       />
-    );
-  };
-  const Popup = () => {
-    return (
-      <View>
-        <View
-          style={{
-            width: 300,
-            borderRadius: 10,
-            backgroundColor: 'white',
-            marginRight: 20,
-            paddingTop: 8,
-            paddingBottom: 16,
-          }}
-        >
-          {props.clinics.map((item) => (
-            <View style={styles.textViewStyle}>
-              <Text
-                style={styles.textStyle}
-                onPress={() => {
-                  setselectedClinic(item);
-                  setShowPopup(false);
-                  props.setselectedClinic(item);
-                }}
-              >
-                {`${item.facility.streetLine1}, ${
-                  item.facility.streetLine2 ? `${item.facility.streetLine2}, ` : ''
-                }${item.facility.city}`}
-              </Text>
-            </View>
-          ))}
-        </View>
-      </View>
     );
   };
 
@@ -584,7 +372,6 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
           marginBottom: 16,
         }}
       >
-        {renderLocation()}
         {renderTimings()}
       </View>
     </View>

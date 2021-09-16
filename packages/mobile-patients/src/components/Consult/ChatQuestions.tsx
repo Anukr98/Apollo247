@@ -35,33 +35,18 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     flex: 1,
-    // alignItems: 'flex-end',
     justifyContent: 'flex-end',
-    // height: 100,
     backgroundColor: 'transparent',
-    // ...theme.viewStyles.container,
     zIndex: 1000,
   },
   mainView: {
     minHeight: 200,
-
-    // flex: 1,
-    // flex: 9,
-    // backgroundColor: 'transparent',
   },
   itemContainer: {
     minHeight: 200,
-    // margin: 20,
     paddingTop: 20,
     backgroundColor: 'white',
     alignItems: 'flex-start',
-    // justifyContent: 'space-around',
-    // borderRadius: 10,
-    // shadowColor: '#808080',
-    // shadowOffset: { width: 0, height: 5 },
-    // shadowOpacity: 0.4,
-    // shadowRadius: 10,
-    // elevation: 8,
   },
   descptionText: {
     marginTop: 10,
@@ -277,15 +262,7 @@ const slides: Slide[] = [
     onSubmitValidation: [/^\d{1,3}(\/|\\)\d{1,3}$/],
     validationMessage: 'Enter blood pressure in valid format (eg. 120/80)',
   },
-  // {
-  //   key: 'familyHistory',
-  //   index: 12,
-  //   title: 'Does anyone in your family suffer from — COPD,Cancer, Hypertension or Diabetes?',
-  //   buttonText: ['Yes', 'No'],
-  //   inputData: ['value'],
-  // },
 ];
-
 export interface ChatQuestionsProps {
   onDonePress: (values: { k: string; v: string[] }[]) => void;
   onItemDone?: (values: { k: string; v: string[] }) => void;
@@ -297,7 +274,7 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
   const [values, setValues] = useState<{ k: string; v: string[] }[]>();
   const [refresh, setRefresh] = useState<boolean>(false);
   const [isSend, setisSend] = useState<boolean[]>(slides.map((item) => false));
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, currentPatientWithHistory } = useAllCurrentPatients();
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const { showAphAlert, hideAphAlert } = useUIElements();
 
@@ -355,32 +332,33 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
         v: item.inputData.map((i) => (item.dropDown && i === 'drop' ? item.dropDown[0].value : '')),
       };
     });
-
-    if (currentPatient && currentPatient.patientMedicalHistory) {
-      currentPatient.patientMedicalHistory.age &&
+    if (currentPatientWithHistory?.patientMedicalHistory) {
+      currentPatientWithHistory?.patientMedicalHistory?.age &&
         (v.find((i) => i.k === 'age')!.v = [
-          currentPatient.patientMedicalHistory.age !== 'No'
-            ? currentPatient.patientMedicalHistory.age
+          currentPatientWithHistory?.patientMedicalHistory?.age !== 'No'
+            ? currentPatientWithHistory?.patientMedicalHistory?.age
             : '',
         ]);
-      currentPatient.patientMedicalHistory.gender &&
-        (currentPatient.patientMedicalHistory.gender === 'No'
+      currentPatientWithHistory?.patientMedicalHistory?.gender &&
+        (currentPatientWithHistory?.patientMedicalHistory?.gender === 'No'
           ? (v.find((i) => i.k === 'gender')!.v = ['Male'])
           : (v.find((i) => i.k === 'gender')!.v = ['Female']) &&
-            (v.find((i) => i.k === 'gender')!.v = [currentPatient.patientMedicalHistory.gender]));
-      currentPatient.patientMedicalHistory.bp &&
+            (v.find((i) => i.k === 'gender')!.v = [
+              currentPatientWithHistory?.patientMedicalHistory?.gender,
+            ]));
+      currentPatientWithHistory?.patientMedicalHistory?.bp &&
         (v.find((i) => i.k === 'bp')!.v = [
-          currentPatient.patientMedicalHistory.bp !== ChatRoom_NotRecorded_Value
-            ? (currentPatient.patientMedicalHistory.bp.match(/^\d{0,3}(\/|\\){0,1}\d{0,3}$/) || [
-                '',
-              ])[0] || ''
+          currentPatientWithHistory?.patientMedicalHistory?.bp !== ChatRoom_NotRecorded_Value
+            ? (currentPatientWithHistory?.patientMedicalHistory?.bp.match(
+                /^\d{0,3}(\/|\\){0,1}\d{0,3}$/
+              ) || [''])[0] || ''
             : '',
           '',
         ]);
 
       const height = [];
-      if (currentPatient.patientMedicalHistory.height) {
-        const heightData = currentPatient.patientMedicalHistory.height.split(' ');
+      if (currentPatientWithHistory?.patientMedicalHistory?.height) {
+        const heightData = currentPatientWithHistory?.patientMedicalHistory?.height.split(' ');
         if (heightData.length == 2) {
           height.push((heightData[0].match(/^[0-9'"’”.]*$/g) || [''])[0] || '');
           height.push(
@@ -393,38 +371,37 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
         height.push('', 'cm');
       }
       v.find((i) => i.k === 'height')!.v = height;
-      currentPatient.patientMedicalHistory.weight &&
+      currentPatientWithHistory?.patientMedicalHistory?.weight &&
         (v.find((i) => i.k === 'weight')!.v = [
-          currentPatient.patientMedicalHistory.weight !== ChatRoom_NotRecorded_Value
-            ? (currentPatient.patientMedicalHistory.weight.match(/^[0-9]+\.{0,1}[0-9]{0,3}$/) || [
-                '',
-              ])[0] || ''
+          currentPatientWithHistory?.patientMedicalHistory?.weight !== ChatRoom_NotRecorded_Value
+            ? (currentPatientWithHistory?.patientMedicalHistory?.weight.match(
+                /^[0-9]+\.{0,1}[0-9]{0,3}$/
+              ) || [''])[0] || ''
             : '',
         ]);
-      currentPatient.patientMedicalHistory.dietAllergies &&
-        (currentPatient.patientMedicalHistory.dietAllergies === 'No'
+      currentPatientWithHistory?.patientMedicalHistory?.dietAllergies &&
+        (currentPatientWithHistory?.patientMedicalHistory?.dietAllergies === 'No'
           ? (v.find((i) => i.k === 'diet')!.v = ['No'])
           : (v.find((i) => i.k === 'diet')!.v = ['Yes']) &&
             (v.find((i) => i.k === 'dietAllergies')!.v = [
-              currentPatient.patientMedicalHistory.dietAllergies,
+              currentPatientWithHistory?.patientMedicalHistory?.dietAllergies,
             ]));
 
-      currentPatient.patientMedicalHistory.drugAllergies &&
-        (currentPatient.patientMedicalHistory.drugAllergies === 'No'
+      currentPatientWithHistory?.patientMedicalHistory?.drugAllergies &&
+        (currentPatientWithHistory?.patientMedicalHistory?.drugAllergies === 'No'
           ? (v.find((i) => i.k === 'drug')!.v = ['No'])
           : (v.find((i) => i.k === 'drug')!.v = ['Yes']) &&
             (v.find((i) => i.k === 'drugAllergies')!.v = [
-              currentPatient.patientMedicalHistory.drugAllergies,
+              currentPatientWithHistory?.patientMedicalHistory?.drugAllergies,
             ]));
-      currentPatient.patientMedicalHistory.temperature &&
+      currentPatientWithHistory?.patientMedicalHistory?.temperature &&
         (v.find((i) => i.k === 'temperature')!.v = [
-          currentPatient.patientMedicalHistory.temperature,
+          currentPatientWithHistory?.patientMedicalHistory?.temperature,
         ]);
     }
-
     setValues(v);
     // appIntroSliderRef.current.goToSlide(6);
-  }, []);
+  }, [currentPatientWithHistory]);
 
   const _renderNextButton = () => {
     return (
@@ -644,6 +621,7 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
                       ? theme.colors.APP_GREEN
                       : theme.colors.WHITE,
                   marginBottom: 16,
+                  paddingHorizontal: 3,
                 }}
                 disabledStyle={{
                   backgroundColor:
@@ -712,7 +690,6 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
           ref={appIntroSliderRef}
           extraData={refresh}
           paginationStyle={{ bottom: 10 }}
-          // hidePagination
           scrollEnabled={false}
           slides={slides}
           showPrevButton={false}

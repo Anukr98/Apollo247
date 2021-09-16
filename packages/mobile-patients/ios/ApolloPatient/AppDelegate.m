@@ -10,27 +10,20 @@
 #import <React/RCTBridge.h>
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTRootView.h>
-#import "Firebase.h"
-#import <Fabric/Fabric.h>
-#import <Crashlytics/Crashlytics.h>
+#import <Firebase.h>
 #import "RNSplashScreen.h"  // here
-#import "RNFirebaseNotifications.h"
-#import "RNFirebaseMessaging.h"
 #import <React/RCTLinkingManager.h>
 #import <WebEngage/WebEngage.h>
-@import AppsFlyerLib;
-#import <FBSDKCoreKit/FBSDKCoreKit.h>
 #import <CodePush/CodePush.h>
 
-#if __has_include(<AppsFlyerLib/AppsFlyerTracker.h>) // from Pod
-#import <AppsFlyerLib/AppsFlyerTracker.h>
-#else
-#import "AppsFlyerTracker.h"
-#endif
+#import <RNAppsFlyer.h>
 #import <PushKit/PushKit.h>
 #import "RNCallKeep.h"
 #import "RNVoipPushNotificationManager.h"
+#import <CleverTapSDK/CleverTap.h>
+#import <CleverTapReact/CleverTapReactManager.h>
 @import GoogleMaps;
+#import <AppTrackingTransparency/AppTrackingTransparency.h>
 
 @implementation AppDelegate
 
@@ -43,6 +36,9 @@
                                                    moduleName:@"ApolloPatient"
                                             initialProperties:nil];
   
+  [CleverTap autoIntegrate]; // integrate CleverTap SDK using the autoIntegrate option
+  [[CleverTapReactManager sharedInstance] applicationDidLaunchWithOptions:launchOptions];
+
   rootView.backgroundColor = [[UIColor alloc] initWithRed:1.0f green:1.0f blue:1.0f alpha:1];
   
   self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
@@ -50,12 +46,31 @@
   rootViewController.view = rootView;
   self.window.rootViewController = rootViewController;
   [self.window makeKeyAndVisible];
-  //  [RNSplashScreen show];  // here
+  // [RNSplashScreen show];  // here
   [RNSplashScreen showSplash:@"LaunchScreen" inRootView:rootView];
   
-  [FIRApp configure];
-  [RNFirebaseNotifications configure];
-  [Fabric with:@[[Crashlytics class]]];
+  if ([FIRApp defaultApp] == nil) {
+    [FIRApp configure];
+  }
+  
+  //NEWLY ADDED PERMISSIONS FOR iOS 14
+ if (@available(iOS 14, *)) {
+   [ATTrackingManager requestTrackingAuthorizationWithCompletionHandler:^(ATTrackingManagerAuthorizationStatus status) {
+     switch (status) {
+       case ATTrackingManagerAuthorizationStatusAuthorized:
+         NSLog(@"%lu Authorised",(unsigned long)status);
+         break;
+       case ATTrackingManagerAuthorizationStatusDenied:
+         NSLog(@"%lu Denied",(unsigned long)status);
+         break;
+       case ATTrackingManagerAuthorizationStatusRestricted:
+         NSLog(@"%lu Restricted",(unsigned long)status);
+         break;
+       default:
+         break;
+     }
+   }];
+ }
   
   //  [[UNUserNotificationCenter currentNotificationCenter] setDelegate:self];
   
@@ -76,8 +91,6 @@
   }];
   
   [[WebEngage sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
-  [[FBSDKApplicationDelegate sharedInstance] application:application
-                           didFinishLaunchingWithOptions:launchOptions];
   
   return YES;
 }
@@ -128,19 +141,6 @@
   }
 }
 
-- (void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification {
-  [[RNFirebaseNotifications instance] didReceiveLocalNotification:notification];
-}
-
-- (void)application:(UIApplication *)application didReceiveRemoteNotification:(nonnull NSDictionary *)userInfo
-fetchCompletionHandler:(nonnull void (^)(UIBackgroundFetchResult))completionHandler{
-  [[RNFirebaseNotifications instance] didReceiveRemoteNotification:userInfo fetchCompletionHandler:completionHandler];
-}
-
-- (void)application:(UIApplication *)application didRegisterUserNotificationSettings:(UIUserNotificationSettings *)notificationSettings {
-  [[RNFirebaseMessaging instance] didRegisterUserNotificationSettings:notificationSettings];
-}
-
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
   application.applicationIconBadgeNumber = 0;
@@ -150,42 +150,42 @@ fetchCompletionHandler:(nonnull void (^)(UIBackgroundFetchResult))completionHand
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
 {
   
-  @try {
-    NSLog(@"deviceToken %@",deviceToken);
-    
-    [[AppsFlyerTracker sharedTracker] registerUninstall:deviceToken];
-    
-    NSString *pushToken;
-    pushToken = [deviceToken description];
-    if(deviceToken){
-      pushToken = [pushToken stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"<>"]];
-      pushToken = [pushToken stringByReplacingOccurrencesOfString:@" " withString:@""];
-    } else {
-      pushToken= @"";
-    }
-    
-    if (self.chatClient && self.chatClient.user) {
-      
-      [self.chatClient registerWithNotificationToken:deviceToken
-       
-                                          completion:^(TCHResult *result) {
-        if (![result isSuccessful]) {
-          
-          // try registration again or verify token
-        }
-        
-      }];
-      
-    } else {
-      
-      [[NSUserDefaults standardUserDefaults] setObject:deviceToken forKey:@"deviceToken"];
-    }
-    
-    [[NSUserDefaults standardUserDefaults]setObject:pushToken forKey:@"devicePushToken"];
-    [[NSUserDefaults standardUserDefaults]synchronize];
-  } @catch (NSException *exception) {
-    NSLog(@"%@",exception );
-  }
+ @try {
+   NSLog(@"deviceToken %@",deviceToken);
+
+   [[AppsFlyerLib shared] registerUninstall:deviceToken];
+
+   NSString *pushToken;
+   pushToken = [deviceToken description];
+   if(deviceToken){
+     pushToken = [pushToken stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"<>"]];
+     pushToken = [pushToken stringByReplacingOccurrencesOfString:@" " withString:@""];
+   } else {
+     pushToken= @"";
+   }
+
+   if (self.chatClient && self.chatClient.user) {
+
+     [self.chatClient registerWithNotificationToken:deviceToken
+
+                                         completion:^(TCHResult *result) {
+       if (![result isSuccessful]) {
+
+         // try registration again or verify token
+       }
+
+     }];
+
+   } else {
+
+     [[NSUserDefaults standardUserDefaults] setObject:deviceToken forKey:@"deviceToken"];
+   }
+
+   [[NSUserDefaults standardUserDefaults]setObject:pushToken forKey:@"devicePushToken"];
+   [[NSUserDefaults standardUserDefaults]synchronize];
+ } @catch (NSException *exception) {
+   NSLog(@"%@",exception );
+ }
   
 }
 
@@ -235,16 +235,12 @@ API_AVAILABLE(ios(10.0)){
     }
     
     
-    [[AppsFlyerTracker sharedTracker] handleOpenUrl:url options:options];
+    [[AppsFlyerAttribution shared] handleOpenUrl:url options:options];
     
     [RCTLinkingManager application:application
                            openURL:url
                  sourceApplication:options[UIApplicationOpenURLOptionsSourceApplicationKey]
                         annotation:options[UIApplicationOpenURLOptionsAnnotationKey]];
-    
-    if ([[FBSDKApplicationDelegate sharedInstance] application:application openURL:url options:options]) {
-      return YES;
-    }
   } @catch (NSException *exception) {
     NSLog(@"%@",exception );
   }
@@ -255,7 +251,8 @@ API_AVAILABLE(ios(10.0)){
 // Reports app open from deep link from apps which do not support Universal Links (Twitter) and for iOS8 and below
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString*)sourceApplication annotation:(id)annotation
 {
-     [[AppsFlyerTracker sharedTracker] handleOpenURL:url sourceApplication:sourceApplication withAnnotation:annotation];
+   [[AppsFlyerAttribution shared] handleOpenUrl:url sourceApplication:sourceApplication annotation:annotation];
+
      return YES;
 }
 
@@ -266,9 +263,12 @@ API_AVAILABLE(ios(10.0)){
   [RCTLinkingManager application:application
             continueUserActivity:userActivity
               restorationHandler:restorationHandler];
-  [[AppsFlyerTracker sharedTracker] continueUserActivity:userActivity restorationHandler:restorationHandler];
+   [[AppsFlyerAttribution shared] continueUserActivity:userActivity restorationHandler:restorationHandler];
+
   [RNCallKeep application:application continueUserActivity:userActivity restorationHandler:restorationHandler];
-  return true;
+  return [RCTLinkingManager application:application
+            continueUserActivity:userActivity
+              restorationHandler:restorationHandler];
 }
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge

@@ -2,85 +2,85 @@ import {
   LocationData,
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
+import stripHtml from 'string-strip-html';
+import {
+  DiagnosticsCartItem,
+  useDiagnosticsCart,
+} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
-import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { PincodePopup } from '@aph/mobile-patients/src/components/Medicines/PincodePopup';
+import {
+  Badge,
+  SectionHeader,
+  Spearator,
+} from '@aph/mobile-patients/src/components/ui/BasicComponents';
+
 import {
   CartIcon,
-  DropdownGreen,
   LocationOff,
-  LocationOn,
-  NotificationIcon,
   SearchSendIcon,
-  TestsIcon,
-  ShieldIcon,
   HomeIcon,
-  PrimaryIcon,
-  LinkedUhidIcon,
-  PendingIcon,
+  NotificationIcon,
+  WorkflowIcon,
+  ArrowRightYellow,
+  ShieldIcon,
+  Remove,
+  DropdownGreen,
+  WidgetLiverIcon,
+  ExpressSlotClock,
+  PrescriptionColored,
+  GreenCheck,
+  PrescriptionIcon,
+  GalleryIcon,
+  CameraIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
-import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
-import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
-  GET_DIAGNOSTIC_DATA,
-  GET_DIAGNOSTIC_ORDER_LIST,
   SAVE_SEARCH,
-  SEARCH_DIAGNOSTICS_BY_ID,
   GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
-  SEARCH_DIAGNOSTICS_BY_CITY_ID,
+  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+  SET_DEFAULT_ADDRESS,
+  GET_PATIENT_ADDRESS_LIST,
+  GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
+  GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import {
-  getDiagnosticOrdersList,
-  getDiagnosticOrdersListVariables,
-  getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
-import {
-  getDiagnosticsData,
-  getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers,
-  getDiagnosticsData_getDiagnosticsData_diagnosticOrgans,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsData';
-import {
-  searchDiagnosticsByCityID,
-  searchDiagnosticsByCityIDVariables,
-  searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
-} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
-
-import {
-  getTestsPackages,
-  TestPackage,
-  PackageInclusion,
-  getPackageData,
   getPlaceInfoByPincode,
+  getLandingPageBanners,
+  getDiagnosticHomePageWidgets,
+  DIAGNOSTIC_GROUP_PLAN,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
-  doRequestAndAccessLocation,
   doRequestAndAccessLocationModified,
   g,
-  getNetStatus,
-  isValidSearch,
-  postWebEngageEvent,
-  postWEGNeedHelpEvent,
-  setWebEngageScreenNames,
   getFormattedLocation,
+  nameFormater,
+  isSmallDevice,
+  navigateToHome,
+  isAddressLatLngInValid,
+  addTestsToCart,
+  handleGraphQlError,
+  downloadDiagnosticReport,
+  setAsyncPharmaLocation,
+  downloadDocument,
+  removeWhiteSpaces,
+  storagePermissions,
+  getUserType,
+  getCleverTapCircleMemberValues,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import React, { useEffect, useState } from 'react';
-import { useApolloClient, useQuery } from 'react-apollo-hooks';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   Dimensions,
-  Keyboard,
   ListRenderItemInfo,
   SafeAreaView,
   ScrollView,
@@ -90,503 +90,753 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
+  Image as ImageNative,
+  ImageBackground,
+  BackHandler,
+  Alert,
+  Linking,
+  FlatList,
+  Modal,
   Platform,
 } from 'react-native';
-import { Image, Input } from 'react-native-elements';
-import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
-import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { Image } from 'react-native-elements';
+import { NavigationScreenProps } from 'react-navigation';
 import {
-  searchDiagnosticsById,
-  searchDiagnosticsByIdVariables,
-  searchDiagnosticsById_searchDiagnosticsById_diagnostics,
-} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsById';
-import { WebEngageEventName, WebEngageEvents } from '../../helpers/webEngageEvents';
-import moment from 'moment';
+  DIAGNOSTIC_ORDER_STATUS,
+  SEARCH_TYPE,
+  TEST_COLLECTION_TYPE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  useShoppingCart,
+  PhysicalPrescription,
+  EPrescription,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import {
+  CommonBugFender,
+  CommonLogEvent,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import _ from 'lodash';
 import {
   getPincodeServiceability,
   getPincodeServiceabilityVariables,
-} from '../../graphql/types/getPincodeServiceability';
+} from '@aph/mobile-patients/src/graphql/types/getPincodeServiceability';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+import {
+  GetSubscriptionsOfUserByStatus,
+  GetSubscriptionsOfUserByStatusVariables,
+} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
+import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
+import {
+  getDiagnosticClosedOrders,
+  getDiagnosticExpressSlots,
+  getDiagnosticOpenOrders,
+  getDiagnosticPatientPrescription,
+  getDiagnosticPhelboDetails,
+  getUserBannersList,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+  sourceHeaders,
+} from '@aph/mobile-patients/src/utils/commonUtils';
+import Carousel from 'react-native-snap-carousel';
+import { DiagnosticsSearchSuggestionItem } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticsSearchSuggestionItem';
+import { AccessLocation } from '@aph/mobile-patients/src/components/Medicines/Components/AccessLocation';
+import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
+import { PincodeInput } from '@aph/mobile-patients/src/components/Medicines/Components/PicodeInput';
+import {
+  makeAdressAsDefault,
+  makeAdressAsDefaultVariables,
+} from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
+import { CertifiedCard } from '@aph/mobile-patients/src/components/Tests/components/CertifiedCard';
+import {
+  DiagnosticAddresssSelected,
+  DiagnosticAddToCartEvent,
+  DiagnosticBannerClick,
+  DiagnosticHomePageWidgetClicked,
+  DiagnosticLandingPageViewedEvent,
+  DiagnosticPinCodeClicked,
+  DiagnosticTrackOrderViewed,
+  DiagnosticTrackPhleboClicked,
+  DiagnosticViewReportClicked,
+} from '@aph/mobile-patients/src/components/Tests/Events';
+import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
+import { PackageCard } from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
+import {
+  getPatientAddressList,
+  getPatientAddressListVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
+import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
+import {
+  AppConfig,
+  DIAGNOSITC_PHELBO_TRACKING_STATUS,
+  DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY,
+  DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
+  stepsToBookArray,
+} from '@aph/mobile-patients/src/strings/AppConfig';
+import {
+  findDiagnosticsWidgetsPricing,
+  findDiagnosticsWidgetsPricingVariables,
+} from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
+import { LowNetworkCard } from '@aph/mobile-patients/src/components/Tests/components/LowNetworkCard';
+import { WidgetCard } from '@aph/mobile-patients/src/components/Tests/components/WidgetCard';
 
-const { width: winWidth } = Dimensions.get('window');
-const styles = StyleSheet.create({
-  labelView: {
-    position: 'absolute',
-    top: -3,
-    right: -3,
-    backgroundColor: '#ff748e',
-    height: 14,
-    width: 14,
-    borderRadius: 7,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  labelText: {
-    ...theme.fonts.IBMPlexSansBold(9),
-    color: theme.colors.WHITE,
-  },
-  imagePlaceholderStyle: {
-    backgroundColor: '#f7f8f5',
-    opacity: 0.5,
-    borderRadius: 5,
-  },
-  hiTextStyle: {
-    marginLeft: 20,
-    color: '#02475b',
-    ...theme.fonts.IBMPlexSansSemiBold(36),
-  },
-  nameTextContainerStyle: {
-    maxWidth: '75%',
-  },
-  nameTextStyle: {
-    marginLeft: 5,
-    color: '#02475b',
-    ...theme.fonts.IBMPlexSansSemiBold(36),
-  },
-  seperatorStyle: {
-    height: 2,
-    backgroundColor: '#00b38e',
-    //marginTop: 5,
-    marginHorizontal: 5,
-    marginBottom: 6,
-    marginRight: -5,
-  },
-  gotItStyles: {
-    height: 60,
-    paddingRight: 25,
-    backgroundColor: 'transparent',
-  },
-  gotItTextStyles: {
-    paddingTop: 16,
-    ...theme.viewStyles.yellowTextStyle,
-  },
-  menuItemContainer: {
-    marginHorizontal: 0,
-    padding: 0,
-    margin: 0,
-  },
-  menuMenuContainerStyle: {
-    marginLeft: winWidth * 0.25,
-    marginTop: 50,
-  },
-  menuScrollViewContainerStyle: { paddingVertical: 0 },
-  menuItemTextStyle: {
-    ...theme.viewStyles.text('M', 14, '#01475b'),
-    padding: 0,
-    margin: 0,
-  },
-  menuBottomPadding: { paddingBottom: 0 },
-  deliverToText: { ...theme.viewStyles.text('R', 11, '#01475b', 1, 16) },
-  locationText: { ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) },
-  locationTextUnderline: {
-    height: 2,
-    backgroundColor: '#00b38e',
-    opacity: 1,
-  },
-  dropdownGreenContainer: { justifyContent: 'flex-end', marginBottom: -2 },
-  serviceabilityMsg: {
-    marginHorizontal: 10,
-    ...theme.viewStyles.text('R', 12, '#890000'),
-    justifyContent: 'center',
-    textAlign: 'left',
-  },
-  serviceabiltyMessageBackground: {
-    backgroundColor: 'white',
-  },
-  serviceabiltyMessageView: {
-    marginLeft: 20,
-    marginRight: 20,
-    marginBottom: 10,
-    padding: 5,
-    borderColor: '#890000',
-    borderWidth: 1,
-    borderRadius: 5,
-  },
-  serviceabiltyMessageInnerView: {
-    flexDirection: 'row',
-    marginHorizontal: 10,
-    justifyContent: 'space-between',
-  },
-  pendingIconStyle: {
-    height: 15,
-    width: 15,
-    resizeMode: 'contain',
-    marginTop: '1%',
-    tintColor: '#890000',
-  },
-});
+import {
+  renderBannerShimmer,
+  renderDiagnosticWidgetHeadingShimmer,
+  renderDiagnosticWidgetShimmer,
+  renderTestDiagonosticsShimmer,
+} from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import moment from 'moment';
+
+import AsyncStorage from '@react-native-community/async-storage';
+import { OrderCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/OrderCardCarousel';
+import { PrescriptionCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/PrescriptionCardCarousel';
+import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
+import { getUniqueId } from 'react-native-device-info';
+import { CleverTapEventName } from '../../helpers/CleverTapEvents';
+
+import {
+  getDiagnosticOrdersListByMobile,
+  getDiagnosticOrdersListByMobileVariables,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import strings from '@aph/mobile-patients/src/strings/strings.json';
+import DocumentPicker, { DocumentPickerResponse } from 'react-native-document-picker';
+import ImageResizer from 'react-native-image-resizer';
+import RNFetchBlob from 'rn-fetch-blob';
+export const MAX_FILE_SIZE = 25000000; // ~25MB
+// import { Cache } from "react-native-cache";
+
+const imagesArray = [
+  require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
+  require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_2.webp'),
+  require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_3.webp'),
+  require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_4.webp'),
+];
+
+const whyBookUsArray = [
+  { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_0.webp') },
+  { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_1.webp') },
+  { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_2.webp') },
+  { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_3.webp') },
+];
+
+const { width: winWidth, height: winHeight } = Dimensions.get('window');
+export interface DiagnosticData {
+  cityId: string;
+  stateId: string;
+  city: string;
+  state: string;
+}
+interface DiagnosticWidgetInclusionObservationData {
+  mandatoryValue: string;
+  observationName: string;
+}
+interface DiagnosticWidgetInclusion {
+  incItemId: string;
+  incTitle: string;
+  incObservationData: DiagnosticWidgetInclusionObservationData[];
+}
+export interface DiagnosticWidgetItem {
+  itemTitle: string;
+  itemImageUrl: string;
+  itemId: string;
+  itemCanonicalTag: string;
+  inclusionData: DiagnosticWidgetInclusion[];
+  itemIcon: string;
+  diagnosticPricing: any;
+  packageCalculatedMrp: any;
+}
+
+export interface DiagnosticWidget {
+  diagnosticWidgetData: DiagnosticWidgetItem[];
+  diagnosticWidgetTitle: string;
+  diagnosticWidgetType: string;
+  diagnosticwidgetsRankOrder: string;
+  id: string;
+  diagnosticWidgetBannerImage: string;
+  diagnosticWidgetBannerUrl: string;
+  diagnosticWidgetBannerText: string;
+}
 
 export interface TestsProps
   extends NavigationScreenProps<{
-    focusSearch?: boolean;
+    comingFrom?: string;
+    movedFrom?: string;
+    setEPrescriptions: ((items: EPrescription[]) => void) | null;
+    homeScreenAttributes?: any;
+    phyPrescriptionUploaded: PhysicalPrescription[];
+    ePresscriptionUploaded: EPrescription[];
   }> {}
 
 export const Tests: React.FC<TestsProps> = (props) => {
-  const focusSearch = props.navigation.getParam('focusSearch');
-  const { cartItems, addCartItem, removeCartItem, clearCartInfo } = useDiagnosticsCart();
-  const { cartItems: shopCartItems } = useShoppingCart();
-  const cartItemsCount = cartItems.length + shopCartItems.length;
-  const { currentPatient } = useAllCurrentPatients();
-  // const [data, setData] = useState<MedicinePageAPiResponse>();
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<boolean>(false);
-  const [currentLocation, setcurrentLocation] = useState<string>('');
-  const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
-  const [serviceabilityCity, setServiceabilityCity] = useState<string>('');
-  const [optionSelected, setOptionSelected] = useState<string>('');
-  const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
-    []
-  );
-  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>(
-    currentPatient!
-  );
+  const {
+    cartItems,
+    addCartItem,
+    removeCartItem,
+    isDiagnosticCircleSubscription,
+    setIsDiagnosticCircleSubscription,
+    newAddressAddedHomePage,
+    setNewAddressAddedHomePage,
+    deliveryAddressId,
+    setDeliveryAddressId,
+    setDiagnosticAreas,
+    setAreaSelected,
+    setDiagnosticSlot,
+    setAddresses: setTestAddress,
+    addMultipleCartItems: addMultipleTestCartItems,
+    setCartPagePopulated,
+    asyncDiagnosticPincode,
+    setAsyncDiagnosticPincode,
+  } = useDiagnosticsCart();
+  const {
+    cartItems: shopCartItems,
+    setCircleSubscriptionId,
+    setHdfcSubscriptionId,
+    setIsCircleSubscription,
+    setHdfcPlanName,
+    setIsFreeDelivery,
+    setCirclePlanValidity,
+    addresses,
+    setAddresses,
+    asyncPincode,
+  } = useShoppingCart();
 
-  const [ordersFetched, setOrdersFetched] = useState<
-    (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList | null)[]
-  >([]);
-
-  const { data: diagnosticsData, error: hError, loading: hLoading, refetch: hRefetch } = useQuery<
-    getDiagnosticsData
-  >(GET_DIAGNOSTIC_DATA, {
-    variables: {},
-    fetchPolicy: 'cache-first',
-  });
-
-  const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
   const {
     locationDetails,
     setLocationDetails,
     diagnosticLocation,
     setDiagnosticLocation,
-    diagnosticsCities,
-    setDiagnosticsCities,
-    locationForDiagnostics,
     diagnosticServiceabilityData,
     setDiagnosticServiceabilityData,
     isDiagnosticLocationServiceable,
     setDiagnosticLocationServiceable,
+    setBannerData,
+    bannerData,
+    pharmacyLocation,
+    notificationCount,
   } = useAppCommonData();
 
-  const [testPackages, setTestPackages] = useState<TestPackage[]>([]);
-  const [locationError, setLocationError] = useState(false);
-  const [showLocations, setshowLocations] = useState<boolean>(false);
-  const [searchQuery, setSearchQuery] = useState({});
+  type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
+  type Address = savePatientAddress_savePatientAddress_patientAddress;
+
+  const movedFrom = props.navigation.getParam('movedFrom');
+  const homeScreenAttributes = props.navigation.getParam('homeScreenAttributes');
+  const phyPrescriptionUploaded = props.navigation.getParam('phyPrescriptionUploaded') || [];
+  const ePresscriptionUploaded = props.navigation.getParam('ePresscriptionUploaded') || [];
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+
+  const hdfc_values = string.Hdfc_values;
+  const cartItemsCount = cartItems?.length + shopCartItems?.length;
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<boolean>(false);
+
+  const [bannerLoading, setBannerLoading] = useState(true);
+  const [imgHeight, setImgHeight] = useState(200);
+  const [slideIndex, setSlideIndex] = useState(0);
+  const [banners, setBanners] = useState([]);
+  const [cityId, setCityId] = useState('');
+  const [currentOffset, setCurrentOffset] = useState<number>(1);
+
+  const [sectionLoading, setSectionLoading] = useState<boolean>(false);
+  const [showItemCard, setShowItemCard] = useState<boolean>(false);
+  const [bookUsSlideIndex, setBookUsSlideIndex] = useState(0);
+  const [showbookingStepsModal, setShowBookingStepsModal] = useState(false);
+  const [scrollOffset, setScrollOffset] = useState<number>(0);
+  const [isPrescriptionUpload, setIsPrescriptionUpload] = useState<boolean>(false);
+  const [isPrescriptionGallery, setIsPrescriptionGallery] = useState<boolean>(false);
+  const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
+  const [isUploaded, setIsUploaded] = useState(false);
+  const [widgetsData, setWidgetsData] = useState([] as any);
+  const [reloadWidget, setReloadWidget] = useState<boolean>(false);
+
+  const [latestPrescription, setLatestPrescription] = useState([] as any);
+
+  const [patientOpenOrders, setPatientOpenOrders] = useState([] as any);
+  const [patientClosedOrders, setPatientClosedOrders] = useState([] as any);
+
+  const [isCurrentScreen, setCurrentScreen] = useState<string>('');
+
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
-  const hasLocation = locationDetails;
+  const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
+  const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
+  const defaultAddress = addresses?.find((item) => item?.defaultAddress);
+  const [pageLoading, setPageLoading] = useState<boolean>(false);
+  const [isFocused, setIsFocused] = useState<boolean>(false);
+  const [clickedItem, setClickedItem] = useState<any>([]);
+  const [serviceableObject, setServiceableObject] = useState({} as any);
+  const [expressSlotMsg, setExpressSlotMsg] = useState<string>('');
+  const [isPriceAvailable, setIsPriceAvailable] = useState<boolean>(false);
+  const [fetchAddressLoading, setFetchAddressLoading] = useState<boolean>(false);
 
-  const diagnosticPincode = g(diagnosticLocation, 'pincode') || g(locationDetails, 'pincode');
+  const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
 
-  const patientAttributes = {
-    'Patient UHID': g(currentPatient, 'uhid'),
-    'Patient Gender': g(currentPatient, 'gender'),
-    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-    'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
-  };
-  useEffect(() => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED] = patientAttributes;
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, eventAttributes);
-  }, []);
-
-  /**
-   * for serviceable - non-serviceable tracking
-   */
-
-  const serviceableAttributes = {
-    'Patient UHID': g(currentPatient, 'uhid'),
-    State: g(diagnosticLocation, 'state') || g(locationDetails, 'state') || '',
-    City: g(diagnosticLocation, 'city') || g(locationDetails, 'city') || '',
-    'PinCode Entered': parseInt(diagnosticPincode!),
-  };
-
-  useEffect(() => {
-    if (!!locationDetails || !!diagnosticLocation) {
-      if (isDiagnosticLocationServiceable) {
-        const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_SERVICEABLE] = serviceableAttributes;
-        postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_SERVICEABLE, eventAttributes);
-      } else {
-        const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_NON_SERVICEABLE] = serviceableAttributes;
-        postWebEngageEvent(
-          WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_NON_SERVICEABLE,
-          eventAttributes
-        );
-      }
-    }
-  }, [diagnosticPincode]);
-
-  const setWebEngageEventOnSearchItem = (keyword: string, results: []) => {
-    if (keyword.length > 2) {
-      const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED] = {
-        ...patientAttributes,
-        'Keyword Entered': keyword,
-        '# Results appeared': results.length,
-        'Item in Results': results,
-      };
-      postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED, eventAttributes);
-    }
-  };
-
-  const setWebEngageEventOnSearchItemClicked = (item: object) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_CLICKED_AFTER_SEARCH] = {
-      ...patientAttributes,
-      'Item Clicked': item,
-    };
-    postWebEngageEvent(
-      WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_CLICKED_AFTER_SEARCH,
-      eventAttributes
-    );
-  };
-
-  const setWebEnageEventForPinCodeClicked = () => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED] = {
-      ...patientAttributes,
-      Method: !optionSelected ? 'Enter Manually' : optionSelected,
-      Pincode: parseInt(diagnosticPincode!),
-    };
-    postWebEngageEvent(
-      WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED,
-      eventAttributes
-    );
-  };
-
-  /**
-   * if any change in the location and pincode is changed
-   */
-  useEffect(() => {
-    if (diagnosticPincode) {
-      checkIsPinCodeServiceable(diagnosticPincode);
-      setWebEnageEventForPinCodeClicked();
-    }
-  }, [diagnosticPincode]);
-
-  /**
-   * fetching the orders
-   */
-  useEffect(() => {
-    if (currentPatient && profile && profile.id !== currentPatient.id) {
-      setLoadingContext!(true);
-      setProfile(currentPatient);
-      ordersRefetch()
-        .then((data: any) => {
-          const orderData = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
-          setOrdersFetched(orderData);
-          setLoadingContext!(false);
-        })
-        .catch((e) => {
-          CommonBugFender('Tests_ordersRefetch_PATIENT_CHANGE', e);
-        });
-    }
-  }, [currentPatient]);
-
-  /**
-   * if there is any change in the location yellow pop-up ,if location is present.
-   */
-  useEffect(() => {
-    checkLocation();
-  }, [locationDetails]);
-
-  const checkLocation = () => {
-    !locationDetails &&
-      showAphAlert!({
-        unDismissable: true,
-        title: 'Hi! :)',
-        description:
-          'We need to know your location to function better. Please allow us to auto detect your location or enter location manually.',
-        children: (
-          <View
-            style={{
-              flexDirection: 'row',
-              marginHorizontal: 20,
-              justifyContent: 'space-between',
-              alignItems: 'flex-end',
-              marginVertical: 18,
-            }}
-          >
-            <Button
-              style={{
-                flex: 1,
-                marginRight: 16,
-              }}
-              title={'ENTER MANUALLY'}
-              onPress={() => {
-                hideAphAlert!();
-                setshowLocationpopup(true);
-              }}
-            />
-            <Button
-              style={{ flex: 1 }}
-              title={'ALLOW AUTO DETECT'}
-              onPress={() => {
-                hideAphAlert!();
-                setLoadingContext!(true);
-                doRequestAndAccessLocation()
-                  .then((response) => {
-                    setLoadingContext!(false);
-                    checkIsPinCodeServiceable(response.pincode);
-                    response && setDiagnosticLocation!(response);
-                    response && !locationDetails && setLocationDetails!(response);
-                  })
-                  .catch((e) => {
-                    CommonBugFender('Tests_ALLOW_AUTO_DETECT', e);
-                    setLoadingContext!(false);
-                    showAphAlert!({
-                      title: 'Uh oh! :(',
-                      description: 'Unable to access location.',
-                      onPressOk: () => {
-                        hideAphAlert!();
-                        setLocationError(true);
-                        // setshowLocationpopup(true); //same as medicine
-                      },
-                    });
-                  });
-              }}
-            />
-          </View>
-        ),
-      });
-  };
-
-  useEffect(() => {
-    if (locationForDiagnostics && locationForDiagnostics.cityId) {
-      getTestsPackages(locationForDiagnostics.cityId, locationForDiagnostics.stateId)
-        .then(({ data }) => {
-          setLoading(false);
-          aphConsole.log('getTestsPackages\n', { data });
-          setTestPackages(g(data, 'data') || []);
-        })
-        .catch((e) => {
-          CommonBugFender('Tests_getTestsPackages', e);
-          setLoading(false);
-          aphConsole.log('getTestsPackages Error\n', { e });
-        });
-      // .finally(() => {
-      //   setLoading(false);
-      // });
-    } else {
-      setTestPackages([]);
-      setLoading(false);
-    }
-  }, [locationForDiagnostics && locationForDiagnostics.cityId]);
-
-  const {
-    data: orders,
-    error: ordersError,
-    loading: ordersLoading,
-    refetch: ordersRefetch,
-  } = useQuery<getDiagnosticOrdersList, getDiagnosticOrdersListVariables>(
-    GET_DIAGNOSTIC_ORDER_LIST,
-    {
-      variables: {
-        patientId: currentPatient && currentPatient.id,
+  const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
+    client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
+      query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
+      context: {
+        sourceHeaders,
       },
-      fetchPolicy: 'cache-first',
-    }
-  );
+      variables: {
+        cityID: Number(cityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
+        itemIDs: listOfId,
+      },
+      fetchPolicy: 'no-cache',
+    });
 
-  // let _orders = (!ordersLoading && g(orders, 'getDiagnosticOrdersList', 'ordersList')) || [];
-
-  useEffect(() => {
-    if (!ordersLoading) {
-      const orderData = g(orders, 'getDiagnosticOrdersList', 'ordersList') || [];
-      orderData.length > 0 && setOrdersFetched(orderData);
-    }
-  }, [ordersLoading]);
-
-  /**
-   * web engage events.
-   */
-  useEffect(() => {
-    setWebEngageScreenNames('Diagnostic Home Page');
-    hRefetch();
-    if (ordersFetched.length == 0) {
-      ordersRefetch()
-        .then((data: any) => {
-          const orderData = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
-          orderData.length > 0 && setOrdersFetched(orderData);
-        })
-        .catch((e) => {
-          CommonBugFender('Tests_ordersRefetch_initial', e);
-        });
-    }
-  }, []);
-
-  const setWebEnageEventForItemViewedOnLanding = (name: string, id: string, type: string) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ITEM_CLICKED_ON_LANDING] = {
-      ...patientAttributes,
-      'Item Name': name,
-      'Item ID': id,
-      Type: type,
-    };
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ITEM_CLICKED_ON_LANDING, eventAttributes);
-  };
-
-  const postFeaturedTestEvent = (name: string, id: string) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.FEATURED_TEST_CLICKED] = {
-      'Product name': name,
-      'Product id (SKUID)': id,
-      Source: 'Home',
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient UHID': g(currentPatient, 'uhid'),
-      Relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(
-        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-      ),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Customer ID': g(currentPatient, 'id'),
-    };
-    postWebEngageEvent(WebEngageEventName.FEATURED_TEST_CLICKED, eventAttributes);
+  const setWebEnageEventForPinCodeClicked = (
+    mode: string,
+    pincode: string,
+    serviceable: boolean
+  ) => {
+    DiagnosticPinCodeClicked(
+      currentPatient,
+      mode,
+      pincode,
+      serviceable,
+      isDiagnosticCircleSubscription
+    );
   };
 
   const postDiagnosticAddToCartEvent = (
     name: string,
     id: string,
     price: number,
-    discountedPrice: number
+    discountedPrice: number,
+    source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+    section?: 'Featured tests' | 'Browse packages'
   ) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADD_TO_CART] = {
-      'product name': name,
-      'product id': id,
-      Source: 'Diagnostic',
-      Price: price,
-      'Discounted Price': discountedPrice,
-      Quantity: 1,
-      // 'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      // 'Patient UHID': g(currentPatient, 'uhid'),
-      // Relation: g(currentPatient, 'relation'),
-      // 'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
-      // 'Patient Gender': g(currentPatient, 'gender'),
-      // 'Mobile Number': g(currentPatient, 'mobileNumber'),
-      // 'Customer ID': g(currentPatient, 'id'),
-    };
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
+    DiagnosticAddToCartEvent(
+      name,
+      id,
+      price,
+      discountedPrice,
+      source,
+      section,
+      currentPatient,
+      isDiagnosticCircleSubscription
+    );
   };
 
-  const postBrowsePackageEvent = (packageName: string) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.BROWSE_PACKAGE] = {
-      'Package Name': packageName,
-      // Category: '',
-      Source: 'Home',
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient UHID': g(currentPatient, 'uhid'),
-      Relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(
-        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-      ),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Customer ID': g(currentPatient, 'id'),
+  useEffect(() => {
+    if (movedFrom === 'deeplink') {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+      return () => {
+        BackHandler.removeEventListener('hardwareBackPress', handleBack);
+      };
+    }
+  }, []);
+
+  const handleBack = () => {
+    navigateToHome(props.navigation, {}, movedFrom === 'deeplink');
+    return true;
+  };
+
+  /**
+   * if any change in the location and pincode is changed
+   */
+
+  useEffect(() => {
+    if (newAddressAddedHomePage != '') {
+      checkIsPinCodeServiceable(newAddressAddedHomePage, '', 'newAddress');
+      setNewAddressAddedHomePage?.('');
+    }
+  }, [newAddressAddedHomePage]);
+
+  /** added so that if phramacy code change, then this also changes. */
+  useEffect(() => {
+    let getLocationDetails = !!asyncPincode
+      ? asyncPincode
+      : !!locationDetails
+      ? locationDetails
+      : pharmacyLocation!;
+    setDiagnosticLocation?.(getLocationDetails);
+    setAsyncDiagnosticPincode?.(getLocationDetails);
+    checkIsPinCodeServiceable(getLocationDetails?.pincode, 'manual', 'pharmaPincode');
+  }, [asyncPincode]); //removed location details
+
+  /**
+   * fetch widgets
+   */
+  useEffect(() => {
+    setBannerData && setBannerData([]);
+    DiagnosticLandingPageViewedEvent(
+      currentPatient,
+      isDiagnosticLocationServiceable,
+      isDiagnosticCircleSubscription,
+      movedFrom == 'deeplink' ? 'Deeplink' : undefined,
+      homeScreenAttributes
+    );
+  }, []);
+
+  useEffect(() => {
+    if (currentPatient) {
+      fetchAddress();
+      fetchPatientOpenOrders();
+      fetchPatientClosedOrders();
+      fetchPatientPrescriptions();
+      getUserBanners();
+      // getDataFromCache();
+    }
+  }, [currentPatient]);
+
+  useEffect(() => {
+    if (isFocused) {
+      const getAsyncLocationPincode = async () => {
+        const asyncLocationPincode: any = await AsyncStorage.getItem('PharmacyLocationPincode');
+        if (asyncLocationPincode) {
+          let getAsyncPincode = JSON.parse(asyncLocationPincode);
+          setAsyncDiagnosticPincode?.(JSON.parse(asyncLocationPincode));
+          //call only when they are different.
+          if (asyncDiagnosticPincode?.pincode === getAsyncPincode?.pincode) {
+            return;
+          }
+          setDiagnosticLocation?.(!!pharmacyLocation ? pharmacyLocation! : locationDetails!);
+        }
+      };
+      getAsyncLocationPincode();
+    }
+  }, [isFocused]);
+
+  /**
+   * if there is any change in the location yellow pop-up ,if location is present.
+   */
+
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      setBannerData && setBannerData([]); // default banners to be empty
+      getUserBanners();
+      setIsFocused(true);
+      setCurrentScreen(AppRoutes.Tests); //to avoid showing non-serviceable prompt on medicine page
+    });
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+      setCurrentScreen('');
+      setIsFocused(false);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      didBlur && didBlur.remove();
     };
-    postWebEngageEvent(WebEngageEventName.BROWSE_PACKAGE, eventAttributes);
+  }, []);
+
+  useEffect(() => {
+    if (!loading && banners?.length > 0) {
+      banners?.map((item: any) => {
+        ImageNative.getSize(
+          item?.bannerImage,
+          (width, height) => {
+            setImgHeight(Math.max(height * (winWidth / width) + 20, 180));
+            setBannerLoading(false);
+          },
+          () => {
+            setBannerLoading(false);
+          }
+        );
+      });
+    }
+  }, [loading, banners]);
+
+  const fetchPatientOpenOrders = async () => {
+    try {
+      let openOrdersResponse: any = await getDiagnosticOpenOrders(
+        client,
+        currentPatient?.mobileNumber,
+        0,
+        3
+      );
+      if (openOrdersResponse?.data?.data) {
+        const getOpenOrders =
+          openOrdersResponse?.data?.data?.getDiagnosticOpenOrdersList?.openOrders;
+        setPatientOpenOrders(getOpenOrders);
+      } else {
+        setPatientOpenOrders([]);
+      }
+    } catch (error) {
+      setPatientOpenOrders([]);
+      CommonBugFender('fetchPatientOpenOrders_Tests', error);
+    }
+  };
+
+  const fetchPatientClosedOrders = async () => {
+    try {
+      let closedOrdersResponse: any = await getDiagnosticClosedOrders(
+        client,
+        currentPatient?.mobileNumber,
+        0,
+        3
+      );
+      if (closedOrdersResponse?.data?.data) {
+        const getClosedOrders =
+          closedOrdersResponse?.data?.data?.getDiagnosticClosedOrdersList?.closedOrders;
+        setPatientClosedOrders(getClosedOrders);
+      } else {
+        setPatientClosedOrders([]);
+      }
+    } catch (error) {
+      setPatientClosedOrders([]);
+      CommonBugFender('fetchPatientOpenOrders_Tests', error);
+    }
+  };
+
+  useEffect(() => {
+    // getting diagnosticUserType from asyncStorage
+    const fetchUserType = async () => {
+      try {
+        const diagnosticUserType = await AsyncStorage.getItem('diagnosticUserType');
+        if (diagnosticUserType == null) {
+          fetchOrders();
+        }
+      } catch (error) {
+        fetchOrders();
+      }
+    };
+    fetchUserType();
+  }, []);
+  const fetchOrders = async () => {
+    //for checking whether user is new or repeat.
+    try {
+      setLoading?.(true);
+      client
+        .query<getDiagnosticOrdersListByMobile, getDiagnosticOrdersListByMobileVariables>({
+          query: GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
+          context: {
+            sourceHeaders,
+          },
+          variables: {
+            mobileNumber: currentPatient && currentPatient.mobileNumber,
+            paginated: true,
+            limit: 1, //decreased limit to 1 because we only need to check whether user had any single order or not
+            offset: currentOffset,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((data) => {
+          const ordersList = data?.data?.getDiagnosticOrdersListByMobile?.ordersList || [];
+          const diagnosticUserType =
+            ordersList?.length > 0 ? string.user_type.REPEAT : string.user_type.NEW;
+          AsyncStorage.setItem('diagnosticUserType', JSON.stringify(diagnosticUserType));
+        })
+        .catch((error) => {
+          setLoading?.(false);
+          setError(true);
+          CommonBugFender(`${AppRoutes.Tests}_fetchOrders`, error);
+        });
+    } catch (error) {
+      setLoading?.(false);
+      setError(true);
+      CommonBugFender(`${AppRoutes.Tests}_fetchOrders`, error);
+    }
+  };
+
+  const fetchPatientPrescriptions = async () => {
+    try {
+      const res: any = await getDiagnosticPatientPrescription(
+        client,
+        currentPatient?.mobileNumber,
+        3,
+        AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
+      );
+      if (res?.data?.data) {
+        const response = res?.data?.data?.getPatientLatestPrescriptions;
+        if (!!response && response?.length > 0) {
+          setLatestPrescription(response);
+        } else {
+          setLatestPrescription([]);
+        }
+      } else {
+        setLatestPrescription([]);
+      }
+    } catch (error) {
+      setLatestPrescription([]);
+      CommonBugFender('fetchPatientPrescriptions_Tests', error);
+    }
+  };
+
+  const getDiagnosticBanner = async (cityId: number) => {
+    try {
+      const res: any = await getLandingPageBanners('diagnostic', Number(cityId));
+      //if true then only show it.
+      if (res?.data?.success) {
+        const bannerData = g(res, 'data', 'data');
+        setBanners(bannerData);
+      } else {
+        setBanners([]);
+        setBannerLoading(false);
+      }
+    } catch (error) {
+      console.log('ye4');
+      CommonBugFender('getDiagnosticBanner_Tests', error);
+      setBanners([]);
+      setBannerLoading(false);
+      setReloadWidget(true);
+    }
+  };
+  const getHomePageWidgets = async (cityId: string) => {
+    setSectionLoading(true);
+    try {
+      const result: any = await getDiagnosticHomePageWidgets('diagnostic', Number(cityId));
+      if (result?.data?.success && result?.data?.data?.length > 0) {
+        const sortWidgets = result?.data?.data?.sort(
+          (a: any, b: any) =>
+            Number(a.diagnosticwidgetsRankOrder) - Number(b.diagnosticwidgetsRankOrder)
+        );
+        // setCityId(cityId);
+        //call here the prices.
+        // setWidgetsData(sortWidgets);
+        // setIsPriceAvailable(false);
+        // setSectionLoading(false);
+        // setShowItemCard(true);
+        fetchWidgetsPrices(sortWidgets, cityId);
+      } else {
+        setSectionLoading(false);
+        setWidgetsData([]);
+        setLoading?.(false);
+        setPageLoading?.(false);
+        console.log('ye');
+        setReloadWidget(true);
+      }
+    } catch (error) {
+      CommonBugFender('getHomePageWidgets_Tests', error);
+      setWidgetsData([]);
+      setLoading?.(false);
+      setReloadWidget(true);
+      setPageLoading?.(false);
+      setSectionLoading(false);
+    }
+  };
+
+  const getUserBanners = async () => {
+    try {
+      const res: any = await getUserBannersList(
+        client,
+        currentPatient,
+        string.banner_context.DIAGNOSTIC_HOME
+      );
+      if (res) {
+        setBannerData && setBannerData(res);
+      }
+    } catch (error) {
+      setBannerData && setBannerData([]);
+    }
+  };
+
+  async function getExpressSlots(
+    serviceabilityObject: DiagnosticData,
+    selectedAddress: LocationData
+  ) {
+    const getLat = selectedAddress?.latitude!;
+    const getLng = selectedAddress?.longitude!;
+    const getZipcode = selectedAddress?.pincode;
+    const getServiceablityObject = {
+      cityID: Number(serviceabilityObject?.cityId),
+      stateID: Number(serviceabilityObject?.stateId),
+    };
+    //response when unserviceable
+    if (Number(serviceabilityObject?.stateId) == 0 && serviceabilityObject?.city == '') {
+      setExpressSlotMsg('');
+      return;
+    }
+    try {
+      const res: any = await getDiagnosticExpressSlots(
+        client,
+        getLat,
+        getLng,
+        String(getZipcode),
+        getServiceablityObject
+      );
+      if (res?.data?.getUpcomingSlotInfo) {
+        const getResponse = res?.data?.getUpcomingSlotInfo;
+        if (getResponse?.status) {
+          setExpressSlotMsg(getResponse?.slotInfo);
+        } else {
+          setExpressSlotMsg('');
+        }
+      } else {
+        setExpressSlotMsg('');
+      }
+    } catch (error) {
+      CommonBugFender('getExpressSlots_Tests', error);
+      setExpressSlotMsg('');
+    }
+  }
+
+  const fetchWidgetsPrices = async (widgetsData: any, cityId: string) => {
+    const filterWidgets = widgetsData?.filter(
+      (item: any) => !!item?.diagnosticWidgetData && item?.diagnosticWidgetData?.length > 0
+    );
+    const itemIds = filterWidgets?.map((item: any) =>
+      item?.diagnosticWidgetData?.map((data: any, index: number) => Number(data?.itemId))
+    );
+    const allItemIds = itemIds?.flat();
+    //restriction less than 12.
+    try {
+      const res = await fetchPricesForCityId(
+        Number(cityId!) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
+        allItemIds
+      );
+      let newWidgetsData = [...filterWidgets];
+
+      const priceResult = res?.data?.findDiagnosticsWidgetsPricing;
+      if (!!priceResult && !!priceResult?.diagnostics && priceResult?.diagnostics?.length > 0) {
+        const widgetPricingArr = priceResult?.diagnostics;
+
+        for (let i = 0; i < filterWidgets?.length; i++) {
+          for (let j = 0; j < filterWidgets?.[i]?.diagnosticWidgetData?.length; j++) {
+            let wItem = filterWidgets?.[i]?.diagnosticWidgetData?.[j]; // j ka element
+            const findIndex = widgetPricingArr?.findIndex(
+              (pricingData) => Number(pricingData?.itemId) === Number(wItem?.itemId)
+            );
+            if (findIndex !== -1) {
+              (newWidgetsData[i].diagnosticWidgetData[j].packageCalculatedMrp =
+                widgetPricingArr?.[findIndex]?.packageCalculatedMrp),
+                (newWidgetsData[i].diagnosticWidgetData[j].diagnosticPricing =
+                  widgetPricingArr?.[findIndex]?.diagnosticPricing);
+            }
+          }
+        }
+      }
+      newWidgetsData?.length > 0 && reloadWidget ? setReloadWidget(false) : setReloadWidget(true);
+
+      setWidgetsData(newWidgetsData);
+      setIsPriceAvailable(true);
+      setSectionLoading(false);
+      setLoading?.(false);
+      setPageLoading?.(false);
+    } catch (error) {
+      CommonBugFender('errorInFetchPricing api__Tests', error);
+      setSectionLoading(false);
+      setLoading?.(false);
+      setPageLoading?.(false);
+      setReloadWidget(true);
+      showAphAlert?.({
+        title: string.common.uhOh,
+        description: string.common.tryAgainLater,
+      });
+    }
+  };
+
+  const renderCarouselBanners = () => {
+    const showBanner = bannerData && bannerData.length > 0;
+    if (showBanner) {
+      return (
+        <CarouselBanners
+          navigation={props.navigation}
+          planActivationCallback={() => {
+            getUserBanners();
+            getUserSubscriptionsByStatus();
+          }}
+          from={string.banner_context.DIAGNOSTIC_HOME}
+          source={'Diagnostic'}
+          circleActivated={false}
+          circleEventSource={'Diagnostic Home page Banner'}
+        />
+      );
+    }
   };
 
   // Common Views
-
   const renderSectionLoader = (height: number = 100) => {
     return (
       <Spinner
@@ -612,67 +862,173 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setError(true);
   };
 
-  //change the city name which comes from serviceability
-  const updatePlaceInfoByPincode = (pincode: string) => {
+  const formatAddressToLocation = (address: Address): LocationData => ({
+    displayName: address?.city!,
+    latitude: address?.latitude!,
+    longitude: address?.longitude!,
+    area: '',
+    city: address?.city!,
+    state: address?.state!,
+    stateCode: address?.stateCode!,
+    country: '',
+    pincode: address?.zipcode!,
+    lastUpdated: new Date().getTime(),
+  });
+
+  async function fetchAddress() {
+    try {
+      if (addresses?.length) {
+        const deliveryAddress = addresses?.find((item) => item?.defaultAddress);
+        if (deliveryAddress) {
+          setDeliveryAddressId?.(deliveryAddress?.id);
+
+          //if location is not undefined in either of the three, then don't change address
+          if (
+            !asyncDiagnosticPincode?.pincode! &&
+            !diagnosticLocation &&
+            !locationDetails &&
+            !pharmacyLocation
+          ) {
+            checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'initialFetchAddress');
+            setDiagnosticLocation?.(formatAddressToLocation(deliveryAddress));
+            return;
+          }
+        }
+      }
+      setFetchAddressLoading?.(true);
+      const response = await client.query<getPatientAddressList, getPatientAddressListVariables>({
+        query: GET_PATIENT_ADDRESS_LIST,
+        variables: { patientId: currentPatient?.id },
+        fetchPolicy: 'no-cache',
+      });
+      const addressList = (response.data.getPatientAddressList.addressList as Address[]) || [];
+      setAddresses?.(addressList);
+      setTestAddress?.(addressList);
+      const deliveryAddress = addressList?.find((item) => item?.defaultAddress);
+      if (deliveryAddress) {
+        setDeliveryAddressId?.(deliveryAddress?.id);
+        if (
+          !asyncDiagnosticPincode?.pincode! &&
+          !diagnosticLocation &&
+          !locationDetails &&
+          !pharmacyLocation
+        ) {
+          checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'fetchAddressResponse');
+          setDiagnosticLocation?.(formatAddressToLocation(deliveryAddress));
+        }
+      } else {
+        checkLocation(addressList);
+      }
+      setFetchAddressLoading?.(false);
+    } catch (error) {
+      checkLocation(addresses);
+      setFetchAddressLoading?.(false);
+      CommonBugFender('fetching_Addresses_on_Test_Page', error);
+    }
+  }
+
+  const updatePlaceInfoByPincode = (pincode: string, serviceableResponse: DiagnosticData) => {
+    let isPinCodeServiceable = serviceableResponse?.city != '';
     getPlaceInfoByPincode(pincode)
       .then(({ data }) => {
         try {
-          const addrComponents = data.results[0].address_components || [];
-          const latLang = data.results[0].geometry.location || {};
-          const response = getFormattedLocation(addrComponents, latLang, pincode);
-          setDiagnosticLocation!(response);
-          !locationDetails && setLocationDetails!(response);
+          if (data?.results?.length > 0) {
+            const addrComponents = data?.results?.[0]?.address_components || [];
+            const latLang = data?.results?.[0]?.geometry?.location || {};
+            const response = getFormattedLocation(addrComponents, latLang, pincode);
+            let setCity, setState;
+            if (isDiagnosticLocationServiceable && diagnosticServiceabilityData == null) {
+              setCity = diagnosticLocation?.city! || '';
+              setState = diagnosticLocation?.state! || '';
+            } else if (isPinCodeServiceable && serviceableResponse?.city != '') {
+              setCity = serviceableResponse?.city! || '';
+              setState = serviceableResponse?.state! || '';
+            } else {
+              setCity = response?.city || '';
+              setState = response?.state || '';
+            }
+            (response.city = setCity), (response.state = setState);
+            setDiagnosticLocation?.(response);
+            !locationDetails && setLocationDetails!(response);
+            const saveAddress = {
+              pincode: pincode,
+              id: '',
+              city: setCity,
+              state: setState,
+            };
+            setAsyncPharmaLocation(saveAddress);
+            setAsyncDiagnosticPincode?.(saveAddress);
+            setLoadingContext?.(false);
+            getExpressSlots(serviceableResponse, response);
+          } else {
+            let response = {
+              displayName: '',
+              area:
+                isDiagnosticLocationServiceable && diagnosticServiceabilityData == null
+                  ? diagnosticLocation?.city!
+                  : isPinCodeServiceable && serviceableResponse?.city != ''
+                  ? serviceableResponse?.city!
+                  : '',
+              city:
+                isDiagnosticLocationServiceable && diagnosticServiceabilityData == null
+                  ? diagnosticLocation?.city!
+                  : isPinCodeServiceable && serviceableResponse?.city != ''
+                  ? serviceableResponse?.city!
+                  : '',
+              state:
+                isDiagnosticLocationServiceable && diagnosticServiceabilityData == null
+                  ? diagnosticLocation?.state!
+                  : isPinCodeServiceable && serviceableResponse?.city != ''
+                  ? serviceableResponse?.state!
+                  : '',
+              country: 'India',
+              pincode: String(pincode),
+            };
+
+            setDiagnosticLocation!(response);
+            !locationDetails && setLocationDetails!(response);
+            //for storing in the async storage.
+            const saveAddress = {
+              pincode: pincode,
+              id: '',
+              city: response?.city,
+              state: response?.state,
+            };
+            setAsyncPharmaLocation(saveAddress);
+            setAsyncDiagnosticPincode?.(saveAddress);
+            setLoadingContext?.(false);
+            //calling slot api
+            getExpressSlots(serviceableResponse, response);
+          }
         } catch (e) {
+          CommonBugFender('updatePlaceInfoByPincode_Tests', e);
+          setLoadingContext?.(false);
           handleUpdatePlaceInfoByPincodeError(e);
         }
       })
       .catch(handleUpdatePlaceInfoByPincodeError)
-      .finally(() => setLoadingContext!(false));
-  };
-
-  const renderPopup = () => {
-    const onClose = (serviceable?: boolean, response?: LocationData) => {
-      setshowLocationpopup(false);
-      // if (serviceable) {
-      //   setServiceabilityMsg('');
-      //   setPharmacyLocationServiceable!(true);
-      // }
-    };
-
-    return (
-      showLocationpopup && (
-        <PincodePopup
-          onClickClose={() => {
-            onClose();
-            checkLocation();
-          }}
-          toBeShownOn={'Diagnostics'}
-          onComplete={onClose}
-          onPressSubmit={(pincode) => checkIsPinCodeServiceable(pincode)}
-          subText={'Allow us to serve you better by entering your area pincode below.'}
-        />
-      )
-    );
+      .finally(() => setLoadingContext?.(false));
   };
 
   /**check current location */
-  const autoDetectLocation = async () => {
-    setLoadingContext!(true);
+  const autoDetectLocation = (addresses: addressListType) => {
+    setPageLoading?.(true);
     doRequestAndAccessLocationModified()
       .then((response) => {
-        setLoadingContext!(false);
-        checkIsPinCodeServiceable(response.pincode);
+        setPageLoading!(false);
         response && setDiagnosticLocation!(response);
-        // response && WebEngageEventAutoDetectLocation(response.pincode, true);
         response && !locationDetails && setLocationDetails!(response);
+        setDeliveryAddressId?.('');
+        checkIsPinCodeServiceable(response.pincode, 'Auto-select', 'autoDetect');
       })
       .catch((e) => {
+        setPageLoading!(false);
+        checkLocation(addresses);
         CommonBugFender('Diagnostic__ALLOW_AUTO_DETECT', e);
-        setLoadingContext!(false);
         e &&
           typeof e == 'string' &&
           !e.includes('denied') &&
-          showAphAlert!({
+          showAphAlert?.({
             title: string.common.uhOh,
             description: e,
           });
@@ -682,989 +1038,251 @@ export const Tests: React.FC<TestsProps> = (props) => {
   /**
    * check for the pincode serviceability
    */
-  const checkIsPinCodeServiceable = async (pincode: string) => {
+  const checkIsPinCodeServiceable = async (pincode: string, mode?: string, comingFrom?: string) => {
+    let obj = {} as DiagnosticData;
     if (!!pincode) {
-      setLoadingContext!(true);
+      reloadWidget && setReloadWidget(false);
+      setPageLoading?.(true);
+      setSectionLoading(true); //for loading the widgets.
       client
         .query<getPincodeServiceability, getPincodeServiceabilityVariables>({
           query: GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
+          context: {
+            sourceHeaders,
+          },
           variables: {
-            pincode: parseInt(pincode, 10),
+            pincode: Number(pincode),
           },
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
-          console.log('data...' + data.getPincodeServiceability.cityName);
           const serviceableData = g(data, 'getPincodeServiceability');
           if (serviceableData && serviceableData?.cityName != '') {
-            let obj = {
-              cityId: serviceableData.cityID?.toString() || '',
-              stateId: serviceableData.stateID?.toString() || '',
-              state: serviceableData.stateName || '',
-              city: serviceableData.cityName || '',
+            obj = {
+              cityId: serviceableData?.cityID?.toString() || '0',
+              stateId: serviceableData?.stateID?.toString() || '0',
+              state: serviceableData?.stateName || '',
+              city: serviceableData?.cityName || '',
             };
-            setDiagnosticServiceabilityData!(obj);
-            setDiagnosticLocationServiceable!(true);
+            setServiceableObject(obj);
+            setDiagnosticServiceabilityData?.(obj);
+            setDiagnosticLocationServiceable?.(true);
             setServiceabilityMsg('');
+            mode && setWebEnageEventForPinCodeClicked(mode, pincode, true);
+            comingFrom == 'defaultAddress' &&
+              DiagnosticAddresssSelected(
+                'Existing',
+                'Yes',
+                pincode,
+                'Home page',
+                currentPatient,
+                isDiagnosticCircleSubscription
+              );
+            comingFrom == 'newAddress' &&
+              DiagnosticAddresssSelected(
+                'New',
+                'Yes',
+                pincode,
+                'Home page',
+                currentPatient,
+                isDiagnosticCircleSubscription
+              );
           } else {
-            setDiagnosticLocationServiceable!(false);
-            setLoadingContext!(false);
-            renderLocationNotServingPopUpForPincode(pincode);
+            obj = {
+              cityId: String(AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID),
+              stateId: '0',
+              state: '',
+              city: '',
+            };
+            setServiceableObject(obj);
+            setPageLoading?.(false);
+            setDiagnosticLocationServiceable?.(false);
+
+            isCurrentScreen == AppRoutes.Tests
+              ? renderLocationNotServingPopUpForPincode(pincode)
+              : null;
+
+            setServiceabilityMsg(string.diagnostics.nonServiceablePinCodeMsg);
+
+            mode && setWebEnageEventForPinCodeClicked(mode, pincode, false);
+            comingFrom == 'defaultAddress' &&
+              DiagnosticAddresssSelected(
+                'Existing',
+                'No',
+                pincode,
+                'Home page',
+                currentPatient,
+                isDiagnosticCircleSubscription
+              );
+            comingFrom == 'newAddress' &&
+              DiagnosticAddresssSelected(
+                'New',
+                'No',
+                pincode,
+                'Home page',
+                currentPatient,
+                isDiagnosticCircleSubscription
+              );
           }
+          getDiagnosticBanner(Number(serviceableData?.cityID));
+          getHomePageWidgets(obj?.cityId);
           setshowLocationpopup(false);
-          updatePlaceInfoByPincode(pincode);
+          updatePlaceInfoByPincode(pincode, obj);
         })
         .catch((e) => {
-          CommonBugFender('Tests_', e);
-          setLoadingContext!(false);
-          console.log('getDiagnosticsPincode serviceability Error\n', { e });
-          showAphAlert!({
-            unDismissable: true,
-            title: 'Uh oh! :(',
-            description:
-              "Something went wrong. We're unable to check diagnostics serviceability for your location.",
-          });
+          setPageLoading?.(false);
+          CommonBugFender('getDiagnosticsPincodeServiceabilityError_Tests', e);
+          setLoadingContext?.(false);
+          setReloadWidget(true);
+          setSectionLoading(false);
         });
     }
   };
 
-  const renderTopView = () => {
-    return (
-      <View
-        style={{
-          justifyContent: 'space-between',
-          flexDirection: 'row',
-          paddingTop: 16,
-          paddingBottom: 12,
-          paddingHorizontal: 20,
-          backgroundColor: theme.colors.WHITE,
-        }}
-      >
-        <TouchableOpacity
-          activeOpacity={1}
-          // onPress={() => props.navigation.popToTop()}
-          onPress={() => {
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [
-                  NavigationActions.navigate({
-                    routeName: AppRoutes.ConsultRoom,
-                  }),
-                ],
-              })
-            );
-          }}
-        >
-          {/* <HomeIcon /> */}
-          <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
-        </TouchableOpacity>
-        <View style={{ flexDirection: 'row' }}>
-          {renderDeliverToLocationMenuAndCTA()}
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => props.navigation.navigate(AppRoutes.MedAndTestCart)}
-          >
-            <CartIcon />
-            {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
-          </TouchableOpacity>
-          {/* <NotificationIcon /> */}
-        </View>
-      </View>
-    );
-  };
-
-  /*
-  const uploadPrescriptionCTA = () => {
-    return (
-      <ListCard
-        onPress={() => {
-          postMyOrdersClicked('Diagnostics', currentPatient);
-          props.navigation.navigate(AppRoutes.YourOrdersTest);
-        }}
-        container={{
-          marginBottom: 24,
-          marginTop: 20,
-        }}
-        title={'My Orders'}
-        leftIcon={<TestsIcon />}
-      />
-    );
-  };
-*/
   const renderYourOrders = () => {
-    // if (ordersLoading) return renderSectionLoader(70);
     return (
-      // (!ordersLoading && ordersFetched.length > 0 && (
       <ListCard
         onPress={() => {
           postMyOrdersClicked('Diagnostics', currentPatient);
-          setLoadingContext!(true);
-          props.navigation.navigate(AppRoutes.YourOrdersTest, {
-            orders: ordersFetched,
+          props.navigation.push(AppRoutes.YourOrdersTest, {
             isTest: true,
-            refetch: ordersRefetch,
-            error: ordersError,
-            loading: ordersLoading,
           });
         }}
         container={{
           marginBottom: 24,
-          marginTop: 20,
         }}
-        title={'My Orders'}
-        leftIcon={<TestsIcon />}
-      />
-      // )) || <View style={{ height: 24 }} />
-    );
-  };
-
-  const renderCatalogCard = (
-    text: string,
-    imgUrl: string,
-    onPress: () => void,
-    style?: ViewStyle
-  ) => {
-    return (
-      <TouchableOpacity activeOpacity={1} onPress={onPress}>
-        <View
-          style={[
-            {
-              ...theme.viewStyles.card(12, 0),
-              elevation: 10,
-              flexDirection: 'row',
-              width: 152,
-              height: 68,
-            },
-            style,
-          ]}
-        >
-          <Image
-            source={{ uri: imgUrl }}
-            style={{
-              height: 40,
-              width: 40,
-            }}
-          />
-          <View style={{ width: 16 }} />
-          <Text
-            numberOfLines={2}
-            style={{
-              flex: 1,
-              ...theme.viewStyles.text('M', 14, '#01475b', 1, 20, 0),
-            }}
-          >
-            {text}
-          </Text>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  const hotSellerCard = (data: {
-    name: string;
-    imgUrl: string;
-    price: number;
-    specialPrice?: number;
-    isAddedToCart: boolean;
-    onAddOrRemoveCartItem: () => void;
-    onPress: () => void;
-    style?: ViewStyle;
-  }) => {
-    const { name, imgUrl, price, specialPrice, style } = data;
-
-    const renderDiscountedPrice = () => {
-      const styles = StyleSheet.create({
-        discountedPriceText: {
-          ...theme.viewStyles.text('M', 14, '#02475b', 0.4, 24),
-          textAlign: 'center',
-        },
-        priceText: {
-          ...theme.viewStyles.text('SB', 14, '#01475b', 1, 24),
-          textAlign: 'center',
-        },
-      });
-      return (
-        <View
-          style={[
-            {
-              flexDirection: 'row',
-              marginBottom: 8,
-            },
-          ]}
-        >
-          <Text style={[styles.priceText, { marginRight: 4 }]}>Rs. {specialPrice || price}</Text>
-          {!!specialPrice && (
-            <Text style={styles.discountedPriceText}>
-              (
-              <Text
-                style={[
-                  {
-                    textDecorationLine: 'line-through',
-                  },
-                ]}
-              >
-                Rs. {price}
-              </Text>
-              )
-            </Text>
-          )}
-        </View>
-      );
-    };
-
-    return (
-      <TouchableOpacity activeOpacity={1} onPress={data.onPress}>
-        <View
-          style={{
-            ...theme.viewStyles.card(12, 0),
-            elevation: 10,
-            height: 188,
-            width: 152,
-            marginHorizontal: 4,
-            alignItems: 'center',
-            ...style,
-          }}
-        >
-          <Image
-            placeholderStyle={styles.imagePlaceholderStyle}
-            source={{ uri: imgUrl }}
-            style={{
-              height: 40,
-              width: 40,
-              marginBottom: 8,
-            }}
-          />
-          <View style={{ height: 47.5 }}>
-            <Text
-              style={{
-                ...theme.viewStyles.text('M', 14, '#01475b', 1, 20),
-                textAlign: 'center',
-              }}
-              numberOfLines={2}
-            >
-              {name}
-            </Text>
-          </View>
-          <Spearator style={{ marginBottom: 7.5 }} />
-          {renderDiscountedPrice()}
-          <Text
-            style={{
-              ...theme.viewStyles.text(
-                'B',
-                13,
-                isDiagnosticLocationServiceable ? '#fc9916' : '#FED984',
-                1,
-                24
-              ),
-              textAlign: 'center',
-            }}
-            onPress={data.onAddOrRemoveCartItem}
-          >
-            {data.isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
-          </Text>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  const renderHotSellerItem = (
-    data: ListRenderItemInfo<getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers>
-  ) => {
-    const { packageImage, packageName, diagnostics } = data.item;
-    const foundMedicineInCart = !!cartItems.find((item) => item.id == `${diagnostics!.itemId}`);
-    const specialPrice = undefined;
-    const addToCart = () => {
-      if (!isDiagnosticLocationServiceable) {
-        return;
-      }
-      fetchPackageInclusion(`${diagnostics!.itemId}`, (tests) => {
-        postDiagnosticAddToCartEvent(
-          packageName!,
-          `${diagnostics!.itemId}`,
-          diagnostics!.rate,
-          diagnostics!.rate // since no special price
-        );
-        addCartItem!({
-          id: `${diagnostics!.itemId}`,
-          mou: tests.length,
-          name: packageName!,
-          price: diagnostics!.rate,
-          specialPrice: specialPrice,
-          thumbnail: packageImage,
-          collectionMethod: diagnostics!.collectionType!,
-        });
-      });
-    };
-    const removeFromCart = () => {
-      if (!isDiagnosticLocationServiceable) {
-        return;
-      }
-      removeCartItem!(`${diagnostics!.itemId}`);
-    };
-    // const specialPrice = special_price
-    //   ? typeof special_price == 'string'
-    //     ? parseInt(special_price)
-    //     : special_price
-    //   : price;
-
-    return hotSellerCard({
-      name: packageName!,
-      imgUrl: packageImage!,
-      price: diagnostics!.rate,
-      specialPrice: undefined,
-      isAddedToCart: foundMedicineInCart,
-      onAddOrRemoveCartItem: foundMedicineInCart ? removeFromCart : addToCart,
-      onPress: () => {
-        if (!isDiagnosticLocationServiceable) {
-          return;
-        }
-        setWebEnageEventForItemViewedOnLanding(
-          packageName!,
-          `${diagnostics!.itemId}`,
-          `${diagnostics!.itemType}`
-        );
-        postFeaturedTestEvent(packageName!, `${diagnostics!.itemId}`);
-        props.navigation.navigate(AppRoutes.TestDetails, {
-          testDetails: {
-            Rate: diagnostics!.rate,
-            Gender: diagnostics!.gender,
-            ItemID: `${diagnostics!.itemId}`,
-            ItemName: packageName,
-            collectionType: diagnostics!.collectionType,
-            FromAgeInDays: diagnostics!.fromAgeInDays,
-            ToAgeInDays: diagnostics!.toAgeInDays,
-            preparation: diagnostics!.testPreparationData,
-            source: 'Landing Page',
-            type: diagnostics!.itemType,
-          } as TestPackageForDetails,
-        });
-      },
-      style: {
-        marginHorizontal: 4,
-        marginTop: 16,
-        marginBottom: 20,
-        ...(data.index == 0 ? { marginLeft: 20 } : {}),
-      },
-    });
-  };
-
-  const renderHotSellers = () => {
-    const hotSellers = (g(diagnosticsData, 'getDiagnosticsData', 'diagnosticHotSellers') ||
-      []) as getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers[];
-
-    if (!hLoading && hotSellers.length == 0) return null;
-    return (
-      <View>
-        <SectionHeader leftText={'FEATURED TESTS'} />
-        {hLoading ? (
-          renderSectionLoader(188)
-        ) : (
-          <FlatList
-            bounces={false}
-            keyExtractor={(_, index) => `${index}`}
-            showsHorizontalScrollIndicator={false}
-            horizontal
-            data={hotSellers}
-            renderItem={renderHotSellerItem}
-          />
-        )}
-      </View>
-    );
-  };
-
-  // const renderBrowseByCondition = () => {
-  //   return (
-  //     <View>
-  //       <SectionHeader leftText={'BROWSE BY CONDITION'} />
-  //       <FlatList
-  //         bounces={false}
-  //         keyExtractor={(_, index) => `${index}`}
-  //         showsHorizontalScrollIndicator={false}
-  //         horizontal
-  //         data={shopByOrgans}
-  //         renderItem={({ item, index }) => {
-  //           return renderCatalogCard(
-  //             item.title,
-  //             `${config.IMAGES_BASE_URL[0]}${item.image_url}`,
-  //             () =>
-  //               props.navigation.navigate(AppRoutes.SearchByBrand, {
-  //                 category_id: item.category_id,
-  //                 title: `${item.title || 'Products'}`.toUpperCase(),
-  //                 isTest: true,
-  //               }),
-  //             {
-  //               marginHorizontal: 4,
-  //               marginTop: 16,
-  //               marginBottom: 20,
-  //               ...(index == 0 ? { marginLeft: 20 } : {}),
-  //             }
-  //           );
-  //         }}
-  //       />
-  //     </View>
-  //   );
-  // };
-
-  const renderPackageCard = (
-    title: string,
-    subtitle: string,
-    desc: string,
-    price: number,
-    specialPrice: number | undefined,
-    style: ViewStyle,
-    isAddedToCart: boolean,
-    onPress: () => void,
-    onPressBookNow: () => void
-  ) => {
-    return (
-      <TouchableOpacity
-        activeOpacity={1}
-        style={[
-          {
-            width: Dimensions.get('window').width * 0.86,
-            ...theme.viewStyles.card(16, 4, 10, '#fff', 10),
-            paddingVertical: 12,
-          },
-          style,
-        ]}
-        onPress={onPress}
-      >
-        <View
-          style={{
-            flex: 1,
-            flexDirection: 'row',
-          }}
-        >
-          <View
-            style={{
-              flexGrow: 1,
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            }}
-          >
-            <View
-              style={{
-                width: Dimensions.get('window').width * 0.4,
-              }}
-            >
-              <Text style={theme.viewStyles.text('SB', 16, '#02475b', 1, 24)} numberOfLines={2}>
-                {title}
-              </Text>
-              <View style={{ height: 8 }} />
-              <Text style={theme.viewStyles.text('M', 10, '#02475b', 1, undefined, 0.25)}>
-                {subtitle}
-              </Text>
-              <View style={{ height: 16 }} />
-              <Text style={theme.viewStyles.text('M', 14, '#0087ba', 1, 22)}>{desc}</Text>
-            </View>
-            <View style={{}}>
-              <Image
-                source={{
-                  uri: '',
-                  height: 120,
-                  width: 120,
-                }}
-                style={{ borderRadius: 5 }}
-              />
-            </View>
-          </View>
-        </View>
-        <Spearator style={{ marginVertical: 11.5 }} />
-
-        <View
-          style={{
-            flexDirection: 'row',
-            flex: 1,
-          }}
-        >
-          <View
-            style={{
-              flexGrow: 1,
-              flexDirection: 'row',
-            }}
-          >
-            <Text
-              style={{
-                marginRight: 8,
-                ...theme.viewStyles.text('SB', 14, '#02475b', 1, 24),
-              }}
-            >
-              Rs. {specialPrice || price}
-            </Text>
-            {!!specialPrice && (
-              <Text
-                style={{
-                  ...theme.viewStyles.text('SB', 14, '#02475b', 0.6, 24),
-                  textAlign: 'center',
-                }}
-              >
-                (
-                <Text
-                  style={[
-                    {
-                      textDecorationLine: 'line-through',
-                    },
-                  ]}
-                >
-                  Rs. {price}
-                </Text>
-                )
-              </Text>
-            )}
-          </View>
-          <View
-            style={{
-              flexGrow: 1,
-              alignItems: 'flex-end',
-            }}
-          >
-            <Text style={theme.viewStyles.text('B', 13, '#fc9916', 1, 24)} onPress={onPressBookNow}>
-              {isAddedToCart ? 'ADDED TO CART' : 'BOOK NOW'}
-            </Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  const errorAlert = () => {
-    showAphAlert!({
-      title: 'Uh oh! :(',
-      description: 'Unable to fetch package details.',
-    });
-  };
-
-  const fetchPackageDetails = (
-    itemIds: string,
-    func: (product: searchDiagnosticsById_searchDiagnosticsById_diagnostics) => void
-  ) => {
-    {
-      setLoadingContext!(true);
-      client
-        .query<searchDiagnosticsById, searchDiagnosticsByIdVariables>({
-          query: SEARCH_DIAGNOSTICS_BY_ID,
-          variables: {
-            itemIds: itemIds,
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then(({ data }) => {
-          setLoadingContext!(false);
-          aphConsole.log('searchDiagnostics\n', { data });
-          const product = g(data, 'searchDiagnosticsById', 'diagnostics', '0' as any);
-          if (product) {
-            func && func(product);
-          } else {
-            errorAlert();
-          }
-        })
-        .catch((e) => {
-          CommonBugFender('Tests_fetchPackageDetails', e);
-          setLoadingContext!(false);
-          aphConsole.log({ e });
-          errorAlert();
-        });
-      // .finally(() => {
-      //   setLoadingContext!(false);
-      // });
-    }
-  };
-
-  const fetchPackageInclusion = (id: string, func: (tests: PackageInclusion[]) => void) => {
-    setLoadingContext!(true);
-    getPackageData(id)
-      .then(({ data }) => {
-        setLoadingContext!(false);
-        console.log('getPackageData\n', { data });
-        const product = g(data, 'data');
-        if (product && product.length) {
-          func && func(product);
-        } else {
-          errorAlert();
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('Tests_fetchPackageInclusion', e);
-        setLoadingContext!(false);
-        console.log('getPackageData Error\n', { e });
-        errorAlert();
-      });
-    // .finally(() => {
-    //   setLoadingContext!(false);
-    // });
-  };
-
-  const renderTestPackages = () => {
-    if (!loading && testPackages.length == 0) return null;
-    return (
-      <View>
-        <SectionHeader leftText={'BROWSE PACKAGES'} />
-        {loading ? (
-          renderSectionLoader(205)
-        ) : (
-          <FlatList
-            bounces={false}
-            keyExtractor={(_, index) => `${index}`}
-            showsHorizontalScrollIndicator={false}
-            horizontal
-            data={testPackages}
-            renderItem={({ item, index }) => {
-              const inclusionCount = (item.PackageInClussion || []).length;
-              const desc = inclusionCount
-                ? `${inclusionCount} TEST${inclusionCount == 1 ? '' : 'S'} INCLUDED`
-                : '';
-              const applicableAge = `Ideal for individuals between ${(
-                item.FromAgeInDays / 365
-              ).toFixed(0)}-${(item.ToAgeInDays / 365).toFixed(0)} years.`;
-              return renderPackageCard(
-                item.ItemName,
-                desc,
-                applicableAge,
-                parseInt(item.Rate.toFixed(0)),
-                0,
-                {
-                  marginHorizontal: 4,
-                  marginTop: 16,
-                  marginBottom: 20,
-                  ...(index == 0 ? { marginLeft: 20 } : {}),
-                },
-                !!cartItems.find((_item) => _item.id == item.ItemID),
-                () => {
-                  fetchPackageDetails(item.ItemID, (product) => {
-                    if (!isDiagnosticLocationServiceable) {
-                      return;
-                    }
-                    props.navigation.navigate(AppRoutes.TestDetails, {
-                      testDetails: {
-                        ...item,
-                        collectionType: product.collectionType,
-                        preparation: product.testPreparationData,
-                        source: 'Landing Page',
-                        type: product.itemType,
-                      } as TestPackageForDetails,
-                      type: 'Package',
-                    });
-                  });
-                },
-                () => {
-                  fetchPackageDetails(item.ItemID, (product) => {
-                    if (!isDiagnosticLocationServiceable) {
-                      return;
-                    }
-                    addCartItem!({
-                      id: item.ItemID,
-                      name: item.ItemName,
-                      mou: item.PackageInClussion.length,
-                      price: item.Rate,
-                      thumbnail: '',
-                      specialPrice: undefined,
-                      collectionMethod: product.collectionType!,
-                    });
-                  });
-                }
-              );
-            }}
-          />
-        )}
-      </View>
-    );
-  };
-
-  const preventiveTestCard = (name: string, price: number, style: ViewStyle) => {
-    return (
-      <TouchableOpacity
-        activeOpacity={1}
-        style={[
-          {
-            ...theme.viewStyles.card(16, 4, 10, '#fff', 10),
-            paddingBottom: 12,
-          },
-          style,
-        ]}
-      >
-        <Text style={theme.viewStyles.text('M', 14, '#01475b', 1, 22)}>{name}</Text>
-        <Spearator style={{ marginVertical: 7.5 }} />
-        <Text style={theme.viewStyles.text('B', 14, '#01475b', 1, 20)}>Rs. {price}</Text>
-      </TouchableOpacity>
-    );
-  };
-
-  const renderPreventiveTests = () => {
-    const preventiveTests = Array.from({
-      length: 10,
-    }).map((_) => ({
-      name: 'Blood Glucose Test',
-      price: 120,
-    }));
-
-    return (
-      <View>
-        <SectionHeader leftText={'SOME PREVENTIVE TESTS FOR YOU'} />
-        <FlatList
-          bounces={false}
-          keyExtractor={(_, index) => `${index}`}
-          showsHorizontalScrollIndicator={false}
-          horizontal
-          data={preventiveTests}
-          renderItem={({ item, index }) => {
-            return preventiveTestCard(item.name, item.price, {
-              marginHorizontal: 4,
-              marginTop: 16,
-              marginBottom: 20,
-              ...(index == 0 ? { marginLeft: 20 } : {}),
-            });
-          }}
-        />
-      </View>
-    );
-  };
-
-  const renderTestsByOrgan = () => {
-    const shopByOrgans = (g(diagnosticsData, 'getDiagnosticsData', 'diagnosticOrgans') ||
-      []) as getDiagnosticsData_getDiagnosticsData_diagnosticOrgans[];
-
-    if (!hLoading && shopByOrgans.length == 0) return null;
-    return (
-      <View>
-        <SectionHeader leftText={'BROWSE PACKAGES'} />
-        {hLoading ? (
-          renderSectionLoader()
-        ) : (
-          <FlatList
-            bounces={false}
-            keyExtractor={(_, index) => `${index}`}
-            showsHorizontalScrollIndicator={false}
-            horizontal
-            data={shopByOrgans}
-            renderItem={({ item, index }) => {
-              return renderCatalogCard(
-                item.organName!,
-                item.organImage!,
-                () => {
-                  if (!isDiagnosticLocationServiceable) {
-                    return;
-                  }
-                  setWebEnageEventForItemViewedOnLanding(item.organName!, item.id!, 'Package');
-                  postBrowsePackageEvent(item.organName!);
-                  props.navigation.navigate(AppRoutes.TestsByCategory, {
-                    title: `${item.organName || 'Products'}`.toUpperCase(),
-                    products: [item.diagnostics],
-                  });
-                },
-                {
-                  marginHorizontal: 4,
-                  marginTop: 16,
-                  marginBottom: 20,
-                  ...(index == 0 ? { marginLeft: 20 } : {}),
-                }
-              );
-            }}
-          />
-        )}
-      </View>
-    );
-  };
-
-  const renderNeedHelp = () => {
-    return (
-      <NeedHelpAssistant
-        navigation={props.navigation}
-        containerStyle={{
-          paddingBottom: 20,
-          paddingTop: 20,
+        titleStyle={{
+          color: theme.colors.SHERPA_BLUE,
+          ...theme.fonts.IBMPlexSansSemiBold(16),
+          paddingHorizontal: 0,
         }}
-        onNeedHelpPress={() => {
-          postWEGNeedHelpEvent(currentPatient, 'Tests');
-        }}
+        title={'MY ORDERS'}
+        leftIcon={null}
       />
     );
+  };
+
+  const onAddCartItem = (
+    itemId: string | number,
+    itemName: string,
+    rate?: number,
+    collectionType?: TEST_COLLECTION_TYPE,
+    pricesObject?: any,
+    promoteCircle?: boolean,
+    promoteDiscount?: boolean,
+    selectedPlan?: any,
+    inclusions?: any[]
+  ) => {
+    savePastSearch(`${itemId}`, itemName).catch((e) => {
+      aphConsole.log({ e });
+    });
+    //passed zero till the time prices aren't updated.
+    postDiagnosticAddToCartEvent(
+      stripHtml(itemName),
+      `${itemId}`,
+      0,
+      0,
+      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PARTIAL_SEARCH
+    );
+    addCartItem?.({
+      id: `${itemId}`,
+      name: stripHtml(itemName),
+      price: pricesObject?.rate || 0,
+      specialPrice: pricesObject?.specialPrice! || pricesObject?.rate || 0,
+      circlePrice: pricesObject?.circlePrice,
+      circleSpecialPrice: pricesObject?.circleSpecialPrice,
+      discountPrice: pricesObject?.discountPrice,
+      discountSpecialPrice: pricesObject?.discountSpecialPrice,
+      mou: inclusions == null ? 1 : inclusions?.length,
+      thumbnail: '',
+      collectionMethod: collectionType! || TEST_COLLECTION_TYPE?.HC,
+      groupPlan: selectedPlan?.groupPlan || DIAGNOSTIC_GROUP_PLAN.ALL,
+      packageMrp: pricesObject?.mrpToDisplay || 0,
+      inclusions: inclusions == null ? [Number(itemId)] : inclusions,
+    });
   };
 
   const [searchText, setSearchText] = useState<string>('');
-  const [medicineList, setMedicineList] = useState<
+  const [diagnosticResults, setDiagnosticResults] = useState<
     searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
   >([]);
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
   const [isSearchFocused, setSearchFocused] = useState(false);
   const client = useApolloClient();
+  const { pharmacyCircleAttributes } = useShoppingCart();
 
-  const onSearchMedicine = (_searchText: string) => {
-    if (isValidSearch(_searchText)) {
-      if (!g(locationForDiagnostics, 'cityId')) {
-        renderLocationNotServingPopup();
-        return;
+  const getUserSubscriptionsByStatus = async () => {
+    setPageLoading!(true);
+    try {
+      const query: GetSubscriptionsOfUserByStatusVariables = {
+        mobile_number: g(currentPatient, 'mobileNumber'),
+        status: ['active', 'deferred_inactive'],
+      };
+      const res = await client.query<GetSubscriptionsOfUserByStatus>({
+        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+        fetchPolicy: 'no-cache',
+        variables: query,
+      });
+      const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+      setPageLoading!(false);
+      if (data) {
+        if (data?.APOLLO?.[0]._id && data?.APOLLO?.[0]?.status !== 'disabled') {
+          AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
+          setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
+          setIsCircleSubscription && setIsCircleSubscription(true);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+          const planValidity = {
+            startDate: data?.APOLLO?.[0]?.start_date,
+            endDate: data?.APOLLO?.[0]?.end_date,
+            plan_id: data?.APOLLO?.[0]?.plan_id,
+            source_identifier: data?.APOLLO?.[0]?.source_meta_data?.source_identifier,
+          };
+          setCirclePlanValidity && setCirclePlanValidity(planValidity);
+        } else {
+          setCircleSubscriptionId && setCircleSubscriptionId('');
+          setIsCircleSubscription && setIsCircleSubscription(false);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+          setCirclePlanValidity && setCirclePlanValidity(null);
+        }
+
+        if (data?.HDFC?.[0]._id) {
+          setHdfcSubscriptionId && setHdfcSubscriptionId(data?.HDFC?.[0]._id);
+
+          const planName = data?.HDFC?.[0].name;
+          setHdfcPlanName && setHdfcPlanName(planName);
+
+          if (planName === hdfc_values.PLATINUM_PLAN && data?.HDFC?.[0].status === 'active') {
+            setIsFreeDelivery && setIsFreeDelivery(true);
+          }
+        } else {
+          setHdfcSubscriptionId && setHdfcSubscriptionId('');
+          setHdfcPlanName && setHdfcPlanName('');
+        }
       }
-      setSearchText(_searchText);
-      if (!(_searchText && _searchText.length > 2)) {
-        setMedicineList([]);
-        console.log('onSearchMedicine');
-        return;
-      }
-      setsearchSate('load');
-      client
-        .query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
-          query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
-          variables: {
-            cityID: parseInt(locationForDiagnostics?.cityId!, 10), //be default show of hyderabad
-            searchText: _searchText,
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then(({ data }) => {
-          // aphConsole.log({ data });
-          setSearchText(_searchText);
-          const products = g(data, 'searchDiagnosticsByCityID', 'diagnostics') || [];
-          setMedicineList(
-            products as searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
-          );
-          setsearchSate('success');
-          setWebEngageEventOnSearchItem(_searchText, products);
-        })
-        .catch((e) => {
-          CommonBugFender('Tests_onSearchMedicine', e);
-          // aphConsole.log({ e });
-          setsearchSate('fail');
-        });
+    } catch (error) {
+      setPageLoading!(false);
+      CommonBugFender('Diagnositic_Landing_Page_Tests_GetSubscriptionsOfUserByStatus', error);
     }
   };
 
-  interface SuggestionType {
-    name: string;
-    price: number;
-    type: 'TEST' | 'PACKAGE';
-    imgUri?: string;
-    onPress: () => void;
-    showSeparator?: boolean;
-    style?: ViewStyle;
-  }
-
-  const renderSearchSuggestionItem = (data: SuggestionType) => {
-    const localStyles = StyleSheet.create({
-      containerStyle: {
-        ...data.style,
-      },
-      iconAndDetailsContainerStyle: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginVertical: 9.5,
-        marginHorizontal: 12,
-      },
-      iconOrImageContainerStyle: {
-        width: 40,
-      },
-      nameAndPriceViewStyle: {
-        flex: 1,
-      },
-    });
-
-    const renderNamePriceAndInStockStatus = () => {
-      return (
-        <View style={localStyles.nameAndPriceViewStyle}>
-          <Text
-            numberOfLines={1}
-            style={{
-              ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0),
-            }}
-          >
-            {data.name}
-          </Text>
-          <Text
-            style={{
-              ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
-            }}
-          >
-            Rs. {data.price}
-          </Text>
-        </View>
-      );
-    };
-
-    const renderIconOrImage = () => {
-      return (
-        <View style={localStyles.iconOrImageContainerStyle}>
-          {data.imgUri ? (
-            <Image
-              placeholderStyle={styles.imagePlaceholderStyle}
-              source={{ uri: data.imgUri }}
-              style={{
-                height: 40,
-                width: 40,
-              }}
-              resizeMode="contain"
-            />
-          ) : data.type == 'PACKAGE' ? (
-            <TestsIcon />
-          ) : (
-            <TestsIcon />
-          )}
-        </View>
-      );
-    };
-
-    return (
-      <TouchableOpacity activeOpacity={1} onPress={data.onPress}>
-        <View style={localStyles.containerStyle} key={data.name}>
-          <View style={localStyles.iconAndDetailsContainerStyle}>
-            {renderIconOrImage()}
-            <View style={{ width: 16 }} />
-            {renderNamePriceAndInStockStatus()}
-          </View>
-          {data.showSeparator ? <Spearator /> : null}
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  const [scrollOffset, setScrollOffset] = useState<number>(0);
-
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    // console.log(`scrollOffset, ${event.nativeEvent.contentOffset.y}`);
-    setScrollOffset(event.nativeEvent.contentOffset.y);
-  };
-
   const renderSearchBar = () => {
-    const isFocusedStyle = scrollOffset > 10 || isSearchFocused;
-
     const styles = StyleSheet.create({
-      inputStyle: {
-        minHeight: 29,
-        ...theme.fonts.IBMPlexSansMedium(18),
+      searchNewInput: {
+        borderColor: '#e7e7e7',
+        borderRadius: 5,
+        borderWidth: 1,
+        width: '92%',
+        alignSelf: 'center',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignContent: 'center',
+        padding: 10,
+        marginVertical: 15,
+        backgroundColor: '#f7f8f5',
       },
-      inputContainerStyle: isFocusedStyle
-        ? {
-            borderBottomColor: '#00b38e',
-            borderBottomWidth: 2,
-            marginHorizontal: 10,
-          }
-        : {
-            borderRadius: 5,
-            backgroundColor: '#f7f8f5',
-            marginHorizontal: 10,
-            paddingHorizontal: 16,
-            borderBottomWidth: 0,
-          },
-      rightIconContainerStyle: isFocusedStyle
-        ? {
-            height: 24,
-          }
-        : {},
-      style: isFocusedStyle
-        ? {
-            paddingBottom: 18.5,
-          }
-        : { borderRadius: 5 },
-      containerStyle: isFocusedStyle
-        ? {
-            marginBottom: 20,
-            marginTop: 8,
-          }
-        : {
-            marginBottom: 20,
-            marginTop: 12,
-            alignSelf: 'center',
-          },
+      searchTextStyle: {
+        ...theme.viewStyles.text('SB', 18, 'rgba(1,48,91, 0.3)'),
+      },
     });
 
     const shouldEnableSearchSend = searchText.length > 2;
@@ -1673,6 +1291,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         activeOpacity={1}
         style={{
           opacity: shouldEnableSearchSend ? 1 : 0.4,
+          marginRight: 5,
         }}
         disabled={!shouldEnableSearchSend}
         onPress={() => {
@@ -1680,195 +1299,354 @@ export const Tests: React.FC<TestsProps> = (props) => {
             searchText: searchText,
           });
           setSearchText('');
-          setMedicineList([]);
+          setDiagnosticResults([]);
         }}
       >
         <SearchSendIcon />
       </TouchableOpacity>
     );
 
-    const itemsNotFound =
-      searchSate == 'success' && searchText.length > 2 && medicineList.length == 0;
     return (
-      <View pointerEvents={isDiagnosticLocationServiceable ? 'auto' : 'none'}>
-        <Input
-          autoFocus={!locationDetails ? false : focusSearch}
-          onSubmitEditing={() => {
-            if (searchText.length > 2) {
-              props.navigation.navigate(AppRoutes.SearchTestScene, {
-                searchText: searchText,
-              });
-            }
-          }}
-          value={searchText}
-          autoCapitalize="none"
-          spellCheck={false}
-          onFocus={() => setSearchFocused(true)}
-          onBlur={() => {
-            setSearchFocused(false);
-            setMedicineList([]);
-            setSearchText('');
-            setsearchSate('success');
-          }}
-          onChangeText={(value) => {
-            if (isValidSearch(value)) {
-              if (!g(locationForDiagnostics, 'cityId')) {
-                renderLocationNotServingPopup();
-                return;
-              }
-              setSearchText(value);
-              if (!(value && value.length > 2)) {
-                setMedicineList([]);
-                return;
-              }
-              const search = _.debounce(onSearchMedicine, 300);
-              setSearchQuery((prevSearch: any) => {
-                if (prevSearch.cancel) {
-                  prevSearch.cancel();
-                }
-                return search;
-              });
-              search(value);
-            }
-          }}
-          autoCorrect={false}
-          rightIcon={isSearchFocused ? rigthIconView : <View />}
-          placeholder="Search tests &amp; packages"
-          selectionColor={itemsNotFound ? '#890000' : '#00b38e'}
-          underlineColorAndroid="transparent"
-          placeholderTextColor="rgba(1,48,91, 0.4)"
-          inputStyle={styles.inputStyle}
-          inputContainerStyle={[
-            styles.inputContainerStyle,
-            itemsNotFound
-              ? {
-                  borderBottomColor: '#890000',
-                }
-              : {},
-          ]}
-          rightIconContainerStyle={styles.rightIconContainerStyle}
-          style={styles.style}
-          containerStyle={styles.containerStyle}
-          errorStyle={{
-            ...theme.viewStyles.text('M', 12, '#890000'),
-            marginHorizontal: 10,
-          }}
-          errorMessage={
-            itemsNotFound ? 'Sorry, we couldn’t find what you are looking for :(' : undefined
-          }
-        />
-      </View>
+      <TouchableOpacity
+        onPress={() => {
+          props.navigation.navigate(AppRoutes.SearchTestScene, {
+            searchText: searchText,
+          });
+        }}
+        style={styles.searchNewInput}
+      >
+        <Text style={styles.searchTextStyle}>Search tests &amp; packages</Text>
+        {rigthIconView}
+      </TouchableOpacity>
     );
   };
 
-  const renderDeliverToLocationMenuAndCTA = () => {
-    const options = ['Auto Select Pincode', 'Enter Pincode Manually'].map((item) => ({
-      key: item,
-      value: item,
-    }));
+  const renderAlert = (message: string, source?: string, address?: any) => {
+    if (!!source && !!address) {
+      showAphAlert?.({
+        unDismissable: true,
+        title: string.common.uhOh,
+        description: message,
+        onPressOk: () => {
+          hideAphAlert?.();
+          props.navigation.push(AppRoutes.AddAddressNew, {
+            KeyName: 'Update',
+            addressDetails: address,
+            ComingFrom: AppRoutes.TestsCart,
+            updateLatLng: true,
+            source: 'Tests' as AddressSource,
+          });
+        },
+      });
+    }
+  };
 
-    return (
-      <MaterialMenu
-        options={options}
-        itemContainer={styles.menuItemContainer}
-        menuContainerStyle={[
-          styles.menuMenuContainerStyle,
-          {
-            marginTop: hasLocation ? winWidth * 0.08 : 35,
-            marginLeft: 10,
-          },
-        ]}
-        scrollViewContainerStyle={styles.menuScrollViewContainerStyle}
-        itemTextStyle={styles.menuItemTextStyle}
-        bottomPadding={styles.menuBottomPadding}
-        onPress={(item) => {
-          if (item.value == options[0].value) {
-            autoDetectLocation();
-            setOptionSelected('Auto Detect');
-          } else {
-            setshowLocationpopup(true);
-            setOptionSelected('Enter Manually');
-          }
-        }}
-      >
-        {renderDeliverToLocationCTA()}
-      </MaterialMenu>
-    );
+  async function setDefaultAddress(address: Address) {
+    try {
+      const isSelectedAddressWithNoLatLng = isAddressLatLngInValid(address);
+      if (isSelectedAddressWithNoLatLng) {
+        //show the error
+        renderAlert(string.diagnostics.updateAddressLatLngMessage, 'updateLocation', address);
+      } else {
+        setPageLoading?.(true);
+        hideAphAlert?.();
+        const response = await client.query<makeAdressAsDefault, makeAdressAsDefaultVariables>({
+          query: SET_DEFAULT_ADDRESS,
+          variables: { patientAddressId: address?.id },
+          fetchPolicy: 'no-cache',
+        });
+        const { data } = response;
+        const patientAddress = data?.makeAdressAsDefault?.patientAddress;
+        const updatedAddresses = addresses.map((item) => ({
+          ...item,
+          defaultAddress: patientAddress?.id == item.id ? patientAddress?.defaultAddress : false,
+        }));
+        setAddresses?.(updatedAddresses);
+        setTestAddress?.(updatedAddresses);
+        patientAddress?.defaultAddress && setDeliveryAddressId?.(patientAddress?.id);
+        setDiagnosticAreas?.([]);
+        setAreaSelected?.({});
+        setDiagnosticSlot?.(null);
+        const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
+        setDiagnosticLocation?.(formatAddressToLocation(deliveryAddress! || null));
+        checkIsPinCodeServiceable(address?.zipcode!, undefined, 'defaultAddress');
+        setPageLoading(false);
+      }
+    } catch (error) {
+      setPageLoading(false);
+      checkLocation(addresses);
+      CommonBugFender('set_default_Address_on_Medicine_Page', error);
+      showAphAlert?.({
+        title: string.common.uhOh,
+        description:
+          "We're sorry! Unable to set delivery address. Please try again after some time",
+      });
+    }
+  }
+
+  const checkLocation = (addresses: addressListType) => {
+    !defaultAddress &&
+      !locationDetails &&
+      !diagnosticLocation &&
+      !pharmacyLocation &&
+      showAccessLocationPopup(addresses, false);
+  };
+  const showAccessLocationPopup = (addressList: addressListType, pincodeInput?: boolean) => {
+    return showAphAlert?.({
+      // unDismissable: isunDismissable(),
+      removeTopIcon: true,
+      onPressOutside: () => {
+        hideAphAlert!();
+        //if this needs to be done, if location permission is denied or anywhere.
+        if (
+          !defaultAddress &&
+          !locationDetails &&
+          !diagnosticLocation &&
+          !pharmacyLocation &&
+          !asyncDiagnosticPincode?.pincode!
+        ) {
+          setDeliveryAddressId?.('');
+          checkIsPinCodeServiceable('500034', undefined, 'noLocation');
+        }
+      },
+      children: !pincodeInput ? (
+        <AccessLocation
+          isAddressLoading={fetchAddressLoading}
+          source={AppRoutes.Tests}
+          addresses={addressList}
+          onPressSelectAddress={(address) => {
+            const saveAddress = {
+              pincode: address?.zipcode,
+              id: address?.id,
+              city: address?.city,
+              state: address?.state,
+            };
+            setCartPagePopulated?.(false);
+            setAsyncDiagnosticPincode?.(saveAddress);
+            setDefaultAddress(address);
+          }}
+          onPressEditAddress={(address) => {
+            props.navigation.push(AppRoutes.AddAddressNew, {
+              KeyName: 'Update',
+              addressDetails: address,
+              source: 'Tests' as AddressSource,
+              ComingFrom: AppRoutes.Tests,
+            });
+            hideAphAlert?.();
+          }}
+          onPressAddAddress={() => {
+            props.navigation.navigate(AppRoutes.AddAddressNew, {
+              source: 'Tests' as AddressSource,
+              addOnly: true,
+            });
+            hideAphAlert?.();
+          }}
+          onPressCurrentLocaiton={() => {
+            hideAphAlert?.();
+            autoDetectLocation(addressList);
+          }}
+          onPressPincode={() => {
+            hideAphAlert?.();
+            showAccessLocationPopup(addressList, true);
+          }}
+        />
+      ) : (
+        <PincodeInput
+          onPressApply={(pincode) => {
+            if (pincode?.length == 6) {
+              hideAphAlert?.();
+              setDeliveryAddressId?.('');
+              checkIsPinCodeServiceable(pincode, 'Manually', 'pincodeManualApply');
+            }
+          }}
+          onPressBack={() => showAccessLocationPopup(addressList, false)}
+        />
+      ),
+    });
   };
 
   const formatText = (text: string, count: number) =>
     text.length > count ? `${text.slice(0, count)}...` : text;
 
   const renderDeliverToLocationCTA = () => {
-    const location = diagnosticLocation
-      ? `${formatText(
-          g(diagnosticLocation, 'city') || g(diagnosticLocation, 'state') || '',
-          18
-        )} ${g(diagnosticLocation, 'pincode')}`
-      : `${formatText(g(locationDetails, 'city') || g(locationDetails, 'state') || '', 18)} ${g(
-          locationDetails,
-          'pincode'
-        )}`;
+    let deliveryAddress = addresses?.find((item) => item?.id == deliveryAddressId);
+    const location = asyncDiagnosticPincode?.pincode
+      ? `${formatText(asyncDiagnosticPincode?.city || asyncDiagnosticPincode?.state || '', 18)} ${
+          asyncDiagnosticPincode?.pincode
+        }`
+      : !deliveryAddress
+      ? diagnosticLocation?.pincode
+        ? `${formatText(
+            g(diagnosticLocation, 'city') || g(diagnosticLocation, 'state') || '',
+            18
+          )} ${g(diagnosticLocation, 'pincode')}`
+        : `${formatText(g(locationDetails, 'city') || g(locationDetails, 'state') || '', 18)} ${g(
+            locationDetails,
+            'pincode'
+          )}`
+      : `${formatText(deliveryAddress?.city || deliveryAddress?.state || '', 18)} ${
+          deliveryAddress?.zipcode
+        }`;
+
     return (
       <View style={{ paddingLeft: 15, marginTop: 3.5 }}>
         {hasLocation ? (
-          <View style={{ marginTop: -7.5, marginRight: 40 }}>
+          <TouchableOpacity
+            style={{ marginTop: -7.5 }}
+            onPress={() => {
+              showAccessLocationPopup(addresses, false);
+            }}
+          >
+            <Text numberOfLines={1} style={styles.deliverToText}>
+              {string.diagnostics.collectionFromText}
+            </Text>
             <View style={{ flexDirection: 'row' }}>
               <View>
-                <Text style={styles.locationText}>{location}</Text>
-                {!serviceabilityMsg ? null : ( // <Spearator style={styles.locationTextUnderline} />
-                  <View style={{ height: 2 }} />
-                )}
+                <Text style={styles.locationText}>{nameFormater(location, 'title')}</Text>
+                <Spearator style={styles.locationTextUnderline} />
               </View>
-
               <View style={styles.dropdownGreenContainer}>
-                <LocationOn />
+                <DropdownGreen />
               </View>
             </View>
-          </View>
+          </TouchableOpacity>
         ) : (
-          <View style={{ marginTop: -3, marginRight: 3 }}>
-            <LocationOff />
-          </View>
+          <LocationOff />
         )}
+        {!!serviceabilityMsg && <Text style={styles.serviceabilityMsg}>{serviceabilityMsg}</Text>}
       </View>
     );
   };
+
+  const renderDot = (active: boolean, source?: string) => (
+    <View
+      style={[
+        styles.sliderDotStyle,
+        {
+          backgroundColor: active
+            ? source == 'orderStatus'
+              ? colors.APP_YELLOW
+              : colors.APP_GREEN
+            : '#d8d8d8',
+          width: source == 'orderStatus' && active ? 14 : 8,
+        },
+      ]}
+    />
+  );
 
   const renderBanner = () => {
-    return (
-      <View
-        style={{
-          backgroundColor: theme.colors.APP_GREEN,
-          width: '100%',
-          paddingVertical: 16,
-          paddingHorizontal: 20,
-          flexDirection: 'row',
-        }}
-      >
-        <ShieldIcon />
+    if (loading || bannerLoading) {
+      //To do add another section shimmer
+      return renderBannerShimmer();
+
+      return (
         <View
-          style={{
-            borderRightWidth: 1,
-            borderRightColor: 'rgba(2, 71, 91, 0.5)',
-            marginHorizontal: 19.5,
-          }}
-        />
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-          }}
-        >
-          <Text style={theme.viewStyles.text('M', 14, theme.colors.WHITE, 1, 22)}>
-            Most trusted diagnostics from the comfort of your home!
-          </Text>
+          style={[styles.sliderPlaceHolderStyle, { height: imgHeight, backgroundColor: '#e3e1e1' }]}
+        ></View>
+      );
+    } else if (banners?.length > 0) {
+      return (
+        <View style={{ marginBottom: 28 }}>
+          <Carousel
+            onSnapToItem={setSlideIndex}
+            data={banners}
+            renderItem={renderSliderItem}
+            sliderWidth={winWidth}
+            itemWidth={winWidth}
+            loop={true}
+            autoplay={true}
+            autoplayDelay={3000}
+            autoplayInterval={3000}
+          />
+          <View style={styles.landingBannerInnerView}>
+            {banners?.length > 1 &&
+              banners?.map((_, index) =>
+                index == slideIndex ? renderDot(true) : renderDot(false)
+              )}
+          </View>
         </View>
-      </View>
+      );
+    } else {
+      return null;
+    }
+  };
+
+  const renderSliderItem = ({ item, index }: { item: any; index: number }) => {
+    const handleOnPress = () => {
+      if (item?.redirectUrl && item?.redirectUrl != '') {
+        //for rtpcr - drive through - open webview
+        if (item?.redirectUrlText === 'WebView') {
+          DiagnosticBannerClick(
+            slideIndex + 1,
+            Number(item?.itemId || item?.id),
+            item?.bannerTitle
+          );
+          try {
+            const openUrl = item?.redirectUrl || AppConfig.Configuration.RTPCR_Google_Form;
+            props.navigation.navigate(AppRoutes.CovidScan, {
+              covidUrl: openUrl,
+            });
+          } catch (e) {
+            aphConsole.log(e);
+            CommonBugFender('renderSliderItem_handleOnPress_Tests', e);
+          }
+        }
+        //redirect to details page
+        else {
+          const data = item?.redirectUrl?.split('=')?.[1];
+          const extractData = data?.replace('apollopatients://', '');
+          const getNavigationDetails = extractData?.split('?');
+          const route = getNavigationDetails?.[0]?.toLowerCase();
+          let itemId = '';
+          try {
+            if (getNavigationDetails?.length >= 2) {
+              itemId = getNavigationDetails?.[1]?.split('&');
+              if (itemId.length > 0) {
+                itemId = itemId[0];
+              }
+            }
+          } catch (error) {}
+          if (route == 'testdetails') {
+            DiagnosticBannerClick(
+              slideIndex + 1,
+              Number(itemId),
+              item?.bannerTitle,
+              currentPatient,
+              isDiagnosticCircleSubscription
+            );
+            props.navigation.navigate(AppRoutes.TestDetails, {
+              itemId: itemId,
+              comingFrom: AppRoutes.Tests,
+            });
+          } else if (route == 'testlisting') {
+            DiagnosticBannerClick(
+              slideIndex + 1,
+              Number(0),
+              item?.bannerTitle,
+              currentPatient,
+              isDiagnosticCircleSubscription
+            );
+            props.navigation.navigate(AppRoutes.TestListing, {
+              movedFrom: 'deeplink',
+              widgetName: itemId, //name,
+              cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+            });
+          }
+        }
+      }
+    };
+    return (
+      <TouchableOpacity activeOpacity={1} onPress={handleOnPress}>
+        <ImageNative
+          resizeMode="stretch"
+          style={{ width: '100%', minHeight: imgHeight }}
+          source={{ uri: item.bannerImage }}
+        />
+      </TouchableOpacity>
     );
   };
 
-  const savePastSeacrh = (sku: string, name: string) =>
+  const savePastSearch = (sku: string, name: string) =>
     client.mutate({
       mutation: SAVE_SEARCH,
       variables: {
@@ -1881,281 +1659,1686 @@ export const Tests: React.FC<TestsProps> = (props) => {
       },
     });
 
-  const renderSearchSuggestionItemView = (
-    data: ListRenderItemInfo<searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics>
-  ) => {
+  const renderSearchSuggestionItemView = (data: ListRenderItemInfo<any>) => {
     const { index, item } = data;
-    const imgUri = undefined; //`${config.IMAGES_BASE_URL[0]}${1}`;
-    const {
-      rate,
-      gender,
-      itemId,
-      itemName,
-      collectionType,
-      fromAgeInDays,
-      toAgeInDays,
-      testPreparationData,
-      itemType,
-    } = item;
-    return renderSearchSuggestionItem({
-      onPress: () => {
-        savePastSeacrh(`${itemId}`, itemName).catch((e) => {});
-        setWebEngageEventOnSearchItemClicked(item);
-        props.navigation.navigate(AppRoutes.TestDetails, {
-          testDetails: {
-            Rate: rate,
-            Gender: gender,
-            ItemID: `${itemId}`,
-            ItemName: itemName,
-            collectionType: collectionType,
-            FromAgeInDays: fromAgeInDays,
-            ToAgeInDays: toAgeInDays,
-            preparation: testPreparationData,
-            source: 'Landing Page',
-            type: itemType,
-          } as TestPackageForDetails,
-        });
-      },
-      name: item.itemName,
-      price: item.rate,
-      type: 'TEST',
-      style: {
-        marginHorizontal: 20,
-        paddingBottom: index == medicineList.length - 1 ? 10 : 0,
-      },
-      showSeparator: !(index == medicineList.length - 1),
-      imgUri,
-    });
+
+    return (
+      <DiagnosticsSearchSuggestionItem
+        onPress={() => {
+          CommonLogEvent(AppRoutes.Tests, 'Search suggestion Item');
+          props.navigation.navigate(AppRoutes.TestDetails, {
+            itemId: item?.diagnostic_item_id,
+            itemName: item?.diagnostic_item_name,
+            source: 'Partial Search',
+            comingFrom: AppRoutes.Tests,
+          });
+        }}
+        onPressAddToCart={() => {
+          onAddCartItem(item?.diagnostic_item_id, item?.diagnostic_item_name);
+        }}
+        data={item}
+        loading={true}
+        showSeparator={index !== diagnosticResults?.length - 1}
+        style={{
+          marginHorizontal: 20,
+          paddingBottom: index == diagnosticResults?.length - 1 ? 20 : 0,
+        }}
+        onPressRemoveFromCart={() => removeCartItem!(`${item?.diagnostic_item_id}`)}
+      />
+    );
   };
 
   const renderSearchSuggestions = () => {
-    // if (medicineList.length == 0) return null;
+    const showResults = !!searchText && searchText?.length > 2 && diagnosticResults?.length > 0;
+    const isLoading = searchSate == 'load';
     return (
-      <View
-        style={{
-          width: '100%',
-          position: 'absolute',
-        }}
-      >
-        {searchSate == 'load' ? (
-          <View
-            style={{
-              backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-            }}
-          >
-            {renderSectionLoader(266)}
+      <>
+        {isLoading ? (
+          <View style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}>
+            {renderSectionLoader(330)}
           </View>
         ) : (
-          !!searchText &&
-          searchText.length > 2 && (
-            <FlatList
-              keyboardShouldPersistTaps="always"
-              // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
-              bounces={false}
-              keyExtractor={(_, index) => `${index}`}
-              showsVerticalScrollIndicator={false}
-              style={{
-                paddingTop: medicineList.length > 0 ? 10.5 : 0,
-                maxHeight: 266,
-                backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-              }}
-              data={medicineList}
-              renderItem={renderSearchSuggestionItemView}
-            />
+          !!showResults && (
+            <View>
+              <FlatList
+                keyboardShouldPersistTaps="always"
+                bounces={false}
+                keyExtractor={(_, index) => `${index}`}
+                showsVerticalScrollIndicator={true}
+                persistentScrollbar={true}
+                style={{
+                  paddingTop: 10.5,
+                  maxHeight: 266,
+                  backgroundColor: '#f7f8f5',
+                }}
+                data={diagnosticResults}
+                renderItem={renderSearchSuggestionItemView}
+              />
+              {diagnosticResults?.length > 6 && (
+                <View style={styles.viewAllContainer}>
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {
+                      props.navigation.navigate(AppRoutes.SearchTestScene, {
+                        searchText: searchText,
+                      });
+                      setSearchText('');
+                      setDiagnosticResults([]);
+                    }}
+                    style={styles.viewAllTouchView}
+                  >
+                    <Text style={styles.viewAllText}>VIEW ALL RESULTS</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
           )
         )}
+      </>
+    );
+  };
+
+  const renderPackageWidget = (data: any) => {
+    let listShowLength = 10;
+    const isPricesAvailable =
+      !!data &&
+      data?.diagnosticWidgetData?.length > 0 &&
+      data?.diagnosticWidgetData?.find((item: any) => item?.diagnosticPricing);
+    const showViewAll = !!isPricesAvailable && data?.diagnosticWidgetData?.length > 2;
+    const lengthOfTitle = data?.diagnosticWidgetTitle?.length;
+    return (
+      <View style={!!isPricesAvailable ? styles.widgetSpacing : {}}>
+        {!!isPricesAvailable ? (
+          <>
+            {sectionLoading ? (
+              renderDiagnosticWidgetHeadingShimmer() //load heading
+            ) : (
+              <SectionHeader
+                leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
+                leftTextStyle={[
+                  styles.widgetHeading,
+                  {
+                    ...theme.viewStyles.text(
+                      'B',
+                      !!lengthOfTitle && lengthOfTitle > 20 ? 13.5 : 16,
+                      theme.colors.SHERPA_BLUE,
+                      1,
+                      20
+                    ),
+                  },
+                ]}
+                rightText={showViewAll ? 'VIEW ALL' : ''}
+                rightTextStyle={showViewAll ? styles.widgetViewAllText : {}}
+                onPressRightText={
+                  showViewAll
+                    ? () => {
+                        props.navigation.navigate(AppRoutes.TestListing, {
+                          movedFrom: AppRoutes.Tests,
+                          data: data,
+                          cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+                          widgetType: data?.diagnosticWidgetType,
+                        });
+                      }
+                    : undefined
+                }
+                style={
+                  showViewAll
+                    ? { paddingBottom: 1, borderBottomWidth: 0 }
+                    : { borderBottomWidth: 0 }
+                }
+              />
+            )}
+            {sectionLoading ? (
+              renderDiagnosticWidgetShimmer(false) //to load package card
+            ) : (
+              <PackageCard
+                data={data}
+                diagnosticWidgetData={data?.diagnosticWidgetData?.slice(
+                  0,
+                  data?.diagnosticWidgetData?.length >= listShowLength
+                    ? listShowLength
+                    : data?.diagnosticWidgetData?.length
+                )}
+                isPriceAvailable={isPriceAvailable}
+                isCircleSubscribed={isDiagnosticCircleSubscription}
+                isServiceable={isDiagnosticLocationServiceable}
+                isVertical={false}
+                navigation={props.navigation}
+                source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME}
+                sourceScreen={AppRoutes.Tests}
+              />
+            )}
+          </>
+        ) : sectionLoading ? (
+          renderDiagnosticWidgetShimmer(true) //load overall widget
+        ) : null}
       </View>
     );
   };
 
-  const renderSearchBarAndSuggestions = () => {
+  const renderTestWidgets = (data: any) => {
+    const isPricesAvailable =
+      !!data &&
+      data?.diagnosticWidgetData?.length > 0 &&
+      data?.diagnosticWidgetData?.find((item: any) => item?.diagnosticPricing);
+    const showViewAll = !!isPricesAvailable && data?.diagnosticWidgetData?.length > 2;
+    const lengthOfTitle = data?.diagnosticWidgetTitle?.length;
+
+    return (
+      <View>
+        {
+          <>
+            {sectionLoading ? (
+              renderDiagnosticWidgetHeadingShimmer() //load heading
+            ) : !!isPricesAvailable ? (
+              <SectionHeader
+                leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
+                leftTextStyle={[
+                  styles.widgetHeading,
+                  {
+                    ...theme.viewStyles.text(
+                      'B',
+                      !!lengthOfTitle && lengthOfTitle > 20 ? 13.5 : 16,
+                      theme.colors.SHERPA_BLUE,
+                      1,
+                      20
+                    ),
+                  },
+                ]}
+                rightText={showViewAll ? 'VIEW ALL' : ''}
+                rightTextStyle={showViewAll ? styles.widgetViewAllText : {}}
+                onPressRightText={
+                  showViewAll
+                    ? () => {
+                        props.navigation.navigate(AppRoutes.TestListing, {
+                          movedFrom: AppRoutes.Tests,
+                          data: data,
+                          cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+                          widgetType: data?.diagnosticWidgetType,
+                        });
+                      }
+                    : undefined
+                }
+                style={
+                  showViewAll
+                    ? { paddingBottom: 1, borderBottomWidth: 0 }
+                    : { borderBottomWidth: 0 }
+                }
+              />
+            ) : null}
+            {sectionLoading ? (
+              renderDiagnosticWidgetShimmer(false) //load package card
+            ) : (
+              <ItemCard
+                data={data}
+                diagnosticWidgetData={data?.diagnosticWidgetData}
+                isPriceAvailable={isPriceAvailable}
+                isCircleSubscribed={isDiagnosticCircleSubscription}
+                isServiceable={isDiagnosticLocationServiceable}
+                isVertical={false}
+                navigation={props.navigation}
+                source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME}
+                sourceScreen={AppRoutes.Tests}
+              />
+            )}
+          </>
+        }
+      </View>
+    );
+  };
+
+  const renderWhyBookUs = () => {
+    return (
+      <View style={{ marginBottom: -20, marginTop: 10 }}>
+        <View style={{ marginLeft: 16 }}>
+          <Text style={styles.whyBookUsHeading}>{nameFormater('why book with us', 'upper')} ?</Text>
+        </View>
+        <Carousel
+          onSnapToItem={setBookUsSlideIndex}
+          data={whyBookUsArray}
+          renderItem={renderWhyBookUsSlider}
+          sliderWidth={winWidth}
+          itemWidth={winWidth}
+          loop={true}
+          autoplay={true}
+          autoplayDelay={3000}
+          autoplayInterval={3000}
+        />
+        <View style={[styles.landingBannerInnerView, { bottom: 35 }]}>
+          {whyBookUsArray?.map((_, index) =>
+            index == bookUsSlideIndex ? renderDot(true) : renderDot(false)
+          )}
+        </View>
+      </View>
+    );
+  };
+
+  const renderWhyBookUsSlider = ({ item, index }: { item: any; index: number }) => {
+    const handleOnPress = () => {};
     return (
       <TouchableOpacity
         activeOpacity={1}
-        onPress={() => {
-          Keyboard.dismiss();
+        onPress={handleOnPress}
+        key={index.toString()}
+        style={{
+          height: 230,
         }}
-        style={[
-          (searchSate == 'success' || searchSate == 'fail') && medicineList.length == 0
-            ? {
-                height: '100%',
-                width: '100%',
-              }
-            : searchText.length > 2
-            ? {
-                height: '100%',
-                width: '100%',
-                backgroundColor: 'rgba(0,0,0,0.8)',
-              }
-            : {},
-        ]}
       >
-        {renderSearchSuggestions()}
+        <ImageNative
+          key={index.toString()}
+          resizeMode={'contain'}
+          style={styles.whyBookUsImage}
+          source={item?.image}
+        />
       </TouchableOpacity>
     );
   };
 
-  const renderSections = () => {
+  const renderStepsToBook = () => {
     return (
-      <TouchableOpacity
-        activeOpacity={1}
+      <ListCard
         onPress={() => {
-          if (medicineList.length == 0 && !searchText) return;
-          setSearchText('');
-          setMedicineList([]);
+          renderBookingStepsModal();
         }}
-        style={{ flex: 1 }}
-      >
-        {renderBanner()}
-        {/* {uploadPrescriptionCTA()} */}
-        {renderYourOrders()}
-        <>
-          {renderHotSellers()}
-          {/* {renderBrowseByCondition()} */}
-          {renderTestPackages()}
-          {renderTestsByOrgan()}
-          {/* {renderPreventiveTests()} */}
-        </>
-        {/* {renderNeedHelp()} */}
-      </TouchableOpacity>
+        container={styles.stepsToBookContainer}
+        title={string.diagnostics.stepsToBook}
+        leftIcon={<WorkflowIcon />}
+        titleStyle={{
+          color: colors.SHERPA_BLUE,
+          ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 12 : 13),
+          lineHeight: 18,
+        }}
+      />
     );
   };
 
-  const renderLocationNotServingPopup = () => {
-    showAphAlert!({
-      title: `Hi ${currentPatient && currentPatient.firstName},`,
-      description: string.diagnostics.nonServiceableMsg.replace(
-        '{{city_name}}',
-        g(locationDetails, 'displayName')!
+  const renderBookingStepsModal = () => {
+    const divisionFactor = winHeight > 750 ? 2.2 : winHeight > 650 ? 1.7 : 1.5;
+    return showAphAlert?.({
+      unDismissable: false,
+      removeTopIcon: true,
+      children: (
+        <View
+          style={[
+            styles.stepsToBookModalView,
+            {
+              height: winHeight / divisionFactor,
+            },
+          ]}
+        >
+          <View style={styles.stepsToBookModalHeadingView}>
+            <View>
+              <Text style={styles.stepsToBookModalHeadingText}>
+                {nameFormater(string.diagnostics.stepsToBookHeading, 'upper')}
+              </Text>
+            </View>
+            <View>
+              <TouchableOpacity
+                onPress={() => hideAphAlert!()}
+                activeOpacity={1}
+                style={{ backgroundColor: 'transparent' }}
+              >
+                <Remove style={styles.removeIconStyle} />
+              </TouchableOpacity>
+            </View>
+          </View>
+          <View>
+            {stepsToBookArray.map((item: any, index: number) => {
+              return (
+                <>
+                  <View style={{ flexDirection: 'row' }}>
+                    <View style={styles.stepsToBookModalMainTextView}>
+                      <Image source={item.image} style={styles.stepsToBookModalIconStyle} />
+                    </View>
+                    <View style={{ width: '82%' }}>
+                      {index == stepsToBookArray?.length - 1 ? (
+                        <View>{renderStepsToBookText(item.heading, item.subtext)}</View>
+                      ) : (
+                        <ImageBackground
+                          source={require('@aph/mobile-patients/src/components/ui/icons/bottomShadow.webp')}
+                          style={{ height: index == 1 ? 118 : 108, width: 300 }}
+                          resizeMode={'contain'}
+                        >
+                          {renderStepsToBookText(item.heading, item.subtext)}
+                        </ImageBackground>
+                      )}
+                    </View>
+                  </View>
+                </>
+              );
+            })}
+          </View>
+        </View>
       ),
-      onPressOk: () => {
-        hideAphAlert!();
-        setshowLocationpopup(true);
-      },
     });
   };
 
+  const renderStepsToBookText = (heading: string, subText: string) => {
+    return (
+      <>
+        <Text style={styles.stepsToBookModalMainTextHeading}>{heading}</Text>
+        <Text style={styles.stepsToBookModalMainTextSubText}>{subText}</Text>
+      </>
+    );
+  };
+
+  const renderCertificateView = () => {
+    return (
+      <CertifiedCard
+        titleText={string.diagnostics.certificateText}
+        titleStyle={{
+          color: colors.SHERPA_BLUE,
+          ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 12 : 13),
+          lineHeight: 18,
+        }}
+        leftIcon={<ShieldIcon />}
+        bottomView={renderCertificateImages()}
+      />
+    );
+  };
+
+  const renderCertificateImages = () => {
+    return (
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginVertical: '4%' }}>
+        {imagesArray.map((img) => (
+          <Image
+            source={img}
+            style={{ height: isSmallDevice ? 30 : 36, width: isSmallDevice ? 65 : 70 }}
+            resizeMode={'contain'}
+          />
+        ))}
+      </View>
+    );
+  };
+
+  function refetchWidgets() {
+    setReloadWidget(false);
+    setWidgetsData([]);
+    setLoading?.(true);
+    //if banners are not loaded, then refetch them.
+    banners?.length == 0 ? getDiagnosticBanner(serviceableObject?.cityId) : null;
+    getHomePageWidgets(serviceableObject?.cityId);
+    //call patients orders + prescriptions as well.
+    fetchPatientOpenOrders();
+    fetchPatientClosedOrders();
+    fetchPatientPrescriptions();
+  }
+
+  const renderLowNetwork = () => {
+    return (
+      <LowNetworkCard
+        heading1={string.common.couldNotLoadText}
+        heading2={string.common.lowNetworkText}
+        buttonTitle={'RETRY'}
+        onPress={refetchWidgets}
+      />
+    );
+  };
+
+  const renderPrescriptionCard = () => {
+    return (
+      <View>
+        {latestPrescription?.length > 0 ? (
+          <PrescriptionCardCarousel
+            data={latestPrescription}
+            onPressBookNow={onPressBookNow}
+            onPressViewPrescription={onPressViewPrescription}
+          />
+        ) : null}
+      </View>
+    );
+  };
+  const formatResponse = (response: ImageCropPickerResponse[]) => {
+    if (response.length == 0) return [];
+
+    return response.map((item) => {
+      const isPdf = item.mime == 'application/pdf';
+      const fileUri = item!.path || `folder/file.jpg`;
+      const random8DigitNumber = Math.floor(Math.random() * 90000) + 20000000;
+      const fileType = isPdf ? 'pdf' : fileUri.substring(fileUri.lastIndexOf('.') + 1);
+
+      return {
+        base64: item.data,
+        fileType: fileType,
+        title: `${isPdf ? 'PDF' : 'IMG'}_${random8DigitNumber}`,
+      } as PhysicalPrescription;
+    });
+  };
+  const onClickTakePhoto = () => {
+    ImagePicker.openCamera({
+      cropping: false,
+      hideBottomControls: true,
+      width: 2096,
+      height: 2096,
+      includeBase64: true,
+      multiple: true,
+      compressImageQuality: 0.5,
+      compressImageMaxHeight: 2096,
+      compressImageMaxWidth: 2096,
+      writeTempFile: false,
+    })
+      .then((response) => {
+        setLoading(true);
+        props.navigation.navigate(AppRoutes.PrescriptionCamera, {
+          type: 'CAMERA_AND_GALLERY',
+          responseData: formatResponse([response] as ImageCropPickerResponse[]),
+          title: 'Camera',
+        });
+      })
+      .catch((e: Error) => {});
+  };
+
+  const openGallery = () => {
+    setIsPrescriptionUpload(false);
+    ImagePicker.openPicker({
+      cropping: true,
+      hideBottomControls: true,
+      includeBase64: true,
+      multiple: true,
+      compressImageQuality: 0.5,
+      compressImageMaxHeight: 2096,
+      compressImageMaxWidth: 2096,
+      writeTempFile: false,
+      freeStyleCropEnabled: false,
+    })
+      .then((response) => {
+        const images = response as ImageCropPickerResponse[];
+        const isGreaterThanSpecifiedSize = images.find(({ size }) => size > MAX_FILE_SIZE);
+        if (isGreaterThanSpecifiedSize) {
+          Alert.alert(strings.common.uhOh, `Invalid File Size. File size must be less than 25MB.`);
+          return;
+        }
+        const uploadedImages = formatResponse(images);
+        props.navigation.navigate(AppRoutes.SubmittedPrescription, {
+          type: 'Gallery',
+          phyPrescriptionsProp: [...phyPrescriptionUploaded, ...uploadedImages],
+          ePrescriptionsProp: ePresscriptionUploaded,
+          source: 'Tests',
+        });
+      })
+      .catch((e: Error) => {
+        CommonBugFender('Tests_onClickGallery', e);
+      });
+  };
+  const getBase64 = (response: DocumentPickerResponse[]): Promise<string>[] => {
+    return response.map(async ({ fileCopyUri: uri, name: fileName, type }) => {
+      const isPdf = fileName.toLowerCase().endsWith('.pdf'); // TODO: check here if valid image by mime
+      uri = Platform.OS === 'ios' ? decodeURI(uri.replace('file://', '')) : uri;
+      let compressedImageUri = '';
+      if (!isPdf) {
+        compressedImageUri = (await ImageResizer.createResizedImage(uri, 2096, 2096, 'JPEG', 50))
+          .uri;
+        compressedImageUri =
+          Platform.OS === 'ios' ? compressedImageUri.replace('file://', '') : compressedImageUri;
+      }
+      return RNFetchBlob.fs.readFile(!isPdf ? compressedImageUri : uri, 'base64');
+    });
+  };
+
+  const onBrowseClicked = async () => {
+    setIsPrescriptionUpload(false);
+    try {
+      const documents = await DocumentPicker.pickMultiple({
+        type: [DocumentPicker.types.pdf],
+        copyTo: 'documentDirectory',
+      });
+      const isValidPdf = documents.find(({ name }) => name.toLowerCase().endsWith('.pdf'));
+      const isValidSize = documents.find(({ size }) => size < MAX_FILE_SIZE);
+      if (!isValidPdf || !isValidSize) {
+        Alert.alert(
+          strings.common.uhOh,
+          !isValidPdf
+            ? `Invalid File Type. File type must be PDF.`
+            : `Invalid File Size. File size must be less than 25MB.`
+        );
+        return;
+      }
+      const base64Array = await Promise.all(getBase64(documents));
+      const base64FormattedArray = base64Array.map(
+        (base64, index) =>
+          ({
+            mime: documents[index].type,
+            data: base64,
+          } as ImageCropPickerResponse)
+      );
+      const documentData = base64Array.map(
+        (base64, index) =>
+          ({
+            title: documents[index].name,
+            fileType: documents[index].type,
+            base64: base64,
+          } as PhysicalPrescription)
+      );
+      props.navigation.navigate(AppRoutes.SubmittedPrescription, {
+        type: 'Gallery',
+        phyPrescriptionsProp: [...phyPrescriptionUploaded, ...documentData],
+        ePrescriptionsProp: ePresscriptionUploaded,
+        source: 'SubmittedPrescription',
+      });
+    } catch (e:any) {
+      if (DocumentPicker.isCancel(e)) {
+        CommonBugFender('SubmittedPrescription_onClickGallery', e);
+      }
+    }
+  };
+
+  const renderUploadPrescriptionCard = () => {
+    return (
+      <View style={styles.precriptionContainer}>
+        <View style={styles.precriptionContainerUpload}>
+          <PrescriptionColored style={{ height: 35 }} />
+          <Text style={styles.prescriptionText}>Place your order via prescription</Text>
+          <Button
+            title={'UPLOAD'}
+            style={styles.buttonStyle}
+            onPress={() => {
+              setIsPrescriptionGallery(false);
+              setIsPrescriptionUpload(true);
+            }}
+          />
+        </View>
+        {isUploaded ? (
+          <View style={styles.bottomArea}>
+            <View style={{ flexDirection: 'row', paddingHorizontal: 5 }}>
+              <GreenCheck style={{ width: 18, height: 18 }} />
+              <Text style={styles.prescriptionTextUpload}>Prescription Uploaded</Text>
+            </View>
+            <Text style={styles.prescriptionTextUploadTime}>
+              {moment().format('DD MMM, HH:mm')}
+            </Text>
+          </View>
+        ) : null}
+      </View>
+    );
+  };
+  const renderEPrescriptionModal = () => {
+    return (
+      <SelectEPrescriptionModal
+        displayPrismRecords={true}
+        navigation={props.navigation}
+        onSubmit={(selectedEPres) => {
+          setSelectPrescriptionVisible(false);
+          if (selectedEPres.length == 0) {
+            return;
+          }
+          props.navigation.navigate(AppRoutes.SubmittedPrescription, {
+            ePrescriptionsProp: selectedEPres,
+            type: 'E-Prescription',
+            showOptions: false,
+            isReUpload: true,
+          });
+        }}
+        selectedEprescriptionIds={[]}
+        isVisible={isSelectPrescriptionVisible}
+      />
+    );
+  };
+
+  function onPressBookNow(item: any) {
+    const testPrescription = item?.caseSheet?.diagnosticPrescription;
+    addTestsToCart(testPrescription, client, '500030', setLoadingContext)
+      .then((tests: DiagnosticsCartItem[]) => {
+        // Adding ePrescriptions to DiagnosticsCart
+        const unAvailableItemsArray = testPrescription?.filter(
+          (item: any) =>
+            !tests?.find((val) => val?.name?.toLowerCase() == item?.itemname?.toLowerCase())
+        );
+        const unAvailableItems = unAvailableItemsArray
+          ?.map((item: any) => item?.itemname)
+          ?.join(', ');
+
+        if (tests?.length) {
+          addMultipleTestCartItems?.(tests);
+          //removed code for e-prescriptions
+        }
+        if (testPrescription?.length == unAvailableItemsArray?.length) {
+          showAphAlert?.({
+            title: string.common.uhOh,
+            description: string.common.noDiagnosticsAvailable,
+            onPressOk: () => {
+              _navigateToTestCart();
+            },
+            onPressOutside: () => {
+              _navigateToTestCart();
+            },
+          });
+        } else {
+          //in case of if any unavailable items or all are present
+          const lengthOfAvailableItems = tests?.length;
+          const testAdded = tests?.map((item) => nameFormater(item?.name), 'title').join('\n');
+          showAphAlert?.({
+            title:
+              !!lengthOfAvailableItems && lengthOfAvailableItems > 0
+                ? `${lengthOfAvailableItems} ${
+                    lengthOfAvailableItems > 1 ? 'items' : 'item'
+                  } added to your cart`
+                : string.common.uhOh,
+            description: unAvailableItems
+              ? `Below items are added to your cart: \n${testAdded} \nSearch for the remaining diagnositc tests and add to the cart.`
+              : `Below items are added to your cart: \n${testAdded}`,
+            onPressOk: () => {
+              _navigateToTestCart();
+            },
+            onPressOutside: () => {
+              _navigateToTestCart();
+            },
+          });
+        }
+        const getItemNames = tests?.map((item) => item?.name)?.join(', ');
+        const getItemIds = tests?.map((item) => Number(item?.id))?.join(', ');
+        setLoadingContext?.(false);
+        DiagnosticAddToCartEvent(
+          getItemNames,
+          getItemIds,
+          0,
+          0,
+          DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PRESCRIPTION,
+          currentPatient,
+          isDiagnosticCircleSubscription
+        );
+      })
+      .catch((e) => {
+        setLoadingContext?.(false);
+        handleGraphQlError(e);
+      });
+  }
+
+  function _navigateToTestCart() {
+    hideAphAlert?.();
+    props.navigation.navigate(AppRoutes.TestsCart);
+  }
+
+  const getFileName = (item: any) => {
+    return (
+      'Prescription_' +
+      moment(item?.prescriptionDateTime).format('DD MM YYYY') +
+      '_' +
+      item?.doctorName +
+      '_Apollo 247' +
+      new Date().getTime() +
+      '.pdf'
+    );
+  };
+
+  async function onPressViewPrescription(item: any) {
+    const pdfName = item?.caseSheet?.blobName;
+    const prescriptionDate = moment(item?.prescriptionDateTime).format('DD MM YYYY');
+    const fileName: string = getFileName(item);
+    //need to remove the event once added
+    DiagnosticViewReportClicked(
+      'Home',
+      !!pdfName?.labReportURL ? 'Yes' : 'No',
+      'Download Report PDF'
+    );
+    if (pdfName == null || pdfName == '') {
+      Alert.alert('No Image');
+      CommonLogEvent('Tests', 'No image');
+    } else {
+      try {
+        await downloadDiagnosticReport(
+          setLoadingContext,
+          AppConfig.Configuration.DOCUMENT_BASE_URL.concat(pdfName),
+          prescriptionDate,
+          item?.patientName,
+          true,
+          fileName
+        );
+      } catch (error) {
+        setLoadingContext?.(false);
+        CommonBugFender('Tests_onPressViewPrescription_downloadLabTest', error);
+      } finally {
+        setLoadingContext?.(false);
+      }
+    }
+  }
+
+  const renderOrderStatusCard = () => {
+    var allOrders = [];
+    if (patientOpenOrders?.length == 3) {
+      allOrders.push(patientOpenOrders);
+    } else if (patientOpenOrders?.length && patientOpenOrders?.length < 3) {
+      let closedOrders = patientClosedOrders.slice(0, 3 - patientOpenOrders?.length);
+      allOrders.push(patientOpenOrders);
+      allOrders.push(closedOrders);
+    } else {
+      allOrders.push(patientClosedOrders);
+    }
+    allOrders = allOrders?.flat(1);
+    return (
+      <View>
+        {allOrders?.length > 0 ? (
+          <OrderCardCarousel data={allOrders} onPressBookNow={onPressOrderStatusOption} />
+        ) : null}
+      </View>
+    );
+  };
+
+  async function onPressOrderStatusOption(item: any) {
+    if (DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(item?.orderStatus)) {
+      //track order
+      navigateToTrackingScreen(item);
+    } else if (DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(item?.orderStatus)) {
+      DiagnosticViewReportClicked(
+        'Home',
+        !!item?.labReportURL ? 'Yes' : 'No',
+        'Download Report PDF',
+        item?.id
+      );
+      //view report download
+      //need to remove the event once added
+      DiagnosticViewReportClicked(
+        'Home',
+        !!item?.labReportURL ? 'Yes' : 'No',
+        'Download Report PDF',
+        item?.id
+      );
+      if (!!item?.labReportURL && item?.labReportURL != '') {
+        onPressViewReport();
+        setClickedItem(item);
+      } else {
+        showAphAlert?.({
+          title: string.common.uhOh,
+          description: string.diagnostics.responseUnavailableForReport,
+        });
+      }
+    } else {
+      if (DIAGNOSITC_PHELBO_TRACKING_STATUS.includes(item?.orderStatus)) {
+        //track phlebo
+        item?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED
+          ? navigateToTrackingScreen(item)
+          : getPhelboDetails(item?.id, item);
+      } else {
+        navigateToTrackingScreen(item);
+      }
+    }
+  }
+
+  async function onPressViewReport() {
+    const appointmentDate = moment(clickedItem?.slotDateTimeInUTC)?.format('DD MMM YYYY');
+    const patientName = `${clickedItem?.patientObj?.firstName} ${clickedItem?.patientObj?.lastName}`;
+    try {
+      await downloadDiagnosticReport(
+        setLoadingContext,
+        removeWhiteSpaces(clickedItem?.labReportURL),
+        appointmentDate,
+        !!patientName ? patientName : '_',
+        true,
+        undefined,
+        clickedItem?.orderStatus,
+        (clickedItem?.displayId).toString(),
+        true
+      );
+    } catch (error) {
+      setLoadingContext?.(false);
+      CommonBugFender('Tests_onPressOrderStatusOption_downloadLabTest', error);
+    } finally {
+      setLoadingContext?.(false);
+    }
+  }
+
+  function navigateToTrackingScreen(item: any) {
+    DiagnosticTrackOrderViewed(currentPatient, item?.orderStatus, item?.id, 'Home');
+    props.navigation.push(AppRoutes.YourOrdersTest, {
+      isTest: true,
+    });
+  }
+
+  async function getPhelboDetails(orderId: string, order: any) {
+    setLoadingContext?.(true);
+    try {
+      let response: any = await getDiagnosticPhelboDetails(client, [orderId]);
+      if (response?.data?.data) {
+        const getUrl =
+          response?.data?.data?.getOrderPhleboDetailsBulk?.orderPhleboDetailsBulk?.[0]
+            ?.orderPhleboDetails?.phleboTrackLink;
+
+        if (!!getUrl && getUrl != '') {
+          Linking.canOpenURL(getUrl).then((supported: any) => {
+            if (supported) {
+              DiagnosticTrackPhleboClicked(orderId, 'Home', currentPatient, 'Yes');
+              Linking.openURL(getUrl);
+            } else {
+              DiagnosticTrackPhleboClicked(orderId, 'Home', currentPatient, 'No');
+              CommonBugFender('Tests_getPhelboDetails_Unable_to_open_url', getUrl);
+            }
+          });
+        } else {
+          DiagnosticTrackPhleboClicked(orderId, 'Home', currentPatient, 'No');
+          navigateToTrackingScreen(order);
+        }
+      }
+      setLoadingContext?.(false);
+    } catch (error) {
+      DiagnosticTrackPhleboClicked(orderId, 'Home', currentPatient, 'No');
+      setLoadingContext?.(false);
+      CommonBugFender('Tests_onPressOrderStatusOption', error);
+    }
+  }
+
+  const renderExpressSlots = () => {
+    return (
+      <View style={styles.outerExpressView}>
+        <View style={styles.innerExpressView}>
+          <ExpressSlotClock style={styles.expressSlotIcon} />
+          <Text style={styles.expressSlotText}>{expressSlotMsg}</Text>
+        </View>
+      </View>
+    );
+  };
+
+  function getRanking(rank: string) {
+    const findRank =
+      !!widgetsData &&
+      widgetsData?.length > 0 &&
+      widgetsData?.find((item: any) => item?.diagnosticwidgetsRankOrder === rank);
+    return findRank;
+  }
+
+  const renderSections = () => {
+    const widget1 = getRanking('1');
+    return (
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={() => {
+          if (diagnosticResults?.length == 0 && !searchText) return;
+          setSearchText('');
+          setDiagnosticResults([]);
+        }}
+        style={{ flex: 1 }}
+      >
+        {widgetsData?.length == 0 && reloadWidget && renderLowNetwork()}
+        {renderWidgetType(widget1)} {/**1 */}
+        {renderYourOrders()}
+        {latestPrescription?.length > 0 ? renderPrescriptionCard() : null}
+        {renderUploadPrescriptionCard()}
+        {renderOrderStatusCard()}
+        {renderBottomViews()}
+      </TouchableOpacity>
+    );
+  };
+
+  const renderBottomViews = () => {
+    const isWidget = widgetsData?.length > 0;
+
+    const isWidget2 = getRanking('2');
+    const isWidget3 = getRanking('3');
+    const isWidget4 = getRanking('4');
+    const isWidget5 = getRanking('5');
+    const isWidget6 = getRanking('6');
+
+    const restWidgets =
+      isWidget && widgetsData?.length > 6 && widgetsData?.slice(6, widgetsData?.length);
+    return (
+      <>
+        {!!isWidget2 ? renderWidgetType(isWidget2) : null} {/**2 */}
+        {!!isWidget3 ? renderWidgetType(isWidget3) : null} {/** 3 */}
+        {renderStepsToBook()}
+        {!!isWidget4 ? renderWidgetType(isWidget4) : null} {/** 4 */}
+        {renderCarouselBanners()}
+        {!!isWidget5 ? renderWidgetType(isWidget5) : null} {/** 5 */}
+        {renderWhyBookUs()}
+        {!!isWidget6 ? renderWidgetType(isWidget6) : null} {/** 6 */}
+        {renderCertificateView()}
+        {!!restWidgets && restWidgets.map((item: any) => renderWidgetType(item))}
+      </>
+    );
+  };
+
+  const renderWidgetType = (widget: any) => {
+    if (!!widget) {
+      const widgetName = widget?.diagnosticWidgetType?.toLowerCase();
+      switch (widgetName) {
+        case 'banner':
+          return renderBanner();
+          break;
+        case 'package':
+          return renderPackageWidget(widget);
+          break;
+        case string.diagnosticCategoryTitle.categoryGrid:
+          return scrollWidgetSection(widget);
+          break;
+        case string.diagnosticCategoryTitle.category:
+          return gridWidgetSection(widget);
+          break;
+        default:
+          return renderTestWidgets(widget);
+          break;
+      }
+    } else {
+      return null;
+    }
+  };
+
+  const renderCartDetails = () => {
+    return (
+      <View style={styles.cartDetailView}>
+        <Text style={styles.itemAddedText}>
+          {cartItems?.length} {cartItems?.length == 1 ? 'Item' : 'Items'} Added to Cart
+        </Text>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => props.navigation.navigate(AppRoutes.TestsCart)}
+        >
+          <Text style={styles.goToCartText}>GO TO CART</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   const renderLocationNotServingPopUpForPincode = (pincode: string) => {
-    showAphAlert!({
-      title: `Hi ${currentPatient && currentPatient.firstName},`,
+    showAphAlert?.({
+      unDismissable: true,
+      title: string.medicine_cart.tatUnServiceableAlertTitle,
       description: string.diagnostics.nonServiceableConfigPinCodeMsg.replace(
         '{{pincode}}',
         pincode
       ),
-      CTAs: [
-        {
-          text: 'GO TO HOMEPAGE',
-          onPress: () => {
-            hideAphAlert!();
-            props.navigation.navigate(AppRoutes.ConsultRoom, {});
-          },
-          type: 'orange-link',
-        },
-        {
-          text: 'TRY ANOTHER PINCODE',
-          onPress: () => {
-            hideAphAlert!();
-            setshowLocationpopup(true);
-          },
-          type: 'orange-link',
-        },
-      ],
     });
-    setServiceabilityMsg(
-      'Services currently unavailable in your area. Kindly try changing the location.'
+  };
+
+  const renderOverlay = () => {
+    const isNoResultsFound =
+      searchSate != 'load' && searchText.length > 2 && diagnosticResults?.length == 0;
+
+    return (
+      (!!diagnosticResults?.length || searchSate == 'load' || isNoResultsFound) && (
+        <View style={theme.viewStyles.overlayStyle}>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={theme.viewStyles.overlayStyle}
+            onPress={() => {
+              if (diagnosticResults?.length == 0 && !searchText) return;
+              setSearchText('');
+              setDiagnosticResults([]);
+              setSearchFocused(false);
+            }}
+          />
+        </View>
+      )
+    );
+  };
+
+  const renderDiagnosticHeader = () => {
+    const renderIcon = () => (
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={() => {
+          navigateToHome(props.navigation);
+          cleverTapEventForHomeIconClick();
+        }}
+      >
+        <HomeIcon style={{ height: 33, width: 33, resizeMode: 'contain' }} />
+      </TouchableOpacity>
+    );
+
+    const cleverTapEventForHomeIconClick = () => {
+      const eventAttributes = {
+        'Patient name': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+        'Patient UHID': currentPatient?.uhid,
+        Relation: currentPatient?.relation,
+        'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
+        'Patient gender': currentPatient?.gender,
+        'Mobile Number': currentPatient?.mobileNumber,
+        'Customer ID': currentPatient?.id,
+        User_Type: getUserType(allCurrentPatients),
+        'Nav src': 'Dignostic Page',
+        'Circle Member':
+          getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+          undefined,
+        'Device Id': getUniqueId(),
+      };
+      postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);
+    };
+
+    const renderCartIcon = () => (
+      <View style={{ flex: 1 }}>
+        <TouchableOpacity
+          style={{ alignItems: 'flex-end' }}
+          activeOpacity={1}
+          onPress={() => props.navigation.navigate(AppRoutes.TestsCart)}
+        >
+          <CartIcon />
+          {cartItemsCount > 0 && <Badge label={cartItemsCount} />}
+        </TouchableOpacity>
+      </View>
+    );
+
+    const renderNotificationIcon = () => {
+      return (
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.NotificationScreen);
+          }}
+        >
+          <NotificationIcon style={{ marginLeft: 10, marginRight: 5 }} />
+          {notificationCount > 0 && renderBadge(notificationCount, {})}
+        </TouchableOpacity>
+      );
+    };
+
+    return (
+      <View style={[styles.headerContainer, { paddingBottom: serviceabilityMsg ? 0 : 10 }]}>
+        {renderIcon()}
+        {renderDeliverToLocationCTA()}
+        {renderCartIcon()}
+        {renderNotificationIcon()}
+      </View>
+    );
+  };
+  const scrollWidgetSection = (data: any) => {
+    const showViewAll = data?.diagnosticWidgetData && data?.diagnosticWidgetData?.length > 2;
+    return (
+      <View style={styles.container}>
+        <SectionHeader
+          leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
+          leftTextStyle={[
+            styles.widgetHeading,
+            {
+              ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE, 1, 20),
+            },
+          ]}
+          rightText={showViewAll ? 'VIEW ALL' : ''}
+          rightTextStyle={styles.widgetViewAllText} //showViewAll ? styles.widgetViewAllText : {}
+          onPressRightText={() => {
+            props.navigation.navigate(AppRoutes.TestWidgetListing, {
+              movedFrom: AppRoutes.Tests,
+              data: data,
+              cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+            });
+          }}
+          style={{ borderBottomWidth: 0, paddingBottom: 0 }}
+        />
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sectionView}>
+          {data?.diagnosticWidgetData?.map((item: any) => (
+            <WidgetCard
+              data={item}
+              onPressWidget={() => {
+                DiagnosticHomePageWidgetClicked(
+                  currentPatient,
+                  data?.diagnosticWidgetTitle,
+                  undefined,
+                  undefined,
+                  item?.itemTitle,
+                  isDiagnosticCircleSubscription
+                );
+                {
+                  props.navigation.navigate(AppRoutes.TestListing, {
+                    widgetName: item?.itemTitle,
+                    movedFrom: AppRoutes.Tests,
+                    data: data,
+                    cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+                    widgetType: data?.diagnosticWidgetType,
+                  });
+                }
+              }}
+            />
+          ))}
+        </ScrollView>
+      </View>
+    );
+  };
+
+  const renderGridComponent = (data: any, item: any, index: number) => {
+    const imageIcon = !!item?.itemIcon
+      ? item?.itemIcon
+      : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_ICON;
+    return (
+      <TouchableOpacity
+        style={styles.gridPart}
+        onPress={() => {
+          DiagnosticHomePageWidgetClicked(
+            currentPatient,
+            data?.diagnosticWidgetTitle,
+            undefined,
+            undefined,
+            item?.itemTitle,
+            isDiagnosticCircleSubscription
+          );
+          {
+            props.navigation.navigate(AppRoutes.TestListing, {
+              widgetName: item?.itemTitle,
+              movedFrom: AppRoutes.Tests,
+              data: data,
+              cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+              widgetType: data?.diagnosticWidgetType,
+            });
+          }
+        }}
+      >
+        <View style={styles.circleView}>
+          {imageIcon != '' ? (
+            <ImageNative resizeMode="contain" style={styles.image} source={{ uri: imageIcon }} />
+          ) : (
+            <WidgetLiverIcon style={styles.image} resizeMode={'contain'} />
+          )}
+        </View>
+        <Text numberOfLines={2} ellipsizeMode="tail" style={styles.textStyle}>
+          {nameFormater(item?.itemTitle, 'default')}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const gridWidgetSection = (data: any) => {
+    const numColumns = 4;
+    let newGridData: any[] = [];
+    if (
+      data?.diagnosticWidgetData?.length >= numColumns &&
+      data?.diagnosticWidgetData?.length % numColumns != 0
+    ) {
+      let sortedItemsIndex =
+        data?.diagnosticWidgetData?.length - (data?.diagnosticWidgetData?.length % numColumns);
+      if (sortedItemsIndex > numColumns * 2) {
+        newGridData = data?.diagnosticWidgetData.slice(0, numColumns * 2);
+      } else {
+        newGridData = data?.diagnosticWidgetData.slice(0, sortedItemsIndex);
+      }
+    } else {
+      newGridData = data?.diagnosticWidgetData;
+    }
+    const showViewAll = newGridData && newGridData?.length > 2;
+    return (
+      <View style={{ marginBottom: 24 }}>
+        <SectionHeader
+          leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
+          leftTextStyle={[
+            styles.widgetHeading,
+            {
+              ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE, 1, 20),
+            },
+          ]}
+          rightText={showViewAll ? 'VIEW ALL' : ''}
+          rightTextStyle={styles.widgetViewAllText}
+          onPressRightText={() => {
+            props.navigation.navigate(AppRoutes.TestWidgetListing, {
+              movedFrom: AppRoutes.Tests,
+              data: data,
+              cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+            });
+          }}
+          style={{ borderBottomWidth: 0, paddingBottom: 0 }}
+        />
+        <View style={styles.gridConatiner}>
+          <FlatList
+            data={newGridData}
+            numColumns={numColumns}
+            keyExtractor={(_, index) => `${index}`}
+            renderItem={({ item, index }) => renderGridComponent(data, item, index)}
+          />
+        </View>
+      </View>
+    );
+  };
+
+  const prescriptionOptionArray = [
+    {
+      icon: <GalleryIcon />,
+      title: 'Choose from Gallery',
+    },
+    {
+      icon: <CameraIcon />,
+      title: 'Take a Picture',
+    },
+    {
+      icon: <PrescriptionIcon />,
+      title: 'Select from my Prescriptions',
+    },
+  ];
+
+  const prescriptionGalleryOptionArray = [
+    {
+      title: 'Photo Library',
+    },
+    {
+      title: 'Upload PDF',
+    },
+  ];
+
+  const renderOptionsUploadPrescription = () => {
+    return (
+      <>
+        <Text style={styles.textHeadingModal}>Upload Prescription</Text>
+        {prescriptionOptionArray.map((item) => {
+          return (
+            <TouchableOpacity
+              onPress={() => {
+                if (item.title == 'Choose from Gallery') {
+                  setIsPrescriptionGallery(true);
+                } else if (item.title == 'Take a Picture') {
+                  setIsPrescriptionUpload(false);
+                  onClickTakePhoto();
+                } else {
+                  setIsPrescriptionUpload(false);
+                  setSelectPrescriptionVisible(true);
+                }
+              }}
+              style={styles.areaStyles}
+            >
+              {item.icon}
+              <Text style={styles.textPrescription}>{item.title}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </>
+    );
+  };
+
+  const renderGalleryOption = () => {
+    return (
+      <>
+        <Text style={styles.textHeadingModal}>Choose from Gallery</Text>
+        {prescriptionGalleryOptionArray.map((item) => {
+          return (
+            <TouchableOpacity style={{ flexDirection: 'row', alignContent: 'center' }}
+            onPress={()=>{
+              if (item?.title == 'Photo Library') {
+                openGallery()
+              } else {
+                if (Platform.OS === 'android') {
+                  storagePermissions(() => {
+                    onBrowseClicked();
+                  });
+                } else {
+                  onBrowseClicked();
+                }
+              }
+            }}
+            >
+              <Text style={styles.textPrescription}>{item.title}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </>
     );
   };
 
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
-        {renderTopView()}
-        {!!serviceabilityMsg && (
-          <View style={styles.serviceabiltyMessageBackground}>
-            <View style={styles.serviceabiltyMessageView}>
-              <View style={styles.serviceabiltyMessageInnerView}>
-                <PendingIcon style={styles.pendingIconStyle} />
-                <Text style={styles.serviceabilityMsg}>{serviceabilityMsg}</Text>
-              </View>
-            </View>
+        {pageLoading ? (
+          <View style={{ backgroundColor: 'white' }}>
+            {renderDiagnosticHeader()}
+            {renderSearchBar()}
+            {renderTestDiagonosticsShimmer()}
           </View>
-        )}
-        <ScrollView
-          keyboardShouldPersistTaps="always"
-          showsVerticalScrollIndicator={false}
-          style={{ flex: 1 }}
-          bounces={false}
-          stickyHeaderIndices={[1]}
-          onScroll={handleScroll}
-          scrollEventThrottle={20}
-          contentContainerStyle={[
-            isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},
-          ]}
-        >
-          <ProfileList
-            navigation={props.navigation}
-            saveUserChange={true}
-            childView={
-              <View
-                style={{
-                  flexDirection: 'row',
-                  paddingRight: 8,
-                  borderRightWidth: 0,
-                  borderRightColor: 'rgba(2, 71, 91, 0.2)',
-                  backgroundColor: theme.colors.WHITE,
+        ) : (
+          <>
+            <View style={{ backgroundColor: 'white' }}>
+              {renderDiagnosticHeader()}
+              {renderSearchBar()}
+              {expressSlotMsg != '' ? renderExpressSlots() : null}
+              {renderSearchSuggestions()}
+              <Modal
+                animationType="fade"
+                transparent={true}
+                visible={isPrescriptionUpload}
+                onRequestClose={() => {
+                  setIsPrescriptionUpload(false);
+                }}
+                onDismiss={() => {
+                  setIsPrescriptionUpload(false);
                 }}
               >
-                <Text style={styles.hiTextStyle}>{'hi'}</Text>
-                <View style={styles.nameTextContainerStyle}>
-                  <View style={{ flexDirection: 'row', flex: 1 }}>
-                    <Text
-                      style={[
-                        styles.nameTextStyle,
-                        { maxWidth: Platform.OS === 'ios' ? '85%' : '75%' },
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
-                    </Text>
-                    {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
-                      <LinkedUhidIcon
-                        style={{
-                          width: 22,
-                          height: 20,
-                          marginLeft: 5,
-                          marginTop: Platform.OS === 'ios' ? 16 : 20,
-                        }}
-                        resizeMode={'contain'}
-                      />
-                    ) : null}
-                    <View style={{ paddingTop: 15, marginLeft: 6 }}>
-                      <DropdownGreen />
-                    </View>
+                <View style={styles.modalMainView}>
+                  <View style={styles.paitentModalView}>
+                    {isPrescriptionGallery
+                      ? renderGalleryOption()
+                      : renderOptionsUploadPrescription()}
                   </View>
-                  {currentPatient && <View style={styles.seperatorStyle} />}
                 </View>
-              </View>
-            }
-            selectedProfile={profile}
-            unsetloaderDisplay={true}
-          ></ProfileList>
-
-          <View style={[isSearchFocused ? { flex: 1 } : {}]}>
-            <View
-              style={{
-                backgroundColor: 'white',
-              }}
-            >
-              {renderSearchBar()}
+              </Modal>
             </View>
-            {renderSearchBarAndSuggestions()}
-          </View>
-          <View style={[isSearchFocused && searchText.length > 2 ? { height: 0 } : {}]}>
-            {renderSections()}
-          </View>
-        </ScrollView>
+            <View style={{ flex: 1 }}>
+              <ScrollView
+                removeClippedSubviews={true}
+                bounces={false}
+                style={{ flex: 1, marginBottom: !!cartItems && cartItems?.length > 0 ? 30 : 0 }}
+                keyboardShouldPersistTaps="always"
+                showsVerticalScrollIndicator={false}
+                nestedScrollEnabled={true}
+              >
+                {renderSections()}
+                {renderOverlay()}
+              </ScrollView>
+              {!!cartItems && cartItems?.length > 0 ? renderCartDetails() : null}
+            </View>
+          </>
+        )}
       </SafeAreaView>
-      {renderPopup()}
+      {showbookingStepsModal ? renderBookingStepsModal() : null}
+      {isSelectPrescriptionVisible && renderEPrescriptionModal()}
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  labelView: {
+    position: 'absolute',
+    top: -3,
+    right: -3,
+    backgroundColor: '#ff748e',
+    height: 14,
+    width: 14,
+    borderRadius: 7,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalMainView: {
+    backgroundColor: 'rgba(100,100,100, 0.5)',
+    flex: 1,
+    justifyContent: 'flex-end',
+    // alignItems: 'center',
+    flexDirection: 'column',
+  },
+  paitentModalView: {
+    backgroundColor: 'white',
+    width: '100%',
+    padding: 10,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  },
+  precriptionContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    ...theme.viewStyles.shadowStyle,
+    marginLeft: 16,
+    marginRight: 16,
+    marginBottom: 24,
+  },
+  precriptionContainerUpload: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    paddingHorizontal: 5,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    paddingVertical: 10,
+  },
+  textHeadingModal: {
+    ...theme.viewStyles.text('B', 17, colors.SHERPA_BLUE),
+    marginBottom: 20,
+  },
+  textPrescription: {
+    ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE),
+    marginBottom: 20,
+    paddingHorizontal: 10,
+  },
+  areaStyles: { flexDirection: 'row', alignContent: 'center' },
+  buttonStyle: { width: '30%', alignSelf: 'center' },
+  prescriptionText: {
+    ...theme.viewStyles.text('SB', 15, theme.colors.SHERPA_BLUE, 1, 20),
+    textAlign: 'left',
+    width: '50%',
+  },
+  bottomArea: {
+    backgroundColor: colors.APP_GREEN,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  prescriptionTextUpload: {
+    ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1),
+    paddingHorizontal: 5,
+  },
+  prescriptionTextUploadTime: {
+    ...theme.viewStyles.text('R', 14, theme.colors.WHITE, 1),
+    paddingHorizontal: 5,
+  },
+  labelText: {
+    ...theme.fonts.IBMPlexSansBold(9),
+    color: theme.colors.WHITE,
+  },
+  sectionView: {
+    margin: 10,
+    flexDirection: 'row',
+  },
+  container: {
+    // marginTop: 20,
+    marginBottom: 24,
+  },
+  gridConatiner: {
+    width: '92%',
+    backgroundColor: 'white',
+    marginVertical: 16,
+    marginLeft: 16,
+    marginRight: 16,
+  },
+  imagePlaceholderStyle: {
+    backgroundColor: '#f7f8f5',
+    opacity: 0.5,
+    borderRadius: 5,
+  },
+
+  menuItemContainer: {
+    marginHorizontal: 0,
+    padding: 0,
+    margin: 0,
+  },
+  menuMenuContainerStyle: {
+    marginLeft: winWidth * 0.25,
+    marginTop: 50,
+  },
+  menuScrollViewContainerStyle: { paddingVertical: 0 },
+  menuItemTextStyle: {
+    ...theme.viewStyles.text('M', 14, '#01475b'),
+    padding: 0,
+    margin: 0,
+  },
+  menuBottomPadding: { paddingBottom: 0 },
+  deliverToText: { ...theme.viewStyles.text('R', 11, '#01475b', 1, 16) },
+  locationText: { ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) },
+  locationTextUnderline: {
+    height: 2,
+    backgroundColor: '#00b38e',
+    opacity: 1,
+  },
+  dropdownGreenContainer: { justifyContent: 'flex-end', marginBottom: -2 },
+
+  serviceabiltyMessageBackground: {
+    backgroundColor: 'white',
+  },
+  serviceabiltyMessageView: {
+    marginLeft: 20,
+    marginRight: 20,
+    marginBottom: 10,
+    padding: 5,
+    borderColor: '#890000',
+    borderWidth: 1,
+    borderRadius: 5,
+  },
+  serviceabiltyMessageInnerView: {
+    flexDirection: 'row',
+    marginHorizontal: 10,
+    justifyContent: 'space-between',
+  },
+  pendingIconStyle: {
+    height: 15,
+    width: 15,
+    resizeMode: 'contain',
+    marginTop: '1%',
+    tintColor: '#890000',
+  },
+
+  sliderPlaceHolderStyle: {
+    ...theme.viewStyles.imagePlaceholderStyle,
+    width: '100%',
+    alignContent: 'center',
+    justifyContent: 'center',
+  },
+  sliderDotStyle: {
+    height: 8,
+    width: 8,
+    borderRadius: 4,
+    marginHorizontal: 4,
+    marginTop: 9,
+  },
+  landingBannerInnerView: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    position: 'absolute',
+    bottom: 10,
+    alignSelf: 'center',
+  },
+  viewAllContainer: {
+    paddingVertical: 10,
+    paddingHorizontal: 60,
+    backgroundColor: '#f7f8f5',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
+  },
+  viewAllTouchView: {
+    ...theme.viewStyles.cardViewStyle,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#FCB716',
+    borderRadius: 6,
+    padding: 10,
+    alignItems: 'center',
+  },
+  viewAllText: { ...theme.viewStyles.text('B', 15, '#FCB716', 1, 20) },
+  widgetViewAllText: {
+    ...theme.viewStyles.text('B', 15, theme.colors.APP_YELLOW, 1, 20),
+    textAlign: 'right',
+  },
+  widgetHeading: {
+    textAlign: 'left',
+  },
+  widgetView: {
+    marginLeft: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginRight: 32,
+    marginBottom: '2%',
+  },
+  whyBookUsHeading: {
+    ...theme.viewStyles.text('SB', 15, theme.colors.SHERPA_BLUE, 0.5, 20),
+    textAlign: 'left',
+  },
+  itemAddedText: {
+    marginLeft: 20,
+    ...theme.viewStyles.text('SB', isSmallDevice ? 13 : 14, theme.colors.WHITE),
+    lineHeight: 16,
+    textAlign: 'left',
+    alignSelf: 'center',
+  },
+  goToCartText: {
+    marginRight: 20,
+    ...theme.viewStyles.text('SB', isSmallDevice ? 15 : 16, theme.colors.WHITE),
+    lineHeight: 20,
+    textAlign: 'right',
+    alignSelf: 'center',
+  },
+  cartDetailView: {
+    position: 'absolute',
+    backgroundColor: colors.APP_YELLOW_COLOR,
+    bottom: 0,
+    height: 50,
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  serviceabilityMsg: { ...theme.viewStyles.text('R', 10, '#890000') },
+  headerContainer: {
+    flexDirection: 'row',
+    paddingTop: 16,
+    backgroundColor: '#fff',
+    marginLeft: 16,
+    marginRight: 16,
+  },
+  stepsToBookModalView: {
+    paddingLeft: 30,
+    paddingRight: 20,
+    paddingTop: 20,
+  },
+  stepsToBookModalHeadingView: { flexDirection: 'row', justifyContent: 'space-between' },
+  stepsToBookModalHeadingText: {
+    ...theme.viewStyles.text('SB', isSmallDevice ? 14 : 15, colors.SHERPA_BLUE, 1, 20),
+  },
+  removeIconStyle: {
+    tintColor: colors.APP_YELLOW_COLOR,
+    height: 30,
+    width: 30,
+    resizeMode: 'contain',
+  },
+  stepsToBookModalMainTextView: {
+    justifyContent: 'center',
+    alignSelf: 'center',
+    marginTop: -10,
+  },
+  stepsToBookModalIconStyle: {
+    height: 30,
+    width: 30,
+  },
+  stepsToBookModalMainTextHeading: {
+    marginTop: '2%',
+    marginHorizontal: 20,
+    ...theme.viewStyles.text('SB', isSmallDevice ? 14 : 15, '#5C586F', 1, 20),
+  },
+  stepsToBookModalMainTextSubText: {
+    marginBottom: '4%',
+    marginHorizontal: 20,
+    ...theme.viewStyles.text('R', isSmallDevice ? 13 : 14, colors.SHERPA_BLUE, 1, 20),
+  },
+  stepsToBookContainer: {
+    marginBottom: 24,
+    marginTop: 10,
+  },
+  whyBookUsImage: { width: '100%', height: 200 },
+  headingSections: { ...theme.viewStyles.text('B', 14, colors.SHERPA_BLUE, 1, 22) },
+  viewDefaultContainer: {
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    backgroundColor: '#f7f8f5',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
+  },
+  defaultContainer: {
+    width: '100%',
+    justifyContent: 'space-between',
+    marginVertical: 10,
+    paddingVertical: 0,
+    backgroundColor: 'white',
+  },
+  circleView: {
+    width: 50,
+    height: 50,
+    borderRadius: 50 / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f9f9f9',
+  },
+  image: {
+    width: 30,
+    height: 30,
+    backgroundColor: '#f9f9f9',
+  },
+  gridPart: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '25%',
+    borderColor: '#E8E8E8',
+    borderWidth: 0.5,
+    padding: 15,
+  },
+  textStyle: {
+    ...theme.viewStyles.text('SB', isSmallDevice ? 13 : 14, colors.SHERPA_BLUE, 1, 20, 0),
+    paddingVertical: 5,
+    textAlign: 'center',
+    width: '100%',
+  },
+  widgetSpacing: {
+    marginVertical: 12, //24
+  },
+  outerExpressView: { backgroundColor: colors.APP_GREEN, marginBottom: 2 },
+  innerExpressView: {
+    flexDirection: 'row',
+    padding: 8,
+    alignItems: 'center',
+    width: '97%',
+  },
+  expressSlotIcon: { width: 37, height: 37, resizeMode: 'contain' },
+  expressSlotText: { ...theme.viewStyles.text('SB', 14, colors.WHITE, 1, 18), marginLeft: 16 },
+});

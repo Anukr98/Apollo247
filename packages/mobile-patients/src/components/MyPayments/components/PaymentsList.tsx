@@ -7,7 +7,6 @@ import React, { FC, useState } from 'react';
 import { StyleSheet, View, FlatList } from 'react-native';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import PaymentHistoryCard from './PaymentHistoryCard';
-import { IPayment } from 'src/models/IPayment';
 import NoPaymentsScreen from './NoPaymentsScreen';
 import {
   CONSULT_ORDER_PAYMENT_DETAILS,
@@ -69,7 +68,6 @@ const PaymentsList: FC<IProps> = (props) => {
   };
 
   const onConsultEndReached = () => {
-    console.log('End reached');
     if (meta && !fetching && paymentsList.length < meta.total) {
       setfetching(true);
       client
@@ -84,10 +82,12 @@ const PaymentsList: FC<IProps> = (props) => {
         })
         .then((res) => {
           if (res.data) {
-            console.log('payments-->', g(res.data, 'consultOrders', 'appointments').length);
-            console.log('pageNo-->', pageNo + 1);
             let array = paymentsList;
-            array = array.concat(g(res.data, 'consultOrders', 'appointments'));
+            array = array.concat(
+              g(res.data, 'consultOrders', 'appointments')?.filter(
+                (item) => item.appointmentType === 'ONLINE'
+              )
+            );
             setpaymentsList(array);
             setpageNo(pageNo + 1);
           }
@@ -100,7 +100,6 @@ const PaymentsList: FC<IProps> = (props) => {
   };
 
   const onPharmaEndReached = () => {
-    console.log('End reached');
     if (!fetching && paymentsList.length < meta.total) {
       setfetching(true);
       client
@@ -115,8 +114,6 @@ const PaymentsList: FC<IProps> = (props) => {
         })
         .then((res) => {
           if (res.data) {
-            console.log('payments-->', g(res.data, 'pharmacyOrders', 'pharmaOrders').length);
-            console.log('pageNo-->', pageNo + 1);
             let array = paymentsList;
             array = array.concat(g(res.data, 'pharmacyOrders', 'pharmaOrders'));
             setpaymentsList(array);
@@ -146,7 +143,6 @@ const PaymentsList: FC<IProps> = (props) => {
         refreshing={false}
         onEndReachedThreshold={0.2}
         onEndReached={(info: { distanceFromEnd: number }) => {
-          console.log(info);
           onEndReached();
         }}
         ListFooterComponent={renderListFooter()}

@@ -1,86 +1,35 @@
 package com.apollopatient;
 
 import android.app.Application;
-import android.content.Context;
+
+import com.BV.LinearGradient.LinearGradientPackage;
+import com.apollopatient.appsignature.RNAppSignatureHelperPackage;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
-import com.reactnativecommunity.androidprogressbar.RNCProgressBarPackage;
-import com.reactnativecommunity.progressview.RNCProgressViewPackage;
-import com.reactcommunity.rndatetimepicker.RNDateTimePickerPackage;
-import fr.bamlab.rnimageresizer.ImageResizerPackage;
-import com.microsoft.codepush.react.CodePush;
-import io.github.elyx0.reactnativedocumentpicker.DocumentPickerPackage;
-import io.wazo.callkeep.RNCallKeepPackage;
-import com.ocetnik.timer.BackgroundTimerPackage;
-import com.brentvatne.react.ReactVideoPackage;
-import com.zmxv.RNSound.RNSoundPackage;
-import com.ninty.system.setting.SystemSettingPackage;
-import com.zxcpoiu.incallmanager.InCallManagerPackage;
-import com.opentokreactnative.OTPackage;
-import me.furtado.smsretriever.RNSmsRetrieverPackage;
-import com.bugfender.react.RNBugfenderPackage;
-import com.facebook.reactnative.androidsdk.FBSDKPackage;
+import com.ajithab.RNReceiveSharingIntent.ReceiveSharingIntentPackage;
+import com.bebnev.RNUserAgentPackage;
+import com.ibits.react_native_in_app_review.AppReviewPackage;
+import com.christopherdro.htmltopdf.RNHTMLtoPDFPackage;
+import com.horcrux.svg.SvgPackage;
 import com.appsflyer.reactnative.RNAppsFlyerPackage;
-import com.webengage.sdk.android.WebEngage;
-import com.webengage.sdk.android.WebEngageConfig;
-import com.webengage.sdk.android.WebEngageActivityLifeCycleCallbacks;
-import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
-import com.masteratul.exceptionhandler.ReactNativeExceptionHandlerPackage;
-import com.imagepicker.ImagePickerPackage;
-import com.learnium.RNDeviceInfo.RNDeviceInfo;
-import com.reactnativecommunity.webview.RNCWebViewPackage;
-import com.bugsnag.BugsnagReactNative;
-import org.wonday.pdf.RCTPdfView;
-import com.RNFetchBlob.RNFetchBlobPackage;
-import com.oblador.vectoricons.VectorIconsPackage;
-import org.devio.rn.splashscreen.SplashScreenReactPackage;
-import com.corbt.keepawake.KCKeepAwakePackage;
-import com.reactnative.ivpusic.imagepicker.PickerPackage;
-import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
-import com.heanoria.library.reactnative.locationenabler.RNAndroidLocationEnablerPackage;
-import io.invertase.firebase.config.RNFirebaseRemoteConfigPackage;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
-import com.webengage.sdk.android.WebEngage;
-
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.soloader.SoLoader;
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
+import com.microsoft.codepush.react.CodePush;
+import com.webengage.sdk.android.WebEngage;
+import com.webengage.sdk.android.WebEngageActivityLifeCycleCallbacks;
+import com.webengage.sdk.android.WebEngageConfig;
+import com.github.wuxudong.rncharts.MPAndroidChartPackage;
+import com.clevertap.android.sdk.ActivityLifecycleCallback;
+import com.ibits.react_native_in_app_review.AppReviewPackage;
 import java.util.List;
-import com.masteratul.exceptionhandler.NativeExceptionHandlerIfc;
-import com.masteratul.exceptionhandler.ReactNativeExceptionHandlerModule;
-import android.app.AlertDialog;
-import com.webengage.sdk.android.Analytics;
 
-
-// import com.reactnative.ivpusic.imagepicker.PickerPackage;
-// import com.corbt.keepawake.KCKeepAwakePackage;
-// import com.RNFetchBlob.RNFetchBlobPackage;
-// import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
-// import com.learnium.RNDeviceInfo.RNDeviceInfo;
-// import com.zxcpoiu.incallmanager.InCallManagerPackage;
-// import io.github.elyx0.reactnativedocumentpicker.DocumentPickerPackage;
-// import com.opentokreactnative.OTPackage;
-// import org.devio.rn.splashscreen.SplashScreenReactPackage;
-import io.invertase.firebase.RNFirebasePackage;
-// import com.oblador.vectoricons.VectorIconsPackage;
-import io.invertase.firebase.analytics.RNFirebaseAnalyticsPackage; // <-- Add this line
-import io.invertase.firebase.auth.RNFirebaseAuthPackage;
-// import com.facebook.react.shell.MainReactPackage;
-import io.invertase.firebase.notifications.RNFirebaseNotificationsPackage;
-import io.invertase.firebase.messaging.RNFirebaseMessagingPackage;
-import io.invertase.firebase.config.RNFirebaseRemoteConfigPackage; // <-- Add this line
-import io.invertase.firebase.database.RNFirebaseDatabasePackage; // <-- Add this line
-import com.crashlytics.android.Crashlytics;
-import io.fabric.sdk.android.Fabric;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import com.apollopatient.appsignature.RNAppSignatureHelperPackage;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 public class MainApplication extends Application implements ReactApplication {
 
@@ -102,28 +51,12 @@ public class MainApplication extends Application implements ReactApplication {
                     List<ReactPackage> packages = new PackageList(this).getPackages();
                     // Packages that cannot be autolinked yet can be added manually here, for example:
                     // packages.add(new MyReactNativePackage());
-
-                    // packages.add(new PickerPackage());
-                    // packages.add(new KCKeepAwakePackage());
-                    // packages.add(new RNFetchBlobPackage());
-                    // packages.add(new AsyncStoragePackage());
-                    // packages.add(new RNDeviceInfo());
-                    // packages.add(new InCallManagerPackage());
-                    // packages.add(new DocumentPickerPackage());
-                    // packages.add(new OTPackage());
-                    // packages.add(new SplashScreenReactPackage());
-                    packages.add(new RNFirebasePackage());
-                    // packages.add(new VectorIconsPackage());
-                    // packages.add(new RNGestureHandlerPackage());
-                    packages.add(new RNFirebaseAnalyticsPackage());
-                    packages.add(new RNFirebaseAuthPackage());
-                    packages.add(new RNFirebaseMessagingPackage());
-                    packages.add(new RNFirebaseNotificationsPackage());
+                    packages.add(new MPAndroidChartPackage());
                     packages.add(new StreamPackage());
-                    packages.add(new RNFirebaseRemoteConfigPackage());
-                    packages.add(new RNFirebaseDatabasePackage());
                     packages.add(new RNAppSignatureHelperPackage());
-                    // packages.add(new ReactNativeExceptionHandlerPackage());
+                    packages.add(new LinearGradientPackage());
+                    packages.add(new GetReferrerPackage());
+
                     return packages;
                 }
 
@@ -140,63 +73,44 @@ public class MainApplication extends Application implements ReactApplication {
 
     @Override
     public void onCreate() {
+        // Register the CleverTap ActivityLifecycleCallback; before calling super
+        ActivityLifecycleCallback.register(this);
         super.onCreate();
 
-        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(new OnSuccessListener<InstanceIdResult>() {
-            @Override
-            public void onSuccess(InstanceIdResult instanceIdResult) {
-                String token = instanceIdResult.getToken();
-                WebEngage.get().setRegistrationID(token);
-            }
-        });
-
-        Fabric.with(this, new Crashlytics());
         SoLoader.init(this, /* native exopackage */ false);
-        initializeFlipper(this); // Remove this line if you don't want Flipper enabled
-
-        WebEngageConfig webEngageConfig = new WebEngageConfig.Builder()
-                .setWebEngageKey("in~~c2ab3533")
-                .setDebugMode(false) // only in development mode
-                .build();
-        registerActivityLifecycleCallbacks(new WebEngageActivityLifeCycleCallbacks(this, webEngageConfig));
-
-        ReactNativeExceptionHandlerModule.setNativeExceptionHandler(new NativeExceptionHandlerIfc() {
-            @Override
-            public void handleNativeException(Thread thread, Throwable throwable, Thread.UncaughtExceptionHandler originalHandler) {
-                // Put your error handling code here
-                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getApplicationContext());
-                alertDialogBuilder.setTitle("Uh oh.. :(");
-                alertDialogBuilder.setMessage("Oops! Unexpected error occurred. We have reported this to our team. Please close the app and start again.");
-                alertDialogBuilder.setPositiveButton("OK, GOT IT",null);
-                AlertDialog alertDialog = alertDialogBuilder.create();
-                alertDialog.show();
-            }
-        });
+        initAppComponents();
     }
 
-    /**
-     * Loads Flipper in React Native templates.
-     *
-     * @param context
-     */
-    private static void initializeFlipper(Context context) {
-        if (BuildConfig.DEBUG) {
+    private void initAppComponents() {
+        Observable.fromCallable(() -> {
             try {
-        /*
-         We use reflection here to pick up the class that initializes Flipper,
-        since Flipper library is not available in release mode
-        */
-                Class<?> aClass = Class.forName("com.facebook.flipper.ReactNativeFlipper");
-                aClass.getMethod("initializeFlipper", Context.class).invoke(null, context);
-            } catch (ClassNotFoundException e) {
+                FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(new OnSuccessListener<InstanceIdResult>() {
+                    @Override
+                    public void onSuccess(InstanceIdResult instanceIdResult) {
+                        String token = instanceIdResult.getToken();
+                        WebEngage.get().setRegistrationID(token);
+                    }
+                });
+
+
+                //Staging -- in~~c2ab3529
+                //Production -- in~~c2ab3533
+                WebEngageConfig webEngageConfig = new WebEngageConfig.Builder()
+                        .setWebEngageKey("in~~c2ab3533")
+                        .setDebugMode(false) // only in development mode
+                        .build();
+
+                registerActivityLifecycleCallbacks(new WebEngageActivityLifeCycleCallbacks(this, webEngageConfig));
+
+                return true;
+            } catch (Exception e) {
                 e.printStackTrace();
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
+                return false;
             }
-        }
+        }).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe((result) -> {
+                }, Throwable::printStackTrace);
+
     }
 }

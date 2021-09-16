@@ -16,8 +16,8 @@ import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput'
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
-  getPatientAllAppointments_getPatientAllAppointments_appointments,
-  getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription,
+  getPatientAllAppointments_getPatientAllAppointments_activeAppointments,
+  getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet_medicinePrescription,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import {
   DoctorIcon,
@@ -53,6 +53,7 @@ import {
   g,
   followUpChatDaysCaseSheet,
   isPastAppointment,
+  postWEGPatientAPIError,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const { width, height } = Dimensions.get('window');
@@ -236,7 +237,7 @@ const styles = StyleSheet.create({
 
 export interface SearchAppointmentScreenProps
   extends NavigationScreenProps<{
-    allAppointments: getPatientAllAppointments_getPatientAllAppointments_appointments;
+    allAppointments: getPatientAllAppointments_getPatientAllAppointments_activeAppointments;
     onPressBack: () => void;
   }> {}
 
@@ -244,17 +245,17 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
   const [searchText, setSearchText] = useState<string>('');
   const allAppointmentsParam = props.navigation.getParam('allAppointments') || [];
   const [allAppointments, setAllAppointments] = useState<
-    getPatientAllAppointments_getPatientAllAppointments_appointments[]
+    getPatientAllAppointments_getPatientAllAppointments_activeAppointments[]
   >([]);
   const [searchAppointments, setSearchAppointments] = useState<
-    getPatientAllAppointments_getPatientAllAppointments_appointments[]
+    getPatientAllAppointments_getPatientAllAppointments_activeAppointments[]
   >([]);
   const [searchResultFound, setSearchResultFound] = useState(true);
   const [searchQuery, setSearchQuery] = useState({});
   const [
     appointmentItem,
     setAppoinmentItem,
-  ] = useState<getPatientAllAppointments_getPatientAllAppointments_appointments | null>();
+  ] = useState<getPatientAllAppointments_getPatientAllAppointments_activeAppointments | null>();
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
 
@@ -390,7 +391,7 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
   };
 
   const renderConsultationCard = (
-    item: getPatientAllAppointments_getPatientAllAppointments_appointments,
+    item: getPatientAllAppointments_getPatientAllAppointments_activeAppointments,
     index: number
   ) => {
     let tomorrowDate = moment(new Date())
@@ -418,9 +419,7 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
         return null;
       }
     };
-    // console.log(tomorrow, 'tomorrow');
     let appointmentDateTomarrow = moment(item.appointmentDateTime).format('DD MMM');
-    // console.log(appointmentDateTomarrow, 'apptomorrow', tomorrowDate);
     const caseSheet = followUpChatDaysCaseSheet(item.caseSheet);
     const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
     const followUpAfterInDays =
@@ -450,8 +449,6 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
       g(item, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')! ||
       'Physical Consultation';
     const day1 = moment(appointmentDateTime)
-      // .set('hour', 0)
-      // .set('minute', 0)
       .startOf('day')
       .add(followUpAfterInDays, 'days'); // since we're calculating as EOD
     const day2 = moment(new Date());
@@ -461,7 +458,7 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
     const pastAppointmentItem = isPastAppointment(item?.caseSheet, item);
     const medicinePrescription = g(caseSheet, '0' as any, 'medicinePrescription');
     const getMedicines = (
-      medicines: (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription | null)[]
+      medicines: (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet_medicinePrescription | null)[]
     ) =>
       medicines
         ? medicines
@@ -815,7 +812,6 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
               </View>
             ) : null}
             {item.status == STATUS.PENDING ||
-            // dateIsAfterconsult ||
             item.status == STATUS.IN_PROGRESS ||
             item.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
             item.status == STATUS.NO_SHOW ||
@@ -852,7 +848,6 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
           marginTop: 20,
         }}
         ListFooterComponent={() => <View style={{ height: 20 }} />}
-        // horizontal={true}
         data={searchText?.length > 2 ? searchAppointments : []}
         bounces={false}
         removeClippedSubviews={true}

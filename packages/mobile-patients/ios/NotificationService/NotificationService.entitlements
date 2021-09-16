@@ -5,6 +5,8 @@
 	<key>com.apple.developer.associated-domains</key>
 	<array>
 		<string>applinks:apl247.onelink.me</string>
+		<string>applinks:www.apollopharmacy.in</string>
+		<string>applinks:www.apollo247.com</string>
 	</array>
 	<key>com.apple.security.application-groups</key>
 	<array>

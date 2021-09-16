@@ -7,17 +7,12 @@ import {
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
   GET_APPOINTMENT_DATA,
-  GET_CALL_DETAILS,
   GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getAppointmentData as getAppointmentDataQuery,
   getAppointmentDataVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
-import {
-  getCallDetails,
-  getCallDetailsVariables,
-} from '@aph/mobile-patients/src/graphql/types/getCallDetails';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   dataSavedUserID,
@@ -25,6 +20,7 @@ import {
   g,
   postWebEngageEvent,
   overlyCallPermissions,
+  getIsMedicine,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -32,13 +28,11 @@ import moment from 'moment';
 import React, { useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { StyleSheet, Platform, View, TouchableOpacity, Text } from 'react-native';
-import firebase from 'react-native-firebase';
-import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
+import { NavigationScreenProps } from 'react-navigation';
 import { DoctorType } from '../graphql/types/globalTypes';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import AsyncStorage from '@react-native-community/async-storage';
-import { RemoteMessage } from 'react-native-firebase/messaging';
 import KotlinBridge from '@aph/mobile-patients/src/KotlinBridge';
 import { NotificationIconWhite } from './ui/Icons';
 import { WebEngageEvents, WebEngageEventName } from '../helpers/webEngageEvents';
@@ -47,6 +41,7 @@ import {
   getMedicineOrderOMSDetailsWithAddress,
   getMedicineOrderOMSDetailsWithAddressVariables,
 } from '../graphql/types/getMedicineOrderOMSDetailsWithAddress';
+import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   rescheduleTextStyles: {
@@ -102,22 +97,14 @@ type CustomNotificationType =
   | 'Appointment_Canceled_Refund'
   | 'Appointment_Payment_Pending_Failure'
   | 'Book_Appointment'
-  | 'webview';
+  | 'webview'
+  | 'patient_chat_message';
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
 
 export const NotificationListener: React.FC<NotificationListenerProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
-  const isAndroid = Platform.OS === 'android';
-  const {
-    showAphAlert,
-    hideAphAlert,
-    setLoading,
-    setMedFeedback,
-    audioTrack,
-    setPrevVolume,
-    maxVolume,
-  } = useUIElements();
+  const { showAphAlert, hideAphAlert, setLoading, setMedFeedback } = useUIElements();
   const { cartItems, setCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
   const client = useApolloClient();
   const { setDoctorJoinedChat } = useAppCommonData();
@@ -137,7 +124,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     aphConsole.log(`CustomNotificationType:: ${type}`);
     showAphAlert!({
       title: `Hi,`,
-      description: data.content,
+      description: data?.content,
       CTAs: [
         {
           text: 'DISMISS',
@@ -150,7 +137,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
             hideAphAlert!();
             props.navigation.navigate(AppRoutes.OrderDetailsScene, {
               goToHomeOnBack: true,
-              orderAutoId: data.orderAutoId,
+              orderAutoId: data?.orderAutoId || data?.orderId,
             });
           },
         },
@@ -308,55 +295,49 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       | any,
     notificationType: CustomNotificationType
   ) => {
-    console.log('-- notificationType --', { notificationType });
     showAphAlert!({
       title: ' ',
       description: data.content,
     });
   };
 
-  const processNotification = async (notification: Notification) => {
-    const { title, body, data } = notification;
+  const showFollowupNotificationStatusAlert = (
+    data: any,
+    notificationType: CustomNotificationType
+  ) => {
+    showAphAlert!({
+      title: `Hi ${currentPatient?.firstName || ''},`,
+      description: `You have 1 new message from ${data?.doctorName || 'doctor'}`,
+      CTAs: [
+        {
+          text: 'DISMISS',
+          onPress: () => hideAphAlert!(),
+          type: 'white-button',
+        },
+        {
+          text: 'VIEW DETAILS',
+          onPress: () => {
+            hideAphAlert!();
+            getAppointmentData(data.appointmentId, notificationType, '', '');
+          },
+        },
+      ],
+    });
+  };
+
+  const processNotification = async (
+    notification: FirebaseMessagingTypes.RemoteMessage,
+    appOnForeground?: boolean
+  ) => {
+    const data = notification.data || {};
     const notificationType = data.type as CustomNotificationType;
-    aphConsole.log({ notificationType, title, body, data });
-    aphConsole.log('processNotification', notification);
-
     const currentScreenName = await AsyncStorage.getItem('setCurrentName');
-    aphConsole.log('setCurrentName', currentScreenName);
 
-    // const notificationArray = [];
-    // let array: any = await AsyncStorage.getItem('allNotification');
-    // // console.log('array', array);
-
-    // const obj: any = {};
-    // obj['data'] = notification.data;
-    // obj['date'] = new Date();
-
-    // if (array !== null) {
-    //   array = JSON.parse(array);
-    //   array.date = new Date();
-    //   array.isRead = 'false';
-    //   array.push(obj);
-
-    //   if (array.length <= 10) {
-    //     notificationArray.push(...array);
-    //   } else {
-    //     notificationArray.push(...array.slice(1));
-    //   }
-    // } else {
-    //   notificationArray.push(obj);
-    // }
-
-    // console.log('notificationArray', notificationArray, notificationArray.length);
-
-    // AsyncStorage.setItem('allNotification', JSON.stringify(notificationArray));
-    // AsyncStorage.removeItem('allNotification');
     if (
       notificationType === 'chat_room' ||
       notificationType === 'call_started' ||
       notificationType === 'Appointment_Canceled' ||
       notificationType === 'doctor_Noshow_Reschedule_Appointment'
-      // notificationType === 'Reschedule_Appointment'
     ) {
       if (notificationType === 'chat_room' || notificationType === 'call_started') {
         if (data.doctorType === DoctorType.SENIOR) {
@@ -373,10 +354,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       )
         return;
     }
-
-    // if (notificationType === 'PRESCRIPTION_READY') {
-    //   if (currentScreenName === AppRoutes.ConsultDetails) return;
-    // }
 
     aphConsole.log('processNotification after return statement');
 
@@ -415,9 +392,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               {
                 text: 'RESCHEDULE',
                 onPress: () => {
-                  console.log(
-                    `data.appointmentId: ${data.appointmentId}, data.callType: ${data.callType}`
-                  );
                   getAppointmentData(data.appointmentId, notificationType, '', '');
                 },
                 type: 'orange-button',
@@ -485,13 +459,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                 onPress: () => {
                   hideAphAlert && hideAphAlert();
                   if (currentScreenName === AppRoutes.ChatRoom) {
-                    props.navigation.dispatch(
-                      StackActions.reset({
-                        index: 0,
-                        key: null,
-                        actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-                      })
-                    );
+                    navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar);
                   }
                 },
                 type: 'white-button',
@@ -499,9 +467,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               {
                 text: 'RESCHEDULE',
                 onPress: () => {
-                  console.log(
-                    `data.appointmentId: ${data.appointmentId}, data.callType: ${data.callType}`
-                  );
                   getAppointmentData(data.appointmentId, notificationType, '', '');
                 },
                 type: 'orange-button',
@@ -539,9 +504,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               {
                 text: 'RESCHEDULE',
                 onPress: () => {
-                  console.log(
-                    `data.appointmentId: ${data.appointmentId}, data.callType: ${data.callType}`
-                  );
                   getAppointmentData(data.appointmentId, notificationType, '', '');
                 },
                 type: 'orange-button',
@@ -553,7 +515,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       case 'Patient_Cancel_Appointment':
         {
           const userId = await dataSavedUserID('selectedProfileId');
-          const { data } = notification;
           const { appointmentId } = data;
           {
             showAphAlert!({
@@ -565,13 +526,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                   text: 'DISMISS',
                   onPress: () => {
                     hideAphAlert && hideAphAlert();
-                    props.navigation.dispatch(
-                      StackActions.reset({
-                        index: 0,
-                        key: null,
-                        actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-                      })
-                    );
+                    navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar);
                   },
                   type: 'white-button',
                 },
@@ -595,7 +550,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       case 'Appointment_Canceled_Refund':
         {
           const userId = await dataSavedUserID('selectedProfileId');
-          const { data } = notification;
           const { appointmentId } = data;
           showAphAlert!({
             title: ' ',
@@ -610,13 +564,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                       currentScreenName === AppRoutes.AppointmentDetails ||
                       currentScreenName === AppRoutes.AppointmentOnlineDetails
                     ) {
-                      props.navigation.dispatch(
-                        StackActions.reset({
-                          index: 0,
-                          key: null,
-                          actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-                        })
-                      );
+                      navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar);
                     }
                   } catch (error) {}
                 },
@@ -640,7 +588,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         break;
       case 'Appointment_Payment_Pending_Failure':
         {
-          const { data } = notification;
           const { doctorId, content } = data;
           showAphAlert!({
             title: ' ',
@@ -667,9 +614,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         break;
       case 'Cart_Ready':
         {
-          // data.deliveredDate
           const orderId: number = parseInt(data.orderId || '0');
-          console.log('Cart_Ready called');
           client
             .query<
               getMedicineOrderOMSDetailsWithAddress,
@@ -710,7 +655,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                           : undefined,
                         quantity: items[index].qty || 1,
                         prescriptionRequired: medicineDetails.is_prescription_required == '1',
-                        isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
+                        isMedicine: getIsMedicine(medicineDetails.type_id?.toLowerCase()) || '0',
                         thumbnail: medicineDetails.thumbnail || medicineDetails.image,
                         maxOrderQty: medicineDetails.MaxOrderQty,
                         productType: medicineDetails.type_id,
@@ -774,21 +719,18 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
       case 'chat_room':
         {
-          const doctorName = data.doctorName;
-          const userName = data.patientName;
-          const doctorType = data.doctorType;
           aphConsole.log('chat_room');
           getAppointmentData(data.appointmentId, notificationType, '', '');
         }
         break;
+      case 'patient_chat_message':
+        appOnForeground
+          ? showFollowupNotificationStatusAlert(data, notificationType)
+          : getAppointmentData(data.appointmentId, notificationType, '', '');
+        break;
 
       case 'call_started':
         {
-          console.log('call_started', data);
-
-          const doctorName = data.doctorName;
-          const userName = data.patientName;
-          // setLoading;
           getAppointmentData(data.appointmentId, notificationType, data.callType, '');
         }
         break;
@@ -830,7 +772,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         {
           const doctorName = data.doctorName;
           const userName = data.patientName;
-          overlyCallPermissions(userName, doctorName, showAphAlert, hideAphAlert, true);
+          //overlyCallPermissions(userName, doctorName, showAphAlert, hideAphAlert, true);
         }
         break;
       case 'webview':
@@ -846,60 +788,27 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
   };
 
   useEffect(() => {
-    console.log('createNotificationListeners');
     /*
      * Triggered when a particular notification has been received in foreground
      * */
-    const notificationListener = firebase.notifications().onNotification((notification) => {
+    const notificationListener = messaging().onMessage((notification) => {
       aphConsole.log('notificationListener');
-      const localNotification = new firebase.notifications.Notification()
-        // .setSound('incallmanager_ringtone.mp3')
-        .setNotificationId(notification.notificationId)
-        .setTitle(notification.title)
-        .setBody(notification.body)
-        .setData(notification.data)
-        .android.setChannelId('fcm_FirebaseNotifiction_default_channel') // e.g. the id you chose above
-        .android.setSmallIcon('@drawable/ic_notification_white') // create this icon in Android Studio
-        .android.setColor('#fcb716') // you can set a color here
-        .android.setPriority(firebase.notifications.Android.Priority.Max)
-        .android.setAutoCancel(true)
-        .android.setBigText(notification.body, notification.title);
-      firebase
-        .notifications()
-        .displayNotification(localNotification)
-        .catch((err) => console.error(err));
-      if (notification.data.type !== 'chat_room' && notification.data.type !== 'call_started') {
-        processNotification(notification);
+      if (notification.data?.type !== 'chat_room' && notification.data?.type !== 'call_started') {
+        processNotification(notification, true); // when app in foreground
       }
     });
 
     /*
      * If your app is closed, you can check if it was opened by a notification being clicked / tapped / opened as follows:
      * */
-    firebase
-      .notifications()
+    messaging()
       .getInitialNotification()
-      .then(async (_notificationOpen: NotificationOpen) => {
-        if (_notificationOpen) {
-          aphConsole.log('_notificationOpen');
-          const notification = _notificationOpen.notification;
+      .then(async (notification) => {
+        if (notification) {
           const lastNotification = await AsyncStorage.getItem('lastNotification');
-          if (lastNotification !== notification.notificationId) {
-            await AsyncStorage.setItem('lastNotification', notification.notificationId);
-            // App was opened by a notification
-            // Get the action triggered by the notification being opened
-            // const action = _notificationOpen.action;
-            processNotification(_notificationOpen.notification);
-            try {
-              aphConsole.log('notificationOpen', _notificationOpen.notification.notificationId);
-
-              firebase
-                .notifications()
-                .removeDeliveredNotification(_notificationOpen.notification.notificationId);
-            } catch (error) {
-              CommonBugFender('NotificationListener_firebase_try', error);
-              aphConsole.log('notificationOpen error', error);
-            }
+          if (lastNotification !== notification.messageId) {
+            await AsyncStorage.setItem('lastNotification', notification.messageId || '');
+            processNotification(notification);
           }
         }
       })
@@ -907,197 +816,29 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         CommonBugFender('NotificationListener_firebase', e);
       });
 
-    try {
-      const channel = new firebase.notifications.Android.Channel(
-        'fcm_FirebaseNotifiction_default_channel',
-        'Apollo',
-        firebase.notifications.Android.Importance.Max
-      ).setDescription('Demo app description');
-      // .setSound('incallmanager_ringtone.mp3');
-      firebase.notifications().android.createChannel(channel);
-    } catch (error) {
-      CommonBugFender('NotificationListener_channel_try', error);
-      aphConsole.log('error in notification channel', error);
-    }
-    try {
-      const channelForCalls = new firebase.notifications.Android.Channel(
-        'fcm_FirebaseNotifiction_call_channel',
-        'Apollo Audio & Video calls',
-        firebase.notifications.Android.Importance.Max
-      )
-        .setDescription('Apollo Consultation')
-        .enableLights(true)
-        .enableVibration(true)
-        .setVibrationPattern([1000])
-        .setShowBadge(true);
-      firebase.notifications().android.createChannel(channelForCalls);
-    } catch (error) {
-      CommonBugFender('NotificationListener_channel_try', error);
-      aphConsole.log('error in notification channel', error);
-    }
-
     /*
      * If your app is in background, you can listen for when a notification is clicked / tapped / opened as follows:
      * */
-    const onNotificationListener = firebase
-      .notifications()
-      .onNotificationOpened((notificationOpen: NotificationOpen) => {
-        if (notificationOpen) {
-          aphConsole.log('notificationOpen');
+    const onNotificationListener = messaging().onNotificationOpenedApp((notification) => {
+      if (notification) {
+        processNotification(notification);
+      }
+    });
 
-          const notification: Notification = notificationOpen.notification;
-          processNotification(notification);
-        }
-      });
-
-    const messageListener = firebase.messaging().onMessage((message: RemoteMessage) => {
-      // Process your message as required
+    const messageListener = messaging().onMessage((message) => {
       if (Platform.OS === 'android') {
         try {
-          // console.log('RemoteMessage', message, message._data);
-          // if((message._data.af-uinstall-tracking === true) return;
-          // if (message._data.source !== 'webengage') {
           KotlinBridge.cmNotification(JSON.stringify(message.data));
-          // }
         } catch (error) {}
       }
     });
 
     return function cleanup() {
-      console.log('didmount clean up');
       notificationListener();
       onNotificationListener();
       messageListener();
     };
   }, []);
-
-  const getCallStatus = (
-    appointmentCallId: string,
-    appointmentId: string,
-    notificationType: CustomNotificationType,
-    callType: string,
-    doctorName: string,
-    userName: string,
-    doctorType: string
-  ) => {
-    setLoading && setLoading(true);
-
-    client
-      .query<getCallDetails, getCallDetailsVariables>({
-        query: GET_CALL_DETAILS,
-        variables: {
-          appointmentCallId: appointmentCallId,
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((data: any) => {
-        console.log('data', data);
-        try {
-          const endTime = data.data.getCallDetails.appointmentCallDetails.endTime;
-          console.log('call endTime', endTime);
-
-          if (endTime) {
-            try {
-              setPrevVolume();
-              if (audioTrack && !isAndroid) {
-                audioTrack.stop();
-              }
-
-              console.log('call ended');
-              hideAphAlert && hideAphAlert();
-              setLoading && setLoading(false);
-
-              // showAphAlert!({
-              //   title: `Oops :(`,
-              //   description: `You have missed the call from Dr. ${doctorName}`,
-              //   unDismissable: true,
-              //   children: (
-              //     <View
-              //       style={{
-              //         flexDirection: 'row',
-              //         marginHorizontal: 20,
-              //         alignItems: 'flex-end',
-              //         marginVertical: 18,
-              //       }}
-              //     >
-              //       <TouchableOpacity
-              //         style={styles.rescheduletyles}
-              //         onPress={() => {
-              //           hideAphAlert && hideAphAlert();
-              //           setLoading && setLoading(false);
-              //         }}
-              //       >
-              //         <Text style={[styles.rescheduleTextStyles, { color: 'white' }]}>
-              //           {'OKAY'}
-              //         </Text>
-              //       </TouchableOpacity>
-              //     </View>
-              //   ),
-              // });
-            } catch (error) {}
-          } else {
-            try {
-              setLoading && setLoading(false);
-              try {
-                maxVolume();
-                if (audioTrack && !isAndroid) {
-                  audioTrack.play();
-                  audioTrack.setNumberOfLoops(15);
-                  console.log('call audioTrack');
-                }
-              } catch (e) {
-                CommonBugFender('playing_callertune__failed', e);
-              }
-
-              setTimeout(() => {
-                setPrevVolume();
-                if (audioTrack && !isAndroid) {
-                  audioTrack.stop();
-                }
-              }, 15000);
-
-              showAphAlert!({
-                title: `Hi ${userName} :)`,
-                description: `Dr. ${
-                  doctorType == DoctorType.JUNIOR ? doctorName + '`s' + ' team doctor' : doctorName
-                } is waiting for your call response. Please proceed to the Consult Room`,
-                unDismissable: true,
-                CTAs: [
-                  {
-                    text: 'CANCEL',
-                    type: 'white-button',
-                    onPress: () => {
-                      hideAphAlert && hideAphAlert();
-                      setPrevVolume();
-                      if (audioTrack && !isAndroid) {
-                        audioTrack.stop();
-                      }
-                    },
-                  },
-                  {
-                    text: 'CONSULT ROOM',
-                    type: 'orange-button',
-                    onPress: () => {
-                      getAppointmentData(appointmentId, notificationType, callType, '');
-                    },
-                  },
-                ],
-              });
-            } catch (error) {}
-          }
-        } catch (error) {
-          CommonBugFender('NotificationListener_getCallStatus_try', error);
-          setLoading && setLoading(false);
-          hideAphAlert && hideAphAlert();
-        }
-      })
-      .catch((e: any) => {
-        CommonBugFender('NotificationListener_getCallStatus', e);
-        setLoading && setLoading(false);
-        const error = JSON.parse(JSON.stringify(e));
-        console.log('getCallStatus error', error);
-      });
-  };
 
   const getAppointmentData = (
     appointmentId: string,
@@ -1121,11 +862,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         try {
           hideAphAlert && hideAphAlert();
           setLoading && setLoading(false);
-
-          console.log(
-            'GetDoctorNextAvailableSlot',
-            _data.data.getAppointmentData!.appointmentsHistory
-          );
           const appointmentData = _data.data.getAppointmentData!.appointmentsHistory;
           if (appointmentData) {
             if (
@@ -1150,7 +886,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               notificationType == 'call_started' ||
               notificationType == 'chat_room' ||
               notificationType == 'Reminder_Appointment_15' ||
-              notificationType == 'Reminder_Appointment_Casesheet_15'
+              notificationType == 'Reminder_Appointment_Casesheet_15' ||
+              notificationType == 'patient_chat_message'
             ) {
               try {
                 if (appointmentData[0]!.doctorInfo !== null) {
@@ -1182,9 +919,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       })
       .catch((e) => {
         CommonBugFender('NotificationListener_getAppointmentData', e);
-        console.log('Error occured while GetDoctorNextAvailableSlot', { e });
         setLoading && setLoading(false);
-        // handleGraphQlError(e);
       });
   };
 

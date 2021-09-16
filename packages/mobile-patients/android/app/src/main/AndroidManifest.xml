@@ -1,24 +1,30 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-  package="com.apollopatient">
+    package="com.apollopatient">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- Added for the Google Fit-->
+    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.READ_SMS"
+                 tools:node="remove"   />
+    <uses-permission android:name="android.permission.RECEIVE_SMS"
+                 tools:node="remove"  />
     <!--CallKit Permissions Start-->
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <permission
         android:name="android.permission.INTERACT_ACROSS_USERS_FULL"
         android:protectionLevel="signature" />
@@ -38,99 +44,144 @@
         android:required="false" />
 
     <application
-      android:name=".MainApplication"
-      android:label="@string/app_name"
-      android:icon="@mipmap/ic_launcher"
-      android:roundIcon="@mipmap/ic_launcher_round"
-        tools:replace="android:allowBackup,android:theme"
+        android:name=".MainApplication"
         android:allowBackup="false"
-        android:largeHeap="true"
-      android:theme="@style/AppTheme">
-      <activity
-        android:name=".MainActivity"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-          android:launchMode="singleTask"
-          android:screenOrientation="portrait"
-        android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
-        android:windowSoftInputMode="stateAlwaysHidden|adjustPan"
-          >
-        <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
-          <intent-filter android:label="@string/app_name">
-              <action android:name="android.intent.action.VIEW" />
-              <category android:name="android.intent.category.DEFAULT" />
-              <category android:name="android.intent.category.BROWSABLE" />
-              <!-- Accepts URIs that begin with "link://patienturl -->
-              <data android:scheme="apollopatients" />
-          </intent-filter>
-                     <intent-filter android:label="@string/app_name">
-              <action android:name="android.intent.action.VIEW" />
-              <category android:name="android.intent.category.DEFAULT" />
-              <category android:name="android.intent.category.BROWSABLE" />
-              <!-- Accepts URIs that begin with "https:www.apollo247.com -->
-              <data android:scheme="https" android:host="www.apollo247.com"/>
-          </intent-filter>
-      </activity>
+        android:largeHeap="true"
+        android:requestLegacyExternalStorage="true"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:hardwareAccelerated="true"
+        android:theme="@style/AppTheme"
+        tools:replace="android:allowBackup,android:theme">
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
+            android:label="@string/app_name"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateAlwaysHidden|adjustPan">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter android:label="@string/app_name">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "link://patienturl -->
+                <data android:scheme="apollopatients" />
+            </intent-filter>
+            <intent-filter android:label="@string/app_name">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "https:www.apollo247.com -->
+                <data
+                    android:host="www.apollo247.com"
+                    android:scheme="https" />
+            </intent-filter>
+
+            <!--  support sharing images into app-->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+
+            <!-- support sharing pdf into  app-->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/pdf" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/pdf" />
+            </intent-filter>
+            <intent-filter android:label="@string/app_name">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "https:www.apollopharmacy.in -->
+                <data
+                    android:host="www.apollopharmacy.in"
+                    android:scheme="https" />
+            </intent-filter>
+        </activity>
 
         <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" />
         <activity android:name=".UnlockScreenActivity" />
-        <service android:name=".MyFirebaseMessagingService">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
-            </intent-filter>
-        </service>
 
-        <service android:name="io.invertase.firebase.messaging.RNFirebaseMessagingService">
+        <service android:name=".MyFirebaseMessagingService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-
-        <service android:name="io.invertase.firebase.messaging.RNFirebaseBackgroundMessagingService" />
-
-        <receiver android:name="io.invertase.firebase.notifications.RNFirebaseNotificationReceiver" />
-        <receiver
-            android:name="io.invertase.firebase.notifications.RNFirebaseNotificationsRebootReceiver"
-            android:enabled="true"
-            android:exported="true">
+        <service
+            android:name="com.clevertap.pushtemplates.PTNotificationIntentService"
+            android:exported="false">
             <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
-                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
-
-                <category android:name="android.intent.category.DEFAULT" />
+                <action android:name="com.clevertap.PT_PUSH_EVENT"/>
             </intent-filter>
-        </receiver>
-        
-        <meta-data
-            android:name="io.fabric.ApiKey"
-            android:value="40001b65375e3b0193fe0fb56ac6706df22e3eed" />
-        <meta-data android:name="com.bugsnag.android.API_KEY" android:value="53a0b9fd23719632a22d2c262a06bb4e"/>
+        </service>
+        <service android:name=".RingtonePlayingService" />
 
+        <receiver
+            android:name="com.clevertap.android.sdk.pushnotification.CTPushNotificationReceiver"
+            android:exported="false"
+            android:enabled="true">
+        </receiver>
+        <receiver
+            android:name="com.clevertap.pushtemplates.PushTemplateReceiver"
+            android:exported="false"
+            android:enabled="true">
+        </receiver>
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_notification_white" />
 
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@color/notificationColor" />
-
-        <meta-data android:name=
-            "com.google.firebase.messaging.default_notification_channel_id"
+            android:resource="@color/notificationColor"
+            tools:replace="android:resource" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="@string/default_notification_channel_id"
-            />
-        <meta-data android:name="com.webengage.sdk.android.environment" android:value="in" />
+            tools:replace="android:value" />
+        <meta-data
+            android:name="com.webengage.sdk.android.environment"
+            android:value="in" />
         <!-- if data center is in India -->
 
-<!--        <meta-data-->
-<!--            android:name="firebase_crash_collection_enabled"-->
-<!--            android:value="${analytics_deactivated}"/>-->
-        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
-        <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0"/>
-       
-        <uses-library android:name="org.apache.http.legacy" android:required="false"/>
+        <!--        <meta-data-->
+        <!--            android:name="firebase_crash_collection_enabled"-->
+        <!--            android:value="${analytics_deactivated}"/>-->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0" />
+        <uses-library
+            android:name="org.apache.http.legacy"
+            android:required="false" />
+        <meta-data 
+            android:name="com.truecaller.android.sdk.PartnerKey" 
+            android:value="@string/truecaller_appkey" />
+        <meta-data
+            android:name="CLEVERTAP_ACCOUNT_ID"
+            android:value="@string/clevertap_account_id"/>
+        <meta-data
+            android:name="CLEVERTAP_TOKEN"
+            android:value="@string/clevertap_token"/>
 
     </application>
 

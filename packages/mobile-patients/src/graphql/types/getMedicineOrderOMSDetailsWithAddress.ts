@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { MEDICINE_ORDER_TYPE, MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_STATUS, MEDICINE_ORDER_PAYMENT_TYPE, PAYMENT_METHODS_REVERSE, REFUND_STATUS } from "./globalTypes";
@@ -7,6 +8,12 @@ import { MEDICINE_ORDER_TYPE, MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_STATUS, MED
 // ====================================================
 // GraphQL query operation: getMedicineOrderOMSDetailsWithAddress
 // ====================================================
+
+export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_consultInfo {
+  __typename: "ConsultInfo";
+  doctorName: string | null;
+  appointmentDateTime: any | null;
+}
 
 export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderLineItems {
   __typename: "MedicineOrderOMSLineItems";
@@ -67,6 +74,12 @@ export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetail
   customReason: string | null;
 }
 
+export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderShipments_driverDetails {
+  __typename: "DriverDetails";
+  driverName: string | null;
+  driverPhone: string | null;
+}
+
 export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderShipments_medicineOrdersStatus {
   __typename: "MedicineOrdersOMSStatus";
   id: string;
@@ -88,13 +101,16 @@ export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetail
 
 export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderShipments {
   __typename: "MedicineOrderOMSShipment";
+  driverDetails: getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderShipments_driverDetails | null;
   id: string;
   siteId: string | null;
   siteName: string | null;
-  apOrderNo: string | null;
+  trackingNo: string | null;
+  trackingProvider: string | null;
   updatedDate: string | null;
   currentStatus: MEDICINE_ORDER_STATUS | null;
   itemDetails: string | null;
+  trackingUrl: string | null;
   medicineOrdersStatus: (getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderShipments_medicineOrdersStatus | null)[] | null;
   medicineOrderInvoice: (getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderShipments_medicineOrderInvoice | null)[] | null;
 }
@@ -130,6 +146,7 @@ export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetail
 export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails {
   __typename: "MedicineOrdersOMS";
   id: string;
+  appointmentId: string | null;
   createdDate: any | null;
   orderAutoId: number | null;
   billNumber: string | null;
@@ -142,6 +159,7 @@ export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetail
   estimatedAmount: number | null;
   prescriptionImageUrl: string | null;
   orderTat: string | null;
+  oldOrderTat: string | null;
   orderType: MEDICINE_ORDER_TYPE | null;
   shopAddress: string | null;
   packagingCharges: number | null;
@@ -149,6 +167,11 @@ export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetail
   currentStatus: MEDICINE_ORDER_STATUS | null;
   patientAddressId: string | null;
   alertStore: boolean | null;
+  prescriptionOptionSelected: string | null;
+  tatType: string | null;
+  shopId: string | null;
+  totalCashBack: number | null;
+  consultInfo: getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_consultInfo | null;
   medicineOrderLineItems: (getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderLineItems | null)[] | null;
   medicineOrderPayments: (getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderPayments | null)[] | null;
   medicineOrderRefunds: (getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderRefunds | null)[] | null;

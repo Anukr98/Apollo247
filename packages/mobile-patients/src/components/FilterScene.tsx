@@ -16,21 +16,18 @@ import {
   SectionList,
   TextInput,
 } from 'react-native';
-import { Calendar, DateObject } from 'react-native-calendars';
 import { filterDataType } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearchListing';
 import { CalendarView } from '@aph/mobile-patients/src/components/ui/CalendarView';
 import moment from 'moment';
 import {
   CheckUnselectedIcon,
   CheckedIcon,
-  IconBase,
   CloseCal,
   SearchIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 
 const styles = StyleSheet.create({
   container: {
-    // ...theme.viewStyles.container,
     flex: 1,
     backgroundColor: theme.colors.WHITE,
     position: 'absolute',
@@ -41,18 +38,18 @@ const styles = StyleSheet.create({
     zIndex: 5,
     elevation: 5,
   },
+  applyFilterButton: {
+    flex: 1,
+    marginHorizontal: 40,
+    marginTop: 15,
+  },
   cardContainer: {
     padding: 20,
     paddingBottom: 0,
-    // paddingTop: 16,
     marginVertical: 4,
     ...theme.viewStyles.cardViewStyle,
     borderRadius: 0,
     backgroundColor: '#f7f8f5',
-    // shadowColor: '#4c808080',
-    // shadowOffset: { width: 0, height: 5 },
-    // shadowOpacity: 0.2,
-    // elevation: 2,
   },
   labelView: {
     flexDirection: 'row',
@@ -113,7 +110,6 @@ const styles = StyleSheet.create({
   //start
   content: {
     flexDirection: 'row',
-    // flex: 0.7,
   },
   sectionHeaderStyles: {
     borderBottomWidth: 0.5,
@@ -150,7 +146,6 @@ const styles = StyleSheet.create({
     paddingLeft: 30,
     justifyContent: 'space-between',
     alignItems: 'center',
-    // backgroundColor: theme.colors.CARD_BG,
     borderBottomWidth: 0.2,
     borderBottomColor: theme.colors.LIGHT_GRAY_2,
     flexDirection: 'row',
@@ -181,12 +176,6 @@ const styles = StyleSheet.create({
   //end
 });
 
-type dataType = {
-  label: string;
-  options: string[];
-  selectedOptions: string[];
-}[];
-
 export interface FilterSceneProps {
   onClickClose: (arg0: filterDataType[]) => void;
   data: filterDataType[];
@@ -197,13 +186,6 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
   const [data, setData] = useState<filterDataType[]>(props.data);
   const [showCalander, setshowCalander] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const today = new Date().toISOString().slice(0, 10);
-  const [dateSelected, setdateSelected] = useState<object>({
-    [today]: {
-      selected: true,
-      selectedColor: theme.colors.APP_GREEN,
-    },
-  });
   const [date, setDate] = useState<Date>(new Date());
 
   const renderItem = (item: any, id: number) => (
@@ -220,7 +202,6 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
           ...dataCopy[id],
           selectedOptions: selectedData,
         };
-        console.log('dataCopy==>', dataCopy);
         setData(dataCopy);
       }}
       activeOpacity={1}
@@ -234,13 +215,12 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
   const searchedData = (sectionsData: any, searchTerm = '') => {
     const finalData = sectionsData.reduce((result, sectionData) => {
       const { state, data } = sectionData;
+
       const filteredData = data.filter((item: any) => {
         let searchDataItem = state;
-
         searchDataItem = ''
           ? ''.split('.').reduce((prevVal, currVal) => prevVal[currVal], item)
           : item;
-
         return searchDataItem.toLowerCase().includes(searchTerm.toLowerCase());
       });
       if (filteredData.length !== 0) {
@@ -249,6 +229,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
           data: filteredData,
         });
       }
+
       return result;
     }, []);
     return finalData;
@@ -263,7 +244,9 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
           <TextInput
             style={{ marginLeft: 14 }}
             placeholder={'Search'}
-            onChangeText={(searchTerm) => setSearchTerm(searchTerm)}
+            onChangeText={(searchTerm) => {
+              setSearchTerm(searchTerm);
+            }}
           />
         </View>
         <SectionList
@@ -327,7 +310,6 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
     );
   };
 
-  // const { currentUser } = useAuth();
   const [menuItems, setMenuItems] = useState([
     { id: '0', name: 'City' },
     { id: '1', name: 'Brands' },
@@ -445,8 +427,10 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
                   } else {
                     selectedData.push(name);
                   }
+
                   dataCopy[id] = {
                     ...dataCopy[id],
+                    label: menuItems[id].name,
                     selectedOptions: selectedData,
                   };
                   setData(dataCopy);
@@ -596,7 +580,6 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
-              console.log(data, 'data1111111111');
               const filterData = data.map((obj) => {
                 if (obj) obj.selectedOptions = [];
                 return obj;
@@ -618,7 +601,6 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
     data.forEach((item) => {
       if (item.selectedOptions) length += item.selectedOptions.length;
     });
-    console.log(length, 'length');
     if (length == 0) {
       props.filterLength();
     }
@@ -628,7 +610,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
       >
         <Button
           title={'APPLY FILTERS'}
-          style={{ flex: 1, marginHorizontal: 40, marginTop: 15 }}
+          style={styles.applyFilterButton}
           onPress={() => {
             props.setData(data);
             props.onClickClose(data);

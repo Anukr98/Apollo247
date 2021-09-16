@@ -11,18 +11,23 @@ export interface UnServiceableProps {
 export const UnServiceable: React.FC<UnServiceableProps> = (props) => {
   const { cartItems } = useShoppingCart();
   const { style } = props;
-  const unServiceable = cartItems.filter((item) => item.unserviceable);
+  const unServiceable = cartItems.filter(
+    ({ unserviceable, unavailableOnline }) => unserviceable || unavailableOnline
+  );
 
-  return unServiceable && unServiceable.length ? (
+  return unServiceable.length ? (
     <View style={[styles.card, style]}>
       <AlertIcon />
       <View style={{ marginLeft: 8 }}>
         <Text style={styles.unServiceable}>Some Items are not serviceable in your area.</Text>
         {unServiceable.map((item) => {
+          const unavailableText = `${item.name} is ${
+            item.unavailableOnline ? 'not for sale' : 'out of stock'
+          }.`;
           return (
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <BlueDotIcon />
-              <Text style={styles.itemName}>{`${item.name} is out of stock.`}</Text>
+              <Text style={styles.itemName}>{unavailableText}</Text>
             </View>
           );
         })}

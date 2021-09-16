@@ -1,24 +1,13 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
-import { Gender, Relation } from "./globalTypes";
+import { Gender, Relation, BloodGroups } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getPatientByMobileNumber
 // ====================================================
-
-export interface getPatientByMobileNumber_getPatientByMobileNumber_patients_familyHistory {
-  __typename: "FamilyHistory";
-  description: string | null;
-  relation: string | null;
-}
-
-export interface getPatientByMobileNumber_getPatientByMobileNumber_patients_lifeStyle {
-  __typename: "LifeStyle";
-  description: string | null;
-  occupationHistory: string | null;
-}
 
 export interface getPatientByMobileNumber_getPatientByMobileNumber_patients_patientMedicalHistory {
   __typename: "MedicalHistory";
@@ -30,6 +19,7 @@ export interface getPatientByMobileNumber_getPatientByMobileNumber_patients_pati
   pastMedicalHistory: string | null;
   pastSurgicalHistory: string | null;
   temperature: string | null;
+  bloodGroup: BloodGroups | null;
   weight: string | null;
 }
 
@@ -40,6 +30,7 @@ export interface getPatientByMobileNumber_getPatientByMobileNumber_patients {
   firstName: string | null;
   lastName: string | null;
   mobileNumber: string;
+  isConsulted: boolean | null;
   dateOfBirth: any | null;
   emailAddress: string | null;
   gender: Gender | null;
@@ -53,10 +44,8 @@ export interface getPatientByMobileNumber_getPatientByMobileNumber_patients {
   primaryPatientId: string | null;
   whatsAppMedicine: boolean | null;
   whatsAppConsult: boolean | null;
-  familyHistory: (getPatientByMobileNumber_getPatientByMobileNumber_patients_familyHistory | null)[] | null;
-  lifeStyle: (getPatientByMobileNumber_getPatientByMobileNumber_patients_lifeStyle | null)[] | null;
-  patientMedicalHistory: getPatientByMobileNumber_getPatientByMobileNumber_patients_patientMedicalHistory | null;
   partnerId: string | null;
+  patientMedicalHistory: getPatientByMobileNumber_getPatientByMobileNumber_patients_patientMedicalHistory | null;
 }
 
 export interface getPatientByMobileNumber_getPatientByMobileNumber {
