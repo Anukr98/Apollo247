@@ -443,6 +443,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     circlePlanSelected,
     defaultCirclePlan,
     showCircleSubscribed,
+    circleSubPlanId,
   } = useShoppingCart();
   const chatDays = doctorDetails?.chatDays;
   const isPayrollDoctor = doctorDetails?.doctorType === DoctorType.PAYROLL;
@@ -1726,7 +1727,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
-      docName: g(doctorDetails, 'fullName')! || undefined,
+      'Doctor name': g(doctorDetails, 'fullName')! || undefined,
       Source: 'doctor profile',
       'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
@@ -1735,24 +1736,27 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
       'Patient gender': g(currentPatient, 'gender'),
-      specialityName: g(doctorDetails, 'specialty', 'name')! || undefined,
-      exp: Number(g(doctorDetails, 'experience')) || undefined,
+      'Speciality name': g(doctorDetails, 'specialty', 'name')! || undefined,
+      Experience: Number(g(doctorDetails, 'experience')) || undefined,
       'Customer ID': g(currentPatient, 'id'),
-      docId: g(doctorDetails, 'id')!,
-      specialityId: g(doctorDetails, 'specialty', 'id')!,
-      docHospital:
+      'Doctor ID': g(doctorDetails, 'id')!,
+      'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
+      'Doctor hospital':
         doctorClinics.length > 0 && doctorDetails!.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics[0].facility.name}`
           : undefined,
-      docCity:
+      'Doctor city':
         doctorClinics.length > 0 && doctorDetails!.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics[0].facility.city}`
           : undefined,
       User_Type: getUserType(allCurrentPatients),
-      onlineConsultFee: Number(doctorDetails?.onlineConsultationFees) || undefined,
-      physicalConsultFee: Number(doctorDetails?.physicalConsultationFees) || undefined,
-      availableInMins:
+      'Online consult fee': Number(doctorDetails?.onlineConsultationFees) || undefined,
+      'Physical consult fee': Number(doctorDetails?.physicalConsultationFees) || undefined,
+      'Available in mins':
         getTimeDiff(onlineSelected ? availableTime : physicalAvailableTime) || undefined,
+      'Mobile number': currentPatient?.mobileNumber || '',
+      'Circle Member': !!circleSubscriptionId,
+      'Circle Plan type': circleSubPlanId,
     };
     postCleverTapEvent(
       CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED,

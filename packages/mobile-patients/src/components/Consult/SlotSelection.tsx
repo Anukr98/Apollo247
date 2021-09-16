@@ -222,7 +222,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     isCircleDoctorOnSelectedConsultMode,
     cashbackEnabled,
   } = circleDoctorDetails;
-  const { circleSubscriptionId } = useShoppingCart();
+  const { circleSubscriptionId, circleSubPlanId } = useShoppingCart();
   const { locationDetails } = useAppCommonData();
 
   const doctorFees = isOnlineSelected
@@ -843,27 +843,32 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
       isDoctorsOfTheHourStatus: doctorDetails?.doctorsOfTheHourStatus,
     };
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION] = {
-      docName: g(doctorDetails, 'fullName')!,
-      specialtyName: g(doctorDetails, 'specialty', 'name')!,
-      experience: Number(g(doctorDetails, 'experience')!),
-      languagesKnown: g(doctorDetails, 'languages')! || 'NA',
-      appointmentType: isOnlineSelected ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
-      docId: g(doctorDetails, 'id')!,
-      SpecialtyId: g(doctorDetails, 'specialty', 'id')!,
+      'Doctor name': g(doctorDetails, 'fullName')!,
+      'Speciality name': g(doctorDetails, 'specialty', 'name')!,
+      Experience: Number(g(doctorDetails, 'experience')!),
+      Languages: g(doctorDetails, 'languages')! || 'NA',
+      'Consult type': isOnlineSelected ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
+      'Doctor ID': g(doctorDetails, 'id')!,
+      'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
       'Patient UHID': g(currentPatient, 'uhid'),
-      appointmentDateTime: moment(selectedTimeSlot).toDate(),
+      'Appointment date time': moment(selectedTimeSlot).toDate(),
       'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
       'Patient gender': g(currentPatient, 'gender'),
-      onlineConsultFee: onlineConsultMRPPrice || undefined,
-      physicalConsultFee: physicalConsultMRPPrice || undefined,
+      'Online consult fee': onlineConsultMRPPrice || undefined,
+      'Physical consult fee': physicalConsultMRPPrice || undefined,
       Source: isOnlineSelected ? 'Consult Now' : 'Schedule for Later',
       User_Type: getUserType(allCurrentPatients),
-      price: actualPrice,
-      docHospital: doctorDetails?.doctorHospital?.[0]?.facility?.name || undefined,
-      docCity: doctorDetails?.doctorHospital?.[0]?.facility?.city || undefined,
+      'Actual amount': actualPrice,
+      'Doctor hospital': doctorDetails?.doctorHospital?.[0]?.facility?.name || undefined,
+      'Doctor city': doctorDetails?.doctorHospital?.[0]?.facility?.city || undefined,
+      'Customer ID': g(currentPatient, 'id'),
+      'Mobile number': g(currentPatient, 'mobileNumber'),
+      'Circle member': !!circleSubscriptionId,
+      'Circle plan type': circleSubPlanId,
+      'Doctor type': g(doctorDetails, 'doctorType') || '',
     };
     postCleverTapEvent(
       CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION,

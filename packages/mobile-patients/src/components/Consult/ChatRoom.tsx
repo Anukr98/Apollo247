@@ -879,7 +879,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
-  const { setEPrescriptions, addMultipleCartItems } = useShoppingCart();
+  const { setEPrescriptions, addMultipleCartItems, circleSubPlanId, circleSubscriptionId } = useShoppingCart();
   const [name, setname] = useState<string>('');
   const [showRescheduleCancel, setShowRescheduleCancel] = useState<boolean>(false);
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
@@ -6275,18 +6275,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       'Patient age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
-      docId: g(item, 'doctorId') || undefined,
-      docName: g(item, 'doctorInfo', 'fullName') || undefined,
-      docCity: g(item, 'doctorInfo', 'city') || undefined,
-      specialityId: g(item, 'doctorInfo', 'specialty', 'id') || undefined,
-      specialityName: g(item, 'doctorInfo', 'specialty', 'name') || undefined,
-      'Doctor Category': g(item, 'doctorInfo', 'doctorType') || undefined,
+      'Doctor ID': g(item, 'doctorId') || undefined,
+      'Doctor name': g(item, 'doctorInfo', 'fullName') || undefined,
+      'Doctor city': g(item, 'doctorInfo', 'city') || undefined,
+      'Speciality ID': g(item, 'doctorInfo', 'specialty', 'id') || undefined,
+      'Speciality name': g(item, 'doctorInfo', 'specialty', 'name') || undefined,
+      'Doctor category': g(item, 'doctorInfo', 'doctorType')! || undefined,
       'Consult ID': g(item, 'id') || '',
-      'Consult Date Time': moment(g(item, 'appointmentDateTime')).toDate(),
+      'Appointment datetime': moment(g(item, 'appointmentDateTime')).toDate(),
       'Consult Mode': g(item, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
-      isConsultStarted: !!g(item, 'isConsultStarted'),
+      'Is consult started': !!g(item, 'isConsultStarted'),
       Prescription: followUpMedicineNameText || '',
       Source: 'Inside Consult Room',
+      'Mobile number': currentPatient?.mobileNumber || '',
+      'Circle Member': !!circleSubscriptionId,
+      'Circle Plan type': circleSubPlanId,
     };
     postCleverTapEvent(
       CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED,
