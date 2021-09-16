@@ -67,12 +67,14 @@
     "greatPopup": "Great! :)",
     "prepareForConsult": "FILL MEDICAL DETAILS",
     "continueConsult": "GO TO CONSULT ROOM",
+    "consultRoom": "CONTINUE CONSULT",
     "fillVitalsText": "Fill vitals to get started with the consult journey",
     "bookAnotherSlot": "Book another slot with the doctor to complete your consultation",
     "bookFollowUp": "Book your slot with the doctor for a follow up consultation",
     "mentionReports": "Mention your condition and upload reports before the consultation starts ",
     "gotoConsultRoomText": "Connect with doctor to start the consult",
     "gotoConsultRoomJuniorDrText": "Connect with Junior Doctor before final consult",
+    "joinConsultRoom": "Join the Consult room to continue your consultation",
     "pickAnotherSlotText": "Sorry, we had to reschedule this appointment. Please pick another slot.",
     "DisclaimerTextBookingRequest": "This is not a confirmation of the Booking. Our Executives will reach you regarding Booking Confirmation. It is subjected to availability.",
     "DisclaimerText": "By proceeding, I agree that I have read and understood the Terms & Conditions of usage of 247 and consent to the same. I am voluntarily availing of the services provided on this platform. I am fully aware that I will not be undergoing a physical examination by a physician prior to a physician recommending  medical tests and/or treatment and/or the prescribing of OTC drugs. I am also aware that  the consultation on 247 Application does not preclude my rights to visit a physician and opt for a physical examination at any point in time and I am free at any time during the consultation to request for the same.",
@@ -139,6 +141,7 @@
     "noDiagnosticsAvailable": "Unfortunately, we do not have any diagnostic(s) available right now.",
     "unableToSetDeliveryAddress": "We're sorry! Unable to set delivery address. Please try again after some time",
     "circleNoSubscriptionText": "No Subscription",
+    "sharePHR": "Share all Files from Past Medical record with the Doctor",
     "memberCashback": " Membership Cashback ",
     "cashbackInfo": "(Cashback can be used to buy medicines online as well as at physical Apollo Pharmacy stores. ",
     "hcSavedOnConsultByCare": "You will get {amount} HC on this Consult",
@@ -278,7 +281,8 @@
     "need_help": "Need Help?",
     "book_appointment": "BOOK AN APPOINTMENT",
     "book_appointment_question": "Want to book an appointment?",
-    "arrayTest": [{
+    "arrayTest": [
+      {
         "id": 1,
         "title": "Are you looking for a particular doctor?",
         "descripiton": "FIND SPECIALIST",
@@ -297,7 +301,8 @@
         "image": "require('@aph/mobile-patients/src/images/home/test.png')"
       }
     ],
-    "startDoctor": [{
+    "startDoctor": [
+      {
         "name": "Dr. Narayana Rao’s",
         "status": "AVAILABLE",
         "Program": "Star Cardiology Program",
@@ -326,7 +331,8 @@
     }
   },
   "consult_room": {
-    "specialities": [{
+    "specialities": [
+      {
         "image": "",
         "name": "General Physician",
         "id": 1
@@ -360,7 +366,8 @@
     "description": "You have no consultations today :) Hope you are doing well?",
     "things_to_do": {
       "label": "Things To Do",
-      "data": [{
+      "data": [
+        {
           "title": "Your Health Profile is just 30% complete. Update it now!",
           "description": "UPDATE HEALTH PROFILE"
         },
@@ -372,7 +379,8 @@
     },
     "articles": {
       "label": "Read a few articles on how to stay healthy",
-      "data": [{
+      "data": [
+        {
           "image": "",
           "title": "5 Simple Daily Yoga Exercises For Good Health!",
           "link": ""
@@ -407,7 +415,8 @@
     "avaliablity": "Availability",
     "online": "Online\nConsults",
     "inperson": "In-Person\nConsults",
-    "filter_data": [{
+    "filter_data": [
+      {
         "label": "City",
         "options": ["Hyderabad", "Chennai"]
       },
@@ -489,9 +498,11 @@
     "specialDiscountText": "TESTS247 coupon pre-applied",
     "unableToOpenReport": "We are facing some issue in opening the report. Please try again later.",
     "responseUnavailableForReport": "Report is not yet available to download. Please try after some time.",
-    "disclaimerText": [{
-      "text": "Rescheduling can be done upto 3 times only"
-    }],
+    "disclaimerText": [
+      {
+        "text": "Rescheduling can be done upto 3 times only"
+      }
+    ],
     "reschduleCountExceed": "You have rescheduled thrice. You're out of reschedule attempts.",
     "rescheduleCountText": "You can reschedule to a maximum of 3 times. If you click ok, you will have {{setRescheduleCount}} reschedule attempt(s) left.",
     "reasonForCancel_TestOrder": {
@@ -618,7 +629,8 @@
     "test_prec_not_req": "This test doesn't requires doctor’s prescription",
     "go_to_help": "GO TO HELP"
   },
-  "defaultReasonList": [{
+  "defaultReasonList": [
+    {
       "title": "Arrived very Late"
     },
     {
@@ -634,9 +646,11 @@
       "title": "I have other Feedback"
     }
   ],
-  "positiveReasonList": [{
-    "title": "I have Positive Feedback"
-  }],
+  "positiveReasonList": [
+    {
+      "title": "I have Positive Feedback"
+    }
+  ],
   "OrderSummery": {
     "total": "Total",
     "order": "ORDER",
@@ -684,7 +698,8 @@
     "order_medicines": "ORDER MEDICINES NOW",
     "book_follow_up": "BOOK FOLLOW-UP",
     "add_note_to_notify_users": "Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!",
-    "tabs": [{
+    "tabs": [
+      {
         "title": "Consults & Rx",
         "count": "0"
       },
@@ -701,6 +716,10 @@
         "count": "0"
       }
     ]
+  },
+  "HyperSDKStatus": {
+    "success": "success",
+    "pending": "pending"
   },
   "Payment": {
     "success": "PAYMENT_SUCCESS",
@@ -735,7 +754,8 @@
   "alerts": {
     "Open_camera_in_video_call": "Image capturing is disabled during a video call. Please switch to the Audio call if you want to send an Image."
   },
-  "muiltdosages": [{
+  "muiltdosages": [
+    {
       "single": "tablet",
       "multiple": "tablet(s)"
     },
@@ -856,9 +876,11 @@
     "ADVANCE_DIABETES_QUESTIONAIRE": {
       "HEADING": "THANK YOU  !!",
       "SUBHEADING": "In order to assist you in the best possible way, please answer these questions",
-      "QUESTIONAIRE": [{
+      "QUESTIONAIRE": [
+        {
           "QUESTION": "Q1. Which type of diabetes are you living with?",
-          "OPTIONS": [{
+          "OPTIONS": [
+            {
               "key": "Pre-Diabetes",
               "value": "Pre-Diabetes"
             },
@@ -878,7 +900,8 @@
         },
         {
           "QUESTION": "Q2. For how many years have you lived with diabetes?",
-          "OPTIONS": [{
+          "OPTIONS": [
+            {
               "key": "lessThan2Years",
               "value": "Less than 2 years"
             },
@@ -1003,7 +1026,8 @@
       "Benefits and offers available through the program may change or be withdrawn without prior intimation. Apollo 24/7 will not be responsible for any liability arising from such situations or use of such offers.",
       "Any disputes arising out of the program shall be subject to arbitration by a sole arbitrator appointed by Apollo 24/7 for this purpose. The proceedings of the arbitration shall be conducted as per the provisions of Arbitration and Conciliation Act, 1996. The place of arbitration shall be at Chennai and language of arbitration shall be English. The existence of a dispute, if at all, shall not constitute a claim against Apollo 24/7."
     ],
-    "FAQ": [{
+    "FAQ": [
+      {
         "faqQuestion": "What is the Apollo 24|7 CIRCLE Membership program?",
         "faqAnswer": "Apollo 24|7 CIRCLE membership is a one-of-its-kind program designed to give the best care and value to its members. Once you sign up by choosing the plan that suits your needs, you will receive benefits like an emergency doctor-on-call, cashback on medicines, discounts on doctor consultations, and diagnostics. Did we also tell you that all your deliveries will be done free of cost and on a priority basis?"
       },
@@ -1111,7 +1135,8 @@
     "testPincodeText": "Enter pincode here",
     "addNewAddressText": "Add New Address"
   },
-  "aboutApolloList": [{
+  "aboutApolloList": [
+    {
       "title": "About Us",
       "url": "https://www.apollo247.com/aboutUs?isMobile=true"
     },
@@ -1296,6 +1321,7 @@
     "stepThree": "If required, share necessary reports and text updates.",
     "viewGuideline": "View Consultation Guidelines \n",
     "download": "Download",
+    "medicineNote": "Seamlessly, order here your medicines and get deliveries in 2 hours. Also, same day home sample collection facility available for tests prescribed. T&C Apply."
   },
   "specialOffersScreen": {
     "couponKnowMore": "How you can redeem this offer:",

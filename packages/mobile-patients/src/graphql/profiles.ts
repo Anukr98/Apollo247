@@ -872,8 +872,8 @@ export const GET_PATIENT_ACTIVE_FOLLOWUP_APPOINTMENTS = gql`
 `;
 
 export const GET_ALL_SPECIALTIES = gql`
-  query getAllSpecialties {
-    getAllSpecialties {
+  query getAllSpecialties($specialtyStatus: SPECIALTY_STATUS) {
+    getAllSpecialties(specialtyStatus: $specialtyStatus) {
       id
       name
       image
@@ -1510,6 +1510,7 @@ export const SAVE_MEDICINE_ORDER_OMS_V2 = gql`
       errorMessage
       transactionId
       isCodEligible
+      codMessage
       orders {
         id
         orderAutoId
@@ -1529,6 +1530,7 @@ export const SAVE_ORDER_WITH_SUBSCRIPTION = gql`
       errorMessage
       transactionId
       isCodEligible
+      codMessage
       orders {
         id
         orderAutoId
@@ -2185,6 +2187,8 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
             mobile
             vaccinationStatus
           }
+          isPhleboETAElapsed
+          phleboETAElapsedMessage
         }
         diagnosticOrderReschedule {
           rescheduleDate
@@ -3241,7 +3245,7 @@ export const GET_MEDICAL_PRISM_RECORD_V3 = gql`
             result
             range
             outOfRange
-            # resultDate
+            resultDate
           }
           fileUrl
           testResultFiles {
@@ -3623,6 +3627,22 @@ export const GET_INDIVIDUAL_TEST_RESULT_PDF = gql`
   query getIndividualTestResultPdf($patientId: ID!, $recordId: String!, $sequence: String!) {
     getIndividualTestResultPdf(patientId: $patientId, recordId: $recordId, sequence: $sequence) {
       url
+    }
+  }
+`;
+
+export const GET_VISUALIZATION_DATA = gql`
+  query getVisualizationData($uhid: String!, $serviceName: String!, $parameterName: String!) {
+    getVisualizationData(uhid: $uhid, serviceName: $serviceName, parameterName: $parameterName) {
+      errorCode
+      errorMsg
+      response {
+        parameterName
+        result
+        unit
+        range
+        resultDate
+      }
     }
   }
 `;
@@ -5110,6 +5130,24 @@ export const GET_APPOINTMENT_INFO = gql`
   }
 `;
 
+export const GET_ORDER_INFO = gql`
+  query getOrderInternal($order_id: String!) {
+    getOrderInternal(order_id: $order_id) {
+      id
+      customer_id
+      payment_order_id
+      payment_status
+      total_amount
+      payment_status
+      PharmaOrderDetails {
+        medicineOrderDetails {
+          orderAutoId
+        }
+      }
+    }
+  }
+`;
+
 export const PROCESS_DIAG_COD_ORDER = gql`
   mutation processDiagnosticHCOrder($processDiagnosticHCOrderInput: ProcessDiagnosticHCOrderInput) {
     processDiagnosticHCOrder(processDiagnosticHCOrderInput: $processDiagnosticHCOrderInput) {
@@ -6001,9 +6039,15 @@ export const GET_DIAGNOSTIC_REPORT_TAT = gql`
 `;
 
 export const GET_PATIENT_PRESCRIPTIONS = gql`
-  query {
-    getPatientPrescriptions(patientId: $patientId, limit: 100) {
-      response {
+  query getPatientPrescriptions(
+    $patientId: String!
+    $limit: Int!
+    ) {
+      getPatientPrescriptions(
+        patientId: $patientId
+        limit: $limit
+      ) {
+        response{
         doctorName
         patientName
         caseSheet {
@@ -6013,11 +6057,9 @@ export const GET_PATIENT_PRESCRIPTIONS = gql`
           prescriptionGeneratedDate
           diagnosis {
             name
-            __typename
           }
           diagnosticPrescription {
             itemname
-            __typename
           }
           doctorId
           doctorType
@@ -6054,49 +6096,12 @@ export const GET_PATIENT_PRESCRIPTIONS = gql`
             instruction
             __typename
           }
-          __typename
         }
-      }
-    }
-    getPatientPrismMedicalRecords_V2(patientId: $patientId, records: [PRESCRIPTION]) {
-      prescriptions {
-        response {
-          id
-          prescriptionName
-          date
-          prescribedBy
-          notes
-          prescriptionSource
-          source
-          siteDisplayName
-          fileUrl
-          prescriptionFiles {
-            id
-            fileName
-            mimeType
-            content
-            byteContent
-            __typename
-          }
-          __typename
-        }
-        errorCode
-        errorMsg
-        errorType
-        __typename
       }
     }
   }
 `;
 
-export const ADD_PATIENT_PRESCRIPTION_RECORD = gql`
-  mutation addPatientPrescriptionRecord($AddPrescriptionRecordInput: AddPrescriptionRecordInput) {
-    addPatientPrescriptionRecord(addPrescriptionRecordInput: $AddPrescriptionRecordInput) {
-      status
-      __typename
-    }
-  }
-`;
 
 export const SAVE_JUSPAY_SDK_RESPONSE = gql`
   mutation saveJuspayResponseForAudit($auditInput: AuditInput) {

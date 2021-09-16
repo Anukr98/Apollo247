@@ -22,6 +22,7 @@ import com.microsoft.codepush.react.CodePush;
 import com.webengage.sdk.android.WebEngage;
 import com.webengage.sdk.android.WebEngageActivityLifeCycleCallbacks;
 import com.webengage.sdk.android.WebEngageConfig;
+import com.github.wuxudong.rncharts.MPAndroidChartPackage;
 import com.clevertap.android.sdk.ActivityLifecycleCallback;
 import com.ibits.react_native_in_app_review.AppReviewPackage;
 import java.util.List;
@@ -50,6 +51,7 @@ public class MainApplication extends Application implements ReactApplication {
                     List<ReactPackage> packages = new PackageList(this).getPackages();
                     // Packages that cannot be autolinked yet can be added manually here, for example:
                     // packages.add(new MyReactNativePackage());
+                    packages.add(new MPAndroidChartPackage());
                     packages.add(new StreamPackage());
                     packages.add(new RNAppSignatureHelperPackage());
                     packages.add(new LinearGradientPackage());

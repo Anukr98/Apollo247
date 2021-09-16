@@ -166,6 +166,7 @@ import { NudgeMessage } from '@aph/mobile-patients/src/components/Medicines/Comp
 import { getUniqueId } from 'react-native-device-info';
 import { Cache } from 'react-native-cache';
 import { setItem, getItem } from '@aph/mobile-patients/src/helpers/TimedAsyncStorage';
+import { SuggestedQuantityNudge } from '@aph/mobile-patients/src/components/SuggestedQuantityNudge/SuggestedQuantityNudge';
 
 const styles = StyleSheet.create({
   scrollViewStyle: {
@@ -367,8 +368,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.CATEGORY_CLICKED, eventAttributes);
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CATEGORY_VIEWED] = {
-      'category name': categoryName || undefined,
-      'category ID': categoryId || undefined,
+      'Category Name': categoryName || undefined,
+      'Category ID': categoryId || undefined,
       'Section Name': sectionName || undefined,
       Source: source,
     };
@@ -399,6 +400,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     },
     backend: AsyncStorage,
   });
+
+  const [showSuggestedQuantityNudge, setShowSuggestedQuantityNudge] = useState<boolean>(false);
+  const [shownNudgeOnce, setShownNudgeOnce] = useState<boolean>(false);
+  const [currentProductIdInCart, setCurrentProductIdInCart] = useState<string>(null);
+  const [currentProductQuantityInCart, setCurrentProductQuantityInCart] = useState<number>(0);
+  const [itemPackForm, setItemPackForm] = useState<string>('');
+  const [suggestedQuantity, setSuggestedQuantity] = useState<string>(null);
 
   useEffect(() => {
     populateCachedData();
@@ -1891,6 +1899,22 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     debounce.current(searchText);
   }, [searchText]);
 
+  useEffect(() => {
+    if (cartItems.find(({ id }) => id?.toUpperCase() === currentProductIdInCart)) {
+      if (shownNudgeOnce === false) {
+        setShowSuggestedQuantityNudge(true);
+      }
+    }
+  }, [cartItems, currentProductQuantityInCart, currentProductIdInCart]);
+
+  useEffect(() => {
+    if (showSuggestedQuantityNudge === false) {
+      setShownNudgeOnce(false);
+    }
+  }, [currentProductIdInCart]);
+
+  useEffect(() => {}, [showSuggestedQuantityNudge]);
+
   const onSearch = (searchText: string) => {
     if (searchText.length >= 3) {
       onSearchMedicine(searchText);
@@ -2039,6 +2063,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const onUpdateCartItem = (id: string, quantity: number) => {
     updateCartItem!({ id, quantity: quantity });
+    setCurrentProductQuantityInCart(quantity + 1);
   };
 
   const onRemoveCartItem = (id: string) => {
@@ -2069,6 +2094,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         }}
         onPressAddToCart={() => {
           onAddCartItem(item);
+          setCurrentProductIdInCart(item.sku);
+          item.pack_form ? setItemPackForm(item.pack_form) : setItemPackForm('');
+          item.suggested_qty
+            ? setSuggestedQuantity(item.suggested_qty)
+            : setSuggestedQuantity(null);
+          setCurrentProductQuantityInCart(1);
         }}
         onPressNotify={() => {
           onNotifyMeClick(item.name);
@@ -2077,10 +2108,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           const q = getItemQuantity(item.sku);
           if (q == getMaxQtyForMedicineItem(item.MaxOrderQty)) return;
           onUpdateCartItem(item.sku, getItemQuantity(item.sku) + 1);
+          setCurrentProductQuantityInCart(q + 1);
         }}
         onPressSubstract={() => {
           const q = getItemQuantity(item.sku);
           q == 1 ? onRemoveCartItem(item.sku) : onUpdateCartItem(item.sku, q - 1);
+          setCurrentProductQuantityInCart(q - 1);
         }}
         quantity={getItemQuantity(item.sku)}
         data={item}
@@ -2491,6 +2524,21 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       </SafeAreaView>
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
       {showCirclePopup && renderCircleMembershipPopup()}
+      {showSuggestedQuantityNudge &&
+        shownNudgeOnce === false &&
+        !!suggestedQuantity &&
+        +suggestedQuantity > 1 &&
+        currentProductQuantityInCart < +suggestedQuantity && (
+          <SuggestedQuantityNudge
+            suggested_qty={suggestedQuantity}
+            sku={currentProductIdInCart}
+            packForm={itemPackForm}
+            setShownNudgeOnce={setShownNudgeOnce}
+            showSuggestedQuantityNudge={showSuggestedQuantityNudge}
+            setShowSuggestedQuantityNudge={setShowSuggestedQuantityNudge}
+            setCurrentProductQuantityInCart={setCurrentProductQuantityInCart}
+          />
+        )}
     </View>
   );
 };

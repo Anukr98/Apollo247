@@ -33,11 +33,8 @@ import {
   Text,
   BackHandler,
   View,
-  Image,
   ScrollView,
   Animated,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
   Platform,
   TouchableOpacity,
 } from 'react-native';
@@ -49,9 +46,8 @@ import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import MedicineBottomFilters from './MedicineBottomFilters';
 import { productsThumbnailUrl } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import ContentLoader from 'react-native-easy-content-loader';
 import LinearGradient from 'react-native-linear-gradient';
-import ShimmerPlaceholder, { createShimmerPlaceholder } from 'react-native-shimmer-placeholder';
+import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 
 export type SortByOption = {
   id: string;
@@ -144,6 +140,14 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const { currentPatient } = useAllCurrentPatients();
   const { showAphAlert } = useUIElements();
   const { axdcCode } = useAppCommonData();
+
+  //styles
+  const styles2 = {
+    shimmer: { height: bannerImage?.length > 0 ? 140 : 0, width: '100%', objectFit: 'contain' },
+    animatedView: {
+      marginTop: bannerImage?.length > 0 ? 140 : 0,
+    },
+  };
 
   useEffect(() => {
     if (categoryId && !searchText) {
@@ -278,7 +282,6 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     existingProducts: MedicineProduct[]
   ) => {
     try {
-      console.log('categoryId', categoryId);
       updateLoading(pageId, true);
       const _selectedFilters = formatFilters(selectedFilters, filters);
       if (_selectedFilters.category != navigation.getParam('category_id'))
@@ -294,7 +297,12 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         axdcCode,
         pinCode
       );
-      setBannerImage(data?.design[0]?.mobile_banner_image);
+      if (
+        data?.design[0]?.mobile_banner_image.endsWith('.jpg') ||
+        data?.design[0]?.mobile_banner_image.endsWith('.png') ||
+        data?.design[0]?.mobile_banner_image.endsWith('.jpeg')
+      )
+        setBannerImage(data?.design[0]?.mobile_banner_image);
       updateProducts(pageId, existingProducts, data);
       setProductsTotal(data.count);
       updateLoading(pageId, false);
@@ -502,7 +510,6 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
           selectedFilters={filterBy}
           onClose={onClose}
           onApplyFilters={onApplyFilters}
-          bottomCategoryId={bottomCategoryId}
         />
       )
     );
@@ -592,11 +599,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
             y: -HEADER_MAX_HEIGHT,
           }}
         >
-          <View
-            style={{
-              marginTop: 140,
-            }}
-          >
+          <View style={styles2.animatedView}>
             {renderSections()}
             {renderProducts()}
           </View>
@@ -613,7 +616,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
           {isLoading ? (
             <ShimmerPlaceholder
               LinearGradient={LinearGradient}
-              shimmerStyle={{ height: 140, width: '100%' }}
+              shimmerStyle={styles2.shimmer}
             ></ShimmerPlaceholder>
           ) : (
             <Animated.Image
@@ -622,11 +625,13 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
                 {
                   opacity: imageOpacity,
                   transform: [{ translateY: imageTranslate }],
+                  objectFit: 'cover',
                 },
               ]}
               source={{
                 uri: productsThumbnailUrl(bannerImage),
               }}
+              resizeMode={'cover'}
             />
           )}
         </Animated.View>
@@ -731,4 +736,3 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
 });
-

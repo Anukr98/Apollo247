@@ -199,7 +199,7 @@ export const aphConsole: AphConsole = {
     isDebugOn && console.info(message, ...optionalParams);
   },
   warn: (message?: any, ...optionalParams: any[]) => {
-    isDebugOn && console.warn(message, ...optionalParams);
+    // isDebugOn && console.warn(message, ...optionalParams);
   },
   trace: (message?: any, ...optionalParams: any[]) => {
     isDebugOn && console.trace(message, ...optionalParams);
@@ -1636,7 +1636,7 @@ export const postwebEngageAddToCartEvent = (
   }: Pick<MedicineProduct, 'sku' | 'name' | 'price' | 'special_price' | 'category_id'>,
   source: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Source'],
   sectionName?: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Section Name'],
-  categoryName?: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['category name'],
+  categoryName?: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Category Name'],
   pharmacyCircleAttributes?: PharmacyCircleEvent
 ) => {
   const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART] = {
@@ -1659,9 +1659,9 @@ export const postwebEngageAddToCartEvent = (
   const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART] = {
     'product name': name,
     'product id (SKUID)': sku,
-    'category name': categoryName || undefined,
+    'Category Name': categoryName || undefined,
     'Section Name': sectionName || undefined,
-    'category ID': category_id || undefined,
+    'Category ID': category_id || undefined,
     Price: price,
     'Discounted Price': Number(special_price) || undefined,
     Quantity: 1,
@@ -2141,27 +2141,26 @@ export const callPermissions = (
   );
 };
 
-
 export const getUTMdataFromURL = (url: string) => {
   var result: any = { appUrl: null, utm_source: null, utm_medium: null, utm_campaign: null };
-  if (url.indexOf("?") != -1) {
+  if (url.indexOf('?') != -1) {
     try {
-      var splitedArray = url.split("?");
-      var main_url_array = splitedArray[1].split("&");
-      result.appUrl = splitedArray[0]
-      main_url_array.forEach(item => {
-        let utmAr = item.split("=");
-        result[utmAr[0]] = utmAr[1]
-      })
-      return result
-    } catch (error) { return false }
+      var splitedArray = url.split('?');
+      var main_url_array = splitedArray[1].split('&');
+      result.appUrl = splitedArray[0];
+      main_url_array.forEach((item) => {
+        let utmAr = item.split('=');
+        result[utmAr[0]] = utmAr[1];
+      });
+      return result;
+    } catch (error) {
+      return false;
+    }
+  } else {
+    result.appUrl = url;
+    return result;
   }
-  else {
-    result.appUrl = url
-    return result
-  }
-
-}
+};
 
 export const storagePermissions = (doRequest?: () => void) => {
   permissionHandler(
@@ -2212,7 +2211,6 @@ export const InitiateAppsFlyer = (
     } else {
     }
   });
-
 
 
   onAppOpenAttributionCanceller = appsFlyer.onAppOpenAttribution(async (res) => {
@@ -3026,6 +3024,30 @@ export const navigateToScreenWithEmptyStack = (
   }
 };
 
+export const navigateToScreenWithHomeScreeninStack = (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  screenName: string,
+  params?: any
+) => {
+  const navigate = navigation.popToTop({ immediate: true });
+  if (navigate) {
+    setTimeout(() => {
+      navigation.navigate(screenName, params);
+    }, 0);
+  } else {
+    navigation.dispatch(
+      StackActions.reset({
+        index: 1,
+        key: null,
+        actions: [
+          NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom }),
+          NavigationActions.navigate({ routeName: screenName, params }),
+        ],
+      })
+    );
+  }
+};
+
 export const apiCallEnums = {
   circleSavings: 'GetCircleSavingsOfUserByMobile',
   getAllBanners: 'GetAllGroupBannersOfUser',
@@ -3540,7 +3562,7 @@ export const getCleverTapCheckoutCompletedEventAttributes = (
     'Service Area': 'Pharmacy',
     'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
     af_revenue: getFormattedAmount(grandTotal),
-    'Circle Cashback amount':
+    'Circle Cashback Amount':
       circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
     'Split Cart': orders?.length > 1 ? 'Yes' : 'No',
     'Prescription Option selected': uploadPrescriptionRequired
@@ -3557,7 +3579,7 @@ export const getCleverTapCheckoutCompletedEventAttributes = (
     'Order_ID(s)': ordersIds?.map((i) => i?.orderAutoId)?.join(','),
   };
   if (store) {
-    eventAttributes['Store Id'] = store.storeid;
+    eventAttributes['Store ID'] = store.storeid;
     eventAttributes['Store Name'] = store.storename;
     eventAttributes['Store Number'] = store.phone;
     eventAttributes['Store Address'] = store.address;

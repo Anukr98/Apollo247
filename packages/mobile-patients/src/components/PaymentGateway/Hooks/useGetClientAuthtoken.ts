@@ -32,5 +32,5 @@ export const useGetClientAuthToken = (customer_id: string, businessLine: string)
     initiate();
   }, []);
 
-  return { clientAuthToken };
+  return clientAuthToken;
 };

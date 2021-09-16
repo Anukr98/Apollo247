@@ -748,18 +748,27 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     const orderIdText = 'Order ID: ' + String(displayId);
     return (
       <View style={styles.statusCardStyle}>
-        <View style={styles.statusCardSubContainerStyle}>
-          {statusIcon()}
-          <View style={styles.statusView}>
-            {statusText()}
-            {priceText()}
+        <View style={[
+          styles.statusCardSubContainerStyle,
+          (status == pending || status == failure) &&
+          {
+            ...styles.failureCardStyle,
+            borderColor: status == failure ? theme.colors.APP_RED : theme.colors.PENDING_TEXT
+          }]}>
+          <View style={styles.centerHorizontal}>
+            {statusIcon()}
+            <View style={styles.statusView}>
+              {statusText()}
+              {priceText()}
+            </View>
+          </View>
+          <View style={styles.orderIdStyles}>
+            <Text style={theme.viewStyles.text('R', 10, theme.colors.SLATE_GRAY, 1, 20)}>
+              {orderIdText}
+            </Text>
           </View>
         </View>
-        <View style={styles.orderIdStyles}>
-          <Text style={theme.viewStyles.text('R', 10, theme.colors.SLATE_GRAY, 1, 20)}>
-            {orderIdText}
-          </Text>
-        </View>
+        {status == success &&
         <TouchableOpacity
           style={styles.refStyles}
           onPress={() => copyToClipboard(refNumberText)}>
@@ -767,7 +776,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             {'Payment Ref. Number - ' + refNumberText}
           </Text>
           <Copy style={styles.iconStyle} />
-        </TouchableOpacity>
+        </TouchableOpacity>}
         <View>
           {renderViewInvoice()} 
           {renderEmailInputContainer()}
@@ -1255,6 +1264,16 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     )
   }
 
+  const renderMedicineNote = () => {
+    return (
+      <View style={styles.medicineNoteView}>
+        <Text style={theme.viewStyles.text('R', 10, theme.colors.SLATE_GRAY)}>
+          {string.consultPayment.medicineNote}
+        </Text>
+      </View>
+    )
+  }
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
@@ -1264,13 +1283,14 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           <View style={styles.container}>
             <ScrollView style={styles.container}>
               {renderStatusCard()}
-              {status == success && renderConsultInfo()}
+              {renderConsultInfo()}
               {circleSavings > 0 && !circleSubscriptionId
                 ? renderAddedCirclePlanWithValidity()
                 : null}
               {locationDetails && renderSavedLocation()}
               {circleSavings > 0 && !!circleSubscriptionId ? renderCircleSavingsOnPurchase() : null}
               {renderNote()}
+              {renderMedicineNote()}
             </ScrollView>
             <View style={{backgroundColor: theme.colors.WHITE}}>
               {renderButton()}
@@ -1330,9 +1350,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.WHITE
   },
   statusCardSubContainerStyle: {
-    margin: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
+    padding: 12,
   },
   appointmentCardStyle: {
     marginVertical: 0.03 * windowWidth,
@@ -1408,7 +1426,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(11),
   },
   orderIdStyles: {
-    marginStart: 12,
+    marginTop: 12,
   },
   paymentRef: {
     justifyContent: 'flex-start',
@@ -1620,4 +1638,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  centerHorizontal: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  medicineNoteView: {
+    backgroundColor: theme.colors.WHITE,
+    marginHorizontal: 20,
+    borderRadius: 10,
+    padding: 12,
+    marginTop: 10,
+  },
+  failureCardStyle: {
+    borderWidth: 1.5,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  }
 });

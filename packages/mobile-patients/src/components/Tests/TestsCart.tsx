@@ -1525,7 +1525,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               isComingFrom={AppRoutes.TestsCart}
               isCareSubscribed={isDiagnosticCircleSubscription}
               containerStyle={medicineCardContainerStyle}
-              showCartInclusions={showInclusions}
+              showCartInclusions={false} //showInclusions
               key={test?.id}
               testId={test?.id}
               reportGenItem={reportGenItem}

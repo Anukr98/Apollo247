@@ -393,7 +393,11 @@ export const handleOpenURL = (event: any) => {
           id: linkId ? linkId : undefined,
         };
         break;
-
+      case 'payment':
+        return {
+          routeName: 'PaymentMethods',
+          id: linkId ? linkId : undefined,
+        };
       default:
         if (b === 0) {
           return {
@@ -431,7 +435,7 @@ export const pushTheView = (
   voipAppointmentId?: MutableRefObject<string>,
   isCorporateSubscribed?: boolean,
   vaccinationCmsIdentifier?: string,
-  vaccinationSubscriptionId?: string,
+  vaccinationSubscriptionId?: string
 ) => {
   setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
   switch (routeName) {
@@ -586,7 +590,7 @@ export const pushTheView = (
         navigateToView(navigation, AppRoutes.CommonWebView, {
           url: AppConfig.Configuration.CIRCLE_LANDING_URL,
           source: 'Consult',
-          circleEventSource: 'DeepLink Redirection'
+          circleEventSource: 'DeepLink Redirection',
         });
       }
       break;

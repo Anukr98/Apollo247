@@ -337,6 +337,18 @@ export const SearchAreaIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_search_area_icon.webp')} />
 );
 
+export const BarChar: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/barChart.webp')} />
+);
+
+export const RedArrow: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/Red_Up_Arrow.webp')} />
+);
+
+export const RedDownArrow: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/Red_Down_Arrow.webp')} />
+);
+
 export const TestTimeIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_test_time.webp')} />
 );
@@ -1702,6 +1714,14 @@ export const ActiveCalenderIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/activeCalender.webp')} />
 );
 
+export const GreenCircleTick: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/greenCircleTick_3x.webp')} />
+);
+
+export const WhiteCross: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/white_cross_3x.webp')} />
+);
+
 export const InactiveCalenderIcon: React.FC<IconProps> = (props) => (
   <IconBase
     resizeMode="contain"
@@ -2165,5 +2185,20 @@ export const OvalUpcoming: React.FC<IconProps> = (props) => (
     size="lg"
     {...props}
     source={require('@aph/mobile-patients/src/components/ui/icons/ovalUpcoming.webp')}
+  />
+);
+
+export const RemoveIconGrey: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/crossIcon.webp')}
+  />
+);
+
+export const ConsultRefund: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/refund_new.webp')}
   />
 );

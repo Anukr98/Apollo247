@@ -828,11 +828,18 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       .format('DD MMM');
 
     const getConsultationSubTexts = () => {
-      return !item?.isConsultStarted
-        ? string.common.mentionReports
-        : !item?.isJdQuestionsComplete
+      const {
+        isAutomatedQuestionsComplete,
+        isSeniorConsultStarted, 
+        isConsultStarted
+      } = item || {};
+      return (!isAutomatedQuestionsComplete && !isSeniorConsultStarted) ||
+        !isConsultStarted ? string.common.fillVitalsText
+        : !isConsultStarted && isAutomatedQuestionsComplete
         ? string.common.gotoConsultRoomJuniorDrText
-        : string.common.gotoConsultRoomText || '';
+        : isSeniorConsultStarted
+        ? string.common.joinConsultRoom
+        : string.common.mentionReports
     };
 
     const getAppointmentStatusText = () => {
@@ -840,10 +847,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         return 'Cancelled';
       } else if (item?.status === STATUS.COMPLETED) {
         return 'Completed';
-      } else if (item?.status === STATUS.PENDING || item?.status === STATUS.IN_PROGRESS) {
-        return 'Active';
       } else if (item?.appointmentState === APPOINTMENT_STATE.RESCHEDULE) {
         return 'Rescheduled';
+      } else if (item?.status === STATUS.PENDING || item?.status === STATUS.IN_PROGRESS) {
+        return 'Active';
       } else if (item?.isFollowUp === 'true') {
         return 'Follow Up Appointment';
       } else {
@@ -862,10 +869,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     const appointmentDateTime = moment
       .utc(item.appointmentDateTime)
       .local()
-      .format('YYYY-MM-DD HH:mm:ss');
+      .format('YYYY-MM-DD HH:mm:ss');      
     const minutes = moment.duration(moment(appointmentDateTime).diff(new Date())).asMinutes();
     const title =
-      minutes > 0 && minutes <= 15
+      minutes > 0 && minutes <= 15 && getAppointmentStatusText() == 'Active'
         ? `${Math.ceil(minutes)} MIN${Math.ceil(minutes) > 1 ? 'S' : ''}`
         : tomorrowDate == appointmentDateTomarrow
         ? 'TOMORROW, ' + moment(appointmentDateTime).format('h:mm A')
@@ -874,7 +881,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               ? 'h:mm A'
               : 'DD MMM YYYY, h:mm A'
           );
-    const isActive = minutes > 0 && minutes <= 15 ? true : false;
+    const isActive = minutes > 0 && minutes <= 15 &&
+       getAppointmentStatusText() == 'Active' ? true : false;
     const dateIsAfterconsult = moment(appointmentDateTime).isAfter(moment(new Date()));
     const doctorHospitalName =
       g(item, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')! ||
@@ -1243,7 +1251,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 onPress={onPressActiveUpcomingButtons}
               >
                 <Text style={styles.prepareForConsult}>
-                  {item.isConsultStarted
+                  {item?.isSeniorConsultStarted
+                    ? string.common.consultRoom
+                    : item?.isConsultStarted && item?.isAutomatedQuestionsComplete
                     ? string.common.continueConsult
                     : string.common.prepareForConsult}
                 </Text>
