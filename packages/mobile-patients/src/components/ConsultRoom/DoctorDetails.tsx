@@ -435,6 +435,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     physicalConsultSlashedPrice,
     cashbackEnabled,
     cashbackAmount,
+    onlineConsultDiscountedPrice,
   } = circleDoctorDetails;
   const {
     circleSubscriptionId,
@@ -738,19 +739,25 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Media Source': mediaSource,
       User_Type: getUserType(allCurrentPatients),
     };
+    const {
+      onlineConsultDiscountedPrice,
+      cashbackEnabled,
+      cashbackAmount
+    } = calculateCircleDoctorPricing(doctorDetails);
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED] = {
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
-      'Patient Age': Math.round(
+      'Patient age': Math.round(
         Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile number': g(currentPatient, 'mobileNumber'),
       'Doctor ID': g(doctorDetails, 'id')!,
-      'Doctor Name': g(doctorDetails, 'fullName')!,
-      'Speciality Name': g(doctorDetails, 'specialty', 'name')!,
+      'Doctor name': g(doctorDetails, 'fullName')!,
+      'Speciality name': g(doctorDetails, 'specialty', 'name')!,
       'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
-      'Media Source': mediaSource,
+      Experience: String(doctorDetails?.experience) || '',
+      'Media source': mediaSource,
       User_Type: getUserType(allCurrentPatients),
       Fee: Number(doctorDetails?.onlineConsultationFees),
       Source: cleverTapAppointmentAttributes?.source
@@ -760,12 +767,21 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         : 'Deeplink',
       'Doctor card clicked': 'No',
       Rank: 'NA',
+      Languages: doctorDetails?.languages || '',
       Is_TopDoc: doctorDetails?.doctorsOfTheHourStatus ? 'Yes' : 'No',
       DOTH: doctorDetails?.doctorsOfTheHourStatus ? 'T' : 'F',
-      'Doctor Tab': 'NA',
-      'Doctor Category': doctorDetails?.doctorType,
+      'Doctor tab': 'NA',
+      'Doctor category': doctorDetails?.doctorType,
       'Search screen': 'NA',
       'Appointment CTA': cleverTapAppointmentAttributes?.appointmentCTA || 'NA',
+      'Customer ID': g(currentPatient, 'id'),
+      'Available in mins': 'NA',
+      'Relation': g(currentPatient, 'relation'),
+      'Circle Membership added': String(!!circlePlanSelected),
+      'Circle discount': onlineConsultDiscountedPrice ? onlineConsultDiscountedPrice : 0,
+      'Circle Cashback': cashbackEnabled ? cashbackAmount! : 0,
+      'Doctor city': doctorDetails?.doctorHospital[0]?.facility?.city || '',
+      'Hospital name': doctorDetails?.doctorHospital[0]?.facility?.name || '',
     };
     fromDeeplink &&
       postWebEngageEvent(WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK, eventAttributes);

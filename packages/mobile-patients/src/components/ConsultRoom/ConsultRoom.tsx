@@ -791,6 +791,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setCirclePaymentReference,
     pharmacyCircleAttributes,
     setIsCircleExpired,
+    circleSubPlanId,
   } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
@@ -1403,7 +1404,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       eventAttributes = {
         ...eventAttributes,
         isConsulted: getUserType(allCurrentPatients),
+        'Circle Member': !!circleSubscriptionId,
+        'Circle Plan type': circleSubPlanId || '',
       };
+      console.log({eventAttributes});
+      
     }
     if (eventName == CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS) {
       eventAttributes = {

@@ -921,6 +921,12 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       profile_deeplink
       photoUrl
       availableModes
+      doctorHospital {
+        facility {
+          city
+          name
+        }
+      }
       doctorPricing {
         slashed_price
         available_to

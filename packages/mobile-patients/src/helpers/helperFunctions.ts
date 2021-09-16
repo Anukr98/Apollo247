@@ -1757,20 +1757,24 @@ export const postConsultSearchCleverTapEvent = (
   currentPatient: any,
   allCurrentPatients: any,
   noResults: boolean,
-  source: 'speciality screen' | 'Doctor listing screen'
+  source: 'speciality screen' | 'Doctor listing screen',
+  circleMember: boolean,
+  circlePlan: string
 ) => {
   const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_SEARCH] = {
-    textSearched: searchInput,
+    Keyword: searchInput,
     'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
     'Patient UHID': g(currentPatient, 'uhid'),
     Relation: g(currentPatient, 'relation'),
     'Patient age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
     'Patient gender': g(currentPatient, 'gender'),
-    'Mobile Number': g(currentPatient, 'mobileNumber'),
+    'Patient Number': g(currentPatient, 'mobileNumber'),
     'Customer ID': g(currentPatient, 'id'),
     User_Type: getUserType(allCurrentPatients),
     Source: source,
-    'search result success': noResults ? 'No' : 'Yes',
+    'Search result success': noResults ? 'No' : 'Yes',
+    'Circle Member': circleMember,
+    'Circle Plan type': circlePlan,
   };
   postCleverTapEvent(CleverTapEventName.CONSULT_SEARCH, eventAttributes);
 };
