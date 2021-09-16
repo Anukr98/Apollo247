@@ -2,10 +2,7 @@ import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponent
 import {
   CheckedIcon,
   CircleLogo,
-  DeleteIcon,
   Down,
-  RadioButtonIcon,
-  RadioButtonUnselectedIcon,
   SavingsIcon,
   Up,
 } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -128,6 +125,8 @@ import {
   CreateUserSubscription,
   CreateUserSubscriptionVariables,
 } from '@aph/mobile-patients/src/graphql/types/CreateUserSubscription';
+import CircleCard from '@aph/mobile-patients/src/components/Tests/components/CircleCard';
+import { CirclePlansListOverlay } from '@aph/mobile-patients/src/components/Tests/components/CirclePlansListOverlay';
 
 const screenWidth = Dimensions.get('window').width;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
@@ -240,6 +239,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const [date, setDate] = useState<Date>(new Date());
   const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
   const [defaultCirclePlan, setDefaultCirclePlan] = useState<any>(null);
+  const [allMembershipPlans, setAllMembershipPlans] = useState<any>([]);
   const [showCirclePopup, setShowCirclePopup] = useState<boolean>(false);
 
   let itemNamesToRemove_global: string[] = [];
@@ -268,11 +268,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     isModifyFlow ? modifiedPatientCart : patientCartItems
   );
   var patientCartItemsCopy = JSON.parse(JSON.stringify(isCartEmpty));
-  const showCirclePlans =
-    (!isDiagnosticCircleSubscription && !isCircleAddedToCart) ||
-    (!isDiagnosticCircleSubscription &&
-      isModifyFlow &&
-      modifiedOrder?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT);
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
@@ -354,6 +349,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         },
       });
       const membershipPlans = res?.data?.GetPlanDetailsByPlanId?.response?.plan_summary;
+      setAllMembershipPlans(membershipPlans);
       if (membershipPlans) {
         const defaultPlan = membershipPlans?.filter((item: any) => item?.defaultPack === true);
         if (defaultPlan?.length > 0) {
@@ -941,44 +937,89 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     );
   };
 
-  function _navigateToViewCirclePlans() {
-    setShowCirclePopup(true);
+  function _setChoosenPlan(item: any) {
+    setIsCircleAddedToCart?.(true);
+    setSelectedCirclePlan?.(item);
+    setIsCircleSubscription?.(true);
   }
 
-  const renderCirclePurchase = () => {
+  function _navigateToBenefitsPage() {
+    setShowCirclePopup(false);
+    props.navigation.navigate(AppRoutes.MembershipDetails, {
+      membershipType: 'CIRCLE PLAN',
+      isActive: true,
+    });
+  }
+
+  const renderCirclePlansPopup = () => {
     return (
-      <View style={styles.circlePlanOuterView}>
-        <View style={{ backgroundColor: '#FFF5DE' }}>
-          <View style={styles.circlePlanInnerView}>
-            <CircleLogo style={styles.circlePlanLogoStyle} />
-            <View style={styles.verticalSeparator} />
-            <View>
-              <Text style={styles.youCanText}>
-                You can{' '}
-                <Text style={styles.youCanGreenText}>
-                  save {string.common.Rs} {circleSaving}
-                </Text>
-                <Text style={styles.youCanBoldText}> on this order</Text> with Circle!
-              </Text>
-              <TouchableOpacity
-                onPress={() => _navigateToViewCirclePlans()}
-                style={styles.viewPlanTouch}
-              >
-                <Text style={styles.viewPlanText}>VIEW PLANS</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-        {renderPlanSelectionView()}
-      </View>
+      <CirclePlansListOverlay
+        title={'Circle Membership'}
+        upperLeftText={'You can'}
+        upperMiddleText={'save'}
+        circleSaving={circleSaving}
+        upperRightText={'on this order.'}
+        effectivePriceText={'Your effective price is'}
+        effectivePrice={grandTotal} //need to change on each plan selection
+        membershipPlans={allMembershipPlans}
+        onPressClose={() => setShowCirclePopup(false)}
+        choosenPlan={(item) => _setChoosenPlan(item)}
+        onPressViewAll={() => _navigateToBenefitsPage()}
+      />
     );
   };
+
+  useEffect(() => {
+    setIsCircleAddedToCart?.(AppConfig.Configuration.CIRCLE_PLAN_PRESELECTED); //read from firebase
+  }, []);
 
   /** check for renew flow => need to check the renew_price & status of circle in ConsultRoom -> isexpired
    * setIsCircleExpired -> shoppingCartProvider
    * circle wali api se jo data aa raha hai, usme circle ka status "disabled" karke static data daal do membership me
    *
    */
+  const renderCirclePurchase = () => {
+    const defaultPlanPurchasePrice = !!selectedCirclePlan
+      ? selectedCirclePlan?.currentSellingPrice
+      : !!defaultCirclePlan && defaultCirclePlan?.currentSellingPrice;
+    const defaultPlanDurationInMonths = !!selectedCirclePlan
+      ? selectedCirclePlan?.durationInMonth
+      : !!defaultCirclePlan && defaultCirclePlan?.durationInMonth;
+    return (
+      <View
+        style={{
+          margin: 6,
+          marginBottom: 16,
+        }}
+      >
+        <CircleCard
+          heading1={'Buy Circle Membership'}
+          upperLeftText={isCircleAddedToCart ? 'You' : 'You can'}
+          upperMiddleText={isCircleAddedToCart ? 'saved' : 'save'}
+          upperRightText={'on this order with Circle!'}
+          circleSaving={circleSaving}
+          defaultPlanPrice={defaultPlanPurchasePrice}
+          defaultPlanMonths={defaultPlanDurationInMonths}
+          rightText={'VIEW PLANS'}
+          effectivePriceText={
+            isCircleAddedToCart ? 'Your effective price is' : 'Effective price would be'
+          }
+          toPayPrice={toPayPrice}
+          isPlanPreselected={isCircleAddedToCart}
+          onPressViewPlan={() => _navigateToViewCirclePlans()}
+          onTogglePlans={() => _onTogglePlans()}
+        />
+      </View>
+    );
+  };
+
+  function _onTogglePlans() {
+    setIsCircleAddedToCart?.(!isCircleAddedToCart);
+  }
+
+  function _navigateToViewCirclePlans() {
+    setShowCirclePopup(true);
+  }
 
   function _addCircleValues() {
     // setIsDiagnosticCircleSubscription?.(true);
@@ -988,84 +1029,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setIsCircleSubscription?.(true);
   }
 
-  function _addCirclePlan() {
-    // setIsDiagnosticCircleSubscription?.(true);
-    setIsCircleAddedToCart?.(true);
-    setCirclePlanSelected?.(defaultCirclePlan); //overall
-    setSelectedCirclePlan?.(defaultCirclePlan); //diag
-    setIsCircleSubscription?.(true);
-  }
-
-  /**
-   * check for the plan selected as well
-   */
-  const renderPlanSelectionView = () => {
-    const defaultPlanPurchasePrice = !!defaultCirclePlan && defaultCirclePlan?.currentSellingPrice;
-    const defaultPlanDurationInMonths = !!defaultCirclePlan && defaultCirclePlan?.durationInMonth;
-    return (
-      <>
-        {!!defaultPlanPurchasePrice && !!defaultPlanDurationInMonths ? (
-          <View style={{ padding: 8, flexDirection: 'row' }}>
-            <TouchableOpacity
-              onPress={() => _addCirclePlan()}
-              style={styles.planSelectedRadioTouch}
-            >
-              {isCircleAddedToCart ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
-            </TouchableOpacity>
-            <Text style={styles.planBuyText}>
-              Buy at {string.common.Rs} {defaultPlanPurchasePrice} for {defaultPlanDurationInMonths}{' '}
-              months
-            </Text>
-          </View>
-        ) : null}
-      </>
-    );
-  };
-
-  /**
-   * check for the plan selected as well
-   */
-  const renderCircleAdded = () => {
-    const defaultPlanDurationInMonths = !!selectedCirclePlan
-      ? selectedCirclePlan?.durationInMonth
-      : !!defaultCirclePlan && defaultCirclePlan?.durationInMonth;
-    const validTill = moment(new Date(), 'DD/MM/YYYY').add(
-      'days',
-      !!selectedCirclePlan ? selectedCirclePlan?.valid_duration : defaultCirclePlan?.valid_duration
-    );
-    return (
-      <View style={styles.circleAddedOuterView}>
-        <View style={{ backgroundColor: 'rgb(219, 237, 233)' }}>
-          <View style={styles.circleAddedInnerView}>
-            <CircleLogo style={[styles.circlePlanLogoStyle, { alignSelf: 'flex-start' }]} />
-            <View style={styles.verticalSeparator} />
-            <View style={{ width: '67%' }}>
-              <Text style={styles.circlePlanDurationText}>
-                {`${defaultPlanDurationInMonths} ${
-                  defaultPlanDurationInMonths == 1 ? 'month' : 'months'
-                } membership successfully added to cart!`}
-              </Text>
-              <Text style={styles.circlePlanValidText}>
-                {`Valid till: ${moment(validTill)?.format('D MMM YYYY')}`}
-              </Text>
-            </View>
-            <View>
-              <TouchableOpacity
-                onPress={() => setIsCircleAddedToCart?.(false)}
-                style={styles.circlePlanDeleteTouch}
-              >
-                <DeleteIcon style={styles.deleteIcon} />
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </View>
-    );
-  };
-
   // console.log({ isCircleAddedToCart });
   // console.log({ isDiagnosticCircleSubscription });
-  // console.log({ showCirclePlans });
 
   //change circle purchase price to selected plan
   const renderTotalCharges = () => {
@@ -1089,8 +1054,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             isModifyFlow &&
             modifiedOrder?.paymentType !== DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT)
             ? null
-            : isCircleAddedToCart
-            ? renderCircleAdded()
             : renderCirclePurchase()}
           {renderPrices('Total MRP', totalPriceExcludingAnyDiscounts.toFixed(2))}
 
@@ -2207,7 +2170,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         {renderTestProceedBar()}
       </SafeAreaView>
       {isVisible && renderPremiumOverlay()}
-      {showCirclePopup && renderCircleMembershipPopup()}
+      {showCirclePopup && renderCirclePlansPopup()}
       {!hyperSdkInitialized && <Spinner />}
     </View>
   );

@@ -1005,6 +1005,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Disincentivize_COD_Message',
       PROD: 'Disincentivize_COD_Message',
     },
+    CirclePlanPreselected: {
+      QA: 'QA_Is_Circle_Preselected',
+      PROD: 'Is_Circle_Preselected',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1286,6 +1290,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
 
       disincentivizeCodMessage && setPaymentCodMessage?.(disincentivizeCodMessage);
+
+      setAppConfig('CirclePlanPreselected', 'CIRCLE_PLAN_PRESELECTED', (key) =>
+        config.getString(key)
+      );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';

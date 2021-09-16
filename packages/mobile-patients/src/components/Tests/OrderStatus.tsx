@@ -67,7 +67,7 @@ import DeviceInfo from 'react-native-device-info';
 import {
   GetSubscriptionsOfUserByStatus,
   GetSubscriptionsOfUserByStatusVariables,
-} from '../../graphql/types/GetSubscriptionsOfUserByStatus';
+} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 import AsyncStorage from '@react-native-community/async-storage';
 
 export interface OrderStatusProps extends NavigationScreenProps {}

@@ -274,7 +274,8 @@ const appStaticVariables = {
     '10788a46-512c-41c0-8c59-e31ff7eebbe4',
   ],
   DEFAULT_PHELBO_ETA : 45,
-  MAX_PATIENT_SELECTION : 6
+  MAX_PATIENT_SELECTION : 6,
+  CIRCLE_PLAN_PRESELECTED: false
 };
 
 const DEV_top_specialties = [

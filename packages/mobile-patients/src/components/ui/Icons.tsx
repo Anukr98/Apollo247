@@ -2297,3 +2297,11 @@ export const OvalUpcoming: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/ovalUpcoming.webp')}
   />
 );
+
+export const CoinSavingsIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="lg"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/coinSavingsIcon.webp')}
+  />
+);
