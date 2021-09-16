@@ -413,12 +413,26 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     orderId: string,
     orderAutoId: string
   ) => {
-    const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED] = {
-      'customer id': currentPatient ? currentPatient.id : '',
+    // const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED] = {
+    //   'customer id': currentPatient ? currentPatient.id : '',
+    //   'cart size': cartItems.length,
+    //   af_revenue: getFormattedAmount(grandTotal),
+    //   af_currency: 'INR',
+    //   'order id': orderId,
+    //   orderAutoId: orderAutoId,
+    //   'coupon applied': coupon ? true : false,
+    //   'Circle Cashback amount':
+    //     circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
+    //   ...pharmacyCircleAttributes!,
+    //   ...pharmacyUserTypeAttribute,
+    //   TransactionId: transId,
+    // };
+    const appsflyerEventAttributes = {
+      af_customer_user_id: currentPatient ? currentPatient.id : '',
       'cart size': cartItems.length,
       af_revenue: getFormattedAmount(grandTotal),
       af_currency: 'INR',
-      'order id': orderId,
+      af_order_id: orderId,
       orderAutoId: orderAutoId,
       'coupon applied': coupon ? true : false,
       'Circle Cashback amount':
