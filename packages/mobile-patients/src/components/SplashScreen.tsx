@@ -42,6 +42,7 @@ import {
   postCleverTapEvent,
   navigateToScreenWithHomeScreeninStack,
   navigateToHome,
+  setCleverTapAppsFlyerCustID,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -150,7 +151,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface SplashScreenProps extends NavigationScreenProps { }
+export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { APP_ENV } = AppConfig;
@@ -235,6 +236,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     handleDeepLink();
     getDeviceToken();
     initializeRealTimeUninstall();
+    setCleverTapAppsFlyerCustID();
     InitiateAppsFlyer(props.navigation, (resources) => {
       redirectRoute(
         resources?.routeName,
@@ -273,7 +275,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
     const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
     const deviceTokenTimeStamp = (await AsyncStorage.getItem('deviceTokenTimeStamp')) || '';
-    const currentDeviceTokenTimeStamp = deviceTokenTimeStamp ? JSON.parse(deviceTokenTimeStamp) : '';
+    const currentDeviceTokenTimeStamp = deviceTokenTimeStamp
+      ? JSON.parse(deviceTokenTimeStamp)
+      : '';
     if (
       !currentDeviceToken ||
       currentDeviceToken === '' ||
