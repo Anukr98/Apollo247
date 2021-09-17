@@ -2252,15 +2252,11 @@ export const InitiateAppsFlyer = (
   })
 };
 
-
 export const clevertapEventForAppsflyerDeeplink = (eventArributes: any) => {
   postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
     ...eventArributes
   });
 }
-
-
-
 
 export const deferredDeepLinkRedirectionData = async (
   navigation: NavigationScreenProp<NavigationRoute<object>, object>,
