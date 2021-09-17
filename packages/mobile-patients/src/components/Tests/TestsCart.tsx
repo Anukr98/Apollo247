@@ -460,7 +460,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         client,
         !!diagnosticSlot && !isEmptyObject(diagnosticSlot) ? dateTimeInUTC : null,
         Number(addressCityId),
-        Number(pincode),
+        !!pincode ? Number(pincode) : 0,
         listOfIds!
       );
       if (result?.data?.getConfigurableReportTAT) {
