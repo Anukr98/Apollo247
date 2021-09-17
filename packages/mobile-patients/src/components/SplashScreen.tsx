@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface SplashScreenProps extends NavigationScreenProps { }
+export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { APP_ENV } = AppConfig;
@@ -265,7 +265,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
     const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
     const deviceTokenTimeStamp = (await AsyncStorage.getItem('deviceTokenTimeStamp')) || '';
-    const currentDeviceTokenTimeStamp = deviceTokenTimeStamp ? JSON.parse(deviceTokenTimeStamp) : '';
+    const currentDeviceTokenTimeStamp = deviceTokenTimeStamp
+      ? JSON.parse(deviceTokenTimeStamp)
+      : '';
     if (
       !currentDeviceToken ||
       currentDeviceToken === '' ||
@@ -1094,6 +1096,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Show_nudge_on_pharma_cart',
       PROD: 'Show_nudge_on_pharma_cart',
     },
+    Enable_Cred_WebView_Flow: {
+      QA: 'QA_Enable_Cred_WebView_Flow',
+      PROD: 'Enable_Cred_WebView_Flow',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1340,6 +1346,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'Diagnostics_Help_NonOrder_Queries',
         'Diagnostics_Help_NonOrder_Queries',
         (key) => config.getString(key)
+      );
+      setAppConfig('Enable_Cred_WebView_Flow', 'enableCredWebView', (key) =>
+        config.getBoolean(key)
       );
 
       const nudgeMessagePharmacyHome = getRemoteConfigValue(
