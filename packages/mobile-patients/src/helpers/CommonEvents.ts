@@ -112,7 +112,8 @@ export const truecallerWEBEngage = (
 export const myConsultedDoctorsClickedWEBEngage = (
   currentPatient: any,
   doctor: getPatientPastConsultedDoctors_getPatientPastConsultedDoctors,
-  allCurrentPatients: any
+  allCurrentPatients: any,
+  pageName: string,
 ) => {
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.MY_CONSULTED_DOCTORS_CLICKED]
@@ -128,6 +129,8 @@ export const myConsultedDoctorsClickedWEBEngage = (
     'Doctor Name': doctor?.fullName || '',
     'Doctor Id': doctor?.id,
     'Doctor Speciality': doctor?.specialty?.name,
+    'Page Name': pageName,
+    'Nav src': pageName === 'Home Screen' ? 'homepage bar' : 'Bottom bar',
     'Previous consult Details': {
       'Consult Date & Time': doctor?.consultDetails?.consultDateTime || '',
       'Display ID': doctor?.consultDetails?.displayId || '',

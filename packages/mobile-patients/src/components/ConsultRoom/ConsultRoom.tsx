@@ -790,6 +790,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setCirclePaymentReference,
     pharmacyCircleAttributes,
     setIsCircleExpired,
+    circleSubPlanId,
   } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
@@ -1296,14 +1297,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     attributes?: any
   ) => {
     let eventAttributes: PatientInfo = {
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(
+      'Patient age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
       User_Type: getUserType(allCurrentPatients),
     };
@@ -1365,11 +1366,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
       'Patient gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Mobile number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
       User_Type: getUserType(allCurrentPatients),
       'Nav src': source === 'Home Screen' ? 'hero banner' : 'Bottom bar',
-      'Page Name': 'Home Screen',
+      'Page name': 'Home Screen',
     };
     if (
       source &&
@@ -1403,6 +1404,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       eventAttributes = {
         ...eventAttributes,
         isConsulted: getUserType(allCurrentPatients),
+        'Circle Member': !!circleSubscriptionId,
+        'Circle Plan type': circleSubPlanId || '',
       };
     }
     if (eventName == CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS) {
