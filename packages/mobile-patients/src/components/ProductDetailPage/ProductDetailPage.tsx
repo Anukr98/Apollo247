@@ -1185,6 +1185,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   isPharma ? medicineDetails?.PharmaOverview?.[0]?.NewPharmaOverview : null
                 }
                 directionsOfUse={medicineDetails?.direction_for_use_dosage}
+                allergen_info={medicineDetails?.allergen_info}
               />
               {!!substitutes.length && isInStock && (
                 <SimilarProducts
@@ -1209,10 +1210,23 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   navigation={props.navigation}
                 />
               )}
-              {(!!medicineDetails?.marketer_address || !!medicineDetails?.country_of_origin) && (
+              {(!!medicineDetails?.marketer_address ||
+                !!medicineDetails?.country_of_origin ||
+                !!medicineDetails?.packer_name ||
+                !!medicineDetails?.packer_address ||
+                !!medicineDetails?.importer_name ||
+                !!medicineDetails?.importer_address ||
+                !!medicineDetails?.import_date ||
+                !!medicineDetails?.generic_name) && (
                 <ProductManufacturer
                   address={medicineDetails?.marketer_address}
                   origin={medicineDetails?.country_of_origin}
+                  packerName={medicineDetails?.packer_name}
+                  packerAddress={medicineDetails?.packer_address}
+                  importerName={medicineDetails?.importer_name}
+                  importerAddress={medicineDetails?.importer_address}
+                  importDate={medicineDetails?.import_date}
+                  genericName={medicineDetails?.generic_name}
                 />
               )}
               {renderDisclaimerMessage()}
