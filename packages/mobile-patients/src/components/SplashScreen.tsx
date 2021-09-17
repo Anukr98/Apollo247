@@ -528,7 +528,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           : AppConfig.Configuration.merchantId;
         initiateHyperSDK(currentPatientId, merchantId);
         const params = {
-          paymentId: paymentId,
+          paymentId: response?.data?.getOrderInternal?.payment_order_id,
           amount: response?.data?.getOrderInternal?.total_amount,
           orderDetails: { orderId: response?.data?.getOrderInternal?.id },
           businessLine: 'paymentLink',
@@ -1114,6 +1114,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Show_nudge_on_pharma_cart',
       PROD: 'Show_nudge_on_pharma_cart',
     },
+    Enable_Cred_WebView_Flow: {
+      QA: 'QA_Enable_Cred_WebView_Flow',
+      PROD: 'Enable_Cred_WebView_Flow',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1360,6 +1364,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'Diagnostics_Help_NonOrder_Queries',
         'Diagnostics_Help_NonOrder_Queries',
         (key) => config.getString(key)
+      );
+      setAppConfig('Enable_Cred_WebView_Flow', 'enableCredWebView', (key) =>
+        config.getBoolean(key)
       );
 
       const nudgeMessagePharmacyHome = getRemoteConfigValue(
