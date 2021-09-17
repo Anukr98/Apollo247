@@ -3330,6 +3330,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             savings={circleSavings}
             credits={healthCredits}
             expired={expired}
+            renew={renew}
           />
         ) : circleStatus === 'disabled' ? (
           <CircleTypeCard6
@@ -3340,6 +3341,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             savings={circleSavings}
             credits={healthCredits}
             expired={expired}
+            renew={renew}
           />
         ) : null}
 
