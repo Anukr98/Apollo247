@@ -16,6 +16,7 @@ import { GET_PLAN_DETAILS_BY_PLAN_ID } from '@aph/mobile-patients/src/graphql/pr
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useApolloClient } from 'react-apollo-hooks';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import HTML from 'react-native-render-html';
 const { SHERPA_BLUE, APP_YELLOW, WHITE, APP_GREEN, CLEAR } = theme.colors;
 
 interface CirclePlansListOverlayProps {
@@ -27,6 +28,7 @@ interface CirclePlansListOverlayProps {
   effectivePriceText: string;
   effectivePrice: string | number;
   membershipPlans?: any;
+  facts: string;
   choosenPlan: (plan: any) => void;
   onPressClose: () => void;
   onPressViewAll: () => void;
@@ -42,6 +44,7 @@ export const CirclePlansListOverlay: React.FC<CirclePlansListOverlayProps> = (pr
     effectivePrice,
     effectivePriceText,
     membershipPlans,
+    facts,
     choosenPlan,
     onPressClose,
     onPressViewAll,
@@ -188,6 +191,14 @@ export const CirclePlansListOverlay: React.FC<CirclePlansListOverlayProps> = (pr
     );
   };
 
+  const renderCircleFacts = () => {
+    return (
+      <View style={styles.factsView}>
+        <HTML html={facts} baseFontStyle={styles.factsStyle} />
+      </View>
+    );
+  };
+
   const renderButtonsView = () => {
     return (
       <View style={styles.rowStyle}>
@@ -219,6 +230,7 @@ export const CirclePlansListOverlay: React.FC<CirclePlansListOverlayProps> = (pr
               {renderHeadingView()}
               {renderSavingsView()}
               {renderList()}
+              {renderCircleFacts()}
               {renderButtonsView()}
             </View>
           </SafeAreaView>
@@ -278,11 +290,15 @@ const styles = StyleSheet.create({
     ...text('M', 12, SHERPA_BLUE, 1, 18),
   },
   listCardStyle: {
-    height: 180,
+    height: 200,
     marginTop: 16,
     marginBottom: 30,
   },
-  doneButtonViewStyle: { width: '50%', alignSelf: 'center', marginBottom: 16 },
+  doneButtonViewStyle: {
+    width: '50%',
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
   circleIcon: { height: 47, width: 47, resizeMode: 'contain' },
   coinSavingIconStyle: { height: 20, width: 20, resizeMode: 'contain' },
   checkedIcon: { height: 20, width: 20, resizeMode: 'contain' },
@@ -302,7 +318,7 @@ const styles = StyleSheet.create({
     ...text('B', 13, APP_YELLOW, 1, 24),
   },
   viewAllTouch: {
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     width: '40%',
     height: 50,
@@ -319,5 +335,24 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 10, 'white'),
     textAlign: 'center',
   },
-  rowStyle: { flexDirection: 'row', justifyContent: 'space-between' },
+  rowStyle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  factsView: {
+    backgroundColor: '#E4F7FF',
+    padding: 14,
+    paddingTop: 6,
+    paddingBottom: 6,
+    marginBottom: 16,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  factsStyle: {
+    color: theme.colors.SHERPA_BLUE,
+    lineHeight: 16,
+    fontSize: 11,
+  },
 });

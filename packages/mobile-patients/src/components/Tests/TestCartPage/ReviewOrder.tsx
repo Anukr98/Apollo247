@@ -291,6 +291,12 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     !!selectedCirclePlan && !isEmptyObject(selectedCirclePlan) && _addCircleValues();
   }, []);
 
+  useEffect(() => {
+    isDiagnosticCircleSubscription
+      ? null
+      : setIsCircleAddedToCart?.(AppConfig.Configuration.CIRCLE_PLAN_PRESELECTED); //read from firebase
+  }, []);
+
   async function populateCartMapping() {
     const listOfIds = cartItems?.map((item) => Number(item?.id));
     try {
@@ -908,39 +914,12 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     );
   };
 
-  const renderCircleMembershipPopup = () => {
-    return (
-      <CircleMembershipPlans
-        buyNow={true}
-        isModal={true}
-        closeModal={() => setShowCirclePopup(false)}
-        navigation={props.navigation}
-        isConsultJourney={false}
-        // isDiagnosticJourney={true}
-        from={string.banner_context.DIAGNOSTIC_CART}
-        source={'Diagnostic Cart'}
-        onSelectMembershipPlan={(plan) => {
-          if (plan) {
-            // if plan is selected
-            setIsDiagnosticCircleSubscription?.(true);
-            setIsCircleAddedToCart?.(true);
-            setSelectedCirclePlan?.(plan);
-            setCircleMembershipCharges && setCircleMembershipCharges(plan?.currentSellingPrice);
-            setCircleSubPlanId && setCircleSubPlanId(plan?.subPlanId);
-          } else {
-            // if plan is removed
-            setCircleMembershipCharges && setCircleMembershipCharges(0);
-          }
-        }}
-        circleEventSource={'Diagnostic Review page'}
-      />
-    );
-  };
-
-  function _setChoosenPlan(item: any) {
+  function _setChoosenPlan(plan: any) {
     setIsCircleAddedToCart?.(true);
-    setSelectedCirclePlan?.(item);
+    setSelectedCirclePlan?.(plan);
     setIsCircleSubscription?.(true);
+    setCircleMembershipCharges && setCircleMembershipCharges(plan?.currentSellingPrice);
+    setCircleSubPlanId && setCircleSubPlanId(plan?.subPlanId);
   }
 
   function _navigateToBenefitsPage() {
@@ -952,6 +931,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   }
 
   const renderCirclePlansPopup = () => {
+    const facts = AppConfig.Configuration.CIRCLE_FACTS;
     return (
       <CirclePlansListOverlay
         title={'Circle Membership'}
@@ -962,16 +942,13 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         effectivePriceText={'Your effective price is'}
         effectivePrice={grandTotal} //need to change on each plan selection
         membershipPlans={allMembershipPlans}
+        facts={facts}
         onPressClose={() => setShowCirclePopup(false)}
         choosenPlan={(item) => _setChoosenPlan(item)}
         onPressViewAll={() => _navigateToBenefitsPage()}
       />
     );
   };
-
-  useEffect(() => {
-    setIsCircleAddedToCart?.(AppConfig.Configuration.CIRCLE_PLAN_PRESELECTED); //read from firebase
-  }, []);
 
   /** check for renew flow => need to check the renew_price & status of circle in ConsultRoom -> isexpired
    * setIsCircleExpired -> shoppingCartProvider
@@ -986,12 +963,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       ? selectedCirclePlan?.durationInMonth
       : !!defaultCirclePlan && defaultCirclePlan?.durationInMonth;
     return (
-      <View
-        style={{
-          margin: 6,
-          marginBottom: 16,
-        }}
-      >
+      <View style={styles.circleCardView}>
         <CircleCard
           heading1={'Buy Circle Membership'}
           upperLeftText={isCircleAddedToCart ? 'You' : 'You can'}
@@ -2327,60 +2299,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     margin: 16,
   },
-  circlePlanOuterView: {
-    margin: 6,
-    borderColor: theme.colors.APP_GREEN,
-    borderRadius: 5,
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    marginBottom: 16,
-  },
-  circlePlanInnerView: { flexDirection: 'row', padding: 16 },
-  circlePlanLogoStyle: {
-    height: 50,
-    width: 50,
-    resizeMode: 'contain',
-    alignSelf: 'center',
-  },
-  verticalSeparator: {
-    height: '100%',
-    width: 1,
-    backgroundColor: 'rgba(2, 71, 91, 0.3)',
-    marginLeft: 12,
-    marginRight: 12,
-  },
-  youCanText: { ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 1, 16) },
-  youCanGreenText: { ...theme.viewStyles.text('M', 12, theme.colors.APP_GREEN, 1, 16) },
-  youCanBoldText: { ...theme.viewStyles.text('SB', 12, theme.colors.SHERPA_BLUE, 1, 16) },
-  viewPlanTouch: { marginTop: 8, width: '50%' },
-  viewPlanText: { ...theme.viewStyles.text('B', 14, theme.colors.APP_YELLOW, 1, 24) },
-  planSelectedRadioTouch: {
-    width: '10%',
-    alignItems: 'center',
-  },
-  planBuyText: {
-    ...theme.viewStyles.text('SB', 14, theme.colors.APP_GREEN, 1, 26),
-    marginLeft: 12,
-  },
-  circleAddedOuterView: {
-    margin: 6,
-    borderColor: 'rgb(219, 237, 233)',
-    borderRadius: 5,
-    borderWidth: 2,
-    marginBottom: 16,
-  },
-  circleAddedInnerView: { flexDirection: 'row', padding: 16 },
-  circlePlanDurationText: { ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 1, 16) },
-  circlePlanValidText: {
-    ...theme.viewStyles.text('R', 10, theme.colors.SHERPA_BLUE, 0.6, 13),
-    marginTop: 6,
-  },
-  circlePlanDeleteTouch: {
-    marginLeft: 16,
-    height: 30,
-    width: 30,
-  },
-  deleteIcon: { height: 20, width: 20, resizeMode: 'contain', alignSelf: 'flex-end' },
   flexRow: { flexDirection: 'row', justifyContent: 'space-between' },
   smallCircleLogo: { height: 25, width: 35, resizeMode: 'contain' },
   circleMembershipText: {
@@ -2406,4 +2324,8 @@ const styles = StyleSheet.create({
   circleSavingNormalText: { ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 1, 18) },
   circleSavingView: { width: '89%', marginHorizontal: 6 },
   circleSavingOuterView: { borderStyle: 'solid', backgroundColor: '#F3FFFF', borderWidth: 1 },
+  circleCardView: {
+    margin: 6,
+    marginBottom: 16,
+  },
 });

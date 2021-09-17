@@ -374,7 +374,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         client,
         null,
         Number(addressCityId),
-        Number(pincode),
+        !!pincode ? Number(pincode) : 0,
         listOfIds!
       );
       if (result?.data?.getConfigurableReportTAT) {
