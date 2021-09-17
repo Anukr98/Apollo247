@@ -375,7 +375,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         client,
         null,
         Number(addressCityId),
-        Number(pincode),
+        !!pincode ? Number(pincode) : 0,
         listOfIds!
       );
       if (result?.data?.getConfigurableReportTAT) {
@@ -1311,7 +1311,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         isCircleSubscribed={isDiagnosticCircleSubscription}
         reportGenItem={reportGenItem}
         reportTat={reportTAT}
-        showCartInclusions={showInclusions}
+        showCartInclusions={false} //showInclusions
         duplicateArray={filterDuplicateItemsForPatients}
         onPressCard={(item) => {
           CommonLogEvent(AppRoutes.CartPage, 'Navigate to test details scene');

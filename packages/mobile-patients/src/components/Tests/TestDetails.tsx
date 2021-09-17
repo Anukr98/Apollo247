@@ -490,7 +490,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         client,
         !!diagnosticSlot && !isEmptyObject(diagnosticSlot) ? dateTimeInUTC : null,
         id,
-        Number(pincode),
+        !!pincode ? Number(pincode) : 0,
         itemIds
       );
       if (result?.data?.getConfigurableReportTAT) {
