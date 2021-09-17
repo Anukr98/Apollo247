@@ -42,6 +42,8 @@ import {
   postCleverTapEvent,
   navigateToScreenWithHomeScreeninStack,
   navigateToHome,
+  setCleverTapAppsFlyerCustID,
+  clevertapEventForAppsflyerDeeplink,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -92,6 +94,7 @@ import {
 import CleverTap from 'clevertap-react-native';
 import { CleverTapEventName } from '../helpers/CleverTapEvents';
 import analytics from '@react-native-firebase/analytics';
+import appsFlyer from 'react-native-appsflyer';
 
 (function() {
   /**
@@ -150,7 +153,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface SplashScreenProps extends NavigationScreenProps { }
+let onDeepLinkCanceller: any;
+
+export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { APP_ENV } = AppConfig;
@@ -194,8 +199,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   useEffect(() => {
     prefetchUserMetadata();
-
-    InitiateAppsFlyer(props.navigation);
     DeviceEventEmitter.addListener('accept', (params) => {
       if (getCurrentRoute() !== AppRoutes.ChatRoom) {
         voipCallType.current = params.call_type;
@@ -237,6 +240,17 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     handleDeepLink();
     getDeviceToken();
     initializeRealTimeUninstall();
+    setCleverTapAppsFlyerCustID();
+    InitiateAppsFlyer(props.navigation, (resources) => {
+      redirectRoute(
+        resources?.routeName,
+        resources?.id,
+        resources?.isCall,
+        resources?.timeout,
+        resources?.mediaSource,
+        resources?.data
+      );
+    });
   }, []);
 
   useEffect(() => {
@@ -265,7 +279,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
     const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
     const deviceTokenTimeStamp = (await AsyncStorage.getItem('deviceTokenTimeStamp')) || '';
-    const currentDeviceTokenTimeStamp = deviceTokenTimeStamp ? JSON.parse(deviceTokenTimeStamp) : '';
+    const currentDeviceTokenTimeStamp = deviceTokenTimeStamp
+      ? JSON.parse(deviceTokenTimeStamp)
+      : '';
     if (
       !currentDeviceToken ||
       currentDeviceToken === '' ||
@@ -383,10 +399,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           setBugFenderLog('DEEP_LINK_URL', url);
           if (url) {
             try {
-              if (Platform.OS === 'ios') InitiateAppsFlyer(props.navigation);
-              const data = handleOpenURL(url);
-              const { routeName, id, isCall, timeout, mediaSource } = data;
-              redirectRoute(routeName, id, isCall, timeout, mediaSource, data?.data);
+              const data: any = handleOpenURL(url);
+              redirectRoute(
+                data?.routeName,
+                data?.id,
+                data?.isCall,
+                data?.timeout,
+                data?.mediaSource,
+                data?.data
+              );
               fireAppOpenedEvent(url);
             } catch (e) {}
           } else {
@@ -401,10 +422,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       Linking.addEventListener('url', (event) => {
         try {
           setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
-          const data = handleOpenURL(event.url);
-          triggerUTMCustomEvent(event.url);
-          const { routeName, id, isCall, timeout, mediaSource } = data;
-          redirectRoute(routeName, id, isCall, timeout, mediaSource, data?.data);
+          const data: any = handleOpenURL(event.url);
+          catchSourceUrlDataUsingAppsFlyer();
+          redirectRoute(
+            data?.routeName,
+            data?.id,
+            data?.isCall,
+            data?.timeout,
+            data?.mediaSource,
+            data?.data
+          );
           fireAppOpenedEvent(event.url);
         } catch (e) {}
       });
@@ -691,26 +718,19 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const triggerUTMCustomEvent = async (url: string | null) => {
     try {
       if (url) {
-        const { utm_source, utm_medium, utm_campaign, appUrl } = getUTMdataFromURL(url);
-        if (utm_source || utm_medium || utm_campaign) {
-          postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
-            utm_source,
-            utm_medium,
-            utm_campaign,
-            appUrl,
-          });
-        } else {
-          postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
-            appUrl,
-            deeplink: 'Deeplink',
-          });
-        }
       } else {
         postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
           source: 'Organic',
         });
       }
     } catch (error) {}
+  };
+
+  const catchSourceUrlDataUsingAppsFlyer = async () => {
+    onDeepLinkCanceller = await appsFlyer.onDeepLink(async (res) => {
+      clevertapEventForAppsflyerDeeplink(res.data);
+      onDeepLinkCanceller();
+    });
   };
 
   const prefetchUserMetadata = async () => {

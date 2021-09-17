@@ -26,6 +26,7 @@ import {
   setCrashlyticsAttributes,
   onCleverTapUserLogin,
   postCleverTapEvent,
+  deferredDeepLinkRedirectionData,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -356,19 +357,48 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     }
   };
 
-  const navigateTo = (routeName: AppRoutes, parmas?: { previousRoute: string }) => {
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [
-          NavigationActions.navigate({
-            routeName: routeName,
-            params: parmas,
-          }),
-        ],
-      })
-    );
+  const navigateTo = (
+    routeName: AppRoutes,
+    parmas?: { previousRoute: string } | null | undefined,
+    signup?: boolean
+  ) => {
+    if (signup === true) {
+      setOpenFillerView(false);
+      props.navigation.dispatch(
+        StackActions.reset({
+          index: 0,
+          key: null,
+          actions: [
+            NavigationActions.navigate({
+              routeName: routeName,
+              params: parmas ? parmas : {},
+            }),
+          ],
+        })
+      );
+    } else {
+      deferredDeepLinkRedirectionData(
+        props.navigation,
+        () => {
+          setOpenFillerView(false);
+          props.navigation.dispatch(
+            StackActions.reset({
+              index: 0,
+              key: null,
+              actions: [
+                NavigationActions.navigate({
+                  routeName: routeName,
+                  params: parmas ? parmas : {},
+                }),
+              ],
+            })
+          );
+        },
+        () => {
+          setOpenFillerView(false);
+        }
+      );
+    }
   };
 
   useEffect(() => {
@@ -589,7 +619,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const moveScreenForward = (mePatient: any) => {
     AsyncStorage.setItem('logginHappened', 'true');
-    setOpenFillerView(false);
     // commenting this to avoid setting of AppFlyerCustId twice
     // SetAppsFlyerCustID(mePatient.primaryPatientId);
     postOtpSuccessAppsflyerEvet(mePatient.primaryPatientId);
@@ -599,7 +628,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           value: 'Yes',
         };
         postWebEngageEvent(WebEngageEventName.PRE_APOLLO_CUSTOMER, eventAttributes);
-        navigateTo(AppRoutes.MultiSignup);
+        navigateTo(AppRoutes.MultiSignup, null, true);
       } else {
         AsyncStorage.setItem('userLoggedIn', 'true');
         onCleverTapUserLogin(mePatient);
@@ -616,7 +645,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           value: 'No',
         };
         postWebEngageEvent(WebEngageEventName.PRE_APOLLO_CUSTOMER, eventAttributes);
-        navigateTo(AppRoutes.SignUp);
+        navigateTo(AppRoutes.SignUp, null, true);
         fireUserLoggedInEvent(mePatient, 'Registration');
       } else {
         AsyncStorage.setItem('userLoggedIn', 'true');
