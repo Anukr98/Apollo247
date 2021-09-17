@@ -528,7 +528,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           : AppConfig.Configuration.merchantId;
         initiateHyperSDK(currentPatientId, merchantId);
         const params = {
-          paymentId: paymentId,
+          paymentId: response?.data?.getOrderInternal?.payment_order_id,
           amount: response?.data?.getOrderInternal?.total_amount,
           orderDetails: { orderId: response?.data?.getOrderInternal?.id },
           businessLine: 'paymentLink',
