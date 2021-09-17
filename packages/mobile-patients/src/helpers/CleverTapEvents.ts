@@ -88,6 +88,9 @@ export enum CleverTapEventName {
   //Consult Permissioon Events
   CONSULT_PERMISSIONS = 'Consult permissions',
 
+  //Consult Dealyed
+  CONSULT_DELAYED_MESSAGE_CLICKED='Consult Delayed Message clicked',
+
   // Symptom Tracker Events
   SYMPTOM_TRACKER_SELECT_OTHER_MEMBER_CLICKED = 'Symptom_Select other member clicked',
   SYMPTOM_TRACKER_MOST_TROUBLING_SYMPTOM_CLICKED = 'Symptoms_Most troubling symptom clicked',
@@ -1056,6 +1059,18 @@ export interface CleverTapEvents {
     Camera?: boolean;
     Microphone?: boolean;
   };
+
+  // *********** Delayed Reminder Event ******* \\
+  [CleverTapEventName.CONSULT_DELAYED_MESSAGE_CLICKED]: {
+    'Doctor Name': string,
+    'Doctor Number': string,
+    'Doctor ID': string,
+    'Display Speciality Name':string,
+    'Display ID': number | null,
+    'Patient Name': string,
+    'Patient Phone Number': string,
+    'Phone number clicked': string,
+  }
   // ********** PharmacyEvents ********** \\
 
   [CleverTapEventName.PHARMACY_SEARCH]: {

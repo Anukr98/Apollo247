@@ -789,6 +789,27 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     right: 0,
   },
+  messageContainer: {
+    backgroundColor: '#0087ba',
+    marginLeft: 38,
+    borderRadius: 10,
+  },
+  messageText: {
+    color: '#ffffff',
+    paddingTop: 8,
+    paddingBottom: 4,
+    paddingHorizontal: 16,
+    ...theme.fonts.IBMPlexSansMedium(15),
+    textAlign: 'left',
+  },
+  messageTimeText: {
+    color: '#ffffff',
+    paddingHorizontal: 16,
+    paddingVertical: 4,
+    textAlign: 'right',
+    ...theme.fonts.IBMPlexSansMedium(10),
+  },
+  transparentView: { backgroundColor: 'transparent', height: 4, width: 20 },
 });
 
 const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/;
@@ -1022,6 +1043,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const followUpChatGuideLines = '^^#followUpChatGuideLines';
   const externalMeetingLink = '^^#externalMeetingLink';
   const jdAutoAssign = '^^#JdInfoMsg';
+  const delayedConsultReminder = '^^#DelayReminder';
 
   const disconnecting = 'Disconnecting...';
   const callConnected = 'Call Connected';
@@ -5079,6 +5101,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 </>
               ) : null}
             </View>
+          ) : rowData.automatedText === delayedConsultReminder ? (
+            <View style={styles.messageContainer}>
+              {rowData.message ? (
+                <>
+                  <Text style={styles.messageText}>
+                    {openDialerFromString(rowData.message, rowData?.metaData)}
+                  </Text>
+                  <Text style={styles.messageTimeText}>{convertChatTime(rowData)}</Text>
+                  <View style={styles.transparentView} />
+                </>
+              ) : null}
+            </View>
           ) : rowData.message === exotelCall ? (
             <View
               style={{
@@ -5450,6 +5484,45 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           ) : null}
         </View>
       </View>
+    );
+  };
+
+  const openDialerEvent = (el: string, metaData: { [key: string]: string } | undefined) => {
+    if (metaData) {
+      const mobileKey = Object.keys(metaData).find((key) => metaData[key] === el);
+      if (mobileKey) {
+        const eventAttributes = {
+          'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+          'Doctor Number': g(appointmentData, 'doctorInfo', 'mobileNumber')!,
+          'Doctor ID': doctorId,
+          'Display Speciality Name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
+          'Display ID': g(appointmentData, 'displayId')!,
+          'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+          'Patient Phone Number': g(currentPatient, 'mobileNumber'),
+          'Phone number clicked':
+            mobileKey === 'secretaryMobileNumber' ? 'Secretary' : 'Support Team',
+        };
+        postCleverTapEvent(CleverTapEventName.CONSULT_DELAYED_MESSAGE_CLICKED, eventAttributes);
+      }
+    }
+    Linking.openURL('tel:' + el);
+  };
+  // Function to open Dialer From String
+  const openDialerFromString = (str: string, metaData: { [key: string]: string } | undefined) => {
+    let regex = /(?:[-+()]*\d){10,13}/gm;
+    let arr = str.split(' ');
+    return (
+      <Text>
+        {arr.map((el: string) => {
+          if (el.match(regex)) {
+            const number = el.match(regex);
+            if (number && number[0]) {
+              return <Text onPress={() => openDialerEvent(number[0], metaData)}>{el}</Text>;
+            }
+          }
+          return el === '\n' ? el : el ? el.trim() + ' ' : null;
+        })}
+      </Text>
     );
   };
 
