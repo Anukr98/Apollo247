@@ -27,6 +27,7 @@ import {
   setBugFenderLog,
   isIos,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { saveTokenDevice } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   doRequestAndAccessLocation,
@@ -96,7 +97,7 @@ import { CleverTapEventName } from '../helpers/CleverTapEvents';
 import analytics from '@react-native-firebase/analytics';
 import appsFlyer from 'react-native-appsflyer';
 
-(function() {
+(function () {
   /**
    * Praktice.ai
    * Polyfill for Promise.prototype.finally
@@ -109,16 +110,16 @@ import appsFlyer from 'react-native-appsflyer';
   if (typeof Promise.prototype['finally'] === 'function') {
     return;
   }
-  globalObject.Promise.prototype['finally'] = function(callback: any) {
+  globalObject.Promise.prototype['finally'] = function (callback: any) {
     const constructor = this.constructor;
     return this.then(
-      function(value: any) {
-        return constructor.resolve(callback()).then(function() {
+      function (value: any) {
+        return constructor.resolve(callback()).then(function () {
           return value;
         });
       },
-      function(reason: any) {
-        return constructor.resolve(callback()).then(function() {
+      function (reason: any) {
+        return constructor.resolve(callback()).then(function () {
           throw reason;
         });
       }
@@ -218,7 +219,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       PrefetchAPIReuqest({
         clientId: AppConfig.Configuration.PRAKTISE_API_KEY,
       })
-        .then((res: any) => {})
+        .then((res: any) => { })
         .catch((e: Error) => {
           CommonBugFender('SplashScreen_PrefetchAPIReuqest', e);
         });
@@ -279,9 +280,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
     const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
     const deviceTokenTimeStamp = (await AsyncStorage.getItem('deviceTokenTimeStamp')) || '';
-    const currentDeviceTokenTimeStamp = deviceTokenTimeStamp
-      ? JSON.parse(deviceTokenTimeStamp)
-      : '';
+    const currentDeviceTokenTimeStamp = deviceTokenTimeStamp ? JSON.parse(deviceTokenTimeStamp) : '';
+    const currentPatientId: any = await AsyncStorage.getItem('selectUserId');
     if (
       !currentDeviceToken ||
       currentDeviceToken === '' ||
@@ -300,6 +300,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           AsyncStorage.setItem('deviceToken', JSON.stringify(token));
           AsyncStorage.setItem('deviceTokenTimeStamp', JSON.stringify(new Date().getTime()));
           UnInstallAppsFlyer(token);
+          if (currentPatientId && token) {
+            saveTokenDevice(client, token, currentPatientId)
+              ?.catch((e) => {
+                CommonBugFender('Login_saveTokenDevice', e);
+                AsyncStorage.setItem('deviceToken', '');
+              })
+          };
         })
         .catch((e) => {
           CommonBugFender('SplashScreen_getDeviceToken', e);
@@ -409,7 +416,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                 data?.data
               );
               fireAppOpenedEvent(url);
-            } catch (e) {}
+            } catch (e) { }
           } else {
             settakeToConsultRoom(true);
             fireAppOpenedEvent('');
@@ -433,7 +440,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             data?.data
           );
           fireAppOpenedEvent(event.url);
-        } catch (e) {}
+        } catch (e) { }
       });
       AsyncStorage.removeItem('location');
     } catch (error) {
@@ -639,7 +646,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         : null;
       const currentPatient = allPatients
         ? allPatients?.find((patient: any) => patient?.id === currentPatientId) ||
-          allPatients?.find((patient: any) => patient?.isUhidPrimary === true)
+        allPatients?.find((patient: any) => patient?.isUhidPrimary === true)
         : null;
       setAllPatients(allPatients);
 
@@ -723,7 +730,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           source: 'Organic',
         });
       }
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const catchSourceUrlDataUsingAppsFlyer = async () => {
@@ -896,7 +903,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               });
             });
         }
-      } catch {}
+      } catch { }
     }
     if (appState.match(/active|foreground/) && nextAppState === 'background') {
       APPStateActive();
@@ -1132,8 +1139,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         currentEnv === AppEnv.QA2 ||
         currentEnv === AppEnv.QA3 ||
         currentEnv === AppEnv.QA5
-      ? valueBasedOnEnv.QA || valueBasedOnEnv.PROD
-      : valueBasedOnEnv.DEV || valueBasedOnEnv.QA || valueBasedOnEnv.PROD;
+        ? valueBasedOnEnv.QA || valueBasedOnEnv.PROD
+        : valueBasedOnEnv.DEV || valueBasedOnEnv.QA || valueBasedOnEnv.PROD;
   };
 
   const getRemoteConfigValue = (
@@ -1449,7 +1456,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                 Platform.OS === 'ios'
                   ? 'https://apps.apple.com/in/app/apollo247/id1496740273'
                   : 'https://play.google.com/store/apps/details?id=com.apollo.patientapp'
-              ).catch((err) => {});
+              ).catch((err) => { });
             }}
           />
         </View>
@@ -1494,7 +1501,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       toValue: 1,
       duration: 1300,
       useNativeDriver: true,
-    }).start(() => {});
+    }).start(() => { });
   };
 
   return (
