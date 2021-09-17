@@ -2236,17 +2236,28 @@ export const InitiateAppsFlyer = (
   });
   onDeepLinkCanceller = appsFlyer.onDeepLink(res => {
     if (res.isDeferred === true) {
+      clevertapEventForAppsflyerDeeplink(res.data)
       const url = handleOpenURL(res.data.deep_link_value);
       AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url))
     }
     else if (res.data.deep_link_value && res.isDeferred === false) {
+      clevertapEventForAppsflyerDeeplink(res.data)
       const url = handleOpenURL(res.data.deep_link_value);
       AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url))
       redirectWithOutDeferred(url)
     }
+    else if (res.status == "success") {
+      clevertapEventForAppsflyerDeeplink(res.data)
+    }
   })
 };
 
+
+export const clevertapEventForAppsflyerDeeplink = (eventArributes: any) => {
+  postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
+    ...eventArributes
+  });
+}
 
 
 

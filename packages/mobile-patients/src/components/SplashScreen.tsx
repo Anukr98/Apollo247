@@ -43,6 +43,7 @@ import {
   navigateToScreenWithHomeScreeninStack,
   navigateToHome,
   setCleverTapAppsFlyerCustID,
+  clevertapEventForAppsflyerDeeplink,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -93,6 +94,7 @@ import {
 import CleverTap from 'clevertap-react-native';
 import { CleverTapEventName } from '../helpers/CleverTapEvents';
 import analytics from '@react-native-firebase/analytics';
+import appsFlyer from 'react-native-appsflyer';
 
 (function() {
   /**
@@ -150,6 +152,8 @@ const styles = StyleSheet.create({
     height: 70,
   },
 });
+
+let onDeepLinkCanceller: any;
 
 export interface SplashScreenProps extends NavigationScreenProps {}
 
@@ -419,7 +423,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         try {
           setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
           const data: any = handleOpenURL(event.url);
-          triggerUTMCustomEvent(event.url);
+          catchSourceUrlDataUsingAppsFlyer();
           redirectRoute(
             data?.routeName,
             data?.id,
@@ -714,26 +718,19 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const triggerUTMCustomEvent = async (url: string | null) => {
     try {
       if (url) {
-        const { utm_source, utm_medium, utm_campaign, appUrl } = getUTMdataFromURL(url);
-        if (utm_source || utm_medium || utm_campaign) {
-          postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
-            utm_source,
-            utm_medium,
-            utm_campaign,
-            appUrl,
-          });
-        } else {
-          postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
-            appUrl,
-            deeplink: 'Deeplink',
-          });
-        }
       } else {
         postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
           source: 'Organic',
         });
       }
     } catch (error) {}
+  };
+
+  const catchSourceUrlDataUsingAppsFlyer = async () => {
+    onDeepLinkCanceller = await appsFlyer.onDeepLink(async (res) => {
+      clevertapEventForAppsflyerDeeplink(res.data);
+      onDeepLinkCanceller();
+    });
   };
 
   const prefetchUserMetadata = async () => {
