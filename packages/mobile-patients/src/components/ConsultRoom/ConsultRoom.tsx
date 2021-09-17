@@ -1407,8 +1407,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         'Circle Member': !!circleSubscriptionId,
         'Circle Plan type': circleSubPlanId || '',
       };
-      console.log({eventAttributes});
-      
     }
     if (eventName == CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS) {
       eventAttributes = {
