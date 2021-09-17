@@ -1704,25 +1704,25 @@ export const postAppointmentCleverTapEvents = (
     | CleverTapEvents[CleverTapEventName.CONSULT_CONTINUE_CONSULTATION_CLICKED]
     | CleverTapEvents[CleverTapEventName.CONSULT_CANCELLED_BY_PATIENT]
     | CleverTapEvents[CleverTapEventName.CONSULT_RESCHEDULED_BY_THE_PATIENT] = {
-    doctorName: g(data, 'doctorInfo', 'fullName')!,
+    'Doctor name': g(data, 'doctorInfo', 'fullName')!,
     'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
-    'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
-    'Doctor Category': g(data, 'doctorInfo', 'doctorType')!,
-    'Consult Date Time': moment(g(data, 'appointmentDateTime')).toDate(),
-    'Consult Mode': g(data, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
-    'Hospital Name': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')!,
-    'Hospital City': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'city')!,
-    docId: g(data, 'doctorId') || undefined,
-    patientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Speciality name': g(data, 'doctorInfo', 'specialty', 'name')!,
+    'Doctor category': g(data, 'doctorInfo', 'doctorType')!,
+    'Appointment datetime': moment(g(data, 'appointmentDateTime')).toDate(),
+    'Consult mode': g(data, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
+    'Hospital name': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')!,
+    'Hospital city': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'city')!,
+    'Doctor ID': g(data, 'doctorId') || undefined,
+    'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
     'Patient UHID': g(currentPatient, 'uhid'),
     Relation: g(currentPatient, 'relation'),
-    'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
-    'Patient Gender': g(currentPatient, 'gender'),
+    'Patient age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+    'Patient gender': g(currentPatient, 'gender'),
     'Customer ID': g(currentPatient, 'id'),
-    secretaryName: g(secretaryData, 'name'),
-    secretaryNumber: g(secretaryData, 'mobileNumber'),
-    doctorNumber: g(data, 'doctorInfo', 'mobileNumber')!,
-    patientNumber: g(currentPatient, 'mobileNumber') || undefined,
+    'Secretary name': g(secretaryData, 'name'),
+    'Secretary number': g(secretaryData, 'mobileNumber'),
+    'Doctor number': g(data, 'doctorInfo', 'mobileNumber')!,
+    'Patient number': g(currentPatient, 'mobileNumber') || undefined,
   };
   postCleverTapEvent(type, eventAttributes);
 };
@@ -1757,20 +1757,24 @@ export const postConsultSearchCleverTapEvent = (
   currentPatient: any,
   allCurrentPatients: any,
   noResults: boolean,
-  source: 'speciality screen' | 'Doctor listing screen'
+  source: 'speciality screen' | 'Doctor listing screen',
+  circleMember: boolean,
+  circlePlan: string
 ) => {
   const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_SEARCH] = {
-    textSearched: searchInput,
+    Keyword: searchInput,
     'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
     'Patient UHID': g(currentPatient, 'uhid'),
     Relation: g(currentPatient, 'relation'),
     'Patient age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
     'Patient gender': g(currentPatient, 'gender'),
-    'Mobile Number': g(currentPatient, 'mobileNumber'),
+    'Patient Number': g(currentPatient, 'mobileNumber'),
     'Customer ID': g(currentPatient, 'id'),
     User_Type: getUserType(allCurrentPatients),
     Source: source,
-    'search result success': noResults ? 'No' : 'Yes',
+    'Search result success': noResults ? 'No' : 'Yes',
+    'Circle Member': circleMember,
+    'Circle Plan type': circlePlan,
   };
   postCleverTapEvent(CleverTapEventName.CONSULT_SEARCH, eventAttributes);
 };

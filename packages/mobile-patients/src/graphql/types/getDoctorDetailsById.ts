@@ -9,6 +9,25 @@ import { DoctorType, Gender, ConsultMode, PLAN, PLAN_STATUS, APPOINTMENT_TYPE, W
 // GraphQL query operation: getDoctorDetailsById
 // ====================================================
 
+export interface getDoctorDetailsById_getDoctorDetailsById_doctorHospital_facility {
+  __typename: "Facility";
+  city: string | null;
+  name: string;
+  id: string;
+  latitude: string | null;
+  longitude: string | null;
+  facilityType: string;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
+  imageUrl: string | null;
+}
+
+export interface getDoctorDetailsById_getDoctorDetailsById_doctorHospital {
+  __typename: "DoctorHospital";
+  facility: getDoctorDetailsById_getDoctorDetailsById_doctorHospital_facility;
+}
+
 export interface getDoctorDetailsById_getDoctorDetailsById_doctorPricing {
   __typename: "DoctorPricing";
   slashed_price: number | null;
@@ -18,6 +37,8 @@ export interface getDoctorDetailsById_getDoctorDetailsById_doctorPricing {
   appointment_type: APPOINTMENT_TYPE | null;
   is_cashback_enabled: boolean | null;
   cashback_amount: number | null;
+  bookingFee: number | null;
+  isBookingFeeExempted: boolean | null;
 }
 
 export interface getDoctorDetailsById_getDoctorDetailsById_availabilityTitle {
@@ -45,25 +66,6 @@ export interface getDoctorDetailsById_getDoctorDetailsById_doctorSecretary_secre
 export interface getDoctorDetailsById_getDoctorDetailsById_doctorSecretary {
   __typename: "DoctorSecretaryDetails";
   secretary: getDoctorDetailsById_getDoctorDetailsById_doctorSecretary_secretary | null;
-}
-
-export interface getDoctorDetailsById_getDoctorDetailsById_doctorHospital_facility {
-  __typename: "Facility";
-  id: string;
-  name: string;
-  city: string | null;
-  latitude: string | null;
-  longitude: string | null;
-  facilityType: string;
-  streetLine1: string | null;
-  streetLine2: string | null;
-  streetLine3: string | null;
-  imageUrl: string | null;
-}
-
-export interface getDoctorDetailsById_getDoctorDetailsById_doctorHospital {
-  __typename: "DoctorHospital";
-  facility: getDoctorDetailsById_getDoctorDetailsById_doctorHospital_facility;
 }
 
 export interface getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_specialty {
@@ -169,8 +171,7 @@ export interface getDoctorDetailsById_getDoctorDetailsById {
   profile_deeplink: string | null;
   photoUrl: string | null;
   availableModes: (ConsultMode | null)[] | null;
-  bookingFee: number | null;
-  isBookingFeeExempted: boolean | null;
+  doctorHospital: getDoctorDetailsById_getDoctorDetailsById_doctorHospital[];
   doctorPricing: (getDoctorDetailsById_getDoctorDetailsById_doctorPricing | null)[] | null;
   availabilityTitle: getDoctorDetailsById_getDoctorDetailsById_availabilityTitle | null;
   specialty: getDoctorDetailsById_getDoctorDetailsById_specialty | null;
@@ -178,7 +179,6 @@ export interface getDoctorDetailsById_getDoctorDetailsById {
   onlineConsultationFees: string;
   physicalConsultationFees: string;
   doctorSecretary: getDoctorDetailsById_getDoctorDetailsById_doctorSecretary | null;
-  doctorHospital: getDoctorDetailsById_getDoctorDetailsById_doctorHospital[];
   starTeam: (getDoctorDetailsById_getDoctorDetailsById_starTeam | null)[] | null;
   consultHours: (getDoctorDetailsById_getDoctorDetailsById_consultHours | null)[] | null;
   doctorNextAvailSlots: getDoctorDetailsById_getDoctorDetailsById_doctorNextAvailSlots | null;
