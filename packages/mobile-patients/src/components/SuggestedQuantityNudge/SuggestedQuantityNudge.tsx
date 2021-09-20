@@ -9,6 +9,7 @@ export interface SuggestedQuantityNudgeProps {
   suggested_qty: string | null;
   sku: string;
   packForm: string;
+  maxOrderQty: number;
   setShownNudgeOnce: (showNudge: boolean) => void;
   showSuggestedQuantityNudge: boolean;
   setShowSuggestedQuantityNudge: (showNudge: boolean) => void;
@@ -20,6 +21,7 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
     suggested_qty,
     sku,
     packForm,
+    maxOrderQty,
     setShownNudgeOnce,
     showSuggestedQuantityNudge,
     setShowSuggestedQuantityNudge,
@@ -29,8 +31,8 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
   const { updateCartItem } = useShoppingCart();
 
   const { cartItems } = useShoppingCart();
-  const [selectedQuantity, setSelectedQuantity] = useState<number>(4);
-  const title = 'Recommended for monthy purchase';
+  const [selectedQuantity, setSelectedQuantity] = useState<number>(+suggested_qty);
+  const title = 'Recommended for monthly purchase';
   const mainText = 'It is recommended that you to buy ';
   const mainText1 = ' and stock this medicine for the next 30 days';
   const itemQuantity = packForm ? `${suggested_qty} ${packForm}s` : `${suggested_qty} items`;
@@ -41,13 +43,16 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
   };
 
   const increaseQuantity = (selectedQuantity: number) => {
-    if (!!suggested_qty && selectedQuantity < +suggested_qty) {
+    if (
+      (!!maxOrderQty && selectedQuantity < maxOrderQty) ||
+      (!!suggested_qty && selectedQuantity < +suggested_qty)
+    ) {
       setSelectedQuantity(selectedQuantity + 1);
     }
   };
 
   const decreaseQuantity = (selectedQuantity: number) => {
-    if (selectedQuantity > 1) {
+    if (selectedQuantity > 2) {
       setSelectedQuantity(selectedQuantity - 1);
     }
   };
@@ -85,7 +90,14 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
                 }}
                 style={styles.buttonStyles}
               >
-                <Text style={styles.buttonTextStyles}>-</Text>
+                <Text
+                  style={[
+                    styles.buttonTextStyles,
+                    selectedQuantity === 2 ? styles.greyedStyle : {},
+                  ]}
+                >
+                  -
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.buttonStyles}>
                 <Text style={[styles.buttonTextStyles, styles.quantityStyle]}>
@@ -98,7 +110,16 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
                 }}
                 style={[styles.buttonStyles, styles.lastButtonStyles]}
               >
-                <Text style={styles.buttonTextStyles}>+</Text>
+                <Text
+                  style={[
+                    styles.buttonTextStyles,
+                    selectedQuantity === maxOrderQty || (!!suggested_qty && +suggested_qty)
+                      ? styles.greyedStyle
+                      : {},
+                  ]}
+                >
+                  +
+                </Text>
               </TouchableOpacity>
             </View>
             <View style={styles.addButtonContainer}>
@@ -151,8 +172,8 @@ const styles = StyleSheet.create({
     top: 29,
   },
   closeIcon: {
-    height: 14,
-    width: 14,
+    height: 16,
+    width: 16,
   },
   modalHeaderContainer: {
     width: 248,
@@ -162,7 +183,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   titleText: {
-    ...theme.fonts.IBMPlexSansRegular(14),
+    ...theme.fonts.IBMPlexSansBold(14),
     fontWeight: '600',
     color: '#01475B',
     lineHeight: 22,
@@ -181,7 +202,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   itemQuantityStyle: {
-    ...theme.fonts.IBMPlexSansRegular(12),
+    ...theme.fonts.IBMPlexSansBold(12),
     fontWeight: '600',
     color: '#01475B',
     lineHeight: 15.6,
@@ -211,6 +232,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
     color: '#FC9916',
+  },
+  greyedStyle: {
+    color: '#808080',
   },
   quantityStyle: {
     fontWeight: '700',
