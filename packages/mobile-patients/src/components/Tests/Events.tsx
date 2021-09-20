@@ -553,9 +553,12 @@ export function DiagnosticTrackOrderViewed(
   orderId: string,
   source: 'Home' | 'My Order'
 ) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
+
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_TRACK_ORDER_VIEWED]
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_TRACK_ORDER_VIEWED] = {
+    ...getPatientAttributes,
     'Patient UHID': g(currentPatient, 'uhid'),
     'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
     'Latest Order Status': latestStatus,
@@ -656,11 +659,14 @@ export function DiagnosticPhleboCallingClicked(
 export function DiagnosticOrderSummaryViewed(
   amount: string | number,
   orderId: string,
-  status: string
+  status: string,
+  currentPatient?: string
 ) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED]
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED] = {
+    ...getPatientAttributes,
     'Order amount': amount,
     'Order ID': orderId,
     'Order status': status,
