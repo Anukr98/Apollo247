@@ -611,7 +611,8 @@
     "modifyDiscardText": "You were trying to modify the order. Would you like to discard and go back to home page?",
     "sampleCollected": "Sample Collected",
     "sampleCollectedContent": "Our Apollo agent has successfully collected the samples.",
-    "agent": "Apollo agent"
+    "agent": "Apollo agent",
+    "successfulUpdatePatientDetails": "PatientId has been updated successfully."
   },
   "diagnosticCategoryTitle": {
     "category": "category",

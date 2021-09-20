@@ -60,9 +60,9 @@ import {
   nameFormater,
   navigateToScreenWithEmptyStack,
   aphConsole,
-  downloadDocument,
   removeWhiteSpaces,
   isSmallDevice,
+  getAge,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   DisabledTickIcon,
@@ -74,7 +74,7 @@ import {
   BLACK_LIST_CANCEL_STATUS_ARRAY,
   BLACK_LIST_RESCHEDULE_STATUS_ARRAY,
   DIAGNOSTIC_ORDER_FAILED_STATUS,
-  DIAGNOSTIC_CONFIRMED_STATUS,
+  DIAGNOSTIC_EDIT_PROFILE_ARRAY,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -103,6 +103,7 @@ import { OrderTestCard } from '@aph/mobile-patients/src/components/Tests/compone
 import {
   getDiagnosticRefundOrders,
   getPatientPrismMedicalRecordsApi,
+  switchDiagnosticOrderPatientId,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { Overlay } from 'react-native-elements';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
@@ -123,6 +124,7 @@ import {
   getRescheduleAndCancellationReasons,
   getRescheduleAndCancellationReasonsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getRescheduleAndCancellationReasons';
+import { PatientListOverlay } from '../components/PatientListOverlay';
 
 const { width, height } = Dimensions.get('window');
 
@@ -191,6 +193,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   >(allCurrentPatients);
   const [currentOffset, setCurrentOffset] = useState<number>(1);
   const [resultList, setResultList] = useState([] as any);
+  const [showPatientListOverlay, setShowPatientListOverlay] = useState<boolean>(false);
+  const [patientListSelectedPatient, setPatientListSelectedPatient] = useState([]);
   const source = props.navigation.getParam('source');
 
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
@@ -402,7 +406,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                       vaccinationStatus: null,
                     },
                     isPhleboETAElapsed: null,
-                    phleboETAElapsedMessage: null
+                    phleboETAElapsedMessage: null,
                   };
                 }
                 order.diagnosticOrderPhlebotomists.phleboOTP =
@@ -1251,6 +1255,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       ) => item?.itemName
     );
 
+    const showEditProfileOption = DIAGNOSTIC_EDIT_PROFILE_ARRAY.includes(order?.orderStatus!);
+
     const getSlotStartTime = (slot: string /*07:00-07:30 */) => {
       return moment((slot?.split('-')[0] || '').trim(), 'hh:mm');
     };
@@ -1302,6 +1308,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           showReport || order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED
         }
         showAdditonalView={!!showExtraInfo && showExtraInfo?.length > 0}
+        showEditIcon={showEditProfileOption}
         additonalRejectedInfo={sampleRejectedString}
         price={order?.totalPrice}
         onPressCard={() => _navigateToYourTestDetails(order, false)}
@@ -1310,13 +1317,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPressViewDetails={() => _navigateToYourTestDetails(order, true)}
         onPressViewReport={() => _onPressViewReportAction(order)}
         phelboObject={order?.diagnosticOrderPhlebotomists}
-        onPressRatingStar={(star) => {
-          props.navigation.navigate(AppRoutes.TestRatingScreen, {
-            ratingStar: star,
-            orderDetails: order,
-            onPressBack: fetchOrders,
-          });
-        }}
+        onPressRatingStar={(star) => _navigateToRatingScreen(star, order)}
+        onPressEditPatient={() => _onPressEditPatient(order)}
         onPressCallOption={(name, number) => _onPressPhleboCall(name, number, order?.id)}
         style={[
           { marginHorizontal: 20 },
@@ -1326,6 +1328,19 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       />
     );
   };
+
+  function _onPressEditPatient(order: orderList) {
+    setSelectedOrder(order);
+    setShowPatientListOverlay(true);
+  }
+
+  function _navigateToRatingScreen(star: any, order: any) {
+    props.navigation.navigate(AppRoutes.TestRatingScreen, {
+      ratingStar: star,
+      orderDetails: order,
+      onPressBack: fetchOrders,
+    });
+  }
 
   function _onPressPhleboCall(phleboName: string, phoneNumber: string, orderId: string) {
     //if allowCalling is true.
@@ -1610,6 +1625,108 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     );
   };
 
+  function _onPressClosePatientListOverlay() {
+    setShowPatientListOverlay(false);
+  }
+
+  const checkPatientAge = (_selectedPatient: any, fromNewProfile: boolean = false) => {
+    let age = !!_selectedPatient?.dateOfBirth ? getAge(_selectedPatient?.dateOfBirth) : null;
+    if (age != null && age != undefined && age <= 10) {
+      setShowPatientListOverlay?.(false);
+      showAphAlert?.({
+        title: string.common.uhOh,
+        description: string.diagnostics.minorAgeText,
+        onPressOk: () => {
+          hideAphAlert?.();
+          setShowPatientListOverlay(true);
+        },
+      });
+      return true;
+    }
+    return false;
+  };
+
+  const onNewProfileAdded = (newPatient: any) => {
+    if (newPatient?.profileData) {
+      if (!checkPatientAge(newPatient?.profileData, true)) {
+        setShowPatientListOverlay(false);
+        _changeSelectedPatient(newPatient?.profileData);
+      }
+    }
+  };
+
+  const _onPressBackButton = () => {
+    if (!patientListSelectedPatient) {
+      setShowPatientListOverlay(true);
+    }
+  };
+
+  async function _changeSelectedPatient(patientSelected: any) {
+    setPatientListSelectedPatient([]);
+    try {
+      setLoading?.(true);
+      const result = await switchDiagnosticOrderPatientId(
+        client,
+        selectedOrder?.id!,
+        patientSelected?.id
+      );
+      if (
+        result?.data?.switchDiagnosticOrderPatientID &&
+        result?.data?.switchDiagnosticOrderPatientID?.status
+      ) {
+        const getResult = result?.data?.switchDiagnosticOrderPatientID;
+        showAphAlert?.({
+          unDismissable: true,
+          title: string.common.hiWithSmiley,
+          description: getResult?.message || string.diagnostics.successfulUpdatePatientDetails,
+          onPressOk: () => {
+            hideAphAlert?.();
+            refetchOrders();
+          },
+        });
+      } else {
+        setLoading?.(false);
+        renderReportError(string.common.tryAgainLater);
+      }
+    } catch (error) {
+      renderReportError(string.common.tryAgainLater);
+      setLoading?.(false);
+      CommonBugFender('_onChangeSelectedPatient_YourOrdersTests', error);
+    }
+  }
+
+  const renderPatientsListOverlay = () => {
+    return (
+      <PatientListOverlay
+        showCloseIcon={true}
+        onCloseIconPress={() => _onPressClosePatientListOverlay()}
+        onPressClose={() => _onPressClosePatientListOverlay()}
+        onPressDone={(_selectedPatient: any) => {
+          if (!checkPatientAge(_selectedPatient)) {
+            setPatientListSelectedPatient(_selectedPatient);
+            setShowPatientListOverlay(false);
+            _changeSelectedPatient(_selectedPatient);
+          }
+        }}
+        onPressAddNewProfile={() => {
+          setShowPatientListOverlay(false);
+          props.navigation.navigate(AppRoutes.EditProfile, {
+            isEdit: false,
+            isPoptype: true,
+            mobileNumber: currentPatient?.mobileNumber,
+            onNewProfileAdded: onNewProfileAdded,
+            onPressBackButton: _onPressBackButton,
+          });
+        }}
+        patientSelected={patientListSelectedPatient}
+        onPressAndroidBack={() => {
+          setShowPatientListOverlay(false);
+          handleBack();
+        }}
+      />
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       {showDisplaySchedule && renderRescheduleOrderOverlay()}
@@ -1627,6 +1744,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         {renderOrders()}
         {showBottomOverlay && renderBottomPopUp()}
         {showPatientsOverlay && renderPatientsOverlay()}
+        {showPatientListOverlay && renderPatientsListOverlay()}
       </SafeAreaView>
       {loading && !props?.showHeader ? null : loading && <Spinner />}
     </View>
