@@ -159,8 +159,8 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                         ? nameFormater(item?.diagnostics?.itemName!, 'title')
                         : ''}{' '}
                     </Text>
+                    {!!item?.editOrderID ? renderNewTag() : null}
                   </View>
-                  {!!item?.editOrderID ? renderNewTag() : null}
                   {index == 1 &&
                     filterOrderLineItem?.length - 2 > 0 &&
                     renderShowMore(filterOrderLineItem, item?.itemName!)}
@@ -333,21 +333,25 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
   const showDetailOTPContainer = () => {
     const phlObj = props?.phelboObject;
-    const otpToShow = !!phlObj && phlObj?.PhelboOTP;
-    const phoneNumber = !!phlObj && phlObj?.PhelbotomistMobile;
-    const name = !!phlObj && phlObj?.PhelbotomistName;
-    const phleboTrackLink = !!phlObj && phlObj?.PhelbotomistTrackLink;
+    const otpToShow = !!phlObj && phlObj?.phleboOTP;
+    const phoneNumber = !!phlObj && phlObj?.diagnosticPhlebotomists?.mobile;
+    const name = !!phlObj && phlObj?.diagnosticPhlebotomists?.name;
+    const phleboTrackLink = !!phlObj && phlObj?.phleboTrackLink;
     const orderId = props.orderId.toString();
-    const checkEta = !!phlObj?.CheckInTime;
+    const checkEta = !!phlObj?.checkinDateTime;
     let phleboEta = '';
     if (checkEta) {
-      phleboEta = moment(phlObj?.CheckInTime).format('hh:mm A');
+      phleboEta = moment(phlObj?.checkinDateTime).format('hh:mm A');
     }
     const slotime = !!props.slotTime ? moment(props?.slotTime) || null : null;
     const showDetailedInfo = !!slotime
       ? slotime.diff(moment(), 'minutes') < 60 && slotime.diff(moment(), 'minutes') > 0
       : false;
     const isCallingEnabled = !!phlObj ? phlObj?.allowCalling : false;
+    const showVaccinationStatus = !!phlObj?.diagnosticPhlebotomists?.vaccinationStatus;
+    const isPhleboETAElapsed = !!phlObj && phlObj?.isPhleboETAElapsed;
+    const phleboETAElapsedMessage = phlObj?.phleboETAElapsedMessage;
+
     return (
       <>
         {!!otpToShow && DIAGNOSTIC_SHOW_OTP_STATUS.includes(props.orderLevelStatus) ? (
@@ -374,7 +378,16 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                       <Text style={styles.nameTextHeadingStyles}>
                         {string.diagnostics.agent} Details
                       </Text>
-                      <Text style={styles.nameTextStyles}>{name}</Text>
+                      <View style={styles.rowCenter}>
+                        <Text style={styles.nameTextStyles}>{name}</Text>
+                        {!!showVaccinationStatus && showVaccinationStatus && (
+                          <View style={styles.vaccinationContainer}>
+                            <Text style={styles.vaccinationText}>
+                              {phlObj?.diagnosticPhlebotomists?.vaccinationStatus}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
                     </View>
                   ) : null}
                 </View>
@@ -393,7 +406,11 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
               <View style={styles.otpContainer}>
                 <View style={styles.etaContainer}>
                   <LocationOutline style={styles.locationIcon} />
-                  <Text style={styles.otpTextStyle}>Apollo agent will arrive by {phleboEta}</Text>
+                  <Text style={styles.otpTextStyle}>
+                    {isPhleboETAElapsed
+                      ? phleboETAElapsedMessage
+                      : `Apollo agent will arrive by ${phleboEta}`}
+                  </Text>
                 </View>
                 {phleboTrackLink ? (
                   <TouchableOpacity
@@ -434,7 +451,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
   const showOnlyOTPContainer = () => {
     const phlObj = props?.phelboObject;
-    const otpToShow = !!phlObj && phlObj?.PhelboOTP;
+    const otpToShow = !!phlObj && phlObj?.phleboOTP;
     return (
       <View style={styles.ratingContainer}>
         <Text style={styles.otpBoxTextStyle}>OTP : {otpToShow}</Text>
@@ -445,7 +462,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   const showRatingView = () => {
     const starCount = [1, 2, 3, 4, 5];
     const phlObj = props?.phelboObject;
-    const phleboRating = !!phlObj && phlObj?.PhleboRating;
+    const phleboRating = !!phlObj && phlObj?.phleboRating;
     let checkRating = starCount.includes(phleboRating);
     const ratedStarCount = starCount.slice(0, phleboRating);
     const unRatedStarCount = starCount.slice(phleboRating, starCount.length);
@@ -630,7 +647,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     flexDirection: 'row',
     marginTop: 20,
-    marginBottom: '2%',
+    marginBottom: '1%',
     minHeight: 40,
   },
   testForText: {
@@ -793,4 +810,19 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 10, 'white'),
     textAlign: 'center',
   },
+  rowCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  vaccinationContainer: {
+    backgroundColor: colors.TURQUOISE_LIGHT_BLUE,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: 'transparent',
+    padding: 4,
+    marginHorizontal: 8,
+    maxWidth: '60%',
+  },
+  vaccinationText: { ...theme.viewStyles.text('M', 12, colors.WHITE, 1, 15) },
 });

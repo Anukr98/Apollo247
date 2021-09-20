@@ -8,7 +8,14 @@ import {
   EditProfilePlaceHolder,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { postWebEngageEvent, getAge } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  postWebEngageEvent,
+  getAge,
+  g,
+  getUserType,
+  getCleverTapCircleMemberValues,
+  postCleverTapEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -63,6 +70,9 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { getRelations } from '../../helpers/helperFunctions';
 import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
+import { useShoppingCart } from '../ShoppingCartProvider';
+import { getUniqueId } from 'react-native-device-info';
+import { CleverTapEventName } from '../../helpers/CleverTapEvents';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -343,7 +353,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const [relation, setRelation] = useState<RelationArray>();
   const [email, setEmail] = useState<string>('');
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
-
+  const { pharmacyCircleAttributes } = useShoppingCart();
   const { isIphoneX } = DeviceHelper();
   const client = useApolloClient();
 
@@ -713,7 +723,12 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       })
       .then((data) => {
         setLoading && setLoading(false);
-        getPatientApiCall();
+        getPatientApiCall().then(() => {
+          if (screenName === string.consult) {
+            const { navigation } = props;
+            navigation.goBack();
+          }
+        });
         if (screenName === string.symptomChecker.symptomTracker) {
           const { navigation } = props;
           navigation.goBack();
@@ -1019,6 +1034,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
             onPress={() => {
               setNewProfileConfirmPopupVisible(false);
               newProfile();
+              cleverTapEventForClickOnConfirm();
             }}
             title={'CONFIRM'}
             style={styles.bottomButtonStyle}
@@ -1220,6 +1236,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
                 if (validationMessage) {
                   showAphAlert && showAphAlert({ title: 'Alert!', description: validationMessage });
                 } else {
+                  cleverTapEventForClickOnSave();
                   isEditProfile ? updateUserProfile() : setNewProfileConfirmPopupVisible(true);
                 }
 
@@ -1234,6 +1251,48 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         </View>
       </StickyBottomComponent>
     );
+  };
+
+  const cleverTapEventForClickOnSave = () => {
+    let eventAttributes = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
+      'Nav src': 'Profile Picture',
+      'Circle Member':
+        getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+        undefined,
+      'Device Id': getUniqueId(),
+    };
+    postCleverTapEvent(CleverTapEventName.SAVE_MEMBER_PROFILE_CLICKED, eventAttributes);
+  };
+
+  const cleverTapEventForClickOnConfirm = () => {
+    let eventAttributes = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
+      'Nav src': 'Profile Picture',
+      'Circle Member':
+        getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+        undefined,
+      'Device Id': getUniqueId(),
+    };
+    postCleverTapEvent(CleverTapEventName.CONFIRM_MEMBER_PROFILE_CLICKED, eventAttributes);
   };
 
   const sendVaccinationAddProfileEvent = () => {

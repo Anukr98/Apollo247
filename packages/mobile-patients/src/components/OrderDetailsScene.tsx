@@ -1885,7 +1885,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       <Button
         style={{ margin: 16, marginTop: 32, width: 'auto' }}
         onPress={onPressConfirmCancelOrder}
-        disabled={!!!selectedReason}
+        disabled={!!!selectedReason && showSpinner}
         title={'SUBMIT REQUEST'}
       />
     );
@@ -1972,7 +1972,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         ? 'Non Cart'
         : 'Cart',
       'Customer ID': currentPatient && currentPatient.id,
-      'Delivery date': orderDetails.orderTat
+      'Delivery Date': orderDetails.orderTat
         ? moment(orderDetails.orderTat).format('ddd, D MMMM, hh:mm A')
         : undefined,
       'Mobile number': currentPatient && currentPatient.mobileNumber,

@@ -526,6 +526,10 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
   }, []);
 
   useEffect(() => {
+    if (selectedDose == string.vaccineBooking.title_dose_2 && !selectedVaccineType) {
+      return;
+    }
+
     let result = validateCityConstraints();
     setCityConstraintsQualified(result);
     if (result == true) {
@@ -1055,7 +1059,15 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
 
           <Spearator style={styles.separator} />
 
-          {selectedCity != '' && vaccineSiteList.length == 0 && hospitalSitesLoading == false ? (
+          {(selectedDose == string.vaccineBooking.title_dose_1 &&
+            selectedCity != '' &&
+            vaccineSiteList.length == 0 &&
+            hospitalSitesLoading == false) ||
+          (selectedDose == string.vaccineBooking.title_dose_2 &&
+            selectedVaccineType != '' &&
+            selectedCity != '' &&
+            vaccineSiteList.length == 0 &&
+            hospitalSitesLoading == false) ? (
             <Text style={styles.errorMessageSiteDate}>
               {string.vaccineBooking.no_vaccination_sites_available}{' '}
             </Text>
@@ -1430,6 +1442,10 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
   };
 
   const renderSiteAndDateSelector = () => {
+    if (selectedDose == string.vaccineBooking.title_dose_2 && !selectedVaccineType) {
+      return null;
+    }
+
     if (hospitalSitesLoading) {
       return renderVaccinesHospitalSlotsLoaderShimmer();
     }
