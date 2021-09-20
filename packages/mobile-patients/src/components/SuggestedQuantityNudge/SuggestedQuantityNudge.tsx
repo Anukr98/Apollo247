@@ -32,7 +32,7 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
 
   const { cartItems } = useShoppingCart();
   const [selectedQuantity, setSelectedQuantity] = useState<number>(+suggested_qty);
-  const title = 'Recommended for monthy purchase';
+  const title = 'Recommended for monthly purchase';
   const mainText = 'It is recommended that you to buy ';
   const mainText1 = ' and stock this medicine for the next 30 days';
   const itemQuantity = packForm ? `${suggested_qty} ${packForm}s` : `${suggested_qty} items`;
@@ -113,7 +113,9 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
                 <Text
                   style={[
                     styles.buttonTextStyles,
-                    selectedQuantity === maxOrderQty ? styles.greyedStyle : {},
+                    selectedQuantity === maxOrderQty || (!!suggested_qty && +suggested_qty)
+                      ? styles.greyedStyle
+                      : {},
                   ]}
                 >
                   +
@@ -170,8 +172,8 @@ const styles = StyleSheet.create({
     top: 29,
   },
   closeIcon: {
-    height: 14,
-    width: 14,
+    height: 16,
+    width: 16,
   },
   modalHeaderContainer: {
     width: 248,
@@ -181,7 +183,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   titleText: {
-    ...theme.fonts.IBMPlexSansRegular(14),
+    ...theme.fonts.IBMPlexSansBold(14),
     fontWeight: '600',
     color: '#01475B',
     lineHeight: 22,
@@ -200,7 +202,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   itemQuantityStyle: {
-    ...theme.fonts.IBMPlexSansRegular(12),
+    ...theme.fonts.IBMPlexSansBold(12),
     fontWeight: '600',
     color: '#01475B',
     lineHeight: 15.6,
