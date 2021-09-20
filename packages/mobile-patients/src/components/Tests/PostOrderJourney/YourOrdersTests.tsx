@@ -1280,10 +1280,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               : 'Ms.'
             : ''
         }
-        showAddTest={
-          order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED ||
-          order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED
-        }
+        showEditIcon={showEditProfileOption}
+        showAddTest={showEditProfileOption}
         ordersData={order?.diagnosticOrderLineItems!}
         showPretesting={showPreTesting!}
         dateTime={!!order?.slotDateTimeInUTC ? order?.slotDateTimeInUTC : order?.diagnosticDate}
@@ -1308,7 +1306,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           showReport || order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED
         }
         showAdditonalView={!!showExtraInfo && showExtraInfo?.length > 0}
-        showEditIcon={showEditProfileOption}
         additonalRejectedInfo={sampleRejectedString}
         price={order?.totalPrice}
         onPressCard={() => _navigateToYourTestDetails(order, false)}
