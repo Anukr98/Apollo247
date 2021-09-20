@@ -116,7 +116,8 @@ import {
   CancellationDiagnosticsInputv2,
   DiagnosticsRescheduleSource, 
   slotInfo,
-  ProcessDiagnosticHCOrderInputCOD
+  ProcessDiagnosticHCOrderInputCOD,
+  DiagnosticsBookingSource
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { insertMessageVariables } from '@aph/mobile-patients/src/graphql/types/insertMessage';
 import {
@@ -1264,7 +1265,9 @@ export const diagnosticGetCustomizedSlotsV2 = (client: ApolloClient<object>,  pa
       billAmount: billAmount,
       selectedDate: selectedDate,
       serviceability: serviceabilityObject,
-      diagnosticOrdersId: diagnosticOrdersId
+      diagnosticOrdersId: diagnosticOrdersId,
+      patientAddressID: patientAddressObject?.patientAddressID,
+      bookingSource: DiagnosticsBookingSource.MOBILE
     },
     context: {
       sourceHeaders,

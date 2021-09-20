@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { patientAddressObj, patientObjWithLineItems, DiagnosticsServiceability } from "./globalTypes";
+import { patientAddressObj, patientObjWithLineItems, DiagnosticsServiceability, DiagnosticsBookingSource } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getCustomizedSlotsv2
@@ -38,4 +38,6 @@ export interface getCustomizedSlotsv2Variables {
   selectedDate: any;
   serviceability?: DiagnosticsServiceability | null;
   diagnosticOrdersId?: string | null;
+  patientAddressID?: string | null;
+  bookingSource?: DiagnosticsBookingSource | null;
 }
