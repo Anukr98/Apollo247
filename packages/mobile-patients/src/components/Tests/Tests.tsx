@@ -1885,7 +1885,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         'Home',
         !!item?.labReportURL ? 'Yes' : 'No',
         'Download Report PDF',
-        item?.id
+        item?.displayId
       );
       //view report download
       //need to remove the event once added
@@ -1893,7 +1893,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         'Home',
         !!item?.labReportURL ? 'Yes' : 'No',
         'Download Report PDF',
-        item?.id
+        item?.displayId
       );
       if (!!item?.labReportURL && item?.labReportURL != '') {
         onPressViewReport();
@@ -1940,8 +1940,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }
 
   function navigateToTrackingScreen(item: any) {
-    DiagnosticTrackOrderViewed(currentPatient, item?.orderStatus, item?.id, 'Home');
-    props.navigation.navigate(AppRoutes.YourOrdersTest, {
+    DiagnosticTrackOrderViewed(currentPatient, item?.orderStatus, item?.displayId, 'Home');
+    props.navigation.push(AppRoutes.YourOrdersTest, {
       isTest: true,
     });
   }

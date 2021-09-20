@@ -1302,7 +1302,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       'Track Order',
       !!orderDetails?.labReportURL ? 'Yes' : 'No',
       'Download Report PDF',
-      orderDetails?.id
+      orderDetails?.displayId
     );
     downloadLabTest(
       removeWhiteSpaces(orderDetails?.labReportURL)!,
