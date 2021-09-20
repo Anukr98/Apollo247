@@ -165,7 +165,7 @@ export enum CleverTapEventName {
   DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic make payment clicked',
   PAYMENT_INITIATED = 'Payment Initiated',
   DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic payment initiated',
-  DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic checkout completed',
+  DIAGNOSTIC_ORDER_PLACED = 'Diagnostic order placed',
   DIAGNOSTIC_TRACK_ORDER_VIEWED = 'Diagnostic track order viewed',
   DIAGNOSTIC_ORDER_RESCHEDULE = 'Diagnostic order rescheduled',
   DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
@@ -1436,7 +1436,7 @@ export interface CleverTapEvents {
     Section?: string;
     'Circle user'?: string;
   };
-  [CleverTapEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
+  [CleverTapEventName.DIAGNOSTIC_ORDER_PLACED]: {
     'Order id': string | number;
     Pincode: string | number;
     'Patient UHID': string;
