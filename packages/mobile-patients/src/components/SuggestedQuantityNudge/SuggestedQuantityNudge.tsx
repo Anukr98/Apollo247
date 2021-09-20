@@ -47,7 +47,7 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
   };
 
   const decreaseQuantity = (selectedQuantity: number) => {
-    if (selectedQuantity > 2) {
+    if (selectedQuantity > 1) {
       setSelectedQuantity(selectedQuantity - 1);
     }
   };
