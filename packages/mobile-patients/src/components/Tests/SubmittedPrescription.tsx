@@ -13,6 +13,7 @@ import {
   Dimensions,
   Image,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -41,6 +42,7 @@ import {
   PhrCloseIcon,
   RemoveIcon,
   WhiteCross,
+  PrescriptionColored,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
@@ -68,12 +70,23 @@ import {
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 const { width, height } = Dimensions.get('window');
 import LottieView from 'lottie-react-native';
+import { DocumentPickerResponse } from 'react-native-document-picker';
+import ImageResizer from 'react-native-image-resizer';
+import RNFetchBlob from 'rn-fetch-blob';
 const GreenTickAnimation = '@aph/mobile-patients/src/components/Tests/greenTickAnimation.json'
 
 export interface SubmittedPrescriptionProps extends NavigationScreenProps {
   showHeader?: boolean;
 }
 type PickerImage = any;
+interface Base64Response {
+  uploadedUrl: string;
+  fileCopyUri: string;
+  copyError?: string;
+  type: string;
+  fileName: string;
+  size: number;
+}
 export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (props) => {
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -163,12 +176,12 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   const getAddedImages = () => {
     let imagesArray = [] as any;
     
-    ePrescriptionsProp?.forEach((item: any) => {
+    phyPrescriptionsProp?.forEach((item: any) => {
       let imageObj = {} as any;
-      imageObj.fileName = item?.fileName;
-      imageObj.mimeType = mimeType(item?.fileName);
-      imageObj.content = item?.uploadedUrl;
-      imagesArray.push(imageObj);
+      imageObj.fileName = item?.title + '.' + item?.fileType;
+      imageObj.mimeType = mimeType(item?.title + '.' + item?.fileType);
+      imageObj.content = item?.base64;
+      imagesArray.push(imageObj); 
     });
     return imagesArray;
   };
@@ -176,16 +189,29 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   
   const onSubmitPrescription = () => {
     const inputData: AddPrescriptionRecordInput = {
-      id: ePrescriptionsProp?.[0]?.id,
+      id: ePrescriptionsProp?.[0]?.id ? ePrescriptionsProp?.[0]?.id : '',
       patientId: currentPatient?.id || '',
-      prescriptionName: ePrescriptionsProp?.[0]?.fileName,
-      issuingDoctor: ePrescriptionsProp?.[0]?.doctorName,
+      prescriptionName: ePrescriptionsProp?.[0]?.fileName
+        ? ePrescriptionsProp?.[0]?.fileName
+        : phyPrescriptionsProp?.[0]?.title
+        ? phyPrescriptionsProp?.[0]?.title
+        : '',
+      issuingDoctor: ePrescriptionsProp?.[0]?.doctorName ? ePrescriptionsProp?.[0]?.doctorName : '',
       location: locationName,
       additionalNotes: additionalNotes,
-      dateOfPrescription: moment(ePrescriptionsProp?.[0]?.date, 'DD MMM YYYY').format('YYYY-MM-DD'),
+      dateOfPrescription: ePrescriptionsProp?.[0]?.date
+        ? moment(ePrescriptionsProp?.[0]?.date, 'DD MMM YYYY').format('YYYY-MM-DD')
+        : moment().format('YYYY-MM-DD'),
       recordType: MedicalRecordType.PRESCRIPTION,
-      prescriptionFiles: getAddedImages(),
+      prescriptionFiles: phyPrescriptionsProp?.length
+        ? getAddedImages()
+        : ePrescriptionsProp?.length
+        ? setUploadedImages(ePrescriptionsProp)
+        : [],
     };
+    if (ePrescriptionsProp && ePrescriptionsProp?.length) {
+      setOnSumbitSuccess(true);
+    } else {
     client
       .mutate<addPatientPrescriptionRecord>({
         mutation: ADD_PRESCRIPTION_RECORD,
@@ -205,9 +231,10 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         setOnSumbitSuccess(true);
       })
       .catch((error) => {
-          setIsErrorOccured(true);
+        setIsErrorOccured(true);
         CommonBugFender('SubmittedPrescription_ADD_PRESCRIPTION_RECORD', error);
       });
+    }
   };
   const renderErrorMessage = () => {
     return (
@@ -311,22 +338,12 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                                 <View
                                   style={styles.epresView3}
                                 >
-                                  {item.fileType == 'pdf' ? (
-                                    <FileBig
-                                      style={styles.fileBigStyle}
-                                    />
-                                  ) : (
-                                    <Image
-                                      style={{
-                                        height: 40,
-                                        width: 30,
-                                        borderRadius: 5,
-                                      }}
-                                      source={{ uri: `${item.uploadedUrl}` }}
-                                    />
-                                  )}
+                                  <PrescriptionColored style={{ height: 35 }}/>
                                 </View>
-                                <Text style={styles.leftText}>{item?.fileName}</Text>
+                                <View style={{flexDirection:'column'}}>
+                                <Text style={styles.healthText}>{item?.doctorName}</Text>
+                                <Text style={styles.healthDetailText}>{item?.date} • Prescription for {item?.forPatient}</Text>
+                                </View>
                               </View>
                               <View style={{ justifyContent: 'center' }}>
                                 <RemoveIcon />
@@ -339,8 +356,13 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                   ) : null}
                 </>
                 <TouchableOpacity style={styles.addPresView} onPress={()=>{
+                  props.navigation.navigate('TESTS', {
+                    phyPrescriptionUploaded: PhysicalPrescriptionsProps,
+                    ePresscriptionUploaded: EPrescriptionsProps,
+                    movedFrom: AppRoutes.SubmittedPrescription
+                  });
                 }}>
-                  <Text style={styles.addPresText}>+ADD MORE PRESCRIPTIONS</Text>
+                  <Text style={styles.addPresText}>+ ADD MORE PRESCRIPTIONS</Text>
                 </TouchableOpacity>
               </>
             ) : (
@@ -388,6 +410,14 @@ const styles = StyleSheet.create({
     color: theme.colors.FILTER_CARD_LABEL,
     ...theme.fonts.IBMPlexSansMedium(14),
     alignSelf: 'center',
+  },
+  healthText: {
+    color: theme.colors.FILTER_CARD_LABEL,
+    ...theme.fonts.IBMPlexSansSemiBold(14),
+  },
+  healthDetailText: {
+    color: theme.colors.FILTER_CARD_LABEL,
+    ...theme.fonts.IBMPlexSansRegular(12),
   },
   addPresView: {
     width: '100%',
