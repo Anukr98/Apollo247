@@ -355,8 +355,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       eventAttributes['Display ID'] = displayId;
       eventAttributes['User_Type'] = getUserType(allCurrentPatients);
       let cleverTapEventAttributes = cleverTapConsultBookedEventAttributes;
-      cleverTapEventAttributes['displayId'] = displayId;
-      cleverTapEventAttributes['userType'] = getUserType(allCurrentPatients);
+      cleverTapEventAttributes['Display ID'] = displayId;
+      cleverTapEventAttributes['User_type'] = getUserType(allCurrentPatients);
       postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, appsflyerEventAttributes);
       postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
       firePurchaseEvent(amountBreakup);

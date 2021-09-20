@@ -668,6 +668,9 @@ export interface SpecialityClickedEvent extends PatientInfo {
   'Speciality Name': string;
   'Speciality ID': string;
   User_Type: string;
+  'Circle Member': boolean;
+  'Circle Plan type': string;
+  Source: string;
 }
 
 export interface ReorderMedicines extends PatientInfo {

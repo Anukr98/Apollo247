@@ -234,6 +234,8 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
           loop={false}
           style={{ marginBottom: 80 }}
         />
+        {/* This icon is used optional. Commented for future use */}
+        {/* <GreenCircleTick width={55} height={55} /> */}
         <Text style={styles.successText}>Prescription Successfully Uploaded</Text>
       </View>
     );

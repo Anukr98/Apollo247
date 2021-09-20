@@ -63,10 +63,11 @@ export interface CircleTypeCard5Props extends NavigationScreenProps {
   expiry?: string;
   expired?: string;
   credits?: string;
+  renew?: boolean;
 }
 
 export const CircleTypeCard5: React.FC<CircleTypeCard5Props> = (props) => {
-  const { onButtonPress, savings, expired, credits } = props;
+  const { onButtonPress, savings, expired, credits, renew } = props;
   return (
     <View>
       <View style={styles.planContainer}>
@@ -103,7 +104,7 @@ export const CircleTypeCard5: React.FC<CircleTypeCard5Props> = (props) => {
           <Text style={{ ...theme.viewStyles.text('M', 20, '#666666', 1, 25) }}>{expired}</Text>
         </View>
 
-        <View
+        {renew ? <View
           style={[
             styles.subPlanFour,
             {
@@ -117,7 +118,7 @@ export const CircleTypeCard5: React.FC<CircleTypeCard5Props> = (props) => {
             onPress={onButtonPress}
             disabled={false}
           />
-        </View>
+        </View> : null}
       </View>
     </View>
   );

@@ -406,6 +406,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [currentProductIdInCart, setCurrentProductIdInCart] = useState<string>(null);
   const [currentProductQuantityInCart, setCurrentProductQuantityInCart] = useState<number>(0);
   const [itemPackForm, setItemPackForm] = useState<string>('');
+  const [maxOrderQty, setMaxOrderQty] = useState<number>(0);
   const [suggestedQuantity, setSuggestedQuantity] = useState<string>(null);
 
   useEffect(() => {
@@ -2099,6 +2100,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           item.suggested_qty
             ? setSuggestedQuantity(item.suggested_qty)
             : setSuggestedQuantity(null);
+          item.MaxOrderQty
+            ? setMaxOrderQty(item.MaxOrderQty)
+            : item.suggested_qty
+            ? setMaxOrderQty(+item.suggested_qty)
+            : setMaxOrderQty(0);
           setCurrentProductQuantityInCart(1);
         }}
         onPressNotify={() => {
@@ -2533,6 +2539,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             suggested_qty={suggestedQuantity}
             sku={currentProductIdInCart}
             packForm={itemPackForm}
+            maxOrderQty={maxOrderQty}
             setShownNudgeOnce={setShownNudgeOnce}
             showSuggestedQuantityNudge={showSuggestedQuantityNudge}
             setShowSuggestedQuantityNudge={setShowSuggestedQuantityNudge}

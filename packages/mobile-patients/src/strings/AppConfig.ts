@@ -21,7 +21,7 @@ export enum AppEnv {
   QA6 = 'QA6',
 }
 
-const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA5 as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -267,6 +267,7 @@ const appStaticVariables = {
     '78c2dc50-dc16-44c6-bd2d-d4b14c97b521',
     '10788a46-512c-41c0-8c59-e31ff7eebbe4',
   ],
+  enableCredWebView: false,
 };
 
 const DEV_top_specialties = [
@@ -456,10 +457,10 @@ export const ReturnOrderSubReason = [
 const PharmaApiConfig = {
   dev: {
     TRACK_EVENT: [`${tagalysBaseUrl}/analytics/events/track`],
-    MED_SEARCH: [`${apolloUatBaseUrl}/popcsrchprd_api.php`, pharmaToken201],
+    MED_SEARCH: [`${apolloProdBaseUrl}/popcsrchprd_api.php`, pharmaToken201],
     GET_SKU: [`${apolloUatBaseUrl}/popcsrchsku_api.php`, pharmaToken201],
     MED_DETAIL: [apolloUatBaseUrl, pharmaToken201],
-    MED_SEARCH_SUGGESTION: [`${apolloUatBaseUrl}/popcsrchss_api.php`, pharmaToken201],
+    MED_SEARCH_SUGGESTION: [`${apolloProdBaseUrl}/popcsrchss_api.php`, pharmaToken201],
     STORES_LIST: [apolloUatBaseUrl, pharmaToken201],
     GET_STORE_INVENTORY: [
       `https://online.apollopharmacy.org/TAT/Apollo/GetStoreInventory`,

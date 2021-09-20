@@ -1059,7 +1059,15 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
 
           <Spearator style={styles.separator} />
 
-          {selectedCity != '' && vaccineSiteList.length == 0 && hospitalSitesLoading == false ? (
+          {(selectedDose == string.vaccineBooking.title_dose_1 &&
+            selectedCity != '' &&
+            vaccineSiteList.length == 0 &&
+            hospitalSitesLoading == false) ||
+          (selectedDose == string.vaccineBooking.title_dose_2 &&
+            selectedVaccineType != '' &&
+            selectedCity != '' &&
+            vaccineSiteList.length == 0 &&
+            hospitalSitesLoading == false) ? (
             <Text style={styles.errorMessageSiteDate}>
               {string.vaccineBooking.no_vaccination_sites_available}{' '}
             </Text>
