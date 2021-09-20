@@ -5574,7 +5574,6 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql`
           lastName
         }
         attributesObj {
-          reportTATHours
           reportTATMessage
           reportGenerationTime
           expectedReportGenerationTime
@@ -5635,7 +5634,6 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
           }
         }
         attributesObj {
-          reportTATHours
           reportTATMessage
           reportGenerationTime
           expectedReportGenerationTime
