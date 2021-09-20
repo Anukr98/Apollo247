@@ -1,6 +1,6 @@
 import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { LabTestIcon, ShareBlueIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { BarChar, LabTestIcon, ShareBlueIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -17,11 +17,13 @@ import {
   TouchableOpacity,
   BackHandler,
   View,
+  Alert,
 } from 'react-native';
 import {
   GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID,
   GET_INDIVIDUAL_TEST_RESULT_PDF,
   GET_LAB_RESULT_PDF,
+  GET_VISUALIZATION_DATA,
   PHR_COVERT_TO_ZIP,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -53,7 +55,7 @@ import {
   convertToZipVariables,
 } from '@aph/mobile-patients/src/graphql/types/convertToZip';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import _, { min } from 'lodash';
+import _ from 'lodash';
 import {
   getPatientPrismMedicalRecordsApi,
   getPatientPrismSingleMedicalRecordApi,
@@ -67,16 +69,22 @@ import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions
 import { ResultTestReportsPopUp } from '@aph/mobile-patients/src/components/HealthRecords/Components/ResultTestReportsPopUp';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { RenderPdf } from '@aph/mobile-patients/src/components/ui/RenderPdf';
+import { CombinedBarChart } from '@aph/mobile-patients/src/components/HealthRecords/Components/CombinedBarChar';
 import {
   getIndividualTestResultPdf,
   getIndividualTestResultPdfVariables,
 } from '@aph/mobile-patients/src/graphql/types/getIndividualTestResultPdf';
+import {
+  getVisualizationData,
+  getVisualizationDataVariables,
+} from '@aph/mobile-patients/src/graphql/types/getVisualizationData';
 
 const styles = StyleSheet.create({
   labelStyle: {
     color: theme.colors.TURQUOISE_LIGHT_BLUE,
     lineHeight: 21,
     ...theme.fonts.IBMPlexSansMedium(14),
+    width: '80%',
   },
   readMoreText: {
     textAlign: 'right',
@@ -100,6 +108,8 @@ const styles = StyleSheet.create({
   },
   labelViewStyle: {
     borderBottomWidth: 0,
+    justifyContent: 'space-between',
+    flexDirection: 'row',
     borderBottomColor: theme.colors.SEPARATOR_LINE,
     marginLeft: 18,
     width: '95%',
@@ -215,7 +225,7 @@ const styles = StyleSheet.create({
     paddingBottom: 29,
   },
   recordNameTextStyle: {
-    ...viewStyles.text('SB', 14, '#000000', 1, 21),
+    ...viewStyles.text('SB', 14, '#000000', 1, 30),
     marginRight: 10,
     width: '95%',
   },
@@ -252,16 +262,20 @@ const styles = StyleSheet.create({
 export interface TestReportViewScreenProps extends NavigationScreenProps {}
 
 export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props) => {
+  const testReportsData = props.navigation?.getParam('testReport') || [];
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
   const [showAdditionalNotes, setShowAdditionalNotes] = useState<boolean>(false);
   const [showReadMore, setShowReadMore] = useState<boolean>(false);
   const [apiError, setApiError] = useState(false);
   const [showReadMoreData, setShowReadMoreData] = useState('');
+  const [showPopup, setShowPopup] = useState<boolean>(false);
+  const [resonseData, showResponseData] = useState<[]>([]);
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [showPDF, setShowPDF] = useState<boolean>(false);
   const [pdfFileUrl, setPdfFileUrl] = useState<string>('');
   const [fileNamePDF, setFileNamePDF] = useState<string>('');
-  const [shareFile, setShareFile] = useState<boolean>(false);
+  const [sendParamName, setSendParamName] = useState<string>('');
+  const [sendTestReportName, setSendTestReportName] = useState<string>('');
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
 
@@ -503,6 +517,13 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
             currentPatient && handleGraphQlError(e, 'Report is yet not available');
             CommonBugFender('HealthRecordDetails_downloadPDFTestReport', e);
           });
+      } else if (!!data?.healthCheckDate) {
+        downloadDocument(data.fileUrl);
+      } else if (
+        (data?.labTestSource == 'self' || data?.labTestSource == '247self') &&
+        data?.labTestResults?.length === 0
+      ) {
+        imagesArray?.length === 1 ? downloadDocument() : callConvertToZipApi();
       } else {
         client
           .query<getLabResultpdf, getLabResultpdfVariables>({
@@ -611,6 +632,8 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   };
 
   const renderDownloadButton = () => {
+    const buttonTitle = 'TEST REPORT';
+    const btnTitle = 'DOWNLOAD ';
     const _callDownloadDocumentApi = () => {
       if (imagesArray?.length === 1) {
         labResults ? downloadPDFTestReport() : downloadDocument();
@@ -642,6 +665,8 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
             const unit = item?.unit;
             var minNum: number;
             var maxNum: number;
+            let validNumber = new RegExp(/^-?([0-9]*\.?[0-9]+|[0-9]+\.?[0-9]*)$/);
+            var checkNumber = validNumber.test(item?.result);
             var resultColorChanger: boolean;
             var stringColorChanger: boolean;
             var rangeColorChanger: boolean;
@@ -721,13 +746,26 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                           ? 190
                           : !!item?.parameterName && item?.parameterName?.length > 60
                           ? 150
+                          : !!item?.result && numberOfLineBreaks <= 2 && item?.result?.length < 100
+                          ? 190
                           : 150,
                     },
                   ]}
                 >
                   <View style={styles.labelViewStyle}>
                     <Text style={styles.labelStyle}>{item?.parameterName}</Text>
+                    {data.labTestSource === 'Hospital' && !!checkNumber ? (
+                      <TouchableOpacity
+                        activeOpacity={1}
+                        onPress={() => {
+                          handleOnClickForGraphPopUp(item.parameterName, data?.labTestName);
+                        }}
+                      >
+                        <BarChar size="sm" />
+                      </TouchableOpacity>
+                    ) : null}
                   </View>
+
                   <View
                     style={{
                       flexDirection: columnDecider ? 'column' : 'row',
@@ -829,6 +867,32 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       );
     };
 
+    const handleOnClickForGraphPopUp = (paramName: any, labTestName: any) => {
+      setLoading && setLoading(true);
+      client
+        .query<getVisualizationData, getVisualizationDataVariables>({
+          query: GET_VISUALIZATION_DATA,
+          variables: {
+            uhid: currentPatient?.uhid,
+            serviceName: labTestName,
+            parameterName: paramName,
+          },
+        })
+        .then(({ data }: any) => {
+          if (data?.getVisualizationData?.response?.length > 0) {
+            showResponseData(data.getVisualizationData.response);
+            setSendParamName(paramName);
+            setSendTestReportName(labTestName);
+          }
+          setShowPopup(true);
+        })
+        .catch((e: any) => {
+          setLoading?.(false);
+          currentPatient && handleGraphQlError(e, 'Report is yet not available');
+          CommonBugFender('HealthRecordDetails_downloadPDFTestReport', e);
+        });
+    };
+
     // Handling stringified Test Results from the hospital data
     // To avoid mix up between numeric and string values
     const renderDataFromTestReports = (range: string, unit: string, columnDecider: boolean) => {
@@ -896,49 +960,42 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
     return (
       <View>
         <ScrollView>
-          {data?.labTestSource === '247self'
-            ? imagesArray?.map((item, index) => {
-                const file_name = item?.fileName || '';
-                const file_Url = item?.file_Url || '';
-                return file_name && file_name.toLowerCase().endsWith('.pdf') ? (
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    style={styles.imageViewStyle}
-                    onPress={() => {
-                      setShowPDF(true);
-                      setPdfFileUrl(file_Url);
-                      setFileNamePDF(file_name);
-                    }}
-                  >
-                    <Pdf
-                      key={file_Url}
-                      source={{ uri: file_Url }}
-                      style={styles.pdfStyle}
-                      singlePage
-                    />
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    onPress={() => {
-                      props.navigation.navigate(AppRoutes.ImageSliderScreen, {
-                        images: [file_Url],
-                        heading: file_name || 'Image',
-                      });
-                    }}
-                    style={styles.imageViewStyle}
-                  >
-                    <Image
-                      placeholderStyle={styles.imagePlaceHolderStyle}
-                      PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
-                      source={{ uri: file_Url }}
-                      style={styles.imageStyle}
-                      resizeMode="contain"
-                    />
-                  </TouchableOpacity>
-                );
-              })
-            : null}
+          {imagesArray?.map((item, index) => {
+            const file_name = item?.fileName || '';
+            const file_Url = item?.file_Url || '';
+            return file_name && file_name.toLowerCase().endsWith('.pdf') ? (
+              <TouchableOpacity
+                activeOpacity={1}
+                style={styles.imageViewStyle}
+                onPress={() => {
+                  setShowPDF(true);
+                  setPdfFileUrl(file_Url);
+                  setFileNamePDF(file_name);
+                }}
+              >
+                <Pdf key={file_Url} source={{ uri: file_Url }} style={styles.pdfStyle} singlePage />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={() => {
+                  props.navigation.navigate(AppRoutes.ImageSliderScreen, {
+                    images: [file_Url],
+                    heading: file_name || 'Image',
+                  });
+                }}
+                style={styles.imageViewStyle}
+              >
+                <Image
+                  placeholderStyle={styles.imagePlaceHolderStyle}
+                  PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
+                  source={{ uri: file_Url }}
+                  style={styles.imageStyle}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
       </View>
     );
@@ -1089,6 +1146,73 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
     }
   };
 
+  const onPressAddParamterDetails = () => {
+    let arrDate: [] = [];
+    let arrRange: [] = [];
+    let arrResult: [] = [];
+    let modifiedResult: [] = [];
+    let validNumber = new RegExp(/^[0-9]*([.,][0-9]+)?$/);
+    if (resonseData?.length > 0) {
+      resonseData?.map((items: any) => {
+        let checkValidNumber = validNumber.test(items?.result);
+        if (!!checkValidNumber) {
+          arrDate?.push(items.resultDate);
+          arrRange?.push(items.range);
+          arrResult?.push(items.result);
+        }
+        setLoading && setLoading(false);
+      });
+    } else {
+      let checkValidNumber = validNumber.test(resonseData?.result);
+      if (!!checkValidNumber) {
+        arrDate?.push(resonseData.resultDate);
+        arrRange?.push(resonseData.range);
+        arrResult?.push(resonseData.result);
+      }
+      setLoading && setLoading(false);
+    }
+    arrResult?.map((itm) => {
+      modifiedResult.push({ y: Number(itm) });
+    });
+    var regex = /[a-zA-Z!$%^&*()_+|~=`{}[:;<>?,@#\]]/g;
+    var rangeDecider;
+    var minNumber;
+    var maxNumber;
+    var resultStr = regex.test(arrRange[0]);
+    if (!resultStr) {
+      rangeDecider = arrRange[0].split('-');
+      minNumber = Number(rangeDecider[0]);
+      maxNumber = Number(rangeDecider[1]);
+    }
+    const lineData = arrResult?.map((i) => Number(i));
+    const dateForRanges = arrDate?.map((i) => Number(i));
+    return arrResult?.length > 0 ? (
+      <CombinedBarChart
+        title={sendParamName}
+        onClickClose={() => setShowPopup(false)}
+        isVisible={true}
+        date={data?.date || data?.startDateTime || data?.billDateTime}
+        minLine={!!minNumber ? minNumber : 0}
+        maxLine={!!maxNumber ? maxNumber : 5}
+        resultsData={modifiedResult}
+        lineData={lineData}
+        rangeDate={dateForRanges}
+        testReport={sendTestReportName}
+        allTestReports={testReportsData}
+        onSendTestReport={(selectedItem) => callBackTestReports(selectedItem)}
+        siteName={data?.siteDisplayName}
+        serviceName={sendTestReportName}
+      />
+    ) : (
+      Alert.alert('OOPS!!', 'Result doesnt have a valid value')
+    );
+  };
+
+  const callBackTestReports = (selectedItem: any) => {
+    setShowPopup(false);
+    selectedItem?.labTestResults?.length > 0 ? setData(selectedItem) : null;
+  };
+
   const renderReadMore = (resultString: string) => {
     setShowReadMoreData(resultString);
     setShowReadMore(true);
@@ -1127,6 +1251,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
             {renderData()}
             {onPressReadMore()}
           </ScrollView>
+          {showPopup && onPressAddParamterDetails()}
         </SafeAreaView>
       </View>
     );

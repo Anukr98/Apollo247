@@ -669,6 +669,9 @@ export interface SpecialityClickedEvent extends PatientInfo {
   'Speciality Name': string;
   'Speciality ID': string;
   User_Type: string;
+  'Circle Member': boolean;
+  'Circle Plan type': string;
+  Source: string;
 }
 
 export interface ReorderMedicines extends PatientInfo {
@@ -742,6 +745,12 @@ export interface consultCallEndData {
   'Doctor Type': string;
   'Mode of Call': 'Audio' | 'Video';
   Platform: 'App';
+  'Doctor ID': string;
+  'Doctor Number': string;
+  'Doctor Facility ID': string;
+  'Doctor Facility': string;
+  'Session ID': string;
+  'Call ID': string;
 }
 
 interface consultLocation {
@@ -1389,6 +1398,7 @@ export interface WebEngageEvents {
     'Phlebo Name': string;
     'Order id': string | number;
     'Phlebo id': string | number;
+    Comment?: string 
   };
   [WebEngageEventName.DIAGNOSTIC_PHLEBO_CALLING_CLICKED]: {
     UHID: string;
@@ -2182,6 +2192,16 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    'Doctor ID': string;
+    'Doctor Number': string;
+    'Doctor Facility ID': string;
+    'Doctor Facility': string;
+    'Appointment ID': string;
+    'Appointment Display ID': string;
+    'Patient Number': string;
+    'Session ID': string;
+    'Call ID': string;
+    'Did doctor Join': string;
   };
   [WebEngageEventName.CALL_ENDED]: {
     'Doctor Name': string;

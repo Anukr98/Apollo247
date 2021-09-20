@@ -158,35 +158,34 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
     const eventAttributes:
       | WebEngageEvents[WebEngageEventName.CONSULTATION_BOOKED]
       | CleverTapEvents[CleverTapEventName.CONSULTATION_BOOKED] = {
-      name: g(doctor, 'fullName'),
       specialisation: g(doctor, 'specialty', 'name'),
-      category: g(doctor, 'doctorType'), // send doctorType
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Doctor category': g(doctor, 'doctorType'), // send doctorType
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(
+      'Patient age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
-      'Patient Gender': g(currentPatient, 'gender'),
+      'Patient gender': g(currentPatient, 'gender'),
       'Customer ID': g(currentPatient, 'id'),
-      consultId: id,
+      'Consult ID': id,
       'Speciality ID': g(doctor, 'specialty', 'id'),
-      consultDateTime: date,
-      consultMode:
+      'Appointment datetime': date,
+      'Consult Mode':
         tabs[0].title === selectedTab || selectedTab === string.consultModeTab.VIDEO_CONSULT
           ? 'Online'
           : 'Physical',
-      'Hospital Name':
+      'Hospital name':
         doctorClinics.length > 0 && doctor!.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics[0].facility.name}`
           : '',
-      'Hospital City':
+      'Doctor city':
         doctorClinics.length > 0 && doctor!.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics[0].facility.city}`
           : '',
       'Doctor ID': g(doctor, 'id')!,
-      'Doctor Name': g(doctor, 'fullName')!,
-      'Net Amount': price,
+      'Doctor name': g(doctor, 'fullName')!,
+      'Net amount': price,
       af_revenue: price,
       af_currency: 'INR',
       'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
@@ -205,42 +204,41 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
     });
 
     const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULTATION_BOOKED] = {
-      name: g(doctor, 'fullName'),
       specialisation: g(doctor, 'specialty', 'name'),
-      category: g(doctor, 'doctorType'), // send doctorType
-      patientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Doctor category': g(doctor, 'doctorType'), // send doctorType
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
-      relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(
+      Relation: g(currentPatient, 'relation'),
+      'Patient age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
-      patientGender: g(currentPatient, 'gender'),
+      'Patient gender': g(currentPatient, 'gender'),
       'Customer ID': g(currentPatient, 'id'),
-      consultId: id,
+      'Consult ID': id,
       'Speciality ID': g(doctor, 'specialty', 'id'),
-      consultDateTime: date,
-      consultMode:
+      'Appointment datetime': date,
+      'Consult mode':
         tabs[0].title === selectedTab || selectedTab === string.consultModeTab.VIDEO_CONSULT
           ? 'ONLINE'
           : 'PHYSICAL',
-      hospitalName:
+      'Hospital name':
         doctorClinics.length > 0 && doctor!.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics[0].facility.name}`
           : '',
-      'Hospital City':
+      'Doctor city':
         doctorClinics.length > 0 && doctor!.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics[0].facility.city}`
           : '',
       'Doctor ID': g(doctor, 'id')!,
-      doctorName: g(doctor, 'fullName')!,
-      'Net Amount': price,
+      'Doctor name': g(doctor, 'fullName')!,
+      'Net amount': price,
       af_revenue: price,
       af_currency: 'INR',
       'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
-      circleSavings: circleDiscountedPrice,
-      userType: getUserType(allCurrentPatients),
-      patientNumber: g(currentPatient, 'mobileNumber'),
-      doctorNumber: g(doctor, 'mobileNumber')! || undefined,
+      'Circle savings': circleDiscountedPrice,
+      User_type: getUserType(allCurrentPatients),
+      'Patient number': g(currentPatient, 'mobileNumber'),
+      'Doctor number': g(doctor, 'mobileNumber')! || undefined,
     };
     return eventAttributes;
   };

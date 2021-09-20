@@ -116,6 +116,25 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   PhleboLongitude: number | null;
 }
 
+export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderPhlebotomists_diagnosticPhlebotomists {
+  __typename: "DiagnosticPhlebotomists";
+  id: string;
+  name: string;
+  mobile: string | null;
+  vaccinationStatus: string | null;
+}
+
+export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderPhlebotomists {
+  __typename: "DiagnosticOrderPhlebotomists";
+  phleboRating: number | null;
+  phleboOTP: string | null;
+  checkinDateTime: any | null;
+  phleboTrackLink: string | null;
+  diagnosticPhlebotomists: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderPhlebotomists_diagnosticPhlebotomists;
+  isPhleboETAElapsed: string | null;
+  phleboETAElapsedMessage: string | null;
+}
+
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderReschedule {
   __typename: "DiagnosticOrderReschedule";
   rescheduleDate: any | null;
@@ -161,6 +180,7 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   diagnosticOrdersStatus: (getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus | null)[] | null;
   diagnosticOrderLineItems: (getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems | null)[] | null;
   phleboDetailsObj: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_phleboDetailsObj | null;
+  diagnosticOrderPhlebotomists: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderPhlebotomists | null;
   diagnosticOrderReschedule: (getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderReschedule | null)[] | null;
   diagnosticOrderCancellation: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderCancellation | null;
 }

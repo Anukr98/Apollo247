@@ -1,4 +1,6 @@
 rootProject.name = 'ApolloPatient'
+include ':react-native-receive-sharing-intent'
+project(':react-native-receive-sharing-intent').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-receive-sharing-intent/android')
 include ':react-native-user-agent'
 project(':react-native-user-agent').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-user-agent/android')
 include ':react-native-in-app-review'
@@ -69,6 +71,8 @@ include ':react-native-set-soft-input-mode'
 project(':react-native-set-soft-input-mode').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-set-soft-input-mode/android')
 include ':react-native-maps'
 project(':react-native-maps').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-maps/lib/android')
+include ':react-native-charts-wrapper'
+project(':react-native-charts-wrapper').projectDir = new File(rootProject.projectDir,'../node_modules/react-native-charts-wrapper/android')
 include ':clevertap-react-native'
 project(':clevertap-react-native').projectDir = new File(settingsDir, '../node_modules/clevertap-react-native/android')
 apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesSettingsGradle(settings)

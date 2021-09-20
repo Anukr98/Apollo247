@@ -13,7 +13,6 @@ import android.os.Bundle;
 import android.os.Vibrator;
 import android.provider.Settings;
 import androidx.annotation.RequiresApi;
-
 import com.clevertap.android.sdk.CleverTapAPI;
 import com.facebook.react.ReactActivity;
 
@@ -45,10 +44,9 @@ public class MainActivity extends ReactActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         //added for vitals crash when goes in background, for lollipop devices
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            super.onCreate(savedInstanceState); 
-        }
-        else{
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            super.onCreate(savedInstanceState);
+        } else {
             //lollipop devices
             super.onCreate(null);
         }
@@ -60,9 +58,9 @@ public class MainActivity extends ReactActivity {
             String referrerString = bundle.get(Intent.EXTRA_REFERRER) != null ? bundle.get(Intent.EXTRA_REFERRER).toString() : "";
             setReferrer(referrerString);
         }
-        
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            CleverTapAPI.createNotificationChannel(getApplicationContext(),"Marketing","Marketing","",NotificationManager.IMPORTANCE_HIGH,true);
+            CleverTapAPI.createNotificationChannel(getApplicationContext(), "Marketing", "Marketing", "", NotificationManager.IMPORTANCE_HIGH, true);
         }
 
         try {
@@ -80,12 +78,6 @@ public class MainActivity extends ReactActivity {
             e.printStackTrace();
         }
         //end
-    }
-
-    @Override
-    public void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        setIntent(intent);
     }
 
     @Override
@@ -119,6 +111,12 @@ public class MainActivity extends ReactActivity {
         intent.putExtra(NOTIFICATION_ID, notificationId);
         PendingIntent acceptIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         return acceptIntent;
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
     }
 
 }

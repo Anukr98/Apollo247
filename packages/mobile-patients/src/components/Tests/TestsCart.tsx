@@ -460,7 +460,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         client,
         !!diagnosticSlot && !isEmptyObject(diagnosticSlot) ? dateTimeInUTC : null,
         Number(addressCityId),
-        Number(pincode),
+        !!pincode ? Number(pincode) : 0,
         listOfIds!
       );
       if (result?.data?.getConfigurableReportTAT) {
@@ -713,7 +713,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       areaName,
       areaId,
       hcCharges,
-      slotTime
+      slotTime,
+      isDiagnosticCircleSubscription
     );
   }
 
@@ -1002,7 +1003,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               newAddressAddedCartPage != '' ? 'New' : 'Existing',
               'Yes',
               pinCodeFromAddress,
-              'Cart page'
+              'Cart page',
+              currentPatient,
+              isDiagnosticCircleSubscription
             );
             newAddressAddedCartPage != '' && setNewAddressAddedCartPage?.('');
           } else {
@@ -1025,7 +1028,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               newAddressAddedCartPage != '' ? 'New' : 'Existing',
               'No',
               pinCodeFromAddress,
-              'Cart page'
+              'Cart page',
+              currentPatient,
+              isDiagnosticCircleSubscription
             );
             newAddressAddedCartPage != '' && setNewAddressAddedCartPage?.('');
           }
@@ -1520,7 +1525,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               isComingFrom={AppRoutes.TestsCart}
               isCareSubscribed={isDiagnosticCircleSubscription}
               containerStyle={medicineCardContainerStyle}
-              showCartInclusions={showInclusions}
+              showCartInclusions={false} //showInclusions
               key={test?.id}
               testId={test?.id}
               reportGenItem={reportGenItem}

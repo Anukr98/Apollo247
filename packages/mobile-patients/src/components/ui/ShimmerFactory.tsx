@@ -249,6 +249,13 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
 
+  postShareAppointmentBlock: {
+    height: 100,
+    borderRadius: 10,
+    width: '100%',
+    marginVertical: 10,
+  },
+
   vaccinesHospitalLoader: {
     height: 280,
     borderRadius: 10,
@@ -746,9 +753,9 @@ export const CovidButtonShimmer = () => (
   />
 );
 
-export const couponViewShimmer = () => {
+export const renderCouponViewShimmer = () => {
   return (
-    <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
+    <View style={{ marginVertical: 10 }}>
       <ShimmerPlaceHolder
         shimmerColors={shimmerColors}
         LinearGradient={LinearGradient}
@@ -823,6 +830,45 @@ export const renderDiagnosticWidgetHeadingShimmer = () => {
         LinearGradient={LinearGradient}
         shimmerColors={shimmerColors}
         shimmerStyle={styles.diagnosticCard2}
+      />
+    </View>
+  );
+};
+
+export const renderPostShareAppointmentLoadingShimmer = () => {
+  return (
+    <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.postShareAppointmentBlock}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.postShareAppointmentBlock}
+      />
+
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.postShareAppointmentBlock}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.postShareAppointmentBlock}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.postShareAppointmentBlock}
+      />
+
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.postShareAppointmentBlock}
       />
     </View>
   );

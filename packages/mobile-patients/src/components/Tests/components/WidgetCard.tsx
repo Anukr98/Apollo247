@@ -1,7 +1,6 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
-import { nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { WidgetLiverIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
@@ -29,7 +28,7 @@ export const WidgetCard: React.FC<WidgetCardProps> = (props) => {
           <WidgetLiverIcon style={styles.image} resizeMode={'contain'} />
         )}
       </View>
-      <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>
+      <Text numberOfLines={2} ellipsizeMode="tail" style={styles.textStyle}>
         {data?.itemTitle}
       </Text>
     </TouchableOpacity>
@@ -56,14 +55,6 @@ const styles = StyleSheet.create({
     padding: 5,
     margin: 5,
   },
-  circleImg: {
-    width: 65,
-    height: 65,
-    backgroundColor: '#E8E8E8',
-    margin: 5,
-    // opacity: 0.2,
-    borderRadius: 50,
-  },
   circleView: {
     width: 80,
     height: 80,
@@ -73,8 +64,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
   },
   image: {
-    width: 50,
-    height: 50,
+    width: 48,
+    height: 48,
     backgroundColor: '#f9f9f9',
+    resizeMode: 'contain',
   },
 });

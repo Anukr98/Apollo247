@@ -78,6 +78,8 @@ export interface ProfileListProps {
   screenName?: string;
   editProfileCallback?: (patient: any) => void;
   showProfilePic?: boolean;
+  cleverTapProfileClickEvent?: () => void;
+  cleverTapEventForAddMemberClick?: () => void;
 }
 
 export const ProfileList: React.FC<ProfileListProps> = (props) => {
@@ -292,6 +294,9 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
           props.menuHidden && props.menuHidden();
         }}
         options={usersList[0] === undefined ? pickerData : usersList}
+        profileClickCleverTapEvent={() =>
+          props.cleverTapProfileClickEvent && props.cleverTapProfileClickEvent()
+        }
         defaultOptions={[]}
         selectedText={profile && profile!.id}
         menuContainerStyle={[
@@ -314,6 +319,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
         lastContainerStyle={showProfilePic ? { borderBottomWidth: 0 } : styles.lastContainerStyle}
         onPress={(selectedUser) => {
           if (selectedUser.key === addString) {
+            props.cleverTapEventForAddMemberClick && props.cleverTapEventForAddMemberClick();
             const pfl = profileArray!.find((i) => selectedUser.key === i.id);
             props.onProfileChange && props.onProfileChange(pfl!);
             props.navigation.navigate(AppRoutes.EditProfile, {

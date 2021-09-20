@@ -33,6 +33,7 @@ import {
   postWEGReferralCodeEvent,
   onCleverTapUserLogin,
   postCleverTapEvent,
+  deferredDeepLinkRedirectionData,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   ProductPageViewedSource,
@@ -558,18 +559,20 @@ const SignUp: React.FC<SignUpProps> = (props) => {
 
   const handleOpenURLs = async () => {
     try {
-      const event: any = await AsyncStorage.getItem('deeplink');
-      const data = handleOpenURL(event);
-      const { routeName, id, isCall, timeout, mediaSource } = data;
-      pushTheView(
-        props.navigation,
-        routeName,
-        id ? id : undefined,
-        isCall,
-        undefined,
-        undefined,
-        mediaSource
-      );
+      deferredDeepLinkRedirectionData(props.navigation, async () => {
+        const event: any = await AsyncStorage.getItem('deeplink');
+        const data = handleOpenURL(event);
+        const { routeName, id, isCall, timeout, mediaSource } = data;
+        pushTheView(
+          props.navigation,
+          routeName,
+          id ? id : undefined,
+          isCall,
+          undefined,
+          undefined,
+          mediaSource
+        );
+      });
     } catch (error) {}
   };
 

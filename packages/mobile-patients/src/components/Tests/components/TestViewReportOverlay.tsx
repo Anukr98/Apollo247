@@ -94,28 +94,24 @@ export const TestViewReportOverlay: React.FC<TestViewReportOverlayProps> = (prop
             {viewReportItemsArray.map((item) => (
               <TouchableOpacity
                 onPress={async () => {
-                    if (
-                      item?.title == string.Report.view ||
-                      item?.title == string.Report.download
-                    ) {
-                      props.onPressViewReport();
-                    } else if (item?.title == string.Report.share) {
-                      props.downloadDocument(
-                        removeWhiteSpaces(props?.order?.labReportURL),
-                        'application/pdf'
-                      );
-                    } else {
-                      copyToClipboard(
-                        props.order && props.order?.labReportURL
-                          ? removeWhiteSpaces(props.order?.labReportURL)
-                          : ''
-                      );
-                    }
-                    setTimeout(() => {
-                      props.onClose();
-                    }, 500);
+                  if (item?.title == string.Report.view || item?.title == string.Report.download) {
+                    props.onPressViewReport();
+                  } else if (item?.title == string.Report.share) {
+                    props.downloadDocument(
+                      removeWhiteSpaces(props?.order?.labReportURL),
+                      'application/pdf'
+                    );
+                  } else {
+                    copyToClipboard(
+                      props.order && props.order?.labReportURL
+                        ? removeWhiteSpaces(props.order?.labReportURL)
+                        : ''
+                    );
                   }
-                }
+                  setTimeout(() => {
+                    props.onClose();
+                  }, 500);
+                }}
                 style={styles.itemView}
               >
                 {item?.icon}

@@ -7,6 +7,8 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import RNFetchBlob from 'rn-fetch-blob';
+import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import {
   ChatCallIcon,
   ChatSend,
@@ -119,6 +121,7 @@ import {
   getSecretaryDetailsByDoctor,
   getParticipantsLiveStatus,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { stat } from 'react-native-fs';
 import {
   WebEngageEventName,
   WebEngageEvents,
@@ -178,6 +181,7 @@ import {
   postCleverTapEvent,
   getNetStatus,
   postAppointmentCleverTapEvents,
+  fileToBase64,
 } from '../../helpers/helperFunctions';
 import { mimeType } from '../../helpers/mimeType';
 import { FeedbackPopup } from '../FeedbackPopup';
@@ -188,7 +192,7 @@ import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { CustomAlert } from '../ui/CustomAlert';
 import { Snackbar } from 'react-native-paper';
 import BackgroundTimer from 'react-native-background-timer';
-import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
+import { MAX_FILE_SIZE, UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
 import { ChatRoom_NotRecorded_Value } from '@aph/mobile-patients/src/strings/strings.json';
 import {
   LocationData,
@@ -785,6 +789,27 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     right: 0,
   },
+  messageContainer: {
+    backgroundColor: '#0087ba',
+    marginLeft: 38,
+    borderRadius: 10,
+  },
+  messageText: {
+    color: '#ffffff',
+    paddingTop: 8,
+    paddingBottom: 4,
+    paddingHorizontal: 16,
+    ...theme.fonts.IBMPlexSansMedium(15),
+    textAlign: 'left',
+  },
+  messageTimeText: {
+    color: '#ffffff',
+    paddingHorizontal: 16,
+    paddingVertical: 4,
+    textAlign: 'right',
+    ...theme.fonts.IBMPlexSansMedium(10),
+  },
+  transparentView: { backgroundColor: 'transparent', height: 4, width: 20 },
 });
 
 const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/;
@@ -875,7 +900,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
-  const { setEPrescriptions, addMultipleCartItems } = useShoppingCart();
+  const { setEPrescriptions, addMultipleCartItems, circleSubPlanId, circleSubscriptionId } = useShoppingCart();
   const [name, setname] = useState<string>('');
   const [showRescheduleCancel, setShowRescheduleCancel] = useState<boolean>(false);
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
@@ -1018,6 +1043,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const followUpChatGuideLines = '^^#followUpChatGuideLines';
   const externalMeetingLink = '^^#externalMeetingLink';
   const jdAutoAssign = '^^#JdInfoMsg';
+  const delayedConsultReminder = '^^#DelayReminder';
 
   const disconnecting = 'Disconnecting...';
   const callConnected = 'Call Connected';
@@ -1058,12 +1084,84 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   type messageType = 'PDF' | 'Text' | 'Image';
 
   useEffect(() => {
+    handleExternalFileShareUpload();
+
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     AsyncStorage.getItem('phoneNumber').then(setPhoneNumber);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
   }, []);
+
+  const handleExternalFileShareUpload = () => {
+    try {
+      const sharedFiles = props.navigation.getParam('sharedFilesList');
+
+      if (sharedFiles && sharedFiles.length > 0) {
+        let uploadFileTaskPromiseArray: any[] = [];
+
+        sharedFiles.map((file: any) => {
+          const taskPromise = new Promise((resolve, reject) => {
+            let conetentUri = file.contentUri;
+            let fileNameAndExtension = file.fileName;
+
+            let obtainedfFileType = fileNameAndExtension.substring(
+              fileNameAndExtension.lastIndexOf('.') + 1
+            );
+
+            if (conetentUri.startsWith('content://')) {
+              const RNFS = require('react-native-fs');
+
+              const destPath = `${RNFS.TemporaryDirectoryPath}/${fileNameAndExtension}`;
+              RNFS.copyFile(conetentUri, destPath)
+                .then((path: any) => {
+                  RNFetchBlob.fs
+                    .stat(destPath)
+                    .then((stats) => {
+                      let fileSize = stats?.size;
+                      if (fileSize > MAX_FILE_SIZE) {
+                        Alert.alert(
+                          strings.common.uhOh,
+                          `Invalid File Size. File size must be less than 25 MB.`
+                        );
+                        reject(undefined);
+                        return;
+                      }
+
+                      fileToBase64(destPath).then((fileBase64) => {
+                        const random8DigitNumber = Math.floor(Math.random() * 90000) + 20000000;
+
+                        let uploadFileItem = {
+                          base64: fileBase64,
+                          fileType: obtainedfFileType,
+                          title: obtainedfFileType.toUpperCase() + '_' + random8DigitNumber,
+                        };
+
+                        resolve(uploadFileItem);
+                      });
+                    })
+                    .catch((err) => {
+                      reject(undefined);
+                    });
+                })
+                .catch((err) => {
+                  reject(undefined);
+                });
+            }
+          });
+          uploadFileTaskPromiseArray.push(taskPromise);
+        });
+
+        Promise.all(uploadFileTaskPromiseArray)
+          .then((results) => {
+            uploadDocument(results, 'Gallery');
+          })
+          .catch((err) => {});
+      }
+    } catch (err) {
+      Alert.alert(strings.common.uhOh, `Something went wrong.`);
+    }
+  };
 
   const onCall = useRef<boolean>(false);
 
@@ -1163,6 +1261,34 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         'City'
       ] = location;
     }
+    if (type == WebEngageEventName.PATIENT_ENDED_CONSULT) {
+      const event = eventAttributes as WebEngageEvents[WebEngageEventName.PATIENT_ENDED_CONSULT];
+      event['Doctor ID'] = g(appointmentData, 'doctorInfo', 'id')!;
+      event['Doctor Number'] = g(appointmentData, 'doctorInfo', 'mobileNumber');
+      event['Doctor Facility ID'] = g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'id'
+      );
+      event['Doctor Facility'] = g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'name'
+      );
+      event['Appointment ID'] = g(appointmentData, 'id');
+      event['Appointment Display ID'] = g(appointmentData, 'displayId');
+      event['Patient Number'] = g(appointmentData, 'patientName');
+      event['Session ID'] = sessionId;
+      event['Call ID'] = token;
+      event['Did doctor Join'] = 'string';
+    }
+    postCleverTapEvent(type, eventAttributes);
     postWebEngageEvent(type, eventAttributes);
   };
 
@@ -1362,7 +1488,28 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       'Doctor Type': g(appointmentData, 'doctorInfo', 'doctorType')!,
       'Mode of Call': isAudioCall ? 'Audio' : 'Video',
       Platform: 'App',
+      'Doctor ID': g(appointmentData, 'doctorInfo', 'id'),
+      'Doctor Number': g(appointmentData, 'doctorInfo', 'mobileNumber'),
+      'Doctor Facility ID': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'id'
+      ),
+      'Doctor Facility': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'name'
+      ),
+      'Session ID': sessionId,
+      'Call ID': token,
     };
+    postCleverTapEvent(eventName, eventAttributes);
     postWebEngageEvent(eventName, eventAttributes);
   };
 
@@ -1480,6 +1627,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
     if (fromIncomingCall === true) {
       fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_ANSWERED_CALL);
+    } else {
+      fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_DECLINED_CALL);
     }
     updateNumberOfParticipants();
     fetchDoctorDetails();
@@ -1548,7 +1697,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const checkVitalQuestionsStatus = () => {
-    const isConsultPending =  appointmentData?.status == 'PENDING'; 
+    const isConsultPending = appointmentData?.status == 'PENDING';
     if (appointmentData.isAutomatedQuestionsComplete) {
       requestToJrDoctor();
       if (
@@ -1561,7 +1710,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         showAndUpdateNudgeScreenVisibility();
       }
     } else {
-      const displayQuestion = isConsultPending ? skipAutoQuestions.current ? false : true : false
+      const displayQuestion = isConsultPending ? (skipAutoQuestions.current ? false : true) : false;
       setDisplayChatQuestions(displayQuestion);
     }
   };
@@ -2469,6 +2618,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
   const publisherEventHandlers = {
     streamCreated: (event: string) => {
+      postOpentokEvent('Publisher Stream Created', event);
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_PUBLISHER_STREAM_CREATED,
         JSON.stringify(event)
@@ -2479,6 +2629,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       startCallConnectionUpdateFx();
     },
     streamDestroyed: (event: string) => {
+      postOpentokEvent('Publisher Stream Destroyed', event);
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_PUBLISHER_STREAM_DESTROYED,
         JSON.stringify(event)
@@ -2492,6 +2643,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
     },
     error: (error: string) => {
+      postOpentokError('Publisher Error', error);
       openTokErrorWebEngageEvents(
         WebEngageEventName.PATIENT_PUBLISHER_ERROR,
         JSON.stringify(error)
@@ -2501,6 +2653,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setSnackBar();
     },
     otrnError: (error: string) => {
+      postOpentokError('Publisher OTRN Error', error);
       openTokErrorWebEngageEvents(
         WebEngageEventName.PATIENT_PUBLISHER_OTRNERROR,
         JSON.stringify(error)
@@ -2513,6 +2666,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const subscriberEventHandlers = {
     error: (error: string) => {
+      postOpentokError('Subscriber Error', error);
       setSnackBar();
       openTokErrorWebEngageEvents(
         WebEngageEventName.DOCTOR_SUBSCRIBER_ERROR,
@@ -2520,6 +2674,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       );
     },
     connected: (event: string) => {
+      postOpentokEvent('Subscriber Connected', event);
       openTokWebEngageEvents(WebEngageEventName.DOCTOR_SUBSCRIBER_CONNECTED, JSON.stringify(event));
       setSnackbarState(false);
       playJoinSound();
@@ -2536,6 +2691,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }, 3000);
     },
     disconnected: (event: string) => {
+      postOpentokEvent('Subscriber Disonnected', event);
       callEndWebengageEvent('Network');
       openTokWebEngageEvents(
         WebEngageEventName.DOCTOR_SUBSCRIBER_DISCONNECTED,
@@ -2550,6 +2706,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
     },
     otrnError: (error: string) => {
+      postOpentokError('Subscriber OTRN Error', error);
       openTokErrorWebEngageEvents(
         WebEngageEventName.DOCTOR_SUBSCRIBER_OTRNERROR,
         JSON.stringify(error)
@@ -2557,6 +2714,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setSnackBar();
     },
     videoDisabled: (error: any) => {
+      postOpentokEvent('Subscriber Video Disabled', error);
       openTokWebEngageEvents(
         WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_DISABLED,
         JSON.stringify(error)
@@ -2568,6 +2726,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
     },
     videoEnabled: (error: any) => {
+      postOpentokEvent('Subscriber Video Enabled', error);
       openTokWebEngageEvents(
         WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_ENABLED,
         JSON.stringify(error)
@@ -2578,10 +2737,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
     },
     videoDisableWarning: (error: string) => {
+      postOpentokEvent('Subscriber Video Disable Warning', error);
       callToastStatus.current =
         'Internet connection at the doctor’s end appears to be unstable if the problem persists, the video will be automatically turned off.';
     },
     videoDisableWarningLifted: (error: string) => {
+      postOpentokEvent('Subscriber Video Disable Warning Lifted', error);
       callToastStatus.current = '';
       setDowngradeToAudio(false);
     },
@@ -2589,6 +2750,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const sessionEventHandlers = {
     error: (error: OpentokError) => {
+      postOpentokError('Session Error', error);
       setCallMinimize(false);
       AsyncStorage.setItem('callDisconnected', 'true');
       if (
@@ -2620,6 +2782,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
     },
     connectionCreated: (event: string) => {
+      postOpentokEvent('Session Connection Created', event);
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_SESSION_CONNECTION_CREATED,
         JSON.stringify(event)
@@ -2628,6 +2791,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setSnackbarState(false);
     },
     connectionDestroyed: (event: string) => {
+      postOpentokEvent('Session Connection Destroyed', event);
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_SESSION_CONNECTION_DESTROYED,
         JSON.stringify(event)
@@ -2641,11 +2805,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }, 2000);
     },
     sessionConnected: (event: string) => {
+      postOpentokEvent('Session Connected', event);
       openTokWebEngageEvents(WebEngageEventName.PATIENT_SESSION_CONNECTED, JSON.stringify(event));
       setSnackbarState(false);
       KeepAwake.activate();
     },
     sessionDisconnected: (event: string) => {
+      postOpentokEvent('Session Disconnected', event);
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_SESSION_DISCONNECTED,
         JSON.stringify(event)
@@ -2654,6 +2820,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       eventsAfterConnectionDestroyed();
     },
     sessionReconnected: (event: string) => {
+      postOpentokEvent('Session Reconnected', event);
       openTokWebEngageEvents(WebEngageEventName.PATIENT_SESSION_RECONNECTED, JSON.stringify(event));
       setSnackbarState(false);
       resetCurrentRetryAttempt();
@@ -2666,6 +2833,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       KeepAwake.activate();
     },
     sessionReconnecting: (event: string) => {
+      postOpentokEvent('Session Reconnecting', event);
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_SESSION_RECONNECTING,
         JSON.stringify(event)
@@ -2676,14 +2844,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setSessionReconnectMsg();
       KeepAwake.activate();
     },
-    signal: (event: string) => {},
     streamCreated: (event: string) => {
+      postOpentokEvent('Session Stream Created', event);
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_SESSION_STREAM_CREATED,
         JSON.stringify(event)
       );
     },
     streamDestroyed: (event: string) => {
+      postOpentokEvent('Session Stream Destroyed', event);
       callEndWebengageEvent(
         g(appointmentData, 'doctorInfo', 'doctorType') === 'JUNIOR'
           ? 'Junior Doctor'
@@ -2695,6 +2864,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       );
     },
     streamPropertyChanged: (event: OptntokChangeProp) => {
+      postOpentokEvent('Session Stream Property Changed', event);
       callEndWebengageEvent('Network');
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_SESSION_STREAM_PROPERTY_CHANGED,
@@ -2709,6 +2879,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
     },
     otrnError: (error: string) => {
+      postOpentokError('Session OTRN Error', error);
       openTokErrorWebEngageEvents(
         WebEngageEventName.PATIENT_SESSION_OTRNERROR,
         JSON.stringify(error)
@@ -2721,6 +2892,80 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setCallMinimize(false);
       AsyncStorage.setItem('callDisconnected', 'true');
     },
+  };
+
+  const postOpentokError = (errorName: string, errorData: any) => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.OPENTOK_ERROR_RECEIVED] = {
+      'Doctor ID': g(appointmentData, 'doctorInfo', 'id')!,
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName'),
+      'Doctor Number': g(appointmentData, 'doctorInfo', 'mobileNumber'),
+      'Doctor Type': g(appointmentData, 'doctorInfo', 'doctorType'),
+      'Doctor Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id'),
+      'Doctor Speciality': g(appointmentData, 'doctorInfo', 'specialty', 'name'),
+      'Doctor Facility ID': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'id'
+      ),
+      'Doctor Facility': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'name'
+      ),
+      'Appointment ID': g(appointmentData, 'id'),
+      'Appointment Display ID': g(appointmentData, 'displayId'),
+      'Patient Name': g(appointmentData, 'patientName'),
+      'Patient Number': g(appointmentData, 'patientName'),
+      'Session ID': sessionId,
+      'Call ID': token,
+      'Error Name': errorName,
+      'Error Data': JSON.stringify(errorData),
+      reason: errorData?.reason || '',
+    };
+    postCleverTapEvent(CleverTapEventName.OPENTOK_ERROR_RECEIVED, eventAttributes);
+  };
+
+  const postOpentokEvent = (eventName: string, eventData: any) => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.OPENTOK_EVENT_RECEIVED] = {
+      'Doctor ID': g(appointmentData, 'doctorInfo', 'id')!,
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName'),
+      'Doctor Number': g(appointmentData, 'doctorInfo', 'mobileNumber'),
+      'Doctor Type': g(appointmentData, 'doctorInfo', 'doctorType'),
+      'Doctor Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id'),
+      'Doctor Speciality': g(appointmentData, 'doctorInfo', 'specialty', 'name'),
+      'Doctor Facility ID': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'id'
+      ),
+      'Doctor Facility': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'name'
+      ),
+      'Appointment ID': g(appointmentData, 'id'),
+      'Appointment Display ID': g(appointmentData, 'displayId'),
+      'Patient Name': g(appointmentData, 'patientName'),
+      'Patient Number': g(appointmentData, 'patientName'),
+      'Session ID': sessionId,
+      'Call ID': token,
+      'Event Name': eventName,
+      'Event Data': JSON.stringify(eventData),
+      reason: eventData?.reason || '',
+    };
+    postCleverTapEvent(CleverTapEventName.OPENTOK_EVENT_RECEIVED, eventAttributes);
   };
 
   const resetCurrentRetryAttempt = () => {
@@ -3663,7 +3908,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             message,
             chatFormat: msgType,
             source: 'APP',
-        }},
+          },
+        },
       })
       .then(() => {})
       .catch((error) => {
@@ -4855,6 +5101,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 </>
               ) : null}
             </View>
+          ) : rowData.automatedText === delayedConsultReminder ? (
+            <View style={styles.messageContainer}>
+              {rowData.message ? (
+                <>
+                  <Text style={styles.messageText}>
+                    {openDialerFromString(rowData.message, rowData?.metaData)}
+                  </Text>
+                  <Text style={styles.messageTimeText}>{convertChatTime(rowData)}</Text>
+                  <View style={styles.transparentView} />
+                </>
+              ) : null}
+            </View>
           ) : rowData.message === exotelCall ? (
             <View
               style={{
@@ -5226,6 +5484,45 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           ) : null}
         </View>
       </View>
+    );
+  };
+
+  const openDialerEvent = (el: string, metaData: { [key: string]: string } | undefined) => {
+    if (metaData) {
+      const mobileKey = Object.keys(metaData).find((key) => metaData[key] === el);
+      if (mobileKey) {
+        const eventAttributes = {
+          'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+          'Doctor Number': g(appointmentData, 'doctorInfo', 'mobileNumber')!,
+          'Doctor ID': doctorId,
+          'Display Speciality Name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
+          'Display ID': g(appointmentData, 'displayId')!,
+          'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+          'Patient Phone Number': g(currentPatient, 'mobileNumber'),
+          'Phone number clicked':
+            mobileKey === 'secretaryMobileNumber' ? 'Secretary' : 'Support Team',
+        };
+        postCleverTapEvent(CleverTapEventName.CONSULT_DELAYED_MESSAGE_CLICKED, eventAttributes);
+      }
+    }
+    Linking.openURL('tel:' + el);
+  };
+  // Function to open Dialer From String
+  const openDialerFromString = (str: string, metaData: { [key: string]: string } | undefined) => {
+    let regex = /(?:[-+()]*\d){10,13}/gm;
+    let arr = str.split(' ');
+    return (
+      <Text>
+        {arr.map((el: string) => {
+          if (el.match(regex)) {
+            const number = el.match(regex);
+            if (number && number[0]) {
+              return <Text onPress={() => openDialerEvent(number[0], metaData)}>{el}</Text>;
+            }
+          }
+          return el === '\n' ? el : el ? el.trim() + ' ' : null;
+        })}
+      </Text>
     );
   };
 
@@ -6051,18 +6348,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       'Patient age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
-      docId: g(item, 'doctorId') || undefined,
-      docName: g(item, 'doctorInfo', 'fullName') || undefined,
-      docCity: g(item, 'doctorInfo', 'city') || undefined,
-      specialityId: g(item, 'doctorInfo', 'specialty', 'id') || undefined,
-      specialityName: g(item, 'doctorInfo', 'specialty', 'name') || undefined,
-      'Doctor Category': g(item, 'doctorInfo', 'doctorType') || undefined,
+      'Doctor ID': g(item, 'doctorId') || undefined,
+      'Doctor name': g(item, 'doctorInfo', 'fullName') || undefined,
+      'Doctor city': g(item, 'doctorInfo', 'city') || undefined,
+      'Speciality ID': g(item, 'doctorInfo', 'specialty', 'id') || undefined,
+      'Speciality name': g(item, 'doctorInfo', 'specialty', 'name') || undefined,
+      'Doctor category': g(item, 'doctorInfo', 'doctorType')! || undefined,
       'Consult ID': g(item, 'id') || '',
-      'Consult Date Time': moment(g(item, 'appointmentDateTime')).toDate(),
+      'Appointment datetime': moment(g(item, 'appointmentDateTime')).toDate(),
       'Consult Mode': g(item, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
-      isConsultStarted: !!g(item, 'isConsultStarted'),
+      'Is consult started': !!g(item, 'isConsultStarted'),
       Prescription: followUpMedicineNameText || '',
       Source: 'Inside Consult Room',
+      'Mobile number': currentPatient?.mobileNumber || '',
+      'Circle Member': !!circleSubscriptionId,
+      'Circle Plan type': circleSubPlanId,
     };
     postCleverTapEvent(
       CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED,
@@ -6703,6 +7003,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
     for (let i = 0; i < resource?.length; i++) {
       const item = resource[i];
+
       if (
         item.fileType == 'jpg' ||
         item.fileType == 'jpeg' ||
@@ -6809,6 +7110,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 consultWebEngageEvents(WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM);
               }
             }
+
             uploadDocument(response, response[0].base64, response[0].fileType, type);
             //updatePhysicalPrescriptions(response);
           } else {
@@ -6904,8 +7206,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               } else if (_uploadedUrl) {
                 const fileName = item?.fileName || '';
                 const splitArr = _uploadedUrl.split('.');
-                const fileType = splitArr[splitArr.length-1];
-                if(fileType){
+                const fileType = splitArr[splitArr.length - 1];
+                if (fileType) {
                   postChatWebEngEvent(fileType == 'pdf' ? 'PDF' : 'Image', '');
                 }
                 await callAddChatDocumentApi(prism, _uploadedUrl, fileName);

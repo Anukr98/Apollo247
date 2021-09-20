@@ -508,7 +508,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       'Order_ID(s)': `${orderAutoId}`,
       'Order Type': 'Non Cart',
       'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
-      'Store Id': storeId || undefined, // incase of store delivery
+      'Store ID': storeId || undefined, // incase of store delivery
       'Shipping information': deliveryAddressId ? deliveryAddressLine : storeAddressLine,
       Pincode: pinCode || undefined,
       'User Type': pharmacyUserType || undefined,

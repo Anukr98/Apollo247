@@ -72,6 +72,8 @@ export interface AuthContextProps {
   getFirebaseToken: (() => Promise<unknown>) | null;
   authToken: string;
   validateAuthToken: (() => void) | null;
+  validateAndReturnAuthToken: () => Promise<string>;
+  buildApolloClient: (authToken: string) => ApolloClient<NormalizedCacheObject>;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -99,6 +101,8 @@ export const AuthContext = React.createContext<AuthContextProps>({
   getFirebaseToken: null,
   authToken: '',
   validateAuthToken: null,
+  validateAndReturnAuthToken: null,
+  buildApolloClient: null,
 });
 
 let apolloClient: ApolloClient<NormalizedCacheObject>;
@@ -158,6 +162,22 @@ export const AuthProvider: React.FC = (props) => {
     } else {
       getFirebaseToken();
     }
+  };
+
+  const validateAndReturnAuthToken = () => {
+    return new Promise((res, rej) => {
+      try {
+        firebaseAuth().onAuthStateChanged(async (user) => {
+          if (user) {
+            const jwt = await user.getIdToken(true);
+            setAuthToken(jwt);
+            res(jwt);
+          }
+        });
+      } catch (error) {
+        rej('');
+      }
+    });
   };
 
   const setNewToken = async () => {
@@ -443,6 +463,8 @@ export const AuthProvider: React.FC = (props) => {
 
             authToken,
             validateAuthToken,
+            validateAndReturnAuthToken,
+            buildApolloClient,
           }}
         >
           {props.children}

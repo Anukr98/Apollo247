@@ -184,9 +184,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   tickIcon: {
-    height: 8, 
-    width: 8, 
-    marginStart: 4
+    height: 8,
+    width: 8,
+    marginStart: 4,
   },
   doctorInfoIcon: {
     height: 14,
@@ -280,7 +280,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     cashbackAmount,
   } = circleDoctorDetails;
   const { availableModes } = props;
-  const { showCircleSubscribed } = useShoppingCart();
+  const { showCircleSubscribed, circleSubPlanId, circleSubscriptionId } = useShoppingCart();
   const [fetchedSlot, setfetchedSlot] = useState<string>('');
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const isPhysical = availableModes
@@ -346,9 +346,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     }
     props.navigation.navigate(AppRoutes.SlotSelection, {
       doctorId: id,
-      consultModeSelected: onlineConsult ? 
-        string.consultModeTab.VIDEO_CONSULT :
-        string.consultModeTab.HOSPITAL_VISIT,
+      consultModeSelected: onlineConsult
+        ? string.consultModeTab.VIDEO_CONSULT
+        : string.consultModeTab.HOSPITAL_VISIT,
       externalConnect: null,
       callSaveSearch: props.callSaveSearch,
       ...params,
@@ -408,7 +408,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             style={{ flex: 1 }}
             onPress={() => !showCircleSubscribed && openCircleWebView()}
             activeOpacity={1}
-          > 
+          >
             <View style={styles.rowContainer}>
               <Text
                 style={{
@@ -416,28 +416,28 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   flexWrap: 'wrap',
                 }}
               >
-                {cashbackEnabled ? string.common.circleCashback
-                 : string.common.circleDiscount}
+                {cashbackEnabled ? string.common.circleCashback : string.common.circleDiscount}
               </Text>
               {showCircleSubscribed && <Tick style={styles.tickIcon} />}
             </View>
             <View style={styles.rowContainer}>
               <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.APP_YELLOW) }}>
-                {cashbackEnabled ? `Upto ${cashbackAmount} HC` : 
-                  string.common.Rs + convertNumberToDecimal(circleDoctorDiscountedPrice)}
+                {cashbackEnabled
+                  ? `Upto ${cashbackAmount} HC`
+                  : string.common.Rs + convertNumberToDecimal(circleDoctorDiscountedPrice)}
               </Text>
-              {!showCircleSubscribed && 
-              <View style={styles.rowContainer}>
-                <InfoBlue style={styles.infoIcon} />
-                <Text
-                  style={{
-                    ...theme.viewStyles.text('M', 10, theme.colors.TURQUOISE_LIGHT_BLUE, 1, 12),
-                  }}
-                >
-                  {string.circleDoctors.upgradeNow}
-                </Text>
-              </View>
-              }
+              {!showCircleSubscribed && (
+                <View style={styles.rowContainer}>
+                  <InfoBlue style={styles.infoIcon} />
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text('M', 10, theme.colors.TURQUOISE_LIGHT_BLUE, 1, 12),
+                    }}
+                  >
+                    {string.circleDoctors.upgradeNow}
+                  </Text>
+                </View>
+              )}
             </View>
           </TouchableOpacity>
         </View>
@@ -696,7 +696,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 : calculatefee(rowData, isBoth, isOnline)}
               {isCircleDoctorOnSelectedConsultMode &&
               circleDoctorDiscountedPrice > -1 &&
-              showCircleSubscribed && !cashbackEnabled ? (
+              showCircleSubscribed &&
+              !cashbackEnabled ? (
                 <Text
                   style={{
                     ...theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW),
@@ -711,14 +712,14 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               ) : null}
             </View>
           </View>
-          {languages &&
+          {languages && (
             <View style={styles.infoContainer}>
               <DoctorLanguage style={styles.doctorInfoIcon} />
               <Text style={styles.doctorLanguage} numberOfLines={1}>
                 {languages?.join(', ')}
               </Text>
             </View>
-          }
+          )}
           {!!clinicAddress && (
             <View style={styles.infoContainer}>
               <DoctorLocation style={styles.doctorInfoIcon} />
@@ -796,14 +797,14 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                         );
                         const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
                           'Patient name': currentPatient.firstName,
-                          docId: rowData.id,
-                          specialityId: rowData?.specialty?.id,
-                          specialityName: rowData?.specialty?.name,
-                          exp: Number(rowData?.experience),
-                          docHospital: rowData?.doctorHospital?.[0]?.facility?.name,
-                          docCity: rowData?.doctorHospital?.[0]?.facility?.city,
-                          availableInMins: getTimeDiff(rowData?.slot),
-                          Source: 'Doctor card doctor listing screen',
+                          'Doctor ID': rowData.id,
+                          'Speciality ID': rowData?.specialty?.id,
+                          'Speciality name': rowData?.specialty?.name,
+                          Experience: Number(rowData?.experience),
+                          'Doctor hospital': rowData?.doctorHospital?.[0]?.facility?.name,
+                          'Doctor city': rowData?.doctorHospital?.[0]?.facility?.city,
+                          'Available in mins': getTimeDiff(rowData?.slot),
+                          'Source': 'Doctor card doctor listing screen',
                           'Patient UHID': currentPatient.uhid,
                           Relation: currentPatient?.relation,
                           'Patient age': Math.round(
@@ -813,14 +814,17 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                           'Customer ID': currentPatient.id,
                           User_Type: getUserType(allCurrentPatients),
                           rank: props.rowId || undefined,
-                          onlineConsultFee:
+                          'Online consult fee':
                             Number(rowData?.onlineConsultationFees) ||
                             Number(rowData?.fee) ||
                             undefined,
-                          physicalConsultFee:
+                          'Physical consult fee':
                             Number(rowData?.physicalConsultationFees) ||
                             Number(rowData?.fee) ||
                             undefined,
+                            'Mobile number': currentPatient?.mobileNumber || '',
+                            'Circle Member': !!circleSubscriptionId,
+                            'Circle Plan type': circleSubPlanId,
                         };
                         postCleverTapEvent(
                           CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED,

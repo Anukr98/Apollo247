@@ -219,7 +219,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             return {
               itemId: medicineDetails?.sku || itemDetails?.[index]?.itemId,
               medicineName: medicineDetails?.name || itemDetails?.[index]?.itemName,
-              quantity: Math.ceil(qty),
+              quantity: Math.round(qty),
               mrp: (itemDetails?.[index]?.mrp * mou) / itemDetails?.[index]?.mou,
               total: itemDetails?.[index]?.mrp * itemDetails?.[index]?.issuedQty || 0,
             };
