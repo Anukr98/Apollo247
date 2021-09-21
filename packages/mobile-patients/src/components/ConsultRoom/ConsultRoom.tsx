@@ -215,6 +215,13 @@ const { Vitals } = NativeModules;
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
+  menuOptionsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginLeft: 16,
+    marginTop: 16,
+    marginBottom: 8,
+  },
   viewName: {
     backgroundColor: theme.colors.WHITE,
     width: '100%',
@@ -2942,15 +2949,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const renderMenuOptions = () => {
     let arrayList = isProHealthActive ? listValuesForProHealth : listValues;
     return (
-      <View
-        style={{
-          flexDirection: 'row',
-          flexWrap: 'wrap',
-          marginLeft: 16,
-          marginTop: 16,
-          marginBottom: 8,
-        }}
-      >
+      <View style={styles.menuOptionsContainer}>
         {arrayList.map((item) => {
           if (menuViewOptions.findIndex((i) => i === item.id) >= 0) {
             if (item?.id < 3) {
@@ -3949,6 +3948,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return <ConsultedDoctorsCard navigation={props.navigation} />;
   };
 
+  const renderGlobalSearch = () => {
+    return (
+      <View style={styles.menuOptionsContainer}>
+        <Text>hi gtaydgaihdia du</Text>
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
@@ -3958,6 +3965,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               {renderTopIcons()}
               <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
               <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text>
+              {renderGlobalSearch()}
               {renderMenuOptions()}
 
               {circleDataLoading && renderCircleShimmer()}
