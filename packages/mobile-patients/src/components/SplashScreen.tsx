@@ -746,13 +746,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     });
   };
 
-  const catchSourceUrlDataUsingAppsFlyer = async () => {
-    onDeepLinkCanceller = await appsFlyer.onDeepLink(async (res) => {
-      clevertapEventForAppsflyerDeeplink(res.data);
-      onDeepLinkCanceller();
-    });
-  };
-
   const prefetchUserMetadata = async () => {
     const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
     setUserLoggedIn(userLoggedIn);
