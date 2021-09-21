@@ -87,9 +87,15 @@ import {
   GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
   GET_ONEAPOLLO_USER,
   GET_PLAN_DETAILS_BY_PLAN_ID,
+  GET_PAST_CONSULTS_PRESCRIPTIONS,
+  UPDATE_PATIENT_MEDICAL_PARAMETERS,
+  GET_PRISM_AUTH_TOKEN,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  getPrismAuthTokenVariables,
+  getPrismAuthToken,
+} from '@aph/mobile-patients/src/graphql/types/getPrismAuthToken';
 import { searchPHRApiWithAuthToken } from '@aph/mobile-patients/src/helpers/apiCalls';
-const [prismAuthToken, setPrismAuthToken] = useState<string>('');
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
   GetAllUserSubscriptionsWithPlanBenefitsV2Variables,
@@ -214,6 +220,7 @@ import {
   PatientInfo as PatientInfoObj,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { getUniqueId } from 'react-native-device-info';
+import _ from 'lodash';
 
 const { Vitals } = NativeModules;
 
@@ -236,12 +243,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   searchBarViewStyle: {
-    backgroundColor: theme.colors.CARD_BG,
+    backgroundColor: '#FAFEFF',
     flexDirection: 'row',
     padding: 10,
     flex: 1,
     alignItems: 'center',
     borderRadius: 5,
+    borderWidth: 1.5,
+    borderStyle: 'solid',
+    borderColor: '#D4D4D4',
   },
   cancelTextStyle: {
     ...theme.viewStyles.text('M', 12, theme.colors.SKY_BLUE, 1, 15.6),
@@ -815,6 +825,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [searchText, setSearchText] = useState('');
   const [searchResults, setSearchResults] = useState<any>([]);
   const [searchQuery, setSearchQuery] = useState({});
+  const [prismAuthToken, setPrismAuthToken] = useState<string>('');
 
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
@@ -4009,6 +4020,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   //   return { name: 'name', value: 'asad' };
   // };
   const onSearchExecute = (_searchText: string) => {
+    console.log('csk');
     setSearchLoading(true);
     searchPHRApiWithAuthToken(_searchText, prismAuthToken)
       .then(({ data }) => {
@@ -4060,14 +4072,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 break;
             }
           });
+          console.log('csk', 'search results->', JSON.stringify(finalData));
           setSearchResults(finalData);
           setSearchLoading(false);
         } else {
+          console.log('csk', 'search results->', JSON.stringify(data));
           getAuthToken();
           setSearchLoading(false);
         }
       })
       .catch((error) => {
+        console.log('csk e', 'search results->', JSON.stringify(error));
         CommonBugFender('HomeScreen_ConsultRoom_SearchAPI', error);
         getAuthToken();
         setSearchLoading(false);
@@ -4085,7 +4100,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <View style={styles.searchBarViewStyle}>
           <SearchAreaIcon style={{ width: 20, height: 20 }} />
           <TextInput
-            placeholder={'Search'}
+            placeholder={'Search for Medicines, Doctors, Lab Tests'}
             autoCapitalize={'none'}
             style={styles.textInputStyle}
             selectionColor={theme.colors.TURQUOISE_LIGHT_BLUE}
@@ -4145,7 +4160,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             <View style={styles.viewName}>
               {renderTopIcons()}
               <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
-              <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text>
+              {/* below line could be added for now not in designs */}
+              {/* <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text> */}
               {renderGlobalSearch()}
               {renderMenuOptions()}
 
