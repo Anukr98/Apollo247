@@ -180,22 +180,6 @@ export const AuthProvider: React.FC = (props) => {
     });
   };
 
-  const validateAuthToken = () => {
-    return new Promise((res, rej) => {
-      try {
-        firebaseAuth().onAuthStateChanged(async (user) => {
-          if (user) {
-            const jwt = await user.getIdToken(true);
-            setAuthToken(jwt);
-            res(jwt);
-          }
-        });
-      } catch (error) {
-        rej('');
-      }
-    });
-  };
-
   const setNewToken = async () => {
     const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
     if (userLoggedIn == 'true') {
