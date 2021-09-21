@@ -177,7 +177,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   const getAddedImages = () => {
     let imagesArray = [] as any;
     
-    phyPrescriptionsProp?.forEach((item: any) => {
+    PhysicalPrescriptionsProps?.forEach((item: any) => {
       let imageObj = {} as any;
       imageObj.fileName = item?.title + '.' + item?.fileType;
       imageObj.mimeType = mimeType(item?.title + '.' + item?.fileType);
@@ -190,27 +190,27 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   
   const onSubmitPrescription = () => {
     const inputData: AddPrescriptionRecordInput = {
-      id: ePrescriptionsProp?.[0]?.id ? ePrescriptionsProp?.[0]?.id : '',
+      id: EPrescriptionsProps?.[0]?.id ? EPrescriptionsProps?.[0]?.id : '',
       patientId: currentPatient?.id || '',
-      prescriptionName: ePrescriptionsProp?.[0]?.fileName
-        ? ePrescriptionsProp?.[0]?.fileName
-        : phyPrescriptionsProp?.[0]?.title
-        ? phyPrescriptionsProp?.[0]?.title
+      prescriptionName: EPrescriptionsProps?.[0]?.fileName
+        ? EPrescriptionsProps?.[0]?.fileName
+        : PhysicalPrescriptionsProps?.[0]?.title
+        ? PhysicalPrescriptionsProps?.[0]?.title
         : '',
-      issuingDoctor: ePrescriptionsProp?.[0]?.doctorName ? ePrescriptionsProp?.[0]?.doctorName : '',
+      issuingDoctor: EPrescriptionsProps?.[0]?.doctorName ? EPrescriptionsProps?.[0]?.doctorName : '',
       location: locationName,
       additionalNotes: additionalNotes,
-      dateOfPrescription: ePrescriptionsProp?.[0]?.date
-        ? moment(ePrescriptionsProp?.[0]?.date, 'DD MMM YYYY').format('YYYY-MM-DD')
+      dateOfPrescription: EPrescriptionsProps?.[0]?.date
+        ? moment(EPrescriptionsProps?.[0]?.date, 'DD MMM YYYY').format('YYYY-MM-DD')
         : moment().format('YYYY-MM-DD'),
       recordType: MedicalRecordType.PRESCRIPTION,
-      prescriptionFiles: phyPrescriptionsProp?.length
+      prescriptionFiles: PhysicalPrescriptionsProps?.length
         ? getAddedImages()
-        : ePrescriptionsProp?.length
-        ? setUploadedImages(ePrescriptionsProp)
+        : EPrescriptionsProps?.length
+        ? setUploadedImages(EPrescriptionsProps)
         : [],
     };
-    if (ePrescriptionsProp && ePrescriptionsProp?.length) {
+    if (EPrescriptionsProps && EPrescriptionsProps?.length) {
       setOnSumbitSuccess(true);
     } else {
     client
@@ -293,13 +293,13 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
           <View style={styles.presStyle}>
             {!onSumbitSuccess ? (
               <>
-                {phyPrescriptionsProp && phyPrescriptionsProp?.length ? (
+                {PhysicalPrescriptionsProps && PhysicalPrescriptionsProps?.length ? (
                   <View>
                     <Text style={styles.textStyle}>
                       {nameFormater('Physical Prescriptions', 'upper')}
                     </Text>
                     <View style={styles.presText}>
-                      {phyPrescriptionsProp.map((item: any) => {
+                      {PhysicalPrescriptionsProps.map((item: any) => {
                         return (
                           <View style={styles.phyView}>
                             <View style={styles.phyView2}>
@@ -315,9 +315,15 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                               </View>
                               <Text style={styles.leftText}>{item?.title}</Text>
                             </View>
-                            <View style={{ justifyContent: 'center' }}>
+                            <TouchableOpacity onPress={()=>{
+                              const phyPrescription = PhysicalPrescriptionsProps;
+                              const filteredPres = phyPrescription?.filter(
+                                (_item) => _item?.title != item?.title
+                              );
+                              setPhysicalPrescriptionsProps([...filteredPres]);
+                            }} style={{ justifyContent: 'center' }}>
                               <RemoveIcon />
-                            </View>
+                            </TouchableOpacity>
                           </View>
                         );
                       })}
@@ -325,11 +331,11 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                   </View>
                 ) : null}
                 <>
-                  {ePrescriptionsProp && ePrescriptionsProp?.length ? (
+                  {EPrescriptionsProps && EPrescriptionsProps?.length ? (
                     <View>
                       <Text style={styles.textStyle}>PRESCRIPTION FROM HEALTH RECORDS</Text>
                       <View style={styles.presText}>
-                        {ePrescriptionsProp.map((item: any) => {
+                        {EPrescriptionsProps.map((item: any) => {
                           return (
                             <View style={styles.epresView}>
                               <View style={styles.epresView2}>
@@ -343,9 +349,11 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                                   </Text>
                                 </View>
                               </View>
-                              <View style={{ justifyContent: 'center', width: '10%',alignItems:'center' }}>
+                              <TouchableOpacity onPress={()=>{
+                                setEPrescriptionsProps(EPrescriptionsProps?.filter((_item) => _item?.id != item?.id));
+                              }} style={{ justifyContent: 'center', width: '10%',alignItems:'center' }}>
                                 <RemoveIcon />
-                              </View>
+                              </TouchableOpacity>
                             </View>
                           );
                         })}
@@ -375,6 +383,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
             <Button
               title={onSumbitSuccess ? 'GO TO HOME' : 'SUBMIT'}
               style={styles.buttonStyle}
+              disabled={EPrescriptionsProps?.length || PhysicalPrescriptionsProps?.length ? false : true}
               onPress={() => {
                 if (onSumbitSuccess) {
                   props.navigation.navigate('TESTS');

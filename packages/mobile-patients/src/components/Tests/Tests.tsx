@@ -2132,6 +2132,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         props.navigation.navigate(AppRoutes.PrescriptionCamera, {
           type: 'CAMERA_AND_GALLERY',
           responseData: formatResponse([response] as ImageCropPickerResponse[]),
+          ePresscriptionUploaded: ePresscriptionUploaded,
+          phyPrescriptionUploaded: phyPrescriptionUploaded,
           title: 'Camera',
         });
       })
@@ -2272,7 +2274,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
             return;
           }
           props.navigation.navigate(AppRoutes.SubmittedPrescription, {
-            ePrescriptionsProp: selectedEPres,
+            ePrescriptionsProp: [...ePresscriptionUploaded, ...selectedEPres],
+            phyPrescriptionsProp: phyPrescriptionUploaded,
             type: 'E-Prescription',
             showOptions: false,
             isReUpload: true,
