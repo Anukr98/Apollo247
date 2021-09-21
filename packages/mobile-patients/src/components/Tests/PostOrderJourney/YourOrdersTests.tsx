@@ -1720,6 +1720,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           setShowPatientListOverlay(false);
           handleBack();
         }}
+        disabledPatientId={selectedOrder?.patientId}
       />
     );
   };

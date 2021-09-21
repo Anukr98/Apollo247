@@ -21,6 +21,7 @@ interface PatientListOverlayProps {
   excludeProfileListIds?: string[];
   showCloseIcon: boolean;
   onCloseIconPress: () => void;
+  disabledPatientId?: string;
 }
 
 export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => {
@@ -35,6 +36,9 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
   const [selectedPatient, setSelectedPatient] = useState<any>(patientSelected);
 
   const renderPatientListItem = ({ index, item }) => {
+    const isPatientDisabled = !!props.disabledPatientId
+      ? props.disabledPatientId === item?.id
+      : false;
     if (props.excludeProfileListIds?.includes(item?.uhid)) {
       return null;
     }
@@ -48,18 +52,33 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
     const itemViewStyle = [
       styles.patientItemViewStyle,
       index === 0 && { marginTop: 12 },
-      showGreenBg && { backgroundColor: APP_GREEN },
+
+      isPatientDisabled
+        ? { backgroundColor: '#e8e6e6' }
+        : showGreenBg && { backgroundColor: APP_GREEN },
     ];
     return item?.id === '+ADD MEMBER' ? null : (
       <TouchableOpacity
         activeOpacity={1}
         style={itemViewStyle}
-        onPress={() => setSelectedPatient(item)}
+        onPress={() => {
+          isPatientDisabled ? {} : setSelectedPatient(item);
+        }}
       >
-        <Text style={[styles.patientNameTextStyle, showGreenBg && { color: WHITE }]}>
+        <Text
+          style={[
+            styles.patientNameTextStyle,
+            isPatientDisabled ? { opacity: 0.6 } : showGreenBg && { color: WHITE },
+          ]}
+        >
           {patientName}
         </Text>
-        <Text style={[styles.genderAgeTextStyle, showGreenBg && { color: WHITE }]}>
+        <Text
+          style={[
+            styles.genderAgeTextStyle,
+            isPatientDisabled ? { opacity: 0.6 } : showGreenBg && { color: WHITE },
+          ]}
+        >
           {genderAgeText}
         </Text>
       </TouchableOpacity>
