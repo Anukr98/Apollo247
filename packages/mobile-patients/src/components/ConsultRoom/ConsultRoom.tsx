@@ -54,6 +54,7 @@ import {
   CrossPopup,
   ProHealthIcon,
   BackArrow,
+  SearchAreaIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   BannerDisplayType,
@@ -136,7 +137,7 @@ import {
   getCleverTapCircleMemberValues,
   getAge,
   removeObjectNullUndefinedProperties,
-  fileToBase64,
+  isValidSearch,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -171,6 +172,7 @@ import {
   View,
   ViewStyle,
   Keyboard,
+  TextInput,
 } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -221,6 +223,32 @@ const styles = StyleSheet.create({
     marginLeft: 16,
     marginTop: 16,
     marginBottom: 8,
+  },
+  searchBarMainViewStyle: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    alignItems: 'center',
+  },
+  searchBarViewStyle: {
+    backgroundColor: theme.colors.CARD_BG,
+    flexDirection: 'row',
+    padding: 10,
+    flex: 1,
+    alignItems: 'center',
+    borderRadius: 5,
+  },
+  cancelTextStyle: {
+    ...theme.viewStyles.text('M', 12, theme.colors.SKY_BLUE, 1, 15.6),
+    marginLeft: 18,
+  },
+  textInputStyle: {
+    ...theme.viewStyles.text('R', 14, theme.colors.SHERPA_BLUE, 1, 18),
+    flex: 1,
+    paddingHorizontal: 10,
+    paddingTop: 0,
+    paddingBottom: 1,
   },
   viewName: {
     backgroundColor: theme.colors.WHITE,
@@ -777,6 +805,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [vaccinationSubscriptionName, setVaccinationSubscriptionName] = useState<string>('');
   const [vaccinationSubscriptionPlanId, setVaccinationSubscriptionPlanId] = useState<string>('');
   const [agreedToVaccineTnc, setAgreedToVaccineTnc] = useState<string>('');
+  const [isSearchFocus, setIsSearchFocus] = useState(false);
+  const [searchLoading, setSearchLoading] = useState<boolean>(false);
+  const _searchInputRef = useRef(null);
+  const [searchText, setSearchText] = useState('');
+  const [searchResults, setSearchResults] = useState<any>([]);
+  const [searchQuery, setSearchQuery] = useState({});
 
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
@@ -3948,12 +3982,66 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return <ConsultedDoctorsCard navigation={props.navigation} />;
   };
 
+  const onSearchExecute = () => {
+    return { name: 'name', value: 'asad' };
+  };
+
   const renderGlobalSearch = () => {
     return (
       <View style={styles.menuOptionsContainer}>
-        <Text>hi gtaydgaihdia du</Text>
+        <View style={styles.searchBarViewStyle}>
+          <SearchAreaIcon style={{ width: 20, height: 20 }} />
+          <TextInput
+            placeholder={'Search'}
+            autoCapitalize={'none'}
+            style={styles.textInputStyle}
+            selectionColor={theme.colors.TURQUOISE_LIGHT_BLUE}
+            numberOfLines={1}
+            ref={_searchInputRef}
+            onFocus={() => setIsSearchFocus(true)}
+            value={searchText}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            underlineColorAndroid={'transparent'}
+            onChangeText={(value) => onSearchTextChange(value)}
+          />
+        </View>
+        {isSearchFocus ? (
+          <Text style={styles.cancelTextStyle} onPress={onCancelTextClick}>
+            {'Cancel'}
+          </Text>
+        ) : null}
       </View>
     );
+  };
+
+  const onCancelTextClick = () => {
+    if (_searchInputRef.current) {
+      setSearchText('');
+      setIsSearchFocus(false);
+      _searchInputRef?.current?.clear();
+      setSearchResults([]);
+      Keyboard.dismiss();
+    }
+  };
+
+  const onSearchTextChange = (value: string) => {
+    setIsSearchFocus(true);
+    if (isValidSearch(value)) {
+      setSearchText(value);
+      if (!(value && value.length > 2)) {
+        setSearchResults([]);
+        return;
+      }
+      setSearchLoading(true);
+      const search = _.debounce(onSearchExecute, 500);
+      setSearchQuery((prevSearch: any) => {
+        if (prevSearch.cancel) {
+          prevSearch.cancel();
+        }
+        return search;
+      });
+      search(value);
+    }
   };
 
   return (
