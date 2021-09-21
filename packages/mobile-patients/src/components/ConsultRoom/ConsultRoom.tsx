@@ -55,6 +55,7 @@ import {
   ProHealthIcon,
   BackArrow,
   SearchAreaIcon,
+  RemoveIconGrey,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   BannerDisplayType,
@@ -237,7 +238,7 @@ const styles = StyleSheet.create({
   searchBarMainViewStyle: {
     flexDirection: 'row',
     backgroundColor: 'rgba(0,0,0,0.05)',
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',
@@ -4112,12 +4113,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             underlineColorAndroid={'transparent'}
             onChangeText={(value) => onSearchTextChange(value)}
           />
+          {isSearchFocus ? (
+            <TouchableOpacity onPress={onCancelTextClick}>
+              <RemoveIconGrey style={{ width: 20, height: 20 }} />
+            </TouchableOpacity>
+          ) : null}
         </View>
         {isSearchFocus ? (
           <Text style={styles.cancelTextStyle} onPress={onCancelTextClick}>
             {'Cancel'}
           </Text>
         ) : null}
+        <View style={styles.seperatorStyle} />
       </View>
     );
   };
