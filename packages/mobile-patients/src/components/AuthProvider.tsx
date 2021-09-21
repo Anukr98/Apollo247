@@ -14,7 +14,7 @@ import _isEmpty from 'lodash/isEmpty';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
-import { Platform, Alert } from 'react-native';
+import { Platform, AppState, AppStateStatus } from 'react-native';
 import firebaseAuth from '@react-native-firebase/auth';
 import DeviceInfo from 'react-native-device-info';
 import {
@@ -71,7 +71,8 @@ export interface AuthContextProps {
   setMobileAPICalled: ((par: boolean) => void) | null;
   getFirebaseToken: (() => Promise<unknown>) | null;
   authToken: string;
-  validateAuthToken: () => Promise<string>;
+  validateAuthToken: (() => void) | null;
+  validateAndReturnAuthToken: () => Promise<string>;
   buildApolloClient: (authToken: string) => ApolloClient<NormalizedCacheObject>;
 }
 
@@ -100,6 +101,7 @@ export const AuthContext = React.createContext<AuthContextProps>({
   getFirebaseToken: null,
   authToken: '',
   validateAuthToken: null,
+  validateAndReturnAuthToken: null,
   buildApolloClient: null,
 });
 
@@ -112,6 +114,71 @@ const webengage = new WebEngage();
 export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
   const hasAuthToken = !_isEmpty(authToken);
+  const auth = firebaseAuth();
+
+  useEffect(() => {
+    AppState.addEventListener('change', handleAppStateChange);
+    return () => {
+      AppState.removeEventListener('change', handleAppStateChange);
+    };
+  }, []);
+
+  const handleAppStateChange = (nextAppState: AppStateStatus) => {
+    //validate authtoken when ever app moves from background state to active
+    nextAppState == 'active' && validateAuthToken();
+  };
+
+  useEffect(() => {
+    // listening to change in authtoken
+    const checkChangeinAuthToken = auth?.onIdTokenChanged(async (user) => {
+      if (user) {
+        const jwt = await user.getIdToken(true).catch((error) => {
+          setIsSigningIn(false);
+          setSignInError(true);
+          setAuthToken('');
+          throw error;
+        });
+        setAuthToken(jwt);
+        postWebEngageEvent(WebEngageEventName.AUTHTOKEN_UPDATED, {
+          PatientId: currentPatientId,
+        });
+      }
+    });
+    // unsubscribe on unmounting
+    return checkChangeinAuthToken();
+  }, []);
+
+  useEffect(() => {
+    // building apolloclient when ever there is a change in authToken
+    buildApolloClient(authToken);
+  }, [authToken]);
+
+  const validateAuthToken = () => {
+    if (authToken) {
+      const jwtDecode = require('jwt-decode');
+      const millDate = jwtDecode(authToken).exp;
+      const currentTime = new Date().valueOf() / 1000;
+      millDate < currentTime && getFirebaseToken();
+    } else {
+      getFirebaseToken();
+    }
+  };
+
+  const validateAndReturnAuthToken = () => {
+    return new Promise((res, rej) => {
+      try {
+        firebaseAuth().onAuthStateChanged(async (user) => {
+          if (user) {
+            const jwt = await user.getIdToken(true);
+            setAuthToken(jwt);
+            res(jwt);
+          }
+        });
+      } catch (error) {
+        rej('');
+      }
+    });
+  };
 
   const validateAuthToken = () => {
     return new Promise((res, rej) => {
@@ -145,24 +212,15 @@ export const AuthProvider: React.FC = (props) => {
             setAuthToken(jwt);
           }
         });
-      } catch (e) {}
-    }
-  };
-  const validateAndUpdate = (authToken: any) => {
-    if (authToken) {
-      const jwtDecode = require('jwt-decode');
-      const millDate = jwtDecode(authToken).exp;
-      const currentTime = new Date().valueOf() / 1000;
-      if (millDate < currentTime) {
-        getFirebaseToken();
-      } else {
-        setAuthToken(authToken);
+      } catch (e) {
+        postWebEngageEvent(WebEngageEventName.ERROR_WHILE_FETCHING_JWT_TOKEN, {
+          PatientId: currentPatientId,
+        });
       }
-    } else {
-      getFirebaseToken();
     }
   };
-  const buildApolloClient = (authToken: string, handleUnauthenticated?: any) => {
+
+  const buildApolloClient = (authToken: string) => {
     if (authToken) {
       const jwtDecode = require('jwt-decode');
       const millDate = jwtDecode(authToken).exp;
@@ -213,7 +271,7 @@ export const AuthProvider: React.FC = (props) => {
       cache,
     });
   };
-  apolloClient = buildApolloClient(authToken, () => getFirebaseToken());
+  apolloClient = buildApolloClient(authToken);
 
   const [currentPatientId, setCurrentPatientId] = useState<AuthContextProps['currentPatientId']>(
     null
@@ -225,8 +283,6 @@ export const AuthProvider: React.FC = (props) => {
   const [isSigningIn, setIsSigningIn] = useState<AuthContextProps['isSigningIn']>(false);
   const [signInError, setSignInError] = useState<AuthContextProps['signInError']>(false);
   const [mobileAPICalled, setMobileAPICalled] = useState<AuthContextProps['signInError']>(false);
-
-  const auth = firebaseAuth();
 
   const [allPatients, setAllPatients] = useState<AuthContextProps['allPatients']>(null);
 
@@ -266,15 +322,6 @@ export const AuthProvider: React.FC = (props) => {
     }
   }, [auth]);
 
-  useEffect(() => {
-    async function fetchData() {
-      let jwtToken: any = await AsyncStorage.getItem('jwt');
-      jwtToken = JSON.parse(jwtToken || 'null');
-      validateAndUpdate(jwtToken);
-    }
-    fetchData();
-  }, [auth]);
-
   const getFirebaseToken = () => {
     try {
       return new Promise(async (resolve, reject) => {
@@ -283,7 +330,6 @@ export const AuthProvider: React.FC = (props) => {
           if (user && !authStateRegistered) {
             setIsSigningIn(true);
             authStateRegistered = true;
-
             const jwt = await user.getIdToken(true).catch((error) => {
               setIsSigningIn(false);
               setSignInError(true);
@@ -292,18 +338,23 @@ export const AuthProvider: React.FC = (props) => {
               reject(error);
               throw error;
             });
-
             setAuthToken(jwt);
+            postWebEngageEvent(WebEngageEventName.AUTHTOKEN_UPDATED, {
+              PatientId: currentPatientId,
+            });
             AsyncStorage.setItem('jwt', JSON.stringify(jwt));
-
-            apolloClient = buildApolloClient(jwt, () => getFirebaseToken());
+            apolloClient = buildApolloClient(jwt);
             authStateRegistered = false;
             resolve(jwt);
           }
           setIsSigningIn(false);
         });
       });
-    } catch (error) {}
+    } catch (error) {
+      postWebEngageEvent(WebEngageEventName.ERROR_WHILE_FETCHING_JWT_TOKEN, {
+        PatientId: currentPatientId,
+      });
+    }
   };
 
   const getPatientApiCall = async (containsHistory: boolean) => {
@@ -428,6 +479,7 @@ export const AuthProvider: React.FC = (props) => {
 
             authToken,
             validateAuthToken,
+            validateAndReturnAuthToken,
             buildApolloClient,
           }}
         >
