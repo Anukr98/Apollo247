@@ -579,6 +579,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
       CommonBugFender('fetchPatientOpenOrders_Tests', error);
     }
   };
+  useEffect(() => {
+    if (movedFrom == AppRoutes.SubmittedPrescription) {
+      setIsPrescriptionUpload(true)
+    }
+  }, [movedFrom])
 
   useEffect(() => {
     // getting diagnosticUserType from asyncStorage
