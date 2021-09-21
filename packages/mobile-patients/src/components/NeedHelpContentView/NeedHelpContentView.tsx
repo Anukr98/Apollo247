@@ -75,7 +75,7 @@ export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
-  const { needHelpToContactInMessage } = useAppCommonData();
+  const { needHelpToContactInMessage, needHelpTicketReferenceText } = useAppCommonData();
 
   const renderHeader = () => {
     const onPressBack = () => navigation.goBack();
@@ -219,40 +219,27 @@ export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
   };
 
   const onSuccess = (res: any) => {
+    let ticketId = res?.data?.sendHelpEmail.split(':')[1] || 0;
+    let ticketType = res?.data?.sendHelpEmail.split(':')[2] || '';
+
+    let referenceNumberText = '';
+    if (ticketType && ticketType === 'fd') {
+      referenceNumberText = ticketId
+        ? needHelpTicketReferenceText.replace('#ticketNumber', '#' + ticketId)
+        : '';
+    }
+
     showAphAlert!({
       title: string.common.hiWithSmiley,
-      description: needHelpToContactInMessage || string.needHelpSubmitMessage,
+      description:
+        (needHelpToContactInMessage || string.needHelpSubmitMessage) + '. ' + referenceNumberText,
       unDismissable: true,
       onPressOk: () => {
         hideAphAlert!();
-        openHelpChatScreen(res);
+
+        navigateToHome(navigation);
       },
     });
-  };
-
-  const openHelpChatScreen = (response: any) => {
-    let ticketId = response?.data?.sendHelpEmail.split(':')[1] || 0;
-    let ticket = {
-      closedTime: null,
-      createdTime: '',
-      customFields: {
-        Business: '',
-        __typename: '',
-      },
-      id: ticketId,
-      modifiedTime: '2021-08-26T11:30:46.000Z',
-      status: '',
-      statusType: 'Open',
-      subject: '',
-      ticketNumber: '',
-    };
-
-    if (ticketId) {
-      navigation.navigate(AppRoutes.HelpChatScreen, {
-        ticketId: ticketId,
-        ticket: ticket,
-      });
-    }
   };
 
   const onError = () => {
