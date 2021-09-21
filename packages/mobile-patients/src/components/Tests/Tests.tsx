@@ -1831,7 +1831,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     DiagnosticViewReportClicked(
       'Home',
       !!pdfName?.labReportURL ? 'Yes' : 'No',
-      'Download Report PDF'
+      'Download Report PDF',
+      currentPatient
     );
     if (pdfName == null || pdfName == '') {
       Alert.alert('No Image');
@@ -1885,7 +1886,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         'Home',
         !!item?.labReportURL ? 'Yes' : 'No',
         'Download Report PDF',
-        item?.displayId
+        item?.displayId,
+        currentPatient
       );
       //view report download
       //need to remove the event once added
@@ -1893,7 +1895,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         'Home',
         !!item?.labReportURL ? 'Yes' : 'No',
         'Download Report PDF',
-        item?.displayId
+        item?.displayId,
+        currentPatient
       );
       if (!!item?.labReportURL && item?.labReportURL != '') {
         onPressViewReport();

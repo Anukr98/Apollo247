@@ -493,20 +493,33 @@ export function DiagnosticAddresssSelected(
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE, eventAttributes);
 }
 
-export function DiagnosticAddToCartClicked() {
-  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE, {});
-  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE, {});
+export function DiagnosticAddToCartClicked(
+  pincode: string | number,
+  currentPatient?: string
+) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
+  const eventAttributes:
+    | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE]
+    | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE] = {
+    ...getPatientAttributes,
+    Pincode: pincode,
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE, eventAttributes);
 }
 
 export function DiagnosticRemoveFromCartClicked(
   itemId: string | number,
   itemName: string,
   pincode: string | number,
-  mode: 'Customer' | 'Automated'
+  mode: 'Customer' | 'Automated',
+  currentPatient?: string
 ) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE]
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE] = {
+    ...getPatientAttributes,
     'Item ID': itemId,
     'Item name': itemName,
     Pincode: pincode,
@@ -561,10 +574,12 @@ export function DiagnosticTrackOrderViewed(
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_TRACK_ORDER_VIEWED, eventAttributes);
 }
 
-export function DiagnosticFeedbackSubmitted(currentPatient: any, rating: string, reason: string) {
+export function DiagnosticFeedbackSubmitted(currentPatient: any, rating: string, reason: string,) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_FEEDBACK_GIVEN]
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_FEEDBACK_GIVEN] = {
+    ...getPatientAttributes,
     'Patient UHID': g(currentPatient, 'uhid'),
     'Patient Name': g(currentPatient, 'firstName'),
     Rating: rating,
@@ -612,11 +627,15 @@ export function DiagnosticPhleboFeedbackSubmitted(
   feedback: string | number,
   phleboName: string,
   orderId: string | number,
-  phleboId: string | number
+  phleboId: string | number,
+  patientComment: string,
+  currentPatient?: string
 ) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED]
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED] = {
+    ...getPatientAttributes,
     Rating: rating,
     Feedback: feedback,
     'Phlebo Name': phleboName,
@@ -631,9 +650,11 @@ export function DiagnosticPhleboCallingClicked(
   orderId: string | number,
   phleboName: string
 ) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PHLEBO_CALLING_CLICKED]
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_PHLEBO_CALLING_CLICKED] = {
+    ...getPatientAttributes,
     UHID: g(currentPatient, 'uhid'),
     'Order id': orderId,
     'Phlebo Name': phleboName,
@@ -699,12 +720,15 @@ export function DiagnosticModifyOrder(
 export function DiagnosticViewReportClicked(
   source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary',
   reportGenerated: 'Yes' | 'No',
-  action: 'View Report' | 'Download Report PDF' | 'Share on Whatsapp' | 'Copy Link to PDF',
-  orderId?: string
+  action: 'Download Report PDF',
+  orderId?: string,
+  currentPatient?: string
 ) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED]
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED] = {
+    ...getPatientAttributes,
     Source: source,
     'Report generated': reportGenerated,
     'Action taken': action,
@@ -722,9 +746,11 @@ export function DiagnosticTrackPhleboClicked(
   currentPatient: any,
   isOpen: 'Yes' | 'No'
 ) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED]
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED] = {
+    ...getPatientAttributes,
     'Order id': orderId,
     Source: source,
     UHID: currentPatient?.uhid,
