@@ -932,14 +932,16 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         id,
         name,
         addresses?.[selectedAddressIndex]?.zipcode!,
-        'Customer'
+        'Customer',
+        currentPatient
       );
     } else {
       DiagnosticRemoveFromCartClicked(
         id,
         name,
         diagnosticLocation?.pincode! || locationDetails?.pincode!,
-        'Customer'
+        'Customer',
+        currentPatient
       );
     }
   };
@@ -1260,14 +1262,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   function _navigateToSearch() {
-    DiagnosticAddToCartClicked();
+    DiagnosticAddToCartClicked(pinCode,currentPatient);
     props.navigation.navigate(AppRoutes.SearchTestScene, {
       searchText: '',
     });
   }
 
   function _navigateToHomePage() {
-    DiagnosticAddToCartClicked();
+    DiagnosticAddToCartClicked(pinCode,currentPatient);
     props.navigation.navigate('TESTS', { focusSearch: true });
   }
 
@@ -2869,7 +2871,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         removedItems,
         removedTest,
         addresses?.[selectedAddressIndex]?.zipcode!,
-        'Automated'
+        'Automated',
+        currentPatient
       );
     }
   }
