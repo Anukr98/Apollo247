@@ -43,6 +43,7 @@ import {
   RemoveIcon,
   WhiteCross,
   PrescriptionColored,
+  Pdf
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
@@ -270,8 +271,15 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
 
   return (
     <View style={styles.containerStyle}>
-      <SafeAreaView style={theme.viewStyles.container}>
-        {props?.showHeader == false ? null : (
+      <SafeAreaView
+        style={[
+          styles.containerStyleView,
+          { backgroundColor: onSumbitSuccess ? theme.colors.WHITE : theme.colors.CARD_BG },
+        ]}
+      >
+        {props?.showHeader == false ? null : onSumbitSuccess ? (
+          <View style={{ height: 56 }}></View>
+        ) : (
           <Header
             leftIcon="backArrow"
             title={'SUBMIT PRESCRIPTION'}
@@ -294,16 +302,10 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                       {phyPrescriptionsProp.map((item: any) => {
                         return (
                           <View style={styles.phyView}>
-                            <View
-                              style={styles.phyView2}
-                            >
-                              <View
-                                style={styles.phyView3}
-                              >
+                            <View style={styles.phyView2}>
+                              <View style={styles.phyView3}>
                                 {item.fileType == 'pdf' ? (
-                                  <FileBig
-                                    style={styles.fileBigStyle}
-                                  />
+                                  <Pdf style={styles.pdfIconStyle} />
                                 ) : (
                                   <Image
                                     style={styles.imageView}
@@ -329,23 +331,19 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                       <View style={styles.presText}>
                         {ePrescriptionsProp.map((item: any) => {
                           return (
-                            <View
-                              style={styles.epresView}
-                            >
-                              <View
-                                style={styles.epresView2}
-                              >
-                                <View
-                                  style={styles.epresView3}
-                                >
-                                  <PrescriptionColored style={{ height: 35 }}/>
+                            <View style={styles.epresView}>
+                              <View style={styles.epresView2}>
+                                <View style={styles.epresView3}>
+                                  <PrescriptionColored style={{ height: 35 }} />
                                 </View>
-                                <View style={{flexDirection:'column'}}>
-                                <Text style={styles.healthText}>{item?.doctorName}</Text>
-                                <Text style={styles.healthDetailText}>{item?.date} • Prescription for {item?.forPatient}</Text>
+                                <View style={{ flexDirection: 'column', width:'80%' }}>
+                                  <Text style={styles.healthText}>{item?.doctorName}</Text>
+                                  <Text style={styles.healthDetailText}>
+                                    {item?.date} • Prescription for {item?.forPatient}
+                                  </Text>
                                 </View>
                               </View>
-                              <View style={{ justifyContent: 'center' }}>
+                              <View style={{ justifyContent: 'center', width: '10%',alignItems:'center' }}>
                                 <RemoveIcon />
                               </View>
                             </View>
@@ -355,13 +353,16 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                     </View>
                   ) : null}
                 </>
-                <TouchableOpacity style={styles.addPresView} onPress={()=>{
-                  props.navigation.navigate('TESTS', {
-                    phyPrescriptionUploaded: PhysicalPrescriptionsProps,
-                    ePresscriptionUploaded: EPrescriptionsProps,
-                    movedFrom: AppRoutes.SubmittedPrescription
-                  });
-                }}>
+                <TouchableOpacity
+                  style={styles.addPresView}
+                  onPress={() => {
+                    props.navigation.navigate('TESTS', {
+                      phyPrescriptionUploaded: PhysicalPrescriptionsProps,
+                      ePresscriptionUploaded: EPrescriptionsProps,
+                      movedFrom: AppRoutes.SubmittedPrescription,
+                    });
+                  }}
+                >
                   <Text style={styles.addPresText}>+ ADD MORE PRESCRIPTIONS</Text>
                 </TouchableOpacity>
               </>
@@ -391,6 +392,9 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
 };
 
 const styles = StyleSheet.create({
+  containerStyleView: {
+    flex: 1,
+  },
   prescriptionCardStyle: {
     paddingTop: 7,
     marginTop: 5,
@@ -456,6 +460,11 @@ const styles = StyleSheet.create({
     width: 30,
     borderRadius: 5,
   },
+  pdfIconStyle:{
+    height: 40,
+    width: 30,
+    borderRadius: 5,
+  },
   imageView:{
     height: 40,
     width: 30,
@@ -470,7 +479,7 @@ const styles = StyleSheet.create({
   epresView3:{
     paddingLeft: 8,
     paddingRight: 16,
-    width: 54,
+    width: '12%',
   },
   successText: {
     ...theme.viewStyles.text('B', 16, '#1084A9', 1),

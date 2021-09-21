@@ -32,6 +32,7 @@ import {
   PrescriptionIcon,
   GalleryIcon,
   CameraIcon,
+  CrossPopup
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
@@ -581,6 +582,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
   useEffect(() => {
     if (movedFrom == AppRoutes.SubmittedPrescription) {
+      // user comes back to add more prescription
+      setIsPrescriptionUpload(true)
+    } else if(movedFrom == AppRoutes.PrescriptionCamera) {
+      // when user comes back  deletes the camera captured image
       setIsPrescriptionUpload(true)
     }
   }, [movedFrom])
@@ -2986,6 +2991,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 }}
               >
                 <View style={styles.modalMainView}>
+                  <TouchableOpacity
+                    style={styles.closeContainer}
+                    onPress={() => {
+                      if (isPrescriptionGallery) {
+                        setIsPrescriptionGallery(false);
+                        setIsPrescriptionUpload(true);
+                      } else {
+                        setIsPrescriptionGallery(false);
+                        setIsPrescriptionUpload(false);
+                      }
+                    }}
+                  >
+                    <CrossPopup />
+                  </TouchableOpacity>
                   <View style={styles.paitentModalView}>
                     {isPrescriptionGallery
                       ? renderGalleryOption()
@@ -3130,6 +3149,10 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 14, '#01475b'),
     padding: 0,
     margin: 0,
+  },
+  closeContainer: {
+    alignSelf: 'flex-end',
+    margin: 10,
   },
   menuBottomPadding: { paddingBottom: 0 },
   deliverToText: { ...theme.viewStyles.text('R', 11, '#01475b', 1, 16) },
