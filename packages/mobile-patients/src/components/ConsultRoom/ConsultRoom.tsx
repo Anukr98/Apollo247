@@ -60,6 +60,7 @@ import {
   BannerDisplayType,
   BookingSource,
   BookingStatus,
+  MedicalRecordType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { dateFormatter } from '@aph/mobile-patients/src/utils/dateUtil';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
@@ -87,6 +88,8 @@ import {
   GET_ONEAPOLLO_USER,
   GET_PLAN_DETAILS_BY_PLAN_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import { searchPHRApiWithAuthToken } from '@aph/mobile-patients/src/helpers/apiCalls';
+const [prismAuthToken, setPrismAuthToken] = useState<string>('');
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
   GetAllUserSubscriptionsWithPlanBenefitsV2Variables,
@@ -230,6 +233,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 15,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   searchBarViewStyle: {
     backgroundColor: theme.colors.CARD_BG,
@@ -3982,13 +3986,102 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return <ConsultedDoctorsCard navigation={props.navigation} />;
   };
 
-  const onSearchExecute = () => {
-    return { name: 'name', value: 'asad' };
+  const getAuthToken = async () => {
+    client
+      .query<getPrismAuthToken, getPrismAuthTokenVariables>({
+        query: GET_PRISM_AUTH_TOKEN,
+        fetchPolicy: 'no-cache',
+        variables: {
+          uhid: currentPatient?.uhid || '',
+        },
+      })
+      .then(({ data }) => {
+        const prism_auth_token = g(data, 'getPrismAuthToken', 'response');
+        if (prism_auth_token) {
+          setPrismAuthToken(prism_auth_token);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
+      });
+  };
+  // const onSearchExecute = () => {
+  //   return { name: 'name', value: 'asad' };
+  // };
+  const onSearchExecute = (_searchText: string) => {
+    setSearchLoading(true);
+    searchPHRApiWithAuthToken(_searchText, prismAuthToken)
+      .then(({ data }) => {
+        setSearchResults([]);
+        if (data?.response) {
+          const recordData = data.response;
+          const finalData: any[] = [];
+          recordData.forEach((recordData: any) => {
+            const { healthrecordType } = recordData;
+            switch (healthrecordType) {
+              case 'PRESCRIPTION':
+                finalData.push({ healthkey: MedicalRecordType.PRESCRIPTION, value: recordData });
+                break;
+              case 'LABTEST':
+                finalData.push({ healthkey: MedicalRecordType.TEST_REPORT, value: recordData });
+                break;
+              case 'HOSPITALIZATION':
+                finalData.push({ healthkey: MedicalRecordType.HOSPITALIZATION, value: recordData });
+                break;
+              case 'ALLERGY':
+                finalData.push({ healthkey: MedicalRecordType.ALLERGY, value: recordData });
+                break;
+              case 'MEDICATION':
+                finalData.push({ healthkey: MedicalRecordType.MEDICATION, value: recordData });
+                break;
+              case 'MEDICALCONDITION':
+                finalData.push({
+                  healthkey: MedicalRecordType.MEDICALCONDITION,
+                  value: recordData,
+                });
+                break;
+              case 'RESTRICTION':
+                finalData.push({
+                  healthkey: MedicalRecordType.HEALTHRESTRICTION,
+                  value: recordData,
+                });
+                break;
+              case 'INSURANCE':
+                finalData.push({
+                  healthkey: MedicalRecordType.MEDICALINSURANCE,
+                  value: recordData,
+                });
+                break;
+              case 'BILLS':
+                finalData.push({ healthkey: MedicalRecordType.MEDICALBILL, value: recordData });
+                break;
+              case 'FAMILYHISTORY':
+                finalData.push({ healthkey: MedicalRecordType.FAMILY_HISTORY, value: recordData });
+                break;
+            }
+          });
+          setSearchResults(finalData);
+          setSearchLoading(false);
+        } else {
+          getAuthToken();
+          setSearchLoading(false);
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('HomeScreen_ConsultRoom_SearchAPI', error);
+        getAuthToken();
+        setSearchLoading(false);
+      });
   };
 
   const renderGlobalSearch = () => {
     return (
-      <View style={styles.menuOptionsContainer}>
+      <View
+        style={[
+          styles.searchBarMainViewStyle,
+          { backgroundColor: isSearchFocus ? 'rgba(0,0,0,0.05)' : 'transparent' },
+        ]}
+      >
         <View style={styles.searchBarViewStyle}>
           <SearchAreaIcon style={{ width: 20, height: 20 }} />
           <TextInput
