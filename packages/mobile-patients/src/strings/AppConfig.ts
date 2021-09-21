@@ -459,7 +459,7 @@ const PharmaApiConfig = {
     TRACK_EVENT: [`${tagalysBaseUrl}/analytics/events/track`],
     MED_SEARCH: [`${apolloProdBaseUrl}/popcsrchprd_api.php`, pharmaToken201],
     GET_SKU: [`${apolloUatBaseUrl}/popcsrchsku_api.php`, pharmaToken201],
-    MED_DETAIL: [apolloUatBaseUrl, pharmaToken201],
+    MED_DETAIL: [apolloProdBaseUrl, pharmaToken201],
     MED_SEARCH_SUGGESTION: [`${apolloProdBaseUrl}/popcsrchss_api.php`, pharmaToken201],
     STORES_LIST: [apolloUatBaseUrl, pharmaToken201],
     GET_STORE_INVENTORY: [
@@ -467,7 +467,7 @@ const PharmaApiConfig = {
       pharmaTokenYXV,
     ],
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
-    MED_CART_ITEMS_DETAILS: [`${apolloUatBaseUrl}/popcscrchcart_api.php`, pharmaToken201],
+    MED_CART_ITEMS_DETAILS: [`${apolloProdBaseUrl}/popcscrchcart_api.php`, pharmaToken201],
     IMAGES_BASE_URL: [`https://uat.apollopharmacy.in/pub/media`],
     SPECIAL_OFFERS_IMAGES_BASE_URL: [`https://newassets.apollo247.com/pub/media`],
     COUPON_IMAGES_BASE_URL: [`https://newassets.apollo247.com`],
