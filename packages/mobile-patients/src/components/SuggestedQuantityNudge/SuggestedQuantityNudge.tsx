@@ -113,7 +113,8 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
                 <Text
                   style={[
                     styles.buttonTextStyles,
-                    selectedQuantity === maxOrderQty || (!!suggested_qty && +suggested_qty)
+                    selectedQuantity === maxOrderQty ||
+                    (!!suggested_qty && selectedQuantity === +suggested_qty)
                       ? styles.greyedStyle
                       : {},
                   ]}
