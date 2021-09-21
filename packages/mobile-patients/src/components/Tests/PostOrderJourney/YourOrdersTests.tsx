@@ -1658,8 +1658,16 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   };
 
+  const [switchPatientResponse, setSwitchPatientResponse] = useState<any>('');
+
   async function _changeSelectedPatient(patientSelected: any) {
     setPatientListSelectedPatient([]);
+
+    if (patientSelected?.id === selectedOrder?.patientId) {
+      _onPressClosePatientListOverlay();
+      return;
+    }
+
     try {
       setLoading?.(true);
       const result = await switchDiagnosticOrderPatientId(
@@ -1671,28 +1679,27 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         result?.data?.switchDiagnosticOrderPatientID &&
         result?.data?.switchDiagnosticOrderPatientID?.status
       ) {
-        const getResult = result?.data?.switchDiagnosticOrderPatientID;
-        showAphAlert?.({
-          unDismissable: true,
-          title: string.common.hiWithSmiley,
-          description: getResult?.message || string.diagnostics.successfulUpdatePatientDetails,
-          onPressOk: () => {
-            hideAphAlert?.();
-            refetchOrders();
-          },
-        });
+        setSwitchPatientResponse('success');
       } else {
+        setSwitchPatientResponse('fail');
         setLoading?.(false);
-        renderReportError(string.common.tryAgainLater);
       }
     } catch (error) {
-      renderReportError(string.common.tryAgainLater);
+      setSwitchPatientResponse('fail');
       setLoading?.(false);
       CommonBugFender('_onChangeSelectedPatient_YourOrdersTests', error);
     }
   }
 
+  function _afterSuccess() {
+    _onPressClosePatientListOverlay();
+    refetchOrders();
+  }
+
   const renderPatientsListOverlay = () => {
+    const orderPatient = allCurrentPatients?.find(
+      (item: any) => item?.id === selectedOrder?.patientId
+    );
     return (
       <PatientListOverlay
         showCloseIcon={true}
@@ -1701,7 +1708,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPressDone={(_selectedPatient: any) => {
           if (!checkPatientAge(_selectedPatient)) {
             setPatientListSelectedPatient(_selectedPatient);
-            setShowPatientListOverlay(false);
             _changeSelectedPatient(_selectedPatient);
           }
         }}
@@ -1715,12 +1721,18 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             onPressBackButton: _onPressBackButton,
           });
         }}
-        patientSelected={patientListSelectedPatient}
+        patientSelected={orderPatient}
         onPressAndroidBack={() => {
           setShowPatientListOverlay(false);
           handleBack();
         }}
         disabledPatientId={selectedOrder?.patientId}
+        subTitle={''}
+        titleStyle={styles.patientOverlayTitleStyle}
+        source={AppRoutes.YourOrdersTest}
+        responseMessage={switchPatientResponse}
+        onCloseError={() => setSwitchPatientResponse('')}
+        refetchResult={() => _afterSuccess()}
       />
     );
   };
@@ -1962,4 +1974,5 @@ const styles = StyleSheet.create({
   patientSubText: {
     ...theme.viewStyles.text('R', isSmallDevice ? 11 : 12, '#00B38E'),
   },
+  patientOverlayTitleStyle: { ...theme.viewStyles.text('B', 16, colors.SHERPA_BLUE, 1, 24) },
 });

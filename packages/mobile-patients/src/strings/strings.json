@@ -612,7 +612,8 @@
     "sampleCollected": "Sample Collected",
     "sampleCollectedContent": "Our Apollo agent has successfully collected the samples.",
     "agent": "Apollo agent",
-    "successfulUpdatePatientDetails": "PatientId has been updated successfully."
+    "successfulUpdatePatientDetails": "Patient Name has been updated successfully.",
+    "patientSwitchError": "Sorry, we couldn’t change name due to an error. Please try again"
   },
   "diagnosticCategoryTitle": {
     "category": "category",
