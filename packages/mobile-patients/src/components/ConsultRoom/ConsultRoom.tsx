@@ -97,7 +97,10 @@ import {
   getPrismAuthTokenVariables,
   getPrismAuthToken,
 } from '@aph/mobile-patients/src/graphql/types/getPrismAuthToken';
-import { searchPHRApiWithAuthToken } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  searchPHRApiWithAuthToken,
+  getDiagnosticsSearchResults,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
   GetAllUserSubscriptionsWithPlanBenefitsV2Variables,
@@ -223,6 +226,7 @@ import {
   HomeScreenAttributes,
   PatientInfo as PatientInfoObj,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import { getUniqueId } from 'react-native-device-info';
 import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
 import _ from 'lodash';
@@ -858,6 +862,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [searchResults, setSearchResults] = useState<any>([]);
   const [searchQuery, setSearchQuery] = useState({});
   const [prismAuthToken, setPrismAuthToken] = useState<string>('');
+  const [testSearchResults, setTestSearchResults] = useState<
+    searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
+  >([]);
 
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
@@ -4051,9 +4058,31 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   // const onSearchExecute = () => {
   //   return { name: 'name', value: 'asad' };
   // };
+
+  const onSearchTest = async (_searchText: string) => {
+    setSearchLoading(true);
+    try {
+      const res: any = await getDiagnosticsSearchResults('diagnostic', _searchText, Number(cityId));
+      console.log('csk', JSON.stringify(res));
+      if (res?.data?.success) {
+        const products = res?.data?.data || [];
+        setTestSearchResults(
+          products as searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
+        );
+      } else {
+        setTestSearchResults([]);
+      }
+      setSearchLoading(false);
+    } catch (error) {
+      CommonBugFender('HomeScreen_ConsultRoom', error);
+      setSearchLoading(false);
+    }
+  };
+
   const onSearchExecute = (_searchText: string) => {
     console.log('csk');
     setSearchLoading(true);
+    onSearchTest(_searchText);
     searchPHRApiWithAuthToken(_searchText, prismAuthToken)
       .then(({ data }) => {
         setSearchResults([]);
