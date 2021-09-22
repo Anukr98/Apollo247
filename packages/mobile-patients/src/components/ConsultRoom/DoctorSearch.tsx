@@ -92,6 +92,8 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { calculateCircleDoctorPricing } from '../../utils/commonUtils';
+import { useShoppingCart } from '../ShoppingCartProvider';
 
 const styles = StyleSheet.create({
   searchContainer: {
@@ -390,6 +392,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [savedSearchedSuggestions, setSearchSuggestions] = useState<string>('');
   const [searchedBucket, setSearchedBucket] = useState<string>('');
   const clickedBucket = useRef<string>('');
+  const {circlePlanSelected, circleSubscriptionId, circleSubPlanId} = useShoppingCart();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -508,7 +511,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               currentPatient,
               allCurrentPatients,
               searchResults,
-              'speciality screen'
+              'speciality screen',
+              !!circleSubscriptionId,
+              circleSubPlanId || ''
             );
           } catch (e) {
             CommonBugFender('DoctorSearch_fetchSearchData_try', e);
@@ -573,17 +578,17 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     let eventAttributes:
       | WebEngageEvents[WebEngageEventName.SEARCH_SUGGESTIONS]
       | CleverTapEvents[CleverTapEventName.CONSULT_SEARCH_SUGGESTIONS] = {
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(
+      'Patient age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
-      'Text typed by the user': inputString || searchText,
-      'Search Suggestions': searchSuggestions || savedSearchedSuggestions,
+      Keyword: inputString || searchText,
+      'Search suggestions': searchSuggestions || savedSearchedSuggestions,
       Bucket: bucket || searchedBucket,
       Doctors: doctorIds?.join(', '),
       Symptoms: symptomsList?.join(', '),
@@ -591,11 +596,14 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       Procedures: proceduresList?.join(', '),
       User_Type: getUserType(allCurrentPatients),
     };
+    
     if (clickedItem) {
       // search suggestions clicked event
-      eventAttributes['Bucket Clicked'] = clickedBucket.current;
-      eventAttributes['Search Suggestion Clicked'] = clickedItem || '';
+      eventAttributes['Bucket clicked'] = clickedBucket.current;
+      eventAttributes['Search suggestion clicked'] = clickedItem || '';
       eventAttributes['Source'] = 'Speciality screen';
+      eventAttributes['Circle Member'] = !!circleSubscriptionId;
+      eventAttributes['Circle Plan type'] = circleSubPlanId || '';
       postWebEngageEvent(WebEngageEventName.SEARCH_SUGGESTIONS_CLICKED, eventAttributes);
       postCleverTapEvent(CleverTapEventName.CONSULT_SEARCH_SUGGESTIONS_CLICKED, eventAttributes);
     } else {
@@ -992,6 +1000,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               if (rowData?.typeId && rowData?.name) {
                 postConsultPastSearchSpecialityClicked(currentPatient, allCurrentPatients, rowData);
                 onClickSearch(rowData?.typeId, rowData?.name, 'true');
+                postSpecialityEvent(rowData?.name, rowData?.typeId, 'Past searches');
               }
             }
           }}
@@ -1330,7 +1339,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     );
   };
 
-  const postSpecialityEvent = (speciality: string, specialityId: string) => {
+  const postSpecialityEvent = (speciality: string, specialityId: string, source?: string) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.SPECIALITY_CLICKED] = {
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
@@ -1344,21 +1353,27 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Speciality Name': speciality,
       'Speciality ID': specialityId,
       User_Type: getUserType(allCurrentPatients),
+      'Circle Member': !!circleSubscriptionId,
+      'Circle Plan type': circleSubPlanId || '',
+      Source: source || 'Speciality list',
     };
     postWebEngageEvent(WebEngageEventName.SPECIALITY_CLICKED, eventAttributes);
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_SPECIALITY_CLICKED] = {
       'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
-      relation: g(currentPatient, 'relation') || undefined,
+      Relation: g(currentPatient, 'relation') || undefined,
       'Patient age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
       'Patient gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Mobile number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
-      specialityName: speciality,
-      specialityId: specialityId,
+      'Speciality name': speciality,
+      'Speciality ID': specialityId,
       User_Type: getUserType(allCurrentPatients),
+      'Circle Member': !!circleSubscriptionId,
+      'Circle Plan type': circleSubPlanId || '',
+      Source: source || 'Speciality list',
     };
     postCleverTapEvent(CleverTapEventName.CONSULT_SPECIALITY_CLICKED, cleverTapEventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.SPECIALITY_CLICKED, eventAttributes);
@@ -1375,7 +1390,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     };
     postFirebaseEvent(FirebaseEventName.SPECIALITY_CLICKED, eventAttributesFirebase);
   };
-
+  
   const postDoctorClickWEGEvent = (
     _doctorDetails: any,
     source: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED]['Source'],
@@ -1392,33 +1407,47 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       Rank: doctorDetails?.rowId,
       User_Type: getUserType(allCurrentPatients),
     };
+    const {
+      onlineConsultDiscountedPrice,
+      cashbackEnabled,
+      cashbackAmount,
+    } = calculateCircleDoctorPricing(doctorDetails);
 
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED] = {
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
-      'Patient Age': Math.round(
+      'Patient age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile number': g(currentPatient, 'mobileNumber'),
       'Doctor ID': g(doctorDetails, 'id')!,
-      'Doctor Name': g(doctorDetails, 'displayName')!,
-      'Speciality Name': doctorDetails?.specialtydisplayName,
+      'Doctor name': g(doctorDetails, 'displayName')!,
+      'Speciality name': doctorDetails?.specialtydisplayName,
       'Speciality ID': 'NA',
-      'Media Source': 'NA',
+      'Media source': 'NA',
+      Experience: String(doctorDetails?.experience) || '',
       User_Type: getUserType(allCurrentPatients),
       Fee: Number(doctorDetails?.onlineConsultationFees),
+      Languages: doctorDetails?.languages?.join(',') || '',
       Source: 'Search',
       'Doctor card clicked': 'Yes',
       Rank: doctorDetails?.rowId,
       Is_TopDoc: 'No',
       DOTH: 'F',
-      'Doctor Tab': 'NA',
-      'Doctor Category': doctorDetails?.doctorType,
-      'Search screen': searchText?.length > 2 ? 'Speciality screen' : 'NA',
+      'Doctor tab': 'NA',
+      'Search screen': searchText?.length > 2 ? 'Speciality listing' : 'NA',
+      'Doctor category': doctorDetails?.doctorType,
       'Appointment CTA': 'NA',
+      'Customer ID': g(currentPatient, 'id'),
+      'Available in mins': String(doctorDetails?.earliestSlotInMinutes) || '',
+      'Relation': g(currentPatient, 'relation'),
+      'Circle Membership added': String(!!circlePlanSelected),
+      'Circle discount': onlineConsultDiscountedPrice ? onlineConsultDiscountedPrice : 0,
+      'Circle Cashback': cashbackEnabled ? cashbackAmount! : 0,
+      'Doctor city': 'NA',
+      'Hospital name': 'NA',
     };
-
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {
       DoctorName: doctorDetails.fullName!,
       Source: source,
@@ -1479,7 +1508,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       specialistPluralTerm,
     });
   };
-
+  
   const renderDoctorSearches = () => {
     if (searchText.length > 2 && doctorsList && doctorsList.length > 0) {
       const SpecialitiesList = (searchText.length > 2 ? searchSpecialities : Specialities) || [];

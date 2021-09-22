@@ -117,7 +117,7 @@ import {
 } from 'react-navigation';
 import AsyncStorage from '@react-native-community/async-storage';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
-import { getValuesArray } from '@aph/mobile-patients/src/utils/commonUtils';
+import { calculateCircleDoctorPricing, getValuesArray } from '@aph/mobile-patients/src/utils/commonUtils';
 import _ from 'lodash';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { CirclePlanAddedToCart } from '@aph/mobile-patients/src/components/ui/CirclePlanAddedToCart';
@@ -138,6 +138,7 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { useShoppingCart } from '../ShoppingCartProvider';
 
 const searchFilters = require('@aph/mobile-patients/src/strings/filters');
 const { width: screenWidth } = Dimensions.get('window');
@@ -320,6 +321,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [specialityId, setSpecialityId] = useState<string>(
     props.navigation.getParam('specialityId') || ''
   );
+  const {circlePlanSelected, circleSubscriptionId, circleSubPlanId} = useShoppingCart();
 
   let DoctorsflatListRef: any;
   const filterOptions = (filters: any) => {
@@ -926,7 +928,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             currentPatient,
             allCurrentPatients,
             data?.getDoctorList?.doctors?.length == 0,
-            'Doctor listing screen'
+            'Doctor listing screen',
+            !!circleSubscriptionId,
+            circleSubPlanId || ''
           );
         }
         pageNo ? setpageNo(pageNo + 1) : setpageNo(1);
@@ -1237,14 +1241,19 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     states?: any
   ) => {
     const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_DOH_Viewed] = {
-      doctorId: doctorData?.id,
-      doctorName: doctorData?.displayName,
-      doctorType: doctorData?.doctorType,
-      specialtyId: props.navigation.getParam('specialityId') || '',
-      specialtyName: props.navigation.getParam('specialityName') || '',
-      zone: states || locationDetails?.state || '',
-      userName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      userPhoneNumber: currentPatient?.mobileNumber,
+      'Doctor ID': doctorData?.id,
+      'Doctor name': doctorData?.displayName,
+      'Doctor type': doctorData?.doctorType,
+      'Speciality ID': props.navigation.getParam('specialityId') || '',
+      'Speciality name': props.navigation.getParam('specialityName') || '',
+      Zone: states || locationDetails?.state || '',
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Mobile number': currentPatient?.mobileNumber,
+      'Patient UHID': currentPatient?.uhid || '',
+      'Patient age': Math.round(
+        moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)
+      ),
+      'Patient gender': currentPatient?.gender,
     };
     postCleverTapEvent(eventName, eventAttributes);
   };
@@ -1267,33 +1276,48 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       Is_TopDoc: !!isTopDoc ? 'Yes' : 'No',
       User_Type: getUserType(allCurrentPatients),
     };
+    
+    const {
+      onlineConsultDiscountedPrice,
+      cashbackEnabled,
+      cashbackAmount,
+    } = calculateCircleDoctorPricing(doctorDetails);
 
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED] = {
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
-      'Patient Age': Math.round(
+      'Patient age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile number': g(currentPatient, 'mobileNumber'),
       'Doctor ID': g(doctorDetails, 'id')! || undefined,
-      'Doctor Name': g(doctorDetails, 'displayName')! || undefined,
-      'Speciality Name': doctorDetails?.specialtydisplayName,
+      'Doctor name': g(doctorDetails, 'displayName')! || undefined,
+      'Speciality name': doctorDetails?.specialtydisplayName,
+      Experience: String(doctorDetails?.experience) || '',
       'Speciality ID': props.navigation.getParam('specialityId') || '',
-      'Media Source': 'NA',
+      'Media source': 'NA',
       User_Type: getUserType(allCurrentPatients),
+      Languages: doctorDetails?.languages?.join(',') || '',
       Fee: Number(doctorDetails?.onlineConsultationFees),
       Source: 'Doctor Card clicked',
       'Doctor card clicked': 'Yes',
       Rank: doctorDetails?.rowId,
       Is_TopDoc: !!isTopDoc ? 'Yes' : 'No',
       DOTH: !!isTopDoc ? 'T' : 'F',
-      'Doctor Tab': doctorsType === 'PARTNERS' ? 'Doctor Partner Tab' : 'Apollo Tab',
-      'Doctor Category': doctorDetails?.doctorType,
-      'Search screen': doctorSearch?.length > 2 ? 'Doctor list screen' : 'NA',
+      'Doctor tab': doctorsType === 'PARTNERS' ? 'Partner' : 'Apollo Tab',
+      'Search screen': doctorSearch?.length > 2 ? 'Doctor listing' : 'NA',
+      'Doctor category': doctorDetails?.doctorType,
       'Appointment CTA': 'NA',
+      'Customer ID': g(currentPatient, 'id'),
+      'Available in mins': String(doctorDetails?.earliestSlotInMinutes) || '',
+      'Relation': g(currentPatient, 'relation'),
+      'Circle Membership added': String(!!circlePlanSelected),
+      'Circle discount': onlineConsultDiscountedPrice ? onlineConsultDiscountedPrice : 0,
+      'Circle Cashback': cashbackEnabled ? cashbackAmount! : 0,
+      'Doctor city': 'NA',
+      'Hospital name': 'NA',
     };
-
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {
       DoctorName: doctorDetails.fullName!,
       Source: source,
@@ -1316,13 +1340,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     } else if (type == 'book-appointment') {
       const _cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
         'Patient name': currentPatient.firstName,
-        docId: doctorDetails?.id,
-        specialityId: doctorDetails?.specialty?.id,
-        specialityName: doctorDetails?.specialty?.name,
-        exp: Number(doctorDetails?.experience),
-        docHospital: doctorDetails?.doctorHospital?.[0]?.facility?.name,
-        docCity: doctorDetails?.doctorHospital?.[0]?.facility?.city,
-        availableInMins: getTimeDiff(doctorDetails?.slot),
+        'Doctor ID': doctorDetails?.id,
+        'Speciality ID': doctorDetails?.specialty?.id,
+        'Speciality name': doctorDetails?.specialty?.name,
+        Experience: Number(doctorDetails?.experience),
+        'Doctor hospital': doctorDetails?.doctorHospital?.[0]?.facility?.name,
+        'Doctor city': doctorDetails?.doctorHospital?.[0]?.facility?.city,
+        'Available in mins': getTimeDiff(doctorDetails?.slot),
         Source: 'Doctor card doctor listing screen',
         'Patient UHID': currentPatient.uhid,
         Relation: currentPatient?.relation,
@@ -1331,12 +1355,15 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         'Customer ID': currentPatient.id,
         User_Type: getUserType(allCurrentPatients),
         rank: doctorDetails.rowId || undefined,
-        onlineConsultFee:
+        'Online consult fee':
           Number(doctorDetails?.onlineConsultationFees) || Number(doctorDetails?.fee) || undefined,
-        physicalConsultFee:
+        'Physical consult fee':
           Number(doctorDetails?.physicalConsultationFees) ||
           Number(doctorDetails?.fee) ||
           undefined,
+          'Mobile number': currentPatient?.mobileNumber || '',
+          'Circle Member': !!circleSubscriptionId,
+          'Circle Plan type': circleSubPlanId,
       };
       eventAttributes['Source'] = 'List';
       postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);

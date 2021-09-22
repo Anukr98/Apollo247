@@ -355,8 +355,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       eventAttributes['Display ID'] = displayId;
       eventAttributes['User_Type'] = getUserType(allCurrentPatients);
       let cleverTapEventAttributes = cleverTapConsultBookedEventAttributes;
-      cleverTapEventAttributes['displayId'] = displayId;
-      cleverTapEventAttributes['userType'] = getUserType(allCurrentPatients);
+      cleverTapEventAttributes['Display ID'] = displayId;
+      cleverTapEventAttributes['User_type'] = getUserType(allCurrentPatients);
       postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, appsflyerEventAttributes);
       postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
       firePurchaseEvent(amountBreakup);
@@ -1409,6 +1409,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingHorizontal: 10,
     alignItems: 'center',
+    borderWidth: 0.5,
+    paddingVertical: 6,
+    borderColor: theme.colors.LIGHT_GRAY_2
   },
   viewInvoice: {
     marginTop: 10,
