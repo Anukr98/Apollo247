@@ -4095,7 +4095,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       <View
         style={[
           styles.searchBarMainViewStyle,
-          { backgroundColor: isSearchFocus ? 'rgba(0,0,0,0.05)' : 'transparent' },
+          { backgroundColor: isSearchFocus ? '#fff' : 'transparent' },
         ]}
       >
         <View style={styles.searchBarViewStyle}>
@@ -4124,7 +4124,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             {'Cancel'}
           </Text>
         ) : null}
-        <View style={styles.seperatorStyle} />
+        <View
+          style={{
+            height: 20,
+            backgroundColor: '#000',
+            marginHorizontal: 5,
+            marginVertical: 6,
+          }}
+        />
       </View>
     );
   };
@@ -4162,50 +4169,54 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
-        <ScrollView style={{ flex: 1 }} bounces={false}>
-          <View style={{ width: '100%' }}>
-            <View style={styles.viewName}>
-              {renderTopIcons()}
-              <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
-              {/* below line could be added for now not in designs */}
-              {/* <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text> */}
-              {renderGlobalSearch()}
-              {renderMenuOptions()}
+        {renderTopIcons()}
+        <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
+        {/* below line could be added for now not in designs */}
+        {/* <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text> */}
+        {renderGlobalSearch()}
+        {searchText?.length > 2 ? (
+          renderSearchResults()
+        ) : (
+          <ScrollView style={{ flex: 1 }} bounces={false}>
+            <View style={{ width: '100%' }}>
+              <View style={styles.viewName}>
+                {renderMenuOptions()}
 
-              {circleDataLoading && renderCircleShimmer()}
-              <View style={{ backgroundColor: '#f0f1ec' }}>
-                {isCircleMember === 'yes' && !circleDataLoading && renderCircle()}
-              </View>
-              {showCirclePlans && renderCircleSubscriptionPlans()}
-              {showCircleActivationcr && renderCircleActivation()}
-              {!covidVaccineCtaV2?.data && renderCovidVaccinationShimmer()}
-              <View style={{ backgroundColor: '#f0f1ec' }}>
-                {covidVaccineCtaV2?.data?.length > 0 && renderCovidContainer()}
-              </View>
-              {bannerLoading && renderBannerShimmer()}
-              <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
-              {/**added prohealth banner */}
-              {proActiveAppointments?.length == 0 && (
-                <View style={{ backgroundColor: '#f0f1ec' }}>{renderProhealthBanner()}</View>
-              )}
-              {proActiveAppointments?.length > 0 && (
+                {circleDataLoading && renderCircleShimmer()}
                 <View style={{ backgroundColor: '#f0f1ec' }}>
-                  {renderListView(
-                    proActiveAppointments?.length == 1
-                      ? 'ProHealth Appointment'
-                      : 'ProHealth Appointments',
-                    'prohealth'
-                  )}
+                  {isCircleMember === 'yes' && !circleDataLoading && renderCircle()}
                 </View>
-              )}
-              <View style={{ backgroundColor: '#f0f1ec' }}>
-                {renderListView('Active Appointments', 'normal')}
+                {showCirclePlans && renderCircleSubscriptionPlans()}
+                {showCircleActivationcr && renderCircleActivation()}
+                {!covidVaccineCtaV2?.data && renderCovidVaccinationShimmer()}
+                <View style={{ backgroundColor: '#f0f1ec' }}>
+                  {covidVaccineCtaV2?.data?.length > 0 && renderCovidContainer()}
+                </View>
+                {bannerLoading && renderBannerShimmer()}
+                <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
+                {/**added prohealth banner */}
+                {proActiveAppointments?.length == 0 && (
+                  <View style={{ backgroundColor: '#f0f1ec' }}>{renderProhealthBanner()}</View>
+                )}
+                {proActiveAppointments?.length > 0 && (
+                  <View style={{ backgroundColor: '#f0f1ec' }}>
+                    {renderListView(
+                      proActiveAppointments?.length == 1
+                        ? 'ProHealth Appointment'
+                        : 'ProHealth Appointments',
+                      'prohealth'
+                    )}
+                  </View>
+                )}
+                <View style={{ backgroundColor: '#f0f1ec' }}>
+                  {renderListView('Active Appointments', 'normal')}
+                </View>
+                <View style={{ backgroundColor: '#f0f1ec' }}>{renderAllConsultedDoctors()}</View>
+                {renderCovidMainView()}
               </View>
-              <View style={{ backgroundColor: '#f0f1ec' }}>{renderAllConsultedDoctors()}</View>
-              {renderCovidMainView()}
             </View>
-          </View>
-        </ScrollView>
+          </ScrollView>
+        )}
       </SafeAreaView>
       {showWebView?.action && openWebView(showWebView?.url)}
       {renderBottomTabBar()}
