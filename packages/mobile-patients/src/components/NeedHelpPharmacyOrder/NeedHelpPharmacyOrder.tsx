@@ -5,7 +5,7 @@ import { OrderCard } from '@aph/mobile-patients/src/components/NeedHelpPharmacyO
 import { AphListItem } from '@aph/mobile-patients/src/components/ui/AphListItem';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { RetryCard } from '@aph/mobile-patients/src/components/ui/RetryCard';
-import { formatOrders, MedOrder } from '@aph/mobile-patients/src/components/YourOrdersScene';
+import { formatOrders, MedOrder, getOrderTitle } from '@aph/mobile-patients/src/components/YourOrdersScene';
 import { GET_MEDICINE_ORDERS_OMS__LIST } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getMedicineOrdersOMSList,
@@ -24,6 +24,9 @@ import { FlatList, ListRenderItemInfo, SafeAreaView, StyleSheet, Text, View } fr
 import { FacebookLoader } from 'react-native-easy-content-loader';
 import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
+import { needHelpCleverTapEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
+import { useShoppingCart} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { CleverTapEventName } from '../../helpers/CleverTapEvents';
 
 export interface Props
   extends NavigationScreenProps<{
@@ -43,7 +46,11 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
 
   const breadCrumb = [{ title: string.needHelp }, { title: string.pharmacy }];
 
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients, profileAllPatients  } = useAllCurrentPatients();
+  const {
+    circlePlanValidity,
+    circleSubscriptionId,
+  } = useShoppingCart();
   const [displayAll, setDisplayAll] = useState<boolean>(false);
 
   const ordersQuery = useQuery<getMedicineOrdersOMSList, getMedicineOrdersOMSListVariables>(
@@ -53,8 +60,25 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
   const { data, loading, error } = ordersQuery;
   const orders = formatOrders(data) as MedOrder[];
 
+  const cleverTapEvent = (eventName: CleverTapEventName, extraAttributes?: Object) => {
+    needHelpCleverTapEvent(
+      eventName,
+      allCurrentPatients,
+      currentPatient,
+      circlePlanValidity,
+      circleSubscriptionId,
+      'Pharmacy help Screen',
+      extraAttributes
+    );
+  };
+
   const renderHeader = () => {
-    const onPressBack = () => navigation.goBack();
+    const onPressBack = () => {
+      navigation.goBack();
+      cleverTapEvent(
+        CleverTapEventName.BACK_NAV_ON_C1,
+        {"BU/Module name": string.pharmacy});
+    };
     return <Header title={pageTitle} leftIcon="backArrow" onPressLeftIcon={onPressBack} />;
   };
 
@@ -75,7 +99,16 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderItem = ({ item }: ListRenderItemInfo<MedOrder>) => {
+    const orderRelatedInfo = {
+      "BU/Module name": string.pharmacy,
+      "Order number":item?.billNumber || item?.orderAutoId,
+      "Order status":item?.currentStatus,
+      "Order title":getOrderTitle(item),
+      "Order created date": item?.createdDate
+    };
     const onPressHelp = () => {
+      cleverTapEvent(
+        CleverTapEventName.ORDER_REL_ISSUES_ON_C1_HELP, orderRelatedInfo);
       const currentStatusDate = item?.medicineOrdersStatus?.find(
         (i) => i?.orderStatus === item?.currentStatus
       )?.statusDate;
@@ -91,6 +124,11 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
       });
     };
     const onPress = (isCancelOrder?: boolean) => {
+      isCancelOrder ? 
+        cleverTapEvent(
+          CleverTapEventName.CANCEL_ON_C1_HELP, orderRelatedInfo)
+        : cleverTapEvent(
+          CleverTapEventName.ORDER_NAV_ON_C1_HELP, orderRelatedInfo);
       navigation.navigate(AppRoutes.OrderDetailsScene, {
         orderAutoId: item.orderAutoId,
         billNumber: item.billNumber,
@@ -132,7 +170,13 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
     const visible = !displayAll && orders.length > 1;
     return (
       visible && (
-        <AphListItem title={string.chooseFromPreviousOrders} onPress={() => setDisplayAll(true)} />
+        <AphListItem title={string.chooseFromPreviousOrders} onPress={() => 
+          {
+            setDisplayAll(true);
+            cleverTapEvent(
+              CleverTapEventName.PREV_ORDERS_TILE_ON_C1_HELP,
+              {"BU/Module name": string.pharmacy});
+          }} />
       )
     );
   };
@@ -147,6 +191,9 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
 
   const renderIssueNotRelatedToOrder = () => {
     const onPress = () => {
+      cleverTapEvent(
+        CleverTapEventName.NON_ORDER_ISSUES_ON_C1_HELP,
+        {"BU/Module name": string.pharmacy});
       navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
         queryIdLevel1,
         queries,
