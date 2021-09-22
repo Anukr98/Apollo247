@@ -4045,29 +4045,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return <ConsultedDoctorsCard navigation={props.navigation} />;
   };
 
-  const getAuthToken = async () => {
-    client
-      .query<getPrismAuthToken, getPrismAuthTokenVariables>({
-        query: GET_PRISM_AUTH_TOKEN,
-        fetchPolicy: 'no-cache',
-        variables: {
-          uhid: currentPatient?.uhid || '',
-        },
-      })
-      .then(({ data }) => {
-        const prism_auth_token = g(data, 'getPrismAuthToken', 'response');
-        if (prism_auth_token) {
-          setPrismAuthToken(prism_auth_token);
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
-      });
-  };
-  // const onSearchExecute = () => {
-  //   return { name: 'name', value: 'asad' };
-  // };
-
   const onSearchMedicines = async (
     searchText: string,
     sortBy: string | null,
@@ -4171,6 +4148,21 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       });
   };
 
+  const searchResultsTabHeader = {
+    MEDICATION: {
+      title: 'Search In Medicines',
+      icon: () => null,
+    },
+    TEST_REPORT: {
+      title: 'In Lab Tests',
+      icon: () => <TestsCartIcon style={{ width: 20, height: 20, marginLeft: 8 }} />,
+    },
+    CONSULTATION: {
+      title: 'In Consult',
+      icon: () => <DoctorIcon style={{ width: 20, height: 20, marginLeft: 8 }} />,
+    },
+  };
+
   const renderGlobalSearch = () => {
     return (
       <View>
@@ -4232,13 +4224,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             paddingVertical: 8,
           }}
         >
+          {searchResultsTabHeader[MedicalRecordType.MEDICATION].icon}
           <Text
             style={{
               ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
               marginLeft: 14,
             }}
           >
-            Search In Medicines
+            {searchResultsTabHeader[MedicalRecordType.MEDICATION].title}
           </Text>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -4262,14 +4255,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             paddingVertical: 8,
           }}
         >
-          <TestsCartIcon style={{ width: 20, height: 20, marginLeft: 8 }} />
+          {searchResultsTabHeader[MedicalRecordType.TEST_REPORT].icon}
           <Text
             style={{
               ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
               marginLeft: 14,
             }}
           >
-            In Lab Tests
+            {searchResultsTabHeader[MedicalRecordType.TEST_REPORT].title}
           </Text>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -4292,14 +4285,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             paddingVertical: 8,
           }}
         >
-          <DoctorIcon style={{ width: 20, height: 20, marginLeft: 8 }} />
+          {searchResultsTabHeader[MedicalRecordType.CONSULTATION].icon}
           <Text
             style={{
               ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
               marginLeft: 14,
             }}
           >
-            In Consult
+            {searchResultsTabHeader[MedicalRecordType.CONSULTATION].title}
           </Text>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -4341,7 +4334,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderSearchItem = (item: any, index: number) => {
-    index === 0 ? console.log('csk item', JSON.stringify(searchResults)) : null;
     const healthCardTopView = () => {
       switch (item?.key) {
         case MedicalRecordType.MEDICATION:
