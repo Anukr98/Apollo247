@@ -600,7 +600,7 @@
   },
   "diagnosticCategoryTitle": {
     "category": "category",
-    "categoryGrid": "category_Scroll"
+    "categoryGrid": "category_scroll"
   },
   "orders": {
     "urOrders": "MY ORDERS",
