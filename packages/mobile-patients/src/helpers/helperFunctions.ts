@@ -2240,22 +2240,37 @@ export const InitiateAppsFlyer = (
   });
   onDeepLinkCanceller = appsFlyer.onDeepLink(res => {
     if (res.isDeferred === true) {
-      clevertapEventForAppsflyerDeeplink(res.data)
+      getInstallResources()
       const url = handleOpenURL(res.data.deep_link_value);
       AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url))
     }
     else if (res.data.deep_link_value && res.isDeferred === false) {
-      clevertapEventForAppsflyerDeeplink(res.data)
+      clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data))
       const url = handleOpenURL(res.data.deep_link_value);
       AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url))
       redirectWithOutDeferred(url)
     }
     else if (res.status == "success") {
-      clevertapEventForAppsflyerDeeplink(res.data)
+      clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data))
     }
   })
 };
 
+const removeNullFromObj = (obj: any) => {
+  for (var propName in obj) {
+    if (obj[propName] === null || obj[propName] === undefined) {
+      delete obj[propName];
+    }
+  }
+  return obj
+}
+
+const getInstallResources = () => {
+  let installConversation = appsFlyer.onInstallConversionData((res) => {
+    clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data))
+    installConversation()
+  })
+}
 export const clevertapEventForAppsflyerDeeplink = (eventArributes: any) => {
   postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
     ...eventArributes
@@ -2268,9 +2283,15 @@ export const deferredDeepLinkRedirectionData = async (
   success?: () => void
 ) => {
   const res = await AsyncStorage.getItem('deferred_deep_link_value');
+
   if (res) {
     const url = JSON.parse(res);
-    pushTheView(navigation, url?.routeName)
+    pushTheView(navigation, url?.routeName,
+      url?.id,
+      url?.isCall,
+      undefined,
+      undefined,
+      url?.mediaSource)
     AsyncStorage.removeItem('deferred_deep_link_value')
     success && success()
   }

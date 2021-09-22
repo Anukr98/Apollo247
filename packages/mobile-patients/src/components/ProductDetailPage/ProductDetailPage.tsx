@@ -1274,6 +1274,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             suggested_qty={medicineDetails?.suggested_qty}
             sku={medicineDetails?.sku}
             packForm={medicineDetails?.pack_form}
+            maxOrderQty={medicineDetails?.MaxOrderQty}
             setShownNudgeOnce={setShownNudgeOnce}
             showSuggestedQuantityNudge={showSuggestedQuantityNudge}
             setShowSuggestedQuantityNudge={setShowSuggestedQuantityNudge}

@@ -37,8 +37,7 @@ export enum ProductPageViewedSource {
 }
 
 export enum WebEngageEventName {
-
-  Patient_API_Error='Patient_API_Error',
+  Patient_API_Error = 'Patient_API_Error',
   //DOH
   DOH_Clicked = 'DOH Clicked',
   DOH_Viewed = 'DOH Viewed',
@@ -486,6 +485,8 @@ export enum WebEngageEventName {
   ADD_MEMBER_CLICKED = 'Add Member Clicked',
   MEMBER_DETAILS_SAVED = 'Member Details Saved',
   VACCINE_REGISTRATION_COMPLETED = 'Vaccine Registeration Completed',
+  ERROR_WHILE_FETCHING_JWT_TOKEN = 'Error while Fetching JWT token',
+  AUTHTOKEN_UPDATED = 'Authtoken Updated',
 }
 
 export interface PatientInfo {
@@ -798,14 +799,14 @@ export interface WebEngageEvents {
   [WebEngageEventName.DOH_Clicked]: DOHInfo;
 
   [WebEngageEventName.Patient_API_Error]: {
-  'Patient Name':string;
-  'Patient ID':string;
-  'Patient Number':string;
-  'Doctor ID':string | null;
-  'Screen Name':string;
-  'API Name':string;
-  'Error Name':any;
-    };
+    'Patient Name': string;
+    'Patient ID': string;
+    'Patient Number': string;
+    'Doctor ID': string | null;
+    'Screen Name': string;
+    'API Name': string;
+    'Error Name': any;
+  };
 
   // ********** Home Screen Events ********** \\
 
