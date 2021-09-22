@@ -261,13 +261,14 @@ export function postwebEngageProductRemovedEvent(cartItem: ShoppingCartItem, id:
     'Product ID': cartItem.id,
     'Product Name': cartItem.name,
   };
-
   const appsFlyerEvents = {
     af_customer_user_id: id,
     'No. of items': cartItem.quantity,
     af_content_id: cartItem.id,
     af_content: cartItem.name,
-    af_content_type: "Cart Page"
+    af_content_type: "Cart Page",
+    af_currency: "INR",
+    af_price: cartItem.specialPrice
   }
   postCleverTapEvent(CleverTapEventName.PHARMACY_ITEMS_REMOVED_FROM_CART,eventAttributes);
   postWebEngageEvent(WebEngageEventName.ITEMS_REMOVED_FROM_CART, eventAttributes);

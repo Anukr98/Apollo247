@@ -2352,7 +2352,8 @@ export const postAppsFlyerAddToCartEvent = (
     special_price,
   }: Pick<MedicineProduct, 'sku' | 'type_id' | 'price' | 'special_price'>,
   id: string,
-  pharmacyCircleAttributes?: PharmacyCircleEvent
+  pharmacyCircleAttributes?: PharmacyCircleEvent,
+  content_id?: number
 ) => {
   const eventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_ADD_TO_CART] = {
     'customer id': id,
@@ -2360,6 +2361,7 @@ export const postAppsFlyerAddToCartEvent = (
     af_currency: 'INR',
     item_type: type_id == 'Pharma' ? 'Drugs' : 'FMCG',
     sku: sku,
+    af_content_id: content_id,
     ...pharmacyCircleAttributes,
   };
   postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_ADD_TO_CART, eventAttributes);

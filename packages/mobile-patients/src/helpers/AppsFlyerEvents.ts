@@ -217,6 +217,7 @@ export interface AppsFlyerEvents {
     sku: string;
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
+    "af_content_id"?: number
   };
   [AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART]: {
     productname: string;
