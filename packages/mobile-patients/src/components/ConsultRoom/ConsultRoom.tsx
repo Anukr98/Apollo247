@@ -211,6 +211,7 @@ import {
   renderCircleShimmer,
   renderBannerShimmer,
   CovidButtonShimmer,
+  renderGlobalSearchShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { ConsultedDoctorsCard } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultedDoctorsCard';
 import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
@@ -4445,7 +4446,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         {/* below line could be added for now not in designs */}
         {/* <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text> */}
         {renderGlobalSearch()}
-        {searchText?.length > 2 ? (
+        {searchLoading ? (
+          renderGlobalSearchShimmer()
+        ) : searchText?.length > 2 ? (
           renderSearchResults()
         ) : (
           <ScrollView style={{ flex: 1 }} bounces={false}>

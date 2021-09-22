@@ -436,6 +436,136 @@ export const renderBannerShimmer = () => {
   );
 };
 
+export const renderGlobalSearchShimmer = () => {
+  return (
+    <View style={{ width: width, marginBottom: 6, padding: 16, backgroundColor: '#fff' }}>
+      <View
+        style={{
+          height: 1.5,
+          backgroundColor: '#D4D4D4',
+          marginTop: -4,
+          marginBottom: 4,
+          marginHorizontal: -16,
+        }}
+      />
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: '#EAF6FF',
+          marginVertical: 16,
+          paddingVertical: 8,
+        }}
+      >
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={{
+            ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
+            marginLeft: 14,
+          }}
+        />
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={{ width: 25, height: 25 }}
+        />
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={{
+            ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+            marginLeft: 14,
+          }}
+        />
+      </View>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: '#FEE7DA',
+          marginVertical: 16,
+          paddingVertical: 8,
+        }}
+      >
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={{
+            ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
+            marginLeft: 14,
+          }}
+        />
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={{ width: 25, height: 25 }}
+        />
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={{
+            ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+            marginLeft: 14,
+          }}
+        />
+      </View>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: '#E5FFFD',
+          marginVertical: 16,
+          paddingVertical: 8,
+        }}
+      >
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={{
+            ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
+            marginLeft: 14,
+          }}
+        />
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={{ width: 25, height: 25 }}
+        />
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={{
+            ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+            marginLeft: 14,
+          }}
+        />
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={{ width: 25, height: 25 }}
+        />
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={{
+            ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+            marginLeft: 14,
+          }}
+        />
+      </View>
+    </View>
+  );
+};
+
 export const renderTestDiagonosticsShimmer = () => {
   return (
     <View style={{ backgroundColor: '#f0f1ec' }}>
