@@ -479,6 +479,10 @@ export const Path: React.FC<IconProps> = (props) => (
   />
 );
 
+export const SearchNoResultIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" source={require('./icons/ic_search_no_result.webp')} {...props} />
+);
+
 export const SearchGreenIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" source={require('./icons/ic_search_green.webp')} {...props} />
 );

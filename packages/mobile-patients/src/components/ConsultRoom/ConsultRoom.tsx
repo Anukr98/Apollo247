@@ -56,6 +56,7 @@ import {
   BackArrow,
   SearchAreaIcon,
   RemoveIconGrey,
+  SearchNoResultIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   BannerDisplayType,
@@ -4177,7 +4178,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         data={searchResults}
         ListEmptyComponent={
           <View style={styles.searchListHeaderViewStyle}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: '#EAF6FF',
+                marginVertical: 16,
+                paddingVertical: 8,
+              }}
+            >
               <Text
                 style={{
                   ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
@@ -4198,8 +4207,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 No Results Found
               </Text>
             </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <TestsCartIcon style={{ width: 20, height: 20 }} />
+
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: '#FEE7DA',
+                marginVertical: 16,
+                paddingVertical: 8,
+              }}
+            >
+              <TestsCartIcon style={{ width: 20, height: 20, marginLeft: 8 }} />
               <Text
                 style={{
                   ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
@@ -4220,8 +4238,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 No Results Found
               </Text>
             </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <DoctorIcon style={{ width: 20, height: 20 }} />
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: '#E5FFFD',
+                marginVertical: 16,
+                paddingVertical: 8,
+              }}
+            >
+              <DoctorIcon style={{ width: 20, height: 20, marginLeft: 8 }} />
               <Text
                 style={{
                   ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
