@@ -148,6 +148,7 @@ import {
   getAge,
   removeObjectNullUndefinedProperties,
   isValidSearch,
+  getPhrHighlightText,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -221,6 +222,7 @@ import {
   PatientInfo as PatientInfoObj,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { getUniqueId } from 'react-native-device-info';
+import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
 import _ from 'lodash';
 
 const { Vitals } = NativeModules;
@@ -264,6 +266,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingTop: 0,
     paddingBottom: 1,
+  },
+  loaderViewStyle: {
+    justifyContent: 'center',
+    flex: 1,
+    alignItems: 'center',
+  },
+  loaderStyle: {
+    height: 100,
+    backgroundColor: 'transparent',
+    alignSelf: 'center',
+  },
+  healthRecordTypeTextStyle: {
+    ...theme.viewStyles.text('R', 12, theme.colors.SILVER_LIGHT, 1, 21),
+    marginHorizontal: 13,
+  },
+  healthRecordTypeViewStyle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  searchListHeaderViewStyle: {
+    marginHorizontal: 17,
+    marginVertical: 15,
+  },
+  searchListHeaderTextStyle: {
+    ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 21),
   },
   viewName: {
     backgroundColor: theme.colors.WHITE,
@@ -4133,6 +4161,161 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           }}
         />
       </View>
+    );
+  };
+
+  const renderSearchResults = () => {
+    return searchLoading ? (
+      renderSearchLoader()
+    ) : (
+      <FlatList
+        keyExtractor={(_, index) => `${index}`}
+        bounces={false}
+        data={searchResults}
+        ListEmptyComponent={
+          <Text
+            style={{
+              ...theme.fonts.IBMPlexSansMedium(12),
+              color: '#890000',
+              paddingVertical: 8,
+            }}
+          >
+            Sorry, we couldn’t find what you are looking for :(
+          </Text>
+        }
+        ListHeaderComponent={searchListHeaderView}
+        renderItem={({ item, index }) => renderSearchItem(item, index)}
+      />
+    );
+  };
+
+  const renderSearchLoader = () => {
+    return (
+      <View style={styles.loaderViewStyle}>
+        <Spinner style={styles.loaderStyle} />
+      </View>
+    );
+  };
+
+  const searchListHeaderView = () => {
+    const search_result_text =
+      searchResults?.length === 1
+        ? `${searchResults?.length} search result for \‘${searchText}\’`
+        : `${searchResults?.length} search results for \‘${searchText}\’`;
+    return (
+      <View style={styles.searchListHeaderViewStyle}>
+        <Text style={styles.searchListHeaderTextStyle}>{search_result_text}</Text>
+      </View>
+    );
+  };
+
+  const renderSearchItem = (item: any, index: number) => {
+    const healthCardTopView = () => {
+      switch (item?.healthkey) {
+        case MedicalRecordType.PRESCRIPTION:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <SearchAreaIcon style={{ width: 12, height: 13 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Doctor Consultations'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.TEST_REPORT:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <SearchAreaIcon style={{ width: 14, height: 15 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Test Reports'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.HOSPITALIZATION:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <SearchAreaIcon style={{ width: 13, height: 15.17 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Hospitalizations'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.MEDICALBILL:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <SearchAreaIcon style={{ width: 16, height: 13 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Bills'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.MEDICALINSURANCE:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <RemoveIconGrey style={{ width: 15.55, height: 13 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Insurance'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.ALLERGY:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <RemoveIconGrey style={{ width: 13, height: 16 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Health Conditions > Allergies'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.MEDICATION:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <SearchAreaIcon style={{ width: 13, height: 16 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Health Conditions > Medications'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.HEALTHRESTRICTION:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <RemoveIconGrey style={{ width: 13, height: 16 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Health Conditions > Health Restrictions'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.MEDICALCONDITION:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <RemoveIconGrey style={{ width: 13, height: 16 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Health Conditions > Medical Conditions'}
+              </Text>
+            </View>
+          );
+        case MedicalRecordType.FAMILY_HISTORY:
+          return (
+            <View style={styles.healthRecordTypeViewStyle}>
+              <SearchAreaIcon style={{ width: 13, height: 16 }} />
+              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
+                {'Health Conditions > Family History'}
+              </Text>
+            </View>
+          );
+      }
+    };
+    const dateText = `${moment(item?.value?.date).format('DD MMM YYYY')} - `;
+    const healthMoreText = getPhrHighlightText(item?.value?.highlight || '');
+    return (
+      <SearchHealthRecordCard
+        dateText={dateText}
+        healthRecordTitle={item?.value?.title}
+        healthRecordMoreText={healthMoreText}
+        searchHealthCardTopView={healthCardTopView()}
+        item={item}
+        index={index}
+        onSearchHealthCardPress={(item) => {}}
+      />
     );
   };
 
