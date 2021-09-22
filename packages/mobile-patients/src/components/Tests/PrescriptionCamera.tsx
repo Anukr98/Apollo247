@@ -83,6 +83,9 @@ export const PrescriptionCamera: React.FC<PrescriptionCameraProps> = (props) => 
   const removeClickedPhoto = () => {
     setPhotoBase64('');
     _camera?.current?.resumePreview();
+    props.navigation.navigate('TESTS', {
+      movedFrom: AppRoutes.PrescriptionCamera,
+    });
   };
 
   const renderCameraActions = () => {
