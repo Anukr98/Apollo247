@@ -100,6 +100,10 @@ import {
 import {
   searchPHRApiWithAuthToken,
   getDiagnosticsSearchResults,
+  MedFilter,
+  MedicineProduct,
+  MedicineProductsResponse,
+  searchMedicineApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
@@ -836,6 +840,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setCorporateSubscriptions,
     locationForDiagnostics,
     diagnosticServiceabilityData,
+    axdcCode,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -867,6 +872,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [testSearchResults, setTestSearchResults] = useState<
     searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
   >([]);
+  const [medSearchResults, setMedSearchResults] = useState<MedicineProduct[]>([]);
 
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
@@ -888,6 +894,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     pharmacyCircleAttributes,
     setIsCircleExpired,
     circleSubPlanId,
+    pinCode,
   } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
@@ -4061,6 +4068,41 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   //   return { name: 'name', value: 'asad' };
   // };
 
+  const onSearchMedicines = async (
+    searchText: string,
+    sortBy: string | null,
+    selectedFilters: {},
+    filters: MedFilter[]
+  ) => {
+    try {
+      setSearchLoading(true);
+      console.log('csk med');
+      setMedSearchResults([]);
+      const res = await searchMedicineApi(
+        searchText,
+        1,
+        sortBy,
+        selectedFilters,
+        axdcCode,
+        pinCode
+      );
+
+      if (res?.data?.products) {
+        const products = res?.data?.products || [];
+        const finalProducts = products.slice(0, 3);
+
+        console.log('csk med ', JSON.stringify(finalProducts), res?.data?.product_count);
+        setMedSearchResults(finalProducts);
+      } else {
+        setMedSearchResults([]);
+      }
+      setSearchLoading(false);
+    } catch (error) {
+      setSearchLoading(false);
+      console.log('csk med ', JSON.stringify(error));
+    }
+  };
+
   const onSearchTests = async (_searchText: string) => {
     const cityId =
       locationForDiagnostics?.cityId != ''
@@ -4070,30 +4112,48 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID;
     setSearchLoading(true);
     console.log('csk test');
-    getDiagnosticsSearchResults('diagnostic', _searchText, Number(cityId))
-      .then((res) => {
-        console.log('csk test', JSON.stringify(res));
-        if (res?.data?.success) {
-          const products = res?.data?.data || [];
-          setTestSearchResults(
-            products as searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
-          );
-        } else {
-          setTestSearchResults([]);
-        }
-        setSearchLoading(false);
-      })
-      .catch((error) => {
-        CommonBugFender('HomeScreen_ConsultRoom', error);
-        setSearchLoading(false);
-        console.log('csk test', JSON.stringify(error));
-      });
+    setTestSearchResults([]);
+    try {
+      const res = await getDiagnosticsSearchResults('diagnostic', _searchText, Number(cityId));
+
+      if (res?.data?.success) {
+        const products = res?.data?.data || [];
+
+        const finalProducts = products.slice(0, 3);
+        console.log('csk test', JSON.stringify(finalProducts));
+        setTestSearchResults(finalProducts);
+      } else {
+        setTestSearchResults([]);
+      }
+      setSearchLoading(false);
+    } catch (error) {
+      CommonBugFender('HomeScreen_ConsultRoom', error);
+      setSearchLoading(false);
+      console.log('csk test', JSON.stringify(error));
+    }
   };
 
   const onSearchExecute = (_searchText: string) => {
-    console.log('csk');
+    console.log('csk search start');
+
     setSearchLoading(true);
-    //onSearchTest(_searchText);
+    setSearchResults([]);
+    onSearchTests(_searchText)
+      .then(() => {
+        console.log('csk tests done');
+      })
+      .catch((e) => {
+        CommonBugFender('HomeScreen_ConsultRoom_onSearchTests', e);
+      });
+
+    onSearchMedicines(_searchText, null, {}, [])
+      .then(() => {
+        console.log('csk med done');
+      })
+      .catch((e) => {
+        CommonBugFender('HomeScreen_ConsultRoom_onSearchMedicinesFunction', e);
+      });
+
     searchPHRApiWithAuthToken(_searchText, prismAuthToken)
       .then(({ data }) => {
         setSearchResults([]);
@@ -4129,6 +4189,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         getAuthToken();
         setSearchLoading(false);
       });
+
+    setSearchLoading(false);
   };
 
   const renderGlobalSearch = () => {
