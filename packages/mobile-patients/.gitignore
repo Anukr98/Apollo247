@@ -13,7 +13,8 @@ xcuserdata/
 
 # Ignore AppCode user-related files
 .idea/
-
+ios/Podfile.lock
+project.pbxproj
 # Ignore CocoaPods installed files
 Pods/
 Crashlytics.framework/
@@ -382,7 +383,6 @@ Temporary Items
 
 ### Xcode Patch ###
 *.xcodeproj/*
-!*.xcodeproj/project.pbxproj
 !*.xcodeproj/xcshareddata/
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings

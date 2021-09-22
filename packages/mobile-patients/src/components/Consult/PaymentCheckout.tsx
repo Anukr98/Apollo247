@@ -1134,9 +1134,9 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const getConsultationBookedAppsFlyerEventAttributes = (id: string, displayId: string) => {
     const eventAttributes = {
-      af_customer_user_id: g(currentPatient, 'id'),
-      af_content_id: g(doctor, 'id')!,
-      'specialty id': g(doctor, 'specialty', 'id')!,
+      af_customer_user_id: currentPatient?.id,
+      af_content_id: doctor?.id,
+      'specialty id': doctor?.specialty?.id,
       'consult type': isOnlineConsult ? 'online' : 'clinic',
       af_revenue: amountToPay,
       af_currency: 'INR',
