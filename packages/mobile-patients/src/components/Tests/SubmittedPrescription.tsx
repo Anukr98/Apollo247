@@ -192,12 +192,14 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
     const inputData: AddPrescriptionRecordInput = {
       id: EPrescriptionsProps?.[0]?.id ? EPrescriptionsProps?.[0]?.id : '',
       patientId: currentPatient?.id || '',
-      prescriptionName: EPrescriptionsProps?.[0]?.fileName
-        ? EPrescriptionsProps?.[0]?.fileName
-        : PhysicalPrescriptionsProps?.[0]?.title
+      prescriptionName: PhysicalPrescriptionsProps?.[0]?.title
         ? PhysicalPrescriptionsProps?.[0]?.title
+        : EPrescriptionsProps?.[0]?.fileName
+        ? EPrescriptionsProps?.[0]?.fileName
         : '',
-      issuingDoctor: EPrescriptionsProps?.[0]?.doctorName ? EPrescriptionsProps?.[0]?.doctorName : '',
+      issuingDoctor: EPrescriptionsProps?.[0]?.doctorName
+        ? EPrescriptionsProps?.[0]?.doctorName
+        : '',
       location: locationName,
       additionalNotes: additionalNotes,
       dateOfPrescription: EPrescriptionsProps?.[0]?.date
@@ -210,9 +212,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         ? setUploadedImages(EPrescriptionsProps)
         : [],
     };
-    if (EPrescriptionsProps && EPrescriptionsProps?.length) {
-      setOnSumbitSuccess(true);
-    } else {
+    if (PhysicalPrescriptionsProps && PhysicalPrescriptionsProps?.length) {
     client
       .mutate<addPatientPrescriptionRecord>({
         mutation: ADD_PRESCRIPTION_RECORD,
@@ -235,6 +235,8 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         setIsErrorOccured(true);
         CommonBugFender('SubmittedPrescription_ADD_PRESCRIPTION_RECORD', error);
       });
+    } else {
+      setOnSumbitSuccess(true)
     }
   };
   const renderErrorMessage = () => {
