@@ -86,10 +86,6 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AddedCirclePlanWithValidity } from '@aph/mobile-patients/src/components/ui/AddedCirclePlanWithValidity';
 import { paymentTransactionStatus_paymentTransactionStatus_appointment_amountBreakup } from '@aph/mobile-patients/src/graphql/types/paymentTransactionStatus';
-import {
-  updateAppointmentVariables,
-  updateAppointment,
-} from '@aph/mobile-patients/src/graphql/types/updateAppointment';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 import {
@@ -118,9 +114,11 @@ import {
 import { PAYMENT_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { saveConsultationLocation } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { RenderPdf } from '../ui/RenderPdf';
-
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
 export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props) => {
@@ -306,6 +304,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         fireOrderFailedEvent();
       }
       setStatus(txnStatus);
+      firePaymentOrderStatusEvent(txnStatus);
       setdisplayId(displayId);
       setShowSpinner?.(false);
     } catch (error) {
@@ -313,6 +312,31 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       CommonBugFender('fetchingTxnStutus', error);
       renderErrorPopup(string.common.tryAgainLater);
     }
+  };
+
+  const defaultClevertapEventParams = props.navigation.getParam('defaultClevertapEventParams');
+  const payload = props.navigation.getParam('payload');
+
+  const firePaymentOrderStatusEvent = (backEndStatus: string) => {
+    try {
+      const { mobileNumber, vertical, displayId, paymentId } = defaultClevertapEventParams;
+      const status =
+        props.navigation.getParam('paymentStatus') == 'success'
+          ? 'PAYMENT_SUCCESS'
+          : 'PAYMENT_PENDING';
+      const eventAttributes: CleverTapEvents[CleverTapEventName.PAYMENT_ORDER_STATUS] = {
+        'Phone Number': mobileNumber,
+        vertical: vertical,
+        'Vertical Internal Order Id': displayId,
+        'Payment Order Id': paymentId,
+        'Payment Method Type': payload?.payload?.action,
+        BackendPaymentStatus: backEndStatus,
+        JuspayResponseCode: payload?.errorCode,
+        Response: payload?.payload?.status,
+        Status: status,
+      };
+      postCleverTapEvent(CleverTapEventName.PAYMENT_ORDER_STATUS, eventAttributes);
+    } catch (error) {}
   };
 
   const PermissionsCheck = () => {
@@ -586,16 +610,16 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       return (
         <View style={styles.viewInvoice}>
           <TouchableOpacity
-           style={styles.viewInvoiceContainer}
-           onPress={() => requestStoragePermission()}
+            style={styles.viewInvoiceContainer}
+            onPress={() => requestStoragePermission()}
           >
             <PdfGray style={styles.viewIcon} />
             {textComponent('VIEW INVOICE', undefined, theme.colors.TANGERINE_YELLOW, false)}
           </TouchableOpacity>
           <TouchableOpacity
-           style={styles.emailInvoiceView}
-           onPress={() => setshowEmailInput(!showEmailInput)}
-           >
+            style={styles.emailInvoiceView}
+            onPress={() => setshowEmailInput(!showEmailInput)}
+          >
             <EmailGray style={styles.emailIcon} />
             {textComponent(
               'EMAIL INVOICE',
@@ -703,7 +727,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         const { data } = res;
         const { getOrderInvoice } = data;
         let dirs = RNFetchBlob.fs.dirs;
-        let fileName: string = 'Apollo_Consult_Invoice' + moment().format('MMM_D_YYYY_HH_mm') + '.pdf';
+        let fileName: string =
+          'Apollo_Consult_Invoice' + moment().format('MMM_D_YYYY_HH_mm') + '.pdf';
         const downloadPath =
           Platform.OS === 'ios'
             ? (dirs.DocumentDir || dirs.MainBundleDir) +
@@ -748,13 +773,15 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     const orderIdText = 'Order ID: ' + String(displayId);
     return (
       <View style={styles.statusCardStyle}>
-        <View style={[
-          styles.statusCardSubContainerStyle,
-          (status == pending || status == failure) &&
-          {
-            ...styles.failureCardStyle,
-            borderColor: status == failure ? theme.colors.APP_RED : theme.colors.PENDING_TEXT
-          }]}>
+        <View
+          style={[
+            styles.statusCardSubContainerStyle,
+            (status == pending || status == failure) && {
+              ...styles.failureCardStyle,
+              borderColor: status == failure ? theme.colors.APP_RED : theme.colors.PENDING_TEXT,
+            },
+          ]}
+        >
           <View style={styles.centerHorizontal}>
             {statusIcon()}
             <View style={styles.statusView}>
@@ -768,17 +795,16 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             </Text>
           </View>
         </View>
-        {status == success &&
-        <TouchableOpacity
-          style={styles.refStyles}
-          onPress={() => copyToClipboard(refNumberText)}>
-          <Text style={theme.viewStyles.text('R', 10, theme.colors.SLATE_GRAY, 1, 20)}>
-            {'Payment Ref. Number - ' + refNumberText}
-          </Text>
-          <Copy style={styles.iconStyle} />
-        </TouchableOpacity>}
+        {status == success && (
+          <TouchableOpacity style={styles.refStyles} onPress={() => copyToClipboard(refNumberText)}>
+            <Text style={theme.viewStyles.text('R', 10, theme.colors.SLATE_GRAY, 1, 20)}>
+              {'Payment Ref. Number - ' + refNumberText}
+            </Text>
+            <Copy style={styles.iconStyle} />
+          </TouchableOpacity>
+        )}
         <View>
-          {renderViewInvoice()} 
+          {renderViewInvoice()}
           {renderEmailInputContainer()}
           <Snackbar
             style={styles.snackbarView}
@@ -797,8 +823,10 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             {string.consultPayment.appointmentDetails}
           </Text>
           <Text style={theme.viewStyles.text('M', 12, theme.colors.CONSULT_SUCCESS_TEXT, 1, 20)}>
-            {appointmentType.charAt(0).toUpperCase() + appointmentType.slice(1).toLowerCase()
-             + ' Consultation,' + getDate(appointmentDateTime)}
+            {appointmentType.charAt(0).toUpperCase() +
+              appointmentType.slice(1).toLowerCase() +
+              ' Consultation,' +
+              getDate(appointmentDateTime)}
           </Text>
           <Text style={theme.viewStyles.text('M', 12, theme.colors.BLACK_COLOR, 1, 20)}>
             {doctorName}
@@ -1190,14 +1218,10 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         <Text style={theme.viewStyles.text('SB', 12, theme.colors.LIGHT_BLUE)}>
           {string.consultPayment.knowConsultation}
         </Text>
-        <Text style={styles.callReceiveText}>
-          {string.consultPayment.receiveCallText}
-        </Text>
+        <Text style={styles.callReceiveText}>{string.consultPayment.receiveCallText}</Text>
         <View style={styles.consultStepView}>
           <View style={styles.stepNumberContainer}>
-            <Text style={theme.viewStyles.text('R', 10, theme.colors.WHITE)}>
-              1
-            </Text>
+            <Text style={theme.viewStyles.text('R', 10, theme.colors.WHITE)}>1</Text>
           </View>
           <Text style={theme.viewStyles.text('R', 10, theme.colors.LIGHT_BLUE)}>
             {string.consultPayment.beforeConsultation}
@@ -1214,9 +1238,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         </View>
         <View style={styles.consultStepView}>
           <View style={styles.stepNumberContainer}>
-            <Text style={theme.viewStyles.text('R', 10, theme.colors.WHITE)}>
-              2
-            </Text>
+            <Text style={theme.viewStyles.text('R', 10, theme.colors.WHITE)}>2</Text>
           </View>
           <Text style={theme.viewStyles.text('R', 10, theme.colors.LIGHT_BLUE)}>
             {string.consultPayment.consultation}
@@ -1224,32 +1246,22 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         </View>
         <View style={styles.infoContainer}>
           <View style={styles.dashLine} />
-          <Text style={styles.consultInfoText}>
-            {string.consultPayment.stepTwo}
-          </Text>
+          <Text style={styles.consultInfoText}>{string.consultPayment.stepTwo}</Text>
         </View>
         <View style={styles.consultStepView}>
           <View style={styles.stepNumberContainer}>
-            <Text style={theme.viewStyles.text('R', 10, theme.colors.WHITE)}>
-              3
-            </Text>
+            <Text style={theme.viewStyles.text('R', 10, theme.colors.WHITE)}>3</Text>
           </View>
           <Text style={theme.viewStyles.text('R', 10, theme.colors.LIGHT_BLUE)}>
             {string.consultPayment.postConsultation}
           </Text>
         </View>
         <View style={styles.lastStepView}>
-          <Text style={styles.consultInfoText}>
-            {string.consultPayment.stepThree}
-          </Text>
+          <Text style={styles.consultInfoText}>{string.consultPayment.stepThree}</Text>
         </View>
-        <Text style={styles.guidelineText}>
-          {string.consultPayment.detailedGuidelines}
-        </Text>
-        <TouchableOpacity
-          onPress={() => setShowPDF(true)} 
-          style={styles.pdfView}>
-          <Pdf style={styles.pdfIcon}/>
+        <Text style={styles.guidelineText}>{string.consultPayment.detailedGuidelines}</Text>
+        <TouchableOpacity onPress={() => setShowPDF(true)} style={styles.pdfView}>
+          <Pdf style={styles.pdfIcon} />
           <Text style={theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE)}>
             {string.consultPayment.viewGuideline}
             <Text style={theme.viewStyles.text('R', 12, theme.colors.SLATE_GRAY)}>
@@ -1257,12 +1269,12 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             </Text>
           </Text>
           <View style={styles.arrowIconView}>
-            <RightArrowBlue style={{height: 12, width: 6}} />
+            <RightArrowBlue style={{ height: 12, width: 6 }} />
           </View>
         </TouchableOpacity>
       </View>
-    )
-  }
+    );
+  };
 
   const renderMedicineNote = () => {
     return (
@@ -1271,8 +1283,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           {string.consultPayment.medicineNote}
         </Text>
       </View>
-    )
-  }
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -1292,9 +1304,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
               {renderNote()}
               {renderMedicineNote()}
             </ScrollView>
-            <View style={{backgroundColor: theme.colors.WHITE}}>
-              {renderButton()}
-            </View>
+            <View style={{ backgroundColor: theme.colors.WHITE }}>{renderButton()}</View>
           </View>
         ) : (
           <Spinner />
@@ -1347,7 +1357,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 10,
     paddingBottom: 15,
-    backgroundColor: theme.colors.WHITE
+    backgroundColor: theme.colors.WHITE,
   },
   statusCardSubContainerStyle: {
     padding: 12,
@@ -1539,99 +1549,99 @@ const styles = StyleSheet.create({
   separator: {
     height: 1,
     flex: 1,
-    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR
+    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
   },
   appointmentView: {
-    marginTop: 8, 
-    marginStart: 12
+    marginTop: 8,
+    marginStart: 12,
   },
   statusView: {
-    paddingStart: 18
+    paddingStart: 18,
   },
   consultStepView: {
-    width: 114, 
-    backgroundColor: theme.colors.AQUA_BLUE, 
-    borderRadius: 6, 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    marginStart: 5
+    width: 114,
+    backgroundColor: theme.colors.AQUA_BLUE,
+    borderRadius: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginStart: 5,
   },
   stepNumberContainer: {
     height: 12,
     width: 12,
     borderRadius: 6,
-    backgroundColor: theme.colors.LIGHT_BLUE, 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    marginEnd: 6
+    backgroundColor: theme.colors.LIGHT_BLUE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginEnd: 6,
   },
   infoContainer: {
-    marginStart: 10, 
-    flexDirection: 'row'
+    marginStart: 10,
+    flexDirection: 'row',
   },
   dashLine: {
-    width: 1, 
-    height: 56, 
-    borderStyle: 'dashed', 
-    borderWidth: 1, 
-    borderColor: theme.colors.LIGHT_BLUE, 
-    marginEnd: 16
+    width: 1,
+    height: 56,
+    borderStyle: 'dashed',
+    borderWidth: 1,
+    borderColor: theme.colors.LIGHT_BLUE,
+    marginEnd: 16,
   },
   consultInfoText: {
-    paddingTop: 4, 
-    ...theme.viewStyles.text('R', 10, theme.colors.LIGHT_BLUE)
+    paddingTop: 4,
+    ...theme.viewStyles.text('R', 10, theme.colors.LIGHT_BLUE),
   },
   lastStepView: {
-    marginStart: 26, 
-    marginBottom: 14
+    marginStart: 26,
+    marginBottom: 14,
   },
   guidelineText: {
-    ...theme.viewStyles.text('R', 10, theme.colors.SLATE_GRAY), 
-    marginStart: 5, 
-    marginBottom: 5
+    ...theme.viewStyles.text('R', 10, theme.colors.SLATE_GRAY),
+    marginStart: 5,
+    marginBottom: 5,
   },
   pdfView: {
-    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR, 
-    flex: 1, 
-    borderRadius: 6, 
-    flexDirection: 'row', 
-    paddingVertical: 8, 
-    alignItems: 'center'
+    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+    flex: 1,
+    borderRadius: 6,
+    flexDirection: 'row',
+    paddingVertical: 8,
+    alignItems: 'center',
   },
   pdfIcon: {
     width: 22,
     height: 26,
-    marginStart: 9, 
-    marginEnd: 13
+    marginStart: 9,
+    marginEnd: 13,
   },
   arrowIconView: {
-    flex: 1, 
-    alignItems: 'flex-end', 
-    marginEnd: 16
+    flex: 1,
+    alignItems: 'flex-end',
+    marginEnd: 16,
   },
-  snackbarView: { 
-    position: 'absolute', 
-    zIndex: 1001, 
-    bottom: -10 
+  snackbarView: {
+    position: 'absolute',
+    zIndex: 1001,
+    bottom: -10,
   },
   viewInvoiceContainer: {
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   viewIcon: {
-    width: 16, 
-    height: 10, 
-    marginEnd: 4
+    width: 16,
+    height: 10,
+    marginEnd: 4,
   },
   emailIcon: {
-    width: 17, 
-    height: 13, 
-    marginEnd: 4
+    width: 17,
+    height: 13,
+    marginEnd: 4,
   },
   emailInvoiceView: {
-    flexDirection: 'row', 
+    flexDirection: 'row',
     alignItems: 'center',
-    marginStart: 20
+    marginStart: 20,
   },
   locationSubView: {
     flexDirection: 'row',
@@ -1653,5 +1663,5 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-  }
+  },
 });
