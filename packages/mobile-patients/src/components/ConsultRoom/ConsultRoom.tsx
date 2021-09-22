@@ -866,13 +866,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [searchLoading, setSearchLoading] = useState<boolean>(false);
   const _searchInputRef = useRef(null);
   const [searchText, setSearchText] = useState('');
-  const [searchResults, setSearchResults] = useState<any>([]);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState({});
   const [prismAuthToken, setPrismAuthToken] = useState<string>('');
-  const [testSearchResults, setTestSearchResults] = useState<
+  const testSearchResults = useRef<
     searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
   >([]);
-  const [medSearchResults, setMedSearchResults] = useState<MedicineProduct[]>([]);
+  const medSearchResults = useRef<MedicineProduct[]>([]);
 
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
@@ -4077,7 +4077,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     try {
       setSearchLoading(true);
       console.log('csk med');
-      setMedSearchResults([]);
+
+      medSearchResults.current = [];
       const res = await searchMedicineApi(
         searchText,
         1,
@@ -4091,10 +4092,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const products = res?.data?.products || [];
         const finalProducts = products.slice(0, 3);
 
-        console.log('csk med ', JSON.stringify(finalProducts), res?.data?.product_count);
-        setMedSearchResults(finalProducts);
+        console.log('csk med ', products.length, res?.data?.product_count);
+
+        medSearchResults.current = finalProducts;
       } else {
-        setMedSearchResults([]);
+        medSearchResults.current = [];
       }
       setSearchLoading(false);
     } catch (error) {
@@ -4112,7 +4114,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID;
     setSearchLoading(true);
     console.log('csk test');
-    setTestSearchResults([]);
+    testSearchResults.current = [];
     try {
       const res = await getDiagnosticsSearchResults('diagnostic', _searchText, Number(cityId));
 
@@ -4120,10 +4122,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const products = res?.data?.data || [];
 
         const finalProducts = products.slice(0, 3);
-        console.log('csk test', JSON.stringify(finalProducts));
-        setTestSearchResults(finalProducts);
+        console.log('csk test', products.length);
+
+        testSearchResults.current = finalProducts;
       } else {
-        setTestSearchResults([]);
+        testSearchResults.current = [];
       }
       setSearchLoading(false);
     } catch (error) {
@@ -4133,14 +4136,21 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
-  const onSearchExecute = (_searchText: string) => {
+  const onSearchExecute = async (_searchText: string) => {
     console.log('csk search start');
 
     setSearchLoading(true);
     setSearchResults([]);
     onSearchTests(_searchText)
       .then(() => {
-        console.log('csk tests done');
+        console.log('csk tests done', testSearchResults.current.length);
+        if (testSearchResults.current.length >= 1)
+          setSearchResults([
+            ...searchResults,
+            { key: MedicalRecordType.TEST_REPORT, data: testSearchResults.current },
+          ]);
+
+        console.log('final search res-t', JSON.stringify(searchResults.length));
       })
       .catch((e) => {
         CommonBugFender('HomeScreen_ConsultRoom_onSearchTests', e);
@@ -4148,13 +4158,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
     onSearchMedicines(_searchText, null, {}, [])
       .then(() => {
-        console.log('csk med done');
+        console.log('csk med done', medSearchResults.current.length);
+        if (medSearchResults.current.length >= 1)
+          setSearchResults([
+            ...searchResults,
+            { key: MedicalRecordType.MEDICATION, data: medSearchResults.current },
+          ]);
+        console.log('final search res-m', JSON.stringify(searchResults.length));
       })
       .catch((e) => {
         CommonBugFender('HomeScreen_ConsultRoom_onSearchMedicinesFunction', e);
       });
-
-    setSearchLoading(false);
   };
 
   const renderGlobalSearch = () => {
@@ -4335,6 +4349,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderSearchItem = (item: any, index: number) => {
+    if (index === 0) console.log('csk item', JSON.stringify(item), searchResults.length);
     const healthCardTopView = () => {
       switch (item?.healthkey) {
         case MedicalRecordType.TEST_REPORT:
