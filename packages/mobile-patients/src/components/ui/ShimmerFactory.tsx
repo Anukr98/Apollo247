@@ -514,6 +514,23 @@ export const renderGlobalSearchShimmer = () => {
           }}
         />
       </View>
+
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={{ width: 25, height: 25 }}
+        />
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={{
+            ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+            marginLeft: 14,
+          }}
+        />
+      </View>
+
       <View
         style={{
           flexDirection: 'row',

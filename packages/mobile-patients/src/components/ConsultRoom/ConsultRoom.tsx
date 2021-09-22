@@ -834,6 +834,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setActiveUserSubscriptions,
     corporateSubscriptions,
     setCorporateSubscriptions,
+    locationForDiagnostics,
+    diagnosticServiceabilityData,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -4059,77 +4061,56 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   //   return { name: 'name', value: 'asad' };
   // };
 
-  const onSearchTest = async (_searchText: string) => {
+  const onSearchTests = async (_searchText: string) => {
+    const cityId =
+      locationForDiagnostics?.cityId != ''
+        ? locationForDiagnostics?.cityId
+        : !!diagnosticServiceabilityData && diagnosticServiceabilityData?.city != ''
+        ? diagnosticServiceabilityData?.cityId
+        : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID;
     setSearchLoading(true);
-    try {
-      const res: any = await getDiagnosticsSearchResults('diagnostic', _searchText, Number(cityId));
-      console.log('csk', JSON.stringify(res));
-      if (res?.data?.success) {
-        const products = res?.data?.data || [];
-        setTestSearchResults(
-          products as searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
-        );
-      } else {
-        setTestSearchResults([]);
-      }
-      setSearchLoading(false);
-    } catch (error) {
-      CommonBugFender('HomeScreen_ConsultRoom', error);
-      setSearchLoading(false);
-    }
+    console.log('csk test');
+    getDiagnosticsSearchResults('diagnostic', _searchText, Number(cityId))
+      .then((res) => {
+        console.log('csk test', JSON.stringify(res));
+        if (res?.data?.success) {
+          const products = res?.data?.data || [];
+          setTestSearchResults(
+            products as searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
+          );
+        } else {
+          setTestSearchResults([]);
+        }
+        setSearchLoading(false);
+      })
+      .catch((error) => {
+        CommonBugFender('HomeScreen_ConsultRoom', error);
+        setSearchLoading(false);
+        console.log('csk test', JSON.stringify(error));
+      });
   };
 
   const onSearchExecute = (_searchText: string) => {
     console.log('csk');
     setSearchLoading(true);
-    onSearchTest(_searchText);
+    //onSearchTest(_searchText);
     searchPHRApiWithAuthToken(_searchText, prismAuthToken)
       .then(({ data }) => {
         setSearchResults([]);
         if (data?.response) {
-          const recordData = data.response;
+          const searchData = data.response;
           const finalData: any[] = [];
-          recordData.forEach((recordData: any) => {
-            const { healthrecordType } = recordData;
-            switch (healthrecordType) {
-              case 'PRESCRIPTION':
-                finalData.push({ healthkey: MedicalRecordType.PRESCRIPTION, value: recordData });
+          searchData.forEach((recordData: any) => {
+            const { searchResultType } = recordData;
+            switch (searchResultType) {
+              case 'CONSULT':
+                finalData.push({ healthkey: 'CONSULT', value: recordData });
                 break;
               case 'LABTEST':
                 finalData.push({ healthkey: MedicalRecordType.TEST_REPORT, value: recordData });
                 break;
-              case 'HOSPITALIZATION':
-                finalData.push({ healthkey: MedicalRecordType.HOSPITALIZATION, value: recordData });
-                break;
-              case 'ALLERGY':
-                finalData.push({ healthkey: MedicalRecordType.ALLERGY, value: recordData });
-                break;
               case 'MEDICATION':
-                finalData.push({ healthkey: MedicalRecordType.MEDICATION, value: recordData });
-                break;
-              case 'MEDICALCONDITION':
-                finalData.push({
-                  healthkey: MedicalRecordType.MEDICALCONDITION,
-                  value: recordData,
-                });
-                break;
-              case 'RESTRICTION':
-                finalData.push({
-                  healthkey: MedicalRecordType.HEALTHRESTRICTION,
-                  value: recordData,
-                });
-                break;
-              case 'INSURANCE':
-                finalData.push({
-                  healthkey: MedicalRecordType.MEDICALINSURANCE,
-                  value: recordData,
-                });
-                break;
-              case 'BILLS':
-                finalData.push({ healthkey: MedicalRecordType.MEDICALBILL, value: recordData });
-                break;
-              case 'FAMILYHISTORY':
-                finalData.push({ healthkey: MedicalRecordType.FAMILY_HISTORY, value: recordData });
+                finalData.push({ healthkey: 'MEDICINES', value: recordData });
                 break;
             }
           });
@@ -4235,7 +4216,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   marginLeft: 14,
                 }}
               >
-                No Results Found
+                {string.home.search_not_available}
               </Text>
             </View>
 
@@ -4266,7 +4247,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   marginLeft: 14,
                 }}
               >
-                No Results Found
+                {string.home.search_not_available}
               </Text>
             </View>
             <View
@@ -4296,7 +4277,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   marginLeft: 14,
                 }}
               >
-                No Results Found
+                {string.home.search_not_available}
               </Text>
             </View>
           </View>
