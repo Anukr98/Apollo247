@@ -4104,13 +4104,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             const { searchResultType } = recordData;
             switch (searchResultType) {
               case 'CONSULT':
-                finalData.push({ healthkey: 'CONSULT', value: recordData });
+                finalData.push({ healthkey: MedicalRecordType.CONSULTATION, value: recordData });
                 break;
               case 'LABTEST':
                 finalData.push({ healthkey: MedicalRecordType.TEST_REPORT, value: recordData });
                 break;
-              case 'MEDICATION':
-                finalData.push({ healthkey: 'MEDICINES', value: recordData });
+              case 'MEDICINES':
+                finalData.push({ healthkey: MedicalRecordType.MEDICATION, value: recordData });
                 break;
             }
           });
@@ -4311,15 +4311,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const renderSearchItem = (item: any, index: number) => {
     const healthCardTopView = () => {
       switch (item?.healthkey) {
-        case MedicalRecordType.PRESCRIPTION:
-          return (
-            <View style={styles.healthRecordTypeViewStyle}>
-              <SearchAreaIcon style={{ width: 12, height: 13 }} />
-              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
-                {'Doctor Consultations'}
-              </Text>
-            </View>
-          );
         case MedicalRecordType.TEST_REPORT:
           return (
             <View style={styles.healthRecordTypeViewStyle}>
@@ -4329,39 +4320,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </Text>
             </View>
           );
-        case MedicalRecordType.HOSPITALIZATION:
+        case MedicalRecordType.CONSULTATION:
           return (
             <View style={styles.healthRecordTypeViewStyle}>
               <SearchAreaIcon style={{ width: 13, height: 15.17 }} />
               <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
-                {'Hospitalizations'}
-              </Text>
-            </View>
-          );
-        case MedicalRecordType.MEDICALBILL:
-          return (
-            <View style={styles.healthRecordTypeViewStyle}>
-              <SearchAreaIcon style={{ width: 16, height: 13 }} />
-              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
-                {'Bills'}
-              </Text>
-            </View>
-          );
-        case MedicalRecordType.MEDICALINSURANCE:
-          return (
-            <View style={styles.healthRecordTypeViewStyle}>
-              <RemoveIconGrey style={{ width: 15.55, height: 13 }} />
-              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
-                {'Insurance'}
-              </Text>
-            </View>
-          );
-        case MedicalRecordType.ALLERGY:
-          return (
-            <View style={styles.healthRecordTypeViewStyle}>
-              <RemoveIconGrey style={{ width: 13, height: 16 }} />
-              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
-                {'Health Conditions > Allergies'}
+                {'Consults'}
               </Text>
             </View>
           );
@@ -4370,34 +4334,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             <View style={styles.healthRecordTypeViewStyle}>
               <SearchAreaIcon style={{ width: 13, height: 16 }} />
               <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
-                {'Health Conditions > Medications'}
-              </Text>
-            </View>
-          );
-        case MedicalRecordType.HEALTHRESTRICTION:
-          return (
-            <View style={styles.healthRecordTypeViewStyle}>
-              <RemoveIconGrey style={{ width: 13, height: 16 }} />
-              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
-                {'Health Conditions > Health Restrictions'}
-              </Text>
-            </View>
-          );
-        case MedicalRecordType.MEDICALCONDITION:
-          return (
-            <View style={styles.healthRecordTypeViewStyle}>
-              <RemoveIconGrey style={{ width: 13, height: 16 }} />
-              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
-                {'Health Conditions > Medical Conditions'}
-              </Text>
-            </View>
-          );
-        case MedicalRecordType.FAMILY_HISTORY:
-          return (
-            <View style={styles.healthRecordTypeViewStyle}>
-              <SearchAreaIcon style={{ width: 13, height: 16 }} />
-              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
-                {'Health Conditions > Family History'}
+                {'Medicines'}
               </Text>
             </View>
           );
