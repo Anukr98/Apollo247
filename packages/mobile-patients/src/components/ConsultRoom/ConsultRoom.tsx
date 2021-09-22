@@ -4120,44 +4120,47 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderGlobalSearch = () => {
     return (
-      <View
-        style={[
-          styles.searchBarMainViewStyle,
-          { backgroundColor: isSearchFocus ? '#fff' : 'transparent' },
-        ]}
-      >
-        <View style={styles.searchBarViewStyle}>
-          <SearchAreaIcon style={{ width: 20, height: 20 }} />
-          <TextInput
-            placeholder={'Search for Medicines, Doctors, Lab Tests'}
-            autoCapitalize={'none'}
-            style={styles.textInputStyle}
-            selectionColor={theme.colors.TURQUOISE_LIGHT_BLUE}
-            numberOfLines={1}
-            ref={_searchInputRef}
-            onFocus={() => setIsSearchFocus(true)}
-            value={searchText}
-            placeholderTextColor={theme.colors.placeholderTextColor}
-            underlineColorAndroid={'transparent'}
-            onChangeText={(value) => onSearchTextChange(value)}
-          />
+      <View>
+        <View
+          style={[
+            styles.searchBarMainViewStyle,
+            { backgroundColor: isSearchFocus ? '#fff' : 'transparent' },
+          ]}
+        >
+          <View style={styles.searchBarViewStyle}>
+            <SearchAreaIcon style={{ width: 20, height: 20 }} />
+            <TextInput
+              placeholder={'Search for Medicines, Doctors, Lab Tests'}
+              autoCapitalize={'none'}
+              style={styles.textInputStyle}
+              selectionColor={theme.colors.TURQUOISE_LIGHT_BLUE}
+              numberOfLines={1}
+              ref={_searchInputRef}
+              onFocus={() => setIsSearchFocus(true)}
+              value={searchText}
+              placeholderTextColor={theme.colors.placeholderTextColor}
+              underlineColorAndroid={'transparent'}
+              onChangeText={(value) => onSearchTextChange(value)}
+            />
+            {isSearchFocus ? (
+              <TouchableOpacity onPress={onCancelTextClick}>
+                <RemoveIconGrey style={{ width: 20, height: 20 }} />
+              </TouchableOpacity>
+            ) : null}
+          </View>
           {isSearchFocus ? (
-            <TouchableOpacity onPress={onCancelTextClick}>
-              <RemoveIconGrey style={{ width: 20, height: 20 }} />
-            </TouchableOpacity>
+            <Text style={styles.cancelTextStyle} onPress={onCancelTextClick}>
+              {'Cancel'}
+            </Text>
           ) : null}
         </View>
-        {isSearchFocus ? (
-          <Text style={styles.cancelTextStyle} onPress={onCancelTextClick}>
-            {'Cancel'}
-          </Text>
-        ) : null}
         <View
           style={{
-            height: 20,
-            backgroundColor: '#000',
-            marginHorizontal: 5,
-            marginVertical: 6,
+            height: 2,
+            backgroundColor: '#D4D4D4',
+            marginHorizontal: 0,
+            marginTop: 1,
+            marginBottom: 8,
           }}
         />
       </View>
