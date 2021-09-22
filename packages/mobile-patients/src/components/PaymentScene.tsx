@@ -163,10 +163,6 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
 
   const fireOrderFailedEvent = (orderId: string) => {
     const eventAttributes = {
-      // OrderID: orderId,
-      // Price: totalAmount,
-      // CouponCode: coupon,
-      // PaymentType: paymentTypeID,
       LOB: 'Pharmacy',
       af_order_id: orderId,
       af_price: totalAmount,
