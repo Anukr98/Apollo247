@@ -67,6 +67,7 @@ import {
   BackHandler,
 } from 'react-native';
 import { FlatList, NavigationEvents, NavigationScreenProps } from 'react-navigation';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   getPatientAllAppointments,
   getPatientAllAppointmentsVariables,
@@ -549,16 +550,20 @@ export interface AppointmentFilterObject {
 }
 
 export const Consult: React.FC<ConsultProps> = (props) => {
+  const { allAppointmentApiResponse, setAllAppointmentApiResponse } = useAppCommonData();
+
   const tabs = [{ title: 'Active' }, { title: 'Completed' }, { title: 'Cancelled' }];
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const movedFrom = props.navigation.getParam('movedFrom');
 
-  const [allAppointments, setAllAppointments] = useState<Appointment[]>([]);
+  const [allAppointments, setAllAppointments] = useState<Appointment[] | null>(
+    allAppointmentApiResponse
+  );
   const [totalApptCount, setTotalApptCount] = useState<number>(0);
   const [selectedPatient, selectPatient] = useState<any>('ALL');
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [loading, setLoading] = useState<boolean>(false);
-  const [pageLoading, setPageLoading] = useState<boolean>(true);
+  const [pageLoading, setPageLoading] = useState<boolean>(false);
   const [showFilter, setShowFilter] = useState<boolean>(false);
 
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
@@ -579,12 +584,17 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const client = useApolloClient();
 
   useEffect(() => {
-    setPageLoading(true);
-    fetchAppointments(true);
-  }, []);
+    if (selectedPatient?.id) {
+      // For a particular patient selected invalidate the cache and show page loading
+      setAllAppointmentApiResponse!(null);
+      setPageLoading(true);
+    }
 
-  useEffect(() => {
-    setPageLoading(true);
+    if (!allAppointmentApiResponse) {
+      // show loader when no data in cache
+      setPageLoading(true);
+    }
+
     fetchAppointments(true);
   }, [selectedPatient]);
 
@@ -742,8 +752,16 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       }
       if (reload) {
         appointments && setAllAppointments([...appointments]);
+
+        selectedPatient === 'ALL' &&
+          appointments &&
+          setAllAppointmentApiResponse!([...appointments]);
       } else {
         appointments && setAllAppointments([...allAppointments, ...appointments]);
+
+        selectedPatient === 'ALL' &&
+          appointments &&
+          setAllAppointmentApiResponse!([...allAppointments, ...appointments]);
       }
       setTotalApptCount(totalAppointmentCount || 0);
       setLoading(false);
@@ -810,11 +828,18 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       .format('DD MMM');
 
     const getConsultationSubTexts = () => {
-      return !item?.isConsultStarted
-        ? string.common.mentionReports
-        : !item?.isJdQuestionsComplete
+      const {
+        isAutomatedQuestionsComplete,
+        isSeniorConsultStarted, 
+        isConsultStarted
+      } = item || {};
+      return (!isAutomatedQuestionsComplete && !isSeniorConsultStarted) ||
+        !isConsultStarted ? string.common.fillVitalsText
+        : !isConsultStarted && isAutomatedQuestionsComplete
         ? string.common.gotoConsultRoomJuniorDrText
-        : string.common.gotoConsultRoomText || '';
+        : isSeniorConsultStarted
+        ? string.common.joinConsultRoom
+        : string.common.mentionReports
     };
 
     const getAppointmentStatusText = () => {
@@ -822,10 +847,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         return 'Cancelled';
       } else if (item?.status === STATUS.COMPLETED) {
         return 'Completed';
-      } else if (item?.status === STATUS.PENDING || item?.status === STATUS.IN_PROGRESS) {
-        return 'Active';
       } else if (item?.appointmentState === APPOINTMENT_STATE.RESCHEDULE) {
         return 'Rescheduled';
+      } else if (item?.status === STATUS.PENDING || item?.status === STATUS.IN_PROGRESS) {
+        return 'Active';
       } else if (item?.isFollowUp === 'true') {
         return 'Follow Up Appointment';
       } else {
@@ -844,10 +869,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     const appointmentDateTime = moment
       .utc(item.appointmentDateTime)
       .local()
-      .format('YYYY-MM-DD HH:mm:ss');
+      .format('YYYY-MM-DD HH:mm:ss');      
     const minutes = moment.duration(moment(appointmentDateTime).diff(new Date())).asMinutes();
     const title =
-      minutes > 0 && minutes <= 15
+      minutes > 0 && minutes <= 15 && getAppointmentStatusText() == 'Active'
         ? `${Math.ceil(minutes)} MIN${Math.ceil(minutes) > 1 ? 'S' : ''}`
         : tomorrowDate == appointmentDateTomarrow
         ? 'TOMORROW, ' + moment(appointmentDateTime).format('h:mm A')
@@ -856,7 +881,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               ? 'h:mm A'
               : 'DD MMM YYYY, h:mm A'
           );
-    const isActive = minutes > 0 && minutes <= 15 ? true : false;
+    const isActive = minutes > 0 && minutes <= 15 &&
+       getAppointmentStatusText() == 'Active' ? true : false;
     const dateIsAfterconsult = moment(appointmentDateTime).isAfter(moment(new Date()));
     const doctorHospitalName =
       g(item, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')! ||
@@ -1225,7 +1251,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 onPress={onPressActiveUpcomingButtons}
               >
                 <Text style={styles.prepareForConsult}>
-                  {item.isConsultStarted
+                  {item?.isSeniorConsultStarted
+                    ? string.common.consultRoom
+                    : item?.isConsultStarted && item?.isAutomatedQuestionsComplete
                     ? string.common.continueConsult
                     : string.common.prepareForConsult}
                 </Text>
@@ -1480,7 +1508,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             elevation: displayoverlay ? 0 : 15,
           }
         : {};
-    return <TabHeader containerStyle={containerStyle} navigation={props.navigation} />;
+    return (
+      <TabHeader
+        containerStyle={containerStyle}
+        navigation={props.navigation}
+        screenAsSource={'Appointment Page'}
+      />
+    );
   };
 
   const renderNoAppointments = () => {
@@ -1529,17 +1563,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       )
     );
   };
+
   return (
     <View style={{ flex: 1 }}>
-      <NavigationEvents
-        onDidFocus={(payload) => {
-          if (callFetchAppointmentApi) {
-            setPageLoading(true);
-            fetchAppointments();
-          }
-        }}
-        onDidBlur={(payload) => {}}
-      />
+      <NavigationEvents onDidFocus={(payload) => {}} onDidBlur={(payload) => {}} />
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
         {renderTopView()}
         {renderPatientHeader()}

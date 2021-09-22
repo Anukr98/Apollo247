@@ -25,8 +25,8 @@ import {
   setFirebaseUserId,
   setCrashlyticsAttributes,
   onCleverTapUserLogin,
-  setCleverTapAppsFlyerCustID,
   postCleverTapEvent,
+  deferredDeepLinkRedirectionData,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -49,6 +49,7 @@ import {
   AppStateStatus,
   TextInput,
 } from 'react-native';
+import { timeDifferenceInDays } from '@aph/mobile-patients/src/utils/dateUtil';
 import firebaseAuth from '@react-native-firebase/auth';
 import messaging from '@react-native-firebase/messaging';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
@@ -204,7 +205,7 @@ export interface OTPVerificationProps
     otpString: string;
     phoneNumber: string;
     loginId: string;
-  }> {}
+  }> { }
 
 export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
@@ -356,18 +357,48 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     }
   };
 
-  const navigateTo = (routeName: AppRoutes) => {
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [
-          NavigationActions.navigate({
-            routeName: routeName,
-          }),
-        ],
-      })
-    );
+  const navigateTo = (
+    routeName: AppRoutes,
+    parmas?: { previousRoute: string } | null | undefined,
+    signup?: boolean
+  ) => {
+    if (signup === true) {
+      setOpenFillerView(false);
+      props.navigation.dispatch(
+        StackActions.reset({
+          index: 0,
+          key: null,
+          actions: [
+            NavigationActions.navigate({
+              routeName: routeName,
+              params: parmas ? parmas : {},
+            }),
+          ],
+        })
+      );
+    } else {
+      deferredDeepLinkRedirectionData(
+        props.navigation,
+        () => {
+          setOpenFillerView(false);
+          props.navigation.dispatch(
+            StackActions.reset({
+              index: 0,
+              key: null,
+              actions: [
+                NavigationActions.navigate({
+                  routeName: routeName,
+                  params: parmas ? parmas : {},
+                }),
+              ],
+            })
+          );
+        },
+        () => {
+          setOpenFillerView(false);
+        }
+      );
+    }
   };
 
   useEffect(() => {
@@ -588,10 +619,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const moveScreenForward = (mePatient: any) => {
     AsyncStorage.setItem('logginHappened', 'true');
-    setOpenFillerView(false);
     // commenting this to avoid setting of AppFlyerCustId twice
     // SetAppsFlyerCustID(mePatient.primaryPatientId);
-    setCleverTapAppsFlyerCustID();
     postOtpSuccessAppsflyerEvet(mePatient.primaryPatientId);
     if (mePatient && mePatient.uhid && mePatient.uhid !== '') {
       if (mePatient.relation == null) {
@@ -599,14 +628,16 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           value: 'Yes',
         };
         postWebEngageEvent(WebEngageEventName.PRE_APOLLO_CUSTOMER, eventAttributes);
-        navigateTo(AppRoutes.MultiSignup);
+        navigateTo(AppRoutes.MultiSignup, null, true);
       } else {
         AsyncStorage.setItem('userLoggedIn', 'true');
         onCleverTapUserLogin(mePatient);
         deviceTokenAPI(mePatient.id);
         callPhrNotificationApi(mePatient?.id);
         fireUserLoggedInEvent(mePatient, 'Login');
-        navigateTo(AppRoutes.ConsultRoom);
+        navigateTo(AppRoutes.ConsultRoom, {
+          previousRoute: 'Login',
+        });
       }
     } else {
       if (mePatient.firstName == '') {
@@ -614,14 +645,16 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           value: 'No',
         };
         postWebEngageEvent(WebEngageEventName.PRE_APOLLO_CUSTOMER, eventAttributes);
-        navigateTo(AppRoutes.SignUp);
+        navigateTo(AppRoutes.SignUp, null, true);
         fireUserLoggedInEvent(mePatient, 'Registration');
       } else {
         AsyncStorage.setItem('userLoggedIn', 'true');
         onCleverTapUserLogin(mePatient);
         deviceTokenAPI(mePatient.id);
         callPhrNotificationApi(mePatient?.id);
-        navigateTo(AppRoutes.ConsultRoom);
+        navigateTo(AppRoutes.ConsultRoom, {
+          previousRoute: 'Login',
+        });
         fireUserLoggedInEvent(mePatient, 'Login');
       }
     }
@@ -675,15 +708,23 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const getDeviceToken = async () => {
     const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
     const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    const deviceTokenTimeStamp = (await AsyncStorage.getItem('deviceTokenTimeStamp')) || '';
+    const currentDeviceTokenTimeStamp = deviceTokenTimeStamp ? JSON.parse(deviceTokenTimeStamp) : '';
     if (
       !currentDeviceToken ||
       typeof currentDeviceToken != 'string' ||
-      typeof currentDeviceToken == 'object'
+      typeof currentDeviceToken == 'object' ||
+      !currentDeviceTokenTimeStamp ||
+      currentDeviceTokenTimeStamp === '' ||
+      currentDeviceTokenTimeStamp?.length == 0 ||
+      typeof currentDeviceTokenTimeStamp != 'number' ||
+      timeDifferenceInDays(new Date().getTime(), currentDeviceTokenTimeStamp) > 6
     ) {
       messaging()
         .getToken()
         .then((token) => {
           AsyncStorage.setItem('deviceToken', JSON.stringify(token));
+          AsyncStorage.setItem('deviceTokenTimeStamp', JSON.stringify(new Date().getTime()));
           UnInstallAppsFlyer(token);
         })
         .catch((e) => {
@@ -695,20 +736,28 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const deviceTokenAPI = async (patientId: string) => {
     const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
     const deviceToken2 = deviceToken ? JSON.parse(deviceToken) : '';
-
+    const deviceTokenTimeStamp = (await AsyncStorage.getItem('deviceTokenTimeStamp')) || '';
+    const currentDeviceTokenTimeStamp = deviceTokenTimeStamp ? JSON.parse(deviceTokenTimeStamp) : '';
     if (
       !deviceToken2 ||
       deviceToken2 === '' ||
       deviceToken2.length == 0 ||
       typeof deviceToken2 != 'string' ||
-      typeof deviceToken2 == 'object'
+      typeof deviceToken2 == 'object' ||
+      !currentDeviceTokenTimeStamp ||
+      currentDeviceTokenTimeStamp === '' ||
+      currentDeviceTokenTimeStamp?.length == 0 ||
+      typeof currentDeviceTokenTimeStamp != 'number' ||
+      timeDifferenceInDays(new Date().getTime(), currentDeviceTokenTimeStamp) > 6
     ) {
       messaging()
         .getToken()
         .then((token) => {
           AsyncStorage.setItem('deviceToken', JSON.stringify(token));
           saveTokenDevice(client, token, patientId)
-            ?.then((resp) => {})
+            ?.then((resp) => {
+              AsyncStorage.setItem('deviceTokenTimeStamp', JSON.stringify(new Date().getTime()));
+            })
             .catch((e) => {
               CommonBugFender('OTPVerification_saveTokenDevice', e);
               AsyncStorage.setItem('deviceToken', '');
@@ -719,7 +768,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         });
     } else {
       saveTokenDevice(client, deviceToken2, patientId)
-        ?.then((resp) => {})
+        ?.then((resp) => { })
         .catch((e) => {
           CommonBugFender('OTPVerification_saveTokenDevice', e);
           AsyncStorage.setItem('deviceToken', '');
@@ -798,7 +847,10 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             Keyboard.dismiss();
             const { phoneNumber } = props.navigation.state.params!;
             const { loginId } = props.navigation.state.params!;
-
+            cleverTapEventForGetOTPonCall({
+              mobileNumber: phoneNumber,
+              loginId,
+            });
             getOtpOnCall('+91' + phoneNumber, loginId)
               .then((otpOnCallResult: any) => {
                 const phoneNumberFromParams = `+91${props.navigation.getParam('phoneNumber')}`;
@@ -839,6 +891,17 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     } catch (error) {
       setDisableOtpOnCallCta(false);
     }
+  };
+
+  const cleverTapEventForGetOTPonCall = (data: {
+    mobileNumber?: string | number;
+    loginId?: string | number;
+  }) => {
+    let eventAttributes = {
+      'Mobile Number': data.mobileNumber,
+      'Nav Source': 'Login Screen',
+    };
+    postCleverTapEvent(CleverTapEventName.GET_OTP_ON_CALL, eventAttributes);
   };
 
   const openWebView = () => {
@@ -1023,7 +1086,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             {
               <TouchableOpacity
                 activeOpacity={1}
-                onPress={showResentTimer ? () => {} : onClickResend}
+                onPress={showResentTimer ? () => { } : onClickResend}
                 style={{ width: '50%', paddingLeft: 16, paddingTop: 12 }}
               >
                 <Text

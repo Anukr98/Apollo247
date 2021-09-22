@@ -128,6 +128,7 @@ const Common = {
   AQUA_BLUE: '#E3F2F8',
   TANGERINE_YELLOW: tangerine_yellow,
   TEXT_LIGHT_YELLOW: text_light_yellow,
+  DEEP_RED: deepRed,
 };
 
 const Header = {

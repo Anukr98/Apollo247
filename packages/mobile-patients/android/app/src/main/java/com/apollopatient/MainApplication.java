@@ -6,6 +6,7 @@ import com.BV.LinearGradient.LinearGradientPackage;
 import com.apollopatient.appsignature.RNAppSignatureHelperPackage;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.ajithab.RNReceiveSharingIntent.ReceiveSharingIntentPackage;
 import com.bebnev.RNUserAgentPackage;
 import com.ibits.react_native_in_app_review.AppReviewPackage;
 import com.christopherdro.htmltopdf.RNHTMLtoPDFPackage;
@@ -21,6 +22,7 @@ import com.microsoft.codepush.react.CodePush;
 import com.webengage.sdk.android.WebEngage;
 import com.webengage.sdk.android.WebEngageActivityLifeCycleCallbacks;
 import com.webengage.sdk.android.WebEngageConfig;
+import com.github.wuxudong.rncharts.MPAndroidChartPackage;
 import com.clevertap.android.sdk.ActivityLifecycleCallback;
 import com.ibits.react_native_in_app_review.AppReviewPackage;
 import java.util.List;
@@ -49,6 +51,7 @@ public class MainApplication extends Application implements ReactApplication {
                     List<ReactPackage> packages = new PackageList(this).getPackages();
                     // Packages that cannot be autolinked yet can be added manually here, for example:
                     // packages.add(new MyReactNativePackage());
+                    packages.add(new MPAndroidChartPackage());
                     packages.add(new StreamPackage());
                     packages.add(new RNAppSignatureHelperPackage());
                     packages.add(new LinearGradientPackage());
@@ -93,7 +96,7 @@ public class MainApplication extends Application implements ReactApplication {
                 //Staging -- in~~c2ab3529
                 //Production -- in~~c2ab3533
                 WebEngageConfig webEngageConfig = new WebEngageConfig.Builder()
-                        .setWebEngageKey("in~~c2ab3529")
+                        .setWebEngageKey("in~~c2ab3533")
                         .setDebugMode(false) // only in development mode
                         .build();
 

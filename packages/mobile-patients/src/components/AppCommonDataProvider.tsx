@@ -5,7 +5,7 @@ import { getDoctorsBySpecialtyAndFilters } from '@aph/mobile-patients/src/graphq
 import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../graphql/types/getPatientPersonalizedAppointments';
 import { MedicinePageAPiResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
-
+import { getPatientAllAppointments_getPatientAllAppointments_appointments as Appointment } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 export interface LocationData {
   displayName: string;
   latitude?: number;
@@ -204,6 +204,8 @@ export interface AppCommonDataContextProps {
   setPharmacyLocationServiceable: ((value: boolean) => void) | null;
   medicinePageAPiResponse: MedicinePageAPiResponse | null;
   setMedicinePageAPiResponse: ((value: MedicinePageAPiResponse | null) => void) | null;
+  allAppointmentApiResponse: Appointment[] | null;
+  setAllAppointmentApiResponse: ((appointments: Appointment[] | null) => void) | null;
   diagnosticsCities: getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[];
   setDiagnosticsCities:
     | ((items: getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[]) => void)
@@ -315,6 +317,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setPharmacyLocationServiceable: null,
   medicinePageAPiResponse: null,
   setMedicinePageAPiResponse: null,
+  allAppointmentApiResponse: null,
+  setAllAppointmentApiResponse: null,
   diagnosticsCities: [],
   setDiagnosticsCities: null,
   locationForDiagnostics: null,
@@ -449,6 +453,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
 
   const [medicinePageAPiResponse, setMedicinePageAPiResponse] = useState<
     AppCommonDataContextProps['medicinePageAPiResponse']
+  >(null);
+
+  const [allAppointmentApiResponse, setAllAppointmentApiResponse] = useState<
+    AppCommonDataContextProps['allAppointmentApiResponse']
   >(null);
 
   const [diagnosticsCities, setDiagnosticsCities] = useState<
@@ -675,6 +683,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setPharmacyLocationServiceable,
         medicinePageAPiResponse,
         setMedicinePageAPiResponse,
+        allAppointmentApiResponse,
+        setAllAppointmentApiResponse,
         diagnosticsCities,
         setDiagnosticsCities,
         locationForDiagnostics,

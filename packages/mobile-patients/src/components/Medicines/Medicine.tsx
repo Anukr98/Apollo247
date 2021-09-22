@@ -106,6 +106,8 @@ import {
   setAsyncPharmaLocation,
   postCleverTapEvent,
   getIsMedicine,
+  getUserType,
+  getCleverTapCircleMemberValues,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { USER_AGENT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
@@ -161,8 +163,10 @@ import {
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { MedicineSearchEvents } from '@aph/mobile-patients/src/components/MedicineSearch/MedicineSearchEvents';
 import { NudgeMessage } from '@aph/mobile-patients/src/components/Medicines/Components/NudgeMessage';
+import { getUniqueId } from 'react-native-device-info';
 import { Cache } from 'react-native-cache';
 import { setItem, getItem } from '@aph/mobile-patients/src/helpers/TimedAsyncStorage';
+import { SuggestedQuantityNudge } from '@aph/mobile-patients/src/components/SuggestedQuantityNudge/SuggestedQuantityNudge';
 
 const styles = StyleSheet.create({
   scrollViewStyle: {
@@ -316,6 +320,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setIsCircleExpired,
     isCircleExpired,
     pharmaHomeNudgeMessage,
+    setMedicineHomeBannerData,
+    setMedicineHotSellersData,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
@@ -323,7 +329,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   } = useDiagnosticsCart();
   const hdfc_values = string.Hdfc_values;
   const cartItemsCount = cartItems?.length + diagnosticCartItems?.length;
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [allBrandData, setAllBrandData] = useState<Brand[]>([]);
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
   const { showAphAlert, hideAphAlert, setLoading: globalLoading } = useUIElements();
@@ -362,8 +368,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.CATEGORY_CLICKED, eventAttributes);
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CATEGORY_VIEWED] = {
-      'category name': categoryName || undefined,
-      'category ID': categoryId || undefined,
+      'Category Name': categoryName || undefined,
+      'Category ID': categoryId || undefined,
       'Section Name': sectionName || undefined,
       Source: source,
     };
@@ -394,6 +400,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     },
     backend: AsyncStorage,
   });
+
+  const [showSuggestedQuantityNudge, setShowSuggestedQuantityNudge] = useState<boolean>(false);
+  const [shownNudgeOnce, setShownNudgeOnce] = useState<boolean>(false);
+  const [currentProductIdInCart, setCurrentProductIdInCart] = useState<string>(null);
+  const [currentProductQuantityInCart, setCurrentProductQuantityInCart] = useState<number>(0);
+  const [itemPackForm, setItemPackForm] = useState<string>('');
+  const [suggestedQuantity, setSuggestedQuantity] = useState<string>(null);
 
   useEffect(() => {
     populateCachedData();
@@ -814,7 +827,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
       const formattedLocation = formatAddressToLocation(deliveryAddress! || null);
       setLocationValues(formattedLocation);
-      setPageLoading!(false);
 
       globalLoading!(false);
     } catch (error) {
@@ -931,6 +943,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
       const resonse = (await getMedicinePageProducts(axdcCode, pinCode)).data;
       setData(resonse);
+      if (setMedicineHomeBannerData) {
+        setMedicineHomeBannerData(resonse?.mainbanners);
+      }
+      if (setMedicineHotSellersData) {
+        setMedicineHotSellersData(resonse?.hot_sellers);
+      }
       setMedicinePageAPiResponse!(resonse);
       cacheCachableResponse(resonse);
 
@@ -1049,7 +1067,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     globalLoading!(true);
     doRequestAndAccessLocationModified()
       .then((response) => {
-        setPageLoading!(false);
         globalLoading!(false);
         if (response) {
           setLocationValues(response);
@@ -1139,11 +1156,33 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         activeOpacity={1}
         onPress={() => {
           navigateToHome(props.navigation);
+          cleverTapEventForHomeIconClick();
         }}
       >
         <HomeIcon style={{ height: 33, width: 33 }} />
       </TouchableOpacity>
     );
+
+    const cleverTapEventForHomeIconClick = () => {
+      let eventAttributes = {
+        'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+        'Patient UHID': g(currentPatient, 'uhid'),
+        Relation: g(currentPatient, 'relation'),
+        'Patient age': Math.round(
+          moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+        ),
+        'Patient gender': g(currentPatient, 'gender'),
+        'Mobile Number': g(currentPatient, 'mobileNumber'),
+        'Customer ID': g(currentPatient, 'id'),
+        User_Type: getUserType(allCurrentPatients),
+        'Nav src': 'Medicine Page',
+        'Circle Member':
+          getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+          undefined,
+        'Device Id': getUniqueId(),
+      };
+      postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);
+    };
 
     const renderDeliverToLocationMenuAndCTA = () => {
       const options = ['Auto Select Location', 'Enter Delivery Pincode'].map((item) => ({
@@ -1860,6 +1899,22 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     debounce.current(searchText);
   }, [searchText]);
 
+  useEffect(() => {
+    if (cartItems.find(({ id }) => id?.toUpperCase() === currentProductIdInCart)) {
+      if (shownNudgeOnce === false) {
+        setShowSuggestedQuantityNudge(true);
+      }
+    }
+  }, [cartItems, currentProductQuantityInCart, currentProductIdInCart]);
+
+  useEffect(() => {
+    if (showSuggestedQuantityNudge === false) {
+      setShownNudgeOnce(false);
+    }
+  }, [currentProductIdInCart]);
+
+  useEffect(() => {}, [showSuggestedQuantityNudge]);
+
   const onSearch = (searchText: string) => {
     if (searchText.length >= 3) {
       onSearchMedicine(searchText);
@@ -2008,6 +2063,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const onUpdateCartItem = (id: string, quantity: number) => {
     updateCartItem!({ id, quantity: quantity });
+    setCurrentProductQuantityInCart(quantity + 1);
   };
 
   const onRemoveCartItem = (id: string) => {
@@ -2038,6 +2094,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         }}
         onPressAddToCart={() => {
           onAddCartItem(item);
+          setCurrentProductIdInCart(item.sku);
+          item.pack_form ? setItemPackForm(item.pack_form) : setItemPackForm('');
+          item.suggested_qty
+            ? setSuggestedQuantity(item.suggested_qty)
+            : setSuggestedQuantity(null);
+          setCurrentProductQuantityInCart(1);
         }}
         onPressNotify={() => {
           onNotifyMeClick(item.name);
@@ -2046,10 +2108,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           const q = getItemQuantity(item.sku);
           if (q == getMaxQtyForMedicineItem(item.MaxOrderQty)) return;
           onUpdateCartItem(item.sku, getItemQuantity(item.sku) + 1);
+          setCurrentProductQuantityInCart(q + 1);
         }}
         onPressSubstract={() => {
           const q = getItemQuantity(item.sku);
           q == 1 ? onRemoveCartItem(item.sku) : onUpdateCartItem(item.sku, q - 1);
+          setCurrentProductQuantityInCart(q - 1);
         }}
         quantity={getItemQuantity(item.sku)}
         data={item}
@@ -2163,9 +2227,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           onPressShopByCategory={() => setCategoryTreeVisible(true)}
           onPressSpecialOffers={() => {
             const categoryId = AppConfig.Configuration.SPECIAL_OFFERS_CATEGORY_ID;
-            props.navigation.navigate(AppRoutes.MedicineListing, {
-              category_id: categoryId,
-              title: string.specialOffers,
+            props.navigation.navigate(AppRoutes.SpecialOffersScreen, {
+              movedFrom: 'home',
             });
           }}
         />
@@ -2461,6 +2524,21 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       </SafeAreaView>
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
       {showCirclePopup && renderCircleMembershipPopup()}
+      {showSuggestedQuantityNudge &&
+        shownNudgeOnce === false &&
+        !!suggestedQuantity &&
+        +suggestedQuantity > 1 &&
+        currentProductQuantityInCart < +suggestedQuantity && (
+          <SuggestedQuantityNudge
+            suggested_qty={suggestedQuantity}
+            sku={currentProductIdInCart}
+            packForm={itemPackForm}
+            setShownNudgeOnce={setShownNudgeOnce}
+            showSuggestedQuantityNudge={showSuggestedQuantityNudge}
+            setShowSuggestedQuantityNudge={setShowSuggestedQuantityNudge}
+            setCurrentProductQuantityInCart={setCurrentProductQuantityInCart}
+          />
+        )}
     </View>
   );
 };

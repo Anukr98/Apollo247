@@ -108,17 +108,18 @@ import CleverTap from 'clevertap-react-native';
 import {
   CleverTapEvents,
   CleverTapEventName,
-  ReorderMedicines,
   PharmacyCircleMemberValues,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import Share from 'react-native-share';
 import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientAddressObj } from '../graphql/types/getDiagnosticOrderDetails';
+import { handleOpenURL, pushTheView } from './deeplinkRedirection';
 
 const width = Dimensions.get('window').width;
 
 const { RNAppSignatureHelper } = NativeModules;
 let onInstallConversionDataCanceller: any;
 let onAppOpenAttributionCanceller: any;
+let onDeepLinkCanceller: any;
 
 interface AphConsole {
   error(message?: any, ...optionalParams: any[]): void;
@@ -198,7 +199,7 @@ export const aphConsole: AphConsole = {
     isDebugOn && console.info(message, ...optionalParams);
   },
   warn: (message?: any, ...optionalParams: any[]) => {
-    isDebugOn && console.warn(message, ...optionalParams);
+    // isDebugOn && console.warn(message, ...optionalParams);
   },
   trace: (message?: any, ...optionalParams: any[]) => {
     isDebugOn && console.trace(message, ...optionalParams);
@@ -215,6 +216,18 @@ export const productsThumbnailUrl = (filePath: string, baseUrl?: string) => {
   return (filePath || '').startsWith('http')
     ? filePath
     : `${baseUrl || AppConfig.Configuration.IMAGES_BASE_URL[0]}${filePath}`;
+};
+
+export const couponThumbnailUrl = (filePath: string, baseUrl?: string) => {
+  return (filePath || '').startsWith('http')
+    ? filePath
+    : `${baseUrl || AppConfig.Configuration.COUPON_IMAGES_BASE_URL[0]}${filePath}`;
+};
+
+export const specialOffersImagesThumbnailUrl = (filePath: string, baseUrl?: string) => {
+  return (filePath || '').startsWith('http')
+    ? filePath
+    : `${baseUrl || AppConfig.Configuration.SPECIAL_OFFERS_IMAGES_BASE_URL[0]}${filePath}`;
 };
 
 export const formatAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
@@ -1623,7 +1636,7 @@ export const postwebEngageAddToCartEvent = (
   }: Pick<MedicineProduct, 'sku' | 'name' | 'price' | 'special_price' | 'category_id'>,
   source: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Source'],
   sectionName?: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Section Name'],
-  categoryName?: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['category name'],
+  categoryName?: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Category Name'],
   pharmacyCircleAttributes?: PharmacyCircleEvent
 ) => {
   const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART] = {
@@ -1646,9 +1659,9 @@ export const postwebEngageAddToCartEvent = (
   const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART] = {
     'product name': name,
     'product id (SKUID)': sku,
-    'category name': categoryName || undefined,
+    'Category Name': categoryName || undefined,
     'Section Name': sectionName || undefined,
-    'category ID': category_id || undefined,
+    'Category ID': category_id || undefined,
     Price: price,
     'Discounted Price': Number(special_price) || undefined,
     Quantity: 1,
@@ -1688,25 +1701,25 @@ export const postAppointmentCleverTapEvents = (
     | CleverTapEvents[CleverTapEventName.CONSULT_CONTINUE_CONSULTATION_CLICKED]
     | CleverTapEvents[CleverTapEventName.CONSULT_CANCELLED_BY_PATIENT]
     | CleverTapEvents[CleverTapEventName.CONSULT_RESCHEDULED_BY_THE_PATIENT] = {
-    doctorName: g(data, 'doctorInfo', 'fullName')!,
+    'Doctor name': g(data, 'doctorInfo', 'fullName')!,
     'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
-    'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
-    'Doctor Category': g(data, 'doctorInfo', 'doctorType')!,
-    'Consult Date Time': moment(g(data, 'appointmentDateTime')).toDate(),
-    'Consult Mode': g(data, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
-    'Hospital Name': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')!,
-    'Hospital City': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'city')!,
-    docId: g(data, 'doctorId') || undefined,
-    patientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Speciality name': g(data, 'doctorInfo', 'specialty', 'name')!,
+    'Doctor category': g(data, 'doctorInfo', 'doctorType')!,
+    'Appointment datetime': moment(g(data, 'appointmentDateTime')).toDate(),
+    'Consult mode': g(data, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
+    'Hospital name': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')!,
+    'Hospital city': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'city')!,
+    'Doctor ID': g(data, 'doctorId') || undefined,
+    'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
     'Patient UHID': g(currentPatient, 'uhid'),
     Relation: g(currentPatient, 'relation'),
-    'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
-    'Patient Gender': g(currentPatient, 'gender'),
+    'Patient age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+    'Patient gender': g(currentPatient, 'gender'),
     'Customer ID': g(currentPatient, 'id'),
-    secretaryName: g(secretaryData, 'name'),
-    secretaryNumber: g(secretaryData, 'mobileNumber'),
-    doctorNumber: g(data, 'doctorInfo', 'mobileNumber')!,
-    patientNumber: g(currentPatient, 'mobileNumber') || undefined,
+    'Secretary name': g(secretaryData, 'name'),
+    'Secretary number': g(secretaryData, 'mobileNumber'),
+    'Doctor number': g(data, 'doctorInfo', 'mobileNumber')!,
+    'Patient number': g(currentPatient, 'mobileNumber') || undefined,
   };
   postCleverTapEvent(type, eventAttributes);
 };
@@ -1741,20 +1754,24 @@ export const postConsultSearchCleverTapEvent = (
   currentPatient: any,
   allCurrentPatients: any,
   noResults: boolean,
-  source: 'speciality screen' | 'Doctor listing screen'
+  source: 'speciality screen' | 'Doctor listing screen',
+  circleMember: boolean,
+  circlePlan: string
 ) => {
   const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_SEARCH] = {
-    textSearched: searchInput,
+    Keyword: searchInput,
     'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
     'Patient UHID': g(currentPatient, 'uhid'),
     Relation: g(currentPatient, 'relation'),
     'Patient age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
     'Patient gender': g(currentPatient, 'gender'),
-    'Mobile Number': g(currentPatient, 'mobileNumber'),
+    'Patient Number': g(currentPatient, 'mobileNumber'),
     'Customer ID': g(currentPatient, 'id'),
     User_Type: getUserType(allCurrentPatients),
     Source: source,
-    'search result success': noResults ? 'No' : 'Yes',
+    'Search result success': noResults ? 'No' : 'Yes',
+    'Circle Member': circleMember,
+    'Circle Plan type': circlePlan,
   };
   postCleverTapEvent(CleverTapEventName.CONSULT_SEARCH, eventAttributes);
 };
@@ -2128,27 +2145,26 @@ export const callPermissions = (
   );
 };
 
-
 export const getUTMdataFromURL = (url: string) => {
   var result: any = { appUrl: null, utm_source: null, utm_medium: null, utm_campaign: null };
-  if (url.indexOf("?") != -1) {
+  if (url.indexOf('?') != -1) {
     try {
-      var splitedArray = url.split("?");
-      var main_url_array = splitedArray[1].split("&");
-      result.appUrl = splitedArray[0]
-      main_url_array.forEach(item => {
-        let utmAr = item.split("=");
-        result[utmAr[0]] = utmAr[1]
-      })
-      return result
-    } catch (error) { return false }
+      var splitedArray = url.split('?');
+      var main_url_array = splitedArray[1].split('&');
+      result.appUrl = splitedArray[0];
+      main_url_array.forEach((item) => {
+        let utmAr = item.split('=');
+        result[utmAr[0]] = utmAr[1];
+      });
+      return result;
+    } catch (error) {
+      return false;
+    }
+  } else {
+    result.appUrl = url;
+    return result;
   }
-  else {
-    result.appUrl = url
-    return result
-  }
-
-}
+};
 
 export const storagePermissions = (doRequest?: () => void) => {
   permissionHandler(
@@ -2161,8 +2177,20 @@ export const storagePermissions = (doRequest?: () => void) => {
 };
 
 export const InitiateAppsFlyer = (
-  navigation: NavigationScreenProp<NavigationRoute<object>, object>
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  redirectWithOutDeferred: (data: any) => void | undefined
 ) => {
+  appsFlyer.initSdk(
+    {
+      devKey: 'pP3MjHNkZGiMCamkJ7YpbH',
+      isDebug: false,
+      appId: Platform.OS === 'ios' ? '1496740273' : 'com.apollo.patientapp',
+      onInstallConversionDataListener: true, //Optional
+      onDeepLinkListener: true, //Optional
+    },
+    (result) => { },
+    (error) => { }
+  );
   onInstallConversionDataCanceller = appsFlyer.onInstallConversionData((res) => {
     if (JSON.parse(res.data.is_first_launch || 'null') == true) {
       try {
@@ -2188,15 +2216,6 @@ export const InitiateAppsFlyer = (
     }
   });
 
-  appsFlyer.initSdk(
-    {
-      devKey: 'pP3MjHNkZGiMCamkJ7YpbH',
-      isDebug: false,
-      appId: Platform.OS === 'ios' ? '1496740273' : '',
-    },
-    (result) => { },
-    (error) => { }
-  );
 
   onAppOpenAttributionCanceller = appsFlyer.onAppOpenAttribution(async (res) => {
     // for iOS universal links
@@ -2219,7 +2238,48 @@ export const InitiateAppsFlyer = (
       } catch (error) { }
     }
   });
+  onDeepLinkCanceller = appsFlyer.onDeepLink(res => {
+    if (res.isDeferred === true) {
+      clevertapEventForAppsflyerDeeplink(res.data)
+      const url = handleOpenURL(res.data.deep_link_value);
+      AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url))
+    }
+    else if (res.data.deep_link_value && res.isDeferred === false) {
+      clevertapEventForAppsflyerDeeplink(res.data)
+      const url = handleOpenURL(res.data.deep_link_value);
+      AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url))
+      redirectWithOutDeferred(url)
+    }
+    else if (res.status == "success") {
+      clevertapEventForAppsflyerDeeplink(res.data)
+    }
+  })
 };
+
+export const clevertapEventForAppsflyerDeeplink = (eventArributes: any) => {
+  postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
+    ...eventArributes
+  });
+}
+
+export const deferredDeepLinkRedirectionData = async (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  failure: () => void,
+  success?: () => void
+) => {
+  const res = await AsyncStorage.getItem('deferred_deep_link_value');
+  if (res) {
+    const url = JSON.parse(res);
+    pushTheView(navigation, url?.routeName)
+    AsyncStorage.removeItem('deferred_deep_link_value')
+    success && success()
+  }
+  else {
+    failure()
+  }
+}
+
+
 
 export const UnInstallAppsFlyer = (newFirebaseToken: string) => {
   appsFlyer.updateServerUninstallToken(newFirebaseToken, (success) => { });
@@ -2975,6 +3035,30 @@ export const navigateToScreenWithEmptyStack = (
   }
 };
 
+export const navigateToScreenWithHomeScreeninStack = (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  screenName: string,
+  params?: any
+) => {
+  const navigate = navigation.popToTop({ immediate: true });
+  if (navigate) {
+    setTimeout(() => {
+      navigation.navigate(screenName, params);
+    }, 0);
+  } else {
+    navigation.dispatch(
+      StackActions.reset({
+        index: 1,
+        key: null,
+        actions: [
+          NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom }),
+          NavigationActions.navigate({ routeName: screenName, params }),
+        ],
+      })
+    );
+  }
+};
+
 export const apiCallEnums = {
   circleSavings: 'GetCircleSavingsOfUserByMobile',
   getAllBanners: 'GetAllGroupBannersOfUser',
@@ -3066,7 +3150,7 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
       break;
     default:
       statusString = '';
-      // statusString?.replace(/[_]/g, ' ');
+    // statusString?.replace(/[_]/g, ' ');
   }
   return statusString;
 };
@@ -3489,7 +3573,7 @@ export const getCleverTapCheckoutCompletedEventAttributes = (
     'Service Area': 'Pharmacy',
     'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
     af_revenue: getFormattedAmount(grandTotal),
-    'Circle Cashback amount':
+    'Circle Cashback Amount':
       circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
     'Split Cart': orders?.length > 1 ? 'Yes' : 'No',
     'Prescription Option selected': uploadPrescriptionRequired
@@ -3506,7 +3590,7 @@ export const getCleverTapCheckoutCompletedEventAttributes = (
     'Order_ID(s)': ordersIds?.map((i) => i?.orderAutoId)?.join(','),
   };
   if (store) {
-    eventAttributes['Store Id'] = store.storeid;
+    eventAttributes['Store ID'] = store.storeid;
     eventAttributes['Store Name'] = store.storename;
     eventAttributes['Store Number'] = store.phone;
     eventAttributes['Store Address'] = store.address;
@@ -3563,6 +3647,15 @@ export const getIsMedicine = (typeId: string) => {
   };
   return medicineType[typeId] || '0';
 };
+
+export async function fileToBase64(uri: string) {
+  try {
+    return RNFetchBlob.fs.readFile(uri, 'base64');
+  } catch (e) {
+    console.warn('fileToBase64()', e.message);
+    return '';
+  }
+}
 export const removeWhiteSpaces = (item: any) => {
   const newItem = item?.replace(/\s/g, '');
   return newItem;

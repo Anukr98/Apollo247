@@ -105,7 +105,6 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
       />
     ) : null;
   };
-
   return (
     <TouchableOpacity
       activeOpacity={1}
@@ -178,7 +177,7 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
               {selfUpload
                 ? sourceName === string.common.clicnical_document_text
                   ? sourceName
-                  : item?.siteDisplayName || 'NOT AVAILABLE'
+                  : item?.siteDisplayName || item?.data?.siteDisplayName || '-'
                 : sourceName}
             </Text>
           </View>

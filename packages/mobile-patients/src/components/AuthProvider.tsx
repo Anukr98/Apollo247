@@ -71,6 +71,8 @@ export interface AuthContextProps {
   setMobileAPICalled: ((par: boolean) => void) | null;
   getFirebaseToken: (() => Promise<unknown>) | null;
   authToken: string;
+  validateAuthToken: () => Promise<string>;
+  buildApolloClient: (authToken: string) => ApolloClient<NormalizedCacheObject>;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -97,6 +99,8 @@ export const AuthContext = React.createContext<AuthContextProps>({
 
   getFirebaseToken: null,
   authToken: '',
+  validateAuthToken: null,
+  buildApolloClient: null,
 });
 
 let apolloClient: ApolloClient<NormalizedCacheObject>;
@@ -108,6 +112,22 @@ const webengage = new WebEngage();
 export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
   const hasAuthToken = !_isEmpty(authToken);
+
+  const validateAuthToken = () => {
+    return new Promise((res, rej) => {
+      try {
+        firebaseAuth().onAuthStateChanged(async (user) => {
+          if (user) {
+            const jwt = await user.getIdToken(true);
+            setAuthToken(jwt);
+            res(jwt);
+          }
+        });
+      } catch (error) {
+        rej('');
+      }
+    });
+  };
 
   const setNewToken = async () => {
     const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
@@ -142,7 +162,7 @@ export const AuthProvider: React.FC = (props) => {
       getFirebaseToken();
     }
   };
-  const buildApolloClient = (authToken: string, handleUnauthenticated: any) => {
+  const buildApolloClient = (authToken: string, handleUnauthenticated?: any) => {
     if (authToken) {
       const jwtDecode = require('jwt-decode');
       const millDate = jwtDecode(authToken).exp;
@@ -407,6 +427,8 @@ export const AuthProvider: React.FC = (props) => {
             getFirebaseToken,
 
             authToken,
+            validateAuthToken,
+            buildApolloClient,
           }}
         >
           {props.children}

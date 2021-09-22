@@ -280,7 +280,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     cashbackAmount,
   } = circleDoctorDetails;
   const { availableModes } = props;
-  const { showCircleSubscribed } = useShoppingCart();
+  const { showCircleSubscribed, circleSubPlanId, circleSubscriptionId } = useShoppingCart();
   const [fetchedSlot, setfetchedSlot] = useState<string>('');
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const isPhysical = availableModes
@@ -797,14 +797,14 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                         );
                         const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
                           'Patient name': currentPatient.firstName,
-                          docId: rowData.id,
-                          specialityId: rowData?.specialty?.id,
-                          specialityName: rowData?.specialty?.name,
-                          exp: Number(rowData?.experience),
-                          docHospital: rowData?.doctorHospital?.[0]?.facility?.name,
-                          docCity: rowData?.doctorHospital?.[0]?.facility?.city,
-                          availableInMins: getTimeDiff(rowData?.slot),
-                          Source: 'Doctor card doctor listing screen',
+                          'Doctor ID': rowData.id,
+                          'Speciality ID': rowData?.specialty?.id,
+                          'Speciality name': rowData?.specialty?.name,
+                          Experience: Number(rowData?.experience),
+                          'Doctor hospital': rowData?.doctorHospital?.[0]?.facility?.name,
+                          'Doctor city': rowData?.doctorHospital?.[0]?.facility?.city,
+                          'Available in mins': getTimeDiff(rowData?.slot),
+                          'Source': 'Doctor card doctor listing screen',
                           'Patient UHID': currentPatient.uhid,
                           Relation: currentPatient?.relation,
                           'Patient age': Math.round(
@@ -814,14 +814,17 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                           'Customer ID': currentPatient.id,
                           User_Type: getUserType(allCurrentPatients),
                           rank: props.rowId || undefined,
-                          onlineConsultFee:
+                          'Online consult fee':
                             Number(rowData?.onlineConsultationFees) ||
                             Number(rowData?.fee) ||
                             undefined,
-                          physicalConsultFee:
+                          'Physical consult fee':
                             Number(rowData?.physicalConsultationFees) ||
                             Number(rowData?.fee) ||
                             undefined,
+                            'Mobile number': currentPatient?.mobileNumber || '',
+                            'Circle Member': !!circleSubscriptionId,
+                            'Circle Plan type': circleSubPlanId,
                         };
                         postCleverTapEvent(
                           CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED,

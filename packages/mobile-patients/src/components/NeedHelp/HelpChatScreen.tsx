@@ -194,6 +194,14 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginTop: 50,
   },
+  ticketCreationLagTime: {
+    color: '#FC9916',
+    ...theme.fonts.IBMPlexSansRegular(15),
+    marginHorizontal: 3,
+    alignSelf: 'center',
+    textAlign: 'center',
+    marginTop: 50,
+  },
   chatSend: {
     width: 24,
     height: 24,
@@ -216,7 +224,7 @@ const BUSINESS = {
   DIAGNOSTICS: 'Diagnostics',
 };
 
-export interface HelpChatProps extends NavigationScreenProps {}
+export interface HelpChatProps extends NavigationScreenProps { }
 
 export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
   let ticketId = props.navigation.getParam('ticketId');
@@ -226,21 +234,21 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
   const [messageText, setMessageText] = useState<string>('');
   const [contentHeight, setContentHeight] = useState(40);
   const [isTicketClosed, setIsTicketClosed] = useState<boolean>(
-    ticket?.statusType?.toUpperCase() === 'CLOSED' ? true : false
+    ticket?.statusType?.toUpperCase() === 'CLOSED' || 'RESOLVED'? true : false
   );
   const [conversations, setConverstions] = useState<any>([]);
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [showTicketCreationLagMessage, setShowTicketCreationLagMessage] = useState(false);
 
-  const { showAphAlert } = useUIElements();
+  const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
 
   useEffect(() => {
     if (ticketId) {
       // when there is only ticketId
-      setLoading(true);
-      setRefreshing(true);
-      setTimeout(() => fetchTicketDetails(), 2000);
+      setShowTicketCreationLagMessage(true);
+      setTimeout(() => fetchTicketDetails(), 10000);
     } else {
       if (ticket) {
         getConversation();
@@ -249,6 +257,8 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
   }, []);
 
   const fetchTicketDetails = () => {
+    setShowTicketCreationLagMessage(true);
+
     client
       .query<getHelpdeskTickets>({
         query: GET_HELPDESK_TICKETS,
@@ -259,15 +269,27 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
           (t) => t?.id === ticketId
         )[0];
 
-        setTicket(correspondingTicket);
-        setTimeout(() => getConversation(), 3000);
+        if (correspondingTicket) {
+          setTicket(correspondingTicket);
+          setTimeout(() => getConversation(), 3000);
+        } else {
+          showAphAlert!({
+            title: `Oops :)`,
+            description:
+              'Your ticket is still being submitted. Please reload this screen by clicking OK, GOT IT',
+            onPressOk: () => {
+              hideAphAlert!();
 
-        setLoading(false);
-        setRefreshing(false);
+              setShowTicketCreationLagMessage(true);
+              setTimeout(() => fetchTicketDetails(), 10000);
+            },
+          });
+        }
+
+        setShowTicketCreationLagMessage(false);
       })
       .catch((error) => {
-        setLoading(false);
-        setRefreshing(false);
+        setShowTicketCreationLagMessage(false);
 
         CommonBugFender('fetchHelpdeskTickets', error);
       });
@@ -472,7 +494,8 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
             ticket.
           </Text>
         ) : null}
-        {showWhatsappCTA ? renderWhatsapp() : null}
+        {/* Removing whatsapp support temporarily from help tickets */}
+        {/* {showWhatsappCTA ? renderWhatsapp() : null} */}
       </View>
     );
   };
@@ -558,22 +581,37 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
     <View style={theme.viewStyles.container}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-        {renderOrderStatusHeader()}
+        {!showTicketCreationLagMessage ? renderOrderStatusHeader() : null}
 
         {loading ? (
           <ActivityIndicator style={{ flex: 1, alignItems: 'center' }} size="large" color="green" />
         ) : (
           <View style={[{ flex: 1 }]}>
-            {(conversations == null || conversations.length == 0) && (
-              <Text style={styles.noConversationTillNow}>
-                {string.needHelpScreen.no_conversation_till_now}
-              </Text>
-            )}
-            {renderChatView()}
+            {!showTicketCreationLagMessage &&
+              (conversations == null || conversations.length == 0) && (
+                <Text style={styles.noConversationTillNow}>
+                  {string.needHelpScreen.no_conversation_till_now}
+                </Text>
+              )}
+
+            {showTicketCreationLagMessage ? (
+              <View style={{ marginTop: 300 }}>
+                <ActivityIndicator
+                  style={{ flex: 1, alignItems: 'center' }}
+                  size="large"
+                  color="green"
+                />
+                <Text style={styles.ticketCreationLagTime}>
+                  {string.needHelpScreen.ticket_creation_lag_time}
+                </Text>
+              </View>
+            ) : null}
+
+            {!showTicketCreationLagMessage ? renderChatView() : null}
           </View>
         )}
 
-        {!isTicketClosed && (
+        {!isTicketClosed && !showTicketCreationLagMessage && (
           <View style={styles.chatFooterContainer}>
             <View style={styles.textInputContainerStyles}>
               <TextInput

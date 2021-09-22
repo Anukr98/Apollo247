@@ -83,7 +83,10 @@ import _ from 'lodash';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { getDiagnosticExpressSlots, getReportTAT } from '../../helpers/clientCalls';
+import {
+  getDiagnosticExpressSlots,
+  getReportTAT,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import moment from 'moment';
 
 const screenWidth = Dimensions.get('window').width;
@@ -429,6 +432,14 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       };
     }
 
+    if (
+      (movedFrom == AppRoutes.TestsCart && Number(deliveryAddressStateId) == 0) ||
+      !isDiagnosticLocationServiceable
+    ) {
+      setExpressSlotMsg('');
+      return;
+    }
+
     try {
       const res = await getDiagnosticExpressSlots(
         client,
@@ -437,7 +448,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         String(getZipcode),
         getServiceablityObject
       );
-      console.log({ res });
       if (res?.data?.getUpcomingSlotInfo) {
         const getResponse = res?.data?.getUpcomingSlotInfo;
         if (getResponse?.status) {
@@ -471,7 +481,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         client,
         !!diagnosticSlot && !isEmptyObject(diagnosticSlot) ? dateTimeInUTC : null,
         id,
-        Number(pincode),
+        !!pincode ? Number(pincode) : 0,
         itemIds
       );
       if (result?.data?.getConfigurableReportTAT) {
@@ -573,7 +583,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         testInfo?.ItemID || itemId,
         currentPatient,
         testInfo?.Rate || testDetails?.Rate,
-        pharmacyCircleAttributes
+        pharmacyCircleAttributes,
+        isDiagnosticCircleSubscription
       );
     }
   }, [testInfo]);
@@ -1156,7 +1167,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       itemId!,
       mrpToDisplay,
       discountToDisplay,
-      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS
+      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS,
+      currentPatient,
+      isDiagnosticCircleSubscription
     );
 
     const testInclusions =

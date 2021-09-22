@@ -816,6 +816,12 @@ export enum one_apollo_store_code {
   WEBCUS = 'WEBCUS',
 }
 
+export enum HealthRecordConsentStatus {
+  GRANTED = 'GRANTED',
+  NOT_APPLICABLE = 'NOT_APPLICABLE',
+  NOT_GRANTED = 'NOT_GRANTED',
+}
+
 export interface AddAllergyRecordInput {
   id?: string | null;
   patientId: string;
@@ -1037,6 +1043,7 @@ export interface BookAppointmentInput {
   discountedAmount?: number | null;
   subscriptionDetails?: SUBSCRIPTION_DETAILS | null;
   planPurchaseDetails?: PLAN_PURCHASE_DETAILS | null;
+  healthRecordsConsent?: HealthRecordConsentStatus | null;
 }
 
 export interface BookFollowUpAppointmentInput {
@@ -1420,6 +1427,7 @@ export interface MedicineCartOMSInput {
   prescriptionType?: PrescriptionType | null;
   tatCity?: string | null;
   tatHours?: string | null;
+  isCashBack: boolean;
 }
 
 export interface MedicineCartOMSItem {
@@ -2086,6 +2094,11 @@ export interface PatientConsultEventToDoctorInput {
   doctorFullName: string;
   message?: string | null;
   chatFormat?: string | null;
+}
+
+export enum SPECIALTY_STATUS {
+  ALL = "ALL",
+  TRUE = "TRUE",
 }
 
 //==============================================================

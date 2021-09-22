@@ -27,6 +27,7 @@ import {
   setBugFenderLog,
   isIos,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { saveTokenDevice } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   doRequestAndAccessLocation,
@@ -40,6 +41,10 @@ import {
   onCleverTapUserLogin,
   getUTMdataFromURL,
   postCleverTapEvent,
+  navigateToScreenWithHomeScreeninStack,
+  navigateToHome,
+  setCleverTapAppsFlyerCustID,
+  clevertapEventForAppsflyerDeeplink,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -51,6 +56,7 @@ import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@ap
 import {
   GET_APPOINTMENT_DATA,
   GET_PROHEALTH_HOSPITAL_BY_SLUG,
+  GET_ORDER_INFO,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
@@ -77,16 +83,21 @@ import {
   getProHealthHospitalBySlug,
   getProHealthHospitalBySlugVariables,
 } from '@aph/mobile-patients/src/graphql/types/getProHealthHospitalBySlug';
+import { timeDifferenceInDays } from '@aph/mobile-patients/src/utils/dateUtil';
 import firebaseAuth from '@react-native-firebase/auth';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import {
   preFetchSDK,
   createHyperServiceObject,
+  initiateSDK,
+  terminateSDK,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import CleverTap from 'clevertap-react-native';
 import { CleverTapEventName } from '../helpers/CleverTapEvents';
+import analytics from '@react-native-firebase/analytics';
+import appsFlyer from 'react-native-appsflyer';
 
-(function() {
+(function () {
   /**
    * Praktice.ai
    * Polyfill for Promise.prototype.finally
@@ -99,16 +110,16 @@ import { CleverTapEventName } from '../helpers/CleverTapEvents';
   if (typeof Promise.prototype['finally'] === 'function') {
     return;
   }
-  globalObject.Promise.prototype['finally'] = function(callback: any) {
+  globalObject.Promise.prototype['finally'] = function (callback: any) {
     const constructor = this.constructor;
     return this.then(
-      function(value: any) {
-        return constructor.resolve(callback()).then(function() {
+      function (value: any) {
+        return constructor.resolve(callback()).then(function () {
           return value;
         });
       },
-      function(reason: any) {
-        return constructor.resolve(callback()).then(function() {
+      function (reason: any) {
+        return constructor.resolve(callback()).then(function () {
           throw reason;
         });
       }
@@ -143,12 +154,14 @@ const styles = StyleSheet.create({
   },
 });
 
+let onDeepLinkCanceller: any;
+
 export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { APP_ENV } = AppConfig;
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
-  const { setAllPatients, setMobileAPICalled } = useAuth();
+  const { setAllPatients, setMobileAPICalled, validateAuthToken, buildApolloClient } = useAuth();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [appState, setAppState] = useState(AppState.currentState);
   const [takeToConsultRoom, settakeToConsultRoom] = useState<boolean>(false);
@@ -187,8 +200,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   useEffect(() => {
     prefetchUserMetadata();
-
-    InitiateAppsFlyer(props.navigation);
     DeviceEventEmitter.addListener('accept', (params) => {
       if (getCurrentRoute() !== AppRoutes.ChatRoom) {
         voipCallType.current = params.call_type;
@@ -208,7 +219,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       PrefetchAPIReuqest({
         clientId: AppConfig.Configuration.PRAKTISE_API_KEY,
       })
-        .then((res: any) => {})
+        .then((res: any) => { })
         .catch((e: Error) => {
           CommonBugFender('SplashScreen_PrefetchAPIReuqest', e);
         });
@@ -229,6 +240,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     AsyncStorage.removeItem('saveTokenDeviceApiCall');
     handleDeepLink();
     getDeviceToken();
+    initializeRealTimeUninstall();
+    setCleverTapAppsFlyerCustID();
+    InitiateAppsFlyer(props.navigation, (resources) => {
+      redirectRoute(
+        resources?.routeName,
+        resources?.id,
+        resources?.isCall,
+        resources?.timeout,
+        resources?.mediaSource,
+        resources?.data
+      );
+    });
   }, []);
 
   useEffect(() => {
@@ -247,21 +270,43 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
   }, []);
 
+  const initializeRealTimeUninstall = () => {
+    CleverTap.profileGetCleverTapID((error, res) => {
+      analytics().setUserProperty('ct_objectId', `${res}`);
+    });
+  };
+
   const getDeviceToken = async () => {
     const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
     const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    const deviceTokenTimeStamp = (await AsyncStorage.getItem('deviceTokenTimeStamp')) || '';
+    const currentDeviceTokenTimeStamp = deviceTokenTimeStamp ? JSON.parse(deviceTokenTimeStamp) : '';
+    const currentPatientId: any = await AsyncStorage.getItem('selectUserId');
     if (
       !currentDeviceToken ||
       currentDeviceToken === '' ||
       currentDeviceToken.length == 0 ||
       typeof currentDeviceToken != 'string' ||
-      typeof currentDeviceToken == 'object'
+      typeof currentDeviceToken == 'object' ||
+      !currentDeviceTokenTimeStamp ||
+      currentDeviceTokenTimeStamp === '' ||
+      currentDeviceTokenTimeStamp?.length == 0 ||
+      typeof currentDeviceTokenTimeStamp != 'number' ||
+      timeDifferenceInDays(new Date().getTime(), currentDeviceTokenTimeStamp) > 6
     ) {
       messaging()
         .getToken()
         .then((token) => {
           AsyncStorage.setItem('deviceToken', JSON.stringify(token));
+          AsyncStorage.setItem('deviceTokenTimeStamp', JSON.stringify(new Date().getTime()));
           UnInstallAppsFlyer(token);
+          if (currentPatientId && token) {
+            saveTokenDevice(client, token, currentPatientId)
+              ?.catch((e) => {
+                CommonBugFender('Login_saveTokenDevice', e);
+                AsyncStorage.setItem('deviceToken', '');
+              })
+          };
         })
         .catch((e) => {
           CommonBugFender('SplashScreen_getDeviceToken', e);
@@ -361,12 +406,17 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           setBugFenderLog('DEEP_LINK_URL', url);
           if (url) {
             try {
-              if (Platform.OS === 'ios') InitiateAppsFlyer(props.navigation);
-              const data = handleOpenURL(url);
-              const { routeName, id, isCall, timeout, mediaSource } = data;
-              redirectRoute(routeName, id, isCall, timeout, mediaSource, data?.data);
+              const data: any = handleOpenURL(url);
+              redirectRoute(
+                data?.routeName,
+                data?.id,
+                data?.isCall,
+                data?.timeout,
+                data?.mediaSource,
+                data?.data
+              );
               fireAppOpenedEvent(url);
-            } catch (e) {}
+            } catch (e) { }
           } else {
             settakeToConsultRoom(true);
             fireAppOpenedEvent('');
@@ -379,12 +429,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       Linking.addEventListener('url', (event) => {
         try {
           setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
-          const data = handleOpenURL(event.url);
-          triggerUTMCustomEvent(event.url);
-          const { routeName, id, isCall, timeout, mediaSource } = data;
-          redirectRoute(routeName, id, isCall, timeout, mediaSource, data?.data);
+          const data: any = handleOpenURL(event.url);
+          catchSourceUrlDataUsingAppsFlyer();
+          redirectRoute(
+            data?.routeName,
+            data?.id,
+            data?.isCall,
+            data?.timeout,
+            data?.mediaSource,
+            data?.data
+          );
           fireAppOpenedEvent(event.url);
-        } catch (e) {}
+        } catch (e) { }
       });
       AsyncStorage.removeItem('location');
     } catch (error) {
@@ -441,8 +497,56 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       }
     } else if (routeName == 'prohealth') {
       fetchProhealthHospitalDetails(id!);
+    } else if (routeName == 'PaymentMethods') {
+      !!id ? fetchOrderInfo(id) : getData(routeName, id, isCall, timeout, mediaSource);
     } else {
       getData(routeName, id, isCall, timeout, mediaSource);
+    }
+  };
+
+  const initiateHyperSDK = (cusId: any, merchantId: string) => {
+    try {
+      terminateSDK();
+      createHyperServiceObject();
+      initiateSDK(cusId, cusId, merchantId);
+    } catch (error) {
+      CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
+    }
+  };
+
+  const fetchOrderInfo = async (paymentId: string) => {
+    try {
+      const authToken: string = await validateAuthToken();
+      const apolloClient = buildApolloClient(authToken);
+      const response = await apolloClient.query({
+        query: GET_ORDER_INFO,
+        variables: { order_id: paymentId },
+        fetchPolicy: 'no-cache',
+      });
+      const paymentStatus = response?.data?.getOrderInternal?.payment_status;
+      if (paymentStatus == 'PAYMENT_NOT_INITIATED') {
+        const currentPatientId: any = await AsyncStorage.getItem('selectUserId');
+        const isPharmaOrder = !!response?.data?.getOrderInternal?.PharmaOrderDetails
+          ?.medicineOrderDetails?.length
+          ? true
+          : false;
+        const merchantId = isPharmaOrder
+          ? AppConfig.Configuration.pharmaMerchantId
+          : AppConfig.Configuration.merchantId;
+        initiateHyperSDK(currentPatientId, merchantId);
+        const params = {
+          paymentId: response?.data?.getOrderInternal?.payment_order_id,
+          amount: response?.data?.getOrderInternal?.total_amount,
+          orderDetails: { orderId: response?.data?.getOrderInternal?.id },
+          businessLine: 'paymentLink',
+          customerId: response?.data?.getOrderInternal?.customer_id,
+        };
+        navigateToScreenWithHomeScreeninStack(props.navigation, AppRoutes.PaymentMethods, params);
+      } else {
+        navigateToHome(props.navigation);
+      }
+    } catch (error) {
+      navigateToHome(props.navigation);
     }
   };
 
@@ -542,7 +646,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         : null;
       const currentPatient = allPatients
         ? allPatients?.find((patient: any) => patient?.id === currentPatientId) ||
-          allPatients?.find((patient: any) => patient?.isUhidPrimary === true)
+        allPatients?.find((patient: any) => patient?.isUhidPrimary === true)
         : null;
       setAllPatients(allPatients);
 
@@ -621,26 +725,19 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const triggerUTMCustomEvent = async (url: string | null) => {
     try {
       if (url) {
-        const { utm_source, utm_medium, utm_campaign, appUrl } = getUTMdataFromURL(url);
-        if (utm_source || utm_medium || utm_campaign) {
-          postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
-            utm_source,
-            utm_medium,
-            utm_campaign,
-            appUrl,
-          });
-        } else {
-          postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
-            appUrl,
-            deeplink: 'Deeplink',
-          });
-        }
       } else {
         postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
           source: 'Organic',
         });
       }
-    } catch (error) {}
+    } catch (error) { }
+  };
+
+  const catchSourceUrlDataUsingAppsFlyer = async () => {
+    onDeepLinkCanceller = await appsFlyer.onDeepLink(async (res) => {
+      clevertapEventForAppsflyerDeeplink(res.data);
+      onDeepLinkCanceller();
+    });
   };
 
   const prefetchUserMetadata = async () => {
@@ -782,13 +879,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setMinimumCartValue,
     setMinCartValueForCOD,
     setMaxCartValueForCOD,
-    setNonCodSKus,
     setCartPriceNotUpdateRange,
     setPdpDisclaimerMessage,
     setPharmaHomeNudgeMessage,
     setPharmaCartNudgeMessage,
     setPharmaPDPNudgeMessage,
-    setPaymentCodMessage,
   } = useShoppingCart();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -808,7 +903,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               });
             });
         }
-      } catch {}
+      } catch { }
     }
     if (appState.match(/active|foreground/) && nextAppState === 'background') {
       APPStateActive();
@@ -950,10 +1045,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Mininum_Cart_Values',
       PROD: 'Mininum_Cart_Values',
     },
-    Sku_Non_COD: {
-      QA: 'QA_Sku_Non_COD',
-      PROD: 'Sku_Non_COD',
-    },
     Helpdesk_Chat_Confim_Msg: {
       QA: 'Helpdesk_Chat_Confim_Msg_QA',
       PROD: 'Helpdesk_Chat_Confim_Msg_Prod',
@@ -1030,9 +1121,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Show_nudge_on_pharma_cart',
       PROD: 'Show_nudge_on_pharma_cart',
     },
-    Disincentivize_COD_Message: {
-      QA: 'QA_Disincentivize_COD_Message',
-      PROD: 'Disincentivize_COD_Message',
+    Enable_Cred_WebView_Flow: {
+      QA: 'QA_Enable_Cred_WebView_Flow',
+      PROD: 'Enable_Cred_WebView_Flow',
     },
   };
 
@@ -1048,8 +1139,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         currentEnv === AppEnv.QA2 ||
         currentEnv === AppEnv.QA3 ||
         currentEnv === AppEnv.QA5
-      ? valueBasedOnEnv.QA || valueBasedOnEnv.PROD
-      : valueBasedOnEnv.DEV || valueBasedOnEnv.QA || valueBasedOnEnv.PROD;
+        ? valueBasedOnEnv.QA || valueBasedOnEnv.PROD
+        : valueBasedOnEnv.DEV || valueBasedOnEnv.QA || valueBasedOnEnv.PROD;
   };
 
   const getRemoteConfigValue = (
@@ -1145,12 +1236,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         setMaxCartValueForCOD?.(minMaxCartValues?.maxCartValueCOD);
       minMaxCartValues?.priceNotUpdateRange &&
         setCartPriceNotUpdateRange?.(minMaxCartValues?.priceNotUpdateRange);
-
-      const nonCodSkuList = getRemoteConfigValue(
-        'Sku_Non_COD',
-        (key) => JSON.parse(config.getString(key)) || []
-      );
-      nonCodSkuList?.length && setNonCodSKus?.(nonCodSkuList);
 
       const disclaimerMessagePdp = getRemoteConfigValue('Pharma_Discailmer_Message', (key) =>
         config.getString(key)
@@ -1287,6 +1372,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'Diagnostics_Help_NonOrder_Queries',
         (key) => config.getString(key)
       );
+      setAppConfig('Enable_Cred_WebView_Flow', 'enableCredWebView', (key) =>
+        config.getBoolean(key)
+      );
 
       const nudgeMessagePharmacyHome = getRemoteConfigValue(
         'Nudge_Message_Pharmacy_Home',
@@ -1308,13 +1396,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
 
       nudgeMessagePharmacyPDP && setPharmaPDPNudgeMessage?.(nudgeMessagePharmacyPDP);
-
-      const disincentivizeCodMessage = getRemoteConfigValue(
-        'Disincentivize_COD_Message',
-        (key) => config.getString(key) || ''
-      );
-
-      disincentivizeCodMessage && setPaymentCodMessage?.(disincentivizeCodMessage);
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';
@@ -1375,7 +1456,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                 Platform.OS === 'ios'
                   ? 'https://apps.apple.com/in/app/apollo247/id1496740273'
                   : 'https://play.google.com/store/apps/details?id=com.apollo.patientapp'
-              ).catch((err) => {});
+              ).catch((err) => { });
             }}
           />
         </View>
@@ -1420,7 +1501,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       toValue: 1,
       duration: 1300,
       useNativeDriver: true,
-    }).start(() => {});
+    }).start(() => { });
   };
 
   return (
