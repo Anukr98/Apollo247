@@ -4156,15 +4156,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             </Text>
           ) : null}
         </View>
-        <View
-          style={{
-            height: 2,
-            backgroundColor: '#D4D4D4',
-            marginHorizontal: 0,
-            marginTop: 1,
-            marginBottom: 8,
-          }}
-        />
       </View>
     );
   };
@@ -4179,6 +4170,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         data={searchResults}
         ListEmptyComponent={
           <View style={{ width: width, marginBottom: 6, padding: 16, backgroundColor: '#fff' }}>
+            <View
+              style={{
+                height: 1.6,
+                backgroundColor: '#D4D4D4',
+                marginTop: 1,
+                marginBottom: 8,
+                marginHorizontal: -16,
+              }}
+            />
             <View
               style={{
                 flexDirection: 'row',
