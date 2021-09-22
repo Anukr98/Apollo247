@@ -4211,6 +4211,112 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
+  const renderGlobalSearchNoResults = () => {
+    return (
+      <View style={{ width: width, marginBottom: 6, padding: 16, backgroundColor: '#fff' }}>
+        <View
+          style={{
+            height: 1.5,
+            backgroundColor: '#D4D4D4',
+            marginTop: -4,
+            marginBottom: 4,
+            marginHorizontal: -16,
+          }}
+        />
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: '#EAF6FF',
+            marginVertical: 16,
+            paddingVertical: 8,
+          }}
+        >
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
+              marginLeft: 14,
+            }}
+          >
+            Search In Medicines
+          </Text>
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <SearchNoResultIcon style={{ width: 20, height: 20 }} />
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+              marginLeft: 14,
+            }}
+          >
+            {string.home.search_not_available}
+          </Text>
+        </View>
+
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: '#FEE7DA',
+            marginVertical: 16,
+            paddingVertical: 8,
+          }}
+        >
+          <TestsCartIcon style={{ width: 20, height: 20, marginLeft: 8 }} />
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
+              marginLeft: 14,
+            }}
+          >
+            In Lab Tests
+          </Text>
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <SearchNoResultIcon style={{ width: 20, height: 20 }} />
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+              marginLeft: 14,
+            }}
+          >
+            {string.home.search_not_available}
+          </Text>
+        </View>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: '#E5FFFD',
+            marginVertical: 16,
+            paddingVertical: 8,
+          }}
+        >
+          <DoctorIcon style={{ width: 20, height: 20, marginLeft: 8 }} />
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
+              marginLeft: 14,
+            }}
+          >
+            In Consult
+          </Text>
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <SearchNoResultIcon style={{ width: 20, height: 20 }} />
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+              marginLeft: 14,
+            }}
+          >
+            {string.home.search_not_available}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
   const renderSearchResults = () => {
     return searchLoading ? (
       renderSearchLoader()
@@ -4219,109 +4325,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         keyExtractor={(_, index) => `${index}`}
         bounces={false}
         data={searchResults}
-        ListEmptyComponent={
-          <View style={{ width: width, marginBottom: 6, padding: 16, backgroundColor: '#fff' }}>
-            <View
-              style={{
-                height: 1.5,
-                backgroundColor: '#D4D4D4',
-                marginTop: -4,
-                marginBottom: 4,
-                marginHorizontal: -16,
-              }}
-            />
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: '#EAF6FF',
-                marginVertical: 16,
-                paddingVertical: 8,
-              }}
-            >
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
-                  marginLeft: 14,
-                }}
-              >
-                Search In Medicines
-              </Text>
-            </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <SearchNoResultIcon style={{ width: 20, height: 20 }} />
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
-                  marginLeft: 14,
-                }}
-              >
-                {string.home.search_not_available}
-              </Text>
-            </View>
-
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: '#FEE7DA',
-                marginVertical: 16,
-                paddingVertical: 8,
-              }}
-            >
-              <TestsCartIcon style={{ width: 20, height: 20, marginLeft: 8 }} />
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
-                  marginLeft: 14,
-                }}
-              >
-                In Lab Tests
-              </Text>
-            </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <SearchNoResultIcon style={{ width: 20, height: 20 }} />
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
-                  marginLeft: 14,
-                }}
-              >
-                {string.home.search_not_available}
-              </Text>
-            </View>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: '#E5FFFD',
-                marginVertical: 16,
-                paddingVertical: 8,
-              }}
-            >
-              <DoctorIcon style={{ width: 20, height: 20, marginLeft: 8 }} />
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
-                  marginLeft: 14,
-                }}
-              >
-                In Consult
-              </Text>
-            </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <SearchNoResultIcon style={{ width: 20, height: 20 }} />
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
-                  marginLeft: 14,
-                }}
-              >
-                {string.home.search_not_available}
-              </Text>
-            </View>
-          </View>
-        }
+        ListEmptyComponent={renderGlobalSearchNoResults()}
         // ListHeaderComponent={searchListHeaderView}
         renderItem={({ item, index }) => renderSearchItem(item, index)}
       />
@@ -4336,22 +4340,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const searchListHeaderView = () => {
-    const search_result_text =
-      searchResults?.length === 1
-        ? `${searchResults?.length} search result for \‘${searchText}\’`
-        : `${searchResults?.length} search results for \‘${searchText}\’`;
-    return (
-      <View style={styles.searchListHeaderViewStyle}>
-        <Text style={styles.searchListHeaderTextStyle}>{search_result_text}</Text>
-      </View>
-    );
-  };
-
   const renderSearchItem = (item: any, index: number) => {
-    if (index === 0) console.log('csk item', JSON.stringify(item), searchResults.length);
+    index === 0 ? console.log('csk item', JSON.stringify(searchResults)) : null;
     const healthCardTopView = () => {
-      switch (item?.healthkey) {
+      switch (item?.key) {
         case MedicalRecordType.MEDICATION:
           return (
             <View
