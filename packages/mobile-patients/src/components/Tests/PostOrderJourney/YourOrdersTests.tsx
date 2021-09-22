@@ -1663,6 +1663,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   async function _changeSelectedPatient(patientSelected: any) {
     setPatientListSelectedPatient([]);
+    _onPressClosePatientListOverlay();
     if (patientSelected?.id === selectedOrder?.patientId) {
       _onPressClosePatientListOverlay();
       return;
@@ -1679,12 +1680,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         result?.data?.switchDiagnosticOrderPatientID &&
         result?.data?.switchDiagnosticOrderPatientID?.status
       ) {
+        setShowPatientListOverlay(true);
         setSwitchPatientResponse('success');
       } else {
+        setShowPatientListOverlay(true);
         setSwitchPatientResponse('fail');
         setLoading?.(false);
       }
     } catch (error) {
+      setShowPatientListOverlay(true);
       setSwitchPatientResponse('fail');
       setLoading?.(false);
       CommonBugFender('_onChangeSelectedPatient_YourOrdersTests', error);

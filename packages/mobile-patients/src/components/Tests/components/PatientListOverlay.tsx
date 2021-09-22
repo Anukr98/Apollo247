@@ -211,7 +211,7 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
                   style={[
                     styles.mainViewStyle,
                     {
-                      height: screenHeight / 2.7,
+                      height: screenHeight / (screenHeight < 610 ? 2.1 : 2.7),
                     },
                   ]}
                 >
