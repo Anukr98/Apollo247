@@ -110,7 +110,11 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
               Tests for {props.gender != '' && props.gender} {props.patientName}
             </Text>
             {props.showEditIcon ? (
-              <TouchableOpacity onPress={props.onPressEditPatient} style={styles.editIconTouch}>
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={props.onPressEditPatient}
+                style={styles.editIconTouch}
+              >
                 <EditProfile style={styles.editIcon} />
               </TouchableOpacity>
             ) : null}
@@ -656,7 +660,7 @@ const styles = StyleSheet.create({
     minHeight: 40,
   },
   testForText: {
-    ...theme.viewStyles.text('SB', 13, colors.SHERPA_BLUE, 1, 18),
+    ...theme.viewStyles.text('SB', isSmallDevice ? 12 : 13, colors.SHERPA_BLUE, 1, 18),
     letterSpacing: 0.3,
   },
   yellowText: { ...theme.viewStyles.yellowTextStyle, fontSize: screenWidth > 380 ? 13 : 12 },

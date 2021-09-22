@@ -124,7 +124,7 @@ import {
   getRescheduleAndCancellationReasons,
   getRescheduleAndCancellationReasonsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getRescheduleAndCancellationReasons';
-import { PatientListOverlay } from '../components/PatientListOverlay';
+import { PatientListOverlay } from '@aph/mobile-patients/src/components/Tests/components/PatientListOverlay';
 
 const { width, height } = Dimensions.get('window');
 
@@ -1328,6 +1328,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   function _onPressEditPatient(order: orderList) {
     setSelectedOrder(order);
+    setSwitchPatientResponse('');
     setShowPatientListOverlay(true);
   }
 
@@ -1662,7 +1663,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   async function _changeSelectedPatient(patientSelected: any) {
     setPatientListSelectedPatient([]);
-
     if (patientSelected?.id === selectedOrder?.patientId) {
       _onPressClosePatientListOverlay();
       return;

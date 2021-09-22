@@ -148,16 +148,19 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
   };
 
   const renderSuccessView = () => {
-    setTimeout(() => {
-      refetchResult?.();
-    }, 2000);
     return (
-      <View style={styles.successView}>
-        <GreenCircleTick
-          style={{ height: 55, width: 55, resizeMode: 'contain', marginBottom: 16 }}
+      <>
+        <LottieView
+          source={require('@aph/mobile-patients/src/components/Tests/greenTickAnimation.json')}
+          autoPlay
+          cacheStrategy={'strong'}
+          resizeMode={'cover'}
+          loop={false}
+          onAnimationFinish={() => refetchResult?.()}
+          style={styles.lottieAnimationStyle}
         />
         <Text style={styles.successText}>{string.diagnostics.successfulUpdatePatientDetails}</Text>
-      </View>
+      </>
     );
   };
 
@@ -208,10 +211,7 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
                   style={[
                     styles.mainViewStyle,
                     {
-                      minHeight: 180,
-                      maxHeight: screenHeight / 2.3,
-                      marginTop: 12,
-                      marginBottom: 20,
+                      height: screenHeight / 2.7,
                     },
                   ]}
                 >
@@ -371,6 +371,9 @@ const styles = StyleSheet.create({
   disabledText: { color: SHERPA_BLUE, opacity: 0.4 },
   successText: {
     ...theme.viewStyles.text('B', 16, '#1084A9', 1),
+    marginTop: -30,
+    marginBottom: 30,
+    textAlign: 'center',
   },
   successView: {
     flex: 1,
@@ -392,6 +395,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 8,
+  },
+  lottieAnimationStyle: {
+    width: 200,
+    height: 200,
+    justifyContent: 'center',
+    alignSelf: 'center',
   },
 });
 
