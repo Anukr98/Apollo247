@@ -573,10 +573,15 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     if (
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_FAILED ||
-      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_FAILED
+      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_FAILED ||
+      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.LOST
     ) {
       capsuleText =
-        orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED ? 'Cancelled' : 'Failed';
+        orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED
+          ? 'Cancelled'
+          : orderDetails.currentStatus == MEDICINE_ORDER_STATUS.LOST
+          ? 'Cancelled'
+          : 'Failed';
       capsuleTextColor = '#FFF';
       capsuleViewBGColor = '#890000';
     } else {
@@ -727,7 +732,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
             item!.orderStatus == MEDICINE_ORDER_STATUS.PAYMENT_FAILED ||
             item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_FAILED ||
-            item!.orderStatus == MEDICINE_ORDER_STATUS.ITEMS_RETURNED
+            item!.orderStatus == MEDICINE_ORDER_STATUS.ITEMS_RETURNED ||
+            item!.orderStatus == MEDICINE_ORDER_STATUS.LOST
         ) && (
           <View
             style={{
@@ -1045,6 +1051,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           '',
           `Rider/Courier partner has been assigned to pickup your return items, the Rider may call you before he reaches your place`,
         ],
+        [MEDICINE_ORDER_STATUS.LOST]: [
+          '',
+          `Dear customer, our sincere apologies. Your order #${orderDetails.orderAutoId} had to be cancelled due to operational reasons. Kindly order again and we will make sure it gets fulfilled.`,
+        ],
       };
 
       const isStatusAvailable = Object.keys(orderStatusDescMapping).includes(status);
@@ -1086,7 +1096,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     if (
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.RETURN_INITIATED ||
-      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.RETURN_ACCEPTED
+      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.RETURN_ACCEPTED ||
+      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.LOST
     ) {
       statusList = orderStatusList
         .filter(
@@ -2170,7 +2181,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const showReOrder =
       orderCancel?.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
       orderDetails?.currentStatus == MEDICINE_ORDER_STATUS.RETURN_INITIATED ||
-      orderDetails?.currentStatus == MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE;
+      orderDetails?.currentStatus == MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE ||
+      orderDetails?.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD ||
+      orderDetails?.currentStatus == MEDICINE_ORDER_STATUS.LOST;
+
     return (
       !!showReOrder && (
         <View>
