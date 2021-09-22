@@ -287,8 +287,8 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   searchListHeaderViewStyle: {
-    marginHorizontal: 17,
-    marginVertical: 15,
+    marginHorizontal: 16,
+    marginVertical: 12,
   },
   searchListHeaderTextStyle: {
     ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 21),
@@ -4176,15 +4176,73 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         bounces={false}
         data={searchResults}
         ListEmptyComponent={
-          <Text
-            style={{
-              ...theme.fonts.IBMPlexSansMedium(12),
-              color: '#890000',
-              paddingVertical: 8,
-            }}
-          >
-            Sorry, we couldn’t find what you are looking for :(
-          </Text>
+          <View style={styles.searchListHeaderViewStyle}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
+                  marginLeft: 14,
+                }}
+              >
+                Search In Medicines
+              </Text>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <SearchAreaIcon style={{ width: 20, height: 20 }} />
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE, 1, 16),
+                  marginLeft: 14,
+                }}
+              >
+                No Results Found
+              </Text>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <TestsCartIcon style={{ width: 20, height: 20 }} />
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
+                  marginLeft: 14,
+                }}
+              >
+                In Lab Tests
+              </Text>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <SearchAreaIcon style={{ width: 20, height: 20 }} />
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE, 1, 16),
+                  marginLeft: 14,
+                }}
+              >
+                No Results Found
+              </Text>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <DoctorIcon style={{ width: 20, height: 20 }} />
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
+                  marginLeft: 14,
+                }}
+              >
+                In Consult
+              </Text>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <SearchAreaIcon style={{ width: 20, height: 20 }} />
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE, 1, 16),
+                  marginLeft: 14,
+                }}
+              >
+                No Results Found
+              </Text>
+            </View>
+          </View>
         }
         ListHeaderComponent={searchListHeaderView}
         renderItem={({ item, index }) => renderSearchItem(item, index)}
