@@ -4352,30 +4352,68 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (index === 0) console.log('csk item', JSON.stringify(item), searchResults.length);
     const healthCardTopView = () => {
       switch (item?.healthkey) {
+        case MedicalRecordType.MEDICATION:
+          return (
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: '#EAF6FF',
+                marginVertical: 16,
+                paddingVertical: 8,
+              }}
+            >
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
+                  marginLeft: 14,
+                }}
+              >
+                Search In Medicines
+              </Text>
+            </View>
+          );
         case MedicalRecordType.TEST_REPORT:
           return (
-            <View style={styles.healthRecordTypeViewStyle}>
-              <SearchAreaIcon style={{ width: 14, height: 15 }} />
-              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
-                {'Test Reports'}
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: '#FEE7DA',
+                marginVertical: 16,
+                paddingVertical: 8,
+              }}
+            >
+              <TestsCartIcon style={{ width: 20, height: 20, marginLeft: 8 }} />
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
+                  marginLeft: 14,
+                }}
+              >
+                In Lab Tests
               </Text>
             </View>
           );
         case MedicalRecordType.CONSULTATION:
           return (
-            <View style={styles.healthRecordTypeViewStyle}>
-              <SearchAreaIcon style={{ width: 13, height: 15.17 }} />
-              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
-                {'Consults'}
-              </Text>
-            </View>
-          );
-        case MedicalRecordType.MEDICATION:
-          return (
-            <View style={styles.healthRecordTypeViewStyle}>
-              <SearchAreaIcon style={{ width: 13, height: 16 }} />
-              <Text style={styles.healthRecordTypeTextStyle} numberOfLines={1}>
-                {'Medicines'}
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: '#E5FFFD',
+                marginVertical: 16,
+                paddingVertical: 8,
+              }}
+            >
+              <DoctorIcon style={{ width: 20, height: 20, marginLeft: 8 }} />
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
+                  marginLeft: 14,
+                }}
+              >
+                In Consult
               </Text>
             </View>
           );
