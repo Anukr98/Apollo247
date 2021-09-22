@@ -4154,42 +4154,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         CommonBugFender('HomeScreen_ConsultRoom_onSearchMedicinesFunction', e);
       });
 
-    searchPHRApiWithAuthToken(_searchText, prismAuthToken)
-      .then(({ data }) => {
-        setSearchResults([]);
-        if (data?.response) {
-          const searchData = data.response;
-          const finalData: any[] = [];
-          searchData.forEach((recordData: any) => {
-            const { searchResultType } = recordData;
-            switch (searchResultType) {
-              case 'CONSULT':
-                finalData.push({ healthkey: MedicalRecordType.CONSULTATION, value: recordData });
-                break;
-              case 'LABTEST':
-                finalData.push({ healthkey: MedicalRecordType.TEST_REPORT, value: recordData });
-                break;
-              case 'MEDICINES':
-                finalData.push({ healthkey: MedicalRecordType.MEDICATION, value: recordData });
-                break;
-            }
-          });
-          console.log('csk', 'search results->', JSON.stringify(finalData));
-          setSearchResults(finalData);
-          setSearchLoading(false);
-        } else {
-          console.log('csk', 'search results->', JSON.stringify(data));
-          getAuthToken();
-          setSearchLoading(false);
-        }
-      })
-      .catch((error) => {
-        console.log('csk e', 'search results->', JSON.stringify(error));
-        CommonBugFender('HomeScreen_ConsultRoom_SearchAPI', error);
-        getAuthToken();
-        setSearchLoading(false);
-      });
-
     setSearchLoading(false);
   };
 
