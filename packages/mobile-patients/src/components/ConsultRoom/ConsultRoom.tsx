@@ -4224,7 +4224,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             paddingVertical: 8,
           }}
         >
-          {searchResultsTabHeader[MedicalRecordType.MEDICATION].icon}
+          {searchResultsTabHeader[MedicalRecordType.MEDICATION].icon()}
           <Text
             style={{
               ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
@@ -4255,7 +4255,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             paddingVertical: 8,
           }}
         >
-          {searchResultsTabHeader[MedicalRecordType.TEST_REPORT].icon}
+          {searchResultsTabHeader[MedicalRecordType.TEST_REPORT].icon()}
           <Text
             style={{
               ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
@@ -4285,7 +4285,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             paddingVertical: 8,
           }}
         >
-          {searchResultsTabHeader[MedicalRecordType.CONSULTATION].icon}
+          {searchResultsTabHeader[MedicalRecordType.CONSULTATION].icon()}
           <Text
             style={{
               ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
