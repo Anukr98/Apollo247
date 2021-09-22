@@ -4172,10 +4172,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <View style={{ width: width, marginBottom: 6, padding: 16, backgroundColor: '#fff' }}>
             <View
               style={{
-                height: 1.6,
+                height: 1.5,
                 backgroundColor: '#D4D4D4',
-                marginTop: 1,
-                marginBottom: 8,
+                marginTop: -4,
+                marginBottom: 4,
                 marginHorizontal: -16,
               }}
             />
