@@ -8,11 +8,13 @@ import {
   Helpers as NeedHelpQueryDetailsHelpers,
   Query,
 } from '@aph/mobile-patients/src/components/NeedHelpQueryDetails';
+import { needHelpCleverTapEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { DashedLine, GrayEditIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useShoppingCart} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -26,7 +28,6 @@ import HTML from 'react-native-render-html';
 import {
   Alert,
   SafeAreaView,
-  ScrollView,
   StyleProp,
   StyleSheet,
   Text,
@@ -36,11 +37,15 @@ import {
   BackHandler,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { NavigationScreenProps } from 'react-navigation';
+import { 
+  NavigationScreenProps,
+  ScrollView,
+ } from 'react-navigation';
 import { getHelpdeskTickets } from '../../graphql/types/getHelpdeskTickets';
 import { GET_HELPDESK_TICKETS } from '@aph/mobile-patients/src/graphql/profiles';
 import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
 import { OrderStatusIndicator } from './OrderStatusIndicator';
+import { CleverTapEventName } from '../../helpers/CleverTapEvents';
 
 const { text } = theme.viewStyles;
 const { LIGHT_BLUE } = theme.colors;
@@ -185,7 +190,11 @@ const styles = StyleSheet.create({
 export interface Props extends NavigationScreenProps {}
 
 export const NeedHelp: React.FC<Props> = (props) => {
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients, profileAllPatients  } = useAllCurrentPatients();
+  const {
+    circlePlanValidity,
+    circleSubscriptionId,
+  } = useShoppingCart();
   const [email, setEmail] = useState<string>(currentPatient?.emailAddress || '');
   const [queries, setQueries] = useState<NeedHelpHelpers.HelpSectionQuery[]>([]);
   const [isFocused, setFocused] = useState<boolean>(false);
@@ -318,7 +327,10 @@ export const NeedHelp: React.FC<Props> = (props) => {
           inputStyle={styles.emailInput}
           conatinerstyles={styles.emailInputContainer}
           onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
+          onBlur={() => {
+            setFocused(false);
+            cleverTapEvent(CleverTapEventName.EDIT_EMAIL_ADDRESS_ON_NEED_HELP, {"Email address": email});
+          }}
         />
       </View>
     );
@@ -358,11 +370,24 @@ export const NeedHelp: React.FC<Props> = (props) => {
         : helpCategoryId === helpSectionQueryId.diagnostic
         ? AppRoutes.NeedHelpDiagnosticsOrder
         : AppRoutes.NeedHelpQueryDetails;
+    cleverTapEvent(CleverTapEventName.BU_MODULE_TILE_ON_NEED_HELP,{"BU/Module name": route});
     props.navigation.navigate(route, {
       queries: queries,
       queryIdLevel1: helpCategoryId,
       email: email,
     });
+  };
+
+  const cleverTapEvent = (eventName: CleverTapEventName, extraAttributes?: Object) => {
+    needHelpCleverTapEvent(
+      eventName,
+      allCurrentPatients,
+      currentPatient,
+      circlePlanValidity,
+      circleSubscriptionId,
+      'Need Help',
+      extraAttributes
+    );
   };
 
   const renderHeader = () => {
@@ -373,6 +398,7 @@ export const NeedHelp: React.FC<Props> = (props) => {
           leftIcon="backArrow"
           onPressLeftIcon={() => {
             handleBack();
+            cleverTapEvent(CleverTapEventName.BACK_NAV_ON_NEED_HELP_CLICKED);
           }}
         />
       </View>
@@ -397,6 +423,7 @@ export const NeedHelp: React.FC<Props> = (props) => {
             <TouchableOpacity
               onPress={() => {
                 setShowPreviousTickets(true);
+                cleverTapEvent(CleverTapEventName.VIEW_PREVIOUS_TICKETS_CTA_ON_NEED_HELP);
               }}
             >
               <Text style={styles.clickHereTextStyle}>{string.needHelpScreen.click_here}</Text>
@@ -413,7 +440,13 @@ export const NeedHelp: React.FC<Props> = (props) => {
       <TouchableOpacity
         onPress={() => {
           setShowPreviousTickets(false);
-          props.navigation.navigate(AppRoutes.HelpChatScreen, {
+            cleverTapEvent(showPreviousTickets ? CleverTapEventName.CS_TICKET_ON_PREVIOUS_TICKETS : CleverTapEventName.LATEST_CS_TICKETS_ON_NEED_HELP,{
+              "Ticket number": ticket.ticketNumber,
+              "Ticket title": ticket.subject,
+              "Ticket status": ticket.status,
+              "Ticket created on": ticket.createdTime,
+            });
+            props.navigation.navigate(AppRoutes.HelpChatScreen, {
             ticket: ticket,
           });
         }}
@@ -464,7 +497,11 @@ export const NeedHelp: React.FC<Props> = (props) => {
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
         <View style={[{ flex: 1 }, !queries?.length && styles.invisible]}>
-          <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            bounces={false}
+            showsVerticalScrollIndicator={false}
+            onScroll={() => cleverTapEvent(showPreviousTickets ? CleverTapEventName.PREVIOUS_TICKET_SCREEN_SCROLLED :CleverTapEventName.NEED_HELP_SCROLLED)}
+          >
             {showPreviousTickets ? (
               renderPreviousTicketsSection()
             ) : (
