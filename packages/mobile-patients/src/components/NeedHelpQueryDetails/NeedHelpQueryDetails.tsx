@@ -439,7 +439,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           payment: payment.length <= 0 ? fetchPayment : payment,
         });
       } else {
-        setSelectedQueryId(item.id!);
+        setSelectedQueryId(item?.id!);
         setComments('');
       }
     };
@@ -464,7 +464,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       moment(new Date()).diff(moment(medicineOrderStatusDate), 'hours') <= 48;
 
     if (!showReturnOrder) {
-      data = data.filter((item) => item.id !== helpSectionQueryId.returnOrder);
+      data = data.filter((item) => item?.id !== helpSectionQueryId.returnOrder);
     }
 
     return (

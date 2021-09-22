@@ -593,7 +593,10 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
       <SafeAreaView style={styles.container}>
-        <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
+        <Header
+          leftIcon="backArrow"
+          title="PAYMENT STATUS"
+          onPressLeftIcon={() => props.navigation.goBack()} />
         <View style={styles.container}>
             <ScrollView style={styles.container}>
               {renderStatusCard()}
@@ -727,6 +730,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingHorizontal: 10,
     alignItems: 'center',
+    borderWidth: 0.5,
+    paddingVertical: 6,
+    borderColor: theme.colors.LIGHT_GRAY_2
   },
   viewInvoice: {
     marginTop: 10,

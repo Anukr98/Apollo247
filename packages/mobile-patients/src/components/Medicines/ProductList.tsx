@@ -86,6 +86,7 @@ export const ProductList: React.FC<Props> = ({
   const [currentProductIdInCart, setCurrentProductIdInCart] = useState<string>(null);
   const [currentProductQuantityInCart, setCurrentProductQuantityInCart] = useState<number>(0);
   const [itemPackForm, setItemPackForm] = useState<string>('');
+  const [maxOrderQty, setMaxOrderQty] = useState<number>(0);
   const [suggestedQuantity, setSuggestedQuantity] = useState<string>(null);
 
   useEffect(() => {
@@ -158,6 +159,11 @@ export const ProductList: React.FC<Props> = ({
     setCurrentProductIdInCart(item.sku);
     item.pack_form ? setItemPackForm(item.pack_form) : setItemPackForm('');
     item.suggested_qty ? setSuggestedQuantity(item.suggested_qty) : setSuggestedQuantity(null);
+    item.MaxOrderQty
+      ? setMaxOrderQty(item.MaxOrderQty)
+      : item.suggested_qty
+      ? setMaxOrderQty(+item.suggested_qty)
+      : setMaxOrderQty(0);
     setCurrentProductQuantityInCart(1);
   };
 
@@ -248,6 +254,7 @@ export const ProductList: React.FC<Props> = ({
             suggested_qty={suggestedQuantity}
             sku={currentProductIdInCart}
             packForm={itemPackForm}
+            maxOrderQty={maxOrderQty}
             setShownNudgeOnce={setShownNudgeOnce}
             showSuggestedQuantityNudge={showSuggestedQuantityNudge}
             setShowSuggestedQuantityNudge={setShowSuggestedQuantityNudge}
