@@ -451,10 +451,10 @@ export const ReturnOrderSubReason = [
 const PharmaApiConfig = {
   dev: {
     TRACK_EVENT: [`${tagalysBaseUrl}/analytics/events/track`],
-    MED_SEARCH: [`${apolloUatBaseUrl}/popcsrchprd_api.php`, pharmaToken201],
+    MED_SEARCH: [`${apolloProdBaseUrl}/popcsrchprd_api.php`, pharmaToken201],
     GET_SKU: [`${apolloUatBaseUrl}/popcsrchsku_api.php`, pharmaToken201],
     MED_DETAIL: [apolloUatBaseUrl, pharmaToken201],
-    MED_SEARCH_SUGGESTION: [`${apolloUatBaseUrl}/popcsrchss_api.php`, pharmaToken201],
+    MED_SEARCH_SUGGESTION: [`${apolloProdBaseUrl}/popcsrchss_api.php`, pharmaToken201],
     STORES_LIST: [apolloUatBaseUrl, pharmaToken201],
     GET_STORE_INVENTORY: [
       `https://online.apollopharmacy.org/TAT/Apollo/GetStoreInventory`,
@@ -462,7 +462,7 @@ const PharmaApiConfig = {
     ],
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
     MED_CART_ITEMS_DETAILS: [`${apolloUatBaseUrl}/popcscrchcart_api.php`, pharmaToken201],
-    IMAGES_BASE_URL: [`https://uat.apollopharmacy.in/pub/media`],
+    IMAGES_BASE_URL: [`https://newassets.apollo247.com/pub/media`],
     GET_DELIVERY_TIME: [
       'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
       pharmaTokenYXV,
@@ -472,7 +472,7 @@ const PharmaApiConfig = {
       pharmaTokenYXV,
     ],
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
-    PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/categoriesScript.php`, pharmaToken201],
+    PRODUCTS_BY_CATEGORY: [`${apolloProdBaseUrl}/categoryproducts_api.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
     ALL_BRANDS: [`${apolloUatBaseUrl}/allbrands_api.php`, pharmaToken201],
     GET_TEST_PACKAGES: [
