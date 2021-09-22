@@ -304,7 +304,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                           <View style={styles.phyView}>
                             <View style={styles.phyView2}>
                               <View style={styles.phyView3}>
-                                {item.fileType == 'pdf' ? (
+                                {item.fileType == 'application/pdf' || item.fileType == 'pdf'  ? (
                                   <Pdf style={styles.pdfIconStyle} />
                                 ) : (
                                   <Image
