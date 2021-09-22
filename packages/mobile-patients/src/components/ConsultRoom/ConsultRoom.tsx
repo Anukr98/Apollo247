@@ -242,7 +242,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: 'rgba(0,0,0,0.05)',
     paddingHorizontal: 16,
-    paddingVertical: 15,
+    paddingVertical: 12,
+    marginTop: 6,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -4177,7 +4178,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         bounces={false}
         data={searchResults}
         ListEmptyComponent={
-          <View style={styles.searchListHeaderViewStyle}>
+          <View style={{ width: width, marginBottom: 6, padding: 16, backgroundColor: '#fff' }}>
             <View
               style={{
                 flexDirection: 'row',
@@ -4197,10 +4198,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <SearchAreaIcon style={{ width: 20, height: 20 }} />
+              <SearchNoResultIcon style={{ width: 20, height: 20 }} />
               <Text
                 style={{
-                  ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE, 1, 16),
+                  ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
                   marginLeft: 14,
                 }}
               >
@@ -4228,10 +4229,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <SearchAreaIcon style={{ width: 20, height: 20 }} />
+              <SearchNoResultIcon style={{ width: 20, height: 20 }} />
               <Text
                 style={{
-                  ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE, 1, 16),
+                  ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
                   marginLeft: 14,
                 }}
               >
@@ -4258,10 +4259,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <SearchAreaIcon style={{ width: 20, height: 20 }} />
+              <SearchNoResultIcon style={{ width: 20, height: 20 }} />
               <Text
                 style={{
-                  ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE, 1, 16),
+                  ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
                   marginLeft: 14,
                 }}
               >
@@ -4270,7 +4271,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             </View>
           </View>
         }
-        ListHeaderComponent={searchListHeaderView}
+        // ListHeaderComponent={searchListHeaderView}
         renderItem={({ item, index }) => renderSearchItem(item, index)}
       />
     );
