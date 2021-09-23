@@ -21,7 +21,6 @@ import {
   HomeIcon,
   NotificationIcon,
   WorkflowIcon,
-  ArrowRightYellow,
   ShieldIcon,
   Remove,
   DropdownGreen,
@@ -53,8 +52,6 @@ import {
   handleGraphQlError,
   downloadDiagnosticReport,
   isAddressLatLngInValid,
-  setAsyncPharmaLocation,
-  downloadDocument,
   removeWhiteSpaces,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -159,7 +156,6 @@ import moment from 'moment';
 import AsyncStorage from '@react-native-community/async-storage';
 import { OrderCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/OrderCardCarousel';
 import { PrescriptionCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/PrescriptionCardCarousel';
-import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
 import { DiagnosticLocation } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticLocation';
 import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 import {
@@ -168,6 +164,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 
+const rankArr = ['1', '2', '3', '4', '5', '6'];
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_2.webp'),
@@ -1930,8 +1927,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const findRank =
       !!widgetsData &&
       widgetsData?.length > 0 &&
-      widgetsData?.find((item: any) => item?.diagnosticwidgetsRankOrder === rank);
+      widgetsData?.filter((item: any) => item?.diagnosticwidgetsRankOrder === rank);
     return findRank;
+  }
+
+  function renderWidgetItems(widgetType: any) {
+    return widgetType?.length > 0 && widgetType?.map((wid: any) => renderWidgetType(wid));
   }
 
   const renderSections = () => {
@@ -1947,7 +1948,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         style={{ flex: 1 }}
       >
         {widgetsData?.length == 0 && reloadWidget && renderLowNetwork()}
-        {renderWidgetType(widget1)} {/**1 */}
+        {renderWidgetItems(widget1)} {/**1 */}
         {renderYourOrders()}
         {latestPrescription?.length > 0 ? renderPrescriptionCard() : null}
         {renderOrderStatusCard()}
@@ -1965,18 +1966,22 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const isWidget5 = getRanking('5');
     const isWidget6 = getRanking('6');
 
-    const restWidgets =
-      isWidget && widgetsData?.length > 6 && widgetsData?.slice(6, widgetsData?.length);
+    const getAllRankedItems =
+      !!widgetsData &&
+      widgetsData?.length > 0 &&
+      widgetsData?.filter((item: any) => rankArr.includes(item?.diagnosticwidgetsRankOrder));
+
+    const restWidgets = isWidget && widgetsData?.slice(getAllRankedItems, widgetsData?.length);
     return (
       <>
-        {!!isWidget2 ? renderWidgetType(isWidget2) : null} {/**2 */}
-        {!!isWidget3 ? renderWidgetType(isWidget3) : null} {/** 3 */}
+        {renderWidgetItems(isWidget2)} {/**2 */}
+        {renderWidgetItems(isWidget3)} {/** 3 */}
         {renderStepsToBook()}
-        {!!isWidget4 ? renderWidgetType(isWidget4) : null} {/** 4 */}
+        {renderWidgetItems(isWidget4)} {/** 4 */}
         {renderCarouselBanners()}
-        {!!isWidget5 ? renderWidgetType(isWidget5) : null} {/** 5 */}
+        {renderWidgetItems(isWidget5)} {/** 5 */}
         {renderWhyBookUs()}
-        {!!isWidget6 ? renderWidgetType(isWidget6) : null} {/** 6 */}
+        {renderWidgetItems(isWidget6)} {/** 6 */}
         {renderCertificateView()}
         {!!restWidgets && restWidgets.map((item: any) => renderWidgetType(item))}
       </>
@@ -1987,10 +1992,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
     if (!!widget) {
       const widgetName = widget?.diagnosticWidgetType?.toLowerCase();
       switch (widgetName) {
-        case 'banner':
+        case string.diagnosticCategoryTitle.banner:
           return renderBanner();
           break;
-        case 'package':
+        case string.diagnosticCategoryTitle.package:
           return renderPackageWidget(widget);
           break;
         case string.diagnosticCategoryTitle.categoryGrid:

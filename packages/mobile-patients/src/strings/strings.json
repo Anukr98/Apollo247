@@ -614,7 +614,10 @@
   },
   "diagnosticCategoryTitle": {
     "category": "category",
-    "categoryGrid": "category_scroll"
+    "categoryGrid": "category_scroll",
+    "banner": "banner",
+    "package": "package",
+    "item": "item"
   },
   "diagnosticsCartPage":{
     "patientHeading": "Select Patient Names",
