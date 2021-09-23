@@ -24,6 +24,7 @@ import {
   StarEmpty,
   ClockIcon,
   StarFillGreen,
+  EditProfile,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -34,10 +35,7 @@ import {
   DIAGNOSTIC_SHOW_OTP_STATUS,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
-import {
-  DiagnosticPhleboCallingClicked,
-  DiagnosticTrackPhleboClicked,
-} from '@aph/mobile-patients/src/components/Tests/Events';
+import { DiagnosticTrackPhleboClicked } from '@aph/mobile-patients/src/components/Tests/Events';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 const screenWidth = Dimensions.get('window').width;
@@ -71,8 +69,10 @@ interface OrderTestCardProps {
   isHelp?: boolean;
   orderAttributesObj?: any;
   slotDuration?: any;
+  showEditIcon?: boolean;
   onPressRatingStar: (star: number) => void;
   onPressCallOption: (name: string, number: string) => void;
+  onPressEditPatient: () => void;
 }
 
 export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
@@ -109,6 +109,15 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
             <Text style={styles.testForText}>
               Tests for {props.gender != '' && props.gender} {props.patientName}
             </Text>
+            {props.showEditIcon ? (
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={props.onPressEditPatient}
+                style={styles.editIconTouch}
+              >
+                <EditProfile style={styles.editIcon} />
+              </TouchableOpacity>
+            ) : null}
           </View>
         )}
         {props.showAddTest ? (
@@ -651,7 +660,7 @@ const styles = StyleSheet.create({
     minHeight: 40,
   },
   testForText: {
-    ...theme.viewStyles.text('SB', 13, colors.SHERPA_BLUE, 1, 18),
+    ...theme.viewStyles.text('SB', isSmallDevice ? 12 : 13, colors.SHERPA_BLUE, 1, 18),
     letterSpacing: 0.3,
   },
   yellowText: { ...theme.viewStyles.yellowTextStyle, fontSize: screenWidth > 380 ? 13 : 12 },
@@ -797,7 +806,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  patientNameView: { width: '65%', justifyContent: 'center' },
+  patientNameView: {
+    width: '65%',
+    justifyContent: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   newItemView: {
     backgroundColor: '#4CAF50',
     height: 18,
@@ -825,4 +839,11 @@ const styles = StyleSheet.create({
     maxWidth: '60%',
   },
   vaccinationText: { ...theme.viewStyles.text('M', 12, colors.WHITE, 1, 15) },
+  editIconTouch: {
+    marginHorizontal: 8,
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+  },
+  editIcon: { height: 16, width: 16, resizeMode: 'contain' },
 });

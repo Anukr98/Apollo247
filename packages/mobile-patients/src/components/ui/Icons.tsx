@@ -2202,3 +2202,26 @@ export const ConsultRefund: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/refund_new.webp')}
   />
 );
+
+export const EditProfile: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/patient_edit.webp')}
+  />
+);
+
+export const AddPatientCircleIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/circle-plus.webp')}
+  />
+);
+
+export const MinusPatientCircleIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/circle-minus.webp')}
+  />
+);
