@@ -248,7 +248,6 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     const pIds = props.selectedEprescriptionIds;
     const selectedPrescr = {} as typeof selectedPrescription;
     if (pIds) {
-      console.log('pIds :>> ', pIds);
       pIds!.forEach((id) => {
         selectedPrescr[id] = true;
       });
@@ -722,7 +721,6 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
   };
 
   const renderEPrescriptions = (isOldPrescription: boolean) => {
-    // console.log('prescriptionOlderThan6months :>> ', prescriptionUpto6months);
     return (
       <View>
         <Text style={styles.sectionHeadings}>
