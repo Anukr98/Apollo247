@@ -46,6 +46,14 @@ export interface MedicineProduct {
   pack_size?: string | null;
   banned?: 'Yes' | 'No';
   subcategory?: string | null;
+  country_of_origin?: string | null;
+  packer_name?: string | null;
+  packer_address?: string | null;
+  importer_name?: string | null;
+  importer_address?: string | null;
+  import_date?: string | null;
+  generic_name?: string | null;
+  allergen_info?: string | null;
 }
 
 export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {

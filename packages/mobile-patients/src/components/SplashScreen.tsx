@@ -767,6 +767,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const {
     setLocationDetails,
     setNeedHelpToContactInMessage,
+    setNeedHelpTicketReferenceText,
     setNeedHelpReturnPharmaOrderSuccessMessage,
     setSavePatientDetails,
     setCovidVaccineCta,
@@ -850,6 +851,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Need_Help_To_Contact_In: {
       PROD: 'Need_Help_To_Contact_In',
     },
+
+    Need_Help_Ticket_Reference_Text: {
+      QA: 'Need_Help_Ticket_Reference_Text_QA',
+      PROD: 'Need_Help_Ticket_Reference_Text',
+    },
+
     Min_Value_For_Pharmacy_Free_Delivery: {
       QA: 'QA_Min_Value_For_Pharmacy_Free_Delivery',
       PROD: 'Min_Value_For_Pharmacy_Free_Delivery',
@@ -1081,6 +1088,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         config.getString(key)
       );
       needHelpToContactInMessage && setNeedHelpToContactInMessage!(needHelpToContactInMessage);
+
+      const needHelpTicketReferenceText = getRemoteConfigValue(
+        'Need_Help_Ticket_Reference_Text',
+        (key) => config.getString(key)
+      );
+      needHelpTicketReferenceText && setNeedHelpTicketReferenceText!(needHelpTicketReferenceText);
 
       const covidVaccineCta = getRemoteConfigValue(
         'Covid_Vaccine_Cta_Key',

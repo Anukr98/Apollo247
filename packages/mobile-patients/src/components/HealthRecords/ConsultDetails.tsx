@@ -395,6 +395,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     } else if (defaultAddress && !testIds.length) {
       if (caseSheetDetails?.medicinePrescription?.length) {
         checkMedicineAvailability();
+      } else {
+        setLoading?.(false);
       }
     } else {
       // Test Delivery slots api to be addded here in future
@@ -472,8 +474,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     const skus = caseSheetDetails?.medicinePrescription?.map((item: any) => item?.id);
     const data = await availabilityApi247(defaultAddress?.zipcode || '', skus?.join(','));
     const medicineResponse = data?.data?.response;
-    if(medicineResponse.length){
-      const availableMedicines = medicineResponse.filter(item => item?.exist);    
+    const availableMedicines = medicineResponse?.filter((item: any) => item?.exist);
+    if(availableMedicines?.length) {
       setPrescAvailability(availableMedicines.length == skus?.length ? 'available' : 'partial');
       const skuItems = availableMedicines?.map(item => {return {sku: item?.sku, qty: 1}})!;
       const data = await getDeliveryTAT({
@@ -486,6 +488,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         const { tat } = data?.data?.response;
         setTat(moment(tat, 'DD-MMM-YYYY HH:mm').format('h:mm A, DD MMM YYYY'));
       }
+    } else {
+      setPrescAvailability('unavailable')
     }
     setLoading && setLoading(false);
   };

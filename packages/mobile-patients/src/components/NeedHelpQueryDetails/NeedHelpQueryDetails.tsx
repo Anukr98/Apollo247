@@ -96,7 +96,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
-  const { needHelpToContactInMessage } = useAppCommonData();
+  const { needHelpToContactInMessage, needHelpTicketReferenceText } = useAppCommonData();
   const isConsult = navigation.getParam('isConsult') || false;
   const [selectedQueryId, setSelectedQueryId] = useState<string>('');
   const [comments, setComments] = useState<string>('');
@@ -188,40 +188,26 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   };
 
   const onSuccess = (response: any) => {
+    let ticketId = response?.data?.sendHelpEmail.split(':')[1] || 0;
+    let ticketType = response?.data?.sendHelpEmail.split(':')[2] || '';
+
+    let referenceNumberText = '';
+    if (ticketType && ticketType === 'fd') {
+      referenceNumberText = ticketId
+        ? needHelpTicketReferenceText.replace('#ticketNumber', '#' + ticketId)
+        : '';
+    }
+
     showAphAlert!({
       title: string.common.hiWithSmiley,
-      description: needHelpToContactInMessage || string.needHelpSubmitMessage,
+      description:
+        (needHelpToContactInMessage || string.needHelpSubmitMessage) + '. ' + referenceNumberText,
       unDismissable: true,
       onPressOk: () => {
         hideAphAlert!();
-        openHelpChatScreen(response);
+        navigateToHome(navigation);
       },
     });
-  };
-
-  const openHelpChatScreen = (response: any) => {
-    let ticketId = response?.data?.sendHelpEmail.split(':')[1] || 0;
-    let ticket = {
-      closedTime: null,
-      createdTime: '',
-      customFields: {
-        Business: '',
-        __typename: '',
-      },
-      id: ticketId,
-      modifiedTime: '2021-08-26T11:30:46.000Z',
-      status: '',
-      statusType: 'Open',
-      subject: '',
-      ticketNumber: '',
-    };
-
-    if (ticketId) {
-      navigation.navigate(AppRoutes.HelpChatScreen, {
-        ticketId: ticketId,
-        ticket: ticket,
-      });
-    }
   };
 
   const onError = () => {
@@ -439,7 +425,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           payment: payment.length <= 0 ? fetchPayment : payment,
         });
       } else {
-        setSelectedQueryId(item.id!);
+        setSelectedQueryId(item?.id!);
         setComments('');
       }
     };
@@ -464,7 +450,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       moment(new Date()).diff(moment(medicineOrderStatusDate), 'hours') <= 48;
 
     if (!showReturnOrder) {
-      data = data.filter((item) => item.id !== helpSectionQueryId.returnOrder);
+      data = data.filter((item) => item?.id !== helpSectionQueryId.returnOrder);
     }
 
     return (
