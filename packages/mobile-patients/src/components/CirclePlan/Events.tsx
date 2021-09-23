@@ -8,7 +8,10 @@ import {
   postWebEngageEvent,
   setCircleMembershipType,
   postAppsFlyerEvent,
+  getAge,
+  getCleverTapCircleMemberValues,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { getUniqueId } from 'react-native-device-info';
 import moment from 'moment';
 import {
   WebEngageEventName,
@@ -133,4 +136,39 @@ export const fireCirclePaymentPageViewedEvent = (
       ),
     1000
   );
+};
+
+export const needHelpCleverTapEvent = (
+  eventName: CleverTapEventName,
+  allCurrentPatients: any,
+  currentPatient: any,
+  circlePlanValidity: any,
+  circleSubscriptionId: string | boolean,
+  source: string,
+  extraAttributes?: Object,) => {
+  const circleMembershipType = setCircleMembershipType(
+    circlePlanValidity?.startDate!,
+    circlePlanValidity?.endDate!
+  );
+  let eventAttributes = {
+    'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    Relation: g(currentPatient, 'relation'),
+    'Patient age': getAge(currentPatient?.dateOfBirth),
+    'Patient gender': g(currentPatient, 'gender'),
+    'Mobile Number': g(currentPatient, 'mobileNumber'),
+    'Customer ID': g(currentPatient, 'id'),
+    User_Type: getUserType(allCurrentPatients),
+    'Source': source,
+    'Circle Member': circleSubscriptionId ? 'Yes' : 'No',
+    'Circle Plan': circleMembershipType,
+    'Circle Start Date': circlePlanValidity?.startDate!,
+    'Circle End Date': circlePlanValidity?.endDate!,
+    'Device Id': getUniqueId(),
+    'Platform': Platform.OS,
+  };
+  if (extraAttributes){
+    eventAttributes = {...eventAttributes, ...extraAttributes};
+  }
+  postCleverTapEvent(eventName, eventAttributes);
 };
