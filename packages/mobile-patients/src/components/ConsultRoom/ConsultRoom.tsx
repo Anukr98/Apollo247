@@ -4460,7 +4460,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             {key === MedicalRecordType.TEST_REPORT
               ? item?.diagnostic_item_name
               : key === MedicalRecordType.MEDICATION
-              ? item?.sku
+              ? item?.name
               : string.home.search_not_available}
           </Text>
           <Text
