@@ -264,7 +264,11 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         setisTxnProcessing(false);
         break;
       case 'upiTxn':
-        status
+        let activityRes = payload?.payload?.otherInfo?.response?.dropoutInfo?.activityResponse;
+        activityRes = !!activityRes && activityRes != {} && JSON.parse(activityRes);
+        activityRes?.Status == 'FAILURE' || activityRes?.Status == 'Failed'
+          ? showTxnFailurePopUP()
+          : status
           ? (handleTxnStatus(status, payload), setisTxnProcessing(false))
           : !payload?.error && setAvailableUPIapps(payload?.payload?.availableApps || []);
         break;
