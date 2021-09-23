@@ -93,7 +93,7 @@ export function DiagnosticPinCodeClicked(
   currentPatient: any,
   pincode: string,
   serviceable: boolean,
-  source: DIAGNOSTIC_PINCODE_SOURCE_TYPE
+  source: DIAGNOSTIC_PINCODE_SOURCE_TYPE,
   isDiagnosticCircleSubscription?: boolean | undefined,
 ) {
   const getPatientAttributes = createPatientAttributes(currentPatient);
