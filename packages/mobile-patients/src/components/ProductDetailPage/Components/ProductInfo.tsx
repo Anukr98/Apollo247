@@ -24,6 +24,7 @@ export interface ProductInfoProps {
   isPharma: boolean;
   pharmaOverview?: NewPharmaOverview | null;
   directionsOfUse?: string | null;
+  allergen_info?: string | null;
 }
 
 export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
@@ -44,6 +45,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
     pharmaOverview,
     safety_information,
     directionsOfUse,
+    allergen_info,
   } = props;
 
   const pharmaUses = pharmaOverview?.HowToTake;
@@ -224,6 +226,13 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
     ) : null;
   };
 
+  const renderAllergenInformation = () => (
+    <View>
+      <Text style={styles.subHeading}>Allergen Information</Text>
+      <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>{allergen_info}</Text>
+    </View>
+  );
+
   const renderOtherInformation = () => (
     <View style={styles.otherInfo}>
       <Text style={styles.subHeading}>Other Information</Text>
@@ -266,6 +275,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
         </>
       )}
       {showShowMore && renderShowMore()}
+      {!!allergen_info && renderAllergenInformation()}
       {renderOtherInformation()}
     </View>
   );
