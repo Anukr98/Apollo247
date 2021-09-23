@@ -44,6 +44,7 @@ import {
   postWebEngagePHR,
   isSmallDevice,
   removeObjectProperty,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import {
@@ -78,6 +79,10 @@ import {
   getVisualizationData,
   getVisualizationDataVariables,
 } from '@aph/mobile-patients/src/graphql/types/getVisualizationData';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -535,6 +540,15 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
           })
           .then(({ data }: any) => {
             if (data?.getLabResultpdf?.url) {
+              if (fileShare) {
+                const eventAttributes: CleverTapEvents[CleverTapEventName.PHR_SHARE_REAL_LAB_TEST_REPORT] = {
+                  Source: 'Test Report Screen View',
+                };
+                postCleverTapEvent(
+                  CleverTapEventName.PHR_SHARE_REAL_LAB_TEST_REPORT,
+                  eventAttributes
+                );
+              }
               imagesArray?.length === 0
                 ? downloadDocument(data?.getLabResultpdf?.url, fileShare)
                 : callConvertToZipApi(data?.getLabResultpdf?.url, fileShare);
@@ -883,6 +897,10 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
             showResponseData(data.getVisualizationData.response);
             setSendParamName(paramName);
             setSendTestReportName(labTestName);
+            const eventAttributes: CleverTapEvents[CleverTapEventName.PHR_BAR_CHART_VISUALISATION] = {
+              Source: 'Test Report Screen View',
+            };
+            postCleverTapEvent(CleverTapEventName.PHR_BAR_CHART_VISUALISATION, eventAttributes);
           }
           setShowPopup(true);
         })

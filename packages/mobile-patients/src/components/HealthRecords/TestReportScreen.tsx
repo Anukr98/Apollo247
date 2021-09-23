@@ -755,6 +755,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
     const results = await Promise.all(promises);
     if (results?.length > 0 && results[0] != undefined) {
       setShowSpinner(true);
+
       client
         .mutate<mergePDFS, mergePDFSVariables>({
           mutation: MERGE_PDF,
@@ -766,6 +767,10 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         })
         .then((data: any) => {
           setShowSpinner(false);
+          const eventAttributes: CleverTapEvents[CleverTapEventName.PHR_REAL_TIME_LAB_TEST_REPORT] = {
+            Source: 'Test Report',
+          };
+          postCleverTapEvent(CleverTapEventName.PHR_REAL_TIME_LAB_TEST_REPORT, eventAttributes);
           downloadDocument(data?.data?.mergePDFS?.mergepdfUrl);
         })
         .catch((e) => {
