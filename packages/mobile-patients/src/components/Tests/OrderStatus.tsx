@@ -209,11 +209,6 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     };
   }, []);
 
-  //set circle sub id.
-
-  console.log({ circlePlanSelected });
-  console.log({ circleSubscriptionId });
-
   const getUserSubscriptionsByStatus = async () => {
     try {
       const query: GetSubscriptionsOfUserByStatusVariables = {
@@ -241,7 +236,6 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       let givenDate = new Date(diagnosticDate);
       var diff = (givenDate.getTime() - givenDate.getTime()) / 1000;
       diff /= 60 * 60;
-      console.log(orderDetails, 'orderDetails');
 
       if (diff <= 48) {
         if (InAppReview.isAvailable()) {
@@ -281,7 +275,6 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       'Page Name': 'Dignostic Order Completed',
       'NAV Source': 'Dignostic',
     };
-    console.log({ eventAttributes });
     postCleverTapEvent(
       Platform.OS == 'android'
         ? CleverTapEventName.APP_REVIEW_AND_RATING_TO_PLAYSTORE

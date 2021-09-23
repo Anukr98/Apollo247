@@ -587,7 +587,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       setLoading?.(false);
       setHcApiCalled(true);
     } catch (error) {
-      console.log({ error });
       setHcApiCalled(true);
       setLoading?.(false);
     }
@@ -1001,9 +1000,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setIsCircleSubscription?.(true);
   }
 
-  // console.log({ isCircleAddedToCart });
-  // console.log({ isDiagnosticCircleSubscription });
-
   //change circle purchase price to selected plan
   const renderTotalCharges = () => {
     const anyCartSaving = isDiagnosticCircleSubscription ? cartSaving + circleSaving : cartSaving;
@@ -1364,10 +1360,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         reportGenDetails
       ) as (patientObjWithLineItems | null)[];
 
-      // console.log({ getPatientLineItems });
-      // console.log({ circleSubscriptionId });
-      // console.log({ props });
-      // console.log({ localCircleSubId });
       const bookingOrderInfo: SaveBookHomeCollectionOrderInputv2 = {
         patientAddressID: slotsInput?.addressObject?.patientAddressID,
         patientObjWithLineItems: getPatientLineItems?.map((item: any) => item),
@@ -1392,7 +1384,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         subscriptionInclusionId: null,
         userSubscriptionId: circleSubscriptionId != '' ? circleSubscriptionId : localCircleSubId,
       };
-      console.log({ bookingOrderInfo });
       diagnosticSaveBookHcCollectionV2(client, bookingOrderInfo)
         .then(async ({ data }) => {
           const getSaveHomeCollectionResponse =
@@ -1420,7 +1411,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           }
         })
         .catch((error) => {
-          console.log({ error });
           CommonBugFender('TestsCart_saveHomeCollectionOrder', error);
           setLoading?.(false);
           showAphAlert?.({
@@ -1759,7 +1749,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     source: string
   ) {
     try {
-      console.log('inside call create internbal order');
       setLoading?.(true);
       const getPatientId =
         source === BOOKING_TYPE.MODIFY && isModifyFlow
@@ -1811,7 +1800,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         total_amount: toPayPrice,
         customer_id: currentPatient?.primaryPatientId || getPatientId,
       };
-      console.log({ orderInput });
       const response = await createOrderInternal(orderInput);
       if (response?.data?.createOrderInternal?.success) {
         //check for webenage
@@ -1845,7 +1833,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           //call the process wali api & success page (check for modify Order)
           processModifiyCODOrder(getOrderDetails, grandTotal, eventAttributes, orderInfo, payId!);
         } else {
-          console.log('in the payment methodss');
           setLoading?.(false);
           props.navigation.navigate(AppRoutes.PaymentMethods, {
             paymentId: payId!,
@@ -1977,10 +1964,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       subscriptionInclusionId: null,
       amountToPay: grandTotal, //total amount to pay
     };
-    console.log({ modifyBookingInput });
     saveModifyOrder?.(modifyBookingInput)
       .then((data) => {
-        console.log({ data });
         const getModifyResponse = data?.data?.saveModifyDiagnosticOrder;
         if (!getModifyResponse?.status) {
           apiHandleErrorFunction(modifyBookingInput, getModifyResponse, BOOKING_TYPE.MODIFY);
@@ -2013,9 +1998,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   function onPressProceedToPay() {
     setLoading?.(true);
     //do not createSubId, if it is already added
-    console.log('heheh');
-    console.log({ isCircleAddedToCart });
-    console.log({ localCircleSubId });
     if (isCircleAddedToCart && localCircleSubId == '') {
       callCreateCircleSubscription();
     } else {
@@ -2072,7 +2054,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     } catch (error) {
       //if error then remove the circle price and let user know, something happened
       //ok got it, remove the circle
-      console.log({ error });
       setLoading?.(false);
       showUnableToPurchaseCircleMsg();
       CommonBugFender('callCreateCircleSubscription_ReviewPage', error);

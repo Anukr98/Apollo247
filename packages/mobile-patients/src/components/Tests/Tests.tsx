@@ -315,12 +315,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     DiagnosticAddToCartEvent(name, id, price, discountedPrice, source, section);
   };
 
-  // console.log({ isCircleSubscription });
-  // console.log({ circleSubscriptionId });
-  // console.log({ isDiagnosticCircleSubscription });
-  // console.log({ circlePlanSelected });
-  // console.log({ selectedCirclePlan });
-
   useEffect(() => {
     if (movedFrom === 'deeplink') {
       BackHandler.addEventListener('hardwareBackPress', handleBack);

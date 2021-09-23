@@ -438,7 +438,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     };
     diagnosticCancelOrder(client, orderCancellationInput)
       .then((data: any) => {
-        console.log({ data });
         const cancelResponse = g(data, 'data', 'cancelDiagnosticOrdersv2', 'status');
         if (!!cancelResponse && cancelResponse === true) {
           // updateCancelCard(selectedOrderId);
@@ -590,7 +589,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
       const selectedDate = moment(date)?.format('YYYY-MM-DD');
 
-      console.log({ selectedDate });
       const orderId = selectedOrder?.id;
       const getServiceabilityObject = {
         cityID: Number(selectedOrder?.cityId),
@@ -614,7 +612,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         getServiceabilityObject,
         orderId
       );
-      console.log({ slotsResponse });
       if (slotsResponse?.data?.getCustomizedSlotsv2) {
         const getSlotResponse = slotsResponse?.data?.getCustomizedSlotsv2;
         const getDistanceCharges = getSlotResponse?.distanceCharges;
@@ -652,7 +649,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         slotsArray?.length && setselectedTimeSlot(slotDetails);
       }
     } catch (e) {
-      console.log({ e });
       CommonBugFender('YourOrdersTests_getSlots', e);
       setDiagnosticSlot && setDiagnosticSlot(null);
       setselectedTimeSlot(undefined);
@@ -771,7 +767,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       DiagnosticsRescheduleSource.MOBILE
     )
       .then((data) => {
-        console.log({ data });
         const rescheduleResponse = data?.data?.rescheduleDiagnosticsOrderv2!;
         if (
           !!rescheduleResponse &&

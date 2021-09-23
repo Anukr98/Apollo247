@@ -375,7 +375,6 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
             props.navigation.pop(3, { immediate: true });
             props.navigation.push(AppRoutes.AddressBook, { refetch: true });
           } else {
-            console.log({ props });
             if (source == 'Tests' || source == 'Diagnostics Cart') {
               setNewAddressAddedHomePage?.(String(address?.zipcode!) || '');
               setNewAddressAddedCartPage?.('');

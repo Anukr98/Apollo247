@@ -238,7 +238,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         setError(true);
       }
     } catch (error) {
-      console.log('object :>> ', error);
       setOrderLevelStatus([]);
       setError(true);
       CommonBugFender('getHCOrderFormattedTrackingHistory_TestOrderDetails', error);
