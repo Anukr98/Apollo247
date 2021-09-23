@@ -2272,10 +2272,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         displayPrismRecords={true}
         navigation={props.navigation}
         onSubmit={(selectedEPres) => {
-          console.log(`object`, selectedEPres)
           setSelectPrescriptionVisible(false);
           if (selectedEPres.length == 0) {
-            console.log(`selectedEPres.length == 0`)
             return;
           }
           props.navigation.navigate(AppRoutes.SubmittedPrescription, {
