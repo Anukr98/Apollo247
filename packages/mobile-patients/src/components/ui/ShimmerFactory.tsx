@@ -307,6 +307,22 @@ const styles = StyleSheet.create({
     marginTop: 12,
     height: 40,
   },
+  itemPrice: {
+    ...theme.viewStyles.cardViewStyle,
+    width: '90%',
+    marginRight: 5,
+    marginTop: 5,
+    height: 50,
+    zIndex: 1,
+  },
+  itemPackagePrice: {
+    ...theme.viewStyles.cardViewStyle,
+    width: '100%',
+    marginRight: 5,
+    marginTop: 5,
+    height: 60,
+    zIndex: 1,
+  },
   rowStyle: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -316,21 +332,6 @@ const styles = StyleSheet.create({
     height: 150,
     width: 150,
     margin: 12,
-  },
-  itemPrice: {
-    ...theme.viewStyles.cardViewStyle,
-    width: '90%',
-    marginRight: 5,
-    marginTop: 5,
-    height: 40,
-  },
-
-  itemPackagePrice: {
-    ...theme.viewStyles.cardViewStyle,
-    width: '100%',
-    marginRight: 5,
-    marginTop: 5,
-    height: 60,
   },
 });
 
@@ -797,6 +798,25 @@ export const renderSlotItemShimmer = () => {
     />
   );
 };
+export const renderItemPriceShimmer = () => {
+  return (
+    <ShimmerPlaceHolder
+      shimmerColors={shimmerColors}
+      LinearGradient={LinearGradient}
+      shimmerStyle={styles.itemPrice}
+    />
+  );
+};
+
+export const renderPackageItemPriceShimmer = () => {
+  return (
+    <ShimmerPlaceHolder
+      shimmerColors={shimmerColors}
+      LinearGradient={LinearGradient}
+      shimmerStyle={styles.itemPackagePrice}
+    />
+  );
+};
 
 export const renderDiagnosticWidgetShimmer = (showHeading: boolean) => {
   return (
@@ -852,25 +872,5 @@ export const renderPharmaFetchAddressHeadingShimmer = () => {
         shimmerStyle={styles.pharmaFetchAddressTextShimmer}
       />
     </View>
-  );
-};
-
-export const renderItemPriceShimmer = () => {
-  return (
-    <ShimmerPlaceHolder
-      shimmerColors={shimmerColors}
-      LinearGradient={LinearGradient}
-      shimmerStyle={styles.itemPrice}
-    />
-  );
-};
-
-export const renderPackageItemPriceShimmer = () => {
-  return (
-    <ShimmerPlaceHolder
-      shimmerColors={shimmerColors}
-      LinearGradient={LinearGradient}
-      shimmerStyle={styles.itemPackagePrice}
-    />
   );
 };

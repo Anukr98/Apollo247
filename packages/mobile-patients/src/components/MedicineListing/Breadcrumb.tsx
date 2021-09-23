@@ -17,10 +17,13 @@ export const Breadcrumb: React.FC<Props> = ({ containerStyle, links }) => {
   return (
     <View style={[styles.containerStyle, containerStyle]}>
       {links?.map(({ title, onPress }, index, array) => [
-        <Text onPress={onPress} style={styles.textStyle}>
+        <Text
+          onPress={onPress}
+          style={index == array?.length - 1 ? styles.textStyleLast : styles.textStyle}
+        >
           {title}
         </Text>,
-        index + 1 !== array.length && <ArrowRight style={styles.arrowRight} />,
+        index + 1 !== array?.length && <ArrowRight style={styles.arrowRight} />,
       ])}
     </View>
   );
@@ -38,6 +41,9 @@ const styles = StyleSheet.create({
   },
   textStyle: {
     ...text('R', 11, LIGHT_BLUE, 1, 20),
+  },
+  textStyleLast: {
+    ...text('SB', 11, LIGHT_BLUE, 1, 20),
   },
   arrowRight: {
     height: 18,

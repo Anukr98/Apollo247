@@ -12,6 +12,7 @@ import { SaveBookHomeCollectionOrderInput } from "./globalTypes";
 export interface saveDiagnosticBookHCOrder_saveDiagnosticBookHCOrder_attributes {
   __typename: "CustomResponse";
   itemids: string | null;
+  refreshCart: boolean | null;
 }
 
 export interface saveDiagnosticBookHCOrder_saveDiagnosticBookHCOrder {

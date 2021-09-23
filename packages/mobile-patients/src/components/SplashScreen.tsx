@@ -342,12 +342,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       'Patient mobile number': '',
       'Appointment Date time': null,
       'Appointment display ID': null,
-      'Appointment ID': voipAppointmentId.current,
-      'Doctor Name': voipDoctorName.current,
+      'Appointment ID': voipAppointmentId?.current,
+      'Doctor Name': voipDoctorName?.current,
       'Speciality Name': '',
       'Speciality ID': '',
       'Doctor Type': '',
-      'Mode of Call': voipCallType.current === 'Video' ? 'Video' : 'Audio',
+      'Mode of Call': voipCallType?.current === 'Video' ? 'Video' : 'Audio',
       Platform: 'App',
     };
     postWebEngageEvent(WebEngageEventName.PATIENT_DECLINED_CALL, eventAttributes);
@@ -1041,6 +1041,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Disincentivize_COD_Message',
       PROD: 'Disincentivize_COD_Message',
     },
+    CirclePlanPreselected: {
+      QA: 'QA_Is_Circle_Preselected',
+      PROD: 'Is_Circle_Preselected',
+    },
+    CircleFacts: {
+      QA: 'QA_Circle_Facts',
+      PROD: 'Circle_Facts',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1328,6 +1336,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
 
       disincentivizeCodMessage && setPaymentCodMessage?.(disincentivizeCodMessage);
+
+      setAppConfig('CirclePlanPreselected', 'CIRCLE_PLAN_PRESELECTED', (key) =>
+        config.getString(key)
+      );
+
+      setAppConfig('CircleFacts', 'CIRCLE_FACTS', (key) => config.getString(key));
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';

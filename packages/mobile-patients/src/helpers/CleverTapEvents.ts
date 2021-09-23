@@ -8,6 +8,7 @@ import {
   UploadPrescSource,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { CircleEventSource } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { DIAGNOSTIC_SLOT_TYPE } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 type YesOrNo = 'Yes' | 'No';
 type HdfcPlan = 'SILVER' | 'GOLD' | 'PLATINUM';
@@ -516,10 +517,8 @@ export enum CleverTapEventName {
   PLAYSTORE_APP_REVIEW_AND_RATING = 'Playstore app review and rating',
   APP_REVIEW_AND_RATING_TO_PLAYSTORE = 'Playstore review popup showed',
   APP_REVIEW_AND_RATING_TO_APPSTORE = 'Appstore review popup showed',
-
   //Upload Prescription
   PHARMACY_PRESCRIPTION_UPLOADED = 'Pharmacy Prescription Uploaded',
-
   // Custom UTM Events
   CUSTOM_UTM_VISITED = 'App launch source'
 }
@@ -1373,29 +1372,24 @@ export interface CleverTapEvents {
     'Area Selected': string;
   };
   [CleverTapEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED]: {
-    'Address Pincode': number;
-    'Area Selected': string;
-    'Time Selected': string;
-    'Slot selected': 'Manual' | 'Automatic';
-    'Slot available': 'Yes' | 'No';
-    UHID: string;
+    'Slot time': string;
+    'No. of slots' : number;
+    'Slot date' : string;
+    'Type': DIAGNOSTIC_SLOT_TYPE
   };
   [CleverTapEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED]: {
-    'Patient Name selected': string;
+    'No. of patients': number;
+    'No. of slots': number;
+    'Slot type': DIAGNOSTIC_SLOT_TYPE;
     'Total items in cart': number;
     'Sub Total': number;
-    // 'Delivery charge': number;
     'Net after discount': number;
-    'Prescription Uploaded?': boolean;
-    'Prescription Mandatory?': boolean;
-    'Mode of Sample Collection': 'Home Visit' | 'Clinic Visit';
     'Pin Code': string | number;
-    'Service Area': 'Pharmacy' | 'Diagnostic';
-    'Area Name': string;
-    'Area id': string | number;
+    'Address': string;
     'Home collection charges'?: number;
-    Discount?: number;
     'Collection Time Slot': string;
+    'Collection Date Slot': string | Date;
+    'Circle user': 'Yes' | 'No';
   };
   [CleverTapEventName.DIAGNOSTIC_TRACK_ORDER_VIEWED]: {
     'Patient UHID': string;

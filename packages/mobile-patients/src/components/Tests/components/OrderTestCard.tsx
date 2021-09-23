@@ -149,6 +149,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                       flexDirection: 'row',
                       minWidth: 0,
                       maxWidth: !!item?.editOrderID ? (screenWidth > 350 ? '68%' : '57%') : '80%',
+                      flex: 1,
                     }}
                   >
                     <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
@@ -159,8 +160,8 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                         ? nameFormater(item?.diagnostics?.itemName!, 'title')
                         : ''}{' '}
                     </Text>
+                    {!!item?.editOrderID ? renderNewTag() : null}
                   </View>
-                  {!!item?.editOrderID ? renderNewTag() : null}
                   {index == 1 &&
                     filterOrderLineItem?.length - 2 > 0 &&
                     renderShowMore(filterOrderLineItem, item?.itemName!)}
@@ -176,7 +177,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
               index: number
             ) => (
               <>
-                <View style={{ flexDirection: 'row', width: '86%' }}>
+                <View style={{ flexDirection: 'row', width: '86%', flex: 1 }}>
                   <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
                   <Text style={styles.testName}>
                     {!!item?.itemName ? nameFormater(item?.itemName!, 'title') : ''}{' '}
@@ -630,7 +631,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     flexDirection: 'row',
     marginTop: 20,
-    marginBottom: '2%',
+    marginBottom: '1%',
     minHeight: 40,
   },
   testForText: {

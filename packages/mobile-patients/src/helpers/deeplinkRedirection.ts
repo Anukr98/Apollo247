@@ -385,6 +385,21 @@ export const handleOpenURL = (event: any) => {
           id: linkId ? linkId : undefined,
         };
         break;
+      case 'testordersummary':
+      case 'test-order-summary':
+        return {
+          routeName: 'TestOrderSummary',
+          id: linkId ? linkId : undefined
+        }
+      break;
+
+      case 'testordersummary':
+      case 'test-order-summary':
+        return {
+          routeName: 'TestOrderSummary',
+          id: linkId ? linkId : undefined,
+        };
+        break;
 
       case 'testordersummary':
       case 'test-order-summary':
@@ -652,8 +667,21 @@ export const pushTheView = (
       });
       break;
     case 'TestsCart':
-      navigateToView(navigation, AppRoutes.TestsCart);
+      navigateToView(navigation, AppRoutes.AddPatients);
       break;
+    case 'TestOrderSummary':
+        navigateToView(navigation, AppRoutes.TestOrderDetails, {
+          orderId: id,
+          goToHomeOnBack: true,
+          setOrders: null,
+          selectedOrder: null,  
+          refundStatusArr: [],
+          comingFrom:'deeplink',
+          showOrderSummaryTab: true,
+          disableTrackOrder: true,
+          
+        })
+        break;
     default:
       const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
         source: 'deeplink',

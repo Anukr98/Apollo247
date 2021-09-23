@@ -37,7 +37,7 @@ import {
   CREATE_ORDER,
   UPDATE_ORDER,
   VERIFY_VPA,
-  INITIATE_DIAGNOSTIC_ORDER_PAYMENT,
+  INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -53,17 +53,16 @@ import {
   DiagnosticUserPaymentAborted,
   DiagnosticPaymentPageViewed,
 } from '@aph/mobile-patients/src/components/Tests/Events';
-import {
-  initiateDiagonsticHCOrderPaymentVariables,
-  initiateDiagonsticHCOrderPayment,
-} from '@aph/mobile-patients/src/graphql/types/initiateDiagonsticHCOrderPayment';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { SecureTags } from '@aph/mobile-patients/src/components/PaymentGateway/Components/SecureTag';
 import { useFetchHealthCredits } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useFetchHealthCredits';
 import { HealthCredits } from '@aph/mobile-patients/src/components/PaymentGateway/Components/HealthCredits';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useGetPaymentMethods } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useGetPaymentMethods';
-import { diagnosticPaymentSettings } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  diagnosticPaymentSettings,
+  processDiagnosticsCODOrderV2,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   isEmptyObject,
   paymentModeVersionCheck,
@@ -78,6 +77,11 @@ import { useFetchSavedCards } from '@aph/mobile-patients/src/components/PaymentG
 import Decimal from 'decimal.js';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  initiateDiagonsticHCOrderPaymentv2,
+  initiateDiagonsticHCOrderPaymentv2Variables,
+} from '@aph/mobile-patients/src/graphql/types/initiateDiagonsticHCOrderPaymentv2';
+
 const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {
@@ -86,7 +90,7 @@ export interface PaymentMethodsProps extends NavigationScreenProps {
 }
 
 export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
-  const { modifiedOrder, deliveryAddressCityId } = useDiagnosticsCart();
+  const { modifiedOrder } = useDiagnosticsCart();
   const paymentId = props.navigation.getParam('paymentId');
   const customerId = props.navigation.getParam('customerId');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
@@ -99,6 +103,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const businessLine = props.navigation.getParam('businessLine');
   const isDiagnostic = businessLine === 'diagnostics';
   const disableCod = props.navigation.getParam('disableCOD');
+  const orderResponse = props.navigation.getParam('orderResponse');
+  const isCircleAddedToCart = props.navigation.getParam('isCircleAddedToCart');
   const { currentPatient } = useAllCurrentPatients();
   const [banks, setBanks] = useState<any>([]);
   const [isTxnProcessing, setisTxnProcessing] = useState<boolean>(false);
@@ -178,6 +184,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         : (setburnHc(healthCredits), setAmount(Number(Decimal.sub(amount, healthCredits))))
       : (setAmount(props.navigation.getParam('amount')), setburnHc(0));
   };
+
   async function fetchDiagnosticPaymentMethods() {
     const DEFAULT_COD_CONFIGURATION = AppConfig.Configuration.Enable_Diagnostics_COD;
     try {
@@ -311,15 +318,16 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const initiateOrderPayment = async () => {
     // Api is called to update the order status from Quote to Payment Pending
+    //changed this api from INITIATE_DIAGNOSTIC_ORDER_PAYMENT to INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2
     try {
-      const input: initiateDiagonsticHCOrderPaymentVariables = {
-        diagnosticInitiateOrderPaymentInput: { orderId: orderDetails?.orderId },
+      const input: initiateDiagonsticHCOrderPaymentv2Variables = {
+        diagnosticInitiateOrderPaymentInput: { paymentOrderID: paymentId },
       };
       const res = await client.mutate<
-        initiateDiagonsticHCOrderPayment,
-        initiateDiagonsticHCOrderPaymentVariables
+        initiateDiagonsticHCOrderPaymentv2,
+        initiateDiagonsticHCOrderPaymentv2Variables
       >({
-        mutation: INITIATE_DIAGNOSTIC_ORDER_PAYMENT,
+        mutation: INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2,
         variables: input,
         fetchPolicy: 'no-cache',
       });
@@ -442,6 +450,17 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       : renderErrorPopup();
   }
 
+  function createOrderInputArray() {
+    var array = [] as any;
+    orderResponse?.map((item) => {
+      array.push({
+        orderID: item?.order_id,
+        amount: item?.amount,
+      });
+    });
+    return array;
+  }
+
   async function onPressPayByCash() {
     triggerWebengege('Cash', 'COD');
     setisTxnProcessing(true);
@@ -451,7 +470,29 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       const { data } = response;
       const status =
         data?.createOrderV2?.payment_status || data?.updateOrderDetails?.payment_status;
-      status == 'TXN_SUCCESS' ? navigatetoOrderStatus(true, 'success') : showTxnFailurePopUP();
+      if (status === 'TXN_SUCCESS') {
+        if (businessLine === 'diagnostics') {
+          const getArray = createOrderInputArray();
+          const response = await processDiagnosticsCODOrderV2(client, getArray);
+          const { data } = response;
+          const getResponse = data?.wrapperProcessDiagnosticHCOrderCOD?.result;
+          if (!!getResponse && getResponse?.length > 0) {
+            const isAnyFalse = getResponse?.filter((items) => !items?.status);
+            if (!!isAnyFalse && isAnyFalse?.length > 0) {
+              //show error
+              showTxnFailurePopUP();
+            } else {
+              navigatetoOrderStatus(true, 'success');
+            }
+          } else {
+            showTxnFailurePopUP();
+          }
+        } else {
+          navigatetoOrderStatus(true, 'success');
+        }
+      } else {
+        showTxnFailurePopUP();
+      }
     } catch (e) {
       showTxnFailurePopUP();
     }
@@ -526,6 +567,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           eventAttributes,
           paymentStatus: paymentStatus,
           isModify: isDiagnosticModify ? modifiedOrder : null,
+          isCircleAddedToCart: isCircleAddedToCart,
         });
         break;
       case 'consult':

@@ -1,7 +1,10 @@
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import {
+  DiagnosticPatientCartItem,
+  useDiagnosticsCart,
+} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CartIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CartIcon, RemoveIconGrey } from '@aph/mobile-patients/src/components/ui/Icons';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -27,6 +30,7 @@ import {
   aphConsole,
   g,
   isEmptyObject,
+  isSmallDevice,
   isValidSearch,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -72,7 +76,11 @@ import {
   DiagnosticItemSearched,
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import DeviceInfo from 'react-native-device-info';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 
+const GO_TO_CART_HEIGHT = 50;
+const isIphoneX = DeviceInfo.hasNotch();
 export interface SearchTestSceneProps
   extends NavigationScreenProps<{
     searchText: string;
@@ -92,6 +100,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   >([]);
   const [popularArray, setPopularArray] = useState([]);
   const [searchQuery, setSearchQuery] = useState({});
+  const [isFocus, setIsFocus] = useState<boolean>(false);
 
   const { locationForDiagnostics, diagnosticServiceabilityData } = useAppCommonData();
 
@@ -99,20 +108,26 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const client = useApolloClient();
   const {
     addCartItem,
+    removePatientCartItem,
     removeCartItem,
     cartItems,
     setModifyHcCharges,
     setModifiedOrderItemIds,
     setHcCharges,
-    setAreaSelected,
     asyncDiagnosticPincode,
     setModifiedOrder,
     modifiedOrder,
+    patientCartItems,
+    setPatientCartItems,
+    setModifiedPatientCart,
+    setDistanceCharges,
+    setDeliveryAddressId,
   } = useDiagnosticsCart();
   const { cartItems: shopCartItems } = useShoppingCart();
   const { showAphAlert, setLoading: setGlobalLoading, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
+  const showGoToCart = isModify && cartItems?.length > 0;
 
   //add the cityId in case of modifyFlow
   const cityId = isModify
@@ -130,6 +145,28 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
+    if (isModify) {
+      const unSelectRemainingPatients = patientCartItems?.filter(
+        (item) => item?.patientId !== modifiedOrder?.patientId
+      );
+      if (
+        patientCartItems?.length > 0 &&
+        !!unSelectRemainingPatients &&
+        unSelectRemainingPatients?.length > 0
+      ) {
+        const obj = {
+          patientId: modifiedOrder?.patientId,
+          cartItems: cartItems,
+        } as DiagnosticPatientCartItem;
+        setPatientCartItems?.([obj]);
+      }
+      setModifiedPatientCart?.([
+        {
+          patientId: modifiedOrder?.patientId,
+          cartItems: cartItems,
+        },
+      ]);
+    }
     searchTextFromProp && onSearchTest(searchTextFromProp);
   }, []);
 
@@ -303,8 +340,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   ) => {
     savePastSeacrh(`${itemId}`, itemName).catch((e) => {});
     postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, 0, 0);
-
-    addCartItem!({
+    const addedItem = {
       id: `${itemId}`,
       name: stripHtml(itemName),
       price: pricesObject?.rate || 0,
@@ -313,17 +349,36 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       circleSpecialPrice: pricesObject?.circleSpecialPrice,
       discountPrice: pricesObject?.discountPrice,
       discountSpecialPrice: pricesObject?.discountSpecialPrice,
-      mou: inclusions == null ? 1 : inclusions.length,
+      mou: 1,
       thumbnail: '',
       collectionMethod: collectionType! || TEST_COLLECTION_TYPE?.HC,
       groupPlan: selectedPlan?.groupPlan || DIAGNOSTIC_GROUP_PLAN.ALL,
       packageMrp: pricesObject?.packageMrp || 0,
       inclusions: inclusions == null ? [Number(itemId)] : inclusions,
-    });
+      isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+    };
+    isModify &&
+      setModifiedPatientCart?.([
+        {
+          patientId: modifiedOrder?.patientId,
+          cartItems: cartItems?.concat(addedItem),
+        },
+      ]);
+    addCartItem?.(addedItem);
   };
 
   const onRemoveCartItem = (itemId: string | number) => {
-    removeCartItem!(`${itemId}`);
+    if (isModify) {
+      const newCartItems = cartItems?.filter((item) => Number(item?.id) !== Number(itemId));
+      setModifiedPatientCart?.([
+        {
+          patientId: modifiedOrder?.patientId,
+          cartItems: newCartItems,
+        },
+      ]);
+    }
+    patientCartItems?.map((pItem) => removePatientCartItem?.(pItem?.patientId, `${itemId}`));
+    removeCartItem?.(`${itemId}`);
   };
 
   const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
@@ -340,7 +395,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       <Header
         container={{ borderBottomWidth: 0 }}
         leftIcon={'backArrow'}
-        title={isModify ? 'MODIFY ORDERS' : 'SEARCH TESTS'}
+        title={isModify ? string.diagnostics.modifyHeader : 'SEARCH TESTS'}
         rightComponent={
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity
@@ -348,7 +403,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               onPress={() => {
                 CommonLogEvent(AppRoutes.SearchTestScene, 'Navigate to your cart');
                 isModify
-                  ? props.navigation.navigate(AppRoutes.TestsCart, {
+                  ? props.navigation.navigate(AppRoutes.CartPage, {
                       orderDetails: modifiedOrder,
                     })
                   : props.navigation.navigate(AppRoutes.MedAndTestCart);
@@ -399,7 +454,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     setModifyHcCharges?.(0);
     setModifiedOrderItemIds?.([]);
     setHcCharges?.(0);
-    setAreaSelected?.({});
+    setDistanceCharges?.(0);
+    setModifiedPatientCart?.([]);
+    setDeliveryAddressId?.('');
     //go back to homepage
     props.navigation.navigate('TESTS', { focusSearch: true });
   }
@@ -415,41 +472,58 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const renderSearchInput = () => {
     return (
       <View style={{ paddingHorizontal: 10, backgroundColor: theme.colors.WHITE }}>
-        <TextInputComponent
-          conatinerstyles={{ paddingBottom: 0 }}
-          inputStyle={[
-            styles.searchValueStyle,
-            isNoTestsFound ? { borderBottomColor: '#e50000' } : {},
-          ]}
-          textInputprops={{
-            ...(isNoTestsFound ? { selectionColor: '#e50000' } : {}),
-            autoFocus: true,
-          }}
-          value={searchText}
-          placeholder="Search tests &amp; packages"
-          underlineColorAndroid="transparent"
-          onChangeText={(value) => {
-            if (isValidSearch(value)) {
-              if (!g(locationForDiagnostics, 'cityId')) {
-                renderLocationNotServingPopup();
-                return;
-              }
-              setSearchText(value);
-              if (!(value && value.length > 2)) {
-                setDiagnosticResults([]);
-                return;
-              }
-              const search = _.debounce(onSearchTest, 300);
-              setSearchQuery((prevSearch: any) => {
-                if (prevSearch.cancel) {
-                  prevSearch.cancel();
+        <View style={{ flexDirection: 'row' }}>
+          <TextInputComponent
+            conatinerstyles={{ paddingBottom: 0 }}
+            inputStyle={[
+              styles.searchValueStyle,
+              isNoTestsFound ? { borderBottomColor: '#e50000' } : {},
+              isFocus ? { borderColor: colors.APP_GREEN } : {},
+            ]}
+            textInputprops={{
+              ...(isNoTestsFound ? { selectionColor: '#e50000' } : {}),
+              autoFocus: true,
+            }}
+            onFocus={() => setIsFocus(true)}
+            onBlur={() => setIsFocus(false)}
+            value={searchText}
+            placeholder="Search tests &amp; packages"
+            underlineColorAndroid="transparent"
+            onChangeText={(value) => {
+              if (isValidSearch(value)) {
+                if (!g(locationForDiagnostics, 'cityId')) {
+                  renderLocationNotServingPopup();
+                  return;
                 }
-                return search;
-              });
-              search(value);
-            }
-          }}
-        />
+                setSearchText(value);
+                if (!(value && value.length > 2)) {
+                  setDiagnosticResults([]);
+                  return;
+                }
+                const search = _.debounce(onSearchTest, 300);
+                setSearchQuery((prevSearch: any) => {
+                  if (prevSearch?.cancel) {
+                    prevSearch?.cancel();
+                  }
+                  return search;
+                });
+                search(value);
+              }
+            }}
+          />
+          {!!searchText && searchText?.length > 0 && (
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.crossIconTouch}
+              onPress={() => {
+                setSearchText('');
+                setDiagnosticResults([]);
+              }}
+            >
+              <RemoveIconGrey style={styles.crossIconStyle} />
+            </TouchableOpacity>
+          )}
+        </View>
         {renderSorryMessage}
       </View>
     );
@@ -617,10 +691,19 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             }
           />
         ) : (
-          <ScrollView showsVerticalScrollIndicator={false} style={styles.viewDefaultContainer}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            style={[
+              styles.viewDefaultContainer,
+              {
+                marginBottom: showGoToCart ? GO_TO_CART_HEIGHT + 10 : 0,
+              },
+            ]}
+            bounces={false}
+          >
             {popularPackages?.length > 0 ? (
               <View>
-                <Text style={styles.headingSections}>Popular Packages</Text>
+                <Text style={styles.headingSections}>POPULAR PACKAGES</Text>
                 <View style={styles.defaultContainer}>
                   <FlatList
                     keyExtractor={(_, index) => `${index}`}
@@ -633,7 +716,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             ) : null}
             {popularTests?.length > 0 ? (
               <View>
-                <Text style={styles.headingSections}>Popular Tests</Text>
+                <Text style={styles.headingSections}>POPULAR TESTS</Text>
                 <View style={styles.defaultContainer}>
                   <FlatList
                     keyExtractor={(_, index) => `${index}`}
@@ -669,11 +752,26 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         loading={true}
         showSeparator={index !== diagnosticResults?.length - 1}
         style={{
-          marginHorizontal: 5,
           paddingBottom: index == diagnosticResults?.length - 1 ? 20 : 0,
         }}
-        onPressRemoveFromCart={() => removeCartItem!(`${item?.diagnostic_item_id}`)}
+        onPressRemoveFromCart={() => onRemoveCartItem(`${item?.diagnostic_item_id}`)}
       />
+    );
+  };
+
+  const renderCartPlaceholder = () => {
+    return (
+      <View style={styles.cartDetailView}>
+        <Text style={styles.itemAddedText}>
+          {cartItems?.length} {cartItems?.length == 1 ? 'Item' : 'Items'} Added to Cart
+        </Text>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => props.navigation.navigate(AppRoutes.CartPage)}
+        >
+          <Text style={styles.goToCartText}>GO TO CART</Text>
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -684,6 +782,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         {renderSearchInput()}
       </View>
       {renderMatchingTests()}
+      {showGoToCart && renderCartPlaceholder()}
     </SafeAreaView>
   );
 };
@@ -774,13 +873,14 @@ const styles = StyleSheet.create({
     padding: 12,
     ...theme.fonts.IBMPlexSansSemiBold(14),
   },
-  headingSections: { ...theme.viewStyles.text('B', 14, '#01475B', 1, 22) },
+  headingSections: { ...theme.viewStyles.text('B', isSmallDevice ? 14 : 15, '#01475B', 1, 22) },
   viewDefaultContainer: {
     paddingVertical: 10,
     paddingHorizontal: 10,
     backgroundColor: '#f7f8f5',
     borderTopWidth: 1,
     borderTopColor: '#E5E5E5',
+    flexGrow: 1,
   },
   defaultContainer: {
     width: '100%',
@@ -788,5 +888,44 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     paddingVertical: 0,
     backgroundColor: 'white',
+  },
+  cartDetailView: {
+    position: 'absolute',
+    backgroundColor: theme.colors.APP_YELLOW_COLOR,
+    bottom: isIphoneX ? 10 : 0,
+    height: GO_TO_CART_HEIGHT,
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  itemAddedText: {
+    marginLeft: 20,
+    ...theme.viewStyles.text('SB', isSmallDevice ? 13 : 14, theme.colors.WHITE),
+    lineHeight: 16,
+    textAlign: 'left',
+    alignSelf: 'center',
+  },
+  goToCartText: {
+    marginRight: 20,
+    ...theme.viewStyles.text('SB', isSmallDevice ? 15 : 16, theme.colors.WHITE),
+    lineHeight: 20,
+    textAlign: 'right',
+    alignSelf: 'center',
+  },
+  crossIconStyle: {
+    position: 'absolute',
+    right: 10,
+    height: 16,
+    width: 16,
+    alignSelf: 'center',
+  },
+  crossIconTouch: {
+    justifyContent: 'center',
+    height: 40,
+    width: 40,
+    position: 'absolute',
+    right: 10,
+    alignSelf: 'center',
   },
 });

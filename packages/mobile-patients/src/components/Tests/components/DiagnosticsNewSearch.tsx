@@ -30,7 +30,7 @@ export const DiagnosticsNewSearch: React.FC<DiagnosticsNewSearchProps> = (props)
         <View style={styles.nameAndPriceViewStyle}>
           <View style={{ width: '85%' }}>
             <Text numberOfLines={2} style={styles.testNameText}>
-              {nameFormater(name, 'default')}
+              {name}
             </Text>
           </View>
 
@@ -110,5 +110,4 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   testNameText: { ...theme.viewStyles.text('M', 12, '#01475b', 1, 24, 0), width: '95%' },
-  imageIcon: { height: 40, width: 40 },
 });

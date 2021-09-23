@@ -1548,7 +1548,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const checkVitalQuestionsStatus = () => {
-    const isConsultPending =  appointmentData?.status == 'PENDING'; 
+    const isConsultPending = appointmentData?.status == 'PENDING';
     if (appointmentData.isAutomatedQuestionsComplete) {
       requestToJrDoctor();
       if (
@@ -1561,7 +1561,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         showAndUpdateNudgeScreenVisibility();
       }
     } else {
-      const displayQuestion = isConsultPending ? skipAutoQuestions.current ? false : true : false
+      const displayQuestion = isConsultPending ? (skipAutoQuestions.current ? false : true) : false;
       setDisplayChatQuestions(displayQuestion);
     }
   };
@@ -3663,7 +3663,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             message,
             chatFormat: msgType,
             source: 'APP',
-        }},
+          },
+        },
       })
       .then(() => {})
       .catch((error) => {
@@ -4217,7 +4218,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   function _navigateToTestCart() {
     hideAphAlert?.();
-    props.navigation.push(AppRoutes.TestsCart, { comingFrom: AppRoutes.ConsultDetails });
+    props.navigation.push(AppRoutes.AddPatients, { comingFrom: AppRoutes.ConsultDetails });
   }
 
   const orderMedicine = (rowData: any, index: number) => {
@@ -6904,8 +6905,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               } else if (_uploadedUrl) {
                 const fileName = item?.fileName || '';
                 const splitArr = _uploadedUrl.split('.');
-                const fileType = splitArr[splitArr.length-1];
-                if(fileType){
+                const fileType = splitArr[splitArr.length - 1];
+                if (fileType) {
                   postChatWebEngEvent(fileType == 'pdf' ? 'PDF' : 'Image', '');
                 }
                 await callAddChatDocumentApi(prism, _uploadedUrl, fileName);

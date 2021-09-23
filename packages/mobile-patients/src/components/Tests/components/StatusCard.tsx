@@ -24,6 +24,7 @@ export const StatusCard: React.FC<StatusCardProps> = (props) => {
     <View
       style={[
         styles.container,
+        props.containerStyle,
         {
           backgroundColor: DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(props.titleText)
             ? colors.COMPLETE_STATUS_BGK
@@ -36,6 +37,7 @@ export const StatusCard: React.FC<StatusCardProps> = (props) => {
       <Text
         style={[
           styles.titleStyle,
+          props.titleStyle,
           {
             color: DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(props.titleText)
               ? colors.COMPLETE_STATUS_TEXT
@@ -62,8 +64,8 @@ const styles = StyleSheet.create({
   },
   titleStyle: {
     color: theme.colors.SHERPA_BLUE,
-    ...theme.fonts.IBMPlexSansMedium(10),
-    lineHeight: 14,
+    ...theme.fonts.IBMPlexSansRegular(10),
+    lineHeight: 17,
     textAlign: 'center',
   },
 });

@@ -1,23 +1,20 @@
-import { formatTestSlot, isEmptyObject } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { formatTestSlot, nameFormater } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import {
-  WhiteChevronRightIcon,
-  TestInfoWhiteIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { TestInfoWhiteIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-navigation';
 
 export interface TestProceedBarProps {
   onPressAddDeliveryAddress?: () => void;
   onPressSelectDeliveryAddress?: () => void;
-  onPressProceedtoPay?: () => void;
+  onPressProceedtoPay: () => void;
   onPressTimeSlot?: () => void;
-  onPressSelectArea?: () => void;
   phleboMin?: number;
   selectedTimeSlot?: any;
   showTime?: any;
@@ -27,19 +24,11 @@ export interface TestProceedBarProps {
 }
 
 export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
-  const {
-    grandTotal,
-    deliveryAddressId,
-    addresses,
-    areaSelected,
-    diagnosticAreas,
-  } = useDiagnosticsCart();
+  const { grandTotal, deliveryAddressId, addresses } = useDiagnosticsCart();
   const {
     onPressAddDeliveryAddress,
     onPressSelectDeliveryAddress,
     onPressProceedtoPay,
-    onPressTimeSlot,
-    onPressSelectArea,
     selectedTimeSlot,
     showTime,
     disableProceedToPay,
@@ -49,63 +38,36 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
 
   function getButtonTitle() {
     if (modifyOrderDetails) {
-      return isModifyCOD ? `${string.placeOrder} (COD)` : string.proceedToPay;
+      return isModifyCOD ? `${string.placeOrder} (COD)` : string.makePayment;
     } else {
-      return !deliveryAddressId
-        ? addresses?.length
-          ? string.diagnostics.selectAddressText
-          : string.diagnostics.addAddressText
-        : isEmptyObject(areaSelected)
-        ? string.diagnostics.selectAreaText
-        : string.proceedToPay;
+      return string.makePayment;
     }
   }
 
   function onPressButton() {
-    if (modifyOrderDetails) {
-      onPressProceedtoPay?.();
-    } else {
-      return !deliveryAddressId
-        ? addresses?.length
-          ? onPressSelectDeliveryAddress?.()
-          : onPressAddDeliveryAddress?.()
-        : isEmptyObject(areaSelected)
-        ? onPressSelectArea?.()
-        : onPressProceedtoPay?.();
-    }
+    onPressProceedtoPay?.();
   }
+
+  const localFormatSlot = (slotTime: string) => moment(slotTime, 'hh:mm a')?.format('hh:mm A');
 
   const renderTimeSlot = () => {
     const timeSlotText = modifyOrderDetails
-      ? `${moment(modifyOrderDetails?.slotDateTimeInUTC)?.format('ddd, DD MMM, YYYY') ||
-          ''}, ${`${moment(modifyOrderDetails?.slotDateTimeInUTC).format('hh:mm a') ||
-          formatTestSlot(modifyOrderDetails?.slotTimings)}`}`
-      : `${moment(selectedTimeSlot?.date).format('ddd, DD MMM, YYYY') || ''}, ${
-          selectedTimeSlot?.slotInfo?.startTime
-            ? `${formatTestSlot(selectedTimeSlot?.slotInfo?.startTime!)}`
+      ? `${moment(modifyOrderDetails?.slotDateTimeInUTC)?.format('ddd, DD MMM YYYY') ||
+          ''}, ${`${moment(modifyOrderDetails?.slotDateTimeInUTC).format('hh:mm A') ||
+          localFormatSlot(modifyOrderDetails?.slotTimings)}`}`
+      : //selectedTimeSlot?.slotInfo?.startTime  (if using selectedTimeSlot)
+        `${moment(selectedTimeSlot?.date).format('ddd, DD MMM YYYY') || ''}, ${
+          selectedTimeSlot?.slotStartTime
+            ? `${localFormatSlot(selectedTimeSlot?.slotStartTime!)}`
             : string.diagnostics.noSlotSelectedText
         }`;
     const showPhelboETA = modifyOrderDetails
       ? !!timeSlotText
-      : !!timeSlotText && showTime && selectedTimeSlot?.slotInfo?.startTime;
+      : !!timeSlotText && showTime && selectedTimeSlot?.slotStartTime;
     return (
       <View style={styles.timeSlotMainViewStyle}>
         <View style={styles.timeSlotChangeViewStyle}>
           <Text style={styles.timeSlotTextStyle}>{string.diagnostics.timeSlotText}</Text>
-          {!!modifyOrderDetails ? null : (
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => onPressTimeSlot?.()}
-              style={{ flexDirection: 'row', alignItems: 'center' }}
-            >
-              <Text style={[styles.timeSlotTextStyle, { paddingHorizontal: 8 }]}>
-                {showTime && selectedTimeSlot?.slotInfo?.startTime
-                  ? string.diagnostics.changeText
-                  : string.diagnostics.selectSlotText}
-              </Text>
-              <WhiteChevronRightIcon style={{ width: 20, height: 20 }} />
-            </TouchableOpacity>
-          )}
         </View>
         <Text style={styles.timeTextStyle}>{timeSlotText || ''}</Text>
         {showPhelboETA ? (
@@ -136,8 +98,7 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
   const renderButton = () => {
     const disableProceedToPayButton = !!modifyOrderDetails
       ? getButtonTitle() === `${string.placeOrder} (COD)` && disableProceedToPay
-      : (getButtonTitle() === string.proceedToPay && disableProceedToPay) ||
-        (getButtonTitle() === string.diagnostics.selectAreaText && diagnosticAreas?.length == 0);
+      : getButtonTitle() === string.makePayment && disableProceedToPay;
     return (
       <Button
         disabled={disableProceedToPayButton}
@@ -193,10 +154,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   timeSlotTextStyle: {
-    ...text('B', 14, WHITE, 1, 20),
+    ...text('M', 14, WHITE, 1, 20),
   },
   timeTextStyle: {
-    ...text('R', 14, WHITE, 1, 22),
+    ...text('SB', 14, WHITE, 1, 22),
   },
   infoIconViewStyle: { flexDirection: 'row' },
   timeIconStyle: {

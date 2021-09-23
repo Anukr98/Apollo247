@@ -27,8 +27,9 @@ import {
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   sourceHeaders,
 } from '@aph/mobile-patients/src/utils/commonUtils';
-import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
-import { PackageCard } from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
+import ItemCard from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
+import PackageCard from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
+
 import { TestListingHeader } from '@aph/mobile-patients/src/components/Tests/components/TestListingHeader';
 import { Breadcrumb } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
 import {
@@ -133,6 +134,13 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       setError(true);
     }
   };
+  useEffect(() => {
+    fetchWidgetsPrices(widgetsData);
+  }, [widgetsData?.diagnosticWidgetData?.[0]]);
+
+  useEffect(() => {
+    fetchWidgetsPrices(widgetsData);
+  }, [widgetsData?.diagnosticWidgetData?.[0]]);
 
   useEffect(() => {
     fetchWidgetsPrices(widgetsData);
@@ -193,7 +201,6 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
               response?.[i]?.[0]?.diagnosticPricing);
         }
       }
-
       setWidgetsData(newWidgetsData);
       setIsPriceAvailable(true);
       setLoading?.(false);
@@ -239,7 +246,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         breadcrumb.push({
           title: 'Cart',
           onPress: () => {
-            navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TestsCart);
+            navigateToScreenWithEmptyStack(props.navigation, AppRoutes.AddPatients);
           },
         });
       }
@@ -285,7 +292,6 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         </View>
       );
   };
-
   const renderEmptyMessage = () => {
     return (
       <View style={styles.emptyContainer}>
@@ -299,7 +305,6 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       </View>
     );
   };
-
   const renderLoadMore = () => {
     return (
       <View style={styles.loadMoreView}>
@@ -308,7 +313,6 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       </View>
     );
   };
-
   let countDown: any;
   const loadMoreFuction = () => {
     if (widgetsData?.diagnosticWidgetData?.length > limit * currentOffset) {
