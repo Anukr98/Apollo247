@@ -195,7 +195,7 @@ import {
   TextInput,
 } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { ScrollView } from 'react-native-gesture-handler';
+import { ScrollView, Switch } from 'react-native-gesture-handler';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import WebEngage from 'react-native-webengage';
 import { NavigationScreenProps, FlatList } from 'react-navigation';
@@ -4115,6 +4115,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
+  const updateSearchResultList = (itemKey: string, itemData: any) => {
+    const newState = [...searchResults, { key: itemKey, data: itemData }];
+    setSearchResults(newState);
+  };
+
   const onSearchExecute = async (_searchText: string) => {
     console.log('csk search start');
 
@@ -4124,10 +4129,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       .then(() => {
         console.log('csk tests done', testSearchResults.current.length);
         if (testSearchResults.current.length >= 1)
-          setSearchResults([
-            ...searchResults,
-            { key: MedicalRecordType.TEST_REPORT, data: testSearchResults.current },
-          ]);
+          updateSearchResultList(MedicalRecordType.TEST_REPORT, testSearchResults.current);
 
         console.log('final search res-t', JSON.stringify(searchResults.length));
       })
@@ -4139,10 +4141,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       .then(() => {
         console.log('csk med done', medSearchResults.current.length);
         if (medSearchResults.current.length >= 1)
-          setSearchResults([
-            ...searchResults,
-            { key: MedicalRecordType.MEDICATION, data: medSearchResults.current },
-          ]);
+          updateSearchResultList(MedicalRecordType.MEDICATION, medSearchResults.current);
         console.log('final search res-m', JSON.stringify(searchResults.length));
       })
       .catch((e) => {
@@ -4349,9 +4348,20 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
+  const onClickSearchItem = (key: string) => {
+    switch (key) {
+      case MedicalRecordType.MEDICATION:
+        props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
+        break;
+      case MedicalRecordType.TEST_REPORT:
+        props.navigation.navigate(AppRoutes.SearchTestScene, { searchText: searchText });
+        break;
+    }
+  };
+
   const renderSearchItem = ({ key, data }: any, index: number) => {
     return (
-      <View>
+      <TouchableOpacity onPress={() => onClickSearchItem(key)}>
         <View
           style={{
             flexDirection: 'row',
@@ -4403,13 +4413,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             style={{
               ...theme.viewStyles.text('M', 15, theme.colors.APP_YELLOW, 1, 24),
             }}
+            onPress={() => onClickSearchItem(key)}
           >
             View All Results {searchResultsTabHeader[key].title}
           </Text>
 
           <ArrowRight />
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
