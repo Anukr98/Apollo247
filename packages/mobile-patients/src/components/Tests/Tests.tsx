@@ -325,6 +325,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const homeScreenAttributes = props.navigation.getParam('homeScreenAttributes');
   const phyPrescriptionUploaded = props.navigation.getParam('phyPrescriptionUploaded') || [];
   const ePresscriptionUploaded = props.navigation.getParam('ePresscriptionUploaded') || [];
+  const { ePrescriptions, physicalPrescriptions } = useShoppingCart();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
 
   const hdfc_values = string.Hdfc_values;
@@ -605,9 +606,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
   useEffect(() => {
     if (movedFrom == AppRoutes.SubmittedPrescription) {
       // user comes back to add more prescription
+      setIsPrescriptionGallery(false);
       setIsPrescriptionUpload(true);
     } else if (movedFrom == AppRoutes.PrescriptionCamera) {
       // when user comes back  deletes the camera captured image
+      setIsPrescriptionGallery(false);
       setIsPrescriptionUpload(true);
     }
   }, [movedFrom]);
@@ -2290,12 +2293,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
             ePrescriptionsProp: [...ePresscriptionUploaded, ...selectedEPres],
             phyPrescriptionsProp: phyPrescriptionUploaded,
             type: 'E-Prescription',
-            showOptions: false,
-            isReUpload: true,
           });
         }}
-        selectedEprescriptionIds={[]}
+        selectedEprescriptionIds={ePresscriptionUploaded.map((item) => item.id)}
         isVisible={isSelectPrescriptionVisible}
+        movedFrom={AppRoutes.Tests}
       />
     );
   };
