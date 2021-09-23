@@ -51,7 +51,7 @@ import {
   updateHelpdeskTicket,
 } from '../../graphql/types/updateHelpdeskTicket';
 import { needHelpCleverTapEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
-import { useShoppingCart} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
@@ -228,7 +228,7 @@ const BUSINESS = {
   DIAGNOSTICS: 'Diagnostics',
 };
 
-export interface HelpChatProps extends NavigationScreenProps { }
+export interface HelpChatProps extends NavigationScreenProps {}
 
 export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
   let ticketId = props.navigation.getParam('ticketId');
@@ -238,17 +238,14 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
   const [messageText, setMessageText] = useState<string>('');
   const [contentHeight, setContentHeight] = useState(40);
   const [isTicketClosed, setIsTicketClosed] = useState<boolean>(
-    ticket?.statusType?.toUpperCase() === 'CLOSED' || 'RESOLVED'? true : false
+    ticket?.statusType?.toUpperCase() === 'CLOSED' || 'RESOLVED' ? true : false
   );
   const [conversations, setConverstions] = useState<any>([]);
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState(false);
   const [showTicketCreationLagMessage, setShowTicketCreationLagMessage] = useState(false);
-  const { currentPatient, allCurrentPatients, profileAllPatients  } = useAllCurrentPatients();
-  const {
-    circlePlanValidity,
-    circleSubscriptionId,
-  } = useShoppingCart();
+  const { currentPatient, allCurrentPatients, profileAllPatients } = useAllCurrentPatients();
+  const { circlePlanValidity, circleSubscriptionId } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
 
@@ -341,14 +338,14 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
   };
 
   const cleverTapEvent = (eventName: CleverTapEventName, extraAttributes?: Object) => {
-    let ticketDetailAttributes ={
-      "Ticket number": ticket?.ticketNumber,
-      "Ticket title": ticket?.subject,
-      "Ticket status": ticket?.status,
-      "Ticket created on": ticket?.createdTime,
-    }
-    if (extraAttributes){
-      ticketDetailAttributes = {...ticketDetailAttributes, ...extraAttributes};
+    let ticketDetailAttributes = {
+      'Ticket number': ticket?.ticketNumber,
+      'Ticket title': ticket?.subject,
+      'Ticket status': ticket?.status,
+      'Ticket created on': ticket?.createdTime,
+    };
+    if (extraAttributes) {
+      ticketDetailAttributes = { ...ticketDetailAttributes, ...extraAttributes };
     }
     needHelpCleverTapEvent(
       eventName,
@@ -661,7 +658,9 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
                 }}
                 editable={!isTicketClosed}
                 onBlur={() => {
-                  cleverTapEvent(CleverTapEventName.CHAT_INPUTBOX_ON_TICKET_CHAT, {"Message Text": messageText});
+                  cleverTapEvent(CleverTapEventName.CHAT_INPUTBOX_ON_TICKET_CHAT, {
+                    'Message Text': messageText,
+                  });
                 }}
               />
               <View style={styles.inputTextLine} />
@@ -677,7 +676,9 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
                     Alert.alert('Apollo', 'Please write something to send message.');
                     return;
                   }
-                  cleverTapEvent(CleverTapEventName.SEND_BUTTON_ON_TICKET_CHAT_CLICKED, {"Message Text": textMessage});
+                  cleverTapEvent(CleverTapEventName.SEND_BUTTON_ON_TICKET_CHAT_CLICKED, {
+                    'Message Text': textMessage,
+                  });
                   addCommentHelpdesk(textMessage);
                 }
               }}

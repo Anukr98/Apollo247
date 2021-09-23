@@ -14,7 +14,7 @@ import { DashedLine, GrayEditIcon } from '@aph/mobile-patients/src/components/ui
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { useShoppingCart} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -37,10 +37,7 @@ import {
   BackHandler,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { 
-  NavigationScreenProps,
-  ScrollView,
- } from 'react-navigation';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { getHelpdeskTickets } from '../../graphql/types/getHelpdeskTickets';
 import { GET_HELPDESK_TICKETS } from '@aph/mobile-patients/src/graphql/profiles';
 import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
@@ -190,11 +187,8 @@ const styles = StyleSheet.create({
 export interface Props extends NavigationScreenProps {}
 
 export const NeedHelp: React.FC<Props> = (props) => {
-  const { currentPatient, allCurrentPatients, profileAllPatients  } = useAllCurrentPatients();
-  const {
-    circlePlanValidity,
-    circleSubscriptionId,
-  } = useShoppingCart();
+  const { currentPatient, allCurrentPatients, profileAllPatients } = useAllCurrentPatients();
+  const { circlePlanValidity, circleSubscriptionId } = useShoppingCart();
   const [email, setEmail] = useState<string>(currentPatient?.emailAddress || '');
   const [queries, setQueries] = useState<NeedHelpHelpers.HelpSectionQuery[]>([]);
   const [isFocused, setFocused] = useState<boolean>(false);
@@ -329,7 +323,9 @@ export const NeedHelp: React.FC<Props> = (props) => {
           onFocus={() => setFocused(true)}
           onBlur={() => {
             setFocused(false);
-            cleverTapEvent(CleverTapEventName.EDIT_EMAIL_ADDRESS_ON_NEED_HELP, {"Email address": email});
+            cleverTapEvent(CleverTapEventName.EDIT_EMAIL_ADDRESS_ON_NEED_HELP, {
+              'Email address': email,
+            });
           }}
         />
       </View>
@@ -370,7 +366,7 @@ export const NeedHelp: React.FC<Props> = (props) => {
         : helpCategoryId === helpSectionQueryId.diagnostic
         ? AppRoutes.NeedHelpDiagnosticsOrder
         : AppRoutes.NeedHelpQueryDetails;
-    cleverTapEvent(CleverTapEventName.BU_MODULE_TILE_ON_NEED_HELP,{"BU/Module name": route});
+    cleverTapEvent(CleverTapEventName.BU_MODULE_TILE_ON_NEED_HELP, { 'BU/Module name': route });
     props.navigation.navigate(route, {
       queries: queries,
       queryIdLevel1: helpCategoryId,
@@ -440,13 +436,18 @@ export const NeedHelp: React.FC<Props> = (props) => {
       <TouchableOpacity
         onPress={() => {
           setShowPreviousTickets(false);
-            cleverTapEvent(showPreviousTickets ? CleverTapEventName.CS_TICKET_ON_PREVIOUS_TICKETS : CleverTapEventName.LATEST_CS_TICKETS_ON_NEED_HELP,{
-              "Ticket number": ticket.ticketNumber,
-              "Ticket title": ticket.subject,
-              "Ticket status": ticket.status,
-              "Ticket created on": ticket.createdTime,
-            });
-            props.navigation.navigate(AppRoutes.HelpChatScreen, {
+          cleverTapEvent(
+            showPreviousTickets
+              ? CleverTapEventName.CS_TICKET_ON_PREVIOUS_TICKETS
+              : CleverTapEventName.LATEST_CS_TICKETS_ON_NEED_HELP,
+            {
+              'Ticket number': ticket.ticketNumber,
+              'Ticket title': ticket.subject,
+              'Ticket status': ticket.status,
+              'Ticket created on': ticket.createdTime,
+            }
+          );
+          props.navigation.navigate(AppRoutes.HelpChatScreen, {
             ticket: ticket,
           });
         }}
@@ -500,7 +501,13 @@ export const NeedHelp: React.FC<Props> = (props) => {
           <ScrollView
             bounces={false}
             showsVerticalScrollIndicator={false}
-            onScroll={() => cleverTapEvent(showPreviousTickets ? CleverTapEventName.PREVIOUS_TICKET_SCREEN_SCROLLED :CleverTapEventName.NEED_HELP_SCROLLED)}
+            onScroll={() =>
+              cleverTapEvent(
+                showPreviousTickets
+                  ? CleverTapEventName.PREVIOUS_TICKET_SCREEN_SCROLLED
+                  : CleverTapEventName.NEED_HELP_SCROLLED
+              )
+            }
           >
             {showPreviousTickets ? (
               renderPreviousTicketsSection()

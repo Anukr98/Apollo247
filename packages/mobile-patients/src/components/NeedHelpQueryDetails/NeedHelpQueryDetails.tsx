@@ -50,7 +50,7 @@ import {
   getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
 } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import { needHelpCleverTapEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
-import { useShoppingCart} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 export interface Props
@@ -97,11 +97,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
 
   const client = useApolloClient();
-  const { currentPatient, allCurrentPatients, profileAllPatients  } = useAllCurrentPatients();
-  const {
-    circlePlanValidity,
-    circleSubscriptionId,
-  } = useShoppingCart();
+  const { currentPatient, allCurrentPatients, profileAllPatients } = useAllCurrentPatients();
+  const { circlePlanValidity, circleSubscriptionId } = useShoppingCart();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const { needHelpToContactInMessage } = useAppCommonData();
   const isConsult = navigation.getParam('isConsult') || false;
@@ -182,16 +179,18 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       currentPatient,
       circlePlanValidity,
       circleSubscriptionId,
-      queryIdLevel2 ? 'C2 help Screen' :'C1 help Screen',
+      queryIdLevel2 ? 'C2 help Screen' : 'C1 help Screen',
       extraAttributes
     );
   };
 
   const renderHeader = () => {
-    const onPressBack = () => {navigation.goBack();
+    const onPressBack = () => {
+      navigation.goBack();
       cleverTapEvent(
         queryIdLevel2 ? CleverTapEventName.BACK_NAV_ON_C2_HELP : CleverTapEventName.BACK_NAV_ON_C1,
-        {"BU/Module name": headingTitle});
+        { 'BU/Module name': headingTitle }
+      );
     };
     const pageTitle = string.help.toUpperCase();
     return <Header title={pageTitle} leftIcon="backArrow" onPressLeftIcon={onPressBack} />;
@@ -212,8 +211,11 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
   const onSuccess = (response: any) => {
     cleverTapEvent(
-      queryIdLevel2 ? CleverTapEventName.TICKET_ACKNOWLEDGEMENT_ON_C2_HELP_DISPLAYED : CleverTapEventName.TICKET_ACKNOWLEDGEMENT_ON_C1_HELP_DISPLAYED,
-      {"BU/Module name": headingTitle});
+      queryIdLevel2
+        ? CleverTapEventName.TICKET_ACKNOWLEDGEMENT_ON_C2_HELP_DISPLAYED
+        : CleverTapEventName.TICKET_ACKNOWLEDGEMENT_ON_C1_HELP_DISPLAYED,
+      { 'BU/Module name': headingTitle }
+    );
     showAphAlert!({
       title: string.common.hiWithSmiley,
       description: needHelpToContactInMessage || string.needHelpSubmitMessage,
@@ -316,15 +318,21 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         conatinerstyles={styles.textInputContainer}
         autoFocus={true}
         onBlur={() => {
-          let eventAtttr : {[key: string]: any} = {
-            "Input text": comments,
-            "BU/Module name": headingTitle};
-            if(queryIdLevel2){
-              eventAtttr["C2 Name"]=title;
-            } else{
-              eventAtttr["C1 Name"]=title;
-            }
-          cleverTapEvent(queryIdLevel2 ? CleverTapEventName.DETAILS_INPUT_ON_C2_HELP : CleverTapEventName.DETAILS_INPUTBOX_ON_C1_HELP, eventAtttr);
+          let eventAtttr: { [key: string]: any } = {
+            'Input text': comments,
+            'BU/Module name': headingTitle,
+          };
+          if (queryIdLevel2) {
+            eventAtttr['C2 Name'] = title;
+          } else {
+            eventAtttr['C1 Name'] = title;
+          }
+          cleverTapEvent(
+            queryIdLevel2
+              ? CleverTapEventName.DETAILS_INPUT_ON_C2_HELP
+              : CleverTapEventName.DETAILS_INPUTBOX_ON_C1_HELP,
+            eventAtttr
+          );
         }}
       />,
       isDeliveryStatusQuery ? renderShipmentQueryCTAs() : renderSubmitCTA(title),
@@ -390,15 +398,21 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   };
 
   const onSubmitShowEmailPopup = async (title?: string) => {
-    let eventAtttr : {[key: string]: any} = {
-      "Input text": comments,
-      "BU/Module name": headingTitle};
-      if(queryIdLevel2){
-        eventAtttr["C2 Name"]=title;
-      } else{
-        eventAtttr["C1 Name"]=title;
-      }
-    cleverTapEvent(queryIdLevel2 ? CleverTapEventName.SUBMIT_CTA_ON_C2_HELP: CleverTapEventName.SUBMIT_CTA_ON_C1_HELP, eventAtttr);
+    let eventAtttr: { [key: string]: any } = {
+      'Input text': comments,
+      'BU/Module name': headingTitle,
+    };
+    if (queryIdLevel2) {
+      eventAtttr['C2 Name'] = title;
+    } else {
+      eventAtttr['C1 Name'] = title;
+    }
+    cleverTapEvent(
+      queryIdLevel2
+        ? CleverTapEventName.SUBMIT_CTA_ON_C2_HELP
+        : CleverTapEventName.SUBMIT_CTA_ON_C1_HELP,
+      eventAtttr
+    );
     if (!email) {
       setShowEmailPopup(true);
     } else {
