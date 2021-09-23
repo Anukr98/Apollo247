@@ -1062,7 +1062,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       : currentEnv === AppEnv.QA ||
         currentEnv === AppEnv.QA2 ||
         currentEnv === AppEnv.QA3 ||
-        currentEnv === AppEnv.QA5
+        currentEnv === AppEnv.QA4 ||
+        currentEnv === AppEnv.QA5 ||
+        currentEnv === AppEnv.QA6 ||
+        currentEnv === AppEnv.VAPT
       ? valueBasedOnEnv.QA || valueBasedOnEnv.PROD
       : valueBasedOnEnv.DEV || valueBasedOnEnv.QA || valueBasedOnEnv.PROD;
   };
@@ -1337,11 +1340,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       disincentivizeCodMessage && setPaymentCodMessage?.(disincentivizeCodMessage);
 
-      setAppConfig('CirclePlanPreselected', 'CIRCLE_PLAN_PRESELECTED', (key) =>
-        config.getString(key)
-      );
+      setAppConfig('CirclePlanPreselected', 'CIRCLE_PLAN_PRESELECTED', (key) => {
+        config.getString(key) || AppConfig.Configuration.CIRCLE_PLAN_PRESELECTED;
+      });
 
-      setAppConfig('CircleFacts', 'CIRCLE_FACTS', (key) => config.getString(key));
+      setAppConfig(
+        'CircleFacts',
+        'CIRCLE_FACTS',
+        (key) => config.getString(key) || AppConfig.Configuration.CIRCLE_FACTS
+      );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';

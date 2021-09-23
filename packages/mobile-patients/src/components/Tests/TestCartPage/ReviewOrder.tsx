@@ -614,7 +614,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       />
     );
   };
-
   const renderAddressHeading = () => {
     return (
       <View>
@@ -754,7 +753,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
               <View style={{ flexDirection: 'row', marginTop: 3 }}>
                 <CircleLogo style={styles.savingCircleIcon} />
                 <Text style={styles.savingTextStyle}>
-                  Savings {string.common.Rs} {savingAmount}
+                  Savings {string.common.Rs}
+                  {savingAmount}
                 </Text>
               </View>
             )}
@@ -1997,7 +1997,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
   function onPressProceedToPay() {
     setLoading?.(true);
-    //do not createSubId, if it is already added
+
     if (isCircleAddedToCart && localCircleSubId == '') {
       callCreateCircleSubscription();
     } else {

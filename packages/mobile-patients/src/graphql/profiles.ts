@@ -5515,17 +5515,6 @@ export const GET_ORDER_LEVEL_DIAGNOSTIC_STATUS = gql`
           }
         }
       }
-      groupedPendingReportInclusions{
-        inclusions{
-          itemId
-          itemName
-          packageId
-          packageName
-          orderStatus
-        }
-        reportTATMessage
-        expectedReportGenerationTime
-      }
       statusInclusions {
         statusDate
         orderStatus

@@ -48,22 +48,6 @@ export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingH
   attributes: getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusHistory_attributes | null;
 }
 
-export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_groupedPendingReportInclusions_inclusions {
-  __typename: "PendingReportInclusion";
-  itemId: number | null;
-  itemName: string | null;
-  packageId: number | null;
-  packageName: string | null;
-  orderStatus: DIAGNOSTIC_ORDER_STATUS | null;
-}
-
-export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_groupedPendingReportInclusions {
-  __typename: "GroupedPendingReportInclusion";
-  inclusions: (getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_groupedPendingReportInclusions_inclusions | null)[] | null;
-  reportTATMessage: string | null;
-  expectedReportGenerationTime: any | null;
-}
-
 export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusInclusions {
   __typename: "DiagnosticOrdersStatus";
   statusDate: any | null;
@@ -82,7 +66,6 @@ export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingH
 export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory {
   __typename: "HCOrderFormattedTrackingHistoryResult";
   statusHistory: (getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusHistory | null)[] | null;
-  groupedPendingReportInclusions: (getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_groupedPendingReportInclusions | null)[] | null;
   statusInclusions: (getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusInclusions | null)[] | null;
   upcomingStatuses: (getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_upcomingStatuses | null)[] | null;
 }
