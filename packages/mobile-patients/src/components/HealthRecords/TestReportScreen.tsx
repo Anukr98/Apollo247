@@ -65,7 +65,6 @@ import {
   postCleverTapIfNewSession,
   removeObjectProperty,
   postCleverTapEvent,
-  removeObjectNullUndefinedProperties,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -190,6 +189,11 @@ const ConsultRxFilterArray: FilterArray[] = [
   { key: FILTER_TYPE.PARAMETER_NAME, title: FILTER_TYPE.PARAMETER_NAME },
   { key: FILTER_TYPE.SOURCE, title: FILTER_TYPE.SOURCE },
 ];
+
+interface imageArray {
+  fileName: string;
+  file_Url: string;
+}
 
 export interface TestReportScreenProps
   extends NavigationScreenProps<{
@@ -698,7 +702,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
     return <Text style={styles.sectionHeaderTitleStyle}>{sectionTitle}</Text>;
   };
 
-  const onHealthCardItemPress = (selectedItem: any) => {
+  const onHealthCardItemPress = async (selectedItem: any) => {
     const eventInputData = removeObjectProperty(selectedItem, 'testResultFiles');
     postCleverTapIfNewSession(
       'Test Reports',
@@ -707,10 +711,36 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       phrSession,
       setPhrSession
     );
+    const checkSelectedItem = selectedItem?.data || selectedItem;
+    let imageArrayObj = {} as imageArray;
+    let imageArray: any[] = [];
+    if (checkSelectedItem.labTestSource === 'Hospital') {
+      imageArrayObj.fileName = 'webo-.png';
+      await client
+        .query<getIndividualTestResultPdf, getIndividualTestResultPdfVariables>({
+          query: GET_INDIVIDUAL_TEST_RESULT_PDF,
+          variables: {
+            patientId: currentPatient?.id,
+            recordId: checkSelectedItem?.id,
+            sequence: checkSelectedItem?.testSequence,
+          },
+        })
+        .then(({ data }: any) => {
+          if (data?.getIndividualTestResultPdf?.url) {
+            imageArrayObj.file_Url = data?.getIndividualTestResultPdf?.url;
+          }
+        })
+        .catch((e: any) => {
+          currentPatient && handleGraphQlError(e, 'Report is yet not available');
+          CommonBugFender('HealthRecordDetails_downloadPDFTestReport', e);
+        });
+      imageArray.push(imageArrayObj);
+    }
     props.navigation.navigate(AppRoutes.TestReportViewScreen, {
       data: filterApplied === FILTER_TYPE.PARAMETER_NAME ? selectedItem?.data : selectedItem,
       labResults: true,
       testReport: testReportsData,
+      testResultArray: imageArray?.length > 0 ? imageArray : checkSelectedItem?.testResultFiles,
     });
   };
 
