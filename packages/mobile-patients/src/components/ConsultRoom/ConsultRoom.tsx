@@ -22,6 +22,7 @@ import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/Carousel
 import CovidButton from '@aph/mobile-patients/src/components/ConsultRoom/Components/CovidStyles';
 import firebaseAuth from '@react-native-firebase/auth';
 import ReceiveSharingIntent from 'react-native-receive-sharing-intent';
+var allSettled = require('promise.allsettled');
 
 import {
   CartIcon,
@@ -65,6 +66,7 @@ import {
   BookingStatus,
   MedicalRecordType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { getDoctorList } from '@aph/mobile-patients/src/graphql/types/getDoctorList';
 import { dateFormatter } from '@aph/mobile-patients/src/utils/dateUtil';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
@@ -93,6 +95,7 @@ import {
   GET_PAST_CONSULTS_PRESCRIPTIONS,
   UPDATE_PATIENT_MEDICAL_PARAMETERS,
   GET_PRISM_AUTH_TOKEN,
+  GET_DOCTOR_LIST,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getPrismAuthTokenVariables,
@@ -105,6 +108,9 @@ import {
   MedicineProduct,
   MedicineProductsResponse,
   searchMedicineApi,
+  searchProceduresAndSymptoms,
+  ProceduresAndSymptomsParams,
+  ProceduresAndSymptomsResult,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
@@ -4115,6 +4121,78 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
+  const onSearchConsults = (searchTextString: string = searchText) => {
+    if (searchTextString.length > 2) {
+      setSearchLoading(true);
+      console.log('csk consults');
+      allSettled([getDoctorList(searchTextString), fetchProceduresAndSymptoms(searchTextString)])
+        .then((res: any) => {
+          try {
+            let finalres: any[] = [],
+              doc: any[] = [],
+              speciality: any[] = [];
+            const searchData = res?.[0]?.value?.data?.getDoctorList || null;
+            if (searchData) {
+              if (searchData.doctors) {
+                doc.concat(searchData.doctors);
+              }
+              if (searchData.specialties) {
+                speciality.concat(searchData.specialties);
+              }
+              setshowSpinner(false);
+            }
+
+            const result = res?.[1]?.value?.data?.results;
+            const procedures = result?.filter(
+              (item: ProceduresAndSymptomsResult) => item?.tag?.toUpperCase() === 'PROCEDURE'
+            );
+            const symptoms = result?.filter(
+              (item: ProceduresAndSymptomsResult) => item?.tag?.toUpperCase() === 'SYMPTOM'
+            );
+
+            console.log(
+              'csk consults res',
+              JSON.stringify(doc),
+              JSON.stringify(speciality),
+              JSON.stringify(procedures),
+              JSON.stringify(symptoms)
+            );
+
+            setSearchLoading(false);
+          } catch (e) {
+            CommonBugFender('HomeScreen_ConsultRoom', e);
+            setSearchLoading(false);
+            console.log('csk test', JSON.stringify(e));
+          }
+        })
+        .catch((er) => {
+          CommonBugFender('HomeScreen_ConsultRoom', er);
+          setSearchLoading(false);
+          console.log('csk test', JSON.stringify(er));
+        });
+    }
+  };
+  const getDoctorList = (searchText: string) => {
+    return client.query<getDoctorList>({
+      query: GET_DOCTOR_LIST,
+      fetchPolicy: 'no-cache',
+      variables: {
+        filterInput: {
+          pageNo: 1,
+          pageSize: 10,
+          searchText,
+        },
+      },
+    });
+  };
+
+  const fetchProceduresAndSymptoms = (searchString: string) => {
+    const queryParams: ProceduresAndSymptomsParams = {
+      text: searchString,
+    };
+    return searchProceduresAndSymptoms(queryParams);
+  };
+
   const updateSearchResultList = (itemKey: string, itemData: any) => {
     const newState = [...searchResults, { key: itemKey, data: itemData }];
     setSearchResults(newState);
@@ -4147,6 +4225,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       .catch((e) => {
         CommonBugFender('HomeScreen_ConsultRoom_onSearchMedicinesFunction', e);
       });
+
+    onSearchConsults(_searchText);
   };
 
   interface searchHeaders {
@@ -4364,7 +4444,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderSearchItem = ({ key, data }: any, index: number) => {
-    key === MedicalRecordType.MEDICATION ? console.log('csk med', JSON.stringify(data)) : null;
     return (
       <TouchableOpacity onPress={() => onClickSearchItem(key)}>
         <View
