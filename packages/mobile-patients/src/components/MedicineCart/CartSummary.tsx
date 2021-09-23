@@ -558,6 +558,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       setloading(false);
       setauthToken?.('');
     } catch (error) {
+      console.log("error",error);
+      
       setloading(false);
       renderAlert('Something went wrong. Please try again after some time');
     }

@@ -396,11 +396,11 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     orderAutoId: string
   ) => {
     const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED] = {
-      'customer id': currentPatient ? currentPatient.id : '',
+      af_customer_user_id: currentPatient ? currentPatient.id : '',
       'cart size': cartItems.length,
       af_revenue: getFormattedAmount(grandTotal),
       af_currency: 'INR',
-      'order id': orderId,
+      af_order_id: orderId,
       orderAutoId: orderAutoId,
       'coupon applied': coupon ? true : false,
       'Circle Cashback amount':
