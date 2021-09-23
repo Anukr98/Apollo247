@@ -26,7 +26,7 @@ import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
 import { needHelpCleverTapEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 import { useShoppingCart} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { CleverTapEventName } from '../../helpers/CleverTapEvents';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 export interface Props
   extends NavigationScreenProps<{

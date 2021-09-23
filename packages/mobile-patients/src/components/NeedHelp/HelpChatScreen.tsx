@@ -52,7 +52,7 @@ import {
 } from '../../graphql/types/updateHelpdeskTicket';
 import { needHelpCleverTapEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 import { useShoppingCart} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { CleverTapEventName } from '../../helpers/CleverTapEvents';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 const { height, width } = Dimensions.get('window');

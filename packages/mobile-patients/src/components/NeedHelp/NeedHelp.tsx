@@ -45,7 +45,7 @@ import { getHelpdeskTickets } from '../../graphql/types/getHelpdeskTickets';
 import { GET_HELPDESK_TICKETS } from '@aph/mobile-patients/src/graphql/profiles';
 import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
 import { OrderStatusIndicator } from './OrderStatusIndicator';
-import { CleverTapEventName } from '../../helpers/CleverTapEvents';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const { text } = theme.viewStyles;
 const { LIGHT_BLUE } = theme.colors;
