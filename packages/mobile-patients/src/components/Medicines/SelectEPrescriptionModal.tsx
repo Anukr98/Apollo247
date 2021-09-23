@@ -17,6 +17,7 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
   CommonLogEvent,
   CommonBugFender,
@@ -195,6 +196,7 @@ export interface SelectEPrescriptionModalProps {
   displayPrismRecords?: boolean;
   displayMedicalRecords?: boolean;
   showLabResults?: boolean;
+  movedFrom?: string
 }
 
 export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> = (props) => {
@@ -226,6 +228,9 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
   }, [currentPatient]);
 
   useEffect(() => {
+    if (props.movedFrom == AppRoutes.Tests) {
+      return
+    }
     const pIds = props.selectedEprescriptionIds;
     const selectedPrescr = {} as typeof selectedPrescription;
     if (pIds) {
@@ -235,6 +240,21 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
       setSelectedPrescription(selectedPrescr);
     }
   }, [props.selectedEprescriptionIds]);
+
+
+
+  useEffect(() => {
+    if (props.movedFrom == AppRoutes.Tests) {
+    const pIds = props.selectedEprescriptionIds;
+    const selectedPrescr = {} as typeof selectedPrescription;
+    if (pIds) {
+      pIds!.forEach((id) => {
+        selectedPrescr[id] = true;
+      });
+      setSelectedPrescription(selectedPrescr);
+    }
+  }
+  }, []);
 
   const { data, loading, error } = useQuery<
     getLinkedProfilesPastConsultsAndPrescriptionsByMobile,
@@ -300,6 +320,9 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
   }, [medPrismRecords]);
 
   useEffect(() => {
+    if (props.movedFrom == AppRoutes.Tests) {
+      return
+    }
     if (medPrismerror) {
       handleGraphQlError(
         medPrismerror,
