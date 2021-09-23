@@ -600,10 +600,6 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     }
   };
 
-  const _onPressBackButton = () => {
-    //do nothing. need to check the flow
-  };
-
   function _onPressAddPatients() {
     //navigate to add a member screen
     props.navigation.navigate(AppRoutes.EditProfile, {
@@ -611,7 +607,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       isPoptype: true,
       mobileNumber: currentPatient?.mobileNumber,
       onNewProfileAdded: onNewProfileAdded,
-      onPressBackButton: _onPressBackButton,
+      onPressBackButton: {},
     });
   }
 
