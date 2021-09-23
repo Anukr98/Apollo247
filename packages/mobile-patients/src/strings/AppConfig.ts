@@ -21,6 +21,7 @@ export enum AppEnv {
   QA6 = 'QA6',
 }
 
+
 const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
