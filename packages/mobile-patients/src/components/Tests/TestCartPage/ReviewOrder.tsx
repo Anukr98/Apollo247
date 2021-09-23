@@ -249,7 +249,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   let setLowItemName: string[] = [],
     setHighPriceName: string[] = [];
   let localCircleSubId = '';
-
   const circlePlanPurchasePrice = !!selectedCirclePlan
     ? selectedCirclePlan?.currentSellingPrice
     : !!defaultCirclePlan && defaultCirclePlan?.currentSellingPrice;
