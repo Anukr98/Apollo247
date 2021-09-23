@@ -417,6 +417,7 @@ const top_specialties = [
 ];
 
 export const updateAppConfig = (key: keyof typeof Configuration, value: object) => {
+  console.log({value})
   Configuration[key] = value as never;
 };
 
@@ -506,6 +507,7 @@ const PharmaApiConfig = {
     DELIVERY_CHARGES: 50,
     pharmaMerchantId: 'apollopharm' /*  pharma merchantId staging - apollopharm */,
     assetsBaseurl: 'https://newassets-test.apollo247.com/files',
+    CIRCLE_PLAN_PRESELECTED: false,
   },
   prod: {
     TRACK_EVENT: [`${tagalysBaseUrl}/analytics/events/track`],
@@ -546,6 +548,7 @@ const PharmaApiConfig = {
     DELIVERY_CHARGES: 50,
     pharmaMerchantId: 'apollo_hospitals' /*  pharma merchantId prod - apollo_hospitals */,
     assetsBaseurl: 'https://newassets.apollo247.com/files',
+    CIRCLE_PLAN_PRESELECTED: false,
   },
 };
 
@@ -602,6 +605,7 @@ const ConfigurationDev = {
   CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
+  CIRCLE_PLAN_PRESELECTED: false,
 };
 
 // QA
@@ -659,6 +663,7 @@ const ConfigurationQA = {
   CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com/ordersuccess',
+  CIRCLE_PLAN_PRESELECTED: false,
 };
 
 // QA2
@@ -714,6 +719,7 @@ const ConfigurationQA2 = {
   CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
+  CIRCLE_PLAN_PRESELECTED: false,
 };
 
 // QA3
@@ -770,6 +776,7 @@ const ConfigurationQA3 = {
   CIRLCE_PHARMA_URL: 'https://qathreepatients.apollo247.com/pharma-landing?header=false',
   CIRCLE_TEST_URL: 'https://qathreepatients.apollo247.com/test-landing?header=false',
   CIRCLE_LANDING_URL: 'https://qathreepatients.apollo247.com/circle?header=false',
+  CIRCLE_PLAN_PRESELECTED: false,
 };
 
 const ConfigurationQA5 = {
@@ -827,6 +834,7 @@ const ConfigurationQA5 = {
   CIRLCE_PHARMA_URL: 'https://aph-staging-web-patients.apollo247.com/pharma-landing?header=false',
   CIRCLE_TEST_URL: 'https://aph-staging-web-patients.apollo247.com/test-landing?header=false',
   CIRCLE_LANDING_URL: 'https://aph-staging-web-patients.apollo247.com/circle?header=false',
+  CIRCLE_PLAN_PRESELECTED: false,
 };
 
 const ConfigurationQA6 = {
@@ -883,6 +891,7 @@ const ConfigurationQA6 = {
   CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com/ordersuccess',
+  CIRCLE_PLAN_PRESELECTED: false,
 };
 
 // VAPT
@@ -939,6 +948,7 @@ const ConfigurationVAPT = {
   CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
   PROHEALTH_BOOKING_URL: 'https://stagingpatients.apollo247.com//apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
+  CIRCLE_PLAN_PRESELECTED: false,
 };
 //Production
 const ConfigurationProd = {
@@ -994,6 +1004,7 @@ const ConfigurationProd = {
   CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.prod.vitacloud.io',
   PROHEALTH_BOOKING_URL: 'https://www.apollo247.com/apollo-prohealth',
   baseUrl: 'https://www.apollo247.com',
+  CIRCLE_PLAN_PRESELECTED: false,
 };
 
 //PERFORMANCE
@@ -1051,6 +1062,7 @@ const ConfigurationPERFORM = {
   CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
+  CIRCLE_PLAN_PRESELECTED: false,
 };
 
 //DevelopmentReplica
@@ -1108,6 +1120,7 @@ const ConfigurationDevReplica = {
   CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
+  CIRCLE_PLAN_PRESELECTED: false,
 };
 
 const Configuration =

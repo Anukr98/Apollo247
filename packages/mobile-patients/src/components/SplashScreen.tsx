@@ -1340,15 +1340,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       disincentivizeCodMessage && setPaymentCodMessage?.(disincentivizeCodMessage);
 
-      setAppConfig('CirclePlanPreselected', 'CIRCLE_PLAN_PRESELECTED', (key) => {
-        config.getString(key) || AppConfig.Configuration.CIRCLE_PLAN_PRESELECTED;
-      });
-
-      setAppConfig(
-        'CircleFacts',
-        'CIRCLE_FACTS',
-        (key) => config.getString(key) || AppConfig.Configuration.CIRCLE_FACTS
+      setAppConfig('CirclePlanPreselected', 'CIRCLE_PLAN_PRESELECTED', (key) =>
+        config.getBoolean(key)
       );
+
+      setAppConfig('CircleFacts', 'CIRCLE_FACTS', (key) => config.getString(key));
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';
