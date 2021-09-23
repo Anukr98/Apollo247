@@ -4156,15 +4156,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const searchResultsTabHeader: searchHeaders = {
     MEDICATION: {
       title: 'Search In Medicines',
-      icon: () => null,
+      icon: (s: any) => <MedicineIcon style={[{ width: 20, height: 20, marginLeft: 8 }, ...s]} />,
+      backgroundColor: '#EAF6FF',
     },
     TEST_REPORT: {
       title: 'In Lab Tests',
-      icon: () => <TestsCartIcon style={{ width: 20, height: 20, marginLeft: 8 }} />,
+      icon: (s: any) => <TestsCartIcon style={[{ width: 20, height: 20, marginLeft: 8 }, ...s]} />,
+      backgroundColor: '#FEE7DA',
     },
     CONSULTATION: {
       title: 'In Consult',
-      icon: () => <DoctorIcon style={{ width: 20, height: 20, marginLeft: 8 }} />,
+      icon: (s: any) => <DoctorIcon style={[{ width: 20, height: 20, marginLeft: 8 }, ...s]} />,
+      backgroundColor: '#E5FFFD',
     },
   };
 
@@ -4366,19 +4369,21 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           style={{
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: '#EAF6FF',
+            backgroundColor: searchResultsTabHeader[key].backgroundColor,
             marginVertical: 16,
             paddingVertical: 8,
           }}
         >
-          {searchResultsTabHeader[key].icon()}
+          {index !== 0 ? searchResultsTabHeader[key].icon() : null}
           <Text
             style={{
               ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
               marginLeft: 14,
             }}
           >
-            {searchResultsTabHeader[key].title}
+            {index == 0
+              ? 'Search ' + searchResultsTabHeader[key].title
+              : searchResultsTabHeader[key].title}
           </Text>
         </View>
         <FlatList
@@ -4441,12 +4446,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               height: 36,
             }}
           >
-            <MedicineIcon style={{ width: 26, height: 26 }} />
+            {searchResultsTabHeader[key].icon({ width: 26, height: 26 })}
           </View>
           <Text
             style={{
               ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
               marginLeft: 14,
+              maxWidth: '80%',
             }}
           >
             {key === MedicalRecordType.TEST_REPORT
@@ -4459,7 +4465,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               marginLeft: 14,
             }}
           >
-            {key === MedicalRecordType.TEST_REPORT
+            {'\n' + key === MedicalRecordType.TEST_REPORT
               ? `Total Tests - ${item?.diagnostic_inclusions.length}`
               : null}
           </Text>
