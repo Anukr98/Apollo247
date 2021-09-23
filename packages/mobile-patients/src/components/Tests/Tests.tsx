@@ -1971,7 +1971,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
       widgetsData?.length > 0 &&
       widgetsData?.filter((item: any) => rankArr.includes(item?.diagnosticwidgetsRankOrder));
 
-    const restWidgets = isWidget && widgetsData?.slice(getAllRankedItems, widgetsData?.length);
+    const restWidgets =
+      isWidget && widgetsData?.slice(getAllRankedItems?.length, widgetsData?.length);
     return (
       <>
         {renderWidgetItems(isWidget2)} {/**2 */}
