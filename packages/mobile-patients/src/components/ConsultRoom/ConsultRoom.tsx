@@ -867,6 +867,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const _searchInputRef = useRef(null);
   const [searchText, setSearchText] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [consultSearchResults, setConsultSearchResults] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState({});
   const [prismAuthToken, setPrismAuthToken] = useState<string>('');
   const testSearchResults = useRef<
@@ -4148,7 +4149,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       });
   };
 
-  const searchResultsTabHeader = {
+  interface searchHeaders {
+    [path: string]: any;
+  }
+
+  const searchResultsTabHeader: searchHeaders = {
     MEDICATION: {
       title: 'Search In Medicines',
       icon: () => null,
@@ -4311,17 +4316,27 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderSearchResults = () => {
-    return searchLoading ? (
-      renderSearchLoader()
-    ) : (
-      <FlatList
-        keyExtractor={(_, index) => `${index}`}
-        bounces={false}
-        data={searchResults}
-        ListEmptyComponent={renderGlobalSearchNoResults()}
-        // ListHeaderComponent={searchListHeaderView}
-        renderItem={({ item, index }) => renderSearchItem(item, index)}
-      />
+    return (
+      <View style={{ width: width, marginBottom: 6, padding: 16, backgroundColor: '#fff' }}>
+        <View
+          style={{
+            height: 1.5,
+            backgroundColor: '#D4D4D4',
+            marginTop: -4,
+            marginBottom: 4,
+            marginHorizontal: -16,
+          }}
+        />
+        {console.log('csk total', searchResults.length)}
+        <FlatList
+          keyExtractor={(_, index) => `${index}`}
+          bounces={false}
+          data={searchResults}
+          ListEmptyComponent={renderGlobalSearchNoResults()}
+          // ListHeaderComponent={searchListHeaderView}
+          renderItem={({ item, index }) => renderSearchItem(item, index)}
+        />
+      </View>
     );
   };
 
@@ -4334,87 +4349,26 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderSearchItem = (item: any, index: number) => {
-    const healthCardTopView = () => {
-      switch (item?.key) {
-        case MedicalRecordType.MEDICATION:
-          return (
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: '#EAF6FF',
-                marginVertical: 16,
-                paddingVertical: 8,
-              }}
-            >
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
-                  marginLeft: 14,
-                }}
-              >
-                Search In Medicines
-              </Text>
-            </View>
-          );
-        case MedicalRecordType.TEST_REPORT:
-          return (
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: '#FEE7DA',
-                marginVertical: 16,
-                paddingVertical: 8,
-              }}
-            >
-              <TestsCartIcon style={{ width: 20, height: 20, marginLeft: 8 }} />
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
-                  marginLeft: 14,
-                }}
-              >
-                In Lab Tests
-              </Text>
-            </View>
-          );
-        case MedicalRecordType.CONSULTATION:
-          return (
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: '#E5FFFD',
-                marginVertical: 16,
-                paddingVertical: 8,
-              }}
-            >
-              <DoctorIcon style={{ width: 20, height: 20, marginLeft: 8 }} />
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
-                  marginLeft: 14,
-                }}
-              >
-                In Consult
-              </Text>
-            </View>
-          );
-      }
-    };
-    const dateText = `${moment(item?.value?.date).format('DD MMM YYYY')} - `;
-    const healthMoreText = getPhrHighlightText(item?.value?.highlight || '');
     return (
-      <SearchHealthRecordCard
-        dateText={dateText}
-        healthRecordTitle={item?.value?.title}
-        healthRecordMoreText={healthMoreText}
-        searchHealthCardTopView={healthCardTopView()}
-        item={item}
-        index={index}
-        onSearchHealthCardPress={(item) => {}}
-      />
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: '#EAF6FF',
+          marginVertical: 16,
+          paddingVertical: 8,
+        }}
+      >
+        {searchResultsTabHeader[item?.key].icon()}
+        <Text
+          style={{
+            ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
+            marginLeft: 14,
+          }}
+        >
+          {searchResultsTabHeader[item?.key].title}
+        </Text>
+      </View>
     );
   };
 
