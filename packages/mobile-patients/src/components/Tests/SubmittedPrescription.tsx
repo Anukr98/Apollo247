@@ -337,7 +337,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                                 (_item) => _item?.title != item?.title
                               );
                               setPhysicalPrescriptionsProps([...filteredPres]);
-                            }} style={{ justifyContent: 'center' }}>
+                            }} style={{ justifyContent: 'center',alignItems: 'center' }}>
                               <RemoveIcon />
                             </TouchableOpacity>
                           </View>
@@ -439,6 +439,7 @@ const styles = StyleSheet.create({
     color: theme.colors.FILTER_CARD_LABEL,
     ...theme.fonts.IBMPlexSansMedium(14),
     alignSelf: 'center',
+    width:'80%'
   },
   healthText: {
     color: theme.colors.FILTER_CARD_LABEL,
