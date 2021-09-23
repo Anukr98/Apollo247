@@ -102,6 +102,7 @@ import {
   pharmaSubstitution_pharmaSubstitution_substitutes,
 } from '@aph/mobile-patients/src/graphql/types/pharmaSubstitution';
 import { SuggestedQuantityNudge } from '@aph/mobile-patients/src/components/SuggestedQuantityNudge/SuggestedQuantityNudge';
+import { FrequentlyBoughtTogether } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/FrequentlyBoughtTogether';
 
 export type ProductPageViewedEventProps = Pick<
   WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED],
@@ -331,6 +332,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         .then(({ data }) => {
           const productDetails = g(data, 'productdp', '0' as any);
           if (productDetails) {
+            console.log('product details 2 =============', productDetails);
             setSku(productDetails?.sku);
             setMedicineData(productDetails);
           } else if (data && data.message) {
@@ -349,6 +351,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         .then(({ data }) => {
           const productDetails = g(data, 'productdp', '0' as any);
           if (productDetails) {
+            console.log('product details ------------', productDetails);
             setMedicineData(productDetails);
           } else if (data && data.message) {
             setMedicineError(data.message);
@@ -1185,6 +1188,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   navigation={props.navigation}
                   composition={medicineDetails?.PharmaOverview?.[0]?.Composition || composition}
                   setShowSubstituteInfo={setShowSubstituteInfo}
+                />
+              )}
+              {!!medicineDetails?.bought_together && !!medicineDetails?.bought_together?.length && (
+                <FrequentlyBoughtTogether
+                  name={medicineDetails?.name}
+                  sku={medicineDetails?.sku}
+                  price={medicineDetails?.price}
+                  specialPrice={medicineDetails?.special_price}
+                  boughtTogetherArray={medicineDetails?.bought_together}
                 />
               )}
               <ProductInfo
