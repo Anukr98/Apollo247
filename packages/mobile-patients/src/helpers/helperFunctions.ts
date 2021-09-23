@@ -1590,7 +1590,8 @@ export type CircleEventSource =
   | 'My Account-My membership section'
   | 'Corporate Membership Page'
   | 'Circle Membership page'
-  | 'VC Doctor Card';
+  | 'VC Doctor Card'
+  | 'Diagnostic Review page';
 
 export const getCircleNoSubscriptionText = () => string.common.circleNoSubscriptionText;
 
@@ -3052,7 +3053,7 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
         statusString = 'Partial Refund Initiated'
         break;
     default:
-      statusString = '';
+      statusString =  '';
       // statusString?.replace(/[_]/g, ' ');
   }
   return statusString;

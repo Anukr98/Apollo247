@@ -369,6 +369,23 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     );
   };
 
+  const removeDisabledPatientCartItems = (disabledCartItemIds: string[]) => {
+    hideAphAlert?.();
+
+    const newObj = patientCartItems?.map((item) => {
+      const patientCartItemsObj: DiagnosticPatientCartItem = {
+        patientId: item?.patientId,
+        cartItems: item?.cartItems?.filter(
+          (cItem) => !disabledCartItemIds?.find((dItem) => dItem == cItem?.id)
+        ),
+      };
+      //add a check, if disabledItem is not present & isSelected is false then remove it
+      return patientCartItemsObj;
+    });
+
+    setPatientCartItems?.(newObj);
+  };
+
   const updatePricesInCart = (results: any) => {
     const disabledCartItems = cartItems?.filter(
       (cartItem) =>
@@ -464,6 +481,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
           const disabledCartItemIds = disabledCartItems?.map((item) => item.id);
           setLoading?.(false);
           removeDisabledCartItems(disabledCartItemIds);
+          removeDisabledPatientCartItems(disabledCartItemIds);
         }
       });
       if (!isItemDisable && !isPriceChange) {

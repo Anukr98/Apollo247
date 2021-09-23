@@ -237,7 +237,7 @@ export const SubscriptionCart: React.FC<SubscriptionCartProps> = (props) => {
       setLoading?.(true);
       const response = await createUserSubscription();
       const subscriptionId = g(response, 'data', 'CreateUserSubscription', 'response', '_id');
-      const data = await createOrderInternal(subscriptionId);
+      const data = await createOrderInternal(subscriptionId!);
       const orderInfo = {
         orderId: subscriptionId,
         circleParams: {

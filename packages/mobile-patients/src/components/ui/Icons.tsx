@@ -2309,3 +2309,11 @@ export const RemoveIconGrey: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/crossIcon.webp')}
   />
 );
+
+export const CoinSavingsIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="lg"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/coinSavingsIcon.webp')}
+  />
+);

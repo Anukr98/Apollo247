@@ -16,6 +16,8 @@ import {
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NavigationRoute, NavigationScreenProp, NavigationScreenProps } from 'react-navigation';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -43,6 +45,20 @@ export interface TimelineWizardProps extends NavigationScreenProps {
 
 export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
   const { currentPage, upcomingPages, donePages, isModify } = props;
+  const {
+    isCircleAddedToCart,
+    setIsCircleAddedToCart,
+    setSelectedCirclePlan,
+    setIsDiagnosticCircleSubscription,
+  } = useDiagnosticsCart();
+  const {
+    setCircleMembershipCharges,
+    setCircleSubPlanId,
+    setCirclePlanSelected,
+    setCircleSubscriptionId,
+
+    setIsCircleSubscription,
+  } = useShoppingCart();
 
   function imageRules(currentPage: SCREEN_NAMES) {
     switch (currentPage) {
@@ -113,6 +129,19 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
     }
   }
 
+  function _navigateToRespectivePage(pageName: any) {
+    // isCircleAddedToCart && setIsCircleAddedToCart?.(false);
+    if (isCircleAddedToCart) {
+      setCircleMembershipCharges?.(0);
+      setCircleSubPlanId?.('');
+      setCircleSubscriptionId?.('');
+      setIsCircleSubscription?.(false);
+      setIsDiagnosticCircleSubscription?.(false);
+      setCirclePlanSelected?.(null); //overall
+    }
+    props.navigation.navigate(pageName);
+  }
+
   const renderPatientPage = () => {
     return (
       <View style={styles.textIconView}>
@@ -122,7 +151,7 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
               isModify
                 ? {}
                 : imageRules(currentPage)?.onPressActionOnPatient
-                ? props.navigation.navigate(AppRoutes.AddPatients)
+                ? _navigateToRespectivePage(AppRoutes.AddPatients)
                 : {}
             }
             style={styles.iconTouch}
@@ -163,7 +192,7 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
           <TouchableOpacity
             onPress={() =>
               imageRules(currentPage)?.onPressActionOnCart
-                ? props.navigation.navigate(AppRoutes.CartPage)
+                ? _navigateToRespectivePage(AppRoutes.CartPage)
                 : {}
             }
             style={styles.iconTouch}
@@ -206,7 +235,7 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
               isModify
                 ? {}
                 : imageRules(currentPage)?.onPressActionOnSchedule
-                ? props.navigation.navigate(AppRoutes.AddressSlotSelection)
+                ? _navigateToRespectivePage(AppRoutes.AddressSlotSelection)
                 : {}
             }
             style={styles.iconTouch}

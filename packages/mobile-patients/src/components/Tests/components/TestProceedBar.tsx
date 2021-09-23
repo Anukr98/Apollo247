@@ -52,11 +52,11 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
 
   const renderTimeSlot = () => {
     const timeSlotText = modifyOrderDetails
-      ? `${moment(modifyOrderDetails?.slotDateTimeInUTC)?.format('ddd, DD MMM, YYYY') ||
+      ? `${moment(modifyOrderDetails?.slotDateTimeInUTC)?.format('ddd, DD MMM YYYY') ||
           ''}, ${`${moment(modifyOrderDetails?.slotDateTimeInUTC).format('hh:mm A') ||
           localFormatSlot(modifyOrderDetails?.slotTimings)}`}`
       : //selectedTimeSlot?.slotInfo?.startTime  (if using selectedTimeSlot)
-        `${moment(selectedTimeSlot?.date).format('ddd, DD MMM, YYYY') || ''}, ${
+        `${moment(selectedTimeSlot?.date).format('ddd, DD MMM YYYY') || ''}, ${
           selectedTimeSlot?.slotStartTime
             ? `${localFormatSlot(selectedTimeSlot?.slotStartTime!)}`
             : string.diagnostics.noSlotSelectedText

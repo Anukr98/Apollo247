@@ -214,6 +214,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     newAddressAddedHomePage,
     setNewAddressAddedHomePage,
     patientCartItems,
+    selectedCirclePlan,
   } = useDiagnosticsCart();
   const {
     cartItems: shopCartItems,
@@ -225,6 +226,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setCirclePlanValidity,
     addresses,
     setAddresses,
+    isCircleSubscription,
+    circleSubscriptionId,
+    circlePlanSelected,
   } = useShoppingCart();
 
   const {
@@ -246,7 +250,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const client = useApolloClient();
   const movedFrom = props.navigation.getParam('movedFrom');
-  const homeScreenAttributes = props.navigation.getParam('homeScreenAttributes');
   const { currentPatient } = useAllCurrentPatients();
 
   const hdfc_values = string.Hdfc_values;
@@ -311,6 +314,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
   ) => {
     DiagnosticAddToCartEvent(name, id, price, discountedPrice, source, section);
   };
+
+  // console.log({ isCircleSubscription });
+  // console.log({ circleSubscriptionId });
+  // console.log({ isDiagnosticCircleSubscription });
+  // console.log({ circlePlanSelected });
+  // console.log({ selectedCirclePlan });
 
   useEffect(() => {
     if (movedFrom === 'deeplink') {

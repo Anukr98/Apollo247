@@ -28,7 +28,10 @@ import { TestSlotSelectionOverlayNew } from '@aph/mobile-patients/src/components
 import moment from 'moment';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { diagnosticGetCustomizedSlotsV2 } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { createPatientAddressObject } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  createPatientAddressObject,
+  createPatientObjLineItems,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   SCREEN_NAMES,
@@ -45,11 +48,8 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
     cartItems,
     isDiagnosticCircleSubscription,
     modifiedOrder,
-    addresses,
-    deliveryAddressId,
     setDeliveryAddressId,
     setDiagnosticSlot,
-    selectedPatient,
     setPinCode,
     patientCartItems,
     diagnosticSlot,
@@ -118,62 +118,13 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
     }
   }, [isFocus]);
 
-  //define type
-  function createLineItemPrices(selectedItem: any) {
-    pricesForItemArray = selectedItem?.cartItems?.map(
-      (item: any, index: number) =>
-        ({
-          itemId: Number(item?.id),
-          price:
-            isDiagnosticCircleSubscription && item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
-              ? Number(item?.circleSpecialPrice)
-              : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
-              ? Number(item?.discountSpecialPrice)
-              : Number(item?.specialPrice) || Number(item?.price),
-          mrp:
-            isDiagnosticCircleSubscription && item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
-              ? Number(item?.circlePrice)
-              : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
-              ? Number(item?.discountPrice)
-              : Number(item?.price),
-          groupPlan: isDiagnosticCircleSubscription
-            ? item?.groupPlan!
-            : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
-            ? item?.groupPlan
-            : DIAGNOSTIC_GROUP_PLAN.ALL,
-          preTestingRequirement:
-            !!reportGenDetails && reportGenDetails?.[index]?.itemPrepration
-              ? reportGenDetails?.[index]?.itemPrepration
-              : null,
-        } as DiagnosticLineItem)
-    );
-
-    return {
-      pricesForItemArray,
-    };
-  }
-
-  function createPatientObjLineItems() {
-    const filterPatientItems = isDiagnosticSelectedCartEmpty(patientCartItems);
-    var array = [] as any; //define type
-
-    filterPatientItems?.map((item) => {
-      const getPricesForItem = createLineItemPrices(item)?.pricesForItemArray;
-      const totalPrice = getPricesForItem
-        ?.map((item: any) => Number(item?.price))
-        ?.reduce((prev: number, curr: number) => prev + curr, 0);
-      array.push({
-        patientID: item?.patientId,
-        lineItems: getPricesForItem,
-        totalPrice: totalPrice,
-      });
-    });
-    return array;
-  }
-
   async function getSlots() {
     const getAddressObject = createPatientAddressObject(selectedAddr, diagnosticServiceabilityData);
-    const getPatientObjWithLineItems = createPatientObjLineItems() as (patientObjWithLineItems | null)[];
+    const getPatientObjWithLineItems = createPatientObjLineItems(
+      patientCartItems,
+      isDiagnosticCircleSubscription,
+      reportGenDetails
+    ) as (patientObjWithLineItems | null)[];
 
     const billAmount = getPatientObjWithLineItems
       ?.map((item) => Number(item?.totalPrice))
@@ -311,6 +262,8 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
   const renderSlotSelection = () => {
     return !!slotsInput && !isEmptyObject(slotsInput) ? (
       <TestSlotSelectionOverlayNew
+        isVisible={false}
+        heading={''}
         onClose={() => {}}
         isFocus={isFocus}
         showInOverlay={false}

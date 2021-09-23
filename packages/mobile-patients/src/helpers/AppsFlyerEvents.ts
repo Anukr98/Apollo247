@@ -16,7 +16,8 @@ export type CircleNavigationSource =
   | 'My Account-My membership section'
   | 'Corporate Membership Page'
   | 'Circle Membership page'
-  | 'VC Doctor Card';
+  | 'VC Doctor Card'
+  | 'Diagnostic Review page'
 
 export type CIRCLE_EVENT_DATA = {
   userId: string;

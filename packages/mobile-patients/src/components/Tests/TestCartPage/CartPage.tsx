@@ -305,7 +305,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       : !!selectedAddr
       ? Number(selectedAddr?.zipcode)
       : null;
-
     return client.query<
       findDiagnosticsByItemIDsAndCityID,
       findDiagnosticsByItemIDsAndCityIDVariables

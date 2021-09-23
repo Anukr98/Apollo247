@@ -57,10 +57,18 @@ import {
   getDiagnosticOrderDetails,
   getDiagnosticOrderDetailsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
-import { GET_DIAGNOSTIC_ORDER_LIST_DETAILS } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
+  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+} from '@aph/mobile-patients/src/graphql/profiles';
 
 const width = Dimensions.get('window').width;
 import DeviceInfo from 'react-native-device-info';
+import {
+  GetSubscriptionsOfUserByStatus,
+  GetSubscriptionsOfUserByStatusVariables,
+} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export interface OrderStatusProps extends NavigationScreenProps {}
 
@@ -70,8 +78,9 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     isDiagnosticCircleSubscription,
     clearDiagnoticCartInfo,
     cartItems,
+    setIsDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
-  const { circleSubscriptionId } = useShoppingCart();
+  const { circleSubscriptionId, circlePlanSelected } = useShoppingCart();
   const client = useApolloClient();
   const { setLoading } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
@@ -84,13 +93,15 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const paymentStatus = props.navigation.getParam('paymentStatus');
   const orderCartSaving = orderDetails?.cartSaving!;
   const orderCircleSaving = orderDetails?.circleSaving!;
+  const isCircleAddedToCart = props.navigation.getParam('isCircleAddedToCart');
   const displayId = !!modifiedOrderDetails
     ? modifiedOrderDetails?.displayId
     : orderDetails?.displayId;
   const showCartSaving = orderCartSaving > 0 && orderDetails?.cartHasAll;
-  const savings = isDiagnosticCircleSubscription
-    ? Number(orderCartSaving) + Number(orderCircleSaving)
-    : orderCartSaving;
+  const savings =
+    isDiagnosticCircleSubscription || isCircleAddedToCart
+      ? Number(orderCartSaving) + Number(orderCircleSaving)
+      : orderCartSaving;
   const couldBeSaved =
     !isDiagnosticCircleSubscription && orderCircleSaving > 0 && orderCircleSaving > orderCartSaving;
 
@@ -100,6 +111,8 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       variables: { diagnosticOrderId: orderId },
       fetchPolicy: 'no-cache',
     });
+
+  //check for the savings breakdown
 
   const moveToHome = () => {
     // use apiCallsEnum values here in order to make that api call in home screen
@@ -181,7 +194,9 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   }
 
   useEffect(() => {
+    isCircleAddedToCart && setIsDiagnosticCircleSubscription?.(true);
     fetchOrderDetailsFromPayments();
+    isCircleAddedToCart && getUserSubscriptionsByStatus();
     if (modifiedOrderDetails == null) {
       postwebEngageCheckoutCompletedEvent();
     }
@@ -193,6 +208,31 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
   }, []);
+
+  //set circle sub id.
+
+  console.log({ circlePlanSelected });
+  console.log({ circleSubscriptionId });
+
+  const getUserSubscriptionsByStatus = async () => {
+    try {
+      const query: GetSubscriptionsOfUserByStatusVariables = {
+        mobile_number: g(currentPatient, 'mobileNumber'),
+        status: ['active', 'deferred_inactive'],
+      };
+      const res = await client.query<GetSubscriptionsOfUserByStatus>({
+        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+        fetchPolicy: 'no-cache',
+        variables: query,
+      });
+      const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+      // setCirclePlanDetails(data?.APOLLO?.[0]);
+      // setCircleSubscriptionID(data?.APOLLO?.[0]._id);
+      data?.APOLLO?.[0]._id && AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
+    } catch (error) {
+      CommonBugFender('OrderStatus_getUserSubscriptionsByStatus', error);
+    }
+  };
 
   const submitReviewOnLabBook = async () => {
     try {
@@ -241,6 +281,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       'Page Name': 'Dignostic Order Completed',
       'NAV Source': 'Dignostic',
     };
+    console.log({ eventAttributes });
     postCleverTapEvent(
       Platform.OS == 'android'
         ? CleverTapEventName.APP_REVIEW_AND_RATING_TO_PLAYSTORE
@@ -254,7 +295,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       ...eventAttributes,
       'Payment mode': isCOD ? 'Cash' : 'Prepaid',
       'Circle discount': circleSubscriptionId && orderCircleSaving ? orderCircleSaving : 0,
-      'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+      'Circle user': isDiagnosticCircleSubscription || isCircleAddedToCart ? 'Yes' : 'No',
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED, attributes);
     postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_CHECKOUT_COMPLETED, attributes);
@@ -357,9 +398,20 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
 
   const renderAmount = () => {
     return (
-      <Text style={styles.savedTxt}>
-        {isCOD ? 'Amount to be paid via cash' : 'Total amount paid'} :{' '}
-        <Text style={styles.amount}>₹ {orderDetails?.amount}</Text>
+      <Text
+        style={[
+          styles.savedTxt,
+          {
+            textAlign: isCircleAddedToCart ? 'center' : 'left',
+            lineHeight: isCircleAddedToCart ? 24 : 16,
+          },
+        ]}
+      >
+        {isCOD ? 'Amount to be paid via cash' : 'Total Amount Paid'} :{' '}
+        <Text style={styles.amount}>
+          {string.common.Rs}
+          {orderDetails?.amount}
+        </Text>
       </Text>
     );
   };
@@ -368,19 +420,22 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     return (
       <View style={styles.totalSavingOuterView}>
         {renderAmount()}
-        {!!savings && (
+        {!!savings && !isCircleAddedToCart && (
           <Text style={{ ...styles.savedTxt, marginTop: 8 }}>
             You {''}
             <Text style={styles.savedAmt}>
-              saved {string.common.Rs} {savings}
+              saved {string.common.Rs}
+              {savings}
             </Text>
             {''} on your purchase.
           </Text>
         )}
-        {((isDiagnosticCircleSubscription && orderCircleSaving > 0) ||
-          !!showCartSaving ||
-          couldBeSaved) && <Spearator style={{ marginVertical: 10 }} />}
-        {isDiagnosticCircleSubscription && orderCircleSaving > 0 && (
+        {isCircleAddedToCart
+          ? null
+          : ((isDiagnosticCircleSubscription && orderCircleSaving > 0) ||
+              !!showCartSaving ||
+              couldBeSaved) && <Spearator style={{ marginVertical: 10 }} />}
+        {isDiagnosticCircleSubscription && orderCircleSaving > 0 && !isCircleAddedToCart && (
           <>
             <View style={styles.circleSaving}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -389,7 +444,10 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
                   <Text style={styles.cartSavings}>Membership Discount</Text>
                 </View>
               </View>
-              <Text style={styles.cartSavings}>₹ {orderCircleSaving}</Text>
+              <Text style={styles.cartSavings}>
+                {string.common.Rs}
+                {orderCircleSaving}
+              </Text>
             </View>
           </>
         )}
@@ -397,11 +455,14 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
           <>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }}>
               <Text style={styles.cartSavings}>Cart Saving</Text>
-              <Text style={styles.cartSavings}>₹ {orderCartSaving}</Text>
+              <Text style={styles.cartSavings}>
+                {string.common.Rs}
+                {orderCartSaving}
+              </Text>
             </View>
           </>
         )}
-        {couldBeSavings()}
+        {circleSubscriptionId ? null : couldBeSavings()}
       </View>
     );
   };
@@ -599,14 +660,65 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     );
   };
 
+  function _navigateToCircleBenefits() {
+    props.navigation.navigate(AppRoutes.MembershipDetails, {
+      membershipType: 'CIRCLE PLAN',
+      isActive: true,
+    });
+  }
+
+  //check for expired case
+  const renderCirclePurchaseCard = () => {
+    const duration = circlePlanSelected?.durationInMonth;
+    const circlePurchasePrice = circlePlanSelected?.currentSellingPrice;
+    const validity = moment(new Date(), 'DD/MM/YYYY').add(
+      'days',
+      circlePlanSelected?.valid_duration
+    );
+    return (
+      <View style={styles.circlePurchaseDetailsCard}>
+        <View style={{ flexDirection: 'row' }}>
+          <CircleLogo style={styles.circleLogoIcon} />
+          <View style={styles.circlePurchaseDetailsView}>
+            <Text style={styles.circlePurchaseText}>
+              Congrats! You have successfully purchased the {duration} months (Trial) Circle Plan
+              for {string.common.Rs}
+              {circlePurchasePrice}
+            </Text>
+            {!!savings && (
+              <Text style={{ ...styles.savedTxt, marginTop: 8, fontWeight: '600' }}>
+                You {''}
+                <Text style={styles.savedAmt}>
+                  saved {string.common.Rs}
+                  {savings}
+                </Text>
+                {''} on your purchase.
+              </Text>
+            )}
+            <Text style={styles.circlePlanValidText}>
+              {`Valid till: ${moment(validity)?.format('D MMM YYYY')}`}
+            </Text>
+          </View>
+        </View>
+        <TouchableOpacity
+          onPress={() => _navigateToCircleBenefits()}
+          style={styles.viewAllBenefitsTouch}
+        >
+          <Text style={styles.yellowText}>VIEW ALL BENEFITS</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.DEFAULT_BACKGROUND_COLOR }}>
       <SafeAreaView style={styles.container}>
-        <ScrollView bounces={false} style={{ flex: 1 }} showsVerticalScrollIndicator={true}>
+        <ScrollView bounces={false} style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
           <View style={{ marginHorizontal: 20, marginBottom: 100 }}>
             {renderHeader()}
             {renderOrderPlacedMsg()}
             {renderCartSavings()}
+            {isCircleAddedToCart && renderCirclePurchaseCard()}
             {renderPickUpTime()}
             {renderNoticeText()}
             {/* {enable_cancelellation_policy ? renderCancelationPolicy() : null} */}
@@ -737,7 +849,7 @@ const styles = StyleSheet.create({
     marginVertical: 30,
     borderColor: theme.colors.APP_GREEN,
     borderWidth: 2,
-    borderRadius: 5,
+    borderRadius: 10,
     padding: 16,
     paddingVertical: 10,
     borderStyle: 'dashed',
@@ -877,4 +989,27 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 10, 'white'),
     textAlign: 'center',
   },
+  circlePurchaseText: { ...theme.viewStyles.text('R', 11, colors.SHERPA_BLUE, 1, 16) },
+  circlePlanValidText: {
+    ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 0.6, 16),
+    marginTop: 6,
+  },
+  viewAllBenefitsTouch: {
+    alignSelf: 'flex-end',
+    height: 25,
+    justifyContent: 'center',
+  },
+  yellowText: { ...theme.viewStyles.text('SB', 13, colors.APP_YELLOW, 1, 24) },
+  circlePurchaseDetailsCard: {
+    ...theme.viewStyles.cardContainer,
+    marginBottom: 30,
+    padding: 16,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: 'transparent',
+    borderLeftColor: '#007C9D',
+    borderLeftWidth: 4,
+  },
+  circleLogoIcon: { height: 45, width: 45, resizeMode: 'contain' },
+  circlePurchaseDetailsView: { width: '85%', marginHorizontal: 8 },
 });

@@ -90,7 +90,7 @@ export interface PaymentMethodsProps extends NavigationScreenProps {
 }
 
 export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
-  const { modifiedOrder, deliveryAddressCityId, patientCartItems } = useDiagnosticsCart();
+  const { modifiedOrder } = useDiagnosticsCart();
   const paymentId = props.navigation.getParam('paymentId');
   const customerId = props.navigation.getParam('customerId');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
@@ -104,6 +104,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const isDiagnostic = businessLine === 'diagnostics';
   const disableCod = props.navigation.getParam('disableCOD');
   const orderResponse = props.navigation.getParam('orderResponse');
+  const isCircleAddedToCart = props.navigation.getParam('isCircleAddedToCart');
   const { currentPatient } = useAllCurrentPatients();
   const [banks, setBanks] = useState<any>([]);
   const [isTxnProcessing, setisTxnProcessing] = useState<boolean>(false);
@@ -183,6 +184,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         : (setburnHc(healthCredits), setAmount(Number(Decimal.sub(amount, healthCredits))))
       : (setAmount(props.navigation.getParam('amount')), setburnHc(0));
   };
+
   async function fetchDiagnosticPaymentMethods() {
     const DEFAULT_COD_CONFIGURATION = AppConfig.Configuration.Enable_Diagnostics_COD;
     try {
@@ -570,6 +572,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           eventAttributes,
           paymentStatus: paymentStatus,
           isModify: isDiagnosticModify ? modifiedOrder : null,
+          isCircleAddedToCart: isCircleAddedToCart,
         });
         break;
       case 'consult':
