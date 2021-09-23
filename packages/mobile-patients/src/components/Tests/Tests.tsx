@@ -501,7 +501,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       fetchPatientClosedOrders();
       fetchPatientPrescriptions();
       getUserBanners();
-      // getDataFromCache();
+      getDataFromCache();
     }
   }, [currentPatient]);
 
