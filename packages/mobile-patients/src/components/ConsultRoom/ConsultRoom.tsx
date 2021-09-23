@@ -4155,18 +4155,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const searchResultsTabHeader: searchHeaders = {
     MEDICATION: {
-      title: 'Search In Medicines',
-      icon: (s: any) => <MedicineIcon style={[{ width: 20, height: 20, marginLeft: 8 }, ...s]} />,
+      title: 'In Medicines',
+      icon: (s: any) => <MedicineIcon style={{ width: 20, height: 20, marginLeft: 8, ...s }} />,
       backgroundColor: '#EAF6FF',
     },
     TEST_REPORT: {
       title: 'In Lab Tests',
-      icon: (s: any) => <TestsCartIcon style={[{ width: 20, height: 20, marginLeft: 8 }, ...s]} />,
+      icon: (s: any) => <TestsCartIcon style={{ width: 20, height: 20, marginLeft: 8, ...s }} />,
       backgroundColor: '#FEE7DA',
     },
     CONSULTATION: {
       title: 'In Consult',
-      icon: (s: any) => <DoctorIcon style={[{ width: 20, height: 20, marginLeft: 8 }, ...s]} />,
+      icon: (s: any) => <DoctorIcon style={{ width: 20, height: 20, marginLeft: 8, ...s }} />,
       backgroundColor: '#E5FFFD',
     },
   };
@@ -4320,26 +4320,27 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderSearchResults = () => {
     return (
-      <View style={{ width: width, marginBottom: 6, padding: 16, backgroundColor: '#fff' }}>
-        <View
-          style={{
-            height: 1.5,
-            backgroundColor: '#D4D4D4',
-            marginTop: -4,
-            marginBottom: 4,
-            marginHorizontal: -16,
-          }}
-        />
-        {console.log('csk total', searchResults.length)}
-        <FlatList
-          keyExtractor={(_, index) => `${index}`}
-          bounces={false}
-          data={searchResults}
-          ListEmptyComponent={renderGlobalSearchNoResults()}
-          // ListHeaderComponent={searchListHeaderView}
-          renderItem={({ item, index }) => renderSearchItem(item, index)}
-        />
-      </View>
+      <ScrollView style={{ flex: 1 }} bounces={false}>
+        <View style={{ width: width, marginBottom: 6, padding: 16, backgroundColor: '#fff' }}>
+          <View
+            style={{
+              height: 1.5,
+              backgroundColor: '#D4D4D4',
+              marginTop: -4,
+              marginBottom: 4,
+              marginHorizontal: -16,
+            }}
+          />
+          {console.log('csk total', searchResults.length)}
+          <FlatList
+            keyExtractor={(_, index) => `${index}`}
+            bounces={false}
+            data={searchResults}
+            ListEmptyComponent={renderGlobalSearchNoResults()}
+            renderItem={({ item, index }) => renderSearchItem(item, index)}
+          />
+        </View>
+      </ScrollView>
     );
   };
 
@@ -4363,6 +4364,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderSearchItem = ({ key, data }: any, index: number) => {
+    key === MedicalRecordType.MEDICATION ? console.log('csk med', JSON.stringify(data)) : null;
     return (
       <TouchableOpacity onPress={() => onClickSearchItem(key)}>
         <View
@@ -4457,6 +4459,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           >
             {key === MedicalRecordType.TEST_REPORT
               ? item?.diagnostic_item_name
+              : key === MedicalRecordType.MEDICATION
+              ? item?.sku
               : string.home.search_not_available}
           </Text>
           <Text
