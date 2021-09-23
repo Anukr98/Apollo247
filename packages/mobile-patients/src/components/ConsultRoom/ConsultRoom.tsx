@@ -50,6 +50,7 @@ import {
   TestsCartIcon,
   TestsIcon,
   WhiteArrowRightIcon,
+  ArrowRight,
   VaccineTracker,
   CrossPopup,
   ProHealthIcon,
@@ -4348,26 +4349,120 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const renderSearchItem = (item: any, index: number) => {
+  const renderSearchItem = ({ key, data }: any, index: number) => {
     return (
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          backgroundColor: '#EAF6FF',
-          marginVertical: 16,
-          paddingVertical: 8,
-        }}
-      >
-        {searchResultsTabHeader[item?.key].icon()}
-        <Text
+      <View>
+        <View
           style={{
-            ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
-            marginLeft: 14,
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: '#EAF6FF',
+            marginVertical: 16,
+            paddingVertical: 8,
           }}
         >
-          {searchResultsTabHeader[item?.key].title}
-        </Text>
+          {searchResultsTabHeader[key].icon()}
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
+              marginLeft: 14,
+            }}
+          >
+            {searchResultsTabHeader[key].title}
+          </Text>
+        </View>
+        <FlatList
+          keyExtractor={(_, index) => `${key},${index}`}
+          bounces={false}
+          data={data}
+          ListEmptyComponent={
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <SearchNoResultIcon style={{ width: 26, height: 26 }} />
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+                  marginLeft: 14,
+                }}
+              >
+                {string.home.search_not_available}
+              </Text>
+            </View>
+          }
+          renderItem={({ item, index }) => renderSearchItemDetails(item, index, key)}
+        />
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginVertical: 4,
+            paddingVertical: 2,
+            justifyContent: 'space-between',
+          }}
+        >
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 15, theme.colors.APP_YELLOW, 1, 24),
+            }}
+          >
+            View All Results {searchResultsTabHeader[key].title}
+          </Text>
+
+          <ArrowRight />
+        </View>
+      </View>
+    );
+  };
+
+  const renderSearchItemDetails = (item: any, index: number, key: string) => {
+    return (
+      <View style={{ marginBottom: 6 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View
+            style={{
+              padding: 6,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 5,
+              borderWidth: 1.5,
+              borderStyle: 'solid',
+              borderColor: '#D4D4D4',
+              width: 36,
+              height: 36,
+            }}
+          >
+            <MedicineIcon style={{ width: 26, height: 26 }} />
+          </View>
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+              marginLeft: 14,
+            }}
+          >
+            {key === MedicalRecordType.TEST_REPORT
+              ? item?.diagnostic_item_name
+              : string.home.search_not_available}
+          </Text>
+          <Text
+            style={{
+              ...theme.viewStyles.text('R', 12, theme.colors.LIGHT_BLUE, 1, 14),
+              marginLeft: 14,
+            }}
+          >
+            {key === MedicalRecordType.TEST_REPORT
+              ? `Total Tests - ${item?.diagnostic_inclusions.length}`
+              : null}
+          </Text>
+          <ArrowRight style={{ marginLeft: 'auto' }} />
+        </View>
+        <View
+          style={{
+            height: 1.5,
+            backgroundColor: '#D4D4D4',
+            marginTop: 2,
+            marginBottom: 4,
+            marginHorizontal: -16,
+          }}
+        />
       </View>
     );
   };
