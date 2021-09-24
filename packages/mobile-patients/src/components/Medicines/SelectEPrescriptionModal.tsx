@@ -324,10 +324,6 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
       return
     }
     if (medPrismerror) {
-      handleGraphQlError(
-        medPrismerror,
-        'Oops! seems like we are having an issue. Please try again.'
-      );
       CommonBugFender('SelectEPrescriptionModal_medPrismerror', medPrismerror);
     }
   }, [medPrismerror]);
