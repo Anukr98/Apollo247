@@ -764,11 +764,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       String(orderId),
       slotInfo,
       formattedDate,
-      String(selectedOrderId),
-      currentPatient,
-      isDiagnosticCircleSubscription
-    );
-    rescheduleOrder(rescheduleDiagnosticsInput)
+      comment,
+      selectRescheduleReason,
+      DiagnosticsRescheduleSource.MOBILE
+    )
       .then((data) => {
         const rescheduleResponse = data?.data?.rescheduleDiagnosticsOrderv2!;
         if (
@@ -786,10 +785,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             selectRescheduleReason,
             formatTime,
             formattedDate,
-            String(selectedOrder?.id),
-            selectedOrder?.displayId!,
+            String(selectedOrder?.displayId!),
             currentPatient,
-            selectedOrder?.patientObj!
+            selectedOrder?.patientObj!,
+            isDiagnosticCircleSubscription
           );
           rescheduleSelectedOrder(obj);
           showAphAlert?.({
@@ -1618,7 +1617,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   }
 
   function _onPressAddTest(order: orderList) {
-    DiagnosticAddTestClicked(order?.id, currentPatient, order?.orderStatus, isDiagnosticCircleSubscription);
+    DiagnosticAddTestClicked(
+      order?.id,
+      currentPatient,
+      order?.orderStatus,
+      isDiagnosticCircleSubscription
+    );
 
     //clear the cart, if it has some duplicate item present.
     const getOrderItems = order?.diagnosticOrderLineItems?.map(

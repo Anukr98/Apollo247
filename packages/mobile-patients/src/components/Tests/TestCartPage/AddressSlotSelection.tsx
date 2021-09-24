@@ -327,7 +327,14 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
     const slotDate = moment(diagnosticSlot?.selectedDate)?.format('DD-MM-YYYY');
     const numberOfSlots = selectedTimeSlot?.slotInfo?.internalSlots?.length;
 
-    DiagnosticAppointmentTimeSlot(slotType, slotTime, numberOfSlots, slotDate);
+    DiagnosticAppointmentTimeSlot(
+      slotType,
+      slotTime,
+      numberOfSlots,
+      slotDate,
+      currentPatient,
+      isDiagnosticCircleSubscription
+    );
   }
 
   const disableCTA = !(

@@ -82,7 +82,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   let actualItemsToShow = diagnosticWidgetData?.length > 0 && diagnosticWidgetData;
   const { currentPatient } = useAllCurrentPatients();
-  const {isDiagnosticCircleSubscription} = useDiagnosticsCart()
+  const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const renderItemCard = useCallback(
     (item: any) => {
       const getItem = item?.item;
@@ -346,7 +346,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     const planToConsider = pricesForItem?.planToConsider;
     const discountToDisplay = pricesForItem?.discountToDisplay;
     const mrpToDisplay = pricesForItem?.mrpToDisplay;
-    const widgetType = data?.diagnosticWidgetType;
+    const widgetType = data?.diagnosticWidgetType?.toLowerCase();
 
     const inclusions =
       !!item?.inclusionData && item.inclusionData.map((item: any) => Number(item?.incItemId));
@@ -399,7 +399,14 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
   }
 
   function postHomePageWidgetClicked(name: string, id: string, section: string) {
-    DiagnosticHomePageWidgetClicked(currentPatient,section, id, name, '' , isDiagnosticCircleSubscription);
+    DiagnosticHomePageWidgetClicked(
+      currentPatient,
+      section,
+      id,
+      name,
+      '',
+      isDiagnosticCircleSubscription
+    );
   }
 
   function onPress(item: any, packageCalculatedMrp: number, pricesForItem: any) {

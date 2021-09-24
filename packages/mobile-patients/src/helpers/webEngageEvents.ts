@@ -180,7 +180,6 @@ export enum WebEngageEventName {
   USER_LOCATION_CONSULT = 'User Location consult',
   USER_CHANGED_LOCATION = 'Change location',
   // Diagnostics Events
-  DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
   DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'Diagnostic pincode entered',
   DIAGNOSTIC_LANDING_ITEM_SEARCHED = 'Diagnostic partial search',
   DIAGNOSTIC_ITEM_SEARCHED = 'Diagnostic full search',
@@ -197,7 +196,6 @@ export enum WebEngageEventName {
   DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE = 'Diagnostic add item clicked',
 
   DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE = 'Address Non Serviceable on Diagnostic Cart Page',
-  DIAGNOSTIC_AREA_SELECTED = 'Diagnostic Area Selected on Cart',
   DIAGNOSTIC_SLOT_TIME_SELECTED = 'Diagnostic slot time selected',
   DIAGNOSTIC_MAKE_PAYMENT_CLICKED = 'Diagnostic make payment clicked',
   DIAGNOSTIC_PATIENT_SELECTED = 'Diagnostic patient selected',
@@ -539,12 +537,7 @@ export interface DiagnosticUserInfo {
   'Patient Gender': string;
   'Patient Name': string;
   'Patient Age': number;
-}
-
-export interface DiagnosticLandingPage extends DiagnosticUserInfo {
-  Serviceability: 'Yes' | 'No';
-  Source?: string;
-  'Circle user': 'Yes' | 'No';
+  'User Type'?: any
 }
 
 export interface DiagnosticServiceble {
@@ -690,6 +683,7 @@ export interface ItemSearchedOnLanding extends DiagnosticUserInfo {
   '# Results appeared': number;
   'Item in Results'?: object[];
   Popular?: 'Yes' | 'No';
+  'Circle user': string;
 }
 
 export interface ItemClickedOnLanding extends DiagnosticUserInfo {
@@ -699,9 +693,9 @@ export interface ItemClickedOnLanding extends DiagnosticUserInfo {
 export interface DiagnosticPinCode extends DiagnosticUserInfo {
   Pincode: number | string;
   Serviceability: 'Yes' | 'No';
-  Source : DIAGNOSTIC_PINCODE_SOURCE_TYPE
+  Source : DIAGNOSTIC_PINCODE_SOURCE_TYPE,
+  'Circle user'?: 'Yes' | 'No'
 }
-
 export interface DoctorFilterClick {
   'Patient Name': string;
   'Patient UHID': string;
@@ -1213,7 +1207,6 @@ export interface WebEngageEvents {
 
   // ********** Diagnostic Events *******
 
-  [WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED]: DiagnosticLandingPage;
   [WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED]: ItemSearchedOnLanding;
   [WebEngageEventName.DIAGNOSTIC_ITEM_SEARCHED]: ItemSearchedOnLanding;
   [WebEngageEventName.DIAGNOSTIC_MY_ORDERS]: {
@@ -1259,6 +1252,7 @@ export interface WebEngageEvents {
     'Patient UHID': string;
     'Item ID': string | number;
     'Item Price'?: number | string;
+    'Circle user'?: string;
   };
 
   [WebEngageEventName.DIAGNOSTIC_CART_VIEWED]: {
@@ -1273,15 +1267,12 @@ export interface WebEngageEvents {
     Pincode: string | number;
     UHID: string;
   };
-  [WebEngageEventName.DIAGNOSTIC_AREA_SELECTED]: {
-    'Address Pincode': number;
-    'Area Selected': string;
-  };
   [WebEngageEventName.DIAGNOSTIC_SLOT_TIME_SELECTED]: {
     'Slot time': string;
     'No. of slots' : number;
     'Slot date' : string;
-    'Type': DIAGNOSTIC_SLOT_TYPE
+    'Type': DIAGNOSTIC_SLOT_TYPE.FREE;
+    'Circle user': string;
   };
   [WebEngageEventName.DIAGNOSTIC_MAKE_PAYMENT_CLICKED]: {
     'No. of patients': number;
@@ -1320,8 +1311,6 @@ export interface WebEngageEvents {
       | 'Copy Link to PDF';
   };
   [WebEngageEventName.DIAGNOSTIC_FEEDBACK_GIVEN]: {
-    'Patient UHID': string;
-    'Patient Name': string;
     Rating: string | number;
     'Thing to Improve selected': string;
   };
@@ -1330,6 +1319,7 @@ export interface WebEngageEvents {
     'Item ID': string; // (SKUID)
     Source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
     Section?: string;
+    'Circle user': string;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order id': any;

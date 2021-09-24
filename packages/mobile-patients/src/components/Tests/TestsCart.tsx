@@ -1,3 +1,6 @@
+/**
+ * this file needs to be removed on future releases.
+ */
 import {
   aphConsole,
   formatAddress,
@@ -159,7 +162,6 @@ import {
   DiagnosticAddresssSelected,
   DiagnosticAddToCartClicked,
   DiagnosticAppointmentTimeSlot,
-  DiagnosticAreaSelected,
   DiagnosticCartViewed,
   DiagnosticModifyOrder,
   DiagnosticNonServiceableAddressSelected,
@@ -753,8 +755,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const setWebEngageEventForAreaSelection = (item: areaObject) => {
     const area = String(item?.value);
     const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
-
-    DiagnosticAreaSelected(selectedAddr, area);
   };
 
   const setWebEnageEventForAppointmentTimeSlot = (
@@ -1265,14 +1265,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   function _navigateToSearch() {
-    DiagnosticAddToCartClicked(pinCode,currentPatient);
+    DiagnosticAddToCartClicked(pinCode, currentPatient);
     props.navigation.navigate(AppRoutes.SearchTestScene, {
       searchText: '',
     });
   }
 
   function _navigateToHomePage() {
-    DiagnosticAddToCartClicked(pinCode,currentPatient);
+    DiagnosticAddToCartClicked(pinCode, currentPatient);
     props.navigation.navigate('TESTS', { focusSearch: true });
   }
 
