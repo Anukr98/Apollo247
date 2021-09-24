@@ -83,7 +83,6 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
-import { CheckBox } from 'react-native-elements'
 
 const styles = StyleSheet.create({
   container: {
@@ -178,7 +177,6 @@ const SignUp: React.FC<SignUpProps> = (props) => {
   const [showReferralCode, setShowReferralCode] = useState<boolean>(false);
   const [oneApolloRegistrationCalled, setoneApolloRegistrationCalled] = useState<boolean>(false);
   const isOneTimeUpdate = useRef<boolean>(false);
-  // const [whatsAppOptin, setWhatsAppOptin] = useState<boolean>(false)
 
   useEffect(() => {
     const isValidReferralCode = /^[a-zA-Z]{4}[0-9]{4}$/.test(referral);
@@ -476,17 +474,6 @@ const SignUp: React.FC<SignUpProps> = (props) => {
             autoCapitalize="none"
             keyboardType="email-address"
           />
-          {/* <View style = {{ marginVertical: 20 }}>
-            <View style = {{ flexDirection: "row", alignItems: "center" }}>
-              <View style = {{ width: "15%"}}>
-                <CheckBox checked = {whatsAppOptin} checkedColor = {"gray"} uncheckedColor = {"gray"} size = {15} onPress = {() => setWhatsAppOptin(!whatsAppOptin)} />
-              </View>
-              <Text>Send me personalised health tips and offers on</Text>
-              <View style = {{ marginLeft: 2 }}>
-                <Image source = {require('../../src/images/apollo/whatsapp.png')} style = {{ height: 20, width: 20 }} />
-              </View>
-            </View>
-          </View> */}
           {showReferralCode && renderReferral()}
         </Card>
       </View>
@@ -662,7 +649,6 @@ const SignUp: React.FC<SignUpProps> = (props) => {
 
                       const patientsDetails: UpdatePatientInput = {
                         id: mePatient.id,
-                        // whatsappOptIn: whatsAppOptin,
                         mobileNumber: mePatient.mobileNumber,
                         firstName: firstName.trim(),
                         lastName: lastName.trim(),

@@ -200,7 +200,6 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     if (checkoutEventAttributes && cleverTapCheckoutEventAttributes) {
       const paymentEventAttributes = {
         af_order_id: orderId,
-        // order_Id: orderId,
         order_AutoId: orderAutoId,
         LOB: 'Pharmacy',
         Payment_Status: !!isSuccess ? 'PAYMENT_SUCCESS' : 'PAYMENT_PENDING',
