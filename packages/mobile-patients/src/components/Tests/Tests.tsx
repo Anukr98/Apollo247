@@ -1418,7 +1418,7 @@ const setBannerDataToCache = async() => {
     const showViewAll = !!isPricesAvailable && data?.diagnosticWidgetData?.length > 2;
     const lengthOfTitle = data?.diagnosticWidgetTitle?.length;
     return (
-      <View>
+      <View style={styles.widgetSpacing}>
         {
           <>
             {sectionLoading ? (
@@ -1490,7 +1490,7 @@ const setBannerDataToCache = async() => {
     const lengthOfTitle = data?.diagnosticWidgetTitle?.length;
 
     return (
-      <View>
+      <View style={styles.widgetSpacing}>
         {
           <>
             {sectionLoading ? (
