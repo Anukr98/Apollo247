@@ -101,6 +101,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   const [EPrescriptionsProps, setEPrescriptionsProps] = useState<EPrescription[]>(
     ePrescriptionsProp
   );
+  const { setEPrescriptions, setPhysicalPrescriptions } = useShoppingCart();
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const [testName, settestName] = useState<string>('');
   const [locationName, setLocationName] = useState<string>('');
@@ -402,7 +403,14 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
               disabled={EPrescriptionsProps?.length || PhysicalPrescriptionsProps?.length ? false : true}
               onPress={() => {
                 if (onSumbitSuccess) {
-                  props.navigation.navigate('TESTS');
+                  setEPrescriptions?.([]);
+                  setPhysicalPrescriptions?.([]);
+                  props.navigation.navigate('TESTS',{
+                  phyPrescriptionUploaded: [],
+                  ePresscriptionUploaded: [],
+                  phyPrescriptionsProp: [],
+                  ePrescriptionsProp: []
+                  });
                 } else {
                   onSubmitPrescription();
                 }
