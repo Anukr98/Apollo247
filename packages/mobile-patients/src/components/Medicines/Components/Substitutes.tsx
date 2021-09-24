@@ -191,9 +191,9 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
     <View>
       <Text style={theme.viewStyles.text('M', 12, '#01475b', 1, 15, 0)}>Delivery By</Text>
       <Text style={theme.viewStyles.text('M', 12, '#01475b', 1, 15, 0)}>
-        {moment(new Date(tat), AppConfig.Configuration.MED_DELIVERY_DATE_TAT_API_FORMAT).format(
-          'D MMM | hh:mm A'
-        )}
+        {moment
+          .utc(new Date(tat), AppConfig.Configuration.MED_DELIVERY_DATE_TAT_API_FORMAT)
+          .format('D MMM | hh:mm A')}
       </Text>
     </View>
   );
