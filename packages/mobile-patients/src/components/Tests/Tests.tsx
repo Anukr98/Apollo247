@@ -163,6 +163,7 @@ import {
   makeAdressAsDefaultVariables,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { Cache } from "react-native-cache";
 
 import {
   getDiagnosticOrdersListByMobile,
@@ -261,6 +262,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [currentOffset, setCurrentOffset] = useState<number>(1);
 
   const [sectionLoading, setSectionLoading] = useState<boolean>(false);
+  const [showItemCard, setShowItemCard] = useState<boolean>(false);
   const [bookUsSlideIndex, setBookUsSlideIndex] = useState(0);
   const [showbookingStepsModal, setShowBookingStepsModal] = useState(false);
 
@@ -290,6 +292,29 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
 
+  const cache = new Cache({
+    namespace: "tests",
+    policy: {
+        maxEntries: 100
+    },
+    backend: AsyncStorage
+});
+useEffect(() => {
+  if (!(bannerData && bannerData?.length) ) {
+    setBannerDataToCache()
+  }
+}, [bannerData])
+
+  
+const getDataFromCache = async() => {
+    const banner_data = await cache.get('banner_data');
+    setBannerData && setBannerData(banner_data)
+}
+
+const setBannerDataToCache = async() => {
+  const banner_data = bannerData && bannerData?.length ? bannerData : [];
+  await cache.set('banner_data', banner_data);
+}
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
       query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
@@ -402,6 +427,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       fetchPatientClosedOrders();
       fetchPatientPrescriptions();
       getUserBanners();
+      getDataFromCache()
     }
   }, [currentPatient]);
 
@@ -579,9 +605,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setReloadWidget(true);
     }
   };
-
   const getHomePageWidgets = async (cityId: string) => {
-    setSectionLoading(true);
     try {
       const result: any = await getDiagnosticHomePageWidgets('diagnostic', Number(cityId));
       if (result?.data?.success && result?.data?.data?.length > 0) {
@@ -589,7 +613,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
           (a: any, b: any) =>
             Number(a.diagnosticwidgetsRankOrder) - Number(b.diagnosticwidgetsRankOrder)
         );
+        setCityId(cityId);
         //call here the prices.
+        setWidgetsData(sortWidgets);
+        setIsPriceAvailable(false);
+        setSectionLoading(false);
+        setShowItemCard(true);
         fetchWidgetsPrices(sortWidgets, cityId);
       } else {
         setSectionLoading(false);
@@ -1364,13 +1393,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const showViewAll = !!isPricesAvailable && data?.diagnosticWidgetData?.length > 2;
     const lengthOfTitle = data?.diagnosticWidgetTitle?.length;
     return (
-      <View style={!!isPricesAvailable ? styles.widgetSpacing : {}}>
-        {!!isPricesAvailable ? (
+      <View style={styles.widgetSpacing}>
+        {
           <>
             {sectionLoading ? (
               renderDiagnosticWidgetHeadingShimmer() //load heading
             ) : (
-              <SectionHeader
+              !!isPricesAvailable ? <SectionHeader
                 leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
                 leftTextStyle={[
                   styles.widgetHeading,
@@ -1398,12 +1427,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
                       }
                     : undefined
                 }
-                style={
-                  showViewAll
-                    ? { paddingBottom: 1, borderBottomWidth: 0 }
-                    : { borderBottomWidth: 0 }
-                }
-              />
+                style={showViewAll ? { paddingBottom: 1 } : {}}
+              /> : null
             )}
             {sectionLoading ? (
               renderDiagnosticWidgetShimmer(false) //to load package card
@@ -1426,9 +1451,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               />
             )}
           </>
-        ) : sectionLoading ? (
-          renderDiagnosticWidgetShimmer(true) //to show overall widget
-        ) : null}
+        }
       </View>
     );
   };
@@ -1442,13 +1465,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const lengthOfTitle = data?.diagnosticWidgetTitle?.length;
 
     return (
-      <View style={!!isPricesAvailable ? styles.widgetSpacing : {}}>
-        {!!isPricesAvailable ? (
+      <View style={styles.widgetSpacing}>
+        {
           <>
             {sectionLoading ? (
               renderDiagnosticWidgetHeadingShimmer() //load heading
             ) : (
-              <SectionHeader
+              !!isPricesAvailable ? <SectionHeader
                 leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
                 leftTextStyle={[
                   styles.widgetHeading,
@@ -1476,12 +1499,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
                       }
                     : undefined
                 }
-                style={
-                  showViewAll
-                    ? { paddingBottom: 1, borderBottomWidth: 0 }
-                    : { borderBottomWidth: 0 }
-                }
-              />
+                style={showViewAll ? { paddingBottom: 1 } : {}}
+              /> : null
             )}
             {sectionLoading ? (
               renderDiagnosticWidgetShimmer(false) //load package card
@@ -1499,9 +1518,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               />
             )}
           </>
-        ) : sectionLoading ? (
-          renderDiagnosticWidgetShimmer(true) //load overall widget
-        ) : null}
+      }
       </View>
     );
   };
@@ -2245,7 +2262,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <View style={{ marginBottom: 24 }}>
         <SectionHeader
-          leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')} //nameFormater(data?.diagnosticWidgetTitle, 'upper')
+          leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
           leftTextStyle={[
             styles.widgetHeading,
             {
@@ -2253,7 +2270,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             },
           ]}
           rightText={showViewAll ? 'VIEW ALL' : ''}
-          rightTextStyle={styles.widgetViewAllText} //showViewAll ? styles.widgetViewAllText : {}
+          rightTextStyle={styles.widgetViewAllText}
           onPressRightText={() => {
             props.navigation.navigate(AppRoutes.TestWidgetListing, {
               movedFrom: AppRoutes.Tests,
