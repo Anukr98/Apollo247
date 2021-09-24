@@ -134,7 +134,8 @@ interface AphConsole {
 type ConsultPermissionScreenName =
   | 'Home Screen'
   | 'Payment Confirmation Screen'
-  | 'Appointment Screen';
+  | 'Appointment Screen'
+  | 'Consult Chat Screen';
 
 export interface TestSlot {
   employeeCode: string;

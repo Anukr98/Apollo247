@@ -173,6 +173,22 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
     });
     return imagesArray;
   };
+  useEffect(() => {
+    if (EPrescriptionsProps && EPrescriptionsProps?.length) {
+      const ePrescriptionArray = EPrescriptionsProps?.filter(
+        (item: any, index: any) =>
+          EPrescriptionsProps?.findIndex((obj) => obj?.id == item?.id) === index
+      );
+      setEPrescriptionsProps(ePrescriptionArray)
+    }
+    if (PhysicalPrescriptionsProps && PhysicalPrescriptionsProps?.length) {
+      const phyPrescriptionArray = PhysicalPrescriptionsProps?.filter(
+        (item: any, index: any) =>
+        PhysicalPrescriptionsProps?.findIndex((obj) => obj?.title == item?.title) === index
+      );
+      setPhysicalPrescriptionsProps(phyPrescriptionArray)
+    }
+  }, [])
 
   const getAddedImages = () => {
     let imagesArray = [] as any;
@@ -190,17 +206,17 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   
   const onSubmitPrescription = () => {
     const inputData: AddPrescriptionRecordInput = {
-      id: EPrescriptionsProps?.[0]?.id ? EPrescriptionsProps?.[0]?.id : '',
+      id: PhysicalPrescriptionsProps?.length ? '' : EPrescriptionsProps?.[0]?.id ? EPrescriptionsProps?.[0]?.id : '',
       patientId: currentPatient?.id || '',
-      prescriptionName: EPrescriptionsProps?.[0]?.fileName
-        ? EPrescriptionsProps?.[0]?.fileName
-        : PhysicalPrescriptionsProps?.[0]?.title
+      prescriptionName: PhysicalPrescriptionsProps?.[0]?.title
         ? PhysicalPrescriptionsProps?.[0]?.title
+        : EPrescriptionsProps?.[0]?.fileName
+        ? EPrescriptionsProps?.[0]?.fileName
         : '',
-      issuingDoctor: EPrescriptionsProps?.[0]?.doctorName ? EPrescriptionsProps?.[0]?.doctorName : '',
+      issuingDoctor: PhysicalPrescriptionsProps?.length ? '' : EPrescriptionsProps?.[0]?.doctorName ? EPrescriptionsProps?.[0]?.doctorName : '',
       location: locationName,
       additionalNotes: additionalNotes,
-      dateOfPrescription: EPrescriptionsProps?.[0]?.date
+      dateOfPrescription: PhysicalPrescriptionsProps?.length ? moment().format('YYYY-MM-DD') : EPrescriptionsProps?.[0]?.date
         ? moment(EPrescriptionsProps?.[0]?.date, 'DD MMM YYYY').format('YYYY-MM-DD')
         : moment().format('YYYY-MM-DD'),
       recordType: MedicalRecordType.PRESCRIPTION,
@@ -210,9 +226,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         ? setUploadedImages(EPrescriptionsProps)
         : [],
     };
-    if (EPrescriptionsProps && EPrescriptionsProps?.length) {
-      setOnSumbitSuccess(true);
-    } else {
+    if (PhysicalPrescriptionsProps && PhysicalPrescriptionsProps?.length) {
     client
       .mutate<addPatientPrescriptionRecord>({
         mutation: ADD_PRESCRIPTION_RECORD,
@@ -235,6 +249,8 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         setIsErrorOccured(true);
         CommonBugFender('SubmittedPrescription_ADD_PRESCRIPTION_RECORD', error);
       });
+    } else {
+      setOnSumbitSuccess(true)
     }
   };
   const renderErrorMessage = () => {
@@ -304,7 +320,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                           <View style={styles.phyView}>
                             <View style={styles.phyView2}>
                               <View style={styles.phyView3}>
-                                {item.fileType == 'pdf' ? (
+                                {item.fileType == 'application/pdf' || item.fileType == 'pdf'  ? (
                                   <Pdf style={styles.pdfIconStyle} />
                                 ) : (
                                   <Image
@@ -321,7 +337,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                                 (_item) => _item?.title != item?.title
                               );
                               setPhysicalPrescriptionsProps([...filteredPres]);
-                            }} style={{ justifyContent: 'center' }}>
+                            }} style={{ justifyContent: 'center',alignItems: 'center' }}>
                               <RemoveIcon />
                             </TouchableOpacity>
                           </View>
@@ -423,6 +439,7 @@ const styles = StyleSheet.create({
     color: theme.colors.FILTER_CARD_LABEL,
     ...theme.fonts.IBMPlexSansMedium(14),
     alignSelf: 'center',
+    width:'80%'
   },
   healthText: {
     color: theme.colors.FILTER_CARD_LABEL,
