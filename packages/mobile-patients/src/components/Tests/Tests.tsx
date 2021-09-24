@@ -591,7 +591,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setIsPrescriptionGallery(false)
       setIsPrescriptionUpload(true)
     }
-  }, [movedFrom])
+  }, [props.navigation])
 
   useEffect(() => {
     // getting diagnosticUserType from asyncStorage
