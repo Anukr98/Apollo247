@@ -35,6 +35,7 @@ import {
   GET_PATIENT_ADDRESS_LIST,
   GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
   SET_DEFAULT_ADDRESS,
+  GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import {
@@ -164,6 +165,8 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 
+import { getDiagnosticOrdersListByMobile, getDiagnosticOrdersListByMobileVariables } from '../../graphql/types/getDiagnosticOrdersListByMobile';
+// import { Cache } from "react-native-cache";
 const rankArr = ['1', '2', '3', '4', '5', '6'];
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
@@ -257,6 +260,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [imgHeight, setImgHeight] = useState(200);
   const [slideIndex, setSlideIndex] = useState(0);
   const [banners, setBanners] = useState([]);
+  const [cityId, setCityId] = useState('');
+  const [currentOffset, setCurrentOffset] = useState<number>(1);
 
   const [sectionLoading, setSectionLoading] = useState<boolean>(false);
   const [bookUsSlideIndex, setBookUsSlideIndex] = useState(0);
@@ -301,6 +306,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
       fetchPolicy: 'no-cache',
     });
 
+  const setWebEnageEventForPinCodeClicked = (
+    mode: string,
+    pincode: string,
+    serviceable: boolean
+  ) => {
+    DiagnosticPinCodeClicked(currentPatient, mode, pincode, serviceable, isDiagnosticCircleSubscription);
+  };
+
   const postDiagnosticAddToCartEvent = (
     name: string,
     id: string,
@@ -309,7 +322,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
     section?: 'Featured tests' | 'Browse packages'
   ) => {
-    DiagnosticAddToCartEvent(name, id, price, discountedPrice, source, section);
+    DiagnosticAddToCartEvent(name, id, price, discountedPrice, source, section, currentPatient, isDiagnosticCircleSubscription);
   };
 
   useEffect(() => {
@@ -484,6 +497,55 @@ export const Tests: React.FC<TestsProps> = (props) => {
     } catch (error) {
       setPatientClosedOrders([]);
       CommonBugFender('fetchPatientOpenOrders_Tests', error);
+    }
+  };
+  
+  useEffect(() => {
+    // getting diagnosticUserType from asyncStorage
+    const fetchUserType = async () => {
+      try {
+        const diagnosticUserType = await AsyncStorage.getItem('diagnosticUserType');
+        if (diagnosticUserType == null) {
+          fetchOrders();
+        }
+      } catch (error) {
+        fetchOrders();
+      }
+    };
+    fetchUserType();
+  }, []);
+  const fetchOrders = async () => {
+    //for checking whether user is new or repeat.
+    try {
+      setLoading?.(true);
+      client
+        .query<getDiagnosticOrdersListByMobile, getDiagnosticOrdersListByMobileVariables>({
+          query: GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
+          context: {
+            sourceHeaders,
+          },
+          variables: {
+            mobileNumber: currentPatient && currentPatient.mobileNumber,
+            paginated: true,
+            limit: 1, //decreased limit to 1 because we only need to check whether user had any single order or not
+            offset: currentOffset,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((data) => {
+          const ordersList = data?.data?.getDiagnosticOrdersListByMobile?.ordersList || [];
+          const diagnosticUserType = ordersList?.length > 0 ? string.user_type.REPEAT : string.user_type.NEW;
+          AsyncStorage.setItem('diagnosticUserType', JSON.stringify(diagnosticUserType));
+        })
+        .catch((error) => {
+          setLoading?.(false);
+          setError(true);
+          CommonBugFender(`${AppRoutes.Tests}_fetchOrders`, error);
+        });
+    } catch (error) {
+      setLoading?.(false);
+      setError(true);
+      CommonBugFender(`${AppRoutes.Tests}_fetchOrders`, error);
     }
   };
 
@@ -787,8 +849,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setDiagnosticServiceabilityData?.(obj); //sets the city,state, and there id's
             setDiagnosticLocationServiceable?.(true);
             setServiceabilityMsg('');
-            setUnserviceablePopup(false);
-            !!source && DiagnosticPinCodeClicked(currentPatient, pincode, true, source);
+            mode && setWebEnageEventForPinCodeClicked(mode, pincode, true);
+            comingFrom == 'defaultAddress' &&
+              DiagnosticAddresssSelected('Existing', 'Yes', pincode, 'Home page',currentPatient, isDiagnosticCircleSubscription);
+            comingFrom == 'newAddress' &&
+              DiagnosticAddresssSelected('New', 'Yes', pincode, 'Home page',currentPatient, isDiagnosticCircleSubscription);
           } else {
             //null in case of non-serviceable
             obj = getNonServiceableObject();
@@ -1261,11 +1326,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       if (item?.redirectUrl && item?.redirectUrl != '') {
         //for rtpcr - drive through - open webview
         if (item?.redirectUrlText === 'WebView') {
-          DiagnosticBannerClick(
-            slideIndex + 1,
-            Number(item?.itemId || item?.id),
-            item?.bannerTitle
-          );
+          DiagnosticBannerClick(slideIndex + 1, Number(item?.itemId), item?.bannerTitle, currentPatient,isDiagnosticCircleSubscription);
           try {
             const openUrl = item?.redirectUrl || AppConfig.Configuration.RTPCR_Google_Form;
             props.navigation.navigate(AppRoutes.CovidScan, {
@@ -1292,13 +1353,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
             }
           } catch (error) {}
           if (route == 'testdetails') {
-            DiagnosticBannerClick(slideIndex + 1, Number(itemId), item?.bannerTitle);
+            DiagnosticBannerClick(slideIndex + 1, Number(itemId), item?.bannerTitle, currentPatient, isDiagnosticCircleSubscription);
             props.navigation.navigate(AppRoutes.TestDetails, {
               itemId: itemId,
               comingFrom: AppRoutes.Tests,
             });
           } else if (route == 'testlisting') {
-            DiagnosticBannerClick(slideIndex + 1, Number(0), item?.bannerTitle);
+            DiagnosticBannerClick(slideIndex + 1, Number(0), item?.bannerTitle, currentPatient, isDiagnosticCircleSubscription);
             props.navigation.navigate(AppRoutes.TestListing, {
               movedFrom: 'deeplink',
               widgetName: itemId, //name,
@@ -1730,7 +1791,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
           getItemIds,
           0,
           0,
-          DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PRESCRIPTION
+          DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PRESCRIPTION,
+          currentPatient,
+          isDiagnosticCircleSubscription
         );
       })
       .catch((e) => {
@@ -1765,7 +1828,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     DiagnosticViewReportClicked(
       'Home',
       !!pdfName?.labReportURL ? 'Yes' : 'No',
-      'Download Report PDF'
+      'Download Report PDF',
+      currentPatient
     );
     if (pdfName == null || pdfName == '') {
       Alert.alert('No Image');
@@ -1819,7 +1883,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         'Home',
         !!item?.labReportURL ? 'Yes' : 'No',
         'Download Report PDF',
-        item?.id
+        item?.displayId,
+        currentPatient
       );
       //view report download
       //need to remove the event once added
@@ -1827,7 +1892,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         'Home',
         !!item?.labReportURL ? 'Yes' : 'No',
         'Download Report PDF',
-        item?.id
+        item?.displayId,
+        currentPatient
       );
       if (!!item?.labReportURL && item?.labReportURL != '') {
         onPressViewReport();
@@ -1874,8 +1940,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }
 
   function navigateToTrackingScreen(item: any) {
-    DiagnosticTrackOrderViewed(currentPatient, item?.orderStatus, item?.id, 'Home');
-    props.navigation.navigate(AppRoutes.YourOrdersTest, {
+    DiagnosticTrackOrderViewed(currentPatient, item?.orderStatus, item?.displayId, 'Home');
+    props.navigation.push(AppRoutes.YourOrdersTest, {
       isTest: true,
     });
   }
@@ -2118,10 +2184,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
               data={item}
               onPressWidget={() => {
                 DiagnosticHomePageWidgetClicked(
+                  currentPatient,
                   data?.diagnosticWidgetTitle,
                   undefined,
                   undefined,
-                  item?.itemTitle
+                  item?.itemTitle,
+                  isDiagnosticCircleSubscription
                 );
                 {
                   props.navigation.navigate(AppRoutes.TestListing, {
@@ -2149,10 +2217,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
         style={styles.gridPart}
         onPress={() => {
           DiagnosticHomePageWidgetClicked(
+            currentPatient,
             data?.diagnosticWidgetTitle,
             undefined,
             undefined,
-            item?.itemTitle
+            item?.itemTitle,
+            isDiagnosticCircleSubscription
           );
           {
             props.navigation.navigate(AppRoutes.TestListing, {

@@ -133,6 +133,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const paymentType = useRef<string>('');
   const [areNonCODSkus, setAreNonCODSkus] = useState(false);
 
+  const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
+
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
     const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
@@ -146,7 +148,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   useEffect(() => {
     if (isDiagnostic) {
-      DiagnosticPaymentPageViewed(currentPatient, amount);
+      DiagnosticPaymentPageViewed(currentPatient, amount, isDiagnosticCircleSubscription);
       //modify -> always show prepaid
       // modify -> not to show cod
       setShowPrepaid(AppConfig.Configuration.Enable_Diagnostics_Prepaid);

@@ -66,7 +66,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const [showCurrCard, setShowCurrCard] = useState<boolean>(true);
 
   useEffect(() => {
-    DiagnosticOrderSummaryViewed(grossCharges, orderDetails?.id, orderDetails?.orderStatus);
+    DiagnosticOrderSummaryViewed(grossCharges, orderDetails?.displayId, orderDetails?.orderStatus, currentPatient);
   }, []);
 
   const getCircleObject =

@@ -37,6 +37,7 @@ import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { renderPackageItemPriceShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 const screenWidth = Dimensions.get('window').width;
 const CARD_WIDTH = screenWidth * 0.8; //0.86
 
@@ -80,7 +81,8 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
 
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   let actualItemsToShow = diagnosticWidgetData?.length > 0 && diagnosticWidgetData;
-
+  const { currentPatient } = useAllCurrentPatients();
+  const {isDiagnosticCircleSubscription} = useDiagnosticsCart()
   const renderItemCard = useCallback(
     (item: any) => {
       const getItem = item?.item;
@@ -358,7 +360,9 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
       widgetType === string.diagnosticCategoryTitle.categoryGrid ||
         widgetType == string.diagnosticCategoryTitle.category
         ? 'Category page'
-        : data?.diagnosticWidgetTitle
+        : data?.diagnosticWidgetTitle,
+      currentPatient,
+      isDiagnosticCircleSubscription
     );
 
     const addedItems = {
@@ -395,7 +399,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
   }
 
   function postHomePageWidgetClicked(name: string, id: string, section: string) {
-    DiagnosticHomePageWidgetClicked(section, id, name);
+    DiagnosticHomePageWidgetClicked(currentPatient,section, id, name, '' , isDiagnosticCircleSubscription);
   }
 
   function onPress(item: any, packageCalculatedMrp: number, pricesForItem: any) {

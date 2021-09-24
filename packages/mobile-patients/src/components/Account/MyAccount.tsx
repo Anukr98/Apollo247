@@ -346,6 +346,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       AsyncStorage.removeItem('VaccinationSubscriptionId');
       AsyncStorage.removeItem('hasAgreedVaccineTnC');
       AsyncStorage.removeItem('circleSubscriptionId');
+      AsyncStorage.removeItem('diagnosticUserType');
       clearCartInfo && clearCartInfo();
       clearDiagnoticCartInfo && clearDiagnoticCartInfo();
       setShowMultiPatientMsg?.(true);

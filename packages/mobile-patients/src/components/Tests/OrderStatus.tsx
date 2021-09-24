@@ -291,7 +291,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       'Circle user': isDiagnosticCircleSubscription || isCircleAddedToCart ? 'Yes' : 'No',
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED, attributes);
-    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_CHECKOUT_COMPLETED, attributes);
+    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ORDER_PLACED, attributes);
   };
 
   const handleBack = () => {
