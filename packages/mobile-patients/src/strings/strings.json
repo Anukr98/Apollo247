@@ -1102,6 +1102,10 @@
     "VC_CART": "VC_CART",
     "DIAGNOSTIC_CART": "DIAGNOSTIC_CART"
   },
+  "user_type": {
+    "NEW": "New",
+    "REPEAT": "Repeat"
+  },
   "circleMembershipBenefits": {
     "PHARMA_CASHBACK": "Pharma Cashback",
     "FREE_DELIVERY": "Free Delivery",

@@ -594,7 +594,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         testInfo?.ItemID || itemId,
         currentPatient,
         testInfo?.Rate || testDetails?.Rate,
-        pharmacyCircleAttributes
+        pharmacyCircleAttributes,
+        isDiagnosticCircleSubscription
       );
     }
   }, [testInfo]);
@@ -1204,7 +1205,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       itemId!,
       mrpToDisplay,
       discountToDisplay,
-      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS
+      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS,
+      currentPatient,
+      isDiagnosticCircleSubscription
     );
     const testInclusions =
       testInfo?.inclusions == null

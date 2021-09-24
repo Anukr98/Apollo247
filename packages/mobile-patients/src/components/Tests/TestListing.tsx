@@ -168,7 +168,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     });
 
   useEffect(() => {
-    DiagnosticProductListingPageViewed(widgetType, movedFrom, widgetName, title);
+    let source = movedFrom == 'Tests' ? '247 Home' : movedFrom == 'deeplink' ? 'Deeplink' : ''
+    DiagnosticProductListingPageViewed(widgetType, source, widgetName, title);
   }, []);
 
   const fetchWidgetsPrices = async (widgetsData: any) => {
