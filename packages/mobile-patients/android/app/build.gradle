@@ -309,6 +309,8 @@ dependencies {
     api 'com.google.android.material:material:1.2.0-alpha01'
     implementation("com.github.arimorty:floatingsearchview:2.1.1")
 
+    implementation 'com.opentok.android:opentok-android-sdk:2.18.1'
+
 // RX JAVA
     implementation("io.reactivex.rxjava2:rxjava:2.2.5")
     implementation("io.reactivex.rxjava2:rxandroid:2.1.0")

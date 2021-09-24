@@ -155,6 +155,7 @@
     "react-native-swipe-gestures": "1.0.3",
     "react-native-switch-selector": "^2.1.4",
     "react-native-system-setting": "^1.7.4",
+    "react-native-text-ticker": "^1.14.0",
     "react-native-truecaller-sdk": "^1.0.5",
     "react-native-user-agent": "^2.1.0",
     "react-native-vector-icons": "^6.5.0",
