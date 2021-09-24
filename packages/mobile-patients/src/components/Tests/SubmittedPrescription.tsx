@@ -409,7 +409,8 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                   phyPrescriptionUploaded: [],
                   ePresscriptionUploaded: [],
                   phyPrescriptionsProp: [],
-                  ePrescriptionsProp: []
+                  ePrescriptionsProp: [],
+                  movedFrom: ''
                   });
                 } else {
                   onSubmitPrescription();
