@@ -1155,6 +1155,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 isPrescriptionRequired={medicineDetails?.is_prescription_required == 1}
                 navigation={props.navigation}
                 sku={medicineDetails?.sku}
+                merchandising={medicineDetails?.merchandising}
               />
               <ProductPriceDelivery
                 price={medicineDetails?.price}
