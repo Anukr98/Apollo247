@@ -900,7 +900,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
-  const { setEPrescriptions, addMultipleCartItems, circleSubPlanId, circleSubscriptionId } = useShoppingCart();
+  const {
+    setEPrescriptions,
+    addMultipleCartItems,
+    circleSubPlanId,
+    circleSubscriptionId,
+  } = useShoppingCart();
   const [name, setname] = useState<string>('');
   const [showRescheduleCancel, setShowRescheduleCancel] = useState<boolean>(false);
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
@@ -4351,7 +4356,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       itemId,
       0, //add price
       0, //add price
-      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.CONSULT_ROOM
+      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.CONSULT_ROOM,
+      currentPatient,
+      !!circleSubscriptionId
     );
   }
 

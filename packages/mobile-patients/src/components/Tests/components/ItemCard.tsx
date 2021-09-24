@@ -332,7 +332,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     const planToConsider = pricesForItem?.planToConsider;
     const discountToDisplay = pricesForItem?.discountToDisplay;
     const mrpToDisplay = pricesForItem?.mrpToDisplay;
-    const widgetType = data?.diagnosticWidgetType;
+    const widgetType = data?.diagnosticWidgetType?.toLowerCase();
 
     DiagnosticAddToCartEvent(
       item?.itemTitle,
@@ -340,12 +340,12 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
       mrpToDisplay,
       discountToDisplay,
       source,
+      currentPatient,
+      isDiagnosticCircleSubscription,
       widgetType === string.diagnosticCategoryTitle.categoryGrid ||
         widgetType == string.diagnosticCategoryTitle.category
         ? 'Category page'
-        : data?.diagnosticWidgetTitle,
-      currentPatient,
-      isDiagnosticCircleSubscription
+        : data?.diagnosticWidgetTitle
     );
     addCartItem?.({
       id: `${item?.itemId}`,

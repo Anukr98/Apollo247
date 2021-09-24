@@ -368,7 +368,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const { getPatientApiCall } = useAuth();
 
   const { pharmacyUserTypeAttribute } = useAppCommonData();
-  const { pharmacyCircleAttributes } = useShoppingCart();
+  const { pharmacyCircleAttributes, circleSubscriptionId } = useShoppingCart();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -475,7 +475,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     const data = await availabilityApi247(defaultAddress?.zipcode || '', skus?.join(','));
     const medicineResponse = data?.data?.response;
     const availableMedicines = medicineResponse?.filter((item: any) => item?.exist);
-    if(availableMedicines?.length) {
+    if (availableMedicines?.length) {
       setPrescAvailability(availableMedicines.length == skus?.length ? 'available' : 'partial');
       const skuItems = availableMedicines?.map((item) => {
         return { sku: item?.sku, qty: 1 };
@@ -491,7 +491,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         setTat(moment(tat, 'DD-MMM-YYYY HH:mm').format('h:mm A, DD MMM YYYY'));
       }
     } else {
-      setPrescAvailability('unavailable')
+      setPrescAvailability('unavailable');
     }
     setLoading && setLoading(false);
   };
@@ -859,7 +859,15 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   } = useAppCommonData();
 
   function postDiagnosticAddToCart(itemId: string, itemName: string) {
-    DiagnosticAddToCartEvent(itemName, itemId, 0, 0, DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PHR);
+    DiagnosticAddToCartEvent(
+      itemName,
+      itemId,
+      0,
+      0,
+      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PHR,
+      currentPatient,
+      !!circleSubscriptionId
+    );
   }
 
   const onAddTestsToCart = async () => {
