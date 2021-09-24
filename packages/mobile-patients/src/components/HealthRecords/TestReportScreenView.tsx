@@ -723,7 +723,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
               } else {
                 rangeColorChanger = false;
               }
-              if (item?.result?.length > 14) {
+              if (item?.result?.length > 18) {
                 stringColorChanger = true;
               }
               numberOfLineBreaks = (item?.result?.match(/\n/g) || []).length;
