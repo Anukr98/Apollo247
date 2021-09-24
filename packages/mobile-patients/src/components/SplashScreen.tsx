@@ -530,7 +530,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         fetchPolicy: 'no-cache',
       });
       const paymentStatus = response?.data?.getOrderInternal?.payment_status;
-      if (paymentStatus == 'PAYMENT_NOT_INITIATED') {
+      const allowedStatuses = ['PAYMENT_NOT_INITIATED', 'TXN_FAILURE', 'COD_COMPLETE'];
+      if (allowedStatuses.includes(paymentStatus)) {
         const currentPatientId: any = await AsyncStorage.getItem('selectUserId');
         const isPharmaOrder = !!response?.data?.getOrderInternal?.PharmaOrderDetails
           ?.medicineOrderDetails?.length

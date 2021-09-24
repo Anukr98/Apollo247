@@ -4,6 +4,7 @@ import android.app.Application;
 
 import com.BV.LinearGradient.LinearGradientPackage;
 import com.apollopatient.appsignature.RNAppSignatureHelperPackage;
+import com.apollopatient.opentoknetworktest.OpentokNetworkTestPackage;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
 import com.ajithab.RNReceiveSharingIntent.ReceiveSharingIntentPackage;
@@ -27,11 +28,13 @@ import com.clevertap.android.sdk.ActivityLifecycleCallback;
 import com.ibits.react_native_in_app_review.AppReviewPackage;
 import java.util.List;
 
+
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 public class MainApplication extends Application implements ReactApplication {
+
 
     private final ReactNativeHost mReactNativeHost =
             new ReactNativeHost(this) {
@@ -56,6 +59,7 @@ public class MainApplication extends Application implements ReactApplication {
                     packages.add(new RNAppSignatureHelperPackage());
                     packages.add(new LinearGradientPackage());
                     packages.add(new GetReferrerPackage());
+                    packages.add(new OpentokNetworkTestPackage());
 
                     return packages;
                 }
@@ -113,4 +117,5 @@ public class MainApplication extends Application implements ReactApplication {
                 }, Throwable::printStackTrace);
 
     }
+
 }
