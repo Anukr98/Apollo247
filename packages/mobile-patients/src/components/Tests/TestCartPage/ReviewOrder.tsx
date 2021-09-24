@@ -1292,7 +1292,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       hcCharges,
       slotTime,
       slotDate,
-      isDiagnosticCircleSubscription ? 'Yes' : 'No'
+      isDiagnosticCircleSubscription ? 'Yes' : 'No',
+      currentPatient
     );
   }
 

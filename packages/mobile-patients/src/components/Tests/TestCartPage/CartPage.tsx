@@ -855,6 +855,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       },
       children: (
         <AccessLocation
+          isAddressLoading={false}
           source={AppRoutes.Tests}
           hidePincodeCurrentLocation
           addresses={addresses}
@@ -990,12 +991,14 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   };
 
   function _navigateToHomePage() {
-    DiagnosticAddToCartClicked();
+    const pincode = selectedAddr?.zipcode;
+    DiagnosticAddToCartClicked(pincode!, currentPatient);
     props.navigation.navigate('TESTS', { focusSearch: false });
   }
 
   function _navigateToSearch() {
-    DiagnosticAddToCartClicked();
+    const pincode = selectedAddr?.zipcode;
+    DiagnosticAddToCartClicked(pincode!, currentPatient);
     props.navigation.navigate(AppRoutes.SearchTestScene, {
       searchText: '',
     });

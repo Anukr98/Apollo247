@@ -11,7 +11,6 @@ import {
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import {
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
   DIAGNOSTIC_ORDER_STATUS,
@@ -66,7 +65,12 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const [showCurrCard, setShowCurrCard] = useState<boolean>(true);
 
   useEffect(() => {
-    DiagnosticOrderSummaryViewed(grossCharges, orderDetails?.displayId, orderDetails?.orderStatus, currentPatient);
+    DiagnosticOrderSummaryViewed(
+      grossCharges,
+      orderDetails?.displayId,
+      orderDetails?.orderStatus,
+      currentPatient
+    );
   }, []);
 
   const getCircleObject =

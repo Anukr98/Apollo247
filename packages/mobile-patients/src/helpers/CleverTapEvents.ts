@@ -160,7 +160,6 @@ export enum CleverTapEventName {
   DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE = 'Diagnostic add item clicked',
 
   DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE = 'Address Non Serviceable on Diagnostic Cart Page',
-  DIAGNOSTIC_AREA_SELECTED = 'Diagnostic area selected',
   DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Diagnostic slot time selected',
   DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic make payment clicked',
   PAYMENT_INITIATED = 'Payment Initiated',
@@ -571,17 +570,12 @@ export interface CirclePurchaseInfo extends UserInfo {
   Type: string;
   Source?: string;
 }
-
 export interface DiagnosticUserInfo {
   'Patient UHID': string;
   'Patient Gender': string;
   'Patient Name': string;
   'Patient Age': number;
-}
-
-export interface DiagnosticLandingPage extends DiagnosticUserInfo {
-  Serviceability: 'Yes' | 'No';
-  Source?: string;
+  'User Type'?: any
 }
 
 export interface DiagnosticServiceble {
@@ -780,7 +774,6 @@ export interface ItemClickedOnLanding extends DiagnosticUserInfo {
 }
 
 export interface DiagnosticPinCode extends DiagnosticUserInfo {
-  Mode: string;
   Pincode: number | string;
   Serviceability: 'Yes' | 'No';
   'Circle user'?: string
@@ -1310,7 +1303,6 @@ export interface CleverTapEvents {
 
   // ********** Diagnostic Events *******
 
-  [CleverTapEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED]: DiagnosticLandingPage;
   [CleverTapEventName.DIAGNOSTIC_SEARCH_CLICKED]: ItemSearchedOnLanding;
   [CleverTapEventName.DIAGNOSTIC_MY_ORDERS]: {
     //comment
@@ -1372,17 +1364,11 @@ export interface CleverTapEvents {
     UHID: string;
     'Circle user': string;
   };
-  [CleverTapEventName.DIAGNOSTIC_AREA_SELECTED]: {
-    'Address Pincode': number;
-    'Area Selected': string;
-  };
   [CleverTapEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED]: {
-    'Address Pincode': number;
-    'Area Selected': string;
-    'Time Selected': string;
-    'Slot selected': 'Manual' | 'Automatic';
-    'Slot available': 'Yes' | 'No';
-    UHID: string;
+    'Slot time': string;
+    'No. of slots' : number;
+    'Slot date' : string;
+    'Type': DIAGNOSTIC_SLOT_TYPE;
     'Circle user': string;
   };
   [CleverTapEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED]: {
@@ -1396,6 +1382,7 @@ export interface CleverTapEvents {
     'Address': string;
     'Home collection charges'?: number;
     'Collection Time Slot': string;
+    'Collection Date Slot': string | Date;
     'Circle user': string;
   };
   [CleverTapEventName.DIAGNOSTIC_TRACK_ORDER_VIEWED]: {
@@ -1416,8 +1403,6 @@ export interface CleverTapEvents {
     | 'Copy Link to PDF';
   };
   [CleverTapEventName.DIAGNOSTIC_FEEDBACK_GIVEN]: {
-    'Patient UHID': string;
-    'Patient Name': string;
     Rating: string | number;
     'Thing to Improve selected': string;
   };

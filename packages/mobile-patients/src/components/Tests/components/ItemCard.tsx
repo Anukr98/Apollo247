@@ -83,7 +83,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     onPressRemoveItemFromCart,
   } = props;
   const { currentPatient } = useAllCurrentPatients();
-  const {isDiagnosticCircleSubscription} = useDiagnosticsCart()
+  const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
 
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   let actualItemsToShow =
@@ -343,7 +343,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     const planToConsider = pricesForItem?.planToConsider;
     const discountToDisplay = pricesForItem?.discountToDisplay;
     const mrpToDisplay = pricesForItem?.mrpToDisplay;
-    const widgetType = data?.diagnosticWidgetType;
+    const widgetType = (data?.diagnosticWidgetType).toLowerCase();
 
     DiagnosticAddToCartEvent(
       item?.itemTitle,
@@ -399,7 +399,14 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
   };
 
   function postHomePageWidgetClicked(name: string, id: string, section: string) {
-    DiagnosticHomePageWidgetClicked(currentPatient,section, name, id, '', isDiagnosticCircleSubscription);
+    DiagnosticHomePageWidgetClicked(
+      currentPatient,
+      section,
+      name,
+      id,
+      '',
+      isDiagnosticCircleSubscription
+    );
   }
 
   function onPress(item: any, packageCalculatedMrp: number, pricesForItem: any) {
