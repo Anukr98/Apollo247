@@ -4456,7 +4456,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderSearchItem = ({ key, data }: any, index: number) => {
     return (
-      <TouchableOpacity onPress={() => onClickSearchItem(key)}>
+      <TouchableOpacity
+        onPress={() => (data.length === 0 ? null : onClickSearchItem(key))}
+        style={{ width: width, marginBottom: 2, padding: 16, backgroundColor: '#fff' }}
+      >
         <View
           style={{
             flexDirection: 'row',
@@ -4497,26 +4500,28 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           }
           renderItem={({ item, index }) => renderSearchItemDetails(item, index, key)}
         />
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginVertical: 4,
-            paddingVertical: 2,
-            justifyContent: 'space-between',
-          }}
-        >
-          <Text
+        {data.length === 0 ? null : (
+          <View
             style={{
-              ...theme.viewStyles.text('M', 15, theme.colors.APP_YELLOW, 1, 24),
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginVertical: 2,
+              paddingVertical: 2,
+              justifyContent: 'space-between',
             }}
-            onPress={() => onClickSearchItem(key)}
           >
-            View All Results {searchResultsTabHeader[key].title}
-          </Text>
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 15, theme.colors.APP_YELLOW, 1, 24),
+              }}
+              onPress={() => onClickSearchItem(key)}
+            >
+              View All Results {searchResultsTabHeader[key].title}
+            </Text>
 
-          <ArrowRight />
-        </View>
+            <ArrowRight />
+          </View>
+        )}
       </TouchableOpacity>
     );
   };
