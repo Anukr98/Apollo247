@@ -372,6 +372,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#00b38e',
     marginHorizontal: 5,
     marginBottom: 6,
+    marginTop: 1,
   },
   descriptionTextStyle: {
     marginHorizontal: 16,
@@ -874,13 +875,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const _searchInputRef = useRef(null);
   const [searchText, setSearchText] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [consultSearchResults, setConsultSearchResults] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState({});
   const [prismAuthToken, setPrismAuthToken] = useState<string>('');
   const testSearchResults = useRef<
     searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
   >([]);
   const medSearchResults = useRef<MedicineProduct[]>([]);
+  const consultSearchResults = useRef<any[]>([]);
 
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
@@ -4072,10 +4073,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         axdcCode,
         pinCode
       );
+      let finalProducts: any[] = [];
 
       if (res?.data?.products) {
         const products = res?.data?.products || [];
-        const finalProducts = products.slice(0, 3);
+        finalProducts = products.slice(0, 3);
 
         console.log('csk med ', products.length, res?.data?.product_count);
 
@@ -4083,9 +4085,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       } else {
         medSearchResults.current = [];
       }
+
+      console.log('csk med done', medSearchResults.current.length);
+      updateSearchResultList(MedicalRecordType.MEDICATION, finalProducts);
       setSearchLoading(false);
     } catch (error) {
       setSearchLoading(false);
+      updateSearchResultList(MedicalRecordType.MEDICATION, []);
       console.log('csk med ', JSON.stringify(error));
     }
   };
@@ -4102,22 +4108,27 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     testSearchResults.current = [];
     try {
       const res = await getDiagnosticsSearchResults('diagnostic', _searchText, Number(cityId));
+      let finalProducts = [];
 
       if (res?.data?.success) {
         const products = res?.data?.data || [];
 
-        const finalProducts = products.slice(0, 3);
+        finalProducts = products.slice(0, 3);
         console.log('csk test', products.length);
 
         testSearchResults.current = finalProducts;
       } else {
         testSearchResults.current = [];
       }
+
+      console.log('csk tests done', testSearchResults.current.length);
+      updateSearchResultList(MedicalRecordType.TEST_REPORT, testSearchResults.current);
       setSearchLoading(false);
     } catch (error) {
       CommonBugFender('HomeScreen_ConsultRoom', error);
       setSearchLoading(false);
       console.log('csk test', JSON.stringify(error));
+      updateSearchResultList(MedicalRecordType.TEST_REPORT, []);
     }
   };
 
@@ -4125,9 +4136,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (searchTextString.length > 2) {
       setSearchLoading(true);
       console.log('csk consults');
-      allSettled([getDoctorList(searchTextString), fetchProceduresAndSymptoms(searchTextString)])
+      //const res1= await fetchProceduresAndSymptoms(searchTextString);
+      //       const result = res1?.[1]?.value?.data?.results;
+      // const procedures = result?.filter(
+      //   (item: ProceduresAndSymptomsResult) => item?.tag?.toUpperCase() === 'PROCEDURE'
+      // );
+      // const symptoms = result?.filter(
+      //   (item: ProceduresAndSymptomsResult) => item?.tag?.toUpperCase() === 'SYMPTOM'
+      // );
+      getDoctorList(searchTextString)
         .then((res: any) => {
           try {
+            console.log('csk consults', JSON.stringify(res));
             let finalres: any[] = [],
               doc: any[] = [],
               speciality: any[] = [];
@@ -4142,21 +4162,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               setshowSpinner(false);
             }
 
-            const result = res?.[1]?.value?.data?.results;
-            const procedures = result?.filter(
-              (item: ProceduresAndSymptomsResult) => item?.tag?.toUpperCase() === 'PROCEDURE'
-            );
-            const symptoms = result?.filter(
-              (item: ProceduresAndSymptomsResult) => item?.tag?.toUpperCase() === 'SYMPTOM'
-            );
-
-            console.log(
-              'csk consults res',
-              JSON.stringify(doc),
-              JSON.stringify(speciality),
-              JSON.stringify(procedures),
-              JSON.stringify(symptoms)
-            );
+            // console.log(
+            //   'csk consults res',
+            //   JSON.stringify(doc),
+            //   JSON.stringify(speciality),
+            //   JSON.stringify(procedures),
+            //   JSON.stringify(symptoms)
+            // );
 
             setSearchLoading(false);
           } catch (e) {
@@ -4165,7 +4177,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             console.log('csk test', JSON.stringify(e));
           }
         })
-        .catch((er) => {
+        .catch((er: any) => {
           CommonBugFender('HomeScreen_ConsultRoom', er);
           setSearchLoading(false);
           console.log('csk test', JSON.stringify(er));
@@ -4179,7 +4191,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       variables: {
         filterInput: {
           pageNo: 1,
-          pageSize: 10,
+          pageSize: 3,
           searchText,
         },
       },
@@ -4194,7 +4206,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const updateSearchResultList = (itemKey: string, itemData: any) => {
-    const newState = [...searchResults, { key: itemKey, data: itemData }];
+    // const newState = searchResults.length===0?
+    // [...searchResults, { key: itemKey, data: itemData }];
+    const newState = [
+      { key: MedicalRecordType.MEDICATION, data: medSearchResults.current },
+      { key: MedicalRecordType.TEST_REPORT, data: testSearchResults.current },
+      { key: MedicalRecordType.CONSULTATION, data: consultSearchResults.current },
+    ];
     setSearchResults(newState);
   };
 
@@ -4205,10 +4223,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setSearchResults([]);
     onSearchTests(_searchText)
       .then(() => {
-        console.log('csk tests done', testSearchResults.current.length);
-        if (testSearchResults.current.length >= 1)
-          updateSearchResultList(MedicalRecordType.TEST_REPORT, testSearchResults.current);
-
         console.log('final search res-t', JSON.stringify(searchResults.length));
       })
       .catch((e) => {
@@ -4217,9 +4231,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
     onSearchMedicines(_searchText, null, {}, [])
       .then(() => {
-        console.log('csk med done', medSearchResults.current.length);
-        if (medSearchResults.current.length >= 1)
-          updateSearchResultList(MedicalRecordType.MEDICATION, medSearchResults.current);
         console.log('final search res-m', JSON.stringify(searchResults.length));
       })
       .catch((e) => {
