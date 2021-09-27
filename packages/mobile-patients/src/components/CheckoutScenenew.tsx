@@ -400,8 +400,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       'cart size': cartItems.length,
       af_revenue: getFormattedAmount(grandTotal),
       af_currency: 'INR',
-      af_order_id: orderId && orderId,
-      orderAutoId: orderAutoId && orderAutoId,
+      af_order_id: orderId ? orderId : "0",
+      orderAutoId: orderAutoId ? orderAutoId : "0",
       'coupon applied': coupon ? true : false,
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,

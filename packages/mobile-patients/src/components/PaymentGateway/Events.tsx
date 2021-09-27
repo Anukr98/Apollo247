@@ -136,7 +136,7 @@ export function PharmaOrderPlaced(
       'cart size': cartItems.length,
       af_revenue: getFormattedAmount(grandTotal),
       af_currency: 'INR',
-      af_order_id: paymentOrderId && paymentOrderId,
+      af_order_id: paymentOrderId ? paymentOrderId : "0",
       'coupon applied': coupon ? true : false,
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
