@@ -12,7 +12,7 @@ import {
   sourceHeaders,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   BackHandler,
   StyleSheet,
@@ -127,6 +127,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/CreateUserSubscription';
 import CircleCard from '@aph/mobile-patients/src/components/Tests/components/CircleCard';
 import { CirclePlansListOverlay } from '@aph/mobile-patients/src/components/Tests/components/CirclePlansListOverlay';
+import { debounce } from 'lodash';
 
 const screenWidth = Dimensions.get('window').width;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
@@ -1559,8 +1560,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           cartItems: updatedCartItems,
         };
         setModifiedPatientCart?.([newModifiedPatientCartItems]);
-        setLowItemName.push(getItemName(itemIdsToRemove_global));
-        setHighPriceName.push(getItemName(itemIdsToKeep_global));
+        setLowItemName.push(getItemName([...new Set(itemIdsToRemove_global)]));
+        setHighPriceName.push(getItemName([...new Set(itemIdsToKeep_global)]));
       } else {
         data?.forEach((patientObj: PatientsObjWithOrderIDs) => {
           if (!patientObj?.status) {
@@ -1596,8 +1597,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           }
         });
 
-        setLowItemName.push(getItemName(itemIdsToRemove_global));
-        setHighPriceName.push(getItemName(itemIdsToKeep_global));
+        setLowItemName.push(getItemName([...new Set(itemIdsToRemove_global)]));
+        setHighPriceName.push(getItemName([...new Set(itemIdsToKeep_global)]));
       }
       const selectedAddressIndex = addresses?.findIndex(
         (address) => address?.id == deliveryAddressId
@@ -1682,8 +1683,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   }
 
   const renderDuplicateMessage = (duplicateTests: string[], higherPricesName: string[]) => {
-    const dupTestText = duplicateTests?.join(', ');
-    const highTestText = higherPricesName?.join(', ');
+    const dupTestText = [...new Set(duplicateTests)]?.join(', ');
+    const highTestText = [...new Set(higherPricesName)]?.join(', ');
     showAphAlert?.({
       title: 'Your cart has been revised!',
       description: isModifyFlow
@@ -1992,6 +1993,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       });
   }
 
+  const debouncedChangeHandler = useMemo(() => debounce(onPressProceedToPay, 300), []);
+
   //handle the in the modify flow not to show circle if cod.
   // don't show cod with circle purchase on payments page
 
@@ -2087,7 +2090,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         // selectedTimeSlot={selectedTimeSlot} //change the format
         selectedTimeSlot={diagnosticSlot}
         disableProceedToPay={disableProceedToPay}
-        onPressProceedtoPay={() => onPressProceedToPay()}
+        onPressProceedtoPay={debouncedChangeHandler}
         showTime={showTime}
         phleboMin={isModifyFlow ? phleboMin : phleboETA}
         isModifyCOD={

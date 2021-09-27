@@ -346,7 +346,12 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     const planToConsider = pricesForItem?.planToConsider;
     const discountToDisplay = pricesForItem?.discountToDisplay;
     const mrpToDisplay = pricesForItem?.mrpToDisplay;
-    const widgetType = data?.diagnosticWidgetType?.toLowerCase();
+    const widgetType = Array.isArray(data)
+      ? sourceScreen === AppRoutes.CartPage
+        ? string.diagnosticCategoryTitle.item
+        : data?.[0]?.diagnosticWidgetType
+      : data?.diagnosticWidgetType?.toLowerCase();
+    data?.diagnosticWidgetType?.toLowerCase();
 
     const inclusions =
       !!item?.inclusionData && item.inclusionData.map((item: any) => Number(item?.incItemId));
