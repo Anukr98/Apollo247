@@ -173,7 +173,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
   }, []);
 
   useEffect(() => {
-    let finalData: { key: string; data: HospitalizationType[] }[] = [];
+    let finalData: { key: string; data: any[] }[] = [];
     finalData = initialSortByDays('hospitalizations', hospitalizationMainData, finalData);
     setLocalHospitalizationData(finalData);
   }, [hospitalizationMainData]);
@@ -420,6 +420,18 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
   };
 
   const renderHospitalizationItems = (item: any, index: number) => {
+    const getPresctionDate = (date: string) => {
+      let prev_date = new Date();
+      prev_date.setDate(prev_date.getDate() - 1);
+      if (moment(new Date()).format('DD/MM/YYYY') === moment(new Date(date)).format('DD/MM/YYYY')) {
+        return 'Today';
+      } else if (
+        moment(prev_date).format('DD/MM/YYYY') === moment(new Date(date)).format('DD/MM/YYYY')
+      ) {
+        return 'Yesterday';
+      }
+      return moment(new Date(date)).format('DD MMM');
+    };
     const getSourceName = (source: string) => {
       return source === 'self' || source === '247self'
         ? string.common.clicnical_document_text
@@ -428,10 +440,8 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
     const prescriptionName = 'Dr. ' + item?.data?.doctorName;
     const dateText =
       item?.data?.dateOfHospitalization && item?.data?.date
-        ? `${moment(item?.data?.dateOfHospitalization).format('DD MMM, YYYY')} - ${moment(
-            item?.data?.date
-          ).format('DD MMM, YYYY')}`
-        : moment(item?.data?.date).format('DD MMM YYYY');
+        ? getPresctionDate(item?.data?.dateOfHospitalization)
+        : getPresctionDate(item?.data?.date);
     const soureName = getSourceName(item?.data?.source!) || '-';
     const selfUpload = true;
     const showEditDeleteOption =

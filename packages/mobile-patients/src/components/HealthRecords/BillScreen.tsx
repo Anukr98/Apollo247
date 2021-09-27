@@ -304,7 +304,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
         );
         let mergeArray: { type: string; data: any }[] = [];
         medicalBills?.forEach((c: any) => {
-          mergeArray.push({ type: 'hospitalizations', data: c });
+          mergeArray.push({ type: 'bills', data: c });
         });
         setMedicalBillsMainData(phrSortByDate(mergeArray));
         setShowSpinner(false);

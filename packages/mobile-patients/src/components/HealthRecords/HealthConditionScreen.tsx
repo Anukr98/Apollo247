@@ -203,22 +203,22 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
     const healthConditionsArray: any[] = [];
     let mergeArray: { type: string; data: any }[] = [];
     medicalMedications?.forEach((c: any) => {
-      mergeArray.push({ type: 'medicalConditions', data: c });
+      mergeArray.push({ type: 'health-conditions', data: c });
     });
     medicalConditions?.forEach((c: any) => {
-      mergeArray.push({ type: 'medications', data: c });
+      mergeArray.push({ type: 'health-conditions', data: c });
       // medicalConditionsRecord && healthConditionsArray.push(medicalConditionsRecord);
     });
     medicalHealthRestrictions?.forEach((c: any) => {
-      mergeArray.push({ type: 'healthRestrictions', data: c });
+      mergeArray.push({ type: 'health-conditions', data: c });
       // healthRestrictionRecord && healthConditionsArray.push(healthRestrictionRecord);
     });
     medicalAllergies?.forEach((c: any) => {
-      mergeArray.push({ type: 'allergies', data: c });
+      mergeArray.push({ type: 'health-conditions', data: c });
       // allergyRecord && healthConditionsArray.push(allergyRecord);
     });
     familyHistory?.forEach((c: any) => {
-      mergeArray.push({ type: 'familyHistory', data: c });
+      mergeArray.push({ type: 'health-conditions', data: c });
       // familyHistoryRecord && healthConditionsArray.push(familyHistoryRecord);
     });
     const sortedData = phrSortByDate(mergeArray);

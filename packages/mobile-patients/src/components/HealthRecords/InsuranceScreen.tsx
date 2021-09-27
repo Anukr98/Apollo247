@@ -304,7 +304,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         );
         let mergeArray: { type: string; data: any }[] = [];
         medicalInsurance?.forEach((c: any) => {
-          mergeArray.push({ type: 'medicalInsurances', data: c });
+          mergeArray.push({ type: 'insurance', data: c });
         });
         setMedicalInsuranceMainData(phrSortByDate(mergeArray));
         setShowSpinner(false);
