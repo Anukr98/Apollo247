@@ -81,6 +81,7 @@ import {
   initiateDiagonsticHCOrderPaymentv2,
   initiateDiagonsticHCOrderPaymentv2Variables,
 } from '@aph/mobile-patients/src/graphql/types/initiateDiagonsticHCOrderPaymentv2';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const { HyperSdkReact } = NativeModules;
 
@@ -379,7 +380,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressBank(bankCode: string) {
-    triggerWebengege('NetBanking-' + bankCode, 'NB', 'Net banking');
+    triggerWebengege('NetBanking-' + bankCode, 'NB', string.common.netBanking);
     const token = await getClientToken();
     token
       ? InitiateNetBankingTxn(currentPatient?.id, token, paymentId, bankCode)
@@ -387,7 +388,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressWallet(wallet: string) {
-    triggerWebengege('Wallet-' + wallet, 'WALLET', 'PhonePe Wallet');
+    triggerWebengege('Wallet-' + wallet, 'WALLET', string.common.phonePeWallet);
     const token = await getClientToken();
     token
       ? wallet == 'PHONEPE' && phonePeReady
@@ -420,7 +421,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressVPAPay(VPA: string) {
-    triggerWebengege('UPI Collect', 'UPI', 'VPA-UPI');
+    triggerWebengege('UPI Collect', 'UPI', string.common.VPA);
     try {
       setisTxnProcessing(true);
       const response = await verifyVPA(VPA);
@@ -437,7 +438,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressNewCardPayNow(cardInfo: any, saveCard: boolean) {
-    triggerWebengege('Card', 'CARD', 'Card');
+    triggerWebengege('Card', 'CARD', string.common.Card);
     const token = await getClientToken();
     token
       ? InitiateCardTxn(currentPatient?.id, token, paymentId, cardInfo, saveCard)
@@ -464,7 +465,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressPayByCash() {
-    triggerWebengege('Cash', 'COD', 'Cash');
+    triggerWebengege('Cash', 'COD', string.common.Cash);
     setisTxnProcessing(true);
     try {
       businessLine == 'diagnostics' && initiateOrderPayment();
@@ -522,7 +523,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     otherBanks = otherBanks?.payment_methods?.filter(
       (item: any) => !methods?.includes(item?.payment_method_code)
     );
-    triggerWebengege('NetBanking - OtherBanks', 'NB', 'NetBanking');
+    triggerWebengege('NetBanking - OtherBanks', 'NB', string.common.netBanking);
     props.navigation.navigate(AppRoutes.OtherBanks, {
       paymentId: paymentId,
       amount: amount,
