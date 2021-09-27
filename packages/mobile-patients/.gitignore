@@ -13,6 +13,7 @@ xcuserdata/
 
 # Ignore AppCode user-related files
 .idea/
+
 # Ignore CocoaPods installed files
 Pods/
 Crashlytics.framework/
