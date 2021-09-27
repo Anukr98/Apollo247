@@ -4443,6 +4443,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       case MedicalRecordType.TEST_REPORT:
         props.navigation.navigate(AppRoutes.SearchTestScene, { searchText: searchText });
         break;
+      case MedicalRecordType.CONSULTATION:
+        props.navigation.navigate(AppRoutes.DoctorSearch, { searchText: searchText });
+        break;
     }
   };
 
@@ -4537,37 +4540,58 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           >
             {searchResultsTabHeader[key].icon({ width: 26, height: 26 })}
           </View>
-          <Text
+          <View
             style={{
-              ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
-              marginLeft: 14,
-              maxWidth: '80%',
+              padding: 6,
+              alignItems: 'flex-start',
+              justifyContent: 'center',
+              maxWidth: '70%',
+              marginLeft: 12,
             }}
           >
-            {key === MedicalRecordType.TEST_REPORT
-              ? item?.diagnostic_item_name
-              : key === MedicalRecordType.MEDICATION
-              ? item?.name
-              : string.home.search_not_available}
-          </Text>
-          <Text
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+              }}
+            >
+              {key === MedicalRecordType.TEST_REPORT
+                ? item?.diagnostic_item_name
+                : key === MedicalRecordType.MEDICATION
+                ? item?.name
+                : key === MedicalRecordType.CONSULTATION
+                ? item?.displayName || item?.name
+                : string.home.search_not_available}
+            </Text>
+            <Text
+              style={{
+                ...theme.viewStyles.text('R', 12, theme.colors.LIGHT_BLUE, 1, 14),
+              }}
+            >
+              {key === MedicalRecordType.TEST_REPORT
+                ? 'Total Tests - ' + item?.diagnostic_inclusions.length
+                : key === MedicalRecordType.CONSULTATION
+                ? item?.symptoms || item?.specialtydisplayName
+                : null}
+            </Text>
+          </View>
+
+          <View
             style={{
-              ...theme.viewStyles.text('R', 12, theme.colors.LIGHT_BLUE, 1, 14),
-              marginLeft: 14,
+              padding: 6,
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginLeft: 'auto',
             }}
           >
-            {'\n' + key === MedicalRecordType.TEST_REPORT
-              ? `Total Tests - ${item?.diagnostic_inclusions.length}`
-              : null}
-          </Text>
-          <ArrowRight style={{ marginLeft: 'auto' }} />
+            <ArrowRight />
+          </View>
         </View>
         <View
           style={{
             height: 1.5,
             backgroundColor: '#D4D4D4',
             marginTop: 2,
-            marginBottom: 4,
+            marginBottom: 2,
             marginHorizontal: -16,
           }}
         />
