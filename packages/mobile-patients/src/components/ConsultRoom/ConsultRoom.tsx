@@ -4132,58 +4132,44 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
-  const onSearchConsults = (searchTextString: string = searchText) => {
-    if (searchTextString.length > 2) {
+  const onSearchConsults = async (_searchText: string) => {
+    console.log('csk conss');
+    if (_searchText.length > 2) {
       setSearchLoading(true);
-      console.log('csk consults');
-      //const res1= await fetchProceduresAndSymptoms(searchTextString);
-      //       const result = res1?.[1]?.value?.data?.results;
-      // const procedures = result?.filter(
-      //   (item: ProceduresAndSymptomsResult) => item?.tag?.toUpperCase() === 'PROCEDURE'
-      // );
-      // const symptoms = result?.filter(
-      //   (item: ProceduresAndSymptomsResult) => item?.tag?.toUpperCase() === 'SYMPTOM'
-      // );
-      getDoctorList(searchTextString)
-        .then((res: any) => {
-          try {
-            console.log('csk consults', JSON.stringify(res));
-            let finalres: any[] = [],
-              doc: any[] = [],
-              speciality: any[] = [];
-            const searchData = res?.[0]?.value?.data?.getDoctorList || null;
-            if (searchData) {
-              if (searchData.doctors) {
-                doc.concat(searchData.doctors);
-              }
-              if (searchData.specialties) {
-                speciality.concat(searchData.specialties);
-              }
-              setshowSpinner(false);
-            }
 
-            // console.log(
-            //   'csk consults res',
-            //   JSON.stringify(doc),
-            //   JSON.stringify(speciality),
-            //   JSON.stringify(procedures),
-            //   JSON.stringify(symptoms)
-            // );
+      try {
+        let finalProducts: any[] = [];
+        const res = await getDoctorList(_searchText);
+        const doctors = res?.data?.getDoctorList?.doctors || [];
+        const specialities = res?.data?.getDoctorList?.specialties || [];
 
-            setSearchLoading(false);
-          } catch (e) {
-            CommonBugFender('HomeScreen_ConsultRoom', e);
-            setSearchLoading(false);
-            console.log('csk test', JSON.stringify(e));
-          }
-        })
-        .catch((er: any) => {
-          CommonBugFender('HomeScreen_ConsultRoom', er);
-          setSearchLoading(false);
-          console.log('csk test', JSON.stringify(er));
-        });
+        if (doctors.length !== 0 || specialities.length !== 0) {
+          const finalDoctors = doctors.slice(0, 3);
+          const finalSpecialities = specialities.slice(0, 1);
+          finalProducts = [...finalDoctors, ...finalSpecialities];
+          console.log(
+            'csk cons -',
+            doctors.length,
+            specialities.length,
+            JSON.stringify(finalProducts)
+          );
+          consultSearchResults.current = finalProducts;
+        } else {
+          consultSearchResults.current = [];
+        }
+
+        console.log('csk cons done', consultSearchResults.current.length);
+        updateSearchResultList(MedicalRecordType.CONSULTATION, consultSearchResults.current);
+        setSearchLoading(false);
+      } catch (e) {
+        CommonBugFender('HomeScreen_ConsultRoom', e);
+        setSearchLoading(false);
+        updateSearchResultList(MedicalRecordType.CONSULTATION, []);
+        console.log('csk cons', JSON.stringify(e));
+      }
     }
   };
+
   const getDoctorList = (searchText: string) => {
     return client.query<getDoctorList>({
       query: GET_DOCTOR_LIST,
@@ -4237,7 +4223,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         CommonBugFender('HomeScreen_ConsultRoom_onSearchMedicinesFunction', e);
       });
 
-    onSearchConsults(_searchText);
+    onSearchConsults(_searchText)
+      .then(() => {
+        console.log('final search res-m', JSON.stringify(searchResults.length));
+      })
+      .catch((e) => {
+        CommonBugFender('HomeScreen_ConsultRoom_onSearchConsultsFunction', e);
+      });
   };
 
   interface searchHeaders {
