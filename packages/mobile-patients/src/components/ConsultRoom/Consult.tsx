@@ -564,6 +564,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [loading, setLoading] = useState<boolean>(false);
   const [pageLoading, setPageLoading] = useState<boolean>(false);
+  const [overlayLoading, setOverlayLoading] = useState<boolean>(false);
   const [showFilter, setShowFilter] = useState<boolean>(false);
 
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
@@ -571,7 +572,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [showSchdulesView, setShowSchdulesView] = useState<boolean>(false);
   const [newAppointmentTime, setNewAppointmentTime] = useState<string>('');
   const [newRescheduleCount, setNewRescheduleCount] = useState<number>(0);
-  const [callFetchAppointmentApi, setCallFetchAppointmentApi] = useState(true);
+  const [callFetchAppointmentApi, setCallFetchAppointmentApi] = useState(false);
 
   const [transferfollowup, setTransferfollowup] = useState<boolean>(false);
   const [followupdone, setFollowupDone] = useState<boolean>(false);
@@ -711,6 +712,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   };
 
   const fetchAppointments = async (reload?: boolean) => {
+    console.log('check calling  fetchAppointments ---  reload --', reload);
+
     try {
       const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
       const { data } = await client.query<
@@ -726,7 +729,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           limit: 5,
         },
       });
+
+      console.log('check  data?.getPatientAllAppointments  -- ', data?.getPatientAllAppointments);
+
       const { appointments, totalAppointmentCount } = data?.getPatientAllAppointments || {};
+
       const futureOnlineAppts: Appointment[] =
         appointments?.filter(
           (it) =>
@@ -766,9 +773,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       setTotalApptCount(totalAppointmentCount || 0);
       setLoading(false);
       setPageLoading(false);
+      setOverlayLoading(false);
     } catch (error) {
       setLoading(false);
       setPageLoading(false);
+      setOverlayLoading(false);
     }
   };
 
@@ -828,18 +837,14 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       .format('DD MMM');
 
     const getConsultationSubTexts = () => {
-      const {
-        isAutomatedQuestionsComplete,
-        isSeniorConsultStarted, 
-        isConsultStarted
-      } = item || {};
-      return (!isAutomatedQuestionsComplete && !isSeniorConsultStarted) ||
-        !isConsultStarted ? string.common.fillVitalsText
+      const { isAutomatedQuestionsComplete, isSeniorConsultStarted, isConsultStarted } = item || {};
+      return (!isAutomatedQuestionsComplete && !isSeniorConsultStarted) || !isConsultStarted
+        ? string.common.fillVitalsText
         : !isConsultStarted && isAutomatedQuestionsComplete
         ? string.common.gotoConsultRoomJuniorDrText
         : isSeniorConsultStarted
         ? string.common.joinConsultRoom
-        : string.common.mentionReports
+        : string.common.mentionReports;
     };
 
     const getAppointmentStatusText = () => {
@@ -869,7 +874,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     const appointmentDateTime = moment
       .utc(item.appointmentDateTime)
       .local()
-      .format('YYYY-MM-DD HH:mm:ss');      
+      .format('YYYY-MM-DD HH:mm:ss');
     const minutes = moment.duration(moment(appointmentDateTime).diff(new Date())).asMinutes();
     const title =
       minutes > 0 && minutes <= 15 && getAppointmentStatusText() == 'Active'
@@ -881,8 +886,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               ? 'h:mm A'
               : 'DD MMM YYYY, h:mm A'
           );
-    const isActive = minutes > 0 && minutes <= 15 &&
-       getAppointmentStatusText() == 'Active' ? true : false;
+    const isActive =
+      minutes > 0 && minutes <= 15 && getAppointmentStatusText() == 'Active' ? true : false;
     const dateIsAfterconsult = moment(appointmentDateTime).isAfter(moment(new Date()));
     const doctorHospitalName =
       g(item, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')! ||
@@ -1566,7 +1571,23 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
-      <NavigationEvents onDidFocus={(payload) => {}} onDidBlur={(payload) => {}} />
+      <NavigationEvents
+        onDidFocus={(payload) => {
+          console.log('check  NavigationEvents  onDidFocus---- ');
+
+          console.log('check  callFetchAppointmentApi ---- ', callFetchAppointmentApi);
+
+          if (callFetchAppointmentApi) {
+            //setPageLoading(true);
+            setOverlayLoading(true);
+            fetchAppointments();
+          }
+        }}
+        onDidBlur={(payload) => {
+          console.log('check  NavigationEvents  onDidBlur---- ');
+          setCallFetchAppointmentApi(true);
+        }}
+      />
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
         {renderTopView()}
         {renderPatientHeader()}
@@ -1779,6 +1800,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       {renderAppointmentFilterScreen()}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
       <NotificationListener navigation={props.navigation} />
+      {overlayLoading ? <Spinner /> : null}
     </View>
   );
 };
