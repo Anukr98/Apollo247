@@ -12,7 +12,7 @@ import {
   sourceHeaders,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   BackHandler,
   StyleSheet,
@@ -268,6 +268,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     isModifyFlow ? modifiedPatientCart : patientCartItems
   );
   var patientCartItemsCopy = JSON.parse(JSON.stringify(isCartEmpty));
+  const hideCirclePurchaseInModify =
+    isModifyFlow && modifiedOrder?.paymentType !== DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
@@ -294,7 +296,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   useEffect(() => {
     isDiagnosticCircleSubscription
       ? null
-      : setIsCircleAddedToCart?.(AppConfig.Configuration.CIRCLE_PLAN_PRESELECTED); //read from firebase
+      : setIsCircleAddedToCart?.(
+          hideCirclePurchaseInModify ? false : AppConfig.Configuration.CIRCLE_PLAN_PRESELECTED
+        ); //read from firebase
   }, []);
 
   async function populateCartMapping() {
@@ -1018,9 +1022,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         >
           {/**handing already purchased member */}
           {isDiagnosticCircleSubscription ||
-          (isDiagnosticCircleSubscription &&
-            isModifyFlow &&
-            modifiedOrder?.paymentType !== DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT)
+          (!isDiagnosticCircleSubscription && hideCirclePurchaseInModify)
             ? null
             : renderCirclePurchase()}
           {renderPrices('Total MRP', totalPriceExcludingAnyDiscounts.toFixed(2))}
@@ -1376,9 +1378,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         collectionCharges: {
           charges: hcCharges,
           distanceCharges:
-            !!diagnosticSlot?.isPaidSlot && diagnosticSlot?.isPaidSlot
-              ? diagnosticSlot?.distanceCharges
-              : 0,
+            !!diagnosticSlot?.isPaidSlot && diagnosticSlot?.isPaidSlot ? distanceCharges : 0,
         },
         bookingSource: DiagnosticsBookingSource.MOBILE,
         deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
@@ -1993,7 +1993,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       });
   }
 
-  const debouncedChangeHandler = useMemo(() => debounce(onPressProceedToPay, 300), []);
+  const debouncedChangeHandler = debounce(onPressProceedToPay, 300);
 
   //handle the in the modify flow not to show circle if cod.
   // don't show cod with circle purchase on payments page
@@ -2090,7 +2090,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         // selectedTimeSlot={selectedTimeSlot} //change the format
         selectedTimeSlot={diagnosticSlot}
         disableProceedToPay={disableProceedToPay}
-        onPressProceedtoPay={debouncedChangeHandler}
+        onPressProceedtoPay={() => debouncedChangeHandler()}
         showTime={showTime}
         phleboMin={isModifyFlow ? phleboMin : phleboETA}
         isModifyCOD={

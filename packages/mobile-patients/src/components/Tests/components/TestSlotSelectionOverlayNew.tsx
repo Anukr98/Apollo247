@@ -103,6 +103,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   const [isPrepaidSlot, setPrepaidSlot] = useState<boolean>(
     !!isReschdedule ? false : !!isPremium ? isPremium : false
   );
+  const [overallDistanceCharge, setOverallDistanceCharge] = useState<number>(0);
   //no need to show premium segregation in case of reschedule
 
   const [newSelectedSlot, setNewSelectedSlot] = useState(
@@ -235,6 +236,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           setNoSlotsArray(array);
         } else {
           setSlots(slotsArray);
+          setOverallDistanceCharge(getDistanceCharges!);
           setChangedDate(moment(dateToCheck)?.toDate());
           populateSlots(slotsArray);
           //this needs to be added, if need to select the first slot by default
@@ -331,8 +333,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   }
 
   const renderPremiumTag = () => {
-    const distanceCharges =
-      !!slotInfo?.slotInfo?.distanceCharges && slotInfo?.slotInfo?.distanceCharges;
+    const distanceCharges = overallDistanceCharge;
     return (
       <>
         {distanceCharges > 0 ? (
@@ -340,7 +341,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
             <PremiumIcon style={styles.premiumIcon} />
             <Text style={styles.premiumText}>
               Paid Slot - Additional charge of {string.common.Rs}
-              {slotInfo?.slotInfo?.distanceCharges} will be levied
+              {distanceCharges} will be levied
             </Text>
           </View>
         ) : null}
@@ -583,7 +584,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           ) : null}
           <ScrollView style={styles.containerContentStyle} bounces={false}>
             {renderCalendarView()}
-            {isPrepaidSlot ? renderPremiumTag() : null}
+            {renderPremiumTag()}
             {renderSlotSelectionView()}
           </ScrollView>
           {showInOverlay && props.isReschdedule && overallSlotsArray?.length ? (
