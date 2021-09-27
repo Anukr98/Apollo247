@@ -42,6 +42,7 @@ import {
   postCleverTapIfNewSession,
   removeObjectProperty,
   postCleverTapEvent,
+  phrSortByDate,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -363,7 +364,12 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
           'hospitalizations',
           'response'
         );
-        setHospitalizationMainData(phrSortWithDate(hospitalizationsData));
+        let mergeArray: { type: string; data: any }[] = [];
+        hospitalizationsData?.forEach((c) => {
+          mergeArray.push({ type: 'hospitalizations', data: c });
+        });
+        setHospitalizationMainData(phrSortByDate(mergeArray));
+        // console.log(hospitalizationsData, 'hospitalizationsData');
         setShowSpinner(false);
       })
       .catch((error) => {
@@ -414,29 +420,31 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
     });
   };
 
-  const renderHospitalizationItems = (item: HospitalizationType, index: number) => {
+  const renderHospitalizationItems = (item: any, index: number) => {
+    console.log(item.data.dateOfDischarge, 'hospitalizationMainData');
     const getSourceName = (source: string) => {
       return source === 'self' || source === '247self'
         ? string.common.clicnical_document_text
         : source;
     };
-    const prescriptionName = 'Dr. ' + item?.doctorName;
+    const prescriptionName = 'Dr. ' + item?.data?.doctorName;
     const dateText =
-      item?.dateOfHospitalization && item?.date
-        ? `${moment(item?.dateOfHospitalization).format('DD MMM, YYYY')} - ${moment(
-            item?.date
+      item?.data?.dateOfHospitalization && item?.data?.date
+        ? `${moment(item?.data?.dateOfHospitalization).format('DD MMM, YYYY')} - ${moment(
+            item?.data?.date
           ).format('DD MMM, YYYY')}`
-        : moment(item?.date).format('DD MMM YYYY');
-    const soureName = getSourceName(item?.source!) || '-';
+        : moment(item?.data?.date).format('DD MMM YYYY');
+    const soureName = getSourceName(item?.data?.source!) || '-';
     const selfUpload = true;
     const showEditDeleteOption =
-      getSourceName(item?.source!) === string.common.clicnical_document_text ||
-      getSourceName(item?.source!) === '-'
+      getSourceName(item?.data?.source!) === string.common.clicnical_document_text ||
+      getSourceName(item?.data.source!) === '-'
         ? true
         : false;
+    const realItem = item?.data;
     return (
       <HealthRecordCard
-        item={item}
+        item={realItem}
         index={index}
         editDeleteData={editDeleteData(MedicalRecordType.HOSPITALIZATION)}
         showUpdateDeleteOption={showEditDeleteOption}
