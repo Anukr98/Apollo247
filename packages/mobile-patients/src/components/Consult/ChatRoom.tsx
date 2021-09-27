@@ -4525,7 +4525,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       itemId,
       0, //add price
       0, //add price
-      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.CONSULT_ROOM
+      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.CONSULT_ROOM,
+      currentPatient,
+      !!circleSubscriptionId
     );
   }
 

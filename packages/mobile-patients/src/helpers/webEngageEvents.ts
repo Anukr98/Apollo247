@@ -1263,6 +1263,7 @@ export interface WebEngageEvents {
     'Patient UHID': string;
     'Item ID': string | number;
     'Item Price'?: number | string;
+    'Circle user'?: string;
   };
 
   [WebEngageEventName.DIAGNOSTIC_CART_VIEWED]: {
@@ -1334,6 +1335,7 @@ export interface WebEngageEvents {
     'Item ID': string; // (SKUID)
     Source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
     Section?: string;
+    'Circle user' : string; 
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order id': string | number;

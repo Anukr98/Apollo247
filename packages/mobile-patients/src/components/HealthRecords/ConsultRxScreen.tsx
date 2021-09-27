@@ -225,7 +225,12 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     data: any[];
   }> | null>(null);
   const { setLoading: setGlobalLoading } = useUIElements();
-  const { addMultipleCartItems, setEPrescriptions, ePrescriptions } = useShoppingCart();
+  const {
+    addMultipleCartItems,
+    setEPrescriptions,
+    ePrescriptions,
+    circleSubscriptionId,
+  } = useShoppingCart();
   const { locationDetails, setLocationDetails, phrSession, setPhrSession } = useAppCommonData();
   const {
     addMultipleCartItems: addMultipleTestCartItems,
@@ -631,7 +636,15 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   };
 
   function postDiagnosticAddToCart(itemId: string, itemName: string) {
-    DiagnosticAddToCartEvent(itemName, itemId, 0, 0, DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PHR);
+    DiagnosticAddToCartEvent(
+      itemName,
+      itemId,
+      0,
+      0,
+      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PHR,
+      currentPatient,
+      !!circleSubscriptionId
+    );
   }
 
   const onOrderTestMedPress = async (selectedItem: any, caseSheetDetails: any) => {
