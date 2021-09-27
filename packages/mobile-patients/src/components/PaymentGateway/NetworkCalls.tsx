@@ -146,6 +146,7 @@ export const InitiateUPISDKTxn = (
       sdkPresent: sdkPresent,
       endUrls: [AppConfig.Configuration.baseUrl],
       clientAuthToken: clientAuthToken,
+      showLoader: true,
     },
   };
   if (paymentMethod == 'GOOGLEPAY') {
@@ -195,6 +196,18 @@ export const isPhonePeReady = () => {
     payload: {
       action: 'isDeviceReady',
       sdkPresent: 'ANDROID_PHONEPE',
+    },
+  };
+  HyperSdkReact.process(JSON.stringify(payload));
+};
+
+export const isPayTmReady = () => {
+  const payload = {
+    requestId: 'payTm',
+    service: AppConfig.Configuration.jusPayService,
+    payload: {
+      action: 'isDeviceReady',
+      sdkPresent: 'ANDROID_PAYTM',
     },
   };
   HyperSdkReact.process(JSON.stringify(payload));

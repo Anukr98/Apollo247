@@ -32,6 +32,7 @@ import {
   InitiateUPISDKTxn,
   InitiateCredTxn,
   CheckCredEligibility,
+  isPayTmReady,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -89,7 +90,6 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import DeviceInfo from 'react-native-device-info';
 import { useGetClientAuthToken } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useGetClientAuthtoken';
 import { CredPay } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CredPay';
-import { string } from '../../strings/string';
 const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {
@@ -125,6 +125,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [isCardValid, setisCardValid] = useState<boolean>(true);
   const [phonePeReady, setphonePeReady] = useState<boolean>(false);
   const [googlePayReady, setGooglePayReady] = useState<boolean>(false);
+  const [payTmReady, setPayTmReady] = useState<boolean>(false);
   const [availableUPIApps, setAvailableUPIapps] = useState([]);
   const [eligibleApps, setEligibleApps] = useState([]);
   const { showAphAlert, hideAphAlert } = useUIElements();
@@ -166,6 +167,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     fecthPaymentOptions();
     isPhonePeReady();
     isGooglePayReady();
+    isPayTmReady();
     setTimeout(() => fireScreenLoadedEvent(), 2500);
     return () => eventListener.remove();
   }, []);
@@ -275,6 +277,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       case 'isDeviceReady':
         payload?.requestId == 'phonePe' && status && setphonePeReady(true);
         payload?.requestId == 'googlePay' && status && setGooglePayReady(true);
+        payload?.requestId == 'payTm' && status && setPayTmReady(true);
         break;
       case 'eligibility':
         const eligibleApps = payload?.payload?.apps[0]?.paymentMethodsEligibility;
@@ -488,6 +491,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     token
       ? wallet == 'PHONEPE' && phonePeReady
         ? InitiateUPISDKTxn(requestId, token, paymentId, wallet, 'ANDROID_PHONEPE')
+        : wallet == 'PAYTM' && payTmReady
+        ? InitiateUPISDKTxn(requestId, token, paymentId, wallet, 'ANDROID_PAYTM')
         : InitiateWalletTxn(requestId, token, paymentId, wallet)
       : renderErrorPopup();
   }
