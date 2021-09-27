@@ -1557,9 +1557,11 @@ export interface CleverTapEvents {
     type?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
-    Amount: number;
+    'Order Amount': number;
     LOB: string;
     type?: string;
+    'Order id': string;
+    'Payment mode'?: string
   };
   [CleverTapEventName.CONSULT_PAYMENT_INITIATED]: {
     Amount: number;
