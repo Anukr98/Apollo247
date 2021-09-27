@@ -231,7 +231,6 @@ export const firePurchaseEvent = (
   const appsFlyerAttributes = {
     currency: 'INR',
     items: items,
-    transaction_id: orderId,
     af_revenue: Number(grandTotal),
     af_currency: 'INR',
     af_order_id: orderId,
