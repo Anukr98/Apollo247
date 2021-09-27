@@ -25,8 +25,6 @@ import { circleValidity } from '@aph/mobile-patients/src/components/ShoppingCart
 import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
-import AsyncStorage from '@react-native-community/async-storage';
-import string from '@aph/mobile-patients/src/strings/strings.json';
 function createPatientAttributes(currentPatient: any) {
   const patientAttributes = {
     'Patient UHID': g(currentPatient, 'uhid'),
@@ -489,7 +487,7 @@ export function PaymentInitiated(grandTotal: number, LOB: string, type: string) 
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.PAYMENT_INITIATED]
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
-    Amount: grandTotal,
+    'Order Amount': grandTotal,
     LOB: LOB,
     type: type,
   };
