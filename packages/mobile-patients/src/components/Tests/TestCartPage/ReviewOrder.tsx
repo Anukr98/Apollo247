@@ -242,6 +242,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const [defaultCirclePlan, setDefaultCirclePlan] = useState<any>(null);
   const [allMembershipPlans, setAllMembershipPlans] = useState<any>([]);
   const [showCirclePopup, setShowCirclePopup] = useState<boolean>(false);
+  const [isClicked, setIsClicked] = useState<boolean>(false);
 
   let itemNamesToRemove_global: string[] = [];
   let itemIdsToRemove_global: Number[] = [];
@@ -1999,6 +2000,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   // don't show cod with circle purchase on payments page
 
   function onPressProceedToPay() {
+    setIsClicked(true);
     setLoading?.(true);
 
     if (isCircleAddedToCart && localCircleSubId == '') {
@@ -2006,6 +2008,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     } else {
       callDiagnosticBookingServices();
     }
+
+    setTimeout(() => {
+      setIsClicked(false);
+    }, 500);
   }
 
   function callDiagnosticBookingServices() {
@@ -2089,8 +2095,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       <TestProceedBar
         // selectedTimeSlot={selectedTimeSlot} //change the format
         selectedTimeSlot={diagnosticSlot}
-        disableProceedToPay={disableProceedToPay}
-        onPressProceedtoPay={() => debouncedChangeHandler()}
+        disableProceedToPay={disableProceedToPay || isClicked}
+        onPressProceedtoPay={() => onPressProceedToPay()}
         showTime={showTime}
         phleboMin={isModifyFlow ? phleboMin : phleboETA}
         isModifyCOD={
