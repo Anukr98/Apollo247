@@ -126,8 +126,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [phonePeReady, setphonePeReady] = useState<boolean>(false);
   const [googlePayReady, setGooglePayReady] = useState<boolean>(false);
   const [payTmReady, setPayTmReady] = useState<boolean>(false);
-  const [availableUPIApps, setAvailableUPIapps] = useState([]);
-  const [eligibleApps, setEligibleApps] = useState([]);
+  const [availableUPIApps, setAvailableUPIapps] = useState<any>(null);
+  const [eligibleApps, setEligibleApps] = useState<any>(null);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { authToken, setauthToken } = useAppCommonData();
@@ -168,9 +168,12 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     isPhonePeReady();
     isGooglePayReady();
     isPayTmReady();
-    setTimeout(() => fireScreenLoadedEvent(), 2500);
     return () => eventListener.remove();
   }, []);
+
+  useEffect(() => {
+    paymentMethods && availableUPIApps && eligibleApps && savedCards && fireScreenLoadedEvent();
+  }, [paymentMethods, availableUPIApps, eligibleApps, savedCards]);
 
   useEffect(() => {
     if (isDiagnostic) {

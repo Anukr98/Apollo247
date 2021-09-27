@@ -146,7 +146,7 @@ export function PharmaOrderPlaced(
 export function PaymentScreenLoaded(
   defaultClevertapEventParams: any,
   savedCards: number,
-  eligibleApps: string[],
+  eligibleApps: string[] | null,
   intentApps: string[]
 ) {
   try {
@@ -166,7 +166,7 @@ export function PaymentScreenLoaded(
       'Total Amount': amount,
       "isHC's": !!availableHc ? true : false,
       NumSavedCards: savedCards,
-      'Eligible Payment Methods': eligibleApps,
+      'Eligible Payment Methods': eligibleApps || [],
       'Num UPI Intent Apps': intentApps?.length,
       'UPI Intent App Names': intentApps,
       "HC's Balance": availableHc,
