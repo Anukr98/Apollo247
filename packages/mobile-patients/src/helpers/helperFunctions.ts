@@ -1634,9 +1634,9 @@ export const postwebEngageAddToCartEvent = (
     special_price,
     category_id,
   }: Pick<MedicineProduct, 'sku' | 'name' | 'price' | 'special_price' | 'category_id'>,
-  source: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Source'],
-  sectionName?: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Section Name'],
-  categoryName?: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Category Name'],
+  source: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Nav src'],
+  sectionName?: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Section name'],
+  categoryName?: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Category name'],
   pharmacyCircleAttributes?: PharmacyCircleEvent
 ) => {
   const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART] = {
@@ -1657,19 +1657,19 @@ export const postwebEngageAddToCartEvent = (
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
   const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART] = {
-    'product name': name,
-    'product id (SKUID)': sku,
-    'Category Name': categoryName || undefined,
-    'Section Name': sectionName || undefined,
+    'Product name': name,
+    'SKU ID': sku,
+    'Category name': categoryName || undefined,
+    'Section name': sectionName || undefined,
     'Category ID': category_id || undefined,
     Price: price,
-    'Discounted Price': Number(special_price) || undefined,
+    'Discounted price': Number(special_price) || undefined,
     Quantity: 1,
-    Source: source,
-    'Circle Member':
+    'Nav src': source,
+    'Circle member':
       getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
       undefined,
-    'Circle Membership Value': pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
+    'Circle membership value': pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
   };
   postCleverTapEvent(CleverTapEventName.PHARMACY_ADD_TO_CART, cleverTapEventAttributes);
 };
@@ -3579,42 +3579,42 @@ export const getCleverTapCheckoutCompletedEventAttributes = (
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
   const eventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED] = {
     'Transaction ID': paymentOrderId,
-    'Order Type': 'Cart',
-    'Prescription Added': !!(physicalPrescriptions.length || ePrescriptions.length),
+    'Order type': 'Cart',
+    'Prescription added': !!(physicalPrescriptions.length || ePrescriptions.length),
     'Shipping information': shippingInformation, // (Home/Store address)
     'Total items in cart': cartItems.length,
-    'Grand Total': cartTotal + deliveryCharges,
-    'Total Discount %': coupon
+    'Grand total': cartTotal + deliveryCharges,
+    'Total discount %': coupon
       ? getFormattedAmount(((couponDiscount + productDiscount) / cartTotal) * 100)
       : 0,
-    'Discount Amount': getFormattedAmount(couponDiscount + productDiscount),
-    'Shipping Charges': deliveryCharges,
+    'Discount amount': getFormattedAmount(couponDiscount + productDiscount),
+    'Shipping charges': deliveryCharges,
     'Net after discount': getFormattedAmount(grandTotal),
     'Payment status': 1,
-    'Service Area': 'Pharmacy',
-    'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
-    af_revenue: getFormattedAmount(grandTotal),
-    'Circle Cashback Amount':
+    'Service area': 'Pharmacy',
+    'Mode of delivery': deliveryAddressId ? 'Home' : 'Pickup',
+    'AF revenue': getFormattedAmount(grandTotal),
+    'Circle cashback amount':
       circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
-    'Split Cart': orders?.length > 1 ? 'Yes' : 'No',
-    'Prescription Option selected': uploadPrescriptionRequired
+    'Split cart': orders?.length > 1 ? 'Yes' : 'No',
+    'Prescription option selected': uploadPrescriptionRequired
       ? 'Prescription Upload'
       : 'Not Applicable',
-    'Circle Member':
+    'Circle member':
       getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
       undefined,
-    'Circle Membership Value': pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
-    'User Type': pharmacyUserTypeAttribute?.User_Type || undefined,
-    'Coupon Applied': coupon?.coupon || undefined,
+    'Circle membership value': pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
+    'User type': pharmacyUserTypeAttribute?.User_Type || undefined,
+    'Coupon applied': coupon?.coupon || undefined,
     Pincode: pinCode || undefined,
-    'Cart Items': JSON.stringify(cartItems),
-    'Order_ID(s)': ordersIds?.map((i) => i?.orderAutoId)?.join(','),
+    'Cart items': JSON.stringify(cartItems),
+    'Order ID(s)': ordersIds?.map((i) => i?.orderAutoId)?.join(','),
   };
   if (store) {
     eventAttributes['Store ID'] = store.storeid;
-    eventAttributes['Store Name'] = store.storename;
-    eventAttributes['Store Number'] = store.phone;
-    eventAttributes['Store Address'] = store.address;
+    eventAttributes['Store name'] = store.storename;
+    eventAttributes['Store number'] = store.phone;
+    eventAttributes['Store address'] = store.address;
   }
   return eventAttributes;
 };
@@ -3696,4 +3696,9 @@ export const isCartPriceWithInSpecifiedRange = (
   } catch (error) {
     return false;
   }
+};
+
+export const convertDateToEpochFormat = (value: Date) => {
+  const epochValue = value ? `$D_${Math.floor(value.getTime()/1000.0)}` : '';
+  return epochValue;
 };

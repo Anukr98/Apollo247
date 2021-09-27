@@ -345,45 +345,45 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       const shippingInformation = addr ? formatAddress(addr) : store ? store.address : '';
       const eventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED] = {
         'Transaction ID': transactionId || undefined,
-        'Order Type': 'Cart',
-        'Prescription Added': !!(physicalPrescriptions.length || ePrescriptions.length),
+        'Order type': 'Cart',
+        'Prescription added': !!(physicalPrescriptions.length || ePrescriptions.length),
         'Shipping information': shippingInformation, // (Home/Store address)
         'Total items in cart': cartItems.length,
-        'Grand Total': cartTotal + deliveryCharges,
-        'Total Discount %': coupon
+        'Grand total': cartTotal + deliveryCharges,
+        'Total discount %': coupon
           ? getFormattedAmount(((couponDiscount + productDiscount) / cartTotal) * 100)
           : 0,
-        'Discount Amount': getFormattedAmount(couponDiscount + productDiscount),
-        'Shipping Charges': deliveryCharges,
+        'Discount amount': getFormattedAmount(couponDiscount + productDiscount),
+        'Shipping charges': deliveryCharges,
         'Net after discount': getFormattedAmount(grandTotal),
         'Payment status': 1,
-        'Payment Type': isCOD ? 'COD' : 'Prepaid',
-        'Service Area': 'Pharmacy',
-        'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
-        af_revenue: getFormattedAmount(grandTotal),
-        'Circle Cashback Amount':
+        'Payment type': isCOD ? 'COD' : 'Prepaid',
+        'Service area': 'Pharmacy',
+        'Mode of delivery': deliveryAddressId ? 'Home' : 'Pickup',
+        'AF revenue': getFormattedAmount(grandTotal),
+        'Circle cashback amount':
           circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
-        'Split Cart': orders?.length > 1 ? 'Yes' : 'No',
-        'Prescription Option selected': uploadPrescriptionRequired
+        'Split cart': orders?.length > 1 ? 'Yes' : 'No',
+        'Prescription option selected': uploadPrescriptionRequired
           ? 'Prescription Upload'
           : 'Not Applicable',
-        'Circle Member':
+        'Circle member':
           getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
           undefined,
-        'Circle Membership Value':
+        'Circle membership value':
           pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
-        'User Type': pharmacyUserTypeAttribute?.User_Type || undefined,
-        'Coupon Applied': coupon?.coupon || undefined,
+        'User type': pharmacyUserTypeAttribute?.User_Type || undefined,
+        'Coupon applied': coupon?.coupon || undefined,
         Pincode: pinCode || undefined,
-        'Cart Items': JSON.stringify(cartItems) || undefined,
-        'Order_ID(s)': orderAutoId || undefined,
-        'Payment Instrument': isCOD ? 'COD' : paymentMode || undefined,
+        'Cart items': JSON.stringify(cartItems) || undefined,
+        'Order ID(s)': orderAutoId || undefined,
+        'Payment instrument': isCOD ? 'COD' : paymentMode || undefined,
       };
       if (store) {
         eventAttributes['Store ID'] = store.storeid;
-        eventAttributes['Store Name'] = store.storename;
-        eventAttributes['Store Number'] = store.phone;
-        eventAttributes['Store Address'] = store.address;
+        eventAttributes['Store name'] = store.storename;
+        eventAttributes['Store number'] = store.phone;
+        eventAttributes['Store address'] = store.address;
       }
       return eventAttributes;
     } catch (error) {

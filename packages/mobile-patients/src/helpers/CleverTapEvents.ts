@@ -8,6 +8,7 @@ import {
   UploadPrescSource,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { CircleEventSource } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { ShoppingCartItem } from '../components/ShoppingCartProvider';
 
 type YesOrNo = 'Yes' | 'No';
 type HdfcPlan = 'SILVER' | 'GOLD' | 'PLATINUM';
@@ -131,6 +132,7 @@ export enum CleverTapEventName {
   PHARMACY_NOTIFY_ME = 'Pharmacy Notify Me',
   PHARMACY_UPLOAD_PRESCRIPTION_CLICKED = 'Pharmacy Upload Prescription Clicked',
   PHARMACY_TAT_API_CALLED = 'Pharmacy TAT API Called',
+  PHARMACY_CART_TAT_API_CALLED = 'Pharmacy Cart TAT API Called',
   PHARMACY_PROCEED_TO_ADD_NEW_ADDRESS_CLICK = 'Pharmacy Proceed to Add Address Clicked',
   PHARMACY_PAYMENT_INSTRUMENT_SELECTED = 'Pharmacy Payment Instrument Selected',
   PHARMACY_NONCART_ORDER_SUBMIT_CLICKED = 'Pharmacy Noncart Order Submit Clicked',
@@ -151,6 +153,8 @@ export enum CleverTapEventName {
   PHARMACY_MY_ORDERS_CLICKED = 'Pharmacy My Orders Clicked',
   PHARMACY_MY_ORDER_TRACKING_CLICKED = 'Pharmacy Track Order Clicked',
   PHARMACY_FAST_SUBSTITUTES_VIEWED = 'Pharmacy Fast Substitutes Viewed',
+  PHARMACY_PRESCRIPTION_OPTION_CLICKED = 'Pharmacy Prescription Option Clicked',
+  PHARMACY_APPLY_COUPON_CLICKED = 'Pharmacy Apply Coupon Clicked',
 
   // Diagnostics Events
   DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
@@ -795,9 +799,9 @@ export interface ConsultedBefore extends PatientInfo {
 }
 
 export interface ReorderMedicine extends PatientInfo {
-  source: string;
-  orderType: 'Cart' | 'Non Cart' | 'Offline';
-  noOfItemsNotAvailable?: number;
+  'Nav src': string;
+  'Order type': 'Cart' | 'Non Cart' | 'Offline';
+  'No of items not available'?: number;
 }
 
 export interface ItemSearchedOnLanding extends DiagnosticUserInfo {
@@ -1104,19 +1108,19 @@ export interface CleverTapEvents {
     tabName: string;
   };
   [CleverTapEventName.PHARMACY_NOTIFY_ME]: {
-    'product name': string;
-    'product id': string; // (SKUID)
+    'Product name': string;
+    'SKU ID': string; // (SKUID)
     'Category ID': string;
-    price: number;
-    pincode: string;
-    serviceable: YesOrNo;
+    Price: number;
+    Pincode: string;
+    Serviceability: YesOrNo;
   };
 
   [CleverTapEventName.PHARMACY_CATEGORY_VIEWED]: {
-    'Category Name'?: string;
+    'Category name'?: string;
     'Category ID'?: string;
-    Source: 'Home' | 'Category Tree';
-    'Section Name'?: string;
+    'Nav src': 'Home' | 'Category Tree';
+    'Section name'?: string;
   };
   [CleverTapEventName.CATEGORY_FILTER_CLICKED]: {
     'Category Name': string;
@@ -1150,12 +1154,12 @@ export interface CleverTapEvents {
     'Store Address': string;
   };
   [CleverTapEventName.PHARMACY_ADD_TO_CART]: {
-    'product name': string;
-    'product id (SKUID)': string; // (SKUID)
+    'Product name': string;
+    'SKU ID': string; // (SKUID)
     Price: number;
-    'Discounted Price'?: number;
+    'Discounted price'?: number;
     Quantity: number;
-    Source:
+    'Nav src':
       | 'Pharmacy Home'
       | 'Pharmacy PDP'
       | 'Pharmacy List'
@@ -1168,15 +1172,15 @@ export interface CleverTapEvents {
       | 'PDP Fast Substitutes';
     Brand?: string;
     'Brand ID'?: string;
-    'Category Name'?: string;
+    'Category name'?: string;
     'Category ID'?: string;
     Section?: string;
-    'Section Name'?: string;
-    af_revenue?: number;
-    af_currency?: string;
-    'Circle Member': PharmacyCircleMemberValues;
-    'Circle Membership Value'?: number | null;
-    'Cart Items'?: number;
+    'Section name'?: string;
+    'AF revenue'?: number;
+    'AF currency'?: string;
+    'Circle member': PharmacyCircleMemberValues;
+    'Circle membership value'?: number | null;
+    'Cart items'?: number;
   };
   [CleverTapEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE]: {
     'product name': string;
@@ -1188,26 +1192,26 @@ export interface CleverTapEvents {
   [CleverTapEventName.PHARMACY_CART_VIEWED]: {
     'Customer ID': string;
     'Total items in cart': number;
-    'Sub Total': number;
-    'Shipping Charges': number;
+    'Sub total': number;
+    'Shipping charges': number;
     'Coupon code used'?: string;
-    'Total Discount': number;
-    'Order Value': number;
-    'Prescription Required'?: YesOrNo;
+    'Total discount': number;
+    'Order value': number;
+    'Prescription required'?: YesOrNo;
     'Cart ID'?: string;
-    'Cart Items'?: number;
-    'Service Area': 'Pharmacy' | 'Diagnostic';
-    'Circle Member': PharmacyCircleMemberValues;
-    'Circle Membership Value'?: number | null;
-    'User Type'?: PharmaUserStatus;
+    'Cart items'?: ShoppingCartItem[];
+    'Service area': 'Pharmacy' | 'Diagnostic';
+    'Circle member': PharmacyCircleMemberValues;
+    'Circle membership value'?: number | null;
+    'User type'?: PharmaUserStatus;
   };
   [CleverTapEventName.PHARMACY_CART_SKU_PRICE_MISMATCH]: {
-    'Mobile Number': string;
-    'Sku Id': string;
+    'Mobile number': string;
+    'SKU ID': string;
     'Magento MRP': number;
-    'Magento Pack Size': number;
+    'Magento pack size': number;
     'Store API MRP': number;
-    'Price Change In Cart': 'Yes' | 'No';
+    'Price change in cart': 'Yes' | 'No';
   };
 
   [CleverTapEventName.TAT_API_FAILURE]: {
@@ -1262,19 +1266,19 @@ export interface CleverTapEvents {
   [CleverTapEventName.PHARMACY_ITEMS_REMOVED_FROM_CART]: {
     'Product ID': string;
     'Customer ID': string;
-    'Product Name': string;
-    'No. of items': number;
+    'Product name': string;
+    'No of items': number;
   };
   [CleverTapEventName.PHARMACY_COUPON_ACTION]: {
     'Customer ID': string;
     'Cart Items'?: string;
   };
   [CleverTapEventName.CART_COUPON_APPLIED]: {
-    'Coupon Code'?: string;
+    'Coupon code'?: string;
     'Discounted amount': string | number;
     'Customer ID': string;
-    'Cart Items'?: number;
-    'Coupon Description'?: string;
+    'Cart items'?: string;
+    'Coupon description'?: string;
   };
   [CleverTapEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED]: {
     OptionSelected: 'Search and add' | 'All Medicine' | 'Call me for details';
@@ -1303,38 +1307,38 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED]: {
     'Transaction ID'?: string | number;
-    'Order Type': 'Cart' | 'Non Cart';
-    'Prescription Required'?: YesOrNo;
-    'Prescription Added': boolean;
+    'Order type': 'Cart' | 'Non Cart';
+    'Prescription required'?: YesOrNo;
+    'Prescription added': boolean;
     'Shipping information'?: string; // (Home/Store address)
     'Total items in cart'?: number; // Optional
-    'Grand Total'?: number; // Optional
-    'Total Discount %'?: number; // Optional
-    'Discount Amount'?: number; // Optional
-    'Shipping Charges'?: number; // Optional
+    'Grand total'?: number; // Optional
+    'Total discount %'?: number; // Optional
+    'Discount amount'?: number; // Optional
+    'Shipping charges'?: number; // Optional
     'Net after discount'?: number; // Optional
     'Payment status'?: number; // Optional
-    'Payment Type'?: 'COD' | 'Prepaid'; // Optional
+    'Payment type'?: 'COD' | 'Prepaid'; // Optional
     'Cart ID'?: string | number; // Optional
-    'Service Area': 'Pharmacy' | 'Diagnostic';
-    'Mode of Delivery'?: 'Home' | 'Pickup';
+    'Service area': 'Pharmacy' | 'Diagnostic';
+    'Mode of delivery'?: 'Home' | 'Pickup';
     'Store ID'?: string;
-    'Store Name'?: string;
-    'Store Number'?: string;
-    'Store Address'?: string;
-    af_revenue: number;
-    af_currency: string;
-    'Circle Member'?: PharmacyCircleMemberValues;
-    'Circle Membership Value'?: number | null;
-    'Circle Cashback Amount': number;
-    'Cart Items'?: string | undefined;
-    'User Type'?: PharmaUserStatus;
-    'Split Cart'?: YesOrNo;
-    'Prescription Option selected'?: PrescriptionOptions;
-    'Coupon Applied'?: string;
+    'Store name'?: string;
+    'Store number'?: string;
+    'Store address'?: string;
+    'AF revenue': number;
+    'AF currency'?: string;
+    'Circle member'?: PharmacyCircleMemberValues;
+    'Circle membership value'?: number | null;
+    'Circle cashback amount': number;
+    'Cart items'?: string | undefined;
+    'User type'?: PharmaUserStatus;
+    'Split cart'?: YesOrNo;
+    'Prescription option selected'?: PrescriptionOptions;
+    'Coupon applied'?: string;
     Pincode?: string | number;
-    'Payment Instrument'?: string;
-    'Order_ID(s)'?: string;
+    'Payment instrument'?: string;
+    'Order ID(s)'?: string;
   };
   [CleverTapEventName.PHARMACY_DETAIL_IMAGE_CLICK]: {
     'Product ID': string;
@@ -1344,11 +1348,12 @@ export interface CleverTapEvents {
   [CleverTapEventName.PHARMACY_ENTER_DELIVERY_PINCODE_CLICKED]: UserInfo;
   [CleverTapEventName.PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED]: {
     'Patient UHID': string;
-    'Mobile Number': string;
+    'Mobile number': string;
     'Customer ID': string;
     Serviceability: string;
-    pincode: string;
-    source: string;
+    Pincode: string;
+    'Nav src': string;
+    'Auto selected': YesOrNo;
   };
   [CleverTapEventName.PHARMACY_PINCODE_NONSERVICABLE]: {
     'Mobile Number': string;
@@ -1356,12 +1361,16 @@ export interface CleverTapEvents {
     Servicable: boolean;
   };
   [CleverTapEventName.PHARMACY_HOME_PAGE_BANNER]: {
-    BannerPosition: number;
+    'Banner position': number;
   };
   [CleverTapEventName.CALL_THE_NEAREST_PHARMACY]: {
     pincode: string;
     'Mobile Number': string;
   };
+  [CleverTapEventName.PHARMACY_PRESCRIPTION_OPTION_CLICKED]: {
+    Option: 'Search and add' | 'All Medicine' | 'Call me for details';
+  };
+  [CleverTapEventName.PHARMACY_APPLY_COUPON_CLICKED]: {};
 
   // ********** Diagnostic Events *******
 
@@ -1965,54 +1974,54 @@ export interface CleverTapEvents {
     'Mobile Number': string;
   };
   [CleverTapEventName.PHARMACY_ORDER_SUMMARY_CLICKED]: {
-    'Order ID': string;
+    'Order ID(s)': string;
     'Order date'?: string;
     'Order type': 'Non Cart' | 'Cart' | 'Offline';
     'Customer ID': string;
-    'Delivery Date'?: string;
+    'Delivery date'?: string;
     'Mobile number': string;
     'Order status': MEDICINE_ORDER_STATUS;
   };
   [CleverTapEventName.PHARMACY_MY_ORDER_TRACKING_CLICKED]: {
     'Customer ID': string;
-    'Mobile Number': string;
+    'Mobile number': string;
     'Order ID': string;
-    'Order Type': 'Cart' | 'Non Cart';
-    'Order Status': MEDICINE_ORDER_STATUS; //Order Initiated / Payment Success / Orders Placed, etc.
-    'Order Date': Date;
-    'Delivery Date'?: Date; // TAT Promised
+    'Order type': 'Cart' | 'Non Cart';
+    'Order status': MEDICINE_ORDER_STATUS; //Order Initiated / Payment Success / Orders Placed, etc.
+    'Order date': string;
+    'Delivery date'?: string; // TAT Promised
   };
   [CleverTapEventName.PHARMACY_PROCEED_TO_ADD_NEW_ADDRESS_CLICK]: {
     Source: 'My Account' | 'Upload Prescription' | 'Cart' | 'Diagnostics Cart';
   };
   [CleverTapEventName.PHARMACY_ADD_NEW_ADDRESS_COMPLETED]: {
-    Source: 'My Account' | 'Upload Prescription' | 'Cart' | 'Diagnostics Cart';
+    'Nav src': 'My Account' | 'Upload Prescription' | 'Cart' | 'Diagnostics Cart' | 'PDP';
     Success?: YesOrNo; // Yes / No (If Error message shown because it is unservicable)
     'Delivery address': string;
     Pincode: string;
-    'TAT Displayed': Date;
-    'Delivery TAT': number;
+    'TAT displayed'?: string;
+    'Delivery TAT'?: number;
   };
   [CleverTapEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS]: {
-    'TAT Displayed'?: Date;
-    'Delivery Successful': YesOrNo; // Yes / No (If Error message shown because it is unservicable)
-    'Delivery Address': string;
+    'TAT displayed'?: string;
+    'Delivery successful': YesOrNo; // Yes / No (If Error message shown because it is unservicable)
+    'Delivery address': string;
     Pincode: string;
     'Delivery TAT': number;
-    TAT_Hrs: number;
-    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
-    'Circle Membership Value': number | null;
-    'User Type'?: PharmaUserStatus;
-    'Split Cart': YesOrNo;
-    'Cart Items': string;
-    Shipment_1_TAT?: Date;
-    Shipment_2_TAT?: Date;
-    Shipment_1_Value?: number; // amount after discount
-    Shipment_2_Value?: number;
-    Shipment_1_Items?: number; // number of items
-    Shipment_2_Items?: number;
-    Shipment_1_Site_Type?: SiteType;
-    Shipment_2_Site_Type?: SiteType;
+    'TAT hrs': number;
+    'Circle membership added': 'Yes' | 'No' | 'Existing';
+    'Circle membership value': number | null;
+    'User type'?: PharmaUserStatus;
+    'Split cart': YesOrNo;
+    'Cart items': string;
+    'Shipment1 TAT'?: Date;
+    'Shipment2 TAT'?: Date;
+    'Shipment1 value'?: number; // amount after discount
+    'Shipment2 value'?: number;
+    'Shipment1 items'?: number; // number of items
+    'Shipment2 items'?: number;
+    'Shipment1 site type'?: SiteType;
+    'Shipment2 site yype'?: SiteType;
   };
 
   [CleverTapEventName.PHARMACY_CART_ADDRESS_SELECTED_FAILURE]: {
@@ -2023,36 +2032,49 @@ export interface CleverTapEvents {
   };
 
   [CleverTapEventName.PHARMACY_AVAILABILITY_API_CALLED]: {
-    Source: 'PDP' | 'Add_Search' | 'Add_Display' | 'Cart';
-    Input_SKU?: string;
-    Input_Pincode: string;
-    Input_MRP: number;
-    No_of_items_in_the_cart: number;
-    Response_Exist: YesOrNo;
-    Response_MRP: number;
-    Response_Qty: number;
+    'Nav src': 'PDP' | 'Add_Search' | 'Add_Display' | 'Cart';
+    'Input SKU'?: string;
+    'Input pincode': string;
+    'Input MRP': number;
+    'No of items in the cart': number;
+    'Response exist': YesOrNo;
+    'Response MRP': number;
+    'Response qty': number;
+    'Cart items'?: string;
   };
 
   [CleverTapEventName.PHARMACY_TAT_API_CALLED]: {
-    Source: 'PDP' | 'Cart';
-    Input_SKU: string;
-    Input_qty: number;
-    Input_lat: number;
-    Input_long: number;
-    Input_pincode: string;
-    Input_MRP: number;
-    No_of_items_in_the_cart: number;
-    Response_Exist: YesOrNo;
+    'Nav src': 'PDP' | 'Cart';
+    'Input SKU': string;
+    'Input qty': number;
+    'Input lat': number;
+    'Input long': number;
+    'Input pincode': string;
+    'Input MRP': number;
+    'No of items in the cart': number;
+    'Response exist': YesOrNo;
     Response_MRP: number;
-    Response_Qty: number;
-    Response_lat: number;
-    Response_lng: number;
-    Response_ordertime: number;
-    Response_pincode: string;
-    Response_storeCode: string;
-    Response_storeType: string;
-    Response_tat: string;
-    Response_tatU: number;
+    'Response qty': number;
+    'Response lat': number;
+    'Response long': number;
+    'Response order time': number;
+    'Response pincode': string;
+    'Response store code': string;
+    'Response store type': string;
+    'Response TAT': string;
+    'Response TATU': number;
+  };
+  [CleverTapEventName.PHARMACY_CART_TAT_API_CALLED]: {
+    'TAT 1 day'?: number; 
+    'TAT 1 hour'?: number;
+    'TAT 1 items'?: number; //no of items
+    'TAT 1 amount'?: number;
+    'TAT 2 day'?: number;
+    'TAT 2 hour'?: number;
+    'TAT 2 items'?: number; //no of items
+    'TAT 2 amount'?: number;
+    'Split cart': YesOrNo;
+    Status: 'Success' | 'Failure';
   };
 
   [CleverTapEventName.PHARMACY_CART_SELECT_DELIVERY_ADDRESS_CLICKED]: {
@@ -2501,36 +2523,36 @@ export interface CleverTapEvents {
     'Location permission': string;
   };
   [CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED]: {
-    source: 'deeplink' | 'app home';
+    'Nav src': 'deeplink' | 'app home';
   };
   [CleverTapEventName.PHARMACY_PRODUCT_PAGE_VIEWED]: {
-    Source: ProductPageViewedSource;
-    'product id (SKUID)': string;
-    'product name': string;
-    Stockavailability: YesOrNo | 'Not for Sale';
+    'Nav src': ProductPageViewedSource;
+    'SKU ID': string;
+    'Product name': string;
+    'Stock availability': YesOrNo | 'Not for Sale';
     /**
      * Category ID & Category Name is applicable if customers clicks on products from any category (all categories of shop by category or health areas)
      */
     'Category ID'?: string;
-    CategoryName?: string;
+    'Category name'?: string;
     /**
      * Section Name is applicable if customer clicked on the product from the homepage product widgets like Hot sellers, Recommended products
      */
-    'Section Name'?: string;
-    'Circle Member'?: PharmacyCircleMemberValues;
-    'Circle Membership Value'?: number | null;
-    User_Type?: PharmaUserStatus;
+    'Section name'?: string;
+    'Circle member'?: PharmacyCircleMemberValues;
+    'Circle membership value'?: number | null;
+    'User type'?: PharmaUserStatus;
     Pincode?: string;
-    serviceable: YesOrNo;
-    TATDay?: number | null;
-    TatHour?: number | null;
-    TatDateTime?: Date | string;
-    ProductType?: string;
-    MaxOrderQuantity?: number;
+    Serviceability: YesOrNo;
+    'TAT day'?: number | null;
+    'TAT hour'?: number | null;
+    'TAT date time'?: Date | string;
+    'Product type'?: string;
+    'Max order quantity'?: number;
     MRP?: number;
-    SpecialPrice?: number | null;
-    'Circle Cashback'?: number;
-    SubCategory: string;
+    'Special price'?: number | null;
+    'Circle cashback'?: number;
+    'Sub category': string;
   };
   [CleverTapEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
     'Patient Name': string;

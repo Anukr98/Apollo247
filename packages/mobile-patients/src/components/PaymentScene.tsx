@@ -219,7 +219,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
         });
         postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, {
           ...cleverTapCheckoutEventAttributes,
-          'Cart Items': JSON.stringify(cartItems) || undefined,
+          'Cart items': JSON.stringify(cartItems) || undefined,
         });
       }
     }
