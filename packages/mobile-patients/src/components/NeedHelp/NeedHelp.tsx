@@ -38,9 +38,10 @@ import {
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
 import { getHelpdeskTickets } from '../../graphql/types/getHelpdeskTickets';
-import { GET_HELPDESK_TICKETS } from '@aph/mobile-patients/src/graphql/profiles';
+import { GET_HELPDESK_TICKETS, GET_RECENT_TICKET } from '@aph/mobile-patients/src/graphql/profiles';
 import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
 import { OrderStatusIndicator } from './OrderStatusIndicator';
+import { getRecentTicketQuery } from '@aph/mobile-patients/src/graphql/types/getRecentTicketQuery';
 
 const { text } = theme.viewStyles;
 const { LIGHT_BLUE } = theme.colors;
@@ -199,6 +200,7 @@ export const NeedHelp: React.FC<Props> = (props) => {
   const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
   const [showPreviousTickets, setShowPreviousTickets] = useState<boolean>(false);
   const [helpdeskTickets, setHelpdeskTickets] = useState<any>([]);
+  const [recentHelpdeskTicket, setRecentHelpdeskTicket] = useState<any>();
 
   const client = useApolloClient();
 
@@ -224,12 +226,16 @@ export const NeedHelp: React.FC<Props> = (props) => {
     fetchQueries();
     fetchOngoingQuery();
 
+    fetchRecentHepdeskTicket();
+
     const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     });
 
     const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       BackHandler.addEventListener('hardwareBackPress', handleBack);
+
+      fetchRecentHepdeskTicket();
       fetchHelpdeskTickets();
     });
 
@@ -256,6 +262,20 @@ export const NeedHelp: React.FC<Props> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('fetchHelpdeskTickets', error);
+      });
+  };
+
+  const fetchRecentHepdeskTicket = () => {
+    client
+      .query<getRecentTicketQuery>({
+        query: GET_RECENT_TICKET,
+        fetchPolicy: 'no-cache',
+      })
+      .then((response) => {
+        setRecentHelpdeskTicket(response?.data?.getRecentTicket?.ticket);
+      })
+      .catch((error) => {
+        CommonBugFender('getRecentTicketQuery', error);
       });
   };
 
@@ -385,10 +405,10 @@ export const NeedHelp: React.FC<Props> = (props) => {
   };
 
   const renderTicketsSummaryHeader = () => {
-    return helpdeskTickets != null && helpdeskTickets.length > 0 ? (
+    return recentHelpdeskTicket ? (
       <View>
         <View style={styles.ticketsSummaryHeader}>
-          {renderOrderStatusCard(helpdeskTickets[0])}
+          {renderOrderStatusCard(recentHelpdeskTicket)}
 
           <View style={styles.previousTextContainerStyle}>
             <Text style={styles.previousTicketsTextStyle}>
