@@ -146,7 +146,6 @@ export const InitiateUPISDKTxn = (
       sdkPresent: sdkPresent,
       endUrls: [AppConfig.Configuration.baseUrl],
       clientAuthToken: clientAuthToken,
-      showLoader: true,
     },
   };
   if (paymentMethod == 'GOOGLEPAY') {
