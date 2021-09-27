@@ -343,7 +343,11 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     const planToConsider = pricesForItem?.planToConsider;
     const discountToDisplay = pricesForItem?.discountToDisplay;
     const mrpToDisplay = pricesForItem?.mrpToDisplay;
-    const widgetType = (data?.diagnosticWidgetType).toLowerCase();
+    const widgetType = Array.isArray(data)
+      ? sourceScreen === AppRoutes.CartPage
+        ? string.diagnosticCategoryTitle.item
+        : data?.[0]?.diagnosticWidgetType
+      : data?.diagnosticWidgetType?.toLowerCase();
 
     DiagnosticAddToCartEvent(
       item?.itemTitle,
