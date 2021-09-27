@@ -148,7 +148,13 @@
     "hcCreditInfo": "HCs are calculated based on the total amount paid. In case a coupon is applied, HCs to be credited will be adjusted accordingly.",
     "circleCashback": "CIRCLE CASHBACK",
     "circleDiscount": "CIRCLE DISCOUNT",
-    "bookingFee": "Booking Fee"
+    "bookingFee": "Booking Fee",
+    "phonePeWallet": "PhonePe Wallet",
+    "netBanking": "Net banking",
+    "UPI": "UPI",
+    "VPA": "VPA-UPI",
+    "Card": "Card",
+    "Cash": "Cash"
   },
   "diagnosticsLocation":{
     "savedAddressText": "Saved Addresses",

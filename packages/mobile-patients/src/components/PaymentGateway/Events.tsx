@@ -30,14 +30,16 @@ export function PaymentInitiated(
   LOB: string,
   type: string,
   paymentOrderId: string,
-  instrument: string
+  instrument: string,
+  paymentModeName?: string
 ) {
   try {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PAYMENT_INITIATED] = {
-      Amount: grandTotal,
+    const eventAttributes: CleverTapEvents[CleverTapEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
+      'Order Amount': grandTotal,
       LOB: LOB,
       type: type,
-      paymentOrderId: paymentOrderId,
+      'Order id': paymentOrderId,
+      'Payment mode': paymentModeName,
     };
     const consultEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PAYMENT_INITIATED] = {
       Amount: grandTotal,

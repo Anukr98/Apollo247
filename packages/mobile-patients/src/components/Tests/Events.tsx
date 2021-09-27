@@ -28,19 +28,14 @@ import {
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   DIAGNOSTIC_PINCODE_SOURCE_TYPE,
 } from '@aph/mobile-patients/src/utils/commonUtils';
+import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
-import AsyncStorage from '@react-native-community/async-storage';
-import string from '@aph/mobile-patients/src/strings/strings.json';
-import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj } from '../../graphql/types/getDiagnosticOrdersListByMobile';
-
-async function createPatientAttributes(currentPatient: any) {
-  const diagnosticUserType = await AsyncStorage.getItem('diagnosticUserType');
+function createPatientAttributes(currentPatient: any) {
   const patientAttributes = {
-    'Patient UHID': currentPatient?.uhid,
-    'Patient Gender': currentPatient?.gender,
-    'Patient Name': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
-    'Patient Age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
-    'User Type': !!diagnosticUserType ? JSON.parse(diagnosticUserType) : string.user_type.NEW,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
   };
   return patientAttributes;
 }
@@ -400,7 +395,7 @@ export function PaymentInitiated(grandTotal: number, LOB: string, type: string) 
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.PAYMENT_INITIATED]
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
-    Amount: grandTotal,
+    'Order Amount': grandTotal,
     LOB: LOB,
     type: type,
   };
