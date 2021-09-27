@@ -417,7 +417,6 @@ const top_specialties = [
 ];
 
 export const updateAppConfig = (key: keyof typeof Configuration, value: object) => {
-  console.log({value})
   Configuration[key] = value as never;
 };
 
