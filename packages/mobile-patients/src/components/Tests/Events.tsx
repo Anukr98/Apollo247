@@ -19,6 +19,7 @@ import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/help
 import {
   AppsFlyerEventName,
   AppsFlyerEvents,
+  DiagnosticsDetailsPageViewedSource,
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { circleValidity } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
@@ -88,14 +89,14 @@ export function DiagnosticHomePageSearchItem(
   }
 }
 
-export function DiagnosticPinCodeClicked(
+export async function DiagnosticPinCodeClicked(
   currentPatient: any,
   mode: string,
   pincode: string,
   serviceable: boolean,
   isDiagnosticCircleSubscription?: boolean | undefined
 ) {
-  const getPatientAttributes = createPatientAttributes(currentPatient);
+  const getPatientAttributes = await createPatientAttributes(currentPatient);
 
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR]
@@ -152,9 +153,9 @@ export function DiagnosticAddToCartEvent(
   price: number,
   discountedPrice: number,
   source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
-  section?: string,
   currentPatient?: any,
-  isDiagnosticCircleSubscription?: boolean | undefined
+  isDiagnosticCircleSubscription?: boolean | undefined,
+  section?: string
 ) {
   const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes:
@@ -172,6 +173,23 @@ export function DiagnosticAddToCartEvent(
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
 
+  const appsFlyerAttributes: AppsFlyerEvents[AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART] = {
+    af_content: name,
+    af_content_id: id,
+    af_price: price,
+    DiscountedPrice: !!discountedPrice ? discountedPrice : 0,
+    af_quantity: 1,
+    af_content_type: source,
+    af_currency: 'INR',
+    af_customer_user_id: currentPatient?.id,
+    'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+    LOB: 'Diagnostics',
+  };
+
+  if (!!section) {
+    appsFlyerAttributes['af_category'] = section;
+  }
+
   const firebaseAttributes: FirebaseEvents[FirebaseEventName.DIAGNOSTIC_ADD_TO_CART] = {
     productname: name,
     productid: id,
@@ -180,23 +198,27 @@ export function DiagnosticAddToCartEvent(
     DiscountedPrice: discountedPrice,
     Quantity: 1,
   };
+
+  postAppsFlyerEvent(AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART, appsFlyerAttributes);
   postFirebaseEvent(FirebaseEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
-  postAppsFlyerEvent(AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
 }
 
-export const firePurchaseEvent = (orderId: string, grandTotal: number, cartItems: any) => {
+export const firePurchaseEvent = (
+  orderId: string,
+  grandTotal: number,
+  cartItems: any,
+  currentPatient: any
+) => {
   let items: any = [];
   cartItems.forEach((item: any, index: number) => {
     let itemObj: any = {};
-    itemObj.item_name = item.name; // Product Name or Doctor Name
-    itemObj.item_id = item.id; // Product SKU or Doctor ID
-    itemObj.price = item.specialPrice ? item.specialPrice : item.price; // Product Price After discount or Doctor VC price (create another item in array for PC price)
-    itemObj.item_brand = ''; // Product brand or Apollo (for Apollo doctors) or Partner Doctors (for 3P doctors)
-    itemObj.item_category = 'Diagnostics'; // 'Pharmacy' or 'Consultations'
-    itemObj.item_category2 = ''; // FMCG or Drugs (for Pharmacy) or Specialty Name (for Consultations)
+    itemObj.af_content = item?.name;
+    itemObj.af_content_id = item?.id;
+    itemObj.af_price = !!item?.specialPrice ? item.specialPrice : item.price;
+    itemObj.af_category = 'Diagnostics';
     itemObj.item_variant = item.collectionMethod; // "Default" (for Pharmacy) or Virtual / Physcial (for Consultations)
     itemObj.index = index + 1; // Item sequence number in the list
-    itemObj.quantity = 1; // "1" or actual quantity
+    itemObj.af_quantity = 1;
     items.push(itemObj);
   });
   const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
@@ -206,26 +228,21 @@ export const firePurchaseEvent = (orderId: string, grandTotal: number, cartItems
     value: Number(grandTotal),
     LOB: 'Diagnostics',
   };
-  const appsFlyerAttributes: AppsFlyerEvents[AppsFlyerEventName.PURCHASE] = {
+  const appsFlyerAttributes = {
     currency: 'INR',
     items: items,
     transaction_id: orderId,
     af_revenue: Number(grandTotal),
     af_currency: 'INR',
+    af_order_id: orderId,
+    af_customer_user_id: currentPatient?.id,
   };
   postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   postAppsFlyerEvent(AppsFlyerEventName.PURCHASE, appsFlyerAttributes);
 };
 
 export function DiagnosticDetailsViewed(
-  source:
-    | 'Full Search'
-    | 'Home Page'
-    | 'Cart page'
-    | 'Partial Search'
-    | 'Deeplink'
-    | 'Popular search'
-    | 'Category page',
+  source: DiagnosticsDetailsPageViewedSource,
   itemName: string,
   itemType: string,
   itemCode: string,
@@ -254,9 +271,21 @@ export function DiagnosticDetailsViewed(
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
 
+  const appsFlyerAttribute = {
+    af_content_type: source,
+    af_content_id: itemCode,
+    af_content: itemName,
+    af_customer_user_id: currentPatient?.id,
+    PatientUHID: currentPatient?.uhid,
+    PatientName: `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+    af_price: itemPrice,
+    LOB: 'Diagnostics',
+    ...pharmacyCircleAttributes,
+  };
+
   const firebaseEventAttributes: FirebaseEvents[FirebaseEventName.PRODUCT_PAGE_VIEWED] = {
-    PatientUHID: g(currentPatient, 'uhid'),
-    PatientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    PatientUHID: currentPatient?.uhid,
+    PatientName: `${currentPatient?.firstName} ${currentPatient?.lastName}`,
     source: source,
     ItemName: itemName,
     ItemType: itemType,
@@ -266,7 +295,7 @@ export function DiagnosticDetailsViewed(
     ...pharmacyCircleAttributes,
   };
   postFirebaseEvent(FirebaseEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
-  postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
+  postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, appsFlyerAttribute);
 }
 
 export function DiagnosticBannerClick(
@@ -501,20 +530,30 @@ export function DiagnosticAddresssSelected(
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE, eventAttributes);
 }
 
-export function DiagnosticAddToCartClicked() {
-  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE, {});
-  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE, {});
+export function DiagnosticAddToCartClicked(pincode: string | number, currentPatient?: string) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
+  const eventAttributes:
+    | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE]
+    | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE] = {
+    ...getPatientAttributes,
+    Pincode: pincode,
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE, eventAttributes);
 }
 
 export function DiagnosticRemoveFromCartClicked(
   itemId: string | number,
   itemName: string,
   pincode: string | number,
-  mode: 'Customer' | 'Automated'
+  mode: 'Customer' | 'Automated',
+  currentPatient?: any
 ) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE]
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE] = {
+    ...getPatientAttributes,
     'Item ID': itemId,
     'Item name': itemName,
     Pincode: pincode,
@@ -522,6 +561,15 @@ export function DiagnosticRemoveFromCartClicked(
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE, eventAttributes);
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE, eventAttributes);
+
+  const appsFlyerAttributes = {
+    af_content_id: String(itemId),
+    af_customer_user_id: currentPatient?.id,
+    af_content: itemName,
+    af_quantity: 1,
+  };
+
+  postAppsFlyerEvent(AppsFlyerEventName.ITEMS_REMOVED_FROM_CART, appsFlyerAttributes);
 }
 
 export function DiagnosticRescheduleOrder(
@@ -553,9 +601,12 @@ export function DiagnosticTrackOrderViewed(
   orderId: string,
   source: 'Home' | 'My Order'
 ) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
+
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_TRACK_ORDER_VIEWED]
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_TRACK_ORDER_VIEWED] = {
+    ...getPatientAttributes,
     'Patient UHID': g(currentPatient, 'uhid'),
     'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
     'Latest Order Status': latestStatus,
@@ -567,9 +618,11 @@ export function DiagnosticTrackOrderViewed(
 }
 
 export function DiagnosticFeedbackSubmitted(currentPatient: any, rating: string, reason: string) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_FEEDBACK_GIVEN]
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_FEEDBACK_GIVEN] = {
+    ...getPatientAttributes,
     'Patient UHID': g(currentPatient, 'uhid'),
     'Patient Name': g(currentPatient, 'firstName'),
     Rating: rating,
@@ -579,13 +632,13 @@ export function DiagnosticFeedbackSubmitted(currentPatient: any, rating: string,
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_FEEDBACK_GIVEN, eventAttributes);
 }
 
-export function DiagnosticItemSearched(
+export async function DiagnosticItemSearched(
   currentPatient: any,
   keyword: string,
   results: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[],
   isDiagnosticCircleSubscription: boolean | undefined
 ) {
-  const getPatientAttributes = createPatientAttributes(currentPatient);
+  const getPatientAttributes = await createPatientAttributes(currentPatient);
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ITEM_SEARCHED]
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_SEARCH_CLICKED] = {
@@ -622,11 +675,14 @@ export function DiagnosticPhleboFeedbackSubmitted(
   phleboName: string,
   orderId: string | number,
   phleboId: string | number,
-  patientComment: string
+  patientComment: string,
+  currentPatient?: string
 ) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED]
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED] = {
+    ...getPatientAttributes,
     Rating: rating,
     Feedback: feedback,
     'Phlebo Name': phleboName,
@@ -642,9 +698,11 @@ export function DiagnosticPhleboCallingClicked(
   orderId: string | number,
   phleboName: string
 ) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PHLEBO_CALLING_CLICKED]
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_PHLEBO_CALLING_CLICKED] = {
+    ...getPatientAttributes,
     UHID: g(currentPatient, 'uhid'),
     'Order id': orderId,
     'Phlebo Name': phleboName,
@@ -656,11 +714,14 @@ export function DiagnosticPhleboCallingClicked(
 export function DiagnosticOrderSummaryViewed(
   amount: string | number,
   orderId: string,
-  status: string
+  status: string,
+  currentPatient?: string
 ) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED]
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED] = {
+    ...getPatientAttributes,
     'Order amount': amount,
     'Order ID': orderId,
     'Order status': status,
@@ -712,12 +773,15 @@ export function DiagnosticModifyOrder(
 export function DiagnosticViewReportClicked(
   source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary',
   reportGenerated: 'Yes' | 'No',
-  action: 'View Report' | 'Download Report PDF' | 'Share on Whatsapp' | 'Copy Link to PDF',
-  orderId?: string
+  action: 'Download Report PDF',
+  orderId?: string,
+  currentPatient?: string
 ) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED]
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED] = {
+    ...getPatientAttributes,
     Source: source,
     'Report generated': reportGenerated,
     'Action taken': action,
@@ -735,9 +799,11 @@ export function DiagnosticTrackPhleboClicked(
   currentPatient: any,
   isOpen: 'Yes' | 'No'
 ) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED]
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED] = {
+    ...getPatientAttributes,
     'Order id': orderId,
     Source: source,
     UHID: currentPatient?.uhid,

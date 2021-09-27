@@ -1714,6 +1714,14 @@ export const ActiveCalenderIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/activeCalender.webp')} />
 );
 
+export const GreenCircleTick: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/greenCircleTick_3x.webp')} />
+);
+
+export const WhiteCross: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/white_cross_3x.webp')} />
+);
+
 export const InactiveCalenderIcon: React.FC<IconProps> = (props) => (
   <IconBase
     resizeMode="contain"
@@ -2180,6 +2188,41 @@ export const OvalUpcoming: React.FC<IconProps> = (props) => (
   />
 );
 
+export const NetworkChecking: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/network_checking.webp')}
+  />
+);
+
+export const NetworkGood: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/network_good.webp')}
+  />
+);
+
+export const NetworkBad: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/network_bad.webp')}
+  />
+);
+
+export const NetworkAverage: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/network_average.webp')}
+  />
+);
+
+export const NetworkWhite: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 13, width: 16 }}
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/network_white.webp')}
+  />
+);
 export const RemoveIconGrey: React.FC<IconProps> = (props) => (
   <IconBase
     size="sm"

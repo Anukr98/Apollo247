@@ -27,6 +27,7 @@ import {
   setBugFenderLog,
   isIos,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { saveTokenDevice } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   doRequestAndAccessLocation,
@@ -42,6 +43,8 @@ import {
   postCleverTapEvent,
   navigateToScreenWithHomeScreeninStack,
   navigateToHome,
+  setCleverTapAppsFlyerCustID,
+  clevertapEventForAppsflyerDeeplink,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -92,6 +95,7 @@ import {
 import CleverTap from 'clevertap-react-native';
 import { CleverTapEventName } from '../helpers/CleverTapEvents';
 import analytics from '@react-native-firebase/analytics';
+import appsFlyer from 'react-native-appsflyer';
 
 (function() {
   /**
@@ -150,12 +154,19 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface SplashScreenProps extends NavigationScreenProps { }
+let onDeepLinkCanceller: any;
+
+export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { APP_ENV } = AppConfig;
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
-  const { setAllPatients, setMobileAPICalled, validateAuthToken, buildApolloClient } = useAuth();
+  const {
+    setAllPatients,
+    setMobileAPICalled,
+    validateAndReturnAuthToken,
+    buildApolloClient,
+  } = useAuth();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [appState, setAppState] = useState(AppState.currentState);
   const [takeToConsultRoom, settakeToConsultRoom] = useState<boolean>(false);
@@ -194,8 +205,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   useEffect(() => {
     prefetchUserMetadata();
-
-    InitiateAppsFlyer(props.navigation);
     DeviceEventEmitter.addListener('accept', (params) => {
       if (getCurrentRoute() !== AppRoutes.ChatRoom) {
         voipCallType.current = params.call_type;
@@ -237,6 +246,17 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     handleDeepLink();
     getDeviceToken();
     initializeRealTimeUninstall();
+    setCleverTapAppsFlyerCustID();
+    InitiateAppsFlyer(props.navigation, (resources) => {
+      redirectRoute(
+        resources?.routeName,
+        resources?.id,
+        resources?.isCall,
+        resources?.timeout,
+        resources?.mediaSource,
+        resources?.data
+      );
+    });
   }, []);
 
   useEffect(() => {
@@ -265,7 +285,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
     const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
     const deviceTokenTimeStamp = (await AsyncStorage.getItem('deviceTokenTimeStamp')) || '';
-    const currentDeviceTokenTimeStamp = deviceTokenTimeStamp ? JSON.parse(deviceTokenTimeStamp) : '';
+    const currentDeviceTokenTimeStamp = deviceTokenTimeStamp
+      ? JSON.parse(deviceTokenTimeStamp)
+      : '';
+    const currentPatientId: any = await AsyncStorage.getItem('selectUserId');
     if (
       !currentDeviceToken ||
       currentDeviceToken === '' ||
@@ -284,6 +307,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           AsyncStorage.setItem('deviceToken', JSON.stringify(token));
           AsyncStorage.setItem('deviceTokenTimeStamp', JSON.stringify(new Date().getTime()));
           UnInstallAppsFlyer(token);
+          if (currentPatientId && token) {
+            saveTokenDevice(client, token, currentPatientId)?.catch((e) => {
+              CommonBugFender('Login_saveTokenDevice', e);
+              AsyncStorage.setItem('deviceToken', '');
+            });
+          }
         })
         .catch((e) => {
           CommonBugFender('SplashScreen_getDeviceToken', e);
@@ -383,10 +412,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           setBugFenderLog('DEEP_LINK_URL', url);
           if (url) {
             try {
-              if (Platform.OS === 'ios') InitiateAppsFlyer(props.navigation);
-              const data = handleOpenURL(url);
-              const { routeName, id, isCall, timeout, mediaSource } = data;
-              redirectRoute(routeName, id, isCall, timeout, mediaSource, data?.data);
+              const data: any = handleOpenURL(url);
+              redirectRoute(
+                data?.routeName,
+                data?.id,
+                data?.isCall,
+                data?.timeout,
+                data?.mediaSource,
+                data?.data
+              );
               fireAppOpenedEvent(url);
             } catch (e) {}
           } else {
@@ -401,10 +435,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       Linking.addEventListener('url', (event) => {
         try {
           setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
-          const data = handleOpenURL(event.url);
-          triggerUTMCustomEvent(event.url);
-          const { routeName, id, isCall, timeout, mediaSource } = data;
-          redirectRoute(routeName, id, isCall, timeout, mediaSource, data?.data);
+          const data: any = handleOpenURL(event.url);
+          catchSourceUrlDataUsingAppsFlyer();
+          redirectRoute(
+            data?.routeName,
+            data?.id,
+            data?.isCall,
+            data?.timeout,
+            data?.mediaSource,
+            data?.data
+          );
           fireAppOpenedEvent(event.url);
         } catch (e) {}
       });
@@ -482,7 +522,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   const fetchOrderInfo = async (paymentId: string) => {
     try {
-      const authToken: string = await validateAuthToken();
+      const authToken: string = await validateAndReturnAuthToken();
       const apolloClient = buildApolloClient(authToken);
       const response = await apolloClient.query({
         query: GET_ORDER_INFO,
@@ -490,7 +530,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         fetchPolicy: 'no-cache',
       });
       const paymentStatus = response?.data?.getOrderInternal?.payment_status;
-      if (paymentStatus == 'PAYMENT_NOT_INITIATED') {
+      const allowedStatuses = ['PAYMENT_NOT_INITIATED', 'TXN_FAILURE', 'COD_COMPLETE'];
+      if (allowedStatuses.includes(paymentStatus)) {
         const currentPatientId: any = await AsyncStorage.getItem('selectUserId');
         const isPharmaOrder = !!response?.data?.getOrderInternal?.PharmaOrderDetails
           ?.medicineOrderDetails?.length
@@ -501,7 +542,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           : AppConfig.Configuration.merchantId;
         initiateHyperSDK(currentPatientId, merchantId);
         const params = {
-          paymentId: paymentId,
+          paymentId: response?.data?.getOrderInternal?.payment_order_id,
           amount: response?.data?.getOrderInternal?.total_amount,
           orderDetails: { orderId: response?.data?.getOrderInternal?.id },
           businessLine: 'paymentLink',
@@ -691,26 +732,19 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const triggerUTMCustomEvent = async (url: string | null) => {
     try {
       if (url) {
-        const { utm_source, utm_medium, utm_campaign, appUrl } = getUTMdataFromURL(url);
-        if (utm_source || utm_medium || utm_campaign) {
-          postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
-            utm_source,
-            utm_medium,
-            utm_campaign,
-            appUrl,
-          });
-        } else {
-          postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
-            appUrl,
-            deeplink: 'Deeplink',
-          });
-        }
       } else {
         postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
           source: 'Organic',
         });
       }
     } catch (error) {}
+  };
+
+  const catchSourceUrlDataUsingAppsFlyer = async () => {
+    onDeepLinkCanceller = await appsFlyer.onDeepLink(async (res) => {
+      clevertapEventForAppsflyerDeeplink(res.data);
+      onDeepLinkCanceller();
+    });
   };
 
   const prefetchUserMetadata = async () => {
@@ -1094,6 +1128,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Show_nudge_on_pharma_cart',
       PROD: 'Show_nudge_on_pharma_cart',
     },
+    Enable_Cred_WebView_Flow: {
+      QA: 'QA_Enable_Cred_WebView_Flow',
+      PROD: 'Enable_Cred_WebView_Flow',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1340,6 +1378,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'Diagnostics_Help_NonOrder_Queries',
         'Diagnostics_Help_NonOrder_Queries',
         (key) => config.getString(key)
+      );
+      setAppConfig('Enable_Cred_WebView_Flow', 'enableCredWebView', (key) =>
+        config.getBoolean(key)
       );
 
       const nudgeMessagePharmacyHome = getRemoteConfigValue(

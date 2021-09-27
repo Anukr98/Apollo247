@@ -435,6 +435,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     physicalConsultSlashedPrice,
     cashbackEnabled,
     cashbackAmount,
+    onlineConsultDiscountedPrice,
   } = circleDoctorDetails;
   const {
     circleSubscriptionId,
@@ -442,6 +443,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     circlePlanSelected,
     defaultCirclePlan,
     showCircleSubscribed,
+    circleSubPlanId,
   } = useShoppingCart();
   const chatDays = doctorDetails?.chatDays;
   const isPayrollDoctor = doctorDetails?.doctorType === DoctorType.PAYROLL;
@@ -738,19 +740,25 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Media Source': mediaSource,
       User_Type: getUserType(allCurrentPatients),
     };
+    const {
+      onlineConsultDiscountedPrice,
+      cashbackEnabled,
+      cashbackAmount
+    } = calculateCircleDoctorPricing(doctorDetails);
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED] = {
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
-      'Patient Age': Math.round(
+      'Patient age': Math.round(
         Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile number': g(currentPatient, 'mobileNumber'),
       'Doctor ID': g(doctorDetails, 'id')!,
-      'Doctor Name': g(doctorDetails, 'fullName')!,
-      'Speciality Name': g(doctorDetails, 'specialty', 'name')!,
+      'Doctor name': g(doctorDetails, 'fullName')!,
+      'Speciality name': g(doctorDetails, 'specialty', 'name')!,
       'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
-      'Media Source': mediaSource,
+      Experience: String(doctorDetails?.experience) || '',
+      'Media source': mediaSource,
       User_Type: getUserType(allCurrentPatients),
       Fee: Number(doctorDetails?.onlineConsultationFees),
       Source: cleverTapAppointmentAttributes?.source
@@ -760,12 +768,21 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         : 'Deeplink',
       'Doctor card clicked': 'No',
       Rank: 'NA',
+      Languages: doctorDetails?.languages || '',
       Is_TopDoc: doctorDetails?.doctorsOfTheHourStatus ? 'Yes' : 'No',
       DOTH: doctorDetails?.doctorsOfTheHourStatus ? 'T' : 'F',
-      'Doctor Tab': 'NA',
-      'Doctor Category': doctorDetails?.doctorType,
+      'Doctor tab': 'NA',
+      'Doctor category': doctorDetails?.doctorType,
       'Search screen': 'NA',
       'Appointment CTA': cleverTapAppointmentAttributes?.appointmentCTA || 'NA',
+      'Customer ID': g(currentPatient, 'id'),
+      'Available in mins': 'NA',
+      'Relation': g(currentPatient, 'relation'),
+      'Circle Membership added': String(!!circlePlanSelected),
+      'Circle discount': onlineConsultDiscountedPrice ? onlineConsultDiscountedPrice : 0,
+      'Circle Cashback': cashbackEnabled ? cashbackAmount! : 0,
+      'Doctor city': doctorDetails?.doctorHospital[0]?.facility?.city || '',
+      'Hospital name': doctorDetails?.doctorHospital[0]?.facility?.name || '',
     };
     fromDeeplink &&
       postWebEngageEvent(WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK, eventAttributes);
@@ -1710,7 +1727,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
-      docName: g(doctorDetails, 'fullName')! || undefined,
+      'Doctor name': g(doctorDetails, 'fullName')! || undefined,
       Source: 'doctor profile',
       'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
@@ -1719,24 +1736,27 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
       'Patient gender': g(currentPatient, 'gender'),
-      specialityName: g(doctorDetails, 'specialty', 'name')! || undefined,
-      exp: Number(g(doctorDetails, 'experience')) || undefined,
+      'Speciality name': g(doctorDetails, 'specialty', 'name')! || undefined,
+      Experience: Number(g(doctorDetails, 'experience')) || undefined,
       'Customer ID': g(currentPatient, 'id'),
-      docId: g(doctorDetails, 'id')!,
-      specialityId: g(doctorDetails, 'specialty', 'id')!,
-      docHospital:
+      'Doctor ID': g(doctorDetails, 'id')!,
+      'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
+      'Doctor hospital':
         doctorClinics.length > 0 && doctorDetails!.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics[0].facility.name}`
           : undefined,
-      docCity:
+      'Doctor city':
         doctorClinics.length > 0 && doctorDetails!.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics[0].facility.city}`
           : undefined,
       User_Type: getUserType(allCurrentPatients),
-      onlineConsultFee: Number(doctorDetails?.onlineConsultationFees) || undefined,
-      physicalConsultFee: Number(doctorDetails?.physicalConsultationFees) || undefined,
-      availableInMins:
+      'Online consult fee': Number(doctorDetails?.onlineConsultationFees) || undefined,
+      'Physical consult fee': Number(doctorDetails?.physicalConsultationFees) || undefined,
+      'Available in mins':
         getTimeDiff(onlineSelected ? availableTime : physicalAvailableTime) || undefined,
+      'Mobile number': currentPatient?.mobileNumber || '',
+      'Circle Member': !!circleSubscriptionId,
+      'Circle Plan type': circleSubPlanId,
     };
     postCleverTapEvent(
       CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED,

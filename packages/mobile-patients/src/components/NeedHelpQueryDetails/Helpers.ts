@@ -34,11 +34,7 @@ export const Helpers = {
     const queriesByOrderStatus = queryData?.queriesByOrderStatus?.[orderStatus] as
       | string[]
       | undefined;
-    const diagNonOrderQueries = {
-      nonOrderQueries :  JSON.parse(AppConfig.Configuration.Diagnostics_Help_NonOrder_Queries),
-    } 
-    // here this condition is implemented to handle backward compatiability of old version of apps. We can revert it later on.
-    const nonOrderQueries = queryData?.id == helpSectionQueryId.diagnostic ? diagNonOrderQueries?.nonOrderQueries : queryData?.nonOrderQueries as string[] | undefined;
+    const nonOrderQueries = queryData?.nonOrderQueries as string[] | undefined;
     
     if (queriesByOrderStatus && orderStatus) {
       queries = queriesByOrderStatus.map((qId) => queryData?.queries?.find((q) => q?.id === qId));

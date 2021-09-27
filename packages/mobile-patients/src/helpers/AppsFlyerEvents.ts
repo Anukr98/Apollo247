@@ -1,4 +1,5 @@
 import { PharmaUserStatus } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
 
 type YesOrNo = { value: 'Yes' | 'No' };
 
@@ -47,6 +48,16 @@ export enum ProductPageViewedSource {
   SUBSTITUTES = 'substitutes',
   CROSS_SELLING_PRODUCTS = 'cross selling products',
   SIMILAR_PRODUCTS = 'similar products',
+}
+
+export enum DiagnosticsDetailsPageViewedSource {
+  FULL_SEARCH = 'Full Search',
+  HOME_PAGE =  'Home Page',
+  CART_PAGE = 'Cart page',
+  PARTIAL_SEARCH = 'Partial Search',
+  DEEP_LINK =  'Deeplink',
+  POPULAR_SEARCH = 'Popular search',
+  CATEGORY_PAGE = 'Category page',
 }
 
 export enum AppsFlyerEventName {
@@ -106,8 +117,6 @@ export enum AppsFlyerEventName {
   // Diagnostics Events
   FEATURED_TEST_CLICKED = 'Featured Test Clicked',
   BROWSE_PACKAGE = 'Browse Package',
-  DIAGNOSTIC_ITEM_VIEWED = 'DiagnosticItemViewed',
-  DIAGNOSTIC_CART_ADDRESS_SELECTED_SUCCESS = 'AddressSelected',
 
   // Health Records
   CONSULT_RX = 'Consult & RX',
@@ -219,16 +228,17 @@ export interface AppsFlyerEvents {
     'Circle Membership Value': number | null;
   };
   [AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART]: {
-    productname: string;
-    productid: string; // (SKUID)
-    Price: number;
+    af_content: string; //product name
+    af_content_id: string; //product id
+    af_price: number; //price
     DiscountedPrice: number;
-    Quantity: number;
-    Source: 'Pharmacy Home' | 'Pharmacy PDP' | 'Pharmacy List' | 'Diagnostic';
-    Brand?: string;
-    BrandID?: string;
-    categoryname?: string;
-    categoryID?: string;
+    af_quantity: number; //number of items
+    af_content_type: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE //source
+    af_currency: string,
+    af_customer_user_id : string;
+    'Circle user': 'Yes' | 'No',
+    af_category?: string; //section
+    LOB?: string;
   };
   [AppsFlyerEventName.PHARMACY_CART_VIEWED]: {
     'Customer ID': string;
@@ -499,17 +509,6 @@ export interface AppsFlyerEvents {
     'Patient Gender': string;
     'Mobile Number': string;
     'Customer ID': string;
-  };
-
-  [AppsFlyerEventName.DIAGNOSTIC_ITEM_VIEWED]: {
-    PatientUHID: string;
-    PatientName: string;
-    Source: 'Search Page' | 'Landing Page' | 'Cart page';
-    ItemName: string;
-    ItemType: string;
-    ItemCode: string;
-    ItemPrice: number;
-    LOB: string;
   };
 
   [AppsFlyerEventName.BROWSE_PACKAGE]: {

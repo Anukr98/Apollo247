@@ -328,7 +328,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     const planToConsider = pricesForItem?.planToConsider;
     const discountToDisplay = pricesForItem?.discountToDisplay;
     const mrpToDisplay = pricesForItem?.mrpToDisplay;
-    const widgetType = data?.diagnosticWidgetType;
+    const widgetType = data?.diagnosticWidgetType?.toLowerCase();
 
     const inclusions =
       !!item?.inclusionData && item.inclusionData.map((item: any) => Number(item?.incItemId));
@@ -339,15 +339,15 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
       mrpToDisplay,
       discountToDisplay,
       source,
+      currentPatient,
+      isDiagnosticCircleSubscription,
       widgetType === string.diagnosticCategoryTitle.categoryGrid ||
         widgetType == string.diagnosticCategoryTitle.category
         ? 'Category page'
-        : data?.diagnosticWidgetTitle,
-      currentPatient,
-      isDiagnosticCircleSubscription
+        : data?.diagnosticWidgetTitle
     );
 
-    addCartItem!({
+    addCartItem?.({
       id: `${item?.itemId}`,
       mou: 1,
       name: item?.itemTitle!,

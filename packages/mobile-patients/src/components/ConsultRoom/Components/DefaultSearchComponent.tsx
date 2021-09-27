@@ -16,7 +16,7 @@ interface defaultSearchProps extends NavigationScreenProps {
   pastSearches: (getPastSearches_getPastSearches | null)[];
   topSpecialities: getAllSpecialties_getAllSpecialties[];
   postSymptomTrackEvent: (() => void) | null;
-  postSpecialityEvent: ((speciality: string, specialityId: string) => void) | null;
+  postSpecialityEvent: ((speciality: string, specialityId: string, source?: string) => void) | null;
 }
 
 export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
@@ -108,7 +108,10 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
                       allCurrentPatients,
                       item
                     );
-                    if (item?.typeId && item?.name) onClickSearch(item?.typeId, item?.name);
+                    if (item?.typeId && item?.name){
+                      postSpecialityEvent?.(item?.name, item?.typeId, 'Past searches')
+                      onClickSearch(item?.typeId, item?.name);
+                    }
                   }
                 }}
               >

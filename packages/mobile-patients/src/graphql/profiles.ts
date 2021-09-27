@@ -921,6 +921,12 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       profile_deeplink
       photoUrl
       availableModes
+      doctorHospital {
+        facility {
+          city
+          name
+        }
+      }
       doctorPricing {
         slashed_price
         available_to
@@ -5759,6 +5765,24 @@ export const GET_VACCINATION_AVAILABLE_DATES = gql`
   }
 `;
 
+export const CORPORATE_VACCINE_PLAN_VALIDATION = gql`
+  query getCorporateVaccinePlanValidation($patient_id: String!) {
+    getCorporateVaccinePlanValidation(patient_id: $patient_id) {
+      code
+      success
+      response {
+        corporate_vaccination_allow
+        remaining_vaccination
+        vaccine_dose_allowed
+        vaccine_type
+        relation
+        total_corporate_appointment
+        user_message
+      }
+    }
+  }
+`;
+
 export const GET_VACCINATION_SLOTS = gql`
   query getResourcesSessionAvailableByDate(
     $resource_id: String!
@@ -6039,9 +6063,15 @@ export const GET_DIAGNOSTIC_REPORT_TAT = gql`
 `;
 
 export const GET_PATIENT_PRESCRIPTIONS = gql`
-  query {
-    getPatientPrescriptions(patientId: $patientId, limit: 100) {
-      response {
+  query getPatientPrescriptions(
+    $patientId: String!
+    $limit: Int!
+    ) {
+      getPatientPrescriptions(
+        patientId: $patientId
+        limit: $limit
+      ) {
+        response{
         doctorName
         patientName
         caseSheet {
@@ -6051,11 +6081,9 @@ export const GET_PATIENT_PRESCRIPTIONS = gql`
           prescriptionGeneratedDate
           diagnosis {
             name
-            __typename
           }
           diagnosticPrescription {
             itemname
-            __typename
           }
           doctorId
           doctorType
@@ -6092,49 +6120,12 @@ export const GET_PATIENT_PRESCRIPTIONS = gql`
             instruction
             __typename
           }
-          __typename
         }
-      }
-    }
-    getPatientPrismMedicalRecords_V2(patientId: $patientId, records: [PRESCRIPTION]) {
-      prescriptions {
-        response {
-          id
-          prescriptionName
-          date
-          prescribedBy
-          notes
-          prescriptionSource
-          source
-          siteDisplayName
-          fileUrl
-          prescriptionFiles {
-            id
-            fileName
-            mimeType
-            content
-            byteContent
-            __typename
-          }
-          __typename
-        }
-        errorCode
-        errorMsg
-        errorType
-        __typename
       }
     }
   }
 `;
 
-export const ADD_PATIENT_PRESCRIPTION_RECORD = gql`
-  mutation addPatientPrescriptionRecord($AddPrescriptionRecordInput: AddPrescriptionRecordInput) {
-    addPatientPrescriptionRecord(addPrescriptionRecordInput: $AddPrescriptionRecordInput) {
-      status
-      __typename
-    }
-  }
-`;
 
 export const SAVE_JUSPAY_SDK_RESPONSE = gql`
   mutation saveJuspayResponseForAudit($auditInput: AuditInput) {

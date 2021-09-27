@@ -1,5 +1,6 @@
 package com.apollopatient;
 
+
 import android.app.KeyguardManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -13,8 +14,10 @@ import android.os.Bundle;
 import android.os.Vibrator;
 import android.provider.Settings;
 import androidx.annotation.RequiresApi;
+
 import com.clevertap.android.sdk.CleverTapAPI;
 import com.facebook.react.ReactActivity;
+
 
 public class MainActivity extends ReactActivity {
 
@@ -26,6 +29,7 @@ public class MainActivity extends ReactActivity {
     private static final String TAG = "intentlogs";
     private static String referrer = "";
     private Ringtone ringtone;
+
 
     @Override
     protected String getMainComponentName() {

@@ -119,7 +119,8 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
   const onClickDoctorCard = (
     item: getPatientPastConsultedDoctors_getPatientPastConsultedDoctors
   ) => {
-    myConsultedDoctorsClickedWEBEngage(currentPatient, item, allCurrentPatients);
+    myConsultedDoctorsClickedWEBEngage(currentPatient, item,
+      allCurrentPatients, 'Home Page');
     item?.allowBookingRequest
       ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
           doctorId: item?.id,

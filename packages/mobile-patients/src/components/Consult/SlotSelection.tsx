@@ -50,6 +50,8 @@ import {
   VideoActiveIcon,
   HospitalPhrSearchIcon,
   Online,
+  CheckBoxFilled,
+  CheckBox,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   renderDoctorDetailsShimmer,
@@ -78,6 +80,7 @@ import {
   BOOKINGSOURCE,
   DEVICETYPE,
   PLAN,
+  HealthRecordConsentStatus,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -125,6 +128,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
   const slotSelected = useRef<boolean>(false);
+  const [sharePHR, setSharePHR] = useState<boolean>(true);
 
   const bothConsultTabs = [
     {
@@ -222,7 +226,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     isCircleDoctorOnSelectedConsultMode,
     cashbackEnabled,
   } = circleDoctorDetails;
-  const { circleSubscriptionId } = useShoppingCart();
+  const { circleSubscriptionId, circleSubPlanId } = useShoppingCart();
   const { locationDetails } = useAppCommonData();
 
   const doctorFees = isOnlineSelected
@@ -741,6 +745,29 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     );
   };
 
+ const renderSharePHR = () => {
+   return (
+     <View style={styles.sharePHRContainer}>
+       <TouchableOpacity
+         activeOpacity={1}
+         onPress={() => {
+           setSharePHR(!sharePHR);
+         }}
+         style={styles.checkBoxStyleContainer}
+       >
+         {sharePHR ? (
+           <CheckBoxFilled style={styles.checkBoxStyle} resizeMode={'contain'} />
+         ) : (
+           <CheckBox style={styles.checkBoxStyle} resizeMode={'contain'} />
+         )}
+       </TouchableOpacity>
+       <Text style={styles.sharePHRText}>
+         {string.common.sharePHR}
+       </Text>
+     </View>
+   );
+ };
+
   const renderFooterComponent = () => {
     if (loadTotalSlots) return;
     return (
@@ -753,6 +780,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
             }}
             isSelected={whatsAppUpdate}
           />
+          {renderSharePHR()}
           {!isOnlineSelected && (
             <Text style={styles.physicalConsultNoteTxt}>Note: Pay at Reception is available.</Text>
           )}
@@ -808,7 +836,9 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     };
 
     callWEGEvent(WebEngageEventName.CONSULT_NOW_CLICKED, eventAttributes);
-
+    const healthRecordConsentStatus = sharePHR
+      ? HealthRecordConsentStatus.GRANTED
+      : HealthRecordConsentStatus.NOT_GRANTED;
     const appointmentInput: BookAppointmentInput = {
       patientId: currentPatient?.id,
       doctorId,
@@ -826,8 +856,8 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
               plan: PLAN.CARE_PLAN,
             }
           : null,
+      healthRecordsConsent: healthRecordConsentStatus,
     };
-
     const passProps = {
       doctor: doctorDetails,
       tabs: tabs,
@@ -843,27 +873,32 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
       isDoctorsOfTheHourStatus: doctorDetails?.doctorsOfTheHourStatus,
     };
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION] = {
-      docName: g(doctorDetails, 'fullName')!,
-      specialtyName: g(doctorDetails, 'specialty', 'name')!,
-      experience: Number(g(doctorDetails, 'experience')!),
-      languagesKnown: g(doctorDetails, 'languages')! || 'NA',
-      appointmentType: isOnlineSelected ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
-      docId: g(doctorDetails, 'id')!,
-      SpecialtyId: g(doctorDetails, 'specialty', 'id')!,
+      'Doctor name': g(doctorDetails, 'fullName')!,
+      'Speciality name': g(doctorDetails, 'specialty', 'name')!,
+      Experience: Number(g(doctorDetails, 'experience')!),
+      Languages: g(doctorDetails, 'languages')! || 'NA',
+      'Consult type': isOnlineSelected ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
+      'Doctor ID': g(doctorDetails, 'id')!,
+      'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
       'Patient UHID': g(currentPatient, 'uhid'),
-      appointmentDateTime: moment(selectedTimeSlot).toDate(),
+      'Appointment date time': moment(selectedTimeSlot).toDate(),
       'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
       'Patient gender': g(currentPatient, 'gender'),
-      onlineConsultFee: onlineConsultMRPPrice || undefined,
-      physicalConsultFee: physicalConsultMRPPrice || undefined,
+      'Online consult fee': onlineConsultMRPPrice || undefined,
+      'Physical consult fee': physicalConsultMRPPrice || undefined,
       Source: isOnlineSelected ? 'Consult Now' : 'Schedule for Later',
       User_Type: getUserType(allCurrentPatients),
-      price: actualPrice,
-      docHospital: doctorDetails?.doctorHospital?.[0]?.facility?.name || undefined,
-      docCity: doctorDetails?.doctorHospital?.[0]?.facility?.city || undefined,
+      'Actual amount': actualPrice,
+      'Doctor hospital': doctorDetails?.doctorHospital?.[0]?.facility?.name || undefined,
+      'Doctor city': doctorDetails?.doctorHospital?.[0]?.facility?.city || undefined,
+      'Customer ID': g(currentPatient, 'id'),
+      'Mobile number': g(currentPatient, 'mobileNumber'),
+      'Circle member': !!circleSubscriptionId,
+      'Circle plan type': circleSubPlanId,
+      'Doctor type': g(doctorDetails, 'doctorType') || '',
     };
     postCleverTapEvent(
       CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION,
@@ -1204,9 +1239,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   emptyComponentView: {
-    flexDirection: 'row', 
-    flexWrap: 'wrap', 
-    marginStart: 40, 
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginStart: 40,
     marginTop: 20,
   },
+  sharePHRContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: 'transparent',
+    marginHorizontal: Platform.OS === 'ios' ? 45 : 60,
+    alignItems: 'center'
+  },
+  sharePHRText: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    color: theme.colors.LIGHT_BLUE,
+  },
+  checkBoxStyleContainer: {
+    width: 25,
+    height: 25,
+    marginLeft: 5,
+  },
+  checkBoxStyle: { width: 18, height: 18 },
 });

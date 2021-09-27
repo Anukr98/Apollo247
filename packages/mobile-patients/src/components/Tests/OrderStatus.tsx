@@ -106,7 +106,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     if (modifiedOrderDetails == null) {
       postwebEngageCheckoutCompletedEvent();
     }
-    firePurchaseEvent(orderDetails?.orderId, orderDetails?.amount, cartItems);
+    firePurchaseEvent(orderDetails?.orderId, orderDetails?.amount, cartItems, currentPatient);
     clearDiagnoticCartInfo?.();
     submitReviewOnLabBook();
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -178,7 +178,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED, attributes);
-    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_CHECKOUT_COMPLETED, attributes);
+    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ORDER_PLACED, attributes);
   };
 
   const handleBack = () => {

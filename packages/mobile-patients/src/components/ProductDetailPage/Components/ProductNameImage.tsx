@@ -3,7 +3,10 @@ import { StyleSheet, View, Text, Image, Dimensions, TouchableOpacity } from 'rea
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Carousel from 'react-native-snap-carousel';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { PrescriptionRequiredIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  CircleDiscountBadge,
+  PrescriptionRequiredIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
@@ -18,12 +21,13 @@ export interface ProductNameImageProps {
   isPrescriptionRequired?: boolean | number;
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
   sku: string;
+  merchandising?: number | null;
 }
 
 const { width } = Dimensions.get('window');
 
 export const ProductNameImage: React.FC<ProductNameImageProps> = (props) => {
-  const { name, isPrescriptionRequired, images, sku } = props;
+  const { name, isPrescriptionRequired, images, sku, merchandising } = props;
   const [slideIndex, setSlideIndex] = useState(0);
 
   const renderImageCarousel = () => {
@@ -90,9 +94,25 @@ export const ProductNameImage: React.FC<ProductNameImageProps> = (props) => {
     </View>
   );
 
+  const renderMerchandisingTag = () => {
+    const merchandising = 1;
+    const text = merchandising == 1 ? "Apollo's Choice" : merchandising == 2 ? 'Recommended' : null;
+    if (text) {
+      return (
+        <View style={styles.discountBadgeView}>
+          <CircleDiscountBadge style={styles.discountBadgeIcon} />
+          <Text style={styles.discountBadgeText}>{text}</Text>
+        </View>
+      );
+    } else {
+      return null;
+    }
+  };
+
   return (
     <View style={styles.cardStyle}>
       <Text style={styles.name}>{name}</Text>
+      {!!merchandising && renderMerchandisingTag()}
       {!!images.length && renderImageCarousel()}
       {isPrescriptionRequired && renderPrescriptionRequired()}
     </View>
@@ -135,4 +155,12 @@ const styles = StyleSheet.create({
     height: 17,
     marginRight: 5,
   },
+  discountBadgeText: {
+    color: 'white',
+    position: 'absolute',
+    left: 10,
+    ...theme.fonts.IBMPlexSansMedium(11),
+  },
+  discountBadgeIcon: { height: 17, width: 110 },
+  discountBadgeView: { marginTop: 7 },
 });

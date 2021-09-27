@@ -1120,6 +1120,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 isPrescriptionRequired={medicineDetails?.is_prescription_required == 1}
                 navigation={props.navigation}
                 sku={medicineDetails?.sku}
+                merchandising={medicineDetails?.merchandising}
               />
               <ProductPriceDelivery
                 price={medicineDetails?.price}
@@ -1273,6 +1274,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             suggested_qty={medicineDetails?.suggested_qty}
             sku={medicineDetails?.sku}
             packForm={medicineDetails?.pack_form}
+            maxOrderQty={medicineDetails?.MaxOrderQty}
             setShownNudgeOnce={setShownNudgeOnce}
             showSuggestedQuantityNudge={showSuggestedQuantityNudge}
             setShowSuggestedQuantityNudge={setShowSuggestedQuantityNudge}

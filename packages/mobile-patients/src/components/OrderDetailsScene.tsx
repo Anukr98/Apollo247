@@ -229,8 +229,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       !isEmptyObject(orderOnHold!) &&
       checkIsJSON(orderOnHold?.statusMessage!) &&
       JSON.parse(orderOnHold?.statusMessage!);
-
-  const orderDetails = ((!loading && order) ||
+  
+    const orderDetails = ((!loading && order) ||
     {}) as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails;
   const orderStatusList = ((!loading && order && order.medicineOrdersStatus) || []).filter(
     (item) => item!.hideStatus
@@ -764,8 +764,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                         ? getFormattedDate(isDelivered.statusDate)
                         : orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD
                         ? orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER
-                          ? 'To be Updated'
-                          : 'Awaited' //do it bold
+                          ? 'Will be updated soon'
+                          : 'Will be updated soon' //do it bold
                         : tatInfo
                         ? orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER &&
                           orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED &&
@@ -779,8 +779,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                   </View>
                   <View style={{ flexDirection: 'row', width: showBadge ? '82%' : '90%' }}>
                     <Text style={styles.deliverySubText}>
-                      {orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER &&
-                      orderDetails.oldOrderTat!
+                      {orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD
+                        ? ''
+                        : orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER &&
+                          orderDetails.oldOrderTat!
                         ? diffInTat > 1
                           ? `Delivery date extended by ${diffInTat} days.`
                           : diffInTat == 1
@@ -825,7 +827,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
 
     const colorOfBadge =
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD
-        ? theme.colors.INPUT_FAILURE_TEXT
+        ? '#FC9916'
         : isExpectedDateChanged
         ? 'rgb(230,130,49)'
         : '#00b38e';
@@ -856,7 +858,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                     orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD
                     ? 30
                     : 40
-                  : 20,
+                  : 15,
               backgroundColor: colorOfBadge,
             }}
           >
@@ -953,13 +955,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               ? ['', '']
               : [
                   'Verification Pending: ',
-                  'Your order is being verified by our pharmacists. Our pharmacists might be required to call you for order verification.',
+                  'Your order is being verified by our pharmacists. We might call you for confirming the details.',
                 ]
             : !isOrderRequirePrescription
             ? ['', '']
             : [
                 'Verification Pending: ',
-                'Your order is being verified by our pharmacists. Our pharmacists might be required to call you for order verification.',
+                'Your order is being verified by our pharmacists. We might call you for confirming the details.',
               ],
         [MEDICINE_ORDER_STATUS.ORDER_VERIFIED]:
           orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER && isCartItemsUpdated
@@ -2163,6 +2165,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       sourcePage: 'Order Details',
       refund: refundDetails,
       payment: paymentDetails,
+      etd:getFormattedDateTimeWithBefore(order.orderTat)
     });
   };
 

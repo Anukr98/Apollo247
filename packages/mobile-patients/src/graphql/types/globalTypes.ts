@@ -359,6 +359,7 @@ export enum MEDICINE_ORDER_STATUS {
   RVP_ASSIGNED = 'RVP_ASSIGNED',
   SHIPPED = 'SHIPPED',
   VERIFICATION_DONE = 'VERIFICATION_DONE',
+  LOST="LOST"
 }
 
 export enum MEDICINE_ORDER_STATUS_CONSULT {
@@ -816,6 +817,12 @@ export enum one_apollo_store_code {
   WEBCUS = 'WEBCUS',
 }
 
+export enum HealthRecordConsentStatus {
+  GRANTED = 'GRANTED',
+  NOT_APPLICABLE = 'NOT_APPLICABLE',
+  NOT_GRANTED = 'NOT_GRANTED',
+}
+
 export interface AddAllergyRecordInput {
   id?: string | null;
   patientId: string;
@@ -1037,6 +1044,7 @@ export interface BookAppointmentInput {
   discountedAmount?: number | null;
   subscriptionDetails?: SUBSCRIPTION_DETAILS | null;
   planPurchaseDetails?: PLAN_PURCHASE_DETAILS | null;
+  healthRecordsConsent?: HealthRecordConsentStatus | null;
 }
 
 export interface BookFollowUpAppointmentInput {

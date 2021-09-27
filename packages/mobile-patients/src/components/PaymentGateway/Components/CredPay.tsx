@@ -4,8 +4,8 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CollapseView } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CollapseView';
 import { paymentModeVersionCheck } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { OutagePrompt } from '@aph/mobile-patients/src/components/PaymentGateway/Components/OutagePrompt';
-import { WalletIcon } from '@aph/mobile-patients/src/components/PaymentGateway/Components/WalletIcon';
 import { OffersIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface CredPayProps {
   onPressPayNow: (wallet: string) => void;
@@ -15,6 +15,8 @@ export interface CredPayProps {
 
 export const CredPay: React.FC<CredPayProps> = (props) => {
   const { onPressPayNow, paymentMethod, credInfo } = props;
+  const enableCredWebView = AppConfig.Configuration.enableCredWebView;
+  const isWebView = credInfo?.flowType == 'web';
 
   const renderImage = () => {
     const imageUrl = credInfo?.layout?.icon;
@@ -34,6 +36,7 @@ export const CredPay: React.FC<CredPayProps> = (props) => {
       </View>
     );
   };
+
   const renderCred = () => {
     return (
       <View style={styles.ChildComponent}>
@@ -54,7 +57,13 @@ export const CredPay: React.FC<CredPayProps> = (props) => {
     );
   };
 
-  return <CollapseView isDown={true} Heading={'CRED Pay'} ChildComponent={renderCred()} />;
+  return isWebView ? (
+    enableCredWebView ? (
+      <CollapseView isDown={true} Heading={'CRED Pay'} ChildComponent={renderCred()} />
+    ) : null
+  ) : (
+    <CollapseView isDown={true} Heading={'CRED Pay'} ChildComponent={renderCred()} />
+  );
 };
 
 const styles = StyleSheet.create({

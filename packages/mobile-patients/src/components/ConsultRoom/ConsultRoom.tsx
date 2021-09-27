@@ -790,6 +790,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setCirclePaymentReference,
     pharmacyCircleAttributes,
     setIsCircleExpired,
+    circleSubPlanId,
   } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
@@ -994,7 +995,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     });
 
     AsyncStorage.getItem('VaccinationSubscriptionInclusionId').then((data) => {
-      setVaccinationSubscriptionInclusionId(data);
+      if (data) {
+        setVaccinationSubscriptionInclusionId(data);
+      }
     });
   };
 
@@ -1296,14 +1299,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     attributes?: any
   ) => {
     let eventAttributes: PatientInfo = {
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(
+      'Patient age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
       User_Type: getUserType(allCurrentPatients),
     };
@@ -1365,11 +1368,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
       'Patient gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Mobile number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
       User_Type: getUserType(allCurrentPatients),
       'Nav src': source === 'Home Screen' ? 'hero banner' : 'Bottom bar',
-      'Page Name': 'Home Screen',
+      'Page name': 'Home Screen',
     };
     if (
       source &&
@@ -1403,6 +1406,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       eventAttributes = {
         ...eventAttributes,
         isConsulted: getUserType(allCurrentPatients),
+        'Circle Member': !!circleSubscriptionId,
+        'Circle Plan type': circleSubPlanId || '',
       };
     }
     if (eventName == CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS) {
@@ -1834,6 +1839,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const setSubscriptionData = (plan: any, isUpgradePlan?: boolean, isCorporatePlan?: boolean) => {
+
     try {
       const group = plan.group;
       const groupData: GroupPlan = {
@@ -3327,6 +3333,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             savings={circleSavings}
             credits={healthCredits}
             expired={expired}
+            renew={renew}
           />
         ) : circleStatus === 'disabled' ? (
           <CircleTypeCard6
@@ -3337,6 +3344,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             savings={circleSavings}
             credits={healthCredits}
             expired={expired}
+            renew={renew}
           />
         ) : null}
 
@@ -3601,6 +3609,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     };
     postHomeWEGEvent(WebEngageEventName.COVID_VACCINATION_SECTION_CLICKED, undefined, attibutes);
 
+    console.log(
+      'check  ConsultRoom  handleCovidCTA vaccinationSubscriptionInclusionId ---',
+      vaccinationSubscriptionInclusionId
+    );
+
     try {
       if (item?.action === string.vaccineBooking.CORPORATE_VACCINATION) {
         postVaccineWidgetEvents(CleverTapEventName.VACCINATION_BOOK_SLOT_CLICKED);
@@ -3619,6 +3632,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             } else {
               props.navigation.navigate(AppRoutes.VaccineTermsAndConditions, {
                 isCorporateSubscription: !!corporateSubscriptions?.length,
+                cmsIdentifier: vaccinationCmsIdentifier || '',
+                subscriptionId: vaccinationSubscriptionId || '',
+                subscriptionInclusionId: vaccinationSubscriptionInclusionId || '',
+                isVaccineSubscription: !!vaccinationCmsIdentifier,
               });
             }
           } else {
@@ -3635,7 +3652,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           props.navigation.navigate(AppRoutes.BookedVaccineScreen, {
             cmsIdentifier: vaccinationCmsIdentifier || '',
             subscriptionId: vaccinationSubscriptionId || '',
-            subscriptionInclusionId: vaccinationSubscriptionId || '',
+            subscriptionInclusionId: vaccinationSubscriptionInclusionId || '',
             isVaccineSubscription: !!vaccinationCmsIdentifier,
             isCorporateSubscription: !!corporateSubscriptions?.length,
           });
