@@ -2506,6 +2506,30 @@ export const SEND_HELP_EMAIL = gql`
   }
 `;
 
+// This is similar to above mutation but returns ticket details
+export const CREATE_HELP_TICKET = gql`
+  mutation TicketNumberMutation($createHelpTicketHelpEmailInput: HelpEmailInput) {
+    createHelpTicket(helpEmailInput: $createHelpTicketHelpEmailInput) {
+      ticket {
+        ticketNumber
+        createdTime
+        customerResponseTime
+        modifiedTime
+        statusType
+        subject
+        channel
+        closedTime
+        description
+        id
+        status
+        customFields {
+          Business
+        }
+      }
+    }
+  }
+`;
+
 export const GET_HELP_SECTION_QUERIES = gql`
   query GetHelpSectionQueries {
     getHelpSectionQueries {
@@ -2854,6 +2878,7 @@ export const SAVE_NOTIFICATION_SETTINGS = gql`
 //     }
 //   }
 // `;
+
 export const ADD_PATIENT_HOSPITALIZATION_RECORD = gql`
   mutation addPatientHospitalizationRecord(
     $AddHospitalizationRecordInput: AddHospitalizationRecordInput
@@ -5701,6 +5726,29 @@ export const GET_HELPDESK_TICKETS = gql`
         }
       }
       count
+    }
+  }
+`;
+
+export const GET_RECENT_TICKET = gql`
+  query getRecentTicketQuery {
+    getRecentTicket {
+      ticket {
+        ticketNumber
+        createdTime
+        customerResponseTime
+        modifiedTime
+        statusType
+        subject
+        channel
+        closedTime
+        description
+        id
+        status
+        customFields {
+          Business
+        }
+      }
     }
   }
 `;

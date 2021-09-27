@@ -1,5 +1,5 @@
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { Apollo247Icon, WhatsAppIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Apollo247Icon, WhatsAppIcon, Reload } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState, useRef } from 'react';
@@ -18,6 +18,7 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
+  BackHandler,
   Alert,
   SafeAreaView,
   StyleSheet,
@@ -182,6 +183,12 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(11),
     marginHorizontal: 3,
   },
+  refreshContainer: {
+    flexDirection: 'row',
+    alignSelf: 'center',
+    marginTop: 15,
+    marginLeft: -5,
+  },
   whatsAppIcon: {
     height: 17,
     width: 17,
@@ -193,6 +200,18 @@ const styles = StyleSheet.create({
     marginHorizontal: 3,
     alignSelf: 'center',
     marginTop: 50,
+  },
+  refresh: {
+    color: '#FC9916',
+    ...theme.fonts.IBMPlexSansMedium(13),
+    marginHorizontal: 3,
+    alignSelf: 'center',
+  },
+  reload: {
+    tintColor: '#FC9916',
+    height: 16,
+    width: 16,
+    alignSelf: 'center',
   },
   ticketCreationLagTime: {
     color: '#FC9916',
@@ -240,60 +259,23 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState(false);
   const [showTicketCreationLagMessage, setShowTicketCreationLagMessage] = useState(false);
+  const level: number = props.navigation.getParam('level') || 0;
 
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
 
   useEffect(() => {
-    if (ticketId) {
-      // when there is only ticketId
-      setShowTicketCreationLagMessage(true);
-      setTimeout(() => fetchTicketDetails(), 10000);
-    } else {
-      if (ticket) {
-        getConversation();
-      }
+    if (ticket) {
+      getConversation();
     }
   }, []);
 
-  const fetchTicketDetails = () => {
-    setShowTicketCreationLagMessage(true);
-
-    client
-      .query<getHelpdeskTickets>({
-        query: GET_HELPDESK_TICKETS,
-        fetchPolicy: 'no-cache',
-      })
-      .then((response) => {
-        let correspondingTicket = response?.data?.getHelpdeskTickets?.tickets?.filter(
-          (t) => t?.id === ticketId
-        )[0];
-
-        if (correspondingTicket) {
-          setTicket(correspondingTicket);
-          setTimeout(() => getConversation(), 3000);
-        } else {
-          showAphAlert!({
-            title: `Oops :)`,
-            description:
-              'Your ticket is still being submitted. Please reload this screen by clicking OK, GOT IT',
-            onPressOk: () => {
-              hideAphAlert!();
-
-              setShowTicketCreationLagMessage(true);
-              setTimeout(() => fetchTicketDetails(), 10000);
-            },
-          });
-        }
-
-        setShowTicketCreationLagMessage(false);
-      })
-      .catch((error) => {
-        setShowTicketCreationLagMessage(false);
-
-        CommonBugFender('fetchHelpdeskTickets', error);
-      });
-  };
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
 
   const getConversation = () => {
     setLoading(true);
@@ -415,10 +397,21 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
         <Header
           title={'HELP'}
           leftIcon="backArrow"
-          onPressLeftIcon={() => props.navigation.goBack()}
+          onPressLeftIcon={() => {
+            handleBack();
+          }}
         />
       </View>
     );
+  };
+
+  const handleBack = () => {
+    if (level) {
+      props.navigation.pop(level);
+    } else {
+      props.navigation.goBack();
+    }
+    return true;
   };
 
   const renderOrderStatusHeader = () => {
@@ -586,12 +579,22 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
           <ActivityIndicator style={{ flex: 1, alignItems: 'center' }} size="large" color="green" />
         ) : (
           <View style={[{ flex: 1 }]}>
-            {!showTicketCreationLagMessage &&
-              (conversations == null || conversations.length == 0) && (
+            {!showTicketCreationLagMessage && (conversations == null || conversations.length == 0) && (
+              <View>
                 <Text style={styles.noConversationTillNow}>
                   {string.needHelpScreen.no_conversation_till_now}
                 </Text>
-              )}
+                <TouchableOpacity
+                  style={styles.refreshContainer}
+                  onPress={() => {
+                    getConversation();
+                  }}
+                >
+                  <Reload style={styles.reload} />
+                  <Text style={styles.refresh}>Refresh</Text>
+                </TouchableOpacity>
+              </View>
+            )}
 
             {showTicketCreationLagMessage ? (
               <View style={{ marginTop: 300 }}>

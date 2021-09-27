@@ -12,6 +12,7 @@ import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT,
   SEND_HELP_EMAIL,
+  CREATE_HELP_TICKET,
   GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -49,6 +50,10 @@ import {
   getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails,
   getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
 } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
+import {
+  TicketNumberMutation,
+  TicketNumberMutationVariables,
+} from '@aph/mobile-patients/src/graphql/types/TicketNumberMutation';
 
 export interface Props
   extends NavigationScreenProps<{
@@ -188,15 +193,11 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   };
 
   const onSuccess = (response: any) => {
-    let ticketId = response?.data?.sendHelpEmail.split(':')[1] || 0;
-    let ticketType = response?.data?.sendHelpEmail.split(':')[2] || '';
-
-    let referenceNumberText = '';
-    if (ticketType && ticketType === 'fd') {
-      referenceNumberText = ticketId
-        ? needHelpTicketReferenceText.replace('#ticketNumber', '#' + ticketId)
-        : '';
-    }
+    let ticket = response?.data?.createHelpTicket?.ticket;
+    let ticketNumber = ticket?.ticketNumber;
+    let referenceNumberText = ticketNumber
+      ? needHelpTicketReferenceText.replace('#ticketNumber', '#' + ticketNumber)
+      : '';
 
     showAphAlert!({
       title: string.common.hiWithSmiley,
@@ -205,7 +206,11 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       unDismissable: true,
       onPressOk: () => {
         hideAphAlert!();
-        navigateToHome(navigation);
+
+        navigation.navigate(AppRoutes.HelpChatScreen, {
+          ticket: ticket,
+          level: queryIdLevel2 ? 3 : queryIdLevel1 ? 2 : 1,
+        });
       },
     });
   };
@@ -231,8 +236,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           ? ORDER_TYPE.DIAGNOSTICS
           : null;
       const reason = subQueries?.find(({ id }) => id === selectedQueryId)?.title;
-      const variables: SendHelpEmailVariables = {
-        helpEmailInput: {
+      const variables: TicketNumberMutationVariables = {
+        createHelpTicketHelpEmailInput: {
           category: parentQuery?.title,
           reason: reason,
           comments: comments,
@@ -243,8 +248,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         },
       };
 
-      let res = await client.query<SendHelpEmail, SendHelpEmailVariables>({
-        query: SEND_HELP_EMAIL,
+      let res = await client.mutate<TicketNumberMutation, TicketNumberMutationVariables>({
+        mutation: CREATE_HELP_TICKET,
         variables,
       });
 
