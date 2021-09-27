@@ -42,6 +42,7 @@ import {
   GET_DIAGNOSTIC_EXPRESS_SLOTS_INFO,
   GET_DIAGNOSTIC_REPORT_TAT,
   SAVE_JUSPAY_SDK_RESPONSE,
+  CHANGE_DIAGNOSTIC_ORDER_PATIENT_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -202,6 +203,7 @@ import {
   getConfigurableReportTAT,
   getConfigurableReportTATVariables,
 } from '@aph/mobile-patients/src/graphql/types/getConfigurableReportTAT';
+import { switchDiagnosticOrderPatientID, switchDiagnosticOrderPatientIDVariables } from '@aph/mobile-patients/src/graphql/types/switchDiagnosticOrderPatientID';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -1277,6 +1279,25 @@ export const getReportTAT = (
       cityId: cityId,
       pincode: pincode,
       itemIds: itemIds
+    },
+    fetchPolicy: 'no-cache',
+  }); 
+};
+
+export const switchDiagnosticOrderPatientId = (
+  client: ApolloClient<object>,
+  orderId: string,
+  newPatientId: string,
+) =>
+{
+  return client.mutate<switchDiagnosticOrderPatientID, switchDiagnosticOrderPatientIDVariables>({
+    mutation: CHANGE_DIAGNOSTIC_ORDER_PATIENT_ID,
+    context: {
+      sourceHeaders,
+    },
+    variables: {
+      diagnosticOrdersId: orderId,
+      newPatientId: newPatientId
     },
     fetchPolicy: 'no-cache',
   }); 

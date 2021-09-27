@@ -6136,3 +6136,12 @@ export const GET_JUSPAY_CLIENTAUTH_TOKEN = gql`
     }
   }
 `;
+
+export const CHANGE_DIAGNOSTIC_ORDER_PATIENT_ID = gql`
+mutation switchDiagnosticOrderPatientID($diagnosticOrdersId: String!,$newPatientId: String!) {
+  switchDiagnosticOrderPatientID(diagnosticOrdersId: $diagnosticOrdersId,newPatientId: $newPatientId) {
+    status
+    message
+  }
+}
+`;
