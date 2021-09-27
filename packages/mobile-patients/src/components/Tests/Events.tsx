@@ -29,18 +29,12 @@ import {
   DIAGNOSTIC_PINCODE_SOURCE_TYPE,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 
-import AsyncStorage from '@react-native-community/async-storage';
-import string from '@aph/mobile-patients/src/strings/strings.json';
-import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj } from '../../graphql/types/getDiagnosticOrdersListByMobile';
-
-async function createPatientAttributes(currentPatient: any) {
-  const diagnosticUserType = await AsyncStorage.getItem('diagnosticUserType');
+function createPatientAttributes(currentPatient: any) {
   const patientAttributes = {
-    'Patient UHID': currentPatient?.uhid,
-    'Patient Gender': currentPatient?.gender,
-    'Patient Name': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
-    'Patient Age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
-    'User Type': !!diagnosticUserType ? JSON.parse(diagnosticUserType) : string.user_type.NEW,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
   };
   return patientAttributes;
 }
