@@ -137,8 +137,8 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
       })
       .then((res) => {
         const paymentEventAttributes = {
-          af_order_id: orderId,
-          order_AutoId: orderAutoId,
+          af_order_id: orderId && orderId,
+          order_AutoId: orderAutoId && orderAutoId,
           LOB: 'Pharmacy',
           Payment_Status: res.data.pharmaPaymentStatus.paymentStatus,
         };

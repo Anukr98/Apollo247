@@ -164,9 +164,9 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const fireOrderFailedEvent = (orderId: string) => {
     const eventAttributes = {
       LOB: 'Pharmacy',
-      af_order_id: orderId,
+      af_order_id: orderId && orderId,
       af_price: totalAmount,
-      af_coupon_code: coupon,
+      af_coupon_code: coupon && coupon,
       af_payment_info_available: paymentTypeID
     };
     postAppsFlyerEvent(AppsFlyerEventName.ORDER_FAILED, eventAttributes);
