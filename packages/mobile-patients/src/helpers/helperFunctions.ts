@@ -2362,7 +2362,7 @@ export const postAppsFlyerAddToCartEvent = (
     af_currency: 'INR',
     item_type: type_id == 'Pharma' ? 'Drugs' : 'FMCG',
     sku: sku ? sku : "",
-    af_content_id: content_id && content_id,
+    af_content_id: content_id ? content_id : 0,
     ...pharmacyCircleAttributes,
   };
   postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_ADD_TO_CART, eventAttributes);
