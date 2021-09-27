@@ -712,8 +712,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   };
 
   const fetchAppointments = async (reload?: boolean) => {
-    console.log('check calling  fetchAppointments ---  reload --', reload);
-
     try {
       const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
       const { data } = await client.query<
@@ -729,8 +727,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           limit: 5,
         },
       });
-
-      console.log('check  data?.getPatientAllAppointments  -- ', data?.getPatientAllAppointments);
 
       const { appointments, totalAppointmentCount } = data?.getPatientAllAppointments || {};
 
@@ -1573,18 +1569,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     <View style={{ flex: 1 }}>
       <NavigationEvents
         onDidFocus={(payload) => {
-          console.log('check  NavigationEvents  onDidFocus---- ');
-
-          console.log('check  callFetchAppointmentApi ---- ', callFetchAppointmentApi);
-
           if (callFetchAppointmentApi) {
-            //setPageLoading(true);
             setOverlayLoading(true);
-            fetchAppointments();
+            fetchAppointments(true);
           }
         }}
         onDidBlur={(payload) => {
-          console.log('check  NavigationEvents  onDidBlur---- ');
           setCallFetchAppointmentApi(true);
         }}
       />
