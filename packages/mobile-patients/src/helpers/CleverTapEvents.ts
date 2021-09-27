@@ -1444,7 +1444,7 @@ export interface CleverTapEvents {
     'Order Amount': number;
     LOB: string;
     type?: string;
-    'Order id': string;
+    'Order id'?: string;
     'Payment mode'?: string
   };
   [CleverTapEventName.CONSULT_PAYMENT_INITIATED]: {

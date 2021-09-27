@@ -28,6 +28,7 @@ import {
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   DIAGNOSTIC_PINCODE_SOURCE_TYPE,
 } from '@aph/mobile-patients/src/utils/commonUtils';
+import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
 function createPatientAttributes(currentPatient: any) {
   const patientAttributes = {
@@ -394,7 +395,7 @@ export function PaymentInitiated(grandTotal: number, LOB: string, type: string) 
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.PAYMENT_INITIATED]
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
-    Amount: grandTotal,
+    'Order Amount': grandTotal,
     LOB: LOB,
     type: type,
   };
