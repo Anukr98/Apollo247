@@ -637,7 +637,6 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
   };
 
   const renderHealthConditionItems = (item: any, index: number) => {
-    console.log(item, 'renderHealthConditionItems');
     const renderHealthConditionTopView = () => {
       const getHealthConditionTypeIcon = () => {
         return item?.data?.allergyName ? (

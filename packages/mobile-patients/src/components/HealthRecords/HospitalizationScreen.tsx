@@ -369,7 +369,6 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
           mergeArray.push({ type: 'hospitalizations', data: c });
         });
         setHospitalizationMainData(phrSortByDate(mergeArray));
-        // console.log(hospitalizationsData, 'hospitalizationsData');
         setShowSpinner(false);
       })
       .catch((error) => {
@@ -421,7 +420,6 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
   };
 
   const renderHospitalizationItems = (item: any, index: number) => {
-    console.log(item.data.dateOfDischarge, 'hospitalizationMainData');
     const getSourceName = (source: string) => {
       return source === 'self' || source === '247self'
         ? string.common.clicnical_document_text
