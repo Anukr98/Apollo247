@@ -190,7 +190,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const onSuccess = (response: any) => {
     showAphAlert!({
       title: string.common.hiWithSmiley,
-      description: subQueriesData?.message || queries[0]?.message || needHelpToContactInMessage || string.needHelpSubmitMessage,
+      description: subQueriesData?.message || queries?.[0]?.message || needHelpToContactInMessage || string.needHelpSubmitMessage,
       unDismissable: true,
       onPressOk: () => {
         hideAphAlert!();
