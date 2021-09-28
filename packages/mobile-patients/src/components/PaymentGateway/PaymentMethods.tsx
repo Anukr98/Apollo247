@@ -130,7 +130,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { healthCredits } = useFetchHealthCredits(businessLine);
   const { paymentMethods, cardTypes, fetching } = useGetPaymentMethods(paymentId);
   const { savedCards } = useFetchSavedCards(customerId);
-  const { clientAuthToken } = customerId && useGetClientAuthToken(customerId, businessLine);
+  const clientAuthToken = !!customerId
+    ? useGetClientAuthToken(customerId, businessLine)
+    : undefined;
   const [cred, setCred] = useState<any>(undefined);
 
   useEffect(() => {
@@ -250,7 +252,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         payload?.requestId == 'googlePay' && status && setGooglePayReady(true);
         break;
       case 'eligibility':
-        const eligibleApps = payload?.payload?.apps[0]?.paymentMethodsEligibility;
+        const eligibleApps = payload?.payload?.apps?.[0]?.paymentMethodsEligibility;
         setCred(eligibleApps?.find((item: any) => item?.paymentMethod == 'CRED'));
         break;
       default:
