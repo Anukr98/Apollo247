@@ -5,7 +5,10 @@ import {
   NavigationActions,
 } from 'react-navigation';
 import { setBugFenderLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  postWebEngageEvent,
+  navigateToScreenWithEmptyStack,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -59,7 +62,7 @@ export const handleOpenURL = (event: any) => {
           setBugFenderLog('DEEP_LINK_SPECIALITY_ID', linkId);
         }
       }
-    } catch (error) { }
+    } catch (error) {}
     const routeNameParam = route?.split('?');
 
     route = routeNameParam ? routeNameParam?.[0]?.toLowerCase() : '';
@@ -435,7 +438,8 @@ export const pushTheView = (
   voipAppointmentId?: MutableRefObject<string>,
   isCorporateSubscribed?: boolean,
   vaccinationCmsIdentifier?: string,
-  vaccinationSubscriptionId?: string
+  vaccinationSubscriptionId?: string,
+  params?: any
 ) => {
   setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
   switch (routeName) {
@@ -657,6 +661,9 @@ export const pushTheView = (
       break;
     case 'TestsCart':
       navigateToView(navigation, AppRoutes.TestsCart);
+      break;
+    case 'PaymentMethods':
+      navigateToScreenWithEmptyStack(navigation, AppRoutes.PaymentMethods, params);
       break;
     default:
       const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {

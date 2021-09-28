@@ -504,7 +504,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     } else if (routeName == 'prohealth') {
       fetchProhealthHospitalDetails(id!);
     } else if (routeName == 'PaymentMethods') {
-      !!id ? fetchOrderInfo(id) : getData(routeName, id, isCall, timeout, mediaSource);
+      !!id ? fetchOrderInfo(id) : getData('ConsultRoom');
     } else {
       getData(routeName, id, isCall, timeout, mediaSource);
     }
@@ -548,7 +548,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           businessLine: 'paymentLink',
           customerId: response?.data?.getOrderInternal?.customer_id,
         };
-        navigateToScreenWithEmptyStack(props.navigation, AppRoutes.PaymentMethods, params);
+        getData('PaymentMethods', undefined, undefined, undefined, undefined, params);
       } else {
         navigateToHome(props.navigation);
       }
@@ -614,7 +614,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     id?: string,
     timeout?: boolean,
     isCall?: boolean,
-    mediaSource?: string
+    mediaSource?: string,
+    params?: any
   ) => {
     async function fetchData() {
       //we are prefetching the userLoggedIn because reading it from async storage was taking 400-500 ms
@@ -692,7 +693,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                   voipAppointmentId,
                   isCorporateSubscribed === 'yes',
                   vaccinationCmsIdentifier,
-                  vaccinationSubscriptionId
+                  vaccinationSubscriptionId,
+                  params
                 );
                 let _createCleverTapProifle = createCleverTapProifle;
                 if (_createCleverTapProifle == null) {
