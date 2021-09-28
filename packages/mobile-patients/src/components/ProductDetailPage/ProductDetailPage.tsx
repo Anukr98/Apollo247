@@ -61,6 +61,8 @@ import {
   getDeliveryTAT247,
   TatApiInput247,
   getMedicineDetailsApiV2,
+  MedicineProduct,
+  getBoughtTogether,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
@@ -203,6 +205,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const [shownNudgeOnce, setShownNudgeOnce] = useState<boolean>(false);
   const [currentProductIdInCart, setCurrentProductIdInCart] = useState<string>(null);
   const [currentProductQuantityInCart, setCurrentProductQuantityInCart] = useState<number>(0);
+  const [boughtTogether, setBoughtTogether] = useState<MedicineProduct[]>([]);
 
   const { special_price, price, type_id, subcategory } = medicineDetails;
   const finalPrice = price - special_price ? special_price : price;
@@ -332,9 +335,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         .then(({ data }) => {
           const productDetails = g(data, 'productdp', '0' as any);
           if (productDetails) {
-            console.log('product details 2 =============', productDetails);
             setSku(productDetails?.sku);
             setMedicineData(productDetails);
+            getBoughtTogetherData(productDetails?.sku, productDetails);
           } else if (data && data.message) {
             setMedicineError(data.message);
           }
@@ -351,7 +354,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         .then(({ data }) => {
           const productDetails = g(data, 'productdp', '0' as any);
           if (productDetails) {
-            console.log('product details ------------', productDetails);
             setMedicineData(productDetails);
           } else if (data && data.message) {
             setMedicineError(data.message);
@@ -392,6 +394,41 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         };
       });
       setMultiVariantSkuInformation(skusInformation);
+    }
+  };
+
+  const getBoughtTogetherData = (productSku: string, productDetails) => {
+    const mainProduct = {
+      id: productDetails.id,
+      sku: productDetails.sku,
+      price: productDetails.price,
+      special_price: productDetails?.special_price,
+      name: productDetails.name,
+      status: productDetails?.status,
+      type_id: productDetails?.type_id,
+      url_key: productDetails?.url_key,
+      is_in_stock: productDetails?.is_in_stock,
+      MaxOrderQty: productDetails.MaxOrderQty,
+      sell_online: productDetails?.sell_online,
+      image: productDetails?.image[0],
+      thumbnail: productDetails?.thumbnail,
+      small_image: productDetails?.small_image,
+      mou: productDetails?.mou,
+      is_prescription_required: productDetails?.is_prescription_required,
+      is_express: productDetails?.is_express,
+      dc_availability: productDetails?.dc_availability,
+      is_in_contract: productDetails?.is_in_contract,
+      banned: productDetails?.banned,
+      subcategory_discount: productDetails?.subcategory_discount,
+    };
+    if (!!productSku) {
+      getBoughtTogether(productSku)
+        .then(({ data }) => {
+          const boughtTogetherProducts = data?.bought_together;
+          boughtTogetherProducts.unshift(mainProduct);
+          setBoughtTogether(boughtTogetherProducts);
+        })
+        .catch(({ error }) => {});
     }
   };
 
@@ -1190,15 +1227,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   setShowSubstituteInfo={setShowSubstituteInfo}
                 />
               )}
-              {!!medicineDetails?.bought_together && !!medicineDetails?.bought_together?.length && (
-                <FrequentlyBoughtTogether
-                  name={medicineDetails?.name}
-                  sku={medicineDetails?.sku}
-                  price={medicineDetails?.price}
-                  specialPrice={medicineDetails?.special_price}
-                  boughtTogetherArray={medicineDetails?.bought_together}
-                />
-              )}
+              {!!medicineDetails.is_in_stock &&
+                medicineDetails.is_in_stock === 1 &&
+                !!boughtTogether &&
+                boughtTogether.length > 0 && (
+                  <FrequentlyBoughtTogether
+                    boughtTogetherArray={boughtTogether}
+                    setShowAddedToCart={setShowAddedToCart}
+                  />
+                )}
               <ProductInfo
                 name={medicineDetails?.name}
                 description={medicineDetails?.product_information}

@@ -13,50 +13,97 @@ import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   getDiscountPercentage,
   productsThumbnailUrl,
-  couponThumbnailUrl,
-  specialOffersImagesThumbnailUrl,
+  getIsMedicine,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 export interface FrequentlyBoughtTogetherProps {
-  name: string;
-  sku: string;
-  price: number;
-  specialPrice?: number | string;
   boughtTogetherArray: MedicineProduct[];
+  setShowAddedToCart: (show: boolean) => void;
 }
 
 export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> = (props) => {
-  const { name, sku, price, specialPrice, boughtTogetherArray } = props;
+  const { boughtTogetherArray, setShowAddedToCart } = props;
 
   const [selectedItemsCount, setSelectedItemsCount] = useState<number>(0);
   const [selectedProductsId, setSelectedProductsId] = useState([]);
+  const [selectedProductsArray, setSelectedProductsArray] = useState<MedicineProduct[]>([]);
   const [totalPrice, setTotalPrice] = useState<number>(0);
 
-  const { updateCartItem } = useShoppingCart();
+  const { cartItems, updateCartItem, addCartItem } = useShoppingCart();
 
-  const onPressIcon = (id: number, itemPrice: number) => {
+  const onPressIcon = (id: number, itemPrice: number, item) => {
     let newArr = [...selectedProductsId];
+    let newDataArr = [...selectedProductsArray];
     if (newArr.includes(id)) {
       const x = newArr.indexOf(id);
       newArr.splice(x, 1);
+      newDataArr.splice(x, 1);
       setSelectedItemsCount(selectedItemsCount - 1);
+      setSelectedProductsArray(newDataArr);
       setTotalPrice(totalPrice - itemPrice);
     } else {
       newArr.push(id);
+      newDataArr.push(item);
       setSelectedItemsCount(selectedItemsCount + 1);
+      setSelectedProductsArray(newDataArr);
       setTotalPrice(totalPrice + itemPrice);
     }
     console.log(newArr);
     setSelectedProductsId(newArr);
   };
 
+  const onPressAdd = (selectedProductsArray) => {
+    selectedProductsArray.map((item) => {
+      const {
+        sku,
+        mou,
+        name,
+        price,
+        special_price,
+        is_prescription_required,
+        type_id,
+        thumbnail,
+        MaxOrderQty,
+        url_key,
+        subcategory,
+      } = item;
+      if (cartItems.find(({ id }) => id?.toUpperCase() === sku?.toUpperCase())) {
+        updateCartItem?.({
+          id: sku,
+          quantity: 1,
+        });
+      } else {
+        addCartItem!({
+          id: sku,
+          mou,
+          name,
+          price: price,
+          specialPrice: special_price
+            ? typeof special_price == 'string'
+              ? Number(special_price)
+              : special_price
+            : undefined,
+          prescriptionRequired: is_prescription_required == '1',
+          isMedicine: getIsMedicine(type_id?.toLowerCase()) || '0',
+          quantity: 1,
+          thumbnail: thumbnail,
+          isInStock: true,
+          maxOrderQty: MaxOrderQty,
+          productType: type_id,
+          url_key,
+          subcategory,
+        });
+      }
+      setShowAddedToCart(true);
+      setTimeout(() => {
+        setShowAddedToCart(false);
+      }, 2000);
+    });
+  };
+
   const renderBoughtTogetherItem = (imgUrl: string, item: MedicineProduct, index) => {
-    // const specialPrice = item.special_price ? true : false;
-    const specialPrice = true;
-    const value = 56;
-    // const fallbackImage = `https://newassets.apollo247.com/images/ic_placeholder_circle.png`;
-    const imagePathPresent = imgUrl.match(/\.(jpeg|jpg|gif|png|webp)$/) != null;
+    const specialPrice = item.special_price ? true : false;
     const discount = Math.round(getDiscountPercentage(item.price, item.special_price));
     const itemSelected = selectedProductsId.includes(item?.id);
     return (
@@ -65,9 +112,8 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
           <TouchableOpacity
             onPress={() => {
               item?.special_price
-                ? onPressIcon(item?.id, +item?.special_price)
-                : onPressIcon(item?.id, item?.price);
-              //   onPressIcon(item?.id, +item?.special_price || item?.price);
+                ? onPressIcon(item?.id, +item?.special_price, item)
+                : onPressIcon(item?.id, item?.price, item);
             }}
             style={styles.selectImageStyle}
           >
@@ -96,7 +142,7 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
             {specialPrice ? (
               <Text style={styles.priceStyle}>
                 {'\u20B9'}
-                {value}{' '}
+                {item?.special_price}{' '}
               </Text>
             ) : (
               <Text style={styles.priceStyle}>
@@ -139,7 +185,12 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
             </Text>
           </View>
           <View>
-            <TouchableOpacity style={styles.addButtonContainer}>
+            <TouchableOpacity
+              onPress={() => {
+                onPressAdd(selectedProductsArray);
+              }}
+              style={styles.addButtonContainer}
+            >
               {selectedItemsCount === 0 ? (
                 <Text style={styles.addButtonTextStyles}>ADD ITEMS TO CART</Text>
               ) : selectedItemsCount === 1 ? (
@@ -163,7 +214,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginTop: 20,
-    // backgroundColor: '#229978',
   },
   headingStyle: {
     ...theme.fonts.IBMPlexSansRegular(20),
@@ -173,30 +223,17 @@ const styles = StyleSheet.create({
     letterSpacing: 0.25,
   },
   productContainer: {
-    // width: '100%',
-    // height: 280,
     marginTop: 16,
-    // borderWidth: 0.5,
-    // borderColor: '#02475B',
-    // backgroundColor: '#229978',
   },
-  //   mainItemContainer: {
-  //     height: 71,
-  //     flexDirection: 'row',
-  //     justifyContent: 'center',
-  //   },
   ItemContainer: {
     height: 67,
     borderWidth: 0.5,
     borderRadius: 1,
-    // borderStyle: 'dashed',
     borderTopColor: '#02475B',
     borderLeftColor: '#02475B',
     borderRightColor: '#02475B',
-    // borderColor: '#658F9B',
     borderBottomColor: '#658F9B',
     flexDirection: 'row',
-    // justifyContent: 'center',
   },
   imageContainer: {
     flexDirection: 'row',
@@ -204,12 +241,9 @@ const styles = StyleSheet.create({
     borderRightWidth: 0.5,
     borderColor: '#02475B',
     justifyContent: 'space-evenly',
-    // paddingLeft: 10,
   },
   selectImageStyle: {
     flexDirection: 'row',
-    // justifyContent: 'space-between',
-    // justifyContent: 'space-evenly',
   },
   iconStyles: {
     height: 14,
@@ -229,7 +263,6 @@ const styles = StyleSheet.create({
     height: 53,
     width: 53,
     alignSelf: 'center',
-    // top: 15,
   },
   detailsContainer: {
     flex: 1,
@@ -247,14 +280,12 @@ const styles = StyleSheet.create({
     color: '#01475B',
     fontWeight: '500',
     lineHeight: 18,
-    // paddingRight: 3,
   },
   priceCancelStyle: {
     ...theme.fonts.IBMPlexSansRegular(12),
     color: '#02475B',
     opacity: 0.7,
     fontWeight: '400',
-    // paddingRight: 3,
     lineHeight: 15,
     letterSpacing: 0.25,
     textDecorationLine: 'line-through',
@@ -275,11 +306,9 @@ const styles = StyleSheet.create({
     paddingRight: 19,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    // backgroundColor: '#229978',
   },
   cartPriceStyle: {
     ...theme.fonts.IBMPlexSansRegular(14),
-    // textAlign: 'center',
     lineHeight: 18,
     color: '#658F9B',
   },
@@ -293,9 +322,8 @@ const styles = StyleSheet.create({
   addButtonContainer: {
     height: 40,
     width: 168,
-    // marginRight: 12,
     borderRadius: 5,
-    backgroundColor: '#FC9916',
+    backgroundColor: '#FCB716',
     justifyContent: 'center',
   },
   addButtonTextStyles: {
