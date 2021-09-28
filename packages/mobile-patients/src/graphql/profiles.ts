@@ -2309,6 +2309,7 @@ export const GET_HELP_SECTION_QUERIES = gql`
       needHelpQueries {
         id
         title
+        message
         nonOrderQueries
         queriesByOrderStatus
         content {
