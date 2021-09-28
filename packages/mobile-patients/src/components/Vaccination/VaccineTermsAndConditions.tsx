@@ -16,6 +16,10 @@ import AsyncStorage from '@react-native-community/async-storage';
 export interface VaccineTermsAndConditionsProps
   extends NavigationScreenProps<{
     isCorporateSubscription?: boolean;
+    cmsIdentifier?: string;
+    subscriptionId?: string;
+    subscriptionInclusionId?: string;
+    isVaccineSubscription?: boolean;
   }> {}
 
 const styles = StyleSheet.create({
@@ -68,6 +72,11 @@ export const VaccineTermsAndConditions: React.FC<VaccineTermsAndConditionsProps>
   const isCorporateSubscription = props.navigation.getParam('isCorporateSubscription');
   const [isChecked, setIsChecked] = useState<boolean>(false);
   const [isError, setIsError] = useState<boolean>(false);
+  const cmsIdentifier = props.navigation.getParam('cmsIdentifier');
+  const subscriptionId = props.navigation.getParam('subscriptionId');
+  const subscriptionInclusionId = props.navigation.getParam('subscriptionInclusionId');
+  const excludeProfileListIds = props.navigation.getParam('excludeProfileListIds');
+  const remainingVaccineSlots = props.navigation.getParam('remainingVaccineSlots');
 
   useEffect(() => {
     if (isChecked) setIsError(false);
@@ -179,6 +188,7 @@ export const VaccineTermsAndConditions: React.FC<VaccineTermsAndConditionsProps>
               isVaccineSubscription: !!vaccinationCmsIdentifier,
               isCorporateSubscription: !!isCorporateSubscription,
               comingFrom: AppRoutes.VaccineTermsAndConditions,
+              subscriptionInclusionId: subscriptionInclusionId || '',
             });
           }
         }}

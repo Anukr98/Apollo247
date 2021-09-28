@@ -41,7 +41,7 @@ import {
   onCleverTapUserLogin,
   getUTMdataFromURL,
   postCleverTapEvent,
-  navigateToScreenWithHomeScreeninStack,
+  navigateToScreenWithEmptyStack,
   navigateToHome,
   setCleverTapAppsFlyerCustID,
   clevertapEventForAppsflyerDeeplink,
@@ -530,7 +530,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         fetchPolicy: 'no-cache',
       });
       const paymentStatus = response?.data?.getOrderInternal?.payment_status;
-      if (paymentStatus == 'PAYMENT_NOT_INITIATED') {
+      const allowedStatuses = ['PAYMENT_NOT_INITIATED', 'TXN_FAILURE', 'COD_COMPLETE'];
+      if (allowedStatuses.includes(paymentStatus)) {
         const currentPatientId: any = await AsyncStorage.getItem('selectUserId');
         const isPharmaOrder = !!response?.data?.getOrderInternal?.PharmaOrderDetails
           ?.medicineOrderDetails?.length
@@ -547,7 +548,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           businessLine: 'paymentLink',
           customerId: response?.data?.getOrderInternal?.customer_id,
         };
-        navigateToScreenWithHomeScreeninStack(props.navigation, AppRoutes.PaymentMethods, params);
+        navigateToScreenWithEmptyStack(props.navigation, AppRoutes.PaymentMethods, params);
       } else {
         navigateToHome(props.navigation);
       }

@@ -289,6 +289,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setAddresses: setMedAddresses,
     circleSubscriptionId,
     circlePlanValidity,
+    pharmacyCircleAttributes,
   } = useShoppingCart();
 
   const sourceScreen = props.navigation.getParam('comingFrom');
@@ -1262,14 +1263,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   function _navigateToSearch() {
-    DiagnosticAddToCartClicked(pinCode,currentPatient);
+    DiagnosticAddToCartClicked(pinCode, currentPatient);
     props.navigation.navigate(AppRoutes.SearchTestScene, {
       searchText: '',
     });
   }
 
   function _navigateToHomePage() {
-    DiagnosticAddToCartClicked(pinCode,currentPatient);
+    DiagnosticAddToCartClicked(pinCode, currentPatient);
     props.navigation.navigate('TESTS', { focusSearch: true });
   }
 
@@ -1736,14 +1737,21 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const AddressSelectedEvent = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+    const appsFlyerAttributes = {
+      DeliveryAddress: formatAddress(address),
+      Pincode: address?.zipcode || '',
+      LOB: 'Diagnostics',
+      ...pharmacyCircleAttributes,
+    };
+
     const firebaseAttributes: FirebaseEvents[FirebaseEventName.DIAGNOSTIC_CART_ADDRESS_SELECTED_SUCCESS] = {
       DeliveryAddress: formatAddress(address),
       Pincode: address?.zipcode || '',
       LOB: 'Diagnostics',
     };
     postAppsFlyerEvent(
-      AppsFlyerEventName.DIAGNOSTIC_CART_ADDRESS_SELECTED_SUCCESS,
-      firebaseAttributes
+      AppsFlyerEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS,
+      appsFlyerAttributes
     );
     postFirebaseEvent(
       FirebaseEventName.DIAGNOSTIC_CART_ADDRESS_SELECTED_SUCCESS,
