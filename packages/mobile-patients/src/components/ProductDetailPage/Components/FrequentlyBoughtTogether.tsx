@@ -83,7 +83,7 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
               ? Number(special_price)
               : special_price
             : undefined,
-          prescriptionRequired: is_prescription_required == '1',
+          prescriptionRequired: is_prescription_required === '1',
           isMedicine: getIsMedicine(type_id?.toLowerCase()) || '0',
           quantity: 1,
           thumbnail: thumbnail,
