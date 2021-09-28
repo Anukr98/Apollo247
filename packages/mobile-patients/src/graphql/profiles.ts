@@ -6199,3 +6199,23 @@ export const GET_DIAGNOSTIC_REPORT_TAT = gql`
     }
   }
 `;
+
+export const GET_JUSPAY_CLIENTAUTH_TOKEN = gql`
+  query getCustomer(
+    $customerId: String
+    $is_pharma_juspay: Boolean
+    $get_client_auth_token: Boolean
+  ) {
+    getCustomer(
+      customerId: $customerId
+      is_pharma_juspay: $is_pharma_juspay
+      get_client_auth_token: $get_client_auth_token
+    ) {
+      mobile_number
+      juspay {
+        client_auth_token
+        client_auth_token_expiry
+      }
+    }
+  }
+`;

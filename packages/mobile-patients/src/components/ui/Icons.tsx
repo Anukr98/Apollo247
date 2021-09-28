@@ -274,6 +274,10 @@ export const SpecialOffers: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_special_offers.webp')} />
 );
 
+export const OffersIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/offerGreen.webp')} />
+);
+
 export const AddIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_plus_onorange.webp')} />
 );
@@ -2037,10 +2041,7 @@ export const SavingsIcon: React.FC<IconProps> = (props) => (
 );
 
 export const Tick: React.FC<IconProps> = (props) => (
-  <IconBase
-    {...props}
-    source={require('@aph/mobile-patients/src/components/ui/icons/tick.webp')}
-  />
+  <IconBase {...props} source={require('@aph/mobile-patients/src/components/ui/icons/tick.webp')} />
 );
 
 export const DoctorLocation: React.FC<IconProps> = (props) => (
