@@ -22,10 +22,10 @@ import {
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { circleValidity } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
 import AsyncStorage from '@react-native-community/async-storage';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { searchDiagnosticItem_searchDiagnosticItem_data } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticItem';
 async function createPatientAttributes(currentPatient: any) {
   const diagnosticUserType = await AsyncStorage.getItem('diagnosticUserType');
   const patientAttributes = {
@@ -501,10 +501,7 @@ export function DiagnosticAddresssSelected(
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE, eventAttributes);
 }
 
-export function DiagnosticAddToCartClicked(
-  pincode: string | number,
-  currentPatient?: string
-) {
+export function DiagnosticAddToCartClicked(pincode: string | number, currentPatient?: string) {
   const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE]
@@ -582,7 +579,7 @@ export function DiagnosticTrackOrderViewed(
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_TRACK_ORDER_VIEWED, eventAttributes);
 }
 
-export function DiagnosticFeedbackSubmitted(currentPatient: any, rating: string, reason: string,) {
+export function DiagnosticFeedbackSubmitted(currentPatient: any, rating: string, reason: string) {
   const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_FEEDBACK_GIVEN]
@@ -600,7 +597,7 @@ export function DiagnosticFeedbackSubmitted(currentPatient: any, rating: string,
 export function DiagnosticItemSearched(
   currentPatient: any,
   keyword: string,
-  results: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[],
+  results: searchDiagnosticItem_searchDiagnosticItem_data[],
   isDiagnosticCircleSubscription: boolean | undefined
 ) {
   const getPatientAttributes = createPatientAttributes(currentPatient);
