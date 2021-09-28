@@ -294,7 +294,14 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     setMorningSlots(getMorningSlots);
     setAfternoonSlots(getAfternoonSlots);
     setEveningSlots(getEveningSlots);
-
+    /**
+     * added since, it was persisting previous slots
+     */
+    if (overallSlots?.length == 0) {
+      setOverallSlotsArray([]);
+      setSelectedDayTab(0);
+      return;
+    }
     if (getMorningSlots?.length > 0) {
       setOverallSlotsArray(getMorningSlots);
       setSelectedDayTab(0);
@@ -584,7 +591,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           ) : null}
           <ScrollView style={styles.containerContentStyle} bounces={false}>
             {renderCalendarView()}
-            {renderPremiumTag()}
+            {props.isReschdedule ? null : renderPremiumTag()}
             {renderSlotSelectionView()}
           </ScrollView>
           {showInOverlay && props.isReschdedule && overallSlotsArray?.length ? (

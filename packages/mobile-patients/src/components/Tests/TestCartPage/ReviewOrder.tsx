@@ -728,7 +728,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             </Text>
           </View>
           <Text style={[styles.priceTextStyle, { marginRight: 20 }]}>
-            {string.common.Rs} {defaultPlanPurchasePrice}
+            {string.common.Rs}
+            {defaultPlanPurchasePrice}
           </Text>
         </View>
         <TouchableOpacity onPress={() => _onPressRemovePlan()} style={styles.removeTouch}>
@@ -768,7 +769,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
               <View style={{ flexDirection: 'row', marginTop: 3 }}>
                 <CircleLogo style={styles.savingCircleIcon} />
                 <Text style={styles.savingTextStyle}>
-                  Savings {string.common.Rs}
+                  Savings{string.common.Rs}
                   {savingAmount}
                 </Text>
               </View>

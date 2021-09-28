@@ -80,7 +80,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     cartItems,
     setIsDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
-  const { circleSubscriptionId, circlePlanSelected } = useShoppingCart();
+  const { circleSubscriptionId, circlePlanSelected, setCircleSubscriptionId } = useShoppingCart();
   const client = useApolloClient();
   const { setLoading } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
@@ -132,6 +132,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const [apiPrimaryOrderDetails, setApiPrimaryOrderDetails] = useState([] as any);
   const [primaryOrderId, setPrimaryOrderId] = useState<string>('');
   const [slotDuration, setSlotDuration] = useState<number>(0);
+  const [circlePlanDetails, setCirclePlanDetails] = useState([] as any);
 
   const moveToMyOrders = () => {
     props.navigation.popToTop({ immediate: true }); //if not added, stack was getting cleared.
@@ -222,8 +223,8 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
         variables: query,
       });
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
-      // setCirclePlanDetails(data?.APOLLO?.[0]);
-      // setCircleSubscriptionID(data?.APOLLO?.[0]._id);
+      setCirclePlanDetails(data?.APOLLO?.[0]);
+      setCircleSubscriptionId?.(data?.APOLLO?.[0]._id);
       data?.APOLLO?.[0]._id && AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
     } catch (error) {
       CommonBugFender('OrderStatus_getUserSubscriptionsByStatus', error);
@@ -660,20 +661,18 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
 
   //check for expired case
   const renderCirclePurchaseCard = () => {
-    const duration = circlePlanSelected?.durationInMonth;
-    const circlePurchasePrice = circlePlanSelected?.currentSellingPrice;
-    const validity = moment(new Date(), 'DD/MM/YYYY').add(
-      'days',
-      circlePlanSelected?.valid_duration
-    );
+    const duration = !!circlePlanDetails && circlePlanDetails?.expires_in;
+    const circlePurchasePrice =
+      !!circlePlanDetails && circlePlanDetails?.payment_reference?.amount_paid;
+    const validity = moment(new Date(), 'DD/MM/YYYY').add('days', circlePlanDetails?.expires_in);
     return (
       <View style={styles.circlePurchaseDetailsCard}>
         <View style={{ flexDirection: 'row' }}>
           <CircleLogo style={styles.circleLogoIcon} />
           <View style={styles.circlePurchaseDetailsView}>
             <Text style={styles.circlePurchaseText}>
-              Congrats! You have successfully purchased the {duration} months (Trial) Circle Plan
-              for {string.common.Rs}
+              Congrats! You have successfully purchased the {duration} days (Trial) Circle Plan for{' '}
+              {string.common.Rs}
               {circlePurchasePrice}
             </Text>
             {!!savings && (

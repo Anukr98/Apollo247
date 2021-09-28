@@ -147,7 +147,6 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                   <View
                     style={{
                       flexDirection: 'row',
-                      minWidth: 0,
                       maxWidth: !!item?.editOrderID ? (screenWidth > 350 ? '68%' : '57%') : '80%',
                       flex: 1,
                     }}
@@ -161,10 +160,10 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                         : ''}{' '}
                     </Text>
                     {!!item?.editOrderID ? renderNewTag() : null}
+                    {index == 1 &&
+                      filterOrderLineItem?.length - 2 > 0 &&
+                      renderShowMore(filterOrderLineItem, item?.itemName!)}
                   </View>
-                  {index == 1 &&
-                    filterOrderLineItem?.length - 2 > 0 &&
-                    renderShowMore(filterOrderLineItem, item?.itemName!)}
                 </>
               ) : null}
             </View>
