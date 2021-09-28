@@ -45,12 +45,7 @@ export interface TimelineWizardProps extends NavigationScreenProps {
 
 export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
   const { currentPage, upcomingPages, donePages, isModify } = props;
-  const {
-    isCircleAddedToCart,
-    setIsCircleAddedToCart,
-    setSelectedCirclePlan,
-    setIsDiagnosticCircleSubscription,
-  } = useDiagnosticsCart();
+  const { isCircleAddedToCart, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
   const {
     setCircleMembershipCharges,
     setCircleSubPlanId,

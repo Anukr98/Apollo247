@@ -201,6 +201,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     selectedCirclePlan,
     setSelectedCirclePlan,
     setIsDiagnosticCircleSubscription,
+    isCirclePlanRemoved,
+    setIsCirclePlanRemoved,
   } = useDiagnosticsCart();
 
   const {
@@ -242,6 +244,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const [defaultCirclePlan, setDefaultCirclePlan] = useState<any>(null);
   const [allMembershipPlans, setAllMembershipPlans] = useState<any>([]);
   const [showCirclePopup, setShowCirclePopup] = useState<boolean>(false);
+  const [isClicked, setIsClicked] = useState<boolean>(false);
 
   let itemNamesToRemove_global: string[] = [];
   let itemIdsToRemove_global: Number[] = [];
@@ -297,7 +300,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     isDiagnosticCircleSubscription
       ? null
       : setIsCircleAddedToCart?.(
-          hideCirclePurchaseInModify ? false : AppConfig.Configuration.CIRCLE_PLAN_PRESELECTED
+          hideCirclePurchaseInModify
+            ? false
+            : isCirclePlanRemoved
+            ? false
+            : AppConfig.Configuration.CIRCLE_PLAN_PRESELECTED
         ); //read from firebase
   }, []);
 
@@ -724,15 +731,17 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             {string.common.Rs} {defaultPlanPurchasePrice}
           </Text>
         </View>
-        <TouchableOpacity
-          onPress={() => setIsCircleAddedToCart?.(false)}
-          style={styles.removeTouch}
-        >
+        <TouchableOpacity onPress={() => _onPressRemovePlan()} style={styles.removeTouch}>
           <Text style={styles.removeText}>REMOVE</Text>
         </TouchableOpacity>
       </View>
     );
   };
+
+  function _onPressRemovePlan() {
+    setIsCircleAddedToCart?.(false);
+    setIsCirclePlanRemoved?.(true);
+  }
 
   const renderItemView = (item: DiagnosticsCartItem) => {
     const showCirclePrice = isDiagnosticCircleSubscription ? true : isCircleAddedToCart;
@@ -744,6 +753,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       Number((!!item?.packageMrp && item?.packageMrp!) || mrpToDisplay) -
       Number(item?.circleSpecialPrice!);
 
+    const isGroupPlanCircle = item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.CIRCLE;
+
     return (
       <View>
         <View style={styles.itemView}>
@@ -753,7 +764,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             }}
           >
             <Text style={styles.addressTextStyle}>{nameFormater(item?.name, 'default')}</Text>
-            {isCircleAddedToCart && savingAmount > 0 && (
+            {isCircleAddedToCart && savingAmount > 0 && isGroupPlanCircle && (
               <View style={{ flexDirection: 'row', marginTop: 3 }}>
                 <CircleLogo style={styles.savingCircleIcon} />
                 <Text style={styles.savingTextStyle}>
@@ -927,11 +938,15 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
   function _navigateToBenefitsPage() {
     setShowCirclePopup(false);
-    props.navigation.navigate(AppRoutes.MembershipDetails, {
-      membershipType: 'CIRCLE PLAN',
-      isActive: true,
-    });
+    openCircleWebView();
   }
+
+  const openCircleWebView = () => {
+    props.navigation.navigate(AppRoutes.CommonWebView, {
+      url: AppConfig.Configuration.CIRLCE_PHARMA_URL,
+      source: 'Diagnostic Cart',
+    });
+  };
 
   const renderCirclePlansPopup = () => {
     const facts = AppConfig.Configuration.CIRCLE_FACTS;
@@ -949,6 +964,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         onPressClose={() => setShowCirclePopup(false)}
         choosenPlan={(item) => _setChoosenPlan(item)}
         onPressViewAll={() => _navigateToBenefitsPage()}
+        planToHighLight={selectedCirclePlan}
       />
     );
   };
@@ -990,6 +1006,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
   function _onTogglePlans() {
     setIsCircleAddedToCart?.(!isCircleAddedToCart);
+    setIsCirclePlanRemoved?.(!isCirclePlanRemoved);
   }
 
   function _navigateToViewCirclePlans() {
@@ -1999,6 +2016,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   // don't show cod with circle purchase on payments page
 
   function onPressProceedToPay() {
+    setIsClicked(true);
     setLoading?.(true);
 
     if (isCircleAddedToCart && localCircleSubId == '') {
@@ -2006,6 +2024,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     } else {
       callDiagnosticBookingServices();
     }
+
+    setTimeout(() => {
+      setIsClicked(false);
+    }, 500);
   }
 
   function callDiagnosticBookingServices() {
@@ -2089,8 +2111,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       <TestProceedBar
         // selectedTimeSlot={selectedTimeSlot} //change the format
         selectedTimeSlot={diagnosticSlot}
-        disableProceedToPay={disableProceedToPay}
-        onPressProceedtoPay={() => debouncedChangeHandler()}
+        disableProceedToPay={disableProceedToPay || isClicked}
+        onPressProceedtoPay={() => onPressProceedToPay()}
         showTime={showTime}
         phleboMin={isModifyFlow ? phleboMin : phleboETA}
         isModifyCOD={

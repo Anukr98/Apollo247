@@ -16,6 +16,7 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import AsyncStorage from '@react-native-community/async-storage';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface orderList
   extends getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList {}
@@ -218,6 +219,9 @@ export interface DiagnosticsCartContextProps {
 
   selectedCirclePlan: any;
   setSelectedCirclePlan: ((plan: any) => void) | null;
+
+  isCirclePlanRemoved: boolean;
+  setIsCirclePlanRemoved: ((value: boolean) => void) | null;
 }
 
 export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>({
@@ -346,6 +350,8 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   setIsCircleAddedToCart: null,
   selectedCirclePlan: null,
   setSelectedCirclePlan: null,
+  isCirclePlanRemoved: false,
+  setIsCirclePlanRemoved: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -542,6 +548,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const [selectedCirclePlan, setSelectedCirclePlan] = useState<
     DiagnosticsCartContextProps['selectedCirclePlan']
   >(null);
+
+  const [isCirclePlanRemoved, setIsCirclePlanRemoved] = useState<
+    DiagnosticsCartContextProps['isCirclePlanRemoved']
+  >(false);
 
   const setShowMultiPatientMsg: DiagnosticsCartContextProps['setShowMultiPatientMsg'] = (value) => {
     _setShowMultiPatientMsg(value);
@@ -890,7 +900,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setPhleboETA(0);
     setShowMultiPatientMsg(false);
     setCartItemsMapping([]);
-    setIsCircleAddedToCart?.(false);
+    setIsCircleAddedToCart?.(
+      isDiagnosticCircleSubscription ? false : AppConfig.Configuration.CIRCLE_PLAN_PRESELECTED
+    );
+    setIsCirclePlanRemoved?.(false);
     setSelectedCirclePlan?.(null);
   };
 
@@ -1064,6 +1077,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         setIsCircleAddedToCart,
         selectedCirclePlan,
         setSelectedCirclePlan,
+        isCirclePlanRemoved,
+        setIsCirclePlanRemoved,
       }}
     >
       {props.children}

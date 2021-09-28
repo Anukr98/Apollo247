@@ -163,7 +163,7 @@ import {
   makeAdressAsDefaultVariables,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { Cache } from "react-native-cache";
+import { Cache } from 'react-native-cache';
 
 import {
   getDiagnosticOrdersListByMobile,
@@ -293,28 +293,27 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
 
   const cache = new Cache({
-    namespace: "tests",
+    namespace: 'tests',
     policy: {
-        maxEntries: 100
+      maxEntries: 100,
     },
-    backend: AsyncStorage
-});
-useEffect(() => {
-  if (!(bannerData && bannerData?.length) ) {
-    setBannerDataToCache()
-  }
-}, [bannerData])
+    backend: AsyncStorage,
+  });
+  useEffect(() => {
+    if (!(bannerData && bannerData?.length)) {
+      setBannerDataToCache();
+    }
+  }, [bannerData]);
 
-  
-const getDataFromCache = async() => {
+  const getDataFromCache = async () => {
     const banner_data = await cache.get('banner_data');
-    setBannerData && setBannerData(banner_data)
-}
+    setBannerData && setBannerData(banner_data);
+  };
 
-const setBannerDataToCache = async() => {
-  const banner_data = bannerData && bannerData?.length ? bannerData : [];
-  await cache.set('banner_data', banner_data);
-}
+  const setBannerDataToCache = async () => {
+    const banner_data = bannerData && bannerData?.length ? bannerData : [];
+    await cache.set('banner_data', banner_data);
+  };
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
       query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
@@ -427,7 +426,7 @@ const setBannerDataToCache = async() => {
       fetchPatientClosedOrders();
       fetchPatientPrescriptions();
       getUserBanners();
-      getDataFromCache()
+      getDataFromCache();
     }
   }, [currentPatient]);
 
@@ -459,7 +458,7 @@ const setBannerDataToCache = async() => {
         ImageNative.getSize(
           item?.bannerImage,
           (width, height) => {
-            setImgHeight(Math.max(height * (winWidth / width) + 20, 180));
+            // setImgHeight(Math.max(height * (winWidth / width) + 20, 180));
             setBannerLoading(false);
           },
           () => {
@@ -1398,8 +1397,8 @@ const setBannerDataToCache = async() => {
           <>
             {sectionLoading ? (
               renderDiagnosticWidgetHeadingShimmer() //load heading
-            ) : (
-              !!isPricesAvailable ? <SectionHeader
+            ) : !!isPricesAvailable ? (
+              <SectionHeader
                 leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
                 leftTextStyle={[
                   styles.widgetHeading,
@@ -1428,8 +1427,8 @@ const setBannerDataToCache = async() => {
                     : undefined
                 }
                 style={showViewAll ? { paddingBottom: 1 } : {}}
-              /> : null
-            )}
+              />
+            ) : null}
             {sectionLoading ? (
               renderDiagnosticWidgetShimmer(false) //to load package card
             ) : (
@@ -1470,8 +1469,8 @@ const setBannerDataToCache = async() => {
           <>
             {sectionLoading ? (
               renderDiagnosticWidgetHeadingShimmer() //load heading
-            ) : (
-              !!isPricesAvailable ? <SectionHeader
+            ) : !!isPricesAvailable ? (
+              <SectionHeader
                 leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
                 leftTextStyle={[
                   styles.widgetHeading,
@@ -1500,8 +1499,8 @@ const setBannerDataToCache = async() => {
                     : undefined
                 }
                 style={showViewAll ? { paddingBottom: 1 } : {}}
-              /> : null
-            )}
+              />
+            ) : null}
             {sectionLoading ? (
               renderDiagnosticWidgetShimmer(false) //load package card
             ) : (
@@ -1518,7 +1517,7 @@ const setBannerDataToCache = async() => {
               />
             )}
           </>
-      }
+        }
       </View>
     );
   };

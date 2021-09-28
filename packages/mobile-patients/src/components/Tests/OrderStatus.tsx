@@ -169,6 +169,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     try {
       let response: any = await getDiagnosticRefundOrders(client, paymentId);
       if (response?.data?.data?.getOrderInternal) {
+        console.log({ response });
         const getResponse = response?.data?.data?.getOrderInternal?.DiagnosticsPaymentDetails;
         const getSlotDateTime = getResponse?.ordersList?.[0]?.slotDateTimeInUTC;
         const primaryOrderID = getResponse?.ordersList?.[0]?.primaryOrderID;
@@ -177,7 +178,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
         setApiOrderDetails([getResponse]);
         setTimeDate(getSlotDateTime);
         setSlotDuration(slotDuration);
-        setIsSingleUhid(getResponse?.ordersList?.[0]?.length == 1);
+        setIsSingleUhid(getResponse?.ordersList?.length == 1); //getResponse?.ordersList?.[0]?.length
         if (primaryOrderID) {
           setPrimaryOrderId(primaryOrderID);
           getOrderDetails(primaryOrderID);
@@ -562,17 +563,18 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
           {!!lineItemsLength &&
             lineItemsLength > 0 &&
             (showMoreArray?.includes(displayId) ? null : (
-              <View style={[styles.itemsView, { flexDirection: 'row' }]}>
+              <View
+                style={[
+                  styles.itemsView,
+                  {
+                    flexDirection: 'row',
+                    maxWidth: !!lineItems?.[0]?.editOrderID ? (width > 350 ? '68%' : '57%') : '75%',
+                    flex: 1,
+                  },
+                ]}
+              >
                 <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
-                <Text
-                  style={[
-                    styles.testName,
-                    {
-                      maxWidth: !!lineItems?.[0]?.editOrderID ? '72%' : '75%',
-                      flex: 1,
-                    },
-                  ]}
-                >
+                <Text style={[styles.testName]}>
                   {nameFormater(lineItems?.[0]?.itemName, 'title')}
                 </Text>
                 {!!lineItems?.[0]?.editOrderID ? renderNewTag() : null}
@@ -615,19 +617,15 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       <View style={styles.itemsView}>
         {lineItems?.map((items: any, index: number) => {
           return (
-            <View style={{ flexDirection: 'row' }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                maxWidth: !!items.editOrderID ? '72%' : '75%',
+                flex: 1,
+              }}
+            >
               <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
-              <Text
-                style={[
-                  styles.testName,
-                  {
-                    maxWidth: !!items.editOrderID ? '72%' : '75%',
-                    flex: 1,
-                  },
-                ]}
-              >
-                {nameFormater(items?.itemName, 'default')}
-              </Text>
+              <Text style={[styles.testName]}>{nameFormater(items?.itemName, 'default')}</Text>
               {!!items.editOrderID ? renderNewTag() : null}
               {lineItems?.length - 1 == index && (
                 <TouchableOpacity onPress={() => _onPressLess(item)} style={{ marginLeft: 2 }}>
