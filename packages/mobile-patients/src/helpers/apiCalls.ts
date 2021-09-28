@@ -634,6 +634,11 @@ export interface SpecialOffersBrandsProductsApiResponse {
   search_heading: string;
 }
 
+export interface BoughtTogetherResponse {
+  bought_together: MedicineProduct[];
+  product_count: number;
+}
+
 
 
 const config = AppConfig.Configuration;
@@ -969,6 +974,22 @@ export const getSpecialOffersPageBrandsProducts = (activeBrand: string, discount
     {headers: {
       Authorization: config.SPECIAL_OFFERS_BRANDS_PRODUCTS[1],
     }},
+  );
+};
+
+export const getBoughtTogether = (
+  productSku: string,
+): Promise<AxiosResponse<BoughtTogetherResponse>> => {
+  const url = `${config.BOUGHT_TOGETHER[0]}`;
+  return Axios.post(url,
+    {
+      params: productSku,
+    },
+    {
+      headers: {
+        Authorization: config.BOUGHT_TOGETHER[1],
+      },
+    }
   );
 };
 
