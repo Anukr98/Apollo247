@@ -51,6 +51,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
   BackHandler,
+  Image,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -544,9 +545,6 @@ const SignUp: React.FC<SignUpProps> = (props) => {
 
       postWebEngageEvent(WebEngageEventName.REGISTRATION_DONE, eventAttributes);
       postCleverTapEvent(CleverTapEventName.REGISTRATION_DONE, cleverTapEventAttributes);
-      // const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.REGISTRATION_DONE] = {
-      //   'customer id': currentPatient ? currentPatient.id : '',
-      // };
       const appsflyereventAttributes = {
         af_customer_user_id: currentPatient ? currentPatient.id : '',
       };

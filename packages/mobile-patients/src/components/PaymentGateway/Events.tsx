@@ -5,6 +5,7 @@ import {
   postWebEngageEvent,
   formatAddress,
   postCleverTapEvent,
+  getCleverTapCircleMemberValues,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   ShoppingCartItem,
@@ -24,20 +25,23 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 
 export function PaymentInitiated(
   grandTotal: number,
   LOB: string,
   type: string,
   paymentOrderId: string,
-  instrument: string
+  instrument: string,
+  paymentModeName?: string
 ) {
   try {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PAYMENT_INITIATED] = {
-      Amount: grandTotal,
+    const eventAttributes: CleverTapEvents[CleverTapEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
+      'Order Amount': grandTotal,
       LOB: LOB,
       type: type,
-      paymentOrderId: paymentOrderId,
+      'Order id': paymentOrderId,
+      'Payment mode': paymentModeName,
     };
     const consultEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PAYMENT_INITIATED] = {
       Amount: grandTotal,
@@ -128,12 +132,13 @@ export function PharmaOrderPlaced(
       LOB: 'Pharma',
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, firebaseEventAttributes);
-
+    const { currentPatient } = useAllCurrentPatients()
     const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED] = {
+      af_customer_user_id: currentPatient ? currentPatient.id : "",
       'cart size': cartItems.length,
       af_revenue: getFormattedAmount(grandTotal),
       af_currency: 'INR',
-      'order id': paymentOrderId,
+      af_order_id: paymentOrderId ? paymentOrderId : "0",
       'coupon applied': coupon ? true : false,
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
@@ -141,4 +146,103 @@ export function PharmaOrderPlaced(
     };
     postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, appsflyerEventAttributes);
   } catch (e) {}
+}
+
+export function PaymentScreenLoaded(
+  defaultClevertapEventParams: any,
+  savedCards: number,
+  eligibleApps: string[] | null,
+  intentApps: string[]
+) {
+  try {
+    const {
+      mobileNumber,
+      vertical,
+      displayId,
+      paymentId,
+      amount,
+      availableHc,
+    } = defaultClevertapEventParams;
+    const eventAttributes: CleverTapEvents[CleverTapEventName.PAYMENT_SCREEN_LOADED] = {
+      'Phone Number': mobileNumber,
+      vertical: vertical,
+      'Vertical Internal Order Id': displayId,
+      'Payment Order Id': paymentId,
+      'Total Amount': amount,
+      "isHC's": !!availableHc ? true : false,
+      NumSavedCards: savedCards,
+      'Eligible Payment Methods': eligibleApps || [],
+      'Num UPI Intent Apps': intentApps?.length,
+      'UPI Intent App Names': intentApps,
+      "HC's Balance": availableHc,
+      isPaymentLinkTxn: vertical == 'paymentLink' ? true : false,
+    };
+    postCleverTapEvent(CleverTapEventName.PAYMENT_SCREEN_LOADED, eventAttributes);
+  } catch (error) {}
+}
+
+export function PaymentTxnInitiated(
+  defaultClevertapEventParams: any,
+  burnHc: number,
+  paymentMethod: string,
+  paymentMode: string,
+  appRedirection: string,
+  isSavedCard: boolean,
+  txnType: string,
+  isNewCardSaved: boolean,
+  isCOD: boolean
+) {
+  try {
+    const {
+      mobileNumber,
+      vertical,
+      displayId,
+      paymentId,
+      amount,
+      availableHc,
+    } = defaultClevertapEventParams;
+    const eventAttributes: CleverTapEvents[CleverTapEventName.PAYMENT_TXN_INITIATED] = {
+      'Phone Number': mobileNumber,
+      vertical: vertical,
+      'Vertical Internal Order Id': displayId,
+      'Payment Order Id': paymentId,
+      'Total Amount': amount + burnHc,
+      "HC's Balance": availableHc,
+      "HC's Redeemed": burnHc,
+      'COD Amount': isCOD ? amount : 0,
+      'Prepaid Amount': !isCOD ? amount : 0,
+      'Payment Method Type': paymentMethod,
+      'Payment Method': paymentMode,
+      'App Redirection': appRedirection,
+      isSavedCard: isSavedCard,
+      TxnType: txnType,
+      ifNewCardSaved: isNewCardSaved,
+      isPaymentLinkTxn: vertical == 'paymentLink' ? true : false,
+    };
+    postCleverTapEvent(CleverTapEventName.PAYMENT_TXN_INITIATED, eventAttributes);
+  } catch (error) {}
+}
+
+export function PaymentTxnResponse(
+  defaultClevertapEventParams: any,
+  paymentMethod: string,
+  responseCode: string,
+  response: string,
+  status: string
+) {
+  try {
+    const { mobileNumber, vertical, displayId, paymentId, amount } = defaultClevertapEventParams;
+    const eventAttributes: CleverTapEvents[CleverTapEventName.PAYMENT_TXN_RESPONSE] = {
+      'Phone Number': mobileNumber,
+      vertical: vertical,
+      'Vertical Internal Order Id': displayId,
+      'Payment Order Id': paymentId,
+      'Total Amount': amount,
+      'Payment Method Type': paymentMethod,
+      JuspayResponseCode: responseCode,
+      Response: response,
+      Status: status,
+    };
+    postCleverTapEvent(CleverTapEventName.PAYMENT_TXN_RESPONSE, eventAttributes);
+  } catch (error) {}
 }

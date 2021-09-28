@@ -2353,14 +2353,16 @@ export const postAppsFlyerAddToCartEvent = (
     special_price,
   }: Pick<MedicineProduct, 'sku' | 'type_id' | 'price' | 'special_price'>,
   id: string,
-  pharmacyCircleAttributes?: PharmacyCircleEvent
+  pharmacyCircleAttributes?: PharmacyCircleEvent,
+  content_id?: number
 ) => {
   const eventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_ADD_TO_CART] = {
     'customer id': id,
     af_revenue: Number(special_price) || price,
     af_currency: 'INR',
     item_type: type_id == 'Pharma' ? 'Drugs' : 'FMCG',
-    sku: sku,
+    sku: sku ? sku : "",
+    af_content_id: content_id ? content_id : 0,
     ...pharmacyCircleAttributes,
   };
   postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_ADD_TO_CART, eventAttributes);

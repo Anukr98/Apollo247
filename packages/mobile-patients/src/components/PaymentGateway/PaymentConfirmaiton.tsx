@@ -17,8 +17,14 @@ import { Pending, Success, Copy } from '@aph/mobile-patients/src/components/ui/I
 import { Snackbar } from 'react-native-paper';
 import React, { useEffect, useState } from 'react';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
-
+import {
+  navigateToHome,
+  postCleverTapEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
@@ -33,6 +39,7 @@ export const PaymentConfirmation: React.FC<PaymentConfirmationProps> = (props) =
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
 
   useEffect(() => {
+    firePaymentOrderStatusEvent();
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -42,6 +49,31 @@ export const PaymentConfirmation: React.FC<PaymentConfirmationProps> = (props) =
   const handleBack = () => {
     navigateToHome(props.navigation);
     return true;
+  };
+
+  const defaultClevertapEventParams = props.navigation.getParam('defaultClevertapEventParams');
+  const payload = props.navigation.getParam('payload');
+
+  const firePaymentOrderStatusEvent = () => {
+    try {
+      const { mobileNumber, vertical, displayId, paymentId } = defaultClevertapEventParams;
+      const status =
+        props.navigation.getParam('paymentStatus') == 'success'
+          ? 'PAYMENT_SUCCESS'
+          : 'PAYMENT_PENDING';
+      const eventAttributes: CleverTapEvents[CleverTapEventName.PAYMENT_ORDER_STATUS] = {
+        'Phone Number': mobileNumber,
+        vertical: vertical,
+        'Vertical Internal Order Id': displayId,
+        'Payment Order Id': paymentId,
+        'Payment Method Type': payload?.payload?.action,
+        BackendPaymentStatus: status,
+        JuspayResponseCode: payload?.errorCode,
+        Response: payload?.payload?.status,
+        Status: status,
+      };
+      postCleverTapEvent(CleverTapEventName.PAYMENT_ORDER_STATUS, eventAttributes);
+    } catch (error) {}
   };
 
   const copyToClipboard = (refId: string) => {
@@ -92,9 +124,6 @@ export const PaymentConfirmation: React.FC<PaymentConfirmationProps> = (props) =
         <View style={{ alignItems: 'center', marginTop: 10 }}>{statusText()}</View>
         <View style={styles.priceCont}>
           {textComponent(priceText, theme.colors.SHADE_GREY, false)}
-        </View>
-        <View style={styles.priceCont}>
-          {textComponent(orderIdText, theme.colors.SHADE_GREY, false)}
         </View>
         <View>
           <View style={styles.paymentRef}>

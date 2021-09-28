@@ -14,6 +14,7 @@ import {
   Image,
   TouchableOpacity,
   Platform,
+  BackHandler
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -101,6 +102,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   const [EPrescriptionsProps, setEPrescriptionsProps] = useState<EPrescription[]>(
     ePrescriptionsProp
   );
+  const { setEPrescriptions, setPhysicalPrescriptions } = useShoppingCart();
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const [testName, settestName] = useState<string>('');
   const [locationName, setLocationName] = useState<string>('');
@@ -126,6 +128,27 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
       setIsErrorOccured(false);
     }, 3000);
   }, [isErrorOccured])
+  useEffect(() => {
+    if (onSumbitSuccess) {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+      return () => {
+        BackHandler.removeEventListener('hardwareBackPress', handleBack);
+      };
+    }
+  }, [onSumbitSuccess]);
+
+  const handleBack = () => {
+      setEPrescriptions?.([]);
+      setPhysicalPrescriptions?.([]);
+      props.navigation.navigate('TESTS', {
+        phyPrescriptionUploaded: [],
+        ePresscriptionUploaded: [],
+        phyPrescriptionsProp: [],
+        ePrescriptionsProp: [],
+        movedFrom: '',
+      });
+    return true;
+  };
 
 
   const fetchPatientPrescriptions = () => {
@@ -402,7 +425,15 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
               disabled={EPrescriptionsProps?.length || PhysicalPrescriptionsProps?.length ? false : true}
               onPress={() => {
                 if (onSumbitSuccess) {
-                  props.navigation.navigate('TESTS');
+                  setEPrescriptions?.([]);
+                  setPhysicalPrescriptions?.([]);
+                  props.navigation.navigate('TESTS',{
+                  phyPrescriptionUploaded: [],
+                  ePresscriptionUploaded: [],
+                  phyPrescriptionsProp: [],
+                  ePrescriptionsProp: [],
+                  movedFrom: ''
+                  });
                 } else {
                   onSubmitPrescription();
                 }

@@ -438,9 +438,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
       price,
       discountedPrice,
       source,
-      section,
       currentPatient,
-      isDiagnosticCircleSubscription
+      isDiagnosticCircleSubscription,
+      section
     );
   };
 
@@ -613,7 +613,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setIsPrescriptionGallery(false);
       setIsPrescriptionUpload(true);
     }
-  }, [movedFrom]);
+  }, [props.navigation]);
 
   useEffect(() => {
     // getting diagnosticUserType from asyncStorage

@@ -229,8 +229,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       !isEmptyObject(orderOnHold!) &&
       checkIsJSON(orderOnHold?.statusMessage!) &&
       JSON.parse(orderOnHold?.statusMessage!);
-  
-    const orderDetails = ((!loading && order) ||
+
+  const orderDetails = ((!loading && order) ||
     {}) as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails;
   const orderStatusList = ((!loading && order && order.medicineOrdersStatus) || []).filter(
     (item) => item!.hideStatus
@@ -573,10 +573,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     if (
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_FAILED ||
-      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_FAILED
+      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_FAILED ||
+      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.LOST
     ) {
       capsuleText =
-        orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED ? 'Cancelled' : 'Failed';
+        orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED || MEDICINE_ORDER_STATUS.LOST
+          ? 'Cancelled'
+          : 'Failed';
       capsuleTextColor = '#FFF';
       capsuleViewBGColor = '#890000';
     } else {
@@ -1046,6 +1049,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         [MEDICINE_ORDER_STATUS.RVP_ASSIGNED]: [
           '',
           `Rider/Courier partner has been assigned to pickup your return items, the Rider may call you before he reaches your place`,
+        ],
+        [MEDICINE_ORDER_STATUS.LOST]: [
+          '',
+          `Dear customer, our sincere apologies. Your order #${orderDetails.orderAutoId} had to be cancelled due to operational reasons. Kindly order again and we will make sure it gets fulfilled`,
         ],
       };
 
@@ -2165,6 +2172,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       sourcePage: 'Order Details',
       refund: refundDetails,
       payment: paymentDetails,
+      etd: getFormattedDateTimeWithBefore(order.orderTat),
     });
   };
 
@@ -2172,7 +2180,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const showReOrder =
       orderCancel?.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
       orderDetails?.currentStatus == MEDICINE_ORDER_STATUS.RETURN_INITIATED ||
-      orderDetails?.currentStatus == MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE;
+      orderDetails?.currentStatus == MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE ||
+      orderDetails?.currentStatus == MEDICINE_ORDER_STATUS.LOST;
     return (
       !!showReOrder && (
         <View>

@@ -163,14 +163,10 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
 
   const fireOrderFailedEvent = (orderId: string) => {
     const eventAttributes = {
-      // OrderID: orderId,
-      // Price: totalAmount,
-      // CouponCode: coupon,
-      // PaymentType: paymentTypeID,
       LOB: 'Pharmacy',
-      af_order_id: orderId,
+      af_order_id: orderId ? orderId : 0,
       af_price: totalAmount,
-      af_coupon_code: coupon,
+      af_coupon_code: coupon ? coupon : 0,
       af_payment_info_available: paymentTypeID
     };
     postAppsFlyerEvent(AppsFlyerEventName.ORDER_FAILED, eventAttributes);
@@ -183,22 +179,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     orderId: string,
     orderAutoId: string
   ) => {
-    // const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED] = {
-    //   'customer id': currentPatient ? currentPatient.id : '',
-    //   'cart size': cartItems.length,
-    //   af_revenue: getFormattedAmount(grandTotal),
-    //   af_currency: 'INR',
-    //   'order id': orderId,
-    //   orderAutoId: orderAutoId,
-    //   'coupon applied': coupon ? true : false,
-    //   'Circle Cashback amount':
-    //     circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
-    //   ...pharmacyCircleAttributes!,
-    //   ...pharmacyUserTypeAttribute,
-    //   TransactionId: isStorePickup ? '' : transactionId,
-    // };
     const appsflyerEventAttributes = {
-      // 'customer id': currentPatient ? currentPatient.id : '',
       af_customer_user_id: currentPatient ? currentPatient.id : '',
       'cart size': cartItems.length,
       af_revenue: getFormattedAmount(grandTotal),
@@ -219,7 +200,6 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     if (checkoutEventAttributes && cleverTapCheckoutEventAttributes) {
       const paymentEventAttributes = {
         af_order_id: orderId,
-        // order_Id: orderId,
         order_AutoId: orderAutoId,
         LOB: 'Pharmacy',
         Payment_Status: !!isSuccess ? 'PAYMENT_SUCCESS' : 'PAYMENT_PENDING',

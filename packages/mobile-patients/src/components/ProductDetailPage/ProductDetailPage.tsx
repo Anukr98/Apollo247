@@ -245,7 +245,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (sku && movedFrom === ProductPageViewedSource.DEEP_LINK) {
+    if (
+      sku &&
+      (movedFrom === ProductPageViewedSource.DEEP_LINK ||
+        movedFrom == ProductPageViewedSource.MULTI_VARIANT)
+    ) {
       fetchDeliveryTime(pincode, false);
     }
   }, [sku]);
@@ -946,7 +950,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       pharmacyCircleAttributes!
     );
     let id = currentPatient && currentPatient.id ? currentPatient.id : '';
-    postAppsFlyerAddToCartEvent(medicineDetails, id, pharmacyCircleAttributes!);
+    postAppsFlyerAddToCartEvent(medicineDetails, id, pharmacyCircleAttributes!, medicineDetails.id);
   };
 
   const renderBottomButton = () => {

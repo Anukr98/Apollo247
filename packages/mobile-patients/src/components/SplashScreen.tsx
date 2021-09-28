@@ -41,7 +41,7 @@ import {
   onCleverTapUserLogin,
   getUTMdataFromURL,
   postCleverTapEvent,
-  navigateToScreenWithHomeScreeninStack,
+  navigateToScreenWithEmptyStack,
   navigateToHome,
   setCleverTapAppsFlyerCustID,
   clevertapEventForAppsflyerDeeplink,
@@ -548,7 +548,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           businessLine: 'paymentLink',
           customerId: response?.data?.getOrderInternal?.customer_id,
         };
-        navigateToScreenWithHomeScreeninStack(props.navigation, AppRoutes.PaymentMethods, params);
+        navigateToScreenWithEmptyStack(props.navigation, AppRoutes.PaymentMethods, params);
       } else {
         navigateToHome(props.navigation);
       }

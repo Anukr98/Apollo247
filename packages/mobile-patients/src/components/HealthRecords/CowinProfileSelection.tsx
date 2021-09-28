@@ -19,9 +19,20 @@ import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import _ from 'lodash';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  handleGraphQlError,
+  postCleverTapEvent,
+  postCleverTapPHR,
+  postWebEngageEvent,
+  removeObjectProperty,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import RNFetchBlob from 'rn-fetch-blob';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 const styles = StyleSheet.create({
   cardViewStyle: {
@@ -148,6 +159,7 @@ export const CowinProfileSelection: React.FC<CowinProfileSelectionProps> = (prop
   const [spinner, setSpinner] = useState<boolean>(false);
   const beneficiaryIDData = props.navigation?.getParam('beneficiaryIDData') || [];
   const token = props.navigation?.getParam('cowinToken') || '';
+  const { currentPatient } = useAllCurrentPatients();
 
   useEffect(() => {
     var localData: [] = [];
@@ -196,6 +208,10 @@ export const CowinProfileSelection: React.FC<CowinProfileSelectionProps> = (prop
     )
       .then((data: any) => {
         setSpinner!(false);
+        const eventAttributes: CleverTapEvents[CleverTapEventName.PHR_DOWNLOAD_VACCINATION_REPORT] = {
+          Source: 'Cowin Profile Selection',
+        };
+        postCleverTapEvent(CleverTapEventName.PHR_DOWNLOAD_VACCINATION_REPORT, eventAttributes);
         downloadDocument(data?.url);
       })
       .catch((error) => {
