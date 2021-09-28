@@ -414,7 +414,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       is_in_stock: productDetails?.is_in_stock,
       MaxOrderQty: productDetails.MaxOrderQty,
       sell_online: productDetails?.sell_online,
-      image: productDetails?.image[0],
+      image: productDetails?.image?.[0],
       thumbnail: productDetails?.thumbnail,
       small_image: productDetails?.small_image,
       mou: productDetails?.mou,
@@ -432,7 +432,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           boughtTogetherProducts.unshift(mainProduct);
           setBoughtTogether(boughtTogetherProducts);
         })
-        .catch(({ error }) => {});
+        .catch(({ error }) => {
+          CommonBugFender('ProductDetails_fetchBoughtTogether', error);
+        });
     }
   };
 

@@ -49,7 +49,6 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
       setSelectedProductsArray(newDataArr);
       setTotalPrice(totalPrice + itemPrice);
     }
-    console.log(newArr);
     setSelectedProductsId(newArr);
   };
 
@@ -102,9 +101,9 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
     });
   };
 
-  const renderBoughtTogetherItem = (imgUrl: string, item: MedicineProduct, index) => {
-    const specialPrice = item.special_price ? true : false;
-    const discount = Math.round(getDiscountPercentage(item.price, item.special_price));
+  const renderBoughtTogetherItem = (imgUrl: string, item: MedicineProduct, index: number) => {
+    const specialPrice = item?.special_price ? true : false;
+    const discount = Math.round(getDiscountPercentage(item?.price, item?.special_price));
     const itemSelected = selectedProductsId.includes(item?.id);
     return (
       <View style={styles.ItemContainer}>

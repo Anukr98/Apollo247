@@ -985,7 +985,6 @@ export const getBoughtTogether = (
   return Axios.post(url,
     {
       params: productSku,
-
     },
     {
       headers: {
