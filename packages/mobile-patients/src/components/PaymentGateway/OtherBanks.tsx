@@ -21,16 +21,18 @@ import {
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { one_apollo_store_code } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-
+import { PaymentTxnInitiated } from '@aph/mobile-patients/src/components/PaymentGateway/Events';
 export interface OtherBanksProps extends NavigationScreenProps {}
 
 export const OtherBanks: React.FC<OtherBanksProps> = (props) => {
   const paymentId = props.navigation.getParam('paymentId');
   const amount = props.navigation.getParam('amount');
   const banks = props.navigation.getParam('banks');
-  const orderId = props.navigation.getParam('orderId');
+  const orderDetails = props.navigation.getParam('orderDetails');
+  const orderId = orderDetails?.orderId;
   const businessLine = props.navigation.getParam('businessLine');
   const burnHc = props.navigation.getParam('burnHc');
+  const healthCredits = props.navigation.getParam('healthCredits');
   const { authToken, setauthToken } = useAppCommonData();
   const [selectedBank, setSelectedBank] = useState<string>('');
   const client = useApolloClient();
@@ -38,6 +40,14 @@ export const OtherBanks: React.FC<OtherBanksProps> = (props) => {
   const [isTxnProcessing, setisTxnProcessing] = useState<boolean>(false);
   const storeCode =
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
+  const defaultClevertapEventParams = {
+    mobileNumber: currentPatient?.mobileNumber,
+    vertical: businessLine,
+    displayId: orderDetails?.displayId,
+    paymentId: paymentId,
+    amount: amount,
+    availableHc: healthCredits,
+  };
 
   const onPressBank = (bank: any) => setSelectedBank(bank);
 
@@ -93,8 +103,31 @@ export const OtherBanks: React.FC<OtherBanksProps> = (props) => {
     }
   };
 
+  function firePaymentInitiatedEvent(
+    paymentMethod: string,
+    paymentMode: string,
+    intentApp: any,
+    isSavedCard: boolean,
+    upitxnType: any,
+    newCardSaved: boolean,
+    isCOD: boolean
+  ) {
+    PaymentTxnInitiated(
+      defaultClevertapEventParams,
+      burnHc,
+      paymentMethod,
+      paymentMode,
+      intentApp,
+      isSavedCard,
+      upitxnType,
+      newCardSaved,
+      isCOD
+    );
+  }
+
   async function onPressPay(bank: any) {
     setisTxnProcessing(true);
+    firePaymentInitiatedEvent('NB', bank?.payment_method_code, null, false, null, false, false);
     try {
       const token = await getClientToken();
       InitiateNetBankingTxn(currentPatient?.id, token, paymentId, bank?.payment_method_code);

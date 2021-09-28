@@ -353,14 +353,16 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       fetchPolicy: 'no-cache',
     });
   };
-  
+
   const createOrderInternal = (orderId: string, subscriptionId?: string) => {
     const orders: OrderVerticals = {
-      consult: [{
-        order_id: orderId, 
-        amount: consultAmounttoPay,
-        patient_id: currentPatient?.id 
-      }],
+      consult: [
+        {
+          order_id: orderId,
+          amount: consultAmounttoPay,
+          patient_id: currentPatient?.id,
+        },
+      ],
     };
     if (subscriptionId) {
       orders['subscription'] = [
@@ -415,7 +417,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           }
         } else {
           setLoading && setLoading(false);
-        } 
+        }
       })
       .catch((error) => {
         setLoading && setLoading(false);
@@ -426,9 +428,9 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   async function validateAutoApplyCoupon(couponList: any[]) {
     try {
       for (let couponObj of couponList) {
-        const {coupon} = couponObj || {};        
-        const couponStatus: any =  await validateCoupon(coupon, true);
-        if(couponStatus?.applied) break;
+        const { coupon } = couponObj || {};
+        const couponStatus: any = await validateCoupon(coupon, true);
+        if (couponStatus?.applied) break;
       }
       setLoading && setLoading(false);
     } catch (error) {
@@ -467,11 +469,12 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const renderCareMembershipAddedCard = () => {
     return (
-      <CareMembershipAdded 
+      <CareMembershipAdded
         doctor={doctor}
         isOnlineConsult={isOnlineConsult}
-        couponDiscountFees={couponDiscountFees} />
-        );
+        couponDiscountFees={couponDiscountFees}
+      />
+    );
   };
 
   const renderPriceBreakup = () => {
@@ -765,7 +768,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
               setCoupon(coupon);
               setCouponDiscountFees(discount);
               setDoctorDiscountedFees(revisedAmount);
-              res({applied: true});
+              res({ applied: true });
               if (discount == billAmount) {
                 setIsBookingFeeExempted(true);
               } else {
@@ -970,6 +973,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       doctorID: doctor?.id,
       doctor: doctor,
       orderId: apptmt?.id,
+      displayId: apptmt?.displayId,
       price: amountToPay,
       appointmentInput: appointmentInput,
       appointmentDateTime: appointmentInput.appointmentDateTime,
@@ -1133,10 +1137,10 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   };
 
   const getConsultationBookedAppsFlyerEventAttributes = (id: string, displayId: string) => {
-    const eventAttributes: AppsFlyerEvents[AppsFlyerEventName.CONSULTATION_BOOKED] = {
-      'customer id': g(currentPatient, 'id'),
-      'doctor id': g(doctor, 'id')!,
-      'specialty id': g(doctor, 'specialty', 'id')!,
+    const eventAttributes = {
+      af_customer_user_id: currentPatient?.id,
+      af_content_id: doctor?.id,
+      'specialty id': doctor?.specialty?.id,
       'consult type': isOnlineConsult ? 'online' : 'clinic',
       af_revenue: amountToPay,
       af_currency: 'INR',
@@ -1145,7 +1149,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       'coupon applied': coupon ? true : false,
       'Circle discount': circleDiscount,
       User_Type: getUserType(allCurrentPatients),
-    };
+    }
     return eventAttributes;
   };
 
@@ -1387,7 +1391,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       'Doctor city': g(doctor, 'city')!,
       'Doctor category': g(doctor, 'doctorType')!,
       'Speciality name': g(doctor, 'specialty', 'name')!,
-      'Discount': !!coupon ? 'T' : 'F',
+      Discount: !!coupon ? 'T' : 'F',
       'Coupon applied': coupon,
       'Discount amount': couponDiscountFees,
       'Net amount': amountToPay,

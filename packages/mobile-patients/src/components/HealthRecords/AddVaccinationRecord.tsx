@@ -14,6 +14,9 @@ import {
   handleGraphQlError,
   postWebEngageIfNewSession,
   removeObjectProperty,
+  postCleverTapEvent,
+  postWebEngageEvent,
+  postCleverTapIfNewSession,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   Keyboard,
@@ -44,6 +47,7 @@ import {
 import { GET_IMMUNIZATION_DETAILS } from '@aph/mobile-patients/src/graphql/profiles';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 type PickerImage = any;
 
@@ -391,14 +395,22 @@ export const AddVaccinationRecord: React.FC<AAddVaccinationRecordProps> = (props
           },
         })
         .then(({ data }) => {
-          const eventInputData = removeObjectProperty(vaccinationCener, 'vaccinationResultFiles');
+          const eventInputData = removeObjectProperty(vaccinationCener, 'immunizations');
           postWebEngagePHR(
             currentPatient,
-            WebEngageEventName.PHR_ADD_TEST_REPORT,
+            CleverTapEventName.PHR_ADD_VACCINATION_REPORT,
             'Vaccination',
             eventInputData
           );
           postWebEngageIfNewSession(
+            'Vaccination',
+            currentPatient,
+            eventInputData,
+            phrSession,
+            setPhrSession
+          );
+          postCleverTapEvent(CleverTapEventName.PHR_ADD_VACCINATION_REPORT, eventInputData);
+          postCleverTapIfNewSession(
             'Vaccination',
             currentPatient,
             eventInputData,

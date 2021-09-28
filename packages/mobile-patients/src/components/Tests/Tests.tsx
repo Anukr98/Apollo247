@@ -438,9 +438,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
       price,
       discountedPrice,
       source,
-      section,
       currentPatient,
-      isDiagnosticCircleSubscription
+      isDiagnosticCircleSubscription,
+      section
     );
   };
 

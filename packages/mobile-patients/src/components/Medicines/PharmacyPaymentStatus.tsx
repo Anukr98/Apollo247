@@ -168,6 +168,8 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const [transactionId, setTransactionId] = useState(null);
   const [showSubstituteConfirmation, setShowSubstituteConfirmation] = useState<boolean>(false);
   const isSplitCart: boolean = orders?.length > 1 ? true : false;
+  const defaultClevertapEventParams = props.navigation.getParam('defaultClevertapEventParams');
+  const payload = props.navigation.getParam('payload');
 
   useEffect(() => {
     if (!!substituteTime && showSubstituteMessage && status == success) {
@@ -223,6 +225,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
           pharmaPaymentStatus?.bankTxnId,
           pharmaPaymentStatus?.paymentMode
         );
+        firePaymentOrderStatusEvent(pharmaPaymentStatus?.paymentStatus);
         fireCirclePlanActivatedEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
         fireCirclePurchaseEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
         appReviewAndRating();
@@ -338,6 +341,28 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     navigateToHome(props.navigation);
   };
 
+  const firePaymentOrderStatusEvent = (backEndStatus: string) => {
+    try {
+      const { mobileNumber, vertical, displayId, paymentId } = defaultClevertapEventParams;
+      const status =
+        props.navigation.getParam('paymentStatus') == 'success'
+          ? 'PAYMENT_SUCCESS'
+          : 'PAYMENT_PENDING';
+      const eventAttributes: CleverTapEvents[CleverTapEventName.PAYMENT_ORDER_STATUS] = {
+        'Phone Number': mobileNumber,
+        vertical: vertical,
+        'Vertical Internal Order Id': displayId,
+        'Payment Order Id': paymentId,
+        'Payment Method Type': payload?.payload?.action,
+        BackendPaymentStatus: backEndStatus,
+        JuspayResponseCode: payload?.errorCode,
+        Response: payload?.payload?.status,
+        Status: status,
+      };
+      postCleverTapEvent(CleverTapEventName.PAYMENT_ORDER_STATUS, eventAttributes);
+    } catch (error) {}
+  };
+
   const firePaymentStatusPageViewedEvent = (
     status: string,
     transactionId: number,
@@ -413,13 +438,13 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     orderId: string,
     orderAutoId: string
   ) => {
-    const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED] = {
-      'customer id': currentPatient ? currentPatient.id : '',
-      'cart size': cartItems.length,
+    const appsflyerEventAttributes = {
+      af_customer_user_id: currentPatient ? currentPatient?.id : '',
+      'cart size': cartItems?.length,
       af_revenue: getFormattedAmount(grandTotal),
       af_currency: 'INR',
-      'order id': orderId,
-      orderAutoId: orderAutoId,
+      af_order_id: orderId ? orderId : 0,
+      orderAutoId: orderAutoId ? orderAutoId : 0,
       'coupon applied': coupon ? true : false,
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
