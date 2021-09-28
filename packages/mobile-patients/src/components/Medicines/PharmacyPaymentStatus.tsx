@@ -168,6 +168,8 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const [transactionId, setTransactionId] = useState(null);
   const [showSubstituteConfirmation, setShowSubstituteConfirmation] = useState<boolean>(false);
   const isSplitCart: boolean = orders?.length > 1 ? true : false;
+  const defaultClevertapEventParams = props.navigation.getParam('defaultClevertapEventParams');
+  const payload = props.navigation.getParam('payload');
 
   useEffect(() => {
     if (!!substituteTime && showSubstituteMessage && status == success) {
@@ -223,6 +225,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
           pharmaPaymentStatus?.bankTxnId,
           pharmaPaymentStatus?.paymentMode
         );
+        firePaymentOrderStatusEvent(pharmaPaymentStatus?.paymentStatus);
         fireCirclePlanActivatedEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
         fireCirclePurchaseEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
         appReviewAndRating();
@@ -336,6 +339,28 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       apiCallEnums.plansCashback,
     ];
     navigateToHome(props.navigation);
+  };
+
+  const firePaymentOrderStatusEvent = (backEndStatus: string) => {
+    try {
+      const { mobileNumber, vertical, displayId, paymentId } = defaultClevertapEventParams;
+      const status =
+        props.navigation.getParam('paymentStatus') == 'success'
+          ? 'PAYMENT_SUCCESS'
+          : 'PAYMENT_PENDING';
+      const eventAttributes: CleverTapEvents[CleverTapEventName.PAYMENT_ORDER_STATUS] = {
+        'Phone Number': mobileNumber,
+        vertical: vertical,
+        'Vertical Internal Order Id': displayId,
+        'Payment Order Id': paymentId,
+        'Payment Method Type': payload?.payload?.action,
+        BackendPaymentStatus: backEndStatus,
+        JuspayResponseCode: payload?.errorCode,
+        Response: payload?.payload?.status,
+        Status: status,
+      };
+      postCleverTapEvent(CleverTapEventName.PAYMENT_ORDER_STATUS, eventAttributes);
+    } catch (error) {}
   };
 
   const firePaymentStatusPageViewedEvent = (

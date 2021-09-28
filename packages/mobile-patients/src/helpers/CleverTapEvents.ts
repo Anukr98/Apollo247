@@ -89,7 +89,7 @@ export enum CleverTapEventName {
   CONSULT_PERMISSIONS = 'Consult permissions',
 
   //Consult Dealyed
-  CONSULT_DELAYED_MESSAGE_CLICKED='Consult Delayed Message clicked',
+  CONSULT_DELAYED_MESSAGE_CLICKED = 'Consult Delayed Message clicked',
 
   // Symptom Tracker Events
   SYMPTOM_TRACKER_SELECT_OTHER_MEMBER_CLICKED = 'Symptom_Select other member clicked',
@@ -109,6 +109,12 @@ export enum CleverTapEventName {
   CONSULT_GO_BACK_CLICKED = 'Consult_go back clicked',
   CONSULT_SHARE_ICON_CLICKED = 'Consult share icon clicked',
   DOCTOR_PROFILE_SCREEN_BY_SHARE_LINK = 'Doctor profile screen by share link',
+
+  //Payment Events
+  PAYMENT_SCREEN_LOADED = 'Payment Screen Loaded',
+  PAYMENT_TXN_INITIATED = 'Payment Txn Initiated',
+  PAYMENT_TXN_RESPONSE = 'Payment Txn Response',
+  PAYMENT_ORDER_STATUS = 'Payment Order Status',
 
   //Pharmacy events
   PHARMACY_CATEGORY_VIEWED = 'Pharmacy Category Viewed',
@@ -557,8 +563,6 @@ export enum CleverTapEventName {
   VACCINATION_CANCELLATION = 'Vaccine_Cancellation',
   PHR_CLICK_VACCINATION = 'PHR_CLICK_VACCINATION',
 
-
-
   HOME_ICON_CLICKED = 'Homepage logo Clicked',
   //Home Page Event
   USER_PROFILE_IMAGE_NAME_CLICKED = 'User Profile Image name Clicked',
@@ -582,7 +586,7 @@ export enum CleverTapEventName {
   PHARMACY_PRESCRIPTION_UPLOADED = 'Pharmacy Prescription Uploaded',
 
   // Custom UTM Events
-  CUSTOM_UTM_VISITED = 'App launch source'
+  CUSTOM_UTM_VISITED = 'App launch source',
 }
 
 export interface PatientInfo {
@@ -694,14 +698,14 @@ export interface HomeScreenAttributes {
   Source?: 'Home Screen' | 'Menu' | 'My Account Screen';
   'Page Name'?: string;
   'Nav src'?:
-  | 'hero banner'
-  | 'Bottom bar'
-  | 'app launch'
-  | 'homepage bar'
-  | 'Vaccine Widget'
-  | 'Blog Widget'
-  | 'my account'
-  | 'Top bar';
+    | 'hero banner'
+    | 'Bottom bar'
+    | 'app launch'
+    | 'homepage bar'
+    | 'Vaccine Widget'
+    | 'Blog Widget'
+    | 'my account'
+    | 'Top bar';
 }
 
 export interface HdfcCustomerInfo {
@@ -851,7 +855,7 @@ export interface DiagnosticPinCode extends DiagnosticUserInfo {
   Mode: string;
   Pincode: number | string;
   Serviceability: 'Yes' | 'No';
-  'Circle user'?: string
+  'Circle user'?: string;
 }
 
 export interface DoctorFilterClick {
@@ -1114,15 +1118,15 @@ export interface CleverTapEvents {
 
   // *********** Delayed Reminder Event ******* \\
   [CleverTapEventName.CONSULT_DELAYED_MESSAGE_CLICKED]: {
-    'Doctor Name': string,
-    'Doctor Number': string,
-    'Doctor ID': string,
-    'Display Speciality Name':string,
-    'Display ID': number | null,
-    'Patient Name': string,
-    'Patient Phone Number': string,
-    'Phone number clicked': string,
-  }
+    'Doctor Name': string;
+    'Doctor Number': string;
+    'Doctor ID': string;
+    'Display Speciality Name': string;
+    'Display ID': number | null;
+    'Patient Name': string;
+    'Patient Phone Number': string;
+    'Phone number clicked': string;
+  };
   // ********** PharmacyEvents ********** \\
 
   [CleverTapEventName.PHARMACY_SEARCH]: {
@@ -1274,7 +1278,7 @@ export interface CleverTapEvents {
     'Cart ID'?: string; // we don't have cartId before placing order
     'Mode of Delivery': 'Home' | 'Pickup' | 'Home Visit' | 'Clinic Visit';
     'Delivery Date Time'?: string; // Optional (only if Home)
-    'Pincode': string | number;
+    Pincode: string | number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
     'Store ID'?: string;
     'Store Name'?: string;
@@ -1497,7 +1501,7 @@ export interface CleverTapEvents {
     'Prescription Uploaded?': boolean;
     'Prescription Mandatory?': boolean;
     'Mode of Sample Collection': 'Home Visit' | 'Clinic Visit';
-    'Pincode': string | number;
+    Pincode: string | number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
     'Area Name': string;
     'Area id': string | number;
@@ -1924,7 +1928,6 @@ export interface CleverTapEvents {
     'Circle member': boolean;
     'Circle plan type': string;
     'Doctor type': string;
-    
   };
   [CleverTapEventName.CONSULT_COUPON_APPLIED]: {
     CouponCode: string;
@@ -1937,7 +1940,7 @@ export interface CleverTapEvents {
     'Doctor city': string;
     'Doctor category': DoctorType;
     'Speciality name': string;
-    'Discount': string;
+    Discount: string;
     'Coupon applied'?: string;
     'Discount amount': number;
     'Net amount': number;
@@ -2613,7 +2616,7 @@ export interface CleverTapEvents {
     'Available in mins': string;
     'Doctor city': string;
     'Hospital name': string;
-    'Relation': string;
+    Relation: string;
     'Circle Membership added': string;
     'Circle discount': number;
     'Circle Cashback': number;
@@ -2623,13 +2626,13 @@ export interface CleverTapEvents {
     Rank: number | string;
     Is_TopDoc?: YesOrNo;
     Source:
-    | 'Deeplink'
-    | 'Doctor Card clicked'
-    | 'Search'
-    | 'My Doctors'
-    | 'Appointment CTA'
-    | 'Direct'
-    | 'Past search clicked';
+      | 'Deeplink'
+      | 'Doctor Card clicked'
+      | 'Search'
+      | 'My Doctors'
+      | 'Appointment CTA'
+      | 'Direct'
+      | 'Past search clicked';
     'Doctor card clicked': YesOrNo;
     DOTH: 'T' | 'F';
     'Doctor tab': 'Apollo Tab' | 'Partner' | 'NA';
@@ -3031,5 +3034,60 @@ export interface CleverTapEvents {
   [CleverTapEventName.PHARMACY_PRESCRIPTION_UPLOADED]: {
     Location: 'Cart' | 'Non-Cart';
     Source: 'Gallery' | 'Camera' | 'My Prescription' | 'Consult Room' | 'Health Records';
+  };
+
+  [CleverTapEventName.PAYMENT_SCREEN_LOADED]: {
+    'Phone Number': string;
+    vertical: string;
+    'Vertical Internal Order Id': string;
+    'Payment Order Id': string;
+    'Total Amount': number;
+    "isHC's": boolean;
+    NumSavedCards: number;
+    'Eligible Payment Methods': String[];
+    'Num UPI Intent Apps': number;
+    'UPI Intent App Names': String[];
+    "HC's Balance": number;
+    isPaymentLinkTxn: boolean;
+  };
+  [CleverTapEventName.PAYMENT_TXN_INITIATED]: {
+    'Phone Number': string;
+    vertical: string;
+    'Vertical Internal Order Id': string;
+    'Payment Order Id': string;
+    'Total Amount': number;
+    "HC's Balance": number;
+    "HC's Redeemed": number;
+    'COD Amount': number;
+    'Prepaid Amount': number;
+    'Payment Method Type': string;
+    'Payment Method': string;
+    'App Redirection': string | null;
+    isSavedCard: boolean;
+    TxnType: string;
+    ifNewCardSaved: boolean;
+    isPaymentLinkTxn: boolean;
+  };
+  [CleverTapEventName.PAYMENT_TXN_RESPONSE]: {
+    'Phone Number': string;
+    vertical: string;
+    'Vertical Internal Order Id': string;
+    'Payment Order Id': string;
+    'Total Amount': number;
+    'Payment Method Type': string;
+    JuspayResponseCode: string;
+    Response: string;
+    Status: string;
+  };
+  [CleverTapEventName.PAYMENT_ORDER_STATUS]: {
+    'Phone Number': string;
+    vertical: string;
+    'Vertical Internal Order Id': string;
+    'Payment Order Id': string;
+    'Payment Method Type': string;
+    BackendPaymentStatus: string;
+    JuspayResponseCode: string;
+    Response: string;
+    Status: string;
   };
 }

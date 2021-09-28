@@ -537,7 +537,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         props.navigation.navigate(AppRoutes.PaymentMethods, {
           paymentId: paymentId,
           amount: grandTotal,
-          orderDetails: getOrderDetails(orders),
+          orderDetails: getOrderDetails(orders, transactionId),
           businessLine: 'pharma',
           customerId: cusId,
           checkoutEventAttributes: getCheckoutCompletedEventAttributes(
@@ -563,8 +563,9 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     }
   };
 
-  const getOrderDetails = (orders: any) => {
+  const getOrderDetails = (orders: any, transactionId: string) => {
     const orderDetails = {
+      displayId: transactionId,
       orders: orders,
       orderInfo: OrderInfo,
       deliveryTime: deliveryTime,

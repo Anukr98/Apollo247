@@ -200,6 +200,18 @@ export const isPhonePeReady = () => {
   HyperSdkReact.process(JSON.stringify(payload));
 };
 
+export const isPayTmReady = () => {
+  const payload = {
+    requestId: 'payTm',
+    service: AppConfig.Configuration.jusPayService,
+    payload: {
+      action: 'isDeviceReady',
+      sdkPresent: 'ANDROID_PAYTM',
+    },
+  };
+  HyperSdkReact.process(JSON.stringify(payload));
+};
+
 export const fetchAvailableUPIApps = (requestId: string) => {
   const payload = {
     requestId: requestId,

@@ -2309,6 +2309,7 @@ export const GET_HELP_SECTION_QUERIES = gql`
       needHelpQueries {
         id
         title
+        message
         nonOrderQueries
         queriesByOrderStatus
         content {
@@ -6153,4 +6154,42 @@ export const GET_JUSPAY_CLIENTAUTH_TOKEN = gql`
       }
     }
   }
+`;
+
+export const GET_DIAGNOSTIC_SEARCH_RESULTS = gql `
+  query searchDiagnosticItem($keyword:String!, $cityId: Int!){
+    searchDiagnosticItem(keyword: $keyword, cityId: $cityId){
+      data{
+        diagnostic_item_id
+        diagnostic_item_name
+        diagnostic_inclusions
+        diagnostic_item_alias
+        diagnostic_item_price{
+          status
+          startDate
+          endDate
+          price
+          mrp
+          couponCode
+          groupPlan
+        }
+        diagnostic_item_packageCalculatedMrp
+        diagnostic_item_itemType
+        diagnostic_item_alias_names
+        diagnostic_inclusions_test_parameter_data{
+          mandatoryValue
+          observationName
+        }
+      }
+    }
+  }
+`;
+
+export const CHANGE_DIAGNOSTIC_ORDER_PATIENT_ID = gql`
+mutation switchDiagnosticOrderPatientID($diagnosticOrdersId: String!,$newPatientId: String!) {
+  switchDiagnosticOrderPatientID(diagnosticOrdersId: $diagnosticOrdersId,newPatientId: $newPatientId) {
+    status
+    message
+  }
+}
 `;

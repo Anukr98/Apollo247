@@ -23,9 +23,13 @@ import {
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { circleValidity } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
-function createPatientAttributes(currentPatient: any) {
+import AsyncStorage from '@react-native-community/async-storage';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import { searchDiagnosticItem_searchDiagnosticItem_data } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticItem';
+
+async function createPatientAttributes(currentPatient: any) {
+  const diagnosticUserType = await AsyncStorage.getItem('diagnosticUserType');
   const patientAttributes = {
     'Patient UHID': g(currentPatient, 'uhid'),
     'Patient Gender': g(currentPatient, 'gender'),
@@ -630,7 +634,7 @@ export function DiagnosticFeedbackSubmitted(currentPatient: any, rating: string,
 export async function DiagnosticItemSearched(
   currentPatient: any,
   keyword: string,
-  results: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[],
+  results: searchDiagnosticItem_searchDiagnosticItem_data[],
   isDiagnosticCircleSubscription: boolean | undefined
 ) {
   const getPatientAttributes = await createPatientAttributes(currentPatient);

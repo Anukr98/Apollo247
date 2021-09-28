@@ -22,7 +22,6 @@ import {
   SEARCH_TYPE,
   TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import {
   aphConsole,
   g,
@@ -32,7 +31,6 @@ import {
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -57,7 +55,6 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import {
   DIAGNOSTIC_GROUP_PLAN,
   getDiagnosticsPopularResults,
-  getDiagnosticsSearchResults,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import _ from 'lodash';
@@ -74,7 +71,10 @@ import {
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { getDiagnosticSearchResults } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { searchDiagnosticItem_searchDiagnosticItem_data } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticItem';
 
+type searchResults = searchDiagnosticItem_searchDiagnosticItem_data;
 export interface SearchTestSceneProps
   extends NavigationScreenProps<{
     searchText: string;
@@ -85,7 +85,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>(searchTextFromProp);
   const [diagnosticResults, setDiagnosticResults] = useState<
-    searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
+    searchDiagnosticItem_searchDiagnosticItem_data[]
   >([]);
   const [searchResult, setSearchResult] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -166,7 +166,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           sourceHeaders,
         },
         variables: {
-          patientId: g(currentPatient, 'id') || '',
+          patientId: currentPatient?.id,
           type: SEARCH_TYPE.TEST,
         },
         fetchPolicy: 'no-cache',
@@ -183,9 +183,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   //for past item search
   const fetchPackageDetails = async (name: string, func: (product: any) => void) => {
     try {
-      const res: any = await getDiagnosticsSearchResults('diagnostic', name, Number(cityId));
-      if (res?.data?.success) {
-        const product = g(res, 'data', 'data') || [];
+      const res: any = await getDiagnosticSearchResults(client, name, Number(cityId));
+      if (!!res?.data?.searchDiagnosticItem && res?.data?.searchDiagnosticItem?.data?.length > 0) {
+        const product = res?.data?.searchDiagnosticItem?.data || [];
         func && func(product);
       }
       setIsLoading?.(false);
@@ -202,7 +202,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     try {
       const res: any = await getDiagnosticsPopularResults('diagnostic', Number(cityId));
       if (res?.data?.success) {
-        const product = g(res, 'data', 'data') || [];
+        const product = res?.data?.data || [];
         setPopularArray(product);
         setIsLoading(false);
       }
@@ -216,7 +216,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     }
   };
 
-  const showGenericALert = (e: { response: AxiosResponse }) => {
+  const showGenericALert = (e: any) => {
     showAphAlert?.({
       title: string.common.uhOh,
       description: `Something went wrong.`,
@@ -238,13 +238,10 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     setShowMatchingMedicines(true);
     setIsLoading(true);
     try {
-      const res: any = await getDiagnosticsSearchResults('diagnostic', _searchText, Number(cityId));
-
-      if (res?.data?.success) {
-        const products = g(res, 'data', 'data') || [];
-        setDiagnosticResults(
-          products as searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
-        );
+      const res: any = await getDiagnosticSearchResults(client, _searchText, Number(cityId));
+      if (!!res?.data?.searchDiagnosticItem && res?.data?.searchDiagnosticItem?.data?.length > 0) {
+        const products = res?.data?.searchDiagnosticItem?.data || [];
+        setDiagnosticResults(products as searchDiagnosticItem_searchDiagnosticItem_data[]);
         setSearchResult(products?.length == 0);
         setWebEngageEventOnSearchItem(_searchText, products);
       } else {
@@ -259,7 +256,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     }
   };
 
-  const savePastSeacrh = (sku: string, name: string) =>
+  const savePastSearch = (sku: string, name: string) =>
     client.mutate({
       mutation: SAVE_SEARCH,
       variables: {
@@ -267,7 +264,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           type: SEARCH_TYPE.TEST,
           typeId: sku,
           typeName: name,
-          patient: currentPatient && currentPatient.id ? currentPatient.id : '',
+          patient: currentPatient?.id || '',
         },
       },
     });
@@ -289,10 +286,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     );
   };
 
-  const setWebEngageEventOnSearchItem = (
-    keyword: string,
-    results: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
-  ) => {
+  const setWebEngageEventOnSearchItem = (keyword: string, results: searchResults[]) => {
     DiagnosticItemSearched(currentPatient, keyword, results, isDiagnosticCircleSubscription);
   };
 
@@ -307,7 +301,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     selectedPlan?: any,
     inclusions?: any[]
   ) => {
-    savePastSeacrh(`${itemId}`, itemName).catch((e) => {});
+    savePastSearch(`${itemId}`, itemName).catch((e) => {});
     postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, 0, 0);
 
     addCartItem!({
@@ -554,11 +548,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     );
   };
 
-  const renderTestCard = (
-    product: any,
-    index: number,
-    array: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
-  ) => {
+  const renderTestCard = (product: any, index: number, array: searchResults[]) => {
     return (
       <DiagnosticsSearchSuggestionItem
         onPress={() => {
