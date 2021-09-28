@@ -241,7 +241,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     );   
      showAphAlert!({
       title: string.common.hiWithSmiley,
-      description: needHelpToContactInMessage || string.needHelpSubmitMessage,
+      description: subQueriesData?.message || queries?.[0]?.message || needHelpToContactInMessage || string.needHelpSubmitMessage,
       unDismissable: true,
       onPressOk: () => {
         hideAphAlert!();
