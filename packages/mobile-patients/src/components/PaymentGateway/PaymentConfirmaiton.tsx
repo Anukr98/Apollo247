@@ -93,9 +93,6 @@ export const PaymentConfirmation: React.FC<PaymentConfirmationProps> = (props) =
         <View style={styles.priceCont}>
           {textComponent(priceText, theme.colors.SHADE_GREY, false)}
         </View>
-        <View style={styles.priceCont}>
-          {textComponent(orderIdText, theme.colors.SHADE_GREY, false)}
-        </View>
         <View>
           <View style={styles.paymentRef}>
             {textComponent('Payment Ref. Number - ', theme.colors.SHADE_GREY, false)}
