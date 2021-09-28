@@ -83,6 +83,7 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { CheckBox } from 'react-native-elements'
 
 const styles = StyleSheet.create({
   container: {
@@ -176,6 +177,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
   const [deviceToken, setDeviceToken] = useState<string>('');
   const [showReferralCode, setShowReferralCode] = useState<boolean>(false);
   const [oneApolloRegistrationCalled, setoneApolloRegistrationCalled] = useState<boolean>(false);
+  const [whatsAppOptIn, setWhatsAppOptIn] = useState<boolean>(false)
   const isOneTimeUpdate = useRef<boolean>(false);
 
   useEffect(() => {
@@ -474,6 +476,19 @@ const SignUp: React.FC<SignUpProps> = (props) => {
             autoCapitalize="none"
             keyboardType="email-address"
           />
+          <View style = {{ marginVertical: 20, flexDirection: "row", alignItems: "center", marginHorizontal: -15 }}>
+            <View style = {{ width: "90%", flexDirection: "row", alignItems: "center" }}>
+              <CheckBox
+                checked = {whatsAppOptIn}
+                onPress = {() => setWhatsAppOptIn(!whatsAppOptIn)}
+                size = {15}
+              />
+              <Text style = {{ marginLeft: -10 }}>Send me personalised health tips and offers on</Text>
+            </View>
+            <View style = {{ width: "10%" }}>
+              <Image source = {require("@aph/mobile-patients/src/images/apollo/whatsapp.webp")} style = {{ width: 30, height: 30 }} />
+            </View>
+          </View>
           {showReferralCode && renderReferral()}
         </Card>
       </View>
@@ -649,6 +664,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
 
                       const patientsDetails: UpdatePatientInput = {
                         id: mePatient.id,
+                        whatsAppOptIn: whatsAppOptIn,
                         mobileNumber: mePatient.mobileNumber,
                         firstName: firstName.trim(),
                         lastName: lastName.trim(),
