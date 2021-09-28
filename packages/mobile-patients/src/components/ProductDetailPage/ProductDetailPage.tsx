@@ -592,13 +592,48 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         'Circle Cashback': Number(cashback) || 0,
         SubCategory: subcategory || '',
       };
+
+      let appsFlyerEvents = {
+        af_country: "India",
+        source: movedFrom,
+        af_content_id: sku?.toUpperCase(),
+        af_content: name,
+        Stockavailability: stock_availability,
+        ...productPageViewedEventProps,
+        ...pharmacyCircleAttributes,
+        User_Type: userType,
+        Pincode: pincode,
+        serviceable: notServiceable ? 'No' : 'Yes',
+        TATDay: deliveryTime ? moment(deliveryTime).diff(moment(), 'days') : null,
+        TatHour: deliveryTime ? moment(deliveryTime).diff(moment(), 'hours') : null,
+        TatDateTime: deliveryTime,
+        ProductType: type_id,
+        MaxOrderQuantity: MaxOrderQty,
+        af_price: special_price || null,
+        CircleCashback: cashback,
+        isMultiVariant: multiVariantAttributes.length ? 1 : 0,
+        af_currency: "INR",
+        af_content_type: "Product Page"
+      }
+      
       if (movedFrom === 'deeplink') {
         eventAttributes['Circle Membership Added'] = circleID
           ? 'Existing'
           : !!circleMembershipCharges
           ? 'Yes'
           : 'No';
+        appsFlyerEvents['Circle Membership Added'] = circleID
+          ? 'Existing'
+          : !!circleMembershipCharges
+          ? 'Yes'
+          : 'No';
         eventAttributes['CategoryID'] = category_id;
+        appsFlyerEvents['CategoryID'] = category_id;
+        cleverTapEventAttributes['Circle Member'] = circleID
+          ? 'Existing'
+          : !!circleMembershipCharges
+          ? 'Added'
+          : 'Not Added';
         cleverTapEventAttributes['Circle Member'] = circleID
           ? 'Existing'
           : !!circleMembershipCharges
@@ -607,7 +642,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       }
       postCleverTapEvent(CleverTapEventName.PHARMACY_PRODUCT_PAGE_VIEWED, cleverTapEventAttributes);
       postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
-      postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
+      postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, appsFlyerEvents);
       postFirebaseEvent(FirebaseEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
     }
   };
@@ -911,7 +946,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       pharmacyCircleAttributes!
     );
     let id = currentPatient && currentPatient.id ? currentPatient.id : '';
-    postAppsFlyerAddToCartEvent(medicineDetails, id, pharmacyCircleAttributes!);
+    postAppsFlyerAddToCartEvent(medicineDetails, id, pharmacyCircleAttributes!, medicineDetails.id);
   };
 
   const renderBottomButton = () => {

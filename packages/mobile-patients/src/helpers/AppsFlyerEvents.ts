@@ -226,6 +226,7 @@ export interface AppsFlyerEvents {
     sku: string;
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
+    "af_content_id"?: number
   };
   [AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART]: {
     af_content: string; //product name
@@ -322,11 +323,13 @@ export interface AppsFlyerEvents {
     Pincode: string | number;
   };
   [AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED]: {
+    af_customer_user_id?: string,
     'customer id'?: string;
     'cart size': number;
     af_revenue: number;
     af_currency: string;
-    'order id': string;
+    af_order_id?: string;
+    'order id'?: string;
     orderAutoId?: string;
     'coupon applied': boolean;
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
