@@ -572,6 +572,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           itemWidth={width}
           loop={true}
           autoplay={true}
+          loopClonesPerSide={datatoshow?.length || 0}
         />
         {datatoshow && datatoshow.length > 0 ? (
           <View style={styles.sliderDotsContainer}>

@@ -32,6 +32,7 @@ import {
   PrescriptionIcon,
   GalleryIcon,
   CameraIcon,
+  CrossPopup
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
@@ -581,6 +582,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
   useEffect(() => {
     if (movedFrom == AppRoutes.SubmittedPrescription) {
+      // user comes back to add more prescription
+      setIsPrescriptionUpload(true)
+    } else if(movedFrom == AppRoutes.PrescriptionCamera) {
+      // when user comes back  deletes the camera captured image
       setIsPrescriptionUpload(true)
     }
   }, [movedFrom])
@@ -2127,6 +2132,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         props.navigation.navigate(AppRoutes.PrescriptionCamera, {
           type: 'CAMERA_AND_GALLERY',
           responseData: formatResponse([response] as ImageCropPickerResponse[]),
+          ePresscriptionUploaded: ePresscriptionUploaded,
+          phyPrescriptionUploaded: phyPrescriptionUploaded,
           title: 'Camera',
         });
       })
@@ -2267,7 +2274,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
             return;
           }
           props.navigation.navigate(AppRoutes.SubmittedPrescription, {
-            ePrescriptionsProp: selectedEPres,
+            ePrescriptionsProp: [...ePresscriptionUploaded, ...selectedEPres],
+            phyPrescriptionsProp: phyPrescriptionUploaded,
             type: 'E-Prescription',
             showOptions: false,
             isReUpload: true,
@@ -2373,7 +2381,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     DiagnosticViewReportClicked(
       'Home',
       !!pdfName?.labReportURL ? 'Yes' : 'No',
-      'Download Report PDF'
+      'Download Report PDF',
+      currentPatient
     );
     if (pdfName == null || pdfName == '') {
       Alert.alert('No Image');
@@ -2427,7 +2436,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         'Home',
         !!item?.labReportURL ? 'Yes' : 'No',
         'Download Report PDF',
-        item?.displayId
+        item?.displayId,
+        currentPatient
       );
       //view report download
       //need to remove the event once added
@@ -2435,7 +2445,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         'Home',
         !!item?.labReportURL ? 'Yes' : 'No',
         'Download Report PDF',
-        item?.displayId
+        item?.displayId,
+        currentPatient
       );
       if (!!item?.labReportURL && item?.labReportURL != '') {
         onPressViewReport();
@@ -2986,6 +2997,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 }}
               >
                 <View style={styles.modalMainView}>
+                  <TouchableOpacity
+                    style={styles.closeContainer}
+                    onPress={() => {
+                      if (isPrescriptionGallery) {
+                        setIsPrescriptionGallery(false);
+                        setIsPrescriptionUpload(true);
+                      } else {
+                        setIsPrescriptionGallery(false);
+                        setIsPrescriptionUpload(false);
+                      }
+                    }}
+                  >
+                    <CrossPopup />
+                  </TouchableOpacity>
                   <View style={styles.paitentModalView}>
                     {isPrescriptionGallery
                       ? renderGalleryOption()
@@ -3130,6 +3155,10 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 14, '#01475b'),
     padding: 0,
     margin: 0,
+  },
+  closeContainer: {
+    alignSelf: 'flex-end',
+    margin: 10,
   },
   menuBottomPadding: { paddingBottom: 0 },
   deliverToText: { ...theme.viewStyles.text('R', 11, '#01475b', 1, 16) },

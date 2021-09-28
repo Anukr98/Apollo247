@@ -249,7 +249,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (sku && movedFrom === ProductPageViewedSource.DEEP_LINK) {
+    if (
+      sku &&
+      (movedFrom === ProductPageViewedSource.DEEP_LINK ||
+        movedFrom == ProductPageViewedSource.MULTI_VARIANT)
+    ) {
       fetchDeliveryTime(pincode, false);
     }
   }, [sku]);
