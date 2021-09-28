@@ -38,7 +38,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { FlatList, ListRenderItemInfo, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { FlatList, ListRenderItemInfo, SafeAreaView, StyleSheet, Text, View,BackHandler } from 'react-native';
 import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
 import { TouchableOpacity } from 'react-native';
@@ -49,6 +49,9 @@ import {
   getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails,
   getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
 } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
+import { needHelpCleverTapEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 export interface Props
   extends NavigationScreenProps<{
@@ -66,6 +69,7 @@ export interface Props
     refund: any[];
     payment: any[];
     additionalInfo: boolean;
+    etd: any;
   }> {}
 
 export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
@@ -94,23 +98,44 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
 
   const client = useApolloClient();
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients, profileAllPatients } = useAllCurrentPatients();
+  const { circlePlanValidity, circleSubscriptionId } = useShoppingCart(); 
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const { needHelpToContactInMessage } = useAppCommonData();
   const isConsult = navigation.getParam('isConsult') || false;
   const [selectedQueryId, setSelectedQueryId] = useState<string>('');
   const [comments, setComments] = useState<string>('');
+  const [orderDelayed, setOrderDelayed] = React.useState<boolean>(false);
+  const [tatBreach, setTatBreach] = React.useState<Boolean>(true);
+  const [raiseOrderDelayQuery, setRaiseOrderDelayQuery] = React.useState<boolean>(false);
+  const [etd, setEtd] = React.useState<string>(navigation.getParam('etd'));
   const apolloClient = useApolloClient();
   const { getHelpSectionQueries } = NeedHelpHelpers;
+
+  const orderDelayTitle = 'My order is getting Delayed';
+
+  React.useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', () => {
+      if (orderDelayed) {
+        setOrderDelayed(false);
+        return true;
+      } else navigation.goBack();
+    });
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', () => {
+        if (orderDelayed) {
+          setOrderDelayed(false);
+          return true;
+        } else navigation.goBack();
+      });
+    };
+  }, [orderDelayed]);
 
   useEffect(() => {
     if (!_queries) {
       fetchQueries();
     }
-    if (
-      queryIdLevel1 == helpSectionQueryId.pharmacy &&
-      navigation.getParam('refund') === undefined
-    ) {
+    if (queryIdLevel1 == helpSectionQueryId.pharmacy) {
       getOMSDetails();
     }
   }, []);
@@ -156,7 +181,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       variables: vars,
       fetchPolicy: 'no-cache',
     });
-
+    setTatBreach(data?.getMedicineOrderOMSDetailsWithAddress?.tatBreached);
     const order = data?.getMedicineOrderOMSDetailsWithAddress?.medicineOrderDetails;
     const paymentDetails = order?.medicineOrderPayments || [];
     const RefundTypes = ['REFUND_REQUEST_RAISED', 'REFUND_SUCCESSFUL'];
@@ -168,8 +193,28 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     setFetchPayment(paymentDetails);
   };
 
+  const cleverTapEvent = (eventName: CleverTapEventName, extraAttributes?: Object) => {
+    needHelpCleverTapEvent(
+      eventName,
+      allCurrentPatients,
+      currentPatient,
+      circlePlanValidity,
+      circleSubscriptionId,
+      queryIdLevel2 ? 'C2 help Screen' : 'C1 help Screen',
+      extraAttributes
+    );
+  };
   const renderHeader = () => {
-    const onPressBack = () => navigation.goBack();
+    const onPressBack = () => {
+      if (orderDelayed) {
+        return setOrderDelayed(false);
+      }
+      navigation.goBack();
+      cleverTapEvent(
+        queryIdLevel2 ? CleverTapEventName.BACK_NAV_ON_C2_HELP : CleverTapEventName.BACK_NAV_ON_C1,
+        { 'BU/Module name': headingTitle }
+      );
+    };
     const pageTitle = string.help.toUpperCase();
     return <Header title={pageTitle} leftIcon="backArrow" onPressLeftIcon={onPressBack} />;
   };
@@ -188,7 +233,13 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   };
 
   const onSuccess = (response: any) => {
-    showAphAlert!({
+    cleverTapEvent(
+      queryIdLevel2
+        ? CleverTapEventName.TICKET_ACKNOWLEDGEMENT_ON_C2_HELP_DISPLAYED
+        : CleverTapEventName.TICKET_ACKNOWLEDGEMENT_ON_C1_HELP_DISPLAYED,
+      { 'BU/Module name': headingTitle }
+    );   
+     showAphAlert!({
       title: string.common.hiWithSmiley,
       description: subQueriesData?.message || queries?.[0]?.message || needHelpToContactInMessage || string.needHelpSubmitMessage,
       unDismissable: true,
@@ -215,7 +266,6 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       subject: '',
       ticketNumber: '',
     };
-
     if (ticketId) {
       navigation.navigate(AppRoutes.HelpChatScreen, {
         ticketId: ticketId,
@@ -279,7 +329,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  const renderTextInputAndCTAs = () => {
+  const renderTextInputAndCTAs = (title?: string) => {
     const isDeliveryStatusQuery = selectedQueryId === helpSectionQueryId.deliveryStatus;
 
     return [
@@ -289,8 +339,25 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         placeholder={string.pleaseProvideMoreDetails}
         conatinerstyles={styles.textInputContainer}
         autoFocus={true}
+        onBlur={() => {
+          let eventAtttr: { [key: string]: any } = {
+            'Input text': comments,
+            'BU/Module name': headingTitle,
+          };
+          if (queryIdLevel2) {
+            eventAtttr['C2 Name'] = title;
+          } else {
+            eventAtttr['C1 Name'] = title;
+          }
+          cleverTapEvent(
+            queryIdLevel2
+              ? CleverTapEventName.DETAILS_INPUT_ON_C2_HELP
+              : CleverTapEventName.DETAILS_INPUTBOX_ON_C1_HELP,
+            eventAtttr
+          );
+        }}
       />,
-      isDeliveryStatusQuery ? renderShipmentQueryCTAs() : renderSubmitCTA(),
+      isDeliveryStatusQuery ? renderShipmentQueryCTAs() : renderSubmitCTA(title),
     ];
   };
 
@@ -341,19 +408,34 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     );
   };
 
-  const renderSubmitCTA = () => {
+  const renderSubmitCTA = (title?: string) => {
     return (
       <Text
-        onPress={onSubmitShowEmailPopup}
-        style={[styles.submit, { opacity: comments ? 1 : 0.5 }]}
+      onPress={() => onSubmitShowEmailPopup(title)}
+      style={[styles.submit, { opacity: comments ? 1 : 0.5 }]}
       >
         {string.submit.toUpperCase()}
       </Text>
     );
   };
 
-  const onSubmitShowEmailPopup = async () => {
-    if (!email) {
+  const onSubmitShowEmailPopup = async (title?: string) => {
+    let eventAtttr: { [key: string]: any } = {
+      'Input text': comments,
+      'BU/Module name': headingTitle,
+    };
+    if (queryIdLevel2) {
+      eventAtttr['C2 Name'] = title;
+    } else {
+      eventAtttr['C1 Name'] = title;
+    }
+    cleverTapEvent(
+      queryIdLevel2
+        ? CleverTapEventName.SUBMIT_CTA_ON_C2_HELP
+        : CleverTapEventName.SUBMIT_CTA_ON_C1_HELP,
+      eventAtttr
+    ); 
+       if (!email) {
       setShowEmailPopup(true);
     } else {
       onSubmit(email);
@@ -371,7 +453,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
         <View style={styles.flatListContainer}>
           <TouchableOpacity
-            style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+            style={styles.titleView}
             onPress={() => {
               setSelectedQueryId(navigation.state.params?.queryIdLevel2 || '');
               setComments('');
@@ -439,16 +521,26 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           payment: payment.length <= 0 ? fetchPayment : payment,
         });
       } else {
-        setSelectedQueryId(item?.id!);
+        setSelectedQueryId(item.id!);
+        setRaiseOrderDelayQuery(false);
         setComments('');
       }
+      !raiseOrderDelayQuery && item?.title === orderDelayTitle && setOrderDelayed(true);
     };
     return (
       <>
         <Text onPress={onPress} style={styles.flatListItem}>
           {item?.title}
         </Text>
-        {item?.id === selectedQueryId ? renderTextInputAndCTAs() : null}
+        {item?.id === selectedQueryId
+          ? item?.title === orderDelayTitle
+            ? null
+            : renderTextInputAndCTAs()
+          : null}
+        {item?.title === orderDelayTitle &&
+          item?.id === selectedQueryId &&
+          raiseOrderDelayQuery &&
+          renderTextInputAndCTAs()}
       </>
     );
   };
@@ -464,19 +556,88 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       moment(new Date()).diff(moment(medicineOrderStatusDate), 'hours') <= 48;
 
     if (!showReturnOrder) {
-      data = data.filter((item) => item?.id !== helpSectionQueryId.returnOrder);
+      data = data.filter((item) => item.id !== helpSectionQueryId.returnOrder);
     }
 
+    const showMessage = (tat: boolean) => {
+      if (tat) {
+        const str = string.needHelpQueryDetails.tatBreachedTrue;
+        const newStr = str.replace('{{medicineOrderStatus}}', medicineOrderStatus!);
+        return newStr;
+      } else {
+        const str = string.needHelpQueryDetails.tatBreachedFalse;
+        const newStr = str.replace('{{medicineOrderStatus}}', medicineOrderStatus!);
+        const finalStringToBeSend = newStr.replace('{{etd}}', etd);
+        return finalStringToBeSend;
+      }
+    };
+
+    const renderOrderStatus = () =>
+      tatBreach ? (
+        <>
+          <View style={styles.flatListContainer2}>
+            <Text style={styles.flatListItem}>{showMessage(true)}</Text>
+            <TouchableOpacity
+              style={styles.trackStyle}
+              onPress={() => {
+                navigation.navigate(AppRoutes.OrderDetailsScene, {
+                  orderAutoId: orderId,
+                });
+              }}
+            >
+              <Text style={styles.trackText}>TRACK ORDER</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.flatListContainer2}>
+            <TouchableOpacity
+              style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+              onPress={() => {
+                setRaiseOrderDelayQuery(true);
+                setOrderDelayed(false);
+                setComments('');
+              }}
+            >
+              <Text style={styles.txtBold}>My issue is still not resolved</Text>
+              <ArrowRight style={{ height: 18, width: 18 }} />
+            </TouchableOpacity>
+          </View>
+        </>
+      ) : (
+        <>
+          <View style={styles.flatListContainer2}>
+            <Text style={styles.flatListItem}>{showMessage(false)}</Text>
+            <TouchableOpacity
+              style={styles.trackStyle}
+              onPress={() => {
+                navigation.navigate(AppRoutes.OrderDetailsScene, {
+                  orderAutoId: orderId,
+                });
+              }}
+            >
+              <Text style={styles.trackText}>TRACK ORDER</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      );
+
     return (
-      <View style={styles.flatListContainer}>
-        <FlatList
-          data={data}
-          renderItem={renderItem}
-          keyExtractor={(_, i) => `${i}`}
-          bounces={false}
-          ItemSeparatorComponent={renderDivider}
-        />
-      </View>
+      <>
+        <SafeAreaView>
+          {orderDelayed ? (
+            <>{renderOrderStatus()}</>
+          ) : (
+            <View style={styles.flatListContainer}>
+              <FlatList
+                data={data}
+                renderItem={renderItem}
+                keyExtractor={(_, i) => `${i}`}
+                bounces={false}
+                ItemSeparatorComponent={renderDivider}
+              />
+            </View>
+          )}
+        </SafeAreaView>
+      </>
     );
   };
 
@@ -486,6 +647,9 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
   const renderHeading = () => {
     const title = headingTitle;
+    if (orderDelayed) {
+      return;
+    }
     const text = orderId
       ? `HELP WITH ${isConsult ? 'APPOINTMENT' : 'ORDER'} #${orderId}`
       : `HELP WITH ${title?.toUpperCase()}`;
@@ -494,6 +658,13 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
   const renderSubHeading = () => {
     const text = 'SELECT YOUR ISSUE';
+    if (orderDelayed) {
+      return (
+        <Text style={[styles.subHeading, styles.txtBold, styles.subHeadingText]}>
+          My Order is getting delayed
+        </Text>
+      );
+    }
     return <Text style={styles.subHeading}>{text}</Text>;
   };
 
@@ -537,8 +708,13 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 150,
   },
+  flatListContainer2: {
+    ...card(),
+    marginTop: 10,
+    marginBottom: 10,
+  },
   flatListItem: {
-    ...text('M', 14, LIGHT_BLUE),
+    ...text('M', 14, LIGHT_BLUE, undefined, 22),
   },
   breadcrumb: {
     marginHorizontal: 20,
@@ -553,6 +729,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginTop: 10,
   },
+  subHeadingText: {
+    marginTop: 0,
+    marginBottom: 7,
+  },
   textInputContainer: {
     marginTop: 15,
   },
@@ -566,5 +746,18 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginBottom: 12,
     marginHorizontal: 5,
+  },
+  trackText: {
+    alignSelf: 'flex-end',
+    ...text('M', 14, APP_YELLOW),
+  },
+  trackStyle: { marginTop: 24 },
+  txtBold: {
+    ...text('M', 14, LIGHT_BLUE, undefined, 19),
+    fontWeight: 'bold',
+  },
+  titleView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
 });

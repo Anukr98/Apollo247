@@ -5766,6 +5766,24 @@ export const GET_VACCINATION_AVAILABLE_DATES = gql`
   }
 `;
 
+export const CORPORATE_VACCINE_PLAN_VALIDATION = gql`
+  query getCorporateVaccinePlanValidation($patient_id: String!) {
+    getCorporateVaccinePlanValidation(patient_id: $patient_id) {
+      code
+      success
+      response {
+        corporate_vaccination_allow
+        remaining_vaccination
+        vaccine_dose_allowed
+        vaccine_type
+        relation
+        total_corporate_appointment
+        user_message
+      }
+    }
+  }
+`;
+
 export const GET_VACCINATION_SLOTS = gql`
   query getResourcesSessionAvailableByDate(
     $resource_id: String!
