@@ -232,6 +232,13 @@ export enum CleverTapEventName {
   PHR_CLICK_INSURANCES = 'PHR Click Insurances',
   PHR_ADD_DOCTOR_CONSULTATIONS = 'PHR Add Doctor Consultation',
   PHR_ADD_TEST_REPORT = 'PHR Add Test Report',
+  PHR_ADD_VACCINATION_REPORT = 'PHR Add Vaccination Report',
+  PHR_DELETE_VACCINATION_REPORT = 'PHR Delete Vaccination Report',
+  PHR_UPDATE_VACCINATION_REPORT = 'PHR Update Vaccination Report',
+  PHR_DOWNLOAD_VACCINATION_REPORT = 'PHR Download Vaccination Report',
+  PHR_BAR_CHART_VISUALISATION = 'PHR Bar Chart Visualisation',
+  PHR_REAL_TIME_LAB_TEST_REPORT = 'PHR Real Time Lab Test Reports',
+  PHR_SHARE_REAL_LAB_TEST_REPORT = 'PHR Share Real Time Lab Test Reports',
   PHR_ADD_HOSPITALIZATIONS = 'PHR Add Hospitalization',
   PHR_ADD_ALLERGY = 'PHR Add Allergy',
   PHR_ADD_FAMILY_HISTORY = 'PHR Add Family History',
@@ -1557,9 +1564,11 @@ export interface CleverTapEvents {
     type?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
-    Amount: number;
+    'Order Amount': number;
     LOB: string;
     type?: string;
+    'Order id'?: string;
+    'Payment mode'?: string
   };
   [CleverTapEventName.CONSULT_PAYMENT_INITIATED]: {
     Amount: number;
