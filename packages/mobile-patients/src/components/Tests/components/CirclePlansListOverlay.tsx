@@ -32,6 +32,7 @@ interface CirclePlansListOverlayProps {
   choosenPlan: (plan: any) => void;
   onPressClose: () => void;
   onPressViewAll: () => void;
+  planToHighLight: any;
 }
 
 export const CirclePlansListOverlay: React.FC<CirclePlansListOverlayProps> = (props) => {
@@ -45,6 +46,7 @@ export const CirclePlansListOverlay: React.FC<CirclePlansListOverlayProps> = (pr
     effectivePriceText,
     membershipPlans,
     facts,
+    planToHighLight,
     choosenPlan,
     onPressClose,
     onPressViewAll,
@@ -52,7 +54,7 @@ export const CirclePlansListOverlay: React.FC<CirclePlansListOverlayProps> = (pr
   const client = useApolloClient();
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
 
-  const [selectedPlan, setSelectedPlan] = useState<any>([]);
+  const [selectedPlan, setSelectedPlan] = useState<any>(planToHighLight);
   const [circleMembershipPlan, setCircleMembershipPlan] = useState<any>([]);
 
   useEffect(() => {
@@ -62,7 +64,9 @@ export const CirclePlansListOverlay: React.FC<CirclePlansListOverlayProps> = (pr
       setCircleMembershipPlan(membershipPlans);
       //set the default plan as the selected plan
       const defaultPlan = membershipPlans?.filter((item: any) => item?.defaultPack === true);
-      !!defaultPlan && defaultPlan?.length > 0 && setSelectedPlan(defaultPlan?.[0]);
+      !!selectedPlan
+        ? null
+        : !!defaultPlan && defaultPlan?.length > 0 && setSelectedPlan(defaultPlan?.[0]);
     }
   }, []);
 
