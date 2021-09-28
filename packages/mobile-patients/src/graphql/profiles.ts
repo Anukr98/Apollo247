@@ -2309,6 +2309,7 @@ export const GET_HELP_SECTION_QUERIES = gql`
       needHelpQueries {
         id
         title
+        message
         nonOrderQueries
         queriesByOrderStatus
         content {
@@ -5765,6 +5766,24 @@ export const GET_VACCINATION_AVAILABLE_DATES = gql`
   }
 `;
 
+export const CORPORATE_VACCINE_PLAN_VALIDATION = gql`
+  query getCorporateVaccinePlanValidation($patient_id: String!) {
+    getCorporateVaccinePlanValidation(patient_id: $patient_id) {
+      code
+      success
+      response {
+        corporate_vaccination_allow
+        remaining_vaccination
+        vaccine_dose_allowed
+        vaccine_type
+        relation
+        total_corporate_appointment
+        user_message
+      }
+    }
+  }
+`;
+
 export const GET_VACCINATION_SLOTS = gql`
   query getResourcesSessionAvailableByDate(
     $resource_id: String!
@@ -6132,6 +6151,35 @@ export const GET_JUSPAY_CLIENTAUTH_TOKEN = gql`
       juspay {
         client_auth_token
         client_auth_token_expiry
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_SEARCH_RESULTS = gql `
+  query searchDiagnosticItem($keyword:String!, $cityId: Int!){
+    searchDiagnosticItem(keyword: $keyword, cityId: $cityId){
+      data{
+        diagnostic_item_id
+        diagnostic_item_name
+        diagnostic_inclusions
+        diagnostic_item_alias
+        diagnostic_item_price{
+          status
+          startDate
+          endDate
+          price
+          mrp
+          couponCode
+          groupPlan
+        }
+        diagnostic_item_packageCalculatedMrp
+        diagnostic_item_itemType
+        diagnostic_item_alias_names
+        diagnostic_inclusions_test_parameter_data{
+          mandatoryValue
+          observationName
+        }
       }
     }
   }

@@ -5,6 +5,7 @@ import {
   postWebEngageEvent,
   formatAddress,
   postCleverTapEvent,
+  getCleverTapCircleMemberValues,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   ShoppingCartItem,
@@ -24,20 +25,23 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 
 export function PaymentInitiated(
   grandTotal: number,
   LOB: string,
   type: string,
   paymentOrderId: string,
-  instrument: string
+  instrument: string,
+  paymentModeName?: string
 ) {
   try {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PAYMENT_INITIATED] = {
-      Amount: grandTotal,
+    const eventAttributes: CleverTapEvents[CleverTapEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
+      'Order Amount': grandTotal,
       LOB: LOB,
       type: type,
-      paymentOrderId: paymentOrderId,
+      'Order id': paymentOrderId,
+      'Payment mode': paymentModeName,
     };
     const consultEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PAYMENT_INITIATED] = {
       Amount: grandTotal,
@@ -128,12 +132,13 @@ export function PharmaOrderPlaced(
       LOB: 'Pharma',
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, firebaseEventAttributes);
-
+    const { currentPatient } = useAllCurrentPatients()
     const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED] = {
+      af_customer_user_id: currentPatient ? currentPatient.id : "",
       'cart size': cartItems.length,
       af_revenue: getFormattedAmount(grandTotal),
       af_currency: 'INR',
-      'order id': paymentOrderId,
+      af_order_id: paymentOrderId ? paymentOrderId : "0",
       'coupon applied': coupon ? true : false,
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,

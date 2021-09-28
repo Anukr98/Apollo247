@@ -139,6 +139,32 @@ export function PharmacyCartViewedEvent(
     ...pharmacyUserTypeAttribute,
     ...pharmacyCircleEvent,
   };
+  const appsFlyerEvents = {
+    'Total items in cart': shoppingCart?.cartItems?.length,
+    'Sub Total': shoppingCart?.cartTotal,
+    'Delivery charge': shoppingCart?.deliveryCharges,
+    'Total Discount': Number(
+      (shoppingCart?.couponDiscount + shoppingCart?.productDiscount).toFixed(2)
+    ),
+    'Net after discount': shoppingCart?.grandTotal,
+    'Prescription Needed?': shoppingCart?.uploadPrescriptionRequired,
+    'Cart Items': shoppingCart?.cartItems?.map(
+      (item) =>
+        ({
+          af_content_id: item?.id,
+          af_content: item?.name,
+          quantity: item?.quantity,
+          price: item?.price,
+          af_price: item?.specialPrice,
+        })
+    ),
+    'Service Area': 'Pharmacy',
+    af_customer_user_id: id,
+    af_content_type: "Cart Page",
+    ...pharmacyUserTypeAttribute,
+    ...pharmacyCircleEvent,
+  };
+  
   const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CART_VIEWED] = {
     'Total items in cart': shoppingCart?.cartItems?.length,
     'Sub Total': shoppingCart?.cartTotal,
@@ -170,7 +196,7 @@ export function PharmacyCartViewedEvent(
   }
   postWebEngageEvent(WebEngageEventName.PHARMACY_CART_VIEWED, eventAttributes);
   postCleverTapEvent(CleverTapEventName.PHARMACY_CART_VIEWED,cleverTapEventAttributes);
-  postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CART_VIEWED, eventAttributes);
+  postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CART_VIEWED, appsFlyerEvents);
 
   const firebaseAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_CART_VIEWED] = {
     TotalItemsInCart: shoppingCart.cartItems.length,
@@ -235,9 +261,18 @@ export function postwebEngageProductRemovedEvent(cartItem: ShoppingCartItem, id:
     'Product ID': cartItem.id,
     'Product Name': cartItem.name,
   };
+  const appsFlyerEvents = {
+    af_customer_user_id: id,
+    'No. of items': cartItem?.quantity,
+    af_content_id: cartItem?.id,
+    af_content: cartItem?.name,
+    af_content_type: "Cart Page",
+    af_currency: "INR",
+    af_price: cartItem?.specialPrice
+  }
   postCleverTapEvent(CleverTapEventName.PHARMACY_ITEMS_REMOVED_FROM_CART,eventAttributes);
   postWebEngageEvent(WebEngageEventName.ITEMS_REMOVED_FROM_CART, eventAttributes);
-  postAppsFlyerEvent(AppsFlyerEventName.ITEMS_REMOVED_FROM_CART, eventAttributes);
+  postAppsFlyerEvent(AppsFlyerEventName.ITEMS_REMOVED_FROM_CART, appsFlyerEvents);
 
   const firebaseAttributes: FirebaseEvents[FirebaseEventName.ITEMS_REMOVED_FROM_CART] = {
     ProductID: cartItem.id,

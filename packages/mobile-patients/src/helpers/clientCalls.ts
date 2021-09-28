@@ -42,6 +42,7 @@ import {
   GET_DIAGNOSTIC_EXPRESS_SLOTS_INFO,
   GET_DIAGNOSTIC_REPORT_TAT,
   SAVE_JUSPAY_SDK_RESPONSE,
+  GET_DIAGNOSTIC_SEARCH_RESULTS,
   CHANGE_DIAGNOSTIC_ORDER_PATIENT_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -203,6 +204,7 @@ import {
   getConfigurableReportTAT,
   getConfigurableReportTATVariables,
 } from '@aph/mobile-patients/src/graphql/types/getConfigurableReportTAT';
+import { searchDiagnosticItem, searchDiagnosticItemVariables } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticItem';
 import { switchDiagnosticOrderPatientID, switchDiagnosticOrderPatientIDVariables } from '@aph/mobile-patients/src/graphql/types/switchDiagnosticOrderPatientID';
 
 export const getNextAvailableSlots = (
@@ -1284,6 +1286,21 @@ export const getReportTAT = (
   }); 
 };
 
+
+export const getDiagnosticSearchResults = (client: ApolloClient<object>, keyword: string, cityId: number) => {
+  return client.query<searchDiagnosticItem, searchDiagnosticItemVariables>({
+    query: GET_DIAGNOSTIC_SEARCH_RESULTS,
+    context: {
+      sourceHeaders,
+    },
+    variables: {
+      keyword: keyword,
+      cityId: cityId
+    },
+     fetchPolicy: 'no-cache',
+  });
+};
+
 export const switchDiagnosticOrderPatientId = (
   client: ApolloClient<object>,
   orderId: string,
@@ -1295,7 +1312,8 @@ export const switchDiagnosticOrderPatientId = (
     context: {
       sourceHeaders,
     },
-    variables: {
+    
+variables: {
       diagnosticOrdersId: orderId,
       newPatientId: newPatientId
     },

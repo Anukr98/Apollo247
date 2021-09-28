@@ -1,7 +1,6 @@
 import Axios, { AxiosResponse, Canceler } from 'axios';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { getTagalysConfig, Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
-import { string } from '../strings/string';
 
 export interface MedicineProduct {
   category_id?: string;
@@ -1300,19 +1299,6 @@ export const getLandingPageBanners = (
   });
 };
 
-export const getDiagnosticsSearchResults = (
-  pageName: string,
-  keyword: string,
-  cityId: number
-): Promise<AxiosResponse<any>> => {
-  const baseurl = config.DRUPAL_CONFIG[0];
-  const getSearchResults = `${baseurl}/${pageName}/item-search?keyword=${keyword}&city=${cityId}`;
-  return Axios.get(getSearchResults, {
-    headers: {
-      Authorization: config.DRUPAL_CONFIG[1],
-    },
-  });
-};
 export const getDiagnosticsPopularResults = (
   pageName: string,
   cityId: number

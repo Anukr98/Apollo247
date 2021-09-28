@@ -25,6 +25,8 @@ import {
   initialSortByDays,
   handleGraphQlError,
   editDeleteData,
+  postCleverTapPHR,
+  postCleverTapIfNewSession,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -44,6 +46,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -224,6 +227,13 @@ export const VaccinationScreen: React.FC<VaccinationScreenProps> = (props) => {
     )
       .then((status) => {
         if (status) {
+          const eventInputData = removeObjectProperty(selectedItem, 'immunizations');
+          postCleverTapPHR(
+            currentPatient,
+            CleverTapEventName.PHR_DELETE_VACCINATION_REPORT,
+            'Vaccination Screen',
+            eventInputData
+          );
           getLatestLabAndHealthCheckRecords();
         } else {
           setShowSpinner(false);
@@ -242,9 +252,16 @@ export const VaccinationScreen: React.FC<VaccinationScreenProps> = (props) => {
   };
 
   const onHealthCardItemPress = (selectedItem: any) => {
-    const eventInputData = removeObjectProperty(selectedItem, 'vaccination');
+    const eventInputData = removeObjectProperty(selectedItem, 'immunizations');
     postWebEngageIfNewSession(
       'Vaccination',
+      currentPatient,
+      eventInputData,
+      phrSession,
+      setPhrSession
+    );
+    postCleverTapIfNewSession(
+      'Vaccination Screen',
       currentPatient,
       eventInputData,
       phrSession,
