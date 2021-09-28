@@ -140,6 +140,17 @@ const styles = StyleSheet.create({
     marginTop: 15,
     position: 'absolute',
   },
+  whatsAppOptinContainer: {
+    marginVertical: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: -15
+  },
+  whatsAppOptinCheckboxContainer: {
+    width: "90%",
+    flexDirection: "row",
+    alignItems: "center"
+  }
 });
 
 type genderOptions = {
@@ -476,8 +487,8 @@ const SignUp: React.FC<SignUpProps> = (props) => {
             autoCapitalize="none"
             keyboardType="email-address"
           />
-          <View style = {{ marginVertical: 20, flexDirection: "row", alignItems: "center", marginHorizontal: -15 }}>
-            <View style = {{ width: "90%", flexDirection: "row", alignItems: "center" }}>
+          <View style = {styles.whatsAppOptinContainer}>
+            <View style = {styles.whatsAppOptinCheckboxContainer}>
               <CheckBox
                 checked = {whatsAppOptIn}
                 onPress = {() => setWhatsAppOptIn(!whatsAppOptIn)}
