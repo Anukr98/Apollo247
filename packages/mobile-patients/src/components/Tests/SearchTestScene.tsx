@@ -63,7 +63,6 @@ import {
   getPricesForItem,
   sourceHeaders,
 } from '@aph/mobile-patients/src/utils/commonUtils';
-import { DiagnosticsSearchSuggestionItem } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticsSearchSuggestionItem';
 import { DiagnosticsNewSearch } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticsNewSearch';
 import {
   DiagnosticAddToCartEvent,
@@ -73,6 +72,7 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { getDiagnosticSearchResults } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { searchDiagnosticItem_searchDiagnosticItem_data } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticItem';
+import { DiagnosticsSearchResultItem } from './components/DiagnosticSearchResultItem';
 
 type searchResults = searchDiagnosticItem_searchDiagnosticItem_data;
 export interface SearchTestSceneProps
@@ -338,7 +338,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     const cartItemsCount = cartItems?.length + shopCartItems?.length;
     return (
       <Header
-        container={{ borderBottomWidth: 0 }}
+        container={{ borderBottomWidth: 1 }}
         leftIcon={'backArrow'}
         title={isModify ? 'MODIFY ORDERS' : 'SEARCH TESTS'}
         rightComponent={
@@ -414,14 +414,14 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
 
   const renderSearchInput = () => {
     return (
-      <View style={{ paddingHorizontal: 10, backgroundColor: theme.colors.WHITE }}>
+      <View style={styles.inputStyle}>
         <View style={{ flexDirection: 'row' }}>
           <TextInputComponent
             conatinerstyles={{ paddingBottom: 0 }}
             inputStyle={[
               styles.searchValueStyle,
               isNoTestsFound ? { borderBottomColor: '#e50000' } : {},
-              isFocus ? { borderColor: colors.APP_GREEN } : {},
+              isFocus ? { borderColor: colors.APP_GREEN, borderWidth: 2 } : {},
             ]}
             textInputprops={{
               ...(isNoTestsFound ? { selectionColor: '#e50000' } : {}),
@@ -550,7 +550,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
 
   const renderTestCard = (product: any, index: number, array: searchResults[]) => {
     return (
-      <DiagnosticsSearchSuggestionItem
+      <DiagnosticsSearchResultItem
         onPress={() => {
           CommonLogEvent(AppRoutes.SearchTestScene, 'Search suggestion Item');
           props.navigation.navigate(AppRoutes.TestDetails, {
@@ -570,6 +570,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           paddingBottom: index == diagnosticResults?.length - 1 ? 20 : 0,
         }}
         onPressRemoveFromCart={() => onRemoveCartItem(product?.diagnostic_item_id)}
+        isCircleSubscribed={isDiagnosticCircleSubscription}
+        searchedString={searchText}
       />
     );
   };
@@ -607,7 +609,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               (diagnosticResults?.length > 0 && (
                 <SectionHeaderComponent
                   sectionTitle={`Showing search results (${diagnosticResults?.length})`}
-                  style={{ marginBottom: 5 }}
+                  style={styles.sectionHeaderView}
+                  titleStyle={styles.sectionHeaderText}
                 />
               )) ||
               null
@@ -624,7 +627,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               (diagnosticResults?.length > 0 && (
                 <SectionHeaderComponent
                   sectionTitle={`Showing search results (${diagnosticResults?.length})`}
-                  style={{ marginBottom: 5 }}
+                  style={styles.sectionHeaderView}
+                  titleStyle={styles.sectionHeaderText}
                 />
               )) ||
               null
@@ -704,9 +708,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
     flex: 1,
-    backgroundColor: 'white', //theme.colors.DEFAULT_BACKGROUND_COLOR,
+    backgroundColor: theme.colors.WHITE,
   },
-  headerStyle: {},
   headerSearchInputShadow: {
     zIndex: 1,
     backgroundColor: theme.colors.WHITE,
@@ -715,6 +718,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 5,
     elevation: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
   },
   labelView: {
     position: 'absolute',
@@ -739,7 +744,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0, 0, 0, 0.1)',
     borderRadius: 5,
     width: '100%',
-    height: 48,
+    height: 50,
     paddingLeft: 10,
   },
   deliveryPinCodeContaner: {
@@ -817,4 +822,12 @@ const styles = StyleSheet.create({
     right: 10,
     alignSelf: 'center',
   },
+  sectionHeaderView: { marginBottom: 5, marginTop: 16 },
+  sectionHeaderText: {
+    color: theme.colors.SHERPA_BLUE,
+    ...theme.fonts.IBMPlexSansRegular(12),
+    opacity: 0.6,
+    letterSpacing: 0,
+  },
+  inputStyle: { paddingHorizontal: 16, backgroundColor: theme.colors.WHITE, marginTop: 16 },
 });
