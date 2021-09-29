@@ -832,7 +832,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   const getConsultationBookedEventAttributes = (time: string, id: string) => {
     const localTimeSlot = moment(new Date(time));
     let date = new Date(time);
-    const doctorClinics = (g(doctor, 'doctorHospital') || []).filter((item) => {
+    const doctorClinics = (doctor?.doctorHospital || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
         return item.facility.facilityType === 'HOSPITAL';
     });
