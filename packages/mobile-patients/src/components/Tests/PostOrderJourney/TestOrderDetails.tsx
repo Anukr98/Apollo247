@@ -92,6 +92,10 @@ import {
   getDiagnosticOrderDetailsByDisplayIDVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetailsByDisplayID';
 import { Dimensions } from 'react-native';
+
+import {
+  useDiagnosticsCart,
+} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 const DROP_DOWN_ARRAY_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
@@ -150,6 +154,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     const setY = yValue == undefined ? scrollYValue : yValue;
     scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: setY, animated: true });
   };
+  const {
+    isDiagnosticCircleSubscription,
+  } = useDiagnosticsCart();
 
   //for showing the order level status.
   const fetchOrderLevelStatus = (orderId: string) =>
@@ -275,7 +282,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     }
     if (selectedTab == string.orders.trackOrder && newList?.length > 0) {
       let latestStatus = newList?.[newList?.length - 1]?.orderStatus;
-      DiagnosticTrackOrderViewed(currentPatient, latestStatus, orderId, 'My Order');
+      DiagnosticTrackOrderViewed(currentPatient, latestStatus, orderId, 'My Order', isDiagnosticCircleSubscription);
     }
   }, [selectedTab]);
 
@@ -983,7 +990,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   function postRatingGivenWebEngageEvent(rating: string, reason: string) {
-    DiagnosticFeedbackSubmitted(currentPatient, rating, reason);
+    DiagnosticFeedbackSubmitted(currentPatient, rating, reason, isDiagnosticCircleSubscription);
   }
 
   const renderFeedbackPopup = () => {
