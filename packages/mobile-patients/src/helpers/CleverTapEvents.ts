@@ -1990,6 +1990,7 @@ export interface CleverTapEvents {
     'Secretary name': string;
     'Patient number': string;
     'Doctor number': string;
+    'Consult Mode': 'Online' | 'Physical';
   };
   [CleverTapEventName.CONSULT_FEEDBACK_GIVEN]: {
     'Doctor Name': string;
