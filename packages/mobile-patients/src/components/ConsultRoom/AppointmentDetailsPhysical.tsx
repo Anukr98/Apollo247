@@ -993,6 +993,7 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
             appointmentDateTime={data?.appointmentDateTime}
             isAppointmentStartsInFifteenMin={isAppointmentStartsInFifteenMin}
             isAppointmentExceedsTenMin={isAppointmentExceedsTenMin}
+            showNetworkTestCTA={false}
           />
         )}
         {showCancelPopup && (

@@ -8302,6 +8302,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
           closeModal={() => setShowRescheduleCancel(false)}
           appointmentDiffMin={appointmentDiffMin}
+          showNetworkTestCTA={true}
           appointmentDateTime={appointmentData?.appointmentDateTime}
           isAppointmentStartsInFifteenMin={isAppointmentStartsInFifteenMin}
           isAppointmentExceedsTenMin={isAppointmentExceedsTenMin}
