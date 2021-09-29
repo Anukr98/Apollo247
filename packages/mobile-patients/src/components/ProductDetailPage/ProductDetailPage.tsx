@@ -1097,7 +1097,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               ref={scrollViewRef}
               bounces={false}
               keyboardShouldPersistTaps="always"
-              style={{}}
               onScroll={(event) => {
                 // show bottom bar if ADD TO CART button scrolls off the screen
                 buttonRef.current &&

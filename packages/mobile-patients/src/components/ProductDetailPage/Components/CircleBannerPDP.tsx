@@ -39,10 +39,10 @@ export const CircleBannerPDP: React.FC<CircleBannerPDPProps> = (props) => {
         string.banner_context.PHARMACY_HOME
       );
       if (res) {
-        setBannerData && setBannerData(res);
+        setBannerData?.(res);
       }
     } catch (error) {
-      setBannerData && setBannerData([]);
+      setBannerData?.([]);
     }
   };
 
