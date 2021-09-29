@@ -467,8 +467,8 @@ const PharmaApiConfig = {
       pharmaTokenYXV,
     ],
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
-    MED_CART_ITEMS_DETAILS: [`${apolloProdBaseUrl}/popcscrchcart_api.php`, pharmaToken201],
-    IMAGES_BASE_URL: [`https://uat.apollopharmacy.in/pub/media`],
+    MED_CART_ITEMS_DETAILS: [`${apolloUatBaseUrl}/popcscrchcart_api.php`, pharmaToken201],
+    IMAGES_BASE_URL: [`https://newassets.apollo247.com/pub/media`],
     SPECIAL_OFFERS_IMAGES_BASE_URL: [`https://newassets.apollo247.com/pub/media`],
     COUPON_IMAGES_BASE_URL: [`https://newassets.apollo247.com`],
     GET_DELIVERY_TIME: [
@@ -480,8 +480,9 @@ const PharmaApiConfig = {
       pharmaTokenYXV,
     ],
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
-    PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/categoryproducts_api.php`, pharmaToken201],
+    PRODUCTS_BY_CATEGORY: [`${apolloProdBaseUrl}/categoryproducts_api.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
+    BOUGHT_TOGETHER: [`${apolloUatBaseUrl}/popsrchboughttogether_api.php`, pharmaToken201],
     SPECIAL_OFFERS_PAGE_WIDGETS: [
       'https://uatcms.apollo247.com/api/special-offer/getwidget',
       specialOffersWidgetApiCredentials,
@@ -540,6 +541,7 @@ const PharmaApiConfig = {
     GET_SUBSTITUTES: [`${apolloProdBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
     PRODUCTS_BY_CATEGORY: [`${apolloProdBaseUrl}/categoryproducts_api.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloProdBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
+    BOUGHT_TOGETHER: [`${apolloProdBaseUrl}/popsrchboughttogether_api.php`, pharmaToken201],
     SPECIAL_OFFERS_PAGE_WIDGETS: [
       'https://cms.apollo247.com/api/special-offer/getwidget',
       specialOffersWidgetApiCredentials,
@@ -1564,6 +1566,11 @@ export const DIAGNOSTIC_ONLINE_PAYMENT_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
 ];
+
+export const DIAGNOSTIC_EDIT_PROFILE_ARRAY = [
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
+]
 
 type SpecialitiesType = {
   [key: string]: string[];

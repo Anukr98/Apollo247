@@ -191,12 +191,13 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
             props.status == MEDICINE_ORDER_STATUS.ORDER_PLACED
               ? { ...theme.fonts.IBMPlexSansSemiBold(12) }
               : {},
-            props.status == MEDICINE_ORDER_STATUS.CANCELLED
+            props.status == MEDICINE_ORDER_STATUS.CANCELLED ||
+            props.status == MEDICINE_ORDER_STATUS.LOST
               ? { color: theme.colors.INPUT_FAILURE_TEXT }
               : {},
           ]}
         >
-          {props.statusDesc}
+          {props.statusDesc === 'Lost' ? 'Order Cancelled' : props.statusDesc}
         </Text>
         <Text numberOfLines={1} style={styles.dateTimeStyle}>
           {props.dateTime}
@@ -259,7 +260,8 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
       props.status == MEDICINE_ORDER_STATUS.RETURN_INITIATED ||
       props.status == MEDICINE_ORDER_STATUS.DELIVERED ||
       props.status == MEDICINE_ORDER_STATUS.CANCELLED ||
-      props.status == MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE;
+      props.status == MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE ||
+      props.status == MEDICINE_ORDER_STATUS.LOST;
     const title = props.isOnHold!
       ? 'ON-HOLD'
       : props.isChanged!

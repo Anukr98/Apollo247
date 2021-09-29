@@ -24,6 +24,7 @@ import {
   StarEmpty,
   ClockIcon,
   StarFillGreen,
+  EditProfile,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -32,12 +33,10 @@ import {
   DIAGNOSTIC_ORDER_FAILED_STATUS,
   DIAGNOSTIC_ORDER_FOR_PREPDATA,
   DIAGNOSTIC_SHOW_OTP_STATUS,
+  DIAGNOSTIC_STATUS_BEFORE_SUBMITTED
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
-import {
-  DiagnosticPhleboCallingClicked,
-  DiagnosticTrackPhleboClicked,
-} from '@aph/mobile-patients/src/components/Tests/Events';
+import { DiagnosticTrackPhleboClicked } from '@aph/mobile-patients/src/components/Tests/Events';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 const screenWidth = Dimensions.get('window').width;
@@ -71,8 +70,10 @@ interface OrderTestCardProps {
   isHelp?: boolean;
   orderAttributesObj?: any;
   slotDuration?: any;
+  showEditIcon?: boolean;
   onPressRatingStar: (star: number) => void;
   onPressCallOption: (name: string, number: string) => void;
+  onPressEditPatient: () => void;
 }
 
 export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
@@ -109,6 +110,15 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
             <Text style={styles.testForText}>
               Tests for {props.gender != '' && props.gender} {props.patientName}
             </Text>
+            {props.showEditIcon ? (
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={props.onPressEditPatient}
+                style={styles.editIconTouch}
+              >
+                <EditProfile style={styles.editIcon} />
+              </TouchableOpacity>
+            ) : null}
           </View>
         )}
         {props.showAddTest ? (
@@ -466,29 +476,12 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     let checkRating = starCount.includes(phleboRating);
     const ratedStarCount = starCount.slice(0, phleboRating);
     const unRatedStarCount = starCount.slice(phleboRating, starCount.length);
-    return props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED ? (
-      <View style={styles.ratingContainer}>
-        <Text style={styles.ratingTextStyle}>
-          {!!checkRating
-            ? 'You have successfully rated the Phlebo Experience'
-            : 'How was your Experience with Phlebo'}
-        </Text>
-        <View style={styles.startContainer}>
-          {!!checkRating ? (
-            <>
-              {ratedStarCount.map((item, index) => (
-                <View>
-                  <StarFillGreen style={{ margin: 5 }} />
-                </View>
-              ))}
-              {unRatedStarCount.map((item, index) => (
-                <View>
-                  <StarEmpty style={{ margin: 5 }} />
-                </View>
-              ))}
-            </>
-          ) : (
-            starCount.map((item) => (
+    return !(DIAGNOSTIC_STATUS_BEFORE_SUBMITTED.includes(props.orderLevelStatus)) ? (
+      !!checkRating ? null : (
+        <View style={styles.ratingContainerN}>
+          <Text style={styles.ratingTextStyleN}>Rate Apollo Agent</Text>
+          <View style={styles.startContainerN}>
+            {starCount.map((item) => (
               <TouchableOpacity
                 onPress={() => {
                   props.onPressRatingStar(item);
@@ -496,10 +489,10 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
               >
                 <StarEmpty style={{ margin: 5 }} />
               </TouchableOpacity>
-            ))
-          )}
+            ))}
+          </View>
         </View>
-      </View>
+      )
     ) : null;
   };
   const showReportTat = () => {
@@ -564,7 +557,8 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       onPress={props.onPressCard}
       style={[styles.containerStyle, props.style]}
       key={props?.orderId}
-    >
+    > 
+    {showRatingView()}
       <View key={props?.orderId} style={{ padding: 16, paddingBottom: 12 }}>
         {renderTopView()}
         {renderMidView()}
@@ -585,7 +579,6 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       {props.showAdditonalView || props.isCancelled ? renderAdditionalInfoView() : null}
 
       {showDetailOTPContainer()}
-      {showRatingView()}
       {showReportTat()}
     </TouchableOpacity>
   );
@@ -651,7 +644,7 @@ const styles = StyleSheet.create({
     minHeight: 40,
   },
   testForText: {
-    ...theme.viewStyles.text('SB', 13, colors.SHERPA_BLUE, 1, 18),
+    ...theme.viewStyles.text('SB', isSmallDevice ? 12 : 13, colors.SHERPA_BLUE, 1, 18),
     letterSpacing: 0.3,
   },
   yellowText: { ...theme.viewStyles.yellowTextStyle, fontSize: screenWidth > 380 ? 13 : 12 },
@@ -786,6 +779,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     margin: 5,
   },
+  ratingContainerN: {
+    backgroundColor: '#F0FFFD',
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+    borderRadius: 10,
+    padding: 10,
+    paddingHorizontal: 15,
+    flexDirection: 'row',
+    justifyContent:'space-between',
+    alignItems:'center'
+  },
+  reporttatContainerN: {
+    marginVertical: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  startContainerN: {
+    flexDirection: 'row',
+    marginHorizontal: 10,
+  },
+  ratingTextStyleN: {
+    ...theme.viewStyles.text('SB', 14, colors.SHERPA_BLUE, 1, 16),
+  },
   reportTextStyle: {
     marginHorizontal: 10,
     ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 1, 16),
@@ -797,7 +813,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  patientNameView: { width: '65%', justifyContent: 'center' },
+  patientNameView: {
+    width: '65%',
+    justifyContent: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   newItemView: {
     backgroundColor: '#4CAF50',
     height: 18,
@@ -825,4 +846,11 @@ const styles = StyleSheet.create({
     maxWidth: '60%',
   },
   vaccinationText: { ...theme.viewStyles.text('M', 12, colors.WHITE, 1, 15) },
+  editIconTouch: {
+    marginHorizontal: 8,
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+  },
+  editIcon: { height: 16, width: 16, resizeMode: 'contain' },
 });

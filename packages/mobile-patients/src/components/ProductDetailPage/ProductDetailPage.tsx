@@ -62,6 +62,8 @@ import {
   getDeliveryTAT247,
   TatApiInput247,
   getMedicineDetailsApiV2,
+  MedicineProduct,
+  getBoughtTogether,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
@@ -103,6 +105,7 @@ import {
   pharmaSubstitution_pharmaSubstitution_substitutes,
 } from '@aph/mobile-patients/src/graphql/types/pharmaSubstitution';
 import { SuggestedQuantityNudge } from '@aph/mobile-patients/src/components/SuggestedQuantityNudge/SuggestedQuantityNudge';
+import { FrequentlyBoughtTogether } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/FrequentlyBoughtTogether';
 import { postPharmacyAddNewAddressCompleted } from '../../helpers/webEngageEventHelpers';
 
 export type ProductPageViewedEventProps = Pick<
@@ -207,6 +210,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const [shownNudgeOnce, setShownNudgeOnce] = useState<boolean>(false);
   const [currentProductIdInCart, setCurrentProductIdInCart] = useState<string>(null);
   const [currentProductQuantityInCart, setCurrentProductQuantityInCart] = useState<number>(0);
+  const [boughtTogether, setBoughtTogether] = useState<MedicineProduct[]>([]);
 
   const { special_price, price, type_id, subcategory } = medicineDetails;
   const finalPrice = price - special_price ? special_price : price;
@@ -250,7 +254,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (sku && movedFrom === ProductPageViewedSource.DEEP_LINK) {
+    if (
+      sku &&
+      (movedFrom === ProductPageViewedSource.DEEP_LINK ||
+        movedFrom == ProductPageViewedSource.MULTI_VARIANT)
+    ) {
       fetchDeliveryTime(pincode, false);
     }
   }, [sku]);
@@ -359,6 +367,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           if (productDetails) {
             setSku(productDetails?.sku);
             setMedicineData(productDetails);
+            getBoughtTogetherData(productDetails?.sku, productDetails);
           } else if (data && data.message) {
             setMedicineError(data.message);
           }
@@ -415,6 +424,43 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         };
       });
       setMultiVariantSkuInformation(skusInformation);
+    }
+  };
+
+  const getBoughtTogetherData = (productSku: string, productDetails) => {
+    const mainProduct = {
+      id: productDetails.id,
+      sku: productDetails.sku,
+      price: productDetails.price,
+      special_price: productDetails?.special_price,
+      name: productDetails.name,
+      status: productDetails?.status,
+      type_id: productDetails?.type_id,
+      url_key: productDetails?.url_key,
+      is_in_stock: productDetails?.is_in_stock,
+      MaxOrderQty: productDetails.MaxOrderQty,
+      sell_online: productDetails?.sell_online,
+      image: productDetails?.image?.[0],
+      thumbnail: productDetails?.thumbnail,
+      small_image: productDetails?.small_image,
+      mou: productDetails?.mou,
+      is_prescription_required: productDetails?.is_prescription_required,
+      is_express: productDetails?.is_express,
+      dc_availability: productDetails?.dc_availability,
+      is_in_contract: productDetails?.is_in_contract,
+      banned: productDetails?.banned,
+      subcategory_discount: productDetails?.subcategory_discount,
+    };
+    if (!!productSku) {
+      getBoughtTogether(productSku)
+        .then(({ data }) => {
+          const boughtTogetherProducts = data?.bought_together;
+          boughtTogetherProducts.unshift(mainProduct);
+          setBoughtTogether(boughtTogetherProducts);
+        })
+        .catch(({ error }) => {
+          CommonBugFender('ProductDetails_fetchBoughtTogether', error);
+        });
     }
   };
 
@@ -618,14 +664,49 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         'Circle Cashback': Number(cashback) || 0,
         'Sub category': subcategory || '',
       };
+
+      let appsFlyerEvents = {
+        af_country: "India",
+        source: movedFrom,
+        af_content_id: sku?.toUpperCase(),
+        af_content: name,
+        Stockavailability: stock_availability,
+        ...productPageViewedEventProps,
+        ...pharmacyCircleAttributes,
+        User_Type: userType,
+        Pincode: pincode,
+        serviceable: notServiceable ? 'No' : 'Yes',
+        TATDay: deliveryTime ? moment(deliveryTime).diff(moment(), 'days') : null,
+        TatHour: deliveryTime ? moment(deliveryTime).diff(moment(), 'hours') : null,
+        TatDateTime: deliveryTime,
+        ProductType: type_id,
+        MaxOrderQuantity: MaxOrderQty,
+        af_price: special_price || null,
+        CircleCashback: cashback,
+        isMultiVariant: multiVariantAttributes.length ? 1 : 0,
+        af_currency: "INR",
+        af_content_type: "Product Page"
+      }
+
       if (movedFrom === 'deeplink') {
         eventAttributes['Circle Membership Added'] = circleID
           ? 'Existing'
           : !!circleMembershipCharges
           ? 'Yes'
           : 'No';
+        appsFlyerEvents['Circle Membership Added'] = circleID
+          ? 'Existing'
+          : !!circleMembershipCharges
+          ? 'Yes'
+          : 'No';
         eventAttributes['CategoryID'] = category_id;
-        cleverTapEventAttributes['Circle member'] = circleID
+        appsFlyerEvents['CategoryID'] = category_id;
+        cleverTapEventAttributes['Circle Member'] = circleID
+          ? 'Existing'
+          : !!circleMembershipCharges
+          ? 'Added'
+          : 'Not Added';
+        cleverTapEventAttributes['Circle Member'] = circleID
           ? 'Existing'
           : !!circleMembershipCharges
           ? 'Added'
@@ -633,7 +714,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       }
       postCleverTapEvent(CleverTapEventName.PHARMACY_PRODUCT_PAGE_VIEWED, cleverTapEventAttributes);
       postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
-      postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
+      postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, appsFlyerEvents);
       postFirebaseEvent(FirebaseEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
     }
   };
@@ -938,7 +1019,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       pharmacyCircleAttributes!
     );
     let id = currentPatient && currentPatient.id ? currentPatient.id : '';
-    postAppsFlyerAddToCartEvent(medicineDetails, id, pharmacyCircleAttributes!);
+    postAppsFlyerAddToCartEvent(medicineDetails, id, pharmacyCircleAttributes!, medicineDetails.id);
   };
 
   const renderBottomButton = () => {
@@ -1147,6 +1228,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 isPrescriptionRequired={medicineDetails?.is_prescription_required == 1}
                 navigation={props.navigation}
                 sku={medicineDetails?.sku}
+                merchandising={medicineDetails?.merchandising}
               />
               <ProductPriceDelivery
                 price={medicineDetails?.price}
@@ -1214,6 +1296,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   setShowSubstituteInfo={setShowSubstituteInfo}
                 />
               )}
+              {!!medicineDetails.is_in_stock &&
+                medicineDetails.is_in_stock === 1 &&
+                !!boughtTogether &&
+                boughtTogether.length > 0 && (
+                  <FrequentlyBoughtTogether
+                    boughtTogetherArray={boughtTogether}
+                    setShowAddedToCart={setShowAddedToCart}
+                  />
+                )}
               <ProductInfo
                 name={medicineDetails?.name}
                 description={medicineDetails?.product_information}

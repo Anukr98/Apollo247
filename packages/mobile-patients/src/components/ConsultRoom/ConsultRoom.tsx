@@ -995,7 +995,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     });
 
     AsyncStorage.getItem('VaccinationSubscriptionInclusionId').then((data) => {
-      setVaccinationSubscriptionInclusionId(data);
+      if (data) {
+        setVaccinationSubscriptionInclusionId(data);
+      }
     });
   };
 
@@ -1837,6 +1839,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const setSubscriptionData = (plan: any, isUpgradePlan?: boolean, isCorporatePlan?: boolean) => {
+
     try {
       const group = plan.group;
       const groupData: GroupPlan = {
@@ -3606,6 +3609,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     };
     postHomeWEGEvent(WebEngageEventName.COVID_VACCINATION_SECTION_CLICKED, undefined, attibutes);
 
+    console.log(
+      'check  ConsultRoom  handleCovidCTA vaccinationSubscriptionInclusionId ---',
+      vaccinationSubscriptionInclusionId
+    );
+
     try {
       if (item?.action === string.vaccineBooking.CORPORATE_VACCINATION) {
         postVaccineWidgetEvents(CleverTapEventName.VACCINATION_BOOK_SLOT_CLICKED);
@@ -3624,6 +3632,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             } else {
               props.navigation.navigate(AppRoutes.VaccineTermsAndConditions, {
                 isCorporateSubscription: !!corporateSubscriptions?.length,
+                cmsIdentifier: vaccinationCmsIdentifier || '',
+                subscriptionId: vaccinationSubscriptionId || '',
+                subscriptionInclusionId: vaccinationSubscriptionInclusionId || '',
+                isVaccineSubscription: !!vaccinationCmsIdentifier,
               });
             }
           } else {
@@ -3640,7 +3652,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           props.navigation.navigate(AppRoutes.BookedVaccineScreen, {
             cmsIdentifier: vaccinationCmsIdentifier || '',
             subscriptionId: vaccinationSubscriptionId || '',
-            subscriptionInclusionId: vaccinationSubscriptionId || '',
+            subscriptionInclusionId: vaccinationSubscriptionInclusionId || '',
             isVaccineSubscription: !!vaccinationCmsIdentifier,
             isCorporateSubscription: !!corporateSubscriptions?.length,
           });

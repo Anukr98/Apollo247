@@ -577,9 +577,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.LOST
     ) {
       capsuleText =
-        orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED
-          ? 'Cancelled'
-          : orderDetails.currentStatus == MEDICINE_ORDER_STATUS.LOST
+        orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED || MEDICINE_ORDER_STATUS.LOST
           ? 'Cancelled'
           : 'Failed';
       capsuleTextColor = '#FFF';
@@ -732,8 +730,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
             item!.orderStatus == MEDICINE_ORDER_STATUS.PAYMENT_FAILED ||
             item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_FAILED ||
-            item!.orderStatus == MEDICINE_ORDER_STATUS.ITEMS_RETURNED ||
-            item!.orderStatus == MEDICINE_ORDER_STATUS.LOST
+            item!.orderStatus == MEDICINE_ORDER_STATUS.ITEMS_RETURNED
         ) && (
           <View
             style={{
@@ -770,8 +767,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                         ? getFormattedDate(isDelivered.statusDate)
                         : orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD
                         ? orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER
-                          ? 'To be Updated'
-                          : 'Awaited' //do it bold
+                          ? 'Will be updated soon'
+                          : 'Will be updated soon' //do it bold
                         : tatInfo
                         ? orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER &&
                           orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED &&
@@ -785,8 +782,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                   </View>
                   <View style={{ flexDirection: 'row', width: showBadge ? '82%' : '90%' }}>
                     <Text style={styles.deliverySubText}>
-                      {orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER &&
-                      orderDetails.oldOrderTat!
+                      {orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD
+                        ? ''
+                        : orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER &&
+                          orderDetails.oldOrderTat!
                         ? diffInTat > 1
                           ? `Delivery date extended by ${diffInTat} days.`
                           : diffInTat == 1
@@ -831,7 +830,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
 
     const colorOfBadge =
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD
-        ? theme.colors.INPUT_FAILURE_TEXT
+        ? '#FC9916'
         : isExpectedDateChanged
         ? 'rgb(230,130,49)'
         : '#00b38e';
@@ -862,7 +861,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                     orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD
                     ? 30
                     : 40
-                  : 20,
+                  : 15,
               backgroundColor: colorOfBadge,
             }}
           >
@@ -959,13 +958,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               ? ['', '']
               : [
                   'Verification Pending: ',
-                  'Your order is being verified by our pharmacists. Our pharmacists might be required to call you for order verification.',
+                  'Your order is being verified by our pharmacists. We might call you for confirming the details.',
                 ]
             : !isOrderRequirePrescription
             ? ['', '']
             : [
                 'Verification Pending: ',
-                'Your order is being verified by our pharmacists. Our pharmacists might be required to call you for order verification.',
+                'Your order is being verified by our pharmacists. We might call you for confirming the details.',
               ],
         [MEDICINE_ORDER_STATUS.ORDER_VERIFIED]:
           orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER && isCartItemsUpdated
@@ -1053,7 +1052,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         ],
         [MEDICINE_ORDER_STATUS.LOST]: [
           '',
-          `Dear customer, our sincere apologies. Your order #${orderDetails.orderAutoId} had to be cancelled due to operational reasons. Kindly order again and we will make sure it gets fulfilled.`,
+          `Dear customer, our sincere apologies. Your order #${orderDetails.orderAutoId} had to be cancelled due to operational reasons. Kindly order again and we will make sure it gets fulfilled`,
         ],
       };
 
@@ -1096,8 +1095,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     if (
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.RETURN_INITIATED ||
-      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.RETURN_ACCEPTED ||
-      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.LOST
+      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.RETURN_ACCEPTED
     ) {
       statusList = orderStatusList
         .filter(
@@ -2174,6 +2172,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       sourcePage: 'Order Details',
       refund: refundDetails,
       payment: paymentDetails,
+      etd: getFormattedDateTimeWithBefore(order.orderTat),
     });
   };
 
@@ -2182,9 +2181,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       orderCancel?.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
       orderDetails?.currentStatus == MEDICINE_ORDER_STATUS.RETURN_INITIATED ||
       orderDetails?.currentStatus == MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE ||
-      orderDetails?.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD ||
       orderDetails?.currentStatus == MEDICINE_ORDER_STATUS.LOST;
-
     return (
       !!showReOrder && (
         <View>

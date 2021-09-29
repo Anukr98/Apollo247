@@ -156,6 +156,35 @@ export enum CleverTapEventName {
   PHARMACY_PRESCRIPTION_OPTION_CLICKED = 'Pharmacy Prescription Option Clicked',
   PHARMACY_APPLY_COUPON_CLICKED = 'Pharmacy Apply Coupon Clicked',
 
+  // Help Section Events
+  BACK_NAV_ON_NEED_HELP_CLICKED= 'Back Nav On Need Help Clicked',
+  VIEW_PREVIOUS_TICKETS_CTA_ON_NEED_HELP= 'View Previous Tickets CTA On Need Help Clicked',
+  LATEST_CS_TICKETS_ON_NEED_HELP= 'Latest CS Ticket On Need Help Clicked',
+  EDIT_EMAIL_ADDRESS_ON_NEED_HELP= 'Edit Email Address On Need Help Clicked',
+  BU_MODULE_TILE_ON_NEED_HELP= 'BU/Module Tile On Need Help Clicked',
+  NEED_HELP_SCROLLED= 'Need Help Screen Scrolled',
+  BACK_NAV_ON_C1= 'Back Nav On C1 Help Clicked',
+  ORDER_NAV_ON_C1_HELP= 'Order Nav On C1 Help Clicked',
+  ORDER_REL_ISSUES_ON_C1_HELP= 'Order Rel Issues On C1 Help Clicked',
+  CANCEL_ON_C1_HELP= 'Cancel On C1 Help Clicked',
+  PREV_ORDERS_TILE_ON_C1_HELP= 'Prev Orders Tile On C1 Help Clicked',
+  NON_ORDER_ISSUES_ON_C1_HELP= 'Non Order Issues On C1 Help Clicked',
+  DETAILS_INPUTBOX_ON_C1_HELP= 'Details Inputbox On C1 Help Clicked',
+  SUBMIT_CTA_ON_C1_HELP= 'Submit CTA On C1 Help Clicked',
+  TICKET_ACKNOWLEDGEMENT_ON_C1_HELP_DISPLAYED= 'Ticket Acknowledgement On C1 Help Displayed',
+  C1_HELP_SCREEN_SCROLLED= 'C1 Help Screen Scrolled',
+  BACK_NAV_ON_C2_HELP= 'Back Nav On C2 Help Clicked',
+  DETAILS_INPUT_ON_C2_HELP= 'Details Inputbox On C2 Help Clicked',
+  SUBMIT_CTA_ON_C2_HELP= 'Submit CTA On C2 Help Clicked',
+  TICKET_ACKNOWLEDGEMENT_ON_C2_HELP_DISPLAYED= 'Ticket Acknowledgement On C2 Help Displayed',
+  CHAT_INPUTBOX_ON_TICKET_CHAT= 'Chat Inputbox On Ticket Chat Clicked',
+  SEND_BUTTON_ON_TICKET_CHAT_CLICKED= 'Send Button On Ticket Chat Clicked',
+  REOPEN_CTA_ON_TICKET_CHAT= 'Reopen CTA on Ticket Chat Clicked',
+  TICKET_ACKNOWLEDGEMENT_ON_CHAT_DISPLAYED= 'Ticket Acknowledgement Ticket Chat Displayed',
+  TICKET_CHAT_SCREEN_SCROLLED= 'Ticket Chat Screen Scrolled',
+  CS_TICKET_ON_PREVIOUS_TICKETS= 'CS Ticket On Prev Tickets Clicked',
+  PREVIOUS_TICKET_SCREEN_SCROLLED= 'Prev Tickets Screen Scrolled',
+
   // Diagnostics Events
   DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
   DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'Diagnostic pincode entered',
@@ -193,6 +222,9 @@ export enum CleverTapEventName {
   DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED = 'Diagnostic product listing page viewed',
   DIAGNOSTIC_PRESCRIPTION_SUBMITTED = 'Diagnostic prescription submitted',
 
+  // Network Test
+  PRE_CALL_TEST= 'Pre Call Test Completed',
+
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
   MEDICAL_RECORDS = 'PHR Medical Records',
@@ -210,6 +242,13 @@ export enum CleverTapEventName {
   PHR_CLICK_INSURANCES = 'PHR Click Insurances',
   PHR_ADD_DOCTOR_CONSULTATIONS = 'PHR Add Doctor Consultation',
   PHR_ADD_TEST_REPORT = 'PHR Add Test Report',
+  PHR_ADD_VACCINATION_REPORT = 'PHR Add Vaccination Report',
+  PHR_DELETE_VACCINATION_REPORT = 'PHR Delete Vaccination Report',
+  PHR_UPDATE_VACCINATION_REPORT = 'PHR Update Vaccination Report',
+  PHR_DOWNLOAD_VACCINATION_REPORT = 'PHR Download Vaccination Report',
+  PHR_BAR_CHART_VISUALISATION = 'PHR Bar Chart Visualisation',
+  PHR_REAL_TIME_LAB_TEST_REPORT = 'PHR Real Time Lab Test Reports',
+  PHR_SHARE_REAL_LAB_TEST_REPORT = 'PHR Share Real Time Lab Test Reports',
   PHR_ADD_HOSPITALIZATIONS = 'PHR Add Hospitalization',
   PHR_ADD_ALLERGY = 'PHR Add Allergy',
   PHR_ADD_FAMILY_HISTORY = 'PHR Add Family History',
@@ -836,7 +875,6 @@ export interface DoctorFilterClick {
   filtersApplied: string;
   'Filter Value': string;
 }
-
 export interface FollowUpAppointment {
   'Customer ID': string;
   patientName: string;
@@ -1066,6 +1104,20 @@ export interface CleverTapEvents {
     'Screen Name': 'Payment Confirmation Screen' | 'Home Screen' | 'Appointment Screen';
     Camera?: boolean;
     Microphone?: boolean;
+  };
+
+  // ********** Network Test ********** \\
+  [CleverTapEventName.PRE_CALL_TEST]: {
+    'Device Details': string;
+    'Test Result': string;
+    'Patient Name': string;
+    'Patient Number': string;
+    'Doctor Name': string;
+    'Doctor Number': string;
+    'Consult ID': string;
+    'Consult Display ID': string | number;
+    'Doctor Type': string;
+    'Doctor Speciality': string;
   };
 
   // *********** Delayed Reminder Event ******* \\
@@ -1525,9 +1577,11 @@ export interface CleverTapEvents {
     type?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
-    Amount: number;
+    'Order Amount': number;
     LOB: string;
     type?: string;
+    'Order id'?: string;
+    'Payment mode'?: string
   };
   [CleverTapEventName.CONSULT_PAYMENT_INITIATED]: {
     Amount: number;

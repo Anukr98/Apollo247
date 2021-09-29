@@ -1,7 +1,6 @@
 import Axios, { AxiosResponse, Canceler } from 'axios';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { getTagalysConfig, Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
-import { string } from '../strings/string';
 
 export interface MedicineProduct {
   category_id?: string;
@@ -635,6 +634,11 @@ export interface SpecialOffersBrandsProductsApiResponse {
   search_heading: string;
 }
 
+export interface BoughtTogetherResponse {
+  bought_together: MedicineProduct[];
+  product_count: number;
+}
+
 
 
 const config = AppConfig.Configuration;
@@ -973,6 +977,22 @@ export const getSpecialOffersPageBrandsProducts = (activeBrand: string, discount
   );
 };
 
+export const getBoughtTogether = (
+  productSku: string,
+): Promise<AxiosResponse<BoughtTogetherResponse>> => {
+  const url = `${config.BOUGHT_TOGETHER[0]}`;
+  return Axios.post(url,
+    {
+      params: productSku,
+    },
+    {
+      headers: {
+        Authorization: config.BOUGHT_TOGETHER[1],
+      },
+    }
+  );
+};
+
 const googlePlacesApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 
 export const getPlaceInfoByPincode = (
@@ -1279,19 +1299,6 @@ export const getLandingPageBanners = (
   });
 };
 
-export const getDiagnosticsSearchResults = (
-  pageName: string,
-  keyword: string,
-  cityId: number
-): Promise<AxiosResponse<any>> => {
-  const baseurl = config.DRUPAL_CONFIG[0];
-  const getSearchResults = `${baseurl}/${pageName}/item-search?keyword=${keyword}&city=${cityId}`;
-  return Axios.get(getSearchResults, {
-    headers: {
-      Authorization: config.DRUPAL_CONFIG[1],
-    },
-  });
-};
 export const getDiagnosticsPopularResults = (
   pageName: string,
   cityId: number
