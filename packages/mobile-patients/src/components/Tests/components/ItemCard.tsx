@@ -315,7 +315,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     //1. circle sub + promote -> packageMrp/price
     //2. non-circle + circle -> no slashing
     return (
-      <View style={{ flexDirection: 'row', marginVertical: '5%' }}>
+      <View style={{ flexDirection: 'row', marginVertical: priceToShow ? '5%' : '1%' }}>
         {priceToShow ? (
           <Text style={styles.mainPriceText}>
             {`${string.common.Rs}${convertNumberToDecimal(priceToShow)}`}

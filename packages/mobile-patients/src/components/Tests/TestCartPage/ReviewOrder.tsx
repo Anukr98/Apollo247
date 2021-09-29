@@ -1330,7 +1330,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     if (prescriptions.length == 0 && ePrescriptions.length == 0) {
       bookDiagnosticOrder();
     } else {
-      //prescription function
+      bookDiagnosticOrder();
     }
   };
 

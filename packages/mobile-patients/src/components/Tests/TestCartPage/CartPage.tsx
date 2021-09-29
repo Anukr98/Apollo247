@@ -247,6 +247,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           },
         ],
       });
+    } else if (isCartPresent?.length == 0) {
+      props.navigation.navigate('TESTS', { focusSearch: true });
     } else {
       props.navigation.goBack();
     }
