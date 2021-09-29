@@ -1034,6 +1034,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Disincentivize_COD_Message',
       PROD: 'Disincentivize_COD_Message',
     },
+    Enable_Cred_WebView_Flow: {
+      QA: 'QA_Enable_Cred_WebView_Flow',
+      PROD: 'Enable_Cred_WebView_Flow',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1286,6 +1290,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'Diagnostics_Help_NonOrder_Queries',
         'Diagnostics_Help_NonOrder_Queries',
         (key) => config.getString(key)
+      );
+      setAppConfig('Enable_Cred_WebView_Flow', 'enableCredWebView', (key) =>
+        config.getBoolean(key)
       );
 
       const nudgeMessagePharmacyHome = getRemoteConfigValue(
