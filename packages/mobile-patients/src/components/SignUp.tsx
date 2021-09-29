@@ -8,7 +8,7 @@ import {
   Mascot,
   WhiteTickIcon,
   BackArrow,
-  WhatsApp,
+  WhatsAppIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -151,6 +151,11 @@ const styles = StyleSheet.create({
     width: "90%",
     flexDirection: "row",
     alignItems: "center"
+  },
+  whatsAppIcon: {
+    height: 22,
+    width: 22,
+    resizeMode: "contain",
   }
 });
 
@@ -498,7 +503,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
               <Text style = {{ marginLeft: -10 }}>Send me personalised health tips and offers on</Text>
             </View>
             <View style = {{ width: "10%" }}>
-              <WhatsApp />
+              <WhatsAppIcon style = {styles.whatsAppIcon} />
             </View>
           </View>
           {showReferralCode && renderReferral()}

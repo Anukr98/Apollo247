@@ -29,8 +29,6 @@ export const ArrowDisabled: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/ic_arrow_disabled.webp')} />
 );
 
-export const WhatsApp: React.FC<IconProps> = props => <IconBase size = "sm" source = {require("./icons/whatsapp_4x.webp")} {...props} />
-
 export const ArrowYellow: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/ic_arrow_yellow.webp')} />
 );
