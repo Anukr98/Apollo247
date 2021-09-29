@@ -223,7 +223,6 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
         fetchPolicy: 'no-cache',
         variables: query,
       });
-      console.log({ res });
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
       if (isEmptyObject(data)) {
         setCirclePlanDetails({});

@@ -722,7 +722,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderPayByCash = () => {
-    return (
+    return !isDiagnosticModify ? (
       <PayByCash
         businessLine={businessLine}
         HCselected={HCSelected}
@@ -733,7 +733,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         pharmaDisincentivizeCodMessage={paymentCodMessage}
         areNonCodSkus={areNonCODSkus}
       />
-    );
+    ) : null;
   };
 
   const showTxnFailurePopUP = () => {

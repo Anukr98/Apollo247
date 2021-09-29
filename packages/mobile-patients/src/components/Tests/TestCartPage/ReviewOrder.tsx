@@ -1118,7 +1118,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           {renderPrices('To Pay', toPayPrice?.toFixed(2), true)}
         </View>
         {anyCartSaving > 0 && renderCartSavingBanner()}
-        {isCircleAddedToCart && circleSaving > 0 && renderAddtionalCircleSavingBanner(toPayPrice)}
+        {!isDiagnosticCircleSubscription &&
+          hideCirclePurchaseInModify &&
+          isCircleAddedToCart &&
+          circleSaving > 0 &&
+          renderAddtionalCircleSavingBanner(toPayPrice)}
       </>
     );
   };
