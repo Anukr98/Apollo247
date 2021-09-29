@@ -654,6 +654,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
             updateCartItem?.(updatedObject);
             updatePatientCartItem?.(updatedObject);
+            updateCartItemsLocally(updatedObject);
             isModifyFlow && updateModifiedPatientCartItem?.(updatedObject);
           }
           setLoading?.(false);
@@ -676,6 +677,31 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     }
     !!isNavigate && isNavigate && _navigateToNextScreen();
   };
+
+  function updateCartItemsLocally(updatedItems: DiagnosticsCartItem) {
+    const foundIndex = cartItems?.findIndex((item) => item?.id == updatedItems?.id);
+    if (foundIndex !== -1) {
+      cartItems[foundIndex] = { ...cartItems[foundIndex], ...updatedItems };
+      setCartItems?.([...cartItems]);
+    }
+
+    const newPatientCartItem = patientCartItems?.map((patientItems: DiagnosticPatientCartItem) => {
+      const findLineItemsIndex = patientItems?.cartItems?.findIndex(
+        (lineItems: DiagnosticsCartItem) => lineItems?.id === updatedItems?.id
+      );
+      if (findLineItemsIndex !== -1) {
+        patientItems.cartItems[findLineItemsIndex] = updatedItems;
+        const patientLineItemObj: DiagnosticPatientCartItem = {
+          patientId: patientItems?.patientId,
+          cartItems: patientItems?.cartItems,
+        };
+        return patientLineItemObj;
+      } else {
+        return patientItems;
+      }
+    });
+    setPatientCartItems?.([...newPatientCartItem!]);
+  }
 
   async function getAddressServiceability(navigate?: boolean) {
     //check in case of modify

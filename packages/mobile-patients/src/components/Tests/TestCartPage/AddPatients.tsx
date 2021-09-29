@@ -81,6 +81,7 @@ import { DiagnosticPatientSelected } from '@aph/mobile-patients/src/components/T
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { findDiagnosticSettings } from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
+import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 const screenHeight = Dimensions.get('window').height;
 const { SHERPA_BLUE, WHITE, APP_GREEN } = theme.colors;
@@ -443,6 +444,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
           } else {
             cartPriceToCompare = Number(cartItem?.specialPrice || cartItem?.price);
           }
+
           if (priceToCompare !== cartPriceToCompare) {
             //mrp
             //show the prices changed pop-over
@@ -468,10 +470,11 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
                   : results?.[isItemInCart]?.inclusions,
               isSelected:
                 cartItem?.isSelected || AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+              collectionMethod: TEST_COLLECTION_TYPE.HC,
             };
             updateCartItem?.(updatedItems);
             updatePatientCartItem?.(updatedItems);
-
+            updateCartItemsLocally(updatedItems);
             setLoading?.(false);
           }
         }
@@ -491,6 +494,31 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       }
     }
   };
+
+  function updateCartItemsLocally(updatedItems: DiagnosticsCartItem) {
+    const foundIndex = cartItems?.findIndex((item) => item?.id == updatedItems?.id);
+    if (foundIndex !== -1) {
+      cartItems[foundIndex] = { ...cartItems[foundIndex], ...updatedItems };
+      setCartItems?.([...cartItems]);
+    }
+
+    const newPatientCartItem = patientCartItems?.map((patientItems: DiagnosticPatientCartItem) => {
+      const findLineItemsIndex = patientItems?.cartItems?.findIndex(
+        (lineItems: DiagnosticsCartItem) => lineItems?.id === updatedItems?.id
+      );
+      if (findLineItemsIndex !== -1) {
+        patientItems.cartItems[findLineItemsIndex] = updatedItems;
+        const patientLineItemObj: DiagnosticPatientCartItem = {
+          patientId: patientItems?.patientId,
+          cartItems: patientItems?.cartItems,
+        };
+        return patientLineItemObj;
+      } else {
+        return patientItems;
+      }
+    });
+    setPatientCartItems?.([...newPatientCartItem!]);
+  }
 
   async function getAddressServiceability() {
     //whatever is there on homepage -> in diagnosticLocation
