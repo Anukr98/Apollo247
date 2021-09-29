@@ -530,11 +530,11 @@ const getConsiderDate = (type: string, dataObject: any) => {
     case 'lab-results':
       return dataObject?.data?.date;
     case 'hospitalizations':
-      return dataObject?.date;
+      return dataObject?.data?.date;
     case 'insurance':
-      return dataObject?.startDateTime;
+      return dataObject?.data?.startDateTime;
     case 'bills':
-      return dataObject?.billDateTime;
+      return dataObject?.data?.billDateTime;
     case 'health-conditions':
       return dataObject?.startDateTime || dataObject?.recordDateTime;
     case 'immunization':

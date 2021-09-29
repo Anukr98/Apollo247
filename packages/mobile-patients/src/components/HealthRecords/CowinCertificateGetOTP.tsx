@@ -226,6 +226,7 @@ export const CowinCertificateGetOTP: React.FC<CowinCertificateGetOTPProps> = (pr
   };
 
   const getBeneficiaryID = (token: any) => {
+    setshowSpinner(true);
     if (enterOTP) {
       apolloVaccineClient
         .query<GetCowinBeneficiary>({

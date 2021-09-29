@@ -39,6 +39,7 @@ import {
   postCleverTapIfNewSession,
   removeObjectProperty,
   postCleverTapEvent,
+  phrSortByDate,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -301,7 +302,11 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
           'medicalBills',
           'response'
         );
-        setMedicalBillsMainData(phrSortWithDate(medicalBills));
+        let mergeArray: { type: string; data: any }[] = [];
+        medicalBills?.forEach((c: any) => {
+          mergeArray.push({ type: 'bills', data: c });
+        });
+        setMedicalBillsMainData(phrSortByDate(mergeArray));
         setShowSpinner(false);
       })
       .catch((error) => {
@@ -402,16 +407,17 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
     });
   };
 
-  const renderMedicalBillItems = (item: MedicalBillsType, index: number) => {
-    const prescriptionName = item?.hospitalName || '';
-    const dateText = getPrescriptionDate(item?.billDateTime);
-    const soureName = getSourceName(item?.source!) || '-';
+  const renderMedicalBillItems = (item: any, index: number) => {
+    const prescriptionName = item?.data?.hospitalName || '';
+    const dateText = getPrescriptionDate(item?.data?.billDateTime);
+    const soureName = getSourceName(item?.data?.source!) || '-';
     const selfUpload = true;
     const showEditDeleteOption =
       soureName === string.common.clicnical_document_text || soureName === '-' ? true : false;
+    const realItem = item?.data;
     return (
       <HealthRecordCard
-        item={item}
+        item={realItem}
         index={index}
         editDeleteData={editDeleteData(MedicalRecordType.MEDICALBILL)}
         showUpdateDeleteOption={showEditDeleteOption}
