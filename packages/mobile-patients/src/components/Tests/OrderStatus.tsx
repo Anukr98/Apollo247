@@ -570,26 +570,31 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
           {!!lineItemsLength &&
             lineItemsLength > 0 &&
             (showMoreArray?.includes(displayId) ? null : (
-              <View
-                style={[
-                  styles.itemsView,
-                  {
-                    flexDirection: 'row',
-                    maxWidth: !!lineItems?.[0]?.editOrderID ? (width > 350 ? '68%' : '57%') : '75%',
-                    flex: 1,
-                  },
-                ]}
-              >
-                <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
-                <Text style={[styles.testName]}>
-                  {nameFormater(lineItems?.[0]?.itemName, 'title')}
-                </Text>
-                {!!lineItems?.[0]?.editOrderID ? renderNewTag() : null}
-                {remainingItems > 0 && (
-                  <TouchableOpacity onPress={() => _onPressMore(order)} style={{ marginLeft: 2 }}>
-                    <Text style={styles.moreText}>+ {remainingItems} MORE</Text>
-                  </TouchableOpacity>
-                )}
+              <View style={styles.itemsView}>
+                <View
+                  style={[
+                    {
+                      flexDirection: 'row',
+                      maxWidth: !!lineItems?.[0]?.editOrderID
+                        ? width > 350
+                          ? '68%'
+                          : '57%'
+                        : '75%',
+                      flex: 1,
+                    },
+                  ]}
+                >
+                  <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
+                  <Text style={[styles.testName]}>
+                    {nameFormater(lineItems?.[0]?.itemName, 'title')}
+                  </Text>
+                  {!!lineItems?.[0]?.editOrderID ? renderNewTag() : null}
+                  {remainingItems > 0 && (
+                    <TouchableOpacity onPress={() => _onPressMore(order)} style={{ marginLeft: 2 }}>
+                      <Text style={styles.moreText}>+ {remainingItems} MORE</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
               </View>
             ))}
           {showMoreArray?.includes(displayId) && renderMore(order, lineItems)}
