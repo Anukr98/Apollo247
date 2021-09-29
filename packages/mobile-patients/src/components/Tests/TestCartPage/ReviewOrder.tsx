@@ -298,7 +298,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
   useEffect(() => {
     isDiagnosticCircleSubscription
-      ? null
+      ? setIsCircleAddedToCart?.(false)
       : setIsCircleAddedToCart?.(
           hideCirclePurchaseInModify
             ? false
@@ -769,7 +769,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
               <View style={{ flexDirection: 'row', marginTop: 3 }}>
                 <CircleLogo style={styles.savingCircleIcon} />
                 <Text style={styles.savingTextStyle}>
-                  Savings{string.common.Rs}
+                  Savings {string.common.Rs}
                   {savingAmount}
                 </Text>
               </View>
@@ -1056,17 +1056,20 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
                   style={[
                     styles.blueTextStyle,
                     {
-                      textDecorationLine:
-                        isModifyFlow &&
-                        modifiedOrder?.collectionCharges > 0 &&
-                        hcCharges === 0 &&
-                        cartItems?.length > 0
-                          ? 'line-through'
-                          : 'none',
+                      //commented for future refrence
+                      // textDecorationLine:
+                      //   isModifyFlow &&
+                      //   modifiedOrder?.collectionCharges > 0 &&
+                      //   hcCharges === 0 &&
+                      //   cartItems?.length > 0
+                      //     ? 'line-through'
+                      //     : 'none',
                     },
                   ]}
                 >
-                  {string.common.Rs} {hcChargesToShow}
+                  {string.common.Rs}
+                  {isModifyFlow ? Number(0)?.toFixed(2) : Number(hcChargesToShow)?.toFixed(2)}{' '}
+                  {/** added check since we don't want any striked through price */}
                 </Text>
               </View>
             </View>

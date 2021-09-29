@@ -32,6 +32,7 @@ import {
   extractPatientDetails,
   g,
   getCleverTapCircleMemberValues,
+  isEmptyObject,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
@@ -222,10 +223,16 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
         fetchPolicy: 'no-cache',
         variables: query,
       });
+      console.log({ res });
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
-      setCirclePlanDetails(data?.APOLLO?.[0]);
-      setCircleSubscriptionId?.(data?.APOLLO?.[0]._id);
-      data?.APOLLO?.[0]._id && AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
+      if (isEmptyObject(data)) {
+        setCirclePlanDetails({});
+      } else {
+        setCirclePlanDetails(data?.APOLLO?.[0]);
+        setCircleSubscriptionId?.(data?.APOLLO?.[0]._id);
+        data?.APOLLO?.[0]._id &&
+          AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
+      }
     } catch (error) {
       CommonBugFender('OrderStatus_getUserSubscriptionsByStatus', error);
     }
@@ -708,7 +715,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
             {renderHeader()}
             {renderOrderPlacedMsg()}
             {renderCartSavings()}
-            {isCircleAddedToCart && renderCirclePurchaseCard()}
+            {isCircleAddedToCart && !isEmptyObject(circlePlanDetails) && renderCirclePurchaseCard()}
             {renderPickUpTime()}
             {renderNoticeText()}
             {/* {enable_cancelellation_policy ? renderCancelationPolicy() : null} */}

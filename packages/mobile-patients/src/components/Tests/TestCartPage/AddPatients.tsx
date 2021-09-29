@@ -125,7 +125,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
 
   const client = useApolloClient();
 
-  const patientListToShow = allCurrentPatients?.filter(
+  var patientListToShow = allCurrentPatients?.filter(
     (item: any) => !!item?.id && item?.id != '+ADD MEMBER'
   );
   var isCartEmpty = isDiagnosticSelectedCartEmpty(patientCartItems);
@@ -690,8 +690,10 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
 
   function _setSelectedPatient(patientDetails: any, ind: number) {
     let arr = patientListToShow?.map((newItem: any, index: number) => {
-      if (ind == index && patientDetails != null) {
-        newItem.isPatientSelected = !newItem?.isPatientSelected;
+      if (ind == index && patientDetails != null && newItem?.hasOwnProperty('isPatientSelected')) {
+        newItem['isPatientSelected'] = !newItem?.isPatientSelected;
+      } else {
+        newItem['isPatientSelected'] = false;
       }
       return { ...newItem };
     });
