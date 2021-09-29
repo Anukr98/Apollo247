@@ -2508,7 +2508,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }
 
   function navigateToTrackingScreen(item: any) {
-    DiagnosticTrackOrderViewed(currentPatient, item?.orderStatus, item?.displayId, 'Home');
+    DiagnosticTrackOrderViewed(currentPatient, item?.orderStatus, item?.displayId, 'Home', isDiagnosticCircleSubscription);
     props.navigation.push(AppRoutes.YourOrdersTest, {
       isTest: true,
     });
@@ -2526,21 +2526,21 @@ export const Tests: React.FC<TestsProps> = (props) => {
         if (!!getUrl && getUrl != '') {
           Linking.canOpenURL(getUrl).then((supported: any) => {
             if (supported) {
-              DiagnosticTrackPhleboClicked(orderId, 'Home', currentPatient, 'Yes');
+              DiagnosticTrackPhleboClicked(orderId, 'Home', currentPatient, 'Yes', isDiagnosticCircleSubscription);
               Linking.openURL(getUrl);
             } else {
-              DiagnosticTrackPhleboClicked(orderId, 'Home', currentPatient, 'No');
+              DiagnosticTrackPhleboClicked(orderId, 'Home', currentPatient, 'No', isDiagnosticCircleSubscription);
               CommonBugFender('Tests_getPhelboDetails_Unable_to_open_url', getUrl);
             }
           });
         } else {
-          DiagnosticTrackPhleboClicked(orderId, 'Home', currentPatient, 'No');
+          DiagnosticTrackPhleboClicked(orderId, 'Home', currentPatient, 'No',isDiagnosticCircleSubscription);
           navigateToTrackingScreen(order);
         }
       }
       setLoadingContext?.(false);
     } catch (error) {
-      DiagnosticTrackPhleboClicked(orderId, 'Home', currentPatient, 'No');
+      DiagnosticTrackPhleboClicked(orderId, 'Home', currentPatient, 'No', isDiagnosticCircleSubscription);
       setLoadingContext?.(false);
       CommonBugFender('Tests_onPressOrderStatusOption', error);
     }
