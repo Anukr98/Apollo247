@@ -122,6 +122,7 @@ export const ProductNameImage: React.FC<ProductNameImageProps> = (props) => {
 const styles = StyleSheet.create({
   cardStyle: {
     marginVertical: 10,
+    paddingHorizontal: 15,
   },
   name: {
     ...theme.viewStyles.text('B', 17, '#02475B', 1, 25, 0.35),
