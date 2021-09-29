@@ -139,7 +139,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const newProfileAdded = props.navigation.getParam('newProfileAdded');
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
-  const doctor = props.navigation.getParam('doctor');
+  const doctor : getDoctorDetailsById_getDoctorDetailsById | null = props.navigation.getParam('doctor');
   const tabs = props.navigation.getParam('tabs');
   const selectedTab = props.navigation.getParam('selectedTab');
   const appointmentInput = props.navigation.getParam('appointmentInput');
@@ -645,6 +645,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           eventAttributes['Display ID'] = apptmt?.displayId!;
           eventAttributes['User_Type'] = getUserType(allCurrentPatients);
           postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
+          postCleverTapEvent(CleverTapEventName.CONSULTATION_BOOKED, eventAttributes);
           postAppsFlyerEvent(
             AppsFlyerEventName.CONSULTATION_BOOKED,
             getConsultationBookedAppsFlyerEventAttributes(apptmt?.id!, apptmt?.displayId)
@@ -831,7 +832,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   const getConsultationBookedEventAttributes = (time: string, id: string) => {
     const localTimeSlot = moment(new Date(time));
     let date = new Date(time);
-    const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
+    const doctorClinics = (g(doctor, 'doctorHospital') || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
         return item.facility.facilityType === 'HOSPITAL';
     });
