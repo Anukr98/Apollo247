@@ -34,6 +34,7 @@ const styles = StyleSheet.create({
     padding: 7,
     borderWidth: 1,
     borderColor: '#02475B',
+    marginHorizontal: 15,
   },
   heading: {
     ...theme.viewStyles.text('M', 16, '#02475B', 1, 25, 0.35),
