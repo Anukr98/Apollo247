@@ -1322,6 +1322,7 @@ export interface CleverTapEvents {
     'Order amount': string | number;
     'Order id': string;
     'Order status'?: string;
+    'Circle user'?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR]: DiagnosticPinCode;
   [CleverTapEventName.DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED]: {
@@ -1397,14 +1398,16 @@ export interface CleverTapEvents {
     Source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary';
     'Report generated': 'Yes' | 'No';
     'Action taken':
-    | 'View Report'
-    | 'Download Report PDF'
-    | 'Share on Whatsapp'
-    | 'Copy Link to PDF';
+      | 'View Report'
+      | 'Download Report PDF'
+      | 'Share on Whatsapp'
+      | 'Copy Link to PDF';
+    'Circle user'?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_FEEDBACK_GIVEN]: {
     Rating: string | number;
     'Thing to Improve selected': string;
+    'Circle user'?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_ADD_TO_CART]: {
     'Item Name': string;
@@ -1476,6 +1479,7 @@ export interface CleverTapEvents {
     'Item ID'?: string | number;
     'Item name'?: string;
     Pincode: string | number;
+    'Circle user'?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_ORDER_RESCHEDULE]: {
     'Reschedule reason': string;
@@ -1500,12 +1504,14 @@ export interface CleverTapEvents {
     UHID: string;
     'Order id': string | number;
     'Phlebo Name': string;
+    'Circle user'?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED]: {
     'Order id': string | number;
     UHID: string;
     'Link opened': 'Yes' | 'No';
     Source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary';
+    'Circle user'?: string;
   };
   [CleverTapEventName.DIGNOSTIC_PAYMENT_ABORTED]: {
     'Order id': string;

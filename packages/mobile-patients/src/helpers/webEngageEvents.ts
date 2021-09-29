@@ -1299,6 +1299,7 @@ export interface WebEngageEvents {
     'Latest Order Status': string;
     'Order id': string;
     Source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary';
+    'Circle user' ?: string; 
   };
   [WebEngageEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED]: {
     'Order id'?: string;
@@ -1362,6 +1363,7 @@ export interface WebEngageEvents {
     'Item name': string;
     Pincode: string | number;
     Mode: 'Customer' | 'Automated';
+    'Circle user'?: string; 
   };
   [WebEngageEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE]: {
     'Item ID'?: string | number;
