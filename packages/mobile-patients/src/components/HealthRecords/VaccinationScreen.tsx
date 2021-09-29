@@ -27,6 +27,7 @@ import {
   editDeleteData,
   postCleverTapPHR,
   postCleverTapIfNewSession,
+  postWebEngagePHR,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -162,7 +163,6 @@ export const VaccinationScreen: React.FC<VaccinationScreenProps> = (props) => {
         if (!!immunizations) {
           finalData = initialSortByDays('immunization', immunizations, finalData);
           setLocalVaccinationData(finalData);
-          console.log(immunizations, 'FINAL DATA');
         }
         setShowSpinner(false);
       })
@@ -209,10 +209,11 @@ export const VaccinationScreen: React.FC<VaccinationScreenProps> = (props) => {
   const onPressEditPrismMedicalRecords = (selectedItem: any) => {
     setCallApi(false);
     props.navigation.navigate(AppRoutes.AddVaccinationRecord, {
-      navigatedFrom: 'Test Reports',
+      navigatedFrom: 'Vaccination Screen',
       recordType: MedicalRecordType.IMMUNIZATION,
       selectedRecordID: selectedItem?.id,
       selectedRecord: selectedItem,
+      update: true,
       onRecordAdded: onRecordAdded,
     });
   };
@@ -252,21 +253,6 @@ export const VaccinationScreen: React.FC<VaccinationScreenProps> = (props) => {
   };
 
   const onHealthCardItemPress = (selectedItem: any) => {
-    const eventInputData = removeObjectProperty(selectedItem, 'immunizations');
-    postWebEngageIfNewSession(
-      'Vaccination',
-      currentPatient,
-      eventInputData,
-      phrSession,
-      setPhrSession
-    );
-    postCleverTapIfNewSession(
-      'Vaccination Screen',
-      currentPatient,
-      eventInputData,
-      phrSession,
-      setPhrSession
-    );
     props.navigation.navigate(AppRoutes.VaccinationDoseScreen, {
       data: selectedItem,
     });
@@ -354,6 +340,7 @@ export const VaccinationScreen: React.FC<VaccinationScreenProps> = (props) => {
               navigatedFrom: 'Vaccination ',
               recordType: MedicalRecordType.IMMUNIZATION,
               onRecordAdded: onRecordAdded,
+              update: false,
             });
           }}
         />
