@@ -127,7 +127,7 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
           </TouchableOpacity>
         </View>
         <View style={styles.detailsContainer}>
-          <Text numberOfLines={2} ellipsizeMode={'tail'}>
+          <Text numberOfLines={2} ellipsizeMode={'tail'} style={styles.nameStyle}>
             {item?.name}
           </Text>
           <View style={styles.priceContainer}>
@@ -262,6 +262,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingLeft: 13,
     paddingRight: 20,
+  },
+  nameStyle: {
+    ...theme.fonts.IBMPlexSansRegular(14),
+    color: '#02475B',
+    lineHeight: 18,
   },
   priceContainer: {
     flexDirection: 'row',

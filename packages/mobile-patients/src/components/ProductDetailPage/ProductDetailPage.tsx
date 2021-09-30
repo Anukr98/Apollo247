@@ -1291,15 +1291,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   setShowSubstituteInfo={setShowSubstituteInfo}
                 />
               )}
-              {!!medicineDetails.is_in_stock &&
-                medicineDetails.is_in_stock === 1 &&
-                !!boughtTogether &&
-                boughtTogether.length > 0 && (
-                  <FrequentlyBoughtTogether
-                    boughtTogetherArray={boughtTogether}
-                    setShowAddedToCart={setShowAddedToCart}
-                  />
-                )}
+              {isInStock && !!boughtTogether && boughtTogether.length > 0 && (
+                <FrequentlyBoughtTogether
+                  boughtTogetherArray={boughtTogether}
+                  setShowAddedToCart={setShowAddedToCart}
+                />
+              )}
               <ProductInfo
                 name={medicineDetails?.name}
                 description={medicineDetails?.product_information}
