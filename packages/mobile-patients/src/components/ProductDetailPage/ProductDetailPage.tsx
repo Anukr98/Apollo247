@@ -958,27 +958,25 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     const total = cartItems
       .reduce((currTotal, currItem) => currTotal + currItem.quantity * currItem.price, 0)
       .toFixed(2);
+    const circleMember = circleSubscriptionId && !isCircleExpired;
+    const nonCircleMember = !circleSubscriptionId || isCircleExpired;
     const showNudgeMessage =
-      pharmaPDPNudgeMessage?.show === 'yes' && pharmaPDPNudgeMessage?.nudgeMessage;
-    const showByUserType =
-      pharmaPDPNudgeMessage?.userType == 'all' ||
-      (pharmaPDPNudgeMessage?.userType == 'circle' && circleSubscriptionId && !isCircleExpired) ||
-      (pharmaPDPNudgeMessage?.userType == 'non-circle' &&
-        (!circleSubscriptionId || isCircleExpired));
-    const showMessage = showNudgeMessage && showByUserType;
+      pharmaPDPNudgeMessage?.show === 'yes' &&
+      ((circleMember && !!pharmaPDPNudgeMessage?.nudgeMessage) ||
+        (nonCircleMember && !!pharmaPDPNudgeMessage?.nudgeMessageNonCircle));
     return (
       <StickyBottomComponent
         style={
-          showMessage ? styles.bottomComponent : { justifyContent: 'center', shadowOpacity: 0 }
+          showNudgeMessage ? styles.bottomComponent : { justifyContent: 'center', shadowOpacity: 0 }
         }
       >
-        {showMessage && <NudgeMessage nudgeMessage={pharmaPDPNudgeMessage} />}
+        {showNudgeMessage && <NudgeMessage nudgeMessage={pharmaPDPNudgeMessage} />}
         <TouchableOpacity
           onPress={() => {
             props.navigation.navigate(AppRoutes.MedicineCart);
           }}
           activeOpacity={0.7}
-          style={[styles.bottomCta, showMessage ? { alignSelf: 'center' } : {}]}
+          style={[styles.bottomCta, showNudgeMessage ? { alignSelf: 'center' } : {}]}
         >
           <Text style={styles.bottomCtaText}>
             {`Proceed to Checkout (${cartItems?.length} items) ${
