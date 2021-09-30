@@ -41,7 +41,7 @@ export interface Props extends Omit<ListProps, 'renderItem'> {
   renderComponent?: ListRenderItem<ProductCardProps>;
   addToCartSource:
     | WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source']
-    | CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Source'];
+    | CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Nav src'];
   movedFrom: ProductPageViewedSource;
   productPageViewedEventProps?: ProductPageViewedEventProps;
   sectionName?: string;

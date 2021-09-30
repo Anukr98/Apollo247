@@ -468,17 +468,17 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         'Customer ID': g(currentPatient, 'id'),
       };
       const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_RE_ORDER_MEDICINE] = {
-        orderType: !!g(order, 'billNumber')
+        'Order type': !!g(order, 'billNumber')
           ? 'Offline'
           : orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION
           ? 'Non Cart'
           : 'Cart',
-        noOfItemsNotAvailable: unavailableItems.length,
-        source: selectedTab,
-        'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+        'No of items not available': unavailableItems.length,
+        'Nav src': selectedTab,
+        'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
         'Patient UHID': g(currentPatient, 'uhid'),
         Relation: g(currentPatient, 'relation'),
-        'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+        'Patient age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
         'Patient Gender': g(currentPatient, 'gender'),
         'Mobile Number': g(currentPatient, 'mobileNumber'),
         'Customer ID': g(currentPatient, 'id'),
@@ -1973,7 +1973,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.ORDER_SUMMARY_CLICKED, eventAttributes);
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_ORDER_SUMMARY_CLICKED] = {
-      'Order ID': orderDetails.id,
+      'Order ID(s)': orderDetails.id,
       'Order date': getFormattedOrderPlacedDateTime(orderDetails) || undefined,
       'Order type': !!g(order, 'billNumber')
         ? 'Offline'
@@ -1981,7 +1981,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         ? 'Non Cart'
         : 'Cart',
       'Customer ID': currentPatient && currentPatient.id,
-      'Delivery Date': orderDetails.orderTat
+      'Delivery date': orderDetails.orderTat
         ? moment(orderDetails.orderTat).format('ddd, D MMMM, hh:mm A')
         : undefined,
       'Mobile number': currentPatient && currentPatient.mobileNumber,
