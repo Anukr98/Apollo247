@@ -30,11 +30,11 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
   const [selectedProductsArray, setSelectedProductsArray] = useState<MedicineProduct[]>([]);
   const [totalPrice, setTotalPrice] = useState<number>(0);
 
-  const { cartItems, updateCartItem, addCartItem } = useShoppingCart();
+  const { cartItems, updateCartItem, addMultipleCartItems } = useShoppingCart();
 
   const onPressIcon = (id: number, itemPrice: number, item) => {
-    let newArr = [...selectedProductsId];
-    let newDataArr = [...selectedProductsArray];
+    const newArr = [...selectedProductsId];
+    const newDataArr = [...selectedProductsArray];
     if (newArr.includes(id)) {
       const x = newArr.indexOf(id);
       newArr.splice(x, 1);
@@ -53,54 +53,47 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
   };
 
   const onPressAdd = (selectedProductsArray) => {
-    selectedProductsArray.map((item) => {
-      const {
-        sku,
-        mou,
-        name,
-        price,
-        special_price,
-        is_prescription_required,
-        type_id,
-        thumbnail,
-        MaxOrderQty,
-        url_key,
-        subcategory,
-      } = item;
-      if (cartItems.find(({ id }) => id?.toUpperCase() === sku?.toUpperCase())) {
-        updateCartItem?.({
-          id: sku,
-          quantity: 1,
-        });
-      } else {
-        addCartItem!({
-          id: sku,
-          mou,
-          name,
-          price: price,
-          specialPrice: special_price
-            ? typeof special_price == 'string'
-              ? Number(special_price)
-              : special_price
-            : undefined,
-          prescriptionRequired: is_prescription_required === '1',
-          isMedicine: getIsMedicine(type_id?.toLowerCase()) || '0',
-          quantity: 1,
-          thumbnail: thumbnail,
-          isInStock: true,
-          maxOrderQty: MaxOrderQty,
-          productType: type_id,
-          url_key,
-          subcategory,
-        });
+    if (selectedProductsArray.length > 0) {
+      const itemsList = selectedProductsArray.map((item) => {
+        if (cartItems.find(({ id }) => id?.toUpperCase() === item?.sku?.toUpperCase())) {
+          updateCartItem?.({
+            id: item?.sku,
+            quantity: 1,
+          });
+          return null;
+        } else {
+          return {
+            id: item?.sku,
+            mou: item?.mou,
+            name: item?.name,
+            price: item?.price,
+            specialPrice: item?.special_price
+              ? typeof item?.special_price == 'string'
+                ? Number(item?.special_price)
+                : item?.special_price
+              : undefined,
+            prescriptionRequired: item?.is_prescription_required === '1',
+            isMedicine: getIsMedicine(item?.type_id?.toLowerCase()) || '0',
+            quantity: 1,
+            thumbnail: item?.thumbnail,
+            isInStock: true,
+            maxOrderQty: item?.MaxOrderQty,
+            productType: item?.type_id,
+            url_key: item?.url_key,
+            subcategory: item?.subcategory,
+          };
+        }
+      });
+      if (!itemsList.every((element) => element === null)) {
+        const finalItemsList = itemsList.filter((element) => element !== null);
+        addMultipleCartItems!(finalItemsList);
       }
       setShowAddedToCart(true);
       setTimeout(() => {
         setShowAddedToCart(false);
       }, 2000);
-    });
+    }
   };
-
   const renderBoughtTogetherItem = (imgUrl: string, item: MedicineProduct, index: number) => {
     const specialPrice = item?.special_price ? true : false;
     const discount = Math.round(getDiscountPercentage(item?.price, item?.special_price));
@@ -288,6 +281,7 @@ const styles = StyleSheet.create({
     lineHeight: 15,
     letterSpacing: 0.25,
     textDecorationLine: 'line-through',
+    paddingTop: 2,
   },
   discountStyle: {
     ...theme.fonts.IBMPlexSansRegular(12),
@@ -295,6 +289,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
     fontWeight: '500',
     lineHeight: 16,
+    paddingTop: 2,
   },
   cartContainer: {
     height: 75,
