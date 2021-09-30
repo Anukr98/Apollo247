@@ -61,10 +61,7 @@ import { useFetchHealthCredits } from '@aph/mobile-patients/src/components/Payme
 import { HealthCredits } from '@aph/mobile-patients/src/components/PaymentGateway/Components/HealthCredits';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useGetPaymentMethods } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useGetPaymentMethods';
-import {
-  diagnosticPaymentSettings,
-  processDiagnosticsCODOrderV2,
-} from '@aph/mobile-patients/src/helpers/clientCalls';
+import { diagnosticPaymentSettings } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   isEmptyObject,
   paymentModeVersionCheck,
@@ -502,25 +499,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       const status =
         data?.createOrderV2?.payment_status || data?.updateOrderDetails?.payment_status;
       if (status === 'TXN_SUCCESS') {
-        if (businessLine === 'diagnostics') {
-          const getArray = createOrderInputArray();
-          const response = await processDiagnosticsCODOrderV2(client, getArray);
-          const { data } = response;
-          const getResponse = data?.wrapperProcessDiagnosticHCOrderCOD?.result;
-          if (!!getResponse && getResponse?.length > 0) {
-            const isAnyFalse = getResponse?.filter((items) => !items?.status);
-            if (!!isAnyFalse && isAnyFalse?.length > 0) {
-              //show error
-              showTxnFailurePopUP();
-            } else {
-              navigatetoOrderStatus(true, 'success');
-            }
-          } else {
-            showTxnFailurePopUP();
-          }
-        } else {
-          navigatetoOrderStatus(true, 'success');
-        }
+        navigatetoOrderStatus(true, 'success');
       } else {
         showTxnFailurePopUP();
       }
