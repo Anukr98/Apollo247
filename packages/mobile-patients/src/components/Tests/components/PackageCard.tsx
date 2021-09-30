@@ -479,7 +479,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     const isAlreadyPartOfOrder =
       !!modifiedOrderItemIds &&
       modifiedOrderItemIds?.length &&
-      modifiedOrderItemIds?.find((id: number) => Number(id) == Number(item?.id));
+      modifiedOrderItemIds?.find((id: number) => Number(id) == Number(item?.itemId || item?.id));
     return (
       <Text
         style={[
