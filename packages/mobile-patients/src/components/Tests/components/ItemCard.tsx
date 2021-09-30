@@ -489,10 +489,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     const isAlreadyPartOfOrder =
       !!modifiedOrderItemIds &&
       modifiedOrderItemIds?.length &&
-      modifiedOrderItemIds?.find(
-        (id: number) =>
-          Number(id) == Number(props.sourceScreen === AppRoutes.TestsCart ? item?.itemId : item?.id)
-      );
+      modifiedOrderItemIds?.find((id: number) => Number(id) == Number(item?.itemId || item?.id));
     return (
       <Text
         style={[
