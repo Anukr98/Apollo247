@@ -1662,8 +1662,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   }
 
   function _navigateToSearchPage(patientId: string) {
-    props.navigation.navigate(AppRoutes.SearchTestScene, {
+    props.navigation.push(AppRoutes.SearchTestScene, {
       searchText: '',
+      isModify: true,
     });
   }
 
