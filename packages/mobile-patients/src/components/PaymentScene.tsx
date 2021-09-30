@@ -179,7 +179,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     orderId: string,
     orderAutoId: string
   ) => {
-    const appsflyerEventAttributes = {
+    const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED] = {
       af_customer_user_id: currentPatient ? currentPatient.id : '',
       'cart size': cartItems.length,
       af_revenue: getFormattedAmount(grandTotal),
@@ -187,6 +187,9 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       af_order_id: orderId,
       orderAutoId: orderAutoId,
       'coupon applied': coupon ? true : false,
+      "af_content_id": cartItems?.map(item => item?.id),
+      "af_price": cartItems?.map(item => item?.specialPrice),
+      "af_quantity": cartItems?.map(item => item?.quantity),
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
       ...pharmacyCircleAttributes!,

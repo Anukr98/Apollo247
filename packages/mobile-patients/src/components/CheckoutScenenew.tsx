@@ -403,6 +403,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       af_order_id: orderId ? orderId : "0",
       orderAutoId: orderAutoId ? orderAutoId : "0",
       'coupon applied': coupon ? true : false,
+      "af_content_id": cartItems?.map(item => item?.id),
+      "af_price": cartItems?.map(item => item?.specialPrice),
+      "af_quantity": cartItems?.map(item => item?.quantity),
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
       ...pharmacyCircleAttributes!,
