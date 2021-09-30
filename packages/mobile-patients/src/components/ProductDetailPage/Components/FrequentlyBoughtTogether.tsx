@@ -94,63 +94,80 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
       }, 2000);
     }
   };
+  const renderPlusView = () => {
+    return (
+      <View style={{ flexDirection: 'row', marginVertical: -15 }}>
+        <View style={styles.plusLeftStyle}>
+          <Text numberOfLines={1} ellipsizeMode={'clip'} style={{ color: '#658F9B' }}>
+            -----------------
+          </Text>
+        </View>
+        <View>
+          <Text style={styles.plusTextStyle}>+</Text>
+        </View>
+        <View style={styles.plusRightStyle}>
+          <Text numberOfLines={1} ellipsizeMode={'clip'} style={{ color: '#658F9B' }}>
+            --------------------------------------------------------
+          </Text>
+        </View>
+      </View>
+    );
+  };
   const renderBoughtTogetherItem = (imgUrl: string, item: MedicineProduct, index: number) => {
     const specialPrice = item?.special_price ? true : false;
     const discount = Math.round(getDiscountPercentage(item?.price, item?.special_price));
     const itemSelected = selectedProductsId.includes(item?.id);
     return (
-      <View style={styles.ItemContainer}>
-        <View style={styles.imageContainer}>
-          <TouchableOpacity
-            onPress={() => {
-              item?.special_price
-                ? onPressIcon(item?.id, +item?.special_price, item)
-                : onPressIcon(item?.id, item?.price, item);
-            }}
-            style={styles.selectImageStyle}
-          >
-            {itemSelected ? (
-              <CheckBoxFilled style={styles.iconStyles} />
-            ) : (
-              <CheckBox style={styles.iconStyles} />
-            )}
-            {
-              <View style={styles.plusStyle}>
-                {index !== boughtTogetherArray.length - 1 ? (
-                  <Text style={styles.plusTextStyle}>+</Text>
-                ) : (
-                  <Text>{'   '}</Text>
-                )}
-              </View>
-            }
-            <ImageNative source={{ uri: imgUrl }} style={styles.imageStyle} resizeMode="contain" />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.detailsContainer}>
-          <Text numberOfLines={2} ellipsizeMode={'tail'} style={styles.nameStyle}>
-            {item?.name}
-          </Text>
-          <View style={styles.priceContainer}>
-            {specialPrice ? (
-              <Text style={styles.priceStyle}>
-                {'\u20B9'}
-                {item?.special_price}{' '}
-              </Text>
-            ) : (
-              <Text style={styles.priceStyle}>
-                {'\u20B9'}
-                {item?.price}
-              </Text>
-            )}
-            {specialPrice && (
-              <Text style={styles.priceCancelStyle}>
-                {'\u20B9'}
-                {item?.price}{' '}
-              </Text>
-            )}
-            {specialPrice && <Text style={styles.discountStyle}>{`${discount}%off`}</Text>}
+      <View style={styles.mainContainer}>
+        <View style={styles.ItemContainer}>
+          <View style={styles.imageContainer}>
+            <TouchableOpacity
+              onPress={() => {
+                item?.special_price
+                  ? onPressIcon(item?.id, +item?.special_price, item)
+                  : onPressIcon(item?.id, item?.price, item);
+              }}
+              style={styles.selectImageStyle}
+            >
+              {itemSelected ? (
+                <CheckBoxFilled style={styles.iconStyles} />
+              ) : (
+                <CheckBox style={styles.iconStyles} />
+              )}
+              <ImageNative
+                source={{ uri: imgUrl }}
+                style={styles.imageStyle}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.detailsContainer}>
+            <Text numberOfLines={2} ellipsizeMode={'tail'} style={styles.nameStyle}>
+              {item?.name}
+            </Text>
+            <View style={styles.priceContainer}>
+              {specialPrice ? (
+                <Text style={styles.priceStyle}>
+                  {'\u20B9'}
+                  {item?.special_price}{' '}
+                </Text>
+              ) : (
+                <Text style={styles.priceStyle}>
+                  {'\u20B9'}
+                  {item?.price}
+                </Text>
+              )}
+              {specialPrice && (
+                <Text style={styles.priceCancelStyle}>
+                  {'\u20B9'}
+                  {item?.price}{' '}
+                </Text>
+              )}
+              {specialPrice && <Text style={styles.discountStyle}>{`${discount}%off`}</Text>}
+            </View>
           </View>
         </View>
+        {index !== boughtTogetherArray.length - 1 && renderPlusView()}
       </View>
     );
   };
@@ -216,15 +233,15 @@ const styles = StyleSheet.create({
   },
   productContainer: {
     marginTop: 16,
+    borderWidth: 0.5,
+    borderRadius: 1,
+    borderColor: '#02475B',
+  },
+  mainContainer: {
+    flexDirection: 'column',
   },
   ItemContainer: {
     height: 67,
-    borderWidth: 0.5,
-    borderRadius: 1,
-    borderTopColor: '#02475B',
-    borderLeftColor: '#02475B',
-    borderRightColor: '#02475B',
-    borderBottomColor: '#658F9B',
     flexDirection: 'row',
   },
   imageContainer: {
@@ -236,20 +253,14 @@ const styles = StyleSheet.create({
   },
   selectImageStyle: {
     flexDirection: 'row',
+    marginHorizontal: 11,
+    flexGrow: 1,
+    justifyContent: 'space-between',
   },
   iconStyles: {
     height: 14,
     width: 14,
     alignSelf: 'center',
-  },
-  plusStyle: {
-    justifyContent: 'flex-end',
-    bottom: -15,
-    left: 30,
-  },
-  plusTextStyle: {
-    fontSize: 25,
-    color: '#658F9B',
   },
   imageStyle: {
     height: 53,
@@ -298,8 +309,8 @@ const styles = StyleSheet.create({
   },
   cartContainer: {
     height: 75,
-    borderWidth: 0.5,
-    borderColor: '#02475B',
+    borderTopWidth: 0.5,
+    borderTopColor: '#02475B',
     paddingTop: 16,
     paddingLeft: 19,
     paddingRight: 19,
@@ -330,5 +341,19 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
     color: '#FFFFFF',
+  },
+  plusLeftStyle: {
+    width: '15%',
+    alignSelf: 'center',
+    marginRight: 5,
+  },
+  plusRightStyle: {
+    width: '85%',
+    alignSelf: 'center',
+    marginLeft: 5,
+  },
+  plusTextStyle: {
+    color: '#658F9B',
+    fontSize: 25,
   },
 });
