@@ -954,11 +954,13 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     return (
       <CirclePlansListOverlay
         title={'Circle Membership'}
-        upperLeftText={'You can'}
-        upperMiddleText={'save'}
+        upperLeftText={isCircleAddedToCart ? 'You' : 'You can'}
+        upperMiddleText={isCircleAddedToCart ? 'saved' : 'save'}
         circleSaving={circleSaving}
-        upperRightText={'on this order.'}
-        effectivePriceText={'Your effective price is'}
+        upperRightText={isCircleAddedToCart ? 'on this order with Circle!' : 'on this order.'}
+        effectivePriceText={
+          isCircleAddedToCart ? 'Your effective price is' : 'Effective price would be'
+        }
         effectivePrice={grandTotal} //need to change on each plan selection
         membershipPlans={allMembershipPlans}
         facts={facts}
@@ -985,7 +987,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     return (
       <View style={styles.circleCardView}>
         <CircleCard
-          heading1={'Buy Circle Membership'}
+          heading1={isCircleAddedToCart ? 'Yay! You are a Circle Member' : 'Buy Circle Membership'}
           upperLeftText={isCircleAddedToCart ? 'You' : 'You can'}
           upperMiddleText={isCircleAddedToCart ? 'saved' : 'save'}
           upperRightText={'on this order with Circle!'}

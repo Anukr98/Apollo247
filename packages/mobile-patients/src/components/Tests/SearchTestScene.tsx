@@ -126,7 +126,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const { cartItems: shopCartItems } = useShoppingCart();
   const { showAphAlert, setLoading: setGlobalLoading, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
-  const { isDiagnosticCircleSubscription } = useDiagnosticsCart()
+  const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const showGoToCart = isModify && cartItems?.length > 0;
 
@@ -396,7 +396,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     const cartItemsCount = cartItems?.length + shopCartItems?.length;
     return (
       <Header
-        container={{ borderBottomWidth: 0 }}
+        container={{ borderBottomWidth: 0, borderWidth: 2 }}
         leftIcon={'backArrow'}
         title={isModify ? string.diagnostics.modifyHeader : 'SEARCH TESTS'}
         rightComponent={
