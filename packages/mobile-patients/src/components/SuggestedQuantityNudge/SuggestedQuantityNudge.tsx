@@ -36,6 +36,7 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
   const mainText = 'It is recommended that you to buy ';
   const mainText1 = ' and stock this medicine for the next 30 days';
   const itemQuantity = packForm ? `${suggested_qty} ${packForm}s` : `${suggested_qty} items`;
+  const maxQuantity = maxOrderQty ? maxOrderQty : +suggested_qty;
 
   const onPressCloseBottomSheet = () => {
     setShownNudgeOnce(true);
@@ -43,10 +44,7 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
   };
 
   const increaseQuantity = (selectedQuantity: number) => {
-    if (
-      (!!maxOrderQty && selectedQuantity < maxOrderQty) ||
-      (!!suggested_qty && selectedQuantity < +suggested_qty)
-    ) {
+    if (selectedQuantity < maxQuantity) {
       setSelectedQuantity(selectedQuantity + 1);
     }
   };
@@ -113,10 +111,7 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
                 <Text
                   style={[
                     styles.buttonTextStyles,
-                    selectedQuantity === maxOrderQty ||
-                    (!!suggested_qty && selectedQuantity === +suggested_qty)
-                      ? styles.greyedStyle
-                      : {},
+                    selectedQuantity === maxQuantity ? styles.greyedStyle : {},
                   ]}
                 >
                   +
