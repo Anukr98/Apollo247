@@ -363,9 +363,10 @@ const styles = StyleSheet.create({
     height: 0.5,
   },
   networkTestIcon: {
-    marginRight: 15,
+    marginRight: -20,
     height: 20,
     width: 25,
+    alignSelf: 'flex-end',
   },
   doctorNameStyle: {
     paddingTop: 8,
@@ -7618,6 +7619,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const onPressCalender = () => {
+    console.log('check  onPressCalender--- ');
+
     setShowRescheduleCancel(true);
     if (isAppointmentStartsInFifteenMin) {
       autoTriggerFifteenMinToAppointmentTimeMsg();
@@ -7628,19 +7631,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const renderNetworkTestCTA = () => {
-    return (
-      <TouchableOpacity onPress={() => {}}>
-        {OTNetworkTestStatus === OT_NETWORK_TEST_STATUS.CHECKING ? (
-          <NetworkChecking style={styles.networkTestIcon} />
-        ) : OTNetworkTestStatus === OT_NETWORK_TEST_STATUS.AVERAGE ? (
-          <NetworkAverage style={styles.networkTestIcon} />
-        ) : OTNetworkTestStatus === OT_NETWORK_TEST_STATUS.GOOD ? (
-          <NetworkGood style={styles.networkTestIcon} />
-        ) : (
-          <NetworkBad style={styles.networkTestIcon} />
-        )}
-      </TouchableOpacity>
-    );
+    if (OTNetworkTestStatus === OT_NETWORK_TEST_STATUS.CHECKING) {
+      return <NetworkChecking style={styles.networkTestIcon} />;
+    } else if (OTNetworkTestStatus === OT_NETWORK_TEST_STATUS.AVERAGE) {
+      return <NetworkAverage style={styles.networkTestIcon} />;
+    } else if (OTNetworkTestStatus === OT_NETWORK_TEST_STATUS.GOOD) {
+      return <NetworkGood style={styles.networkTestIcon} />;
+    } else {
+      return <NetworkBad style={styles.networkTestIcon} />;
+    }
   };
 
   const renderNetworkTestContainer = () => {
@@ -7877,10 +7876,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       <TouchableOpacity
         style={styles.manageCTAView}
         onPress={() => {
+          console.log('check onPress renderManageCTA---  ');
+
           onPressCalender();
         }}
       >
-        <More />
+        <More style={{ alignSelf: 'flex-end' }} />
       </TouchableOpacity>
     );
   };
@@ -7996,18 +7997,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }
           }}
           rightIcon={
-            <View style={{ flexDirection: 'row' }}>
+            <TouchableOpacity
+              style={{
+                flexDirection: 'row',
+                alignSelf: 'flex-end',
+                alignContent: 'flex-end',
+                alignItems: 'flex-end',
+                marginRight: -10,
+              }}
+              disabled={doctorJoinedChat || status.current === STATUS.COMPLETED}
+              onPress={() => onPressCalender()}
+            >
               {showNetworkTestIcon ? renderNetworkTestCTA() : null}
-
-              <TouchableOpacity
-                disabled={doctorJoinedChat || status.current === STATUS.COMPLETED}
-                onPress={() => onPressCalender()}
-              >
-                {doctorJoinedChat || status.current === STATUS.COMPLETED
-                  ? renderManageCTA(true)
-                  : renderManageCTA()}
-              </TouchableOpacity>
-            </View>
+              {doctorJoinedChat || status.current === STATUS.COMPLETED
+                ? renderManageCTA(true)
+                : renderManageCTA()}
+            </TouchableOpacity>
           }
         />
         {showProgressBarOnHeader.current ? (
