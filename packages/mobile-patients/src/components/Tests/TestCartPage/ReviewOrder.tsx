@@ -428,10 +428,14 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const pincode = isModifyFlow
       ? modifiedOrder?.patientAddressObj?.zipcode
       : selectedAddr?.zipcode;
-    const formattedDate = moment(diagnosticSlot?.selectedDate)?.format('YYYY-MM-DD');
+
+    const formattedDate = moment(diagnosticSlot?.selectedDate)?.format('YYYY-MM-DD') as string;
+    const formatTime = diagnosticSlot?.slotStartTime as string;
+    const formattedString = moment(formattedDate).format('YYYY/MM/DD') + ' ' + formatTime;
     const dateTimeInUTC = isModifyFlow
       ? modifiedOrder && modifiedOrder?.slotDateTimeInUTC
-      : moment(formattedDate + ' ' + diagnosticSlot?.slotStartTime)?.toISOString();
+      : new Date(formattedString)?.toISOString();
+
     const cityIdToPass = isModifyFlow ? modifiedOrder?.cityId : deliveryAddressCityId;
 
     try {
