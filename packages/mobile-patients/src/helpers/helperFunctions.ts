@@ -530,11 +530,11 @@ const getConsiderDate = (type: string, dataObject: any) => {
     case 'lab-results':
       return dataObject?.data?.date;
     case 'hospitalizations':
-      return dataObject?.date;
+      return dataObject?.data?.date;
     case 'insurance':
-      return dataObject?.startDateTime;
+      return dataObject?.data?.startDateTime;
     case 'bills':
-      return dataObject?.billDateTime;
+      return dataObject?.data?.billDateTime;
     case 'health-conditions':
       return dataObject?.startDateTime || dataObject?.recordDateTime;
     case 'immunization':
@@ -2362,7 +2362,7 @@ export const postAppsFlyerAddToCartEvent = (
     af_currency: 'INR',
     item_type: type_id == 'Pharma' ? 'Drugs' : 'FMCG',
     sku: sku ? sku : "",
-    af_content_id: content_id && content_id,
+    af_content_id: content_id ? content_id : 0,
     ...pharmacyCircleAttributes,
   };
   postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_ADD_TO_CART, eventAttributes);

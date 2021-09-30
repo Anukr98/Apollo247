@@ -237,8 +237,8 @@ export enum CleverTapEventName {
   PHR_UPDATE_VACCINATION_REPORT = 'PHR Update Vaccination Report',
   PHR_DOWNLOAD_VACCINATION_REPORT = 'PHR Download Vaccination Report',
   PHR_BAR_CHART_VISUALISATION = 'PHR Bar Chart Visualisation',
-  PHR_REAL_TIME_LAB_TEST_REPORT = 'PHR Real Time Lab Test Reports',
-  PHR_SHARE_REAL_LAB_TEST_REPORT = 'PHR Share Real Time Lab Test Reports',
+  PHR_REAL_TIME_LAB_TEST_REPORT = 'PHR Download Real Time Lab Test Reports',
+  PHR_SHARE_LAB_TEST_REPORT = 'PHR Share Lab Test Report',
   PHR_ADD_HOSPITALIZATIONS = 'PHR Add Hospitalization',
   PHR_ADD_ALLERGY = 'PHR Add Allergy',
   PHR_ADD_FAMILY_HISTORY = 'PHR Add Family History',
@@ -1433,6 +1433,7 @@ export interface CleverTapEvents {
     'Order amount': string | number;
     'Order ID': string;
     'Order status'?: string;
+    'Circle user'?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR]: DiagnosticPinCode;
   [CleverTapEventName.DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED]: {
@@ -1522,12 +1523,14 @@ export interface CleverTapEvents {
       | 'Download Report PDF'
       | 'Share on Whatsapp'
       | 'Copy Link to PDF';
+    'Circle user'?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_FEEDBACK_GIVEN]: {
     'Patient UHID': string;
     'Patient Name': string;
     Rating: string | number;
     'Thing to Improve selected': string;
+    'Circle user'?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_ADD_TO_CART]: {
     'Item Name': string;
@@ -1599,6 +1602,7 @@ export interface CleverTapEvents {
     'Item ID'?: string | number;
     'Item name'?: string;
     Pincode: string | number;
+    'Circle user'?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_ORDER_RESCHEDULE]: {
     'Reschedule reason': string;
@@ -1624,12 +1628,14 @@ export interface CleverTapEvents {
     UHID: string;
     'Order id': string | number;
     'Phlebo Name': string;
+    'Circle user'?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED]: {
     'Order id': string | number;
     UHID: string;
     'Link opened': 'Yes' | 'No';
     Source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary';
+    'Circle user'?: string;
   };
   [CleverTapEventName.DIGNOSTIC_PAYMENT_ABORTED]: {
     'Order id': string;
@@ -1984,6 +1990,7 @@ export interface CleverTapEvents {
     'Secretary name': string;
     'Patient number': string;
     'Doctor number': string;
+    'Consult Mode': 'Online' | 'Physical';
   };
   [CleverTapEventName.CONSULT_FEEDBACK_GIVEN]: {
     'Doctor Name': string;

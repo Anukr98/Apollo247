@@ -256,7 +256,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         payload?.requestId == 'googlePay' && status && setGooglePayReady(true);
         break;
       case 'eligibility':
-        const eligibleApps = payload?.payload?.apps[0]?.paymentMethodsEligibility;
+        const eligibleApps = payload?.payload?.apps?.[0]?.paymentMethodsEligibility;
         setCred(eligibleApps?.find((item: any) => item?.paymentMethod == 'CRED'));
         break;
       default:

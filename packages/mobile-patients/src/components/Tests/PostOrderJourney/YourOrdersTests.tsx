@@ -1330,7 +1330,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   function _onPressPhleboCall(phleboName: string, phoneNumber: string, orderId: string) {
     //if allowCalling is true.
     const id = orderId.toString();
-    DiagnosticPhleboCallingClicked(currentPatient, id, phleboName);
+    DiagnosticPhleboCallingClicked(currentPatient, id, phleboName, isDiagnosticCircleSubscription);
     _callDiagnosticExotelApi(phoneNumber, orderId);
   }
 

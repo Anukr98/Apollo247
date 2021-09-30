@@ -102,6 +102,7 @@ import {
   pharmaSubstitution_pharmaSubstitution_substitutes,
 } from '@aph/mobile-patients/src/graphql/types/pharmaSubstitution';
 import { SuggestedQuantityNudge } from '@aph/mobile-patients/src/components/SuggestedQuantityNudge/SuggestedQuantityNudge';
+import { CircleBannerPDP } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/CircleBannerPDP';
 
 export type ProductPageViewedEventProps = Pick<
   WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED],
@@ -245,7 +246,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (sku && movedFrom === ProductPageViewedSource.DEEP_LINK) {
+    if (
+      sku &&
+      (movedFrom === ProductPageViewedSource.DEEP_LINK ||
+        movedFrom == ProductPageViewedSource.MULTI_VARIANT)
+    ) {
       fetchDeliveryTime(pincode, false);
     }
   }, [sku]);
@@ -953,27 +958,25 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     const total = cartItems
       .reduce((currTotal, currItem) => currTotal + currItem.quantity * currItem.price, 0)
       .toFixed(2);
+    const circleMember = circleSubscriptionId && !isCircleExpired;
+    const nonCircleMember = !circleSubscriptionId || isCircleExpired;
     const showNudgeMessage =
-      pharmaPDPNudgeMessage?.show === 'yes' && pharmaPDPNudgeMessage?.nudgeMessage;
-    const showByUserType =
-      pharmaPDPNudgeMessage?.userType == 'all' ||
-      (pharmaPDPNudgeMessage?.userType == 'circle' && circleSubscriptionId && !isCircleExpired) ||
-      (pharmaPDPNudgeMessage?.userType == 'non-circle' &&
-        (!circleSubscriptionId || isCircleExpired));
-    const showMessage = showNudgeMessage && showByUserType;
+      pharmaPDPNudgeMessage?.show === 'yes' &&
+      ((circleMember && !!pharmaPDPNudgeMessage?.nudgeMessage) ||
+        (nonCircleMember && !!pharmaPDPNudgeMessage?.nudgeMessageNonCircle));
     return (
       <StickyBottomComponent
         style={
-          showMessage ? styles.bottomComponent : { justifyContent: 'center', shadowOpacity: 0 }
+          showNudgeMessage ? styles.bottomComponent : { justifyContent: 'center', shadowOpacity: 0 }
         }
       >
-        {showMessage && <NudgeMessage nudgeMessage={pharmaPDPNudgeMessage} />}
+        {showNudgeMessage && <NudgeMessage nudgeMessage={pharmaPDPNudgeMessage} />}
         <TouchableOpacity
           onPress={() => {
             props.navigation.navigate(AppRoutes.MedicineCart);
           }}
           activeOpacity={0.7}
-          style={[styles.bottomCta, showMessage ? { alignSelf: 'center' } : {}]}
+          style={[styles.bottomCta, showNudgeMessage ? { alignSelf: 'center' } : {}]}
         >
           <Text style={styles.bottomCtaText}>
             {`Proceed to Checkout (${cartItems?.length} items) ${
@@ -1131,9 +1134,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               ref={scrollViewRef}
               bounces={false}
               keyboardShouldPersistTaps="always"
-              style={{
-                paddingHorizontal: 15,
-              }}
               onScroll={(event) => {
                 // show bottom bar if ADD TO CART button scrolls off the screen
                 buttonRef.current &&
@@ -1163,7 +1163,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 isExpress={medicineDetails?.is_express === 'Yes'}
                 isInStock={isInStock}
                 isSellOnline={medicineDetails?.sell_online === 1}
-                manufacturer={medicineDetails?.manufacturer}
                 showPincodePopup={showAccessAccessLocationPopup}
                 deliveryTime={deliveryTime}
                 deliveryError={deliveryError}
@@ -1206,14 +1205,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   setShowSubstituteInfo={setShowSubstituteInfo}
                 />
               </View>
-              {isPharma && (
-                <PharmaManufacturer
-                  manufacturer={medicineDetails?.manufacturer}
-                  composition={medicineDetails?.PharmaOverview?.[0]?.Composition || composition}
-                  consumeType={medicineDetails?.consume_type}
-                  onCompositionClick={onCompositionClick}
-                />
-              )}
+              <CircleBannerPDP />
+              <PharmaManufacturer
+                manufacturer={medicineDetails?.manufacturer}
+                composition={medicineDetails?.PharmaOverview?.[0]?.Composition || composition}
+                consumeType={medicineDetails?.consume_type}
+                onCompositionClick={onCompositionClick}
+                isPharma={isPharma}
+              />
               {!!substitutes.length && !isInStock && (
                 <SimilarProducts
                   heading={string.productDetailPage.PRODUCT_SUBSTITUTES}

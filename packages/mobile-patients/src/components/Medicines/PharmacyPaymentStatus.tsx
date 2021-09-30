@@ -210,6 +210,14 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         setorderDateTime(pharmaPaymentStatus?.orderDateTime);
         setpaymentRefId(pharmaPaymentStatus?.paymentRefId);
         status == pending && setStatus(pharmaPaymentStatus?.paymentStatus);
+        if (
+          pharmaPaymentStatus?.paymentStatus !== failure &&
+          pharmaPaymentStatus?.paymentStatus !== aborted &&
+          pharmaPaymentStatus?.paymentStatus !== pending &&
+          pharmaPaymentStatus?.paymentStatus !== 'PAYMENT_PENDING'
+        ) {
+          clearCartInfo?.();
+        }
         setPaymentMode(pharmaPaymentStatus?.paymentMode);
         setTransactionId(pharmaPaymentStatus?.bankTxnId);
         setIsCircleBought(!!pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);

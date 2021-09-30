@@ -44,7 +44,7 @@ import {
   postWebEngagePHR,
   isSmallDevice,
   removeObjectProperty,
-  postCleverTapEvent,
+  postCleverTapPHR,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import {
@@ -309,7 +309,6 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
     : null;
 
   const propertyName = g(data, 'testResultFiles') ? 'testResultFiles' : '';
-  const eventInputData = removeObjectProperty(data, propertyName);
 
   useEffect(() => {
     Platform.OS === 'android' && requestReadSmsPermission();
@@ -540,15 +539,6 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
           })
           .then(({ data }: any) => {
             if (data?.getLabResultpdf?.url) {
-              if (fileShare) {
-                const eventAttributes: CleverTapEvents[CleverTapEventName.PHR_SHARE_REAL_LAB_TEST_REPORT] = {
-                  Source: 'Test Report Screen View',
-                };
-                postCleverTapEvent(
-                  CleverTapEventName.PHR_SHARE_REAL_LAB_TEST_REPORT,
-                  eventAttributes
-                );
-              }
               testResultArray?.length === 1
                 ? downloadDocument(data?.getLabResultpdf?.url, fileShare)
                 : callConvertToZipApi(data?.getLabResultpdf?.url, fileShare);
@@ -599,6 +589,13 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       Platform.OS === 'ios'
         ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + (fileName || 'Apollo_TestReport.zip')
         : dirs.DownloadDir + '/' + (fileName || 'Apollo_TestReport.zip');
+    postCleverTapPHR(
+      currentPatient,
+      fileShare
+        ? CleverTapEventName.PHR_SHARE_LAB_TEST_REPORT
+        : CleverTapEventName.PHR_DOWNLOAD_TEST_REPORT,
+      'Test Report Screen View'
+    );
     setLoading && setLoading(true);
     RNFetchBlob.config({
       fileCache: true,
@@ -618,7 +615,6 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       .fetch('GET', zipUrl)
       .then((res) => {
         setLoading && setLoading(false);
-        postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, eventInputData);
         const shareOptions = {
           title: mimeType(res.path()),
           url: `file://${res.path()}`,
@@ -897,12 +893,8 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
             showResponseData(data.getVisualizationData.response);
             setSendParamName(paramName);
             setSendTestReportName(labTestName);
-            const eventAttributes: CleverTapEvents[CleverTapEventName.PHR_BAR_CHART_VISUALISATION] = {
-              Source: 'Test Report Screen View',
-            };
-            postCleverTapEvent(CleverTapEventName.PHR_BAR_CHART_VISUALISATION, eventAttributes);
+            setShowPopup(true);
           }
-          setShowPopup(true);
         })
         .catch((e: any) => {
           setLoading?.(false);
@@ -1119,6 +1111,13 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       Platform.OS === 'ios'
         ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + (fileName || 'Apollo_TestReport.pdf')
         : dirs.DownloadDir + '/' + (fileName || 'Apollo_TestReport.pdf');
+    postCleverTapPHR(
+      currentPatient,
+      fileShare
+        ? CleverTapEventName.PHR_SHARE_LAB_TEST_REPORT
+        : CleverTapEventName.PHR_DOWNLOAD_TEST_REPORT,
+      'Test Report Screen View'
+    );
     setLoading && setLoading(true);
     RNFetchBlob.config({
       fileCache: true,
@@ -1146,7 +1145,6 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       )
       .then((res) => {
         setLoading && setLoading(false);
-        postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, eventInputData);
         const shareOptions = {
           title: mimeType(res.path()),
           url: `file://${res.path()}`,
@@ -1230,6 +1228,12 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       minNumber = Number(rangeDecider[0]);
       maxNumber = Number(rangeDecider[1]);
     }
+    postCleverTapPHR(
+      currentPatient,
+      CleverTapEventName.PHR_BAR_CHART_VISUALISATION,
+      'Test Report Screen View',
+      resonseData
+    );
     const lineData = arrResult?.map((i) => Number(i));
     const dateForRanges = arrDate?.map((i) => Number(i));
     return arrResult?.length > 0 ? (

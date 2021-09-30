@@ -24,6 +24,7 @@ import {
   postCleverTapEvent,
   postCleverTapPHR,
   postWebEngageEvent,
+  postWebEngagePHR,
   removeObjectProperty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -208,10 +209,12 @@ export const CowinProfileSelection: React.FC<CowinProfileSelectionProps> = (prop
     )
       .then((data: any) => {
         setSpinner!(false);
-        const eventAttributes: CleverTapEvents[CleverTapEventName.PHR_DOWNLOAD_VACCINATION_REPORT] = {
-          Source: 'Cowin Profile Selection',
-        };
-        postCleverTapEvent(CleverTapEventName.PHR_DOWNLOAD_VACCINATION_REPORT, eventAttributes);
+        postCleverTapPHR(
+          currentPatient,
+          CleverTapEventName.PHR_DOWNLOAD_VACCINATION_REPORT,
+          'Cowin Profile Selection',
+          data
+        );
         downloadDocument(data?.url);
       })
       .catch((error) => {
