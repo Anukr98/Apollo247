@@ -278,7 +278,8 @@ const appStaticVariables = {
   DEFAULT_PHELBO_ETA : 45,
   MAX_PATIENT_SELECTION : 6,
   CIRCLE_PLAN_PRESELECTED: false,
-  CIRCLE_FACTS : "<b>#CircleFact:</b> On an average Circle members <b>save upto ₹400 every month</b>"
+  CIRCLE_FACTS : "<b>#CircleFact:</b> On an average Circle members <b>save upto ₹400 every month</b>",
+  enableCredWebView: false,
 };
 
 const DEV_top_specialties = [
