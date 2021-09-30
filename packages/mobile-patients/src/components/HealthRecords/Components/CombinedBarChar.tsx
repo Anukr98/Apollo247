@@ -87,15 +87,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 16, '#1180BF', 1, 20.8),
     left: 15,
     marginTop: 10,
-    borderRadius: 5,
-    overflow: 'hidden',
-    height: 20,
     backgroundColor: 'white',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 3,
     width: '90%',
   },
   dateContainer: {
@@ -561,10 +553,10 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
               highlightFullBarEnabled={false}
               legend={{ enabled: true, xEntrySpace: 10, yEntrySpace: 10 }}
               zoom={
-                props?.lineData?.length > 4
-                  ? Platform.OS === 'ios'
-                    ? { scaleX: 2, scaleY: 1, xValue: -9999, yValue: 1, axisDependency: 'RIGHT' }
-                    : { scaleX: 4, scaleY: 1, xValue: 9999, yValue: 1, axisDependency: 'RIGHT' }
+                props?.lineData?.length > 5
+                  ? props?.lineData?.length >= 20
+                    ? { scaleX: 20, scaleY: 1, xValue: -9999, yValue: 1, axisDependency: 'RIGHT' }
+                    : { scaleX: 3, scaleY: 1, xValue: -9999, yValue: 1, axisDependency: 'RIGHT' }
                   : null
               }
               chartDescription={{ text: '' }}
