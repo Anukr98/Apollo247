@@ -1285,7 +1285,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
   const renderMainView = () => {
     return (
-      <View style={{ flex: 1, marginBottom: 200 }}>
+      <View style={{ flex: 1, marginBottom: 250 }}>
         {renderAddressHeading()}
         {renderCartItems()}
         {isModifyFlow ? renderPreviouslyAddedItems() : null}
@@ -2195,7 +2195,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       <SafeAreaView style={[{ ...theme.viewStyles.container }]}>
         {renderHeader()}
         {renderWizard()}
-        <ScrollView bounces={false} style={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+        <ScrollView bounces={false} style={{ flexGrow: 1 }} showsVerticalScrollIndicator={true}>
           {renderMainView()}
         </ScrollView>
         {renderTestProceedBar()}
