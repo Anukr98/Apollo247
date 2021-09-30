@@ -1250,7 +1250,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 <Text style={styles.prepareForConsult}>
                   {item?.isSeniorConsultStarted
                     ? string.common.consultRoom
-                    : item?.isConsultStarted && item?.isAutomatedQuestionsComplete
+                    : item?.isConsultStarted || item?.isAutomatedQuestionsComplete
                     ? string.common.continueConsult
                     : string.common.prepareForConsult}
                 </Text>
