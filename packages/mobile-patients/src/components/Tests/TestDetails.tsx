@@ -893,7 +893,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             <View style={styles.midCardView}>
               <ClockIcon style={styles.clockIconStyle} />
               <View style={styles.midCardTextView}>
-                <Text style={styles.reportTimeText}>Get Reports by</Text>
+                <Text style={styles.reportTimeText}>Get reports earliest by</Text>
                 <Text style={styles.reportTime}>
                   {reportTat != ''
                     ? moment(reportTat)?.format('dddd, DD MMMM')

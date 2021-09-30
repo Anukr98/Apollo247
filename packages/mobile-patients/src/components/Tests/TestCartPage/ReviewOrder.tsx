@@ -1097,15 +1097,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           {(isDiagnosticCircleSubscription || isCircleAddedToCart) && circleSaving > 0 && (
             <View style={[styles.rowSpaceBetweenStyle]}>
               <View style={{ flexDirection: 'row', flex: 0.8 }}>
-                <CircleLogo
-                  style={{
-                    resizeMode: 'contain',
-                    height: 25,
-                    width: 37,
-                    alignSelf: 'center',
-                    marginRight: 5,
-                  }}
-                />
+                <CircleLogo style={styles.circleLogoIcon} />
                 <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
                   Membership discount (-)
                 </Text>
@@ -1124,10 +1116,19 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             )}
           <Spearator style={{ marginBottom: 6, marginTop: 6 }} />
           {renderPrices('To Pay', toPayPrice?.toFixed(2), true)}
+          {isCircleAddedToCart && renderCODDisableText()}
         </View>
         {anyCartSaving > 0 && renderCartSavingBanner()}
         {showEffectiveView && renderAddtionalCircleSavingBanner(toPayPrice)}
       </>
+    );
+  };
+
+  const renderCODDisableText = () => {
+    return (
+      <View>
+        <Text style={styles.codDisableText}>{string.diagnostics.codDisableTextForCircle}</Text>
+      </View>
     );
   };
 
@@ -2345,5 +2346,13 @@ const styles = StyleSheet.create({
   circleCardView: {
     margin: 6,
     marginBottom: 16,
+  },
+  codDisableText: { ...theme.viewStyles.text('M', 12, '#D23D3D', 1, 18) },
+  circleLogoIcon: {
+    resizeMode: 'contain',
+    height: 25,
+    width: 37,
+    alignSelf: 'center',
+    marginRight: 5,
   },
 });
