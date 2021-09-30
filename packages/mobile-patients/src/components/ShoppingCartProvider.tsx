@@ -131,15 +131,18 @@ export interface BreadcrumbLink {
 
 export interface NudgeMessage {
   nudgeMessage: string;
+  nudgeMessage_non_circle?: string;
   show: 'yes' | 'no';
-  userType: 'circle' | 'non-circle' | 'all';
+  userType?: 'circle' | 'non-circle' | 'all';
 }
 
 export interface NudgeMessageCart {
   nudgeMessageMore: string;
   nudgeMessageLess: string;
+  nudgeMessageMore_non_circle?: string;
+  nudgeMessageLess_non_circle?: string;
   show: 'yes' | 'no';
-  userType: 'circle' | 'non-circle' | 'all';
+  userType?: 'circle' | 'non-circle' | 'all';
   orderValue: number;
   cashbackPer: number;
 }

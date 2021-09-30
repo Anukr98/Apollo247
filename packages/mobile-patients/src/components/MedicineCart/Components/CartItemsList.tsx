@@ -24,10 +24,19 @@ export const CartItemsList: React.FC<CartItemsListProps> = (props) => {
   const { cartBankOffer } = useAppCommonData();
   const { isCircleExpired, circleSubscriptionId } = useShoppingCart();
   const isFromCart = screen === 'cart';
+  const circleMember = circleSubscriptionId && !isCircleExpired;
+  const nonCircleMember = !circleSubscriptionId || isCircleExpired;
+  const {
+    nudgeMessageMore,
+    nudgeMessageLess,
+    nudgeMessageMore_non_circle,
+    nudgeMessageLess_non_circle,
+  } = pharmaCartNudgeMessage;
   const showNudgeMessage =
+    isFromCart &&
     pharmaCartNudgeMessage?.show === 'yes' &&
-    (pharmaCartNudgeMessage?.nudgeMessageMore || pharmaCartNudgeMessage?.nudgeMessageLess) &&
-    isFromCart;
+    ((circleMember && !!(nudgeMessageMore || nudgeMessageLess)) ||
+      (nonCircleMember && !!(nudgeMessageMore_non_circle || nudgeMessageLess_non_circle)));
 
   const renderCartItemsHeader = () => {
     const itemsCount =
@@ -81,27 +90,18 @@ export const CartItemsList: React.FC<CartItemsListProps> = (props) => {
   );
 
   const renderNudgeMessage = () => {
-    const showByUserType =
-      pharmaCartNudgeMessage?.userType == 'all' ||
-      (pharmaCartNudgeMessage?.userType == 'circle' && circleSubscriptionId && !isCircleExpired) ||
-      (pharmaCartNudgeMessage?.userType == 'non-circle' &&
-        (!circleSubscriptionId || isCircleExpired));
-    if (showByUserType) {
-      return (
-        <View style={{ marginTop: 10 }}>
-          <NudgeMessage nudgeMessageCart={pharmaCartNudgeMessage} source={'cart'} />
-        </View>
-      );
-    } else {
-      return null;
-    }
+    return (
+      <View style={{ marginTop: 10 }}>
+        <NudgeMessage nudgeMessageCart={pharmaCartNudgeMessage} source={'cart'} />
+      </View>
+    );
   };
 
   return (
     <View>
       {renderCartItemsHeader()}
       {!!cartBankOffer && renderCartBankOfferBanner()}
-      {showNudgeMessage && renderNudgeMessage()}
+      {!!showNudgeMessage && renderNudgeMessage()}
       {renderCartItems()}
     </View>
   );

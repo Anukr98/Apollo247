@@ -2,25 +2,20 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import {
+  NudgeMessageCart,
+  useShoppingCart,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
-interface NudgeMessage {
+interface NudgeMessageType {
   nudgeMessage: string;
+  nudgeMessage_non_circle?: string;
   show: 'yes' | 'no';
-  userType: 'circle' | 'non-circle' | 'all';
-}
-
-interface NudgeMessageCart {
-  nudgeMessageMore: string;
-  nudgeMessageLess: string;
-  show: 'yes' | 'no';
-  userType: 'circle' | 'non-circle' | 'all';
-  orderValue: number;
-  cashbackPer: number;
+  userType?: 'circle' | 'non-circle' | 'all';
 }
 
 export interface NudgeMessageProps {
-  nudgeMessage?: NudgeMessage | null;
+  nudgeMessage?: NudgeMessageType | null;
   nudgeMessageCart?: NudgeMessageCart | null;
   source?: string;
 }
@@ -29,6 +24,7 @@ export const NudgeMessage: React.FC<NudgeMessageProps> = (props) => {
   const { nudgeMessage, nudgeMessageCart, source } = props;
   const { circleSubscriptionId, isCircleExpired, grandTotal } = useShoppingCart();
   const showCircleLogo = !!circleSubscriptionId && !isCircleExpired;
+  const circleMember = circleSubscriptionId && !isCircleExpired;
 
   const replaceTextAmount = (text: string) => {
     return text
@@ -37,12 +33,20 @@ export const NudgeMessage: React.FC<NudgeMessageProps> = (props) => {
   };
 
   const getTextComponent = () => {
-    let text = nudgeMessage?.nudgeMessage;
+    let text = circleMember ? nudgeMessage?.nudgeMessage : nudgeMessage?.nudgeMessage_non_circle;
     if (source == 'cart' && nudgeMessageCart?.orderValue) {
       if (nudgeMessageCart?.orderValue > grandTotal) {
-        text = replaceTextAmount(nudgeMessageCart?.nudgeMessageLess);
+        text = replaceTextAmount(
+          circleMember
+            ? nudgeMessageCart?.nudgeMessageLess
+            : nudgeMessageCart?.nudgeMessageLess_non_circle || ''
+        );
       } else {
-        text = replaceTextAmount(nudgeMessageCart?.nudgeMessageMore);
+        text = replaceTextAmount(
+          circleMember
+            ? nudgeMessageCart?.nudgeMessageMore
+            : nudgeMessageCart?.nudgeMessageMore_non_circle || ''
+        );
       }
     }
     return <Text style={styles.nudgeText}>{text}</Text>;

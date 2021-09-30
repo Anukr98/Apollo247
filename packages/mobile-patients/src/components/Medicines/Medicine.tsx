@@ -2330,19 +2330,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       },
     });
     const effectivePrice = Math.round(cartDiscountTotal - cartTotalCashback);
+    const circleMember = circleSubscriptionId && !isCircleExpired;
+    const nonCircleMember = !circleSubscriptionId || isCircleExpired;
     const showNudgeMessage =
-      pharmaHomeNudgeMessage?.show === 'yes' && pharmaHomeNudgeMessage?.nudgeMessage;
-    const showByUserType =
-      pharmaHomeNudgeMessage?.userType == 'all' ||
-      (pharmaHomeNudgeMessage?.userType == 'circle' && circleSubscriptionId && !isCircleExpired) ||
-      (pharmaHomeNudgeMessage?.userType == 'non-circle' &&
-        (!circleSubscriptionId || isCircleExpired));
+      pharmaHomeNudgeMessage?.show === 'yes' &&
+      ((circleMember && !!pharmaHomeNudgeMessage?.nudgeMessage) ||
+        (nonCircleMember && !!pharmaHomeNudgeMessage?.nudgeMessage_non_circle));
 
     return (
       <View style={[circleStyles.container, { backgroundColor: 'white' }]}>
-        {showNudgeMessage && showByUserType && (
-          <NudgeMessage nudgeMessage={pharmaHomeNudgeMessage} />
-        )}
+        {!!showNudgeMessage && <NudgeMessage nudgeMessage={pharmaHomeNudgeMessage} />}
         <View style={circleStyles.content}>
           <View
             style={{
