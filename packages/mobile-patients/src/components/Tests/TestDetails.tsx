@@ -494,7 +494,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         itemIds
       );
       if (result?.data?.getConfigurableReportTAT) {
-        const getMaxReportTat = result?.data?.getConfigurableReportTAT?.maxReportTAT;
+        const getMaxReportTat = result?.data?.getConfigurableReportTAT?.reportTATMessage!;
         setReportTat(getMaxReportTat);
       } else {
         setReportTat('');
@@ -896,7 +896,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                 <Text style={styles.reportTimeText}>Get reports earliest by</Text>
                 <Text style={styles.reportTime}>
                   {reportTat != ''
-                    ? moment(reportTat)?.format('dddd, DD MMMM')
+                    ? reportTat
                     : cmsTestDetails?.diagnosticReportCustomerText
                     ? cmsTestDetails?.diagnosticReportCustomerText
                     : cmsTestDetails?.diagnosticReportGenerationTime}

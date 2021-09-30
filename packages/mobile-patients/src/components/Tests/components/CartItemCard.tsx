@@ -58,7 +58,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
 
   const hasExtraData =
     !!reportGenItem &&
-    (reportGenItem?.itemPrepration || reportTat?.reportTATInUTC || reportGenItem?.itemReportTat);
+    (reportGenItem?.itemPrepration || reportTat?.reportTATMessage || reportGenItem?.itemReportTat);
   const inclusionCount = !!reportGenItem && reportGenItem?.itemParameterCount;
 
   const showSavingsView =
@@ -153,12 +153,12 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const renderReportTat_preTestingReqrmnt = () => {
     return !!hasExtraData ? (
       <View style={styles.reportView}>
-        {reportTat?.reportTATInUTC || reportGenItem?.itemReportTat ? (
+        {reportTat?.reportTATMessage || reportGenItem?.itemReportTat ? (
           <View style={[styles.reportGenViewStyle, styles.reportViewStyle]}>
             <TestTimeIcon style={[styles.timeIconStyle, { marginLeft: 4 }]} />
             <Text style={[styles.reportGenTextStyle, { textAlign: 'right' }]}>
-              {!!reportTat?.reportTATInUTC && reportTat?.reportTATInUTC != ''
-                ? `Report by ${moment(reportTat?.reportTATInUTC)?.format('ddd, DD MMM')}`
+              {!!reportTat?.reportTATMessage && reportTat?.reportTATMessage != ''
+                ? reportTat?.reportTATMessage
                 : `Report in ${reportGenItem?.itemReportTat}`}
             </Text>
           </View>
@@ -169,7 +169,8 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
               styles.reportGenViewStyle,
               {
                 justifyContent: 'flex-start',
-                marginLeft: !!reportTat?.reportTATInUTC || !!reportGenItem?.itemReportTat ? -4 : -8,
+                marginLeft:
+                  !!reportTat?.reportTATMessage || !!reportGenItem?.itemReportTat ? -4 : -8,
               },
             ]}
           >
@@ -289,7 +290,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     borderWidth: 1,
     borderColor: theme.colors.TEST_CARD_BUTTOM_BG,
-    maxWidth: 136, //160
+    maxWidth: 185, //160
     minWidth: 100,
     justifyContent: 'flex-start',
     paddingRight: 6,
