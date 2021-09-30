@@ -9,6 +9,7 @@ import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   postCleverTapEvent,
+  convertDateToEpochFormat,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Store } from '@aph/mobile-patients/src/helpers/apiCalls';
 import moment from 'moment';
@@ -59,7 +60,16 @@ export const postPharmacyMyOrderTrackingClicked = (
     'Mobile Number': g(customer, 'mobileNumber')!,
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_MY_ORDER_TRACKING_CLICKED, eventAttributes);
-  postCleverTapEvent(CleverTapEventName.PHARMACY_MY_ORDER_TRACKING_CLICKED, eventAttributes);
+  const cleverTapEventAttributes: PharmacyMyOrderTrackingClicked = {
+    'Order ID': orderId,
+    'Order type': orderType,
+    'Order status': orderStatus,
+    'Order date': convertDateToEpochFormat(orderDate),
+    'Delivery date': convertDateToEpochFormat(deliveryDate),
+    'Customer ID': g(customer, 'id')!,
+    'Mobile number': g(customer, 'mobileNumber')!,
+  };
+  postCleverTapEvent(CleverTapEventName.PHARMACY_MY_ORDER_TRACKING_CLICKED, cleverTapEventAttributes);
 };
 
 type PharmacyAddNewAddressClick =
@@ -80,8 +90,8 @@ export const postPharmacyAddNewAddressCompleted = (
   source: PharmacyAddNewAddressCompleted['Source'],
   pincode: PharmacyAddNewAddressCompleted['Pincode'],
   deliveryAddress: PharmacyAddNewAddressCompleted['Delivery address'],
-  tat: PharmacyAddNewAddressCompleted['TAT Displayed'],
-  deliveryTat: PhamracyCartAddressSelectedSuccess['Delivery TAT'],
+  tat?,
+  deliveryTat?: PhamracyCartAddressSelectedSuccess['Delivery TAT'],
   success?: PharmacyAddNewAddressCompleted['Success']
 ) => {
   const eventAttributes: PharmacyAddNewAddressCompleted = {
@@ -93,13 +103,14 @@ export const postPharmacyAddNewAddressCompleted = (
     'Delivery TAT': deliveryTat,
   };
   const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_NEW_ADDRESS_COMPLETED] = {
-    Source: source,
+    'Nav src': source,
     Success: success,
     'Delivery address': deliveryAddress,
     Pincode: pincode,
-    'TAT Displayed': tat,
-    'Delivery TAT': deliveryTat,
+    'TAT displayed': convertDateToEpochFormat(tat),
+    'Delivery TAT': deliveryTat || undefined,
   };
+  console.log('add adress', cleverTapEventAttributes, tat);
   postCleverTapEvent(
     CleverTapEventName.PHARMACY_ADD_NEW_ADDRESS_COMPLETED,
     cleverTapEventAttributes
@@ -136,17 +147,17 @@ export const postPhamracyCartAddressSelectedSuccess = (
     ...splitOrderDetails,
   };
   const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS] = {
-    'TAT Displayed': tatDisplayed,
-    'Delivery Successful': success,
-    'Delivery Address': deliveryAddress,
+    'TAT displayed': convertDateToEpochFormat(tatDisplayed),
+    'Delivery successful': success,
+    'Delivery address': deliveryAddress,
     Pincode: pincode,
     'Delivery TAT': deliveryTat,
     TAT_Hrs: tatHrs,
-    'Split Cart': !!isSplitCart ? 'Yes' : 'No',
-    'Cart Items': itemsInCart || undefined,
-    'Circle Membership Added': pharmacyCircleEvent?.['Circle Membership Added'],
-    'Circle Membership Value': pharmacyCircleEvent?.['Circle Membership Value'] || undefined,
-    'User Type': pharmacyUserTypeAttribute?.User_Type || undefined,
+    'Split cart': !!isSplitCart ? 'Yes' : 'No',
+    'Cart items': itemsInCart || undefined,
+    'Circle membership added': pharmacyCircleEvent?.['Circle Membership Added'],
+    'Circle membership value': pharmacyCircleEvent?.['Circle Membership Value'] || undefined,
+    'User type': pharmacyUserTypeAttribute?.User_Type || undefined,
     ...splitOrderDetails,
   };
   postCleverTapEvent(
