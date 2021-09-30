@@ -82,6 +82,7 @@ import {
 import {
   diagnosticGetPhleboCharges,
   diagnosticSaveBookHcCollectionV2,
+  getReportTAT,
   processDiagnosticsCODOrderV2,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
@@ -203,6 +204,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setIsDiagnosticCircleSubscription,
     isCirclePlanRemoved,
     setIsCirclePlanRemoved,
+    modifiedOrderItemIds,
   } = useDiagnosticsCart();
 
   const {
@@ -245,6 +247,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const [allMembershipPlans, setAllMembershipPlans] = useState<any>([]);
   const [showCirclePopup, setShowCirclePopup] = useState<boolean>(false);
   const [isClicked, setIsClicked] = useState<boolean>(false);
+  const [reportTat, setReportTat] = useState<string>('');
 
   let itemNamesToRemove_global: string[] = [];
   let itemIdsToRemove_global: Number[] = [];
@@ -288,7 +291,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    const itemIds = isModifyFlow ? cartItemsWithId.concat(modifiedOrderItemIds) : cartItemsWithId;
     populateCartMapping();
+    fetchOverallReportTat(itemIds);
     //if not a circle member
     if (!isDiagnosticCircleSubscription) {
       fetchCirclePlans();
@@ -414,6 +419,40 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   useEffect(() => {
     !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
   }, [isfetchingId]);
+
+  async function fetchOverallReportTat(_cartItemId: string | number[]) {
+    const removeSpaces =
+      typeof _cartItemId == 'string' ? _cartItemId?.replace(/\s/g, '')?.split(',') : null;
+    const listOfIds =
+      typeof _cartItemId == 'string' ? removeSpaces?.map((item) => Number(item!)) : _cartItemId;
+    const pincode = isModifyFlow
+      ? modifiedOrder?.patientAddressObj?.zipcode
+      : selectedAddr?.zipcode;
+    const formattedDate = moment(diagnosticSlot?.selectedDate)?.format('YYYY-MM-DD');
+    const dateTimeInUTC = isModifyFlow
+      ? modifiedOrder && modifiedOrder?.slotDateTimeInUTC
+      : moment(formattedDate + ' ' + diagnosticSlot?.slotStartTime)?.toISOString();
+    const cityIdToPass = isModifyFlow ? modifiedOrder?.cityId : deliveryAddressCityId;
+
+    try {
+      const result = await getReportTAT(
+        client,
+        dateTimeInUTC,
+        Number(cityIdToPass),
+        !!pincode ? Number(pincode) : 0,
+        listOfIds!
+      );
+      if (result?.data?.getConfigurableReportTAT) {
+        const getMaxReportTat = result?.data?.getConfigurableReportTAT?.reportTATMessage;
+        setReportTat(getMaxReportTat!);
+      } else {
+        setReportTat('');
+      }
+    } catch (error) {
+      CommonBugFender('fetchReportTat_ReviewOrderPage', error);
+      setReportTat('');
+    }
+  }
 
   const fetchFindDiagnosticSettings = async () => {
     try {
@@ -2134,6 +2173,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             : false
         }
         modifyOrderDetails={isModifyFlow ? modifiedOrder : null}
+        showReportTat={reportTat}
       />
     ) : null;
   };

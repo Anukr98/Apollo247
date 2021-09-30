@@ -1,7 +1,7 @@
 import { formatTestSlot, nameFormater } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { TestInfoWhiteIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { ClockIcon, TestInfoWhiteIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -21,6 +21,7 @@ export interface TestProceedBarProps {
   disableProceedToPay?: boolean;
   isModifyCOD: boolean;
   modifyOrderDetails: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList | null;
+  showReportTat: string;
 }
 
 export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
@@ -34,6 +35,7 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
     disableProceedToPay,
     isModifyCOD,
     modifyOrderDetails,
+    showReportTat,
   } = props;
 
   function getButtonTitle() {
@@ -109,8 +111,18 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
     );
   };
 
+  const renderOverallReportTat = () => {
+    return (
+      <View style={styles.reportTatBottomview}>
+        <ClockIcon style={styles.clockIconStyle} />
+        <Text style={styles.reportOrderTextStyle}>{showReportTat}</Text>
+      </View>
+    );
+  };
+
   return (
     <View style={styles.container}>
+      {showReportTat != '' ? renderOverallReportTat() : null}
       {selectedTimeSlot || !!modifyOrderDetails ? renderTimeSlot() : null}
       <View style={styles.subContainer}>
         {renderTotal()}
@@ -168,5 +180,22 @@ const styles = StyleSheet.create({
   infoTextStyle: {
     ...text('R', 10, WHITE, 1, 16),
     marginLeft: 4,
+  },
+  reportTatBottomview: {
+    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
+    padding: 12,
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingLeft: 16,
+  },
+  clockIconStyle: { height: 20, width: 20, resizeMode: 'contain' },
+  reportOrderTextStyle: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: theme.colors.SHERPA_BLUE,
+    marginHorizontal: 8,
+    lineHeight: 16,
+    letterSpacing: 0.04,
   },
 });
