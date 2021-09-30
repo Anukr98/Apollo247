@@ -29,14 +29,16 @@ export const CartItemsList: React.FC<CartItemsListProps> = (props) => {
   const {
     nudgeMessageMore,
     nudgeMessageLess,
-    nudgeMessageMore_non_circle,
-    nudgeMessageLess_non_circle,
+    nudgeMessageMoreNonCircle,
+    nudgeMessageLessNonCircle,
   } = pharmaCartNudgeMessage;
+  const isNudgeMessageForCircle = circleMember && !!(nudgeMessageMore || nudgeMessageLess);
+  const isNudgeMessageForNonCircle =
+    nonCircleMember && !!(nudgeMessageMoreNonCircle || nudgeMessageLessNonCircle);
   const showNudgeMessage =
     isFromCart &&
     pharmaCartNudgeMessage?.show === 'yes' &&
-    ((circleMember && !!(nudgeMessageMore || nudgeMessageLess)) ||
-      (nonCircleMember && !!(nudgeMessageMore_non_circle || nudgeMessageLess_non_circle)));
+    (isNudgeMessageForCircle || isNudgeMessageForNonCircle);
 
   const renderCartItemsHeader = () => {
     const itemsCount =

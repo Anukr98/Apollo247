@@ -2335,7 +2335,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const showNudgeMessage =
       pharmaHomeNudgeMessage?.show === 'yes' &&
       ((circleMember && !!pharmaHomeNudgeMessage?.nudgeMessage) ||
-        (nonCircleMember && !!pharmaHomeNudgeMessage?.nudgeMessage_non_circle));
+        (nonCircleMember && !!pharmaHomeNudgeMessage?.nudgeMessageNonCircle));
 
     return (
       <View style={[circleStyles.container, { backgroundColor: 'white' }]}>

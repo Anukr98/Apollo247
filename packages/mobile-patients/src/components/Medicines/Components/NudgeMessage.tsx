@@ -9,7 +9,7 @@ import {
 
 interface NudgeMessageType {
   nudgeMessage: string;
-  nudgeMessage_non_circle?: string;
+  nudgeMessageNonCircle?: string;
   show: 'yes' | 'no';
   userType?: 'circle' | 'non-circle' | 'all';
 }
@@ -33,19 +33,19 @@ export const NudgeMessage: React.FC<NudgeMessageProps> = (props) => {
   };
 
   const getTextComponent = () => {
-    let text = circleMember ? nudgeMessage?.nudgeMessage : nudgeMessage?.nudgeMessage_non_circle;
+    let text = circleMember ? nudgeMessage?.nudgeMessage : nudgeMessage?.nudgeMessageNonCircle;
     if (source == 'cart' && nudgeMessageCart?.orderValue) {
       if (nudgeMessageCart?.orderValue > grandTotal) {
         text = replaceTextAmount(
           circleMember
             ? nudgeMessageCart?.nudgeMessageLess
-            : nudgeMessageCart?.nudgeMessageLess_non_circle || ''
+            : nudgeMessageCart?.nudgeMessageLessNonCircle || ''
         );
       } else {
         text = replaceTextAmount(
           circleMember
             ? nudgeMessageCart?.nudgeMessageMore
-            : nudgeMessageCart?.nudgeMessageMore_non_circle || ''
+            : nudgeMessageCart?.nudgeMessageMoreNonCircle || ''
         );
       }
     }

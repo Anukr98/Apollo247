@@ -131,7 +131,7 @@ export interface BreadcrumbLink {
 
 export interface NudgeMessage {
   nudgeMessage: string;
-  nudgeMessage_non_circle?: string;
+  nudgeMessageNonCircle?: string;
   show: 'yes' | 'no';
   userType?: 'circle' | 'non-circle' | 'all';
 }
@@ -139,8 +139,8 @@ export interface NudgeMessage {
 export interface NudgeMessageCart {
   nudgeMessageMore: string;
   nudgeMessageLess: string;
-  nudgeMessageMore_non_circle?: string;
-  nudgeMessageLess_non_circle?: string;
+  nudgeMessageMoreNonCircle?: string;
+  nudgeMessageLessNonCircle?: string;
   show: 'yes' | 'no';
   userType?: 'circle' | 'non-circle' | 'all';
   orderValue: number;

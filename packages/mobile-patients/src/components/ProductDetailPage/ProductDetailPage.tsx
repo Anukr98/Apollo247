@@ -923,7 +923,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     const showNudgeMessage =
       pharmaPDPNudgeMessage?.show === 'yes' &&
       ((circleMember && !!pharmaPDPNudgeMessage?.nudgeMessage) ||
-        (nonCircleMember && !!pharmaPDPNudgeMessage?.nudgeMessage_non_circle));
+        (nonCircleMember && !!pharmaPDPNudgeMessage?.nudgeMessageNonCircle));
     return (
       <StickyBottomComponent
         style={
