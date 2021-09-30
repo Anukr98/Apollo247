@@ -612,7 +612,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     const foundIndex = cartItems?.findIndex((item) => item?.id == itemUpdates?.id);
     if (foundIndex !== -1) {
       cartItems[foundIndex] = { ...cartItems[foundIndex], ...itemUpdates };
-      setCartItems([...cartItems]);
+      setCartItems([...cartItems]?.slice(0));
     }
   };
 
@@ -694,7 +694,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         return patientItems;
       }
     });
-    setPatientCartItems?.([...newPatientCartItem!]);
+    setPatientCartItems?.([...newPatientCartItem!]?.slice(0));
   };
 
   const removeDuplicatePatientCartItems: DiagnosticsCartContextProps['removeDuplicatePatientCartItems'] = (

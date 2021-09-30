@@ -472,8 +472,6 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
                 cartItem?.isSelected || AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
               collectionMethod: TEST_COLLECTION_TYPE.HC,
             };
-            updateCartItem?.(updatedItems);
-            updatePatientCartItem?.(updatedItems);
             updateCartItemsLocally(updatedItems);
             setLoading?.(false);
           }
@@ -496,12 +494,6 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   };
 
   function updateCartItemsLocally(updatedItems: DiagnosticsCartItem) {
-    const foundIndex = cartItems?.findIndex((item) => item?.id == updatedItems?.id);
-    if (foundIndex !== -1) {
-      cartItems[foundIndex] = { ...cartItems[foundIndex], ...updatedItems };
-      setCartItems?.([...cartItems]);
-    }
-
     const newPatientCartItem = patientCartItems?.map((patientItems: DiagnosticPatientCartItem) => {
       const findLineItemsIndex = patientItems?.cartItems?.findIndex(
         (lineItems: DiagnosticsCartItem) => lineItems?.id === updatedItems?.id
@@ -517,7 +509,12 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
         return patientItems;
       }
     });
-    setPatientCartItems?.([...newPatientCartItem!]);
+    setPatientCartItems?.([...newPatientCartItem!].slice(0));
+    const foundIndex = cartItems?.findIndex((item) => item?.id == updatedItems?.id);
+    if (foundIndex !== -1) {
+      cartItems[foundIndex] = { ...cartItems[foundIndex], ...updatedItems };
+      setCartItems?.([...cartItems]?.slice(0));
+    }
   }
 
   async function getAddressServiceability() {
