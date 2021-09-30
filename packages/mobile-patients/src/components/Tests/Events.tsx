@@ -205,7 +205,15 @@ export const firePurchaseEvent = (
   cartItems: any,
   currentPatient: any
 ) => {
-  let items: any = [];
+  let items,
+    itemIds,
+    itemNames,
+    itemPrices,
+    itemCategories,
+    itemCollectionMethods,
+    itemIndexs,
+    itemQuantity: any = [];
+
   cartItems.forEach((item: any, index: number) => {
     let itemObj: any = {};
     itemObj.af_content = item?.name;
@@ -216,7 +224,27 @@ export const firePurchaseEvent = (
     itemObj.index = index + 1; // Item sequence number in the list
     itemObj.af_quantity = 1;
     items.push(itemObj);
+
+    itemIds.push(item?.id);
+    itemNames.push(item?.name);
+    itemPrices.push(!!item?.specialPrice ? String(item.specialPrice) : String(item.price));
+    itemCategories.push('Diagnositcs');
+    itemCollectionMethods.push(item?.collectionMethod);
+    itemIndexs.push(String(index));
+    itemQuantity.push(String(1));
   });
+
+  let appsFlyerObject = {} as any;
+  appsFlyerObject.af_content = itemNames;
+  appsFlyerObject.af_content_id = itemIds;
+  appsFlyerObject.af_price = itemPrices;
+  appsFlyerObject.af_category = itemCategories;
+  appsFlyerObject.item_variant = itemCollectionMethods;
+  appsFlyerObject.index = itemIndexs;
+  appsFlyerObject.af_quantity = itemQuantity;
+
+  const stringifiedAppsFlyerObject = JSON.stringify(appsFlyerObject);
+
   const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
     currency: 'INR',
     items: items,
@@ -225,8 +253,7 @@ export const firePurchaseEvent = (
     LOB: 'Diagnostics',
   };
   const appsFlyerAttributes = {
-    currency: 'INR',
-    items: items,
+    items: stringifiedAppsFlyerObject,
     af_revenue: Number(grandTotal),
     af_currency: 'INR',
     af_order_id: orderId,
