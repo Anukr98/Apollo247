@@ -226,11 +226,11 @@ export function PharmacyCartViewedEvent(
   postFirebaseEvent(FirebaseEventName.PHARMACY_CART_VIEWED, firebaseAttributes);
 }
 
-export function PricemismatchEvent(cartItem: ShoppingCartItem, id: string, storeItemPrice: number) {
+export function PricemismatchEvent(cartItem: ShoppingCartItem, id: string, storeItemPrice: number, previousCartPrice: number) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.SKU_PRICE_MISMATCH]|CleverTapEvents[CleverTapEventName.PHARMACY_CART_SKU_PRICE_MISMATCH] = {
     'Mobile number': id,
     'SKU ID': cartItem.id,
-    'Magento MRP': cartItem.price,
+    'Magento MRP': previousCartPrice,
     'Magento pack size': Number(cartItem.mou),
     'Store API MRP': storeItemPrice,
     'Price change in cart': 'Yes',

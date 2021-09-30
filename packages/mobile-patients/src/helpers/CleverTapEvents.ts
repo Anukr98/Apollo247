@@ -1309,8 +1309,8 @@ export interface CleverTapEvents {
     'Payment Instrument': string;
   };
   [CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED]: {
-    Source: 'Home' | 'Cart';
-    'User Type'?: PharmaUserStatus;
+    'Nav src': 'Home' | 'Cart';
+    'User type'?: PharmaUserStatus;
   };
   [CleverTapEventName.CART_UPLOAD_PRESCRIPTION_CLICKED]: {
     'Customer ID': string;
@@ -2121,11 +2121,11 @@ export interface CleverTapEvents {
   [CleverTapEventName.PHARMACY_CART_TAT_API_CALLED]: {
     'TAT 1 day'?: number; 
     'TAT 1 hour'?: number;
-    'TAT 1 items'?: number; //no of items
+    'TAT 1 items'?: string; 
     'TAT 1 amount'?: number;
     'TAT 2 day'?: number;
     'TAT 2 hour'?: number;
-    'TAT 2 items'?: number; //no of items
+    'TAT 2 items'?: string;
     'TAT 2 amount'?: number;
     'Split cart': YesOrNo;
     Status: 'Success' | 'Failure';

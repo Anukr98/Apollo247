@@ -474,15 +474,26 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
                 currentDate,
                 'h'
               );
-              splitOrderDetails['TAT ' + (index + 1) + ' items'] = order?.items?.length;
+              splitOrderDetails['TAT ' + (index + 1) + ' items'] = JSON.stringify(order?.items);
               splitOrderDetails['TAT ' + (index + 1) + ' amount'] =
                 getShipmentPrice(order?.items, cartItems) +
                 (order?.deliveryCharge || 0) +
                 (order?.packingCharges || 0);
             });
+          } else {
+            const momentTatDate = moment(orders[0]?.tat);
+            splitOrderDetails['TAT 1' + ' day'] = Math.ceil(
+              momentTatDate.diff(currentDate, 'h') / 24
+            );
+            splitOrderDetails['TAT 1' + ' hour'] = momentTatDate.diff(currentDate, 'h');
+            splitOrderDetails['TAT 1' + ' items'] = JSON.stringify(orders[0]?.items);
+            splitOrderDetails['TAT 1' + ' amount'] =
+              getShipmentPrice(orders[0]?.items, cartItems) +
+              (orders?.deliveryCharge || 0) +
+              (orders?.packingCharges || 0);
           }
           const eventAttributes: PharmacyCartTatApiCalled = {
-            'Split cart': 'No',
+            'Split cart': orders?.length > 1 ? 'Yes' : 'No',
             Status: 'Success',
             ...splitOrderDetails,
           };
@@ -696,8 +707,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             cartItem['specialPrice'] =
               Number(cartItem?.mou) * storeItem?.mrp * (cartItem?.specialPrice / cartItem?.price);
           }
+          const previousCartPrice = cartItem['price'];
           cartItem['price'] = Number(cartItem?.mou) * storeItem?.mrp;
-          PricemismatchEvent(cartItem, currentPatient?.mobileNumber, storePrice);
+          PricemismatchEvent(cartItem, currentPatient?.mobileNumber, storePrice, previousCartPrice);
         }
       }
       cartItemsAfterPriceUpdate.push(cartItem);

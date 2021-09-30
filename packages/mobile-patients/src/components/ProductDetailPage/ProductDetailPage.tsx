@@ -666,7 +666,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       };
 
       let appsFlyerEvents = {
-        af_country: "India",
+        af_country: 'India',
         source: movedFrom,
         af_content_id: sku?.toUpperCase(),
         af_content: name,
@@ -684,9 +684,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         af_price: special_price || null,
         CircleCashback: cashback,
         isMultiVariant: multiVariantAttributes.length ? 1 : 0,
-        af_currency: "INR",
-        af_content_type: "Product Page"
-      }
+        af_currency: 'INR',
+        af_content_type: 'Product Page',
+      };
 
       if (movedFrom === 'deeplink') {
         eventAttributes['Circle Membership Added'] = circleID
@@ -701,12 +701,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           : 'No';
         eventAttributes['CategoryID'] = category_id;
         appsFlyerEvents['CategoryID'] = category_id;
-        cleverTapEventAttributes['Circle Member'] = circleID
-          ? 'Existing'
-          : !!circleMembershipCharges
-          ? 'Added'
-          : 'Not Added';
-        cleverTapEventAttributes['Circle Member'] = circleID
+        cleverTapEventAttributes['Circle member'] = circleID
           ? 'Existing'
           : !!circleMembershipCharges
           ? 'Added'
