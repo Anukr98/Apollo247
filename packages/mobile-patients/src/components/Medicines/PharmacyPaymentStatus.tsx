@@ -368,8 +368,6 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     transactionId: number,
     paymentMode: string
   ) => {
-    if(status !== failure && status !== aborted && status !== pending && status !== "PAYMENT_PENDING")
-      clearCartInfo?.()
     const paymentStatus =
       status == MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS
         ? 'Success'
@@ -393,6 +391,8 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       'Substitution Option Shown': showSubstituteMessage ? 'Yes' : 'No',
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_POST_CART_PAGE_VIEWED, eventAttributes);
+    if(status !== failure && status !== aborted && status !== pending && status !== "PAYMENT_PENDING")
+      clearCartInfo?.()
   };
 
   const fireSubstituteResponseEvent = (action: string) => {
