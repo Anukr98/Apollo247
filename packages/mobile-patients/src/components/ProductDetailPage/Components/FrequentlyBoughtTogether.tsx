@@ -167,7 +167,7 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
             </View>
           </View>
         </View>
-        {index !== boughtTogetherArray.length - 1 && renderPlusView()}
+        {index !== boughtTogetherArray?.length - 1 && renderPlusView()}
       </View>
     );
   };
