@@ -339,6 +339,14 @@ const styles = StyleSheet.create({
     marginTop: 5,
     height: 60,
   },
+  prescriptionOption: {
+    borderRadius: 5,
+    borderColor: '#D3D3D3',
+    borderWidth: 0.5,
+    height: 250,
+    width: '95%',
+    margin: 10,
+  },
 });
 
 export const renderCovidVaccinationShimmer = () => {
@@ -918,5 +926,16 @@ export const renderPackageItemPriceShimmer = () => {
       LinearGradient={LinearGradient}
       shimmerStyle={styles.itemPackagePrice}
     />
+  );
+};
+
+export const pharmaPrescriptionShimmer = () => {
+  return (
+    <View style={{ backgroundColor: '#f0f1ec', paddingHorizontal: 8 }}>
+      <ShimmerPlaceHolder
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.prescriptionOption}
+      />
+    </View>
   );
 };

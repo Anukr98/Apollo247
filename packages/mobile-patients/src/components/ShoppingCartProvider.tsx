@@ -3,6 +3,7 @@ import {
   MedicineOrderShipmentInput,
   MedicineCartOMSItem,
   PrescriptionType,
+  PharmaPrescriptionOptionInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { Store, GetStoreInventoryResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -287,6 +288,8 @@ export interface ShoppingCartContextProps {
   setMedicineHomeBannerData: ((value: any) => void) | null;
   medicineHotSellersData: any;
   setMedicineHotSellersData: ((value: any) => void) | null;
+  tatDetailsForPrescriptionOptions: PharmaPrescriptionOptionInput | null;
+  setTatDetailsForPrescriptionOptions: ((value: PharmaPrescriptionOptionInput) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -419,6 +422,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setMedicineHomeBannerData: null,
   medicineHotSellersData: null,
   setMedicineHotSellersData: null,
+  tatDetailsForPrescriptionOptions: null,
+  setTatDetailsForPrescriptionOptions: null,
 });
 
 const AsyncStorageKeys = {
@@ -617,6 +622,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
     const updatedEPres = [...existingFilteredEPres, ...itemsToAdd];
     setEPrescriptions(updatedEPres);
   };
+
+  const [tatDetailsForPrescriptionOptions, setTatDetailsForPrescriptionOptions] = useState<
+    ShoppingCartContextProps['tatDetailsForPrescriptionOptions']
+  >(null);
 
   const setCartItems: ShoppingCartContextProps['setCartItems'] = (cartItems) => {
     if (cartItems.length) {
@@ -881,6 +890,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setSubscriptionCoupon(null);
     setMedicineHomeBannerData(null);
     setMedicineHotSellersData(null);
+    setTatDetailsForPrescriptionOptions(null);
   };
 
   useEffect(() => {
@@ -1365,6 +1375,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setMedicineHomeBannerData,
         medicineHotSellersData,
         setMedicineHotSellersData,
+        tatDetailsForPrescriptionOptions,
+        setTatDetailsForPrescriptionOptions,
       }}
     >
       {props.children}

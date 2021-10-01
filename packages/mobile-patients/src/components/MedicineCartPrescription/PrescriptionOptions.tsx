@@ -25,11 +25,18 @@ import { PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalT
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Button, ButtonProps, Divider } from 'react-native-elements';
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
 import { postCleverTapUploadPrescriptionEvents } from '@aph/mobile-patients/src/components/UploadPrescription/Events';
+import { useApolloClient } from 'react-apollo-hooks';
+import { GET_PHARMACY_PRESCRIPTION_OPTION } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  pharmaPrescriptionOption,
+  pharmaPrescriptionOptionVariables,
+} from '@aph/mobile-patients/src/graphql/types/pharmaPrescriptionOption';
+import { pharmaPrescriptionShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 
 export interface Props {
   selectedOption: PrescriptionType | null;
@@ -51,10 +58,50 @@ export const PrescriptionOptions: React.FC<Props> = ({
   navigation,
 }) => {
   const [myPrescriptionsVisible, setMyPrescriptionsVisible] = useState<boolean>(false);
-  const { ePrescriptions, physicalPrescriptions } = useShoppingCart();
+  const {
+    ePrescriptions,
+    physicalPrescriptions,
+    tatDetailsForPrescriptionOptions,
+  } = useShoppingCart();
+  const client = useApolloClient();
   const prescriptionPopupRef = useRef<UploadPrescriprionPopupRefProps | null>(null);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
-  const cartPrescriptionOptions = AppConfig.Configuration.CART_PRESCRIPTION_OPTIONS;
+  const configPrescriptionOptions = AppConfig.Configuration.CART_PRESCRIPTION_OPTIONS;
+  const [prescriptionsLoading, setPrescriptionsLoading] = useState<boolean>(false);
+  const [cartPrescriptionOptions, setCartPrescriptionOptions] = useState<any[]>([]);
+
+  useEffect(() => {
+    getPrescriptionOptions();
+  }, []);
+
+  const getPrescriptionOptions = async () => {
+    setPrescriptionsLoading(true);
+    try {
+      if (!tatDetailsForPrescriptionOptions?.patientid) {
+        setCartPrescriptionOptions(configPrescriptionOptions);
+        setPrescriptionsLoading(false);
+        return;
+      }
+      const response = await client.query<
+        pharmaPrescriptionOption,
+        pharmaPrescriptionOptionVariables
+      >({
+        query: GET_PHARMACY_PRESCRIPTION_OPTION,
+        variables: tatDetailsForPrescriptionOptions,
+        fetchPolicy: 'no-cache',
+      });
+      const { data } = response;
+      if (data?.pharmaPrescriptionOption?.pharmaPrescriptionOption?.length) {
+        setCartPrescriptionOptions(data?.pharmaPrescriptionOption?.pharmaPrescriptionOption);
+      } else {
+        setCartPrescriptionOptions(configPrescriptionOptions);
+      }
+      setPrescriptionsLoading(false);
+    } catch (error) {
+      setCartPrescriptionOptions(configPrescriptionOptions);
+      setPrescriptionsLoading(false);
+    }
+  };
 
   const renderHavePrescription = (title: string) => {
     return (
@@ -271,19 +318,23 @@ export const PrescriptionOptions: React.FC<Props> = ({
   };
 
   const renderCartPrescriptionOptions = () => {
-    return cartPrescriptionOptions
-      .filter(({ visible }) => visible)
-      .map(({ id, title }, index, array) => {
-        const options =
-          id === 'havePrescription'
-            ? [renderHavePrescription(title), renderAddedPrescriptions()]
-            : id === 'sharePrescriptionLater'
-            ? [renderSharePrescriptionLater(title)]
-            : id === 'noPrescriptionDoConsult'
-            ? [renderNoPrescription(title)]
-            : null;
-        return [options, index > 0 && index < array.length && renderDivider()];
-      });
+    if (prescriptionsLoading) {
+      return pharmaPrescriptionShimmer();
+    } else {
+      return cartPrescriptionOptions
+        .filter(({ visible }) => visible)
+        .map(({ id, title }, index, array) => {
+          const options =
+            id === 'havePrescription'
+              ? [renderHavePrescription(title), renderAddedPrescriptions()]
+              : id === 'sharePrescriptionLater'
+              ? [renderSharePrescriptionLater(title)]
+              : id === 'noPrescriptionDoConsult'
+              ? [renderNoPrescription(title)]
+              : null;
+          return [options, index > 0 && index < array.length && renderDivider()];
+        });
+    }
   };
 
   return (

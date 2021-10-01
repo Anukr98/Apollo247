@@ -707,6 +707,12 @@ export enum STATUS {
   UNAVAILABLE_MEDMANTRA = 'UNAVAILABLE_MEDMANTRA',
 }
 
+export enum SiteType {
+  CVDC = "CVDC",
+  HUB = "HUB",
+  LVDC = "LVDC",
+}
+
 export enum SpecialtySearchType {
   ID = 'ID',
   NAME = 'NAME',
@@ -1699,6 +1705,15 @@ export interface PharmaCouponInput {
   code: string;
   patientId: string;
   orderLineItems?: (OrderLineItems | null)[] | null;
+}
+
+export interface PharmaPrescriptionOptionInput {
+  patientid?: string | null;
+  userType?: PHARMACY_USER_TYPE | null;
+  tatType?: SiteType | null;
+  tatCity?: string | null;
+  tatHours?: string | null;
+  items?: (string | null)[] | null;
 }
 
 export interface PharmaSubstitutionRequest {
