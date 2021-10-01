@@ -1053,6 +1053,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Enable_Cred_WebView_Flow',
       PROD: 'Enable_Cred_WebView_Flow',
     },
+    Diagnostics_Default_Location: {
+      QA: 'QA_Diagnostics_Default_Address',
+      PROD: 'Diagnostics_Default_Address',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1352,6 +1356,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
 
       setAppConfig('CircleFacts', 'CIRCLE_FACTS', (key) => config.getString(key));
+
+      setAppConfig(
+        'Diagnostics_Default_Location',
+        'DIAGNOSTIC_DEFAULT_LOCATION',
+        (key) =>
+          JSON.parse(config.getString(key) || 'null') ||
+          AppConfig.Configuration.DIAGNOSTIC_DEFAULT_LOCATION
+      );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';
