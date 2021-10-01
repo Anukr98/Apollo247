@@ -5,7 +5,7 @@ import {
   NavigationActions,
 } from 'react-navigation';
 import { setBugFenderLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { postCleverTapEvent, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -16,6 +16,7 @@ import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
 import { MutableRefObject } from 'react';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { CleverTapEventName, CleverTapEvents } from './CleverTapEvents';
 
 export const handleOpenURL = (event: any) => {
   try {
@@ -443,6 +444,13 @@ export const pushTheView = (
       navigation.navigate('APPOINTMENTS', { movedFrom: 'deeplink' });
       break;
     case 'Medicine':
+      const eventAttribute: CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
+        'Nav src': 'deeplink',
+      };
+      setTimeout(
+        () => postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED, eventAttribute),
+        500
+      );
       navigation.navigate('MEDICINES', { comingFrom: 'deeplink' });
       break;
     case 'UploadPrescription':
