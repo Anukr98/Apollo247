@@ -864,6 +864,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setDiagnosticServiceabilityData?.(obj); //sets the city,state, and there id's
             setDiagnosticLocationServiceable?.(true);
             setServiceabilityMsg('');
+            setUnserviceablePopup(false);
             !!source &&
               DiagnosticPinCodeClicked(
                 currentPatient,
