@@ -116,7 +116,7 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
   const renderBoughtTogetherItem = (imgUrl: string, item: MedicineProduct, index: number) => {
     const specialPrice = item?.special_price ? true : false;
     const discount = Math.round(getDiscountPercentage(item?.price, item?.special_price));
-    const itemSelected = selectedProductsId?.includes(item?.id);
+    const itemSelected = selectedProductsId.includes(item?.id);
     return (
       <View style={styles.mainContainer}>
         <View style={styles.ItemContainer}>
