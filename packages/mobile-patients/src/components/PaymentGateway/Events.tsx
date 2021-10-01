@@ -136,7 +136,7 @@ export function PharmaOrderPlaced(
 
     let revenue = 0;
     shoppingCart?.cartItems?.forEach(item => {
-      revenue += item?.quantity * item?.specialPrice!
+      revenue += item?.quantity * (item?.specialPrice ? item?.specialPrice : item?.price)
     })
     const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED] = {
       af_customer_user_id: currentPatient ? currentPatient.id : "",
@@ -146,7 +146,7 @@ export function PharmaOrderPlaced(
       af_order_id: paymentOrderId ? paymentOrderId : "0",
       "af_content_id": shoppingCart?.cartItems?.map(item => item?.id),
       "af_quantity": shoppingCart?.cartItems?.map(item => item?.quantity),
-      "af_price": shoppingCart?.cartItems?.map(item => item?.specialPrice),
+      "af_price": shoppingCart?.cartItems?.map(item => item?.specialPrice ? item?.specialPrice : item?.price),
       'coupon applied': coupon ? true : false,
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,

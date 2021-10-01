@@ -188,7 +188,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       orderAutoId: orderAutoId,
       'coupon applied': coupon ? true : false,
       "af_content_id": cartItems?.map(item => item?.id),
-      "af_price": cartItems?.map(item => item?.specialPrice),
+      "af_price": cartItems?.map(item => item?.specialPrice ? item?.specialPrice : item?.price),
       "af_quantity": cartItems?.map(item => item?.quantity),
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,

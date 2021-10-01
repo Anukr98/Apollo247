@@ -368,6 +368,8 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     transactionId: number,
     paymentMode: string
   ) => {
+    if(status !== failure && status !== aborted && status !== pending && status !== "PAYMENT_PENDING")
+      clearCartInfo?.()
     const paymentStatus =
       status == MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS
         ? 'Success'
@@ -448,7 +450,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       'coupon applied': coupon ? true : false,
       "af_content_id": cartItems?.map(item => item?.id),
       "af_quantity": cartItems?.map(item => item?.quantity),
-      "af_price": cartItems?.map(item => item?.specialPrice),
+      "af_price": cartItems?.map(item => item?.specialPrice ? item?.specialPrice : item?.price),
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
       ...pharmacyCircleAttributes!,
