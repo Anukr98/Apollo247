@@ -6155,3 +6155,15 @@ export const GET_JUSPAY_CLIENTAUTH_TOKEN = gql`
     }
   }
 `;
+
+export const GET_PHARMACY_PRESCRIPTION_OPTION = gql`
+  query pharmaPrescriptionOption($pharmaPrescriptionOptionInput: PharmaPrescriptionOptionInput) {
+    pharmaPrescriptionOption(pharmaPrescriptionOptionInput: $pharmaPrescriptionOptionInput) {
+      pharmaPrescriptionOption {
+        id
+        title
+        visible
+      }
+    }
+  }
+`;
