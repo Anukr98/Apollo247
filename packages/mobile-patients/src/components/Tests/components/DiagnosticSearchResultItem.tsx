@@ -1,13 +1,8 @@
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import {
-  PackageIcon,
-  TestsCartIcon,
-  TestsIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { PackageIcon, TestsCartIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
-import { Image } from 'react-native-elements';
 import {
   isEmptyObject,
   isSmallDevice,
@@ -76,18 +71,19 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
     const itemTypeExits = !!itemType && itemType != '';
     const isTest = itemTypeExits && itemType?.toLowerCase() == 'test';
     const isPackage = itemTypeExits && itemType?.toLowerCase() == 'package';
-    const isZero = (isTest && testPramaterDataCount == 0) || (isPackage && dataLength == 0);
+    const isTestPackageDetailsUnavailable =
+      (isTest && testPramaterDataCount == 0) || (isPackage && dataLength == 0);
 
     return (
       <View style={{ flex: 1 }}>
         <View style={styles.nameAndPriceViewStyle}>
-          <View style={{ width: '70%' }}>
+          <View style={{ width: '66%' }}>
             <Text numberOfLines={2} style={styles.testNameText}>
               {name}
             </Text>
             {!!itemTypeExits ? (isTest ? renderTestsIncluded() : renderInclusions()) : null}
             {renderAliasName()}
-            {isZero && renderItemType(isZero)}
+            {renderItemType(isTestPackageDetailsUnavailable)}
           </View>
           <View style={{ alignItems: 'flex-end' }}>
             <Text style={styles.priceText}>
@@ -97,7 +93,6 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
             {renderAddToCartView(pricesForItem)}
           </View>
         </View>
-        {!isZero && renderItemType(isZero)}
       </View>
     );
   };
@@ -126,7 +121,7 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
     return (
       <View>
         {inclusionData?.length > 0 && (
-          <Text style={styles.greyedOutTextStyle}>
+          <Text numberOfLines={2} style={styles.greyedOutTextStyle}>
             Includes:{' '}
             <Text
               style={{ color: !!findMatchItem ? theme.colors.APP_GREEN : theme.colors.SHERPA_BLUE }}
@@ -143,19 +138,21 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
   const renderAliasName = () => {
     const aliasNames =
       !!data?.diagnostic_item_alias_names && data?.diagnostic_item_alias_names !== '';
+
     return (
       <>
-        {aliasNames && (
+        {aliasNames ? (
           <Text style={styles.greyedOutItalicsTextStyle} numberOfLines={1}>
-            Also Known as: {aliasNames}{' '}
+            Also Known as: {data?.diagnostic_item_alias_names}
           </Text>
-        )}
+        ) : null}
       </>
     );
   };
 
-  const renderItemType = (isTop: boolean) => {
+  const renderItemType = (isTestPackageDetailsUnavailable: boolean) => {
     const hasType = !!itemType && itemType != '';
+    const isTest = !!hasType && itemType?.toLowerCase() == 'test';
     return (
       <>
         {!!hasType ? (
@@ -163,20 +160,13 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
             style={[
               styles.iconOrImageContainerStyle,
               {
-                width:
-                  itemType?.toLowerCase() == 'test'
-                    ? isTop
-                      ? '33%'
-                      : '24%'
-                    : isTop
-                    ? '43%'
-                    : '29%',
-                marginTop: isTop ? 8 : itemType?.toLowerCase() == 'test' ? -4 : 8,
+                width: isTest ? 85 : 110,
+                marginTop: isTestPackageDetailsUnavailable ? 8 : isTest ? -4 : 10,
               },
             ]}
           >
             <View>
-              {!!itemType && itemType != '' && itemType?.toLowerCase() == 'test' ? (
+              {isTest ? (
                 <TestsCartIcon style={styles.imageIcon} />
               ) : (
                 <PackageIcon style={styles.imageIcon} />
@@ -263,15 +253,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   addCta: {
-    ...theme.viewStyles.text('B', isSmallDevice ? 13 : 14, '#FCA317', 1, 18, 0),
+    ...theme.viewStyles.text('B', isSmallDevice ? 12 : 13, '#FCA317', 1, 18, 0),
     textTransform: 'uppercase',
-    textAlign: 'right',
-    width: 'auto',
+    textAlign: 'center',
   },
   removeCta: {
-    ...theme.viewStyles.text('B', 14, colors.WHITE, 1, 18, 0),
+    ...theme.viewStyles.text('B', isSmallDevice ? 12 : 13, colors.WHITE, 1, 18, 0),
     textTransform: 'uppercase',
-    textAlign: 'right',
+    textAlign: 'center',
   },
   testNameText: {
     ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 20),
@@ -284,7 +273,7 @@ const styles = StyleSheet.create({
     color: theme.colors.SHERPA_BLUE,
     opacity: 0.6,
     lineHeight: 18,
-    fontSize: 12,
+    fontSize: 11,
   },
   greyedOutTextStyle: {
     ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 1, 18),
