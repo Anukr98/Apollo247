@@ -373,6 +373,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS_FOR_HELP = gql`
         appointmentType
         appointmentDateTime
         displayId
+        status
         doctorInfo {
           thumbnailUrl
           displayName
