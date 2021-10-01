@@ -96,9 +96,9 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
   };
   const renderPlusView = () => {
     return (
-      <View style={{ flexDirection: 'row', marginVertical: -15 }}>
+      <View style={styles.plusContainer}>
         <View style={styles.plusLeftStyle}>
-          <Text numberOfLines={1} ellipsizeMode={'clip'} style={{ color: '#658F9B' }}>
+          <Text numberOfLines={1} ellipsizeMode={'clip'} style={styles.dashStyle}>
             -----------------
           </Text>
         </View>
@@ -106,7 +106,7 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
           <Text style={styles.plusTextStyle}>+</Text>
         </View>
         <View style={styles.plusRightStyle}>
-          <Text numberOfLines={1} ellipsizeMode={'clip'} style={{ color: '#658F9B' }}>
+          <Text numberOfLines={1} ellipsizeMode={'clip'} style={styles.dashStyle}>
             --------------------------------------------------------
           </Text>
         </View>
@@ -342,6 +342,10 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: '#FFFFFF',
   },
+  plusContainer: {
+    flexDirection: 'row',
+    marginVertical: -15,
+  },
   plusLeftStyle: {
     width: '15%',
     alignSelf: 'center',
@@ -355,5 +359,8 @@ const styles = StyleSheet.create({
   plusTextStyle: {
     color: '#658F9B',
     fontSize: 25,
+  },
+  dashStyle: {
+    color: '#658F9B',
   },
 });
