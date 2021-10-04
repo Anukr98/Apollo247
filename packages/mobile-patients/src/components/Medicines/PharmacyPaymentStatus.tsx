@@ -564,7 +564,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const fireCleverTapOrderSuccessEvent = () => {
     postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, {
       ...cleverTapCheckoutEventAttributes,
-      'Cart Items': cartItems?.length,
+      'Cart items': cartItems?.length,
     });
   };
 
