@@ -202,6 +202,7 @@ import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/G
 import {
   CleverTapEventName,
   CleverTapEvents,
+  DiagnosticHomePageSource,
   HomeScreenAttributes,
   PatientInfo as PatientInfoObj,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
@@ -1546,6 +1547,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const homeScreenAttributes = {
           'Nav src': 'hero banner',
           'Page Name': 'Home Screen',
+          Source: DiagnosticHomePageSource.HOMEPAGE_CTA,
         };
         postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Home Screen');
@@ -2706,6 +2708,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   const homeScreenAttributes = {
                     'Nav src': 'Bottom bar',
                     'Page Name': 'Home Screen',
+                    Source: DiagnosticHomePageSource.TAB_BAR,
                   };
                   postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Menu');
@@ -2961,7 +2964,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       } else if (action.cta_action == 'PHR') {
         props.navigation.navigate('HealthRecords');
       } else if (action.cta_action == 'DIAGNOSTICS_LANDING') {
-        props.navigation.navigate('TESTS');
+        const homeScreenAttributes = {
+          Source: DiagnosticHomePageSource.BANNER,
+        };
+        props.navigation.navigate('TESTS', { homeScreenAttributes });
       } else if (action.cta_action == 'MEMBERSHIP_DETAIL_CIRCLE') {
         props.navigation.navigate('MembershipDetails', {
           membershipType: 'CIRCLE PLAN',

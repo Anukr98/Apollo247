@@ -15,6 +15,7 @@ import {
 import {
   CleverTapEventName,
   CleverTapEvents,
+  DiagnosticHomePageSource,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
@@ -38,6 +39,22 @@ function createPatientAttributes(currentPatient: any) {
     'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
   };
   return patientAttributes;
+}
+
+export async function DiagnosticLandingPageViewedEvent(
+  currentPatient: any,
+  isDiagnosticCircleSubscription: boolean | undefined,
+  source: DiagnosticHomePageSource
+) {
+  const getPatientAttributes = await createPatientAttributes(currentPatient);
+
+  const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED] = {
+    ...getPatientAttributes,
+    'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+    Source: source,
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, cleverTapEventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, cleverTapEventAttributes);
 }
 
 export async function DiagnosticPinCodeClicked(

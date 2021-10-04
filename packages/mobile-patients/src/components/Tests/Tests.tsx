@@ -119,6 +119,7 @@ import {
   DiagnosticAddToCartEvent,
   DiagnosticBannerClick,
   DiagnosticHomePageWidgetClicked,
+  DiagnosticLandingPageViewedEvent,
   DiagnosticPinCodeClicked,
   DiagnosticTrackOrderViewed,
   DiagnosticTrackPhleboClicked,
@@ -200,6 +201,7 @@ export interface TestsProps
   extends NavigationScreenProps<{
     comingFrom?: string;
     movedFrom?: string;
+    homeScreenAttributes?: any;
   }> {}
 
 export const Tests: React.FC<TestsProps> = (props) => {
@@ -248,6 +250,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const client = useApolloClient();
   const movedFrom = props.navigation.getParam('movedFrom');
+  const homeScreenAttributes = props.navigation.getParam('homeScreenAttributes');
   const { currentPatient } = useAllCurrentPatients();
 
   const hdfc_values = string.Hdfc_values;
@@ -418,6 +421,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   }, []);
 
+  function triggerLandingPageViewedEvent() {
+    DiagnosticLandingPageViewedEvent(
+      currentPatient,
+      isDiagnosticCircleSubscription,
+      movedFrom === 'deeplink' ? 'Deeplink' : homeScreenAttributes?.Source
+    );
+  }
+
   //loading address, open-closed order, circle banners for the user.
   useEffect(() => {
     if (currentPatient) {
@@ -427,6 +438,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       fetchPatientPrescriptions();
       getUserBanners();
       getDataFromCache();
+      triggerLandingPageViewedEvent();
     }
   }, [currentPatient]);
 

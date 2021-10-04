@@ -8,6 +8,7 @@ import {
   UploadPrescSource,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE, DIAGNOSTIC_PINCODE_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
+import { DiagnosticHomePageSource } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 type YesOrNo = 'Yes' | 'No';
 type HdfcPlan = 'SILVER' | 'GOLD' | 'PLATINUM';
@@ -179,7 +180,9 @@ export enum WebEngageEventName {
   COVID_VACCINATION_SECTION_CLICKED = 'Covid Vaccination Section Clicked',
   USER_LOCATION_CONSULT = 'User Location consult',
   USER_CHANGED_LOCATION = 'Change location',
+  
   // Diagnostics Events
+  DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
   DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'Diagnostic pincode entered',
   DIAGNOSTIC_LANDING_ITEM_SEARCHED = 'Diagnostic partial search',
   DIAGNOSTIC_ITEM_SEARCHED = 'Diagnostic full search',
@@ -539,7 +542,10 @@ export interface DiagnosticUserInfo {
   'Patient Age': number;
   'User Type'?: any
 }
-
+export interface DiagnosticLandingPage extends DiagnosticUserInfo {
+    Source: DiagnosticHomePageSource;
+    'Circle user'?: string;
+}
 export interface DiagnosticServiceble {
   'Patient UHID': string;
   State: string;
@@ -1206,7 +1212,7 @@ export interface WebEngageEvents {
   };
 
   // ********** Diagnostic Events *******
-
+  [WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED]: DiagnosticLandingPage;
   [WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED]: ItemSearchedOnLanding;
   [WebEngageEventName.DIAGNOSTIC_ITEM_SEARCHED]: ItemSearchedOnLanding;
   [WebEngageEventName.DIAGNOSTIC_MY_ORDERS]: {
