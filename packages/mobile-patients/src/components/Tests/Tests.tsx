@@ -622,40 +622,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     fetchUserType();
   }, []);
 
-  const fetchOrders = async () => {
-    //for checking whether user is new or repeat.
-    try {
-      setLoading?.(true);
-      client
-        .query<getDiagnosticOrdersListByMobile, getDiagnosticOrdersListByMobileVariables>({
-          query: GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
-          context: {
-            sourceHeaders,
-          },
-          variables: {
-            mobileNumber: currentPatient && currentPatient.mobileNumber,
-            paginated: true,
-            limit: 1, //decreased limit to 1 because we only need to check whether user had any single order or not
-            offset: currentOffset,
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then((data) => {
-          const ordersList = data?.data?.getDiagnosticOrdersListByMobile?.ordersList || [];
-          const diagnosticUserType =
-            ordersList?.length > 0 ? string.user_type.REPEAT : string.user_type.NEW;
-          AsyncStorage.setItem('diagnosticUserType', JSON.stringify(diagnosticUserType));
-        })
-        .catch((error) => {
-          setLoading?.(false);
-          CommonBugFender(`${AppRoutes.Tests}_fetchOrders`, error);
-        });
-    } catch (error) {
-      setLoading?.(false);
-      CommonBugFender(`${AppRoutes.Tests}_fetchOrders`, error);
-    }
-  };
-
   useEffect(() => {
     // getting diagnosticUserType from asyncStorage
     const fetchUserType = async () => {
