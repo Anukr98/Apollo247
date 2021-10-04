@@ -1054,9 +1054,6 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       duration_in_month: circlePriceAndDuration?.durationInMonth,
       user_type: getUserType(allCurrentPatients),
       price: circlePriceAndDuration?.price,
-      source_identifier: circlePlanValidity?.source_identifier,
-      corporate_name: currentPatient?.partnerId,
-      destination: action,
     };
     postCleverTapEvent(CleverTapEventName.CIRCLE_BENIFIT_CLICKED, cleverTapEventAttributes);
   };
