@@ -53,6 +53,7 @@ import {
   GET_DIAGNOSTICS_RECOMMENDATIONS,
   GET_DIAGNOSTIC_EXPRESS_SLOTS_INFO,
   GET_DIAGNOSTIC_REPORT_TAT,
+  SAVE_JUSPAY_SDK_RESPONSE,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -223,9 +224,18 @@ import {
   getDiagnosticPaymentSettings,
   getDiagnosticPaymentSettingsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticPaymentSettings';
-import { getDiagnosticItemRecommendations, getDiagnosticItemRecommendationsVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticItemRecommendations';
-import { getUpcomingSlotInfo, getUpcomingSlotInfoVariables } from '@aph/mobile-patients/src/graphql/types/getUpcomingSlotInfo';
-import { getConfigurableReportTAT, getConfigurableReportTATVariables } from '@aph/mobile-patients/src/graphql/types/getConfigurableReportTAT';
+import {
+  getDiagnosticItemRecommendations,
+  getDiagnosticItemRecommendationsVariables,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticItemRecommendations';
+import {
+  getUpcomingSlotInfo,
+  getUpcomingSlotInfoVariables,
+} from '@aph/mobile-patients/src/graphql/types/getUpcomingSlotInfo';
+import {
+  getConfigurableReportTAT,
+  getConfigurableReportTATVariables,
+} from '@aph/mobile-patients/src/graphql/types/getConfigurableReportTAT';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -1187,19 +1197,16 @@ export const savePhleboFeedback = (
   client: ApolloClient<object>,
   rating: number,
   feedback: string,
-  orderId: string
+  orderId: string,
+  userComment: string
 ) => {
-  const inputVariables = {
-    phleboRating: rating,
-    phleboFeedback: feedback,
-    diagnosticOrdersId: orderId,
-  };
   return client.mutate<savePhleboFeedback_savePhleboFeedback, savePhleboFeedbackVariables>({
     mutation: SAVE_PHLEBO_FEEDBACK,
     variables: {
       phleboRating: rating,
       phleboFeedback: feedback,
       diagnosticOrdersId: orderId,
+      patientComments: userComment
     },
     fetchPolicy: 'no-cache',
   });
@@ -1370,6 +1377,17 @@ export const diagnosticsOrderListByParentId =  (
     fetchPolicy: 'no-cache',
   });
 }
+
+export const saveJusPaySDKresponse = (client: ApolloClient<object>, payload: any) => {
+  client.query({
+    query: SAVE_JUSPAY_SDK_RESPONSE,
+    context: {
+      sourceHeaders,
+    },
+    variables: payload,
+    fetchPolicy: 'no-cache',
+  });
+};
 
 export const getDiagnosticCartRecommendations = (
   client: ApolloClient<object>,

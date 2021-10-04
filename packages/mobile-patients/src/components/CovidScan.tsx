@@ -10,6 +10,8 @@ import {
   SafeAreaView,
   View,
   BackHandler,
+  Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
@@ -98,7 +100,15 @@ export const CovidScan: React.FC<CovidScanProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         <Header leftIcon="logo" onPressLeftIcon={() => handleBack()} />
-        <View style={{ flex: 1, overflow: 'hidden' }}>{renderWebView()}</View>
+        <View style={{ flex: 1, overflow: 'hidden' }}>
+          {Platform.OS == 'android' ? (
+            <KeyboardAvoidingView style={theme.viewStyles.container} behavior={'height'}>
+              {renderWebView()}
+            </KeyboardAvoidingView>
+          ) : (
+            renderWebView()
+          )}
+        </View>
       </SafeAreaView>
       {loading && renderSpinner()}
     </View>

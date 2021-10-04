@@ -25,6 +25,9 @@ import {
   initialSortByDays,
   handleGraphQlError,
   editDeleteData,
+  postCleverTapPHR,
+  postCleverTapIfNewSession,
+  postWebEngagePHR,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -44,6 +47,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -159,7 +163,6 @@ export const VaccinationScreen: React.FC<VaccinationScreenProps> = (props) => {
         if (!!immunizations) {
           finalData = initialSortByDays('immunization', immunizations, finalData);
           setLocalVaccinationData(finalData);
-          console.log(immunizations, 'FINAL DATA');
         }
         setShowSpinner(false);
       })
@@ -206,10 +209,11 @@ export const VaccinationScreen: React.FC<VaccinationScreenProps> = (props) => {
   const onPressEditPrismMedicalRecords = (selectedItem: any) => {
     setCallApi(false);
     props.navigation.navigate(AppRoutes.AddVaccinationRecord, {
-      navigatedFrom: 'Test Reports',
+      navigatedFrom: 'Vaccination Screen',
       recordType: MedicalRecordType.IMMUNIZATION,
       selectedRecordID: selectedItem?.id,
       selectedRecord: selectedItem,
+      update: true,
       onRecordAdded: onRecordAdded,
     });
   };
@@ -224,6 +228,13 @@ export const VaccinationScreen: React.FC<VaccinationScreenProps> = (props) => {
     )
       .then((status) => {
         if (status) {
+          const eventInputData = removeObjectProperty(selectedItem, 'immunizations');
+          postCleverTapPHR(
+            currentPatient,
+            CleverTapEventName.PHR_DELETE_VACCINATION_REPORT,
+            'Vaccination Screen',
+            eventInputData
+          );
           getLatestLabAndHealthCheckRecords();
         } else {
           setShowSpinner(false);
@@ -242,14 +253,6 @@ export const VaccinationScreen: React.FC<VaccinationScreenProps> = (props) => {
   };
 
   const onHealthCardItemPress = (selectedItem: any) => {
-    const eventInputData = removeObjectProperty(selectedItem, 'vaccination');
-    postWebEngageIfNewSession(
-      'Vaccination',
-      currentPatient,
-      eventInputData,
-      phrSession,
-      setPhrSession
-    );
     props.navigation.navigate(AppRoutes.VaccinationDoseScreen, {
       data: selectedItem,
     });
@@ -337,6 +340,7 @@ export const VaccinationScreen: React.FC<VaccinationScreenProps> = (props) => {
               navigatedFrom: 'Vaccination ',
               recordType: MedicalRecordType.IMMUNIZATION,
               onRecordAdded: onRecordAdded,
+              update: false,
             });
           }}
         />

@@ -573,7 +573,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           loop={true}
           autoplay={true}
         />
-        {datatoshow && datatoshow.length > 0 ? (
+        {datatoshow && datatoshow?.length > 1 ? (
           <View style={styles.sliderDotsContainer}>
             {datatoshow?.map((_, index) =>
               index == slideIndex ? renderDot(true) : renderDot(false)

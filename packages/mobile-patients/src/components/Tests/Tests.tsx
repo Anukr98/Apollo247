@@ -26,7 +26,14 @@ import {
   WidgetLiverIcon,
   PolygonIcon,
   ExpressSlotClock,
+  PrescriptionColored,
+  GreenCheck,
+  PrescriptionIcon,
+  GalleryIcon,
+  CameraIcon,
+  CrossPopup,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
@@ -54,8 +61,13 @@ import {
   isAddressLatLngInValid,
   removeWhiteSpaces,
   doRequestAndAccessLocationModified,
+  storagePermissions,
+  getUserType,
+  getCleverTapCircleMemberValues,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import React, { useEffect, useState } from 'react';
@@ -85,7 +97,11 @@ import {
   DIAGNOSTIC_ORDER_STATUS,
   TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import {
+  useShoppingCart,
+  PhysicalPrescription,
+  EPrescription,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import {
   CommonBugFender,
   CommonLogEvent,
@@ -157,6 +173,13 @@ import moment from 'moment';
 import AsyncStorage from '@react-native-community/async-storage';
 import { OrderCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/OrderCardCarousel';
 import { PrescriptionCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/PrescriptionCardCarousel';
+import { getUniqueId } from 'react-native-device-info';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+
+import DocumentPicker, { DocumentPickerResponse } from 'react-native-document-picker';
+import ImageResizer from 'react-native-image-resizer';
+import RNFetchBlob from 'rn-fetch-blob';
+export const MAX_FILE_SIZE = 25000000; // ~25MB
 import { DiagnosticLocation } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticLocation';
 import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 import {
@@ -195,17 +218,52 @@ export interface DiagnosticData {
   city: string;
   state: string;
 }
+interface DiagnosticWidgetInclusionObservationData {
+  mandatoryValue: string;
+  observationName: string;
+}
+interface DiagnosticWidgetInclusion {
+  incItemId: string;
+  incTitle: string;
+  incObservationData: DiagnosticWidgetInclusionObservationData[];
+}
+export interface DiagnosticWidgetItem {
+  itemTitle: string;
+  itemImageUrl: string;
+  itemId: string;
+  itemCanonicalTag: string;
+  inclusionData: DiagnosticWidgetInclusion[];
+  itemIcon: string;
+  diagnosticPricing: any;
+  packageCalculatedMrp: any;
+}
+
+export interface DiagnosticWidget {
+  diagnosticWidgetData: DiagnosticWidgetItem[];
+  diagnosticWidgetTitle: string;
+  diagnosticWidgetType: string;
+  diagnosticwidgetsRankOrder: string;
+  id: string;
+  diagnosticWidgetBannerImage: string;
+  diagnosticWidgetBannerUrl: string;
+  diagnosticWidgetBannerText: string;
+}
 
 export interface TestsProps
   extends NavigationScreenProps<{
     comingFrom?: string;
     movedFrom?: string;
+    setEPrescriptions: ((items: EPrescription[]) => void) | null;
+    homeScreenAttributes?: any;
+    phyPrescriptionUploaded: PhysicalPrescription[];
+    ePresscriptionUploaded: EPrescription[];
   }> {}
 
 export const Tests: React.FC<TestsProps> = (props) => {
-  const { setAddresses: setMedAddresses } = useShoppingCart();
+  const { setAddresses: setMedAddresses, pharmacyCircleAttributes } = useShoppingCart();
   const {
     cartItems,
+    addCartItem,
     isDiagnosticCircleSubscription,
     setIsDiagnosticCircleSubscription,
     setDeliveryAddressId,
@@ -244,10 +302,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
   } = useAppCommonData();
 
   type Address = savePatientAddress_savePatientAddress_patientAddress;
-
   const client = useApolloClient();
   const movedFrom = props.navigation.getParam('movedFrom');
-  const { currentPatient } = useAllCurrentPatients();
+  const homeScreenAttributes = props.navigation.getParam('homeScreenAttributes');
+  const phyPrescriptionUploaded = props.navigation.getParam('phyPrescriptionUploaded') || [];
+  const ePresscriptionUploaded = props.navigation.getParam('ePresscriptionUploaded') || [];
+  const { ePrescriptions, physicalPrescriptions } = useShoppingCart();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
 
   const hdfc_values = string.Hdfc_values;
   const cartItemsCount = cartItems?.length + shopCartItems?.length;
@@ -264,7 +325,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [showItemCard, setShowItemCard] = useState<boolean>(false);
   const [bookUsSlideIndex, setBookUsSlideIndex] = useState(0);
   const [showbookingStepsModal, setShowBookingStepsModal] = useState(false);
-
+  const [isPrescriptionUpload, setIsPrescriptionUpload] = useState<boolean>(false);
+  const [isPrescriptionGallery, setIsPrescriptionGallery] = useState<boolean>(false);
+  const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
+  const [isUploaded, setIsUploaded] = useState(false);
   const [widgetsData, setWidgetsData] = useState([] as any);
   const [reloadWidget, setReloadWidget] = useState<boolean>(false);
 
@@ -282,10 +346,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [source, setSource] = useState<DIAGNOSTIC_PINCODE_SOURCE_TYPE>();
   const [showUnserviceablePopup, setUnserviceablePopup] = useState<boolean>(false);
   const [serviceableObject, setServiceableObject] = useState({} as any);
+  const [showNoLocationPopUp, setShowNoLocationPopUp] = useState<boolean>(false);
+  const [isFocused, setIsFocused] = useState<boolean>(false);
   const [clickedItem, setClickedItem] = useState<any>([]);
   const [expressSlotMsg, setExpressSlotMsg] = useState<string>('');
   const [isPriceAvailable, setIsPriceAvailable] = useState<boolean>(false);
-  const [showNoLocationPopUp, setShowNoLocationPopUp] = useState<boolean>(false);
+  const [fetchAddressLoading, setFetchAddressLoading] = useState<boolean>(false);
 
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
 
@@ -324,6 +390,40 @@ export const Tests: React.FC<TestsProps> = (props) => {
       fetchPolicy: 'no-cache',
     });
 
+  const setWebEnageEventForPinCodeClicked = (
+    mode: string,
+    pincode: string,
+    serviceable: boolean
+  ) => {
+    DiagnosticPinCodeClicked(
+      currentPatient,
+      mode,
+      pincode,
+      serviceable,
+      isDiagnosticCircleSubscription
+    );
+  };
+
+  const postDiagnosticAddToCartEvent = (
+    name: string,
+    id: string,
+    price: number,
+    discountedPrice: number,
+    source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+    section?: 'Featured tests' | 'Browse packages'
+  ) => {
+    DiagnosticAddToCartEvent(
+      name,
+      id,
+      price,
+      discountedPrice,
+      source,
+      section,
+      currentPatient,
+      isDiagnosticCircleSubscription
+    );
+  };
+
   useEffect(() => {
     if (movedFrom === 'deeplink') {
       BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -337,6 +437,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     navigateToHome(props.navigation, {}, movedFrom === 'deeplink');
     return true;
   };
+
+  //sync pharma with diag?
 
   function saveDiagnosticLocation(
     locationDetails: LocationData,
@@ -476,6 +578,81 @@ export const Tests: React.FC<TestsProps> = (props) => {
     } catch (error) {
       setPatientClosedOrders([]);
       CommonBugFender('fetchPatientOpenOrders_Tests', error);
+    }
+  };
+  useEffect(() => {
+    if (movedFrom == AppRoutes.SubmittedPrescription) {
+      // user comes back to add more prescription
+      setIsPrescriptionGallery(false);
+      setIsPrescriptionUpload(true);
+    } else if (movedFrom == AppRoutes.PrescriptionCamera) {
+      // when user comes back  deletes the camera captured image
+      setIsPrescriptionGallery(false);
+      setIsPrescriptionUpload(true);
+    }
+  }, [props.navigation]);
+
+  useEffect(() => {
+    // getting diagnosticUserType from asyncStorage
+    const fetchUserType = async () => {
+      try {
+        const diagnosticUserType = await AsyncStorage.getItem('diagnosticUserType');
+        if (diagnosticUserType == null) {
+          fetchOrders();
+        }
+      } catch (error) {
+        fetchOrders();
+      }
+    };
+    fetchUserType();
+  }, []);
+
+  useEffect(() => {
+    // getting diagnosticUserType from asyncStorage
+    const fetchUserType = async () => {
+      try {
+        const diagnosticUserType = await AsyncStorage.getItem('diagnosticUserType');
+        if (diagnosticUserType == null) {
+          fetchOrders();
+        }
+      } catch (error) {
+        fetchOrders();
+      }
+    };
+    fetchUserType();
+  }, []);
+
+  const fetchOrders = async () => {
+    //for checking whether user is new or repeat.
+    try {
+      setLoading?.(true);
+      client
+        .query<getDiagnosticOrdersListByMobile, getDiagnosticOrdersListByMobileVariables>({
+          query: GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
+          context: {
+            sourceHeaders,
+          },
+          variables: {
+            mobileNumber: currentPatient && currentPatient.mobileNumber,
+            paginated: true,
+            limit: 1, //decreased limit to 1 because we only need to check whether user had any single order or not
+            offset: currentOffset,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((data) => {
+          const ordersList = data?.data?.getDiagnosticOrdersListByMobile?.ordersList || [];
+          const diagnosticUserType =
+            ordersList?.length > 0 ? string.user_type.REPEAT : string.user_type.NEW;
+          AsyncStorage.setItem('diagnosticUserType', JSON.stringify(diagnosticUserType));
+        })
+        .catch((error) => {
+          setLoading?.(false);
+          CommonBugFender(`${AppRoutes.Tests}_fetchOrders`, error);
+        });
+    } catch (error) {
+      setLoading?.(false);
+      CommonBugFender(`${AppRoutes.Tests}_fetchOrders`, error);
     }
   };
 
@@ -662,44 +839,42 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }
 
   const fetchWidgetsPrices = async (widgetsData: any, cityId: string) => {
-    //filter the items.
     const filterWidgets = widgetsData?.filter(
       (item: any) => !!item?.diagnosticWidgetData && item?.diagnosticWidgetData?.length > 0
     );
     const itemIds = filterWidgets?.map((item: any) =>
       item?.diagnosticWidgetData?.map((data: any, index: number) => Number(data?.itemId))
     );
+    const allItemIds = itemIds?.flat();
     //restriction less than 12.
     try {
-      const res = Promise.all(
-        !!itemIds &&
-          itemIds?.map((item: any) =>
-            fetchPricesForCityId(
-              Number(cityId!) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
-              item?.length > 12 ? item?.slice(0, 12) : item
-            )
-          )
-      );
-
-      const response = (await res)?.map(
-        (item: any) => item?.data?.findDiagnosticsWidgetsPricing?.diagnostics || []
+      const res = await fetchPricesForCityId(
+        Number(cityId!) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
+        allItemIds
       );
       let newWidgetsData = [...filterWidgets];
 
-      for (let i = 0; i < filterWidgets?.length; i++) {
-        for (let j = 0; j < filterWidgets?.[i]?.diagnosticWidgetData?.length; j++) {
-          const findIndex = filterWidgets?.[i]?.diagnosticWidgetData?.findIndex(
-            (item: any) => item?.itemId == Number(response?.[i]?.[j]?.itemId)
-          );
-          if (findIndex !== -1) {
-            (newWidgetsData[i].diagnosticWidgetData[findIndex].packageCalculatedMrp =
-              response?.[i]?.[j]?.packageCalculatedMrp),
-              (newWidgetsData[i].diagnosticWidgetData[findIndex].diagnosticPricing =
-                response?.[i]?.[j]?.diagnosticPricing);
+      const priceResult = res?.data?.findDiagnosticsWidgetsPricing;
+      if (!!priceResult && !!priceResult?.diagnostics && priceResult?.diagnostics?.length > 0) {
+        const widgetPricingArr = priceResult?.diagnostics;
+
+        for (let i = 0; i < filterWidgets?.length; i++) {
+          for (let j = 0; j < filterWidgets?.[i]?.diagnosticWidgetData?.length; j++) {
+            let wItem = filterWidgets?.[i]?.diagnosticWidgetData?.[j]; // j ka element
+            const findIndex = widgetPricingArr?.findIndex(
+              (pricingData) => Number(pricingData?.itemId) === Number(wItem?.itemId)
+            );
+            if (findIndex !== -1) {
+              (newWidgetsData[i].diagnosticWidgetData[j].packageCalculatedMrp =
+                widgetPricingArr?.[findIndex]?.packageCalculatedMrp),
+                (newWidgetsData[i].diagnosticWidgetData[j].diagnosticPricing =
+                  widgetPricingArr?.[findIndex]?.diagnosticPricing);
+            }
           }
         }
       }
       newWidgetsData?.length > 0 && reloadWidget ? setReloadWidget(false) : setReloadWidget(true);
+
       setWidgetsData(newWidgetsData);
       setIsPriceAvailable(true);
       setSectionLoading(false);
@@ -774,7 +949,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           }
         }
       }
-      setPageLoading?.(true);
+      setFetchAddressLoading?.(true);
       const response = await client.query<getPatientAddressList, getPatientAddressListVariables>({
         query: GET_PATIENT_ADDRESS_LIST,
         variables: { patientId: currentPatient?.id },
@@ -794,7 +969,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       } else {
         //  -> load default hyderabad.
       }
-      setPageLoading?.(false);
+      setFetchAddressLoading?.(false);
     } catch (error) {
       // -> load default hyderabad.
       setPageLoading?.(false);
@@ -1214,6 +1389,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     text.length > count ? `${text.slice(0, count)}...` : text;
 
   const renderDeliverToLocationCTA = () => {
+    //need to show start of address if default, otherwise ??
     const location = `${formatText(
       diagnosticLocation?.city || diagnosticLocation?.state || '',
       18
@@ -1356,7 +1532,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       );
     } else if (banners?.length > 0) {
       return (
-        <View style={{ marginBottom: 10 }}>
+        <View style={{ marginBottom: 28 }}>
           <Carousel
             onSnapToItem={setSlideIndex}
             data={banners}
@@ -1381,70 +1557,71 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   };
 
+  function _handleNavigationFromBanner(item: any, url: string) {
+    //for rtpcr - drive through - open webview
+    if (item?.redirectUrlText === 'WebView') {
+      DiagnosticBannerClick(slideIndex + 1, Number(item?.itemId || item?.id), item?.bannerTitle);
+      try {
+        const openUrl = url || AppConfig.Configuration.RTPCR_Google_Form;
+        props.navigation.navigate(AppRoutes.CovidScan, {
+          covidUrl: openUrl,
+        });
+      } catch (e) {
+        aphConsole.log(e);
+        CommonBugFender(`renderSliderItem__handleNavigationFromBanner_${AppRoutes.Tests}`, e);
+      }
+    }
+    //redirect to details page
+    else {
+      const data = item?.redirectUrl?.split('=')?.[1];
+      const extractData = data?.replace('apollopatients://', '');
+      const getNavigationDetails = extractData?.split('?');
+      const route = getNavigationDetails?.[0]?.toLowerCase();
+      let itemId = '';
+      try {
+        if (getNavigationDetails?.length >= 2) {
+          itemId = getNavigationDetails?.[1]?.split('&');
+          if (itemId?.length > 0) {
+            itemId = itemId?.[0];
+          }
+        }
+      } catch (error) {}
+      if (route == 'testdetails') {
+        DiagnosticBannerClick(
+          slideIndex + 1,
+          Number(itemId),
+          item?.bannerTitle,
+          currentPatient,
+          isDiagnosticCircleSubscription
+        );
+        props.navigation.navigate(AppRoutes.TestDetails, {
+          itemId: itemId,
+          comingFrom: AppRoutes.Tests,
+        });
+      } else if (route == 'testlisting') {
+        DiagnosticBannerClick(
+          slideIndex + 1,
+          Number(0),
+          item?.bannerTitle,
+          currentPatient,
+          isDiagnosticCircleSubscription
+        );
+        props.navigation.navigate(AppRoutes.TestListing, {
+          movedFrom: 'deeplink',
+          widgetName: itemId, //name,
+          cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+        });
+      }
+    }
+  }
+
   const renderSliderItem = ({ item, index }: { item: any; index: number }) => {
     const handleOnPress = () => {
-      if (item?.redirectUrl && item?.redirectUrl != '') {
-        //for rtpcr - drive through - open webview
-        if (item?.redirectUrlText === 'WebView') {
-          DiagnosticBannerClick(
-            slideIndex + 1,
-            Number(item?.itemId),
-            item?.bannerTitle,
-            currentPatient,
-            isDiagnosticCircleSubscription
-          );
-          try {
-            const openUrl = item?.redirectUrl || AppConfig.Configuration.RTPCR_Google_Form;
-            props.navigation.navigate(AppRoutes.CovidScan, {
-              covidUrl: openUrl,
-            });
-          } catch (e) {
-            aphConsole.log(e);
-            CommonBugFender('renderSliderItem_handleOnPress_Tests', e);
-          }
-        }
-        //redirect to details page
-        else {
-          const data = item?.redirectUrl?.split('=')?.[1];
-          const extractData = data?.replace('apollopatients://', '');
-          const getNavigationDetails = extractData?.split('?');
-          const route = getNavigationDetails?.[0]?.toLowerCase();
-          let itemId = '';
-          try {
-            if (getNavigationDetails?.length >= 2) {
-              itemId = getNavigationDetails?.[1]?.split('&');
-              if (itemId?.length > 0) {
-                itemId = itemId[0];
-              }
-            }
-          } catch (error) {}
-          if (route == 'testdetails') {
-            DiagnosticBannerClick(
-              slideIndex + 1,
-              Number(itemId),
-              item?.bannerTitle,
-              currentPatient,
-              isDiagnosticCircleSubscription
-            );
-            props.navigation.navigate(AppRoutes.TestDetails, {
-              itemId: itemId,
-              comingFrom: AppRoutes.Tests,
-            });
-          } else if (route == 'testlisting') {
-            DiagnosticBannerClick(
-              slideIndex + 1,
-              Number(0),
-              item?.bannerTitle,
-              currentPatient,
-              isDiagnosticCircleSubscription
-            );
-            props.navigation.navigate(AppRoutes.TestListing, {
-              movedFrom: 'deeplink',
-              widgetName: itemId, //name,
-              cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
-            });
-          }
-        }
+      if (item?.newredirectUrl && item?.newredirectUrl != '') {
+        _handleNavigationFromBanner(item, item?.newredirectUrl);
+      } else if (item?.redirectUrl && item?.redirectUrl != '') {
+        //added for older versions + fallback
+        _handleNavigationFromBanner(item, item?.redirectUrl);
       }
     };
     return (
@@ -1573,7 +1750,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
                       }
                     : undefined
                 }
-                style={showViewAll ? { paddingBottom: 1 } : {}}
+                style={
+                  showViewAll
+                    ? { paddingBottom: 1, borderBottomWidth: 0 }
+                    : { borderBottomWidth: 0 }
+                }
               />
             ) : null}
             {sectionLoading ? (
@@ -1759,6 +1940,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   function refetchWidgets() {
+    setReloadWidget(false);
     setWidgetsData([]);
     setLoading?.(true);
     //if banners are not loaded, then refetch them.
@@ -1796,6 +1978,193 @@ export const Tests: React.FC<TestsProps> = (props) => {
           />
         ) : null}
       </View>
+    );
+  };
+  const formatResponse = (response: ImageCropPickerResponse[]) => {
+    if (response.length == 0) return [];
+
+    return response.map((item) => {
+      const isPdf = item.mime == 'application/pdf';
+      const fileUri = item!.path || `folder/file.jpg`;
+      const random8DigitNumber = Math.floor(Math.random() * 90000) + 20000000;
+      const fileType = isPdf ? 'pdf' : fileUri.substring(fileUri.lastIndexOf('.') + 1);
+
+      return {
+        base64: item.data,
+        fileType: fileType,
+        title: `${isPdf ? 'PDF' : 'IMG'}_${random8DigitNumber}`,
+      } as PhysicalPrescription;
+    });
+  };
+  const onClickTakePhoto = () => {
+    ImagePicker.openCamera({
+      cropping: false,
+      hideBottomControls: true,
+      width: 2096,
+      height: 2096,
+      includeBase64: true,
+      multiple: true,
+      compressImageQuality: 0.5,
+      compressImageMaxHeight: 2096,
+      compressImageMaxWidth: 2096,
+      writeTempFile: false,
+    })
+      .then((response) => {
+        setLoading(true);
+        props.navigation.navigate(AppRoutes.PrescriptionCamera, {
+          type: 'CAMERA_AND_GALLERY',
+          responseData: formatResponse([response] as ImageCropPickerResponse[]),
+          ePresscriptionUploaded: ePresscriptionUploaded,
+          phyPrescriptionUploaded: phyPrescriptionUploaded,
+          title: 'Camera',
+        });
+      })
+      .catch((e: Error) => {});
+  };
+
+  const openGallery = () => {
+    setIsPrescriptionUpload(false);
+    ImagePicker.openPicker({
+      cropping: true,
+      hideBottomControls: true,
+      includeBase64: true,
+      multiple: true,
+      compressImageQuality: 0.5,
+      compressImageMaxHeight: 2096,
+      compressImageMaxWidth: 2096,
+      writeTempFile: false,
+      freeStyleCropEnabled: false,
+    })
+      .then((response) => {
+        const images = response as ImageCropPickerResponse[];
+        const isGreaterThanSpecifiedSize = images.find(({ size }) => size > MAX_FILE_SIZE);
+        if (isGreaterThanSpecifiedSize) {
+          Alert.alert(string.common.uhOh, `Invalid File Size. File size must be less than 25MB.`);
+          return;
+        }
+        const uploadedImages = formatResponse(images);
+        props.navigation.navigate(AppRoutes.SubmittedPrescription, {
+          type: 'Gallery',
+          phyPrescriptionsProp: [...phyPrescriptionUploaded, ...uploadedImages],
+          ePrescriptionsProp: ePresscriptionUploaded,
+          source: 'Tests',
+        });
+      })
+      .catch((e: Error) => {
+        CommonBugFender('Tests_onClickGallery', e);
+      });
+  };
+  const getBase64 = (response: DocumentPickerResponse[]): Promise<string>[] => {
+    return response.map(async ({ fileCopyUri: uri, name: fileName, type }) => {
+      const isPdf = fileName.toLowerCase().endsWith('.pdf'); // TODO: check here if valid image by mime
+      uri = Platform.OS === 'ios' ? decodeURI(uri.replace('file://', '')) : uri;
+      let compressedImageUri = '';
+      if (!isPdf) {
+        compressedImageUri = (await ImageResizer.createResizedImage(uri, 2096, 2096, 'JPEG', 50))
+          .uri;
+        compressedImageUri =
+          Platform.OS === 'ios' ? compressedImageUri.replace('file://', '') : compressedImageUri;
+      }
+      return RNFetchBlob.fs.readFile(!isPdf ? compressedImageUri : uri, 'base64');
+    });
+  };
+
+  const onBrowseClicked = async () => {
+    setIsPrescriptionUpload(false);
+    try {
+      const documents = await DocumentPicker.pickMultiple({
+        type: [DocumentPicker.types.pdf],
+        copyTo: 'documentDirectory',
+      });
+      const isValidPdf = documents.find(({ name }) => name.toLowerCase().endsWith('.pdf'));
+      const isValidSize = documents.find(({ size }) => size < MAX_FILE_SIZE);
+      if (!isValidPdf || !isValidSize) {
+        Alert.alert(
+          strings.common.uhOh,
+          !isValidPdf
+            ? `Invalid File Type. File type must be PDF.`
+            : `Invalid File Size. File size must be less than 25MB.`
+        );
+        return;
+      }
+      const base64Array = await Promise.all(getBase64(documents));
+      const base64FormattedArray = base64Array.map(
+        (base64, index) =>
+          ({
+            mime: documents[index].type,
+            data: base64,
+          } as ImageCropPickerResponse)
+      );
+      const documentData = base64Array.map(
+        (base64, index) =>
+          ({
+            title: documents[index].name,
+            fileType: documents[index].type,
+            base64: base64,
+          } as PhysicalPrescription)
+      );
+      props.navigation.navigate(AppRoutes.SubmittedPrescription, {
+        type: 'Gallery',
+        phyPrescriptionsProp: [...phyPrescriptionUploaded, ...documentData],
+        ePrescriptionsProp: ePresscriptionUploaded,
+        source: 'SubmittedPrescription',
+      });
+    } catch (e) {
+      if (DocumentPicker.isCancel(e)) {
+        CommonBugFender('SubmittedPrescription_onClickGallery', e);
+      }
+    }
+  };
+
+  const renderUploadPrescriptionCard = () => {
+    return (
+      <View style={styles.precriptionContainer}>
+        <View style={styles.precriptionContainerUpload}>
+          <PrescriptionColored style={{ height: 35 }} />
+          <Text style={styles.prescriptionText}>Place your order via prescription</Text>
+          <Button
+            title={'UPLOAD'}
+            style={styles.buttonStyle}
+            onPress={() => {
+              setIsPrescriptionGallery(false);
+              setIsPrescriptionUpload(true);
+            }}
+          />
+        </View>
+        {isUploaded ? (
+          <View style={styles.bottomArea}>
+            <View style={{ flexDirection: 'row', paddingHorizontal: 5 }}>
+              <GreenCheck style={{ width: 18, height: 18 }} />
+              <Text style={styles.prescriptionTextUpload}>Prescription Uploaded</Text>
+            </View>
+            <Text style={styles.prescriptionTextUploadTime}>
+              {moment().format('DD MMM, HH:mm')}
+            </Text>
+          </View>
+        ) : null}
+      </View>
+    );
+  };
+  const renderEPrescriptionModal = () => {
+    return (
+      <SelectEPrescriptionModal
+        displayPrismRecords={true}
+        navigation={props.navigation}
+        onSubmit={(selectedEPres) => {
+          setSelectPrescriptionVisible(false);
+          if (selectedEPres.length == 0) {
+            return;
+          }
+          props.navigation.navigate(AppRoutes.SubmittedPrescription, {
+            ePrescriptionsProp: [...ePresscriptionUploaded, ...selectedEPres],
+            phyPrescriptionsProp: phyPrescriptionUploaded,
+            type: 'E-Prescription',
+          });
+        }}
+        selectedEprescriptionIds={ePresscriptionUploaded.map((item) => item.id)}
+        isVisible={isSelectPrescriptionVisible}
+        movedFrom={AppRoutes.Tests}
+      />
     );
   };
 
@@ -2113,6 +2482,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         {renderWidgetItems(widget1)} {/**1 */}
         {renderYourOrders()}
         {latestPrescription?.length > 0 ? renderPrescriptionCard() : null}
+        {renderUploadPrescriptionCard()}
         {renderOrderStatusCard()}
         {renderBottomViews()}
       </TouchableOpacity>
@@ -2146,7 +2516,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         {renderWhyBookUs()}
         {renderWidgetItems(isWidget6)} {/** 6 */}
         {renderCertificateView()}
-        {!!restWidgets && restWidgets.map((item: any) => renderWidgetType(item))}
+        {!!restWidgets && restWidgets?.map((item: any) => renderWidgetType(item))}
       </>
     );
   };
@@ -2207,11 +2577,31 @@ export const Tests: React.FC<TestsProps> = (props) => {
         activeOpacity={1}
         onPress={() => {
           navigateToHome(props.navigation);
+          cleverTapEventForHomeIconClick();
         }}
       >
         <HomeIcon style={styles.homeIconStyle} />
       </TouchableOpacity>
     );
+
+    const cleverTapEventForHomeIconClick = () => {
+      const eventAttributes = {
+        'Patient name': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+        'Patient UHID': currentPatient?.uhid,
+        Relation: currentPatient?.relation,
+        'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
+        'Patient gender': currentPatient?.gender,
+        'Mobile Number': currentPatient?.mobileNumber,
+        'Customer ID': currentPatient?.id,
+        User_Type: getUserType(allCurrentPatients),
+        'Nav src': 'Dignostic Page',
+        'Circle Member':
+          getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+          undefined,
+        'Device Id': getUniqueId(),
+      };
+      postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);
+    };
 
     const renderCartIcon = () => (
       <View style={{ flex: 1 }}>
@@ -2262,7 +2652,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             },
           ]}
           rightText={showViewAll ? 'VIEW ALL' : ''}
-          rightTextStyle={styles.widgetViewAllText} //showViewAll ? styles.widgetViewAllText : {}
+          rightTextStyle={styles.widgetViewAllText}
           onPressRightText={() => {
             props.navigation.navigate(AppRoutes.TestWidgetListing, {
               movedFrom: AppRoutes.Tests,
@@ -2396,6 +2786,89 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  const prescriptionOptionArray = [
+    {
+      icon: <GalleryIcon />,
+      title: 'Choose from Gallery',
+    },
+    {
+      icon: <CameraIcon />,
+      title: 'Take a Picture',
+    },
+    {
+      icon: <PrescriptionIcon />,
+      title: 'Select from my Prescriptions',
+    },
+  ];
+
+  const prescriptionGalleryOptionArray = [
+    {
+      title: 'Photo Library',
+    },
+    {
+      title: 'Upload PDF',
+    },
+  ];
+
+  const renderOptionsUploadPrescription = () => {
+    return (
+      <>
+        <Text style={styles.textHeadingModal}>Upload Prescription</Text>
+        {prescriptionOptionArray.map((item) => {
+          return (
+            <TouchableOpacity
+              onPress={() => {
+                if (item.title == 'Choose from Gallery') {
+                  setIsPrescriptionGallery(true);
+                } else if (item.title == 'Take a Picture') {
+                  setIsPrescriptionUpload(false);
+                  onClickTakePhoto();
+                } else {
+                  setIsPrescriptionUpload(false);
+                  setSelectPrescriptionVisible(true);
+                }
+              }}
+              style={styles.areaStyles}
+            >
+              {item.icon}
+              <Text style={styles.textPrescription}>{item.title}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </>
+    );
+  };
+
+  const renderGalleryOption = () => {
+    return (
+      <>
+        <Text style={styles.textHeadingModal}>Choose from Gallery</Text>
+        {prescriptionGalleryOptionArray.map((item) => {
+          return (
+            <TouchableOpacity
+              style={{ flexDirection: 'row', alignContent: 'center' }}
+              onPress={() => {
+                if (item?.title == 'Photo Library') {
+                  openGallery();
+                } else {
+                  if (Platform.OS === 'android') {
+                    storagePermissions(() => {
+                      onBrowseClicked();
+                    });
+                  } else {
+                    onBrowseClicked();
+                  }
+                }
+              }}
+            >
+              <Text style={styles.textPrescription}>{item.title}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
@@ -2433,6 +2906,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         {showNoLocationPopUp && renderNonServiceableToolTip(true)}
       </SafeAreaView>
       {showbookingStepsModal ? renderBookingStepsModal() : null}
+      {isSelectPrescriptionVisible && renderEPrescriptionModal()}
     </View>
   );
 };
@@ -2448,6 +2922,68 @@ const styles = StyleSheet.create({
     borderRadius: 7,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  modalMainView: {
+    backgroundColor: 'rgba(100,100,100, 0.5)',
+    flex: 1,
+    justifyContent: 'flex-end',
+    // alignItems: 'center',
+    flexDirection: 'column',
+  },
+  paitentModalView: {
+    backgroundColor: 'white',
+    width: '100%',
+    padding: 10,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  },
+  precriptionContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    ...theme.viewStyles.shadowStyle,
+    marginLeft: 16,
+    marginRight: 16,
+    marginBottom: 24,
+  },
+  precriptionContainerUpload: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    paddingHorizontal: 5,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    paddingVertical: 10,
+  },
+  textHeadingModal: {
+    ...theme.viewStyles.text('B', 17, colors.SHERPA_BLUE),
+    marginBottom: 20,
+  },
+  textPrescription: {
+    ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE),
+    marginBottom: 20,
+    paddingHorizontal: 10,
+  },
+  areaStyles: { flexDirection: 'row', alignContent: 'center' },
+  buttonStyle: { width: '30%', alignSelf: 'center' },
+  prescriptionText: {
+    ...theme.viewStyles.text('SB', 15, theme.colors.SHERPA_BLUE, 1, 20),
+    textAlign: 'left',
+    width: '50%',
+  },
+  bottomArea: {
+    backgroundColor: colors.APP_GREEN,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  prescriptionTextUpload: {
+    ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1),
+    paddingHorizontal: 5,
+  },
+  prescriptionTextUploadTime: {
+    ...theme.viewStyles.text('R', 14, theme.colors.WHITE, 1),
+    paddingHorizontal: 5,
   },
   labelText: {
     ...theme.fonts.IBMPlexSansBold(9),
@@ -2683,7 +3219,6 @@ const styles = StyleSheet.create({
     height: 30,
     alignSelf: 'flex-end',
     backgroundColor: '#EF6D6D',
-    borderRadius: 0,
     width: winWidth / 3.5,
     borderRadius: 10,
   },

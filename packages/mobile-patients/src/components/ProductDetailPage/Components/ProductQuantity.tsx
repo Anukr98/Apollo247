@@ -110,7 +110,7 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
   };
 
   return (
-    <View>
+    <View style={{ paddingHorizontal: 15 }}>
       <View style={styles.flexRow}>
         {isSellOnline && renderQuantity()}
         {isSellOnline && !!packSize && !!productForm && !!packForm && renderPackSize()}

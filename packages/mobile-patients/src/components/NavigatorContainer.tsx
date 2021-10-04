@@ -153,6 +153,12 @@ import { CowinCertificateOTPScreen } from '@aph/mobile-patients/src/components/H
 import { CowinCertificateGetOTP } from '@aph/mobile-patients/src/components/HealthRecords/CowinCertificateGetOTP';
 import { CowinProfileSelection } from '@aph/mobile-patients/src/components/HealthRecords/CowinProfileSelection';
 import { CowinCertificateViewer } from '@aph/mobile-patients/src/components/HealthRecords/CowinCertificateViewer';
+import { PostShareAppointmentSelectorScreen } from '@aph/mobile-patients/src/components/ConsultRoom/PostShareAppointmentSelectorScreen';
+import { PrescriptionCamera } from '@aph/mobile-patients/src/components/Tests/PrescriptionCamera';
+import { SubmittedPrescription } from '@aph/mobile-patients/src/components/Tests/SubmittedPrescription';
+import { SpecialOffersScreen } from '@aph/mobile-patients/src/components/SpecialOffers/SpecialOffers';
+import { PaymentConfirmation } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentConfirmaiton';
+import { ConsultPaymentScreen } from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/ConsultPaymentScreen';
 
 export enum AppRoutes {
   Login = 'Login',
@@ -293,6 +299,12 @@ export enum AppRoutes {
   CowinCertificateOTPScreen = 'CowinCertificateOTPScreen',
   CowinCertificateGetOTP = 'CowinCertificateGetOTP',
   CowinProfileSelection = 'CowinProfileSelection',
+  PostShareAppointmentSelectorScreen = 'PostShareAppointmentSelectorScreen',
+  PrescriptionCamera = 'PrescriptionCamera',
+  SubmittedPrescription = 'SubmittedPrescription',
+  SpecialOffersScreen = 'SpecialOffersScreen',
+  PaymentConfirmation = 'PaymentConfirmation',
+  ConsultPaymentScreen = 'ConsultPaymentScreen',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -746,6 +758,24 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.CowinProfileSelection]: {
     screen: CowinProfileSelection,
+  },
+  [AppRoutes.PostShareAppointmentSelectorScreen]: {
+    screen: PostShareAppointmentSelectorScreen,
+  },
+  [AppRoutes.PrescriptionCamera]: {
+    screen: PrescriptionCamera,
+  },
+  [AppRoutes.SubmittedPrescription]: {
+    screen: SubmittedPrescription,
+  },
+  [AppRoutes.SpecialOffersScreen]: {
+    screen: SpecialOffersScreen,
+  },
+  [AppRoutes.PaymentConfirmation]: {
+    screen: PaymentConfirmation,
+  },
+  [AppRoutes.ConsultPaymentScreen]: {
+    screen: ConsultPaymentScreen,
   },
 };
 

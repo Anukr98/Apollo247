@@ -20,7 +20,6 @@ import {
   postWebEngageEvent,
   SetAppsFlyerCustID,
   onCleverTapUserLogin,
-  setCleverTapAppsFlyerCustID,
   postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { loginAPI } from '@aph/mobile-patients/src/helpers/loginCalls';
@@ -60,6 +59,7 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { AuthButton } from '@aph/mobile-patients/src/components/ui/AuthButton';
 import { VERIFY_TRUECALLER_PROFILE } from '@aph/mobile-patients/src/graphql/profiles';
 import { useApolloClient } from 'react-apollo-hooks';
+import { timeDifferenceInDays } from '@aph/mobile-patients/src/utils/dateUtil';
 import {
   verifyTrueCallerProfile,
   verifyTrueCallerProfileVariables,
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface LoginProps extends NavigationScreenProps {}
+export interface LoginProps extends NavigationScreenProps { }
 
 const isPhoneNumberValid = (number: string) => {
   const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(number)
@@ -243,6 +243,7 @@ export const Login: React.FC<LoginProps> = (props) => {
     // For handling the success event
     TRUECALLER.on('profileSuccessReponse', (profile: any) => {
       setLoading?.(false);
+      cleverTapEventForUserContinueThroughTrueCallerLogin();
       // add other logic here related to login/sign-up as per your use-case.
       oneTimeApiCall.current && verifyTrueCallerProfile(profile);
     });
@@ -331,6 +332,7 @@ export const Login: React.FC<LoginProps> = (props) => {
               ...errorAttributes,
               'Error Message': 'User pressed SKIP or USE ANOTHER NUMBER',
             };
+            cleverTapEventForUserSkippedFromTrueCallerLogin();
             truecallerWEBEngage(null, 'sdk error', errorAttributes);
             break;
           }
@@ -442,7 +444,6 @@ export const Login: React.FC<LoginProps> = (props) => {
     AsyncStorage.setItem('logginHappened', 'true');
     // commenting this to avoid setting of AppFlyerCustId twice
     // SetAppsFlyerCustID(mePatient.primaryPatientId);
-    setCleverTapAppsFlyerCustID();
     mePatient && (await AsyncStorage.setItem(LOGIN_PROFILE, JSON.stringify(mePatient)));
     if (mePatient && mePatient.uhid && mePatient.uhid !== '') {
       if (mePatient.relation == null) {
@@ -466,6 +467,9 @@ export const Login: React.FC<LoginProps> = (props) => {
               actions: [
                 NavigationActions.navigate({
                   routeName: AppRoutes.ConsultRoom,
+                  params: {
+                    previousRoute: 'Login',
+                  },
                 }),
               ],
             })
@@ -495,19 +499,27 @@ export const Login: React.FC<LoginProps> = (props) => {
   const deviceTokenAPI = async (patientId: string) => {
     const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
     const deviceToken2 = deviceToken ? JSON.parse(deviceToken) : '';
-
+    const deviceTokenTimeStamp = (await AsyncStorage.getItem('deviceTokenTimeStamp')) || '';
+    const currentDeviceTokenTimeStamp = deviceTokenTimeStamp ? JSON.parse(deviceTokenTimeStamp) : '';
     if (
       !deviceToken2 ||
       deviceToken2 === '' ||
       deviceToken2.length == 0 ||
       typeof deviceToken2 != 'string' ||
-      typeof deviceToken2 == 'object'
+      typeof deviceToken2 == 'object' ||
+      !currentDeviceTokenTimeStamp ||
+      currentDeviceTokenTimeStamp === '' ||
+      currentDeviceTokenTimeStamp?.length == 0 ||
+      typeof currentDeviceTokenTimeStamp != 'number' ||
+      timeDifferenceInDays(new Date().getTime(), currentDeviceTokenTimeStamp) > 6
     ) {
       messaging()
         .getToken()
         .then((token) => {
           saveTokenDevice(client, token, patientId)
-            ?.then((resp) => {})
+            ?.then((resp) => {
+              AsyncStorage.setItem('deviceTokenTimeStamp', JSON.stringify(new Date().getTime()));
+            })
             .catch((e) => {
               CommonBugFender('Login_saveTokenDevice', e);
               AsyncStorage.setItem('deviceToken', '');
@@ -518,7 +530,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         });
     } else {
       saveTokenDevice(client, deviceToken2, patientId)
-        ?.then((resp) => {})
+        ?.then((resp) => { })
         .catch((e) => {
           CommonBugFender('Login_saveTokenDevice', e);
           AsyncStorage.setItem('deviceToken', '');
@@ -650,7 +662,7 @@ export const Login: React.FC<LoginProps> = (props) => {
 
                   try {
                     signOut();
-                  } catch (error) {}
+                  } catch (error) { }
 
                   props.navigation.navigate(AppRoutes.OTPVerification, {
                     otpString,
@@ -671,7 +683,7 @@ export const Login: React.FC<LoginProps> = (props) => {
           setShowSpinner(false);
         }
       });
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const openWebView = () => {
@@ -700,6 +712,7 @@ export const Login: React.FC<LoginProps> = (props) => {
 
   const loginWithTruecaller = () => {
     setLoading?.(true);
+    cleverTapEventForLoginViaTrueCaller();
     /**
      * If you are checking in local, then you need to change truecaller_appkey(debug key) from strings.xml file
      */
@@ -717,6 +730,30 @@ export const Login: React.FC<LoginProps> = (props) => {
         });
       }
     });
+  };
+
+  const cleverTapEventForLoginViaTrueCaller = () => {
+    let eventAttributes = {
+      'Nav src': 'App login screen',
+      'Page Name': 'Login Screen',
+    };
+    postCleverTapEvent(CleverTapEventName.LOGIN_VIA_TRUECALLER, eventAttributes);
+  };
+
+  const cleverTapEventForUserSkippedFromTrueCallerLogin = () => {
+    let eventAttributes = {
+      'Nav src': 'App login screen',
+      'Page Name': 'Login Screen',
+    };
+    postCleverTapEvent(CleverTapEventName.LOGIN_WITH_TRUECALLER_SKIPPED, eventAttributes);
+  };
+
+  const cleverTapEventForUserContinueThroughTrueCallerLogin = () => {
+    let eventAttributes = {
+      'Nav src': 'App login screen',
+      'Page Name': 'Login Screen',
+    };
+    postCleverTapEvent(CleverTapEventName.LOGIN_WITH_TRUECALLER_CONTINUE, eventAttributes);
   };
 
   return (

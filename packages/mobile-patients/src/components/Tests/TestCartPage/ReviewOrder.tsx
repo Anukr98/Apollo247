@@ -205,6 +205,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     isCirclePlanRemoved,
     setIsCirclePlanRemoved,
     modifiedOrderItemIds,
+    circleGrandTotal,
   } = useDiagnosticsCart();
 
   const {
@@ -263,6 +264,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const toPayPrice = isCircleAddedToCart
     ? Number(grandTotal) + Number(circlePlanPurchasePrice)
     : grandTotal;
+
+  const nonCircle_CircleEffectivePrice = Number(circleGrandTotal) + Number(circlePlanPurchasePrice);
 
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const addressText = isModifyFlow
@@ -797,6 +800,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       Number((!!item?.packageMrp && item?.packageMrp!) || mrpToDisplay) -
       Number(item?.circleSpecialPrice!);
 
+    const totalIndiviualSavingAmount = !!savingAmount && savingAmount * item?.mou;
+
     const isGroupPlanCircle = item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.CIRCLE;
 
     return (
@@ -808,12 +813,12 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             }}
           >
             <Text style={styles.addressTextStyle}>{nameFormater(item?.name, 'default')}</Text>
-            {isCircleAddedToCart && savingAmount > 0 && isGroupPlanCircle && (
+            {isCircleAddedToCart && totalIndiviualSavingAmount > 0 && isGroupPlanCircle && (
               <View style={{ flexDirection: 'row', marginTop: 3 }}>
                 <CircleLogo style={styles.savingCircleIcon} />
                 <Text style={styles.savingTextStyle}>
                   Savings {string.common.Rs}
-                  {savingAmount}
+                  {totalIndiviualSavingAmount}
                 </Text>
               </View>
             )}
@@ -1004,7 +1009,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         effectivePriceText={
           isCircleAddedToCart ? 'Your effective price is' : 'Effective price would be'
         }
-        effectivePrice={grandTotal} //need to change on each plan selection
+        effectivePrice={isCircleAddedToCart ? grandTotal : circleGrandTotal} //need to change on each plan selection
         membershipPlans={allMembershipPlans}
         facts={facts}
         onPressClose={() => setShowCirclePopup(false)}
@@ -1041,7 +1046,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           effectivePriceText={
             isCircleAddedToCart ? 'Your effective price is' : 'Effective price would be'
           }
-          toPayPrice={toPayPrice}
+          toPayPrice={isCircleAddedToCart ? toPayPrice : nonCircle_CircleEffectivePrice}
           isPlanPreselected={isCircleAddedToCart}
           onPressViewPlan={() => _navigateToViewCirclePlans()}
           onTogglePlans={() => _onTogglePlans()}
@@ -1049,7 +1054,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       </View>
     );
   };
-
   function _onTogglePlans() {
     setIsCircleAddedToCart?.(!isCircleAddedToCart);
     setIsCirclePlanRemoved?.(!isCirclePlanRemoved);
@@ -1134,7 +1138,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             )}
           {isCircleAddedToCart &&
             !!circlePlanPurchasePrice &&
-            circleSaving > 0 &&
             renderPrices('Circle Membership', circlePlanPurchasePrice?.toFixed(2), false, false)}
           {normalSaving > 0 && renderPrices('Cart Savings', normalSaving?.toFixed(2), false, true)}
           {(isDiagnosticCircleSubscription || isCircleAddedToCart) && circleSaving > 0 && (
@@ -2178,6 +2181,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         }
         modifyOrderDetails={isModifyFlow ? modifiedOrder : null}
         showReportTat={reportTat}
+        priceToShow={toPayPrice}
       />
     ) : null;
   };

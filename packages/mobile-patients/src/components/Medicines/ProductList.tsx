@@ -14,7 +14,7 @@ import {
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import {
   FlatList,
   FlatListProps,
@@ -30,6 +30,7 @@ import {
   CleverTapEventName,
   ProductPageViewedSource,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { SuggestedQuantityNudge } from '@aph/mobile-patients/src/components/SuggestedQuantityNudge/SuggestedQuantityNudge';
 
 type ListProps = FlatListProps<MedicineProduct>;
 
@@ -80,6 +81,29 @@ export const ProductList: React.FC<Props> = ({
     asyncPincode,
   } = useShoppingCart();
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
+  const [showSuggestedQuantityNudge, setShowSuggestedQuantityNudge] = useState<boolean>(false);
+  const [shownNudgeOnce, setShownNudgeOnce] = useState<boolean>(false);
+  const [currentProductIdInCart, setCurrentProductIdInCart] = useState<string>(null);
+  const [currentProductQuantityInCart, setCurrentProductQuantityInCart] = useState<number>(0);
+  const [itemPackForm, setItemPackForm] = useState<string>('');
+  const [maxOrderQty, setMaxOrderQty] = useState<number>(0);
+  const [suggestedQuantity, setSuggestedQuantity] = useState<string>(null);
+
+  useEffect(() => {
+    if (cartItems.find(({ id }) => id?.toUpperCase() === currentProductIdInCart)) {
+      if (shownNudgeOnce === false) {
+        setShowSuggestedQuantityNudge(true);
+      }
+    }
+  }, [cartItems, currentProductQuantityInCart, currentProductIdInCart]);
+
+  useEffect(() => {
+    if (showSuggestedQuantityNudge === false) {
+      setShownNudgeOnce(false);
+    }
+  }, [currentProductIdInCart]);
+
+  useEffect(() => {}, [showSuggestedQuantityNudge]);
 
   const onPress = (sku: string, urlKey: string) => {
     if (
@@ -132,6 +156,15 @@ export const ProductList: React.FC<Props> = ({
       pharmacyCircleAttributes!,
       onAddedSuccessfully ? onAddedSuccessfully : () => {}
     );
+    setCurrentProductIdInCart(item.sku);
+    item.pack_form ? setItemPackForm(item.pack_form) : setItemPackForm('');
+    item.suggested_qty ? setSuggestedQuantity(item.suggested_qty) : setSuggestedQuantity(null);
+    item.MaxOrderQty
+      ? setMaxOrderQty(item.MaxOrderQty)
+      : item.suggested_qty
+      ? setMaxOrderQty(+item.suggested_qty)
+      : setMaxOrderQty(0);
+    setCurrentProductQuantityInCart(1);
   };
 
   const onPressCareCashback = () => {
@@ -149,10 +182,12 @@ export const ProductList: React.FC<Props> = ({
       const onPressAddQty = () => {
         if (qty < item.MaxOrderQty) {
           updateCartItem!({ id, quantity: qty + 1 });
+          setCurrentProductQuantityInCart(qty + 1);
         }
       };
       const onPressSubtractQty = () => {
         qty == 1 ? removeCartItem!(id) : updateCartItem!({ id, quantity: qty - 1 });
+        setCurrentProductQuantityInCart(qty - 1);
       };
 
       const props: ProductCardProps = {
@@ -186,28 +221,47 @@ export const ProductList: React.FC<Props> = ({
   const renderItemSeparator = useCallback(() => <View style={styles.itemSeparator} />, []);
 
   return (
-    <FlatList
-      data={isPdp ? dataToShow : data}
-      renderItem={renderItem}
-      keyExtractor={keyExtractor}
-      bounces={false}
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      removeClippedSubviews={true}
-      ItemSeparatorComponent={renderItemSeparator}
-      contentContainerStyle={[styles.flatListContainer, contentContainerStyle]}
-      onEndReached={() => {
-        if (dataToShow?.length && isPdp) {
-          if (lastIndex <= data?.length) {
-            const newData = data?.slice(lastIndex, step);
-            setDataToShow(data?.slice(0, lastIndex + step));
-            setLastIndex(lastIndex + step);
+    <View>
+      <FlatList
+        nestedScrollEnabled
+        data={isPdp ? dataToShow : data}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        bounces={false}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        removeClippedSubviews={true}
+        ItemSeparatorComponent={renderItemSeparator}
+        contentContainerStyle={[styles.flatListContainer, contentContainerStyle]}
+        onEndReached={() => {
+          if (dataToShow?.length && isPdp) {
+            if (lastIndex <= data?.length) {
+              const newData = data?.slice(lastIndex, step);
+              setDataToShow(data?.slice(0, lastIndex + step));
+              setLastIndex(lastIndex + step);
+            }
           }
-        }
-      }}
-      onEndReachedThreshold={0.2}
-      {...restOfProps}
-    />
+        }}
+        onEndReachedThreshold={0.2}
+        {...restOfProps}
+      />
+      {showSuggestedQuantityNudge &&
+        shownNudgeOnce === false &&
+        !!suggestedQuantity &&
+        +suggestedQuantity > 1 &&
+        currentProductQuantityInCart < +suggestedQuantity && (
+          <SuggestedQuantityNudge
+            suggested_qty={suggestedQuantity}
+            sku={currentProductIdInCart}
+            packForm={itemPackForm}
+            maxOrderQty={maxOrderQty}
+            setShownNudgeOnce={setShownNudgeOnce}
+            showSuggestedQuantityNudge={showSuggestedQuantityNudge}
+            setShowSuggestedQuantityNudge={setShowSuggestedQuantityNudge}
+            setCurrentProductQuantityInCart={setCurrentProductQuantityInCart}
+          />
+        )}
+    </View>
   );
 };
 

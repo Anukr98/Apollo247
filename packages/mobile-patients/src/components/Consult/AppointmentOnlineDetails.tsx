@@ -904,7 +904,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                     );
                   }
                   CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'START_CONSULTATION_CLICKED');
-                  props.navigation.navigate(AppRoutes.ChatRoom, {
+                  props.navigation.replace(AppRoutes.ChatRoom, {
                     data: data,
                     callType: '',
                     prescription: '',

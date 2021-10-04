@@ -1501,8 +1501,6 @@ const styles = StyleSheet.create({
     elevation: 5,
     zIndex: 1,
   },
-  buttonView: { margin: 10 },
-  buttonStyleReport: { width: '85%', alignSelf: 'center', justifyContent: 'center' },
   reportTatBottomview: {
     backgroundColor: colors.TEST_CARD_BUTTOM_BG,
     padding: 12,
@@ -1593,10 +1591,9 @@ const styles = StyleSheet.create({
   },
   buttonStyle: {
     alignSelf: 'center',
-    marginVertical: 10,
+    justifyContent: 'center',
     width: '85%',
-    marginLeft: 10,
-    marginRight: 10,
+    marginLeft: screenWidth / 16,
   },
   noDataCard: {
     height: 'auto',

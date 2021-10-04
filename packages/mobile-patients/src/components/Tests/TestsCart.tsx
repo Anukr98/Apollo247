@@ -292,6 +292,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setAddresses: setMedAddresses,
     circleSubscriptionId,
     circlePlanValidity,
+    pharmacyCircleAttributes,
   } = useShoppingCart();
 
   const sourceScreen = props.navigation.getParam('comingFrom');
@@ -465,7 +466,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         client,
         !!diagnosticSlot && !isEmptyObject(diagnosticSlot) ? dateTimeInUTC : null,
         Number(addressCityId),
-        Number(pincode),
+        !!pincode ? Number(pincode) : 0,
         listOfIds!
       );
       if (result?.data?.getConfigurableReportTAT) {
@@ -1532,7 +1533,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               isComingFrom={AppRoutes.TestsCart}
               isCareSubscribed={isDiagnosticCircleSubscription}
               containerStyle={medicineCardContainerStyle}
-              showCartInclusions={showInclusions}
+              showCartInclusions={false} //showInclusions
               key={test?.id}
               testId={test?.id}
               reportGenItem={reportGenItem}
@@ -1741,14 +1742,21 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const AddressSelectedEvent = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+    const appsFlyerAttributes = {
+      DeliveryAddress: formatAddress(address),
+      Pincode: address?.zipcode || '',
+      LOB: 'Diagnostics',
+      ...pharmacyCircleAttributes,
+    };
+
     const firebaseAttributes: FirebaseEvents[FirebaseEventName.DIAGNOSTIC_CART_ADDRESS_SELECTED_SUCCESS] = {
       DeliveryAddress: formatAddress(address),
       Pincode: address?.zipcode || '',
       LOB: 'Diagnostics',
     };
     postAppsFlyerEvent(
-      AppsFlyerEventName.DIAGNOSTIC_CART_ADDRESS_SELECTED_SUCCESS,
-      firebaseAttributes
+      AppsFlyerEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS,
+      appsFlyerAttributes
     );
     postFirebaseEvent(
       FirebaseEventName.DIAGNOSTIC_CART_ADDRESS_SELECTED_SUCCESS,

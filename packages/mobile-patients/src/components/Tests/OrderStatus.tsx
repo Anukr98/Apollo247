@@ -203,7 +203,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     if (modifiedOrderDetails == null) {
       postwebEngageCheckoutCompletedEvent();
     }
-    firePurchaseEvent(orderDetails?.orderId, orderDetails?.amount, cartItems);
+    firePurchaseEvent(orderDetails?.orderId, orderDetails?.amount, cartItems, currentPatient);
     clearDiagnoticCartInfo?.();
     submitReviewOnLabBook();
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -294,7 +294,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const postwebEngageCheckoutCompletedEvent = () => {
     let attributes = {
       ...eventAttributes,
-      'Payment mode': isCOD ? 'Cash' : 'Prepaid',
+      'Payment Mode': isCOD ? 'Cash' : 'Prepaid',
       'Circle discount': circleSubscriptionId && orderCircleSaving ? orderCircleSaving : 0,
       'Circle user': isDiagnosticCircleSubscription || isCircleAddedToCart ? 'Yes' : 'No',
     };

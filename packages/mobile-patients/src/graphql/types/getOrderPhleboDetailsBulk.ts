@@ -11,6 +11,7 @@ export interface getOrderPhleboDetailsBulk_getOrderPhleboDetailsBulk_orderPhlebo
   __typename: "DiagnosticPhlebotomists";
   name: string;
   mobile: string | null;
+  vaccinationStatus: string | null;
 }
 
 export interface getOrderPhleboDetailsBulk_getOrderPhleboDetailsBulk_orderPhleboDetailsBulk_orderPhleboDetails {

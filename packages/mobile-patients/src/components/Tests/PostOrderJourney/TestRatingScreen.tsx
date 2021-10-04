@@ -93,8 +93,8 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
           value={userInput}
           placeholder={'Write your Feedback Here'}
           onChangeText={(text) => setUserInput(text)}
-          style={{ textAlign: 'center' }}
-          underlineColorAndroid={colors.APP_GREEN}
+          style={styles.textInputStyle}
+          underlineColorAndroid={'transparent'}
         />
       </View>
     );
@@ -135,10 +135,11 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
       currentPatient
     );
   };
+
   const onSubmitFeedback = async (rating: number, feedback: string, id: string) => {
     setLoading?.(true);
     try {
-      const response = await savePhleboFeedback(client, rating, feedback, id);
+      const response = await savePhleboFeedback(client, rating, feedback, id, userInput);
       postDiagnosticPhleboFeedbackSubmitted(
         rating,
         feedback,
@@ -312,6 +313,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     width: '70%',
+    marginTop: 8,
   },
   submitCtaContainer: {
     width: '100%',
@@ -320,5 +322,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 10,
     backgroundColor: 'white',
+  },
+  textInputStyle: {
+    textAlign: 'center',
+    borderWidth: 1,
+    borderColor: 'transparent',
+    borderBottomColor: colors.APP_GREEN,
   },
 });

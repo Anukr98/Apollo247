@@ -22,13 +22,11 @@ export interface TestProceedBarProps {
   isModifyCOD: boolean;
   modifyOrderDetails: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList | null;
   showReportTat: string;
+  priceToShow: number;
 }
 
 export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
-  const { grandTotal, deliveryAddressId, addresses } = useDiagnosticsCart();
   const {
-    onPressAddDeliveryAddress,
-    onPressSelectDeliveryAddress,
     onPressProceedtoPay,
     selectedTimeSlot,
     showTime,
@@ -36,6 +34,7 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
     isModifyCOD,
     modifyOrderDetails,
     showReportTat,
+    priceToShow,
   } = props;
 
   function getButtonTitle() {
@@ -91,7 +90,10 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
   const renderTotal = () => {
     return (
       <View>
-        <Text style={styles.total}>₹{grandTotal?.toFixed(2)}</Text>
+        <Text style={styles.total}>
+          {string.common.Rs}
+          {priceToShow?.toFixed(2)}
+        </Text>
         <Text style={styles.text}>{'Total Amount'}</Text>
       </View>
     );
