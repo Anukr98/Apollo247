@@ -649,7 +649,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                   ? [Number(results?.[isItemInCart]?.itemId)]
                   : results?.[isItemInCart]?.inclusions,
               collectionMethod: TEST_COLLECTION_TYPE.HC,
-              isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+              // isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG, //commented for future ref
             };
 
             updateCartItemsLocally(updatedObject);
@@ -682,6 +682,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         (lineItems: DiagnosticsCartItem) => lineItems?.id === updatedItems?.id
       );
       if (findLineItemsIndex !== -1) {
+        const getCurrentPatientCartItems = patientItems.cartItems[findLineItemsIndex].isSelected!;
+        updatedItems['isSelected'] = getCurrentPatientCartItems;
         patientItems.cartItems[findLineItemsIndex] = updatedItems;
         const patientLineItemObj: DiagnosticPatientCartItem = {
           patientId: patientItems?.patientId,
@@ -693,11 +695,14 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       }
     });
     setPatientCartItems?.([...newPatientCartItem!]?.slice(0));
-    const foundIndex = cartItems?.findIndex((item) => item?.id == updatedItems?.id);
-    if (foundIndex !== -1) {
-      cartItems[foundIndex] = { ...cartItems[foundIndex], ...updatedItems };
-      setCartItems?.([...cartItems]?.slice(0));
-    }
+    /**
+     * commented below code for future reference.
+     */
+    // const foundIndex = cartItems?.findIndex((item) => item?.id == updatedItems?.id);
+    // if (foundIndex !== -1) {
+    //   cartItems[foundIndex] = { ...cartItems[foundIndex], ...updatedItems };
+    //   setCartItems?.([...cartItems]?.slice(0));
+    // }
   }
 
   async function getAddressServiceability(navigate?: boolean) {
@@ -772,7 +777,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       'Circle Membership Value': null,
     };
     postAppsFlyerEvent(
-      AppsFlyerEventName.DIAGNOSTIC_CART_ADDRESS_SELECTED_SUCCESS,
+      AppsFlyerEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS,
       firebaseAttributes
     );
     postFirebaseEvent(

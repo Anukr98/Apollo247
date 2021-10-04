@@ -198,34 +198,36 @@ export const firePurchaseEvent = (
   cartItems: any,
   currentPatient: any
 ) => {
-  let items,
-    itemIds,
-    itemNames,
-    itemPrices,
-    itemCategories,
-    itemCollectionMethods,
-    itemIndexs,
+  let items: any = [],
+    itemIds: any = [],
+    itemNames: any = [],
+    itemPrices: any = [],
+    itemCategories: any = [],
+    itemCollectionMethods: any = [],
+    itemIndexs: any = [],
     itemQuantity: any = [];
 
-  cartItems.forEach((item: any, index: number) => {
-    let itemObj: any = {};
-    itemObj.af_content = item?.name;
-    itemObj.af_content_id = item?.id;
-    itemObj.af_price = !!item?.specialPrice ? item.specialPrice : item.price;
-    itemObj.af_category = 'Diagnostics';
-    itemObj.item_variant = item.collectionMethod; // "Default" (for Pharmacy) or Virtual / Physcial (for Consultations)
-    itemObj.index = index + 1; // Item sequence number in the list
-    itemObj.af_quantity = 1;
-    items.push(itemObj);
+  !!cartItems &&
+    cartItems?.length > 0 &&
+    cartItems?.forEach((item: any, index: number) => {
+      let itemObj: any = {};
+      itemObj.af_content = item?.name;
+      itemObj.af_content_id = item?.id;
+      itemObj.af_price = !!item?.specialPrice ? item.specialPrice : item.price;
+      itemObj.af_category = 'Diagnostics';
+      itemObj.item_variant = item.collectionMethod; // "Default" (for Pharmacy) or Virtual / Physcial (for Consultations)
+      itemObj.index = index + 1; // Item sequence number in the list
+      itemObj.af_quantity = 1;
+      items.push(itemObj);
 
-    itemIds.push(item?.id);
-    itemNames.push(item?.name);
-    itemPrices.push(!!item?.specialPrice ? String(item.specialPrice) : String(item.price));
-    itemCategories.push('Diagnositcs');
-    itemCollectionMethods.push(item?.collectionMethod);
-    itemIndexs.push(String(index));
-    itemQuantity.push(String(1));
-  });
+      itemIds.push(item?.id);
+      itemNames.push(item?.name);
+      itemPrices.push(!!item?.specialPrice ? String(item.specialPrice) : String(item.price));
+      itemCategories.push('Diagnositcs');
+      itemCollectionMethods.push(item?.collectionMethod);
+      itemIndexs.push(String(index));
+      itemQuantity.push(String(1));
+    });
 
   let appsFlyerObject = {} as any;
   appsFlyerObject.af_content = itemNames;

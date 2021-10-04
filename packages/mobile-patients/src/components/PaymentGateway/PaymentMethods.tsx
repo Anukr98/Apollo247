@@ -498,17 +498,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     token ? InitiateSavedCardTxn(requestId, token, paymentId, cardInfo, cvv) : renderErrorPopup();
   }
 
-  function createOrderInputArray() {
-    var array = [] as any;
-    orderResponse?.map((item) => {
-      array.push({
-        orderID: item?.order_id,
-        amount: item?.amount,
-      });
-    });
-    return array;
-  }
-
   async function onPressPayByCash() {
     triggerWebengege('Cash', 'COD', string.common.Cash);
     setisTxnProcessing(true);
