@@ -6157,8 +6157,8 @@ export const GET_JUSPAY_CLIENTAUTH_TOKEN = gql`
 `;
 
 export const GET_DIAGNOSTIC_SEARCH_RESULTS = gql `
-  query searchDiagnosticItem($keyword:String!, $cityId: Int!){
-    searchDiagnosticItem(keyword: $keyword, cityId: $cityId){
+  query searchDiagnosticItem($keyword:String!, $cityId: Int!, $size: Int){
+    searchDiagnosticItem(keyword: $keyword, cityId: $cityId, size: $size){
       data{
         diagnostic_item_id
         diagnostic_item_name

@@ -1287,7 +1287,7 @@ export const getReportTAT = (
 };
 
 
-export const getDiagnosticSearchResults = (client: ApolloClient<object>, keyword: string, cityId: number) => {
+export const getDiagnosticSearchResults = (client: ApolloClient<object>, keyword: string, cityId: number, results: number) => {
   return client.query<searchDiagnosticItem, searchDiagnosticItemVariables>({
     query: GET_DIAGNOSTIC_SEARCH_RESULTS,
     context: {
@@ -1295,7 +1295,8 @@ export const getDiagnosticSearchResults = (client: ApolloClient<object>, keyword
     },
     variables: {
       keyword: keyword,
-      cityId: cityId
+      cityId: cityId,
+      size: results
     },
      fetchPolicy: 'no-cache',
   });

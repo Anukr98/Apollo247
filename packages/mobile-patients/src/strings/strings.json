@@ -617,7 +617,13 @@
     "sampleCollectedContent": "Our Apollo agent has successfully collected the samples.",
     "agent": "Apollo agent",
     "successfulUpdatePatientDetails": "Patient Name has been updated successfully.",
-    "patientSwitchError": "Sorry, we couldn’t change name due to an error. Please try again"
+    "patientSwitchError": "Sorry, we couldn’t change name due to an error. Please try again",
+    "test":"Test+ included",
+    "tests":"Tests+ included",
+    "alsoKnownAs": "Also Known as:",
+    "addToCart": "ADD TO CART",
+    "removeFromCart": "REMOVE",
+    "alreadyAdded":"ALREADY ADDED"
   },
   "diagnosticCategoryTitle": {
     "category": "category",

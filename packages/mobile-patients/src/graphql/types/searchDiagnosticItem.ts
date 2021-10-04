@@ -51,4 +51,5 @@ export interface searchDiagnosticItem {
 export interface searchDiagnosticItemVariables {
   keyword: string;
   cityId: number;
+  size?: number | null;
 }

@@ -4,6 +4,7 @@ import { DIAGNOSTIC_GROUP_PLAN, GooglePlacesType } from '@aph/mobile-patients/sr
 import moment from 'moment';
 import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import DeviceInfo from 'react-native-device-info';
+import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 export const getValuesArray = (arr: any) => {
   const finalArr = arr.map((item: any) => item.name);
@@ -374,3 +375,77 @@ export enum DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE {
   CONSULT_ROOM = 'Consult Room',
   PHR = 'PHR Prescription',
 }
+
+export const diagnosticsDisplayPrice = (item: DiagnosticsCartItem , isCircleMember : boolean) =>{
+  const itemPackageMrp = item?.packageMrp!;
+  const specialPrice = item?.specialPrice!;
+  const price = item?.price!; 
+  const circlePrice = item?.circlePrice!;
+  const circleSpecialPrice = item?.circleSpecialPrice!;
+  const discountPrice = item?.discountPrice!;
+  const discountSpecialPrice = item?.discountSpecialPrice!;
+
+  const discount = getDiscountPercentage(
+    !!itemPackageMrp && itemPackageMrp > price ? itemPackageMrp : price,
+    specialPrice
+  );
+  const circleDiscount = getDiscountPercentage(
+    !!itemPackageMrp && itemPackageMrp > circlePrice ? itemPackageMrp : circlePrice,
+    circleSpecialPrice
+  );
+  const specialDiscount = getDiscountPercentage(
+    !!itemPackageMrp && itemPackageMrp > discountPrice ? itemPackageMrp : discountPrice,
+    discountSpecialPrice
+  );
+
+  const promoteCircle = item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.CIRCLE && discount < circleDiscount && specialDiscount < circleDiscount;
+  const promoteDiscount = promoteCircle ? false : item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT && discount < specialDiscount;
+
+  const mrpToDisplay = calculateMrpToDisplay(
+    promoteCircle,
+    promoteDiscount,
+    itemPackageMrp,
+    price,
+    circlePrice,
+    discountPrice
+  );
+
+  //1. circle sub + promote circle -> circleSpecialPrice
+  //2. circle sub + discount -> dicount Price
+  //3. circle sub + none -> special price | price
+  //4. non-circle + promote circle -> special price | price
+  //5. non-circle + promte disocunt -> discount price
+  //6. non-circle + none -> special price | price
+  let priceToShow;
+  if (isCircleMember) {
+    if (promoteCircle) {
+      priceToShow = circleSpecialPrice;
+    } else if (promoteDiscount) {
+      priceToShow = discountSpecialPrice;
+    } else {
+      priceToShow = specialPrice || price;
+    }
+  } else {
+    if (promoteDiscount) {
+      priceToShow = discountSpecialPrice;
+    } else {
+      priceToShow = specialPrice || price;
+    }
+  }
+
+  const slashedPrice = !!itemPackageMrp
+  ? itemPackageMrp > priceToShow
+    ? itemPackageMrp
+    : null
+  : price > priceToShow
+  ? price
+  : null;
+
+
+  return {
+    priceToShow,
+    slashedPrice,
+    mrpToDisplay
+  }
+}
+
