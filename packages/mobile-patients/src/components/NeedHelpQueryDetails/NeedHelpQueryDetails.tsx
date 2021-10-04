@@ -12,6 +12,7 @@ import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT,
   SEND_HELP_EMAIL,
+  CREATE_HELP_TICKET,
   GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -38,7 +39,15 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { FlatList, ListRenderItemInfo, SafeAreaView, StyleSheet, Text, View,BackHandler } from 'react-native';
+import {
+  FlatList,
+  ListRenderItemInfo,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+  BackHandler,
+} from 'react-native';
 import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
 import { TouchableOpacity } from 'react-native';
@@ -52,6 +61,10 @@ import {
 import { needHelpCleverTapEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import {
+  TicketNumberMutation,
+  TicketNumberMutationVariables,
+} from '@aph/mobile-patients/src/graphql/types/TicketNumberMutation';
 
 export interface Props
   extends NavigationScreenProps<{
@@ -99,9 +112,9 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
   const client = useApolloClient();
   const { currentPatient, allCurrentPatients, profileAllPatients } = useAllCurrentPatients();
-  const { circlePlanValidity, circleSubscriptionId } = useShoppingCart(); 
+  const { circlePlanValidity, circleSubscriptionId } = useShoppingCart();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
-  const { needHelpToContactInMessage } = useAppCommonData();
+  const { needHelpToContactInMessage, needHelpTicketReferenceText } = useAppCommonData();
   const isConsult = navigation.getParam('isConsult') || false;
   const [selectedQueryId, setSelectedQueryId] = useState<string>('');
   const [comments, setComments] = useState<string>('');
@@ -238,40 +251,28 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         ? CleverTapEventName.TICKET_ACKNOWLEDGEMENT_ON_C2_HELP_DISPLAYED
         : CleverTapEventName.TICKET_ACKNOWLEDGEMENT_ON_C1_HELP_DISPLAYED,
       { 'BU/Module name': headingTitle }
-    );   
-     showAphAlert!({
+    );
+
+    let ticket = response?.data?.createHelpTicket?.ticket;
+    let ticketNumber = ticket?.ticketNumber;
+    let referenceNumberText = ticketNumber
+      ? needHelpTicketReferenceText.replace('#ticketNumber', '#' + ticketNumber)
+      : '';
+
+    showAphAlert!({
       title: string.common.hiWithSmiley,
-      description: needHelpToContactInMessage || string.needHelpSubmitMessage,
+      description:
+        (needHelpToContactInMessage || string.needHelpSubmitMessage) + '. ' + referenceNumberText,
       unDismissable: true,
       onPressOk: () => {
         hideAphAlert!();
-        openHelpChatScreen(response);
+
+        navigation.navigate(AppRoutes.HelpChatScreen, {
+          ticket: ticket,
+          level: queryIdLevel2 ? 3 : queryIdLevel1 ? 2 : 1,
+        });
       },
     });
-  };
-
-  const openHelpChatScreen = (response: any) => {
-    let ticketId = response?.data?.sendHelpEmail.split(':')[1] || 0;
-    let ticket = {
-      closedTime: null,
-      createdTime: '',
-      customFields: {
-        Business: '',
-        __typename: '',
-      },
-      id: ticketId,
-      modifiedTime: '2021-08-26T11:30:46.000Z',
-      status: '',
-      statusType: 'Open',
-      subject: '',
-      ticketNumber: '',
-    };
-    if (ticketId) {
-      navigation.navigate(AppRoutes.HelpChatScreen, {
-        ticketId: ticketId,
-        ticket: ticket,
-      });
-    }
   };
 
   const onError = () => {
@@ -294,9 +295,9 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           : parentQuery?.id == helpSectionQueryId.diagnostic
           ? ORDER_TYPE.DIAGNOSTICS
           : null;
-          const reason = subQueries?.length>0 ? subQueries?.find(({ id }) => id === selectedQueryId)?.title : subQueriesData?.title;
-          const variables: SendHelpEmailVariables = {
-        helpEmailInput: {
+      const reason = subQueries?.find(({ id }) => id === selectedQueryId)?.title;
+      const variables: TicketNumberMutationVariables = {
+        createHelpTicketHelpEmailInput: {
           category: parentQuery?.title,
           reason: reason,
           comments: comments,
@@ -307,8 +308,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         },
       };
 
-      let res = await client.query<SendHelpEmail, SendHelpEmailVariables>({
-        query: SEND_HELP_EMAIL,
+      let res = await client.mutate<TicketNumberMutation, TicketNumberMutationVariables>({
+        mutation: CREATE_HELP_TICKET,
         variables,
       });
 
@@ -411,8 +412,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const renderSubmitCTA = (title?: string) => {
     return (
       <Text
-      onPress={() => onSubmitShowEmailPopup(title)}
-      style={[styles.submit, { opacity: comments ? 1 : 0.5 }]}
+        onPress={() => onSubmitShowEmailPopup(title)}
+        style={[styles.submit, { opacity: comments ? 1 : 0.5 }]}
       >
         {string.submit.toUpperCase()}
       </Text>
@@ -434,8 +435,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         ? CleverTapEventName.SUBMIT_CTA_ON_C2_HELP
         : CleverTapEventName.SUBMIT_CTA_ON_C1_HELP,
       eventAtttr
-    ); 
-       if (!email) {
+    );
+    if (!email) {
       setShowEmailPopup(true);
     } else {
       onSubmit(email);
@@ -556,7 +557,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       moment(new Date()).diff(moment(medicineOrderStatusDate), 'hours') <= 48;
 
     if (!showReturnOrder) {
-      data = data.filter((item) => item.id !== helpSectionQueryId.returnOrder);
+      data = data.filter((item) => item?.id !== helpSectionQueryId.returnOrder);
     }
 
     const showMessage = (tat: boolean) => {

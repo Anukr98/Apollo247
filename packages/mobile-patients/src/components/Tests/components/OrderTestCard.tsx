@@ -9,9 +9,7 @@ import {
   TouchableOpacity,
   Linking,
 } from 'react-native';
-import {
-  useDiagnosticsCart,
-} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { isSmallDevice, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DIAGNOSTIC_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -92,9 +90,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
   const bookedOn = moment(props?.createdOn)?.format('Do MMM') || null;
   const { currentPatient } = useAllCurrentPatients();
-  const {
-    isDiagnosticCircleSubscription,
-  } = useDiagnosticsCart();
+  const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const renderTopView = () => {
     return (
       <View style={styles.horizontalRow}>
@@ -153,8 +149,8 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                   <View
                     style={{
                       flexDirection: 'row',
-                      minWidth: 0,
                       maxWidth: !!item?.editOrderID ? (screenWidth > 350 ? '68%' : '57%') : '80%',
+                      flex: 1,
                     }}
                   >
                     <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
@@ -166,10 +162,10 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                         : ''}{' '}
                     </Text>
                     {!!item?.editOrderID ? renderNewTag() : null}
+                    {index == 1 &&
+                      filterOrderLineItem?.length - 2 > 0 &&
+                      renderShowMore(filterOrderLineItem, item?.itemName!)}
                   </View>
-                  {index == 1 &&
-                    filterOrderLineItem?.length - 2 > 0 &&
-                    renderShowMore(filterOrderLineItem, item?.itemName!)}
                 </>
               ) : null}
             </View>
@@ -182,7 +178,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
               index: number
             ) => (
               <>
-                <View style={{ flexDirection: 'row', width: '86%' }}>
+                <View style={{ flexDirection: 'row', width: '86%', flex: 1 }}>
                   <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
                   <Text style={styles.testName}>
                     {!!item?.itemName ? nameFormater(item?.itemName!, 'title') : ''}{' '}
@@ -433,12 +429,24 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                             );
                             Linking.openURL(phleboTrackLink);
                           } else {
-                            DiagnosticTrackPhleboClicked(orderId, 'My Order', currentPatient, 'No', isDiagnosticCircleSubscription);
+                            DiagnosticTrackPhleboClicked(
+                              orderId,
+                              'My Order',
+                              currentPatient,
+                              'No',
+                              isDiagnosticCircleSubscription
+                            );
                             setBugFenderLog('FAILED_OPEN_URL', phleboTrackLink);
                           }
                         });
                       } catch (e) {
-                        DiagnosticTrackPhleboClicked(orderId, 'My Order', currentPatient, 'No', isDiagnosticCircleSubscription);
+                        DiagnosticTrackPhleboClicked(
+                          orderId,
+                          'My Order',
+                          currentPatient,
+                          'No',
+                          isDiagnosticCircleSubscription
+                        );
                         setBugFenderLog('FAILED_OPEN_URL', phleboTrackLink);
                       }
                     }}

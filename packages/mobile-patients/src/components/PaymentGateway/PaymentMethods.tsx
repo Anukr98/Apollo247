@@ -39,7 +39,7 @@ import {
   CREATE_ORDER,
   UPDATE_ORDER,
   VERIFY_VPA,
-  INITIATE_DIAGNOSTIC_ORDER_PAYMENT,
+  INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -55,10 +55,6 @@ import {
   DiagnosticUserPaymentAborted,
   DiagnosticPaymentPageViewed,
 } from '@aph/mobile-patients/src/components/Tests/Events';
-import {
-  initiateDiagonsticHCOrderPaymentVariables,
-  initiateDiagonsticHCOrderPayment,
-} from '@aph/mobile-patients/src/graphql/types/initiateDiagonsticHCOrderPayment';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { SecureTags } from '@aph/mobile-patients/src/components/PaymentGateway/Components/SecureTag';
 import { useFetchHealthCredits } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useFetchHealthCredits';
@@ -84,6 +80,12 @@ import Decimal from 'decimal.js';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import DeviceInfo from 'react-native-device-info';
+import {
+  initiateDiagonsticHCOrderPaymentv2,
+  initiateDiagonsticHCOrderPaymentv2Variables,
+} from '@aph/mobile-patients/src/graphql/types/initiateDiagonsticHCOrderPaymentv2';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+
 import { useGetClientAuthToken } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useGetClientAuthtoken';
 import { CredPay } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CredPay';
 const { HyperSdkReact } = NativeModules;
@@ -100,7 +102,7 @@ export interface PaymentMethodsProps extends NavigationScreenProps {
 }
 
 export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
-  const { modifiedOrder, deliveryAddressCityId } = useDiagnosticsCart();
+  const { modifiedOrder } = useDiagnosticsCart();
   const paymentId = props.navigation.getParam('paymentId');
   const customerId = props.navigation.getParam('customerId');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
@@ -114,6 +116,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const isDiagnostic = businessLine === 'diagnostics';
   const disableCod = props.navigation.getParam('disableCOD');
   const paymentCodMessage = props.navigation.getParam('paymentCodMessage');
+  const orderResponse = props.navigation.getParam('orderResponse');
+  const isCircleAddedToCart = props.navigation.getParam('isCircleAddedToCart');
   const { currentPatient } = useAllCurrentPatients();
   const [banks, setBanks] = useState<any>([]);
   const [isTxnProcessing, setisTxnProcessing] = useState<boolean>(false);
@@ -125,7 +129,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { authToken, setauthToken } = useAppCommonData();
-  const { grandTotal } = useShoppingCart();
+  const { grandTotal, cartItems, nonCodSKus } = useShoppingCart();
   const [HCSelected, setHCSelected] = useState<boolean>(false);
   const [burnHc, setburnHc] = useState<number>(0);
   const storeCode =
@@ -136,6 +140,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [showCOD, setShowCOD] = useState<boolean>(isDiagnostic ? false : true);
   const [showDiagnosticHCMsg, setShowDiagnosticHCMsg] = useState<string>('');
   const paymentType = useRef<string>('');
+  const [areNonCODSkus, setAreNonCODSkus] = useState(false);
   const { healthCredits } = useFetchHealthCredits(businessLine);
   const { paymentMethods, cardTypes, fetching } = useGetPaymentMethods(paymentId);
   const { savedCards } = useFetchSavedCards(customerId);
@@ -361,15 +366,16 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const initiateOrderPayment = async () => {
     // Api is called to update the order status from Quote to Payment Pending
+    //changed this api from INITIATE_DIAGNOSTIC_ORDER_PAYMENT to INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2
     try {
-      const input: initiateDiagonsticHCOrderPaymentVariables = {
-        diagnosticInitiateOrderPaymentInput: { orderId: orderDetails?.orderId },
+      const input: initiateDiagonsticHCOrderPaymentv2Variables = {
+        diagnosticInitiateOrderPaymentInput: { paymentOrderID: paymentId },
       };
       const res = await client.mutate<
-        initiateDiagonsticHCOrderPayment,
-        initiateDiagonsticHCOrderPaymentVariables
+        initiateDiagonsticHCOrderPaymentv2,
+        initiateDiagonsticHCOrderPaymentv2Variables
       >({
-        mutation: INITIATE_DIAGNOSTIC_ORDER_PAYMENT,
+        mutation: INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2,
         variables: input,
         fetchPolicy: 'no-cache',
       });
@@ -419,13 +425,13 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressBank(bankCode: string) {
-    triggerWebengege('NetBanking-' + bankCode, 'NB', 'Net banking');
+    triggerWebengege('NetBanking-' + bankCode, 'NB', string.common.netBanking);
     const token = await getClientToken();
     token ? InitiateNetBankingTxn(requestId, token, paymentId, bankCode) : renderErrorPopup();
   }
 
   async function onPressWallet(wallet: string) {
-    triggerWebengege('Wallet-' + wallet, 'WALLET', 'PhonePe Wallet');
+    triggerWebengege('Wallet-' + wallet, 'WALLET', string.common.phonePeWallet);
     const token = await getClientToken();
     token
       ? wallet == 'PHONEPE' && phonePeReady
@@ -464,7 +470,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressVPAPay(VPA: string) {
-    triggerWebengege('UPI Collect', 'UPI', 'VPA-UPI');
+    triggerWebengege('UPI Collect', 'UPI', string.common.VPA);
     try {
       setisTxnProcessing(true);
       const response = await verifyVPA(VPA);
@@ -481,7 +487,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressNewCardPayNow(cardInfo: any, saveCard: boolean) {
-    triggerWebengege('Card', 'CARD', 'Card');
+    triggerWebengege('Card', 'CARD', string.common.Card);
     const token = await getClientToken();
     token ? InitiateCardTxn(requestId, token, paymentId, cardInfo, saveCard) : renderErrorPopup();
   }
@@ -492,8 +498,19 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     token ? InitiateSavedCardTxn(requestId, token, paymentId, cardInfo, cvv) : renderErrorPopup();
   }
 
+  function createOrderInputArray() {
+    var array = [] as any;
+    orderResponse?.map((item) => {
+      array.push({
+        orderID: item?.order_id,
+        amount: item?.amount,
+      });
+    });
+    return array;
+  }
+
   async function onPressPayByCash() {
-    triggerWebengege('Cash', 'COD', 'Cash');
+    triggerWebengege('Cash', 'COD', string.common.Cash);
     setisTxnProcessing(true);
     try {
       businessLine == 'diagnostics' && initiateOrderPayment();
@@ -501,7 +518,11 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       const { data } = response;
       const status =
         data?.createOrderV2?.payment_status || data?.updateOrderDetails?.payment_status;
-      status == 'TXN_SUCCESS' ? navigatetoOrderStatus(true, 'success') : showTxnFailurePopUP();
+      if (status === 'TXN_SUCCESS') {
+        navigatetoOrderStatus(true, 'success');
+      } else {
+        showTxnFailurePopUP();
+      }
     } catch (e) {
       showTxnFailurePopUP();
     }
@@ -529,7 +550,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     otherBanks = otherBanks?.payment_methods?.filter(
       (item: any) => !methods?.includes(item?.payment_method_code)
     );
-    triggerWebengege('NetBanking - OtherBanks', 'NB', 'NetBanking');
+    triggerWebengege('NetBanking - OtherBanks', 'NB', string.common.netBanking);
     props.navigation.navigate(AppRoutes.OtherBanks, {
       paymentId: paymentId,
       amount: amount,
@@ -576,6 +597,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           eventAttributes,
           paymentStatus: paymentStatus,
           isModify: isDiagnosticModify ? modifiedOrder : null,
+          isCircleAddedToCart: isCircleAddedToCart,
         });
         break;
       case 'consult':
@@ -742,7 +764,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderPayByCash = () => {
-    return (
+    return !isDiagnosticModify ? (
       <PayByCash
         businessLine={businessLine}
         HCselected={HCSelected}
@@ -752,7 +774,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         pharmaDisableCod={disableCod}
         pharmaDisincentivizeCodMessage={paymentCodMessage}
       />
-    );
+    ) : null;
   };
 
   const showTxnFailurePopUP = () => {

@@ -3792,7 +3792,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           ? AppRoutes.MedAndTestCart
           : shopCartItems.length
           ? AppRoutes.MedicineCart
-          : AppRoutes.TestsCart;
+          : AppRoutes.AddPatients;
       props.navigation.navigate(route);
     };
 
@@ -3840,9 +3840,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       >
         <ImageBackground
           style={styles.proHealthBannerImage}
-          source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_2.webp')}
+          source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_banner.webp')}
           resizeMode={'stretch'}
-          borderRadius={5}
+          borderRadius={10}
         ></ImageBackground>
       </TouchableOpacity>
     );

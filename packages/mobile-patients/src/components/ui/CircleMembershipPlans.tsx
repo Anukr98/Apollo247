@@ -25,7 +25,12 @@ import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/G
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import ContentLoader from 'react-native-easy-content-loader';
-import { CircleLogo, BlueTick, CrossPopup, ExclamationGreen } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  CircleLogo,
+  BlueTick,
+  CrossPopup,
+  ExclamationGreen,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import AsyncStorage from '@react-native-community/async-storage';
 import { Overlay } from 'react-native-elements';
@@ -81,7 +86,7 @@ import {
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
-import {Tooltip} from 'react-native-elements';
+import { Tooltip } from 'react-native-elements';
 
 const { width } = Dimensions.get('window');
 interface CircleMembershipPlansProps extends NavigationScreenProps {
@@ -96,7 +101,13 @@ interface CircleMembershipPlansProps extends NavigationScreenProps {
   doctorFees?: number;
   onEndApiCall?: (() => void) | null;
   buyNow?: boolean;
-  source?: 'Pharma' | 'Product Detail' | 'Pharma Cart' | 'Diagnostic' | 'Consult';
+  source?:
+    | 'Pharma'
+    | 'Product Detail'
+    | 'Pharma Cart'
+    | 'Diagnostic'
+    | 'Consult'
+    | 'Diagnostic Cart';
   from?: string;
   healthCredits?: number;
   circleEventSource?: CircleEventSource;
@@ -149,7 +160,10 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     circleSubscriptionId,
     cartItems,
   } = useShoppingCart();
-  const { setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
+  const {
+    setIsDiagnosticCircleSubscription,
+    cartItems: diagnosticCartItems,
+  } = useDiagnosticsCart();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { setLoading } = useUIElements();
   const storeCode =
@@ -241,7 +255,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           } else {
             // pharma journey and circle membership charges
             const planSelected = circlePlans.filter(
-              (value) => value?.currentSellingPrice == circleMembershipCharges
+              (value: any) => value?.currentSellingPrice == circleMembershipCharges
             );
             setIsCircleSubscription && setIsCircleSubscription(true);
             onSelectMembershipPlan && onSelectMembershipPlan(planSelected[0]);
@@ -267,7 +281,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     if (source === 'Pharma Cart') {
       postAppsFlyerCircleAddRemoveCartEvent(
         membershipPlan,
-        circleEventSource,
+        circleEventSource!,
         'add',
         currentPatient
       );
@@ -312,6 +326,11 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         WebEngageEventName.DIAGNOSTICS_KNOW_MORE_CLICKED_CIRCLE_POPUP,
         CircleEventAttributes
       );
+    source == 'Diagnostic Cart' &&
+      postWebEngageEvent(
+        WebEngageEventName.DIAGNOSTICS_KNOW_MORE_CLICKED_CIRCLE_POPUP,
+        CircleEventAttributes
+      );
   };
 
   const fireCircleBuyNowEvent = () => {
@@ -341,7 +360,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     };
     if (isConsultJourney || getButtonTitle() === string.circleDoctors.addToCart) {
       postCleverTapEvent(CleverTapEventName.CIRCLE_PLAN_TO_CART, cleverTapEventAttributes);
-      postAppsFlyerCircleAddRemoveCartEvent(circleData, circleEventSource, 'add', currentPatient);
+      postAppsFlyerCircleAddRemoveCartEvent(circleData, circleEventSource!, 'add', currentPatient);
     }
   };
 
@@ -564,8 +583,9 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
                   <Text style={styles.getCareText}>
                     Get{' '}
                     <Text style={theme.viewStyles.text('SB', 13, theme.colors.LIGHT_BLUE)}>
-                      {cashbackEnabled ? `upto ${cashbackAmount} HC` : 
-                      string.common.Rs + convertNumberToDecimal(careDiscountPrice) + ' off '}
+                      {cashbackEnabled
+                        ? `upto ${cashbackAmount} HC`
+                        : string.common.Rs + convertNumberToDecimal(careDiscountPrice!) + ' off '}
                     </Text>{' '}
                     on this Consult with CIRCLE membership and a lot more benefits....
                   </Text>
@@ -623,17 +643,16 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           <Text style={[styles.getCareText, { marginRight: 0 }]}>
             Get{' '}
             <Text style={theme.viewStyles.text('SB', 12, theme.colors.LIGHT_BLUE)}>
-              {cashbackEnabled ? `upto ${cashbackAmount} HC` : 
-              string.common.Rs + convertNumberToDecimal(careDiscountPrice)+ 'off '}
+              {cashbackEnabled
+                ? `upto ${cashbackAmount} HC`
+                : string.common.Rs + convertNumberToDecimal(careDiscountPrice!) + 'off '}
             </Text>{' '}
             on this Consult
           </Text>
         </View>
-        {cashbackEnabled && 
+        {cashbackEnabled && (
           <View style={styles.hcInfoView}>
-            <Text style={styles.hcInfoText}>
-              {string.common.hcToRupee}
-            </Text>
+            <Text style={styles.hcInfoText}>{string.common.hcToRupee}</Text>
             <Tooltip
               containerStyle={styles.tooltipView}
               height={126}
@@ -644,22 +663,23 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
               popover={
                 <View>
                   <Text style={styles.tooltipTitle}>{string.common.whatIsHc}</Text>
-                  <Text style={styles.tootipDesc}>{string.common.hcShort}
-                  <Text style={styles.hcBoldText}>
-                    {string.common.healthCredit}
-                    </Text>
+                  <Text style={styles.tootipDesc}>
+                    {string.common.hcShort}
+                    <Text style={styles.hcBoldText}>{string.common.healthCredit}</Text>
                     {string.common.hcInfo}
-                    </Text>
+                  </Text>
                   <Text style={styles.tipHcInfoText}>{string.common.hcToRupee}</Text>
                 </View>
-              }>
+              }
+            >
               <ExclamationGreen style={styles.infoIcon} />
             </Tooltip>
-          </View>}
+          </View>
+        )}
       </View>
     );
   };
-  
+
   const renderKnowMore = (alignSelf: 'flex-end' | 'center') => {
     return (
       <View
@@ -730,6 +750,8 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         ? AppConfig.Configuration.CIRCLE_LANDING_URL
         : isDiagnosticJourney || from === string.banner_context.DIAGNOSTIC_HOME
         ? AppConfig.Configuration.CIRCLE_TEST_URL
+        : from === string.banner_context.DIAGNOSTIC_CART
+        ? AppConfig.Configuration.CIRLCE_PHARMA_URL
         : AppConfig.Configuration.CIRLCE_PHARMA_URL,
       source: source,
       circleEventSource,
@@ -781,7 +803,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     try {
       const response = await createUserSubscription();
       const subscriptionId = g(response, 'data', 'CreateUserSubscription', 'response', '_id');
-      const data = await createOrderInternal(subscriptionId);
+      const data = await createOrderInternal(subscriptionId!);
       const res = await createJusPayOrder(data?.data?.createOrderInternal?.payment_order_id!);
       setLoading?.(false);
       if (res?.data?.createOrderV2?.payment_status == 'TXN_SUCCESS') {
@@ -814,7 +836,9 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   };
 
   const getButtonTitle = () =>
-    buyNow && from !== string.banner_context.PHARMACY_HOME
+    buyNow && from === string.banner_context.DIAGNOSTIC_CART
+      ? string.circleDoctors.addToCart
+      : buyNow && from !== string.banner_context.PHARMACY_HOME
       ? purchaseWithHC
         ? string.circleDoctors.upgradeWithHC.replace(
             '{hc}',
@@ -850,7 +874,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           fireCircleBuyNowEvent();
           postAppsFlyerCircleAddRemoveCartEvent(
             circlePlanSelected,
-            circleEventSource,
+            circleEventSource!,
             'add',
             currentPatient
           );
@@ -864,12 +888,25 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           autoSelectDefaultPlan(membershipPlans);
           fireCirclePlanToCartEvent();
           if (buyNow && from !== string.banner_context.PHARMACY_HOME) {
-            if (purchaseWithHC) {
-              closeModal && closeModal();
-              onPurchasePlanThroughHC();
+            if (from === string.banner_context.DIAGNOSTIC_CART) {
+              //don't have hc with diagnostics
+              if (!diagnosticCartItems?.length) {
+                closeModal?.();
+                props.navigation.navigate(AppRoutes.SubscriptionCart);
+              } else {
+                setCircleMembershipCharges &&
+                  setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
+                setCircleSubPlanId && setCircleSubPlanId(circlePlanSelected?.subPlanId);
+                closeModal && closeModal();
+              }
             } else {
-              closeModal?.();
-              props.navigation.navigate(AppRoutes.SubscriptionCart);
+              if (purchaseWithHC) {
+                closeModal && closeModal();
+                onPurchasePlanThroughHC();
+              } else {
+                closeModal?.();
+                props.navigation.navigate(AppRoutes.SubscriptionCart);
+              }
             }
           } else if (from === string.banner_context.PHARMACY_HOME) {
             if (!cartItems?.length) {
@@ -956,7 +993,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
             );
             postAppsFlyerCircleAddRemoveCartEvent(
               circlePlanSelected,
-              circleEventSource,
+              circleEventSource!,
               'remove',
               currentPatient
             );
@@ -1205,9 +1242,9 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   infoIcon: {
-    height: 12, 
-    width: 12, 
-    marginStart: 8
+    height: 12,
+    width: 12,
+    marginStart: 8,
   },
   hcInfoView: {
     flexDirection: 'row',
@@ -1215,10 +1252,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   hcInfoText: {
-    ...theme.viewStyles.text('R', 12, theme.colors.LIGHT_BLUE)
+    ...theme.viewStyles.text('R', 12, theme.colors.LIGHT_BLUE),
   },
   tooltipTitle: {
-    ...theme.viewStyles.text('M', 13, theme.colors.APP_YELLOW)
+    ...theme.viewStyles.text('M', 13, theme.colors.APP_YELLOW),
   },
   tootipDesc: {
     ...theme.viewStyles.text('R', 10, theme.colors.LIGHT_BLUE, undefined, 12),
@@ -1236,6 +1273,6 @@ const styles = StyleSheet.create({
     shadowColor: theme.colors.SHADOW_GRAY,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.4,
-    shadowRadius: 8
+    shadowRadius: 8,
   },
 });

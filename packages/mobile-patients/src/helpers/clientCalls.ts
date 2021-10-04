@@ -37,6 +37,18 @@ import {
   UPDATE_APPOINTMENT,
   SAVE_PHLEBO_FEEDBACK,
   PROCESS_DIAG_COD_ORDER,
+  CREATE_ORDER,
+  GET_DIAGNOSTIC_SERVICEABILITY,
+  SAVE_DIAGNOSTIC_ORDER_V2,
+  GET_CUSTOMIZED_DIAGNOSTIC_SLOTS_V2,
+  CREATE_INTERNAL_ORDER,
+  MODIFY_DIAGNOSTIC_ORDERS,
+  GET_DIAGNOSTIC_PHLEBO_CHARGES,
+  DIAGNOSTIC_CANCEL_V2,
+  DIAGNOSTIC_RESCHEDULE_V2,
+  DIAGNOSITC_EXOTEL_CALLING,
+  DIAGNOSTIC_WRAPPER_PROCESS_HC,
+  GET_DIAGNOSTIC_ORDERSLIST_BY_PARENT_ORDER_ID,
   GET_DIAGNOSTIC_PAYMENT_SETTINGS,
   GET_DIAGNOSTICS_RECOMMENDATIONS,
   GET_DIAGNOSTIC_EXPRESS_SLOTS_INFO,
@@ -95,7 +107,18 @@ import {
   BannerDisplayType,
   ProcessDiagnosticHCOrderInput,
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
+  SaveBookHomeCollectionOrderInputv2,
+  patientObjWithLineItems,
+  patientAddressObj,
   DiagnosticsServiceability,
+  OrderCreate,
+  saveModifyDiagnosticOrderInput,
+  ChargeDetailsInput,
+  CancellationDiagnosticsInputv2,
+  DiagnosticsRescheduleSource, 
+  slotInfo,
+  ProcessDiagnosticHCOrderInputCOD,
+  DiagnosticsBookingSource
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { insertMessageVariables } from '@aph/mobile-patients/src/graphql/types/insertMessage';
 import {
@@ -178,6 +201,17 @@ import {
   updateAppointmentVariables,
   updateAppointment,
 } from '@aph/mobile-patients/src/graphql/types/updateAppointment';
+import { getDiagnosticServiceability, getDiagnosticServiceabilityVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticServiceability';
+import { saveDiagnosticBookHCOrderv2, saveDiagnosticBookHCOrderv2Variables } from '@aph/mobile-patients/src/graphql/types/saveDiagnosticBookHCOrderv2';
+import { getCustomizedSlotsv2, getCustomizedSlotsv2Variables } from '@aph/mobile-patients/src/graphql/types/getCustomizedSlotsv2';
+import { createOrderInternal, createOrderInternalVariables } from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
+import { saveModifyDiagnosticOrder, saveModifyDiagnosticOrderVariables } from '@aph/mobile-patients/src/graphql/types/saveModifyDiagnosticOrder';
+import { getPhleboCharges, getPhleboChargesVariables } from '@aph/mobile-patients/src/graphql/types/getPhleboCharges';
+import { cancelDiagnosticOrdersv2, cancelDiagnosticOrdersv2Variables } from '@aph/mobile-patients/src/graphql/types/cancelDiagnosticOrdersv2';
+import { rescheduleDiagnosticsOrderv2, rescheduleDiagnosticsOrderv2Variables } from '@aph/mobile-patients/src/graphql/types/rescheduleDiagnosticsOrderv2';
+import { diagnosticExotelCalling, diagnosticExotelCallingVariables } from '@aph/mobile-patients/src/graphql/types/diagnosticExotelCalling';
+import { wrapperProcessDiagnosticHCOrderCOD, wrapperProcessDiagnosticHCOrderCODVariables } from '@aph/mobile-patients/src/graphql/types/wrapperProcessDiagnosticHCOrderCOD';
+import { getDiagnosticOrdersListByParentOrderID, getDiagnosticOrdersListByParentOrderIDVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByParentOrderID';
 import {
   savePhleboFeedbackVariables,
   savePhleboFeedback_savePhleboFeedback,
@@ -1205,6 +1239,144 @@ export const diagnosticPaymentSettings = (client: ApolloClient<object>, paymentI
     fetchPolicy: 'no-cache',
   });
 };
+export const diagnosticServiceability = (client: ApolloClient<object>,latitude: number, longitude: number) => {
+  return client.query<getDiagnosticServiceability, getDiagnosticServiceabilityVariables>({
+    query: GET_DIAGNOSTIC_SERVICEABILITY,
+    variables: {latitude: Number(latitude), longitude: Number(longitude)},
+    context: {
+      sourceHeaders,
+    },
+    fetchPolicy: 'no-cache',
+  });
+};
+
+export const diagnosticGetPhleboCharges = (client :ApolloClient<object>,chargeDetailsInput: ChargeDetailsInput ) => {
+  return client.query<getPhleboCharges, getPhleboChargesVariables>({
+    query: GET_DIAGNOSTIC_PHLEBO_CHARGES,
+    variables: {
+      chargeDetailsInput : chargeDetailsInput
+    },
+    context: {
+      sourceHeaders,
+    },
+    fetchPolicy: 'no-cache',
+  });
+};
+
+export const diagnosticGetCustomizedSlotsV2 = (client: ApolloClient<object>,  patientAddressObject: patientAddressObj, patientsObjWithLineItemsObject: (patientObjWithLineItems | null) [] ,billAmount: number,selectedDate: any,serviceabilityObject?: DiagnosticsServiceability, diagnosticOrdersId?: string) => {
+  return client.query<getCustomizedSlotsv2, getCustomizedSlotsv2Variables>({
+    query: GET_CUSTOMIZED_DIAGNOSTIC_SLOTS_V2,
+    variables: {
+      patientAddressObj: patientAddressObject,
+      patientsObjWithLineItems: patientsObjWithLineItemsObject,
+      billAmount: billAmount,
+      selectedDate: selectedDate,
+      serviceability: serviceabilityObject,
+      diagnosticOrdersId: diagnosticOrdersId,
+      patientAddressID: patientAddressObject?.patientAddressID,
+      bookingSource: DiagnosticsBookingSource.MOBILE
+    },
+    context: {
+      sourceHeaders,
+    },
+    fetchPolicy: 'no-cache',
+  });
+};
+
+export const diagnosticSaveBookHcCollectionV2 = (client: ApolloClient<object>,orderInfo : SaveBookHomeCollectionOrderInputv2) => {
+  return client.mutate<saveDiagnosticBookHCOrderv2, saveDiagnosticBookHCOrderv2Variables>({
+    mutation: SAVE_DIAGNOSTIC_ORDER_V2,
+    variables: {diagnosticOrderInput : orderInfo},
+    context: {
+      sourceHeaders,
+    }
+  });
+};
+
+export const createInternalOrder = (client: ApolloClient<object>,orders : OrderCreate) => {
+  return client.mutate<createOrderInternal, createOrderInternalVariables>({
+    mutation: CREATE_INTERNAL_ORDER,
+    context: {
+      sourceHeaders,
+    },
+    variables: { order: orders },
+  });
+};
+
+export const diagnosticSaveModifyOrder = (client: ApolloClient<object>,orderInfo: saveModifyDiagnosticOrderInput) => {
+  return client.mutate<saveModifyDiagnosticOrder, saveModifyDiagnosticOrderVariables>({
+    mutation: MODIFY_DIAGNOSTIC_ORDERS,
+    context: {
+      sourceHeaders,
+    },
+    variables: { saveModifyDiagnosticOrder: orderInfo }
+  });
+};
+
+export const diagnosticCancelOrder = (client: ApolloClient<object>, orderInput:CancellationDiagnosticsInputv2) =>{
+  return  client.mutate<cancelDiagnosticOrdersv2, cancelDiagnosticOrdersv2Variables>({
+    mutation: DIAGNOSTIC_CANCEL_V2,
+    context: { sourceHeaders },
+    variables: { cancellationDiagnosticsInput: orderInput },
+    fetchPolicy: 'no-cache',
+  });
+}
+
+export const diagnosticRescheduleOrder = (client: ApolloClient<object>,  parentOrderID: string,slotInfo: slotInfo,selectedDate: any ,comment: string,reason: string,source: DiagnosticsRescheduleSource) =>{
+  return client.mutate<rescheduleDiagnosticsOrderv2, rescheduleDiagnosticsOrderv2Variables>({
+    mutation: DIAGNOSTIC_RESCHEDULE_V2,
+    variables: {
+      parentOrderID: parentOrderID,
+      slotInfo: slotInfo,
+      selectedDate: selectedDate,
+      comment: comment,
+      reason: reason,
+      source: source,
+    },
+    context: { sourceHeaders },
+    fetchPolicy: 'no-cache',
+  });
+}
+
+export const diagnosticExotelCall = (client : ApolloClient<object>, orderId: string) =>{
+ return client.mutate<diagnosticExotelCalling, diagnosticExotelCallingVariables>({
+    mutation: DIAGNOSITC_EXOTEL_CALLING,
+    context: {
+      sourceHeaders,
+    },
+    variables: { orderId: orderId },
+  });
+}
+
+export const processDiagnosticsCODOrderV2 =  (
+  client: ApolloClient<object>,
+  array : [ProcessDiagnosticHCOrderInputCOD]
+) => {
+
+  return client.mutate<wrapperProcessDiagnosticHCOrderCOD, wrapperProcessDiagnosticHCOrderCODVariables>({
+    mutation: DIAGNOSTIC_WRAPPER_PROCESS_HC,
+    context: {
+      sourceHeaders,
+    },
+    variables: { processDiagnosticHCOrdersInput: array },
+    fetchPolicy: 'no-cache',
+  });
+}
+
+export const diagnosticsOrderListByParentId =  (
+  client: ApolloClient<object>,
+  parentOrderID : string
+) => {
+
+  return client.query<getDiagnosticOrdersListByParentOrderID, getDiagnosticOrdersListByParentOrderIDVariables>({
+    query: GET_DIAGNOSTIC_ORDERSLIST_BY_PARENT_ORDER_ID,
+    context: {
+      sourceHeaders,
+    },
+    variables: { parentOrderID: parentOrderID },
+    fetchPolicy: 'no-cache',
+  });
+}
 
 export const saveJusPaySDKresponse = (client: ApolloClient<object>, payload: any) => {
   client.query({
@@ -1281,3 +1453,4 @@ export const getReportTAT = (
     fetchPolicy: 'no-cache',
   }); 
 };
+
