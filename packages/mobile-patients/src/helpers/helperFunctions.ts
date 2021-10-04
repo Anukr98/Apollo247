@@ -2640,7 +2640,7 @@ export const addPharmaItemToCart = (
 
   const navigate = () => {
     navigation.push(AppRoutes.ProductDetailPage, {
-      sku: cartItem.id,
+      sku: cartItem?.id,
       urlKey: cartItem?.url_key,
       deliveryError: outOfStockMsg,
     });
@@ -2650,10 +2650,10 @@ export const addPharmaItemToCart = (
     addCartItem!(cartItem);
     postwebEngageAddToCartEvent(
       {
-        sku: cartItem.id,
-        name: cartItem.name,
-        price: cartItem.price,
-        special_price: cartItem.specialPrice,
+        sku: cartItem?.id,
+        name: cartItem?.name,
+        price: cartItem?.price,
+        special_price: cartItem?.specialPrice,
         category_id: otherInfo?.categoryId,
       },
       otherInfo?.source,
@@ -2663,26 +2663,26 @@ export const addPharmaItemToCart = (
     );
     postFirebaseAddToCartEvent(
       {
-        sku: cartItem.id,
-        name: cartItem.name,
-        price: cartItem.price,
-        special_price: cartItem.specialPrice,
-        category_id: g(otherInfo, 'categoryId'),
+        sku: cartItem?.id,
+        name: cartItem?.name,
+        price: cartItem?.price,
+        special_price: cartItem?.specialPrice,
+        category_id: otherInfo?.categoryId,
       },
-      g(otherInfo, 'source')!,
-      g(otherInfo, 'section'),
+      otherInfo?.source,
+      otherInfo?.section,
       '',
       pharmacyCircleAttributes!
     );
     postAppsFlyerAddToCartEvent(
       {
-        sku: cartItem.id,
-        name: cartItem.name,
-        price: cartItem.price,
-        special_price: cartItem.specialPrice,
-        category_id: g(otherInfo, 'categoryId'),
+        sku: cartItem?.id,
+        name: cartItem?.name,
+        price: cartItem?.price,
+        special_price: cartItem?.specialPrice,
+        category_id: otherInfo?.categoryId,
       },
-      g(currentPatient, 'id')!,
+      currentPatient?.id,
       pharmacyCircleAttributes!
     );
   };
@@ -2692,7 +2692,7 @@ export const addPharmaItemToCart = (
       'product name': cartItem.name,
       'product id': cartItem.id,
       pincode: pincode,
-      'Mobile Number': g(currentPatient, 'mobileNumber')!,
+      'Mobile Number': currentPatient?.mobileNumber,
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE, eventAttributes);
     onComplete && onComplete();
