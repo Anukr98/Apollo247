@@ -33,6 +33,7 @@ import {
   postWEGReferralCodeEvent,
   onCleverTapUserLogin,
   postCleverTapEvent,
+  deferredDeepLinkRedirectionData,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   ProductPageViewedSource,
@@ -50,6 +51,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
   BackHandler,
+  Image,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -543,8 +545,8 @@ const SignUp: React.FC<SignUpProps> = (props) => {
 
       postWebEngageEvent(WebEngageEventName.REGISTRATION_DONE, eventAttributes);
       postCleverTapEvent(CleverTapEventName.REGISTRATION_DONE, cleverTapEventAttributes);
-      const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.REGISTRATION_DONE] = {
-        'customer id': currentPatient ? currentPatient.id : '',
+      const appsflyereventAttributes = {
+        af_customer_user_id: currentPatient ? currentPatient.id : '',
       };
       if (referral) {
         // only send if referral has a value
@@ -558,18 +560,20 @@ const SignUp: React.FC<SignUpProps> = (props) => {
 
   const handleOpenURLs = async () => {
     try {
-      const event: any = await AsyncStorage.getItem('deeplink');
-      const data = handleOpenURL(event);
-      const { routeName, id, isCall, timeout, mediaSource } = data;
-      pushTheView(
-        props.navigation,
-        routeName,
-        id ? id : undefined,
-        isCall,
-        undefined,
-        undefined,
-        mediaSource
-      );
+      deferredDeepLinkRedirectionData(props.navigation, async () => {
+        const event: any = await AsyncStorage.getItem('deeplink');
+        const data = handleOpenURL(event);
+        const { routeName, id, isCall, timeout, mediaSource } = data;
+        pushTheView(
+          props.navigation,
+          routeName,
+          id ? id : undefined,
+          isCall,
+          undefined,
+          undefined,
+          mediaSource
+        );
+      });
     } catch (error) {}
   };
 

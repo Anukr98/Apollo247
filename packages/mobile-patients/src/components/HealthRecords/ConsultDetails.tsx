@@ -368,7 +368,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const { getPatientApiCall } = useAuth();
 
   const { pharmacyUserTypeAttribute } = useAppCommonData();
-  const { pharmacyCircleAttributes } = useShoppingCart();
+  const { pharmacyCircleAttributes, circleSubscriptionId } = useShoppingCart();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -860,7 +860,15 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   } = useAppCommonData();
 
   function postDiagnosticAddToCart(itemId: string, itemName: string) {
-    DiagnosticAddToCartEvent(itemName, itemId, 0, 0, DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PHR);
+    DiagnosticAddToCartEvent(
+      itemName,
+      itemId,
+      0,
+      0,
+      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PHR,
+      currentPatient,
+      !!circleSubscriptionId
+    );
   }
 
   const onAddTestsToCart = async () => {

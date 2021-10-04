@@ -484,6 +484,11 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           removeCouponWithAlert(response);
         }
       } catch (error) {
+        CommonBugFender(`${AppRoutes.CartSummary}_onPressProceedtoPay`, Error(error));
+        showAphAlert?.({
+          title: string.common.uhOh,
+          description: string.common.somethingWentWrong,
+        });
         return;
       }
     }
@@ -518,8 +523,13 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         !circleSubscriptionId && circleMembershipCharges
           ? await saveOrderWithSubscription()
           : await saveOrder();
-      const { orders, transactionId, errorCode, isCodEligible } =
+      const { orders, transactionId, errorCode, isCodEligible, errorMessage, codMessage } =
         response?.data?.saveMedicineOrderV2 || {};
+      if (errorCode == 400 && errorMessage) {
+        setloading(false);
+        renderAlert(errorMessage);
+        return;
+      }
       const subscriptionId = response?.data?.CreateUserSubscription?.response?._id;
       const data = await createOrderInternal(orders, subscriptionId);
       if (data?.data?.createOrderInternal?.success) {
@@ -542,6 +552,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
             orders
           ),
           disableCOD: !isCodEligible,
+          paymentCodMessage: codMessage,
         });
       }
       setloading(false);

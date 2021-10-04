@@ -98,7 +98,8 @@ export interface DiagnosticsCartContextProps {
   circleSaving: number;
   couponDiscount: number;
   deliveryCharges: number;
-
+  temporaryCartSaving: number;
+  temporaryNormalSaving: number;
   hcCharges: number;
   setHcCharges: ((id: number) => void) | null;
 
@@ -106,6 +107,7 @@ export interface DiagnosticsCartContextProps {
   setModifyHcCharges: ((id: number) => void) | null;
 
   grandTotal: number;
+  circleGrandTotal: number; //if circle is not applied
 
   uploadPrescriptionRequired: boolean;
 
@@ -252,6 +254,8 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   circleSaving: 0,
   couponDiscount: 0,
   deliveryCharges: 0,
+  temporaryNormalSaving: 0,
+  temporaryCartSaving: 0,
 
   hcCharges: 0,
   setHcCharges: null,
@@ -263,6 +267,7 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   setDistanceCharges: null,
 
   grandTotal: 0,
+  circleGrandTotal: 0,
 
   uploadPrescriptionRequired: false,
 
@@ -769,6 +774,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
   );
 
+  const cartItemsWithAll = allCartItems?.filter(
+    (item: DiagnosticsCartItem) => item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
+  );
+
   const discountSaving: DiagnosticsCartContextProps['discountSaving'] = withDiscount?.reduce(
     (currTotal: number, currItem: DiagnosticsCartItem) =>
       currTotal +
@@ -777,7 +786,17 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         : currItem?.price! - currItem?.discountSpecialPrice!),
     0
   );
+
   const normalSaving: DiagnosticsCartContextProps['normalSaving'] = withAll?.reduce(
+    (currTotal: number, currItem: DiagnosticsCartItem) =>
+      currTotal +
+      (currItem?.packageMrp && currItem?.packageMrp > currItem?.specialPrice!
+        ? currItem?.packageMrp! - currItem?.specialPrice!
+        : currItem?.price! - currItem?.specialPrice!),
+    0
+  );
+
+  const temporaryNormalSaving: DiagnosticsCartContextProps['temporaryNormalSaving'] = cartItemsWithAll?.reduce(
     (currTotal: number, currItem: DiagnosticsCartItem) =>
       currTotal +
       (currItem?.packageMrp && currItem?.packageMrp > currItem?.specialPrice!
@@ -804,6 +823,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   );
 
   const cartSaving: DiagnosticsCartContextProps['cartTotal'] = discountSaving + normalSaving;
+  const temporaryCartSaving: DiagnosticsCartContextProps['temporaryCartSaving'] =
+    discountSaving + temporaryNormalSaving;
+
   const circleSaving: DiagnosticsCartContextProps['circleSaving'] = parseFloat(
     allCartItems
       ?.reduce(
@@ -830,6 +852,17 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
       couponDiscount -
       cartSaving -
       (isDiagnosticCircleSubscription || isCircleAddedToCart ? circleSaving : 0) +
+      (!!distanceCharges ? distanceCharges : 0)
+    ).toFixed(2)
+  );
+
+  const circleGrandTotal = parseFloat(
+    (
+      totalPriceExcludingAnyDiscounts +
+      deliveryCharges +
+      couponDiscount -
+      temporaryCartSaving -
+      circleSaving +
       (!!distanceCharges ? distanceCharges : 0)
     ).toFixed(2)
   );
@@ -993,6 +1026,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         normalSaving,
         circleSaving,
         grandTotal,
+        circleGrandTotal,
+        temporaryCartSaving, //used for cal circle savings, even if circle is not applied
+        temporaryNormalSaving,
         couponDiscount,
         deliveryCharges,
         setAreaSelected,

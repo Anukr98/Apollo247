@@ -249,6 +249,13 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
 
+  postShareAppointmentBlock: {
+    height: 100,
+    borderRadius: 10,
+    width: '100%',
+    marginVertical: 10,
+  },
+
   vaccinesHospitalLoader: {
     height: 280,
     borderRadius: 10,
@@ -332,6 +339,14 @@ const styles = StyleSheet.create({
     height: 150,
     width: 150,
     margin: 12,
+  },
+  prescriptionOption: {
+    borderRadius: 5,
+    borderColor: '#D3D3D3',
+    borderWidth: 0.5,
+    height: 250,
+    width: '95%',
+    margin: 10,
   },
 });
 
@@ -747,9 +762,9 @@ export const CovidButtonShimmer = () => (
   />
 );
 
-export const couponViewShimmer = () => {
+export const renderCouponViewShimmer = () => {
   return (
-    <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
+    <View style={{ marginVertical: 10 }}>
       <ShimmerPlaceHolder
         shimmerColors={shimmerColors}
         LinearGradient={LinearGradient}
@@ -848,6 +863,45 @@ export const renderDiagnosticWidgetHeadingShimmer = () => {
   );
 };
 
+export const renderPostShareAppointmentLoadingShimmer = () => {
+  return (
+    <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.postShareAppointmentBlock}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.postShareAppointmentBlock}
+      />
+
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.postShareAppointmentBlock}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.postShareAppointmentBlock}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.postShareAppointmentBlock}
+      />
+
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.postShareAppointmentBlock}
+      />
+    </View>
+  );
+};
+
 export const renderPharmaFetchAddressHeadingShimmer = () => {
   return (
     <View style={[styles.rowStyle, { marginTop: 16 }]}>
@@ -870,6 +924,17 @@ export const renderPharmaFetchAddressHeadingShimmer = () => {
         LinearGradient={LinearGradient}
         shimmerColors={shimmerColors}
         shimmerStyle={styles.pharmaFetchAddressTextShimmer}
+      />
+    </View>
+  );
+};
+
+export const pharmaPrescriptionShimmer = () => {
+  return (
+    <View style={{ backgroundColor: '#f0f1ec', paddingHorizontal: 8 }}>
+      <ShimmerPlaceHolder
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.prescriptionOption}
       />
     </View>
   );

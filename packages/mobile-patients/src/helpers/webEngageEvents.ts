@@ -38,8 +38,7 @@ export enum ProductPageViewedSource {
 }
 
 export enum WebEngageEventName {
-
-  Patient_API_Error='Patient_API_Error',
+  Patient_API_Error = 'Patient_API_Error',
   //DOH
   DOH_Clicked = 'DOH Clicked',
   DOH_Viewed = 'DOH Viewed',
@@ -488,6 +487,8 @@ export enum WebEngageEventName {
   ADD_MEMBER_CLICKED = 'Add Member Clicked',
   MEMBER_DETAILS_SAVED = 'Member Details Saved',
   VACCINE_REGISTRATION_COMPLETED = 'Vaccine Registeration Completed',
+  ERROR_WHILE_FETCHING_JWT_TOKEN = 'Error while Fetching JWT token',
+  AUTHTOKEN_UPDATED = 'Authtoken Updated',
 }
 
 export interface PatientInfo {
@@ -668,6 +669,9 @@ export interface SpecialityClickedEvent extends PatientInfo {
   'Speciality Name': string;
   'Speciality ID': string;
   User_Type: string;
+  'Circle Member': boolean;
+  'Circle Plan type': string;
+  Source: string;
 }
 
 export interface ReorderMedicines extends PatientInfo {
@@ -742,6 +746,12 @@ export interface consultCallEndData {
   'Doctor Type': string;
   'Mode of Call': 'Audio' | 'Video';
   Platform: 'App';
+  'Doctor ID': string;
+  'Doctor Number': string;
+  'Doctor Facility ID': string;
+  'Doctor Facility': string;
+  'Session ID': string;
+  'Call ID': string;
 }
 
 interface consultLocation {
@@ -795,14 +805,14 @@ export interface WebEngageEvents {
   [WebEngageEventName.DOH_Clicked]: DOHInfo;
 
   [WebEngageEventName.Patient_API_Error]: {
-  'Patient Name':string;
-  'Patient ID':string;
-  'Patient Number':string;
-  'Doctor ID':string | null;
-  'Screen Name':string;
-  'API Name':string;
-  'Error Name':any;
-    };
+    'Patient Name': string;
+    'Patient ID': string;
+    'Patient Number': string;
+    'Doctor ID': string | null;
+    'Screen Name': string;
+    'API Name': string;
+    'Error Name': any;
+  };
 
   // ********** Home Screen Events ********** \\
 
@@ -1394,6 +1404,7 @@ export interface WebEngageEvents {
     'Phlebo Name': string;
     'Order id': string | number;
     'Phlebo id': string | number;
+    Comment?: string 
   };
   [WebEngageEventName.DIAGNOSTIC_PHLEBO_CALLING_CLICKED]: {
     UHID: string;
@@ -2187,6 +2198,16 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    'Doctor ID': string;
+    'Doctor Number': string;
+    'Doctor Facility ID': string;
+    'Doctor Facility': string;
+    'Appointment ID': string;
+    'Appointment Display ID': string;
+    'Patient Number': string;
+    'Session ID': string;
+    'Call ID': string;
+    'Did doctor Join': string;
   };
   [WebEngageEventName.CALL_ENDED]: {
     'Doctor Name': string;

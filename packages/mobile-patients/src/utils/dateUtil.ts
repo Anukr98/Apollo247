@@ -52,7 +52,17 @@ export const dateFormatter = (dateTime: Date) => {
     return `${format(dateTime, 'DD MMM YYYY, h:mm A')}`;
   }
 };
-export const dateFormatterDDMM = (dateTime: string,form: string) => {
+
+export const dateFormatterDDMM = (dateTime: string, form: string) => {
   let dateF = new Date(dateTime);
     return `${format(dateF, form)}`;
 };
+
+/**
+ * Function to calculate the time(days) difference between two timeStamps
+ * @param T1 (number)
+ * @param T2 (number)
+ */
+export const timeDifferenceInDays = (T1: number, T2: number) => {
+  return (T1 - T2) / (1000 * 3600 * 24);
+}

@@ -14,6 +14,10 @@ import {
   handleGraphQlError,
   postWebEngageIfNewSession,
   removeObjectProperty,
+  postCleverTapEvent,
+  postWebEngageEvent,
+  postCleverTapIfNewSession,
+  postCleverTapPHR,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   Keyboard,
@@ -44,6 +48,7 @@ import {
 import { GET_IMMUNIZATION_DETAILS } from '@aph/mobile-patients/src/graphql/profiles';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 type PickerImage = any;
 
@@ -288,9 +293,7 @@ export const AddVaccinationRecord: React.FC<AAddVaccinationRecordProps> = (props
   const covidType = ['Covisheild', 'Covaxin', 'Sputnik', 'Pfizer'];
   const doseType = ['Dose 1', 'Dose 2'];
 
-  const recordType = props.navigation.state.params
-    ? props.navigation.state.params.recordType
-    : false;
+  const updateInfo = props.navigation.state.params ? props.navigation.state.params.update : false;
   const selectedRecordID = props.navigation.state.params
     ? props.navigation.state.params.selectedRecordID
     : null;
@@ -391,20 +394,17 @@ export const AddVaccinationRecord: React.FC<AAddVaccinationRecordProps> = (props
           },
         })
         .then(({ data }) => {
-          const eventInputData = removeObjectProperty(vaccinationCener, 'vaccinationResultFiles');
-          postWebEngagePHR(
+          const eventInputData = removeObjectProperty(vaccinationCener, 'immunizations');
+          postCleverTapPHR(
             currentPatient,
-            WebEngageEventName.PHR_ADD_TEST_REPORT,
-            'Vaccination',
+            updateInfo
+              ? CleverTapEventName.PHR_UPDATE_VACCINATION_REPORT
+              : CleverTapEventName.PHR_ADD_VACCINATION_REPORT,
+            'Add Vaccination Record',
             eventInputData
           );
-          postWebEngageIfNewSession(
-            'Vaccination',
-            currentPatient,
-            eventInputData,
-            phrSession,
-            setPhrSession
-          );
+
+          setshowSpinner(false);
           if (data?.addPatientImmunizationRecord.status) {
             gotoHealthRecordsHomeScreen();
           }

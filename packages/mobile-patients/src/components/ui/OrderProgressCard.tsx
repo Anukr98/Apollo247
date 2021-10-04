@@ -202,9 +202,10 @@ export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
                   styles.statusStyle,
                   props.status == 'Order Ready at Store' && { textTransform: 'none' },
                   props.status == 'Order Cancelled' && { color: '#890000' },
+                  props.status == 'Lost' && { color: '#890000' },
                 ]}
               >
-                {props.status}
+                {props.status == 'Lost' ? 'Order cancelled' : props.status}
               </Text>
               {(props.date && props.time) || props.description ? (
                 <>
@@ -266,3 +267,4 @@ OrderProgressCard.defaultProps = {
   showReUploadPrescription: false,
   showChatWithUs: false,
 };
+

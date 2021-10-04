@@ -161,14 +161,16 @@ export const CirclePlansListOverlay: React.FC<CirclePlansListOverlayProps> = (pr
       <View style={{ flexDirection: 'row' }}>
         <CoinSavingsIcon style={styles.coinSavingIconStyle} />
         <View style={{ marginHorizontal: 8 }}>
-          <Text style={styles.savingHeadingText}>
-            {upperLeftText}{' '}
-            <Text style={{ color: APP_GREEN }}>
-              {upperMiddleText} {string.common.Rs}
-              {circleSaving}
-            </Text>{' '}
-            {upperRightText}
-          </Text>
+          {!!circleSaving && circleSaving > 0 && (
+            <Text style={styles.savingHeadingText}>
+              {upperLeftText}{' '}
+              <Text style={{ color: APP_GREEN }}>
+                {upperMiddleText} {string.common.Rs}
+                {circleSaving}
+              </Text>{' '}
+              {upperRightText}
+            </Text>
+          )}
           <Text style={[styles.savingHeadingText, { marginTop: 2 }]}>
             {effectivePriceText}{' '}
             <Text style={{ color: APP_GREEN }}>

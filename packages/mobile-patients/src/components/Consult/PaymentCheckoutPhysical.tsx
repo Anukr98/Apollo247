@@ -139,7 +139,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const newProfileAdded = props.navigation.getParam('newProfileAdded');
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
-  const doctor = props.navigation.getParam('doctor');
+  const doctor : getDoctorDetailsById_getDoctorDetailsById | null = props.navigation.getParam('doctor');
   const tabs = props.navigation.getParam('tabs');
   const selectedTab = props.navigation.getParam('selectedTab');
   const appointmentInput = props.navigation.getParam('appointmentInput');
@@ -645,6 +645,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           eventAttributes['Display ID'] = apptmt?.displayId!;
           eventAttributes['User_Type'] = getUserType(allCurrentPatients);
           postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
+          postCleverTapEvent(CleverTapEventName.CONSULTATION_BOOKED, eventAttributes);
           postAppsFlyerEvent(
             AppsFlyerEventName.CONSULTATION_BOOKED,
             getConsultationBookedAppsFlyerEventAttributes(apptmt?.id!, apptmt?.displayId)
@@ -831,7 +832,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   const getConsultationBookedEventAttributes = (time: string, id: string) => {
     const localTimeSlot = moment(new Date(time));
     let date = new Date(time);
-    const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
+    const doctorClinics = (doctor?.doctorHospital || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
         return item.facility.facilityType === 'HOSPITAL';
     });
@@ -881,39 +882,38 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     });
 
     const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULTATION_BOOKED] = {
-      name: g(doctor, 'fullName')!,
       specialisation: g(doctor, 'specialty', 'name')!,
-      category: g(doctor, 'doctorType')!, // send doctorType
-      patientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Doctor category': g(doctor, 'doctorType')!, // send doctorType
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
-      relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(
+      Relation: g(currentPatient, 'relation'),
+      'Patient age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
-      patientGender: g(currentPatient, 'gender'),
+      'Patient gender': g(currentPatient, 'gender'),
       'Customer ID': g(currentPatient, 'id'),
-      consultId: id,
+      'Consult ID': id,
       'Speciality ID': g(doctor, 'specialty', 'id')!,
-      consultDateTime: date,
-      consultMode: tabs[0].title === selectedTab ? 'ONLINE' : 'PHYSICAL',
-      hospitalName:
+      'Appointment datetime': date,
+      'Consult mode': tabs[0].title === selectedTab ? 'ONLINE' : 'PHYSICAL',
+      'Hospital name':
         doctorClinics?.length > 0 && doctor?.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics?.[0]?.facility?.name}`
           : '',
-      'Hospital City':
+      'Doctor city':
         doctorClinics?.length > 0 && doctor?.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics?.[0]?.facility?.city}`
           : '',
       'Doctor ID': g(doctor, 'id')!,
-      doctorName: g(doctor, 'fullName')!,
-      'Net Amount': amountToPay,
+      'Doctor name': g(doctor, 'fullName')!,
+      'Net amount': amountToPay,
       af_revenue: amountToPay,
       af_currency: 'INR',
       'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
-      circleSavings: circleDiscount,
-      userType: getUserType(allCurrentPatients),
-      patientNumber: g(currentPatient, 'mobileNumber'),
-      doctorNumber: g(doctor, 'mobileNumber')! || undefined,
+      'Circle savings': circleDiscount,
+      User_type: getUserType(allCurrentPatients),
+      'Patient number': g(currentPatient, 'mobileNumber'),
+      'Doctor number': g(doctor, 'mobileNumber')! || undefined,
     };
     return eventAttributes;
   };
@@ -994,17 +994,15 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       User_Type: getUserType(allCurrentPatients),
     };
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PAY_BUTTON_CLICKED] = {
-      consultDateTime: localTimeSlot,
-      Amount: finalAppointmentInput?.actualAmount,
-      doctorName: g(doctor, 'fullName')!,
-      doctorCity: g(doctor, 'city')!,
-      'Type of Doctor': g(doctor, 'doctorType')!,
-      specialty: g(doctor, 'specialty', 'name')!,
-      actualPrice: finalAppointmentInput?.actualAmount,
-      'Discount used ?': !!coupon,
-      discountCoupon: coupon,
-      discountAmount: couponDiscountFees,
-      netAmount: amountToPay,
+      'Appointment datetime': localTimeSlot,
+      'Doctor name': g(doctor, 'fullName')!,
+      'Doctor city': g(doctor, 'city')!,
+      'Doctor category': g(doctor, 'doctorType')!,
+      'Speciality name': g(doctor, 'specialty', 'name')!,
+      'Discount': !!coupon ? 'T' : 'F',
+      'Coupon applied': coupon,
+      'Discount amount': couponDiscountFees,
+      'Net amount': amountToPay,
       'Customer ID': g(currentPatient, 'id'),
       'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient age': Math.round(
@@ -1012,18 +1010,20 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       ),
       'Patient gender': g(currentPatient, 'gender'),
       'Patient UHID': g(currentPatient, 'uhid'),
-      consultType: tabs[0].title === selectedTab ? 'ONLINE' : 'CLINIC',
+      'Consult type': 'CLINIC',
       'Doctor ID': g(doctor, 'id')!,
       'Speciality ID': g(doctor, 'specialty', 'id')!,
-      'Hospital Name':
+      'Hospital name':
         doctorClinics?.length > 0 && doctor?.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics?.[0]?.facility?.name}`
           : '',
-      'Hospital City':
+      'Hospital city':
         doctorClinics?.length > 0 && doctor?.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics?.[0].facility?.city}`
           : '',
       User_Type: getUserType(allCurrentPatients),
+      'Booking fee': 'F',
+      'Booking value': 0,
     };
     postWebEngageEvent(WebEngageEventName.PAY_BUTTON_CLICKED, eventAttributes);
     postCleverTapEvent(CleverTapEventName.CONSULT_PAY_BUTTON_CLICKED, cleverTapEventAttributes);

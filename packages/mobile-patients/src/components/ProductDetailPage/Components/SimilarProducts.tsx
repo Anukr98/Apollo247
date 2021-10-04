@@ -59,6 +59,7 @@ export const SimilarProducts: React.FC<SimilarProductsProps> = (props) => {
 const styles = StyleSheet.create({
   cardStyle: {
     marginVertical: 10,
+    paddingHorizontal: 15,
   },
   heading: {
     ...theme.viewStyles.text('SB', 17, '#02475B', 1, 25, 0.35),

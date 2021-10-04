@@ -367,6 +367,7 @@ export enum MEDICINE_ORDER_STATUS {
   RVP_ASSIGNED = 'RVP_ASSIGNED',
   SHIPPED = 'SHIPPED',
   VERIFICATION_DONE = 'VERIFICATION_DONE',
+  LOST="LOST"
 }
 
 export enum MEDICINE_ORDER_STATUS_CONSULT {
@@ -719,6 +720,12 @@ export enum STATUS {
   UNAVAILABLE_MEDMANTRA = 'UNAVAILABLE_MEDMANTRA',
 }
 
+export enum SiteType {
+  CVDC = "CVDC",
+  HUB = "HUB",
+  LVDC = "LVDC",
+}
+
 export enum SpecialtySearchType {
   ID = 'ID',
   NAME = 'NAME',
@@ -827,6 +834,12 @@ export enum one_apollo_store_code {
   ANDCUS = 'ANDCUS',
   IOSCUS = 'IOSCUS',
   WEBCUS = 'WEBCUS',
+}
+
+export enum HealthRecordConsentStatus {
+  GRANTED = 'GRANTED',
+  NOT_APPLICABLE = 'NOT_APPLICABLE',
+  NOT_GRANTED = 'NOT_GRANTED',
 }
 
 export interface AddAllergyRecordInput {
@@ -1050,6 +1063,7 @@ export interface BookAppointmentInput {
   discountedAmount?: number | null;
   subscriptionDetails?: SUBSCRIPTION_DETAILS | null;
   planPurchaseDetails?: PLAN_PURCHASE_DETAILS | null;
+  healthRecordsConsent?: HealthRecordConsentStatus | null;
   adminId?: string | null;
 }
 
@@ -1463,6 +1477,7 @@ export interface MedicineCartOMSInput {
   prescriptionType?: PrescriptionType | null;
   tatCity?: string | null;
   tatHours?: string | null;
+  isCashBack: boolean;
   appointmentId?: string | null;
 }
 
@@ -1734,6 +1749,15 @@ export interface PharmaCouponInput {
   code: string;
   patientId: string;
   orderLineItems?: (OrderLineItems | null)[] | null;
+}
+
+export interface PharmaPrescriptionOptionInput {
+  patientid?: string | null;
+  userType?: PHARMACY_USER_TYPE | null;
+  tatType?: SiteType | null;
+  tatCity?: string | null;
+  tatHours?: string | null;
+  items?: (string | null)[] | null;
 }
 
 export interface PharmaSubstitutionRequest {
@@ -2200,6 +2224,11 @@ export interface PatientConsultEventToDoctorInput {
   doctorFullName: string;
   message?: string | null;
   chatFormat?: string | null;
+}
+
+export enum SPECIALTY_STATUS {
+  ALL = "ALL",
+  TRUE = "TRUE",
 }
 
 //==============================================================

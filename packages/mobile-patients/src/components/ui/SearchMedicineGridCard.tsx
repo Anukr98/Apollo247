@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
     left: 10,
     ...theme.fonts.IBMPlexSansMedium(11),
   },
-  discountBadgeIcon: { height: 15, width: 70 },
+  discountBadgeIcon: { height: 17, width: 110 },
   discountBadgeView: { position: 'absolute', top: 0 },
   specialPriceContainer: {
     flexDirection: 'row',
@@ -164,9 +164,8 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
     dc_availability,
     is_in_contract,
     image,
+    merchandising,
   } = props;
-  const finalPrice = price - Number(special_price) ? Number(special_price) : price;
-  const cashback = calculateCashbackForItem(Number(finalPrice), type_id, subcategory, sku);
 
   const isOutOfStock =
     dc_availability?.toLowerCase() === 'no' && is_in_contract?.toLowerCase() === 'no';
@@ -278,15 +277,6 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
     }
   };
 
-  const renderOfferTag = () => {
-    return (
-      <View style={styles.discountBadgeView}>
-        <CircleDiscountBadge style={styles.discountBadgeIcon} />
-        <Text style={styles.discountBadgeText}>OFFER</Text>
-      </View>
-    );
-  };
-
   const renderExpressFlag = () => {
     return (
       <View style={styles.expressContainer}>
@@ -295,13 +285,27 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
     );
   };
 
+  const renderMerchandisingTag = () => {
+    const text = merchandising == 1 ? 'Apollo\'s Choice' : merchandising == 2 ? 'Recommended' : null;
+    if (text) {
+      return (
+        <View style={styles.discountBadgeView}>
+          <CircleDiscountBadge style={styles.discountBadgeIcon} />
+          <Text style={styles.discountBadgeText}>{text}</Text>
+        </View>
+      );
+    } else {
+      return null;
+    }
+  };
+
   return (
     <TouchableOpacity
       activeOpacity={1}
       style={[styles.containerStyle, containerStyle, { zIndex: -1 }]}
       onPress={() => onPress()}
     >
-      {!!cashback && !!type_id && renderOfferTag()}
+      {!!merchandising && renderMerchandisingTag()}
       {is_express === 'Yes' && renderExpressFlag()}
       {renderMedicineIcon()}
       <View style={[styles.medicineIconAndNameViewStyle]}>{renderTitleAndIcon()}</View>

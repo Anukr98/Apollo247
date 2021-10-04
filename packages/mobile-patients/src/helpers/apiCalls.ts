@@ -1,6 +1,7 @@
 import Axios, { AxiosResponse, Canceler } from 'axios';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { getTagalysConfig, Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
+import { string } from '../strings/string';
 
 export interface MedicineProduct {
   category_id?: string;
@@ -46,6 +47,8 @@ export interface MedicineProduct {
   pack_size?: string | null;
   banned?: 'Yes' | 'No';
   subcategory?: string | null;
+  merchandising?: number | null;
+  suggested_qty?: string | null;
   country_of_origin?: string | null;
   packer_name?: string | null;
   packer_address?: string | null;
@@ -582,6 +585,66 @@ export interface ProceduresAndSymptomsResult {
   tag: string;
 }
 
+export interface SpecialOfferWidgetsData {
+  widgetTitle: string;
+  widgetRank: string;
+}
+
+export interface SpecialOffersWidgetsApiResponse {
+  success: string;
+  msg: string;
+  data: SpecialOfferWidgetsData[]
+}
+
+export interface SpecialOffersCouponsData {
+  couponCode: string;
+  description: string;
+  startDate: number;
+  endDate: number;
+  header: string;
+  logo: string;
+  knowMore: string;
+  terms: string;
+  redirectUrl: string;
+  skus?: [] | null;
+}
+
+export interface SpecialOffersCouponsApiResponse {
+  errorCode: number;
+  errorMsg?: null;
+  errorType?: null;
+  response?: SpecialOffersCouponsData[];
+}
+
+export interface SpecialOffersCategoryApiResponse {
+  category_id: number;
+  title: string;
+  url_key: string;
+  image_url: string;
+  specialoffer_position: string;
+}
+
+export interface SpecialOffersBrandsApiResponse {
+  id: number;
+  title: string;
+  url_key: string;
+  image: string;
+  position: string;
+  promotional_message: string;
+  discount: string;
+  sorting_option: string;
+}
+
+export interface SpecialOffersBrandsProductsApiResponse {
+  filters?: [] | null;
+  sort_by?: [] | null;
+  products: MedicineProduct[];
+  product_count: number;
+  search_heading: string;
+}
+
+
+
 const config = AppConfig.Configuration;
 
 export const getMedicineDetailsApi = (
@@ -859,6 +922,54 @@ export const getMedicinePageProducts = (
   });
 };
 
+export const getSpecialOffersPageWidgets = (): Promise<AxiosResponse<SpecialOffersWidgetsApiResponse>> => {
+  const url = `${config.SPECIAL_OFFERS_PAGE_WIDGETS[0]}`;
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.SPECIAL_OFFERS_PAGE_WIDGETS[1],
+    },
+  });
+};
+
+export const getSpecialOffersPageCoupons = (): Promise<AxiosResponse<SpecialOffersCouponsApiResponse>> => {
+  const url = `${config.SPECIAL_OFFERS_PAGE_COUPONS[0]}`;
+  return Axios.get(url, {
+    headers: {},
+  });
+};
+
+export const getSpecialOffersPageCategory = (): Promise<AxiosResponse<SpecialOffersCategoryApiResponse>> => {
+  const url = `${config.SPECIAL_OFFERS_CATEGORY[0]}`;
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.SPECIAL_OFFERS_CATEGORY[1],
+    },
+  });
+};
+
+export const getSpecialOffersPageBrands = (): Promise<AxiosResponse<SpecialOffersBrandsApiResponse>> => {
+  const url = `${config.SPECIAL_OFFERS_BRANDS[0]}`;
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.SPECIAL_OFFERS_BRANDS[1],
+    },
+  });
+};
+
+export const getSpecialOffersPageBrandsProducts = (activeBrand: string, discount_percentage: object) 
+:Promise<AxiosResponse<SpecialOffersBrandsProductsApiResponse>> => {
+  const url = `${config.SPECIAL_OFFERS_BRANDS_PRODUCTS[0]}`;
+  return Axios.post(url,
+    {
+      params: activeBrand,
+      filter: { discount_percentage}
+    },
+    {headers: {
+      Authorization: config.SPECIAL_OFFERS_BRANDS_PRODUCTS[1],
+    }},
+  );
+};
+
 const googlePlacesApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 
 export const getPlaceInfoByPincode = (
@@ -1051,6 +1162,16 @@ export const validateConsultCoupon = (data: any): Promise<AxiosResponse<any>> =>
   const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
   let url = `${baseUrl}/validate?mobile=${mobile}&email=${email}`;
   return Axios.post(url, data);
+};
+
+export const fetchAutoApplyCoupon = (data: any): Promise<AxiosResponse<any>> => {
+  const { mobile, packageId, email, type } = data;
+  const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
+  let url = `${baseUrl}/autoapply?mobile=${mobile}&email=${email}&type=${type}`;
+  if (!!packageId) {
+    url += `&packageId=${packageId}`;
+  }  
+  return Axios.get(url);
 };
 
 export const userSpecificCoupon = (

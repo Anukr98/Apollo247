@@ -3,6 +3,8 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+import { SPECIALTY_STATUS } from "./globalTypes";
+
 // ====================================================
 // GraphQL query operation: getAllSpecialties
 // ====================================================
@@ -22,4 +24,8 @@ export interface getAllSpecialties_getAllSpecialties {
 
 export interface getAllSpecialties {
   getAllSpecialties: getAllSpecialties_getAllSpecialties[];
+}
+
+export interface getAllSpecialtiesVariables {
+  specialtyStatus?: SPECIALTY_STATUS | null;
 }

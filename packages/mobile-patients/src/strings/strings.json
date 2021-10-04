@@ -67,9 +67,14 @@
     "greatPopup": "Great! :)",
     "prepareForConsult": "FILL MEDICAL DETAILS",
     "continueConsult": "GO TO CONSULT ROOM",
+    "consultRoom": "CONTINUE CONSULT",
     "fillVitalsText": "Fill vitals to get started with the consult journey",
+    "bookAnotherSlot": "Book another slot with the doctor to complete your consultation",
+    "bookFollowUp": "Book your slot with the doctor for a follow up consultation",
+    "mentionReports": "Mention your condition and upload reports before the consultation starts ",
     "gotoConsultRoomText": "Connect with doctor to start the consult",
     "gotoConsultRoomJuniorDrText": "Connect with Junior Doctor before final consult",
+    "joinConsultRoom": "Join the Consult room to continue your consultation",
     "pickAnotherSlotText": "Sorry, we had to reschedule this appointment. Please pick another slot.",
     "DisclaimerTextBookingRequest": "This is not a confirmation of the Booking. Our Executives will reach you regarding Booking Confirmation. It is subjected to availability.",
     "DisclaimerText": "By proceeding, I agree that I have read and understood the Terms & Conditions of usage of 247 and consent to the same. I am voluntarily availing of the services provided on this platform. I am fully aware that I will not be undergoing a physical examination by a physician prior to a physician recommending  medical tests and/or treatment and/or the prescribing of OTC drugs. I am also aware that  the consultation on 247 Application does not preclude my rights to visit a physician and opt for a physical examination at any point in time and I am free at any time during the consultation to request for the same.",
@@ -136,6 +141,7 @@
     "noDiagnosticsAvailable": "Unfortunately, we do not have any diagnostic(s) available right now.",
     "unableToSetDeliveryAddress": "We're sorry! Unable to set delivery address. Please try again after some time",
     "circleNoSubscriptionText": "No Subscription",
+    "sharePHR": "Share all Files from Past Medical record with the Doctor",
     "memberCashback": " Membership Cashback ",
     "cashbackInfo": "(Cashback can be used to buy medicines online as well as at physical Apollo Pharmacy stores. ",
     "hcSavedOnConsultByCare": "You will get {amount} HC on this Consult",
@@ -154,7 +160,9 @@
     "UPI": "UPI",
     "VPA": "VPA-UPI",
     "Card": "Card",
-    "Cash": "Cash"
+    "Cash": "Cash",
+    "android": "android",
+    "ios":"ios"
   },
   "diagnosticsLocation":{
     "savedAddressText": "Saved Addresses",
@@ -163,7 +171,9 @@
     "unableToGetPermission":"Unable to get Permission",
     "unableToFetchLocation":"We are unable to fetch your location",
     "permissionDeniedCTA":"grant",
-    "unableToGetPermissionCTA": "turn on"
+    "unableToGetPermissionCTA": "turn on",
+    "denied":"denied",
+    "restricted": "restricted"
   },
   "components": {
     "medicineDetails": {
@@ -416,6 +426,10 @@
     "no_conversation_till_now": "No conversation till now !",
     "ticket_creation_lag_time": "It usually takes 10 seconds to submit your ticket, we will update you here once its done."
   },
+  "needHelpQueryDetails": {
+    "tatBreachedTrue": "Your Order is {{medicineOrderStatus}}. Due to heavy order volumes, we are facing unexpected delays in shipping. We sincerely apologize for the inconvenience. We are working proactively to deliver at the earliest.",
+    "tatBreachedFalse": "Your Order is {{medicineOrderStatus}}. You will receive your order by {{etd}}. We are working proactively to deliver at the earliest."
+  },
   "doctor_search_listing": {
     "pleaseWait": "Please Wait!",
     "lookingForBestDoctors": "We are looking for the\nbest doctors for you :)",
@@ -481,7 +495,8 @@
     "cartItemsNotAvailableInStore": "The item(s) you have selected are not available in the nearby stores. Kindly opt for Home Delivery and we will deliver them to you directly at your doorstep.",
     "PickupStoreUnavailable": "Sorry! We’re working hard to get to this area! In the meantime, you can try next nearest pincode.",
     "orderDetailsExpectedDeliverySubTextNonCartOrder": "Delivery date will be updated after successful verification",
-    "noInternetMessage": "There is no internet. Please check your internet connection."
+    "noInternetMessage": "There is no internet. Please check your internet connection.",
+    "missingItemsAlertMessage": "Sorry, the following items are unavailable at your location and will be removed from the cart:"
   },
   "diagnostics": {
     "locationPermissionText": "Allow us to serve you better by entering your area pincode below.",
@@ -747,6 +762,10 @@
         "count": "0"
       }
     ]
+  },
+  "HyperSDKStatus": {
+    "success": "success",
+    "pending": "pending"
   },
   "Payment": {
     "success": "PAYMENT_SUCCESS",
@@ -1351,6 +1370,12 @@
     "stepTwo": "Consultation with Doctor via audio/video call.\nAccess your prescription in the Consult Room.",
     "stepThree": "If required, share necessary reports and text updates.",
     "viewGuideline": "View Consultation Guidelines \n",
-    "download": "Download"
+    "download": "Download",
+    "medicineNote": "Seamlessly, order here your medicines and get deliveries in 2 hours. Also, same day home sample collection facility available for tests prescribed. T&C Apply."
+  },
+  "specialOffersScreen": {
+    "couponKnowMore": "How you can redeem this offer:",
+    "brandDealsSubHeading": "Select any of the brands below to see its products on offer",
+    "readTermsAndConditions": "Read the Terms & Conditions"
   }
 }
