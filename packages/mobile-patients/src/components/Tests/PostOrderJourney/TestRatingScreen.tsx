@@ -56,6 +56,7 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
   const [unRatedStarsArray, setUnRatedStarsArray] = useState(starCount.slice(ratingStar, 5));
   const [activeReason, setActiveReason] = useState('');
   const [userInput, setUserInput] = useState('');
+  const { currentPatient } = useAllCurrentPatients();
 
   useEffect(() => {
     setLoading?.(false);
@@ -115,14 +116,24 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
     }
     return result;
   };
+
   const postDiagnosticPhleboFeedbackSubmitted = (
     rating: string | number,
     feedback: string | number,
     phleboName: string,
     orderId: string | number,
-    phleboId: string | number
+    phleboId: string | number,
+    patientComment: string
   ) => {
-    DiagnosticPhleboFeedbackSubmitted(rating, feedback, phleboName, orderId, phleboId);
+    DiagnosticPhleboFeedbackSubmitted(
+      rating,
+      feedback,
+      phleboName,
+      orderId,
+      phleboId,
+      patientComment,
+      currentPatient
+    );
   };
   const onSubmitFeedback = async (rating: number, feedback: string, id: string) => {
     setLoading?.(true);
@@ -133,7 +144,8 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
         feedback,
         phlObj?.PhelbotomistName,
         orderDetail?.displayId,
-        id
+        id,
+        userInput
       );
       setLoading?.(false);
       showAphAlert?.({
@@ -172,7 +184,7 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
             <View style={styles.phleboDetails}>
               <UserOutline style={styles.icon} />
               <Text style={styles.textStylePhlebo}>
-                Apollo agent • {`${phlObj?.PhelbotomistName}`}
+                {string.diagnostics.agent} • {`${phlObj?.PhelbotomistName}`}
               </Text>
             </View>
           ) : (

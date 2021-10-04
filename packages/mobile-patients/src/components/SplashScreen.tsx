@@ -342,12 +342,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       'Patient mobile number': '',
       'Appointment Date time': null,
       'Appointment display ID': null,
-      'Appointment ID': voipAppointmentId.current,
-      'Doctor Name': voipDoctorName.current,
+      'Appointment ID': voipAppointmentId?.current,
+      'Doctor Name': voipDoctorName?.current,
       'Speciality Name': '',
       'Speciality ID': '',
       'Doctor Type': '',
-      'Mode of Call': voipCallType.current === 'Video' ? 'Video' : 'Audio',
+      'Mode of Call': voipCallType?.current === 'Video' ? 'Video' : 'Audio',
       Platform: 'App',
     };
     postWebEngageEvent(WebEngageEventName.PATIENT_DECLINED_CALL, eventAttributes);
@@ -1041,6 +1041,22 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Disincentivize_COD_Message',
       PROD: 'Disincentivize_COD_Message',
     },
+    CirclePlanPreselected: {
+      QA: 'QA_Is_Circle_Preselected',
+      PROD: 'Is_Circle_Preselected',
+    },
+    CircleFacts: {
+      QA: 'QA_Circle_Facts',
+      PROD: 'Circle_Facts',
+    },
+    Enable_Cred_WebView_Flow: {
+      QA: 'QA_Enable_Cred_WebView_Flow',
+      PROD: 'Enable_Cred_WebView_Flow',
+    },
+    Diagnostics_Default_Location: {
+      QA: 'QA_Diagnostics_Default_Address',
+      PROD: 'Diagnostics_Default_Address',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1054,7 +1070,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       : currentEnv === AppEnv.QA ||
         currentEnv === AppEnv.QA2 ||
         currentEnv === AppEnv.QA3 ||
-        currentEnv === AppEnv.QA5
+        currentEnv === AppEnv.QA4 ||
+        currentEnv === AppEnv.QA5 ||
+        currentEnv === AppEnv.QA6 ||
+        currentEnv === AppEnv.VAPT
       ? valueBasedOnEnv.QA || valueBasedOnEnv.PROD
       : valueBasedOnEnv.DEV || valueBasedOnEnv.QA || valueBasedOnEnv.PROD;
   };
@@ -1300,6 +1319,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'Diagnostics_Help_NonOrder_Queries',
         (key) => config.getString(key)
       );
+      setAppConfig('Enable_Cred_WebView_Flow', 'enableCredWebView', (key) =>
+        config.getBoolean(key)
+      );
 
       const nudgeMessagePharmacyHome = getRemoteConfigValue(
         'Nudge_Message_Pharmacy_Home',
@@ -1328,6 +1350,20 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
 
       disincentivizeCodMessage && setPaymentCodMessage?.(disincentivizeCodMessage);
+
+      setAppConfig('CirclePlanPreselected', 'CIRCLE_PLAN_PRESELECTED', (key) =>
+        config.getBoolean(key)
+      );
+
+      setAppConfig('CircleFacts', 'CIRCLE_FACTS', (key) => config.getString(key));
+
+      setAppConfig(
+        'Diagnostics_Default_Location',
+        'DIAGNOSTIC_DEFAULT_LOCATION',
+        (key) =>
+          JSON.parse(config.getString(key) || 'null') ||
+          AppConfig.Configuration.DIAGNOSTIC_DEFAULT_LOCATION
+      );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';

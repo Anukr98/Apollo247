@@ -1,9 +1,10 @@
-import { Alert, Platform } from 'react-native';
-import { AddressObj, ConsultMode, PLAN } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { Platform } from 'react-native';
+import { AddressObj, ConsultMode, DiagnosticLineItem, patientAddressObj, PLAN } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { DIAGNOSTIC_GROUP_PLAN, GooglePlacesType } from '@aph/mobile-patients/src/helpers/apiCalls';
 import moment from 'moment';
-import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getDiscountPercentage, isDiagnosticSelectedCartEmpty } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import DeviceInfo from 'react-native-device-info';
+import { DiagnosticPatientCartItem, DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 export const getValuesArray = (arr: any) => {
   const finalArr = arr.map((item: any) => item.name);
@@ -359,7 +360,21 @@ export const createAddressObject = (addressObject: any) => {
     city: addressObject?.city,
     state: addressObject?.state,
   } as AddressObj;
-};
+}
+
+export const createPatientAddressObject = (addressObject : any, serviceabilityObject: any) =>{
+  return {
+      addressLine1: addressObject?.addressLine1,
+      addressLine2: addressObject?.addressLine2,
+      zipcode: addressObject?.zipcode! || "0",
+      landmark: addressObject?.landmark,
+      latitude: Number(addressObject?.latitude! || 0),
+      longitude: Number(addressObject?.longitude! || 0),
+      city: addressObject?.city || serviceabilityObject?.city,
+      state: addressObject?.state || serviceabilityObject?.state,
+      patientAddressID: addressObject?.id,
+    } as patientAddressObj;
+}
 
 export enum DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE {
   HOME = 'Home page',
@@ -373,4 +388,134 @@ export enum DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE {
   CART_PAGE = 'Cart page',
   CONSULT_ROOM = 'Consult Room',
   PHR = 'PHR Prescription',
+}
+export const diagnosticsDisplayPrice = (item: DiagnosticsCartItem , isCircleMember : boolean) =>{
+  const itemPackageMrp = item?.packageMrp!;
+  const specialPrice = item?.specialPrice!;
+  const price = item?.price!; 
+  const circlePrice = item?.circlePrice!;
+  const circleSpecialPrice = item?.circleSpecialPrice!;
+  const discountPrice = item?.discountPrice!;
+  const discountSpecialPrice = item?.discountSpecialPrice!;
+
+  const discount = getDiscountPercentage(
+    !!itemPackageMrp && itemPackageMrp > price ? itemPackageMrp : price,
+    specialPrice
+  );
+  const circleDiscount = getDiscountPercentage(
+    !!itemPackageMrp && itemPackageMrp > circlePrice ? itemPackageMrp : circlePrice,
+    circleSpecialPrice
+  );
+  const specialDiscount = getDiscountPercentage(
+    !!itemPackageMrp && itemPackageMrp > discountPrice ? itemPackageMrp : discountPrice,
+    discountSpecialPrice
+  );
+
+  const promoteCircle = item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.CIRCLE && discount < circleDiscount && specialDiscount < circleDiscount;
+  const promoteDiscount = promoteCircle ? false : item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT && discount < specialDiscount;
+
+  const mrpToDisplay = calculateMrpToDisplay(
+    promoteCircle,
+    promoteDiscount,
+    itemPackageMrp,
+    price,
+    circlePrice,
+    discountPrice
+  );
+
+  //1. circle sub + promote circle -> circleSpecialPrice
+  //2. circle sub + discount -> dicount Price
+  //3. circle sub + none -> special price | price
+  //4. non-circle + promote circle -> special price | price
+  //5. non-circle + promte disocunt -> discount price
+  //6. non-circle + none -> special price | price
+  let priceToShow;
+  if (isCircleMember) {
+    if (promoteCircle) {
+      priceToShow = circleSpecialPrice;
+    } else if (promoteDiscount) {
+      priceToShow = discountSpecialPrice;
+    } else {
+      priceToShow = specialPrice || price;
+    }
+  } else {
+    if (promoteDiscount) {
+      priceToShow = discountSpecialPrice;
+    } else {
+      priceToShow = specialPrice || price;
+    }
+  }
+
+  const slashedPrice = !!itemPackageMrp
+  ? itemPackageMrp > priceToShow
+    ? itemPackageMrp
+    : null
+  : price > priceToShow
+  ? price
+  : null;
+
+
+  return {
+    priceToShow,
+    slashedPrice,
+    mrpToDisplay
+  }
+}
+
+export enum DIAGNOSTIC_PINCODE_SOURCE_TYPE  {
+  SEARCH = 'Search',
+  AUTO = 'Auto-select',
+  ADDRESS = 'Saved Address'
+}
+
+export const createLineItemPrices = (selectedItem: any, isDiagnosticCircleSubscription: boolean, reportGenDetails: any) =>{
+  var pricesForItemArray = selectedItem?.cartItems?.map(
+    (item: any, index: number) =>
+      ({
+        itemId: Number(item?.id),
+        price:
+          isDiagnosticCircleSubscription && item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+            ? Number(item?.circleSpecialPrice)
+            : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+            ? Number(item?.discountSpecialPrice)
+            : Number(item?.specialPrice) || Number(item?.price),
+        mrp:
+          isDiagnosticCircleSubscription && item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+            ? Number(item?.circlePrice)
+            : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+            ? Number(item?.discountPrice)
+            : Number(item?.price),
+        groupPlan: isDiagnosticCircleSubscription
+          ? item?.groupPlan!
+          : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+          ? item?.groupPlan
+          : DIAGNOSTIC_GROUP_PLAN.ALL,
+        preTestingRequirement:
+          !!reportGenDetails && reportGenDetails?.[index]?.itemPrepration
+            ? reportGenDetails?.[index]?.itemPrepration
+            : null,
+      } as DiagnosticLineItem)
+  );
+
+  return {
+    pricesForItemArray,
+  };
+}
+
+export const createPatientObjLineItems = (patientCartItems: DiagnosticPatientCartItem[], isDiagnosticCircleSubscription: boolean, reportGenDetails: any) =>{
+  const filterPatientItems = isDiagnosticSelectedCartEmpty(patientCartItems);
+  var array = [] as any; //define type
+
+  filterPatientItems?.map((item) => {
+    const getPricesForItem = createLineItemPrices(item, isDiagnosticCircleSubscription, reportGenDetails)?.pricesForItemArray;
+    const totalPrice = getPricesForItem
+      ?.map((item: any) => Number(item?.price))
+      ?.reduce((prev: number, curr: number) => prev + curr, 0);
+    array.push({
+      patientID: item?.patientId,
+      lineItems: getPricesForItem,
+      totalPrice: totalPrice,
+    });
+  });
+  return array;
 }

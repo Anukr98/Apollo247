@@ -10,6 +10,8 @@
 export interface findDiagnosticSettings_findDiagnosticSettings {
   __typename: "findDiagnosticSettingsResult";
   phleboETAInMinutes: number | null;
+  maxAllowedUhidsCount: number | null;
+  maxUhidsLimitExceededMessage: string | null;
 }
 
 export interface findDiagnosticSettings {

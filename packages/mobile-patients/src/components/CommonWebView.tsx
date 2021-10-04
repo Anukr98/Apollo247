@@ -26,6 +26,7 @@ import {
 import { useApolloClient } from 'react-apollo-hooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { postAppsFlyerCircleAddRemoveCartEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 export interface CommonWebViewProps extends NavigationScreenProps {}
 
@@ -48,6 +49,7 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
     setCircleSubPlanId,
     setAutoCirlcePlanAdded,
   } = useShoppingCart();
+  const { setIsCircleAddedToCart, setSelectedCirclePlan } = useDiagnosticsCart();
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const fireCirclePlanSelectedEvent = () => {
     const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED] = {
@@ -138,15 +140,24 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
             if (action == 'PAY') {
               props.navigation.navigate(AppRoutes.SubscriptionCart);
             } else {
-              setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
-              setDefaultCirclePlan && setDefaultCirclePlan(null);
-              setCirclePlanSelected && setCirclePlanSelected(responseData);
-              setIsCircleSubscription && setIsCircleSubscription(true);
-              fireCirclePlanToCartEvent(responseData);
-              setCircleMembershipCharges &&
-                setCircleMembershipCharges(responseData?.currentSellingPrice);
-              setCircleSubPlanId && setCircleSubPlanId(responseData?.subPlanId);
-              AsyncStorage.setItem('circlePlanSelected', data);
+              if (source === 'Diagnostic Cart') {
+                setIsCircleAddedToCart?.(true);
+                setSelectedCirclePlan?.(responseData);
+                setCircleMembershipCharges &&
+                  setCircleMembershipCharges(responseData?.currentSellingPrice);
+                setCircleSubPlanId && setCircleSubPlanId(responseData?.subPlanId);
+              } else {
+                setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+                setDefaultCirclePlan && setDefaultCirclePlan(null);
+                setCirclePlanSelected && setCirclePlanSelected(responseData);
+                setIsCircleSubscription && setIsCircleSubscription(true);
+                fireCirclePlanToCartEvent(responseData);
+                setCircleMembershipCharges &&
+                  setCircleMembershipCharges(responseData?.currentSellingPrice);
+                setCircleSubPlanId && setCircleSubPlanId(responseData?.subPlanId);
+                AsyncStorage.setItem('circlePlanSelected', data);
+              }
+
               navigation.goBack();
             }
             if (isCallback) {

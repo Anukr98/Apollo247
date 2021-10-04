@@ -169,7 +169,7 @@ export const PatientDetailsOverlay: React.FC<PatientDetailsOverlayProps> = (prop
               <Button
                 title={'DONE'}
                 disabled={!date || !gender}
-                onPress={() => onPressDone(date, gender, selectedPatient)}
+                onPress={() => onPressDone(date!, gender, selectedPatient)}
                 style={styles.doneButtonViewStyle}
               />
             </View>

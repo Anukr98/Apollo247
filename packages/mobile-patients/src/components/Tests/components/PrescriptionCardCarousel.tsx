@@ -65,7 +65,7 @@ export const PrescriptionCardCarousel: React.FC<PrescriptionCardCarouselProps> =
       />
       <View style={styles.cardDots}>
         {data?.length > 1
-          ? data?.map((_, i) => {
+          ? data?.map((_: any, i: any) => {
               let opacity = orderStatus_position.interpolate({
                 inputRange: [i - 1, i, i + 1],
                 outputRange: [0.2, 1, 0.2],

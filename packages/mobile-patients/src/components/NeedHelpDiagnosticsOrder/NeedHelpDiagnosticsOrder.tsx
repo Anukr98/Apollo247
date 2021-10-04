@@ -88,7 +88,7 @@ export interface Props
     email: string;
     orderId?: string;
     isOrderRelatedIssue?: boolean;
-    medicineOrderStatus?: MEDICINE_ORDER_STATUS;
+    medicineOrderStatus?: DIAGNOSTIC_ORDER_STATUS;
     isConsult?: boolean;
     medicineOrderStatusDate?: any;
     sourcePage: WebEngageEvents[WebEngageEventName.HELP_TICKET_SUBMITTED]['Source_Page'];
@@ -327,12 +327,12 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
     );
   };
   const onPressHelp = (item: any) => {
-    const currentStatusDate = item?.medicineOrdersStatus?.find(
-      (i) => i?.orderStatus === item?.currentStatus
+    const currentStatusDate = item?.diagnosticOrdersStatus?.find(
+      (i) => i?.orderStatus === item?.orderStatus
     )?.statusDate;
     navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
       isOrderRelatedIssue: true,
-      medicineOrderStatus: item.currentStatus,
+      medicineOrderStatus: item.orderStatus,
       medicineOrderStatusDate: currentStatusDate,
       orderId: item?.displayId,
       queryIdLevel1,

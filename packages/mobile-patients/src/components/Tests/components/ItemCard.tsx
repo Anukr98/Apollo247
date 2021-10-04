@@ -34,8 +34,9 @@ import {
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 const screenWidth = Dimensions.get('window').width;
-const CARD_WIDTH = screenWidth * 0.45;
+const CARD_WIDTH = screenWidth > 350 ? screenWidth * 0.45 : screenWidth * 0.5;
 const CARD_HEIGHT = 230; //210
 export interface ItemCardProps {
   onPress?: (item: any) => void;
@@ -55,23 +56,36 @@ export interface ItemCardProps {
   onEndReached?: any;
   diagnosticWidgetData?: any;
   isPriceAvailable?: boolean;
-  onPressAddToCartFromCart?: (item: any) => void;
+  onPressAddToCartFromCart?: (item: any, addedItems: any) => void;
   onPressRemoveItemFromCart?: (item: any) => void;
 }
 
-export const ItemCard: React.FC<ItemCardProps> = (props) => {
-  const { cartItems, addCartItem, removeCartItem, modifiedOrderItemIds } = useDiagnosticsCart();
+const ItemCard: React.FC<ItemCardProps> = (props) => {
+  const {
+    cartItems,
+    addCartItem,
+    removeCartItem,
+    modifiedOrderItemIds,
+    modifiedOrder,
+    setModifiedPatientCart,
+    removeMultiPatientCartItems,
+    patientCartItems,
+  } = useDiagnosticsCart();
   const {
     data,
     isCircleSubscribed,
     navigation,
     diagnosticWidgetData,
     source,
+    changeCTA,
     sourceScreen,
     onPressAddToCartFromCart,
     onPressRemoveItemFromCart,
   } = props;
+  const { currentPatient } = useAllCurrentPatients();
+  const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
 
+  const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   let actualItemsToShow =
     source === 'Cart page'
       ? data?.length > 0 && data
@@ -132,7 +146,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
             ]}
           >
             <View style={{ flexDirection: 'row' }}>
-              <View style={{ width: '69%' }}>
+              <View style={{ width: screenWidth < 340 ? '60%' : '69%' }}>
                 {imageUrl == '' ? (
                   <WidgetLiverIcon style={styles.imageStyle} resizeMode={'contain'} />
                 ) : (
@@ -173,7 +187,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
         </TouchableOpacity>
       );
     },
-    [cartItems]
+    [cartItems, patientCartItems]
   );
 
   const renderPercentageDiscount = (discount: string | number) => {
@@ -259,7 +273,8 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     return (
       <View style={mainViewStyle}>
         <Text style={textStyle}>
-          {text} {string.common.Rs} {convertNumberToDecimal(price)}
+          {text} {string.common.Rs}
+          {convertNumberToDecimal(price)}
         </Text>
       </View>
     );
@@ -300,10 +315,10 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     //1. circle sub + promote -> packageMrp/price
     //2. non-circle + circle -> no slashing
     return (
-      <View style={{ flexDirection: 'row', marginVertical: '5%' }}>
+      <View style={{ flexDirection: 'row', marginVertical: priceToShow ? '5%' : '1%' }}>
         {priceToShow ? (
           <Text style={styles.mainPriceText}>
-            {`${string.common.Rs} ${convertNumberToDecimal(priceToShow)}`}
+            {`${string.common.Rs}${convertNumberToDecimal(priceToShow)}`}
           </Text>
         ) : (
           renderItemPriceShimmer()
@@ -311,7 +326,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
         {(!isCircleSubscribed && promoteCircle && priceToShow == slashedPrice) ||
         priceToShow == slashedPrice ? null : slashedPrice ? (
           <Text style={styles.slashedPriceText}>
-            {`${string.common.Rs} ${convertNumberToDecimal(slashedPrice)}`}
+            {`${string.common.Rs}${convertNumberToDecimal(slashedPrice)}`}
           </Text>
         ) : null}
       </View>
@@ -328,7 +343,11 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     const planToConsider = pricesForItem?.planToConsider;
     const discountToDisplay = pricesForItem?.discountToDisplay;
     const mrpToDisplay = pricesForItem?.mrpToDisplay;
-    const widgetType = data?.diagnosticWidgetType;
+    const widgetType = Array.isArray(data)
+      ? sourceScreen === AppRoutes.CartPage
+        ? string.diagnosticCategoryTitle.item
+        : data?.[0]?.diagnosticWidgetType
+      : data?.diagnosticWidgetType?.toLowerCase();
 
     DiagnosticAddToCartEvent(
       item?.itemTitle,
@@ -339,9 +358,11 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
       widgetType === string.diagnosticCategoryTitle.categoryGrid ||
         widgetType == string.diagnosticCategoryTitle.category
         ? 'Category page'
-        : data?.diagnosticWidgetTitle
+        : data?.diagnosticWidgetTitle,
+      currentPatient,
+      isDiagnosticCircleSubscription
     );
-    addCartItem?.({
+    const addedItems = {
       id: `${item?.itemId}`,
       mou: 1,
       name: item?.itemTitle!,
@@ -356,17 +377,40 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
       groupPlan: planToConsider?.groupPlan,
       packageMrp: packageCalculatedMrp,
       inclusions: [Number(item?.itemId)], // since it's a test
-    });
-    onPressAddToCartFromCart?.(item);
+      isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+    };
+    if (sourceScreen === AppRoutes.CartPage) {
+      onPressAddToCartFromCart?.(item, addedItems);
+    } else {
+      addCartItem?.(addedItems);
+      isModifyFlow &&
+        setModifiedPatientCart?.([
+          {
+            patientId: modifiedOrder?.patientId,
+            cartItems: cartItems?.concat(addedItems),
+          },
+        ]);
+    }
   }
 
-  function onPressRemoveFromCart(item: any) {
-    removeCartItem!(`${item?.itemId}`);
-    onPressRemoveItemFromCart?.(item);
-  }
+  const onPressRemoveFromCart = (item: any) => {
+    if (sourceScreen === AppRoutes.CartPage) {
+      onPressRemoveItemFromCart?.(item);
+    } else {
+      removeCartItem?.(`${item?.itemId}`);
+      removeMultiPatientCartItems?.(`${item?.itemId}`);
+    }
+  };
 
   function postHomePageWidgetClicked(name: string, id: string, section: string) {
-    DiagnosticHomePageWidgetClicked(section, name, id);
+    DiagnosticHomePageWidgetClicked(
+      currentPatient,
+      section,
+      name,
+      id,
+      '',
+      isDiagnosticCircleSubscription
+    );
   }
 
   function onPress(item: any, packageCalculatedMrp: number, pricesForItem: any) {
@@ -411,6 +455,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
       navigation.navigate(AppRoutes.TestDetails, {
         itemId: item?.itemId,
         comingFrom: sourceScreen,
+        changeCTA: changeCTA,
         testDetails: {
           Rate: price,
           specialPrice: specialPrice! || price,
@@ -444,10 +489,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     const isAlreadyPartOfOrder =
       !!modifiedOrderItemIds &&
       modifiedOrderItemIds?.length &&
-      modifiedOrderItemIds?.find(
-        (id: number) =>
-          Number(id) == Number(props.sourceScreen === AppRoutes.TestsCart ? item?.itemId : item?.id)
-      );
+      modifiedOrderItemIds?.find((id: number) => Number(id) == Number(item?.itemId || item?.id));
     return (
       <Text
         style={[
@@ -457,18 +499,35 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
             width: isAlreadyPartOfOrder ? '80%' : '70%',
           },
         ]}
-        onPress={() =>
-          isAlreadyPartOfOrder
-            ? {}
-            : isAddedToCart
-            ? onPressRemoveFromCart(item)
-            : onPressAddToCart(item, pricesForItem, packageCalculatedMrp)
-        }
+        onPress={() => {
+          _onPressFunction(
+            isAlreadyPartOfOrder,
+            isAddedToCart,
+            item,
+            pricesForItem,
+            packageCalculatedMrp
+          );
+        }}
       >
         {isAlreadyPartOfOrder ? 'ALREADY ADDED' : isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
       </Text>
     );
   };
+
+  function _onPressFunction(
+    isAlreadyPartOfOrder: any,
+    isAddedToCart: boolean,
+    item: any,
+    pricesForItem: any,
+    packageCalculatedMrp: number
+  ) {
+    if (isAlreadyPartOfOrder) {
+    } else if (isAddedToCart) {
+      onPressRemoveFromCart(item);
+    } else {
+      onPressAddToCart(item, pricesForItem, packageCalculatedMrp);
+    }
+  }
 
   const renderError = () => {
     if (props.isVertical)
@@ -540,6 +599,8 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
   );
 };
 
+export default React.memo(ItemCard);
+
 const styles = StyleSheet.create({
   itemCardView: {
     ...theme.viewStyles.card(12, 0),
@@ -550,7 +611,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
     alignItems: 'flex-start',
     marginTop: 16,
-    marginBottom: 20,
+    marginBottom: 16,
   },
   imagePlaceholderStyle: { backgroundColor: '#f7f8f5', opacity: 0.5, borderRadius: 5 },
   imageStyle: { height: 40, width: 40, marginBottom: 8 },

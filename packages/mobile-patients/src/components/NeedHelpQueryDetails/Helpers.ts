@@ -30,25 +30,31 @@ export const Helpers = {
     isOrderRelatedIssue: boolean,
     orderStatus: any
   ) => {
-    let queries = null;
+    let queries = [];
     const queriesByOrderStatus = queryData?.queriesByOrderStatus?.[orderStatus] as
       | string[]
       | undefined;
-      const diagNonOrderQueries = {
+    const diagNonOrderQueries = {
        nonOrderQueries :  JSON.parse(AppConfig.Configuration.Diagnostics_Help_NonOrder_Queries),
         } 
      // here this condition is implemented to handle backward compatiability of old version of apps. We can revert it later on.
       const nonOrderQueries = queryData?.id == helpSectionQueryId.diagnostic ? diagNonOrderQueries?.nonOrderQueries : queryData?.nonOrderQueries as string[] | undefined;
-    
+      
     if (queriesByOrderStatus && orderStatus) {
-      queries = queriesByOrderStatus.map((qId) => queryData?.queries?.find((q) => q?.id === qId));
+      queriesByOrderStatus.forEach((qId) => {
+        queryData?.queries?.forEach(qElement => {
+          if(qElement?.id === qId){
+            queries.push(qElement);
+          }
+        });
+      });
     } else if (nonOrderQueries && !isOrderRelatedIssue) {
       queries = nonOrderQueries.map((qId) => queryData?.queries?.find((q) => q?.id === qId));
     } else if (nonOrderQueries && isOrderRelatedIssue) {
       queries = queryData?.queries?.filter((q) => !nonOrderQueries.includes(q?.id!));
     }
 
-    return (queries || queryData?.queries || []) as NeedHelpHelpers.HelpSectionQuery[];
+    return (queries.length ?  queries :  queryData?.queries ? queryData?.queries : []) as NeedHelpHelpers.HelpSectionQuery[];
   },
 };
 

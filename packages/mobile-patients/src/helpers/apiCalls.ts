@@ -682,17 +682,6 @@ export const searchPickupStoresApi = async (
   );
 };
 
-export const searchClinicApi = async (): Promise<AxiosResponse<ClinicDetailsResponse>> => {
-  return Axios.post(
-    AppConfig.Configuration.GET_CLINICS[0] as string,
-    {
-      ...(AppConfig.Configuration.GET_CLINICS[1] as object),
-    },
-    {
-      headers: {},
-    }
-  );
-};
 
 export const getStoreInventoryApi = (
   shopId: string,
@@ -1192,9 +1181,9 @@ export const getDiagnosticsPopularResults = (
   });
 };
 
-export const getDiagnosticHomePageWidgets = (pageName: string): Promise<AxiosResponse<any>> => {
+export const getDiagnosticHomePageWidgets = (pageName: string, cityId: number): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
-  const getWidgets = `${baseurl}/${pageName}/getwidgets`;
+  const getWidgets = `${baseurl}/${pageName}/getwidgets?city=${cityId}`;
   return Axios.get(getWidgets, {
     headers: {
       Authorization: config.DRUPAL_CONFIG[1],

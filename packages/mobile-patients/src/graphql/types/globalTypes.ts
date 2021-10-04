@@ -78,15 +78,15 @@ export enum BloodGroups {
 }
 
 export enum BookingSource {
-  Apollo247_Android = 'Apollo247_Android',
-  Apollo247_Ios = 'Apollo247_Ios',
-  Apollo247_Web = 'Apollo247_Web',
+  Apollo247_Android = "Apollo247_Android",
+  Apollo247_Ios = "Apollo247_Ios",
+  Apollo247_Web = "Apollo247_Web",
 }
 
 export enum BookingStatus {
-  COMPLETED = 'COMPLETED',
-  FAILED = 'FAILED',
-  INPROGRESS = 'INPROGRESS',
+  COMPLETED = "COMPLETED",
+  FAILED = "FAILED",
+  INPROGRESS = "INPROGRESS",
 }
 
 export enum CODCity {
@@ -136,6 +136,12 @@ export enum DEVICE_TYPE {
   WEB = 'WEB',
 }
 
+export enum DIAGNOSTICS_GROUPPLAN {
+  ALL = "ALL",
+  CIRCLE = "CIRCLE",
+  SPECIALDISCOUNTS = "SPECIALDISCOUNTS",
+}
+
 export enum DIAGNOSTICS_TYPE {
   PACKAGE = 'PACKAGE',
   TEST = 'TEST',
@@ -147,31 +153,32 @@ export enum DIAGNOSTIC_ORDER_PAYMENT_TYPE {
 }
 
 export enum DIAGNOSTIC_ORDER_STATUS {
-  ORDER_CANCELLED = 'ORDER_CANCELLED',
-  ORDER_CANCELLED_REQUEST = 'ORDER_CANCELLED_REQUEST',
-  ORDER_COMPLETED = 'ORDER_COMPLETED',
-  ORDER_FAILED = 'ORDER_FAILED',
-  ORDER_INITIATED = 'ORDER_INITIATED',
-  ORDER_MODIFIED = 'ORDER_MODIFIED',
-  ORDER_PLACED = 'ORDER_PLACED',
-  ORDER_RESCHEDULED = 'ORDER_RESCHEDULED',
-  ORDER_RESCHEDULED_REQUEST = 'ORDER_RESCHEDULED_REQUEST',
-  PARTIAL_ORDER_COMPLETED = 'PARTIAL_ORDER_COMPLETED',
-  PAYMENT_FAILED = 'PAYMENT_FAILED',
-  PAYMENT_PENDING = 'PAYMENT_PENDING',
-  PAYMENT_SUCCESSFUL = 'PAYMENT_SUCCESSFUL',
-  PHLEBO_CHECK_IN = 'PHLEBO_CHECK_IN',
-  PHLEBO_COMPLETED = 'PHLEBO_COMPLETED',
-  PICKUP_CONFIRMED = 'PICKUP_CONFIRMED',
-  PICKUP_REQUESTED = 'PICKUP_REQUESTED',
-  REPORT_GENERATED = 'REPORT_GENERATED',
-  SAMPLE_COLLECTED = 'SAMPLE_COLLECTED',
-  SAMPLE_COLLECTED_IN_LAB = 'SAMPLE_COLLECTED_IN_LAB',
-  SAMPLE_NOT_COLLECTED_IN_LAB = 'SAMPLE_NOT_COLLECTED_IN_LAB',
-  SAMPLE_RECEIVED_IN_LAB = 'SAMPLE_RECEIVED_IN_LAB',
-  SAMPLE_REJECTED_IN_LAB = 'SAMPLE_REJECTED_IN_LAB',
-  SAMPLE_SUBMITTED = 'SAMPLE_SUBMITTED',
-  SAMPLE_TESTED = 'SAMPLE_TESTED',
+  ORDER_CANCELLED = "ORDER_CANCELLED",
+  ORDER_CANCELLED_REQUEST = "ORDER_CANCELLED_REQUEST",
+  ORDER_COMPLETED = "ORDER_COMPLETED",
+  ORDER_FAILED = "ORDER_FAILED",
+  ORDER_INITIATED = "ORDER_INITIATED",
+  ORDER_MODIFIED = "ORDER_MODIFIED",
+  ORDER_PLACED = "ORDER_PLACED",
+  ORDER_RESCHEDULED = "ORDER_RESCHEDULED",
+  ORDER_RESCHEDULED_REQUEST = "ORDER_RESCHEDULED_REQUEST",
+  PARTIAL_ORDER_COMPLETED = "PARTIAL_ORDER_COMPLETED",
+  PAYMENT_FAILED = "PAYMENT_FAILED",
+  PAYMENT_PENDING = "PAYMENT_PENDING",
+  PAYMENT_SUCCESSFUL = "PAYMENT_SUCCESSFUL",
+  PHLEBO_CHECK_IN = "PHLEBO_CHECK_IN",
+  PHLEBO_COMPLETED = "PHLEBO_COMPLETED",
+  PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
+  PICKUP_REQUESTED = "PICKUP_REQUESTED",
+  REFUND_INITIATED = "REFUND_INITIATED",
+  REPORT_GENERATED = "REPORT_GENERATED",
+  SAMPLE_COLLECTED = "SAMPLE_COLLECTED",
+  SAMPLE_COLLECTED_IN_LAB = "SAMPLE_COLLECTED_IN_LAB",
+  SAMPLE_NOT_COLLECTED_IN_LAB = "SAMPLE_NOT_COLLECTED_IN_LAB",
+  SAMPLE_RECEIVED_IN_LAB = "SAMPLE_RECEIVED_IN_LAB",
+  SAMPLE_REJECTED_IN_LAB = "SAMPLE_REJECTED_IN_LAB",
+  SAMPLE_SUBMITTED = "SAMPLE_SUBMITTED",
+  SAMPLE_TESTED = "SAMPLE_TESTED",
 }
 
 export enum DOCTOR_ONLINE_STATUS {
@@ -254,6 +261,7 @@ export enum Gender {
   MALE = 'MALE',
   OTHER = 'OTHER',
 }
+
 
 export enum HDFC_CUSTOMER {
   NOT_HDFC_CUSTOMER = 'NOT_HDFC_CUSTOMER',
@@ -562,6 +570,11 @@ export enum PAYMENT_METHODS_REVERSE {
   PAYTM_POSTPAID = 'PAYTM_POSTPAID',
   PAYTM_WALLET = 'PAYTM_WALLET',
   UPI = 'UPI',
+}
+
+export enum PAYMENT_MODE {
+  COD = "COD",
+  PREPAID = "PREPAID",
 }
 
 export enum PAYMENT_STATUS {
@@ -1037,6 +1050,7 @@ export interface BookAppointmentInput {
   discountedAmount?: number | null;
   subscriptionDetails?: SUBSCRIPTION_DETAILS | null;
   planPurchaseDetails?: PLAN_PURCHASE_DETAILS | null;
+  adminId?: string | null;
 }
 
 export interface BookFollowUpAppointmentInput {
@@ -1079,6 +1093,22 @@ export interface CancellationDiagnosticsInput {
   orderId: string;
   patientId: string;
   reason: string;
+}
+
+export interface CancellationDiagnosticsInputv2 {
+  comment?: string | null;
+  orderIds: (string | null)[];
+  patientId: string;
+  reason: string;
+}
+
+export interface ChargeDetailsInput {
+  patientAddressObj: patientAddressObj;
+  patientsObjWithLineItems: (patientObjWithLineItems | null)[];
+  billAmount: number;
+  serviceability?: DiagnosticsServiceability | null;
+  slotInfo?: slotInfo | null;
+  diagnosticOrdersId?: string | null;
 }
 
 export interface CheckCallConnectionInput {
@@ -1172,6 +1202,13 @@ export interface DeletePatientPrismMedicalRecordInput {
 export interface DiagnosticInitiateOrderPayment {
   orderId?: string | null;
 }
+export interface DiagnosticInitiateOrderPaymentv2 {
+  paymentOrderID?: string | null;
+}
+
+export interface DiagnosticInitiateOrderPaymentv2 {
+  paymentOrderID?: string | null;
+}
 
 export interface DiagnosticLineItem {
   itemId?: number | null;
@@ -1217,6 +1254,11 @@ export interface DiagnosticTestsOrdered {
   itemName?: string | null;
   rateExcludingDiscount?: number | null;
   groupPlan?: string | null;
+}
+
+export interface DiagnosticsServiceability {
+  cityID?: number | null;
+  stateID?: number | null;
 }
 
 export interface DoctorAvailabilityInput {
@@ -1287,6 +1329,7 @@ export interface FilterDoctorInput {
   specialty?: string | null;
   specialtySearchType?: SpecialtySearchType | null;
   specialtyName?: (string | null)[] | null;
+  specialistPluralTerm?: (string | null)[] | null;
   city?: (string | null)[] | null;
   experience?: (Range | null)[] | null;
   availability?: (string | null)[] | null;
@@ -1420,6 +1463,7 @@ export interface MedicineCartOMSInput {
   prescriptionType?: PrescriptionType | null;
   tatCity?: string | null;
   tatHours?: string | null;
+  appointmentId?: string | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -1754,6 +1798,12 @@ export interface REQUEST_DETAIL {
   preferredDateText?: string | null;
 }
 
+export interface ProcessDiagnosticHCOrderInputCOD {
+  orderID: string;
+  statusDate?: any | null;
+  amount: number;
+}
+
 export interface Range {
   minimum?: number | null;
   maximum?: number | null;
@@ -1778,7 +1828,7 @@ export interface ReturnPharmaOrderInput {
   patientId?: string | null;
   email: string;
   orderId?: number | null;
-  orderType?: ORDER_TYPE | null;
+  orderType?: PHARMACY_ORDER_TYPE | null;
   orderFiles?: fileProperties[] | null;
 }
 
@@ -1803,7 +1853,7 @@ export interface SaveBookHomeCollectionOrderInput {
   deviceType?: DEVICETYPE | null;
   items?: (DiagnosticLineItem | null)[] | null;
   slotId: string;
-  areaId: number;
+  areaId?: number | null;
   collectionCharges: number;
   uniqueID?: string | null;
   slotDateTimeInUTC: any;
@@ -1812,6 +1862,22 @@ export interface SaveBookHomeCollectionOrderInput {
   subscriptionInclusionId?: string | null;
   attachmentData?: (Attachments | null)[] | null;
   caseSheets?: (string | null)[] | null;
+  agentLoginID?: string | null;
+}
+
+export interface SaveBookHomeCollectionOrderInputv2 {
+  patientAddressID: string;
+  patientObjWithLineItems?: (patientObjWithLineItems | null)[] | null;
+  selectedDate: any;
+  slotInfo: slotInfo;
+  serviceability: DiagnosticsServiceability;
+  collectionCharges: phleboCharges;
+  bookingSource: DiagnosticsBookingSource;
+  deviceType: DEVICETYPE;
+  userSubscriptionId?: string | null;
+  subscriptionInclusionId?: string | null;
+  couponCode?: string | null;
+  caseSheets?: (string | null)[] | null;
 }
 
 export interface SaveDeviceTokenInput {
@@ -1819,6 +1885,7 @@ export interface SaveDeviceTokenInput {
   deviceToken: string;
   deviceOS: string;
   patientId: string;
+  appVersion?: string | null;
 }
 
 export interface SaveMedicineOrderV2Input {
@@ -1838,6 +1905,7 @@ export interface SaveMedicineOrderV2Input {
   healthCreditUsed?: number | null;
   shipments?: (MedicineOrderShipmentInput | null)[] | null;
   prescriptionType?: PrescriptionType | null;
+  appointmentId?: string | null;
 }
 
 export interface SavePatientNotificationSettingsInput {
@@ -1971,9 +2039,43 @@ export interface VerifyVPA {
   merchant_id?: string | null;
 }
 
+export interface diagnosticLineItem {
+  mrp: number;
+  price: number;
+  couponDiscAmount?: number | null;
+  groupPlanDiscAmount?: number | null;
+  groupPlan?: DIAGNOSTICS_GROUPPLAN | null;
+  itemId: number;
+  preTestingRequirement?: string | null;
+  reportGenerationTime?: string | null;
+}
+
 export interface fileProperties {
   fileType?: string | null;
   base64FileInput?: string | null;
+}
+
+export interface patientAddressObj {
+  patientAddressID: string;
+  latitude: number;
+  longitude: number;
+  city: string;
+  state: string;
+  landmark?: string | null;
+  addressLine1: string;
+  addressLine2: string;
+  zipcode: string;
+}
+
+export interface patientObjWithLineItems {
+  patientID: string;
+  lineItems?: (diagnosticLineItem | null)[] | null;
+  totalPrice: number;
+}
+
+export interface phleboCharges {
+  charges: number;
+  distanceCharges?: number | null;
 }
 
 export interface prescriptionPrismFileProperties {
@@ -1991,6 +2093,18 @@ export interface saveModifyDiagnosticOrderInput {
   items?: (DiagnosticLineItem | null)[] | null;
   userSubscriptionId?: string | null;
   subscriptionInclusionId?: string | null;
+}
+
+export interface slotDetail {
+  slotDisplayTime?: string | null;
+  internalSlots?: (string | null)[] | null;
+}
+
+export interface slotInfo {
+  slotDetails?: slotDetail | null;
+  status?: number | null;
+  phleboID?: number | null;
+  paidSlot?: boolean | null;
 }
 
 export interface voipPushTokenInput {

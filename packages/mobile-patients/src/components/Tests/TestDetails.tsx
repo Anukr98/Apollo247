@@ -38,7 +38,6 @@ import {
   View,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -72,8 +71,8 @@ import { Breadcrumb } from '@aph/mobile-patients/src/components/MedicineListing/
 import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { FAQComponent } from '@aph/mobile-patients/src/components/SubscriptionMembership/Components/FAQComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { PackageCard } from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
-import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
+import PackageCard from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
+import ItemCard from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import {
   findDiagnosticsWidgetsPricing,
   findDiagnosticsWidgetsPricingVariables,
@@ -88,8 +87,13 @@ import {
   getReportTAT,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import moment from 'moment';
+import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 
 const screenWidth = Dimensions.get('window').width;
+const screenHeight = Dimensions.get('window').height;
+
+const divisionFactor =
+  screenHeight > 800 ? 10.5 : screenHeight > 700 ? 12.5 : screenHeight > 600 ? 14.5 : 16.5;
 export interface TestPackageForDetails extends TestPackage {
   collectionType: TEST_COLLECTION_TYPE;
   preparation: string;
@@ -146,6 +150,7 @@ export interface TestDetailsProps
     itemName?: string;
     movedFrom?: string;
     cityId?: string;
+    changeCTA?: boolean;
     stateId?: string;
   }> {}
 
@@ -162,8 +167,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     setModifyHcCharges,
     setModifiedOrderItemIds,
     setHcCharges,
-    setAreaSelected,
     setModifiedOrder,
+    setModifiedPatientCart,
+    setDistanceCharges,
+    setDeliveryAddressId,
     addresses,
     deliveryAddressId,
     deliveryAddressCityId,
@@ -180,6 +187,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   const testDetails = props.navigation.getParam('testDetails', {} as TestPackageForDetails);
   const testName = props.navigation.getParam('itemName');
+  const changeCTA = props.navigation.getParam('changeCTA');
+
   const { setLoading: setLoadingContext, showAphAlert, hideAphAlert } = useUIElements();
 
   const addressCityId = props.navigation.getParam('cityId');
@@ -208,6 +217,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [widgetsData, setWidgetsData] = useState([] as any);
   const [expressSlotMsg, setExpressSlotMsg] = useState<string>('');
   const [reportTat, setReportTat] = useState<string>('');
+  const [showBottomBar, setShowBottomBar] = useState<boolean>(false);
+  const [priceHeight, setPriceHeight] = useState<number>(0);
 
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
 
@@ -223,6 +234,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   const isAddedToCart = !!cartItems?.find((item) => item.id == testInfo?.ItemID);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
+  const priceViewRef = React.useRef<View>(null);
 
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
@@ -262,8 +274,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       'diagnostic-details',
       Number(itemId),
       !!itemName ? itemName : cmsTestDetails?.diagnosticUrlAlias,
-      Number(diagnosticServiceabilityData?.cityId!) ||
-        AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
+      cityIdToUse
     );
     if (res?.data?.success) {
       const result = g(res, 'data', 'data');
@@ -273,7 +284,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
       !!result?.diagnosticWidgetsData &&
         result?.diagnosticWidgetsData?.length > 0 &&
-        fetchWidgetPrices(result?.diagnosticWidgetsData, diagnosticServiceabilityData?.cityId!);
+        fetchWidgetPrices(result?.diagnosticWidgetsData, cityIdToUse);
     } else {
       setLoadingContext?.(false);
       setErrorState(true);
@@ -298,9 +309,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           sourceHeaders,
         },
         variables: {
-          cityID:
-            Number(diagnosticServiceabilityData?.cityId!) ||
-            AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
+          cityID: cityIdToUse,
           itemIDs: listOfIds,
         },
         fetchPolicy: 'no-cache',
@@ -370,7 +379,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     }
   };
 
-  const fetchWidgetPrices = async (widgetsData: any, cityId: string) => {
+  const fetchWidgetPrices = async (widgetsData: any, cityId: string | number) => {
     const itemIds = widgetsData?.map((item: any) =>
       item?.diagnosticWidgetData?.map((data: any, index: number) => Number(data?.itemId))
     );
@@ -378,7 +387,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     try {
       const res = Promise.all(
         itemIds?.map((item: any) =>
-          fetchPricesForCityId(Number(cityId!) || 9, item?.length > 12 ? item?.slice(0, 12) : item)
+          fetchPricesForCityId(Number(cityId!), item?.length > 12 ? item?.slice(0, 12) : item)
         )
       );
 
@@ -481,11 +490,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         client,
         !!diagnosticSlot && !isEmptyObject(diagnosticSlot) ? dateTimeInUTC : null,
         id,
-        Number(pincode),
+        !!pincode ? Number(pincode) : 0,
         itemIds
       );
       if (result?.data?.getConfigurableReportTAT) {
-        const getMaxReportTat = result?.data?.getConfigurableReportTAT?.maxReportTAT;
+        const getMaxReportTat = result?.data?.getConfigurableReportTAT?.reportTATMessage!;
         setReportTat(getMaxReportTat);
       } else {
         setReportTat('');
@@ -534,7 +543,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     setModifyHcCharges?.(0);
     setModifiedOrderItemIds?.([]);
     setHcCharges?.(0);
-    setAreaSelected?.({});
+    setDistanceCharges?.(0);
+    setModifiedPatientCart?.([]);
+    setDeliveryAddressId?.('');
     //go back to homepage
     props.navigation.navigate('TESTS');
   }
@@ -558,7 +569,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         breadcrumb.push({
           title: 'Cart',
           onPress: () => {
-            navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TestsCart);
+            navigateToScreenWithEmptyStack(props.navigation, AppRoutes.AddPatients);
           },
         });
       }
@@ -583,7 +594,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         testInfo?.ItemID || itemId,
         currentPatient,
         testInfo?.Rate || testDetails?.Rate,
-        pharmacyCircleAttributes
+        pharmacyCircleAttributes,
+        isDiagnosticCircleSubscription
       );
     }
   }, [testInfo]);
@@ -695,12 +707,16 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     return (
       <View style={styles.descriptionCardOuterView}>
         {renderCardTopView()}
-        {renderPriceView()}
+        {renderPriceView(false)}
       </View>
     );
   };
 
-  const renderPriceView = () => {
+  function _setPriceLayoutPosition(layout: any, event: any) {
+    setPriceHeight(layout?.height);
+  }
+
+  const renderPriceView = (isBottom: boolean) => {
     //if coming from anywhere other than cart page
     //check other conidtions
     const slashedPrice =
@@ -732,12 +748,37 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       }
     }
     return (
-      <View style={{}}>
+      <View>
+        {!isBottom
+          ? renderTopPriceView(slashedPrice, priceToShow)
+          : renderBottomPriceView(slashedPrice, priceToShow)}
+      </View>
+    );
+  };
+
+  const renderTopPriceView = (slashedPrice: number, priceToShow: number) => {
+    return (
+      <View
+        ref={priceViewRef}
+        onLayout={(event) => {
+          const layout = event.nativeEvent.layout;
+          _setPriceLayoutPosition(layout, event);
+        }}
+      >
         {renderSeparator()}
         <View style={{ marginTop: '2%' }}>
           {renderSlashedView(slashedPrice, priceToShow)}
-          {!_.isEmpty(testInfo) && renderMainPriceView(priceToShow)}
+          {!_.isEmpty(testInfo) && renderMainPriceView(priceToShow, true)}
         </View>
+      </View>
+    );
+  };
+
+  const renderBottomPriceView = (slashedPrice: number, priceToShow: number) => {
+    return (
+      <View>
+        {renderSlashedView(slashedPrice, priceToShow)}
+        {!_.isEmpty(testInfo) && renderMainPriceView(priceToShow, false)}
       </View>
     );
   };
@@ -757,7 +798,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     );
   };
 
-  const renderMainPriceView = (priceToShow: number) => {
+  const renderMainPriceView = (priceToShow: number, showSavings: boolean) => {
     return (
       <View style={styles.flexRowView}>
         {!!priceToShow && (
@@ -765,7 +806,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             {string.common.Rs} {convertNumberToDecimal(priceToShow)}
           </Text>
         )}
-        {renderDiscountView()}
+        {showSavings ? renderDiscountView() : null}
       </View>
     );
   };
@@ -800,7 +841,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             {renderSavingView(
               'Savings',
               specialDiscountSaving,
-              { marginHorizontal: '1%' },
+              { marginHorizontal: '2%' },
               styles.savingsText
             )}
           </View>
@@ -852,10 +893,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             <View style={styles.midCardView}>
               <ClockIcon style={styles.clockIconStyle} />
               <View style={styles.midCardTextView}>
-                <Text style={styles.reportTimeText}>Get Reports by</Text>
+                <Text style={styles.reportTimeText}>Get reports earliest by</Text>
                 <Text style={styles.reportTime}>
                   {reportTat != ''
-                    ? moment(reportTat)?.format('dddd, DD MMMM')
+                    ? reportTat
                     : cmsTestDetails?.diagnosticReportCustomerText
                     ? cmsTestDetails?.diagnosticReportCustomerText
                     : cmsTestDetails?.diagnosticReportGenerationTime}
@@ -1044,9 +1085,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       <TestListingHeader
         navigation={props.navigation}
         headerText={nameFormater(
-          !!modifiedOrder && !isEmptyObject(modifiedOrder)
-            ? 'MODIFIED ORDER'
-            : 'TEST PACKAGE DETAIL',
+          !!modifiedOrder && !isEmptyObject(modifiedOrder) ? 'MODIFY ORDER' : 'TEST PACKAGE DETAIL',
           'upper'
         )}
         movedFrom={'testDetails'}
@@ -1166,9 +1205,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       itemId!,
       mrpToDisplay,
       discountToDisplay,
-      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS
+      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS,
+      currentPatient,
+      isDiagnosticCircleSubscription
     );
-
     const testInclusions =
       testInfo?.inclusions == null
         ? [Number(itemId)]
@@ -1176,10 +1216,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         ? testInfo?.inclusions
         : [Number(testInfo?.inclusions)];
 
-    addCartItem?.({
-      id: `${itemId!}`,
+    const addedItems = {
+      id: `${itemId}`,
       mou: 1,
-      name: cmsTestDetails?.diagnosticItemName || testInfo?.itemName,
+      name: cmsTestDetails?.diagnosticItemName || testInfo?.ItemName,
       price: price,
       specialPrice: specialPrice! | price,
       circlePrice: circlePrice,
@@ -1188,14 +1228,32 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       discountSpecialPrice: discountSpecialPrice,
       thumbnail: cmsTestDetails?.diagnosticItemImageUrl,
       collectionMethod: TEST_COLLECTION_TYPE.HC,
-      packageMrp: Number(testInfo?.packageMrp!),
       groupPlan: testInfo?.promoteCircle
         ? DIAGNOSTIC_GROUP_PLAN.CIRCLE
         : testInfo?.promoteDiscount
         ? DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
         : DIAGNOSTIC_GROUP_PLAN.ALL,
+      packageMrp: Number(testInfo?.packageMrp!),
       inclusions: testInclusions,
-    });
+      isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+    };
+
+    isModify &&
+      setModifiedPatientCart?.([
+        {
+          patientId: modifiedOrder?.patientId,
+          cartItems: cartItems?.concat(addedItems),
+        },
+      ]);
+    addCartItem?.(addedItems);
+
+    if (movedFrom === AppRoutes.CartPage && changeCTA) {
+      isModify
+        ? props.navigation.navigate(AppRoutes.CartPage, {
+            orderDetails: modifiedOrder,
+          })
+        : props.navigation.navigate(AppRoutes.AddPatients);
+    }
   }
 
   function onPressRemoveFromCart() {
@@ -1232,6 +1290,16 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             keyboardDismissMode="on-drag"
             style={{ marginBottom: 60 }}
             ref={scrollViewRef}
+            scrollEventThrottle={16}
+            onScroll={(event) => {
+              // show price if price is scrolled off the screen
+              priceViewRef?.current &&
+                priceViewRef?.current?.measure(
+                  (x: any, y: any, width: any, height: any, pagex: any, pagey: any) => {
+                    setShowBottomBar(pagey - screenHeight / divisionFactor < priceHeight);
+                  }
+                );
+            }}
           >
             {!_.isEmpty(testInfo) && !!cmsTestDetails && renderItemCard()}
             {renderDescriptionCard()}
@@ -1244,23 +1312,33 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               : null}
           </ScrollView>
           <StickyBottomComponent>
+            {showBottomBar && renderPriceView(true)}
             <Button
               title={
                 isAlreadyPartOfOrder
                   ? 'ALREADY ADDED'
+                  : movedFrom === AppRoutes.CartPage && changeCTA
+                  ? 'ADD & PROCEED TO CART'
                   : isAddedToCart
-                  ? 'PROCEED TO CART '
+                  ? 'PROCEED TO CART'
                   : 'ADD TO CART'
               }
               onPress={() =>
                 isAlreadyPartOfOrder
-                  ? props.navigation.navigate(AppRoutes.TestsCart, {
+                  ? props.navigation.navigate(AppRoutes.CartPage, {
                       orderDetails: modifiedOrder,
                     })
+                  : movedFrom === AppRoutes.CartPage && changeCTA
+                  ? onPressAddToCart()
                   : isAddedToCart
-                  ? props.navigation.navigate(AppRoutes.TestsCart)
+                  ? isModify
+                    ? props.navigation.navigate(AppRoutes.CartPage, {
+                        orderDetails: modifiedOrder,
+                      })
+                    : props.navigation.navigate(AppRoutes.AddPatients)
                   : onPressAddToCart()
               }
+              style={showBottomBar ? { width: '70%' } : {}}
             />
           </StickyBottomComponent>
         </>
@@ -1310,7 +1388,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   descriptionCardOuterView: {
-    width: Dimensions.get('window').width * 0.9,
+    width: screenWidth * 0.9,
     ...theme.viewStyles.card(16, 4, 10, '#fff', 10),
     padding: 16,
     elevation: 10,
