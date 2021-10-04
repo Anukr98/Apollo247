@@ -61,7 +61,6 @@ import {
   nameFormater,
   navigateToScreenWithEmptyStack,
   aphConsole,
-  isSmallDevice,
   extractPatientDetails,
   removeWhiteSpaces,
   isSmallDevice,
@@ -131,8 +130,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
     string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
   ];
-  const ALL = 'All';
-
   const ALL = 'All';
 
   const {

@@ -260,7 +260,7 @@ export interface TestsProps
   }> {}
 
 export const Tests: React.FC<TestsProps> = (props) => {
-  const { setAddresses: setMedAddresses } = useShoppingCart();
+  const { setAddresses: setMedAddresses, pharmacyCircleAttributes } = useShoppingCart();
   const {
     cartItems,
     addCartItem,
@@ -302,7 +302,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   } = useAppCommonData();
 
   type Address = savePatientAddress_savePatientAddress_patientAddress;
-
+  const client = useApolloClient();
   const movedFrom = props.navigation.getParam('movedFrom');
   const homeScreenAttributes = props.navigation.getParam('homeScreenAttributes');
   const phyPrescriptionUploaded = props.navigation.getParam('phyPrescriptionUploaded') || [];
@@ -1893,7 +1893,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         const images = response as ImageCropPickerResponse[];
         const isGreaterThanSpecifiedSize = images.find(({ size }) => size > MAX_FILE_SIZE);
         if (isGreaterThanSpecifiedSize) {
-          Alert.alert(strings.common.uhOh, `Invalid File Size. File size must be less than 25MB.`);
+          Alert.alert(string.common.uhOh, `Invalid File Size. File size must be less than 25MB.`);
           return;
         }
         const uploadedImages = formatResponse(images);
