@@ -57,6 +57,27 @@ export async function DiagnosticLandingPageViewedEvent(
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, cleverTapEventAttributes);
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, cleverTapEventAttributes);
 }
+export function DiagnosticHomePageSearchItem(
+  currentPatient: any,
+  keyword: string,
+  results: any[],
+  isDiagnosticCircleSubscription?: boolean | undefined
+) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
+  if (keyword.length > 2) {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED]
+      | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_SEARCH_CLICKED] = {
+      ...getPatientAttributes,
+      'Keyword Entered': keyword,
+      '# Results appeared': results.length,
+      'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+    };
+
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED, eventAttributes);
+    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_SEARCH_CLICKED, eventAttributes);
+  }
+}
 
 export async function DiagnosticPinCodeClicked(
   currentPatient: any,
