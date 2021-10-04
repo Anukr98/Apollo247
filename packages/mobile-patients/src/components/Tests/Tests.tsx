@@ -1098,24 +1098,51 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const autoDetectLocation = () => {
     setPageLoading?.(true);
-    doRequestAndAccessLocationModified()
+    doRequestAndAccessLocationModified(false, true, false)
       .then((response) => {
-        setPageLoading!(false);
-        response && setDiagnosticLocation?.(response);
-        response && !locationDetails && setLocationDetails?.(response);
+        if (response) {
+          response && setDiagnosticLocation?.(response);
+          response && !locationDetails && setLocationDetails?.(response);
+        } else {
+          _enablePermissionFromSettings();
+        }
       })
       .catch((e) => {
-        setPageLoading?.(false);
+        if (Platform.OS == 'android') {
+          e === 'denied'
+            ? autoDetectLocation() //ask again
+            : e === 'restricted'
+            ? _enablePermissionFromSettings()
+            : null; // unable to fetch the location
+        } else {
+          e === 'denied' ? _enablePermissionFromSettings() : null; // unable to fetch the location
+        }
+
+        //if goes in error then show the prompt that we are unable to fetch your location. -> thrid view
         CommonBugFender('AutoDetectLocation_Tests', e);
-        e &&
-          typeof e == 'string' &&
-          !e.includes('denied') &&
-          showAphAlert?.({
-            title: string.common.uhOh,
-            description: e,
-          });
+      })
+      .finally(() => {
+        setPageLoading?.(false);
       });
   };
+
+  function _enablePermissionFromSettings() {
+    Alert.alert('Location', 'Enable location access from settings', [
+      {
+        text: 'Cancel',
+        onPress: () => {
+          AsyncStorage.setItem('settingsCalled', 'false');
+        },
+      },
+      {
+        text: 'Ok',
+        onPress: () => {
+          AsyncStorage.setItem('settingsCalled', 'true');
+          Linking.openSettings();
+        },
+      },
+    ]);
+  }
 
   async function setDefaultAddress(address: Address) {
     try {
