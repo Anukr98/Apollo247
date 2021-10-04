@@ -411,6 +411,14 @@ export const handleOpenURL = (event: any) => {
           id: linkId ? linkId : undefined,
         };
         break;
+
+      case 'testordersummary':
+      case 'test-order-summary':
+        return {
+          routeName: 'TestOrderSummary',
+          id: linkId ? linkId : undefined,
+        };
+        break;
       case 'payment':
         return {
           routeName: 'PaymentMethods',

@@ -60,6 +60,7 @@ import {
   downloadDiagnosticReport,
   isAddressLatLngInValid,
   removeWhiteSpaces,
+  doRequestAndAccessLocationModified,
   storagePermissions,
   getUserType,
   getCleverTapCircleMemberValues,
@@ -192,7 +193,6 @@ import {
   getDiagnosticOrdersListByMobile,
   getDiagnosticOrdersListByMobileVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
-// import { Cache } from "react-native-cache";
 const rankArr = ['1', '2', '3', '4', '5', '6'];
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
@@ -337,8 +337,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [patientOpenOrders, setPatientOpenOrders] = useState([] as any);
   const [patientClosedOrders, setPatientClosedOrders] = useState([] as any);
 
-  const [isCurrentScreen, setCurrentScreen] = useState<string>('');
-
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
   const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
   const defaultAddress = addresses?.find((item) => item?.defaultAddress);
@@ -348,6 +346,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [source, setSource] = useState<DIAGNOSTIC_PINCODE_SOURCE_TYPE>();
   const [showUnserviceablePopup, setUnserviceablePopup] = useState<boolean>(false);
   const [serviceableObject, setServiceableObject] = useState({} as any);
+  const [showNoLocationPopUp, setShowNoLocationPopUp] = useState<boolean>(false);
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const [clickedItem, setClickedItem] = useState<any>([]);
   const [expressSlotMsg, setExpressSlotMsg] = useState<string>('');
@@ -363,7 +362,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     },
     backend: AsyncStorage,
   });
-
   useEffect(() => {
     if (!(bannerData && bannerData?.length)) {
       setBannerDataToCache();
@@ -379,7 +377,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const banner_data = bannerData && bannerData?.length ? bannerData : [];
     await cache.set('banner_data', banner_data);
   };
-
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
       query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
@@ -486,11 +483,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         //if everything is null, then load it from hyderabad.
         saveDiagnosticLocation(
           formatAddressToLocation(
-            !!pharmacyLocation
-              ? pharmacyLocation
-              : !!locationDetails
-              ? locationDetails
-              : getDefaultLocation
+            !!pharmacyLocation ? pharmacyLocation : !!locationDetails ? locationDetails : null
           ),
           DIAGNOSTIC_PINCODE_SOURCE_TYPE.AUTO
         );
@@ -521,11 +514,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setBannerData && setBannerData([]); // default banners to be empty
       getUserBanners();
-      setCurrentScreen(AppRoutes.Tests); //to avoid showing non-serviceable prompt on medicine page
     });
-    const didBlur = props.navigation.addListener('didBlur', (payload) => {
-      setCurrentScreen('');
-    });
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {});
     return () => {
       didFocus && didFocus.remove();
       didBlur && didBlur.remove();
@@ -632,6 +622,21 @@ export const Tests: React.FC<TestsProps> = (props) => {
     fetchUserType();
   }, []);
 
+  useEffect(() => {
+    // getting diagnosticUserType from asyncStorage
+    const fetchUserType = async () => {
+      try {
+        const diagnosticUserType = await AsyncStorage.getItem('diagnosticUserType');
+        if (diagnosticUserType == null) {
+          fetchOrders();
+        }
+      } catch (error) {
+        fetchOrders();
+      }
+    };
+    fetchUserType();
+  }, []);
+
   const fetchOrders = async () => {
     //for checking whether user is new or repeat.
     try {
@@ -695,7 +700,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       const res: any = await getLandingPageBanners('diagnostic', Number(cityId));
       //if true then only show it.
       if (res?.data?.success) {
-        const bannerData = g(res, 'data', 'data');
+        const bannerData = res?.data?.data;
         setBanners(bannerData);
       } else {
         setBanners([]);
@@ -969,6 +974,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setDiagnosticLocationServiceable?.(true);
             setServiceabilityMsg('');
             setUnserviceablePopup(false);
+            setShowNoLocationPopUp(false);
             !!source &&
               DiagnosticPinCodeClicked(
                 currentPatient,
@@ -990,6 +996,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         getDiagnosticBanner(Number(obj?.cityId));
         getHomePageWidgets(obj?.cityId);
       } catch (error) {
+        setShowNoLocationPopUp(false);
         setPageLoading?.(false);
         CommonBugFender('fetchAddressServiceability_Tests', error);
         setLoadingContext?.(false);
@@ -997,6 +1004,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
         setSectionLoading(false);
         setBannerLoading(false);
       }
+    } else {
+      getDiagnosticBanner(AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID);
+      getHomePageWidgets(String(AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID));
+      setShowNoLocationPopUp(true);
     }
   }
 
@@ -1015,6 +1026,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setDiagnosticServiceabilityData?.(obj);
     setPageLoading?.(false);
     setDiagnosticLocationServiceable?.(false);
+    setShowNoLocationPopUp(false);
     setUnserviceablePopup(true);
     setServiceabilityMsg(string.diagnostics.nonServiceableMsg1);
     !!source &&
@@ -1056,10 +1068,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
   >([]);
 
   const getUserSubscriptionsByStatus = async () => {
-    setPageLoading!(true);
+    setPageLoading?.(true);
     try {
       const query: GetSubscriptionsOfUserByStatusVariables = {
-        mobile_number: g(currentPatient, 'mobileNumber'),
+        mobile_number: currentPatient?.mobileNumber,
         status: ['active', 'deferred_inactive'],
       };
       const res = await client.query<GetSubscriptionsOfUserByStatus>({
@@ -1068,7 +1080,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         variables: query,
       });
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
-      setPageLoading!(false);
+      setPageLoading?.(false);
       if (data) {
         if (data?.APOLLO?.[0]._id && data?.APOLLO?.[0]?.status !== 'disabled') {
           AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
@@ -1104,7 +1116,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }
       }
     } catch (error) {
-      setPageLoading!(false);
+      setPageLoading?.(false);
       CommonBugFender('Diagnositic_Landing_Page_Tests_GetSubscriptionsOfUserByStatus', error);
     }
   };
@@ -1220,6 +1232,59 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setUnserviceablePopup(false);
   }
 
+  function _onPressLocateMe() {
+    setShowNoLocationPopUp(false);
+    autoDetectLocation();
+  }
+
+  const autoDetectLocation = () => {
+    setPageLoading?.(true);
+    doRequestAndAccessLocationModified(false, true, false)
+      .then((response) => {
+        if (response) {
+          response && setDiagnosticLocation?.(response);
+          response && !locationDetails && setLocationDetails?.(response);
+        } else {
+          _enablePermissionFromSettings();
+        }
+      })
+      .catch((e) => {
+        if (Platform.OS == string.common.android) {
+          e === string.diagnosticsLocation.denied
+            ? autoDetectLocation() //ask again
+            : e === string.diagnosticsLocation.restricted
+            ? _enablePermissionFromSettings()
+            : null; // unable to fetch the location
+        } else {
+          e === string.diagnosticsLocation.denied ? _enablePermissionFromSettings() : null; // unable to fetch the location
+        }
+
+        //if goes in error then show the prompt that we are unable to fetch your location. -> thrid view
+        CommonBugFender('AutoDetectLocation_Tests', e);
+      })
+      .finally(() => {
+        setPageLoading?.(false);
+      });
+  };
+
+  function _enablePermissionFromSettings() {
+    Alert.alert('Location', 'Enable location access from settings', [
+      {
+        text: 'Cancel',
+        onPress: () => {
+          AsyncStorage.setItem('settingsCalled', 'false');
+        },
+      },
+      {
+        text: 'Ok',
+        onPress: () => {
+          AsyncStorage.setItem('settingsCalled', 'true');
+          Linking.openSettings();
+        },
+      },
+    ]);
+  }
+
   async function setDefaultAddress(address: Address) {
     try {
       const isSelectedAddressWithNoLatLng = isAddressLatLngInValid(address);
@@ -1295,28 +1360,38 @@ export const Tests: React.FC<TestsProps> = (props) => {
       diagnosticLocation?.city || diagnosticLocation?.state || '',
       18
     )} ${!!diagnosticLocation?.pincode ? diagnosticLocation?.pincode : ''}`;
+    const hasDiagnosticLocationUndefinedValues =
+      !!diagnosticLocation?.state && !!diagnosticLocation?.state && !!diagnosticLocation?.pincode;
     return (
       <View style={{ paddingLeft: 15, marginTop: 3.5 }}>
         {hasLocation ? (
           <TouchableOpacity
-            style={{ marginTop: -7.5 }}
+            style={{
+              marginTop: -7.5,
+            }}
             onPress={() => {
               setLocationPopup(true);
               setUnserviceablePopup(false);
             }}
           >
-            <Text numberOfLines={1} style={styles.deliverToText}>
-              {string.diagnostics.collectionFromText}
-            </Text>
-            <View style={{ flexDirection: 'row' }}>
-              <View>
-                <Text style={styles.locationText}>{nameFormater(location, 'title')}</Text>
-                <Spearator style={styles.locationTextUnderline} />
-              </View>
-              <View style={styles.dropdownGreenContainer}>
-                <DropdownGreen />
-              </View>
-            </View>
+            {hasDiagnosticLocationUndefinedValues ? (
+              <>
+                <Text numberOfLines={1} style={styles.deliverToText}>
+                  {string.diagnostics.collectionFromText}
+                </Text>
+                <View style={{ flexDirection: 'row' }}>
+                  <View>
+                    <Text style={styles.locationText}>{nameFormater(location, 'title')}</Text>
+                    <Spearator style={styles.locationTextUnderline} />
+                  </View>
+                  <View style={styles.dropdownGreenContainer}>
+                    <DropdownGreen />
+                  </View>
+                </View>
+              </>
+            ) : (
+              renderLocateMe()
+            )}
           </TouchableOpacity>
         ) : (
           <LocationOff />
@@ -1326,30 +1401,67 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-  const renderNonServiceableToolTip = () => {
+  const renderLocateMe = () => {
+    return (
+      <View style={styles.rowCenter}>
+        <TouchableOpacity
+          onPress={() => _onPressLocateMe()}
+          style={styles.locateMeTouch}
+          activeOpacity={1}
+        >
+          <Text style={styles.locateMeText}>Locate Me</Text>
+        </TouchableOpacity>
+        <View style={styles.dropdownGreenContainer}>
+          <DropdownGreen />
+        </View>
+      </View>
+    );
+  };
+
+  const renderNonServiceableToolTip = (isNoLocation: boolean) => {
     return (
       <TouchableOpacity
-        onPress={() => setUnserviceablePopup(false)}
-        style={{
-          position: 'absolute',
-          height: winHeight,
-          width: winWidth,
-        }}
+        onPress={() =>
+          isNoLocation ? setShowNoLocationPopUp(false) : setUnserviceablePopup(false)
+        }
+        style={styles.toolTipTouch}
       >
-        <View style={styles.nonServiceableToolTip}>
-          <PolygonIcon style={styles.toolTipIcon} />
+        <View
+          style={[
+            styles.nonServiceableToolTip,
+            isNoLocation && {
+              backgroundColor: theme.colors.TURQUOISE_LIGHT_BLUE,
+              top: Platform.OS == 'ios' ? winHeight / 8 : winHeight / (winHeight > 700 ? 11 : 9),
+              left: winWidth / 7,
+              width: winWidth / 2,
+            },
+          ]}
+        >
+          <PolygonIcon
+            style={[
+              styles.toolTipIcon,
+              isNoLocation && { tintColor: theme.colors.TURQUOISE_LIGHT_BLUE },
+            ]}
+          />
           <View style={{ padding: 12 }}>
             <Text style={styles.unserviceableHeading}>
-              {string.addressSelection.unserviceableHeading}
+              {isNoLocation ? 'No location selected' : string.addressSelection.unserviceableHeading}
             </Text>
-            <Text style={styles.unserviceableMsg}>{string.addressSelection.unserviceableText}</Text>
+            <Text style={styles.unserviceableMsg}>
+              {isNoLocation ? 'Select your location' : string.addressSelection.unserviceableText}
+            </Text>
 
-            <View style={{ marginTop: 12 }}>
+            <View style={{ marginTop: isNoLocation ? 9 : 12 }}>
               <Button
-                style={styles.unserviceableButton}
+                style={[
+                  styles.unserviceableButton,
+                  isNoLocation && {
+                    backgroundColor: 'rgb(51,150,177)',
+                  },
+                ]}
                 titleTextStyle={styles.unserviceableCTAStyle}
-                title={'CHANGE LOCATION'}
-                onPress={() => _onPressChangeLocation()}
+                title={isNoLocation ? 'SELECT LOCATION' : 'CHANGE LOCATION'}
+                onPress={() => (isNoLocation ? _onPressLocateMe() : _onPressChangeLocation())}
               />
             </View>
           </View>
@@ -2756,7 +2868,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
           </>
         )}
         {showLocationPopup && renderLocationSearch()}
-        {showUnserviceablePopup && renderNonServiceableToolTip()}
+        {showUnserviceablePopup && renderNonServiceableToolTip(false)}
+        {showNoLocationPopUp && renderNonServiceableToolTip(true)}
       </SafeAreaView>
       {showbookingStepsModal ? renderBookingStepsModal() : null}
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
@@ -3072,8 +3185,8 @@ const styles = StyleSheet.create({
     height: 30,
     alignSelf: 'flex-end',
     backgroundColor: '#EF6D6D',
-    borderRadius: 0,
     width: winWidth / 3.5,
+    borderRadius: 10,
   },
   unserviceableCTAStyle: {
     ...theme.viewStyles.text('SB', isIphone5s() ? 9 : 10, theme.colors.BUTTON_TEXT),
@@ -3093,4 +3206,24 @@ const styles = StyleSheet.create({
   },
   expressSlotIcon: { width: 37, height: 37, resizeMode: 'contain' },
   expressSlotText: { ...theme.viewStyles.text('SB', 14, colors.WHITE, 1, 18), marginLeft: 16 },
+  locateMeTouch: {
+    zIndex: 1,
+    height: 30,
+    marginTop: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderColor: colors.APP_YELLOW,
+    borderWidth: 1,
+    borderRadius: 3,
+    padding: 3,
+    paddingTop: 0,
+    paddingBottom: 0,
+  },
+  rowCenter: { flexDirection: 'row', alignItems: 'center' },
+  locateMeText: { ...theme.viewStyles.text('SB', 14, colors.APP_YELLOW, 1, 18) },
+  toolTipTouch: {
+    position: 'absolute',
+    height: winHeight,
+    width: winWidth,
+  },
 });
