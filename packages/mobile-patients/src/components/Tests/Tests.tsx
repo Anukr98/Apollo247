@@ -1283,14 +1283,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }
       })
       .catch((e) => {
-        if (Platform.OS == 'android') {
-          e === 'denied'
+        if (Platform.OS == string.common.android) {
+          e === string.diagnosticsLocation.denied
             ? autoDetectLocation() //ask again
-            : e === 'restricted'
+            : e === string.diagnosticsLocation.restricted
             ? _enablePermissionFromSettings()
             : null; // unable to fetch the location
         } else {
-          e === 'denied' ? _enablePermissionFromSettings() : null; // unable to fetch the location
+          e === string.diagnosticsLocation.denied ? _enablePermissionFromSettings() : null; // unable to fetch the location
         }
 
         //if goes in error then show the prompt that we are unable to fetch your location. -> thrid view

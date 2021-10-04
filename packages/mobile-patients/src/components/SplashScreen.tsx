@@ -1153,22 +1153,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Diagnostics_Default_Address',
       PROD: 'Diagnostics_Default_Address',
     },
-    CirclePlanPreselected: {
-      QA: 'QA_Is_Circle_Preselected',
-      PROD: 'Is_Circle_Preselected',
-    },
-    CircleFacts: {
-      QA: 'QA_Circle_Facts',
-      PROD: 'Circle_Facts',
-    },
-    Enable_Cred_WebView_Flow: {
-      QA: 'QA_Enable_Cred_WebView_Flow',
-      PROD: 'Enable_Cred_WebView_Flow',
-    },
-    Diagnostics_Default_Location: {
-      QA: 'QA_Diagnostics_Default_Address',
-      PROD: 'Diagnostics_Default_Address',
-    },
   };
 
   const getKeyBasedOnEnv = (

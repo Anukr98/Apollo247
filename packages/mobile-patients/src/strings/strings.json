@@ -160,7 +160,9 @@
     "UPI": "UPI",
     "VPA": "VPA-UPI",
     "Card": "Card",
-    "Cash": "Cash"
+    "Cash": "Cash",
+    "android": "android",
+    "ios":"ios"
   },
   "diagnosticsLocation":{
     "savedAddressText": "Saved Addresses",
@@ -169,7 +171,9 @@
     "unableToGetPermission":"Unable to get Permission",
     "unableToFetchLocation":"We are unable to fetch your location",
     "permissionDeniedCTA":"grant",
-    "unableToGetPermissionCTA": "turn on"
+    "unableToGetPermissionCTA": "turn on",
+    "denied":"denied",
+    "restricted": "restricted"
   },
   "components": {
     "medicineDetails": {
