@@ -733,7 +733,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       </View>
       {renderMatchingTests()}
       {showGoToCart ? renderStickyBottom() : null}
-      {/* <View style={{ height: 20 }} /> */}
     </SafeAreaView>
   );
 };

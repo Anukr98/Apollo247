@@ -99,13 +99,14 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
 
   const renderTestsIncluded = () => {
     return (
-      <View>
+      <>
         {testPramaterDataCount > 0 && (
           <Text style={styles.greyedOutTextStyle}>
-            {testPramaterDataCount} {testPramaterDataCount > 1 ? 'Tests' : 'Test'}+ included
+            {testPramaterDataCount}{' '}
+            {testPramaterDataCount > 1 ? string.diagnostics.tests : string.diagnostics.test}
           </Text>
         )}
-      </View>
+      </>
     );
   };
 
@@ -143,7 +144,7 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
       <>
         {aliasNames ? (
           <Text style={styles.greyedOutItalicsTextStyle} numberOfLines={1}>
-            Also Known as: {data?.diagnostic_item_alias_names}
+            {string.diagnostics.alsoKnownAs} {data?.diagnostic_item_alias_names}
           </Text>
         ) : null}
       </>
@@ -202,15 +203,15 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
       >
         {isAlreadyPartOfOrder ? (
           <View style={styles.removeCtaView}>
-            <Text style={styles.removeCta}>ALREADY ADDED</Text>
+            <Text style={styles.removeCta}>{string.diagnostics.alreadyAdded}</Text>
           </View>
         ) : isAddedToCart ? (
           <View style={styles.removeCtaView}>
-            <Text style={styles.removeCta}>REMOVE</Text>
+            <Text style={styles.removeCta}>{string.diagnostics.removeFromCart}</Text>
           </View>
         ) : (
           <View style={styles.addCtaView}>
-            <Text style={styles.addCta}>ADD TO CART</Text>
+            <Text style={styles.addCta}>{string.diagnostics.addToCart}</Text>
           </View>
         )}
       </TouchableOpacity>
@@ -253,7 +254,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   addCta: {
-    ...theme.viewStyles.text('B', isSmallDevice ? 12 : 13, '#FCA317', 1, 18, 0),
+    ...theme.viewStyles.text('B', isSmallDevice ? 12 : 13, colors.LIGHT_ORANGE_YELLOW, 1, 18, 0),
     textTransform: 'uppercase',
     textAlign: 'center',
   },
@@ -292,8 +293,8 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   removeCtaView: {
-    backgroundColor: '#FF774B',
-    borderColor: '#FF774B',
+    backgroundColor: colors.ORANGE,
+    borderColor: colors.ORANGE,
     borderRadius: 10,
     borderWidth: 1,
     padding: 6,
