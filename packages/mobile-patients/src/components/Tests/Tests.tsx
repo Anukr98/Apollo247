@@ -613,7 +613,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setIsPrescriptionGallery(false);
       setIsPrescriptionUpload(true);
     }
-  }, [props.navigation])
+  }, [props.navigation]);
 
   useEffect(() => {
     // getting diagnosticUserType from asyncStorage
@@ -1603,68 +1603,71 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   };
 
+  function _handleNavigationFromBanner(item: any, url: string) {
+    //for rtpcr - drive through - open webview
+    if (item?.redirectUrlText === 'WebView') {
+      DiagnosticBannerClick(slideIndex + 1, Number(item?.itemId || item?.id), item?.bannerTitle);
+      try {
+        const openUrl = url || AppConfig.Configuration.RTPCR_Google_Form;
+        props.navigation.navigate(AppRoutes.CovidScan, {
+          covidUrl: openUrl,
+        });
+      } catch (e) {
+        aphConsole.log(e);
+        CommonBugFender(`renderSliderItem__handleNavigationFromBanner_${AppRoutes.Tests}`, e);
+      }
+    }
+    //redirect to details page
+    else {
+      const data = item?.redirectUrl?.split('=')?.[1];
+      const extractData = data?.replace('apollopatients://', '');
+      const getNavigationDetails = extractData?.split('?');
+      const route = getNavigationDetails?.[0]?.toLowerCase();
+      let itemId = '';
+      try {
+        if (getNavigationDetails?.length >= 2) {
+          itemId = getNavigationDetails?.[1]?.split('&');
+          if (itemId?.length > 0) {
+            itemId = itemId?.[0];
+          }
+        }
+      } catch (error) {}
+      if (route == 'testdetails') {
+        DiagnosticBannerClick(
+          slideIndex + 1,
+          Number(itemId),
+          item?.bannerTitle,
+          currentPatient,
+          isDiagnosticCircleSubscription
+        );
+        props.navigation.navigate(AppRoutes.TestDetails, {
+          itemId: itemId,
+          comingFrom: AppRoutes.Tests,
+        });
+      } else if (route == 'testlisting') {
+        DiagnosticBannerClick(
+          slideIndex + 1,
+          Number(0),
+          item?.bannerTitle,
+          currentPatient,
+          isDiagnosticCircleSubscription
+        );
+        props.navigation.navigate(AppRoutes.TestListing, {
+          movedFrom: 'deeplink',
+          widgetName: itemId, //name,
+          cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+        });
+      }
+    }
+  }
+
   const renderSliderItem = ({ item, index }: { item: any; index: number }) => {
     const handleOnPress = () => {
-      if (item?.redirectUrl && item?.redirectUrl != '') {
-        //for rtpcr - drive through - open webview
-        if (item?.redirectUrlText === 'WebView') {
-          DiagnosticBannerClick(
-            slideIndex + 1,
-            Number(item?.itemId || item?.id),
-            item?.bannerTitle
-          );
-          try {
-            const openUrl = item?.redirectUrl || AppConfig.Configuration.RTPCR_Google_Form;
-            props.navigation.navigate(AppRoutes.CovidScan, {
-              covidUrl: openUrl,
-            });
-          } catch (e) {
-            aphConsole.log(e);
-            CommonBugFender('renderSliderItem_handleOnPress_Tests', e);
-          }
-        }
-        //redirect to details page
-        else {
-          const data = item?.redirectUrl?.split('=')?.[1];
-          const extractData = data?.replace('apollopatients://', '');
-          const getNavigationDetails = extractData?.split('?');
-          const route = getNavigationDetails?.[0]?.toLowerCase();
-          let itemId = '';
-          try {
-            if (getNavigationDetails?.length >= 2) {
-              itemId = getNavigationDetails?.[1]?.split('&');
-              if (itemId.length > 0) {
-                itemId = itemId[0];
-              }
-            }
-          } catch (error) {}
-          if (route == 'testdetails') {
-            DiagnosticBannerClick(
-              slideIndex + 1,
-              Number(itemId),
-              item?.bannerTitle,
-              currentPatient,
-              isDiagnosticCircleSubscription
-            );
-            props.navigation.navigate(AppRoutes.TestDetails, {
-              itemId: itemId,
-              comingFrom: AppRoutes.Tests,
-            });
-          } else if (route == 'testlisting') {
-            DiagnosticBannerClick(
-              slideIndex + 1,
-              Number(0),
-              item?.bannerTitle,
-              currentPatient,
-              isDiagnosticCircleSubscription
-            );
-            props.navigation.navigate(AppRoutes.TestListing, {
-              movedFrom: 'deeplink',
-              widgetName: itemId, //name,
-              cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
-            });
-          }
-        }
+      if (item?.newredirectUrl && item?.newredirectUrl != '') {
+        _handleNavigationFromBanner(item, item?.newredirectUrl);
+      } else if (item?.redirectUrl && item?.redirectUrl != '') {
+        //added for older versions + fallback
+        _handleNavigationFromBanner(item, item?.redirectUrl);
       }
     };
     return (
@@ -2508,7 +2511,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }
 
   function navigateToTrackingScreen(item: any) {
-    DiagnosticTrackOrderViewed(currentPatient, item?.orderStatus, item?.displayId, 'Home', isDiagnosticCircleSubscription);
+    DiagnosticTrackOrderViewed(
+      currentPatient,
+      item?.orderStatus,
+      item?.displayId,
+      'Home',
+      isDiagnosticCircleSubscription
+    );
     props.navigation.push(AppRoutes.YourOrdersTest, {
       isTest: true,
     });
@@ -2526,21 +2535,45 @@ export const Tests: React.FC<TestsProps> = (props) => {
         if (!!getUrl && getUrl != '') {
           Linking.canOpenURL(getUrl).then((supported: any) => {
             if (supported) {
-              DiagnosticTrackPhleboClicked(orderId, 'Home', currentPatient, 'Yes', isDiagnosticCircleSubscription);
+              DiagnosticTrackPhleboClicked(
+                orderId,
+                'Home',
+                currentPatient,
+                'Yes',
+                isDiagnosticCircleSubscription
+              );
               Linking.openURL(getUrl);
             } else {
-              DiagnosticTrackPhleboClicked(orderId, 'Home', currentPatient, 'No', isDiagnosticCircleSubscription);
+              DiagnosticTrackPhleboClicked(
+                orderId,
+                'Home',
+                currentPatient,
+                'No',
+                isDiagnosticCircleSubscription
+              );
               CommonBugFender('Tests_getPhelboDetails_Unable_to_open_url', getUrl);
             }
           });
         } else {
-          DiagnosticTrackPhleboClicked(orderId, 'Home', currentPatient, 'No',isDiagnosticCircleSubscription);
+          DiagnosticTrackPhleboClicked(
+            orderId,
+            'Home',
+            currentPatient,
+            'No',
+            isDiagnosticCircleSubscription
+          );
           navigateToTrackingScreen(order);
         }
       }
       setLoadingContext?.(false);
     } catch (error) {
-      DiagnosticTrackPhleboClicked(orderId, 'Home', currentPatient, 'No', isDiagnosticCircleSubscription);
+      DiagnosticTrackPhleboClicked(
+        orderId,
+        'Home',
+        currentPatient,
+        'No',
+        isDiagnosticCircleSubscription
+      );
       setLoadingContext?.(false);
       CommonBugFender('Tests_onPressOrderStatusOption', error);
     }
