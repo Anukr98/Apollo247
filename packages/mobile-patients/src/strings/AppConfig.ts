@@ -285,6 +285,7 @@ const appStaticVariables = {
   CIRCLE_PLAN_PRESELECTED: false,
   CIRCLE_FACTS : "<b>#CircleFact:</b> On an average Circle members <b>save upto ₹400 every month</b>",
   enableCredWebView: false,
+  DIAGNOSTICS_REPORT_TAT_BREACH_TEXT: "Reports are delayed by a few hours, but should be available any time soon."
 };
 
 const DEV_top_specialties = [

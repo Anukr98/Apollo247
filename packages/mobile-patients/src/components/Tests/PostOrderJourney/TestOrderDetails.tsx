@@ -428,10 +428,15 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const renderOrderReportTat = (reportTat: any) => {
+    const isTatBreach = moment().isSameOrAfter(
+      orderDetails?.attributesObj?.expectedReportGenerationTime
+    );
     return (
       <View style={styles.reportTatBottomview}>
         <ClockIcon style={styles.clockIconStyle} />
-        <Text style={styles.reportOrderTextStyle}> {reportTat} </Text>
+        <Text style={styles.reportOrderTextStyle}>
+          {isTatBreach ? AppConfig.Configuration.DIAGNOSTICS_REPORT_TAT_BREACH_TEXT : reportTat}
+        </Text>
       </View>
     );
   };

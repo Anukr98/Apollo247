@@ -30,6 +30,7 @@ import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUti
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { isIphone5s, setBugFenderLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
+  AppConfig,
   DIAGNOSTIC_ORDER_FAILED_STATUS,
   DIAGNOSTIC_ORDER_FOR_PREPDATA,
   DIAGNOSTIC_SHOW_OTP_STATUS,
@@ -518,6 +519,9 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     ) : null;
   };
   const showReportTat = () => {
+    const isTatBreach =
+      !!props?.orderAttributesObj?.expectedReportGenerationTime &&
+      moment().isSameOrAfter(props?.orderAttributesObj?.expectedReportGenerationTime);
     const report = !!props?.orderAttributesObj?.reportTATMessage
       ? props?.orderAttributesObj?.reportTATMessage
       : !!props?.orderAttributesObj?.reportGenerationTime
@@ -532,7 +536,9 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         {report ? (
           <View style={styles.reporttatContainer}>
             <ClockIcon />
-            <Text style={styles.reportTextStyle}>{`${report}`}</Text>
+            <Text style={styles.reportTextStyle}>{`${
+              isTatBreach ? AppConfig.Configuration.DIAGNOSTICS_REPORT_TAT_BREACH_TEXT : report
+            }`}</Text>
           </View>
         ) : null}
         {prepData ? (

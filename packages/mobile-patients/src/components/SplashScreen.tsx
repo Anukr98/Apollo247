@@ -1153,6 +1153,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Diagnostics_Default_Address',
       PROD: 'Diagnostics_Default_Address',
     },
+    Diagnostics_Report_Tat_Breach_Text: {
+      QA: 'QA_Diagnostics_Report_Tat_Breach_Text',
+      PROD: 'Diagnostics_Report_Tat_Breach_Text',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1453,6 +1457,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) =>
           JSON.parse(config.getString(key) || 'null') ||
           AppConfig.Configuration.DIAGNOSTIC_DEFAULT_LOCATION
+      );
+
+      setAppConfig(
+        'Diagnostics_Report_Tat_Breach_Text',
+        'DIAGNOSTICS_REPORT_TAT_BREACH_TEXT',
+        (key) => config.getString(key)
       );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
