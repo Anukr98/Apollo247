@@ -21,7 +21,6 @@ export enum AppEnv {
   QA6 = 'QA6',
 }
 
-
 const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
@@ -263,28 +262,30 @@ const appStaticVariables = {
     },
   ],
   DIAGNOSTIC_DEFAULT_ICON: 'https://newassets.apollo247.com/organs/ic_blood.png',
-  DIAGNOSTIC_DEFAULT_LOCATION : {
-    displayName: "Hyderabad",
-      latitude: 17.3202127,
-      longitude: 78.4020322,
-      area: "",
-      city: "Hyderabad",
-      state: "Telangana",
-      stateCode: "TG",
-      country: "India",
-      pincode: "500030"
+  DIAGNOSTIC_DEFAULT_LOCATION: {
+    displayName: 'Hyderabad',
+    latitude: 17.3202127,
+    longitude: 78.4020322,
+    area: '',
+    city: 'Hyderabad',
+    state: 'Telangana',
+    stateCode: 'TG',
+    country: 'India',
+    pincode: '500030',
   },
-  DEFAULT_ITEM_SELECTION_FLAG : true, 
+  DEFAULT_ITEM_SELECTION_FLAG: true,
   Diagnostics_Help_NonOrder_Queries: [
     '96b606f4-dd13-46ff-8bce-85315efee053',
     '78c2dc50-dc16-44c6-bd2d-d4b14c97b521',
     '10788a46-512c-41c0-8c59-e31ff7eebbe4',
   ],
-  DEFAULT_PHELBO_ETA : 45,
-  MAX_PATIENT_SELECTION : 6,
+  DEFAULT_PHELBO_ETA: 45,
+  MAX_PATIENT_SELECTION: 6,
   CIRCLE_PLAN_PRESELECTED: false,
-  CIRCLE_FACTS : "<b>#CircleFact:</b> On an average Circle members <b>save upto ₹400 every month</b>",
+  CIRCLE_FACTS:
+    '<b>#CircleFact:</b> On an average Circle members <b>save upto ₹400 every month</b>',
   enableCredWebView: false,
+  TrueCaller_Login_Enabled: false,
 };
 
 const DEV_top_specialties = [
@@ -1354,12 +1355,12 @@ export const DIAGNOSTIC_LAB_TESTING_STATUS = [
 ];
 
 export const DIAGNOSTIC_SAMPLE_COLLECTED_STATUS = [
-    DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
-    DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
-    DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
-    DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
-    DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
-]
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
+];
 
 export const DIAGNOSTIC_VERTICAL_STATUS_TO_SHOW = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED,
@@ -1464,8 +1465,8 @@ export const DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY = [
 export const DIAGNOSTIC_SUB_STATUS_TO_SHOW = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
-  DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING
-]
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
+];
 
 export const TestsNewFeedbackData = {
   options: [
@@ -1603,7 +1604,7 @@ export const DIAGNOSTIC_ONLINE_PAYMENT_STATUS = [
 export const DIAGNOSTIC_EDIT_PROFILE_ARRAY = [
   DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
   DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
-]
+];
 
 type SpecialitiesType = {
   [key: string]: string[];
