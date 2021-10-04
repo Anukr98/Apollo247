@@ -3,7 +3,7 @@ import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/Carousel
 import { getUserBannersList } from '@aph/mobile-patients/src/helpers/clientCalls';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
+import { NavigationScreenProp, NavigationRoute, NavigationScreenProps } from 'react-navigation';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -17,7 +17,9 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
-export interface CircleBannerPDPProps {}
+export interface CircleBannerPDPProps extends NavigationScreenProps {
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>;
+}
 
 export const CircleBannerPDP: React.FC<CircleBannerPDPProps> = (props) => {
   const { bannerData, setBannerData } = useAppCommonData();

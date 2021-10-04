@@ -1205,7 +1205,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   setShowSubstituteInfo={setShowSubstituteInfo}
                 />
               </View>
-              <CircleBannerPDP />
+              <CircleBannerPDP navigation={props.navigation} />
               <PharmaManufacturer
                 manufacturer={medicineDetails?.manufacturer}
                 composition={medicineDetails?.PharmaOverview?.[0]?.Composition || composition}
