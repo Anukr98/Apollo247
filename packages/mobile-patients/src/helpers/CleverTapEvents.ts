@@ -1629,8 +1629,8 @@ export interface CleverTapEvents {
   [CleverTapEventName.DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED]: {
     Type: 'Category' | 'Widget';
     Source: 'Home' | 'Deeplink' | 'Details page' | 'Cart page';
-    'Category Name': '';
-    'Section name': '';
+    'Category Name': string;
+    'Section name': string;
   };
   [CleverTapEventName.DIAGNOSTIC_PRESCRIPTION_SUBMITTED]: {
     Source: string;
