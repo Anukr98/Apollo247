@@ -1157,6 +1157,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Diagnostics_Report_Tat_Breach_Text',
       PROD: 'Diagnostics_Report_Tat_Breach_Text',
     },
+    TrueCaller_Login_Enabled: {
+      QA: 'TrueCaller_Login_Enabled_QA',
+      PROD: 'TrueCaller_Login_Enabled_PROD',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1414,6 +1418,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) => config.getString(key)
       );
       setAppConfig('Enable_Cred_WebView_Flow', 'enableCredWebView', (key) =>
+        config.getBoolean(key)
+      );
+
+      setAppConfig('TrueCaller_Login_Enabled', 'TrueCaller_Login_Enabled', (key) =>
         config.getBoolean(key)
       );
 
