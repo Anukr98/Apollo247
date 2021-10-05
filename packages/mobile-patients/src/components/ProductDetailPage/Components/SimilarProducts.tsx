@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { ProductList } from '@aph/mobile-patients/src/components/Medicines/ProductList';
-import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { ProductUpSellingCard } from '@aph/mobile-patients/src/components/Medicines/ProductUpSellingCard';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -49,7 +49,11 @@ export const SimilarProducts: React.FC<SimilarProductsProps> = (props) => {
             ? 'Similar Widget'
             : 'Pharmacy PDP'
         }
-        movedFrom={ProductPageViewedSource.SIMILAR_PRODUCTS}
+        movedFrom={
+          isSubstituteProducts
+            ? ProductPageViewedSource.PDP_ALL_SUSBTITUTES
+            : ProductPageViewedSource.SIMILAR_PRODUCTS
+        }
         contentContainerStyle={{ marginLeft: -18 }}
       />
     </View>

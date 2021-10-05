@@ -2236,6 +2236,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             props.navigation.navigate(AppRoutes.SpecialOffersScreen, {
               movedFrom: 'home',
             });
+            const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_SPECIAL_OFFERS_CLICKED] = {
+              'Nav src': 'Pharmacy Home',
+            };
+            postCleverTapEvent(
+              CleverTapEventName.PHARMACY_SPECIAL_OFFERS_CLICKED,
+              cleverTapEventAttributes
+            );
           }}
         />
         {sectionsView}

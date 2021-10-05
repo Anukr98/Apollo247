@@ -636,7 +636,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     }
   };
 
-  function _onPressBackButton() {}
+  function _onPressBack() {}
 
   function _onPressAddPatients() {
     //navigate to add a member screen
@@ -645,7 +645,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       isPoptype: true,
       mobileNumber: currentPatient?.mobileNumber,
       onNewProfileAdded: onNewProfileAdded,
-      onPressBackButton: _onPressBackButton,
+      onPressBackButton: _onPressBack(),
     });
   }
 
