@@ -53,7 +53,7 @@ export const TestListingHeader: React.FC<Props> = ({ navigation, movedFrom, head
     const cartItemsCount = cartItems?.length + diagnosticCartItems?.length;
     const onPressCartIcon = () => {
       if (!!modifiedOrder && !isEmptyObject(modifiedOrder)) {
-        navigation.navigate(AppRoutes.TestsCart, {
+        navigation.navigate(AppRoutes.CartPage, {
           orderDetails: modifiedOrder,
         });
       } else {

@@ -23,7 +23,7 @@ import {
 } from 'react-native';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { DisclaimerSection } from '@aph/mobile-patients/src/components/Tests/components/DisclaimerSection';
+import DisclaimerSection from '@aph/mobile-patients/src/components/Tests/components/DisclaimerSection';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
   getTestOrderStatusText,

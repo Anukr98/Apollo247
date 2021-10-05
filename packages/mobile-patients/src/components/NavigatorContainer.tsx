@@ -87,7 +87,6 @@ import { SearchTestScene } from '@aph/mobile-patients/src/components/Tests/Searc
 import { YourOrdersTest } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/YourOrdersTests';
 import { OrderedTestStatus } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/OrderedTestStatus';
 import { TestOrderDetails } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/TestOrderDetails';
-import { ClinicSelection } from '@aph/mobile-patients/src/components/Tests/ClinicSelection';
 import {
   CommonLogEvent,
   CommonBugFender,
@@ -134,6 +133,10 @@ import MyOrdersScreen from '@aph/mobile-patients/src/components/MyOrders/MyOrder
 import { TestRatingScreen } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/TestRatingScreen';
 import { SlotSelection } from '@aph/mobile-patients/src/components/Consult/SlotSelection';
 import { VaccineBookingScreen } from '@aph/mobile-patients/src/components/Vaccination/VaccineBookingScreen';
+import { AddPatients } from '@aph/mobile-patients/src/components/Tests/TestCartPage/AddPatients';
+import { AddressSlotSelection } from '@aph/mobile-patients/src/components/Tests/TestCartPage/AddressSlotSelection';
+import { CartPage } from '@aph/mobile-patients/src/components/Tests/TestCartPage/CartPage';
+import { ReviewOrder } from '@aph/mobile-patients/src/components/Tests/TestCartPage/ReviewOrder';
 import { VaccineBookingConfirmationScreen } from '@aph/mobile-patients//src/components/Vaccination/VaccineBookingConfirmationScreen';
 import { BookedVaccineScreen } from '@aph/mobile-patients//src/components/Vaccination/BookedVaccineScreen';
 import { ActivateCorporateMembership } from '@aph/mobile-patients//src/components/Vaccination/ActivateCorporateMembership';
@@ -240,7 +243,6 @@ export enum AppRoutes {
   YourOrdersTest = 'YourOrdersTest',
   OrderedTestStatus = 'OrderedTestStatus',
   TestOrderDetails = 'TestOrderDetails',
-  ClinicSelection = 'ClinicSelection',
   RenderPdf = 'RenderPdf',
   Tests = 'Tests',
   CovidScan = 'CovidScan',
@@ -287,6 +289,10 @@ export enum AppRoutes {
   ManagePayments = 'ManagePayments',
   TestReportViewScreen = 'TestReportViewScreen',
   CowinRegistration = 'CowinRegistration',
+  AddPatients = 'AddPatients',
+  AddressSlotSelection = 'AddressSlotSelection',
+  CartPage = 'CartPage',
+  ReviewOrder = 'ReviewOrder',
   VaccinationScreen = 'VaccinationScreen',
   VaccinationDoseScreen = 'VaccinationDoseScreen',
   AddVaccinationRecord = 'AddVaccinationRecord',
@@ -587,9 +593,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.TestOrderDetails]: {
     screen: TestOrderDetails,
   },
-  [AppRoutes.ClinicSelection]: {
-    screen: ClinicSelection,
-  },
   [AppRoutes.RenderPdf]: {
     screen: RenderPdf,
   },
@@ -725,6 +728,18 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.CowinRegistration]: {
     screen: CowinRegistrationScreen,
+  },
+  [AppRoutes.AddPatients]: {
+    screen: AddPatients,
+  },
+  [AppRoutes.AddressSlotSelection]: {
+    screen: AddressSlotSelection,
+  },
+  [AppRoutes.CartPage]: {
+    screen: CartPage,
+  },
+  [AppRoutes.ReviewOrder]: {
+    screen: ReviewOrder,
   },
   [AppRoutes.VaccinationScreen]: {
     screen: VaccinationScreen,
