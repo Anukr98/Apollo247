@@ -4451,9 +4451,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderSearchItem = ({ key, data }: any, index: number) => {
     return (
-      <TouchableOpacity
-        onPress={() => (data.length === 0 ? null : onClickSearchItem(key))}
-        style={{ width: width, marginBottom: 2, padding: 16, backgroundColor: '#fff' }}
+      <View
+        style={{
+          width: width,
+          marginBottom: 2,
+          padding: 16,
+          backgroundColor: '#fff',
+          justifyContent: 'flex-start',
+        }}
       >
         <View
           style={{
@@ -4476,48 +4481,50 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               : searchResultsTabHeader[key].title}
           </Text>
         </View>
-        <FlatList
-          keyExtractor={(_, index) => `${key},${index}`}
-          bounces={false}
-          data={data}
-          ListEmptyComponent={
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <SearchNoResultIcon style={{ width: 26, height: 26 }} />
+        <TouchableOpacity onPress={() => (data.length === 0 ? null : onClickSearchItem(key))}>
+          <FlatList
+            keyExtractor={(_, index) => `${key},${index}`}
+            bounces={false}
+            data={data}
+            ListEmptyComponent={
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <SearchNoResultIcon style={{ width: 26, height: 26 }} />
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+                    marginLeft: 14,
+                  }}
+                >
+                  {string.home.search_not_available}
+                </Text>
+              </View>
+            }
+            renderItem={({ item, index }) => renderSearchItemDetails(item, index, key)}
+          />
+          {data.length === 0 ? null : (
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginVertical: 2,
+                paddingVertical: 2,
+                justifyContent: 'space-between',
+              }}
+            >
               <Text
                 style={{
-                  ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
-                  marginLeft: 14,
+                  ...theme.viewStyles.text('M', 15, theme.colors.APP_YELLOW, 1, 24),
                 }}
+                onPress={() => onClickSearchItem(key)}
               >
-                {string.home.search_not_available}
+                View All Results {searchResultsTabHeader[key].title}
               </Text>
-            </View>
-          }
-          renderItem={({ item, index }) => renderSearchItemDetails(item, index, key)}
-        />
-        {data.length === 0 ? null : (
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginVertical: 2,
-              paddingVertical: 2,
-              justifyContent: 'space-between',
-            }}
-          >
-            <Text
-              style={{
-                ...theme.viewStyles.text('M', 15, theme.colors.APP_YELLOW, 1, 24),
-              }}
-              onPress={() => onClickSearchItem(key)}
-            >
-              View All Results {searchResultsTabHeader[key].title}
-            </Text>
 
-            <ArrowRight />
-          </View>
-        )}
-      </TouchableOpacity>
+              <ArrowRight />
+            </View>
+          )}
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -4578,9 +4585,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <View
             style={{
               padding: 6,
-              alignItems: 'center',
+              alignItems: 'flex-start',
               justifyContent: 'center',
               marginLeft: 'auto',
+              marginRight: 2,
             }}
           >
             <ArrowRight />
