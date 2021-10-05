@@ -726,8 +726,10 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     //find the selectedItem
     const findSelectedItem = arr?.find((item: any) => item?.id == patientDetails?.id);
     if (findSelectedItem?.isPatientSelected) {
+      const updatedItems = JSON.parse(JSON.stringify(cartItems));
+      updatedItems['isSelected'] = true;
       //check here, if item is already selected => unselect
-      addPatientCartItem?.(patientDetails?.id, cartItems);
+      addPatientCartItem?.(patientDetails?.id, updatedItems);
     } else {
       removePatientCartItem?.(patientDetails?.id);
     }

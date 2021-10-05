@@ -136,6 +136,7 @@ import {
   DiagnosticAddToCartEvent,
   DiagnosticBannerClick,
   DiagnosticHomePageWidgetClicked,
+  DiagnosticLandingPageViewedEvent,
   DiagnosticPinCodeClicked,
   DiagnosticTrackOrderViewed,
   DiagnosticTrackPhleboClicked,
@@ -174,7 +175,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { OrderCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/OrderCardCarousel';
 import { PrescriptionCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/PrescriptionCardCarousel';
 import { getUniqueId } from 'react-native-device-info';
-import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { CleverTapEventName, DiagnosticHomePageSource } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 import DocumentPicker, { DocumentPickerResponse } from 'react-native-document-picker';
 import ImageResizer from 'react-native-image-resizer';
@@ -491,6 +492,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   }, []);
 
+  function triggerLandingPageViewedEvent() {
+    DiagnosticLandingPageViewedEvent(
+      currentPatient,
+      isDiagnosticCircleSubscription,
+      movedFrom === string.diagnostics.deeplink ? DiagnosticHomePageSource.DEEPLINK : homeScreenAttributes?.Source
+    );
+  }
+
   //loading address, open-closed order, circle banners for the user.
   useEffect(() => {
     if (currentPatient) {
@@ -500,6 +509,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       fetchPatientPrescriptions();
       getUserBanners();
       getDataFromCache();
+      triggerLandingPageViewedEvent();
     }
   }, [currentPatient]);
 

@@ -204,8 +204,9 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       postwebEngageCheckoutCompletedEvent();
     }
     firePurchaseEvent(orderDetails?.orderId, orderDetails?.amount, cartItems, currentPatient);
-    clearDiagnoticCartInfo?.();
     submitReviewOnLabBook();
+    clearDiagnoticCartInfo?.();
+
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -215,7 +216,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const getUserSubscriptionsByStatus = async () => {
     try {
       const query: GetSubscriptionsOfUserByStatusVariables = {
-        mobile_number: g(currentPatient, 'mobileNumber'),
+        mobile_number: currentPatient?.mobileNumber,
         status: ['active', 'deferred_inactive'],
       };
       const res = await client.query<GetSubscriptionsOfUserByStatus>({
@@ -266,15 +267,13 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const postCleverTapEventForTrackingAppReview = async () => {
     const uniqueId = await DeviceInfo.getUniqueId();
     const eventAttributes: CleverTapEvents[CleverTapEventName.PLAYSTORE_APP_REVIEW_AND_RATING] = {
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient Name': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+      'Patient UHID': currentPatient?.uhid,
       'User Type': pharmacyUserTypeAttribute?.User_Type || '',
-      'Patient Age': Math.round(
-        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-      ),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Customer ID': g(currentPatient, 'id'),
+      'Patient Age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
+      'Patient Gender': currentPatient?.gender,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer ID': currentPatient?.id,
       'CT Source': Platform.OS,
       'Device ID': uniqueId,
       'Circle Member':

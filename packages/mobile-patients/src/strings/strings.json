@@ -640,7 +640,8 @@
     "discardAllPatients": "Your cart has been updated, with the selected patient",
     "modifyHeader" : "MODIFY ORDER",
     "agent": "Apollo agent",
-    "codDisableTextForCircle": "Cash on Delivery is unavailable with Circle membership in Cart"
+    "codDisableTextForCircle": "Cash on Delivery is unavailable with Circle membership in Cart",
+    "deeplink":"deeplink"
   },
   "diagnosticCategoryTitle": {
     "category": "category",

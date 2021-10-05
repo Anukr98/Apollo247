@@ -40,6 +40,13 @@ export enum ProductPageViewedSource {
   PDP_FAST_SUSBTITUTES = 'PDP Fast Substitutes',
 }
 
+export enum DiagnosticHomePageSource {
+  TAB_BAR = "247 Home bottom bar",
+  HOMEPAGE_CTA = "247 Home CTA",
+  BANNER  = "247 Home banner",
+  DEEPLINK = "Deeplink"
+}
+
 export enum CleverTapEventName {
   //Consult Events
   CONSULT_DOCTOR_PROFILE_VIEWED = 'Consult Doctor Profile viewed',
@@ -640,6 +647,10 @@ export interface DiagnosticUserInfo {
   'Patient Name': string;
   'Patient Age': number;
   'User Type'?: any
+}
+export interface DiagnosticLandingPage extends DiagnosticUserInfo {
+  Source: DiagnosticHomePageSource;
+  'Circle user'?: string;
 }
 
 export interface DiagnosticServiceble {
@@ -1404,7 +1415,7 @@ export interface CleverTapEvents {
   };
 
   // ********** Diagnostic Events *******
-
+  [CleverTapEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED]: DiagnosticLandingPage;
   [CleverTapEventName.DIAGNOSTIC_SEARCH_CLICKED]: ItemSearchedOnLanding;
   [CleverTapEventName.DIAGNOSTIC_MY_ORDERS]: {
     //comment
