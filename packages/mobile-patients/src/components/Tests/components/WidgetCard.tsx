@@ -43,7 +43,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 5,
-    paddingHorizontal: 10,
     margin: 5,
     marginHorizontal: 10,
     elevation: 5,
@@ -52,8 +51,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20, 0),
     width: '100%',
     textAlign: 'center',
-    padding: 5,
-    margin: 5,
+    paddingVertical: 5,
   },
   circleView: {
     width: 80,
@@ -62,6 +60,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#f9f9f9',
+    paddingHorizontal: 10,
   },
   image: {
     width: 48,
