@@ -2870,6 +2870,39 @@ export const Tests: React.FC<TestsProps> = (props) => {
               {renderDiagnosticHeader()}
               {renderSearchBar()}
               {expressSlotMsg != '' ? renderExpressSlots() : null}
+              <Modal
+                animationType="fade"
+                transparent={true}
+                visible={isPrescriptionUpload}
+                onRequestClose={() => {
+                  setIsPrescriptionUpload(false);
+                }}
+                onDismiss={() => {
+                  setIsPrescriptionUpload(false);
+                }}
+              >
+                <View style={styles.modalMainView}>
+                  <TouchableOpacity
+                    style={styles.closeContainer}
+                    onPress={() => {
+                      if (isPrescriptionGallery) {
+                        setIsPrescriptionGallery(false);
+                        setIsPrescriptionUpload(true);
+                      } else {
+                        setIsPrescriptionGallery(false);
+                        setIsPrescriptionUpload(false);
+                      }
+                    }}
+                  >
+                    <CrossPopup />
+                  </TouchableOpacity>
+                  <View style={styles.paitentModalView}>
+                    {isPrescriptionGallery
+                      ? renderGalleryOption()
+                      : renderOptionsUploadPrescription()}
+                  </View>
+                </View>
+              </Modal>
             </View>
             <View style={{ flex: 1 }}>
               <ScrollView
@@ -2938,6 +2971,10 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
     paddingVertical: 10,
+  },
+  closeContainer: {
+    alignSelf: 'flex-end',
+    margin: 10,
   },
   textHeadingModal: {
     ...theme.viewStyles.text('B', 17, colors.SHERPA_BLUE),
