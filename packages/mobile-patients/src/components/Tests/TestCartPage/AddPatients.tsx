@@ -82,8 +82,8 @@ import { DiagnosticPatientSelected } from '@aph/mobile-patients/src/components/T
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { findDiagnosticSettings } from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
-import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { PatientDetailsOverlay } from '../components/PatientDetailsOverlay';
+import { Gender, TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { PatientDetailsOverlay } from '@aph/mobile-patients/src/components/Tests/components/PatientDetailsOverlay';
 import {
   editProfile,
   editProfileVariables,
@@ -147,6 +147,8 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   const [limitMsg, setLimitMsg] = useState<string>('');
   const [patientSelectionCount, setPatientSelectionCount] = useState<number>(0);
   const [showPatientDetailsOverlay, setShowPatientDetailsOverlay] = useState<boolean>(false);
+  const [tempPatientSelected, setTempPatientSelected] = useState({} as any);
+  const [tempIndex, setTempIndex] = useState<number>(0);
 
   const keyExtractor = useCallback((_, index: number) => `${index}`, []);
   const keyExtractor1 = useCallback((_, index: number) => `${index}`, []);
@@ -611,8 +613,6 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     );
   };
 
-  console.log({ allCurrentPatients });
-
   const changeCurrentProfile = (_selectedPatient: any, _showPatientDetailsOverlay: boolean) => {
     if (currentPatient?.id === _selectedPatient?.id) {
       return;
@@ -724,9 +724,6 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     }
   }
 
-  console.log({ allCurrentPatients });
-
-  const [tempPatientSelected, setTempPatientSelected] = useState({} as any);
   function _onPressPatient(patient: any, index: number) {
     const isInvalidUser = checkPatientAge(patient);
     const hasEmptyValues = checkEmptyPatientValues(patient, index);
@@ -734,9 +731,9 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       renderBelowAgePopUp();
       _setSelectedPatient?.(null, index);
     } else if (hasEmptyValues) {
-      // _setSelectedPatient?.(null, index);
       setShowPatientDetailsOverlay(true);
       setTempPatientSelected(patient);
+      setTempIndex(index);
     } else {
       _setSelectedPatient?.(patient, index);
     }
@@ -744,10 +741,8 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
 
   function _setSelectedPatient(patientDetails: any, ind: number) {
     let arr = patientListToShow?.map((newItem: any, index: number) => {
-      if (ind == index && patientDetails != null && newItem?.hasOwnProperty('isPatientSelected')) {
+      if (ind == index && patientDetails != null) {
         newItem['isPatientSelected'] = !newItem?.isPatientSelected;
-      } else {
-        newItem['isPatientSelected'] = false;
       }
       return { ...newItem };
     });
@@ -764,7 +759,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     }
   }
 
-  function _updatePatientDetails(_selectedPatient: any, _gender: any, _date: any) {
+  function _updatePatientDetails(_selectedPatient: any, _gender: Gender, _date: any) {
     setShowPatientDetailsOverlay(false);
     setLoading?.(true);
     client
@@ -790,13 +785,13 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
         if (!checkPatientAge(profileData, true)) {
           showSelectedPatient?.(profileData!);
           changeCurrentProfile(profileData, false);
+          _setSelectedPatient(profileData, tempIndex);
         } else {
           renderBelowAgePopUp();
           _setSelectedPatient?.(null, 0);
         }
       })
       .catch((e) => {
-        console.log({ e });
         setLoading?.(false);
         showAphAlert?.({
           title: string.common.uhOh,
