@@ -1396,6 +1396,17 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
         }}
         onPressDone={(_selectedPatient: any) => {
           setShowPatientListOverlay(false);
+
+          //reset all the params
+          setSelectedDose(string.vaccineBooking.title_dose_1);
+          setSelectedCity('');
+          setSelectedVaccineType('');
+          setSelectedHospitalSite('');
+          setSelectedHospitalSiteResourceID('');
+          setSelectedHospitalSiteAddress('');
+          setAvailableDates([]);
+          setAvailableSlots([]);
+
           setUpSelectedPatient(_selectedPatient);
         }}
         onPressAddNewProfile={() => {
