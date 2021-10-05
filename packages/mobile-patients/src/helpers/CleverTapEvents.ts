@@ -2592,7 +2592,7 @@ export interface CleverTapEvents {
     'Circle cashback'?: number;
     SubCategory: string;
     'Multivariants available': YesOrNo;
-    'No of multivariants'?: number | null;
+    'No of variants'?: number | null;
     'Substitutes available'?: YesOrNo;
     'No of substitutes'?: number | null;
   };

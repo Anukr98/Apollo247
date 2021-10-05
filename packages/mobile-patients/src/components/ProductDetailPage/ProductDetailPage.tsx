@@ -609,7 +609,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         'Circle cashback': Number(cashback) || 0,
         SubCategory: subcategory || '',
         'Multivariants available': multiVariantArray?.length > 0 ? 'Yes' : 'No',
-        'No of multivariants': multiVariantArray?.length > 0 ? multiVariantArray?.length : null,
+        'No of variants': multiVariantArray?.length > 0 ? multiVariantArray?.length : null,
         'Substitutes available':
           !!productSubstitutes && productSubstitutes.length > 0 ? 'Yes' : 'No',
         'No of substitutes':
