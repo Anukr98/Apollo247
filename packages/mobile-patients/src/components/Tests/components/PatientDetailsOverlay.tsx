@@ -130,7 +130,8 @@ export const PatientDetailsOverlay: React.FC<PatientDetailsOverlayProps> = (prop
   };
 
   const _onPressClose = () => {
-    return !selectedPatient?.dateOfBirth || !selectedPatient?.gender ? {} : onPressClose();
+    onPressClose();
+    // return !selectedPatient?.dateOfBirth || !selectedPatient?.gender ? {} : onPressClose();
   };
 
   return (
