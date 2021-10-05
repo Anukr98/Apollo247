@@ -175,7 +175,10 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { OrderCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/OrderCardCarousel';
 import { PrescriptionCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/PrescriptionCardCarousel';
 import { getUniqueId } from 'react-native-device-info';
-import { CleverTapEventName, DiagnosticHomePageSource } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import {
+  CleverTapEventName,
+  DiagnosticHomePageSource,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 import DocumentPicker, { DocumentPickerResponse } from 'react-native-document-picker';
 import ImageResizer from 'react-native-image-resizer';
@@ -496,7 +499,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
     DiagnosticLandingPageViewedEvent(
       currentPatient,
       isDiagnosticCircleSubscription,
-      movedFrom === string.diagnostics.deeplink ? DiagnosticHomePageSource.DEEPLINK : homeScreenAttributes?.Source
+      movedFrom === string.diagnostics.deeplink
+        ? DiagnosticHomePageSource.DEEPLINK
+        : homeScreenAttributes?.Source
     );
   }
 
@@ -1413,18 +1418,23 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderLocateMe = () => {
     return (
-      <View style={styles.rowCenter}>
-        <TouchableOpacity
-          onPress={() => _onPressLocateMe()}
-          style={styles.locateMeTouch}
-          activeOpacity={1}
-        >
-          <Text style={styles.locateMeText}>Locate Me</Text>
-        </TouchableOpacity>
-        <View style={styles.dropdownGreenContainer}>
-          <DropdownGreen />
+      <>
+        <Text numberOfLines={1} style={styles.deliverToText}>
+          {string.diagnostics.collectionFromText}
+        </Text>
+        <View style={styles.rowCenter}>
+          <TouchableOpacity
+            onPress={() => _onPressLocateMe()}
+            style={styles.locateMeTouch}
+            activeOpacity={1}
+          >
+            <Text style={styles.locateMeText}>{nameFormater('Locate Me', 'upper')}</Text>
+          </TouchableOpacity>
+          <View style={styles.dropdownGreenContainer}>
+            <DropdownGreen />
+          </View>
         </View>
-      </View>
+      </>
     );
   };
 
@@ -2974,11 +2984,9 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   gridConatiner: {
-    width: '92%',
+    width: winWidth,
     backgroundColor: 'white',
     marginVertical: 16,
-    marginLeft: 16,
-    marginRight: 16,
   },
   imagePlaceholderStyle: {
     backgroundColor: '#f7f8f5',
@@ -3146,14 +3154,17 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     backgroundColor: '#f9f9f9',
+    resizeMode: 'contain',
   },
   gridPart: {
     alignItems: 'center',
-    justifyContent: 'center',
-    width: '25%',
+    justifyContent: 'flex-start',
+    width: winWidth / 4,
     borderColor: '#E8E8E8',
     borderWidth: 0.5,
-    padding: 15,
+    padding: 16,
+    paddingLeft: 12,
+    paddingRight: 12,
   },
   textStyle: {
     ...theme.viewStyles.text('SB', isSmallDevice ? 13 : 14, colors.SHERPA_BLUE, 1, 20, 0),
@@ -3219,18 +3230,13 @@ const styles = StyleSheet.create({
   locateMeTouch: {
     zIndex: 1,
     height: 30,
-    marginTop: 5,
     justifyContent: 'center',
     alignItems: 'center',
-    borderColor: colors.APP_YELLOW,
-    borderWidth: 1,
-    borderRadius: 3,
-    padding: 3,
-    paddingTop: 0,
-    paddingBottom: 0,
   },
-  rowCenter: { flexDirection: 'row', alignItems: 'center' },
-  locateMeText: { ...theme.viewStyles.text('SB', 14, colors.APP_YELLOW, 1, 18) },
+  rowCenter: { flexDirection: 'row', alignItems: 'center', marginTop: -5.5 },
+  locateMeText: {
+    ...theme.viewStyles.text('SB', 14, colors.APP_YELLOW, 1, 18),
+  },
   toolTipTouch: {
     position: 'absolute',
     height: winHeight,
