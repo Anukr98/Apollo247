@@ -145,9 +145,9 @@ export interface SlotInfo {
   endTime: string;
   isPaidSlot: boolean | null;
   status: string;
-  internalSlots:  string | null;
+  internalSlots: string | null;
   startTime: string;
-  distanceCharges:  number | null
+  distanceCharges: number | null
 }
 
 export enum EDIT_DELETE_TYPE {
@@ -258,7 +258,7 @@ export const getDoctorShareMessage = (doctorData: any) => {
 };
 
 export const formatAddressWithLandmark = (
-  address: savePatientAddress_savePatientAddress_patientAddress 
+  address: savePatientAddress_savePatientAddress_patientAddress
 ) => {
   const addrLine1 = removeConsecutiveComma(
     [address?.addressLine1, address?.addressLine2].filter((v) => v).join(', ')
@@ -1171,10 +1171,10 @@ export const doRequestAndAccessLocationModified = (
           }
         } else {
           if (response === 'denied' || response === 'restricted') {
-            if(!showPrompt){
+            if (!showPrompt) {
               // don't show the prompt.
             }
-            else{
+            else {
               Alert.alert('Location', 'Enable location access from settings', [
                 {
                   text: 'Cancel',
@@ -1191,8 +1191,8 @@ export const doRequestAndAccessLocationModified = (
                 },
               ]);
             }
-            
-           var msg = !showPrompt ? response : 'Unable to get location, permission denied' 
+
+            var msg = !showPrompt ? response : 'Unable to get location, permission denied'
             reject(msg);
           } else {
             reject('Unable to get location.');
@@ -1228,21 +1228,21 @@ export const doRequestAndAccessLocation = (isModifyAddress?: boolean): Promise<L
           }
         } else {
           if (response === 'denied' || response === 'restricted') {
-              Alert.alert('Location', 'Enable location access from settings', [
-                {
-                  text: 'Cancel',
-                  onPress: () => {
-                    AsyncStorage.setItem('settingsCalled', 'false');
-                  },
+            Alert.alert('Location', 'Enable location access from settings', [
+              {
+                text: 'Cancel',
+                onPress: () => {
+                  AsyncStorage.setItem('settingsCalled', 'false');
                 },
-                {
-                  text: 'Ok',
-                  onPress: () => {
-                    AsyncStorage.setItem('settingsCalled', 'true');
-                    Linking.openSettings();
-                  },
+              },
+              {
+                text: 'Ok',
+                onPress: () => {
+                  AsyncStorage.setItem('settingsCalled', 'true');
+                  Linking.openSettings();
                 },
-              ]);
+              },
+            ]);
             resolve(undefined);
           } else {
             reject('Unable to get location.');
@@ -2222,18 +2222,18 @@ export const InitiateAppsFlyer = (
     }
   });
   onDeepLinkCanceller = appsFlyer.onDeepLink(res => {
-    if (res.isDeferred === true) {
+    if (res.isDeferred) {
       getInstallResources()
       const url = handleOpenURL(res.data.deep_link_value);
       AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url))
     }
-    else if (res.data.deep_link_value && res.isDeferred === false) {
+    if (!res.isDeferred) {
       clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data))
       const url = handleOpenURL(res.data.deep_link_value);
       AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url))
       redirectWithOutDeferred(url)
     }
-    else if (res.status == "success") {
+    if (res.status == "success") {
       clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data))
     }
   })
@@ -3155,14 +3155,14 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
       statusString = 'Partial Order Completed';
       break;
     case DIAGNOSTIC_ORDER_STATUS.ORDER_MODIFIED:
-        statusString = !!customText ? 'Order modification' : 'Order modified'
-        break;
+      statusString = !!customText ? 'Order modification' : 'Order modified'
+      break;
     case DIAGNOSTIC_ORDER_STATUS.REFUND_INITIATED:
-        statusString = 'Partial Refund Initiated'
-        break;
+      statusString = 'Partial Refund Initiated'
+      break;
     default:
-      statusString =  '';
-      // statusString?.replace(/[_]/g, ' ');
+      statusString = '';
+    // statusString?.replace(/[_]/g, ' ');
   }
   return statusString;
 };
@@ -3639,27 +3639,26 @@ export const setAsyncDiagnosticLocation = (address: any) => {
   }
 };
 
-export  const checkPatientAge = (_selectedPatient: any, fromNewProfile: boolean = false) => {
-    let age = !!_selectedPatient?.dateOfBirth ? getAge(_selectedPatient?.dateOfBirth) : null;
-    if (age!=null && age!=undefined && age <= 10) {
-      return true;
-    }
-    return false;
-  };
+export const checkPatientAge = (_selectedPatient: any, fromNewProfile: boolean = false) => {
+  let age = !!_selectedPatient?.dateOfBirth ? getAge(_selectedPatient?.dateOfBirth) : null;
+  if (age != null && age != undefined && age <= 10) {
+    return true;
+  }
+  return false;
+};
 
-export const extractPatientDetails = (patientDetails: any) =>{
+export const extractPatientDetails = (patientDetails: any) => {
   const patientName = `${patientDetails?.firstName! || ''} ${patientDetails?.lastName! || ''}`;
-  const genderAgeText = `${nameFormater(patientDetails?.gender!, 'title') || ''}, ${
-    patientDetails?.dateOfBirth ? getAge(patientDetails?.dateOfBirth) || '0' : ''
-  }`;
+  const genderAgeText = `${nameFormater(patientDetails?.gender!, 'title') || ''}, ${patientDetails?.dateOfBirth ? getAge(patientDetails?.dateOfBirth) || '0' : ''
+    }`;
   const patientSalutation = !!patientDetails?.gender
     ? patientDetails?.gender === Gender.FEMALE
       ? 'Ms.'
       : patientDetails?.gender === Gender.MALE
-      ? 'Mr.'
-      : ''
+        ? 'Mr.'
+        : ''
     : '';
-  
+
   return {
     patientName,
     genderAgeText,
@@ -3667,19 +3666,19 @@ export const extractPatientDetails = (patientDetails: any) =>{
   }
 }
 
-export const isDiagnosticSelectedCartEmpty = (patientCartItems: DiagnosticPatientCartItem[]) =>{
-const getAllSelectedItems = patientCartItems?.map((item: DiagnosticPatientCartItem) => {
-  let obj = {
-    patientId: item?.patientId,
-    cartItems: item?.cartItems?.filter((items) => items?.isSelected == true),
-  };
-  return obj;
-});
-const finalPatientCartItems = getAllSelectedItems?.filter((item: DiagnosticPatientCartItem) => {
-  if (item?.cartItems?.length > 0) {
-    return item;
-  }
-});
+export const isDiagnosticSelectedCartEmpty = (patientCartItems: DiagnosticPatientCartItem[]) => {
+  const getAllSelectedItems = patientCartItems?.map((item: DiagnosticPatientCartItem) => {
+    let obj = {
+      patientId: item?.patientId,
+      cartItems: item?.cartItems?.filter((items) => items?.isSelected == true),
+    };
+    return obj;
+  });
+  const finalPatientCartItems = getAllSelectedItems?.filter((item: DiagnosticPatientCartItem) => {
+    if (item?.cartItems?.length > 0) {
+      return item;
+    }
+  });
   return finalPatientCartItems
 }
 export const downloadDocument = (
