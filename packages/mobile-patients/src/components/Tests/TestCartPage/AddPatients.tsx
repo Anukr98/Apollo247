@@ -38,7 +38,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
   DiagnosticData,
@@ -54,6 +54,7 @@ import {
   findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsByItemIDsAndCityID';
 import {
+  EDIT_PROFILE,
   FIND_DIAGNOSTIC_SETTINGS,
   GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
   GET_PATIENT_ADDRESS_LIST,
@@ -82,6 +83,12 @@ import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponent
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { findDiagnosticSettings } from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { PatientDetailsOverlay } from '../components/PatientDetailsOverlay';
+import {
+  editProfile,
+  editProfileVariables,
+} from '@aph/mobile-patients/src/graphql/types/editProfile';
+import moment from 'moment';
 
 const screenHeight = Dimensions.get('window').height;
 const { SHERPA_BLUE, WHITE, APP_GREEN } = theme.colors;
@@ -92,6 +99,7 @@ export interface AddPatientsProps extends NavigationScreenProps {}
 
 export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   const { currentPatient, setCurrentPatientId, allCurrentPatients } = useAllCurrentPatients();
+  const { getPatientApiCall } = useAuth();
   const {
     setCartItems,
     updateCartItem,
@@ -138,6 +146,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   const [patientLimit, setPatientLimit] = useState<number>(0);
   const [limitMsg, setLimitMsg] = useState<string>('');
   const [patientSelectionCount, setPatientSelectionCount] = useState<number>(0);
+  const [showPatientDetailsOverlay, setShowPatientDetailsOverlay] = useState<boolean>(false);
 
   const keyExtractor = useCallback((_, index: number) => `${index}`, []);
   const keyExtractor1 = useCallback((_, index: number) => `${index}`, []);
@@ -602,6 +611,8 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     );
   };
 
+  console.log({ allCurrentPatients });
+
   const changeCurrentProfile = (_selectedPatient: any, _showPatientDetailsOverlay: boolean) => {
     if (currentPatient?.id === _selectedPatient?.id) {
       return;
@@ -625,6 +636,8 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     }
   };
 
+  function _onPressBackButton() {}
+
   function _onPressAddPatients() {
     //navigate to add a member screen
     props.navigation.navigate(AppRoutes.EditProfile, {
@@ -632,7 +645,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       isPoptype: true,
       mobileNumber: currentPatient?.mobileNumber,
       onNewProfileAdded: onNewProfileAdded,
-      onPressBackButton: {},
+      onPressBackButton: _onPressBackButton,
     });
   }
 
@@ -703,11 +716,27 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     setItemsSelected(arr!);
   }
 
+  function checkEmptyPatientValues(patient: any, index: any) {
+    if (!patient?.dateOfBirth || !patient?.gender) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  console.log({ allCurrentPatients });
+
+  const [tempPatientSelected, setTempPatientSelected] = useState({} as any);
   function _onPressPatient(patient: any, index: number) {
     const isInvalidUser = checkPatientAge(patient);
+    const hasEmptyValues = checkEmptyPatientValues(patient, index);
     if (isInvalidUser) {
       renderBelowAgePopUp();
       _setSelectedPatient?.(null, index);
+    } else if (hasEmptyValues) {
+      // _setSelectedPatient?.(null, index);
+      setShowPatientDetailsOverlay(true);
+      setTempPatientSelected(patient);
     } else {
       _setSelectedPatient?.(patient, index);
     }
@@ -734,6 +763,60 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       removePatientCartItem?.(patientDetails?.id);
     }
   }
+
+  function _updatePatientDetails(_selectedPatient: any, _gender: any, _date: any) {
+    setShowPatientDetailsOverlay(false);
+    setLoading?.(true);
+    client
+      .mutate<editProfile, editProfileVariables>({
+        mutation: EDIT_PROFILE,
+        variables: {
+          editProfileInput: {
+            id: _selectedPatient?.id,
+            photoUrl: _selectedPatient?.photoUrl,
+            firstName: _selectedPatient?.firstName?.trim(),
+            lastName: _selectedPatient?.lastName?.trim(),
+            relation: _selectedPatient?.relation,
+            gender: _gender,
+            dateOfBirth: moment(_date, 'DD/MM/YYYY')?.format('YYYY-MM-DD'),
+            emailAddress: _selectedPatient?.emailAddress?.trim(),
+          },
+        },
+      })
+      .then(({ data }) => {
+        const profileData = data?.editProfile?.patient;
+        setLoading?.(false);
+        getPatientApiCall();
+        if (!checkPatientAge(profileData, true)) {
+          showSelectedPatient?.(profileData!);
+          changeCurrentProfile(profileData, false);
+        } else {
+          renderBelowAgePopUp();
+          _setSelectedPatient?.(null, 0);
+        }
+      })
+      .catch((e) => {
+        console.log({ e });
+        setLoading?.(false);
+        showAphAlert?.({
+          title: string.common.uhOh,
+          description: string.common.tryAgainLater,
+        });
+        CommonBugFender('AddPatients_updateUserProfile', e);
+      });
+  }
+
+  const renderPatientDetailsOverlay = () => {
+    return showPatientDetailsOverlay ? (
+      <PatientDetailsOverlay
+        selectedPatient={tempPatientSelected}
+        onPressClose={() => setShowPatientDetailsOverlay(false)}
+        onPressDone={(_date, _gender, _selectedPatient) => {
+          _updatePatientDetails(_selectedPatient, _gender, _date);
+        }}
+      />
+    ) : null;
+  };
 
   const renderFooterComponent = () => {
     return <View style={{ height: 40 }} />;
@@ -1007,6 +1090,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
         {renderHeader()}
         {renderWizard()}
         {renderMainView()}
+        {renderPatientDetailsOverlay()}
       </SafeAreaView>
       {renderStickyBottom()}
     </View>
