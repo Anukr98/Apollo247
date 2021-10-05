@@ -150,6 +150,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     pharmaPDPNudgeMessage,
     circleSubscriptionId,
     isCircleExpired,
+    productSubstitutes,
     setProductSubstitutes,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
@@ -282,6 +283,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       postProductPageViewedEvent(pincode, isInStock);
     }
   }, [medicineDetails, availabilityCalled, deliveryTime]);
+
+  useEffect(() => {
+    if (productSubstitutes && productSubstitutes.length > 0) {
+      postProductPageViewedEvent(pincode, isInStock);
+    }
+  }, [productSubstitutes]);
 
   useEffect(() => {
     if (axdcCode && medicineDetails?.sku) {
@@ -452,6 +459,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       if (
         movedFrom === ProductPageViewedSource.PARTIAL_SEARCH ||
         movedFrom === ProductPageViewedSource.SUBSTITUTES ||
+        movedFrom === ProductPageViewedSource.PDP_ALL_SUSBTITUTES ||
         movedFrom === ProductPageViewedSource.CROSS_SELLING_PRODUCTS ||
         movedFrom === ProductPageViewedSource.SIMILAR_PRODUCTS ||
         movedFrom === ProductPageViewedSource.NOTIFICATION ||
@@ -571,18 +579,22 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         CircleCashback: cashback,
         isMultiVariant: multiVariantAttributes.length ? 1 : 0,
       };
+      let multiVariantArray = [];
+      if (!!medicineDetails?.multi_variants_products) {
+        multiVariantArray = Object.keys(medicineDetails?.multi_variants_products?.products);
+      }
       let cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_PRODUCT_PAGE_VIEWED] = {
-        Source: movedFrom,
-        'product id (SKUID)': sku?.toUpperCase(),
-        'product name': name,
+        'Nav src': movedFrom,
+        SKUID: sku?.toUpperCase(),
+        'Product name': name,
         Stockavailability: stock_availability,
         'Category ID': category_id || undefined,
-        CategoryName: productPageViewedEventProps?.CategoryName || undefined,
-        'Section Name': productPageViewedEventProps?.SectionName || undefined,
-        'Circle Member':
+        'Category name': productPageViewedEventProps?.CategoryName || undefined,
+        'Section name': productPageViewedEventProps?.SectionName || undefined,
+        'Circle member':
           getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
           undefined,
-        'Circle Membership Value':
+        'Circle membership value':
           pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
         User_Type: userType || undefined,
         Pincode: pincode,
@@ -594,12 +606,18 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         MaxOrderQuantity: MaxOrderQty,
         MRP: price,
         SpecialPrice: special_price || undefined,
-        'Circle Cashback': Number(cashback) || 0,
+        'Circle cashback': Number(cashback) || 0,
         SubCategory: subcategory || '',
+        'Multivariants available': multiVariantArray?.length > 0 ? 'Yes' : 'No',
+        'No of multivariants': multiVariantArray?.length > 0 ? multiVariantArray?.length : null,
+        'Substitutes available':
+          !!productSubstitutes && productSubstitutes.length > 0 ? 'Yes' : 'No',
+        'No of substitutes':
+          !!productSubstitutes && productSubstitutes.length > 0 ? productSubstitutes.length : null,
       };
 
       let appsFlyerEvents = {
-        af_country: "India",
+        af_country: 'India',
         source: movedFrom,
         af_content_id: sku?.toUpperCase(),
         af_content: name,
@@ -617,10 +635,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         af_price: special_price || null,
         CircleCashback: cashback,
         isMultiVariant: multiVariantAttributes.length ? 1 : 0,
-        af_currency: "INR",
-        af_content_type: "Product Page"
-      }
-      
+        af_currency: 'INR',
+        af_content_type: 'Product Page',
+      };
+
       if (movedFrom === 'deeplink') {
         eventAttributes['Circle Membership Added'] = circleID
           ? 'Existing'
@@ -937,7 +955,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       setCurrentProductQuantityInCart(productQuantity);
     }
     postwebEngageAddToCartEvent(
-      medicineDetails,
+      medicine_details,
       isFromFastSubstitutes ? 'PDP Fast Substitutes' : 'Pharmacy PDP',
       sectionName,
       '',
