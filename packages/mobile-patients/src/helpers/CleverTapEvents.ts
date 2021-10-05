@@ -37,6 +37,7 @@ export enum ProductPageViewedSource {
   MULTI_VARIANT = 'multivariant',
   PDP_ALL_SUSBTITUTES = 'PDP All Substitutes',
   PDP_FAST_SUSBTITUTES = 'PDP Fast Substitutes',
+  SPECIAL_OFFERS = 'Special Offers',
 }
 
 export enum CleverTapEventName {
@@ -145,6 +146,8 @@ export enum CleverTapEventName {
   PHARMACY_MY_ORDERS_CLICKED = 'Pharmacy My Orders Clicked',
   PHARMACY_MY_ORDER_TRACKING_CLICKED = 'Pharmacy Track Order Clicked',
   PHARMACY_FAST_SUBSTITUTES_VIEWED = 'Pharmacy Fast Substitutes Viewed',
+  PHARMACY_SPECIAL_OFFERS_CLICKED = 'Special Offers Clicked',
+  PHARMACY_CHRONIC_UPSELL_NUDGE = 'Chronic Upsell Nudge',
 
   // Help Section Events
   BACK_NAV_ON_NEED_HELP_CLICKED= 'Back Nav On Need Help Clicked',
@@ -1213,7 +1216,9 @@ export interface CleverTapEvents {
       | 'Pharmacy Cart'
       | 'Category Tree'
       | 'PDP All Substitutes'
-      | 'PDP Fast Substitutes';
+      | 'PDP Fast Substitutes'
+      | 'Special Offers'
+      | 'Chronic Upsell Nudge';
     Brand?: string;
     'Brand ID'?: string;
     'Category Name'?: string;
@@ -1409,6 +1414,13 @@ export interface CleverTapEvents {
   [CleverTapEventName.CALL_THE_NEAREST_PHARMACY]: {
     pincode: string;
     'Mobile Number': string;
+  };
+  [CleverTapEventName.PHARMACY_SPECIAL_OFFERS_CLICKED]: {
+    'Nav src': string;
+  };
+  [CleverTapEventName.PHARMACY_CHRONIC_UPSELL_NUDGE]: {
+    'SKU ID': string;
+    'Quantity shown': number | null;
   };
 
   // ********** Diagnostic Events *******
@@ -2562,21 +2574,21 @@ export interface CleverTapEvents {
     source: 'deeplink' | 'app home';
   };
   [CleverTapEventName.PHARMACY_PRODUCT_PAGE_VIEWED]: {
-    Source: ProductPageViewedSource;
-    'product id (SKUID)': string;
-    'product name': string;
+    'Nav src': ProductPageViewedSource;
+    'SKUID': string;
+    'Product name': string;
     Stockavailability: YesOrNo | 'Not for Sale';
     /**
      * Category ID & Category Name is applicable if customers clicks on products from any category (all categories of shop by category or health areas)
      */
     'Category ID'?: string;
-    CategoryName?: string;
+    'Category name'?: string;
     /**
      * Section Name is applicable if customer clicked on the product from the homepage product widgets like Hot sellers, Recommended products
      */
-    'Section Name'?: string;
-    'Circle Member'?: PharmacyCircleMemberValues;
-    'Circle Membership Value'?: number | null;
+    'Section name'?: string;
+    'Circle member'?: PharmacyCircleMemberValues;
+    'Circle membership value'?: number | null;
     User_Type?: PharmaUserStatus;
     Pincode?: string;
     serviceable: YesOrNo;
@@ -2587,8 +2599,12 @@ export interface CleverTapEvents {
     MaxOrderQuantity?: number;
     MRP?: number;
     SpecialPrice?: number | null;
-    'Circle Cashback'?: number;
+    'Circle cashback'?: number;
     SubCategory: string;
+    'Multivariants available': YesOrNo;
+    'No of multivariants'?: number | null;
+    'Substitutes available'?: YesOrNo;
+    'No of substitutes'?: number | null;
   };
   [CleverTapEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
     'Patient Name': string;

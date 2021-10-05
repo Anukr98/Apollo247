@@ -34,6 +34,8 @@ export enum ProductPageViewedSource {
   CROSS_SELLING_PRODUCTS = 'cross selling products',
   SIMILAR_PRODUCTS = 'similar products',
   MULTI_VARIANT = 'multivariant',
+  PDP_ALL_SUSBTITUTES = 'PDP All Substitutes',
+
 }
 
 export enum WebEngageEventName {
@@ -1019,7 +1021,9 @@ export interface WebEngageEvents {
       | 'Pharmacy Full Search'
       | 'Similar Widget'
       | 'Pharmacy Cart'
-      | 'Category Tree';
+      | 'Category Tree'
+      | 'Special Offers'
+      | 'Chronic Upsell Nudge';
     Brand?: string;
     'Brand ID'?: string;
     'category name'?: string;

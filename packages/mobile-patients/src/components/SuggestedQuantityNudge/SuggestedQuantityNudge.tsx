@@ -1,9 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { TouchableOpacity, View, Text, StyleSheet, TouchableWithoutFeedback } from 'react-native';
 import Modal from 'react-native-modal';
 import { PhrCloseIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import {
+  getCleverTapCircleMemberValues,
+  postCleverTapEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 export interface SuggestedQuantityNudgeProps {
   suggested_qty: string | null;
@@ -28,7 +36,7 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
     setCurrentProductQuantityInCart,
   } = props;
 
-  const { updateCartItem } = useShoppingCart();
+  const { updateCartItem, pharmacyCircleAttributes } = useShoppingCart();
 
   const { cartItems } = useShoppingCart();
   const [selectedQuantity, setSelectedQuantity] = useState<number>(+suggested_qty);
@@ -37,6 +45,15 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
   const mainText1 = ' and stock this medicine for the next 30 days';
   const itemQuantity = packForm ? `${suggested_qty} ${packForm}s` : `${suggested_qty} items`;
   const maxQuantity = maxOrderQty ? maxOrderQty : +suggested_qty;
+  const source = 'Chronic Upsell Nudge';
+
+  useEffect(() => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CHRONIC_UPSELL_NUDGE] = {
+      'SKU ID': sku,
+      'Quantity shown': +suggested_qty,
+    };
+    postCleverTapEvent(CleverTapEventName.PHARMACY_CHRONIC_UPSELL_NUDGE, eventAttributes);
+  }, []);
 
   const onPressCloseBottomSheet = () => {
     setShownNudgeOnce(true);
@@ -128,11 +145,36 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
                   onPress={() => {
                     onPressCloseBottomSheet();
                     if (cartItems.find(({ id }) => id?.toUpperCase() === sku?.toUpperCase())) {
+                      const itemAddedFromNudge = cartItems.find(
+                        ({ id }) => id?.toUpperCase() === sku?.toUpperCase()
+                      );
                       updateCartItem?.({
                         id: sku,
                         quantity: selectedQuantity,
                       });
                       setCurrentProductQuantityInCart(selectedQuantity);
+
+                      const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART] = {
+                        'product name': itemAddedFromNudge?.name,
+                        'product id (SKUID)': sku,
+                        'Category Name': undefined,
+                        'Section Name': undefined,
+                        'Category ID': undefined,
+                        Price: itemAddedFromNudge?.price,
+                        'Discounted Price': Number(itemAddedFromNudge?.specialPrice) || undefined,
+                        Quantity: selectedQuantity,
+                        Source: source,
+                        'Circle Member':
+                          getCleverTapCircleMemberValues(
+                            pharmacyCircleAttributes?.['Circle Membership Added']!
+                          ) || undefined,
+                        'Circle Membership Value':
+                          pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
+                      };
+                      postCleverTapEvent(
+                        CleverTapEventName.PHARMACY_ADD_TO_CART,
+                        cleverTapEventAttributes
+                      );
                     }
                   }}
                 >
