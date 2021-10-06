@@ -223,7 +223,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       goToHomeOnBack: true,
       comingFrom: AppRoutes.TestsCart,
       showOrderSummaryTab: true,
-      disableTrackOrder: true,
+      disableTrackOrder: false,
       amount: orderDetails?.amount,
     });
   };
