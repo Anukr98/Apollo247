@@ -1,8 +1,10 @@
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import {
+  ArrowRight,
   CheckedIcon,
   CircleLogo,
   Down,
+  OffersIconOrange,
   SavingsIcon,
   Up,
 } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -129,6 +131,7 @@ import {
 import CircleCard from '@aph/mobile-patients/src/components/Tests/components/CircleCard';
 import { CirclePlansListOverlay } from '@aph/mobile-patients/src/components/Tests/components/CirclePlansListOverlay';
 import { debounce } from 'lodash';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 
 const screenWidth = Dimensions.get('window').width;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
@@ -1071,6 +1074,24 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setIsCircleSubscription?.(true);
   }
 
+  function _navigateToCoupons() {
+    props.navigation.navigate(AppRoutes.CouponScreen, {});
+  }
+
+  const renderCouponView = () => {
+    return (
+      <TouchableOpacity onPress={() => _navigateToCoupons()} style={styles.couponViewTouch}>
+        <View style={styles.offersView}>
+          <OffersIconOrange style={styles.offersIconStyle} />
+          <Text style={styles.couponText}>
+            {nameFormater(string.diagnosticsCoupons.couponsText, 'upper')}
+          </Text>
+        </View>
+        <ArrowRight style={{ tintColor: colors.TANGERINE_YELLOW }} />
+      </TouchableOpacity>
+    );
+  };
+
   //change circle purchase price to selected plan
   const renderTotalCharges = () => {
     const anyCartSaving = isDiagnosticCircleSubscription ? cartSaving + circleSaving : cartSaving;
@@ -1084,7 +1105,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
     return (
       <>
-        {/* {renderCouponView()} */}
         <View
           style={[
             styles.totalChargesContainer,
@@ -1098,6 +1118,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           (!isDiagnosticCircleSubscription && hideCirclePurchaseInModify)
             ? null
             : renderCirclePurchase()}
+          {renderCouponView()}
           {renderPrices('Total MRP', totalPriceExcludingAnyDiscounts.toFixed(2))}
 
           {couponDiscount > 0 && renderPrices('Coupon Discount', couponDiscount?.toFixed(2))}
@@ -2402,5 +2423,25 @@ const styles = StyleSheet.create({
     width: 37,
     alignSelf: 'center',
     marginRight: 5,
+  },
+  couponViewTouch: {
+    borderColor: colors.TANGERINE_YELLOW,
+    borderRadius: 4,
+    borderWidth: 1,
+    padding: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+    marginTop: 8,
+  },
+  offersView: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
+  couponText: {
+    marginHorizontal: 6,
+    ...theme.viewStyles.text('B', 14.5, colors.TANGERINE_YELLOW, 1, 24),
+  },
+  offersIconStyle: {
+    height: 24,
+    width: 24,
+    resizeMode: 'contain',
   },
 });

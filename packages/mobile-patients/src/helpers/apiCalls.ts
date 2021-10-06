@@ -1402,3 +1402,11 @@ export const getTatStaticContent = (
   const url = `${baseUrl}/tatCtaStaticContent.json`;
   return Axios.get(url);
 };
+
+export const fetchDiagnosticCoupons = (
+  type: string
+): Promise<AxiosResponse<any>> => {
+  const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
+  const url = `${baseUrl}/frontend?type=${type}`;
+  return Axios.get(url);
+};

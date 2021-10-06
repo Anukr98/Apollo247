@@ -175,6 +175,16 @@
     "denied":"denied",
     "restricted": "restricted"
   },
+  "diagnosticsCoupons":{
+    "couponsText": "Offers and Coupons",
+    "applyCouponText":"Apply Coupon Code",
+    "couponForYou": "Coupons for You",
+    "apply": "Apply",
+    "couponPlcaholder": "Enter Coupon code",
+    "couponFetchError":"Sorry, we're unable to fetch coupon codes right now. Please try again.",
+    "noCouponsText":"No coupons available",
+    "invalidCouponCode":"Invalid Coupon Code"
+  },
   "components": {
     "medicineDetails": {
       "helpers": {
