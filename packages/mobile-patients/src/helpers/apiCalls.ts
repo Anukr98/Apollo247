@@ -398,6 +398,9 @@ export interface OfferBannerSection {
   end_time: string;
   category_id?: number;
   sku?: string;
+  ip_id?:string;
+  ip_section_name?:string;
+
 }
 
 export interface MedicinePageAPiMetadata {
