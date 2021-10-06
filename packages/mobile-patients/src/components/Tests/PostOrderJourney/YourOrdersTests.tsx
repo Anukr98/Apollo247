@@ -106,6 +106,7 @@ import {
 import {
   getRescheduleAndCancellationReasons,
   getRescheduleAndCancellationReasonsVariables,
+  getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons,
 } from '@aph/mobile-patients/src/graphql/types/getRescheduleAndCancellationReasons';
 
 const { width, height } = Dimensions.get('window');
@@ -165,8 +166,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [showRescheduleReasons, setShowRescheduleReasons] = useState<boolean>(false);
   const [showCancelReasons, setShowCancelReasons] = useState<boolean>(false);
   const [showPromoteCashback, setShowPromoteCashback] = useState<boolean>(false);
-  const [cancelReasonList, setCancelReasonList] = useState<any>([]);
-  const [rescheduleReasonList, setRescheduleReasonList] = useState<any>([]);
+  const [cancelReasonList, setCancelReasonList] = useState([] as any);
+  const [rescheduleReasonList, setRescheduleReasonList] = useState([] as any);
   const [selectCancelReason, setSelectCancelReason] = useState<string>('');
   const [cancelReasonComment, setCancelReasonComment] = useState<string>('');
   const [selectRescheduleReason, setSelectRescheduleReason] = useState<string>('');
@@ -331,7 +332,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then((data) => {
-          const reasonList = data?.data?.getRescheduleAndCancellationReasons || [];
+          const reasonList =
+            (data?.data
+              ?.getRescheduleAndCancellationReasons as getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons) ||
+            [];
           setCancelReasonList(reasonList?.cancellationReasons);
           setRescheduleReasonList(reasonList?.rescheduleReasons);
         })
