@@ -1412,7 +1412,11 @@ export interface CleverTapEvents {
     Servicable: boolean;
   };
   [CleverTapEventName.PHARMACY_HOME_PAGE_BANNER]: {
-    BannerPosition: number;
+    'Nav src': 'Home Page' | 'Special Offers';
+    'Banner position': number;
+    Name: string;
+    'IP ID': string | undefined;
+    'IP section name': string | undefined;
   };
   [CleverTapEventName.CALL_THE_NEAREST_PHARMACY]: {
     pincode: string;

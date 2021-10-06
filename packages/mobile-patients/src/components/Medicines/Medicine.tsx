@@ -1302,13 +1302,18 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderSliderItem = ({ item, index }: { item: OfferBannerSection; index: number }) => {
     const handleOnPress = () => {
-      const eventAttributes:
-        | WebEngageEvents[WebEngageEventName.PHARMACY_BANNER_CLICK]
-        | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_BANNER] = {
+      const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_BANNER_CLICK] = {
         BannerPosition: slideIndex + 1,
       };
+      const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_BANNER] = {
+        'Nav src': 'Home Page',
+        'Banner position': slideIndex + 1,
+        Name: item?.name,
+        'IP ID': item?.ip_id,
+        'IP section name': item?.ip_section_name,
+      };
       postWebEngageEvent(WebEngageEventName.PHARMACY_BANNER_CLICK, eventAttributes);
-      postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_BANNER, eventAttributes);
+      postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_BANNER, cleverTapEventAttributes);
       if (item.category_id) {
         props.navigation.navigate(AppRoutes.MedicineListing, {
           category_id: item.category_id,
