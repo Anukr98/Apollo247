@@ -598,6 +598,7 @@ export interface SpecialOffersCouponsData {
   terms: string;
   redirectUrl: string;
   skus?: [] | null;
+  knowMoreOption?: boolean;
 }
 
 export interface SpecialOffersCouponsApiResponse {
@@ -975,6 +976,19 @@ export const getSpecialOffersPageBrandsProducts = (activeBrand: string, discount
       Authorization: config.SPECIAL_OFFERS_BRANDS_PRODUCTS[1],
     }},
   );
+};
+
+export const fetchCouponsPDP = async (data: any): Promise<AxiosResponse<SpecialOffersCouponsApiResponse>> => {
+  const { mobile, packageId, sku, type } = data;
+  const baseUrl = AppConfig.Configuration.SPECIAL_OFFERS_PAGE_COUPONS[0];
+  let url = `${baseUrl}?mobile=${mobile}&type=${type}&sku=${sku}`;
+  if (!!packageId) {
+    url += `&packageId=${packageId}`;
+  }
+  const response =  await Axios.get(url, {
+    headers: {},
+  });
+  return response;
 };
 
 export const getBoughtTogether = (

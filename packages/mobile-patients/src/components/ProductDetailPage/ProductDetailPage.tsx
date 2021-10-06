@@ -50,6 +50,7 @@ import {
   getIsMedicine,
   calculateCashbackForItem,
   formatAddress,
+  getPackageIds,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   MedicineProductDetails,
@@ -64,6 +65,7 @@ import {
   getMedicineDetailsApiV2,
   MedicineProduct,
   getBoughtTogether,
+  fetchCouponsPDP,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
@@ -107,6 +109,7 @@ import {
 import { SuggestedQuantityNudge } from '@aph/mobile-patients/src/components/SuggestedQuantityNudge/SuggestedQuantityNudge';
 import { FrequentlyBoughtTogether } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/FrequentlyBoughtTogether';
 import { postPharmacyAddNewAddressCompleted } from '../../helpers/webEngageEventHelpers';
+import { CouponSectionPDP } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/CouponSectionPDP';
 
 export type ProductPageViewedEventProps = Pick<
   WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED],
@@ -171,6 +174,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     setAxdcCode,
     isPharmacyLocationServiceable,
     axdcCode,
+    activeUserSubscriptions,
   } = useAppCommonData();
 
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
@@ -211,6 +215,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const [currentProductIdInCart, setCurrentProductIdInCart] = useState<string>(null);
   const [currentProductQuantityInCart, setCurrentProductQuantityInCart] = useState<number>(0);
   const [boughtTogether, setBoughtTogether] = useState<MedicineProduct[]>([]);
+  const [couponData, setCouponData] = useState([]);
 
   const { special_price, price, type_id, subcategory } = medicineDetails;
   const finalPrice = price - special_price ? special_price : price;
@@ -368,6 +373,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             setSku(productDetails?.sku);
             setMedicineData(productDetails);
             getBoughtTogetherData(productDetails?.sku, productDetails);
+            getCouponsData(productDetails?.sku);
           } else if (data && data.message) {
             setMedicineError(data.message);
           }
@@ -460,6 +466,25 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         })
         .catch(({ error }) => {
           CommonBugFender('ProductDetails_fetchBoughtTogether', error);
+        });
+    }
+  };
+
+  const getCouponsData = (productSku: string) => {
+    if (!!productSku) {
+      const params = {
+        packageId: getPackageIds(activeUserSubscriptions)?.join(),
+        mobile: g(currentPatient, 'mobileNumber'),
+        sku: productSku,
+        type: 'Pharmacy',
+      };
+      fetchCouponsPDP(params)
+        .then(({ data }) => {
+          const couponResponse = data;
+          setCouponData(couponResponse?.response);
+        })
+        .catch(({ error }) => {
+          CommonBugFender('ProductDetails_fetchCouponData', error);
         });
     }
   };
@@ -1290,6 +1315,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   composition={medicineDetails?.PharmaOverview?.[0]?.Composition || composition}
                   setShowSubstituteInfo={setShowSubstituteInfo}
                 />
+              )}
+              {!!couponData && couponData.length > 0 && (
+                <CouponSectionPDP offersData={couponData} />
               )}
               {isInStock && !!boughtTogether && boughtTogether.length > 0 && (
                 <FrequentlyBoughtTogether
