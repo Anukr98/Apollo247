@@ -295,7 +295,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           : parentQuery?.id == helpSectionQueryId.diagnostic
           ? ORDER_TYPE.DIAGNOSTICS
           : null;
-      const reason = subQueries?.find(({ id }) => id === selectedQueryId)?.title;
+      const reason = subQueries?.length>0 ? subQueries?.find(({ id }) => id === selectedQueryId)?.title : subQueriesData?.title;
       const variables: TicketNumberMutationVariables = {
         createHelpTicketHelpEmailInput: {
           category: parentQuery?.title,
