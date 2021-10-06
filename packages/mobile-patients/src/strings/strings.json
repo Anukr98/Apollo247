@@ -427,8 +427,8 @@
     "ticket_creation_lag_time": "It usually takes 10 seconds to submit your ticket, we will update you here once its done."
   },
   "needHelpQueryDetails": {
-    "tatBreachedTrue": "Your Order is {{medicineOrderStatus}}. Due to heavy order volumes, we are facing unexpected delays in shipping. We sincerely apologize for the inconvenience. We are working proactively to deliver at the earliest.",
-    "tatBreachedFalse": "Your Order is {{medicineOrderStatus}}. You will receive your order by {{etd}}. We are working proactively to deliver at the earliest."
+    "tatBreachedTrue": "Your order status is {{medicineOrderStatus}}. Due to heavy order volumes, we are facing unexpected delays in shipping. We sincerely apologize for the inconvenience. We are working proactively to deliver at the earliest.",
+    "tatBreachedFalse": "Your order status is {{medicineOrderStatus}}. You will receive your order by {{etd}}. We are working proactively to deliver at the earliest."
   },
   "doctor_search_listing": {
     "pleaseWait": "Please Wait!",
