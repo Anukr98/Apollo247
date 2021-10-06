@@ -226,6 +226,19 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     }
   };
 
+  const formatSearchFilter = (selectedFilters: SelectedFilters) => {
+    const keys = Object.keys(selectedFilters);
+    const selectedFilter: any = {};
+    if (keys?.length) {
+      keys.forEach((key) => {
+        if (selectedFilters?.[key]?.length) {
+          selectedFilter[key] = selectedFilters[key];
+        }
+      });
+    }
+    return selectedFilter;
+  };
+
   const searchProducts = async (
     searchText: string,
     pageId: number,
@@ -235,7 +248,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   ) => {
     try {
       updateLoading(pageId, true);
-      const _selectedFilters = formatFilters(selectedFilters, filters);
+      const _selectedFilters = formatSearchFilter(selectedFilters);
       const { data } = await searchMedicineApi(
         searchText,
         pageId,
