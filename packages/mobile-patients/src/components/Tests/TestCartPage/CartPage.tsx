@@ -688,8 +688,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         (lineItems: DiagnosticsCartItem) => lineItems?.id === updatedItems?.id
       );
       if (findLineItemsIndex !== -1) {
-        const getCurrentPatientCartItems = patientItems.cartItems[findLineItemsIndex].isSelected!;
-        updatedItems['isSelected'] = getCurrentPatientCartItems;
         patientItems.cartItems[findLineItemsIndex] = updatedItems;
         const patientLineItemObj: DiagnosticPatientCartItem = {
           patientId: patientItems?.patientId,
@@ -703,7 +701,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     setPatientCartItems?.([...newPatientCartItem!]?.slice(0));
 
     const foundIndex = cartItems?.findIndex((item) => item?.id == updatedItems?.id);
-    if (foundIndex !== -1 && isModifyFlow) {
+    if (foundIndex !== -1) {
       cartItems[foundIndex] = { ...cartItems[foundIndex], ...updatedItems };
       setCartItems?.([...cartItems]?.slice(0));
     }
