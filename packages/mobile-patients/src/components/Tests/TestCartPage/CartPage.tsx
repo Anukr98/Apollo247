@@ -565,10 +565,16 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   }
 
   const updatePricesInCart = (results: any, isNavigate?: boolean) => {
+    const getExisitngItems = patientCartItems
+      ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
+      ?.flat();
+    const getUniqueItems = [...new Set(getExisitngItems)];
+    const arrayToChoose = isModifyFlow ? cartItems : getUniqueItems;
+
     if (results?.length == 0) {
       setLoading?.(false);
     }
-    const disabledCartItems = cartItems?.filter(
+    const disabledCartItems = getUniqueItems?.filter(
       (cartItem) =>
         !results?.find(
           (d: findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics) =>
@@ -577,8 +583,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     );
     let isItemDisable = false,
       isPriceChange = false;
-    if (cartItems?.length > 0) {
-      cartItems?.map((cartItem) => {
+    if (arrayToChoose?.length > 0) {
+      arrayToChoose?.map((cartItem) => {
         const isItemInCart = results?.findIndex(
           (item: any) => String(item?.itemId) === String(cartItem?.id)
         );
@@ -695,9 +701,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       }
     });
     setPatientCartItems?.([...newPatientCartItem!]?.slice(0));
-    /**
-     * commented below code for future reference.
-     */
+
     const foundIndex = cartItems?.findIndex((item) => item?.id == updatedItems?.id);
     if (foundIndex !== -1 && isModifyFlow) {
       cartItems[foundIndex] = { ...cartItems[foundIndex], ...updatedItems };
