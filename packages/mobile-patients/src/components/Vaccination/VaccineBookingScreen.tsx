@@ -514,9 +514,15 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
   const { cusId, isfetchingId } = useGetJuspayId();
 
   useEffect(() => {
+    //check for corporate
     if (isCorporateSubscription) {
-      //check for corporate
-      setRetail(false); // Default should be Corporate Sponsored for corporate user
+      //check for number of remainingVaccineSlots
+      if (Number.parseInt(remainingVaccineSlots) > 0) {
+        setRetail(false); // Default should be Corporate Sponsored for corporate user - in case the dependent count is available
+      } else {
+        setRetail(true); // Default should be ’pay by Self’ for corporate user in case dependent count is exhauted
+      }
+      // setRetail(false); // Default should be Corporate Sponsored for corporate user // REVERTED FOR NOW
     } else {
       setRetail(true);
     }
@@ -548,16 +554,18 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
   }, [isRetail]);
 
   useEffect(() => {
-    if (isCorporateSubscription) {
-      if (isRetail == true) {
-        //first call getCorporateVaccinePlanValidation api then call fetchSlotsAvailable
-        fetchSlotsAvailable();
-      } else {
-        fetchCorporateVaccinePlanValidation();
-      }
-    } else {
-      fetchSlotsAvailable();
-    }
+    fetchSlotsAvailable();
+    //REVERTED FOR NOW
+    // if (isCorporateSubscription) {
+    //   if (isRetail == true) {
+    //     //first call getCorporateVaccinePlanValidation api then call fetchSlotsAvailable
+    //     fetchSlotsAvailable();
+    //   } else {
+    //     fetchCorporateVaccinePlanValidation();
+    //   }
+    // } else {
+    //   fetchSlotsAvailable();
+    // }
   }, [selectedHospitalSiteResourceID, preferredDate]);
 
   useEffect(() => {
@@ -1541,6 +1549,25 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
         city={selectedCity}
         vaccineType={selectedVaccineType}
         onRetailChanged={(_isRetail) => {
+          if (remainingVaccineSlots == 0 && _isRetail == false) {
+            setRetail(true); // If user selects ’Corp Sponsored’ in this case it will show a warning that your dependent count is exhausted.
+
+            showAphAlert &&
+              showAphAlert({
+                title: 'Oops!',
+
+                description:
+                  AppConfig.Configuration.Used_Up_Alotted_Slot_Msg ||
+                  'Sorry! You have used up all your allotted booking slots under corporate vaccination. You can still continue to book payable slots under pay by self option.',
+
+                onPressOk: () => {
+                  hideAphAlert!();
+                },
+              });
+
+            return;
+          }
+
           setRetail(_isRetail);
         }}
         onSiteResourceIdSelected={(siteResourceId) => {
