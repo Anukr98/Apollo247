@@ -287,6 +287,7 @@ const appStaticVariables = {
   enableCredWebView: false,
   DIAGNOSTICS_REPORT_TAT_BREACH_TEXT: "Reports are delayed by a few hours, but should be available any time soon.",
   TrueCaller_Login_Enabled: false,
+  DIAGNOSTICS_NO_CIRCLE_SAVINGS_TEXT : 'Extra 15% off on lab tests and cashback on medicine orders'
 };
 
 const DEV_top_specialties = [
