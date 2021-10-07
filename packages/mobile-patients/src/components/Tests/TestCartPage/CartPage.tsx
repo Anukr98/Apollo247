@@ -649,7 +649,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                   ? [Number(results?.[isItemInCart]?.itemId)]
                   : results?.[isItemInCart]?.inclusions,
               collectionMethod: TEST_COLLECTION_TYPE.HC,
-              // isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG, //commented for future ref
+              isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG, //commented for future ref
             };
 
             updateCartItemsLocally(updatedObject);
@@ -698,11 +698,11 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     /**
      * commented below code for future reference.
      */
-    // const foundIndex = cartItems?.findIndex((item) => item?.id == updatedItems?.id);
-    // if (foundIndex !== -1) {
-    //   cartItems[foundIndex] = { ...cartItems[foundIndex], ...updatedItems };
-    //   setCartItems?.([...cartItems]?.slice(0));
-    // }
+    const foundIndex = cartItems?.findIndex((item) => item?.id == updatedItems?.id);
+    if (foundIndex !== -1 && isModifyFlow) {
+      cartItems[foundIndex] = { ...cartItems[foundIndex], ...updatedItems };
+      setCartItems?.([...cartItems]?.slice(0));
+    }
   }
 
   async function getAddressServiceability(navigate?: boolean) {
