@@ -6306,15 +6306,9 @@ export const GET_DIAGNOSTIC_REPORT_TAT = gql`
 `;
 
 export const GET_PATIENT_PRESCRIPTIONS = gql`
-  query getPatientPrescriptions(
-    $patientId: String!
-    $limit: Int!
-    ) {
-      getPatientPrescriptions(
-        patientId: $patientId
-        limit: $limit
-      ) {
-        response{
+  query getPatientPrescriptions($patientId: String!, $limit: Int!) {
+    getPatientPrescriptions(patientId: $patientId, limit: $limit) {
+      response {
         doctorName
         patientName
         caseSheet {
@@ -6369,7 +6363,6 @@ export const GET_PATIENT_PRESCRIPTIONS = gql`
   }
 `;
 
-
 export const SAVE_JUSPAY_SDK_RESPONSE = gql`
   mutation saveJuspayResponseForAudit($auditInput: AuditInput) {
     saveJuspayResponseForAudit(auditInput: $auditInput) {
@@ -6406,6 +6399,15 @@ export const GET_PHARMACY_PRESCRIPTION_OPTION = gql`
         title
         visible
       }
+    }
+  }
+`;
+
+export const CREATE_VONAGE_SESSION_TOKEN = gql`
+  mutation createVonageSessionToken($appointmentId: String!) {
+    createVonageSessionToken(appointmentId: $appointmentId) {
+      token
+      sessionId
     }
   }
 `;

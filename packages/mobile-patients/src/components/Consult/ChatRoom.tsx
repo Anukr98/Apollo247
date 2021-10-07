@@ -62,6 +62,7 @@ import {
   GET_DOCTOR_DETAILS_BY_ID,
   CALL_CONNECTION_UPDATES,
   POST_WEB_ENGAGE,
+  CREATE_VONAGE_SESSION_TOKEN,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   bookRescheduleAppointment,
@@ -243,6 +244,10 @@ import {
 import { postCleverTapUploadPrescriptionEvents } from '@aph/mobile-patients/src/components/UploadPrescription/Events';
 import TextTicker from 'react-native-text-ticker';
 import DeviceInfo from 'react-native-device-info';
+import {
+  createVonageSessionToken,
+  createVonageSessionTokenVariables,
+} from '../../graphql/types/createVonageSessionToken';
 
 interface OpentokStreamObject {
   connection: {
@@ -1126,6 +1131,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const showProgressBarOnHeader = useRef<boolean>(false);
   const isJdAllowedToAssign = useRef<boolean | null | undefined>(null);
   const [appointmentDiffMin, setAppointmentDiffMin] = useState<number>(0);
+
   const [phoneNumber, setPhoneNumber] = useState<string | null>('');
   let cancelAppointmentTitle = '';
   if (appointmentDiffMin >= 15) {
@@ -1147,7 +1153,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       AsyncStorage.getItem(appointmentData?.id + '_' + OPENTOK_NETWORK_TEST_DONE).then(
         (isNetworkTestDone) => {
           if (!isNetworkTestDone || isNetworkTestDone == 'false') {
-            startNetworkConnectivityTest();
+            getAppointmentSessionInfo(); //this will start connectivity test
           }
         }
       );
@@ -2689,6 +2695,26 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           CommonBugFender('ChatRoom_updateSessionAPI', e);
         });
     }
+  };
+
+  const getAppointmentSessionInfo = () => {
+    const input = {
+      appointmentId: appointmentData.id,
+    };
+    client
+      .mutate<createVonageSessionToken, createVonageSessionTokenVariables>({
+        mutation: CREATE_VONAGE_SESSION_TOKEN,
+        variables: input,
+      })
+      .then((response: any) => {
+        startNetworkConnectivityTest(
+          response?.data?.createVonageSessionToken.token,
+          response?.data?.createVonageSessionToken.sessionId
+        );
+      })
+      .catch((e) => {
+        CommonBugFender('ChatRoom_updateSessionAPI', e);
+      });
   };
 
   const CheckDoctorPresentInChat = () => {
@@ -7723,7 +7749,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
-  const checkAndEnableCallMicrophonePermission = () => {
+  const checkAndEnableCallMicrophonePermission = (token: string, sessionId: string) => {
     checkPermissions(['camera', 'microphone']).then((response: any) => {
       const { camera, microphone } = response;
 
@@ -7736,7 +7762,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               'microphone',
               'Enable microphone in order to get your network tested.',
               () => {
-                startNetworkTest();
+                startNetworkTest(token, sessionId);
               },
               'Consult Chat Screen'
             );
@@ -7744,19 +7770,23 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           'Consult Chat Screen'
         );
       } else if (camera === 'authorized' && microphone === 'authorized') {
-        startNetworkTest();
+        startNetworkTest(token, sessionId);
       }
     });
   };
 
-  const startNetworkTest = () => {
+  const startNetworkTest = (token: string, sessionId: string) => {
     let testResult = 'BAD';
 
     setShowNetworkCheckStatusHeader(true);
     setOpenTokNetworkTestInProgress(true);
 
     setOTNetworkTestStatus(OT_NETWORK_TEST_STATUS.CHECKING);
-    NativeModules.OpentokNetworkTest.startNetworkTest('')
+    NativeModules.OpentokNetworkTest.startNetworkTest(
+      AppConfig.Configuration.PRO_TOKBOX_KEY,
+      sessionId,
+      token
+    )
       .then((result: any) => {
         let networkStatus = result.split(':')[0];
 
@@ -7862,10 +7892,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
-  const startNetworkConnectivityTest = () => {
+  const startNetworkConnectivityTest = (token: string, sessionId: string) => {
     Platform.OS == 'ios'
       ? checkNetworkStatusByDownloadingFile()
-      : checkAndEnableCallMicrophonePermission();
+      : checkAndEnableCallMicrophonePermission(token, sessionId);
 
     setShowNetworkTestIcon(true);
     setShowRescheduleCancel(false);
@@ -8284,7 +8314,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setShowRescheduleCancel(false);
           }}
           onPressNetworkConnectivity={() => {
-            startNetworkConnectivityTest();
+            getAppointmentSessionInfo();
           }}
           onPressRescheduleAppointment={() => {
             postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
