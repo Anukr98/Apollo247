@@ -1322,8 +1322,9 @@ export interface CleverTapEvents {
     'No of items': number;
   };
   [CleverTapEventName.PHARMACY_COUPON_ACTION]: {
-    'Customer ID': string;
-    'Cart Items'?: string;
+    'Coupon code'?: string;
+    'Coupon description'?: string;
+    Action?: string;
   };
   [CleverTapEventName.CART_COUPON_APPLIED]: {
     'Coupon code'?: string;

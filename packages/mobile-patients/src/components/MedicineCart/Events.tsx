@@ -288,11 +288,6 @@ export function applyCouponClickedEvent(id: string, itemsInCart?: string) {
     'Customer ID': id,
     'Cart Items': itemsInCart || '',
   };
-  const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_COUPON_ACTION] = {
-    'Customer ID': id,
-    'Cart Items': itemsInCart || undefined,
-  };
-  // postCleverTapEvent(CleverTapEventName.PHARMACY_COUPON_ACTION,cleverTapEventAttributes);
   postWebEngageEvent(WebEngageEventName.CART_APPLY_COUPON_CLCIKED, eventAttributes);
   const cleverTapAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_APPLY_COUPON_CLICKED] = {};
   postCleverTapEvent(CleverTapEventName.PHARMACY_APPLY_COUPON_CLICKED,cleverTapAttributes);
