@@ -431,6 +431,17 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const getFormattedDateTimeWithBefore = (time: string) => {
     let day = parseInt(moment(time).format('D'));
     let getDaySubscript = getFormattedDaySubscript(day);
+    let timeReceived: any = time;
+    const isExpectedDateChanged =
+      orderDetails.oldOrderTat! && statusToShowNewItems.includes(orderDetails.currentStatus!)
+        ? true
+        : false;
+    const days = new Date().getDate() - timeReceived.split('-')[0];
+    if (isExpectedDateChanged && days == -1) {
+      let finalDateTime = 'Arriving Tomorrow' + ' before ' + moment(time).format('hh:mm A');
+      return finalDateTime;
+    }
+
     let finalDateTime =
       day +
       getDaySubscript +
