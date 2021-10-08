@@ -3298,7 +3298,7 @@ export const GET_MEDICAL_PRISM_RECORD_V3 = gql`
             result
             range
             outOfRange
-            resultDate
+            # resultDate
           }
           fileUrl
           testResultFiles {
