@@ -989,6 +989,29 @@ export const BookVaccineIcon: React.FC<IconProps> = (props) => (
   />
 );
 
+export const LabTestBrownIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 30, width: 30, resizeMode: 'contain' }}
+    {...props}
+    source={require('./icons/lab_test_brown.webp')}
+  />
+);
+
+export const PercentOffBrownIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24, resizeMode: 'contain' }}
+    {...props}
+    source={require('./icons/off_percent_brown.webp')}
+  />
+);
+
+export const TimeGreenIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24, resizeMode: 'contain' }}
+    {...props}
+    source={require('./icons/schedule_green.webp')}
+  />
+);
 export const MedicineCartIcon: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 56, width: 56, resizeMode: 'contain' }}

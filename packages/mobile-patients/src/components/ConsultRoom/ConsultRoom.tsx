@@ -60,6 +60,9 @@ import {
   RemoveIconGrey,
   SearchNoResultIcon,
   BookVaccineIcon,
+  LabTestBrownIcon,
+  PercentOffBrownIcon,
+  TimeGreenIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   BannerDisplayType,
@@ -1663,7 +1666,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     {
       id: 2,
       title: 'Book Lab Tests',
-      image: <TestsCartIcon style={styles.menuOptionIconStyle} />,
+      image: <LabTestBrownIcon style={styles.menuOptionIconStyle} />,
       onPress: () => {
         const homeScreenAttributes = {
           'Nav src': 'hero banner',
@@ -1965,7 +1968,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const setSubscriptionData = (plan: any, isUpgradePlan?: boolean, isCorporatePlan?: boolean) => {
-
     try {
       const group = plan.group;
       const groupData: GroupPlan = {
@@ -3104,10 +3106,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     <View style={styles.bottomImageView}>{item.image}</View>
                     <View style={styles.bottomTextView}>
                       <Text
-                        style={[theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 18)]}
+                        style={[theme.viewStyles.text('M', 13, theme.colors.SHERPA_BLUE, 1, 20)]}
                       >
                         {item.title}
                       </Text>
+                    </View>
+                    <View
+                      style={{ marginRight: 5, justifyContent: 'center', alignItems: 'center' }}
+                    >
+                      <ArrowRight />
                     </View>
                   </View>
                 </TouchableOpacity>
@@ -3133,6 +3140,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     <Text style={[theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 18)]}>
                       {item.title}
                     </Text>
+                  </View>
+                  <View style={{ marginRight: 5, justifyContent: 'center', alignItems: 'center' }}>
+                    <ArrowRight />
                   </View>
                 </View>
               </TouchableOpacity>
