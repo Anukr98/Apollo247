@@ -4691,6 +4691,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <View style={styles.viewName}>
                 {renderMenuOptions()}
 
+                {renderHeadings('My Doctors')}
+                <View style={{ backgroundColor: '#f0f1ec' }}>
+                  {renderListView('Active Appointments', 'normal')}
+                </View>
+                <View style={{ backgroundColor: '#f0f1ec' }}>{renderAllConsultedDoctors()}</View>
+
+                {renderHeadings('Circle Membership and More')}
                 {circleDataLoading && renderCircleShimmer()}
                 <View style={{ backgroundColor: '#f0f1ec' }}>
                   {isCircleMember === 'yes' && !circleDataLoading && renderCircle()}
@@ -4698,18 +4705,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 {showCirclePlans && renderCircleSubscriptionPlans()}
                 {showCircleActivationcr && renderCircleActivation()}
                 {bannerLoading && renderBannerShimmer()}
+
                 <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
 
                 {/* {!covidVaccineCtaV2?.data && renderCovidVaccinationShimmer()}
                 <View style={{ backgroundColor: '#f0f1ec' }}>
                   {covidVaccineCtaV2?.data?.length > 0 && renderCovidContainer()}
                 </View> */}
-
-                {renderHeadings('My Doctors')}
-                <View style={{ backgroundColor: '#f0f1ec' }}>
-                  {renderListView('Active Appointments', 'normal')}
-                </View>
-                <View style={{ backgroundColor: '#f0f1ec' }}>{renderAllConsultedDoctors()}</View>
 
                 {renderHeadings('Services For You')}
                 {renderServicesForYouView()}
