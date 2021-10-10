@@ -430,6 +430,16 @@ const styles = StyleSheet.create({
     width: 40,
     resizeMode: 'contain',
   },
+  menuOption2IconStyle: {
+    height: 30,
+    width: 30,
+    resizeMode: 'contain',
+  },
+  menuOption2SubIconStyle: {
+    height: 24,
+    width: 24,
+    resizeMode: 'contain',
+  },
   hdfcConnectContainer: {
     ...theme.viewStyles.cardViewStyle,
     minHeight: 140,
@@ -544,6 +554,19 @@ const styles = StyleSheet.create({
     marginRight: 12,
     marginBottom: 12,
   },
+  bottom2CardView: {
+    ...theme.viewStyles.cardViewStyle,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 15,
+    minHeight: 75,
+    width: width / 2 - 22,
+    marginRight: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderStyle: 'solid',
+    borderColor: '#7EA2AD',
+    borderRadius: 6,
+  },
   bottomImageView: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -555,6 +578,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 6,
     flex: 1,
+  },
+  bottomRightArrowView: {
+    marginRight: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  bottom2TextView: {
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    marginRight: 6,
+  },
+  bottom2ImageView: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 10,
+  },
+  bottom2SubImage: {
+    height: 20,
+    width: 20,
+    resizeMode: 'contain',
   },
   covidSubContainer: {
     flexDirection: 'row',
@@ -777,6 +820,8 @@ type menuOptions = {
   id: number;
   title: string;
   image: React.ReactNode;
+  subtitle?: string;
+  image2?: React.ReactNode;
   onPress: () => void;
 };
 
@@ -1666,7 +1711,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     {
       id: 2,
       title: 'Book Lab Tests',
-      image: <LabTestBrownIcon style={styles.menuOptionIconStyle} />,
+      image: <LabTestBrownIcon style={styles.menuOption2IconStyle} />,
+      image2: <PercentOffBrownIcon style={styles.bottom2SubImage} />,
+      subtitle: 'Upto 60% Off',
       onPress: () => {
         const homeScreenAttributes = {
           'Nav src': 'hero banner',
@@ -1681,7 +1728,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     {
       id: 3,
       title: 'Consult a Doctor',
-      image: <DoctorIcon style={[styles.menuOptionIconStyle]} />,
+      image: <DoctorIcon style={[styles.menuOption2IconStyle]} />,
+      image2: <TimeGreenIcon style={styles.bottom2SubImage} />,
+      subtitle: 'Consult in 15 mins',
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
@@ -3102,19 +3151,32 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             } else {
               return (
                 <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
-                  <View style={styles.bottomCardView}>
-                    <View style={styles.bottomImageView}>{item.image}</View>
-                    <View style={styles.bottomTextView}>
-                      <Text
-                        style={[theme.viewStyles.text('M', 13, theme.colors.SHERPA_BLUE, 1, 20)]}
-                      >
-                        {item.title}
-                      </Text>
+                  <View style={styles.bottom2CardView}>
+                    <View style={{ flexDirection: 'row' }}>
+                      <View style={styles.bottom2ImageView}>{item.image}</View>
+                      <View style={styles.bottom2TextView}>
+                        <Text
+                          style={[theme.viewStyles.text('M', 13, theme.colors.SHERPA_BLUE, 1, 20)]}
+                        >
+                          {item.title}
+                        </Text>
+                      </View>
+                      <View style={styles.bottomRightArrowView}>
+                        <ArrowRight />
+                      </View>
                     </View>
+
                     <View
-                      style={{ marginRight: 5, justifyContent: 'center', alignItems: 'center' }}
+                      style={{ flexDirection: 'row', backgroundColor: 'rgba(254, 231, 218, 0.6)' }}
                     >
-                      <ArrowRight />
+                      <View style={{ flexDirection: 'row' }}>{item.image2}</View>
+                      <View style={styles.bottom2TextView}>
+                        <Text
+                          style={[theme.viewStyles.text('M', 13, theme.colors.SHERPA_BLUE, 1, 20)]}
+                        >
+                          {item.subtitle}
+                        </Text>
+                      </View>
                     </View>
                   </View>
                 </TouchableOpacity>
@@ -3141,7 +3203,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                       {item.title}
                     </Text>
                   </View>
-                  <View style={{ marginRight: 5, justifyContent: 'center', alignItems: 'center' }}>
+                  <View style={styles.bottomRightArrowView}>
                     <ArrowRight />
                   </View>
                 </View>
