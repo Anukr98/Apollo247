@@ -494,11 +494,11 @@ PODS:
     - RSKImageCropper
   - RNShare (6.5.0):
     - React-Core
-  - RNSound (0.11.0):
-    - React
-    - RNSound/Core (= 0.11.0)
-  - RNSound/Core (0.11.0):
-    - React
+  - RNSound (0.11.1):
+    - React-Core
+    - RNSound/Core (= 0.11.1)
+  - RNSound/Core (0.11.1):
+    - React-Core
   - RNSVG (12.1.1):
     - React
   - RNVectorIcons (6.7.0):
@@ -920,7 +920,7 @@ SPEC CHECKSUMS:
   RNGestureHandler: a4ddde1ffc6e590c8127b8b7eabfdade45475c74
   RNImageCropPicker: 9d1a7eea4f8368fc479cbd2bf26459bd3c74d9aa
   RNShare: 047d42214f875d731bde73a2b67418638af85ad9
-  RNSound: c980916b596cc15c8dcd2f6ecd3b13c4881dbe20
+  RNSound: 9253013eeaa051eab63d354fd4654f7aa67c82f0
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
   RNVectorIcons: 368d6d8b8301224e5ffb6254191f4f8876c2be0d
   RNVoipPushNotification: be6f70cac9d1fd73e020063093f635f64d97c9c6
@@ -941,4 +941,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: bb978693ffd2f127a81939e2532293df49b4f470
 
-COCOAPODS: 1.10.1
+COCOAPODS: 1.11.2

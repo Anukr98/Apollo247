@@ -7,23 +7,24 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0E3BB964D59C2A27E13B4276 /* Pods_NotificationService.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 597900C5869985145AC968B1 /* Pods_NotificationService.framework */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
 		13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB11A68108700A75B9A /* LaunchScreen.xib */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		3989311398CD4273BCF8C3F2 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		3989311398CD4273BCF8C3F2 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		446B6C280249786482BE548C /* Pods_NotificationViewController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7997DFA21AFA961F2193115D /* Pods_NotificationViewController.framework */; };
 		4929325025C1959C000A9EBF /* join_sound.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4929324E25C1959C000A9EBF /* join_sound.mp3 */; };
 		492AFA5125C2A4A500330A9C /* left_sound.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 492AFA4F25C2A4A500330A9C /* left_sound.mp3 */; };
-		4D683DC4AA87DE851E055495 /* Pods_NotificationViewController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 953AB7B73FCA51A3F5507C61 /* Pods_NotificationViewController.framework */; };
-		51DB4749A9874BD886B2F10B /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		51DB4749A9874BD886B2F10B /* (null) in Resources */ = {isa = PBXBuildFile; };
 		6717258923016EF10088EE92 /* OTInstall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6717258823016EF10088EE92 /* OTInstall.swift */; };
-		6F01AA3CDEAB4200B6F4D225 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
-		7639B49CA7D542FAB3993C3B /* BuildFile in Resources */ = {isa = PBXBuildFile; };
-		7A1955DD5F9B407C97969865 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
-		7BE6FC5527994F0299F8F1F2 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
-		7CF13BFBC3EB448BA0017BA0 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
-		87388654E0C94B80AB6AC365 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
-		92F3F92657424548B56588C7 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		6F01AA3CDEAB4200B6F4D225 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		7639B49CA7D542FAB3993C3B /* (null) in Resources */ = {isa = PBXBuildFile; };
+		7A1955DD5F9B407C97969865 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		7BE6FC5527994F0299F8F1F2 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		7CF13BFBC3EB448BA0017BA0 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		87388654E0C94B80AB6AC365 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		92F3F92657424548B56588C7 /* (null) in Resources */ = {isa = PBXBuildFile; };
 		970ECE9323CB50040022FE84 /* VitalsBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 970ECE9123CB50030022FE84 /* VitalsBridge.m */; };
 		970ECE9423CB50040022FE84 /* Vitals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 970ECE9223CB50040022FE84 /* Vitals.swift */; };
 		977C7CF82369AEFB008DA5C8 /* OTScreenCapturer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 977C7CF72369AEFB008DA5C8 /* OTScreenCapturer.swift */; };
@@ -57,8 +58,8 @@
 		97FFBDEF23E4887B00E55E34 /* rrule.js in Resources */ = {isa = PBXBuildFile; fileRef = 97FFBDE223E4887A00E55E34 /* rrule.js */; };
 		97FFBDF023E4887B00E55E34 /* nlp.js in Resources */ = {isa = PBXBuildFile; fileRef = 97FFBDE323E4887A00E55E34 /* nlp.js */; };
 		97FFBDF123E4887B00E55E34 /* JavaScriptBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97FFBDE423E4887A00E55E34 /* JavaScriptBridge.swift */; };
-		AAD0918B90D345E89B6D312A /* BuildFile in Resources */ = {isa = PBXBuildFile; };
-		B6877E075F394A0DB541F9EE /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		AAD0918B90D345E89B6D312A /* (null) in Resources */ = {isa = PBXBuildFile; };
+		B6877E075F394A0DB541F9EE /* (null) in Resources */ = {isa = PBXBuildFile; };
 		BB8190F124F8C26C00AD66C6 /* AIRDummyView.m in Sources */ = {isa = PBXBuildFile; fileRef = BB8190BB24F8C26C00AD66C6 /* AIRDummyView.m */; };
 		BB8190F224F8C26C00AD66C6 /* AIRGoogleMapUrlTile.m in Sources */ = {isa = PBXBuildFile; fileRef = BB8190BF24F8C26C00AD66C6 /* AIRGoogleMapUrlTile.m */; };
 		BB8190F324F8C26C00AD66C6 /* AIRGoogleMapPolygonManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BB8190C224F8C26C00AD66C6 /* AIRGoogleMapPolygonManager.m */; };
@@ -114,13 +115,12 @@
 		BBA1D02324F4D25800C77819 /* GMUStaticCluster.m in Sources */ = {isa = PBXBuildFile; fileRef = BBA1D00524F4D25800C77819 /* GMUStaticCluster.m */; };
 		BBA1D02424F4D25800C77819 /* GMSMarker+GMUClusteritem.m in Sources */ = {isa = PBXBuildFile; fileRef = BBA1D00824F4D25800C77819 /* GMSMarker+GMUClusteritem.m */; };
 		C38E9E715A0517993FE5D4F8 /* Pods_ApolloPatient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72F617656E6541D1F4092240 /* Pods_ApolloPatient.framework */; };
-		D7233BEF61ED4CC7ABE5D4E7 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
-		DE455207391A8218749D5D40 /* Pods_NotificationService.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A7EF1B18F33DE14F61F7383 /* Pods_NotificationService.framework */; };
-		E0A12ADE12A2489881685B48 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		D7233BEF61ED4CC7ABE5D4E7 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		E0A12ADE12A2489881685B48 /* (null) in Resources */ = {isa = PBXBuildFile; };
 		E892BC222670D8CC0018AA07 /* RNShare.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E892BC212670D8CC0018AA07 /* RNShare.framework */; };
-		ECCC0EE0406F45368B4BB8A1 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		ECCC0EE0406F45368B4BB8A1 /* (null) in Resources */ = {isa = PBXBuildFile; };
 		ED297163215061F000B7C4FE /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED297162215061F000B7C4FE /* JavaScriptCore.framework */; };
-		F109515A71C04208812E40C7 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		F109515A71C04208812E40C7 /* (null) in Resources */ = {isa = PBXBuildFile; };
 		F1B3D78C22B8D37200521684 /* IBMPlexSans-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F1B3D75622B8D37100521684 /* IBMPlexSans-Medium.ttf */; };
 		F1B3D78D22B8D37200521684 /* IBMPlexSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F1B3D75722B8D37100521684 /* IBMPlexSans-SemiBold.ttf */; };
 		F1B3D79522B8D37200521684 /* IBMPlexSans-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F1B3D75F22B8D37100521684 /* IBMPlexSans-Light.ttf */; };
@@ -189,20 +189,20 @@
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = ApolloPatient/main.m; sourceTree = "<group>"; };
 		1E298778D52A8CF8271AE6DD /* Pods-ApolloPatient-NotificationViewController.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloPatient-NotificationViewController.debug.xcconfig"; path = "Target Support Files/Pods-ApolloPatient-NotificationViewController/Pods-ApolloPatient-NotificationViewController.debug.xcconfig"; sourceTree = "<group>"; };
 		24E5689BA4364D2CB5684A43 /* Fontisto.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Fontisto.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Fontisto.ttf"; sourceTree = "<group>"; };
-		2A7EF1B18F33DE14F61F7383 /* Pods_NotificationService.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NotificationService.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D16E6891FA4F8E400B85C8A /* libReact.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libReact.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		4929324E25C1959C000A9EBF /* join_sound.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = join_sound.mp3; sourceTree = "<group>"; };
 		492AFA4F25C2A4A500330A9C /* left_sound.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = left_sound.mp3; sourceTree = "<group>"; };
 		534D05559BD207D7C46A5934 /* Pods-ApolloPatient-NotificationViewController.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloPatient-NotificationViewController.release.xcconfig"; path = "Target Support Files/Pods-ApolloPatient-NotificationViewController/Pods-ApolloPatient-NotificationViewController.release.xcconfig"; sourceTree = "<group>"; };
+		597900C5869985145AC968B1 /* Pods_NotificationService.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NotificationService.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6717258723016EF00088EE92 /* ApolloPatient-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ApolloPatient-Bridging-Header.h"; sourceTree = "<group>"; };
 		6717258823016EF10088EE92 /* OTInstall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTInstall.swift; sourceTree = "<group>"; };
 		6790F2152317D9880037D908 /* RSKImageCropper.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RSKImageCropper.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		72F617656E6541D1F4092240 /* Pods_ApolloPatient.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ApolloPatient.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7997DFA21AFA961F2193115D /* Pods_NotificationViewController.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NotificationViewController.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8097225873FF04AEF5DA2ED7 /* Pods-NotificationViewController.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NotificationViewController.release.xcconfig"; path = "Target Support Files/Pods-NotificationViewController/Pods-NotificationViewController.release.xcconfig"; sourceTree = "<group>"; };
 		80EAA264D827BADB6794E6F4 /* Pods-ApolloPatient.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloPatient.debug.xcconfig"; path = "Target Support Files/Pods-ApolloPatient/Pods-ApolloPatient.debug.xcconfig"; sourceTree = "<group>"; };
 		836CC23D25E3A67B27683734 /* Pods-ApolloPatient-NotificationService.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloPatient-NotificationService.release.xcconfig"; path = "Target Support Files/Pods-ApolloPatient-NotificationService/Pods-ApolloPatient-NotificationService.release.xcconfig"; sourceTree = "<group>"; };
 		8D81C5135BEDE9E60C222C45 /* Pods-NotificationService.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NotificationService.debug.xcconfig"; path = "Target Support Files/Pods-NotificationService/Pods-NotificationService.debug.xcconfig"; sourceTree = "<group>"; };
-		953AB7B73FCA51A3F5507C61 /* Pods_NotificationViewController.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NotificationViewController.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		970ECE9023CB50030022FE84 /* VitalsBridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VitalsBridge.h; sourceTree = "<group>"; };
 		970ECE9123CB50030022FE84 /* VitalsBridge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VitalsBridge.m; sourceTree = "<group>"; };
 		970ECE9223CB50040022FE84 /* Vitals.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Vitals.swift; sourceTree = "<group>"; };
@@ -402,7 +402,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DE455207391A8218749D5D40 /* Pods_NotificationService.framework in Frameworks */,
+				0E3BB964D59C2A27E13B4276 /* Pods_NotificationService.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -412,7 +412,7 @@
 			files = (
 				9797AC2A2420DFD500AD397F /* UserNotificationsUI.framework in Frameworks */,
 				9797AC292420DFD500AD397F /* UserNotifications.framework in Frameworks */,
-				4D683DC4AA87DE851E055495 /* Pods_NotificationViewController.framework in Frameworks */,
+				446B6C280249786482BE548C /* Pods_NotificationViewController.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -460,8 +460,8 @@
 				72F617656E6541D1F4092240 /* Pods_ApolloPatient.framework */,
 				978157C32420C86800749029 /* UserNotifications.framework */,
 				978157C52420C86800749029 /* UserNotificationsUI.framework */,
-				2A7EF1B18F33DE14F61F7383 /* Pods_NotificationService.framework */,
-				953AB7B73FCA51A3F5507C61 /* Pods_NotificationViewController.framework */,
+				597900C5869985145AC968B1 /* Pods_NotificationService.framework */,
+				7997DFA21AFA961F2193115D /* Pods_NotificationViewController.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -976,21 +976,21 @@
 				97FFBDF023E4887B00E55E34 /* nlp.js in Resources */,
 				97D79A1C24924D410029DE31 /* main.jsbundle in Resources */,
 				97FFBDEF23E4887B00E55E34 /* rrule.js in Resources */,
-				F109515A71C04208812E40C7 /* BuildFile in Resources */,
-				51DB4749A9874BD886B2F10B /* BuildFile in Resources */,
-				92F3F92657424548B56588C7 /* BuildFile in Resources */,
-				7CF13BFBC3EB448BA0017BA0 /* BuildFile in Resources */,
-				E0A12ADE12A2489881685B48 /* BuildFile in Resources */,
-				7A1955DD5F9B407C97969865 /* BuildFile in Resources */,
-				7BE6FC5527994F0299F8F1F2 /* BuildFile in Resources */,
-				7639B49CA7D542FAB3993C3B /* BuildFile in Resources */,
-				3989311398CD4273BCF8C3F2 /* BuildFile in Resources */,
-				6F01AA3CDEAB4200B6F4D225 /* BuildFile in Resources */,
-				ECCC0EE0406F45368B4BB8A1 /* BuildFile in Resources */,
-				AAD0918B90D345E89B6D312A /* BuildFile in Resources */,
-				D7233BEF61ED4CC7ABE5D4E7 /* BuildFile in Resources */,
-				B6877E075F394A0DB541F9EE /* BuildFile in Resources */,
-				87388654E0C94B80AB6AC365 /* BuildFile in Resources */,
+				F109515A71C04208812E40C7 /* (null) in Resources */,
+				51DB4749A9874BD886B2F10B /* (null) in Resources */,
+				92F3F92657424548B56588C7 /* (null) in Resources */,
+				7CF13BFBC3EB448BA0017BA0 /* (null) in Resources */,
+				E0A12ADE12A2489881685B48 /* (null) in Resources */,
+				7A1955DD5F9B407C97969865 /* (null) in Resources */,
+				7BE6FC5527994F0299F8F1F2 /* (null) in Resources */,
+				7639B49CA7D542FAB3993C3B /* (null) in Resources */,
+				3989311398CD4273BCF8C3F2 /* (null) in Resources */,
+				6F01AA3CDEAB4200B6F4D225 /* (null) in Resources */,
+				ECCC0EE0406F45368B4BB8A1 /* (null) in Resources */,
+				AAD0918B90D345E89B6D312A /* (null) in Resources */,
+				D7233BEF61ED4CC7ABE5D4E7 /* (null) in Resources */,
+				B6877E075F394A0DB541F9EE /* (null) in Resources */,
+				87388654E0C94B80AB6AC365 /* (null) in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1449,7 +1449,7 @@
 				CODE_SIGN_ENTITLEMENTS = ApolloPatient/ApolloPatient.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 27;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
@@ -1502,7 +1502,7 @@
 				CODE_SIGN_ENTITLEMENTS = ApolloPatient/ApolloPatient.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 27;
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1658,7 +1658,7 @@
 				CODE_SIGN_ENTITLEMENTS = NotificationService/NotificationService.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 27;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
@@ -1691,7 +1691,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 27;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
@@ -1722,7 +1722,7 @@
 				CODE_SIGN_ENTITLEMENTS = NotificationViewController/NotificationViewController.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 27;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
@@ -1755,7 +1755,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 27;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
