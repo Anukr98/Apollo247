@@ -558,7 +558,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.cardViewStyle,
     shadowOffset: { width: 0, height: 5 },
     elevation: 15,
-    minHeight: 75,
+    minHeight: 78,
     width: width / 2 - 22,
     marginRight: 12,
     marginBottom: 12,
@@ -566,6 +566,14 @@ const styles = StyleSheet.create({
     borderStyle: 'solid',
     borderColor: '#7EA2AD',
     borderRadius: 6,
+    padding: 4,
+    justifyContent: 'center',
+  },
+  bottom2SubCardView: {
+    flexDirection: 'row',
+    marginTop: 'auto',
+    marginHorizontal: 2,
+    borderRadius: 4,
   },
   bottomImageView: {
     alignItems: 'center',
@@ -587,12 +595,12 @@ const styles = StyleSheet.create({
   bottom2TextView: {
     alignItems: 'flex-start',
     justifyContent: 'center',
-    marginRight: 6,
+    marginRight: 4,
   },
   bottom2ImageView: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 10,
+    marginHorizontal: 9,
   },
   bottom2SubImage: {
     height: 20,
@@ -822,6 +830,8 @@ type menuOptions = {
   image: React.ReactNode;
   subtitle?: string;
   image2?: React.ReactNode;
+  subCardColor?: string;
+  subtitleColor?: string;
   onPress: () => void;
 };
 
@@ -1691,6 +1701,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       id: 1,
       title: 'Buy Medicines and Essentials',
       image: <MedicineCartIcon style={[styles.menuOptionIconStyle]} />,
+      subCardColor: '#EAF6FF',
+      subtitleColor: '#2D6E85',
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Home Screen');
@@ -1714,6 +1726,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       image: <LabTestBrownIcon style={styles.menuOption2IconStyle} />,
       image2: <PercentOffBrownIcon style={styles.bottom2SubImage} />,
       subtitle: 'Upto 60% Off',
+      subCardColor: 'rgba(254, 231, 218, 0.6)',
+      subtitleColor: '#A05D1F',
       onPress: () => {
         const homeScreenAttributes = {
           'Nav src': 'hero banner',
@@ -1731,6 +1745,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       image: <DoctorIcon style={[styles.menuOption2IconStyle]} />,
       image2: <TimeGreenIcon style={styles.bottom2SubImage} />,
       subtitle: 'Consult in 15 mins',
+      subCardColor: '#E6FFFD',
+      subtitleColor: '#1FA098',
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
@@ -3152,11 +3168,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               return (
                 <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
                   <View style={styles.bottom2CardView}>
-                    <View style={{ flexDirection: 'row' }}>
+                    <View style={{ flexDirection: 'row', marginTop: 6 }}>
                       <View style={styles.bottom2ImageView}>{item.image}</View>
                       <View style={styles.bottom2TextView}>
                         <Text
-                          style={[theme.viewStyles.text('M', 13, theme.colors.SHERPA_BLUE, 1, 20)]}
+                          style={[theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 18)]}
                         >
                           {item.title}
                         </Text>
@@ -3167,13 +3183,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     </View>
 
                     <View
-                      style={{ flexDirection: 'row', backgroundColor: 'rgba(254, 231, 218, 0.6)' }}
+                      style={[
+                        styles.bottom2SubCardView,
+                        {
+                          backgroundColor: item.subCardColor,
+                        },
+                      ]}
                     >
-                      <View style={{ flexDirection: 'row' }}>{item.image2}</View>
+                      <View style={styles.bottom2ImageView}>{item.image2}</View>
                       <View style={styles.bottom2TextView}>
-                        <Text
-                          style={[theme.viewStyles.text('M', 13, theme.colors.SHERPA_BLUE, 1, 20)]}
-                        >
+                        <Text style={[theme.viewStyles.text('R', 11, item.subtitleColor!, 1, 18)]}>
                           {item.subtitle}
                         </Text>
                       </View>
