@@ -63,6 +63,7 @@ import {
   LabTestBrownIcon,
   PercentOffBrownIcon,
   TimeGreenIcon,
+  Card,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   BannerDisplayType,
@@ -1703,6 +1704,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       image: <MedicineCartIcon style={[styles.menuOptionIconStyle]} />,
       subCardColor: '#EAF6FF',
       subtitleColor: '#2D6E85',
+      subtitle: 'Health Credits Available',
+      image2: <Card style={styles.bottom2SubImage} />,
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Home Screen');
@@ -3148,20 +3151,34 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             if (item?.id === 1) {
               return (
                 <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
-                  <LinearGradientComponent
-                    style={[
-                      styles.linearGradientView,
-                      { shadowOffset: { width: 0, height: 5 }, elevation: 15 },
-                    ]}
-                  >
-                    <View style={styles.topImageView}>
-                      {item.image}
-                      <Text style={styles.topTextStyle}>{item.title}</Text>
+                  <View style={[styles.bottom2CardView, { width: width - 32 }]}>
+                    <View style={{ flexDirection: 'row', marginTop: 6 }}>
+                      <View style={styles.topImageView}>
+                        {item.image}
+                        <Text style={[styles.topTextStyle, { color: theme.colors.SHERPA_BLUE }]}>
+                          {item.title}
+                        </Text>
+                      </View>
+                      <View style={styles.bottomRightArrowView}>
+                        <ArrowRight />
+                      </View>
                     </View>
-                    <View style={{ marginRight: 10 }}>
-                      <WhiteArrowRightIcon />
+                    <View
+                      style={[
+                        styles.bottom2SubCardView,
+                        {
+                          backgroundColor: item.subCardColor,
+                        },
+                      ]}
+                    >
+                      <View style={styles.bottom2ImageView}>{item.image2}</View>
+                      <View style={styles.bottom2TextView}>
+                        <Text style={[theme.viewStyles.text('R', 11, item.subtitleColor!, 1, 18)]}>
+                          ₹ {0} {item.subtitle}
+                        </Text>
+                      </View>
                     </View>
-                  </LinearGradientComponent>
+                  </View>
                 </TouchableOpacity>
               );
             } else {

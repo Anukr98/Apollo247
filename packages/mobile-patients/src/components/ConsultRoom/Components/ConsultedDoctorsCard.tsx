@@ -119,8 +119,7 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
   const onClickDoctorCard = (
     item: getPatientPastConsultedDoctors_getPatientPastConsultedDoctors
   ) => {
-    myConsultedDoctorsClickedWEBEngage(currentPatient, item,
-      allCurrentPatients, 'Home Page');
+    myConsultedDoctorsClickedWEBEngage(currentPatient, item, allCurrentPatients, 'Home Page');
     item?.allowBookingRequest
       ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
           doctorId: item?.id,
@@ -140,11 +139,13 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
 
   return (
     <View>
+      {/* 
+      design changes, not required for now, maybe used
       {loading ? (
         renderConsultedDoctorsTitleShimmer()
       ) : doctors?.length > 0 ? (
         <Text style={styles.myDoctorsTitle}>My Doctors</Text>
-      ) : null}
+      ) : null} */}
       {loading ? (
         renderConsultedDoctorsShimmer()
       ) : (
