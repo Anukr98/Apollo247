@@ -1673,37 +1673,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     },
     {
       id: 3,
-      title: 'Book Lab Tests',
-      image: <TestsCartIcon style={styles.menuOptionIconStyle} />,
-      onPress: () => {
-        const homeScreenAttributes = {
-          'Nav src': 'hero banner',
-          'Page Name': 'Home Screen',
-        };
-        postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Home Screen');
-        postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Home Screen');
-        props.navigation.navigate('TESTS', { focusSearch: true, homeScreenAttributes });
-      },
-    },
-    {
-      id: 4,
-      title: 'View Health Records',
-      image: (
-        <View>
-          <PrescriptionMenu style={styles.menuOptionIconStyle} />
-          {renderBadgeView()}
-        </View>
-      ),
-      onPress: () => {
-        postHomeFireBaseEvent(FirebaseEventName.VIEW_HELATH_RECORDS, 'Home Screen');
-        postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Home Screen');
-        postHomeCleverTapEvent(CleverTapEventName.VIEW_HELATH_RECORDS, 'Home Screen');
-        props.navigation.navigate('HEALTH RECORDS');
-      },
-    },
-
-    {
-      id: 5,
       title: 'Book Doctor by Symptoms',
       image: <Symptomtracker style={styles.menuOptionIconStyle} />,
       onPress: () => {
@@ -1725,12 +1694,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         props.navigation.navigate(AppRoutes.SymptomTracker);
       },
     },
-  ];
-
-  const listValues: menuOptions[] = [
-    ...listOptions,
     {
-      id: 6,
+      id: 4,
+      title: 'Book Covid Vaccination',
+      image: <TestsCartIcon style={styles.menuOptionIconStyle} />,
+      onPress: () => {
+        const homeScreenAttributes = {
+          'Nav src': 'hero banner',
+          'Page Name': 'Home Screen',
+        };
+        postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Home Screen');
+        postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Home Screen');
+        props.navigation.navigate('TESTS', { focusSearch: true, homeScreenAttributes });
+      },
+    },
+    {
+      id: 5,
       title: 'Manage Diabetes',
       image: <Diabetes style={styles.menuOptionIconStyle} />,
       onPress: () => {
@@ -1738,6 +1717,26 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         postHomeWEGEvent(WebEngageEventName.MANAGE_DIABETES);
         postHomeCleverTapEvent(CleverTapEventName.MANAGE_DIABETES, 'Home Screen');
         getTokenforCM();
+      },
+    },
+  ];
+
+  const listValues: menuOptions[] = [
+    ...listOptions,
+    {
+      id: 6,
+      title: 'View Health Records',
+      image: (
+        <View>
+          <PrescriptionMenu style={styles.menuOptionIconStyle} />
+          {renderBadgeView()}
+        </View>
+      ),
+      onPress: () => {
+        postHomeFireBaseEvent(FirebaseEventName.VIEW_HELATH_RECORDS, 'Home Screen');
+        postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Home Screen');
+        postHomeCleverTapEvent(CleverTapEventName.VIEW_HELATH_RECORDS, 'Home Screen');
+        props.navigation.navigate('HEALTH RECORDS');
       },
     },
   ];
@@ -3099,6 +3098,30 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
+  const renderServicesForYouView = () => {
+    let arrayList = isProHealthActive ? listValuesForProHealth : listValues;
+    return (
+      <View style={styles.menuOptionsContainer}>
+        {arrayList.map((item) => {
+          if (menuViewOptions.findIndex((i) => i === item.id) >= 2) {
+            return (
+              <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
+                <View style={styles.bottomCardView}>
+                  <View style={styles.bottomImageView}>{item.image}</View>
+                  <View style={styles.bottomTextView}>
+                    <Text style={[theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 18)]}>
+                      {item.title}
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            );
+          }
+        })}
+      </View>
+    );
+  };
+
   const renderBannersCarousel = () => {
     const showBanner = !!bannerData?.length;
     if (showBanner) {
@@ -3518,6 +3541,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         style={{
           backgroundColor: '#f0f1ec',
           paddingHorizontal: 20,
+          paddingTop: 12,
+          paddingBottom: 4,
         }}
       >
         <Text style={{ ...theme.viewStyles.text('B', 16, theme.colors.LIGHT_BLUE, undefined, 20) }}>
@@ -4686,6 +4711,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 </View>
                 <View style={{ backgroundColor: '#f0f1ec' }}>{renderAllConsultedDoctors()}</View>
 
+                {renderHeadings('Services For You')}
+                {renderServicesForYouView()}
+
                 {renderHeadings('Apollo Prohealth')}
                 {proActiveAppointments?.length == 0 && (
                   <View style={{ backgroundColor: '#f0f1ec' }}>{renderProhealthBanner()}</View>
@@ -4700,7 +4728,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     )}
                   </View>
                 )}
-
                 {renderOtherResourcesMainView()}
               </View>
             </View>

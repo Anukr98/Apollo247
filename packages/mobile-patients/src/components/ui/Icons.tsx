@@ -978,6 +978,14 @@ export const TestsCartIcon: React.FC<IconProps> = (props) => (
   />
 );
 
+export const BookVaccineIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 56, width: 56, resizeMode: 'contain' }}
+    {...props}
+    source={require('./icons/book_vaccine.webp')}
+  />
+);
+
 export const MedicineCartIcon: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 56, width: 56, resizeMode: 'contain' }}
