@@ -59,6 +59,7 @@ import {
   SearchAreaIcon,
   RemoveIconGrey,
   SearchNoResultIcon,
+  BookVaccineIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   BannerDisplayType,
@@ -1697,15 +1698,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     {
       id: 4,
       title: 'Book Covid Vaccination',
-      image: <TestsCartIcon style={styles.menuOptionIconStyle} />,
+      image: <BookVaccineIcon style={styles.menuOptionIconStyle} />,
       onPress: () => {
-        const homeScreenAttributes = {
-          'Nav src': 'hero banner',
-          'Page Name': 'Home Screen',
-        };
-        postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Home Screen');
-        postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Home Screen');
-        props.navigation.navigate('TESTS', { focusSearch: true, homeScreenAttributes });
+        const itemTo = covidVaccineCtaV2?.data?.filter(
+          (item: any) => item?.title === 'Book Vaccination Slot'
+        );
+        handleCovidCTA(itemTo?.[0] || {});
       },
     },
     {
