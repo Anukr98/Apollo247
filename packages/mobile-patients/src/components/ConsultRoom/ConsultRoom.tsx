@@ -3499,17 +3499,30 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const renderCovidMainView = () => {
+  const renderOtherResourcesMainView = () => {
     return (
       <View
         style={{
           backgroundColor: '#f0f1ec',
-          padding: 20,
-          paddingBottom: 0,
-          paddingTop: 0,
+          paddingHorizontal: 20,
         }}
       >
-        {renderCovidCardView()}
+        {renderHealthArticleAndResources()}
+      </View>
+    );
+  };
+
+  const renderHeadings = (title: string) => {
+    return (
+      <View
+        style={{
+          backgroundColor: '#f0f1ec',
+          paddingHorizontal: 20,
+        }}
+      >
+        <Text style={{ ...theme.viewStyles.text('B', 16, theme.colors.LIGHT_BLUE, undefined, 20) }}>
+          {title}
+        </Text>
       </View>
     );
   };
@@ -3529,7 +3542,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const renderCovidCardView = () => {
+  const renderHealthArticleAndResources = () => {
     return (
       <View style={styles.covidCardContainer}>
         <ImageBackground
@@ -4667,7 +4680,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 </View>
                 {bannerLoading && renderBannerShimmer()}
                 <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
-                {/**added prohealth banner */}
+
+                <View style={{ backgroundColor: '#f0f1ec' }}>
+                  {renderListView('Active Appointments', 'normal')}
+                </View>
+                <View style={{ backgroundColor: '#f0f1ec' }}>{renderAllConsultedDoctors()}</View>
+
+                {renderHeadings('Apollo Prohealth')}
                 {proActiveAppointments?.length == 0 && (
                   <View style={{ backgroundColor: '#f0f1ec' }}>{renderProhealthBanner()}</View>
                 )}
@@ -4681,11 +4700,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     )}
                   </View>
                 )}
-                <View style={{ backgroundColor: '#f0f1ec' }}>
-                  {renderListView('Active Appointments', 'normal')}
-                </View>
-                <View style={{ backgroundColor: '#f0f1ec' }}>{renderAllConsultedDoctors()}</View>
-                {renderCovidMainView()}
+
+                {renderOtherResourcesMainView()}
               </View>
             </View>
           </ScrollView>
