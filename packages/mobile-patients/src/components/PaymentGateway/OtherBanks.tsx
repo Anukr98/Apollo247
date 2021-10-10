@@ -8,19 +8,19 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   CREATE_ORDER,
-  INITIATE_DIAGNOSTIC_ORDER_PAYMENT,
+  INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2,
   UPDATE_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { InitiateNetBankingTxn } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import {
-  initiateDiagonsticHCOrderPaymentVariables,
-  initiateDiagonsticHCOrderPayment,
-} from '@aph/mobile-patients/src/graphql/types/initiateDiagonsticHCOrderPayment';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { one_apollo_store_code } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  initiateDiagonsticHCOrderPaymentv2,
+  initiateDiagonsticHCOrderPaymentv2Variables,
+} from '@aph/mobile-patients/src/graphql/types/initiateDiagonsticHCOrderPaymentv2';
 
 export interface OtherBanksProps extends NavigationScreenProps {}
 
@@ -42,16 +42,17 @@ export const OtherBanks: React.FC<OtherBanksProps> = (props) => {
   const onPressBank = (bank: any) => setSelectedBank(bank);
 
   const initiateOrderPayment = async () => {
+    // Api is called to update the order status from Quote to Payment Pending
+    //changed this api from INITIATE_DIAGNOSTIC_ORDER_PAYMENT to INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2
     try {
-      // Api is called to update the order status from Quote to Payment Pending
-      const input: initiateDiagonsticHCOrderPaymentVariables = {
-        diagnosticInitiateOrderPaymentInput: { orderId: orderId },
+      const input: initiateDiagonsticHCOrderPaymentv2Variables = {
+        diagnosticInitiateOrderPaymentInput: { paymentOrderID: paymentId },
       };
       const res = await client.mutate<
-        initiateDiagonsticHCOrderPayment,
-        initiateDiagonsticHCOrderPaymentVariables
+        initiateDiagonsticHCOrderPaymentv2,
+        initiateDiagonsticHCOrderPaymentv2Variables
       >({
-        mutation: INITIATE_DIAGNOSTIC_ORDER_PAYMENT,
+        mutation: INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2,
         variables: input,
         fetchPolicy: 'no-cache',
       });

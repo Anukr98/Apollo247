@@ -8,6 +8,7 @@ import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp'
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import RNFetchBlob from 'rn-fetch-blob';
+import { OPENTOK_NETWORK_TEST_DONE } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import {
   ChatCallIcon,
@@ -33,6 +34,13 @@ import {
   ExternalMeetingVideoCall,
   InactiveCalenderIcon,
   ActiveCalenderIcon,
+  NetworkWhite,
+  NetworkAverage,
+  NetworkBad,
+  NetworkGood,
+  NetworkChecking,
+  Remove,
+  More,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -54,6 +62,7 @@ import {
   GET_DOCTOR_DETAILS_BY_ID,
   CALL_CONNECTION_UPDATES,
   POST_WEB_ENGAGE,
+  CREATE_VONAGE_SESSION_TOKEN,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   bookRescheduleAppointment,
@@ -160,6 +169,7 @@ import {
   View,
   Clipboard,
   BackHandler,
+  ActivityIndicator,
 } from 'react-native';
 import CryptoJS from 'crypto-js';
 import { Image } from 'react-native-elements';
@@ -180,6 +190,8 @@ import {
   getPrescriptionItemQuantity,
   postCleverTapEvent,
   getNetStatus,
+  checkPermissions,
+  permissionHandler,
   postAppointmentCleverTapEvents,
   fileToBase64,
 } from '../../helpers/helperFunctions';
@@ -206,6 +218,7 @@ import {
   EPrescription,
   useShoppingCart,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+
 import { getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_diagnosticPrescription } from '@aph/mobile-patients/src/graphql/types/getSDLatestCompletedCaseSheet';
 import {
   DiagnosticsCartItem,
@@ -229,6 +242,12 @@ import {
   postDoctorConsultEventVariables,
 } from '../../graphql/types/postDoctorConsultEvent';
 import { postCleverTapUploadPrescriptionEvents } from '@aph/mobile-patients/src/components/UploadPrescription/Events';
+import TextTicker from 'react-native-text-ticker';
+import DeviceInfo from 'react-native-device-info';
+import {
+  createVonageSessionToken,
+  createVonageSessionTokenVariables,
+} from '../../graphql/types/createVonageSessionToken';
 
 interface OpentokStreamObject {
   connection: {
@@ -293,6 +312,13 @@ type rescheduleType = {
   isPaid: number;
 };
 
+const OT_NETWORK_TEST_STATUS = {
+  CHECKING: 'CHECKING',
+  GOOD: 'GOOD',
+  AVERAGE: 'AVERAGE',
+  BAD: 'BAD',
+};
+
 const { text } = theme.viewStyles;
 const { LIGHT_BLUE } = theme.colors;
 const styles = StyleSheet.create({
@@ -340,6 +366,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#02475b',
     opacity: 0.2,
     height: 0.5,
+  },
+  networkTestIcon: {
+    marginRight: -20,
+    height: 20,
+    width: 25,
+    alignSelf: 'flex-end',
   },
   doctorNameStyle: {
     paddingTop: 8,
@@ -407,6 +439,14 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(13),
     width: '45%',
   },
+  networkTextClose: {
+    backgroundColor: '#fff',
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+  },
   callHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -434,6 +474,12 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 20,
+  },
+  networkTestActivityIndicator: {
+    width: 16,
+    height: 13,
+    alignSelf: 'flex-start',
+    marginTop: 5,
   },
   inputStyles: {
     marginLeft: 20,
@@ -900,7 +946,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
-  const { setEPrescriptions, addMultipleCartItems, circleSubPlanId, circleSubscriptionId } = useShoppingCart();
+  const {
+    setEPrescriptions,
+    addMultipleCartItems,
+    circleSubPlanId,
+    circleSubscriptionId,
+  } = useShoppingCart();
   const [name, setname] = useState<string>('');
   const [showRescheduleCancel, setShowRescheduleCancel] = useState<boolean>(false);
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
@@ -930,6 +981,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     borderRadius: 12,
     ...theme.viewStyles.cardViewStyle,
   });
+
+  const [showNetworkTestIcon, setShowNetworkTestIcon] = useState<boolean>(false);
+  const [showNetworkCheckStatusHeader, setShowNetworkCheckStatusHeader] = useState<boolean>(false);
+  const [OTNetworkTestStatus, setOTNetworkTestStatus] = useState<any>(
+    OT_NETWORK_TEST_STATUS.CHECKING
+  );
+  const [isOpenTokNetworkTestInProgress, setOpenTokNetworkTestInProgress] = useState<boolean>(
+    false
+  );
 
   const disAllowReschedule =
     g(appointmentData, 'appointmentState') != APPOINTMENT_STATE.AWAITING_RESCHEDULE;
@@ -1071,6 +1131,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const showProgressBarOnHeader = useRef<boolean>(false);
   const isJdAllowedToAssign = useRef<boolean | null | undefined>(null);
   const [appointmentDiffMin, setAppointmentDiffMin] = useState<number>(0);
+
   const [phoneNumber, setPhoneNumber] = useState<string | null>('');
   let cancelAppointmentTitle = '';
   if (appointmentDiffMin >= 15) {
@@ -1084,6 +1145,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   type messageType = 'PDF' | 'Text' | 'Image';
 
   useEffect(() => {
+    if (
+      status.current != STATUS.COMPLETED &&
+      status.current != STATUS.CANCELLED &&
+      status.current != STATUS.IN_PROGRESS
+    ) {
+      AsyncStorage.getItem(appointmentData?.id + '_' + OPENTOK_NETWORK_TEST_DONE).then(
+        (isNetworkTestDone) => {
+          if (!isNetworkTestDone || isNetworkTestDone == 'false') {
+            getAppointmentSessionInfo(); //this will start connectivity test
+          }
+        }
+      );
+    }
+
     handleExternalFileShareUpload();
 
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -1921,6 +1996,110 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     });
   };
 
+  const checkNetworkStatusByDownloadingFile = () => {
+    setShowNetworkCheckStatusHeader(true);
+    setOTNetworkTestStatus(OT_NETWORK_TEST_STATUS.CHECKING);
+
+    let startTime = new Date().getTime();
+
+    const dirs = RNFetchBlob.fs.dirs;
+    const downloadPath = (dirs.DocumentDir || dirs.MainBundleDir) + '/' + 'sample-network-test.mp4';
+
+    let testResult = 'BAD';
+
+    setOpenTokNetworkTestInProgress(true);
+
+    RNFetchBlob.config({
+      fileCache: false,
+      path: downloadPath,
+    })
+      .fetch(
+        'GET',
+        'https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_1920_18MG.mp4',
+        {}
+      )
+      .then((res) => {
+        let endTime = new Date().getTime();
+        let timeTaken = (endTime - startTime) / 1000;
+
+        let downloadSpeed = (18 * 1000) / timeTaken;
+
+        setShowNetworkTestIcon(true);
+
+        if (downloadSpeed >= 1200) {
+          //GOOD
+          setShowNetworkCheckStatusHeader(true);
+          setOTNetworkTestStatus(OT_NETWORK_TEST_STATUS.GOOD);
+          testResult = 'GOOD';
+        } else if (downloadSpeed > 900 && downloadSpeed < 1200) {
+          //fair
+          setShowNetworkCheckStatusHeader(true);
+          setOTNetworkTestStatus(OT_NETWORK_TEST_STATUS.AVERAGE);
+          testResult = 'AVERAGE';
+        } else {
+          //bad
+          setShowNetworkCheckStatusHeader(true);
+          setOTNetworkTestStatus(OT_NETWORK_TEST_STATUS.BAD);
+          testResult = 'BAD';
+        }
+
+        publishNetworkTestPubnubMessage(testResult);
+      })
+      .catch((e) => {
+        setShowNetworkTestIcon(true);
+        setShowNetworkCheckStatusHeader(true);
+        setOTNetworkTestStatus(OT_NETWORK_TEST_STATUS.BAD);
+        testResult = 'BAD';
+
+        publishNetworkTestPubnubMessage(testResult);
+      });
+  };
+
+  const publishNetworkTestPubnubMessage = (testResult: any) => {
+    pubnub.publish(
+      {
+        message: {
+          isTyping: true,
+          message: '^^#networktest',
+          testResult: testResult,
+          id: patientId,
+          messageDate: new Date(),
+        },
+        channel: channel,
+        storeInHistory: true,
+      },
+      (status, response) => {
+        const eventAttributes: CleverTapEvents[CleverTapEventName.PRE_CALL_TEST] = {
+          'Device Details':
+            Platform.OS.toUpperCase() +
+            '-' +
+            DeviceInfo.getDeviceId() +
+            '-' +
+            DeviceInfo.getBrand().toUpperCase(),
+          'Test Result': testResult || '',
+          'Patient Name':
+            appointmentData?.patientName ||
+            currentPatient?.firstName + ' ' + currentPatient?.lastName ||
+            '',
+          'Patient Number': currentPatient?.mobileNumber || '',
+          'Doctor Name': appointmentData?.doctorInfo?.displayName || '',
+          'Doctor Number': appointmentData?.doctorInfo?.mobileNumber || '',
+          'Consult ID': appointmentData?.id || '',
+          'Consult Display ID': appointmentData?.displayId || '',
+          'Doctor Type': appointmentData?.doctorInfo?.doctorType || '',
+          'Doctor Speciality': appointmentData?.doctorInfo?.specialty?.name || '',
+        };
+        postCleverTapEvent(CleverTapEventName.PRE_CALL_TEST, eventAttributes);
+        AsyncStorage.setItem(appointmentData?.id + '_' + OPENTOK_NETWORK_TEST_DONE, 'true');
+
+        setTimeout(() => {
+          setShowNetworkCheckStatusHeader(false);
+          setOpenTokNetworkTestInProgress(false);
+        }, 6000);
+      }
+    );
+  };
+
   const hideCallUI = () => {
     const zeroDimension = {
       height: 0,
@@ -2405,7 +2584,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       });
     } catch (error) {
       CommonBugFender('ChatRoom_updateCallConnectionStatus', error);
-      console.log(error, JSON.stringify(data));
+      //console.log(error, JSON.stringify(data));
     }
   };
 
@@ -2516,6 +2695,26 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           CommonBugFender('ChatRoom_updateSessionAPI', e);
         });
     }
+  };
+
+  const getAppointmentSessionInfo = () => {
+    const input = {
+      appointmentId: appointmentData.id,
+    };
+    client
+      .mutate<createVonageSessionToken, createVonageSessionTokenVariables>({
+        mutation: CREATE_VONAGE_SESSION_TOKEN,
+        variables: input,
+      })
+      .then((response: any) => {
+        startNetworkConnectivityTest(
+          response?.data?.createVonageSessionToken.token,
+          response?.data?.createVonageSessionToken.sessionId
+        );
+      })
+      .catch((e) => {
+        CommonBugFender('ChatRoom_updateSessionAPI', e);
+      });
   };
 
   const CheckDoctorPresentInChat = () => {
@@ -3057,6 +3256,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           postAppointmentWEGEvent(WebEngageEventName.JD_COMPLETED);
         } else if (messageType == startConsultMsg) {
           postAppointmentWEGEvent(WebEngageEventName.SD_CONSULTATION_STARTED);
+
+          setShowNetworkCheckStatusHeader(false);
         } else if (messageType == videoCallMsg && name == 'DOCTOR') {
           postAppointmentWEGEvent(WebEngageEventName.SD_VIDEO_CALL_STARTED);
         }
@@ -4351,7 +4552,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       itemId,
       0, //add price
       0, //add price
-      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.CONSULT_ROOM
+      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.CONSULT_ROOM,
+      currentPatient,
+      !!circleSubscriptionId
     );
   }
 
@@ -4463,7 +4666,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   function _navigateToTestCart() {
     hideAphAlert?.();
-    props.navigation.push(AppRoutes.TestsCart, { comingFrom: AppRoutes.ConsultDetails });
+    props.navigation.push(AppRoutes.AddPatients, { comingFrom: AppRoutes.ConsultDetails });
   }
 
   const orderMedicine = (rowData: any, index: number) => {
@@ -7090,8 +7293,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         ]}
         isVisible={isDropdownVisible}
         disabledOption={'NONE'}
-        blockCamera={isCall}
-        blockCameraMessage={strings.alerts.Open_camera_in_video_call}
+        blockCamera={isCall || isOpenTokNetworkTestInProgress}
+        blockCameraMessage={
+          isOpenTokNetworkTestInProgress
+            ? 'Camera Upload is disabled momentarily for network test. Please wait for 30 seconds...'
+            : strings.alerts.Open_camera_in_video_call
+        }
         optionTexts={{
           camera: 'TAKE A PHOTO',
           gallery: 'CHOOSE FROM\nDEVICE',
@@ -7438,6 +7645,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const onPressCalender = () => {
+    console.log('check  onPressCalender--- ');
+
     setShowRescheduleCancel(true);
     if (isAppointmentStartsInFifteenMin) {
       autoTriggerFifteenMinToAppointmentTimeMsg();
@@ -7445,6 +7654,161 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (isAppointmentExceedsTenMin) {
       autoTriggerTenMinToAppointmentTimeMsg();
     }
+  };
+
+  const renderNetworkTestCTA = () => {
+    if (OTNetworkTestStatus === OT_NETWORK_TEST_STATUS.CHECKING) {
+      return <NetworkChecking style={styles.networkTestIcon} />;
+    } else if (OTNetworkTestStatus === OT_NETWORK_TEST_STATUS.AVERAGE) {
+      return <NetworkAverage style={styles.networkTestIcon} />;
+    } else if (OTNetworkTestStatus === OT_NETWORK_TEST_STATUS.GOOD) {
+      return <NetworkGood style={styles.networkTestIcon} />;
+    } else {
+      return <NetworkBad style={styles.networkTestIcon} />;
+    }
+  };
+
+  const renderNetworkTestContainer = () => {
+    if (!showNetworkCheckStatusHeader) {
+      return null;
+    }
+
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          backgroundColor:
+            OTNetworkTestStatus === OT_NETWORK_TEST_STATUS.CHECKING
+              ? theme.colors.GREEN
+              : OTNetworkTestStatus === OT_NETWORK_TEST_STATUS.AVERAGE
+              ? theme.colors.SHERPA_BLUE
+              : OTNetworkTestStatus === OT_NETWORK_TEST_STATUS.GOOD
+              ? theme.colors.GREEN
+              : theme.colors.LIGHT_GRAY,
+          paddingVertical: 10,
+          paddingHorizontal: 13,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        {OTNetworkTestStatus === OT_NETWORK_TEST_STATUS.CHECKING ? (
+          <ActivityIndicator
+            animating={true}
+            size="small"
+            color="white"
+            style={styles.networkTestActivityIndicator}
+          />
+        ) : (
+          <NetworkWhite style={styles.networkTestActivityIndicator} />
+        )}
+
+        <View style={{ flexDirection: 'column', flex: 1, marginHorizontal: 10 }}>
+          {OTNetworkTestStatus != OT_NETWORK_TEST_STATUS.CHECKING ? (
+            <Text
+              style={{
+                ...text(
+                  'R',
+                  13,
+                  OTNetworkTestStatus === OT_NETWORK_TEST_STATUS.BAD ? theme.colors.RED : '#fff'
+                ),
+              }}
+            >
+              {OTNetworkTestStatus === OT_NETWORK_TEST_STATUS.AVERAGE
+                ? 'Fair Connectivity Strength, might face interruptions with video consultation !'
+                : OTNetworkTestStatus === OT_NETWORK_TEST_STATUS.GOOD
+                ? 'Network test completed'
+                : 'Poor Connectivity Strength, might face interruptions with video consultation ! Connect with a better network and re-test for better audio / video consultation'}
+            </Text>
+          ) : null}
+
+          {OTNetworkTestStatus === OT_NETWORK_TEST_STATUS.CHECKING ? (
+            <TextTicker
+              style={{
+                ...text('R', 13, '#fff'),
+              }}
+              duration={13000}
+              loop
+              bounce
+              repeatSpacer={50}
+              marqueeDelay={1000}
+            >
+              Checking your network strength for consultation. Accessing Microphone/Camera for
+              testing. You might hear echo during testing.
+            </TextTicker>
+          ) : null}
+        </View>
+        <TouchableOpacity
+          style={styles.networkTextClose}
+          onPress={() => {
+            setShowNetworkCheckStatusHeader(false);
+          }}
+        >
+          <Remove style={{ width: 15, height: 15, alignSelf: 'center' }} />
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const checkAndEnableCallMicrophonePermission = (token: string, sessionId: string) => {
+    checkPermissions(['camera', 'microphone']).then((response: any) => {
+      const { camera, microphone } = response;
+
+      if (camera != 'authorized' || microphone != 'authorized') {
+        permissionHandler(
+          'camera',
+          'Enable camera in order to get your network tested',
+          () => {
+            permissionHandler(
+              'microphone',
+              'Enable microphone in order to get your network tested.',
+              () => {
+                startNetworkTest(token, sessionId);
+              },
+              'Consult Chat Screen'
+            );
+          },
+          'Consult Chat Screen'
+        );
+      } else if (camera === 'authorized' && microphone === 'authorized') {
+        startNetworkTest(token, sessionId);
+      }
+    });
+  };
+
+  const startNetworkTest = (token: string, sessionId: string) => {
+    let testResult = 'BAD';
+
+    setShowNetworkCheckStatusHeader(true);
+    setOpenTokNetworkTestInProgress(true);
+
+    setOTNetworkTestStatus(OT_NETWORK_TEST_STATUS.CHECKING);
+    NativeModules.OpentokNetworkTest.startNetworkTest(
+      AppConfig.Configuration.PRO_TOKBOX_KEY,
+      sessionId,
+      token
+    )
+      .then((result: any) => {
+        let networkStatus = result.split(':')[0];
+
+        setShowNetworkTestIcon(true);
+
+        if (networkStatus == 'GOOD') {
+          setOTNetworkTestStatus(OT_NETWORK_TEST_STATUS.GOOD);
+          testResult = 'GOOD';
+        } else if (networkStatus == 'AVERAGE') {
+          setOTNetworkTestStatus(OT_NETWORK_TEST_STATUS.AVERAGE);
+          testResult = 'AVERAGE';
+        } else {
+          setOTNetworkTestStatus(OT_NETWORK_TEST_STATUS.BAD);
+          testResult = 'BAD';
+        }
+        publishNetworkTestPubnubMessage(testResult);
+      })
+      .catch((err: any) => {
+        setOTNetworkTestStatus(OT_NETWORK_TEST_STATUS.BAD);
+        testResult = 'BAD';
+        publishNetworkTestPubnubMessage(testResult);
+      });
   };
 
   const autoTriggerTenMinToAppointmentTimeMsg = () => {
@@ -7528,17 +7892,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const startNetworkConnectivityTest = (token: string, sessionId: string) => {
+    Platform.OS == 'ios'
+      ? checkNetworkStatusByDownloadingFile()
+      : checkAndEnableCallMicrophonePermission(token, sessionId);
+
+    setShowNetworkTestIcon(true);
+    setShowRescheduleCancel(false);
+  };
+
   const renderManageCTA = (isDisabled: boolean = false) => {
     return (
-      <View style={styles.manageCTAView}>
-        <Button
-          disabled={isDisabled}
-          title={'MANAGE'}
-          style={styles.manageBtn}
-          titleTextStyle={theme.viewStyles.text('SB', 12, theme.colors.WHITE)}
-          onPress={() => onPressCalender()}
-        />
-      </View>
+      <TouchableOpacity
+        style={styles.manageCTAView}
+        onPress={() => {
+          console.log('check onPress renderManageCTA---  ');
+
+          onPressCalender();
+        }}
+      >
+        <More style={{ alignSelf: 'flex-end' }} />
+      </TouchableOpacity>
     );
   };
 
@@ -7654,9 +8028,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
           rightIcon={
             <TouchableOpacity
+              style={{
+                flexDirection: 'row',
+                alignSelf: 'flex-end',
+                alignContent: 'flex-end',
+                alignItems: 'flex-end',
+                marginRight: -10,
+              }}
               disabled={doctorJoinedChat || status.current === STATUS.COMPLETED}
               onPress={() => onPressCalender()}
             >
+              {showNetworkTestIcon ? renderNetworkTestCTA() : null}
               {doctorJoinedChat || status.current === STATUS.COMPLETED
                 ? renderManageCTA(true)
                 : renderManageCTA()}
@@ -7670,6 +8052,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             {isProgressBarVisible.current && renderProgressBar(currentProgressBarPosition.current)}
           </View>
         ) : null}
+        {renderNetworkTestContainer()}
+
         {renderChatHeader()}
         {callMinimize && renderTapToReturnToCallView()}
         {isCancelVisible && (
@@ -7929,6 +8313,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setShowCancelPopup(true);
             setShowRescheduleCancel(false);
           }}
+          onPressNetworkConnectivity={() => {
+            getAppointmentSessionInfo();
+          }}
           onPressRescheduleAppointment={() => {
             postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
             postAppointmentCleverTapEvents(
@@ -7950,6 +8337,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
           closeModal={() => setShowRescheduleCancel(false)}
           appointmentDiffMin={appointmentDiffMin}
+          showNetworkTestCTA={true}
           appointmentDateTime={appointmentData?.appointmentDateTime}
           isAppointmentStartsInFifteenMin={isAppointmentStartsInFifteenMin}
           isAppointmentExceedsTenMin={isAppointmentExceedsTenMin}

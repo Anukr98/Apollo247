@@ -137,8 +137,8 @@ android {
         applicationId "com.apollo.patientapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 140
-        versionName "5.6.0"
+        versionCode 143
+        versionName "5.9.0"
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
@@ -308,6 +308,8 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.0.0-beta4")
     api 'com.google.android.material:material:1.2.0-alpha01'
     implementation("com.github.arimorty:floatingsearchview:2.1.1")
+
+    implementation 'com.opentok.android:opentok-android-sdk:2.18.1'
 
 // RX JAVA
     implementation("io.reactivex.rxjava2:rxjava:2.2.5")

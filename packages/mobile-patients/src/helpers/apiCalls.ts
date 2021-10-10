@@ -49,6 +49,14 @@ export interface MedicineProduct {
   subcategory?: string | null;
   merchandising?: number | null;
   suggested_qty?: string | null;
+  country_of_origin?: string | null;
+  packer_name?: string | null;
+  packer_address?: string | null;
+  importer_name?: string | null;
+  importer_address?: string | null;
+  import_date?: string | null;
+  generic_name?: string | null;
+  allergen_info?: string | null;
 }
 
 export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
@@ -390,6 +398,9 @@ export interface OfferBannerSection {
   end_time: string;
   category_id?: number;
   sku?: string;
+  ip_id?:string;
+  ip_section_name?:string;
+
 }
 
 export interface MedicinePageAPiMetadata {
@@ -737,17 +748,6 @@ export const searchPickupStoresApi = async (
   );
 };
 
-export const searchClinicApi = async (): Promise<AxiosResponse<ClinicDetailsResponse>> => {
-  return Axios.post(
-    AppConfig.Configuration.GET_CLINICS[0] as string,
-    {
-      ...(AppConfig.Configuration.GET_CLINICS[1] as object),
-    },
-    {
-      headers: {},
-    }
-  );
-};
 
 export const getStoreInventoryApi = (
   shopId: string,
@@ -1305,7 +1305,7 @@ export const getDiagnosticsPopularResults = (
   });
 };
 
-export const getDiagnosticHomePageWidgets = (pageName: string,  cityId: number): Promise<AxiosResponse<any>> => {
+export const getDiagnosticHomePageWidgets = (pageName: string, cityId: number): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
   const getWidgets = `${baseurl}/${pageName}/getwidgets?city=${cityId}`;
   return Axios.get(getWidgets, {

@@ -47,6 +47,8 @@ export interface PrescriptionCameraProps extends NavigationScreenProps {
 
 export const PrescriptionCamera: React.FC<PrescriptionCameraProps> = (props) => {
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
+  const phyPrescriptionUploaded = props.navigation.getParam('phyPrescriptionUploaded') || [];
+  const ePresscriptionUploaded = props.navigation.getParam('ePresscriptionUploaded') || [];
   const [isCameraAccessGranted, setIsCameraAccessGranted] = useState<boolean>(true);
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const type = props.navigation.getParam('type');
@@ -81,6 +83,9 @@ export const PrescriptionCamera: React.FC<PrescriptionCameraProps> = (props) => 
   const removeClickedPhoto = () => {
     setPhotoBase64('');
     _camera?.current?.resumePreview();
+    props.navigation.navigate('TESTS', {
+      movedFrom: AppRoutes.PrescriptionCamera,
+    });
   };
 
   const renderCameraActions = () => {
@@ -95,7 +100,8 @@ export const PrescriptionCamera: React.FC<PrescriptionCameraProps> = (props) => 
             onPress={ () => {
               props.navigation.navigate(AppRoutes.SubmittedPrescription, {
                 type: 'Camera',
-                ePrescriptionsProp: imageClickData,
+                phyPrescriptionsProp: [...phyPrescriptionUploaded, ...imageClickData],
+                ePrescriptionsProp: ePresscriptionUploaded,
                 source: 'PrescriptionCamera',
               });
             }}
@@ -111,7 +117,7 @@ export const PrescriptionCamera: React.FC<PrescriptionCameraProps> = (props) => 
     try {
       const options = { quality: 0.5, base64: true, pauseAfterCapture: true };
       const data = await _camera?.current?.takePictureAsync(options);
-      const clickedPhotoResponse = formatResponse([data], true);
+      const clickedPhotoResponse = formatResponse(responseData, true);
       setImageClickData(clickedPhotoResponse);
     } catch (error) {
       CommonBugFender('PrescriptionCamera_clickPhoto', error);

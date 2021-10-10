@@ -13,7 +13,11 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import { isSmallDevice, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  isEmptyObject,
+  isSmallDevice,
+  nameFormater,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   convertNumberToDecimal,
@@ -31,6 +35,7 @@ import {
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { renderPackageItemPriceShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 const screenWidth = Dimensions.get('window').width;
@@ -55,7 +60,16 @@ export interface PackageCardProps {
 }
 
 export const PackageCard: React.FC<PackageCardProps> = (props) => {
-  const { cartItems, addCartItem, removeCartItem, modifiedOrderItemIds } = useDiagnosticsCart();
+  const {
+    cartItems,
+    addCartItem,
+    removeCartItem,
+    modifiedOrderItemIds,
+    setModifiedPatientCart,
+    modifiedOrder,
+    patientCartItems,
+    removeMultiPatientCartItems,
+  } = useDiagnosticsCart();
   const {
     data,
     isCircleSubscribed,
@@ -64,6 +78,8 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     sourceScreen,
     diagnosticWidgetData,
   } = props;
+
+  const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   let actualItemsToShow = diagnosticWidgetData?.length > 0 && diagnosticWidgetData;
   const { currentPatient } = useAllCurrentPatients();
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
@@ -165,7 +181,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
         </TouchableOpacity>
       );
     },
-    [cartItems]
+    [cartItems, patientCartItems]
   );
 
   const renderPercentageDiscount = (discount: string | number) => {
@@ -290,9 +306,11 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     }
     const slashedPrice =
       !!packageMrpForItem && packageMrpForItem > price ? packageMrpForItem : price;
-    const isAddedToCart = !!cartItems?.find(
-      (items) => Number(items?.id) == Number(getItem?.itemId)
-    );
+
+    const hasItem =
+      !!cartItems && cartItems?.find((items) => Number(items?.id) == Number(getItem?.itemId));
+    const isAddedToCart = !!hasItem ? true : false;
+
     //1. circle sub + promote -> packageMrp/price
     //2. non-circle + circle -> no slashing
     return (
@@ -328,7 +346,12 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     const planToConsider = pricesForItem?.planToConsider;
     const discountToDisplay = pricesForItem?.discountToDisplay;
     const mrpToDisplay = pricesForItem?.mrpToDisplay;
-    const widgetType = data?.diagnosticWidgetType;
+    const widgetType = Array.isArray(data)
+      ? sourceScreen === AppRoutes.CartPage
+        ? string.diagnosticCategoryTitle.item
+        : data?.[0]?.diagnosticWidgetType
+      : data?.diagnosticWidgetType?.toLowerCase();
+    data?.diagnosticWidgetType?.toLowerCase();
 
     const inclusions =
       !!item?.inclusionData && item.inclusionData.map((item: any) => Number(item?.incItemId));
@@ -347,7 +370,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
       isDiagnosticCircleSubscription
     );
 
-    addCartItem!({
+    const addedItems = {
       id: `${item?.itemId}`,
       mou: 1,
       name: item?.itemTitle!,
@@ -362,11 +385,22 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
       groupPlan: planToConsider?.groupPlan,
       packageMrp: packageCalculatedMrp,
       inclusions: item?.inclusionData == null ? [Number(item?.itemId)] : inclusions,
-    });
+      isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+    };
+
+    addCartItem?.(addedItems);
+    isModifyFlow &&
+      setModifiedPatientCart?.([
+        {
+          patientId: modifiedOrder?.patientId,
+          cartItems: cartItems?.concat(addedItems),
+        },
+      ]);
   }
 
   function onPressRemoveFromCart(item: any) {
-    removeCartItem!(`${item?.itemId}`);
+    removeCartItem?.(`${item?.itemId}`);
+    removeMultiPatientCartItems?.(`${item?.itemId}`);
   }
 
   function postHomePageWidgetClicked(name: string, id: string, section: string) {
@@ -445,7 +479,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     const isAlreadyPartOfOrder =
       !!modifiedOrderItemIds &&
       modifiedOrderItemIds?.length &&
-      modifiedOrderItemIds?.find((id: number) => Number(id) == Number(item?.id));
+      modifiedOrderItemIds?.find((id: number) => Number(id) == Number(item?.itemId || item?.id));
     return (
       <Text
         style={[
@@ -527,6 +561,8 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     </>
   );
 };
+
+export default React.memo(PackageCard);
 
 const styles = StyleSheet.create({
   packageCardTouch: {

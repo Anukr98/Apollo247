@@ -314,9 +314,10 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
   const renderSearchResults = () => {
     if (!searchResults.length) return null;
 
-    const onPress = (sku: string) => {
+    const onPress = (sku: string, urlKey: string) => {
       navigation.push(AppRoutes.ProductDetailPage, {
         sku,
+        urlKey,
         movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
       });
     };
@@ -372,7 +373,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
         data: item,
         quantity: qty,
         maxOrderQty: item.MaxOrderQty,
-        onPress: () => onPress(id),
+        onPress: () => onPress(id, item?.url_key),
         onPressAddToCart: () => onPressAddToCart(item),
         onPressAdd: onPressAdd,
         onPressSubstract: onPressSubstract,

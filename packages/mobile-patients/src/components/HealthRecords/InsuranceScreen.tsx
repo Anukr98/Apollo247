@@ -37,6 +37,7 @@ import {
   postCleverTapIfNewSession,
   removeObjectProperty,
   postCleverTapEvent,
+  phrSortByDate,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -301,7 +302,11 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
           'medicalInsurances',
           'response'
         );
-        setMedicalInsuranceMainData(phrSortWithDate(medicalInsurance));
+        let mergeArray: { type: string; data: any }[] = [];
+        medicalInsurance?.forEach((c: any) => {
+          mergeArray.push({ type: 'insurance', data: c });
+        });
+        setMedicalInsuranceMainData(phrSortByDate(mergeArray));
         setShowSpinner(false);
       })
       .catch((error) => {
@@ -415,21 +420,22 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
     });
   };
 
-  const renderMedicalInsuranceItems = (item: MedicalInsuranceType, index: number) => {
+  const renderMedicalInsuranceItems = (item: any, index: number) => {
     const getSourceName = (source: string) => {
       return source === 'self' || source === '247self'
         ? string.common.clicnical_document_text
         : source;
     };
-    const prescriptionName = item?.insuranceCompany || '';
-    const dateText = getPrescriptionDate(item?.startDateTime);
-    const soureName = getSourceName(item?.source!) || '';
+    const prescriptionName = item?.data?.insuranceCompany || '';
+    const dateText = getPrescriptionDate(item?.data?.startDateTime);
+    const soureName = getSourceName(item?.data?.source!) || '';
     const selfUpload = true;
     const showEditDeleteOption =
       soureName === string.common.clicnical_document_text || soureName === '-' ? true : false;
+    const realItem = item?.data;
     return (
       <HealthRecordCard
-        item={item}
+        item={realItem}
         index={index}
         editDeleteData={editDeleteData(MedicalRecordType.MEDICALINSURANCE)}
         showUpdateDeleteOption={showEditDeleteOption}

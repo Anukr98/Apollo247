@@ -65,7 +65,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
 
-
   const orderSelected = props.navigation.getParam('selectedOrder');
   const individualItemStatus = props.navigation.getParam('itemLevelStatus');
   const getRefundArray = props.navigation.getParam('refundStatusArr');
@@ -275,7 +274,13 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
 
   function _navigateToPHR(order: any) {
     const visitId = orderSelected?.visitNo;
-    DiagnosticViewReportClicked();
+    DiagnosticViewReportClicked(
+      'Home',
+        !!order?.labReportURL ? 'Yes' : 'No',
+        'Download Report PDF',
+        order?.displayId,
+        currentPatient
+    );
     if (visitId) {
       setActiveOrder(order);
       fetchTestReportResult(order);

@@ -166,7 +166,11 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     setPhrSession,
     setCorporateSubscriptions,
   } = useAppCommonData();
-  const { setIsDiagnosticCircleSubscription, clearDiagnoticCartInfo } = useDiagnosticsCart();
+  const {
+    setIsDiagnosticCircleSubscription,
+    clearDiagnoticCartInfo,
+    setShowMultiPatientMsg,
+  } = useDiagnosticsCart();
   const {
     setIsCircleSubscription,
     setCircleMembershipCharges,
@@ -345,6 +349,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       AsyncStorage.removeItem('diagnosticUserType');
       clearCartInfo && clearCartInfo();
       clearDiagnoticCartInfo && clearDiagnoticCartInfo();
+      setShowMultiPatientMsg?.(true);
       setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
       props.navigation.dispatch(
         StackActions.reset({

@@ -24,7 +24,7 @@ export interface DisclaimerSectionProps {
   content: any;
 }
 
-export const DisclaimerSection: React.FC<DisclaimerSectionProps> = (props) => {
+const DisclaimerSection: React.FC<DisclaimerSectionProps> = (props) => {
   return (
     <View style={styles.outerView}>
       {!!props.content &&
@@ -39,3 +39,5 @@ export const DisclaimerSection: React.FC<DisclaimerSectionProps> = (props) => {
     </View>
   );
 };
+
+export default React.memo(DisclaimerSection);

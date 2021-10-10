@@ -11,13 +11,15 @@ import {
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import {
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
   DIAGNOSTIC_ORDER_STATUS,
   REFUND_STATUSES,
   Gender,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  useDiagnosticsCart,
+} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components/StatusCard';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
@@ -61,12 +63,15 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       ? 'Mr. '
       : 'Ms. '
     : '';
+  const {
+    isDiagnosticCircleSubscription,
+  } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
   const [showPreviousCard, setShowPreviousCard] = useState<boolean>(true);
   const [showCurrCard, setShowCurrCard] = useState<boolean>(true);
 
   useEffect(() => {
-    DiagnosticOrderSummaryViewed(grossCharges, orderDetails?.displayId, orderDetails?.orderStatus, currentPatient);
+    DiagnosticOrderSummaryViewed(grossCharges, orderDetails?.displayId, orderDetails?.orderStatus, currentPatient, isDiagnosticCircleSubscription);
   }, []);
 
   const getCircleObject =
@@ -175,11 +180,11 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       : newArr?.reduce((prevVal, currVal) => prevVal + currVal, 0);
 
   const HomeCollectionCharges =
-    orderDetails?.collectionCharges != null
+    orderDetails?.attributesObj?.homeCollectionCharges != null
+      ? orderDetails?.attributesObj?.homeCollectionCharges
+      : orderDetails?.collectionCharges != null
       ? orderDetails?.collectionCharges
-      : totalIndividualDiagonsticsCharges! > orderDetails?.totalPrice
-      ? totalIndividualDiagonsticsCharges! - orderDetails?.totalPrice!
-      : orderDetails?.totalPrice! - totalIndividualDiagonsticsCharges;
+      : 0.0;
 
   //removed the savings (cart,circle,discounts)
   const grossCharges = totalIndividualDiagonsticsCharges!;
@@ -209,6 +214,8 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const modifyTotal = getModifiedLineItems
     ?.map((item: any) => Number(item?.price))
     ?.reduce((preVal: number, curVal: number) => preVal + curVal, 0);
+
+  const paidSlotCharges = orderDetails?.attributesObj?.distanceCharges;
 
   const renderOrderId = () => {
     const bookedOn = moment(orderDetails?.createdDate)?.format('Do MMM') || null;
@@ -361,6 +368,11 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     const firstItem = data?.[0]?.itemName;
     const openPreviousView = title === string.diagnostics.previousCharges && showPreviousCard;
     const openCurrentView = title === string.diagnostics.currentCharges && showCurrCard;
+    const collectionChargesToUse = !!orderDetails?.attributesObj?.homeCollectionCharges
+      ? orderDetails?.attributesObj?.homeCollectionCharges
+      : !!orderDetails?.collectionCharges
+      ? orderDetails?.collectionCharges
+      : 0.0;
     return (
       <View>
         {renderHeading(title)}
@@ -387,7 +399,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
               <Text style={styles.closedViewTotal}>
                 {string.common.Rs}
                 {title === string.diagnostics.previousCharges
-                  ? Number(previousTotal! + orderDetails?.collectionCharges!).toFixed(2)
+                  ? Number(previousTotal! + collectionChargesToUse!).toFixed(2)
                   : Number(modifyTotal! + 0.0).toFixed(2)}
               </Text>
             ) : null}
@@ -448,16 +460,23 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
                 false
               )}
               {renderPrices(
-                'Collection and hygiene charges',
-                title === string.diagnostics.previousCharges
-                  ? orderDetails?.collectionCharges!
+                string.diagnosticsCartPage.homeCollectionText,
+                title === string.diagnostics.previousCharges ? collectionChargesToUse : 0.0,
+                false
+              )}
+              {renderPrices(
+                string.diagnosticsCartPage.paidSlotText,
+                title === string.diagnosticsCartPage.paidSlotText
+                  ? !!orderDetails?.attributesObj?.distanceCharges
+                    ? orderDetails?.attributesObj?.distanceCharges
+                    : 0.0
                   : 0.0,
                 false
               )}
               {renderPrices(
                 'Total',
                 title === string.diagnostics.previousCharges
-                  ? Number(previousTotal! + orderDetails?.collectionCharges!)
+                  ? Number(previousTotal! + collectionChargesToUse)
                   : Number(modifyTotal! + 0.0),
                 false,
                 true
@@ -528,7 +547,13 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           {renderPrices('Circle Discount', totalCircleSaving, true)}
           {renderPrices('Cart Savings', totalCartSaving, true)}
           {renderPrices('Coupon Discount', totalDiscountSaving, true)}
-          {renderPrices('Collection and hygiene charges', HomeCollectionCharges, false)}
+          {renderPrices(
+            string.diagnosticsCartPage.homeCollectionText,
+            HomeCollectionCharges,
+            false
+          )}
+          {!!paidSlotCharges &&
+            renderPrices(string.diagnosticsCartPage.paidSlotText, paidSlotCharges, false)}
           <Spearator style={{ marginTop: 6, marginBottom: 6 }} />
           {renderPrices('Total', orderDetails?.totalPrice, false, true)}
         </View>

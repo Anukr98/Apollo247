@@ -44,6 +44,7 @@ import {
   postWebEngagePHR,
   isSmallDevice,
   removeObjectProperty,
+  postCleverTapPHR,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import {
@@ -78,6 +79,10 @@ import {
   getVisualizationData,
   getVisualizationDataVariables,
 } from '@aph/mobile-patients/src/graphql/types/getVisualizationData';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -263,6 +268,7 @@ export interface TestReportViewScreenProps extends NavigationScreenProps {}
 
 export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props) => {
   const testReportsData = props.navigation?.getParam('testReport') || [];
+  const testResultArray = props.navigation.getParam('testResultArray') || [];
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
   const [showAdditionalNotes, setShowAdditionalNotes] = useState<boolean>(false);
   const [showReadMore, setShowReadMore] = useState<boolean>(false);
@@ -302,9 +308,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
     ? props.navigation.state.params?.prescriptionSource
     : null;
 
-  const imagesArray = g(data, 'testResultFiles') ? g(data, 'testResultFiles') : [];
   const propertyName = g(data, 'testResultFiles') ? 'testResultFiles' : '';
-  const eventInputData = removeObjectProperty(data, propertyName);
 
   useEffect(() => {
     Platform.OS === 'android' && requestReadSmsPermission();
@@ -507,7 +511,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
           })
           .then(({ data }: any) => {
             if (data?.getIndividualTestResultPdf?.url) {
-              imagesArray?.length === 0
+              testResultArray?.length === 1
                 ? downloadDocument(data?.getIndividualTestResultPdf?.url, fileShare)
                 : callConvertToZipApi(data?.getIndividualTestResultPdf?.url, fileShare);
             }
@@ -523,7 +527,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         (data?.labTestSource == 'self' || data?.labTestSource == '247self') &&
         data?.labTestResults?.length === 0
       ) {
-        imagesArray?.length === 1 ? downloadDocument() : callConvertToZipApi();
+        testResultArray?.length === 1 ? downloadDocument() : callConvertToZipApi();
       } else {
         client
           .query<getLabResultpdf, getLabResultpdfVariables>({
@@ -535,7 +539,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
           })
           .then(({ data }: any) => {
             if (data?.getLabResultpdf?.url) {
-              imagesArray?.length === 0
+              testResultArray?.length === 1
                 ? downloadDocument(data?.getLabResultpdf?.url, fileShare)
                 : callConvertToZipApi(data?.getLabResultpdf?.url, fileShare);
             }
@@ -551,7 +555,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
 
   const callConvertToZipApi = (pdfUrl?: string, fileShare?: boolean) => {
     setLoading?.(true);
-    const fileUrls = imagesArray?.map((item: any) => item?.file_Url);
+    const fileUrls = testResultArray?.map((item: any) => item?.file_Url);
     pdfUrl && fileUrls?.push(pdfUrl);
     client
       .mutate<convertToZip, convertToZipVariables>({
@@ -585,6 +589,13 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       Platform.OS === 'ios'
         ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + (fileName || 'Apollo_TestReport.zip')
         : dirs.DownloadDir + '/' + (fileName || 'Apollo_TestReport.zip');
+    postCleverTapPHR(
+      currentPatient,
+      fileShare
+        ? CleverTapEventName.PHR_SHARE_LAB_TEST_REPORT
+        : CleverTapEventName.PHR_DOWNLOAD_TEST_REPORT,
+      'Test Report Screen View'
+    );
     setLoading && setLoading(true);
     RNFetchBlob.config({
       fileCache: true,
@@ -604,7 +615,6 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       .fetch('GET', zipUrl)
       .then((res) => {
         setLoading && setLoading(false);
-        postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, eventInputData);
         const shareOptions = {
           title: mimeType(res.path()),
           url: `file://${res.path()}`,
@@ -635,7 +645,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
     const buttonTitle = 'TEST REPORT';
     const btnTitle = 'DOWNLOAD ';
     const _callDownloadDocumentApi = () => {
-      if (imagesArray?.length === 1) {
+      if (testResultArray?.length === 1) {
         labResults ? downloadPDFTestReport() : downloadDocument();
       } else {
         labResults ? downloadPDFTestReport() : callConvertToZipApi();
@@ -754,7 +764,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                 >
                   <View style={styles.labelViewStyle}>
                     <Text style={styles.labelStyle}>{item?.parameterName}</Text>
-                    {data.labTestSource === 'Hospital' && !!checkNumber ? (
+                    {/* {data.labTestSource === 'Hospital' && !!checkNumber ? (
                       <TouchableOpacity
                         activeOpacity={1}
                         onPress={() => {
@@ -763,7 +773,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                       >
                         <BarChar size="sm" />
                       </TouchableOpacity>
-                    ) : null}
+                    ) : null} */}
                   </View>
 
                   <View
@@ -883,8 +893,8 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
             showResponseData(data.getVisualizationData.response);
             setSendParamName(paramName);
             setSendTestReportName(labTestName);
+            setShowPopup(true);
           }
-          setShowPopup(true);
         })
         .catch((e: any) => {
           setLoading?.(false);
@@ -960,42 +970,70 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
     return (
       <View>
         <ScrollView>
-          {imagesArray?.map((item, index) => {
-            const file_name = item?.fileName || '';
-            const file_Url = item?.file_Url || '';
-            return file_name && file_name.toLowerCase().endsWith('.pdf') ? (
-              <TouchableOpacity
-                activeOpacity={1}
-                style={styles.imageViewStyle}
-                onPress={() => {
-                  setShowPDF(true);
-                  setPdfFileUrl(file_Url);
-                  setFileNamePDF(file_name);
-                }}
-              >
-                <Pdf key={file_Url} source={{ uri: file_Url }} style={styles.pdfStyle} singlePage />
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                activeOpacity={1}
-                onPress={() => {
-                  props.navigation.navigate(AppRoutes.ImageSliderScreen, {
-                    images: [file_Url],
-                    heading: file_name || 'Image',
-                  });
-                }}
-                style={styles.imageViewStyle}
-              >
-                <Image
-                  placeholderStyle={styles.imagePlaceHolderStyle}
-                  PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
-                  source={{ uri: file_Url }}
-                  style={styles.imageStyle}
-                  resizeMode="contain"
-                />
-              </TouchableOpacity>
-            );
-          })}
+          {data?.labTestSource === 'Hospital'
+            ? testResultArray.map((item: any, index: any) => {
+                const file_name = item?.fileName || '';
+                const file_Url = item?.file_Url || '';
+                return file_name && file_name.toLowerCase().endsWith('.png') ? (
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    style={styles.imageViewStyle}
+                    onPress={() => {
+                      setShowPDF(true);
+                      setPdfFileUrl(file_Url);
+                      setFileNamePDF(file_name);
+                    }}
+                  >
+                    <Pdf
+                      key={file_Url}
+                      source={{ uri: file_Url }}
+                      style={styles.pdfStyle}
+                      singlePage
+                    />
+                  </TouchableOpacity>
+                ) : null;
+              })
+            : testResultArray?.map((item: any, index: any) => {
+                const file_name = item?.fileName || '';
+                const file_Url = item?.file_Url || '';
+                return file_name && file_name.toLowerCase().endsWith('.pdf') ? (
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    style={styles.imageViewStyle}
+                    onPress={() => {
+                      setShowPDF(true);
+                      setPdfFileUrl(file_Url);
+                      setFileNamePDF(file_name);
+                    }}
+                  >
+                    <Pdf
+                      key={file_Url}
+                      source={{ uri: file_Url }}
+                      style={styles.pdfStyle}
+                      singlePage
+                    />
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {
+                      props.navigation.navigate(AppRoutes.ImageSliderScreen, {
+                        images: [file_Url],
+                        heading: file_name || 'Image',
+                      });
+                    }}
+                    style={styles.imageViewStyle}
+                  >
+                    <Image
+                      placeholderStyle={styles.imagePlaceHolderStyle}
+                      PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
+                      source={{ uri: file_Url }}
+                      style={styles.imageStyle}
+                      resizeMode="contain"
+                    />
+                  </TouchableOpacity>
+                );
+              })}
         </ScrollView>
       </View>
     );
@@ -1006,8 +1044,8 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       <View style={{ marginBottom: 20 }}>
         {data?.labTestResults?.length > 0 ? renderDetailsFinding() : null}
         {data?.additionalNotes ? renderTopLineReport() : null}
-        {imagesArray?.length > 0 ? renderImage() : null}
-        {imagesArray?.length > 0 || labResults ? renderDownloadButton() : null}
+        {testResultArray?.length > 0 ? renderImage() : null}
+        {testResultArray?.length > 0 || labResults ? renderDownloadButton() : null}
       </View>
     );
   };
@@ -1073,6 +1111,13 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       Platform.OS === 'ios'
         ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + (fileName || 'Apollo_TestReport.pdf')
         : dirs.DownloadDir + '/' + (fileName || 'Apollo_TestReport.pdf');
+    postCleverTapPHR(
+      currentPatient,
+      fileShare
+        ? CleverTapEventName.PHR_SHARE_LAB_TEST_REPORT
+        : CleverTapEventName.PHR_DOWNLOAD_TEST_REPORT,
+      'Test Report Screen View'
+    );
     setLoading && setLoading(true);
     RNFetchBlob.config({
       fileCache: true,
@@ -1100,7 +1145,6 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       )
       .then((res) => {
         setLoading && setLoading(false);
-        postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, eventInputData);
         const shareOptions = {
           title: mimeType(res.path()),
           url: `file://${res.path()}`,
@@ -1184,6 +1228,12 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       minNumber = Number(rangeDecider[0]);
       maxNumber = Number(rangeDecider[1]);
     }
+    postCleverTapPHR(
+      currentPatient,
+      CleverTapEventName.PHR_BAR_CHART_VISUALISATION,
+      'Test Report Screen View',
+      resonseData
+    );
     const lineData = arrResult?.map((i) => Number(i));
     const dateForRanges = arrDate?.map((i) => Number(i));
     return arrResult?.length > 0 ? (

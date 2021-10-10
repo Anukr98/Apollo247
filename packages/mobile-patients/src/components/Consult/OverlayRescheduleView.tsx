@@ -364,8 +364,8 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
               </Text>
             </View>
             <ScrollView bounces={false} ref={scrollViewRef}>
-              {props.renderTab === string.consultModeTab.VIDEO_CONSULT ||
-              string.consultModeTab.CONSULT_ONLINE ? (
+              {props.renderTab == string.consultModeTab.VIDEO_CONSULT ||
+              props.renderTab == string.consultModeTab.CONSULT_ONLINE ? (
                 <ConsultDoctorOnline
                   doctor={props.doctor}
                   timeArray={timeArray}

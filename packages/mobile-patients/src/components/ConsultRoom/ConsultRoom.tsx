@@ -235,6 +235,7 @@ import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/G
 import {
   CleverTapEventName,
   CleverTapEvents,
+  DiagnosticHomePageSource,
   HomeScreenAttributes,
   PatientInfo as PatientInfoObj,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
@@ -1109,7 +1110,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     });
 
     AsyncStorage.getItem('VaccinationSubscriptionInclusionId').then((data) => {
-      setVaccinationSubscriptionInclusionId(data);
+      if (data) {
+        setVaccinationSubscriptionInclusionId(data);
+      }
     });
   };
 
@@ -1665,6 +1668,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const homeScreenAttributes = {
           'Nav src': 'hero banner',
           'Page Name': 'Home Screen',
+          Source: DiagnosticHomePageSource.HOMEPAGE_CTA,
         };
         postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Home Screen');
@@ -1961,6 +1965,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const setSubscriptionData = (plan: any, isUpgradePlan?: boolean, isCorporatePlan?: boolean) => {
+
     try {
       const group = plan.group;
       const groupData: GroupPlan = {
@@ -2847,6 +2852,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   const homeScreenAttributes = {
                     'Nav src': 'Bottom bar',
                     'Page Name': 'Home Screen',
+                    Source: DiagnosticHomePageSource.TAB_BAR,
                   };
                   postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Menu');
@@ -3191,7 +3197,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       } else if (action.cta_action == 'PHR') {
         props.navigation.navigate('HealthRecords');
       } else if (action.cta_action == 'DIAGNOSTICS_LANDING') {
-        props.navigation.navigate('TESTS');
+        const homeScreenAttributes = {
+          Source: DiagnosticHomePageSource.BANNER,
+        };
+        props.navigation.navigate('TESTS', { homeScreenAttributes });
       } else if (action.cta_action == 'MEMBERSHIP_DETAIL_CIRCLE') {
         props.navigation.navigate('MembershipDetails', {
           membershipType: 'CIRCLE PLAN',
@@ -3764,6 +3773,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     };
     postHomeWEGEvent(WebEngageEventName.COVID_VACCINATION_SECTION_CLICKED, undefined, attibutes);
 
+    console.log(
+      'check  ConsultRoom  handleCovidCTA vaccinationSubscriptionInclusionId ---',
+      vaccinationSubscriptionInclusionId
+    );
+
     try {
       if (item?.action === string.vaccineBooking.CORPORATE_VACCINATION) {
         postVaccineWidgetEvents(CleverTapEventName.VACCINATION_BOOK_SLOT_CLICKED);
@@ -3782,6 +3796,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             } else {
               props.navigation.navigate(AppRoutes.VaccineTermsAndConditions, {
                 isCorporateSubscription: !!corporateSubscriptions?.length,
+                cmsIdentifier: vaccinationCmsIdentifier || '',
+                subscriptionId: vaccinationSubscriptionId || '',
+                subscriptionInclusionId: vaccinationSubscriptionInclusionId || '',
+                isVaccineSubscription: !!vaccinationCmsIdentifier,
               });
             }
           } else {
@@ -3798,7 +3816,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           props.navigation.navigate(AppRoutes.BookedVaccineScreen, {
             cmsIdentifier: vaccinationCmsIdentifier || '',
             subscriptionId: vaccinationSubscriptionId || '',
-            subscriptionInclusionId: vaccinationSubscriptionId || '',
+            subscriptionInclusionId: vaccinationSubscriptionInclusionId || '',
             isVaccineSubscription: !!vaccinationCmsIdentifier,
             isCorporateSubscription: !!corporateSubscriptions?.length,
           });
@@ -3938,7 +3956,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           ? AppRoutes.MedAndTestCart
           : shopCartItems.length
           ? AppRoutes.MedicineCart
-          : AppRoutes.TestsCart;
+          : AppRoutes.AddPatients;
       props.navigation.navigate(route);
     };
 
@@ -3986,9 +4004,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       >
         <ImageBackground
           style={styles.proHealthBannerImage}
-          source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_2.webp')}
+          source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_banner.webp')}
           resizeMode={'stretch'}
-          borderRadius={5}
+          borderRadius={10}
         ></ImageBackground>
       </TouchableOpacity>
     );

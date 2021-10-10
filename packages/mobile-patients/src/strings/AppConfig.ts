@@ -262,12 +262,31 @@ const appStaticVariables = {
     },
   ],
   DIAGNOSTIC_DEFAULT_ICON: 'https://newassets.apollo247.com/organs/ic_blood.png',
+  DIAGNOSTIC_DEFAULT_LOCATION: {
+    displayName: 'Hyderabad',
+    latitude: 17.3202127,
+    longitude: 78.4020322,
+    area: '',
+    city: 'Hyderabad',
+    state: 'Telangana',
+    stateCode: 'TG',
+    country: 'India',
+    pincode: '500030',
+  },
+  DEFAULT_ITEM_SELECTION_FLAG: true,
   Diagnostics_Help_NonOrder_Queries: [
     '96b606f4-dd13-46ff-8bce-85315efee053',
     '78c2dc50-dc16-44c6-bd2d-d4b14c97b521',
     '10788a46-512c-41c0-8c59-e31ff7eebbe4',
   ],
+  DEFAULT_PHELBO_ETA: 45,
+  MAX_PATIENT_SELECTION: 6,
+  CIRCLE_PLAN_PRESELECTED: false,
+  CIRCLE_FACTS:
+    '<b>#CircleFact:</b> On an average Circle members <b>save upto ₹400 every month</b>',
   enableCredWebView: false,
+  DIAGNOSTICS_REPORT_TAT_BREACH_TEXT: "Reports are delayed by a few hours, but should be available any time soon.",
+  TrueCaller_Login_Enabled: false,
 };
 
 const DEV_top_specialties = [
@@ -459,7 +478,7 @@ const PharmaApiConfig = {
     TRACK_EVENT: [`${tagalysBaseUrl}/analytics/events/track`],
     MED_SEARCH: [`${apolloProdBaseUrl}/popcsrchprd_api.php`, pharmaToken201],
     GET_SKU: [`${apolloUatBaseUrl}/popcsrchsku_api.php`, pharmaToken201],
-    MED_DETAIL: [apolloUatBaseUrl, pharmaToken201],
+    MED_DETAIL: [apolloProdBaseUrl, pharmaToken201],
     MED_SEARCH_SUGGESTION: [`${apolloProdBaseUrl}/popcsrchss_api.php`, pharmaToken201],
     STORES_LIST: [apolloUatBaseUrl, pharmaToken201],
     GET_STORE_INVENTORY: [
@@ -468,7 +487,7 @@ const PharmaApiConfig = {
     ],
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
     MED_CART_ITEMS_DETAILS: [`${apolloUatBaseUrl}/popcscrchcart_api.php`, pharmaToken201],
-    IMAGES_BASE_URL: [`https://uat.apollopharmacy.in/pub/media`],
+    IMAGES_BASE_URL: [`https://newassets.apollo247.com/pub/media`],
     SPECIAL_OFFERS_IMAGES_BASE_URL: [`https://newassets.apollo247.com/pub/media`],
     COUPON_IMAGES_BASE_URL: [`https://newassets.apollo247.com`],
     GET_DELIVERY_TIME: [
@@ -480,7 +499,7 @@ const PharmaApiConfig = {
       pharmaTokenYXV,
     ],
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
-    PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/categoryproducts_api.php`, pharmaToken201],
+    PRODUCTS_BY_CATEGORY: [`${apolloProdBaseUrl}/categoryproducts_api.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
     SPECIAL_OFFERS_PAGE_WIDGETS: [
       'https://uatcms.apollo247.com/api/special-offer/getwidget',
@@ -502,16 +521,13 @@ const PharmaApiConfig = {
       // `http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedetail`
       `https://report.apollodiagnostics.in/Apollo/AskApollo.aspx?cmd=getpackagedetail`,
     ],
-    GET_CLINICS: [
-      'http://uatlims.apollohl.in/ApolloLive/CronJob/GetCentreDetail.aspx',
-      testApiCredentialsDev,
-    ],
     PRODUCT_SUGGESTIONS_CATEGORYID: '41920',
     SPECIAL_OFFERS_CATEGORY_ID: '42372',
     MIN_CART_VALUE_FOR_FREE_DELIVERY: 300,
     DELIVERY_CHARGES: 50,
     pharmaMerchantId: 'apollopharm' /*  pharma merchantId staging - apollopharm */,
     assetsBaseurl: 'https://newassets-test.apollo247.com/files',
+    CIRCLE_PLAN_PRESELECTED: false,
   },
   prod: {
     TRACK_EVENT: [`${tagalysBaseUrl}/analytics/events/track`],
@@ -559,16 +575,13 @@ const PharmaApiConfig = {
     GET_PACKAGE_DATA: [
       `https://report.apollodiagnostics.in/Apollo/AskApollo.aspx?cmd=getpackagedetail`,
     ],
-    GET_CLINICS: [
-      'https://report.apollodiagnostics.in/Apollo/CronJob/GetCentreDetail.aspx',
-      testApiCredentialsProd,
-    ],
     PRODUCT_SUGGESTIONS_CATEGORYID: '2252',
     SPECIAL_OFFERS_CATEGORY_ID: '2255',
     MIN_CART_VALUE_FOR_FREE_DELIVERY: 300,
     DELIVERY_CHARGES: 50,
     pharmaMerchantId: 'apollo_hospitals' /*  pharma merchantId prod - apollo_hospitals */,
     assetsBaseurl: 'https://newassets.apollo247.com/files',
+    CIRCLE_PLAN_PRESELECTED: false,
   },
 };
 
@@ -625,6 +638,7 @@ const ConfigurationDev = {
   CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
+  CIRCLE_PLAN_PRESELECTED: false,
 };
 
 // QA
@@ -682,6 +696,7 @@ const ConfigurationQA = {
   CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com/ordersuccess',
+  CIRCLE_PLAN_PRESELECTED: false,
 };
 
 // QA2
@@ -737,6 +752,7 @@ const ConfigurationQA2 = {
   CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
+  CIRCLE_PLAN_PRESELECTED: false,
 };
 
 // QA3
@@ -793,6 +809,7 @@ const ConfigurationQA3 = {
   CIRLCE_PHARMA_URL: 'https://qathreepatients.apollo247.com/pharma-landing?header=false',
   CIRCLE_TEST_URL: 'https://qathreepatients.apollo247.com/test-landing?header=false',
   CIRCLE_LANDING_URL: 'https://qathreepatients.apollo247.com/circle?header=false',
+  CIRCLE_PLAN_PRESELECTED: false,
 };
 
 const ConfigurationQA5 = {
@@ -850,6 +867,7 @@ const ConfigurationQA5 = {
   CIRLCE_PHARMA_URL: 'https://aph-staging-web-patients.apollo247.com/pharma-landing?header=false',
   CIRCLE_TEST_URL: 'https://aph-staging-web-patients.apollo247.com/test-landing?header=false',
   CIRCLE_LANDING_URL: 'https://aph-staging-web-patients.apollo247.com/circle?header=false',
+  CIRCLE_PLAN_PRESELECTED: false,
 };
 
 const ConfigurationQA6 = {
@@ -906,6 +924,7 @@ const ConfigurationQA6 = {
   CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com/ordersuccess',
+  CIRCLE_PLAN_PRESELECTED: false,
 };
 
 // VAPT
@@ -962,6 +981,7 @@ const ConfigurationVAPT = {
   CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
   PROHEALTH_BOOKING_URL: 'https://stagingpatients.apollo247.com//apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
+  CIRCLE_PLAN_PRESELECTED: false,
 };
 //Production
 const ConfigurationProd = {
@@ -1017,6 +1037,7 @@ const ConfigurationProd = {
   CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.prod.vitacloud.io',
   PROHEALTH_BOOKING_URL: 'https://www.apollo247.com/apollo-prohealth',
   baseUrl: 'https://www.apollo247.com',
+  CIRCLE_PLAN_PRESELECTED: false,
 };
 
 //PERFORMANCE
@@ -1074,6 +1095,7 @@ const ConfigurationPERFORM = {
   CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
+  CIRCLE_PLAN_PRESELECTED: false,
 };
 
 //DevelopmentReplica
@@ -1131,6 +1153,7 @@ const ConfigurationDevReplica = {
   CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
+  CIRCLE_PLAN_PRESELECTED: false,
 };
 
 const Configuration =
@@ -1331,6 +1354,15 @@ export const DIAGNOSTIC_LAB_TESTING_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
 ];
+
+export const DIAGNOSTIC_SAMPLE_COLLECTED_STATUS = [
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
+];
+
 export const DIAGNOSTIC_VERTICAL_STATUS_TO_SHOW = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED,
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
@@ -1430,6 +1462,11 @@ export const DIAGNOSTIC_SHOW_OTP_STATUS = [
 export const DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
+];
+export const DIAGNOSTIC_SUB_STATUS_TO_SHOW = [
+  DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
 ];
 
 export const TestsNewFeedbackData = {
@@ -1563,6 +1600,11 @@ export const DIAGNOSTIC_ONLINE_PAYMENT_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
+];
+
+export const DIAGNOSTIC_EDIT_PROFILE_ARRAY = [
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
 ];
 
 type SpecialitiesType = {

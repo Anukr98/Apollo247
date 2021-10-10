@@ -41,7 +41,7 @@ import {
   onCleverTapUserLogin,
   getUTMdataFromURL,
   postCleverTapEvent,
-  navigateToScreenWithHomeScreeninStack,
+  navigateToScreenWithEmptyStack,
   navigateToHome,
   setCleverTapAppsFlyerCustID,
   clevertapEventForAppsflyerDeeplink,
@@ -97,7 +97,7 @@ import { CleverTapEventName } from '../helpers/CleverTapEvents';
 import analytics from '@react-native-firebase/analytics';
 import appsFlyer from 'react-native-appsflyer';
 
-(function () {
+(function() {
   /**
    * Praktice.ai
    * Polyfill for Promise.prototype.finally
@@ -110,16 +110,16 @@ import appsFlyer from 'react-native-appsflyer';
   if (typeof Promise.prototype['finally'] === 'function') {
     return;
   }
-  globalObject.Promise.prototype['finally'] = function (callback: any) {
+  globalObject.Promise.prototype['finally'] = function(callback: any) {
     const constructor = this.constructor;
     return this.then(
-      function (value: any) {
-        return constructor.resolve(callback()).then(function () {
+      function(value: any) {
+        return constructor.resolve(callback()).then(function() {
           return value;
         });
       },
-      function (reason: any) {
-        return constructor.resolve(callback()).then(function () {
+      function(reason: any) {
+        return constructor.resolve(callback()).then(function() {
           throw reason;
         });
       }
@@ -161,7 +161,12 @@ export interface SplashScreenProps extends NavigationScreenProps {}
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { APP_ENV } = AppConfig;
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
-  const { setAllPatients, setMobileAPICalled, validateAuthToken, buildApolloClient } = useAuth();
+  const {
+    setAllPatients,
+    setMobileAPICalled,
+    validateAndReturnAuthToken,
+    buildApolloClient,
+  } = useAuth();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [appState, setAppState] = useState(AppState.currentState);
   const [takeToConsultRoom, settakeToConsultRoom] = useState<boolean>(false);
@@ -219,7 +224,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       PrefetchAPIReuqest({
         clientId: AppConfig.Configuration.PRAKTISE_API_KEY,
       })
-        .then((res: any) => { })
+        .then((res: any) => {})
         .catch((e: Error) => {
           CommonBugFender('SplashScreen_PrefetchAPIReuqest', e);
         });
@@ -280,7 +285,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
     const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
     const deviceTokenTimeStamp = (await AsyncStorage.getItem('deviceTokenTimeStamp')) || '';
-    const currentDeviceTokenTimeStamp = deviceTokenTimeStamp ? JSON.parse(deviceTokenTimeStamp) : '';
+    const currentDeviceTokenTimeStamp = deviceTokenTimeStamp
+      ? JSON.parse(deviceTokenTimeStamp)
+      : '';
     const currentPatientId: any = await AsyncStorage.getItem('selectUserId');
     if (
       !currentDeviceToken ||
@@ -301,12 +308,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           AsyncStorage.setItem('deviceTokenTimeStamp', JSON.stringify(new Date().getTime()));
           UnInstallAppsFlyer(token);
           if (currentPatientId && token) {
-            saveTokenDevice(client, token, currentPatientId)
-              ?.catch((e) => {
-                CommonBugFender('Login_saveTokenDevice', e);
-                AsyncStorage.setItem('deviceToken', '');
-              })
-          };
+            saveTokenDevice(client, token, currentPatientId)?.catch((e) => {
+              CommonBugFender('Login_saveTokenDevice', e);
+              AsyncStorage.setItem('deviceToken', '');
+            });
+          }
         })
         .catch((e) => {
           CommonBugFender('SplashScreen_getDeviceToken', e);
@@ -387,12 +393,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       'Patient mobile number': '',
       'Appointment Date time': null,
       'Appointment display ID': null,
-      'Appointment ID': voipAppointmentId.current,
-      'Doctor Name': voipDoctorName.current,
+      'Appointment ID': voipAppointmentId?.current,
+      'Doctor Name': voipDoctorName?.current,
       'Speciality Name': '',
       'Speciality ID': '',
       'Doctor Type': '',
-      'Mode of Call': voipCallType.current === 'Video' ? 'Video' : 'Audio',
+      'Mode of Call': voipCallType?.current === 'Video' ? 'Video' : 'Audio',
       Platform: 'App',
     };
     postWebEngageEvent(WebEngageEventName.PATIENT_DECLINED_CALL, eventAttributes);
@@ -416,7 +422,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                 data?.data
               );
               fireAppOpenedEvent(url);
-            } catch (e) { }
+            } catch (e) {}
           } else {
             settakeToConsultRoom(true);
             fireAppOpenedEvent('');
@@ -440,7 +446,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             data?.data
           );
           fireAppOpenedEvent(event.url);
-        } catch (e) { }
+        } catch (e) {}
       });
       AsyncStorage.removeItem('location');
     } catch (error) {
@@ -498,7 +504,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     } else if (routeName == 'prohealth') {
       fetchProhealthHospitalDetails(id!);
     } else if (routeName == 'PaymentMethods') {
-      !!id ? fetchOrderInfo(id) : getData(routeName, id, isCall, timeout, mediaSource);
+      !!id ? fetchOrderInfo(id) : getData('ConsultRoom');
     } else {
       getData(routeName, id, isCall, timeout, mediaSource);
     }
@@ -516,7 +522,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   const fetchOrderInfo = async (paymentId: string) => {
     try {
-      const authToken: string = await validateAuthToken();
+      const authToken: string = await validateAndReturnAuthToken();
       const apolloClient = buildApolloClient(authToken);
       const response = await apolloClient.query({
         query: GET_ORDER_INFO,
@@ -524,7 +530,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         fetchPolicy: 'no-cache',
       });
       const paymentStatus = response?.data?.getOrderInternal?.payment_status;
-      if (paymentStatus == 'PAYMENT_NOT_INITIATED') {
+      const allowedStatuses = ['PAYMENT_NOT_INITIATED', 'TXN_FAILURE', 'COD_COMPLETE'];
+      if (allowedStatuses.includes(paymentStatus)) {
         const currentPatientId: any = await AsyncStorage.getItem('selectUserId');
         const isPharmaOrder = !!response?.data?.getOrderInternal?.PharmaOrderDetails
           ?.medicineOrderDetails?.length
@@ -541,7 +548,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           businessLine: 'paymentLink',
           customerId: response?.data?.getOrderInternal?.customer_id,
         };
-        navigateToScreenWithHomeScreeninStack(props.navigation, AppRoutes.PaymentMethods, params);
+        getData('PaymentMethods', undefined, undefined, undefined, undefined, params);
       } else {
         navigateToHome(props.navigation);
       }
@@ -607,7 +614,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     id?: string,
     timeout?: boolean,
     isCall?: boolean,
-    mediaSource?: string
+    mediaSource?: string,
+    params?: any
   ) => {
     async function fetchData() {
       //we are prefetching the userLoggedIn because reading it from async storage was taking 400-500 ms
@@ -646,7 +654,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         : null;
       const currentPatient = allPatients
         ? allPatients?.find((patient: any) => patient?.id === currentPatientId) ||
-        allPatients?.find((patient: any) => patient?.isUhidPrimary === true)
+          allPatients?.find((patient: any) => patient?.isUhidPrimary === true)
         : null;
       setAllPatients(allPatients);
 
@@ -685,7 +693,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                   voipAppointmentId,
                   isCorporateSubscribed === 'yes',
                   vaccinationCmsIdentifier,
-                  vaccinationSubscriptionId
+                  vaccinationSubscriptionId,
+                  params
                 );
                 let _createCleverTapProifle = createCleverTapProifle;
                 if (_createCleverTapProifle == null) {
@@ -730,7 +739,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           source: 'Organic',
         });
       }
-    } catch (error) { }
+    } catch (error) {}
   };
 
   const catchSourceUrlDataUsingAppsFlyer = async () => {
@@ -864,6 +873,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const {
     setLocationDetails,
     setNeedHelpToContactInMessage,
+    setNeedHelpTicketReferenceText,
     setNeedHelpReturnPharmaOrderSuccessMessage,
     setSavePatientDetails,
     setCovidVaccineCta,
@@ -903,7 +913,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               });
             });
         }
-      } catch { }
+      } catch {}
     }
     if (appState.match(/active|foreground/) && nextAppState === 'background') {
       APPStateActive();
@@ -945,6 +955,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Need_Help_To_Contact_In: {
       PROD: 'Need_Help_To_Contact_In',
     },
+
+    Need_Help_Ticket_Reference_Text: {
+      QA: 'Need_Help_Ticket_Reference_Text_QA',
+      PROD: 'Need_Help_Ticket_Reference_Text',
+    },
+
     Min_Value_For_Pharmacy_Free_Delivery: {
       QA: 'QA_Min_Value_For_Pharmacy_Free_Delivery',
       PROD: 'Min_Value_For_Pharmacy_Free_Delivery',
@@ -1125,6 +1141,26 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Enable_Cred_WebView_Flow',
       PROD: 'Enable_Cred_WebView_Flow',
     },
+    CirclePlanPreselected: {
+      QA: 'QA_Is_Circle_Preselected',
+      PROD: 'Is_Circle_Preselected',
+    },
+    CircleFacts: {
+      QA: 'QA_Circle_Facts',
+      PROD: 'Circle_Facts',
+    },
+    Diagnostics_Default_Location: {
+      QA: 'QA_Diagnostics_Default_Address',
+      PROD: 'Diagnostics_Default_Address',
+    },
+    Diagnostics_Report_Tat_Breach_Text: {
+      QA: 'QA_Diagnostics_Report_Tat_Breach_Text',
+      PROD: 'Diagnostics_Report_Tat_Breach_Text',
+    },
+    TrueCaller_Login_Enabled: {
+      QA: 'TrueCaller_Login_Enabled_QA',
+      PROD: 'TrueCaller_Login_Enabled_PROD',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1138,9 +1174,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       : currentEnv === AppEnv.QA ||
         currentEnv === AppEnv.QA2 ||
         currentEnv === AppEnv.QA3 ||
-        currentEnv === AppEnv.QA5
-        ? valueBasedOnEnv.QA || valueBasedOnEnv.PROD
-        : valueBasedOnEnv.DEV || valueBasedOnEnv.QA || valueBasedOnEnv.PROD;
+        currentEnv === AppEnv.QA4 ||
+        currentEnv === AppEnv.QA5 ||
+        currentEnv === AppEnv.QA6 ||
+        currentEnv === AppEnv.VAPT
+      ? valueBasedOnEnv.QA || valueBasedOnEnv.PROD
+      : valueBasedOnEnv.DEV || valueBasedOnEnv.QA || valueBasedOnEnv.PROD;
   };
 
   const getRemoteConfigValue = (
@@ -1172,6 +1211,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         config.getString(key)
       );
       needHelpToContactInMessage && setNeedHelpToContactInMessage!(needHelpToContactInMessage);
+
+      const needHelpTicketReferenceText = getRemoteConfigValue(
+        'Need_Help_Ticket_Reference_Text',
+        (key) => config.getString(key)
+      );
+      needHelpTicketReferenceText && setNeedHelpTicketReferenceText!(needHelpTicketReferenceText);
 
       const covidVaccineCta = getRemoteConfigValue(
         'Covid_Vaccine_Cta_Key',
@@ -1376,6 +1421,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         config.getBoolean(key)
       );
 
+      setAppConfig('TrueCaller_Login_Enabled', 'TrueCaller_Login_Enabled', (key) =>
+        config.getBoolean(key)
+      );
+
       const nudgeMessagePharmacyHome = getRemoteConfigValue(
         'Nudge_Message_Pharmacy_Home',
         (key) => JSON.parse(config.getString(key)) || null
@@ -1396,6 +1445,33 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
 
       nudgeMessagePharmacyPDP && setPharmaPDPNudgeMessage?.(nudgeMessagePharmacyPDP);
+
+      setAppConfig('CirclePlanPreselected', 'CIRCLE_PLAN_PRESELECTED', (key) =>
+        config.getBoolean(key)
+      );
+
+      setAppConfig('CircleFacts', 'CIRCLE_FACTS', (key) => config.getString(key));
+
+      setAppConfig(
+        'Diagnostics_Default_Location',
+        'DIAGNOSTIC_DEFAULT_LOCATION',
+        (key) =>
+          JSON.parse(config.getString(key) || 'null') ||
+          AppConfig.Configuration.DIAGNOSTIC_DEFAULT_LOCATION
+      );
+
+      setAppConfig(
+        'Diagnostics_Report_Tat_Breach_Text',
+        'DIAGNOSTICS_REPORT_TAT_BREACH_TEXT',
+        (key) => config.getString(key)
+      );
+
+      const disincentivizeCodMessage = getRemoteConfigValue(
+        'Disincentivize_COD_Message',
+        (key) => config.getString(key) || ''
+      );
+
+      disincentivizeCodMessage && setPaymentCodMessage?.(disincentivizeCodMessage);
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';
@@ -1456,7 +1532,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                 Platform.OS === 'ios'
                   ? 'https://apps.apple.com/in/app/apollo247/id1496740273'
                   : 'https://play.google.com/store/apps/details?id=com.apollo.patientapp'
-              ).catch((err) => { });
+              ).catch((err) => {});
             }}
           />
         </View>
@@ -1501,7 +1577,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       toValue: 1,
       duration: 1300,
       useNativeDriver: true,
-    }).start(() => { });
+    }).start(() => {});
   };
 
   return (
