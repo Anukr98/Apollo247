@@ -769,7 +769,10 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.4,
     shadowRadius: 5,
-    elevation: 5,
+    elevation: 4,
+    borderStyle: 'solid',
+    borderColor: '#7EA2AD',
+    borderRadius: 4,
   },
   covidIconStyle: {
     marginLeft: 10,
@@ -3093,7 +3096,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             styles.activeAppointmentsContainer,
             {
               marginTop: source == 'prohealth' ? 3 : 20,
-              marginBottom: source == 'prohealth' ? 3 : 20,
+              marginBottom: source == 'prohealth' ? 3 : 10,
             },
           ]}
           title={text}

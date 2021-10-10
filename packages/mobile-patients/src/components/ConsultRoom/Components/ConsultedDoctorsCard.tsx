@@ -175,9 +175,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     marginLeft: 20,
     backgroundColor: theme.colors.ICE_BERG,
-    borderRadius: 10,
     paddingHorizontal: 10,
     justifyContent: 'center',
+    borderStyle: 'solid',
+    borderColor: '#7EA2AD',
+    borderRadius: 6,
   },
   doctorProfile: {
     width: 40,
