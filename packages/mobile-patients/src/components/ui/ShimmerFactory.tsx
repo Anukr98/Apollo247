@@ -5,6 +5,7 @@ import { createShimmerPlaceholder } from 'react-native-shimmer-placeholder';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CovidOrange } from '@aph/mobile-patients/src/components/ui/Icons';
 import { cardWidth } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultedDoctorsCard';
+import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 
 const { width, height } = Dimensions.get('window');
 const ShimmerPlaceHolder = createShimmerPlaceholder(LinearGradient);
@@ -386,7 +387,7 @@ export const renderCovidVaccinationShimmer = () => {
 
 export const renderCircleShimmer = () => {
   return (
-    <View style={{ paddingTop: 10 }}>
+    <LinearGradientComponent colors={['#FFEEDB', '#FFFCFA']} style={{ paddingTop: 10 }}>
       <View style={styles.planContainer}>
         <View style={styles.subPlanOne}>
           <Image
@@ -415,20 +416,7 @@ export const renderCircleShimmer = () => {
           />
         </View>
       </View>
-
-      <View style={{ flexDirection: 'row' }}>
-        <ShimmerPlaceHolder
-          shimmerColors={shimmerColors}
-          LinearGradient={LinearGradient}
-          shimmerStyle={styles.circleCard}
-        />
-        <ShimmerPlaceHolder
-          shimmerColors={shimmerColors}
-          LinearGradient={LinearGradient}
-          shimmerStyle={styles.circleCard}
-        />
-      </View>
-    </View>
+    </LinearGradientComponent>
   );
 };
 

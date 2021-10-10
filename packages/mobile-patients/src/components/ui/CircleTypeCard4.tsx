@@ -59,9 +59,9 @@ export const CircleTypeCard4: React.FC<CircleTypeCard4Props> = (props) => {
         </View>
 
         <View style={styles.subPlanTwo}>
-          <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
+          <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 0.7, 16) }}>
             Available Health{'\n'}Credits:
-            <Text style={{ ...theme.viewStyles.text('M', 15, '#000', 1, 18) }}>
+            <Text style={{ ...theme.viewStyles.text('M', 15, theme.colors.SHERPA_BLUE, 1, 18) }}>
               {' '}
               {credits || 0}
             </Text>

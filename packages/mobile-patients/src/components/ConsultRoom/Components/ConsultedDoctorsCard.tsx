@@ -17,7 +17,10 @@ import {
   getPatientPastConsultedDoctors_getPatientPastConsultedDoctors,
 } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultedDoctors';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { DoctorPlaceholderImage } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  DoctorPlaceholderImage,
+  EllipseBulletPoint,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   renderConsultedDoctorsShimmer,
@@ -110,7 +113,7 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
             resizeMode={'cover'}
           />
         ) : (
-          <DoctorPlaceholderImage style={styles.doctorProfile} />
+          <EllipseBulletPoint style={styles.doctorProfile} />
         )}
       </View>
     );

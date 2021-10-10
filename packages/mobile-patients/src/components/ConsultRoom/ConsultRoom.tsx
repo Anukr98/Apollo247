@@ -3174,7 +3174,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                       <View style={styles.bottom2ImageView}>{item.image2}</View>
                       <View style={styles.bottom2TextView}>
                         <Text style={[theme.viewStyles.text('R', 11, item.subtitleColor!, 1, 18)]}>
-                          ₹ {0} {item.subtitle}
+                          ₹ {healthCredits ? healthCredits : 0} {item.subtitle}
                         </Text>
                       </View>
                     </View>
@@ -3527,13 +3527,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
     {
       /**
-       * CircleTypeCard1 && CircleTypeCard2 -> expiring in x days
-       * CircleTypeCard3 && CircleTypeCard4 -> active plans
-       * CircleTypeCard5 && CircleTypeCard6 -> expired plans
+       * CircleTypeCard1 && CircleTypeCard2 -> expiring soon in x days
+       * CircleTypeCard3 && CircleTypeCard4 -> latest active plans
+       * CircleTypeCard5 && CircleTypeCard6 ->  the expired plans
        */
     }
     return (
-      <View style={styles.circleContainer}>
+      <LinearGradientComponent style={styles.circleContainer} colors={['#FFEEDB', '#FFFCFA']}>
         {expiry > 0 && circleStatus === 'active' && renew && circleSavings > 0 ? (
           <CircleTypeCard1
             onButtonPress={() => {
@@ -3605,52 +3605,33 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           />
         ) : null}
 
-        {cardlist?.length > 0 ? (
-          <View style={[styles.circleRowsContainer, { paddingRight: 10 }]}>
-            <View style={styles.circleButtonLeft}>
-              <ImageBackground
-                style={styles.circleButtonImage}
-                source={require('../ui/icons/PathLeft.webp')}
-              />
-            </View>
-
-            <FlatList
-              horizontal={true}
-              data={cardlist}
-              renderItem={({ item }) => renderCircleCards(item, darktheme, renew)}
-              keyExtractor={(item, index) => index.toString() + 'circle'}
-            />
-
-            <View style={styles.circleButtonRight}>
-              <ImageBackground
-                style={styles.circleButtonImage}
-                source={require('../ui/icons/PathRight.webp')}
-              />
-            </View>
-          </View>
-        ) : null}
+        {/* {renderCircleBannerCards} */}
 
         <View style={styles.circleRowsContainer}>
           {expiry > 0 && circleSavings <= 0 ? (
             <Text>
-              <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
+              <Text
+                style={{ ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 0.7, 16) }}
+              >
                 Circle Member{' '}
               </Text>
-              <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 1, 16) }}>
+              <Text style={{ ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 1, 16) }}>
                 saves ₹848 per month.
               </Text>
-              <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
+              <Text
+                style={{ ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 0.7, 16) }}
+              >
                 {' '}
                 You can too{renew ? ' - Renew now!' : '.'}
               </Text>
             </Text>
           ) : circleStatus === 'disabled' ? (
-            <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
+            <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 0.6, 16) }}>
               You’re missing out on benefits - Renew your membership now!!!{' '}
             </Text>
           ) : null}
         </View>
-      </View>
+      </LinearGradientComponent>
     );
   };
 
@@ -3663,6 +3644,34 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         }}
       >
         {renderHealthArticleAndResources()}
+      </View>
+    );
+  };
+
+  const renderCircleBannerCards = () => {
+    if (cardlist?.length <= 0) return null;
+    return (
+      <View style={[styles.circleRowsContainer, { paddingRight: 10 }]}>
+        <View style={styles.circleButtonLeft}>
+          <ImageBackground
+            style={styles.circleButtonImage}
+            source={require('../ui/icons/PathLeft.webp')}
+          />
+        </View>
+
+        <FlatList
+          horizontal={true}
+          data={cardlist}
+          renderItem={({ item }) => renderCircleCards(item, darktheme, renew)}
+          keyExtractor={(item, index) => index.toString() + 'circle'}
+        />
+
+        <View style={styles.circleButtonRight}>
+          <ImageBackground
+            style={styles.circleButtonImage}
+            source={require('../ui/icons/PathRight.webp')}
+          />
+        </View>
       </View>
     );
   };
