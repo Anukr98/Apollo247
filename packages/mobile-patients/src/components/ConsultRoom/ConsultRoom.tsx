@@ -4697,13 +4697,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 </View>
                 {showCirclePlans && renderCircleSubscriptionPlans()}
                 {showCircleActivationcr && renderCircleActivation()}
-                {!covidVaccineCtaV2?.data && renderCovidVaccinationShimmer()}
-                <View style={{ backgroundColor: '#f0f1ec' }}>
-                  {covidVaccineCtaV2?.data?.length > 0 && renderCovidContainer()}
-                </View>
                 {bannerLoading && renderBannerShimmer()}
                 <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
 
+                {/* {!covidVaccineCtaV2?.data && renderCovidVaccinationShimmer()}
+                <View style={{ backgroundColor: '#f0f1ec' }}>
+                  {covidVaccineCtaV2?.data?.length > 0 && renderCovidContainer()}
+                </View> */}
+
+                {renderHeadings('My Doctors')}
                 <View style={{ backgroundColor: '#f0f1ec' }}>
                   {renderListView('Active Appointments', 'normal')}
                 </View>
