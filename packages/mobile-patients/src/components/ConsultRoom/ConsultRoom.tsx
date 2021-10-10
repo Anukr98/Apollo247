@@ -1638,22 +1638,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const listOptions: menuOptions[] = [
     {
       id: 1,
-      title: 'Book Apollo Doctor Appointment',
-      image: <DoctorIcon style={[styles.menuOptionIconStyle]} />,
-      onPress: () => {
-        postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
-        postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
-        postHomeCleverTapEvent(
-          CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED,
-          'Home Screen'
-        );
-        props.navigation.navigate(AppRoutes.DoctorSearch);
-        //props.navigation.navigate(AppRoutes.PostShareAppointmentSelectorScreen);
-      },
-    },
-    {
-      id: 2,
-      title: 'Buy Medicines & Essentials',
+      title: 'Buy Medicines and Essentials',
       image: <MedicineCartIcon style={[styles.menuOptionIconStyle]} />,
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Home Screen');
@@ -1673,7 +1658,36 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       },
     },
     {
+      id: 2,
+      title: 'Book Lab Tests',
+      image: <TestsCartIcon style={styles.menuOptionIconStyle} />,
+      onPress: () => {
+        const homeScreenAttributes = {
+          'Nav src': 'hero banner',
+          'Page Name': 'Home Screen',
+        };
+        postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Home Screen');
+        postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Home Screen');
+        props.navigation.navigate('TESTS', { focusSearch: true, homeScreenAttributes });
+      },
+    },
+    {
       id: 3,
+      title: 'Consult a Doctor',
+      image: <DoctorIcon style={[styles.menuOptionIconStyle]} />,
+      onPress: () => {
+        postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
+        postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
+        postHomeCleverTapEvent(
+          CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED,
+          'Home Screen'
+        );
+        props.navigation.navigate(AppRoutes.DoctorSearch);
+        //props.navigation.navigate(AppRoutes.PostShareAppointmentSelectorScreen);
+      },
+    },
+    {
+      id: 4,
       title: 'Book Doctor by Symptoms',
       image: <Symptomtracker style={styles.menuOptionIconStyle} />,
       onPress: () => {
@@ -1696,7 +1710,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       },
     },
     {
-      id: 4,
+      id: 5,
       title: 'Book Covid Vaccination',
       image: <BookVaccineIcon style={styles.menuOptionIconStyle} />,
       onPress: () => {
@@ -1707,7 +1721,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       },
     },
     {
-      id: 5,
+      id: 6,
       title: 'Manage Diabetes',
       image: <Diabetes style={styles.menuOptionIconStyle} />,
       onPress: () => {
@@ -1722,7 +1736,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const listValues: menuOptions[] = [
     ...listOptions,
     {
-      id: 6,
+      id: 7,
       title: 'View Health Records',
       image: (
         <View>
@@ -1742,7 +1756,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const listValuesForProHealth: menuOptions[] = [
     ...listOptions,
     {
-      id: 6,
+      id: 7,
       title: 'ProHealth',
       image: <ProHealthIcon style={styles.menuOptionIconStyle} />,
       onPress: () => {
@@ -3054,8 +3068,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return (
       <View style={styles.menuOptionsContainer}>
         {arrayList.map((item) => {
-          if (menuViewOptions.findIndex((i) => i === item.id) >= 0) {
-            if (item?.id < 3) {
+          if (
+            menuViewOptions.findIndex((i) => i === item.id) >= 0 &&
+            menuViewOptions.findIndex((i) => i === item.id) <= 2
+          ) {
+            if (item?.id === 1) {
               return (
                 <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
                   <LinearGradientComponent
@@ -3101,7 +3118,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return (
       <View style={styles.menuOptionsContainer}>
         {arrayList.map((item) => {
-          if (menuViewOptions.findIndex((i) => i === item.id) >= 2) {
+          if (item.id > 3) {
             return (
               <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
                 <View style={styles.bottomCardView}>
