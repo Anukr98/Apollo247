@@ -4726,6 +4726,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <View style={styles.viewName}>
                 {renderMenuOptions()}
 
+                {renderHeadings('Offers For You')}
+
                 {renderHeadings('My Doctors')}
                 <View style={{ backgroundColor: '#f0f1ec' }}>
                   {renderListView('Active Appointments', 'normal')}
