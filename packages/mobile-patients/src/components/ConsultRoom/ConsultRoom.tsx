@@ -3449,9 +3449,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const offersCount = 2;
+  const offersCount = 1;
   // 'CIRCLE' || 'MEDICINE' || 'MULTIPLE'
-  const offerType = 'CIRCLE';
+  const offerType = 'MEDICINE';
 
   const circleCashbackOffersComponent = () => {
     return (
