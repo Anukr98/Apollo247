@@ -21,7 +21,7 @@ export enum AppEnv {
   QA6 = 'QA6',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA5 as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA2 as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -268,6 +268,7 @@ const appStaticVariables = {
     '10788a46-512c-41c0-8c59-e31ff7eebbe4',
   ],
   enableCredWebView: false,
+  offerIconBaseUrl: 'https://newassets.apollo247.com/images/payment_offer_icons/',
 };
 
 const DEV_top_specialties = [
@@ -1570,7 +1571,7 @@ export const DIAGNOSTIC_ONLINE_PAYMENT_STATUS = [
 export const DIAGNOSTIC_EDIT_PROFILE_ARRAY = [
   DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
   DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
-]
+];
 
 type SpecialitiesType = {
   [key: string]: string[];
