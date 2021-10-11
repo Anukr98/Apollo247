@@ -154,8 +154,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     orders,
     minCartValueForCOD,
     maxCartValueForCOD,
-    nonCodSKus,
     clearCartInfo,
+    circlePlanSelected,
   } = useShoppingCart();
   const {
     pharmacyUserTypeAttribute,
@@ -188,7 +188,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const [HCorder, setHCorder] = useState<boolean>(false);
   const [scrollToend, setScrollToend] = useState<boolean>(false);
   const [showCareDetails, setShowCareDetails] = useState(true);
-  const [areNonCODSkus, setAreNonCODSkus] = useState(false);
   const [orderTransactionId, setOrderTransactionId] = useState<string>('');
   const client = useApolloClient();
 
@@ -259,14 +258,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       });
     return () => {};
   }, []);
-
-  useEffect(() => {
-    if (cartItems?.length) {
-      const skusNotForCod = cartItems?.find((item) => nonCodSKus?.includes(item?.id));
-      const areNonCodSkus = !!skusNotForCod?.id;
-      setAreNonCODSkus(areNonCodSkus);
-    }
-  }, [cartItems]);
 
   const fetchHealthCredits = async () => {
     client
@@ -370,7 +361,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         'Service Area': 'Pharmacy',
         'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
         af_revenue: getFormattedAmount(grandTotal),
-        'Circle Cashback amount':
+        'Circle Cashback Amount':
           circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
         'Split Cart': orders?.length > 1 ? 'Yes' : 'No',
         'Prescription Option selected': uploadPrescriptionRequired
@@ -389,7 +380,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         'Payment Instrument': isCOD ? 'COD' : paymentMode || undefined,
       };
       if (store) {
-        eventAttributes['Store Id'] = store.storeid;
+        eventAttributes['Store ID'] = store.storeid;
         eventAttributes['Store Name'] = store.storename;
         eventAttributes['Store Number'] = store.phone;
         eventAttributes['Store Address'] = store.address;
@@ -405,13 +396,16 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     orderAutoId: string
   ) => {
     const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED] = {
-      'customer id': currentPatient ? currentPatient.id : '',
+      af_customer_user_id: currentPatient ? currentPatient.id : '',
       'cart size': cartItems.length,
       af_revenue: getFormattedAmount(grandTotal),
       af_currency: 'INR',
-      'order id': orderId,
-      orderAutoId: orderAutoId,
+      af_order_id: orderId ? orderId : "0",
+      orderAutoId: orderAutoId ? orderAutoId : "0",
       'coupon applied': coupon ? true : false,
+      "af_content_id": cartItems?.map(item => item?.id),
+      "af_price": cartItems?.map(item => item?.specialPrice ? item?.specialPrice : item?.price),
+      "af_quantity": cartItems?.map(item => item?.quantity),
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
       ...pharmacyCircleAttributes!,
@@ -770,6 +764,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     const appointmentIds = ePrescriptions
       ?.filter((item) => !!item?.appointmentId)
       ?.map((item) => item?.appointmentId);
+    const totalCashBack =
+      (!coupon?.coupon && isCircleSubscription) || (coupon?.circleBenefits && isCircleSubscription)
+        ? Number(cartTotalCashback) || 0
+        : 0;
     const orderInfo: saveMedicineOrderOMSVariables = {
       medicineCartOMSInput: {
         tatType: tatType,
@@ -852,11 +850,12 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               subPlanId: circleSubPlanId || '',
             }
           : null,
-        totalCashBack: !coupon?.coupon && isCircleSubscription ? Number(cartTotalCashback) || 0 : 0,
+        totalCashBack,
         appVersion: DeviceInfo.getVersion(),
         savedDeliveryCharge:
           !!isFreeDelivery || isCircleSubscription ? 0 : AppConfig.Configuration.DELIVERY_CHARGES,
         appointmentId: appointmentIds?.length ? appointmentIds.join(',') : '',
+        isCashBack: !!totalCashBack,
       },
     };
 
@@ -1186,8 +1185,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         paddingHorizontal: 10,
         paddingVertical: 9,
         borderColor: '#00B38E',
-        borderWidth: 3,
-        borderStyle: 'dashed',
+        borderWidth: 1,
         margin: 0.05 * windowWidth,
       },
       rowSpaceBetween: {
@@ -1511,7 +1509,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       <View>
         <Button
           disabled={
-            areNonCODSkus ||
             isLessThanCodLimit ||
             isMoreThanCodLimit ||
             isOneApolloSelected ||
@@ -1532,10 +1529,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         ) : isMoreThanCodLimit ? (
           <Text style={styles.codAlertMsg}>
             {`Maximum Order amount eligible for COD is ₹${maxCartValueForCOD}.`}
-          </Text>
-        ) : areNonCODSkus ? (
-          <Text style={styles.codAlertMsg}>
-            {'Some of the products you have added to cart are not eligible for Cash on Delivery'}
           </Text>
         ) : !!isOneApolloSelected ? (
           <Text style={styles.codAlertMsg}>

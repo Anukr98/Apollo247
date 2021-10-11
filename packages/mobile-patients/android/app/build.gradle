@@ -137,8 +137,8 @@ android {
         applicationId "com.apollo.patientapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 142
-        versionName "5.8.4"
+        versionCode 143
+        versionName "5.9.0"
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
@@ -215,6 +215,7 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-receive-sharing-intent')
     implementation project(':react-native-user-agent')
     implementation project(':react-native-in-app-review')
     implementation project(':react-native-html-to-pdf')
@@ -222,6 +223,7 @@ dependencies {
     implementation project(':react-native-appsflyer')
     implementation project(':react-native-splash-screen')
     implementation project(':react-native-camera')
+    implementation project(':react-native-charts-wrapper')
     implementation 'com.google.firebase:firebase-messaging:17.3.2'
     implementation project(':@react-native-community_progress-bar-android')
     implementation project(':@react-native-community_progress-view')
@@ -307,6 +309,8 @@ dependencies {
     api 'com.google.android.material:material:1.2.0-alpha01'
     implementation("com.github.arimorty:floatingsearchview:2.1.1")
 
+    implementation 'com.opentok.android:opentok-android-sdk:2.18.1'
+
 // RX JAVA
     implementation("io.reactivex.rxjava2:rxjava:2.2.5")
     implementation("io.reactivex.rxjava2:rxandroid:2.1.0")
@@ -374,6 +378,7 @@ dependencies {
     implementation "androidx.browser:browser:1.0.0"
     implementation "com.google.android:flexbox:2.0.1"
     implementation "in.juspay:google-pay-client-api:1.0.0"
+
     implementation 'in.juspay:hypersdk:2.0.3-rc.06'
 }
 

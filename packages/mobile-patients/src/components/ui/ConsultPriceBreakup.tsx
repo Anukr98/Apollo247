@@ -53,7 +53,6 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
   } = circleDoctorDetails;
 
   const onlineConsultPrice = cashbackEnabled ? onlineConsultMRPPrice : onlineConsultSlashedPrice;
-
   const amountToPay = isCircleDoctorOnSelectedConsultMode
     ? isOnlineConsult
       ? circleSubscriptionId

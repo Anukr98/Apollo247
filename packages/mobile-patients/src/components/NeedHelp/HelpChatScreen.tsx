@@ -51,6 +51,10 @@ import {
   updateHelpdeskTicketVariables,
   updateHelpdeskTicket,
 } from '../../graphql/types/updateHelpdeskTicket';
+import { needHelpCleverTapEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 const { height, width } = Dimensions.get('window');
 
@@ -259,6 +263,8 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState(false);
   const [showTicketCreationLagMessage, setShowTicketCreationLagMessage] = useState(false);
+  const { currentPatient, allCurrentPatients, profileAllPatients } = useAllCurrentPatients();
+  const { circlePlanValidity, circleSubscriptionId } = useShoppingCart();
   const level: number = props.navigation.getParam('level') || 0;
 
   const { showAphAlert, hideAphAlert } = useUIElements();
@@ -314,9 +320,30 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
       });
   };
 
+  const cleverTapEvent = (eventName: CleverTapEventName, extraAttributes?: Object) => {
+    let ticketDetailAttributes = {
+      'Ticket number': ticket?.ticketNumber,
+      'Ticket title': ticket?.subject,
+      'Ticket status': ticket?.status,
+      'Ticket created on': ticket?.createdTime,
+    };
+    if (extraAttributes) {
+      ticketDetailAttributes = { ...ticketDetailAttributes, ...extraAttributes };
+    }
+    needHelpCleverTapEvent(
+      eventName,
+      allCurrentPatients,
+      currentPatient,
+      circlePlanValidity,
+      circleSubscriptionId,
+      'Help Chat Screen',
+      ticketDetailAttributes
+    );
+  };
+
   const reopenClosedTicket = () => {
     setLoading(true);
-
+    cleverTapEvent(CleverTapEventName.REOPEN_CTA_ON_TICKET_CHAT);
     const updateHelpdeskInput = {
       ticketId: ticket?.id || '',
       status: HELP_DESK_TICKET_STATUS.Open,
@@ -373,6 +400,7 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
   };
 
   const showCommentConfirmationAlert = () => {
+    cleverTapEvent(CleverTapEventName.TICKET_ACKNOWLEDGEMENT_ON_CHAT_DISPLAYED);
     showAphAlert!({
       title: `Hi :)`,
       description: AppConfig.Configuration.Helpdesk_Chat_Confim_Msg,
@@ -487,7 +515,8 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
             ticket.
           </Text>
         ) : null}
-        {showWhatsappCTA ? renderWhatsapp() : null}
+        {/* Removing whatsapp support temporarily from help tickets */}
+        {/* {showWhatsappCTA ? renderWhatsapp() : null} */}
       </View>
     );
   };
@@ -544,6 +573,7 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
           keyboardDismissMode="on-drag"
           removeClippedSubviews={false}
           ref={(ref) => (flatListRef.current = ref)}
+          onScrollEndDrag={() => cleverTapEvent(CleverTapEventName.TICKET_CHAT_SCREEN_SCROLLED)}
           contentContainerStyle={{
             marginTop: 0,
           }}
@@ -631,6 +661,11 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
                   setMessageText(value);
                 }}
                 editable={!isTicketClosed}
+                onBlur={() => {
+                  cleverTapEvent(CleverTapEventName.CHAT_INPUTBOX_ON_TICKET_CHAT, {
+                    'Message Text': messageText,
+                  });
+                }}
               />
               <View style={styles.inputTextLine} />
             </View>
@@ -645,6 +680,9 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
                     Alert.alert('Apollo', 'Please write something to send message.');
                     return;
                   }
+                  cleverTapEvent(CleverTapEventName.SEND_BUTTON_ON_TICKET_CHAT_CLICKED, {
+                    'Message Text': textMessage,
+                  });
                   addCommentHelpdesk(textMessage);
                 }
               }}

@@ -3,6 +3,7 @@ import {
   MedicineOrderShipmentInput,
   MedicineCartOMSItem,
   PrescriptionType,
+  PharmaPrescriptionOptionInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { Store, GetStoreInventoryResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -85,6 +86,7 @@ export interface PharmaCoupon extends validatePharmaCoupon_validatePharmaCoupon 
   reason: String;
   freeDelivery: boolean;
   products: [];
+  circleBenefits: boolean;
 }
 
 export interface CartProduct {
@@ -130,15 +132,18 @@ export interface BreadcrumbLink {
 
 export interface NudgeMessage {
   nudgeMessage: string;
+  nudgeMessageNonCircle?: string;
   show: 'yes' | 'no';
-  userType: 'circle' | 'non-circle' | 'all';
+  userType?: 'circle' | 'non-circle' | 'all';
 }
 
 export interface NudgeMessageCart {
   nudgeMessageMore: string;
   nudgeMessageLess: string;
+  nudgeMessageMoreNonCircle?: string;
+  nudgeMessageLessNonCircle?: string;
   show: 'yes' | 'no';
-  userType: 'circle' | 'non-circle' | 'all';
+  userType?: 'circle' | 'non-circle' | 'all';
   orderValue: number;
   cashbackPer: number;
 }
@@ -259,8 +264,6 @@ export interface ShoppingCartContextProps {
   setMinCartValueForCOD: ((value: number) => void) | null;
   maxCartValueForCOD: number;
   setMaxCartValueForCOD: ((value: number) => void) | null;
-  nonCodSKus: string[];
-  setNonCodSKus: ((items: string[]) => void) | null;
   cartPriceNotUpdateRange: number;
   setCartPriceNotUpdateRange: ((value: number) => void) | null;
   pdpDisclaimerMessage: string;
@@ -275,14 +278,18 @@ export interface ShoppingCartContextProps {
   setProductSubstitutes:
     | ((value: pharmaSubstitution_pharmaSubstitution_substitutes) => void)
     | null;
-  paymentCodMessage: string;
-  setPaymentCodMessage: ((message: string) => void) | null;
   subscriptionCoupon: PharmaCoupon | null;
   setSubscriptionCoupon: ((coupon: PharmaCoupon | null) => void) | null;
   subscriptionHCUsed: number;
   setSubscriptionHCUsed: ((value: number) => void) | null;
   subscriptionBillTotal: number;
   setSubscriptionBillTotal: ((value: number) => void) | null;
+  medicineHomeBannerData: any;
+  setMedicineHomeBannerData: ((value: any) => void) | null;
+  medicineHotSellersData: any;
+  setMedicineHotSellersData: ((value: any) => void) | null;
+  tatDetailsForPrescriptionOptions: PharmaPrescriptionOptionInput | null;
+  setTatDetailsForPrescriptionOptions: ((value: PharmaPrescriptionOptionInput) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -393,8 +400,6 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setMinCartValueForCOD: null,
   maxCartValueForCOD: 0,
   setMaxCartValueForCOD: null,
-  nonCodSKus: [],
-  setNonCodSKus: null,
   cartPriceNotUpdateRange: 0,
   setCartPriceNotUpdateRange: null,
   pdpDisclaimerMessage: '',
@@ -407,14 +412,18 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setPharmaPDPNudgeMessage: null,
   productSubstitutes: null,
   setProductSubstitutes: null,
-  paymentCodMessage: '',
-  setPaymentCodMessage: null,
   subscriptionCoupon: null,
   setSubscriptionCoupon: null,
   subscriptionHCUsed: 0,
   setSubscriptionHCUsed: null,
   subscriptionBillTotal: 0,
   setSubscriptionBillTotal: null,
+  medicineHomeBannerData: null,
+  setMedicineHomeBannerData: null,
+  medicineHotSellersData: null,
+  setMedicineHotSellersData: null,
+  tatDetailsForPrescriptionOptions: null,
+  setTatDetailsForPrescriptionOptions: null,
 });
 
 const AsyncStorageKeys = {
@@ -546,7 +555,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [cartPriceNotUpdateRange, setCartPriceNotUpdateRange] = useState<
     ShoppingCartContextProps['cartPriceNotUpdateRange']
   >(0);
-  const [nonCodSKus, setNonCodSKus] = useState<ShoppingCartContextProps['nonCodSKus']>([]);
   const [asyncPincode, setAsyncPincode] = useState<ShoppingCartContextProps['asyncPincode']>();
   const [pharmaHomeNudgeMessage, setPharmaHomeNudgeMessage] = useState<
     ShoppingCartContextProps['pharmaHomeNudgeMessage']
@@ -560,9 +568,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [productSubstitutes, setProductSubstitutes] = useState<
     ShoppingCartContextProps['productSubstitutes']
   >(null);
-  const [paymentCodMessage, setPaymentCodMessage] = useState<
-    ShoppingCartContextProps['paymentCodMessage']
-  >('');
 
   const [isProuctFreeCouponApplied, setisProuctFreeCouponApplied] = useState<boolean>(false);
   const [orders, setOrders] = useState<ShoppingCartContextProps['orders']>([]);
@@ -577,6 +582,14 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [subscriptionBillTotal, setSubscriptionBillTotal] = useState<
     ShoppingCartContextProps['subscriptionBillTotal']
   >(0);
+
+  const [medicineHomeBannerData, setMedicineHomeBannerData] = useState<
+    ShoppingCartContextProps['medicineHomeBannerData']
+  >(null);
+
+  const [medicineHotSellersData, setMedicineHotSellersData] = useState<
+    ShoppingCartContextProps['medicineHotSellersData']
+  >(null);
 
   const setEPrescriptions: ShoppingCartContextProps['setEPrescriptions'] = (items) => {
     _setEPrescriptions(items);
@@ -610,18 +623,18 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setEPrescriptions(updatedEPres);
   };
 
+  const [tatDetailsForPrescriptionOptions, setTatDetailsForPrescriptionOptions] = useState<
+    ShoppingCartContextProps['tatDetailsForPrescriptionOptions']
+  >(null);
+
   const setCartItems: ShoppingCartContextProps['setCartItems'] = (cartItems) => {
     if (cartItems.length) {
       // calculate circle cashback
       cartItems.forEach((item) => {
-        const finalPrice = item.specialPrice
-          ? item.price - item.specialPrice
-            ? item.specialPrice
-            : item.price
-          : item.price;
+        const finalPrice = (coupon && item.couponPrice) || item.specialPrice || item.price;
         let cashback = 0;
         const type_id = item?.productType?.toUpperCase();
-        if (!!circleCashback && !!circleCashback?.[type_id]) {
+        if (!!circleCashback && !!circleCashback?.[type_id] && !item.isFreeCouponProduct) {
           const circleCashBack =
             circleCashback?.[`${type_id}~${item?.subcategory}`] || circleCashback?.[type_id];
           cashback = finalPrice * item.quantity * (circleCashBack / 100);
@@ -755,7 +768,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     isFreeDelivery ||
     deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP ||
     isCircleSubscription ||
-    circleMembershipCharges ||
+    (circleMembershipCharges && !coupon) ||
     hdfcPlanName === string.Hdfc_values.PLATINUM_PLAN
       ? 0
       : cartTotal > 0 &&
@@ -875,6 +888,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setPrescriptionType(null);
     setConsultProfile(null);
     setSubscriptionCoupon(null);
+    setMedicineHomeBannerData(null);
+    setMedicineHotSellersData(null);
+    setTatDetailsForPrescriptionOptions(null);
   };
 
   useEffect(() => {
@@ -930,6 +946,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         shipmentPackagingfee -
         shipmentCouponDiscount -
         shipmentProductDiscount;
+      const isCircleUser = isCircleSubscription || circleSubscriptionId;
       shipment['shopId'] = order['storeCode'];
       shipment['tatType'] = order['storeType'];
       shipment['estimatedAmount'] = formatNumber(estimatedAmount);
@@ -945,7 +962,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
       shipment['allocationProfileName'] = order['allocationProfileName'];
       shipment['clusterId'] = order['clusterId'];
       shipment['totalCashBack'] =
-        !coupon?.coupon && (isCircleSubscription || circleSubscriptionId)
+        (isCircleUser && coupon?.circleBenefits) || (isCircleUser && !coupon?.coupon)
           ? Number(shipmentCashback) || 0
           : 0;
       shipmentsArray.push(shipment);
@@ -996,6 +1013,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
       packagingCharges -
       shipmentCouponDiscount -
       shipmentProductDiscount;
+    const isCircleUser = isCircleSubscription || circleSubscriptionId;
     shipment['estimatedAmount'] = formatNumber(estimatedAmount);
     shipment['deliveryCharges'] = deliveryCharges;
     shipment['couponDiscount'] = formatNumber(shipmentCouponDiscount);
@@ -1011,7 +1029,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     shipment['allocationProfileName'] = null;
     shipment['clusterId'] = null;
     shipment['totalCashBack'] =
-      !coupon?.coupon && (isCircleSubscription || circleSubscriptionId)
+      (isCircleUser && coupon?.circleBenefits) || (isCircleUser && !coupon?.coupon)
         ? Number(shipmentCashback) || 0
         : 0;
     shipment['coupon'] = coupon ? coupon.coupon : '';
@@ -1141,6 +1159,14 @@ export const ShoppingCartProvider: React.FC = (props) => {
       setisProuctFreeCouponApplied(false);
     }
   }, [cartTotal, coupon]);
+
+  useEffect(() => {
+    const discount = shipments.reduce(
+      (currTotal, currItem) => currTotal + (currItem?.productDiscount || 0),
+      0
+    );
+    setProductDiscount(discount);
+  }, [shipments]);
 
   const deductProductDiscount = (products: CartProduct[]) => {
     let discount = 0;
@@ -1326,8 +1352,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setMinCartValueForCOD,
         maxCartValueForCOD,
         setMaxCartValueForCOD,
-        nonCodSKus,
-        setNonCodSKus,
         cartPriceNotUpdateRange,
         setCartPriceNotUpdateRange,
         pdpDisclaimerMessage,
@@ -1341,14 +1365,18 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setPharmaPDPNudgeMessage,
         productSubstitutes,
         setProductSubstitutes,
-        paymentCodMessage,
-        setPaymentCodMessage,
         subscriptionCoupon,
         setSubscriptionCoupon,
         subscriptionHCUsed,
         setSubscriptionHCUsed,
         subscriptionBillTotal,
         setSubscriptionBillTotal,
+        medicineHomeBannerData,
+        setMedicineHomeBannerData,
+        medicineHotSellersData,
+        setMedicineHotSellersData,
+        tatDetailsForPrescriptionOptions,
+        setTatDetailsForPrescriptionOptions,
       }}
     >
       {props.children}

@@ -565,10 +565,16 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   }
 
   const updatePricesInCart = (results: any, isNavigate?: boolean) => {
+    const getExisitngItems = patientCartItems
+      ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
+      ?.flat();
+    const getUniqueItems = [...new Set(getExisitngItems)];
+    const arrayToChoose = isModifyFlow ? cartItems : getUniqueItems;
+
     if (results?.length == 0) {
       setLoading?.(false);
     }
-    const disabledCartItems = cartItems?.filter(
+    const disabledCartItems = getUniqueItems?.filter(
       (cartItem) =>
         !results?.find(
           (d: findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics) =>
@@ -577,8 +583,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     );
     let isItemDisable = false,
       isPriceChange = false;
-    if (cartItems?.length > 0) {
-      cartItems?.map((cartItem) => {
+    if (arrayToChoose?.length > 0) {
+      arrayToChoose?.map((cartItem) => {
         const isItemInCart = results?.findIndex(
           (item: any) => String(item?.itemId) === String(cartItem?.id)
         );
@@ -649,7 +655,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                   ? [Number(results?.[isItemInCart]?.itemId)]
                   : results?.[isItemInCart]?.inclusions,
               collectionMethod: TEST_COLLECTION_TYPE.HC,
-              isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+              isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG, //commented for future ref
             };
 
             updateCartItemsLocally(updatedObject);
@@ -693,6 +699,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       }
     });
     setPatientCartItems?.([...newPatientCartItem!]?.slice(0));
+
     const foundIndex = cartItems?.findIndex((item) => item?.id == updatedItems?.id);
     if (foundIndex !== -1) {
       cartItems[foundIndex] = { ...cartItems[foundIndex], ...updatedItems };
@@ -772,7 +779,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       'Circle Membership Value': null,
     };
     postAppsFlyerEvent(
-      AppsFlyerEventName.DIAGNOSTIC_CART_ADDRESS_SELECTED_SUCCESS,
+      AppsFlyerEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS,
       firebaseAttributes
     );
     postFirebaseEvent(

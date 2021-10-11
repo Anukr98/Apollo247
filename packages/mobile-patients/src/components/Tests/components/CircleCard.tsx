@@ -66,13 +66,15 @@ const CircleCard: React.FC<CircleCardProps> = (props) => {
             {upperRightText}{' '}
           </Text>
         )}
-        <Text style={[styles.mediumText, { marginTop: 2 }]}>
-          {effectivePriceText}{' '}
-          <Text style={styles.mediumGreenText}>
-            {string.common.Rs}
-            {toPayPrice}
+        {!!circleSaving && circleSaving > 0 && (
+          <Text style={[styles.mediumText, { marginTop: 2 }]}>
+            {effectivePriceText}{' '}
+            <Text style={styles.mediumGreenText}>
+              {string.common.Rs}
+              {toPayPrice}
+            </Text>
           </Text>
-        </Text>
+        )}
       </View>
       <View style={styles.belowView}>
         {!!defaultPlanMonths && !!defaultPlanPrice ? (

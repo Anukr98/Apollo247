@@ -68,6 +68,7 @@ import {
   GET_VACCINATION_SLOTS,
   SUBMIT_VACCINATION_BOOKING_REQUEST,
   CREATE_INTERNAL_ORDER,
+  CORPORATE_VACCINE_PLAN_VALIDATION,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { getResourcesList, getResourcesListVariables } from '../../graphql/types/getResourcesList';
 import {
@@ -99,6 +100,7 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import { VaccineSiteDateSelector } from './VaccineSiteDateSelector';
 import { VaccineSlotChooser } from '../ui/VaccineSlotChooser';
 import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
+import { getCorporateVaccinePlanValidation } from '@aph/mobile-patients/src/graphql/types/getCorporateVaccinePlanValidation';
 
 export interface VaccineBookingScreenProps
   extends NavigationScreenProps<{
@@ -520,12 +522,17 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
       } else {
         setRetail(true); // Default should be ’pay by Self’ for corporate user in case dependent count is exhauted
       }
+      // setRetail(false); // Default should be Corporate Sponsored for corporate user // REVERTED FOR NOW
     } else {
       setRetail(true);
     }
   }, []);
 
   useEffect(() => {
+    if (selectedDose == string.vaccineBooking.title_dose_2 && !selectedVaccineType) {
+      return;
+    }
+
     let result = validateCityConstraints();
     setCityConstraintsQualified(result);
     if (result == true) {
@@ -548,6 +555,17 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
 
   useEffect(() => {
     fetchSlotsAvailable();
+    //REVERTED FOR NOW
+    // if (isCorporateSubscription) {
+    //   if (isRetail == true) {
+    //     //first call getCorporateVaccinePlanValidation api then call fetchSlotsAvailable
+    //     fetchSlotsAvailable();
+    //   } else {
+    //     fetchCorporateVaccinePlanValidation();
+    //   }
+    // } else {
+    //   fetchSlotsAvailable();
+    // }
   }, [selectedHospitalSiteResourceID, preferredDate]);
 
   useEffect(() => {
@@ -675,6 +693,60 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
       .catch((error) => {})
       .finally(() => {
         setAvailableDatesLoading(false);
+      });
+  };
+
+  const fetchCorporateVaccinePlanValidation = () => {
+    if (selectedHospitalSiteResourceID == '') {
+      return;
+    }
+
+    setAvailableSlotsLoading(true);
+    setAvailableSlots([]);
+
+    let corporateVaccinePlanValidationInput = {
+      patient_id: selectedPatient?.id || '',
+    };
+
+    apolloVaccineClient
+      .query<getCorporateVaccinePlanValidation>({
+        query: CORPORATE_VACCINE_PLAN_VALIDATION,
+        variables: corporateVaccinePlanValidationInput,
+        fetchPolicy: 'no-cache',
+        context: { headers: { 'x-app-OS': Platform.OS, 'x-app-version': DeviceInfo.getVersion() } },
+      })
+      .then((response) => {
+        if (
+          response?.data?.getCorporateVaccinePlanValidation?.response
+            ?.corporate_vaccination_allow == true
+        ) {
+          fetchSlotsAvailable();
+        } else {
+          const message: string =
+            response?.data?.getCorporateVaccinePlanValidation?.response?.user_message || '';
+
+          showAphAlert &&
+            showAphAlert({
+              title: 'Oops!',
+              description: message,
+              onPressOk: () => {
+                hideAphAlert!();
+              },
+            });
+        }
+      })
+      .catch((error) => {
+        showAphAlert &&
+          showAphAlert({
+            title: 'Oops!',
+            description: 'Unable to validate your corporate plan.',
+            onPressOk: () => {
+              hideAphAlert!();
+            },
+          });
+      })
+      .finally(() => {
+        setAvailableSlotsLoading(false);
       });
   };
 
@@ -1055,7 +1127,15 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
 
           <Spearator style={styles.separator} />
 
-          {selectedCity != '' && vaccineSiteList.length == 0 && hospitalSitesLoading == false ? (
+          {(selectedDose == string.vaccineBooking.title_dose_1 &&
+            selectedCity != '' &&
+            vaccineSiteList.length == 0 &&
+            hospitalSitesLoading == false) ||
+          (selectedDose == string.vaccineBooking.title_dose_2 &&
+            selectedVaccineType != '' &&
+            selectedCity != '' &&
+            vaccineSiteList.length == 0 &&
+            hospitalSitesLoading == false) ? (
             <Text style={styles.errorMessageSiteDate}>
               {string.vaccineBooking.no_vaccination_sites_available}{' '}
             </Text>
@@ -1324,6 +1404,17 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
         }}
         onPressDone={(_selectedPatient: any) => {
           setShowPatientListOverlay(false);
+
+          //reset all the params
+          setSelectedDose(string.vaccineBooking.title_dose_1);
+          setSelectedCity('');
+          setSelectedVaccineType('');
+          setSelectedHospitalSite('');
+          setSelectedHospitalSiteResourceID('');
+          setSelectedHospitalSiteAddress('');
+          setAvailableDates([]);
+          setAvailableSlots([]);
+
           setUpSelectedPatient(_selectedPatient);
         }}
         onPressAddNewProfile={() => {
@@ -1430,6 +1521,10 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
   };
 
   const renderSiteAndDateSelector = () => {
+    if (selectedDose == string.vaccineBooking.title_dose_2 && !selectedVaccineType) {
+      return null;
+    }
+
     if (hospitalSitesLoading) {
       return renderVaccinesHospitalSlotsLoaderShimmer();
     }
@@ -1460,9 +1555,11 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
             showAphAlert &&
               showAphAlert({
                 title: 'Oops!',
+
                 description:
                   AppConfig.Configuration.Used_Up_Alotted_Slot_Msg ||
                   'Sorry! You have used up all your allotted booking slots under corporate vaccination. You can still continue to book payable slots under pay by self option.',
+
                 onPressOk: () => {
                   hideAphAlert!();
                 },

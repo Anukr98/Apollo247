@@ -65,7 +65,7 @@ const FooterButton: FC<FooterButtonProps> = (props) => {
         buttonTitle = 'TRY AGAIN';
         return { buttonTitle: buttonTitle };
       } else if (status === SUCCESS) {
-        buttonTitle = 'VIEW CONSULT DETAILS';
+        buttonTitle = 'GO TO CONSULT ROOM';
         return { buttonTitle: buttonTitle };
       } else {
         buttonTitle = 'GO TO HOME';

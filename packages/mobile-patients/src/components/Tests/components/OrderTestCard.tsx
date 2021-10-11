@@ -9,9 +9,7 @@ import {
   TouchableOpacity,
   Linking,
 } from 'react-native';
-import {
-  useDiagnosticsCart,
-} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { isSmallDevice, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DIAGNOSTIC_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -32,6 +30,7 @@ import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUti
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { isIphone5s, setBugFenderLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
+  AppConfig,
   DIAGNOSTIC_ORDER_FAILED_STATUS,
   DIAGNOSTIC_ORDER_FOR_PREPDATA,
   DIAGNOSTIC_SHOW_OTP_STATUS,
@@ -92,9 +91,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
   const bookedOn = moment(props?.createdOn)?.format('Do MMM') || null;
   const { currentPatient } = useAllCurrentPatients();
-  const {
-    isDiagnosticCircleSubscription,
-  } = useDiagnosticsCart();
+  const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const renderTopView = () => {
     return (
       <View style={styles.horizontalRow}>
@@ -339,21 +336,25 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
   const showDetailOTPContainer = () => {
     const phlObj = props?.phelboObject;
-    const otpToShow = !!phlObj && phlObj?.PhelboOTP;
-    const phoneNumber = !!phlObj && phlObj?.PhelbotomistMobile;
-    const name = !!phlObj && phlObj?.PhelbotomistName;
-    const phleboTrackLink = !!phlObj && phlObj?.PhelbotomistTrackLink;
+    const otpToShow = !!phlObj && phlObj?.phleboOTP;
+    const phoneNumber = !!phlObj && phlObj?.diagnosticPhlebotomists?.mobile;
+    const name = !!phlObj && phlObj?.diagnosticPhlebotomists?.name;
+    const phleboTrackLink = !!phlObj && phlObj?.phleboTrackLink;
     const orderId = props.orderId.toString();
-    const checkEta = !!phlObj?.CheckInTime;
+    const checkEta = !!phlObj?.checkinDateTime;
     let phleboEta = '';
     if (checkEta) {
-      phleboEta = moment(phlObj?.CheckInTime).format('hh:mm A');
+      phleboEta = moment(phlObj?.checkinDateTime).format('hh:mm A');
     }
     const slotime = !!props.slotTime ? moment(props?.slotTime) || null : null;
     const showDetailedInfo = !!slotime
       ? slotime.diff(moment(), 'minutes') < 60 && slotime.diff(moment(), 'minutes') > 0
       : false;
     const isCallingEnabled = !!phlObj ? phlObj?.allowCalling : false;
+    const showVaccinationStatus = !!phlObj?.diagnosticPhlebotomists?.vaccinationStatus;
+    const isPhleboETAElapsed = !!phlObj && phlObj?.isPhleboETAElapsed;
+    const phleboETAElapsedMessage = phlObj?.phleboETAElapsedMessage;
+
     return (
       <>
         {!!otpToShow && DIAGNOSTIC_SHOW_OTP_STATUS.includes(props.orderLevelStatus) ? (
@@ -380,7 +381,16 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                       <Text style={styles.nameTextHeadingStyles}>
                         {string.diagnostics.agent} Details
                       </Text>
-                      <Text style={styles.nameTextStyles}>{name}</Text>
+                      <View style={styles.rowCenter}>
+                        <Text style={styles.nameTextStyles}>{name}</Text>
+                        {!!showVaccinationStatus && showVaccinationStatus && (
+                          <View style={styles.vaccinationContainer}>
+                            <Text style={styles.vaccinationText}>
+                              {phlObj?.diagnosticPhlebotomists?.vaccinationStatus}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
                     </View>
                   ) : null}
                 </View>
@@ -399,7 +409,11 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
               <View style={styles.otpContainer}>
                 <View style={styles.etaContainer}>
                   <LocationOutline style={styles.locationIcon} />
-                  <Text style={styles.otpTextStyle}>Apollo agent will arrive by {phleboEta}</Text>
+                  <Text style={styles.otpTextStyle}>
+                    {isPhleboETAElapsed
+                      ? phleboETAElapsedMessage
+                      : `Apollo agent will arrive by ${phleboEta}`}
+                  </Text>
                 </View>
                 {phleboTrackLink ? (
                   <TouchableOpacity
@@ -416,12 +430,24 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                             );
                             Linking.openURL(phleboTrackLink);
                           } else {
-                            DiagnosticTrackPhleboClicked(orderId, 'My Order', currentPatient, 'No', isDiagnosticCircleSubscription);
+                            DiagnosticTrackPhleboClicked(
+                              orderId,
+                              'My Order',
+                              currentPatient,
+                              'No',
+                              isDiagnosticCircleSubscription
+                            );
                             setBugFenderLog('FAILED_OPEN_URL', phleboTrackLink);
                           }
                         });
                       } catch (e) {
-                        DiagnosticTrackPhleboClicked(orderId, 'My Order', currentPatient, 'No', isDiagnosticCircleSubscription);
+                        DiagnosticTrackPhleboClicked(
+                          orderId,
+                          'My Order',
+                          currentPatient,
+                          'No',
+                          isDiagnosticCircleSubscription
+                        );
                         setBugFenderLog('FAILED_OPEN_URL', phleboTrackLink);
                       }
                     }}
@@ -441,7 +467,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
   const showOnlyOTPContainer = () => {
     const phlObj = props?.phelboObject;
-    const otpToShow = !!phlObj && phlObj?.PhelboOTP;
+    const otpToShow = !!phlObj && phlObj?.phleboOTP;
     return (
       <View style={styles.ratingContainer}>
         <Text style={styles.otpBoxTextStyle}>OTP : {otpToShow}</Text>
@@ -452,7 +478,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   const showRatingView = () => {
     const starCount = [1, 2, 3, 4, 5];
     const phlObj = props?.phelboObject;
-    const phleboRating = !!phlObj && phlObj?.PhleboRating;
+    const phleboRating = !!phlObj && phlObj?.phleboRating;
     let checkRating = starCount.includes(phleboRating);
     const ratedStarCount = starCount.slice(0, phleboRating);
     const unRatedStarCount = starCount.slice(phleboRating, starCount.length);
@@ -493,6 +519,9 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     ) : null;
   };
   const showReportTat = () => {
+    const isTatBreach =
+      !!props?.orderAttributesObj?.expectedReportGenerationTime &&
+      moment().isSameOrAfter(props?.orderAttributesObj?.expectedReportGenerationTime);
     const report = !!props?.orderAttributesObj?.reportTATMessage
       ? props?.orderAttributesObj?.reportTATMessage
       : !!props?.orderAttributesObj?.reportGenerationTime
@@ -507,7 +536,9 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         {report ? (
           <View style={styles.reporttatContainer}>
             <ClockIcon />
-            <Text style={styles.reportTextStyle}>{`${report}`}</Text>
+            <Text style={styles.reportTextStyle}>{`${
+              isTatBreach ? AppConfig.Configuration.DIAGNOSTICS_REPORT_TAT_BREACH_TEXT : report
+            }`}</Text>
           </View>
         ) : null}
         {prepData ? (
@@ -800,4 +831,19 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 10, 'white'),
     textAlign: 'center',
   },
+  rowCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  vaccinationContainer: {
+    backgroundColor: colors.TURQUOISE_LIGHT_BLUE,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: 'transparent',
+    padding: 4,
+    marginHorizontal: 8,
+    maxWidth: '60%',
+  },
+  vaccinationText: { ...theme.viewStyles.text('M', 12, colors.WHITE, 1, 15) },
 });

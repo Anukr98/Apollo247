@@ -18,7 +18,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   FlatList,
-  Linking,
 } from 'react-native';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';

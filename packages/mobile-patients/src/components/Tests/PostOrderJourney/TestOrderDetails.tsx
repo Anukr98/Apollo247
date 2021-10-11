@@ -428,10 +428,15 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const renderOrderReportTat = (reportTat: any) => {
+    const isTatBreach = moment().isSameOrAfter(
+      orderDetails?.attributesObj?.expectedReportGenerationTime
+    );
     return (
       <View style={styles.reportTatBottomview}>
         <ClockIcon style={styles.clockIconStyle} />
-        <Text style={styles.reportOrderTextStyle}> {reportTat} </Text>
+        <Text style={styles.reportOrderTextStyle}>
+          {isTatBreach ? AppConfig.Configuration.DIAGNOSTICS_REPORT_TAT_BREACH_TEXT : reportTat}
+        </Text>
       </View>
     );
   };
@@ -1501,8 +1506,6 @@ const styles = StyleSheet.create({
     elevation: 5,
     zIndex: 1,
   },
-  buttonView: { margin: 10 },
-  buttonStyleReport: { width: '85%', alignSelf: 'center', justifyContent: 'center' },
   reportTatBottomview: {
     backgroundColor: colors.TEST_CARD_BUTTOM_BG,
     padding: 12,
@@ -1593,10 +1596,9 @@ const styles = StyleSheet.create({
   },
   buttonStyle: {
     alignSelf: 'center',
-    marginVertical: 10,
+    justifyContent: 'center',
     width: '85%',
-    marginLeft: 10,
-    marginRight: 10,
+    marginLeft: screenWidth / 16,
   },
   noDataCard: {
     height: 'auto',

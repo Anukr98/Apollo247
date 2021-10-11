@@ -21,7 +21,6 @@ export enum AppEnv {
   QA6 = 'QA6',
 }
 
-
 const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
@@ -68,6 +67,11 @@ const testApiCredentialsProd = {
   Username: 'MCKINSEY',
   Password: 'ERVEYCWTALAOHELEEBRY',
   InterfaceClient: 'MCKINSEY',
+};
+
+const specialOffersWidgetApiCredentials = {
+  Username: 'content',
+  Password: 'walmartNUTtokyoHeist',
 };
 
 const loginSection = {
@@ -258,28 +262,31 @@ const appStaticVariables = {
     },
   ],
   DIAGNOSTIC_DEFAULT_ICON: 'https://newassets.apollo247.com/organs/ic_blood.png',
-  DIAGNOSTIC_DEFAULT_LOCATION : {
-    displayName: "Hyderabad",
-      latitude: 17.3202127,
-      longitude: 78.4020322,
-      area: "",
-      city: "Hyderabad",
-      state: "Telangana",
-      stateCode: "TG",
-      country: "India",
-      pincode: "500030"
+  DIAGNOSTIC_DEFAULT_LOCATION: {
+    displayName: 'Hyderabad',
+    latitude: 17.3202127,
+    longitude: 78.4020322,
+    area: '',
+    city: 'Hyderabad',
+    state: 'Telangana',
+    stateCode: 'TG',
+    country: 'India',
+    pincode: '500030',
   },
-  DEFAULT_ITEM_SELECTION_FLAG : true, 
+  DEFAULT_ITEM_SELECTION_FLAG: true,
   Diagnostics_Help_NonOrder_Queries: [
     '96b606f4-dd13-46ff-8bce-85315efee053',
     '78c2dc50-dc16-44c6-bd2d-d4b14c97b521',
     '10788a46-512c-41c0-8c59-e31ff7eebbe4',
   ],
-  DEFAULT_PHELBO_ETA : 45,
-  MAX_PATIENT_SELECTION : 6,
+  DEFAULT_PHELBO_ETA: 45,
+  MAX_PATIENT_SELECTION: 6,
   CIRCLE_PLAN_PRESELECTED: false,
-  CIRCLE_FACTS : "<b>#CircleFact:</b> On an average Circle members <b>save upto ₹400 every month</b>",
+  CIRCLE_FACTS:
+    '<b>#CircleFact:</b> On an average Circle members <b>save upto ₹400 every month</b>',
   enableCredWebView: false,
+  DIAGNOSTICS_REPORT_TAT_BREACH_TEXT: "Reports are delayed by a few hours, but should be available any time soon.",
+  TrueCaller_Login_Enabled: false,
 };
 
 const DEV_top_specialties = [
@@ -469,10 +476,10 @@ export const ReturnOrderSubReason = [
 const PharmaApiConfig = {
   dev: {
     TRACK_EVENT: [`${tagalysBaseUrl}/analytics/events/track`],
-    MED_SEARCH: [`${apolloUatBaseUrl}/popcsrchprd_api.php`, pharmaToken201],
+    MED_SEARCH: [`${apolloProdBaseUrl}/popcsrchprd_api.php`, pharmaToken201],
     GET_SKU: [`${apolloUatBaseUrl}/popcsrchsku_api.php`, pharmaToken201],
-    MED_DETAIL: [apolloUatBaseUrl, pharmaToken201],
-    MED_SEARCH_SUGGESTION: [`${apolloUatBaseUrl}/popcsrchss_api.php`, pharmaToken201],
+    MED_DETAIL: [apolloProdBaseUrl, pharmaToken201],
+    MED_SEARCH_SUGGESTION: [`${apolloProdBaseUrl}/popcsrchss_api.php`, pharmaToken201],
     STORES_LIST: [apolloUatBaseUrl, pharmaToken201],
     GET_STORE_INVENTORY: [
       `https://online.apollopharmacy.org/TAT/Apollo/GetStoreInventory`,
@@ -480,7 +487,9 @@ const PharmaApiConfig = {
     ],
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
     MED_CART_ITEMS_DETAILS: [`${apolloUatBaseUrl}/popcscrchcart_api.php`, pharmaToken201],
-    IMAGES_BASE_URL: [`https://uat.apollopharmacy.in/pub/media`],
+    IMAGES_BASE_URL: [`https://newassets.apollo247.com/pub/media`],
+    SPECIAL_OFFERS_IMAGES_BASE_URL: [`https://newassets.apollo247.com/pub/media`],
+    COUPON_IMAGES_BASE_URL: [`https://newassets.apollo247.com`],
     GET_DELIVERY_TIME: [
       'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
       pharmaTokenYXV,
@@ -490,8 +499,19 @@ const PharmaApiConfig = {
       pharmaTokenYXV,
     ],
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
-    PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/categoriesScript.php`, pharmaToken201],
+    PRODUCTS_BY_CATEGORY: [`${apolloProdBaseUrl}/categoryproducts_api.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
+    SPECIAL_OFFERS_PAGE_WIDGETS: [
+      'https://uatcms.apollo247.com/api/special-offer/getwidget',
+      specialOffersWidgetApiCredentials,
+    ],
+    SPECIAL_OFFERS_PAGE_COUPONS: ['https://uatvalidcoupon.apollo247.com/offers'],
+    SPECIAL_OFFERS_CATEGORY: [`${apolloUatBaseUrl}/specialoffercategory_api.php`, pharmaToken201],
+    SPECIAL_OFFERS_BRANDS: [`${apolloUatBaseUrl}/specialofferbrand_api.php`, pharmaToken201],
+    SPECIAL_OFFERS_BRANDS_PRODUCTS: [
+      `${apolloUatBaseUrl}/popcsrchspecialoffer_api.php`,
+      pharmaToken201,
+    ],
     ALL_BRANDS: [`${apolloUatBaseUrl}/allbrands_api.php`, pharmaToken201],
     GET_TEST_PACKAGES: [
       `http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedata`,
@@ -523,6 +543,8 @@ const PharmaApiConfig = {
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
     MED_CART_ITEMS_DETAILS: [`${apolloProdBaseUrl}/popcscrchcart_api.php`, pharmaToken201],
     IMAGES_BASE_URL: [`https://newassets.apollo247.com/pub/media`],
+    SPECIAL_OFFERS_IMAGES_BASE_URL: [`https://newassets.apollo247.com/pub/media`],
+    COUPON_IMAGES_BASE_URL: [`https://newassets.apollo247.com`],
     GET_DELIVERY_TIME: [
       'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
       pharmaTokenYXV,
@@ -534,6 +556,17 @@ const PharmaApiConfig = {
     GET_SUBSTITUTES: [`${apolloProdBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
     PRODUCTS_BY_CATEGORY: [`${apolloProdBaseUrl}/categoryproducts_api.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloProdBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
+    SPECIAL_OFFERS_PAGE_WIDGETS: [
+      'https://cms.apollo247.com/api/special-offer/getwidget',
+      specialOffersWidgetApiCredentials,
+    ],
+    SPECIAL_OFFERS_PAGE_COUPONS: ['https://validcoupon.apollo247.com/offers'],
+    SPECIAL_OFFERS_CATEGORY: [`${apolloProdBaseUrl}/specialoffercategory_api.php`, pharmaToken201],
+    SPECIAL_OFFERS_BRANDS: [`${apolloProdBaseUrl}/specialofferbrand_api.php`, pharmaToken201],
+    SPECIAL_OFFERS_BRANDS_PRODUCTS: [
+      `${apolloProdBaseUrl}/popcsrchspecialoffer_api.php`,
+      pharmaToken201,
+    ],
     ALL_BRANDS: [`${apolloProdBaseUrl}/allbrands_api.php`, pharmaToken201],
     GET_TEST_PACKAGES: [
       `https://report.apollodiagnostics.in/Apollo/AskApollo.aspx?cmd=getpackagedata`,
@@ -1323,12 +1356,12 @@ export const DIAGNOSTIC_LAB_TESTING_STATUS = [
 ];
 
 export const DIAGNOSTIC_SAMPLE_COLLECTED_STATUS = [
-    DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
-    DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
-    DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
-    DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
-    DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
-]
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
+];
 
 export const DIAGNOSTIC_VERTICAL_STATUS_TO_SHOW = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED,
@@ -1426,11 +1459,15 @@ export const DIAGNOSTIC_SHOW_OTP_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
 ];
 
+export const DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY = [
+  DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
+];
 export const DIAGNOSTIC_SUB_STATUS_TO_SHOW = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
-  DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING
-]
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
+];
 
 export const TestsNewFeedbackData = {
   options: [
@@ -1565,10 +1602,10 @@ export const DIAGNOSTIC_ONLINE_PAYMENT_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
 ];
 
-export const DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY = [
-  DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
-  DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
-]
+export const DIAGNOSTIC_EDIT_PROFILE_ARRAY = [
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
+];
 
 type SpecialitiesType = {
   [key: string]: string[];
