@@ -232,6 +232,7 @@ import {
   renderBannerShimmer,
   CovidButtonShimmer,
   renderGlobalSearchShimmer,
+  renderOffersForYouShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { ConsultedDoctorsCard } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultedDoctorsCard';
 import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
@@ -3278,7 +3279,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       <TouchableOpacity activeOpacity={1} onPress={() => {}}>
         <LinearGradientComponent
           colors={['#FDFBF7', '#F5D5CE']}
-          style={[styles.bottom2CardView, { width: width / 2 }]}
+          style={[styles.bottom2CardView, { width: width / 1.9 }]}
         >
           <View style={{ flexDirection: 'row', marginTop: -5, justifyContent: 'flex-start' }}>
             <View style={{ marginTop: 11, marginLeft: 10 }}>
@@ -5094,7 +5095,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 {renderMenuOptions()}
 
                 {renderHeadings('Offers For You')}
-                {renderOffersForYou()}
+                {circleDataLoading && renderOffersForYouShimmer()}
+                {!circleDataLoading && renderOffersForYou()}
 
                 {renderHeadings('My Doctors')}
                 <View style={{ backgroundColor: '#f0f1ec' }}>

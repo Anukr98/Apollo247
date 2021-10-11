@@ -433,6 +433,36 @@ export const renderBannerShimmer = () => {
   );
 };
 
+export const renderOffersForYouShimmer = () => {
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        marginLeft: 16,
+        marginTop: 16,
+        marginBottom: 8,
+      }}
+    >
+      <ShimmerPlaceHolder
+        shimmerColors={['#FDFBF7', '#F5D5CE']}
+        shimmerStyle={{
+          ...theme.viewStyles.cardViewStyle,
+          shadowOffset: { width: 0, height: 5 },
+          elevation: 15,
+          minHeight: 98,
+          marginRight: 12,
+          marginBottom: 12,
+          borderRadius: 6,
+          padding: 4,
+          justifyContent: 'center',
+          width: width - 32,
+        }}
+      />
+    </View>
+  );
+};
+
 export const renderGlobalSearchShimmer = () => {
   return (
     <View style={{ width: width, marginBottom: 6, padding: 16, backgroundColor: '#fff' }}>
