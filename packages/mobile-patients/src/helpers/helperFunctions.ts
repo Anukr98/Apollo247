@@ -1571,7 +1571,6 @@ export const postCleverTapEvent = (eventName: CleverTapEventName, attributes: Ob
     if(res === null){ //user is not logged into clevertap
       onCleverTapUserLogin(_currentPatient);
     }
-    console.log("Phone no.",error, res);
   });
 }
 
