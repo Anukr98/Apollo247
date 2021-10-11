@@ -1421,7 +1421,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 0.5,
     paddingVertical: 6,
-    borderColor: theme.colors.LIGHT_GRAY_2
+    borderColor: theme.colors.LIGHT_GRAY_2,
   },
   viewInvoice: {
     marginTop: 10,

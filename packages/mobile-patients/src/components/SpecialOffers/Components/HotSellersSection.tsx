@@ -45,6 +45,7 @@ export const HotSellersSection: React.FC<HotSellersProps> = (props) => {
   const pharmacyPincode =
     asyncPincode?.pincode || pharmacyLocation?.pincode || locationDetails?.pincode;
   const { currentPatient } = useAllCurrentPatients();
+  const movedFrom = 'Special Offers';
 
   const renderItem = (imgUrl: string, item) => {
     const specialPrice = item.special_price ? true : false;
@@ -54,7 +55,7 @@ export const HotSellersSection: React.FC<HotSellersProps> = (props) => {
 
     return (
       <View style={styles.hotSellersContainer}>
-        <TouchableOpacity onPress={() => gotToProductPage(item?.url_key, item?.sku)}>
+        <TouchableOpacity onPress={() => gotToProductPage(item?.url_key, item?.sku, movedFrom)}>
           <View style={styles.hotSellersBoxStyles}>
             {item?.special_price ? renderDiscountTag(item, discount) : <View></View>}
             <View style={styles.squareContainer}>
@@ -95,10 +96,11 @@ export const HotSellersSection: React.FC<HotSellersProps> = (props) => {
     );
   };
 
-  const gotToProductPage = (urlKey: string, sku: string) => {
+  const gotToProductPage = (urlKey: string, sku: string, movedFrom: string) => {
     props.navigation.navigate(AppRoutes.ProductDetailPage, {
       urlKey,
       sku,
+      movedFrom,
     });
   };
 
@@ -202,7 +204,7 @@ export const HotSellersSection: React.FC<HotSellersProps> = (props) => {
       props.navigation,
       currentPatient,
       !!isPharmacyLocationServiceable,
-      { source: 'Pharmacy Partial Search', categoryId: category_id },
+      { source: 'Special Offers', categoryId: category_id },
       JSON.stringify(cartItems),
       () => setItemsLoading({ ...itemsLoading, [sku]: false }),
       pharmacyCircleAttributes!

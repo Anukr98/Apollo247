@@ -1,8 +1,11 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { WidgetLiverIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
+
+const screenWidth = Dimensions.get('window').width;
 
 export interface WidgetCardProps {
   data: any;
@@ -37,7 +40,7 @@ export const WidgetCard: React.FC<WidgetCardProps> = (props) => {
 
 const styles = StyleSheet.create({
   container: {
-    width: 95,
+    width: screenWidth / 4.15,
     backgroundColor: '#FFFFFF',
     borderRadius: 10,
     alignItems: 'center',
@@ -48,7 +51,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   textStyle: {
-    ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20, 0),
+    ...theme.viewStyles.text('SB', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 1, 20, 0),
     width: '100%',
     textAlign: 'center',
     paddingVertical: 5,

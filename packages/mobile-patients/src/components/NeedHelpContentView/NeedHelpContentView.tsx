@@ -12,7 +12,7 @@ import { ArrowRight, Down } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { SEND_HELP_EMAIL } from '@aph/mobile-patients/src/graphql/profiles';
+import { SEND_HELP_EMAIL, CREATE_HELP_TICKET } from '@aph/mobile-patients/src/graphql/profiles';
 import { ORDER_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   SendHelpEmail,
@@ -41,6 +41,10 @@ import {
 import { ListItem } from 'react-native-elements';
 import Hyperlink from 'react-native-hyperlink';
 import { NavigationScreenProps } from 'react-navigation';
+import {
+  TicketNumberMutation,
+  TicketNumberMutationVariables,
+} from '@aph/mobile-patients/src/graphql/types/TicketNumberMutation';
 
 export interface Props
   extends NavigationScreenProps<{
@@ -75,7 +79,7 @@ export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
-  const { needHelpToContactInMessage } = useAppCommonData();
+  const { needHelpToContactInMessage, needHelpTicketReferenceText } = useAppCommonData();
 
   const renderHeader = () => {
     const onPressBack = () => navigation.goBack();
@@ -185,8 +189,8 @@ export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
           : parentQuery?.id == helpSectionQueryId.consult
           ? ORDER_TYPE.CONSULT
           : null;
-      const variables: SendHelpEmailVariables = {
-        helpEmailInput: {
+      const variables: TicketNumberMutationVariables = {
+        createHelpTicketHelpEmailInput: {
           category: parentQuery?.title,
           reason: pathFollowed,
           comments: comments,
@@ -197,8 +201,8 @@ export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
         },
       };
 
-      let res = await client.query<SendHelpEmail, SendHelpEmailVariables>({
-        query: SEND_HELP_EMAIL,
+      let res = await client.mutate<TicketNumberMutation, TicketNumberMutationVariables>({
+        mutation: CREATE_HELP_TICKET,
         variables,
       });
 
@@ -219,40 +223,26 @@ export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
   };
 
   const onSuccess = (res: any) => {
+    let ticket = res?.data?.createHelpTicket?.ticket;
+    let ticketNumber = ticket?.ticketNumber;
+    let referenceNumberText = ticketNumber
+      ? needHelpTicketReferenceText.replace('#ticketNumber', '#' + ticketNumber)
+      : '';
+
     showAphAlert!({
       title: string.common.hiWithSmiley,
-      description: needHelpToContactInMessage || string.needHelpSubmitMessage,
+      description:
+        (needHelpToContactInMessage || string.needHelpSubmitMessage) + '. ' + referenceNumberText,
       unDismissable: true,
       onPressOk: () => {
         hideAphAlert!();
-        openHelpChatScreen(res);
+
+        navigation.navigate(AppRoutes.HelpChatScreen, {
+          ticket: ticket,
+          level: queryIdLevel2 ? 3 : queryIdLevel1 ? 2 : 1,
+        });
       },
     });
-  };
-
-  const openHelpChatScreen = (response: any) => {
-    let ticketId = response?.data?.sendHelpEmail.split(':')[1] || 0;
-    let ticket = {
-      closedTime: null,
-      createdTime: '',
-      customFields: {
-        Business: '',
-        __typename: '',
-      },
-      id: ticketId,
-      modifiedTime: '2021-08-26T11:30:46.000Z',
-      status: '',
-      statusType: 'Open',
-      subject: '',
-      ticketNumber: '',
-    };
-
-    if (ticketId) {
-      navigation.navigate(AppRoutes.HelpChatScreen, {
-        ticketId: ticketId,
-        ticket: ticket,
-      });
-    }
   };
 
   const onError = () => {

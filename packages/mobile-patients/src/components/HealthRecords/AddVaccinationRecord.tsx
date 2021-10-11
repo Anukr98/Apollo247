@@ -17,6 +17,7 @@ import {
   postCleverTapEvent,
   postWebEngageEvent,
   postCleverTapIfNewSession,
+  postCleverTapPHR,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   Keyboard,
@@ -292,9 +293,7 @@ export const AddVaccinationRecord: React.FC<AAddVaccinationRecordProps> = (props
   const covidType = ['Covisheild', 'Covaxin', 'Sputnik', 'Pfizer'];
   const doseType = ['Dose 1', 'Dose 2'];
 
-  const recordType = props.navigation.state.params
-    ? props.navigation.state.params.recordType
-    : false;
+  const updateInfo = props.navigation.state.params ? props.navigation.state.params.update : false;
   const selectedRecordID = props.navigation.state.params
     ? props.navigation.state.params.selectedRecordID
     : null;
@@ -417,6 +416,16 @@ export const AddVaccinationRecord: React.FC<AAddVaccinationRecordProps> = (props
             phrSession,
             setPhrSession
           );
+          postCleverTapPHR(
+            currentPatient,
+            updateInfo
+              ? CleverTapEventName.PHR_UPDATE_VACCINATION_REPORT
+              : CleverTapEventName.PHR_ADD_VACCINATION_REPORT,
+            'Add Vaccination Record',
+            eventInputData
+          );
+
+          setshowSpinner(false);
           if (data?.addPatientImmunizationRecord.status) {
             gotoHealthRecordsHomeScreen();
           }

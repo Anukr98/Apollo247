@@ -1981,7 +1981,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         ? 'Non Cart'
         : 'Cart',
       'Customer ID': currentPatient && currentPatient.id,
-      'Delivery date': orderDetails.orderTat
+      'Delivery Date': orderDetails.orderTat
         ? moment(orderDetails.orderTat).format('ddd, D MMMM, hh:mm A')
         : undefined,
       'Mobile number': currentPatient && currentPatient.mobileNumber,

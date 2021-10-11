@@ -167,7 +167,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       af_order_id: orderId ? orderId : 0,
       af_price: totalAmount,
       af_coupon_code: coupon ? coupon : 0,
-      af_payment_info_available: paymentTypeID
+      af_payment_info_available: paymentTypeID,
     };
     postAppsFlyerEvent(AppsFlyerEventName.ORDER_FAILED, eventAttributes);
     postFirebaseEvent(FirebaseEventName.ORDER_FAILED, eventAttributes);
@@ -187,12 +187,15 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       af_order_id: orderId,
       orderAutoId: orderAutoId,
       'coupon applied': coupon ? true : false,
+      af_content_id: cartItems?.map((item) => item?.id),
+      af_price: cartItems?.map((item) => (item?.specialPrice ? item?.specialPrice : item?.price)),
+      af_quantity: cartItems?.map((item) => item?.quantity),
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
       ...pharmacyCircleAttributes!,
       ...pharmacyUserTypeAttribute,
       TransactionId: isStorePickup ? '' : transactionId,
-    }
+    };
     return appsflyerEventAttributes;
   };
 

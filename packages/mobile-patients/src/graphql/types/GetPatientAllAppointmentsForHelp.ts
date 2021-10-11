@@ -40,6 +40,7 @@ export interface GetPatientAllAppointmentsForHelp_getPatientAllAppointments_appo
   appointmentType: APPOINTMENT_TYPE;
   appointmentDateTime: any;
   displayId: number | null;
+  status: string | null;
   doctorInfo: GetPatientAllAppointmentsForHelp_getPatientAllAppointments_appointments_doctorInfo | null;
 }
 

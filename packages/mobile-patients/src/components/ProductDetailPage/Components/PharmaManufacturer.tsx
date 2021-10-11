@@ -7,10 +7,11 @@ export interface PharmaManufacturerProps {
   composition?: string | null;
   consumeType?: string | null;
   onCompositionClick?: () => void;
+  isPharma: boolean;
 }
 
 export const PharmaManufacturer: React.FC<PharmaManufacturerProps> = (props) => {
-  const { manufacturer, composition, consumeType, onCompositionClick } = props;
+  const { manufacturer, composition, consumeType, onCompositionClick, isPharma } = props;
 
   return (
     <View style={styles.container}>
@@ -20,7 +21,7 @@ export const PharmaManufacturer: React.FC<PharmaManufacturerProps> = (props) => 
           <Text style={styles.value}>{manufacturer}</Text>
         </View>
       )}
-      {!!composition && (
+      {!!composition && !!isPharma && (
         <TouchableOpacity
           onPress={() => {
             onCompositionClick ? onCompositionClick() : null;
@@ -31,7 +32,7 @@ export const PharmaManufacturer: React.FC<PharmaManufacturerProps> = (props) => 
           <Text style={styles.compositionLink}>{composition}</Text>
         </TouchableOpacity>
       )}
-      {!!consumeType && (
+      {!!consumeType && !!isPharma && (
         <View style={styles.cardStyle}>
           <Text style={styles.heading}>Consume Type:</Text>
           <Text style={styles.value}>{consumeType}</Text>
@@ -44,6 +45,7 @@ export const PharmaManufacturer: React.FC<PharmaManufacturerProps> = (props) => 
 const styles = StyleSheet.create({
   container: {
     marginTop: 7,
+    paddingHorizontal: 15,
   },
   cardStyle: {
     marginBottom: 7,

@@ -877,11 +877,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         ? `${Math.ceil(minutes)} MIN${Math.ceil(minutes) > 1 ? 'S' : ''}`
         : tomorrowDate == appointmentDateTomarrow
         ? 'TOMORROW, ' + moment(appointmentDateTime).format('h:mm A')
-        : moment(appointmentDateTime).format(
-            appointmentDateTime.split(' ')[0] === new Date().toISOString().split('T')[0]
-              ? 'h:mm A'
-              : 'DD MMM YYYY, h:mm A'
-          );
+        : moment(appointmentDateTime).format('DD MMM YYYY, h:mm A');
     const isActive =
       minutes > 0 && minutes <= 15 && getAppointmentStatusText() == 'Active' ? true : false;
     const dateIsAfterconsult = moment(appointmentDateTime).isAfter(moment(new Date()));
@@ -1254,7 +1250,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 <Text style={styles.prepareForConsult}>
                   {item?.isSeniorConsultStarted
                     ? string.common.consultRoom
-                    : item?.isConsultStarted && item?.isAutomatedQuestionsComplete
+                    : item?.isConsultStarted || item?.isAutomatedQuestionsComplete
                     ? string.common.continueConsult
                     : string.common.prepareForConsult}
                 </Text>

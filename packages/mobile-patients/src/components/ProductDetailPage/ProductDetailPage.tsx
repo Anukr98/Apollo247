@@ -110,6 +110,7 @@ import { SuggestedQuantityNudge } from '@aph/mobile-patients/src/components/Sugg
 import { FrequentlyBoughtTogether } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/FrequentlyBoughtTogether';
 import { postPharmacyAddNewAddressCompleted } from '../../helpers/webEngageEventHelpers';
 import { CouponSectionPDP } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/CouponSectionPDP';
+import { CircleBannerPDP } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/CircleBannerPDP';
 
 export type ProductPageViewedEventProps = Pick<
   WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED],
@@ -158,6 +159,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     pharmaPDPNudgeMessage,
     circleSubscriptionId,
     isCircleExpired,
+    productSubstitutes,
     setProductSubstitutes,
     newAddressAdded,
     setNewAddressAdded,
@@ -301,6 +303,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       postProductPageViewedEvent(pincode, isInStock);
     }
   }, [medicineDetails, availabilityCalled, deliveryTime]);
+
+  useEffect(() => {
+    if (productSubstitutes && productSubstitutes.length > 0) {
+      postProductPageViewedEvent(pincode, isInStock);
+    }
+  }, [productSubstitutes]);
 
   useEffect(() => {
     if (axdcCode && medicineDetails?.sku) {
@@ -544,6 +552,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       if (
         movedFrom === ProductPageViewedSource.PARTIAL_SEARCH ||
         movedFrom === ProductPageViewedSource.SUBSTITUTES ||
+        movedFrom === ProductPageViewedSource.PDP_ALL_SUSBTITUTES ||
         movedFrom === ProductPageViewedSource.CROSS_SELLING_PRODUCTS ||
         movedFrom === ProductPageViewedSource.SIMILAR_PRODUCTS ||
         movedFrom === ProductPageViewedSource.NOTIFICATION ||
@@ -663,6 +672,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         CircleCashback: cashback,
         isMultiVariant: multiVariantAttributes.length ? 1 : 0,
       };
+      let multiVariantArray = [];
+      if (!!medicineDetails?.multi_variants_products) {
+        multiVariantArray = Object.keys(medicineDetails?.multi_variants_products?.products);
+      }
       let cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_PRODUCT_PAGE_VIEWED] = {
         'Nav src': movedFrom,
         'SKU ID': sku?.toUpperCase(),
@@ -706,11 +719,16 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         TatDateTime: deliveryTime,
         ProductType: type_id,
         MaxOrderQuantity: MaxOrderQty,
-        af_price: special_price || null,
-        CircleCashback: cashback,
-        isMultiVariant: multiVariantAttributes.length ? 1 : 0,
-        af_currency: 'INR',
-        af_content_type: 'Product Page',
+        MRP: price,
+        SpecialPrice: special_price || undefined,
+        'Circle cashback': Number(cashback) || 0,
+        SubCategory: subcategory || '',
+        'Multivariants available': multiVariantArray?.length > 0 ? 'Yes' : 'No',
+        'No of variants': multiVariantArray?.length > 0 ? multiVariantArray?.length : null,
+        'Substitutes available':
+          !!productSubstitutes && productSubstitutes.length > 0 ? 'Yes' : 'No',
+        'No of substitutes':
+          !!productSubstitutes && productSubstitutes.length > 0 ? productSubstitutes.length : null,
       };
 
       if (movedFrom === 'deeplink') {
@@ -726,7 +744,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           : 'No';
         eventAttributes['CategoryID'] = category_id;
         appsFlyerEvents['CategoryID'] = category_id;
-        cleverTapEventAttributes['Circle member'] = circleID
+        cleverTapEventAttributes['Circle Member'] = circleID
           ? 'Existing'
           : !!circleMembershipCharges
           ? 'Added'
@@ -1025,7 +1043,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       setCurrentProductQuantityInCart(productQuantity);
     }
     postwebEngageAddToCartEvent(
-      medicineDetails,
+      medicine_details,
       isFromFastSubstitutes ? 'PDP Fast Substitutes' : 'Pharmacy PDP',
       sectionName,
       '',
@@ -1046,27 +1064,25 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     const total = cartItems
       .reduce((currTotal, currItem) => currTotal + currItem.quantity * currItem.price, 0)
       .toFixed(2);
+    const circleMember = circleSubscriptionId && !isCircleExpired;
+    const nonCircleMember = !circleSubscriptionId || isCircleExpired;
     const showNudgeMessage =
-      pharmaPDPNudgeMessage?.show === 'yes' && pharmaPDPNudgeMessage?.nudgeMessage;
-    const showByUserType =
-      pharmaPDPNudgeMessage?.userType == 'all' ||
-      (pharmaPDPNudgeMessage?.userType == 'circle' && circleSubscriptionId && !isCircleExpired) ||
-      (pharmaPDPNudgeMessage?.userType == 'non-circle' &&
-        (!circleSubscriptionId || isCircleExpired));
-    const showMessage = showNudgeMessage && showByUserType;
+      pharmaPDPNudgeMessage?.show === 'yes' &&
+      ((circleMember && !!pharmaPDPNudgeMessage?.nudgeMessage) ||
+        (nonCircleMember && !!pharmaPDPNudgeMessage?.nudgeMessageNonCircle));
     return (
       <StickyBottomComponent
         style={
-          showMessage ? styles.bottomComponent : { justifyContent: 'center', shadowOpacity: 0 }
+          showNudgeMessage ? styles.bottomComponent : { justifyContent: 'center', shadowOpacity: 0 }
         }
       >
-        {showMessage && <NudgeMessage nudgeMessage={pharmaPDPNudgeMessage} />}
+        {showNudgeMessage && <NudgeMessage nudgeMessage={pharmaPDPNudgeMessage} />}
         <TouchableOpacity
           onPress={() => {
             props.navigation.navigate(AppRoutes.MedicineCart);
           }}
           activeOpacity={0.7}
-          style={[styles.bottomCta, showMessage ? { alignSelf: 'center' } : {}]}
+          style={[styles.bottomCta, showNudgeMessage ? { alignSelf: 'center' } : {}]}
         >
           <Text style={styles.bottomCtaText}>
             {`Proceed to Checkout (${cartItems?.length} items) ${
@@ -1224,9 +1240,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               ref={scrollViewRef}
               bounces={false}
               keyboardShouldPersistTaps="always"
-              style={{
-                paddingHorizontal: 15,
-              }}
               onScroll={(event) => {
                 // show bottom bar if ADD TO CART button scrolls off the screen
                 buttonRef.current &&
@@ -1256,7 +1269,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 isExpress={medicineDetails?.is_express === 'Yes'}
                 isInStock={isInStock}
                 isSellOnline={medicineDetails?.sell_online === 1}
-                manufacturer={medicineDetails?.manufacturer}
                 showPincodePopup={showAccessAccessLocationPopup}
                 deliveryTime={deliveryTime}
                 deliveryError={deliveryError}
@@ -1299,14 +1311,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   setShowSubstituteInfo={setShowSubstituteInfo}
                 />
               </View>
-              {isPharma && (
-                <PharmaManufacturer
-                  manufacturer={medicineDetails?.manufacturer}
-                  composition={medicineDetails?.PharmaOverview?.[0]?.Composition || composition}
-                  consumeType={medicineDetails?.consume_type}
-                  onCompositionClick={onCompositionClick}
-                />
-              )}
+              <CircleBannerPDP navigation={props.navigation} />
+              <PharmaManufacturer
+                manufacturer={medicineDetails?.manufacturer}
+                composition={medicineDetails?.PharmaOverview?.[0]?.Composition || composition}
+                consumeType={medicineDetails?.consume_type}
+                onCompositionClick={onCompositionClick}
+                isPharma={isPharma}
+              />
               {!!substitutes.length && !isInStock && (
                 <SimilarProducts
                   heading={string.productDetailPage.PRODUCT_SUBSTITUTES}
@@ -1344,6 +1356,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   isPharma ? medicineDetails?.PharmaOverview?.[0]?.NewPharmaOverview : null
                 }
                 directionsOfUse={medicineDetails?.direction_for_use_dosage}
+                allergen_info={medicineDetails?.allergen_info}
               />
               {!!substitutes.length && isInStock && (
                 <SimilarProducts
@@ -1368,10 +1381,23 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   navigation={props.navigation}
                 />
               )}
-              {(!!medicineDetails?.marketer_address || !!medicineDetails?.country_of_origin) && (
+              {(!!medicineDetails?.marketer_address ||
+                !!medicineDetails?.country_of_origin ||
+                !!medicineDetails?.packer_name ||
+                !!medicineDetails?.packer_address ||
+                !!medicineDetails?.importer_name ||
+                !!medicineDetails?.importer_address ||
+                !!medicineDetails?.import_date ||
+                !!medicineDetails?.generic_name) && (
                 <ProductManufacturer
                   address={medicineDetails?.marketer_address}
                   origin={medicineDetails?.country_of_origin}
+                  packerName={medicineDetails?.packer_name}
+                  packerAddress={medicineDetails?.packer_address}
+                  importerName={medicineDetails?.importer_name}
+                  importerAddress={medicineDetails?.importer_address}
+                  importDate={medicineDetails?.import_date}
+                  genericName={medicineDetails?.generic_name}
                 />
               )}
               {renderDisclaimerMessage()}

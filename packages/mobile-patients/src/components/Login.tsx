@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface LoginProps extends NavigationScreenProps { }
+export interface LoginProps extends NavigationScreenProps {}
 
 const isPhoneNumberValid = (number: string) => {
   const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(number)
@@ -203,6 +203,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   const client = useApolloClient();
   const [openFillerView, setOpenFillerView] = useState<boolean>(false);
   const { setPhrNotificationData } = useAppCommonData();
+  const enableTrueCaller: boolean = AppConfig.Configuration.TrueCaller_Login_Enabled;
 
   const { setLoading, showAphAlert } = useUIElements();
   const webengage = new WebEngage();
@@ -500,7 +501,9 @@ export const Login: React.FC<LoginProps> = (props) => {
     const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
     const deviceToken2 = deviceToken ? JSON.parse(deviceToken) : '';
     const deviceTokenTimeStamp = (await AsyncStorage.getItem('deviceTokenTimeStamp')) || '';
-    const currentDeviceTokenTimeStamp = deviceTokenTimeStamp ? JSON.parse(deviceTokenTimeStamp) : '';
+    const currentDeviceTokenTimeStamp = deviceTokenTimeStamp
+      ? JSON.parse(deviceTokenTimeStamp)
+      : '';
     if (
       !deviceToken2 ||
       deviceToken2 === '' ||
@@ -530,7 +533,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         });
     } else {
       saveTokenDevice(client, deviceToken2, patientId)
-        ?.then((resp) => { })
+        ?.then((resp) => {})
         .catch((e) => {
           CommonBugFender('Login_saveTokenDevice', e);
           AsyncStorage.setItem('deviceToken', '');
@@ -662,7 +665,7 @@ export const Login: React.FC<LoginProps> = (props) => {
 
                   try {
                     signOut();
-                  } catch (error) { }
+                  } catch (error) {}
 
                   props.navigation.navigate(AppRoutes.OTPVerification, {
                     otpString,
@@ -683,7 +686,7 @@ export const Login: React.FC<LoginProps> = (props) => {
           setShowSpinner(false);
         }
       });
-    } catch (error) { }
+    } catch (error) {}
   };
 
   const openWebView = () => {
@@ -825,8 +828,7 @@ export const Login: React.FC<LoginProps> = (props) => {
           </TouchableOpacity>
         </LoginCard>
         <ScrollView>
-          {/** Truecaller integration will come in next phase */}
-          {isAndroid && renderTruecallerButton()}
+          {enableTrueCaller && isAndroid && renderTruecallerButton()}
           <LandingDataView />
         </ScrollView>
       </SafeAreaView>

@@ -846,7 +846,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             patientId={currentPatient ? currentPatient.id : ''}
             clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
             doctorId={doctorDetails && doctorDetails.id}
-            renderTab={'Visit Clinic'}
+            renderTab={data?.appointmentType == 'ONLINE' ? 'Consult Online' : 'Visit Clinic'}
             rescheduleCount={newRescheduleCount && newRescheduleCount}
             appointmentId={data.id}
             data={data}

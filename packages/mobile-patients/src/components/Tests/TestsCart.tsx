@@ -1,3 +1,6 @@
+/**
+ * this file needs to be removed on future releases.
+ */
 import {
   aphConsole,
   formatAddress,
@@ -109,6 +112,7 @@ import {
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { TestSlotSelectionOverlayNew } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlayNew';
+import { TestPremiumSlotOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestPremiumSlotOverlay';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -158,7 +162,6 @@ import {
   DiagnosticAddresssSelected,
   DiagnosticAddToCartClicked,
   DiagnosticAppointmentTimeSlot,
-  DiagnosticAreaSelected,
   DiagnosticCartViewed,
   DiagnosticModifyOrder,
   DiagnosticNonServiceableAddressSelected,
@@ -184,7 +187,7 @@ import {
   editProfile,
   editProfileVariables,
 } from '@aph/mobile-patients/src/graphql/types/editProfile';
-import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
+import ItemCard from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import AsyncStorage from '@react-native-community/async-storage';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
@@ -322,6 +325,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [displaySchedule, setDisplaySchedule] = useState<boolean>(false);
+  const [displayPremiumOverlay, setDisplayPremiumOverlay] = useState<boolean>(false);
+  const [isPremiumSlot, setIsPremiumSlot] = useState<boolean>(false);
   const [date, setDate] = useState<Date>(new Date());
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>();
   const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
@@ -751,8 +756,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const setWebEngageEventForAreaSelection = (item: areaObject) => {
     const area = String(item?.value);
     const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
-
-    DiagnosticAreaSelected(selectedAddr, area);
   };
 
   const setWebEnageEventForAppointmentTimeSlot = (
@@ -934,7 +937,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         name,
         addresses?.[selectedAddressIndex]?.zipcode!,
         'Customer',
-        currentPatient
+        currentPatient,
+        isDiagnosticCircleSubscription
       );
     } else {
       DiagnosticRemoveFromCartClicked(
@@ -942,7 +946,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         name,
         diagnosticLocation?.pincode! || locationDetails?.pincode!,
         'Customer',
-        currentPatient
+        currentPatient,
+        isDiagnosticCircleSubscription
       );
     }
   };
@@ -1263,14 +1268,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   function _navigateToSearch() {
-    DiagnosticAddToCartClicked(pinCode, currentPatient);
+    DiagnosticAddToCartClicked(pinCode, currentPatient, isDiagnosticCircleSubscription);
     props.navigation.navigate(AppRoutes.SearchTestScene, {
       searchText: '',
     });
   }
 
   function _navigateToHomePage() {
-    DiagnosticAddToCartClicked(pinCode, currentPatient);
+    DiagnosticAddToCartClicked(pinCode, currentPatient, isDiagnosticCircleSubscription);
     props.navigation.navigate('TESTS', { focusSearch: true });
   }
 
@@ -2880,7 +2885,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         removedTest,
         addresses?.[selectedAddressIndex]?.zipcode!,
         'Automated',
-        currentPatient
+        currentPatient,
+        isDiagnosticCircleSubscription
       );
     }
   }
@@ -3498,23 +3504,39 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           isTodaySlotUnavailable={todaySlotNotAvailable}
           onClose={() => setDisplaySchedule(false)}
           slots={slots}
+          isPremium={isPremiumSlot}
           slotInfo={selectedTimeSlot}
           addressDetails={isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr}
           onSchedule={(date: Date, slotInfo: TestSlot) => {
-            setDate(date);
-            setselectedTimeSlot(slotInfo);
-            setDiagnosticSlot!({
-              slotStartTime: slotInfo?.slotInfo?.startTime!,
-              slotEndTime: slotInfo?.slotInfo?.endTime!,
-              date: date.getTime(),
-              employeeSlotId: slotInfo?.slotInfo?.slot!,
-              diagnosticBranchCode: slotInfo?.diagnosticBranchCode,
-              diagnosticEmployeeCode: slotInfo?.employeeCode,
-              city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
-            });
-            setWebEnageEventForAppointmentTimeSlot('Manual', slotInfo, areaSelected);
             setDisplaySchedule(false);
+            if (isPremiumSlot) {
+              setDisplayPremiumOverlay(true);
+            } else {
+              setDate(date);
+              setselectedTimeSlot(slotInfo);
+              setDiagnosticSlot!({
+                slotStartTime: slotInfo?.slotInfo?.startTime!,
+                slotEndTime: slotInfo?.slotInfo?.endTime!,
+                date: date.getTime(),
+                employeeSlotId: slotInfo?.slotInfo?.slot!,
+                diagnosticBranchCode: slotInfo?.diagnosticBranchCode,
+                diagnosticEmployeeCode: slotInfo?.employeeCode,
+                city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
+              });
+              setWebEnageEventForAppointmentTimeSlot('Manual', slotInfo, areaSelected);
+            }
           }}
+        />
+      )}
+      {displayPremiumOverlay && (
+        <TestPremiumSlotOverlay
+          isVisible={displayPremiumOverlay}
+          source={'Tests'}
+          heading="Confirm Your Appointment"
+          onGoBack={() => {
+            setDisplayPremiumOverlay(false), setDisplaySchedule(true);
+          }}
+          onClose={() => setDisplayPremiumOverlay(false)}
         />
       )}
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
