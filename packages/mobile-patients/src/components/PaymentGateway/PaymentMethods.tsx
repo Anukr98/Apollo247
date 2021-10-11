@@ -91,7 +91,11 @@ import {
 import string from '@aph/mobile-patients/src/strings/strings.json';
 
 import { useGetClientAuthToken } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useGetClientAuthtoken';
+import { useGetOffers } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useGetOffers';
 import { CredPay } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CredPay';
+import { Offers } from '@aph/mobile-patients/src/components/PaymentGateway/Components/Offers';
+import { OfferInfo } from '@aph/mobile-patients/src/components/PaymentGateway/Components/OfferInfo';
+
 const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {
@@ -150,6 +154,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { healthCredits } = useFetchHealthCredits(businessLine);
   const { paymentMethods, cardTypes, fetching } = useGetPaymentMethods(paymentId);
   const { savedCards } = useFetchSavedCards(customerId);
+  const { offers } = useGetOffers(paymentId, businessLine);
+
   const clientAuthToken = !!customerId
     ? useGetClientAuthToken(customerId, businessLine)
     : undefined;
@@ -746,6 +752,17 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     );
   };
 
+  const renderOffers = () => {
+    return <Offers offers={offers} onPressTnC={showOfferInfo} />;
+  };
+
+  const showOfferInfo = (offer: any) => {
+    showAphAlert!({
+      removeTopIcon: true,
+      children: <OfferInfo offer={offer} />,
+    });
+  };
+
   const showPaymentOptions = () => {
     //showPrepaid is true for all vertical except diagnostics
     return !!paymentMethods?.length
@@ -866,6 +883,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         {!fetching ? (
           <ScrollView contentContainerStyle={styles.container}>
             {renderBookingInfo()}
+            {renderOffers()}
             {showPaymentOptions()}
             {renderSecureTag()}
           </ScrollView>

@@ -6404,15 +6404,15 @@ export const GET_JUSPAY_CLIENTAUTH_TOKEN = gql`
   }
 `;
 
-export const GET_DIAGNOSTIC_SEARCH_RESULTS = gql `
-  query searchDiagnosticItem($keyword:String!, $cityId: Int!, $size: Int){
-    searchDiagnosticItem(keyword: $keyword, cityId: $cityId, size: $size){
-      data{
+export const GET_DIAGNOSTIC_SEARCH_RESULTS = gql`
+  query searchDiagnosticItem($keyword: String!, $cityId: Int!, $size: Int) {
+    searchDiagnosticItem(keyword: $keyword, cityId: $cityId, size: $size) {
+      data {
         diagnostic_item_id
         diagnostic_item_name
         diagnostic_inclusions
         diagnostic_item_alias
-        diagnostic_item_price{
+        diagnostic_item_price {
           status
           startDate
           endDate
@@ -6424,7 +6424,7 @@ export const GET_DIAGNOSTIC_SEARCH_RESULTS = gql `
         diagnostic_item_packageCalculatedMrp
         diagnostic_item_itemType
         diagnostic_item_alias_names
-        diagnostic_inclusions_test_parameter_data{
+        diagnostic_inclusions_test_parameter_data {
           mandatoryValue
           observationName
         }
@@ -6445,12 +6445,44 @@ export const GET_PHARMACY_PRESCRIPTION_OPTION = gql`
 `;
 
 export const CHANGE_DIAGNOSTIC_ORDER_PATIENT_ID = gql`
-mutation switchDiagnosticOrderPatientID($diagnosticOrdersId: String!,$newPatientId: String!) {
-  switchDiagnosticOrderPatientID(diagnosticOrdersId: $diagnosticOrdersId,newPatientId: $newPatientId) {
-    status
-    message
+  mutation switchDiagnosticOrderPatientID($diagnosticOrdersId: String!, $newPatientId: String!) {
+    switchDiagnosticOrderPatientID(
+      diagnosticOrdersId: $diagnosticOrdersId
+      newPatientId: $newPatientId
+    ) {
+      status
+      message
+    }
   }
-}
+`;
+
+export const GET_OFFERS_LIST = gql`
+  query getOffersList($listOffersInput: OffersRequest!, $is_juspay_pharma: Boolean) {
+    getOffersList(listOffersInput: $listOffersInput, is_juspay_pharma: $is_juspay_pharma) {
+      offers {
+        offer_id
+        offer_description {
+          title
+          description
+          tnc
+          sponsored_by
+        }
+        offer_rules {
+          amount {
+            min_quantity
+            max_quantity
+          }
+          platform
+          payment_instrument {
+            payment_method
+            payment_method_type
+            type
+            variant
+          }
+        }
+      }
+    }
+  }
 `;
 
 export const CREATE_VONAGE_SESSION_TOKEN = gql`

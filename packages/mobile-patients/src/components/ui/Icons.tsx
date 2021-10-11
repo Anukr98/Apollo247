@@ -2423,3 +2423,7 @@ export const CoinSavingsIcon: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/coinSavingsIcon.webp')}
   />
 );
+
+export const OfferBlueIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/offerIcon.webp')} />
+);
