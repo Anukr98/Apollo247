@@ -295,7 +295,10 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           : parentQuery?.id == helpSectionQueryId.diagnostic
           ? ORDER_TYPE.DIAGNOSTICS
           : null;
-      const reason = subQueries?.find(({ id }) => id === selectedQueryId)?.title;
+      const reason =
+        subQueries?.length > 0
+          ? subQueries?.find(({ id }) => id === selectedQueryId)?.title
+          : subQueriesData?.title;
       const variables: TicketNumberMutationVariables = {
         createHelpTicketHelpEmailInput: {
           category: parentQuery?.title,
@@ -546,6 +549,14 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     );
   };
 
+  const capitalizeStatusMessage = (str: string) => {
+    var splitStr = str.toLowerCase().split(' ');
+    for (var i = 0; i < splitStr.length; i++) {
+      splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
+    }
+    return `"${splitStr.join(' ')}"`;
+  };
+
   const renderReasons = () => {
     if (!subQueries?.length) {
       return null;
@@ -563,11 +574,17 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     const showMessage = (tat: boolean) => {
       if (tat) {
         const str = string.needHelpQueryDetails.tatBreachedTrue;
-        const newStr = str.replace('{{medicineOrderStatus}}', medicineOrderStatus!);
+        const newStr = str.replace(
+          '{{medicineOrderStatus}}',
+          capitalizeStatusMessage(medicineOrderStatus?.replace('_', ' ') || '')
+        );
         return newStr;
       } else {
         const str = string.needHelpQueryDetails.tatBreachedFalse;
-        const newStr = str.replace('{{medicineOrderStatus}}', medicineOrderStatus!);
+        const newStr = str.replace(
+          '{{medicineOrderStatus}}',
+          capitalizeStatusMessage(medicineOrderStatus?.replace('_', ' ') || '')
+        );
         const finalStringToBeSend = newStr.replace('{{etd}}', etd);
         return finalStringToBeSend;
       }

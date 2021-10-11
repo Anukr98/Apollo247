@@ -152,6 +152,10 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
 
   const keyExtractor = useCallback((_, index: number) => `${index}`, []);
   const keyExtractor1 = useCallback((_, index: number) => `${index}`, []);
+  const locationToSelect =
+    !!diagnosticLocation && !isEmptyObject(diagnosticLocation)
+      ? diagnosticLocation
+      : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_LOCATION;
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
@@ -233,7 +237,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       (!!diagnosticServiceabilityData &&
         !isEmptyObject(diagnosticServiceabilityData) &&
         cartItems?.length > 0) ||
-      (!!diagnosticLocation && !isEmptyObject(diagnosticLocation) && cartItems?.length > 0)
+      cartItems?.length > 0
     ) {
       getAddressServiceability();
     }
@@ -535,8 +539,8 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     try {
       const serviceabilityResponse = await diagnosticServiceability(
         client,
-        Number(diagnosticLocation?.latitude),
-        Number(diagnosticLocation?.longitude)
+        Number(locationToSelect?.latitude),
+        Number(locationToSelect?.longitude)
       );
       if (
         !serviceabilityResponse?.errors &&
@@ -751,7 +755,9 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     const findSelectedItem = arr?.find((item: any) => item?.id == patientDetails?.id);
     if (findSelectedItem?.isPatientSelected) {
       const updatedItems = JSON.parse(JSON.stringify(cartItems));
-      updatedItems['isSelected'] = true;
+      updatedItems?.map((item: any) => {
+        item['isSelected'] = true;
+      });
       //check here, if item is already selected => unselect
       addPatientCartItem?.(patientDetails?.id, updatedItems);
     } else {
@@ -972,9 +978,9 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       if (deliveryAddressId != '') {
         _navigateToCartPage();
       } else {
-        const getHomePagePincode = diagnosticLocation?.pincode;
-        const getHomePageLat = diagnosticLocation?.latitude;
-        const getHomePageLong = diagnosticLocation?.longitude;
+        const getHomePagePincode = locationToSelect?.pincode;
+        const getHomePageLat = locationToSelect?.latitude;
+        const getHomePageLong = locationToSelect?.longitude;
         if (!!getHomePagePincode) {
           const getNearByAddresses = addresses?.filter(
             (item) => Number(item?.zipcode) === Number(getHomePagePincode)

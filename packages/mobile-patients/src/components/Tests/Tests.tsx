@@ -682,10 +682,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         });
     } catch (error) {
       setLoading?.(false);
-      CommonBugFender(`${AppRoutes.Tests}_fetchOrders`, error);
     }
   };
-
   const fetchPatientPrescriptions = async () => {
     try {
       const res: any = await getDiagnosticPatientPrescription(
@@ -2066,7 +2064,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       const isValidSize = documents.find(({ size }) => size < MAX_FILE_SIZE);
       if (!isValidPdf || !isValidSize) {
         Alert.alert(
-          strings.common.uhOh,
+          string.common.uhOh,
           !isValidPdf
             ? `Invalid File Type. File type must be PDF.`
             : `Invalid File Size. File size must be less than 25MB.`

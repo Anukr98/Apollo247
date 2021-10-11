@@ -1161,6 +1161,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'TrueCaller_Login_Enabled_QA',
       PROD: 'TrueCaller_Login_Enabled_PROD',
     },
+    Diagnostics_No_Saving_Text: {
+      QA: 'QA_Diagnostics_No_Saving_Text',
+      PROD: 'Diagnostics_No_Saving_Text',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1446,13 +1450,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       nudgeMessagePharmacyPDP && setPharmaPDPNudgeMessage?.(nudgeMessagePharmacyPDP);
 
-      const disincentivizeCodMessage = getRemoteConfigValue(
-        'Disincentivize_COD_Message',
-        (key) => config.getString(key) || ''
-      );
-
-      disincentivizeCodMessage && setPaymentCodMessage?.(disincentivizeCodMessage);
-
       setAppConfig('CirclePlanPreselected', 'CIRCLE_PLAN_PRESELECTED', (key) =>
         config.getBoolean(key)
       );
@@ -1472,6 +1469,17 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'DIAGNOSTICS_REPORT_TAT_BREACH_TEXT',
         (key) => config.getString(key)
       );
+
+      setAppConfig('Diagnostics_No_Saving_Text', 'DIAGNOSTICS_NO_CIRCLE_SAVINGS_TEXT', (key) =>
+        config.getString(key)
+      );
+
+      const disincentivizeCodMessage = getRemoteConfigValue(
+        'Disincentivize_COD_Message',
+        (key) => config.getString(key) || ''
+      );
+
+      disincentivizeCodMessage && setPaymentCodMessage?.(disincentivizeCodMessage);
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';

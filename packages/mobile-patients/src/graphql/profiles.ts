@@ -2355,6 +2355,7 @@ export const GET_HELP_SECTION_QUERIES = gql`
       needHelpQueries {
         id
         title
+        message
         nonOrderQueries
         queriesByOrderStatus
         content {
@@ -5384,6 +5385,18 @@ export const GET_ORDER_LEVEL_DIAGNOSTIC_STATUS = gql`
         reportTATMessage
         expectedReportGenerationTime
       }
+      groupedPendingReportInclusions {
+        inclusions {
+          itemId
+          itemName
+          packageId
+          packageName
+          orderStatus
+        }
+        isReportPending
+        reportTATMessage
+        expectedReportGenerationTime
+      }
       statusInclusions {
         statusDate
         orderStatus
@@ -6306,15 +6319,9 @@ export const GET_DIAGNOSTIC_REPORT_TAT = gql`
 `;
 
 export const GET_PATIENT_PRESCRIPTIONS = gql`
-  query getPatientPrescriptions(
-    $patientId: String!
-    $limit: Int!
-    ) {
-      getPatientPrescriptions(
-        patientId: $patientId
-        limit: $limit
-      ) {
-        response{
+  query getPatientPrescriptions($patientId: String!, $limit: Int!) {
+    getPatientPrescriptions(patientId: $patientId, limit: $limit) {
+      response {
         doctorName
         patientName
         caseSheet {
@@ -6369,7 +6376,6 @@ export const GET_PATIENT_PRESCRIPTIONS = gql`
   }
 `;
 
-
 export const SAVE_JUSPAY_SDK_RESPONSE = gql`
   mutation saveJuspayResponseForAudit($auditInput: AuditInput) {
     saveJuspayResponseForAudit(auditInput: $auditInput) {
@@ -6398,6 +6404,34 @@ export const GET_JUSPAY_CLIENTAUTH_TOKEN = gql`
   }
 `;
 
+export const GET_DIAGNOSTIC_SEARCH_RESULTS = gql `
+  query searchDiagnosticItem($keyword:String!, $cityId: Int!, $size: Int){
+    searchDiagnosticItem(keyword: $keyword, cityId: $cityId, size: $size){
+      data{
+        diagnostic_item_id
+        diagnostic_item_name
+        diagnostic_inclusions
+        diagnostic_item_alias
+        diagnostic_item_price{
+          status
+          startDate
+          endDate
+          price
+          mrp
+          couponCode
+          groupPlan
+        }
+        diagnostic_item_packageCalculatedMrp
+        diagnostic_item_itemType
+        diagnostic_item_alias_names
+        diagnostic_inclusions_test_parameter_data{
+          mandatoryValue
+          observationName
+        }
+      }
+    }
+  }`;
+  
 export const GET_PHARMACY_PRESCRIPTION_OPTION = gql`
   query pharmaPrescriptionOption($pharmaPrescriptionOptionInput: PharmaPrescriptionOptionInput) {
     pharmaPrescriptionOption(pharmaPrescriptionOptionInput: $pharmaPrescriptionOptionInput) {
@@ -6406,6 +6440,24 @@ export const GET_PHARMACY_PRESCRIPTION_OPTION = gql`
         title
         visible
       }
+    }
+  }
+`;
+
+export const CHANGE_DIAGNOSTIC_ORDER_PATIENT_ID = gql`
+mutation switchDiagnosticOrderPatientID($diagnosticOrdersId: String!,$newPatientId: String!) {
+  switchDiagnosticOrderPatientID(diagnosticOrdersId: $diagnosticOrdersId,newPatientId: $newPatientId) {
+    status
+    message
+  }
+}
+`;
+
+export const CREATE_VONAGE_SESSION_TOKEN = gql`
+  mutation createVonageSessionToken($appointmentId: String!) {
+    createVonageSessionToken(appointmentId: $appointmentId) {
+      token
+      sessionId
     }
   }
 `;

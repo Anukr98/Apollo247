@@ -415,7 +415,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           if (typeof couponList != null && couponList?.length) {
             validateAutoApplyCoupon(couponList);
           } else {
-            setLoading?.(false)
+            setLoading?.(false);
           }
         } else {
           setLoading && setLoading(false);
@@ -975,6 +975,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       doctorID: doctor?.id,
       doctor: doctor,
       orderId: apptmt?.id,
+      displayId: apptmt?.displayId,
       price: amountToPay,
       appointmentInput: appointmentInput,
       appointmentDateTime: appointmentInput.appointmentDateTime,

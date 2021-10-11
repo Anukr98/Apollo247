@@ -44,6 +44,7 @@ import {
   postWebEngagePHR,
   isSmallDevice,
   removeObjectProperty,
+  postCleverTapEvent,
   postCleverTapPHR,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
@@ -764,7 +765,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                 >
                   <View style={styles.labelViewStyle}>
                     <Text style={styles.labelStyle}>{item?.parameterName}</Text>
-                    {data.labTestSource === 'Hospital' && !!checkNumber ? (
+                    {/* {data.labTestSource === 'Hospital' && !!checkNumber ? (
                       <TouchableOpacity
                         activeOpacity={1}
                         onPress={() => {
@@ -773,7 +774,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                       >
                         <BarChar size="sm" />
                       </TouchableOpacity>
-                    ) : null}
+                    ) : null} */}
                   </View>
 
                   <View

@@ -403,6 +403,29 @@ export const AddVaccinationRecord: React.FC<AAddVaccinationRecordProps> = (props
             'Add Vaccination Record',
             eventInputData
           );
+          postWebEngageIfNewSession(
+            'Vaccination',
+            currentPatient,
+            eventInputData,
+            phrSession,
+            setPhrSession
+          );
+          postCleverTapEvent(CleverTapEventName.PHR_ADD_VACCINATION_REPORT, eventInputData);
+          postCleverTapIfNewSession(
+            'Vaccination',
+            currentPatient,
+            eventInputData,
+            phrSession,
+            setPhrSession
+          );
+          postCleverTapPHR(
+            currentPatient,
+            updateInfo
+              ? CleverTapEventName.PHR_UPDATE_VACCINATION_REPORT
+              : CleverTapEventName.PHR_ADD_VACCINATION_REPORT,
+            'Add Vaccination Record',
+            eventInputData
+          );
 
           setshowSpinner(false);
           if (data?.addPatientImmunizationRecord.status) {

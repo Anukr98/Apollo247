@@ -283,6 +283,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   var patientCartItemsCopy = JSON.parse(JSON.stringify(isCartEmpty));
   const hideCirclePurchaseInModify =
     isModifyFlow && modifiedOrder?.paymentType !== DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
+  const getConfigValues = AppConfig.Configuration.CIRCLE_PLAN_PRESELECTED;
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
@@ -311,13 +312,17 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   useEffect(() => {
     isDiagnosticCircleSubscription
       ? setIsCircleAddedToCart?.(false)
+      : getConfigValues
+      ? setIsCircleAddedToCart?.(
+          hideCirclePurchaseInModify ? false : isCirclePlanRemoved ? false : getConfigValues
+        )
       : setIsCircleAddedToCart?.(
           hideCirclePurchaseInModify
             ? false
-            : isCirclePlanRemoved
-            ? false
-            : AppConfig.Configuration.CIRCLE_PLAN_PRESELECTED
-        ); //read from firebase
+            : isCircleAddedToCart
+            ? isCircleAddedToCart
+            : getConfigValues
+        );
   }, []);
 
   async function populateCartMapping() {
@@ -1086,6 +1091,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       </View>
     );
   };
+
   function _onTogglePlans() {
     setIsCircleAddedToCart?.(!isCircleAddedToCart);
     setIsCirclePlanRemoved?.(!isCirclePlanRemoved);

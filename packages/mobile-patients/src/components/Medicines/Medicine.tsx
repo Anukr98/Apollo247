@@ -368,10 +368,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.CATEGORY_CLICKED, eventAttributes);
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CATEGORY_VIEWED] = {
-      'Category Name': categoryName || undefined,
+      'Category name': categoryName || undefined,
       'Category ID': categoryId || undefined,
-      'Section Name': sectionName || undefined,
-      Source: source,
+      'Section name': sectionName || undefined,
+      'Nav src': source,
     };
     postCleverTapEvent(CleverTapEventName.PHARMACY_CATEGORY_VIEWED, cleverTapEventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.CATEGORY_CLICKED, eventAttributes);
@@ -492,6 +492,38 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const CleverTapEventAutoDetectLocation = (pincode: string, serviceable: boolean) => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED] = {
+      'Patient UHID': currentPatient.uhid,
+      'Mobile number': currentPatient.mobileNumber,
+      'Customer ID': currentPatient.id,
+      Serviceability: serviceable ? 'true' : 'false',
+      Pincode: pincode,
+      'Nav src': 'Pharmacy Home',
+      'Auto selected': 'Yes',
+    };
+    postCleverTapEvent(
+      CleverTapEventName.PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED,
+      eventAttributes
+    );
+  };
+
+  const CleverTapDeliveryPincodeEntered = (pincode: string, serviceable: boolean) => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED] = {
+      'Patient UHID': currentPatient.uhid,
+      'Mobile number': currentPatient.mobileNumber,
+      'Customer ID': currentPatient.id,
+      Serviceability: serviceable ? 'true' : 'false',
+      Pincode: pincode,
+      'Nav src': 'Pharmacy Home',
+      'Auto selected': 'No',
+    };
+    postCleverTapEvent(
+      CleverTapEventName.PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED,
+      eventAttributes
+    );
+  };
+
   const updateServiceability = (
     pincode: string,
     type?: 'autoDetect' | 'pincode' | 'addressSelect'
@@ -541,7 +573,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         setServiceabilityMsg(servicable ? '' : 'Services unavailable. Change delivery location.');
         setPharmacyLocationServiceable!(!!servicable);
         type == 'autoDetect' && WebEngageEventAutoDetectLocation(pincode, !!servicable);
+        type == 'autoDetect' && CleverTapEventAutoDetectLocation(pincode, !!servicable);
         type == 'pincode' && webEngageDeliveryPincodeEntered(pincode, !!servicable);
+        type == 'pincode' && CleverTapDeliveryPincodeEntered(pincode, !!servicable);
         globalLoading!(false);
         if (!servicable) {
           getNearByStoreDetailsApi(pincode)
@@ -1305,10 +1339,17 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       const eventAttributes:
         | WebEngageEvents[WebEngageEventName.PHARMACY_BANNER_CLICK]
         | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_BANNER] = {
-        BannerPosition: slideIndex + 1,
+        'Banner position': slideIndex + 1,
+      };
+      const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_BANNER] = {
+        'Nav src': 'Home Page',
+        'Banner position': slideIndex + 1,
+        Name: item?.name,
+        'IP ID': item?.ip_id,
+        'IP section name': item?.ip_section_name,
       };
       postWebEngageEvent(WebEngageEventName.PHARMACY_BANNER_CLICK, eventAttributes);
-      postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_BANNER, eventAttributes);
+      postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_BANNER, cleverTapEventAttributes);
       if (item.category_id) {
         props.navigation.navigate(AppRoutes.MedicineListing, {
           category_id: item.category_id,
@@ -1415,8 +1456,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 User_Type: pharmacyUserType,
               };
               const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED] = {
-                Source: 'Home',
-                'User Type': pharmacyUserType,
+                'Nav src': 'Home',
+                'User type': pharmacyUserType,
               };
               postCleverTapEvent(
                 CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED,

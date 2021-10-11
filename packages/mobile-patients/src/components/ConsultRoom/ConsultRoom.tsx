@@ -1552,7 +1552,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const eventAttributes:
           | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
           | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
-          source: 'app home',
+          'Nav src': 'app home',
         };
         setTimeout(
           () => postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED, eventAttributes),
@@ -1841,7 +1841,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const setSubscriptionData = (plan: any, isUpgradePlan?: boolean, isCorporatePlan?: boolean) => {
-
     try {
       const group = plan.group;
       const groupData: GroupPlan = {
@@ -2712,7 +2711,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   const eventAttributes:
                     | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
                     | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
-                    source: 'app home',
+                    'Nav src': 'app home',
                   };
                   setTimeout(
                     () =>
@@ -3846,9 +3845,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       >
         <ImageBackground
           style={styles.proHealthBannerImage}
-          source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_banner.webp')}
+          source={{ uri: AppConfig.Configuration.PROHEALTH_BANNER_IMAGE }}
           resizeMode={'stretch'}
-          borderRadius={10}
+          borderRadius={8}
         ></ImageBackground>
       </TouchableOpacity>
     );

@@ -130,9 +130,7 @@ export const MedicineListingSections: React.FC<Props> = ({
     ? [sortByOption, filterByOption, listGridSelection]
     : [sortByOption, listGridSelection];
 
-  const optionsView = (
-    <OptionsDisplayView options={searchText ? [listGridSelection] : optionsViewData} />
-  );
+  const optionsView = <OptionsDisplayView options={optionsViewData} />;
 
   const views = [breadCrumbView, pageTitleView, [divider, optionsView]];
 

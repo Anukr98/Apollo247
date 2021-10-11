@@ -205,6 +205,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     }
     firePurchaseEvent(orderDetails?.orderId, orderDetails?.amount, cartItems, currentPatient);
     submitReviewOnLabBook();
+    firePaymentOrderStatusEvent();
     clearDiagnoticCartInfo?.();
 
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -263,6 +264,30 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       CommonBugFender('inAppRevireAfterPaymentForDignostic', error);
     }
   };
+  const defaultClevertapEventParams = props.navigation.getParam('defaultClevertapEventParams');
+  const payload = props.navigation.getParam('payload');
+
+  const firePaymentOrderStatusEvent = () => {
+    try {
+      const { mobileNumber, vertical, displayId, paymentId } = defaultClevertapEventParams;
+      const status =
+        props.navigation.getParam('paymentStatus') == 'success'
+          ? 'PAYMENT_SUCCESS'
+          : 'PAYMENT_PENDING';
+      const eventAttributes: CleverTapEvents[CleverTapEventName.PAYMENT_ORDER_STATUS] = {
+        'Phone Number': mobileNumber,
+        vertical: vertical,
+        'Vertical Internal Order Id': displayId,
+        'Payment Order Id': paymentId,
+        'Payment Method Type': payload?.payload?.action,
+        BackendPaymentStatus: status,
+        JuspayResponseCode: payload?.errorCode,
+        Response: payload?.payload?.status,
+        Status: status,
+      };
+      postCleverTapEvent(CleverTapEventName.PAYMENT_ORDER_STATUS, eventAttributes);
+    } catch (error) {}
+  };
 
   const postCleverTapEventForTrackingAppReview = async () => {
     const uniqueId = await DeviceInfo.getUniqueId();
@@ -318,7 +343,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       goToHomeOnBack: true,
       comingFrom: AppRoutes.TestsCart,
       showOrderSummaryTab: true,
-      disableTrackOrder: true,
+      disableTrackOrder: false,
       amount: orderDetails?.amount,
     });
   };

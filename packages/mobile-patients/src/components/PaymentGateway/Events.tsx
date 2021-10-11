@@ -25,7 +25,7 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 export function PaymentInitiated(
   grandTotal: number,
@@ -93,9 +93,9 @@ export function PharmaOrderPlaced(
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED] = {
       ...cleverTapCheckoutEventAttributes,
-      'Payment Type': isCOD ? 'COD' : 'Prepaid',
+      'Payment type': isCOD ? 'COD' : 'Prepaid',
       'Transaction ID': paymentOrderId,
-      'Payment Instrument': isCOD ? 'COD' : paymentType || undefined,
+      'Payment instrument': isCOD ? 'COD' : paymentType || undefined,
     };
     postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, cleverTapEventAttributes);
 
@@ -132,21 +132,23 @@ export function PharmaOrderPlaced(
       LOB: 'Pharma',
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, firebaseEventAttributes);
-    const { currentPatient } = useAllCurrentPatients()
+    const { currentPatient } = useAllCurrentPatients();
 
     let revenue = 0;
-    shoppingCart?.cartItems?.forEach(item => {
-      revenue += item?.quantity * (item?.specialPrice ? item?.specialPrice : item?.price)
-    })
+    shoppingCart?.cartItems?.forEach((item) => {
+      revenue += item?.quantity * (item?.specialPrice ? item?.specialPrice : item?.price);
+    });
     const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED] = {
-      af_customer_user_id: currentPatient ? currentPatient.id : "",
+      af_customer_user_id: currentPatient ? currentPatient.id : '',
       'cart size': cartItems.length,
       af_revenue: getFormattedAmount(grandTotal),
       af_currency: 'INR',
-      af_order_id: paymentOrderId ? paymentOrderId : "0",
-      "af_content_id": shoppingCart?.cartItems?.map(item => item?.id),
-      "af_quantity": shoppingCart?.cartItems?.map(item => item?.quantity),
-      "af_price": shoppingCart?.cartItems?.map(item => item?.specialPrice ? item?.specialPrice : item?.price),
+      af_order_id: paymentOrderId ? paymentOrderId : '0',
+      af_content_id: shoppingCart?.cartItems?.map((item) => item?.id),
+      af_quantity: shoppingCart?.cartItems?.map((item) => item?.quantity),
+      af_price: shoppingCart?.cartItems?.map((item) =>
+        item?.specialPrice ? item?.specialPrice : item?.price
+      ),
       'coupon applied': coupon ? true : false,
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,

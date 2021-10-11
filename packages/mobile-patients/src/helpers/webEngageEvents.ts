@@ -1809,8 +1809,8 @@ export interface WebEngageEvents {
     Success?: YesOrNo; // Yes / No (If Error message shown because it is unservicable)
     'Delivery address': string;
     Pincode: string;
-    'TAT Displayed': Date;
-    'Delivery TAT': number;
+    'TAT Displayed'?: Date;
+    'Delivery TAT'?: number;
   };
   [WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS]: {
     'TAT Displayed'?: Date;
@@ -1854,25 +1854,25 @@ export interface WebEngageEvents {
   };
 
   [WebEngageEventName.PHARMACY_TAT_API_CALLED]: {
-    Source: 'PDP' | 'Cart';
-    Input_sku: string;
-    Input_qty: number;
-    Input_lat: number;
-    Input_long: number;
-    Input_pincode: string;
-    Input_MRP: number;
-    No_of_items_in_the_cart: number;
-    Response_Exist: YesOrNo;
+    'Nav src': 'PDP' | 'Cart';
+    'Input SKU': string;
+    'Input qty': number;
+    'Input lat': number;
+    'Input long': number;
+    'Input pincode': string;
+    'Input MRP': number;
+    'No of items in the cart': number;
+    'Response exist': YesOrNo;
     Response_MRP: number;
-    Response_Qty: number;
-    Response_lat: number;
-    Response_lng: number;
-    Response_ordertime: number;
-    Response_pincode: string;
-    Response_storeCode: string;
-    Response_storeType: string;
-    Response_tat: string;
-    Response_tatU: number;
+    'Response qty': number;
+    'Response lat': number;
+    'Response long': number;
+    'Response order time': number;
+    'Response pincode': string;
+    'Response store code': string;
+    'Response store type': string;
+    'Response TAT': string;
+    'Response TATU': number;
   };
 
   [WebEngageEventName.PHARMACY_CART_SELECT_DELIVERY_ADDRESS_CLICKED]: {

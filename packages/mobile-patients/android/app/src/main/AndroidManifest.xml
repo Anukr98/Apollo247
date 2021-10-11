@@ -17,10 +17,12 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
-    <uses-permission android:name="android.permission.READ_SMS"
-                 tools:node="remove"   />
-    <uses-permission android:name="android.permission.RECEIVE_SMS"
-                 tools:node="remove"  />
+    <uses-permission 
+        android:name="android.permission.READ_SMS"
+        tools:node="remove"   />
+    <uses-permission 
+        android:name="android.permission.RECEIVE_SMS"
+        tools:node="remove"  />
     <!--CallKit Permissions Start-->
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -65,23 +67,70 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
             <intent-filter android:label="@string/app_name">
                 <action android:name="android.intent.action.VIEW" />
-
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <!-- Accepts URIs that begin with "link://patienturl -->
-                <data android:scheme="apollopatients" />
-            </intent-filter>
-            <intent-filter android:label="@string/app_name">
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "https:www.apollo247.com -->
+                <data android:scheme="apollopatients" /> 
+                <!-- Accepts URIs that begin with "https:www.apollopharmacy.in -->
                 <data
+                    android:scheme="https" 
+                    android:host="www.apollopharmacy.in"/>
+                <!-- Accepts URIs that begin with "https:www.apollo247.com -->
+                <data 
+                    android:scheme="https"
                     android:host="www.apollo247.com"
-                    android:scheme="https" />
+                    android:pathPrefix="/specialties" />
+                <data 
+                    android:scheme="https"
+                    android:host="www.apollo247.com"
+                    android:pathPrefix="/doctors" />
+                <data 
+                    android:scheme="https"
+                    android:host="www.apollo247.com"
+                    android:pathPrefix="/lab-tests" />
+                <data 
+                    android:scheme="https"
+                    android:host="www.apollo247.com"
+                    android:pathPrefix="/testlisting" />
+                <data 
+                    android:scheme="https"
+                    android:host="www.apollo247.com"
+                    android:pathPrefix="/tests-cart" />
+                <data 
+                    android:scheme="https"
+                    android:host="www.apollo247.com"
+                    android:pathPrefix="/circle-membership" />
+                <data 
+                    android:scheme="https"
+                    android:host="www.apollo247.com"
+                    android:pathPrefix="/circle" />
+                <data 
+                    android:scheme="https"
+                    android:host="www.apollo247.com"
+                    android:pathPrefix="/my-membership" />
+                <data 
+                    android:scheme="https"
+                    android:host="www.apollo247.com"
+                    android:pathPrefix="/appointments" />
+                <data 
+                    android:scheme="https"
+                    android:host="www.apollo247.com"
+                    android:pathPrefix="/pay-online-consult" />
+            </intent-filter>
+
+            <!--  support sharing images into app-->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
             </intent-filter>
 
             <!--  support sharing images into app-->
@@ -111,15 +160,18 @@
             <intent-filter android:label="@string/app_name">
                 <action android:name="android.intent.action.VIEW" />
 
+            <!-- support sharing pdf into  app-->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "https:www.apollopharmacy.in -->
-                <data
-                    android:host="www.apollopharmacy.in"
-                    android:scheme="https" />
+                <data android:mimeType="application/pdf" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/pdf" />
             </intent-filter>
         </activity>
-
         <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" />
         <activity android:name=".UnlockScreenActivity" />
 
@@ -147,10 +199,10 @@
             android:exported="false"
             android:enabled="true">
         </receiver>
+
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_notification_white" />
-
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/notificationColor"
@@ -162,11 +214,6 @@
         <meta-data
             android:name="com.webengage.sdk.android.environment"
             android:value="in" />
-        <!-- if data center is in India -->
-
-        <!--        <meta-data-->
-        <!--            android:name="firebase_crash_collection_enabled"-->
-        <!--            android:value="${analytics_deactivated}"/>-->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0" />
@@ -182,7 +229,5 @@
         <meta-data
             android:name="CLEVERTAP_TOKEN"
             android:value="@string/clevertap_token"/>
-
     </application>
-
 </manifest>

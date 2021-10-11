@@ -322,15 +322,15 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     if (orderSelected?.length > 1) {
       orderSelected?.forEach((order: any, index: number) => {
         const momentTatDate = moment(order?.tat);
-        splitOrderDetails['Shipment_' + (index + 1) + '_TAT'] = Math.ceil(
+        splitOrderDetails['Shipment' + (index + 1) + ' TAT'] = Math.ceil(
           momentTatDate.diff(currentDate, 'h') / 24
         );
-        splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
+        splitOrderDetails['Shipment' + (index + 1) + ' value'] =
           getShipmentPrice(order?.items, cartItems) +
           (order?.deliveryCharge || 0) +
           (order?.packingCharges || 0);
-        splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
-        splitOrderDetails['Shipment_' + (index + 1) + '_Site_Type'] = order?.storeType;
+        splitOrderDetails['Shipment' + (index + 1) + ' items'] = order?.items?.length;
+        splitOrderDetails['Shipment' + (index + 1) + ' site type'] = order?.storeType;
       });
     }
     const currentDate = moment()
@@ -537,7 +537,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         props.navigation.navigate(AppRoutes.PaymentMethods, {
           paymentId: paymentId,
           amount: grandTotal,
-          orderDetails: getOrderDetails(orders),
+          orderDetails: getOrderDetails(orders, transactionId),
           businessLine: 'pharma',
           customerId: cusId,
           checkoutEventAttributes: getCheckoutCompletedEventAttributes(
@@ -563,8 +563,9 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     }
   };
 
-  const getOrderDetails = (orders: any) => {
+  const getOrderDetails = (orders: any, transactionId: string) => {
     const orderDetails = {
+      displayId: transactionId,
       orders: orders,
       orderInfo: OrderInfo,
       deliveryTime: deliveryTime,

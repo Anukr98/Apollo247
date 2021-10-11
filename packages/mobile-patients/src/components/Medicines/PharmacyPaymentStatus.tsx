@@ -391,8 +391,13 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       'Substitution Option Shown': showSubstituteMessage ? 'Yes' : 'No',
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_POST_CART_PAGE_VIEWED, eventAttributes);
-    if(status !== failure && status !== aborted && status !== pending && status !== "PAYMENT_PENDING")
-      clearCartInfo?.()
+    if (
+      status !== failure &&
+      status !== aborted &&
+      status !== pending &&
+      status !== 'PAYMENT_PENDING'
+    )
+      clearCartInfo?.();
   };
 
   const fireSubstituteResponseEvent = (action: string) => {
@@ -445,12 +450,12 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       'cart size': cartItems?.length,
       af_revenue: getFormattedAmount(grandTotal),
       af_currency: 'INR',
-      af_order_id: orderId ? orderId : "0",
-      orderAutoId: orderAutoId ? orderAutoId : "0",
+      af_order_id: orderId ? orderId : '0',
+      orderAutoId: orderAutoId ? orderAutoId : '0',
       'coupon applied': coupon ? true : false,
-      "af_content_id": cartItems?.map(item => item?.id),
-      "af_quantity": cartItems?.map(item => item?.quantity),
-      "af_price": cartItems?.map(item => item?.specialPrice ? item?.specialPrice : item?.price),
+      af_content_id: cartItems?.map((item) => item?.id),
+      af_quantity: cartItems?.map((item) => item?.quantity),
+      af_price: cartItems?.map((item) => (item?.specialPrice ? item?.specialPrice : item?.price)),
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
       ...pharmacyCircleAttributes!,
@@ -569,7 +574,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const fireCleverTapOrderSuccessEvent = () => {
     postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, {
       ...cleverTapCheckoutEventAttributes,
-      'Cart Items': cartItems?.length,
+      'Cart items': cartItems?.length,
     });
   };
 

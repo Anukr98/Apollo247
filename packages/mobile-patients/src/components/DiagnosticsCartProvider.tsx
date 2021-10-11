@@ -642,7 +642,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     } else {
       const patientCartItemsObj: DiagnosticPatientCartItem = {
         patientId: patientId,
-        cartItems: cartItems,
+        cartItems: listOfItems,
       };
       const newCartItems = [patientCartItemsObj, ...patientCartItems];
       setPatientCartItems?.(newCartItems);

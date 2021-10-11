@@ -456,8 +456,8 @@
     "ticket_creation_lag_time": "It usually takes 10 seconds to submit your ticket, we will update you here once its done."
   },
   "needHelpQueryDetails": {
-    "tatBreachedTrue": "Your Order is {{medicineOrderStatus}}. Due to heavy order volumes, we are facing unexpected delays in shipping. We sincerely apologize for the inconvenience. We are working proactively to deliver at the earliest.",
-    "tatBreachedFalse": "Your Order is {{medicineOrderStatus}}. You will receive your order by {{etd}}. We are working proactively to deliver at the earliest."
+    "tatBreachedTrue": "Your order status is {{medicineOrderStatus}}. Due to heavy order volumes, we are facing unexpected delays in shipping. We sincerely apologize for the inconvenience. We are working proactively to deliver at the earliest.",
+    "tatBreachedFalse": "Your order status is {{medicineOrderStatus}}. You will receive your order by {{etd}}. We are working proactively to deliver at the earliest."
   },
   "doctor_search_listing": {
     "pleaseWait": "Please Wait!",
@@ -664,11 +664,19 @@
     "modifyDiscardText": "You were trying to modify the order. Would you like to discard and go back to home page?",
     "sampleCollected": "Sample Collected",
     "sampleCollectedContent": "Our Apollo agent has successfully collected the samples.",
+    "agent": "Apollo agent",
+    "successfulUpdatePatientDetails": "Patient Name has been updated successfully.",
+    "patientSwitchError": "Sorry, we couldn’t change name due to an error. Please try again",
+    "test":"Test+ included",
+    "tests":"Tests+ included",
+    "alsoKnownAs": "Also Known as:",
+    "addToCart": "ADD TO CART",
+    "removeFromCart": "REMOVE",
+    "alreadyAdded":"ALREADY ADDED",
     "nonServiceableMsg1": "Diagnostics services are not available.",
     "whyBookUs": "why book with us",
     "discardAllPatients": "Your cart has been updated, with the selected patient",
     "modifyHeader" : "MODIFY ORDER",
-    "agent": "Apollo agent",
     "codDisableTextForCircle": "Cash on Delivery is unavailable with Circle membership in Cart",
     "deeplink":"deeplink"
   },

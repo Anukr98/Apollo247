@@ -398,6 +398,9 @@ export interface OfferBannerSection {
   end_time: string;
   category_id?: number;
   sku?: string;
+  ip_id?:string;
+  ip_section_name?:string;
+
 }
 
 export interface MedicinePageAPiMetadata {
@@ -607,6 +610,7 @@ export interface SpecialOffersCouponsData {
   terms: string;
   redirectUrl: string;
   skus?: [] | null;
+  knowMoreOption?: boolean;
 }
 
 export interface SpecialOffersCouponsApiResponse {
@@ -643,7 +647,10 @@ export interface SpecialOffersBrandsProductsApiResponse {
   search_heading: string;
 }
 
-
+export interface BoughtTogetherResponse {
+  bought_together: MedicineProduct[];
+  product_count: number;
+}
 
 const config = AppConfig.Configuration;
 
@@ -970,6 +977,35 @@ export const getSpecialOffersPageBrandsProducts = (activeBrand: string, discount
   );
 };
 
+export const fetchCouponsPDP = async (data: any): Promise<AxiosResponse<SpecialOffersCouponsApiResponse>> => {
+  const { mobile, packageId, sku, type } = data;
+  const baseUrl = AppConfig.Configuration.SPECIAL_OFFERS_PAGE_COUPONS[0];
+  let url = `${baseUrl}?mobile=${mobile}&type=${type}&sku=${sku}`;
+  if (!!packageId) {
+    url += `&packageId=${packageId}`;
+  }
+  const response =  await Axios.get(url, {
+    headers: {},
+  });
+  return response;
+};
+
+export const getBoughtTogether = (
+  productSku: string,
+): Promise<AxiosResponse<BoughtTogetherResponse>> => {
+  const url = `${config.BOUGHT_TOGETHER[0]}`;
+  return Axios.post(url,
+    {
+      params: productSku,
+    },
+    {
+      headers: {
+        Authorization: config.BOUGHT_TOGETHER[1],
+      },
+    }
+  );
+};
+
 const googlePlacesApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 
 export const getPlaceInfoByPincode = (
@@ -1276,19 +1312,6 @@ export const getLandingPageBanners = (
   });
 };
 
-export const getDiagnosticsSearchResults = (
-  pageName: string,
-  keyword: string,
-  cityId: number
-): Promise<AxiosResponse<any>> => {
-  const baseurl = config.DRUPAL_CONFIG[0];
-  const getSearchResults = `${baseurl}/${pageName}/item-search?keyword=${keyword}&city=${cityId}`;
-  return Axios.get(getSearchResults, {
-    headers: {
-      Authorization: config.DRUPAL_CONFIG[1],
-    },
-  });
-};
 export const getDiagnosticsPopularResults = (
   pageName: string,
   cityId: number

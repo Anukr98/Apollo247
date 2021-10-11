@@ -25,7 +25,6 @@ import {
   SEARCH_TYPE,
   TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import {
   aphConsole,
   g,
@@ -35,7 +34,6 @@ import {
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -60,7 +58,6 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import {
   DIAGNOSTIC_GROUP_PLAN,
   getDiagnosticsPopularResults,
-  getDiagnosticsSearchResults,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import _ from 'lodash';
@@ -69,15 +66,21 @@ import {
   getPricesForItem,
   sourceHeaders,
 } from '@aph/mobile-patients/src/utils/commonUtils';
-import { DiagnosticsSearchSuggestionItem } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticsSearchSuggestionItem';
 import { DiagnosticsNewSearch } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticsNewSearch';
 import {
   DiagnosticAddToCartEvent,
   DiagnosticItemSearched,
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import DeviceInfo from 'react-native-device-info';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { getDiagnosticSearchResults } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { searchDiagnosticItem_searchDiagnosticItem_data } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticItem';
+import { DiagnosticsSearchResultItem } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticSearchResultItem';
+import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+
+type searchResults = searchDiagnosticItem_searchDiagnosticItem_data;
+import DeviceInfo from 'react-native-device-info';
 
 const GO_TO_CART_HEIGHT = 50;
 const isIphoneX = DeviceInfo.hasNotch();
@@ -91,7 +94,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>(searchTextFromProp);
   const [diagnosticResults, setDiagnosticResults] = useState<
-    searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
+    searchDiagnosticItem_searchDiagnosticItem_data[]
   >([]);
   const [searchResult, setSearchResult] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -128,7 +131,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
-  const showGoToCart = isModify && cartItems?.length > 0;
+  const showGoToCart = !!cartItems && cartItems?.length > 0;
 
   //add the cityId in case of modifyFlow
   const cityId = isModify
@@ -200,7 +203,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           sourceHeaders,
         },
         variables: {
-          patientId: g(currentPatient, 'id') || '',
+          patientId: currentPatient?.id,
           type: SEARCH_TYPE.TEST,
         },
         fetchPolicy: 'no-cache',
@@ -217,9 +220,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   //for past item search
   const fetchPackageDetails = async (name: string, func: (product: any) => void) => {
     try {
-      const res: any = await getDiagnosticsSearchResults('diagnostic', name, Number(cityId));
-      if (res?.data?.success) {
-        const product = g(res, 'data', 'data') || [];
+      const res: any = await getDiagnosticSearchResults(client, name, Number(cityId), 50);
+      if (!!res?.data?.searchDiagnosticItem && res?.data?.searchDiagnosticItem?.data?.length > 0) {
+        const product = res?.data?.searchDiagnosticItem?.data || [];
         func && func(product);
       }
       setIsLoading?.(false);
@@ -236,7 +239,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     try {
       const res: any = await getDiagnosticsPopularResults('diagnostic', Number(cityId));
       if (res?.data?.success) {
-        const product = g(res, 'data', 'data') || [];
+        const product = res?.data?.data || [];
         setPopularArray(product);
         setIsLoading(false);
       }
@@ -250,7 +253,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     }
   };
 
-  const showGenericALert = (e: { response: AxiosResponse }) => {
+  const showGenericALert = (e: any) => {
     showAphAlert?.({
       title: string.common.uhOh,
       description: `Something went wrong.`,
@@ -272,13 +275,10 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     setShowMatchingMedicines(true);
     setIsLoading(true);
     try {
-      const res: any = await getDiagnosticsSearchResults('diagnostic', _searchText, Number(cityId));
-
-      if (res?.data?.success) {
-        const products = g(res, 'data', 'data') || [];
-        setDiagnosticResults(
-          products as searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
-        );
+      const res: any = await getDiagnosticSearchResults(client, _searchText, Number(cityId), 50);
+      if (!!res?.data?.searchDiagnosticItem && res?.data?.searchDiagnosticItem?.data?.length > 0) {
+        const products = res?.data?.searchDiagnosticItem?.data || [];
+        setDiagnosticResults(products as searchDiagnosticItem_searchDiagnosticItem_data[]);
         setSearchResult(products?.length == 0);
         setWebEngageEventOnSearchItem(_searchText, products);
       } else {
@@ -293,7 +293,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     }
   };
 
-  const savePastSeacrh = (sku: string, name: string) =>
+  const savePastSearch = (sku: string, name: string) =>
     client.mutate({
       mutation: SAVE_SEARCH,
       variables: {
@@ -301,7 +301,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           type: SEARCH_TYPE.TEST,
           typeId: sku,
           typeName: name,
-          patient: currentPatient && currentPatient.id ? currentPatient.id : '',
+          patient: currentPatient?.id || '',
         },
       },
     });
@@ -323,10 +323,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     );
   };
 
-  const setWebEngageEventOnSearchItem = (
-    keyword: string,
-    results: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
-  ) => {
+  const setWebEngageEventOnSearchItem = (keyword: string, results: searchResults[]) => {
     DiagnosticItemSearched(currentPatient, keyword, results, isDiagnosticCircleSubscription);
   };
 
@@ -341,7 +338,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     selectedPlan?: any,
     inclusions?: any[]
   ) => {
-    savePastSeacrh(`${itemId}`, itemName).catch((e) => {});
+    savePastSearch(`${itemId}`, itemName).catch((e) => {});
     postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, 0, 0);
     const addedItem = {
       id: `${itemId}`,
@@ -396,7 +393,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     const cartItemsCount = cartItems?.length + shopCartItems?.length;
     return (
       <Header
-        container={{ borderBottomWidth: 0, borderWidth: 2 }}
+        container={{ borderBottomWidth: 1 }}
         leftIcon={'backArrow'}
         title={isModify ? string.diagnostics.modifyHeader : 'SEARCH TESTS'}
         rightComponent={
@@ -474,14 +471,14 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
 
   const renderSearchInput = () => {
     return (
-      <View style={{ paddingHorizontal: 10, backgroundColor: theme.colors.WHITE }}>
+      <View style={styles.inputStyle}>
         <View style={{ flexDirection: 'row' }}>
           <TextInputComponent
             conatinerstyles={{ paddingBottom: 0 }}
             inputStyle={[
               styles.searchValueStyle,
               isNoTestsFound ? { borderBottomColor: '#e50000' } : {},
-              isFocus ? { borderColor: colors.APP_GREEN } : {},
+              isFocus ? { borderColor: colors.APP_GREEN, borderWidth: 2 } : {},
             ]}
             textInputprops={{
               ...(isNoTestsFound ? { selectionColor: '#e50000' } : {}),
@@ -607,13 +604,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     );
   };
 
-  const renderTestCard = (
-    product: any,
-    index: number,
-    array: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
-  ) => {
+  const renderTestCard = (product: any, index: number, array: searchResults[]) => {
     return (
-      <DiagnosticsSearchSuggestionItem
+      <DiagnosticsSearchResultItem
         onPress={() => {
           CommonLogEvent(AppRoutes.SearchTestScene, 'Search suggestion Item');
           props.navigation.navigate(AppRoutes.TestDetails, {
@@ -633,11 +626,14 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           paddingBottom: index == diagnosticResults?.length - 1 ? 20 : 0,
         }}
         onPressRemoveFromCart={() => onRemoveCartItem(product?.diagnostic_item_id)}
+        isCircleSubscribed={isDiagnosticCircleSubscription}
+        searchedString={searchText}
       />
     );
   };
 
   const renderMatchingTests = () => {
+    const bottomStyles = { marginBottom: showGoToCart ? 50 : 0 };
     let popularTests: never[] = [];
     let popularPackages: never[] = [];
     if (popularArray?.length) {
@@ -670,11 +666,13 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               (diagnosticResults?.length > 0 && (
                 <SectionHeaderComponent
                   sectionTitle={`Showing search results (${diagnosticResults?.length})`}
-                  style={{ marginBottom: 5 }}
+                  style={styles.sectionHeaderView}
+                  titleStyle={styles.sectionHeaderText}
                 />
               )) ||
               null
             }
+            style={bottomStyles}
           />
         ) : !!searchText && searchText?.length > 2 ? (
           <FlatList
@@ -687,22 +685,18 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               (diagnosticResults?.length > 0 && (
                 <SectionHeaderComponent
                   sectionTitle={`Showing search results (${diagnosticResults?.length})`}
-                  style={{ marginBottom: 5 }}
+                  style={styles.sectionHeaderView}
+                  titleStyle={styles.sectionHeaderText}
                 />
               )) ||
               null
             }
+            style={bottomStyles}
           />
         ) : (
           <ScrollView
             showsVerticalScrollIndicator={false}
-            style={[
-              styles.viewDefaultContainer,
-              {
-                marginBottom: showGoToCart ? GO_TO_CART_HEIGHT + 10 : 0,
-              },
-            ]}
-            bounces={false}
+            style={[styles.viewDefaultContainer, bottomStyles]}
           >
             {popularPackages?.length > 0 ? (
               <View>
@@ -762,19 +756,25 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     );
   };
 
-  const renderCartPlaceholder = () => {
+  function _navigateToCartPage() {
+    props.navigation.navigate(AppRoutes.TestsCart, {
+      orderDetails: modifiedOrder,
+    });
+  }
+
+  const renderStickyBottom = () => {
+    const cartCount = cartItems?.length > 9 ? `${cartItems?.length}` : `0${cartItems?.length}`;
     return (
-      <View style={styles.cartDetailView}>
-        <Text style={styles.itemAddedText}>
-          {cartItems?.length} {cartItems?.length == 1 ? 'Item' : 'Items'} Added to Cart
+      <StickyBottomComponent style={styles.stickyBottomStyle}>
+        <Text style={styles.itemsAddedText}>
+          {cartCount} {cartItems?.length == 1 ? 'item' : 'items'} added
         </Text>
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={() => props.navigation.navigate(AppRoutes.CartPage)}
-        >
-          <Text style={styles.goToCartText}>GO TO CART</Text>
-        </TouchableOpacity>
-      </View>
+        <Button
+          title={'GO TO CART'}
+          onPress={() => _navigateToCartPage()}
+          style={{ width: '60%' }}
+        />
+      </StickyBottomComponent>
     );
   };
 
@@ -785,7 +785,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         {renderSearchInput()}
       </View>
       {renderMatchingTests()}
-      {showGoToCart && renderCartPlaceholder()}
+      {showGoToCart ? renderStickyBottom() : null}
     </SafeAreaView>
   );
 };
@@ -793,9 +793,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
     flex: 1,
-    backgroundColor: 'white', //theme.colors.DEFAULT_BACKGROUND_COLOR,
+    backgroundColor: theme.colors.WHITE,
   },
-  headerStyle: {},
   headerSearchInputShadow: {
     zIndex: 1,
     backgroundColor: theme.colors.WHITE,
@@ -804,6 +803,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 5,
     elevation: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
   },
   labelView: {
     position: 'absolute',
@@ -828,7 +829,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0, 0, 0, 0.1)',
     borderRadius: 5,
     width: '100%',
-    height: 48,
+    height: 50,
     paddingLeft: 10,
   },
   deliveryPinCodeContaner: {
@@ -930,5 +931,23 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 10,
     alignSelf: 'center',
+  },
+  sectionHeaderView: { marginBottom: 5, marginTop: 16 },
+  sectionHeaderText: {
+    color: theme.colors.SHERPA_BLUE,
+    ...theme.fonts.IBMPlexSansRegular(12),
+    opacity: 0.6,
+    letterSpacing: 0,
+  },
+  inputStyle: { paddingHorizontal: 16, backgroundColor: theme.colors.WHITE, marginTop: 16 },
+  stickyBottomStyle: {
+    shadowColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  itemsAddedText: {
+    ...theme.viewStyles.text('SB', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 1, 20),
+    textAlign: 'center',
+    marginTop: 6,
   },
 });
