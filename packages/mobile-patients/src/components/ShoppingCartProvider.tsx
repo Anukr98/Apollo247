@@ -20,6 +20,83 @@ import { addToCartTagalysEvent } from '@aph/mobile-patients/src/helpers/Tagalys'
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Decimal } from 'decimal.js';
 import { pharmaSubstitution_pharmaSubstitution_substitutes } from '@aph/mobile-patients/src/graphql/types/pharmaSubstitution';
+
+export type ServerCartResponse = {
+  statusCode: number;
+  errorMessage: string | null;
+  data: ServerCartDataResponse | null;
+};
+
+type ServerCartDataResponse = {
+  patientId: string;
+  amount: ServerCartAmount;
+  medicineOrderCartLineItems: ServerCartLineItemsResponse[];
+  zipcode: string;
+  latitude: number;
+  longitude: number;
+  patientAddressId: string;
+  coupon: string;
+  prescriptionDetails: ServerPrescriptionDetails[];
+  prescriptionType: PrescriptionType;
+  appointmentId: string;
+  subscriptionDetails?: ServerCartSubscriptionResponse;
+};
+
+type ServerCartAmount = {
+  cartTotal: number;
+  estimatedAmount: number;
+  deliveryCharges?: number;
+  cartSavings?: number;
+  couponSavings?: number;
+  totalCashBack?: number;
+  isFreeDelivery?: boolean;
+  packagingCharges?: number;
+};
+
+type ServerCartLineItemsResponse = {
+  sku: string;
+  name: string;
+  price: number;
+  quantity: number;
+  mou: string;
+  image: string;
+  thumbnail: string;
+  smallImage: string;
+  isExpress: string;
+  isInContract: string;
+  isPrescriptionRequired: string;
+  description: string;
+  subcategory: string;
+  typeId: string;
+  urlKey: string;
+  isInStock: number;
+  MaxOrderQty: number;
+  sellOnline: number;
+  manufacturer: string;
+  dcAvailability: string;
+  tat: Date;
+  tatDuration: string;
+  sellingPrice: number;
+  isCouponApplicable: boolean;
+  cashback: number;
+};
+
+type ServerPrescriptionDetails = {
+  prescriptionImageUrl?: String;
+  prismPrescriptionFileId?: String;
+};
+
+type ServerCartSubscriptionResponse = {
+  userSubscriptionId?: string;
+  planId?: string; // PLAN_ID;
+  subPlanId?: string;
+  type?: string; // PLAN;
+  planAmount?: number;
+  currentSellingPrice?: number;
+  durationInMonths?: number;
+  validDuration?: number;
+};
+
 export interface ShoppingCartItem {
   id: string;
   name: string;
@@ -41,6 +118,25 @@ export interface ShoppingCartItem {
   circleCashbackAmt?: number;
   url_key?: string;
   subcategory?: string | null;
+  // server cart
+  // sku?: string;
+  // image?: string;
+  // smallImage?: string;
+  // isExpress?: boolean;
+  // isInContract?: string;
+  // dcAvailability?: string;
+  // isPrescriptionRequired?: boolean;
+  // description?: string;
+  // typeId?: string;
+  // urlKey?: string;
+  // MaxOrderQty?: number;
+  // sellOnline?: number;
+  // manufacturer?: string;
+  // tat?: String;
+  // tatDuration?: string;
+  // tatPrice?: number;
+  // isCouponApplicable?: boolean;
+  // cashback?: number;
 }
 
 export interface CouponProducts {
@@ -149,6 +245,14 @@ export interface NudgeMessageCart {
 }
 
 export interface ShoppingCartContextProps {
+  // server cart values start
+  serverCartItems: ServerCartLineItemsResponse[];
+  setServerCartItems: ((items: ServerCartLineItemsResponse[]) => void) | null;
+  serverCartAmount: ServerCartAmount;
+  setServerCartAmount: ((items: ServerCartAmount) => void) | null;
+  cartCircleSubscriptionId: string;
+  setCartCircleSubscriptionId: ((id: string) => void) | null;
+  // server cart values stop
   cartItems: ShoppingCartItem[];
   setCartItems: ((items: ShoppingCartItem[]) => void) | null;
   addCartItem: ((item: ShoppingCartItem) => void) | null;
@@ -293,6 +397,13 @@ export interface ShoppingCartContextProps {
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
+  serverCartItems: [],
+  setServerCartItems: null,
+  cartCircleSubscriptionId: '',
+  setCartCircleSubscriptionId: null,
+  serverCartAmount: null,
+  setServerCartAmount: null,
+
   cartItems: [],
   setCartItems: null,
   addCartItem: null,
@@ -439,6 +550,17 @@ const showGenericAlert = (message: string) => {
 
 export const ShoppingCartProvider: React.FC = (props) => {
   const { currentPatient } = useAllCurrentPatients();
+
+  const [serverCartItems, setServerCartItems] = useState<
+    ShoppingCartContextProps['serverCartItems']
+  >([]);
+  const [cartCircleSubscriptionId, setCartCircleSubscriptionId] = useState<
+    ShoppingCartContextProps['cartCircleSubscriptionId']
+  >('');
+  const [serverCartAmount, setServerCartAmount] = useState<
+    ShoppingCartContextProps['serverCartAmount']
+  >(null);
+
   const [cartItems, _setCartItems] = useState<ShoppingCartContextProps['cartItems']>([]);
   const [couponDiscount, setCouponDiscount] = useState<ShoppingCartContextProps['couponDiscount']>(
     0
@@ -1244,6 +1366,13 @@ export const ShoppingCartProvider: React.FC = (props) => {
   return (
     <ShoppingCartContext.Provider
       value={{
+        serverCartItems,
+        setServerCartItems,
+        cartCircleSubscriptionId,
+        setCartCircleSubscriptionId,
+        serverCartAmount,
+        setServerCartAmount,
+
         cartItems,
         setCartItems,
         addCartItem,
