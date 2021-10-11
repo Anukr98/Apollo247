@@ -3257,7 +3257,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderOffersForYou = () => {
-    medCashbackOfferBanner();
+    return medCashbackOfferBanner();
   };
 
   const medCashbackOfferBanner = () => {
