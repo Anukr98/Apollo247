@@ -3257,10 +3257,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderOffersForYou = () => {
-    return medCashbackOfferBanner();
+    return circleCashbackOffersComponent();
   };
 
-  const medCashbackOfferBanner = () => {
+  const medCashbackOffersComponent = () => {
     return (
       <View style={styles.menuOptionsContainer}>
         <TouchableOpacity activeOpacity={1} onPress={() => {}}>
@@ -3326,6 +3326,75 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               >
                 <Text style={{ ...theme.viewStyles.text('R', 12, '#A15D59', 1, 18) }}>
                   Coupon: Try247
+                </Text>
+              </View>
+
+              <View style={styles.bottomRightArrowView}>
+                <Button
+                  title={`SHOP NOW`}
+                  style={{ width: 106, height: 32 }}
+                  onPress={() => {}}
+                  disabled={false}
+                />
+              </View>
+            </View>
+          </LinearGradientComponent>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const circleCashbackOffersComponent = () => {
+    return (
+      <View style={styles.menuOptionsContainer}>
+        <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+          <LinearGradientComponent
+            colors={['#FDFBF7', '#F5D5CE']}
+            style={[styles.bottom2CardView, { width: width - 32 }]}
+          >
+            <View style={{ flexDirection: 'row', marginTop: -5, justifyContent: 'flex-start' }}>
+              <View style={{ marginTop: 11, marginLeft: 10 }}>
+                <Image
+                  style={{ width: 46, height: 29 }}
+                  source={require('@aph/mobile-patients/src/components/ui/icons/circleLogo.webp')}
+                />
+              </View>
+
+              <View
+                style={{
+                  marginHorizontal: 10,
+                  marginTop: 11,
+                  borderRadius: 4,
+                  backgroundColor: '#CA883B',
+                  paddingHorizontal: 8,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                <Text style={{ ...theme.viewStyles.text('R', 12, '#fff', 1, 18) }}>Offer</Text>
+              </View>
+            </View>
+
+            <View
+              style={{ flexDirection: 'row', marginVertical: 6, justifyContent: 'space-between' }}
+            >
+              <View>
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('M', 17, '#958060', 1, 20),
+                    marginHorizontal: 10,
+                  }}
+                >
+                  Get ₹250 instant cashback
+                </Text>
+
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('R', 14, '#B3A293', 1, 18),
+                    marginHorizontal: 10,
+                  }}
+                >
+                  on Medicine Order
                 </Text>
               </View>
 
