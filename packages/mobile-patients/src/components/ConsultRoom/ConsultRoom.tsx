@@ -65,6 +65,7 @@ import {
   TimeGreenIcon,
   Card,
   CashbackIcon,
+  WhiteArrowRight,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   BannerDisplayType,
@@ -250,6 +251,7 @@ import { getUniqueId } from 'react-native-device-info';
 import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
 import _ from 'lodash';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { Title } from 'react-native-paper';
 
 const { Vitals } = NativeModules;
 
@@ -3274,68 +3276,90 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     else return null;
   };
 
-  const renderOffersCards = (item, index) => {
+  const renderOffersCards = (item: any, index: number) => {
     return (
       <TouchableOpacity activeOpacity={1} onPress={() => {}}>
         <LinearGradientComponent
-          colors={['#FDFBF7', '#F5D5CE']}
-          style={[styles.bottom2CardView, { width: width / 1.9 }]}
+          colors={item?.colors}
+          style={[
+            styles.bottom2CardView,
+            { width: width / 1.9, justifyContent: 'center', alignItems: 'flex-start', height: 155 },
+          ]}
         >
-          <View style={{ flexDirection: 'row', marginTop: -5, justifyContent: 'flex-start' }}>
-            <View style={{ marginTop: 11, marginLeft: 10 }}>
-              <Image
-                style={{ width: 46, height: 29 }}
-                source={require('@aph/mobile-patients/src/components/ui/icons/circleLogo.webp')}
-              />
-            </View>
+          <View
+            style={{
+              marginHorizontal: 10,
+              marginTop: 11,
+              borderRadius: 4,
+              backgroundColor: item?.notchColor,
+              paddingHorizontal: 8,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <Text style={{ ...theme.viewStyles.text('R', 12, '#fff', 1, 18) }}>
+              {item?.notchTitle}
+            </Text>
+          </View>
 
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 20, '#958060', 1, 30),
+              marginHorizontal: 10,
+            }}
+          >
+            {item?.title}
+          </Text>
+
+          <Text
+            style={{
+              ...theme.viewStyles.text('R', 14, '#B3A293', 1, 18),
+              marginHorizontal: 10,
+            }}
+          >
+            {item?.title2}
+          </Text>
+          {item?.couponStatus ? (
             <View
               style={{
-                marginHorizontal: 10,
-                marginTop: 11,
-                borderRadius: 4,
-                backgroundColor: '#CA883B',
-                paddingHorizontal: 8,
-                justifyContent: 'center',
-                alignItems: 'center',
+                flexDirection: 'row',
+                marginVertical: 6,
+                justifyContent: 'space-between',
+                width: '100%',
               }}
             >
-              <Text style={{ ...theme.viewStyles.text('R', 12, '#fff', 1, 18) }}>Offer</Text>
-            </View>
-          </View>
-
-          <View
-            style={{ flexDirection: 'row', marginVertical: 6, justifyContent: 'space-between' }}
-          >
-            <View>
-              <Text
+              <View
                 style={{
-                  ...theme.viewStyles.text('M', 17, '#958060', 1, 20),
                   marginHorizontal: 10,
+                  borderRadius: 4,
+                  borderColor: '#A15D59',
+                  borderWidth: 1,
+                  borderStyle: 'dashed',
+                  backgroundColor: '#fff',
+                  padding: 4,
+                  justifyContent: 'center',
+                  alignItems: 'center',
                 }}
               >
-                Get ₹250 instant cashback
-              </Text>
+                <Text style={{ ...theme.viewStyles.text('R', 12, '#A15D59', 1, 18) }}>
+                  Coupon: Try247
+                </Text>
+              </View>
 
-              <Text
+              <View
                 style={{
-                  ...theme.viewStyles.text('R', 14, '#B3A293', 1, 18),
-                  marginHorizontal: 10,
+                  width: 24,
+                  height: 24,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  borderRadius: 12,
+                  backgroundColor: '#FC9916',
                 }}
               >
-                on Medicine Order
-              </Text>
+                <WhiteArrowRight />
+              </View>
             </View>
-
-            <View style={styles.bottomRightArrowView}>
-              <Button
-                title={`SHOP NOW`}
-                style={{ width: 106, height: 32 }}
-                onPress={() => {}}
-                disabled={false}
-              />
-            </View>
-          </View>
+          ) : null}
         </LinearGradientComponent>
       </TouchableOpacity>
     );
@@ -3424,6 +3448,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       </View>
     );
   };
+
+  const offersCount = 2;
+  // 'CIRCLE' || 'MEDICINE' || 'MULTIPLE'
+  const offerType = 'CIRCLE';
 
   const circleCashbackOffersComponent = () => {
     return (
@@ -3520,12 +3548,25 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
-  const offersCount = 2;
-  // 'CIRCLE' || 'MEDICINE' || 'MULTIPLE'
-  const offerType = 'CIRCLE';
   const offersList = [
-    { id: 1, colors: ['#FCEFD0', '#FFE7AA'], couponStatus: true },
-    { id: 2, colors: ['#FCDCFF', '#FBD0FF'], couponStatus: false },
+    {
+      id: 1,
+      colors: ['#FCEFD0', '#FFE7AA'],
+      couponStatus: true,
+      title: 'Flat 25% off + ₹100 cashback',
+      title2: 'on first medicine order',
+      notchTitle: 'Ends in 12:22 Hr',
+      notchColor: '#0B92DE',
+    },
+    {
+      id: 2,
+      colors: ['#FCDCFF', '#FBD0FF'],
+      couponStatus: false,
+      title: 'First Doctor Consult Free',
+      title2: 'on select doctor',
+      notchTitle: 'FREE',
+      notchColor: '#3BCA9F',
+    },
   ];
 
   const dataBannerCards = (darktheme: any) => {
