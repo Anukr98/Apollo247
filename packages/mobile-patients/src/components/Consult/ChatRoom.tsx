@@ -62,6 +62,7 @@ import {
   GET_DOCTOR_DETAILS_BY_ID,
   CALL_CONNECTION_UPDATES,
   POST_WEB_ENGAGE,
+  CREATE_VONAGE_SESSION_TOKEN,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   bookRescheduleAppointment,
@@ -243,6 +244,10 @@ import {
 import { postCleverTapUploadPrescriptionEvents } from '@aph/mobile-patients/src/components/UploadPrescription/Events';
 import TextTicker from 'react-native-text-ticker';
 import DeviceInfo from 'react-native-device-info';
+import {
+  createVonageSessionToken,
+  createVonageSessionTokenVariables,
+} from '../../graphql/types/createVonageSessionToken';
 
 interface OpentokStreamObject {
   connection: {
@@ -363,9 +368,10 @@ const styles = StyleSheet.create({
     height: 0.5,
   },
   networkTestIcon: {
-    marginRight: 15,
+    marginRight: -20,
     height: 20,
     width: 25,
+    alignSelf: 'flex-end',
   },
   doctorNameStyle: {
     paddingTop: 8,
@@ -1125,6 +1131,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const showProgressBarOnHeader = useRef<boolean>(false);
   const isJdAllowedToAssign = useRef<boolean | null | undefined>(null);
   const [appointmentDiffMin, setAppointmentDiffMin] = useState<number>(0);
+
   const [phoneNumber, setPhoneNumber] = useState<string | null>('');
   let cancelAppointmentTitle = '';
   if (appointmentDiffMin >= 15) {
@@ -1146,7 +1153,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       AsyncStorage.getItem(appointmentData?.id + '_' + OPENTOK_NETWORK_TEST_DONE).then(
         (isNetworkTestDone) => {
           if (!isNetworkTestDone || isNetworkTestDone == 'false') {
-            startNetworkConnectivityTest();
+            getAppointmentSessionInfo(); //this will start connectivity test
           }
         }
       );
@@ -2688,6 +2695,26 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           CommonBugFender('ChatRoom_updateSessionAPI', e);
         });
     }
+  };
+
+  const getAppointmentSessionInfo = () => {
+    const input = {
+      appointmentId: appointmentData.id,
+    };
+    client
+      .mutate<createVonageSessionToken, createVonageSessionTokenVariables>({
+        mutation: CREATE_VONAGE_SESSION_TOKEN,
+        variables: input,
+      })
+      .then((response: any) => {
+        startNetworkConnectivityTest(
+          response?.data?.createVonageSessionToken.token,
+          response?.data?.createVonageSessionToken.sessionId
+        );
+      })
+      .catch((e) => {
+        CommonBugFender('ChatRoom_updateSessionAPI', e);
+      });
   };
 
   const CheckDoctorPresentInChat = () => {
@@ -4639,7 +4666,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   function _navigateToTestCart() {
     hideAphAlert?.();
-    props.navigation.push(AppRoutes.TestsCart, { comingFrom: AppRoutes.ConsultDetails });
+    props.navigation.push(AppRoutes.AddPatients, { comingFrom: AppRoutes.ConsultDetails });
   }
 
   const orderMedicine = (rowData: any, index: number) => {
@@ -7618,6 +7645,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const onPressCalender = () => {
+    console.log('check  onPressCalender--- ');
+
     setShowRescheduleCancel(true);
     if (isAppointmentStartsInFifteenMin) {
       autoTriggerFifteenMinToAppointmentTimeMsg();
@@ -7628,19 +7657,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const renderNetworkTestCTA = () => {
-    return (
-      <TouchableOpacity onPress={() => {}}>
-        {OTNetworkTestStatus === OT_NETWORK_TEST_STATUS.CHECKING ? (
-          <NetworkChecking style={styles.networkTestIcon} />
-        ) : OTNetworkTestStatus === OT_NETWORK_TEST_STATUS.AVERAGE ? (
-          <NetworkAverage style={styles.networkTestIcon} />
-        ) : OTNetworkTestStatus === OT_NETWORK_TEST_STATUS.GOOD ? (
-          <NetworkGood style={styles.networkTestIcon} />
-        ) : (
-          <NetworkBad style={styles.networkTestIcon} />
-        )}
-      </TouchableOpacity>
-    );
+    if (OTNetworkTestStatus === OT_NETWORK_TEST_STATUS.CHECKING) {
+      return <NetworkChecking style={styles.networkTestIcon} />;
+    } else if (OTNetworkTestStatus === OT_NETWORK_TEST_STATUS.AVERAGE) {
+      return <NetworkAverage style={styles.networkTestIcon} />;
+    } else if (OTNetworkTestStatus === OT_NETWORK_TEST_STATUS.GOOD) {
+      return <NetworkGood style={styles.networkTestIcon} />;
+    } else {
+      return <NetworkBad style={styles.networkTestIcon} />;
+    }
   };
 
   const renderNetworkTestContainer = () => {
@@ -7724,7 +7749,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
-  const checkAndEnableCallMicrophonePermission = () => {
+  const checkAndEnableCallMicrophonePermission = (token: string, sessionId: string) => {
     checkPermissions(['camera', 'microphone']).then((response: any) => {
       const { camera, microphone } = response;
 
@@ -7737,7 +7762,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               'microphone',
               'Enable microphone in order to get your network tested.',
               () => {
-                startNetworkTest();
+                startNetworkTest(token, sessionId);
               },
               'Consult Chat Screen'
             );
@@ -7745,19 +7770,23 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           'Consult Chat Screen'
         );
       } else if (camera === 'authorized' && microphone === 'authorized') {
-        startNetworkTest();
+        startNetworkTest(token, sessionId);
       }
     });
   };
 
-  const startNetworkTest = () => {
+  const startNetworkTest = (token: string, sessionId: string) => {
     let testResult = 'BAD';
 
     setShowNetworkCheckStatusHeader(true);
     setOpenTokNetworkTestInProgress(true);
 
     setOTNetworkTestStatus(OT_NETWORK_TEST_STATUS.CHECKING);
-    NativeModules.OpentokNetworkTest.startNetworkTest('')
+    NativeModules.OpentokNetworkTest.startNetworkTest(
+      AppConfig.Configuration.PRO_TOKBOX_KEY,
+      sessionId,
+      token
+    )
       .then((result: any) => {
         let networkStatus = result.split(':')[0];
 
@@ -7863,10 +7892,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
-  const startNetworkConnectivityTest = () => {
+  const startNetworkConnectivityTest = (token: string, sessionId: string) => {
     Platform.OS == 'ios'
       ? checkNetworkStatusByDownloadingFile()
-      : checkAndEnableCallMicrophonePermission();
+      : checkAndEnableCallMicrophonePermission(token, sessionId);
 
     setShowNetworkTestIcon(true);
     setShowRescheduleCancel(false);
@@ -7877,10 +7906,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       <TouchableOpacity
         style={styles.manageCTAView}
         onPress={() => {
+          console.log('check onPress renderManageCTA---  ');
+
           onPressCalender();
         }}
       >
-        <More />
+        <More style={{ alignSelf: 'flex-end' }} />
       </TouchableOpacity>
     );
   };
@@ -7996,18 +8027,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }
           }}
           rightIcon={
-            <View style={{ flexDirection: 'row' }}>
+            <TouchableOpacity
+              style={{
+                flexDirection: 'row',
+                alignSelf: 'flex-end',
+                alignContent: 'flex-end',
+                alignItems: 'flex-end',
+                marginRight: -10,
+              }}
+              disabled={doctorJoinedChat || status.current === STATUS.COMPLETED}
+              onPress={() => onPressCalender()}
+            >
               {showNetworkTestIcon ? renderNetworkTestCTA() : null}
-
-              <TouchableOpacity
-                disabled={doctorJoinedChat || status.current === STATUS.COMPLETED}
-                onPress={() => onPressCalender()}
-              >
-                {doctorJoinedChat || status.current === STATUS.COMPLETED
-                  ? renderManageCTA(true)
-                  : renderManageCTA()}
-              </TouchableOpacity>
-            </View>
+              {doctorJoinedChat || status.current === STATUS.COMPLETED
+                ? renderManageCTA(true)
+                : renderManageCTA()}
+            </TouchableOpacity>
           }
         />
         {showProgressBarOnHeader.current ? (
@@ -8279,7 +8314,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setShowRescheduleCancel(false);
           }}
           onPressNetworkConnectivity={() => {
-            startNetworkConnectivityTest();
+            getAppointmentSessionInfo();
           }}
           onPressRescheduleAppointment={() => {
             postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
@@ -8302,6 +8337,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
           closeModal={() => setShowRescheduleCancel(false)}
           appointmentDiffMin={appointmentDiffMin}
+          showNetworkTestCTA={true}
           appointmentDateTime={appointmentData?.appointmentDateTime}
           isAppointmentStartsInFifteenMin={isAppointmentStartsInFifteenMin}
           isAppointmentExceedsTenMin={isAppointmentExceedsTenMin}

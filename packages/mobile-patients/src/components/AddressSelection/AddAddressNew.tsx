@@ -26,6 +26,7 @@ import {
   formatAddressForApi,
   findAddrComponents,
   postFirebaseEvent,
+  isEmptyObject,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
@@ -37,6 +38,7 @@ import {
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const FakeMarker = require('@aph/mobile-patients/src/components/ui/icons/ic-marker.webp');
 const icon_gps = require('@aph/mobile-patients/src/components/ui/icons/ic_gps_fixed.webp');
@@ -92,6 +94,7 @@ export interface locationResponseProps {
   state?: string;
 }
 export const AddAddressNew: React.FC<MapProps> = (props) => {
+  console.log({ props });
   const KeyName = props.navigation.getParam('KeyName');
   const addressDetails = props.navigation.getParam('addressDetails');
   const addOnly = props.navigation.getParam('addOnly');
@@ -114,21 +117,29 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
   const [isConfirmButtonDisabled, setConfirmButtonDisabled] = useState<boolean>(false);
   const { setLoading: setLoadingContext } = useUIElements();
   const { pharmacyLocation, diagnosticLocation } = useAppCommonData();
+  const locationToSelect =
+    !!diagnosticLocation && !isEmptyObject(diagnosticLocation)
+      ? diagnosticLocation
+      : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_LOCATION;
   const _map = useRef(null);
   const [region, setRegion] = useState({
     latitude: Number(latitude),
     longitude: Number(longitude),
-    latitudeDelta: latitudeDelta,
-    longitudeDelta: longitudeDelta,
+    latitudeDelta: Math.abs(latitudeDelta),
+    longitudeDelta: Math.abs(longitudeDelta),
   });
+
+  function fireAddressFireBaseEvent(lat?: number, long?: number) {
+    const firebaseAttributes: FirebaseEvents[FirebaseEventName.ADDADDRESS_LAT_LNG] = {
+      latitude: !!lat ? Number(lat) : latitude,
+      longitude: !!long ? Number(long) : longitude,
+    };
+    postFirebaseEvent(FirebaseEventName.ADDADDRESS_LAT_LNG, firebaseAttributes);
+  }
 
   useEffect(() => {
     //added just to track the crash.
-    const firebaseAttributes: FirebaseEvents[FirebaseEventName.ADDADDRESS_LAT_LNG] = {
-      latitude: latitude,
-      longitude: longitude,
-    };
-    postFirebaseEvent(FirebaseEventName.ADDADDRESS_LAT_LNG, firebaseAttributes);
+    fireAddressFireBaseEvent();
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -208,7 +219,7 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
 
   const createLocationResponse = (response: any) => {
     var object = {} as locationResponseProps;
-    object.area = response?.area || response?.addressLine2;
+    object.area = response?.area! || response?.addressLine2!;
     object.displayName = response?.displayName || response?.addressLine1;
     object.country = response?.country || 'India';
     object.latitude = Number(response?.latitude! || 0);
@@ -244,46 +255,59 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
         fetchLatLongFromGoogleApi(getAddress, newAddressDetails);
       }
     } else {
-      setLoadingContext!(true);
-      //if no location permissions are given then prompt for the permission
-      doRequestAndAccessLocation(true)
-        .then((response) => {
-          //after getting permission, navigate to map screen
-          //undefined in the case, if user has denied the permission.
-          if (response) {
-            const address = formatLocalAddress(response);
-            setAddressString(address);
-
-            setLatitude(Number(response?.latitude! || 0));
-            setLongitude(Number(response?.longitude! || 0));
-            setRegion({
-              latitude: Number(response?.latitude! || 0),
-              longitude: Number(response?.longitude! || 0),
-              latitudeDelta: latitudeDelta,
-              longitudeDelta: longitudeDelta,
-            });
-
-            isConfirmButtonDisabled && setConfirmButtonDisabled(false);
-            isMapDisabled && setMapDisabled(false);
-            createLocationResponse(response);
-          }
-          //if user denied the permission
-          else {
-            setAddressFromHomepage();
-          }
-        })
-        .catch((e) => {
-          setAddressFromHomepage();
-          CommonBugFender('AddAddress_doRequestAndAccessLocation_error', e);
-        })
-        .finally(() => {
-          setLoadingContext!(false);
+      if (ComingFrom == AppRoutes.AddPatients) {
+        fireAddressFireBaseEvent(locationToSelect?.latitude, locationToSelect?.longitude);
+        setRegion({
+          latitude: Number(locationToSelect?.latitude || 0),
+          longitude: Number(locationToSelect?.longitude || 0),
+          latitudeDelta: latitudeDelta,
+          longitudeDelta: longitudeDelta,
         });
+        createLocationResponse(locationToSelect);
+        const address = formatLocalAddress(locationToSelect);
+        setAddressString(address);
+      } else {
+        setLoadingContext?.(true);
+        //if no location permissions are given then prompt for the permission
+        doRequestAndAccessLocation(true)
+          .then((response) => {
+            //after getting permission, navigate to map screen
+            //undefined in the case, if user has denied the permission.
+            if (response) {
+              const address = formatLocalAddress(response);
+              setAddressString(address);
+
+              setLatitude(Number(response?.latitude! || 0));
+              setLongitude(Number(response?.longitude! || 0));
+              setRegion({
+                latitude: Number(response?.latitude! || 0),
+                longitude: Number(response?.longitude! || 0),
+                latitudeDelta: latitudeDelta,
+                longitudeDelta: longitudeDelta,
+              });
+
+              isConfirmButtonDisabled && setConfirmButtonDisabled(false);
+              isMapDisabled && setMapDisabled(false);
+              createLocationResponse(response);
+            }
+            //if user denied the permission
+            else {
+              setAddressFromHomepage();
+            }
+          })
+          .catch((e) => {
+            setAddressFromHomepage();
+            CommonBugFender('AddAddress_doRequestAndAccessLocation_error', e);
+          })
+          .finally(() => {
+            setLoadingContext!(false);
+          });
+      }
     }
   }, []);
 
   const setAddressFromHomepage = () => {
-    const checkPinCodeFrom = source == 'Diagnostics Cart' ? diagnosticLocation : pharmacyLocation;
+    const checkPinCodeFrom = source == 'Diagnostics Cart' ? locationToSelect : pharmacyLocation;
     if (checkPinCodeFrom) {
       //get pincode from pharam's pincode.
       const zipcode = checkPinCodeFrom?.pincode;

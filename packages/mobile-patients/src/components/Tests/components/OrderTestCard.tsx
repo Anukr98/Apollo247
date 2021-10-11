@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Linking,
 } from 'react-native';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { isSmallDevice, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DIAGNOSTIC_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -30,10 +31,11 @@ import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUti
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { isIphone5s, setBugFenderLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
+  AppConfig,
   DIAGNOSTIC_ORDER_FAILED_STATUS,
   DIAGNOSTIC_ORDER_FOR_PREPDATA,
   DIAGNOSTIC_SHOW_OTP_STATUS,
-  DIAGNOSTIC_STATUS_BEFORE_SUBMITTED
+  DIAGNOSTIC_STATUS_BEFORE_SUBMITTED,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { DiagnosticTrackPhleboClicked } from '@aph/mobile-patients/src/components/Tests/Events';
@@ -90,6 +92,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
   const bookedOn = moment(props?.createdOn)?.format('Do MMM') || null;
   const { currentPatient } = useAllCurrentPatients();
+  const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const renderTopView = () => {
     return (
       <View style={styles.horizontalRow}>
@@ -157,8 +160,8 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                   <View
                     style={{
                       flexDirection: 'row',
-                      minWidth: 0,
                       maxWidth: !!item?.editOrderID ? (screenWidth > 350 ? '68%' : '57%') : '80%',
+                      flex: 1,
                     }}
                   >
                     <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
@@ -170,10 +173,10 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                         : ''}{' '}
                     </Text>
                     {!!item?.editOrderID ? renderNewTag() : null}
+                    {index == 1 &&
+                      filterOrderLineItem?.length - 2 > 0 &&
+                      renderShowMore(filterOrderLineItem, item?.itemName!)}
                   </View>
-                  {index == 1 &&
-                    filterOrderLineItem?.length - 2 > 0 &&
-                    renderShowMore(filterOrderLineItem, item?.itemName!)}
                 </>
               ) : null}
             </View>
@@ -186,7 +189,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
               index: number
             ) => (
               <>
-                <View style={{ flexDirection: 'row', width: '86%' }}>
+                <View style={{ flexDirection: 'row', width: '86%', flex: 1 }}>
                   <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
                   <Text style={styles.testName}>
                     {!!item?.itemName ? nameFormater(item?.itemName!, 'title') : ''}{' '}
@@ -432,16 +435,29 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                               orderId,
                               'My Order',
                               currentPatient,
-                              'Yes'
+                              'Yes',
+                              isDiagnosticCircleSubscription
                             );
                             Linking.openURL(phleboTrackLink);
                           } else {
-                            DiagnosticTrackPhleboClicked(orderId, 'My Order', currentPatient, 'No');
+                            DiagnosticTrackPhleboClicked(
+                              orderId,
+                              'My Order',
+                              currentPatient,
+                              'No',
+                              isDiagnosticCircleSubscription
+                            );
                             setBugFenderLog('FAILED_OPEN_URL', phleboTrackLink);
                           }
                         });
                       } catch (e) {
-                        DiagnosticTrackPhleboClicked(orderId, 'My Order', currentPatient, 'No');
+                        DiagnosticTrackPhleboClicked(
+                          orderId,
+                          'My Order',
+                          currentPatient,
+                          'No',
+                          isDiagnosticCircleSubscription
+                        );
                         setBugFenderLog('FAILED_OPEN_URL', phleboTrackLink);
                       }
                     }}
@@ -476,7 +492,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     let checkRating = starCount.includes(phleboRating);
     const ratedStarCount = starCount.slice(0, phleboRating);
     const unRatedStarCount = starCount.slice(phleboRating, starCount.length);
-    return !(DIAGNOSTIC_STATUS_BEFORE_SUBMITTED.includes(props.orderLevelStatus)) ? (
+    return !DIAGNOSTIC_STATUS_BEFORE_SUBMITTED.includes(props.orderLevelStatus) ? (
       !!checkRating ? null : (
         <View style={styles.ratingContainerN}>
           <Text style={styles.ratingTextStyleN}>Rate Apollo Agent</Text>
@@ -496,6 +512,9 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     ) : null;
   };
   const showReportTat = () => {
+    const isTatBreach =
+      !!props?.orderAttributesObj?.expectedReportGenerationTime &&
+      moment().isSameOrAfter(props?.orderAttributesObj?.expectedReportGenerationTime);
     const report = !!props?.orderAttributesObj?.reportTATMessage
       ? props?.orderAttributesObj?.reportTATMessage
       : !!props?.orderAttributesObj?.reportGenerationTime
@@ -510,7 +529,9 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         {report ? (
           <View style={styles.reporttatContainer}>
             <ClockIcon />
-            <Text style={styles.reportTextStyle}>{`${report}`}</Text>
+            <Text style={styles.reportTextStyle}>{`${
+              isTatBreach ? AppConfig.Configuration.DIAGNOSTICS_REPORT_TAT_BREACH_TEXT : report
+            }`}</Text>
           </View>
         ) : null}
         {prepData ? (
@@ -557,8 +578,8 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       onPress={props.onPressCard}
       style={[styles.containerStyle, props.style]}
       key={props?.orderId}
-    > 
-    {showRatingView()}
+    >
+      {showRatingView()}
       <View key={props?.orderId} style={{ padding: 16, paddingBottom: 12 }}>
         {renderTopView()}
         {renderMidView()}
@@ -787,8 +808,8 @@ const styles = StyleSheet.create({
     padding: 10,
     paddingHorizontal: 15,
     flexDirection: 'row',
-    justifyContent:'space-between',
-    alignItems:'center'
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   reporttatContainerN: {
     marginVertical: 5,

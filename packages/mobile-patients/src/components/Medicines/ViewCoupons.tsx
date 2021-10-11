@@ -325,6 +325,11 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
             'Customer ID': g(currentPatient, 'id'),
             'Cart items': cartItems?.length ? JSON.stringify(cartItems) : undefined,
           };
+          const cleverTapAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_COUPON_ACTION] = {
+            'Coupon code': coupon || undefined,
+            Action: 'Applied',
+          };
+          postCleverTapEvent(CleverTapEventName.PHARMACY_COUPON_ACTION, cleverTapAttributes);
           postCleverTapEvent(CleverTapEventName.CART_COUPON_APPLIED, cleverTapEventAttributes);
           postWebEngageEvent(WebEngageEventName.CART_COUPON_APPLIED, eventAttributes);
         } else {

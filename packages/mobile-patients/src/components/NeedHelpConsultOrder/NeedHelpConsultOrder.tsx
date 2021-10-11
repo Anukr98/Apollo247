@@ -76,6 +76,7 @@ export const NeedHelpConsultOrder: React.FC<Props> = ({ navigation }) => {
     const onPressHelp = () => {
       navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
         isOrderRelatedIssue: true,
+        medicineOrderStatus: item.status,
         orderId: item.displayId,
         queryIdLevel1,
         email,
@@ -130,6 +131,7 @@ export const NeedHelpConsultOrder: React.FC<Props> = ({ navigation }) => {
   const renderIssueNotRelatedToOrder = () => {
     const onPress = () => {
       navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
+        isOrderRelatedIssue: false,
         queryIdLevel1,
         email,
         isConsult: true,

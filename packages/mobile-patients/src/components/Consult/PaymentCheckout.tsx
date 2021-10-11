@@ -414,6 +414,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           let couponList = resp?.data?.response;
           if (typeof couponList != null && couponList?.length) {
             validateAutoApplyCoupon(couponList);
+          } else {
+            setLoading?.(false);
           }
         } else {
           setLoading && setLoading(false);
@@ -1149,7 +1151,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       'coupon applied': coupon ? true : false,
       'Circle discount': circleDiscount,
       User_Type: getUserType(allCurrentPatients),
-    }
+    };
     return eventAttributes;
   };
 

@@ -65,6 +65,7 @@ import {
   postCleverTapIfNewSession,
   removeObjectProperty,
   postCleverTapEvent,
+  postWebEngagePHR,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -797,10 +798,12 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         })
         .then((data: any) => {
           setShowSpinner(false);
-          const eventAttributes: CleverTapEvents[CleverTapEventName.PHR_REAL_TIME_LAB_TEST_REPORT] = {
-            Source: 'Test Report',
-          };
-          postCleverTapEvent(CleverTapEventName.PHR_REAL_TIME_LAB_TEST_REPORT, eventAttributes);
+          postCleverTapPHR(
+            currentPatient,
+            CleverTapEventName.PHR_REAL_TIME_LAB_TEST_REPORT,
+            'Test Report',
+            'Downloaded Real Time Lab Test Reports'
+          );
           downloadDocument(data?.data?.mergePDFS?.mergepdfUrl);
         })
         .catch((e) => {
