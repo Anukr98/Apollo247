@@ -3257,7 +3257,87 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderOffersForYou = () => {
-    return circleCashbackOffersComponent();
+    if (offersCount === 1 && offerType === 'CIRCLE') return circleCashbackOffersComponent();
+    else if (offersCount === 1 && offerType === 'MEDICINE') return medCashbackOffersComponent();
+    else if (offersCount > 1 || offerType === 'MULTIPLE')
+      return (
+        <View style={styles.menuOptionsContainer}>
+          <FlatList
+            horizontal={true}
+            data={offersList}
+            renderItem={({ item, index }) => renderOffersCards(item, index)}
+            keyExtractor={(item, index) => index.toString() + 'offers'}
+          />
+        </View>
+      );
+    else return null;
+  };
+
+  const renderOffersCards = (item, index) => {
+    return (
+      <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+        <LinearGradientComponent
+          colors={['#FDFBF7', '#F5D5CE']}
+          style={[styles.bottom2CardView, { width: width / 2 }]}
+        >
+          <View style={{ flexDirection: 'row', marginTop: -5, justifyContent: 'flex-start' }}>
+            <View style={{ marginTop: 11, marginLeft: 10 }}>
+              <Image
+                style={{ width: 46, height: 29 }}
+                source={require('@aph/mobile-patients/src/components/ui/icons/circleLogo.webp')}
+              />
+            </View>
+
+            <View
+              style={{
+                marginHorizontal: 10,
+                marginTop: 11,
+                borderRadius: 4,
+                backgroundColor: '#CA883B',
+                paddingHorizontal: 8,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ ...theme.viewStyles.text('R', 12, '#fff', 1, 18) }}>Offer</Text>
+            </View>
+          </View>
+
+          <View
+            style={{ flexDirection: 'row', marginVertical: 6, justifyContent: 'space-between' }}
+          >
+            <View>
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 17, '#958060', 1, 20),
+                  marginHorizontal: 10,
+                }}
+              >
+                Get ₹250 instant cashback
+              </Text>
+
+              <Text
+                style={{
+                  ...theme.viewStyles.text('R', 14, '#B3A293', 1, 18),
+                  marginHorizontal: 10,
+                }}
+              >
+                on Medicine Order
+              </Text>
+            </View>
+
+            <View style={styles.bottomRightArrowView}>
+              <Button
+                title={`SHOP NOW`}
+                style={{ width: 106, height: 32 }}
+                onPress={() => {}}
+                disabled={false}
+              />
+            </View>
+          </View>
+        </LinearGradientComponent>
+      </TouchableOpacity>
+    );
   };
 
   const medCashbackOffersComponent = () => {
@@ -3438,6 +3518,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       );
     }
   };
+
+  const offersCount = 2;
+  // 'CIRCLE' || 'MEDICINE' || 'MULTIPLE'
+  const offerType = 'CIRCLE';
+  const offersList = [
+    { id: 1, colors: ['#FCEFD0', '#FFE7AA'], couponStatus: true },
+    { id: 2, colors: ['#FCDCFF', '#FBD0FF'], couponStatus: false },
+  ];
 
   const dataBannerCards = (darktheme: any) => {
     const datatoadd = bannerDataHome?.filter((item: any) => item?.banner_display_type === 'card');
