@@ -204,9 +204,10 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       postwebEngageCheckoutCompletedEvent();
     }
     firePurchaseEvent(orderDetails?.orderId, orderDetails?.amount, cartItems, currentPatient);
-    clearDiagnoticCartInfo?.();
     submitReviewOnLabBook();
     firePaymentOrderStatusEvent();
+    clearDiagnoticCartInfo?.();
+
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);

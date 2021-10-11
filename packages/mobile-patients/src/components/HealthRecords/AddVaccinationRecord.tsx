@@ -395,10 +395,12 @@ export const AddVaccinationRecord: React.FC<AAddVaccinationRecordProps> = (props
         })
         .then(({ data }) => {
           const eventInputData = removeObjectProperty(vaccinationCener, 'immunizations');
-          postWebEngagePHR(
+          postCleverTapPHR(
             currentPatient,
-            CleverTapEventName.PHR_ADD_VACCINATION_REPORT,
-            'Vaccination',
+            updateInfo
+              ? CleverTapEventName.PHR_UPDATE_VACCINATION_REPORT
+              : CleverTapEventName.PHR_ADD_VACCINATION_REPORT,
+            'Add Vaccination Record',
             eventInputData
           );
           postWebEngageIfNewSession(

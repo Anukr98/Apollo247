@@ -1841,7 +1841,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const setSubscriptionData = (plan: any, isUpgradePlan?: boolean, isCorporatePlan?: boolean) => {
-
     try {
       const group = plan.group;
       const groupData: GroupPlan = {
@@ -3846,9 +3845,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       >
         <ImageBackground
           style={styles.proHealthBannerImage}
-          source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_banner.webp')}
+          source={{ uri: AppConfig.Configuration.PROHEALTH_BANNER_IMAGE }}
           resizeMode={'stretch'}
-          borderRadius={10}
+          borderRadius={8}
         ></ImageBackground>
       </TouchableOpacity>
     );

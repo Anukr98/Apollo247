@@ -355,8 +355,6 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       mrpToDisplay,
       discountToDisplay,
       source,
-      currentPatient,
-      isDiagnosticCircleSubscription,
       widgetType === string.diagnosticCategoryTitle.categoryGrid ||
         widgetType == string.diagnosticCategoryTitle.category
         ? 'Category page'

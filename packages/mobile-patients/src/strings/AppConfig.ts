@@ -641,6 +641,7 @@ const ConfigurationDev = {
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
   CIRCLE_PLAN_PRESELECTED: false,
+  PROHEALTH_BANNER_IMAGE : "https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg",
 };
 
 // QA
@@ -699,6 +700,7 @@ const ConfigurationQA = {
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com/ordersuccess',
   CIRCLE_PLAN_PRESELECTED: false,
+  PROHEALTH_BANNER_IMAGE : "https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg",
 };
 
 // QA2
@@ -755,6 +757,7 @@ const ConfigurationQA2 = {
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
   CIRCLE_PLAN_PRESELECTED: false,
+  PROHEALTH_BANNER_IMAGE : "https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg",
 };
 
 // QA3
@@ -812,6 +815,7 @@ const ConfigurationQA3 = {
   CIRCLE_TEST_URL: 'https://qathreepatients.apollo247.com/test-landing?header=false',
   CIRCLE_LANDING_URL: 'https://qathreepatients.apollo247.com/circle?header=false',
   CIRCLE_PLAN_PRESELECTED: false,
+  PROHEALTH_BANNER_IMAGE : "https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg",
 };
 
 const ConfigurationQA5 = {
@@ -870,6 +874,7 @@ const ConfigurationQA5 = {
   CIRCLE_TEST_URL: 'https://aph-staging-web-patients.apollo247.com/test-landing?header=false',
   CIRCLE_LANDING_URL: 'https://aph-staging-web-patients.apollo247.com/circle?header=false',
   CIRCLE_PLAN_PRESELECTED: false,
+  PROHEALTH_BANNER_IMAGE : "https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg",
 };
 
 const ConfigurationQA6 = {
@@ -927,6 +932,7 @@ const ConfigurationQA6 = {
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com/ordersuccess',
   CIRCLE_PLAN_PRESELECTED: false,
+  PROHEALTH_BANNER_IMAGE : "https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg",
 };
 
 // VAPT
@@ -984,6 +990,7 @@ const ConfigurationVAPT = {
   PROHEALTH_BOOKING_URL: 'https://stagingpatients.apollo247.com//apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
   CIRCLE_PLAN_PRESELECTED: false,
+  PROHEALTH_BANNER_IMAGE : "https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg",
 };
 //Production
 const ConfigurationProd = {
@@ -1040,6 +1047,7 @@ const ConfigurationProd = {
   PROHEALTH_BOOKING_URL: 'https://www.apollo247.com/apollo-prohealth',
   baseUrl: 'https://www.apollo247.com',
   CIRCLE_PLAN_PRESELECTED: false,
+  PROHEALTH_BANNER_IMAGE : "https://newassets.apollo247.com/images/banners/ProHealthAppLanding.jpg",
 };
 
 //PERFORMANCE
@@ -1097,7 +1105,7 @@ const ConfigurationPERFORM = {
   CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
-  CIRCLE_PLAN_PRESELECTED: false,
+  CIRCLE_PLAN_PRESELECTED: false,PROHEALTH_BANNER_IMAGE : "https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg",
 };
 
 //DevelopmentReplica
@@ -1156,6 +1164,7 @@ const ConfigurationDevReplica = {
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
   CIRCLE_PLAN_PRESELECTED: false,
+  PROHEALTH_BANNER_IMAGE : "https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg",
 };
 
 const Configuration =

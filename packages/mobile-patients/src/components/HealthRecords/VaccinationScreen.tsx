@@ -253,21 +253,6 @@ export const VaccinationScreen: React.FC<VaccinationScreenProps> = (props) => {
   };
 
   const onHealthCardItemPress = (selectedItem: any) => {
-    const eventInputData = removeObjectProperty(selectedItem, 'immunizations');
-    postWebEngageIfNewSession(
-      'Vaccination',
-      currentPatient,
-      eventInputData,
-      phrSession,
-      setPhrSession
-    );
-    postCleverTapIfNewSession(
-      'Vaccination Screen',
-      currentPatient,
-      eventInputData,
-      phrSession,
-      setPhrSession
-    );
     props.navigation.navigate(AppRoutes.VaccinationDoseScreen, {
       data: selectedItem,
     });

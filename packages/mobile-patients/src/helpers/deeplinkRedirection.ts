@@ -60,7 +60,7 @@ export const handleOpenURL = (event: any) => {
           setBugFenderLog('DEEP_LINK_SPECIALITY_ID', linkId);
         }
       }
-    } catch (error) { }
+    } catch (error) {}
     const routeNameParam = route?.split('?');
 
     route = routeNameParam ? routeNameParam?.[0]?.toLowerCase() : '';

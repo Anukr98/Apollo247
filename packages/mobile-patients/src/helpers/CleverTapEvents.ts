@@ -1242,7 +1242,9 @@ export interface CleverTapEvents {
       | 'Pharmacy Cart'
       | 'Category Tree'
       | 'PDP All Substitutes'
-      | 'PDP Fast Substitutes';
+      | 'PDP Fast Substitutes'
+      | 'Special Offers'
+      | 'Chronic Upsell Nudge';
     Brand?: string;
     'Brand ID'?: string;
     'Category name'?: string;

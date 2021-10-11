@@ -540,15 +540,6 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
           })
           .then(({ data }: any) => {
             if (data?.getLabResultpdf?.url) {
-              if (fileShare) {
-                const eventAttributes: CleverTapEvents[CleverTapEventName.PHR_SHARE_REAL_LAB_TEST_REPORT] = {
-                  Source: 'Test Report Screen View',
-                };
-                postCleverTapEvent(
-                  CleverTapEventName.PHR_SHARE_REAL_LAB_TEST_REPORT,
-                  eventAttributes
-                );
-              }
               testResultArray?.length === 1
                 ? downloadDocument(data?.getLabResultpdf?.url, fileShare)
                 : callConvertToZipApi(data?.getLabResultpdf?.url, fileShare);

@@ -179,7 +179,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     orderId: string,
     orderAutoId: string
   ) => {
-    const appsflyerEventAttributes = {
+    const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED] = {
       af_customer_user_id: currentPatient ? currentPatient.id : '',
       'cart size': cartItems.length,
       af_revenue: getFormattedAmount(grandTotal),
