@@ -757,7 +757,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   };
 
   function _navigateToCartPage() {
-    props.navigation.navigate(AppRoutes.TestsCart, {
+    props.navigation.navigate(AppRoutes.AddPatients, {
       orderDetails: modifiedOrder,
     });
   }
