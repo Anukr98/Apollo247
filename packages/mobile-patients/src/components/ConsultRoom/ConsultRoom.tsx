@@ -64,6 +64,7 @@ import {
   PercentOffBrownIcon,
   TimeGreenIcon,
   Card,
+  CashbackIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   BannerDisplayType,
@@ -247,6 +248,7 @@ import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from 
 import { getUniqueId } from 'react-native-device-info';
 import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
 import _ from 'lodash';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 
 const { Vitals } = NativeModules;
 
@@ -3255,19 +3257,88 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderOffersForYou = () => {
+    medCashbackOfferBanner();
+  };
+
+  const medCashbackOfferBanner = () => {
     return (
       <View style={styles.menuOptionsContainer}>
         <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-          <View style={[styles.bottom2CardView, { width: width - 32 }]}>
-            <View style={{ flexDirection: 'row', marginTop: 6 }}>
-              <Text style={[styles.topTextStyle, { color: theme.colors.SHERPA_BLUE }]}>
-                Flat 25% off + ₹100 cashback
-              </Text>
+          <LinearGradientComponent
+            colors={['rgba(252, 239, 208, 0.6)', '#FFE7AA']}
+            style={[styles.bottom2CardView, { width: width - 32 }]}
+          >
+            <View style={{ flexDirection: 'row', marginTop: -5, justifyContent: 'space-between' }}>
+              <View
+                style={{
+                  marginHorizontal: 10,
+                  marginTop: 14,
+                  borderRadius: 4,
+                  backgroundColor: '#0B92DE',
+                  paddingHorizontal: 4,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                <Text style={{ ...theme.viewStyles.text('R', 12, '#fff', 1, 18) }}>
+                  Ends in 12:22 Hr
+                </Text>
+              </View>
+
+              <View style={{ marginTop: 0.5, marginRight: 16 }}>
+                <CashbackIcon style={{ width: 21.6, height: 30 }} />
+              </View>
             </View>
-            <View style={styles.bottomRightArrowView}>
-              <ArrowRight />
+
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 20, '#A15D59', 1, 30),
+                marginHorizontal: 10,
+              }}
+            >
+              Flat 25% off + ₹100 cashback
+            </Text>
+
+            <Text
+              style={{
+                ...theme.viewStyles.text('R', 14, '#B3A293', 1, 18),
+                marginHorizontal: 10,
+              }}
+            >
+              on first Medicine Order
+            </Text>
+
+            <View
+              style={{ flexDirection: 'row', marginVertical: 6, justifyContent: 'space-between' }}
+            >
+              <View
+                style={{
+                  marginHorizontal: 10,
+                  borderRadius: 4,
+                  borderColor: '#A15D59',
+                  borderWidth: 1,
+                  borderStyle: 'dashed',
+                  backgroundColor: '#fff',
+                  padding: 4,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                <Text style={{ ...theme.viewStyles.text('R', 12, '#A15D59', 1, 18) }}>
+                  Coupon: Try247
+                </Text>
+              </View>
+
+              <View style={styles.bottomRightArrowView}>
+                <Button
+                  title={`SHOP NOW`}
+                  style={{ width: 106, height: 32 }}
+                  onPress={() => {}}
+                  disabled={false}
+                />
+              </View>
             </View>
-          </View>
+          </LinearGradientComponent>
         </TouchableOpacity>
       </View>
     );

@@ -888,6 +888,14 @@ export const ToggleOff: React.FC<IconProps> = (props) => (
   />
 );
 
+export const CashbackIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 26, width: 35 }}
+    {...props}
+    source={require('./icons/percent_cashback.webp')}
+  />
+);
+
 export const ToggleOn: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 32, width: 32 }}
