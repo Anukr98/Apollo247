@@ -131,6 +131,7 @@ export interface OrderDetailsSceneProps
     goToHomeOnBack?: boolean;
     refetchOrders?: () => void;
     reOrder?: boolean;
+    status?: string;
   }> {}
 
 export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
@@ -177,6 +178,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const [isCancelVisible, setCancelVisible] = useState(false);
   const [showPrescriptionPopup, setPrescriptionPopUp] = useState(false);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
+  const [cancellationRequestRaised, setCancellationRequestRaised] = useState<Boolean>(false);
+  const [cancellationAllowed, setCancellationAllowed] = React.useState<Boolean>(false);
+  const [cancellationRequestRejected, setCancellationrequestRejected] = React.useState<Boolean>(
+    false
+  );
 
   const vars: getMedicineOrderOMSDetailsWithAddressVariables = {
     patientId: currentPatient && currentPatient.id,
@@ -191,6 +197,29 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     variables: vars,
     fetchPolicy: 'no-cache',
   });
+  React.useEffect(() => {
+    props.navigation.getParam('status') == MEDICINE_ORDER_STATUS.CANCELLED ||
+    props.navigation.getParam('status') == MEDICINE_ORDER_STATUS.CANCEL_REQUEST
+      ? refetch()
+      : null;
+  }, [
+    props.navigation.getParam('status') == MEDICINE_ORDER_STATUS.CANCELLED,
+    props.navigation.getParam('status') == MEDICINE_ORDER_STATUS.CANCEL_REQUEST,
+  ]);
+  React.useEffect(() => {
+    setCancellationRequestRaised(
+      data?.getMedicineOrderOMSDetailsWithAddress?.orderCancellationAllowedDetails
+        ?.cancellationRequestRaised!
+    );
+    setCancellationAllowed(
+      data?.getMedicineOrderOMSDetailsWithAddress?.orderCancellationAllowedDetails
+        ?.cancellationAllowed!
+    );
+    setCancellationrequestRejected(
+      data?.getMedicineOrderOMSDetailsWithAddress?.orderCancellationAllowedDetails
+        ?.cancellationRequestRejected!
+    );
+  }, [data, refetch]);
   const order = g(data, 'getMedicineOrderOMSDetailsWithAddress', 'medicineOrderDetails');
   const shipmentInfo = g(order, 'medicineOrderShipments');
   const shipmentTrackingNumber = shipmentInfo?.[0]?.trackingNo;
@@ -427,7 +456,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         return 'th';
     }
   };
-  
+
   const getFormattedDateTimeWithBefore = (time: string) => {
     let day = parseInt(moment(time).format('D'));
     let getDaySubscript = getFormattedDaySubscript(day);
@@ -1453,6 +1482,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                   prescriptionRequired,
                   (orderCancel && orderCancel.statusMessage) || ''
                 )}
+                index={index}
+                cancellationRequestRaised={cancellationRequestRaised}
+                cancellationRequestRejected={cancellationRequestRejected}
+                length={statusList.length}
                 status={getOrderStatusText(order!.orderStatus!)}
                 date={getFormattedDate(order!.statusDate)}
                 time={getFormattedTime(order!.statusDate)}
@@ -2041,12 +2074,19 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           setSelectedReason('');
         };
         const requestStatus = g(data, 'cancelMedicineOrderOMS', 'orderStatus');
-        if (requestStatus == MEDICINE_ORDER_STATUS.CANCEL_REQUEST) {
+        if (
+          requestStatus == MEDICINE_ORDER_STATUS.CANCEL_REQUEST ||
+          requestStatus == MEDICINE_ORDER_STATUS.CANCELLED
+        ) {
           showAphAlert &&
             showAphAlert({
               title: 'Hi :)',
               description:
-                'Your cancellation request has been accepted and order is cancelled. If prepaid, the amount paid will be refunded automatically.',
+                requestStatus == MEDICINE_ORDER_STATUS.CANCELLED
+                  ? string.orderDetailScreen.cancelled
+                  : requestStatus == MEDICINE_ORDER_STATUS.CANCEL_REQUEST
+                  ? string.orderDetailScreen.cancellationRequest
+                  : '',
             });
           refetch()
             .then(() => {
@@ -2137,33 +2177,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     return <View style={styles.headerViewStyle}>{renderMoreMenu()}</View>;
   };
 
-  const showCancelOrder = () => {
-    const isOrderBilled = order?.currentStatus === MEDICINE_ORDER_STATUS.ORDER_BILLED;
-    if (isOrderBilled) {
-      showAphAlert!({
-        title: string.common.uhOh,
-        description: string.OrderSummery.orderCancellationAfterBillingAlert,
-        ctaContainerStyle: { justifyContent: 'flex-end' },
-        CTAs: [
-          {
-            text: 'CLICK HERE',
-            type: 'orange-link',
-            onPress: () => {
-              Linking.openURL(
-                AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK
-              ).catch((err) =>
-                CommonBugFender(`${AppRoutes.OrderDetailsScene}_Linking.openURL`, err)
-              );
-              hideAphAlert!();
-            },
-          },
-        ],
-      });
-    } else {
-      getCancellationReasons();
-    }
-  };
-
   const onPressHelp = () => {
     const currentStatusDate = order?.medicineOrdersStatus?.find(
       (i) => i?.orderStatus === order?.currentStatus
@@ -2180,6 +2193,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       refund: refundDetails,
       payment: paymentDetails,
       etd: getFormattedDateTimeWithBefore(order.orderTat),
+      billNumber,
+      refetchOrders,
     });
   };
 
@@ -2212,30 +2227,18 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
 
     if (currentStatus === undefined) return null;
 
-    const statusIrrespectiveOfCurrent = [
-      MEDICINE_ORDER_STATUS.DELIVERED,
-      MEDICINE_ORDER_STATUS.CANCELLED,
-      MEDICINE_ORDER_STATUS.ORDER_BILLED,
-      MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE,
-    ];
     const statusWrtCurrent = [
       MEDICINE_ORDER_STATUS.PAYMENT_FAILED,
       MEDICINE_ORDER_STATUS.PAYMENT_PENDING,
       MEDICINE_ORDER_STATUS.PAYMENT_ABORTED,
       MEDICINE_ORDER_STATUS.ORDER_FAILED,
+      MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE,
     ];
-
-    const cancelNotAllowedIrrespectiveOfCurrentStatus = order?.medicineOrdersStatus?.find((item) =>
-      statusIrrespectiveOfCurrent.includes(item?.orderStatus!)
-    );
-
+    
     const cancelNotAllowedWrtCurrentStatus = statusWrtCurrent.includes(currentStatus!);
 
-    const cancelNotAllowed =
-      cancelNotAllowedIrrespectiveOfCurrentStatus || cancelNotAllowedWrtCurrentStatus;
-
     return (
-      !cancelNotAllowed && (
+      !cancelNotAllowedWrtCurrentStatus && cancellationAllowed && (
         <View>
           {Array.from({ length: 10 })
             .reverse()
@@ -2244,7 +2247,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             ))}
           <Button
             style={styles.cancelOrderButton}
-            onPress={showCancelOrder}
+            onPress={getCancellationReasons}
             title={'CANCEL ORDER'}
           />
         </View>
