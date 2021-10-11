@@ -66,6 +66,7 @@ import {
   Card,
   CashbackIcon,
   WhiteArrowRight,
+  DeliveryInIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   BannerDisplayType,
@@ -3160,6 +3161,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               return (
                 <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
                   <View style={[styles.bottom2CardView, { width: width - 32, height: 90 }]}>
+                    <View style={{ marginLeft: -12, marginBottom: 4 }}>
+                      <DeliveryInIcon />
+                    </View>
                     <View style={{ flexDirection: 'row', marginTop: 6 }}>
                       <View style={styles.topImageView}>
                         {item.image}
