@@ -132,6 +132,7 @@ import CircleCard from '@aph/mobile-patients/src/components/Tests/components/Cir
 import { CirclePlansListOverlay } from '@aph/mobile-patients/src/components/Tests/components/CirclePlansListOverlay';
 import { debounce } from 'lodash';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { Decimal } from 'decimal.js';
 
 const screenWidth = Dimensions.get('window').width;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
@@ -949,11 +950,12 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     title: string,
     price: string | number,
     customStyle?: boolean,
-    savingView?: boolean
+    savingView?: boolean,
+    touchView?: boolean
   ) => {
     return (
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
-        <View style={{ width: '65%' }}>
+      <View style={styles.lineItemView}>
+        <View style={styles.lineTextView}>
           <Text
             style={[
               styles.commonText,
@@ -961,10 +963,17 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
               savingView && { color: theme.colors.APP_GREEN },
             ]}
           >
-            {title} {!!savingView && '(-)'}
+            {title}
           </Text>
+          {!!touchView && touchView && (
+            <TouchableOpacity onPress={() => _navigateToCoupons()} style={styles.applyCouponTouch}>
+              <Text style={styles.couponText}>
+                {nameFormater(string.diagnosticsCircle.applyCoupon, 'upper')}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
-        <View style={{ flex: 1, alignItems: 'flex-end' }}>
+        <View style={styles.lineItemPriceView}>
           <Text
             style={[
               customStyle ? styles.pricesBoldText : styles.pricesNormalText,
@@ -1004,13 +1013,23 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const facts = AppConfig.Configuration.CIRCLE_FACTS;
     return (
       <CirclePlansListOverlay
-        title={'Circle Membership'}
-        upperLeftText={isCircleAddedToCart ? 'You' : 'You can'}
-        upperMiddleText={isCircleAddedToCart ? 'saved' : 'save'}
+        title={string.diagnosticsCircle.circleMembership}
+        upperLeftText={
+          isCircleAddedToCart ? string.diagnosticsCircle.you : string.diagnosticsCircle.youCan
+        }
+        upperMiddleText={
+          isCircleAddedToCart ? string.diagnosticsCircle.saved : string.diagnosticsCircle.save
+        }
         circleSaving={circleSaving}
-        upperRightText={isCircleAddedToCart ? 'on this order with Circle!' : 'on this order.'}
+        upperRightText={
+          isCircleAddedToCart
+            ? string.diagnosticsCircle.orderCircle
+            : string.diagnosticsCircle.onThisOrder
+        }
         effectivePriceText={
-          isCircleAddedToCart ? 'Your effective price is' : 'Effective price would be'
+          isCircleAddedToCart
+            ? string.diagnosticsCircle.yourEfectivePrice
+            : string.diagnosticsCircle.effectivePrice
         }
         effectivePrice={isCircleAddedToCart ? grandTotal : circleGrandTotal} //need to change on each plan selection
         membershipPlans={allMembershipPlans}
@@ -1038,16 +1057,26 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     return (
       <View style={styles.circleCardView}>
         <CircleCard
-          heading1={isCircleAddedToCart ? 'Yay! You are a Circle Member' : 'Buy Circle Membership'}
-          upperLeftText={isCircleAddedToCart ? 'You' : 'You can'}
-          upperMiddleText={isCircleAddedToCart ? 'saved' : 'save'}
-          upperRightText={'on this order with Circle!'}
+          heading1={
+            isCircleAddedToCart
+              ? string.diagnosticsCircle.circleHeading
+              : string.diagnosticsCircle.nonCircleHeading
+          }
+          upperLeftText={
+            isCircleAddedToCart ? string.diagnosticsCircle.you : string.diagnosticsCircle.youCan
+          }
+          upperMiddleText={
+            isCircleAddedToCart ? string.diagnosticsCircle.saved : string.diagnosticsCircle.save
+          }
+          upperRightText={string.diagnosticsCircle.orderCircle}
           circleSaving={circleSaving}
           defaultPlanPrice={defaultPlanPurchasePrice}
           defaultPlanMonths={defaultPlanDurationInMonths}
-          rightText={'VIEW PLANS'}
+          rightText={string.diagnosticsCircle.viewPlans}
           effectivePriceText={
-            isCircleAddedToCart ? 'Your effective price is' : 'Effective price would be'
+            isCircleAddedToCart
+              ? string.diagnosticsCircle.yourEfectivePrice
+              : string.diagnosticsCircle.effectivePrice
           }
           toPayPrice={isCircleAddedToCart ? toPayPrice : nonCircle_CircleEffectivePrice}
           isPlanPreselected={isCircleAddedToCart}
@@ -1075,7 +1104,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   }
 
   function _navigateToCoupons() {
-    props.navigation.navigate(AppRoutes.CouponScreen, {});
+    props.navigation.navigate(AppRoutes.CouponScreen, {
+      pincode: Number(selectedAddr?.zipcode!),
+    });
   }
 
   const renderCouponView = () => {
@@ -1119,9 +1150,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             ? null
             : renderCirclePurchase()}
           {renderCouponView()}
-          {renderPrices('Total MRP', totalPriceExcludingAnyDiscounts.toFixed(2))}
+          {renderPrices(
+            string.diagnosticsCoupons.totalMrp,
+            totalPriceExcludingAnyDiscounts.toFixed(2)
+          )}
 
-          {couponDiscount > 0 && renderPrices('Coupon Discount', couponDiscount?.toFixed(2))}
           {isModifyFlow && Number(hcChargesToShow) == 0 ? null : (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={[styles.pricesNormalText, { width: '60%' }]}>
@@ -1159,8 +1192,19 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             )}
           {isCircleAddedToCart &&
             !!circlePlanPurchasePrice &&
-            renderPrices('Circle Membership', circlePlanPurchasePrice?.toFixed(2), false, false)}
-          {normalSaving > 0 && renderPrices('Cart Savings', normalSaving?.toFixed(2), false, true)}
+            renderPrices(
+              string.diagnosticsCoupons.circleDiscount,
+              circlePlanPurchasePrice?.toFixed(2),
+              false,
+              false
+            )}
+          {normalSaving > 0 &&
+            renderPrices(
+              string.diagnosticsCoupons.discountOnMrp,
+              normalSaving?.toFixed(2),
+              false,
+              true
+            )}
           {(isDiagnosticCircleSubscription || isCircleAddedToCart) && circleSaving > 0 && (
             <View style={[styles.rowSpaceBetweenStyle]}>
               <View style={{ flexDirection: 'row', flex: 0.8 }}>
@@ -1181,8 +1225,15 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
               false,
               true
             )}
+          {renderPrices(
+            string.diagnosticsCoupons.couponDiscount,
+            couponDiscount?.toFixed(2),
+            false,
+            true,
+            true
+          )}
           <Spearator style={{ marginBottom: 6, marginTop: 6 }} />
-          {renderPrices('To Pay', toPayPrice?.toFixed(2), true)}
+          {renderPrices(string.common.toPay, toPayPrice?.toFixed(2), true)}
           {isCircleAddedToCart && renderCODDisableText()}
         </View>
         {anyCartSaving > 0 && renderCartSavingBanner()}
@@ -1799,44 +1850,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     });
   };
 
-  function onChangeCartItems(
-    updatedCartItems: any,
-    removedTest: string,
-    removedTestItemId: any,
-    patientId: string,
-    itemsInCart: DiagnosticsCartItem[]
-  ) {
-    const arrayToSelect = isModifyFlow ? modifiedPatientCart : patientCartItemsCopy;
-    const findIndex = arrayToSelect?.findIndex(
-      (item: DiagnosticPatientCartItem) => item?.patientId == patientId
-    );
-    arrayToSelect[findIndex].cartItems = updatedCartItems;
-
-    setDiagnosticSlot?.(null);
-    setPatientCartItems?.(patientCartItemsCopy);
-    setCartItems?.(updatedCartItems);
-    isModifyFlow &&
-      setModifiedPatientCart?.([
-        {
-          patientId: arrayToSelect[findIndex].patientId,
-          cartItems: updatedCartItems,
-        },
-      ]);
-    if (deliveryAddressId != '') {
-      const selectedAddressIndex = addresses?.findIndex(
-        (address) => address?.id == deliveryAddressId
-      );
-      props.navigation.navigate(AppRoutes.CartPage);
-      let removedItems = removedTestItemId?.join(', ');
-      DiagnosticRemoveFromCartClicked(
-        removedItems,
-        removedTest,
-        addresses?.[selectedAddressIndex]?.zipcode!,
-        'Automated'
-      );
-    }
-  }
-
   //this is changed for saveBooking, for modify (need to add)
   async function callCreateInternalOrder(
     getOrderDetails: any, //getOrderId (in case of modify)
@@ -1961,7 +1974,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const attributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED] = {
       'Order id': orderId,
       Pincode: parseInt(selectedAddr?.zipcode!),
-      'Patient UHID': g(currentPatient, 'id'),
+      'Patient UHID': currentPatient?.id,
       'Total items in order': cartItems?.length,
       'Order amount': toPayPrice,
       'Appointment Date': isModifyFlow
@@ -2236,7 +2249,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   );
 };
 
-const { text, cardViewStyle } = theme.viewStyles;
+const { cardViewStyle } = theme.viewStyles;
 const styles = StyleSheet.create({
   addressOuterView: {
     backgroundColor: theme.colors.WHITE,
@@ -2444,4 +2457,12 @@ const styles = StyleSheet.create({
     width: 24,
     resizeMode: 'contain',
   },
+  applyCouponTouch: {
+    marginHorizontal: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  lineItemView: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+  lineTextView: { width: '65%', flexDirection: 'row' },
+  lineItemPriceView: { flex: 1, alignItems: 'flex-end' },
 });

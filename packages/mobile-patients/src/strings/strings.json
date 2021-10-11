@@ -183,7 +183,26 @@
     "couponPlcaholder": "Enter Coupon code",
     "couponFetchError":"Sorry, we're unable to fetch coupon codes right now. Please try again.",
     "noCouponsText":"No coupons available",
-    "invalidCouponCode":"Invalid Coupon Code"
+    "invalidCouponCode":"Invalid Coupon Code",
+    "discountOnMrp": "Discount on MRP",
+    "couponDiscount":"Coupon Discount",
+    "totalMrp":"Total MRP",
+    "circleDiscount": "Circle Discount"
+  },
+  "diagnosticsCircle":{
+    "nonCircleHeading" : "Buy Circle Membership",
+    "circleHeading":"Yay! You are a Circle Member",
+    "you": "you",
+    "youCan": "You can",
+    "save": "save",
+    "saved": "saved",
+    "orderCircle": "on this order with Circle!",
+    "viewPlans":"VIEW PLANS",
+    "yourEfectivePrice": "Your effective price is",
+    "effectivePrice":"Effective price would be",
+    "circleMembership": "Circle Membership",
+    "onThisOrder": "on this order.",
+    "applyCoupon": "Apply Coupon"
   },
   "components": {
     "medicineDetails": {

@@ -216,9 +216,11 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
       email: g(currentPatient, 'emailAddress'),
       type: isFromConsult ? 'Consult' : isFromSubscription ? 'Subs' : 'Pharmacy',
     };
-
+    console.log('inside fetch coupons');
+    console.log({ data });
     fetchConsultCoupons(data)
       .then((res: any) => {
+        console.log({ res });
         const coupons: pharma_coupon[] = res?.data?.response || [];
         const circleCoupons = coupons.filter(isCircleCoupon);
         setCircleCoupons(circleCoupons || []);
@@ -254,6 +256,9 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     applyingFromList?: boolean
   ) => {
     CommonLogEvent(AppRoutes.ViewCoupons, 'Select coupon');
+    console.log({ coupon });
+    console.log({ cartItems });
+    console.log({ applyingFromList });
     setLoading?.(true);
     let data = {
       mobile: g(currentPatient, 'mobileNumber'),
@@ -279,6 +284,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     console.log('validateConsultCoupon data >> ', data);
     validateConsultCoupon(data)
       .then((resp: any) => {
+        console.log({ resp });
         if (resp?.data?.errorCode == 0) {
           if (resp?.data?.response?.valid) {
             const successMessage = resp?.data?.response?.successMessage || '';
@@ -295,6 +301,8 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
             setIsFreeDelivery?.(!!resp?.data?.response?.freeDelivery);
             props.navigation.goBack();
           } else {
+            console.log('in else');
+            console.log({ resp });
             !applyingFromList && setCouponError(g(resp.data, 'response', 'reason'));
             applyingFromList && setCouponListError(g(resp.data, 'response', 'reason'));
             setDisableCouponsList([...disableCouponsList, coupon]);
@@ -328,6 +336,8 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
           // postCleverTapEvent(CleverTapEventName.CART_COUPON_APPLIED, cleverTapEventAttributes);
           postWebEngageEvent(WebEngageEventName.CART_COUPON_APPLIED, eventAttributes);
         } else {
+          console.log('error in validatetion');
+          console.log(resp);
           CommonBugFender('validatingPharmaCoupon', g(resp?.data, 'errorMsg'));
           !applyingFromList && setCouponError(g(resp?.data, 'errorMsg'));
           applyingFromList && setCouponListError(g(resp?.data, 'errorMsg'));
@@ -335,6 +345,8 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
         }
       })
       .catch((error) => {
+        console.log('in catch fo validate');
+        console.log({ error });
         CommonBugFender('validatingPharmaCoupon', error);
         !applyingFromList && setCouponError('Sorry, unable to validate coupon right now.');
         applyingFromList && setCouponListError('Sorry, unable to validate coupon right now.');
@@ -344,6 +356,8 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
   };
 
   const saveDisableCoupons = (couponName: string) => {
+    console.log('in save disable flow..');
+    console.log({ couponName });
     if (couponName) {
       setAppliedCouponName(couponName);
       if (disableCouponsList?.indexOf(couponName) > -1) {
