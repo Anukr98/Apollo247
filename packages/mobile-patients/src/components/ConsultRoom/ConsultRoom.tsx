@@ -3283,7 +3283,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           colors={item?.colors}
           style={[
             styles.bottom2CardView,
-            { width: width / 1.9, justifyContent: 'center', alignItems: 'flex-start', height: 155 },
+            { width: width / 1.9, justifyContent: 'center', alignItems: 'flex-start', height: 165 },
           ]}
         >
           <View
