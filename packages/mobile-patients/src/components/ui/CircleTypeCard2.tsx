@@ -83,12 +83,12 @@ export const CircleTypeCard2: React.FC<CircleTypeCard2Props> = (props) => {
         </View>
 
         <View style={styles.subPlanThree}>
-          <Button
-            title={`RENEW NOW`}
-            style={{ width: 106, height: 32 }}
+          <Text
+            style={{ width: 155, height: 32, ...theme.viewStyles.text('B', 15, '#FC9916', 1, 18) }}
             onPress={onButtonPress}
-            disabled={false}
-          />
+          >
+            RENEW NOW
+          </Text>
         </View>
       </View>
     </View>

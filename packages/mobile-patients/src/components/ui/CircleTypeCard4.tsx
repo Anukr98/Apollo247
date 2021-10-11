@@ -69,12 +69,12 @@ export const CircleTypeCard4: React.FC<CircleTypeCard4Props> = (props) => {
         </View>
 
         <View style={styles.subPlanThree}>
-          <Button
-            title={`EXPLORE BENEFITS`}
-            style={{ width: 155, height: 32 }}
+          <Text
+            style={{ width: 155, height: 32, ...theme.viewStyles.text('B', 15, '#FC9916', 1, 18) }}
             onPress={onButtonPress}
-            disabled={false}
-          />
+          >
+            EXPLORE BENEFITS
+          </Text>
         </View>
       </View>
     </View>

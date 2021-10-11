@@ -3154,7 +3154,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             if (item?.id === 1) {
               return (
                 <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
-                  <View style={[styles.bottom2CardView, { width: width - 32 }]}>
+                  <View style={[styles.bottom2CardView, { width: width - 32, height: 90 }]}>
                     <View style={{ flexDirection: 'row', marginTop: 6 }}>
                       <View style={styles.topImageView}>
                         {item.image}
@@ -3250,6 +3250,25 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             );
           }
         })}
+      </View>
+    );
+  };
+
+  const renderOffersForYou = () => {
+    return (
+      <View style={styles.menuOptionsContainer}>
+        <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+          <View style={[styles.bottom2CardView, { width: width - 32 }]}>
+            <View style={{ flexDirection: 'row', marginTop: 6 }}>
+              <Text style={[styles.topTextStyle, { color: theme.colors.SHERPA_BLUE }]}>
+                Offers for you exploration
+              </Text>
+            </View>
+            <View style={styles.bottomRightArrowView}>
+              <ArrowRight />
+            </View>
+          </View>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -3543,8 +3562,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               setShowCirclePlans(true);
               onClickCircleBenefits('About to Expire', 'renew');
             }}
-            savings={circleSavings}
-            credits={healthCredits}
+            savings={circleSavings?.toString()}
+            credits={healthCredits?.toString()}
             expiry={circlePlanValidity?.expiry}
           />
         ) : expiry > 0 && circleStatus === 'active' && renew ? (
@@ -3553,7 +3572,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               setShowCirclePlans(true);
               onClickCircleBenefits('About to Expire', 'renew');
             }}
-            credits={healthCredits}
+            credits={healthCredits?.toString()}
             expiry={circlePlanValidity?.expiry}
           />
         ) : expiry > 0 && circleStatus === 'active' && !renew && circleSavings > 0 ? (
@@ -3567,8 +3586,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 circleEventSource: 'Landing Home Page',
               });
             }}
-            credits={healthCredits}
-            savings={circleSavings}
+            credits={healthCredits?.toString()}
+            savings={circleSavings?.toString()}
           />
         ) : expiry > 0 && circleStatus === 'active' && !renew ? (
           <CircleTypeCard4
@@ -3581,8 +3600,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 circleEventSource: 'Landing Home Page',
               });
             }}
-            credits={healthCredits}
-            savings={circleSavings}
+            credits={healthCredits?.toString()}
+            savings={circleSavings?.toString()}
           />
         ) : circleStatus === 'disabled' && circleSavings > 0 ? (
           <CircleTypeCard5
@@ -3590,8 +3609,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               setShowCirclePlans(true);
               onClickCircleBenefits('Expired', 'renew');
             }}
-            savings={circleSavings}
-            credits={healthCredits}
+            savings={circleSavings?.toString()}
+            credits={healthCredits?.toString()}
             expired={expired}
             renew={renew}
           />
@@ -3601,8 +3620,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               setShowCirclePlans(true);
               onClickCircleBenefits('Expired', 'renew');
             }}
-            savings={circleSavings}
-            credits={healthCredits}
+            savings={circleSavings?.toString()}
+            credits={healthCredits?.toString()}
             expired={expired}
             renew={renew}
           />
@@ -4847,6 +4866,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 {renderMenuOptions()}
 
                 {renderHeadings('Offers For You')}
+                {renderOffersForYou()}
 
                 {renderHeadings('My Doctors')}
                 <View style={{ backgroundColor: '#f0f1ec' }}>
