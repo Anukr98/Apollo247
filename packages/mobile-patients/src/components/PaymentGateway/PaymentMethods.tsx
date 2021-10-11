@@ -292,10 +292,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         setEligibleApps(eligibleApps?.map((item: any) => item?.paymentMethod) || []);
         setCred(eligibleApps?.find((item: any) => item?.paymentMethod == 'CRED'));
         break;
-      case 'eligibility':
-        const eligibleApps = payload?.payload?.apps?.[0]?.paymentMethodsEligibility;
-        setCred(eligibleApps?.find((item: any) => item?.paymentMethod == 'CRED'));
-        break;
       default:
         payload?.error && handleError(payload?.errorMessage);
     }
