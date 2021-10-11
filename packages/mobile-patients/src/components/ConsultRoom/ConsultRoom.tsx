@@ -3261,7 +3261,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <View style={[styles.bottom2CardView, { width: width - 32 }]}>
             <View style={{ flexDirection: 'row', marginTop: 6 }}>
               <Text style={[styles.topTextStyle, { color: theme.colors.SHERPA_BLUE }]}>
-                Offers for you exploration
+                Flat 25% off + ₹100 cashback
               </Text>
             </View>
             <View style={styles.bottomRightArrowView}>
