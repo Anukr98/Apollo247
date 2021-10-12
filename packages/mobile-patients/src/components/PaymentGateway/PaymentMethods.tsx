@@ -678,8 +678,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
             shoppingCart,
             paymentId,
             burnHc,
-            isCOD,
-            currentPatient
+            isCOD
           );
         props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
           paymentStatus: paymentStatus,

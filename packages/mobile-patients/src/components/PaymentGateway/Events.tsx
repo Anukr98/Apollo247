@@ -25,7 +25,7 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
-import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 export function PaymentInitiated(
   grandTotal: number,
@@ -85,8 +85,7 @@ export function PharmaOrderPlaced(
   shoppingCart: ShoppingCartContextProps,
   paymentOrderId: string,
   burnHc: number,
-  isCOD: boolean,
-  currentPatient: GetCurrentPatients_getCurrentPatients_patients
+  isCOD: boolean
 ) {
   try {
     const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED] = checkoutEventAttributes;
@@ -133,6 +132,12 @@ export function PharmaOrderPlaced(
       LOB: 'Pharma',
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, firebaseEventAttributes);
+    const { currentPatient } = useAllCurrentPatients();
+
+    let revenue = 0;
+    shoppingCart?.cartItems?.forEach((item) => {
+      revenue += item?.quantity * (item?.specialPrice ? item?.specialPrice : item?.price);
+    });
     const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED] = {
       af_customer_user_id: currentPatient ? currentPatient.id : '',
       'cart size': cartItems.length,

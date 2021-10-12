@@ -3299,7 +3299,7 @@ export const GET_MEDICAL_PRISM_RECORD_V3 = gql`
             result
             range
             outOfRange
-            # resultDate
+            resultDate
           }
           fileUrl
           testResultFiles {
@@ -6442,6 +6442,15 @@ export const GET_PHARMACY_PRESCRIPTION_OPTION = gql`
       }
     }
   }
+`;
+
+export const CHANGE_DIAGNOSTIC_ORDER_PATIENT_ID = gql`
+mutation switchDiagnosticOrderPatientID($diagnosticOrdersId: String!,$newPatientId: String!) {
+  switchDiagnosticOrderPatientID(diagnosticOrdersId: $diagnosticOrdersId,newPatientId: $newPatientId) {
+    status
+    message
+  }
+}
 `;
 
 export const CREATE_VONAGE_SESSION_TOKEN = gql`
