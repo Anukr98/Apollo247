@@ -892,6 +892,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     paddingVertical: 0,
     backgroundColor: 'white',
+    marginBottom: GO_TO_CART_HEIGHT,
   },
   cartDetailView: {
     position: 'absolute',
