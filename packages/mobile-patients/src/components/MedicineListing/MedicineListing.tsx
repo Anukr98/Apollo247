@@ -68,14 +68,18 @@ export interface Props
     movedFrom?: 'registration' | 'deeplink' | 'home';
     breadCrumb?: Pick<Category, 'title' | 'category_id'>[];
     categoryName?: string;
-  }> {}
+  }> {
+  brandsPageSeComing?: boolean | undefined;
+}
 
-export const MedicineListing: React.FC<Props> = ({ navigation }) => {
+// export const MedicineListing: React.FC<Props> = ({ navigation }) => {
+export const MedicineListing: React.FC<Props> = (props) => {
   interface bottomFilter {
     category_id: string;
     url_key: string;
     title: string;
   }
+  const navigation = props.navigation;
 
   // navigation props
   const searchText = navigation.getParam('searchText') || '';
@@ -87,6 +91,8 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const titleNavProp = navigation.getParam('title') || '';
   const breadCrumb = navigation.getParam('breadCrumb') || [];
   const categoryName = navigation.getParam('categoryName') || '';
+
+  const brandsPageSeComing = props?.brandsPageSeComing ? props?.brandsPageSeComing : false;
 
   const { pinCode } = useShoppingCart();
 
@@ -597,7 +603,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   };
   return (
     <SafeAreaView style={container}>
-      {renderHeader()}
+      {brandsPageSeComing == false && renderHeader()}
       <View style={styles.fill}>
         <Animated.ScrollView
           style={{ ...styles.fill }}
