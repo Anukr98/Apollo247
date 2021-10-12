@@ -706,6 +706,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
                     keyExtractor={(_, index) => `${index}`}
                     scrollEnabled={false}
                     data={popularPackages}
+                    bounces={false}
                     renderItem={renderPopularDiagnostic}
                   />
                 </View>
@@ -719,6 +720,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
                     keyExtractor={(_, index) => `${index}`}
                     scrollEnabled={false}
                     data={popularTests}
+                    bounces={false}
                     renderItem={renderPopularDiagnostic}
                   />
                 </View>
@@ -757,7 +759,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   };
 
   function _navigateToCartPage() {
-    props.navigation.navigate(AppRoutes.TestsCart, {
+    props.navigation.navigate(AppRoutes.AddPatients, {
       orderDetails: modifiedOrder,
     });
   }
@@ -892,6 +894,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     paddingVertical: 0,
     backgroundColor: 'white',
+    marginBottom: GO_TO_CART_HEIGHT,
   },
   cartDetailView: {
     position: 'absolute',

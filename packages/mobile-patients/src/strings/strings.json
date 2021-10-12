@@ -187,7 +187,10 @@
     "discountOnMrp": "Discount on MRP",
     "couponDiscount":"Coupon Discount",
     "totalMrp":"Total MRP",
-    "circleDiscount": "Circle Discount"
+    "circleDiscount": "Circle Discount",
+    "applyCoupon": "Apply Coupon",
+    "unableToValidate": "Sorry, unable to validate coupon right now.",
+    "couponApplied":"Coupon Applied"
   },
   "diagnosticsCircle":{
     "nonCircleHeading" : "Buy Circle Membership",
@@ -201,8 +204,7 @@
     "yourEfectivePrice": "Your effective price is",
     "effectivePrice":"Effective price would be",
     "circleMembership": "Circle Membership",
-    "onThisOrder": "on this order.",
-    "applyCoupon": "Apply Coupon"
+    "onThisOrder": "on this order."
   },
   "components": {
     "medicineDetails": {

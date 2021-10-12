@@ -96,7 +96,6 @@ export interface DiagnosticsCartContextProps {
   normalSaving: number;
   discountSaving: number;
   circleSaving: number;
-  couponDiscount: number;
   deliveryCharges: number;
   temporaryCartSaving: number;
   temporaryNormalSaving: number;
@@ -143,8 +142,11 @@ export interface DiagnosticsCartContextProps {
   pinCode: string;
   setPinCode: ((pinCode: string) => void) | null;
 
-  coupon: getCoupons_getCoupons_coupons | null;
-  setCoupon: ((id: getCoupons_getCoupons_coupons) => void) | null;
+  coupon: any | null;
+  setCoupon: ((value: any) => void) | null;
+
+  couponDiscount: number;
+  setCouponDiscount: ((value: number) => void) | null;
 
   deliveryType: MEDICINE_DELIVERY_TYPE | null;
   clearDiagnoticCartInfo: (() => void) | null;
@@ -253,6 +255,7 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   discountSaving: 0,
   circleSaving: 0,
   couponDiscount: 0,
+  setCouponDiscount: null,
   deliveryCharges: 0,
   temporaryNormalSaving: 0,
   temporaryCartSaving: 0,
@@ -848,7 +851,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const grandTotal = parseFloat(
     (
       totalPriceExcludingAnyDiscounts +
-      deliveryCharges +
+      deliveryCharges -
       couponDiscount -
       cartSaving -
       (isDiagnosticCircleSubscription || isCircleAddedToCart ? circleSaving : 0) +
@@ -859,7 +862,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const circleGrandTotal = parseFloat(
     (
       totalPriceExcludingAnyDiscounts +
-      deliveryCharges +
+      deliveryCharges -
       couponDiscount -
       temporaryCartSaving -
       circleSaving +
@@ -913,6 +916,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setDeliveryAddressStateId('');
     setPinCode('');
     setCoupon(null);
+    setCouponDiscount(0);
     setDiagnosticSlot(null);
     setAreaSelected({});
     setDiagnosticAreas([]);
@@ -969,22 +973,22 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     updateCartItemsFromStorage();
   }, []);
 
-  useEffect(() => {
-    // updating coupon discount here on update in cart or new coupon code applied
-    const minimumOrderAmount = coupon && coupon.minimumOrderAmount;
-    if (!coupon || (minimumOrderAmount && cartTotal < minimumOrderAmount)) {
-      setCoupon(null);
-      setCouponDiscount(0);
-    } else {
-      let discountAmount = 0;
-      if (coupon.discountType == DiscountType.PERCENT) {
-        discountAmount = parseFloat(((coupon.discount / 100) * cartTotal).toFixed(2));
-      } else {
-        discountAmount = parseFloat((cartTotal - coupon.discount).toFixed(2));
-      }
-      setCouponDiscount(discountAmount);
-    }
-  }, [cartTotal, coupon]);
+  // useEffect(() => {
+  //   // updating coupon discount here on update in cart or new coupon code applied
+  //   const minimumOrderAmount = coupon && coupon.minimumOrderAmount;
+  //   if (!coupon || (minimumOrderAmount && cartTotal < minimumOrderAmount)) {
+  //     setCoupon(null);
+  //     setCouponDiscount(0);
+  //   } else {
+  //     let discountAmount = 0;
+  //     if (coupon.discountType == DiscountType.PERCENT) {
+  //       discountAmount = parseFloat(((coupon.discount / 100) * cartTotal).toFixed(2));
+  //     } else {
+  //       discountAmount = parseFloat((cartTotal - coupon.discount).toFixed(2));
+  //     }
+  //     setCouponDiscount(discountAmount);
+  //   }
+  // }, [cartTotal, coupon]);
 
   useEffect(() => {
     // updating prescription here on update in cart items
@@ -1030,6 +1034,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         temporaryCartSaving, //used for cal circle savings, even if circle is not applied
         temporaryNormalSaving,
         couponDiscount,
+        setCouponDiscount,
         deliveryCharges,
         setAreaSelected,
         areaSelected,

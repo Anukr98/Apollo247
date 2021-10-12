@@ -130,7 +130,8 @@ const Common = {
   TEXT_LIGHT_YELLOW: text_light_yellow,
   DEEP_RED: deepRed,
   ORANGE: "#FF774B",
-  LIGHT_ORANGE_YELLOW: "#FCA317"
+  LIGHT_ORANGE_YELLOW: "#FCA317",
+  GREEN_BACKGROUND: "#F5FFFD"
 };
 
 const Header = {

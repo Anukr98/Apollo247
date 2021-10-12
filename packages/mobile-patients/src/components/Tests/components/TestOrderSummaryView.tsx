@@ -51,6 +51,7 @@ export interface TestOrderSummaryViewProps {
 
 export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props) => {
   const { orderDetails, refundDetails, refundTransactionId, slotDuration } = props;
+  console.log({ orderDetails });
   const filterOrderLineItem =
     !!orderDetails &&
     orderDetails?.diagnosticOrderLineItems?.filter((item: any) => !item?.isRemoved);

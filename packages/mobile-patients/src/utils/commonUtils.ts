@@ -1,10 +1,11 @@
 import { Platform } from 'react-native';
-import { AddressObj, ConsultMode, DiagnosticLineItem, patientAddressObj, PLAN } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { AddressObj, ConsultMode, diagnosticLineItem, DiagnosticLineItem, patientAddressObj, PLAN } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { DIAGNOSTIC_GROUP_PLAN, GooglePlacesType } from '@aph/mobile-patients/src/helpers/apiCalls';
 import moment from 'moment';
 import { getDiscountPercentage, isDiagnosticSelectedCartEmpty } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import DeviceInfo from 'react-native-device-info';
 import { DiagnosticPatientCartItem, DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import Decimal from 'decimal.js';
 
 export const getValuesArray = (arr: any) => {
   const finalArr = arr.map((item: any) => item.name);
@@ -468,7 +469,7 @@ export enum DIAGNOSTIC_PINCODE_SOURCE_TYPE  {
   ADDRESS = 'Saved Address'
 }
 
-export const createLineItemPrices = (selectedItem: any, isDiagnosticCircleSubscription: boolean, reportGenDetails: any) =>{
+export const createLineItemPrices = (selectedItem: any, isDiagnosticCircleSubscription: boolean, reportGenDetails: any, couponResponse?: any) =>{
   var pricesForItemArray = selectedItem?.cartItems?.map(
     (item: any, index: number) =>
       ({
@@ -494,7 +495,7 @@ export const createLineItemPrices = (selectedItem: any, isDiagnosticCircleSubscr
           !!reportGenDetails && reportGenDetails?.[index]?.itemPrepration
             ? reportGenDetails?.[index]?.itemPrepration
             : null,
-      } as DiagnosticLineItem)
+      } as diagnosticLineItem)
   );
 
   return {
@@ -502,12 +503,13 @@ export const createLineItemPrices = (selectedItem: any, isDiagnosticCircleSubscr
   };
 }
 
-export const createPatientObjLineItems = (patientCartItems: DiagnosticPatientCartItem[], isDiagnosticCircleSubscription: boolean, reportGenDetails: any) =>{
+export const createPatientObjLineItems = (patientCartItems: DiagnosticPatientCartItem[], isDiagnosticCircleSubscription: boolean, reportGenDetails: any, couponResponse?: any) =>{
   const filterPatientItems = isDiagnosticSelectedCartEmpty(patientCartItems);
   var array = [] as any; //define type
 
   filterPatientItems?.map((item) => {
-    const getPricesForItem = createLineItemPrices(item, isDiagnosticCircleSubscription, reportGenDetails)?.pricesForItemArray;
+    const getPricesForItem = createLineItemPrices(item, isDiagnosticCircleSubscription, reportGenDetails, couponResponse)?.pricesForItemArray;
+    console.log({getPricesForItem})
     const totalPrice = getPricesForItem
       ?.map((item: any) => Number(item?.price))
       ?.reduce((prev: number, curr: number) => prev + curr, 0);

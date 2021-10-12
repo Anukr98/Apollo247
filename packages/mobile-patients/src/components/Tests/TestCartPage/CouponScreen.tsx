@@ -9,7 +9,11 @@ import {
   CommonBugFender,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { fetchDiagnosticCoupons } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  DIAGNOSTIC_GROUP_PLAN,
+  fetchDiagnosticCoupons,
+  validateConsultCoupon,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -21,12 +25,16 @@ import {
   useDiagnosticsCart,
 } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { createPatientObjLineItems } from '@aph/mobile-patients/src/utils/commonUtils';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { Overlay } from 'react-native-elements';
 
 const screenHeight = Dimensions.get('window').height;
 export interface CouponScreenProps
   extends NavigationScreenProps<{
     pincode: number;
+    lineItemWithQuantity: any[];
+    toPayPrice: number;
     // applyCouponCallback: (appliedCoupon: any) => void;
   }> {}
 
@@ -36,17 +44,44 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
     modifiedOrder,
     modifiedPatientCart,
     totalPriceExcludingAnyDiscounts,
+    isDiagnosticCircleSubscription,
+    isCircleAddedToCart,
+    setCoupon,
+    coupon,
+    couponDiscount,
+    setCouponDiscount,
   } = useDiagnosticsCart();
+  const { circleSubscriptionId, hdfcSubscriptionId } = useShoppingCart();
+  const {
+    hdfcPlanId,
+    circlePlanId,
+    hdfcStatus,
+    circleStatus,
+    activeUserSubscriptions,
+  } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const { showAphAlert, setLoading, loading } = useUIElements();
   const getPincode = props.navigation.getParam('pincode');
+  const lineItemWithQuantity = props.navigation.getParam('lineItemWithQuantity');
+  const toPayPrice = props.navigation.getParam('toPayPrice');
   const [couponsList, setCouponsList] = useState([] as any);
-  const [couponListError, setCouponListError] = useState<boolean>(false);
+  const [couponListError, setCouponListError] = useState<string>('');
   const [couponError, setCouponError] = useState<string>('');
   const [couponText, setCouponText] = useState<string>('');
+  const [appliedCouponName, setAppliedCouponName] = useState<string>('');
+  const [disableCouponsList, setDisableCouponsList] = useState<string[]>([]);
+  const [loadingOverlay, setLoadingOverlay] = useState<boolean>(false);
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
 
   const isEnableApplyBtn = couponText.length >= 4;
+
+  let packageId: string[] = [];
+  if (hdfcSubscriptionId && hdfcStatus === 'active') {
+    packageId.push(`HDFC:${hdfcPlanId}`);
+  }
+  if (circleSubscriptionId && circleStatus === 'active') {
+    packageId.push(`APOLLO:${circlePlanId}`);
+  }
 
   useEffect(() => {
     getDiagnosticCoupons();
@@ -63,7 +98,6 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
         setCouponsList(getCoupons);
       } else {
         setCouponsList([]);
-        setCouponListError(true);
       }
     } catch (error) {
       setCouponsList([]);
@@ -99,117 +133,139 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
     return true;
   }
 
+  //take care for the modified order & cicle added to cart case
+  const createValidateCouponLineItems = (selectedItem: any, isCircle: boolean) => {
+    console.log({ selectedItem });
+    console.log({ isCircle });
+    //here mrp & special price is based on the lowest plan available
+    var pricesForItemArray = selectedItem?.map((item: any, index: number) => ({
+      testId: Number(item?.id),
+      categoryId: '',
+      mrp: Number(item?.price), //will always be price, irrespective of any plan
+      //discounted price for any plan
+      specialPrice:
+        isCircle && item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+          ? Number(item?.circleSpecialPrice)
+          : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+          ? Number(item?.discountSpecialPrice)
+          : Number(item?.specialPrice) || Number(item?.price),
+      quantity: item?.mou,
+      type: selectedItem?.inclusions?.length > 1 ? 'package' : 'test',
+    }));
+
+    return {
+      pricesForItemArray,
+    };
+  };
+
+  const saveDisableCoupons = (couponName: string) => {
+    console.log('in save disable flow..');
+    console.log({ couponName });
+    if (couponName) {
+      setAppliedCouponName(couponName);
+      if (disableCouponsList?.indexOf(couponName) > -1) {
+        const arr = disableCouponsList;
+        const indexToRemove = arr?.indexOf(couponName);
+        arr?.splice(indexToRemove, 1);
+        setDisableCouponsList(arr);
+      } else {
+        setDisableCouponsList(disableCouponsList?.concat(couponName));
+      }
+    }
+  };
+
   //this will differ in modify flow.
-  // const validateAppliedCoupon = (
-  //   coupon: string,
-  //   cartItems: DiagnosticsCartItem[],
-  //   applyingFromList?: boolean
-  // ) => {
-
-  //   CommonLogEvent(AppRoutes.CouponScreen, 'Select coupon');
-  //   console.log({ coupon });
-  //   console.log({ cartItems });
-  //   console.log({ applyingFromList });
-  //   setLoading?.(true);
-  //   const createLineItems = createPatientObjLineItems(
-  //     patientCartItems,
-  //     isDiagnosticCircleSubscription ? true : isCircleAddedToCart,
-  //     reportGenDetails
-  //   ) as (patientObjWithLineItems | null)[];
-  //   let data = {
-  //     mobile: currentPatient?.mobileNumber,
-  //     billAmount: totalPriceExcludingAnyDiscounts,
-  //     coupon: coupon,
-  //     pinCode: getPincode,
-  //     products: cartItems?.map((item) => ({
-  //       sku: item?.id,
-  //       categoryId: "",
-  //       mrp: item?.price,
-  //       quantity: item?.quantity,
-  //       specialPrice: item?.specialPrice || item?.price,
-  //     })),
-  //     packageIds: packageId,
-  //     email: g(currentPatient, 'emailAddress'),
-  //   };
-  //   if (isFromSubscription && circlePlanSelected?.subPlanId) {
-  //     data['subscriptionType'] = `APOLLO:${circlePlanSelected?.subPlanId}`;
-  //   }
-  //   console.log('validateConsultCoupon data >> ', data);
-  //   validateConsultCoupon(data)
-  //     .then((resp: any) => {
-  //       console.log({ resp });
-  //       if (resp?.data?.errorCode == 0) {
-  //         if (resp?.data?.response?.valid) {
-  //           const successMessage = resp?.data?.response?.successMessage || '';
-  //           setCoupon!({
-  //             ...resp?.data?.response,
-  //             successMessage: successMessage,
-  //           });
-  //           if (isFromSubscription) {
-  //             setSubscriptionCoupon?.({
-  //               ...g(resp?.data, 'response')!,
-  //               successMessage: successMessage,
-  //             });
-  //           }
-  //           setIsFreeDelivery?.(!!resp?.data?.response?.freeDelivery);
-  //           props.navigation.goBack();
-  //         } else {
-  //           console.log('in else');
-  //           console.log({ resp });
-  //           !applyingFromList && setCouponError(g(resp.data, 'response', 'reason'));
-  //           applyingFromList && setCouponListError(g(resp.data, 'response', 'reason'));
-  //           setDisableCouponsList([...disableCouponsList, coupon]);
-  //           saveDisableCoupons(coupon);
-  //         }
-
-  //         const products = g(resp?.data, 'response', 'products');
-  //         if (products?.length) {
-  //           const freeProducts = products?.filter((product) => {
-  //             return product?.couponFree === 1;
-  //           });
-  //           setCouponProducts!(freeProducts);
-  //         }
-
-  //         const eventAttributes: WebEngageEvents[WebEngageEventName.CART_COUPON_APPLIED] = {
-  //           'Coupon Code': coupon,
-  //           'Discounted amount': g(resp?.data, 'response', 'valid')
-  //             ? g(resp.data, 'response', 'discount')
-  //             : 'Not Applicable',
-  //           'Customer ID': g(currentPatient, 'id'),
-  //           'Cart Items': cartItems?.length ? JSON.stringify(cartItems) : '',
-  //         };
-  //         const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CART_COUPON_APPLIED] = {
-  //           'Coupon Code': coupon || undefined,
-  //           'Discounted amount': g(resp?.data, 'response', 'valid')
-  //             ? g(resp.data, 'response', 'discount')
-  //             : 'Not Applicable',
-  //           'Customer ID': g(currentPatient, 'id'),
-  //           'Cart Items': cartItems?.length ? JSON.stringify(cartItems) : undefined,
-  //         };
-  //         // postCleverTapEvent(CleverTapEventName.CART_COUPON_APPLIED, cleverTapEventAttributes);
-  //         postWebEngageEvent(WebEngageEventName.CART_COUPON_APPLIED, eventAttributes);
-  //       } else {
-  //         console.log('error in validatetion');
-  //         console.log(resp);
-  //         CommonBugFender('validatingPharmaCoupon', g(resp?.data, 'errorMsg'));
-  //         !applyingFromList && setCouponError(g(resp?.data, 'errorMsg'));
-  //         applyingFromList && setCouponListError(g(resp?.data, 'errorMsg'));
-  //         saveDisableCoupons(coupon);
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       console.log('in catch fo validate');
-  //       console.log({ error });
-  //       CommonBugFender('validatingPharmaCoupon', error);
-  //       !applyingFromList && setCouponError('Sorry, unable to validate coupon right now.');
-  //       applyingFromList && setCouponListError('Sorry, unable to validate coupon right now.');
-  //       saveDisableCoupons(coupon);
-  //     })
-  //     .finally(() => setLoading?.(false));
-  // };
+  const validateAppliedCoupon = (
+    coupon: string,
+    cartItemsWithQuan: DiagnosticsCartItem[], //with quantity
+    applyingFromList?: boolean,
+    setSubscription?: boolean //used to set the circle sub to false, so that circle benefits are not applied against it
+  ) => {
+    CommonLogEvent(AppRoutes.CouponScreen, 'Select coupon');
+    console.log({ coupon });
+    console.log({ cartItemsWithQuan });
+    console.log({ applyingFromList });
+    console.log({ setSubscription });
+    setLoadingOverlay?.(true);
+    const createLineItemsForPayload = createValidateCouponLineItems(
+      cartItemsWithQuan,
+      setSubscription != undefined
+        ? false
+        : isDiagnosticCircleSubscription
+        ? true
+        : isCircleAddedToCart
+    );
+    console.log({ createLineItemsForPayload });
+    let data = {
+      mobile: currentPatient?.mobileNumber,
+      billAmount: Number(toPayPrice - couponDiscount), //this is basically the price that user will actually pay
+      coupon: coupon,
+      pinCode: String(getPincode),
+      diagnostics: createLineItemsForPayload?.pricesForItemArray?.map((item: any) => item), //define type
+      packageIds: setSubscription != undefined ? [] : packageId, //array of all subscriptions of user
+    };
+    console.log('payload for validate api');
+    console.log({ data });
+    validateConsultCoupon(data)
+      .then((resp: any) => {
+        console.log('getting response from validate coupon');
+        console.log({ resp });
+        if (resp?.data?.errorCode == 0) {
+          if (resp?.data?.response?.valid) {
+            const responseData = resp?.data?.response;
+            /**
+             * case for if user is claiming circle benefits, but coupon => circleBenefits as false
+             */
+            if (
+              (isDiagnosticCircleSubscription || isCircleAddedToCart) &&
+              !responseData?.circleBenefits
+            ) {
+              validateAppliedCoupon(coupon, cartItemsWithQuan, applyingFromList, false);
+            } else {
+              const successMessage = responseData?.successMessage || '';
+              setCoupon?.({
+                ...responseData,
+                successMessage: successMessage,
+              });
+              setCouponDiscount?.(responseData?.discount);
+              props.navigation.goBack();
+            }
+          } else {
+            console.log('in else');
+            console.log({ resp });
+            const getErrorResponseReason = resp?.data?.response?.reason;
+            !applyingFromList && setCouponError(getErrorResponseReason);
+            applyingFromList && setCouponListError(getErrorResponseReason);
+            setCouponDiscount?.(0);
+            setDisableCouponsList([...disableCouponsList, coupon]);
+            saveDisableCoupons(coupon);
+          }
+          //add event here
+        } else {
+          console.log('error in validatetion');
+          console.log(resp);
+          const getCouponErrorMsg = resp?.data?.errorMsg;
+          CommonBugFender('validateAppliedCoupon_CouponScreen', getCouponErrorMsg);
+          !applyingFromList && setCouponError(getCouponErrorMsg);
+          applyingFromList && setCouponListError(getCouponErrorMsg);
+          setCouponDiscount?.(0);
+          saveDisableCoupons(coupon);
+        }
+      })
+      .catch((error) => {
+        console.log('in catch fo validate');
+        console.log({ error });
+        CommonBugFender('validateAppliedCoupon_CouponScreen', error);
+        !applyingFromList && setCouponError(string.diagnosticsCoupons.unableToValidate);
+        applyingFromList && setCouponListError(string.diagnosticsCoupons.unableToValidate);
+        setCouponDiscount?.(0);
+        saveDisableCoupons(coupon);
+      })
+      .finally(() => setLoadingOverlay?.(false));
+  };
 
   function _onPressApplyCoupon(coupon: string, appliedFromList: boolean) {
-    // validateAppliedCoupon(coupon, cartItems, appliedFromList);
+    validateAppliedCoupon(coupon, lineItemWithQuantity, appliedFromList);
   }
 
   const renderHeader = () => {
@@ -281,14 +337,13 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
             }}
             inputStyle={[
               styles.searchValueStyle,
-              couponError ? { borderBottomColor: colors.INPUT_BORDER_FAILURE } : {},
+              couponError ? { borderColor: colors.INPUT_BORDER_FAILURE, borderWidth: 2 } : {},
             ]}
             conatinerstyles={{ paddingBottom: 0 }}
             placeholder={string.diagnosticsCoupons.couponPlcaholder}
           />
           {rightIconView()}
         </View>
-
         {renderCouponError(couponError)}
       </View>
     );
@@ -302,13 +357,16 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
     ) : null;
   };
 
-  const renderCouponView = (item: any, index: number) => {
+  const renderCouponView = (item: any, index: number, isDisabled: boolean) => {
     return (
-      <View style={styles.couponOuterView}>
-        <View style={styles.couponCodeView}>
+      <View style={[styles.couponOuterView, isDisabled && { opacity: 0.5 }]}>
+        <View style={[styles.couponCodeView, isDisabled && { backgroundColor: 'transparent' }]}>
           <Text style={styles.couponCodeText}>{item?.coupon}</Text>
         </View>
-        <TouchableOpacity onPress={() => _onPressApplyCoupon(item?.coupon, true)}>
+        <TouchableOpacity
+          onPress={() => _onPressApplyCoupon(item?.coupon, true)}
+          disabled={isDisabled}
+        >
           <Text style={styles.applyText}>
             {nameFormater(string.diagnosticsCoupons.apply, 'upper')}
           </Text>
@@ -317,11 +375,11 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
     );
   };
 
-  const renderCouponHeadingView = (item: any, index: number) => {
+  const renderCouponHeadingView = (item: any, index: number, isDisabled: boolean) => {
     return (
       <>
         {!!item?.textOffer && item?.textOffer != '' ? (
-          <View style={styles.headingView}>
+          <View style={[styles.headingView, isDisabled && { opacity: 0.5 }]}>
             <Text style={styles.headingText}>{item?.textOffer}</Text>
           </View>
         ) : null}
@@ -329,11 +387,11 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
     );
   };
 
-  const renderCouponDescriptionView = (item: any, index: number) => {
+  const renderCouponDescriptionView = (item: any, index: number, isDisabled: boolean) => {
     return (
       <>
         {!!item?.message && item?.message != '' ? (
-          <View style={styles.descView}>
+          <View style={[styles.descView, isDisabled && { opacity: 0.5 }]}>
             <Text style={styles.descText}>
               {item?.message} <Text style={styles.tncText}>TnC Apply</Text>
             </Text>
@@ -344,13 +402,16 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
   };
 
   const renderCouponItems = ({ item, index }) => {
+    const disableList = disableCouponsList?.indexOf(item?.coupon) > -1;
     return (
       <View style={{ padding: 16 }}>
-        {renderCouponView(item, index)}
+        {renderCouponView(item, index, disableList)}
         <View style={{ width: '85%' }}>
-          {renderCouponHeadingView(item, index)}
-          {renderCouponDescriptionView(item, index)}
+          {renderCouponHeadingView(item, index, disableList)}
+          {renderCouponDescriptionView(item, index, disableList)}
         </View>
+        {/**show error message for invalid coupon */}
+        {disableList && appliedCouponName === item?.coupon && renderCouponError(couponListError)}
       </View>
     );
   };
@@ -387,12 +448,26 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
     );
   };
 
+  const renderLoadingOverlay = () => {
+    return (
+      <Overlay
+        isVisible={loadingOverlay}
+        windowBackgroundColor={'rgba(0, 0, 0, 0.6)'}
+        containerStyle={{ marginBottom: 0 }}
+        fullScreen
+        transparent
+        overlayStyle={styles.loadingOverlay}
+      />
+    );
+  };
+
   return (
-    <View style={{ flex: 1, backgroundColor: 'red' }}>
+    <View style={{ flex: 1 }}>
       <SafeAreaView style={[{ ...theme.viewStyles.container }]}>
         {renderHeader()}
         {renderMainView()}
       </SafeAreaView>
+      {renderLoadingOverlay()}
     </View>
   );
 };
@@ -488,4 +563,15 @@ const styles = StyleSheet.create({
   },
   couponOuterView: { justifyContent: 'space-between', flexDirection: 'row', alignItems: 'center' },
   listOuterView: { backgroundColor: colors.WHITE, flexGrow: 1, maxHeight: screenHeight / 1.55 },
+  loadingOverlay: {
+    padding: 0,
+    margin: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: colors.CLEAR,
+    overflow: 'hidden',
+    elevation: 0,
+    bottom: 0,
+    position: 'absolute',
+  },
 });

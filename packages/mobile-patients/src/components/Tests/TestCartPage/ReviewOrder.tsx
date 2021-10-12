@@ -7,6 +7,7 @@ import {
   OffersIconOrange,
   SavingsIcon,
   Up,
+  OffersIconGreen,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   createPatientAddressObject,
@@ -50,6 +51,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   DEVICETYPE,
+  diagnosticLineItem,
   DiagnosticLineItem,
   DiagnosticsBookingSource,
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
@@ -210,6 +212,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setIsCirclePlanRemoved,
     modifiedOrderItemIds,
     circleGrandTotal,
+    coupon,
+    setCoupon,
+    setCouponDiscount,
   } = useDiagnosticsCart();
 
   const {
@@ -254,6 +259,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const [isClicked, setIsClicked] = useState<boolean>(false);
   const [reportTat, setReportTat] = useState<string>('');
 
+  let lineItemWithQuantity: any = [];
   let itemNamesToRemove_global: string[] = [];
   let itemIdsToRemove_global: Number[] = [];
   let itemIdsToKeep_global: Number[] = [];
@@ -308,6 +314,12 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     }
     !!selectedCirclePlan && !isEmptyObject(selectedCirclePlan) && _addCircleValues();
   }, []);
+
+  /**this is used for removing the coupons if there is any change in the items */
+  useEffect(() => {
+    setCoupon?.(null);
+    setCouponDiscount?.(0);
+  }, [patientCartItems]); //modifiedCartItems for modify order
 
   useEffect(() => {
     isDiagnosticCircleSubscription
@@ -742,8 +754,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       } else {
         itemsWithQuantity.push(item);
       }
+      lineItemWithQuantity = itemsWithQuantity;
       return itemsWithQuantity;
     });
+
     return (
       <View style={{ backgroundColor: theme.colors.WHITE }}>
         {itemsWithQuantity?.map((item: DiagnosticsCartItem, index: number) => {
@@ -970,10 +984,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           >
             {title}
           </Text>
-          {!!touchView && touchView && (
+          {!!touchView && touchView && !!!coupon && !coupon?.valid && (
             <TouchableOpacity onPress={() => _navigateToCoupons()} style={styles.applyCouponTouch}>
               <Text style={styles.couponText}>
-                {nameFormater(string.diagnosticsCircle.applyCoupon, 'upper')}
+                {nameFormater(string.diagnosticsCoupons.applyCoupon, 'upper')}
               </Text>
             </TouchableOpacity>
           )}
@@ -1112,12 +1126,51 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   function _navigateToCoupons() {
     props.navigation.navigate(AppRoutes.CouponScreen, {
       pincode: Number(selectedAddr?.zipcode!),
+      lineItemWithQuantity,
+      toPayPrice,
     });
   }
 
+  function _removeAppliedCoupon() {
+    setCoupon?.(null);
+    setCouponDiscount?.(0);
+  }
+
   const renderCouponView = () => {
+    return <>{!!coupon && coupon?.valid ? renderAppliedCouponView() : renderOffersCouponsView()}</>;
+  };
+
+  console.log({ coupon });
+  const renderAppliedCouponView = () => {
     return (
-      <TouchableOpacity onPress={() => _navigateToCoupons()} style={styles.couponViewTouch}>
+      <View style={[styles.couponViewTouch, styles.appliedCouponBckg]}>
+        <View style={styles.flexRow}>
+          <View style={[styles.offersView, styles.offersViewWidth]}>
+            <OffersIconGreen style={styles.offersIconStyle} />
+            <Text style={[styles.couponText, styles.appliedCouponText]}>
+              {nameFormater(string.diagnosticsCoupons.couponApplied, 'title')}
+            </Text>
+            <View style={styles.couponCodeView}>
+              <Text style={styles.couponCodeText}>{coupon?.coupon}</Text>
+            </View>
+          </View>
+          <TouchableOpacity onPress={() => _removeAppliedCoupon()} style={styles.crossIconTouch}>
+            <Text style={styles.crossIconText}>X </Text>
+          </TouchableOpacity>
+        </View>
+        {!!coupon?.textOffer && coupon?.textOffer != '' && (
+          <Text style={styles.couponOfferText}>{coupon?.textOffer}</Text>
+        )}
+      </View>
+    );
+  };
+
+  const renderOffersCouponsView = () => {
+    return (
+      <TouchableOpacity
+        onPress={() => _navigateToCoupons()}
+        style={[styles.couponViewTouch, styles.flexRow]}
+      >
         <View style={styles.offersView}>
           <OffersIconOrange style={styles.offersIconStyle} />
           <Text style={styles.couponText}>
@@ -1273,8 +1326,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       'You ',
       `saved ${string.common.Rs}${convertNumberToDecimal(
         isDiagnosticCircleSubscription || isCircleAddedToCart
-          ? cartSaving + circleSaving
-          : cartSaving
+          ? cartSaving + circleSaving + couponDiscount
+          : cartSaving + couponDiscount
       )}`,
       'on this order',
       'left',
@@ -1493,6 +1546,96 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     }
   };
 
+  function createPatientObjLineItems_2(
+    patientCartItems: DiagnosticPatientCartItem[],
+    isDiagnosticCircleSubscription: boolean,
+    reportGenDetails: any,
+    couponResponse?: any
+  ) {
+    const filterPatientItems = isDiagnosticSelectedCartEmpty(patientCartItems);
+    var array = [] as any; //define type
+
+    filterPatientItems?.map((item) => {
+      const getPricesForItem111 = createPatientObjLineItemsForCoupons(
+        item,
+        isDiagnosticCircleSubscription,
+        reportGenDetails,
+        couponResponse
+      )?.pricesForItemArray;
+      console.log({ getPricesForItem111 });
+      const totalPrice = getPricesForItem111
+        ?.map((item: any) => Number(item?.price))
+        ?.reduce((prev: number, curr: number) => prev + curr, 0);
+      array.push({
+        patientID: item?.patientId,
+        lineItems: getPricesForItem111,
+        totalPrice: totalPrice,
+      });
+    });
+    return array;
+  }
+
+  const createPatientObjLineItemsForCoupons = (
+    selectedItem: any,
+    isDiagnosticCircleSubscription: boolean,
+    reportGenDetails: any,
+    couponResponse?: any
+  ) => {
+    var pricesForItemArray = selectedItem?.cartItems?.map((item: any, index: number) => {
+      var arr;
+      console.log({ couponResponse });
+      console.log({ item });
+      const getSelectedItem = couponResponse?.diagnostics?.find(
+        (x: any) => Number(x?.testId) === Number(item?.id)
+      );
+      const getPriceValueForItem =
+        isDiagnosticCircleSubscription && item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+          ? Number(item?.circleSpecialPrice)
+          : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+          ? Number(item?.discountSpecialPrice)
+          : Number(item?.specialPrice) || Number(item?.price);
+      const getMrpValueForItem =
+        isDiagnosticCircleSubscription && item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+          ? Number(item?.circlePrice)
+          : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+          ? Number(item?.discountPrice)
+          : Number(item?.price);
+      /*for coupons
+             isMrp = false => discountAmount will be cal on special price (price) -> price = specialPrice - discountAmount
+             isMrp = true => discountAmount will be on mrp -> mrp =  mrp - discountAmount
+            **/
+      console.log({ getSelectedItem });
+      const couponPrice =
+        !!couponResponse && !couponResponse?.isMrp
+          ? getPriceValueForItem - getSelectedItem?.discountAmt
+          : getPriceValueForItem;
+      const couponMrp =
+        !!couponResponse && couponResponse?.isMrp
+          ? getMrpValueForItem - getSelectedItem?.discountAmt
+          : getMrpValueForItem;
+      const couponDiscount = getSelectedItem?.discountAmt;
+      arr = {
+        itemId: Number(item?.id),
+        couponDiscAmount: Number(couponDiscount),
+        price: Number(couponPrice),
+        mrp: Number(couponMrp),
+        groupPlan: isDiagnosticCircleSubscription
+          ? item?.groupPlan!
+          : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+          ? item?.groupPlan
+          : DIAGNOSTIC_GROUP_PLAN.ALL,
+        preTestingRequirement:
+          !!reportGenDetails && reportGenDetails?.[index]?.itemPrepration
+            ? reportGenDetails?.[index]?.itemPrepration
+            : null,
+      } as diagnosticLineItem;
+      return arr;
+    });
+    return {
+      pricesForItemArray,
+    };
+  };
+
   const saveHomeCollectionOrder = () => {
     if (toPayPrice == null || toPayPrice == undefined) {
       //do not call the api, if by any chance grandTotal is not a number
@@ -1511,11 +1654,21 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
       );
 
-      getPatientLineItems = createPatientObjLineItems(
-        patientCartItems,
-        isDiagnosticCircleSubscription ? true : isCircleAddedToCart,
-        reportGenDetails
-      ) as (patientObjWithLineItems | null)[];
+      getPatientLineItems = !!coupon
+        ? createPatientObjLineItems_2(
+            patientCartItems,
+            isDiagnosticCircleSubscription ? true : isCircleAddedToCart,
+            reportGenDetails,
+            coupon
+          )
+        : (createPatientObjLineItems(
+            patientCartItems,
+            isDiagnosticCircleSubscription ? true : isCircleAddedToCart,
+            reportGenDetails,
+            coupon
+          ) as (patientObjWithLineItems | null)[]);
+
+      console.log({ getPatientLineItems });
 
       const bookingOrderInfo: SaveBookHomeCollectionOrderInputv2 = {
         patientAddressID: slotsInput?.addressObject?.patientAddressID,
@@ -1539,6 +1692,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         subscriptionInclusionId: null,
         userSubscriptionId: circleSubscriptionId != '' ? circleSubscriptionId : localCircleSubId,
       };
+      console.log({ bookingOrderInfo });
       diagnosticSaveBookHcCollectionV2(client, bookingOrderInfo)
         .then(async ({ data }) => {
           const getSaveHomeCollectionResponse =
@@ -2448,8 +2602,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     borderWidth: 1,
     padding: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     marginBottom: 16,
     marginTop: 8,
   },
@@ -2471,4 +2623,41 @@ const styles = StyleSheet.create({
   lineItemView: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
   lineTextView: { width: '65%', flexDirection: 'row' },
   lineItemPriceView: { flex: 1, alignItems: 'flex-end' },
+  crossIconText: {
+    ...theme.viewStyles.text('B', 16, colors.SHERPA_BLUE, 1, 24),
+  },
+  couponCodeView: {
+    padding: 14,
+    paddingTop: 4,
+    paddingBottom: 4,
+    borderColor: colors.CONSULT_SUCCESS_TEXT,
+    backgroundColor: colors.TEST_CARD_BUTTOM_BG,
+    borderWidth: 1,
+    borderRadius: 5,
+    borderStyle: 'dashed',
+  },
+  couponCodeText: {
+    ...theme.viewStyles.text('M', 16, colors.CONSULT_SUCCESS_TEXT, 1, 24),
+    flexWrap: 'wrap',
+  },
+  appliedCouponText: {
+    ...theme.viewStyles.text('M', 14.5, colors.SHERPA_BLUE, 1, 24),
+  },
+  crossIconTouch: {
+    width: 40,
+    alignItems: 'flex-end',
+    justifyContent: 'flex-start',
+  },
+  couponOfferText: {
+    ...theme.viewStyles.text('M', 12, colors.APP_GREEN, 1, 18),
+    marginHorizontal: 30,
+  },
+  appliedCouponBckg: {
+    borderColor: colors.APP_GREEN,
+    backgroundColor: colors.GREEN_BACKGROUND,
+  },
+  offersViewWidth: {
+    width: '50%',
+    justifyContent: 'space-between',
+  },
 });

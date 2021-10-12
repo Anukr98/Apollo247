@@ -836,7 +836,8 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
         style={[
           styles.patientSelectTouch,
           {
-            backgroundColor: !!test?.isSelected && test?.isSelected ? '#F5FFFD' : colors.WHITE,
+            backgroundColor:
+              !!test?.isSelected && test?.isSelected ? colors.GREEN_BACKGROUND : colors.WHITE,
           },
         ]}
       >
