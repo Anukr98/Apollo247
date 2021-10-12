@@ -137,6 +137,7 @@ import {
   getAge,
   removeObjectNullUndefinedProperties,
   fileToBase64,
+  checkCleverTapLoginStatus,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -884,6 +885,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       checkIsProhealthActive(currentPatient); //to show prohealth option
       getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
     }
+  }, [currentPatient]);
+
+  useEffect(() => {
+    checkCleverTapLoginStatus(currentPatient);
   }, [currentPatient]);
 
   //to be called only when the user lands via app launch
