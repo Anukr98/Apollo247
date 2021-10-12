@@ -339,6 +339,31 @@ const styles = StyleSheet.create({
     marginTop: 5,
     height: 60,
   },
+  specialOffersCouponContainer: {
+    marginTop: 20,
+    marginHorizontal: 18,
+  },
+  specialOffersCouponShimmer: {
+    borderRadius: 1,
+    height: 100,
+    width: '100%',
+    marginBottom: 16,
+  },
+  specialOffersCouponButtonShimmer: {
+    borderRadius: 5,
+    height: 45,
+    width: '100%',
+    marginBottom: 16,
+  },
+  specialOffersDealsContainer: {
+    marginTop: 25,
+    marginHorizontal: 18,
+  },
+  specialOffersDealsShimmer: {
+    borderRadius: 3,
+    height: 60,
+    width: '100%',
+  },
 });
 
 export const renderCovidVaccinationShimmer = () => {
@@ -918,5 +943,40 @@ export const renderPackageItemPriceShimmer = () => {
       LinearGradient={LinearGradient}
       shimmerStyle={styles.itemPackagePrice}
     />
+  );
+};
+
+export const renderSpecialOffersPageShimmer = () => {
+  return (
+    <View>
+      <View>
+        <ShimmerPlaceHolder LinearGradient={LinearGradient} shimmerStyle={styles.banner1} />
+        <View style={[styles.sliderDotsContainer, { position: 'absolute', bottom: 20 }]}>
+          <View style={styles.sliderDots} />
+          <View style={styles.sliderDots} />
+          <View style={styles.sliderDots} />
+        </View>
+      </View>
+      <View style={styles.specialOffersCouponContainer}>
+        <ShimmerPlaceHolder
+          LinearGradient={LinearGradient}
+          shimmerStyle={styles.specialOffersCouponShimmer}
+        />
+        <ShimmerPlaceHolder
+          LinearGradient={LinearGradient}
+          shimmerStyle={styles.specialOffersCouponShimmer}
+        />
+        <ShimmerPlaceHolder
+          LinearGradient={LinearGradient}
+          shimmerStyle={styles.specialOffersCouponButtonShimmer}
+        />
+      </View>
+      <View style={styles.specialOffersDealsContainer}>
+        <ShimmerPlaceHolder
+          LinearGradient={LinearGradient}
+          shimmerStyle={styles.specialOffersDealsShimmer}
+        />
+      </View>
+    </View>
   );
 };
