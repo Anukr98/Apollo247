@@ -268,12 +268,12 @@ const styles = StyleSheet.create({
   },
   searchBarMainViewStyle: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(0,0,0,0.05)',
     paddingHorizontal: 16,
     paddingVertical: 12,
     marginTop: 6,
     alignItems: 'center',
     justifyContent: 'center',
+    maxHeight: '100%',
   },
   searchBarViewStyle: {
     backgroundColor: '#FAFEFF',
@@ -3164,7 +3164,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     <View style={{ marginLeft: -12, marginBottom: 4 }}>
                       <DeliveryInIcon />
                     </View>
-                    <View style={{ flexDirection: 'row', marginTop: 6 }}>
+                    <View style={{ flexDirection: 'row', marginVertical: 8, paddingBottom: 8 }}>
                       <View style={styles.topImageView}>
                         {item.image}
                         <Text style={[styles.topTextStyle, { color: theme.colors.SHERPA_BLUE }]}>
@@ -3935,7 +3935,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return (
       <View
         style={{
-          backgroundColor: '#f0f1ec',
           paddingHorizontal: 20,
         }}
       >
@@ -3976,7 +3975,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return (
       <View
         style={{
-          backgroundColor: '#f0f1ec',
           paddingHorizontal: 20,
           paddingTop: 12,
           paddingBottom: 4,
@@ -4380,7 +4378,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           flexDirection: 'row',
           paddingTop: 16,
           paddingHorizontal: 16,
-          backgroundColor: theme.colors.CLEAR,
+          backgroundColor: '#FDFBF9',
           paddingBottom: 15,
         }}
       >
@@ -4744,7 +4742,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <View
           style={[
             styles.searchBarMainViewStyle,
-            { backgroundColor: isSearchFocus ? '#fff' : 'transparent' },
+            { backgroundColor: isSearchFocus ? '#fff' : '#fff' },
           ]}
         >
           <View style={styles.searchBarViewStyle}>
@@ -4887,12 +4885,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderSearchResults = () => {
     return (
-      <ScrollView style={{ flex: 1 }} bounces={false}>
+      <ScrollView style={{ flex: 1, backgroundColor: '#FDFBF9' }} bounces={false}>
         <View style={{ width: width, marginBottom: 6, padding: 16, backgroundColor: '#fff' }}>
           <View
             style={{
               height: 1.5,
-              backgroundColor: '#D4D4D4',
+              backgroundColor: '#FDFBF9',
               marginTop: -4,
               marginBottom: 4,
               marginHorizontal: -16,
@@ -5125,7 +5123,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
         {renderTopIcons()}
-        <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
+        <View style={{ flexDirection: 'row', backgroundColor: '#fff', marginBottom: -8 }}>
+          {renderProfileDrop()}
+        </View>
         {/* below line could be added for now not in designs */}
         {/* <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text> */}
         {renderGlobalSearch()}
@@ -5144,21 +5144,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 {!circleDataLoading && renderOffersForYou()}
 
                 {renderHeadings('My Doctors')}
-                <View style={{ backgroundColor: '#f0f1ec' }}>
-                  {renderListView('Active Appointments', 'normal')}
-                </View>
-                <View style={{ backgroundColor: '#f0f1ec' }}>{renderAllConsultedDoctors()}</View>
+                <View>{renderListView('Active Appointments', 'normal')}</View>
+                <View>{renderAllConsultedDoctors()}</View>
 
                 {renderHeadings('Circle Membership and More')}
                 {circleDataLoading && renderCircleShimmer()}
-                <View style={{ backgroundColor: '#f0f1ec' }}>
-                  {isCircleMember === 'yes' && !circleDataLoading && renderCircle()}
-                </View>
+                <View>{isCircleMember === 'yes' && !circleDataLoading && renderCircle()}</View>
                 {showCirclePlans && renderCircleSubscriptionPlans()}
                 {showCircleActivationcr && renderCircleActivation()}
                 {bannerLoading && renderBannerShimmer()}
 
-                <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
+                <View>{renderBannersCarousel()}</View>
 
                 {/* {!covidVaccineCtaV2?.data && renderCovidVaccinationShimmer()}
                 <View style={{ backgroundColor: '#f0f1ec' }}>
@@ -5169,11 +5165,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 {renderServicesForYouView()}
 
                 {renderHeadings('Apollo Prohealth')}
-                {proActiveAppointments?.length == 0 && (
-                  <View style={{ backgroundColor: '#f0f1ec' }}>{renderProhealthBanner()}</View>
-                )}
+                {proActiveAppointments?.length == 0 && <View>{renderProhealthBanner()}</View>}
                 {proActiveAppointments?.length > 0 && (
-                  <View style={{ backgroundColor: '#f0f1ec' }}>
+                  <View>
                     {renderListView(
                       proActiveAppointments?.length == 1
                         ? 'ProHealth Appointment'

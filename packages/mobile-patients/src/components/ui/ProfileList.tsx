@@ -287,96 +287,99 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   const renderPicker = () => {
     const usersList = moveSelectedToTop();
     return (
-      <MaterialMenu
-        showProfilePic={showProfilePic}
-        showMenu={props.showList}
-        menuHidden={() => {
-          props.menuHidden && props.menuHidden();
-        }}
-        options={usersList[0] === undefined ? pickerData : usersList}
-        profileClickCleverTapEvent={() =>
-          props.cleverTapProfileClickEvent && props.cleverTapProfileClickEvent()
-        }
-        defaultOptions={[]}
-        selectedText={profile && profile!.id}
-        menuContainerStyle={[
-          {
-            alignItems: 'flex-end',
-            marginTop: 16,
-            marginLeft: width / 2 - 95,
-          },
-          listContainerStyle,
-        ]}
-        itemContainer={{
-          height: showProfilePic ? 70.8 : 44.8,
-          marginHorizontal: 12,
-          width: width / 2,
-        }}
-        itemTextStyle={{ ...theme.viewStyles.text('M', 13, '#01475b'), paddingHorizontal: 0 }}
-        selectedTextStyle={styles.selectedTextStyle}
-        lastTextStyle={!showProfilePic && styles.lastTextStyle}
-        bottomPadding={{ paddingBottom: props.showProfilePic ? 0 : 20 }}
-        lastContainerStyle={showProfilePic ? { borderBottomWidth: 0 } : styles.lastContainerStyle}
-        onPress={(selectedUser) => {
-          if (selectedUser.key === addString) {
-            props.cleverTapEventForAddMemberClick && props.cleverTapEventForAddMemberClick();
-            const pfl = profileArray!.find((i) => selectedUser.key === i.id);
-            props.onProfileChange && props.onProfileChange(pfl!);
-            props.navigation.navigate(AppRoutes.EditProfile, {
-              isEdit: false,
-              isPoptype: true,
-              mobileNumber: currentPatient && currentPatient!.mobileNumber,
-              screenName: props.screenName,
-              goBackCallback: props.editProfileCallback,
-            });
-            setDisplayAddProfile && setDisplayAddProfile(true);
-          } else {
-            const pfl = profileArray!.find((i) => selectedUser.key === i.id);
-            props.onProfileChange && props.onProfileChange(pfl!);
-            profileArray && setProfile(pfl);
-            if (pfl?.id) {
-              callPhrNotificationApi(pfl?.id);
-              setPhrSession?.('');
-            }
+      <View style={{ backgroundColor: '#fff' }}>
+        <MaterialMenu
+          showProfilePic={showProfilePic}
+          showMenu={props.showList}
+          menuHidden={() => {
+            props.menuHidden && props.menuHidden();
+          }}
+          options={usersList[0] === undefined ? pickerData : usersList}
+          profileClickCleverTapEvent={() =>
+            props.cleverTapProfileClickEvent && props.cleverTapProfileClickEvent()
           }
-          saveUserChange &&
-            selectedUser.key !== addString &&
-            (setCurrentPatientId!(selectedUser!.key),
-            AsyncStorage.setItem('selectUserId', selectedUser!.key),
-            AsyncStorage.setItem('selectUserUHId', selectedUser!.uhid),
-            AsyncStorage.setItem(HEALTH_CREDITS, ''),
-            setAddressList(selectedUser!.key));
-        }}
-      >
-        {props.childView ? (
-          props.childView
-        ) : (
-          <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-            <View style={[styles.placeholderViewStyle, placeholderViewStyle]}>
-              <Text
-                style={[
-                  styles.placeholderTextStyle,
-                  placeholderTextStyle,
-                  ,
-                  profile !== undefined ? null : styles.placeholderStyle,
-                ]}
-                numberOfLines={1}
-              >
-                {profile !== undefined ? profile.firstName : defaultText || 'Select User'}
-              </Text>
-              {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
-                <LinkedUhidIcon
-                  style={{ width: 22, height: 20, marginLeft: 5, marginTop: 2 }}
-                  resizeMode={'contain'}
-                />
-              ) : null}
-              <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
-                <DropdownGreen />
+          defaultOptions={[]}
+          selectedText={profile && profile!.id}
+          menuContainerStyle={[
+            {
+              alignItems: 'flex-end',
+              marginTop: 16,
+              marginLeft: width / 2 - 95,
+              backgroundColor: '#fff',
+            },
+            listContainerStyle,
+          ]}
+          itemContainer={{
+            height: showProfilePic ? 70.8 : 44.8,
+            marginHorizontal: 12,
+            width: width / 2,
+          }}
+          itemTextStyle={{ ...theme.viewStyles.text('M', 13, '#01475b'), paddingHorizontal: 0 }}
+          selectedTextStyle={styles.selectedTextStyle}
+          lastTextStyle={!showProfilePic && styles.lastTextStyle}
+          bottomPadding={{ paddingBottom: props.showProfilePic ? 0 : 20 }}
+          lastContainerStyle={showProfilePic ? { borderBottomWidth: 0 } : styles.lastContainerStyle}
+          onPress={(selectedUser) => {
+            if (selectedUser.key === addString) {
+              props.cleverTapEventForAddMemberClick && props.cleverTapEventForAddMemberClick();
+              const pfl = profileArray!.find((i) => selectedUser.key === i.id);
+              props.onProfileChange && props.onProfileChange(pfl!);
+              props.navigation.navigate(AppRoutes.EditProfile, {
+                isEdit: false,
+                isPoptype: true,
+                mobileNumber: currentPatient && currentPatient!.mobileNumber,
+                screenName: props.screenName,
+                goBackCallback: props.editProfileCallback,
+              });
+              setDisplayAddProfile && setDisplayAddProfile(true);
+            } else {
+              const pfl = profileArray!.find((i) => selectedUser.key === i.id);
+              props.onProfileChange && props.onProfileChange(pfl!);
+              profileArray && setProfile(pfl);
+              if (pfl?.id) {
+                callPhrNotificationApi(pfl?.id);
+                setPhrSession?.('');
+              }
+            }
+            saveUserChange &&
+              selectedUser.key !== addString &&
+              (setCurrentPatientId!(selectedUser!.key),
+              AsyncStorage.setItem('selectUserId', selectedUser!.key),
+              AsyncStorage.setItem('selectUserUHId', selectedUser!.uhid),
+              AsyncStorage.setItem(HEALTH_CREDITS, ''),
+              setAddressList(selectedUser!.key));
+          }}
+        >
+          {props.childView ? (
+            props.childView
+          ) : (
+            <View style={{ flexDirection: 'row', marginBottom: 8, backgroundColor: '#fff' }}>
+              <View style={[styles.placeholderViewStyle, placeholderViewStyle]}>
+                <Text
+                  style={[
+                    styles.placeholderTextStyle,
+                    placeholderTextStyle,
+                    ,
+                    profile !== undefined ? null : styles.placeholderStyle,
+                  ]}
+                  numberOfLines={1}
+                >
+                  {profile !== undefined ? profile.firstName : defaultText || 'Select User'}
+                </Text>
+                {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
+                  <LinkedUhidIcon
+                    style={{ width: 22, height: 20, marginLeft: 5, marginTop: 2 }}
+                    resizeMode={'contain'}
+                  />
+                ) : null}
+                <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
+                  <DropdownGreen />
+                </View>
               </View>
             </View>
-          </View>
-        )}
-      </MaterialMenu>
+          )}
+        </MaterialMenu>
+      </View>
     );
   };
   return renderPicker();
