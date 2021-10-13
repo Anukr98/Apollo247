@@ -709,11 +709,12 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         return patientItems;
       }
     });
-    if (index == lengthOfArray - 1) {
+    if (isModifyFlow) {
+      setPatientCartItems?.([...newPatientCartItem!]?.slice(0));
+    } else if (index == lengthOfArray - 1) {
       setPatientCartItems?.([...newPatientCartItem!]?.slice(0));
     }
 
-    //check modify flow
     const foundIndex = cartItems?.findIndex((item) => item?.id == updatedItems?.id);
     if (foundIndex !== -1) {
       if (index == lengthOfArray - 1 || isModifyFlow) {
@@ -740,7 +741,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       if (serviceabilityResponse?.data?.getDiagnosticServiceability?.status) {
         const getServiceableResponse =
           serviceabilityResponse?.data?.getDiagnosticServiceability?.serviceability;
-        console.log({ getServiceableResponse });
         if (!!getServiceableResponse) {
           obj = {
             cityId: getServiceableResponse?.cityID?.toString() || '0',
