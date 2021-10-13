@@ -287,11 +287,11 @@ const styles = StyleSheet.create({
     borderColor: '#D4D4D4',
   },
   cancelTextStyle: {
-    ...theme.viewStyles.text('M', 14, theme.colors.SKY_BLUE, 1, 20),
+    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 20),
     marginLeft: 18,
   },
   textInputStyle: {
-    ...theme.viewStyles.text('R', 14, theme.colors.SHERPA_BLUE, 1, 18),
+    ...theme.viewStyles.text('R', 14, theme.colors.LIGHT_BLUE, 1, 20),
     flex: 1,
     paddingHorizontal: 10,
     paddingTop: 0,
