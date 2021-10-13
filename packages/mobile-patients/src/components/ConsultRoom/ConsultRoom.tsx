@@ -5183,7 +5183,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         )}
       </SafeAreaView>
       {showWebView?.action && openWebView(showWebView?.url)}
-      {renderBottomTabBar()}
+      {isSearchFocus ? null : renderBottomTabBar()}
       {showPopUp && (
         <>
           <BottomPopUp
