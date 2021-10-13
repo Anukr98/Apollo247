@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
     borderColor: '#D4D4D4',
   },
   cancelTextStyle: {
-    ...theme.viewStyles.text('M', 12, theme.colors.SKY_BLUE, 1, 15.6),
+    ...theme.viewStyles.text('M', 14, theme.colors.SKY_BLUE, 1, 20),
     marginLeft: 18,
   },
   textInputStyle: {
@@ -4739,12 +4739,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const renderGlobalSearch = () => {
     return (
       <View>
-        <View
-          style={[
-            styles.searchBarMainViewStyle,
-            { backgroundColor: isSearchFocus ? '#fff' : '#fff' },
-          ]}
-        >
+        <View style={[styles.searchBarMainViewStyle, { backgroundColor: '#fff' }]}>
           <View style={styles.searchBarViewStyle}>
             <SearchAreaIcon style={{ width: 20, height: 20 }} />
             <TextInput
@@ -5122,7 +5117,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
-        {renderTopIcons()}
+        {isSearchFocus ? null : renderTopIcons()}
         <View style={{ flexDirection: 'row', backgroundColor: '#fff', marginBottom: -8 }}>
           {isSearchFocus ? null : renderProfileDrop()}
         </View>
