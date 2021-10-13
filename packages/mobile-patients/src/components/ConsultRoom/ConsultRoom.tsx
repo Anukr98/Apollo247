@@ -5124,7 +5124,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
         {renderTopIcons()}
         <View style={{ flexDirection: 'row', backgroundColor: '#fff', marginBottom: -8 }}>
-          {renderProfileDrop()}
+          {isSearchFocus ? null : renderProfileDrop()}
         </View>
         {/* below line could be added for now not in designs */}
         {/* <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text> */}
