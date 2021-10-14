@@ -3143,7 +3143,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         {appointmentLoading ? (
           <Spinner style={{ backgroundColor: 'transparent' }} spinnerProps={{ size: 'small' }} />
         ) : (
-          <Text style={{ ...theme.viewStyles.text('M', 18, theme.colors.SKY_BLUE, 1, 24, 0) }}>
+          <Text style={{ ...theme.viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 20, 0) }}>
             {count}
           </Text>
         )}
