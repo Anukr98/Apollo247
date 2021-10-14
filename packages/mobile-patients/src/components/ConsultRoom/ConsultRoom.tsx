@@ -3307,7 +3307,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           colors={item?.colors}
           style={[
             styles.bottom2CardView,
-            { width: width / 1.9, justifyContent: 'center', alignItems: 'flex-start', height: 165 },
+            {
+              width: width / 1.9,
+              justifyContent: 'center',
+              alignItems: 'flex-start',
+              height: 165,
+              borderColor: '#D4D4D4',
+              borderWidth: 1,
+            },
           ]}
         >
           <View
@@ -3328,7 +3335,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
           <Text
             style={{
-              ...theme.viewStyles.text('M', 20, '#958060', 1, 30),
+              ...theme.viewStyles.text('SB', 20, '#958060', 1, 30),
               marginHorizontal: 10,
             }}
           >
@@ -3337,7 +3344,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
           <Text
             style={{
-              ...theme.viewStyles.text('R', 14, '#B3A293', 1, 18),
+              ...theme.viewStyles.text('M', 14, '#B3A293', 1, 18),
               marginHorizontal: 10,
             }}
           >
@@ -3360,7 +3367,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   borderWidth: 1,
                   borderStyle: 'dashed',
                   backgroundColor: '#fff',
-                  padding: 4,
+                  paddingVertical: 2,
+                  paddingHorizontal: 8,
                   justifyContent: 'center',
                   alignItems: 'center',
                 }}
@@ -3474,7 +3482,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const offersCount = 1;
+  const offersCount = 2;
   // 'CIRCLE' || 'MEDICINE' || 'MULTIPLE'
   const offerType = 'MEDICINE';
 
