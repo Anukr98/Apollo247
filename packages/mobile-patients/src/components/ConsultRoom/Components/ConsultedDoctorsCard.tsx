@@ -167,18 +167,17 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 10,
+    marginTop: 6,
     flex: 1,
-    ...theme.viewStyles.cardViewStyle,
     height: 58,
     width: cardWidth,
     marginBottom: 20,
     marginLeft: 20,
-    backgroundColor: theme.colors.ICE_BERG,
+    backgroundColor: theme.colors.ICE_BERG_FLAT,
     paddingHorizontal: 10,
     justifyContent: 'center',
-    borderStyle: 'solid',
-    borderColor: '#7EA2AD',
+    borderWidth: 1,
+    borderColor: theme.colors.D4_GRAY,
     borderRadius: 6,
   },
   doctorProfile: {
