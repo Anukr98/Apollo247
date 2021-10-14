@@ -1800,6 +1800,14 @@ export const WhiteCallIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/whiteCall.webp')} resizeMode="contain" />
 );
 
+export const WhiteCall: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/vector3x.webp')} resizeMode="contain" />
+);
+
+export const BlueCross: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/blueCross3x.webp')} resizeMode="contain" />
+);
+
 export const UserThumbnailIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/callDoctorThumbnail.webp')} resizeMode="contain" />
 );

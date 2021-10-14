@@ -32,6 +32,8 @@ import {
   GalleryIcon,
   CameraIcon,
   CrossPopup,
+  WhiteCall,
+  BlueCross
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
@@ -324,7 +326,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [banners, setBanners] = useState([]);
   const [cityId, setCityId] = useState('');
   const [currentOffset, setCurrentOffset] = useState<number>(1);
-
+  const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
   const [sectionLoading, setSectionLoading] = useState<boolean>(false);
   const [showItemCard, setShowItemCard] = useState<boolean>(false);
   const [bookUsSlideIndex, setBookUsSlideIndex] = useState(0);
@@ -2853,6 +2855,68 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  const renderCallToOrder = () => {
+    return (
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          flexDirection: 'row',
+        }}
+      >
+        {!slideCallToOrder ? (
+          <TouchableOpacity
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: '#346CD9',
+              height: 50,
+              width: 150,
+              borderBottomRightRadius: 10,
+              borderTopRightRadius: 10,
+              marginBottom: !!cartItems && cartItems?.length > 0 ? 60 : 20,
+            }}
+          >
+            <WhiteCall style={{ width: 20, height: 20, paddingHorizontal: 10 }} />
+            <Text style={styles.callToOrderText}>Call to Order</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: '#346CD9',
+              height: 50,
+              width: 50,
+              borderBottomRightRadius: 10,
+              borderTopRightRadius: 10,
+              marginBottom: !!cartItems && cartItems?.length > 0 ? 60 : 20,
+            }}
+            onPress={() => {
+              setSlideCallToOrder(false);
+            }}
+          >
+            <WhiteCall style={{ width: 20, height: 20, padding: 5 }} />
+          </TouchableOpacity>
+        )}
+        <View style={{ marginLeft: -10, marginTop: -10 }}>
+          {!slideCallToOrder ? (
+            <TouchableOpacity
+              onPress={() => {
+                setSlideCallToOrder(true);
+              }}
+            >
+              <BlueCross style={{ width: 20, height: 20 }} />
+            </TouchableOpacity>
+          ) : null}
+        </View>
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
@@ -2914,6 +2978,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 {renderSections()}
                 {!!cartItems && cartItems?.length > 0 ? <View style={{ height: 20 }} /> : null}
               </ScrollView>
+              {renderCallToOrder()}
               {!!cartItems && cartItems?.length > 0 ? renderCartDetails() : null}
             </View>
           </>
@@ -2946,6 +3011,10 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     // alignItems: 'center',
     flexDirection: 'column',
+  },
+  callToOrderText: {
+    ...theme.viewStyles.text('SB', 14, 'white', 1),
+    paddingHorizontal: 10,
   },
   paitentModalView: {
     backgroundColor: 'white',
