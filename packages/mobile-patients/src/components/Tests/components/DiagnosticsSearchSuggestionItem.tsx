@@ -41,7 +41,7 @@ export const DiagnosticsSearchSuggestionItem: React.FC<DiagnosticsSearchSuggesti
         <View style={styles.nameAndPriceViewStyle}>
           <View style={{ width: '70%' }}>
             <Text numberOfLines={2} style={styles.testNameText}>
-              {nameFormater(name, 'default')}
+              {name}
             </Text>
           </View>
 

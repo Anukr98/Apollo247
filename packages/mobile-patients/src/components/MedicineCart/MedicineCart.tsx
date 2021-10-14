@@ -108,7 +108,10 @@ import { CheckedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { CircleCartItem } from '@aph/mobile-patients/src/components/MedicineCart/Components/CircleCartItem';
 import { OneApolloCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/OneApolloCard';
 import AsyncStorage from '@react-native-community/async-storage';
-import { MedicineOrderShipmentInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  MedicineOrderShipmentInput,
+  PharmaPrescriptionOptionInput,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useFetchHealthCredits } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useFetchHealthCredits';
 import { CleverTapEventName, CleverTapEvents } from '../../helpers/CleverTapEvents';
@@ -156,6 +159,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     productDiscount,
     cartPriceNotUpdateRange,
     uploadPrescriptionRequired,
+    setTatDetailsForPrescriptionOptions,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -499,17 +503,31 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           };
           postCleverTapEvent(CleverTapEventName.PHARMACY_CART_TAT_API_CALLED, eventAttributes);
           addressSelectedEvent(selectedAddress, response[0]?.tat, response);
+          const tatResponse = response?.[0];
+          const tatDetails: PharmaPrescriptionOptionInput = {
+            patientid: currentPatient?.id,
+            userType: pharmacyUserTypeAttribute?.User_Type,
+            tatType: tatResponse?.storeType?.toUpperCase(),
+            tatCity: tatResponse?.tatCity,
+            tatHours: tatResponse?.tatDuration,
+            items: serviceableItems?.map((item) => item?.sku),
+          };
+          setTatDetailsForPrescriptionOptions?.(tatDetails);
+          addressSelectedEvent(selectedAddress, tatResponse?.tat, response);
           updatePricesAfterTat(inventoryData, updatedCartItems);
         } catch (error) {
           setloading!(false);
           handleTatApiFailure(selectedAddress, error);
+          setTatDetailsForPrescriptionOptions?.({ patientid: currentPatient?.id });
         }
       } catch (error) {
         setloading!(false);
+        setTatDetailsForPrescriptionOptions?.({ patientid: currentPatient?.id });
       }
     } else if (!deliveryAddressId) {
       setlastCartItems(newCartItems);
       validatePharmaCoupon();
+      setTatDetailsForPrescriptionOptions?.({ patientid: currentPatient?.id });
     }
   }
 

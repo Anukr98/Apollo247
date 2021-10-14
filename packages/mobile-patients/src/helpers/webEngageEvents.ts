@@ -7,7 +7,8 @@ import {
   PharmaUserStatus,
   UploadPrescSource,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE, DIAGNOSTIC_PINCODE_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
+import { DiagnosticHomePageSource } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 type YesOrNo = 'Yes' | 'No';
 type HdfcPlan = 'SILVER' | 'GOLD' | 'PLATINUM';
@@ -34,6 +35,9 @@ export enum ProductPageViewedSource {
   CROSS_SELLING_PRODUCTS = 'cross selling products',
   SIMILAR_PRODUCTS = 'similar products',
   MULTI_VARIANT = 'multivariant',
+  PDP_ALL_SUSBTITUTES = 'PDP All Substitutes',
+
+  BRAND_PAGES = 'brandPages',
 }
 
 export enum WebEngageEventName {
@@ -178,6 +182,7 @@ export enum WebEngageEventName {
   COVID_VACCINATION_SECTION_CLICKED = 'Covid Vaccination Section Clicked',
   USER_LOCATION_CONSULT = 'User Location consult',
   USER_CHANGED_LOCATION = 'Change location',
+
   // Diagnostics Events
   DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
   DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'Diagnostic pincode entered',
@@ -196,9 +201,9 @@ export enum WebEngageEventName {
   DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE = 'Diagnostic add item clicked',
 
   DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE = 'Address Non Serviceable on Diagnostic Cart Page',
-  DIAGNOSTIC_AREA_SELECTED = 'Diagnostic Area Selected on Cart',
-  DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Diagnostic slot time selected',
-  DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic proceed to pay clicked',
+  DIAGNOSTIC_SLOT_TIME_SELECTED = 'Diagnostic slot time selected',
+  DIAGNOSTIC_MAKE_PAYMENT_CLICKED = 'Diagnostic make payment clicked',
+  DIAGNOSTIC_PATIENT_SELECTED = 'Diagnostic patient selected',
   PAYMENT_INITIATED = 'Payment Initiated',
   DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
   DIAGNOSTIC_TRACK_ORDER_VIEWED = 'Diagnostic track Order viewed',
@@ -539,14 +544,12 @@ export interface DiagnosticUserInfo {
   'Patient Gender': string;
   'Patient Name': string;
   'Patient Age': number;
+  'User Type'?: any
 }
-
 export interface DiagnosticLandingPage extends DiagnosticUserInfo {
-  Serviceability: 'Yes' | 'No';
-  Source?: string;
-  'Circle user': 'Yes' | 'No';
+    Source: DiagnosticHomePageSource;
+    'Circle user'?: string;
 }
-
 export interface DiagnosticServiceble {
   'Patient UHID': string;
   State: string;
@@ -693,6 +696,7 @@ export interface ItemSearchedOnLanding extends DiagnosticUserInfo {
   '# Results appeared': number;
   'Item in Results'?: object[];
   Popular?: 'Yes' | 'No';
+  'Circle user': string;
 }
 
 export interface ItemClickedOnLanding extends DiagnosticUserInfo {
@@ -700,11 +704,11 @@ export interface ItemClickedOnLanding extends DiagnosticUserInfo {
 }
 
 export interface DiagnosticPinCode extends DiagnosticUserInfo {
-  Mode: string;
   Pincode: number | string;
   Serviceability: 'Yes' | 'No';
+  Source : DIAGNOSTIC_PINCODE_SOURCE_TYPE,
+  'Circle user'?: 'Yes' | 'No'
 }
-
 export interface DoctorFilterClick {
   'Patient Name': string;
   'Patient UHID': string;
@@ -766,6 +770,11 @@ interface consultLocation {
   Platform: string;
   'Doctor details': any;
   Type: 'Auto Detect' | 'Manual entry';
+}
+
+export enum DIAGNOSTIC_SLOT_TYPE {
+  FREE = 'Free',
+  PAID = 'PAID'
 }
 export interface WebEngageEvents {
   // ********** AppEvents ********** \\
@@ -1019,7 +1028,9 @@ export interface WebEngageEvents {
       | 'Pharmacy Full Search'
       | 'Similar Widget'
       | 'Pharmacy Cart'
-      | 'Category Tree';
+      | 'Category Tree'
+      | 'Special Offers'
+      | 'Chronic Upsell Nudge';
     Brand?: string;
     'Brand ID'?: string;
     'category name'?: string;
@@ -1216,7 +1227,6 @@ export interface WebEngageEvents {
   };
 
   // ********** Diagnostic Events *******
-
   [WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED]: DiagnosticLandingPage;
   [WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED]: ItemSearchedOnLanding;
   [WebEngageEventName.DIAGNOSTIC_ITEM_SEARCHED]: ItemSearchedOnLanding;
@@ -1278,41 +1288,39 @@ export interface WebEngageEvents {
     Pincode: string | number;
     UHID: string;
   };
-  [WebEngageEventName.DIAGNOSTIC_AREA_SELECTED]: {
-    'Address Pincode': number;
-    'Area Selected': string;
+  [WebEngageEventName.DIAGNOSTIC_SLOT_TIME_SELECTED]: {
+    'Slot time': string;
+    'No. of slots' : number;
+    'Slot date' : string;
+    'Type': DIAGNOSTIC_SLOT_TYPE.FREE;
+    'Circle user': string;
   };
-  [WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED]: {
-    'Address Pincode': number;
-    'Area Selected': string;
-    'Time Selected': string;
-    'Slot selected': 'Manual' | 'Automatic';
-    'Slot available': 'Yes' | 'No';
-    UHID: string;
-  };
-  [WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED]: {
-    'Patient Name selected': string;
+  [WebEngageEventName.DIAGNOSTIC_MAKE_PAYMENT_CLICKED]: {
+    'No. of patients': number;
+    'No. of slots': number;
+    'Slot type': DIAGNOSTIC_SLOT_TYPE;
     'Total items in cart': number;
     'Sub Total': number;
-    // 'Delivery charge': number;
     'Net after discount': number;
-    'Prescription Uploaded?': boolean;
-    'Prescription Mandatory?': boolean;
-    'Mode of Sample Collection': 'Home Visit' | 'Clinic Visit';
     'Pin Code': string | number;
-    'Service Area': 'Pharmacy' | 'Diagnostic';
-    'Area Name': string;
-    'Area id': string | number;
+    'Address': string;
     'Home collection charges'?: number;
-    Discount?: number;
     'Collection Time Slot': string;
+    'Collection Date Slot': string | Date;
+    'Circle user': 'Yes' | 'No';
   };
+  [WebEngageEventName.DIAGNOSTIC_PATIENT_SELECTED]: {
+      'No. of patients': number;
+      'Patient UHID': string;
+      'Patient name': string;
+  },
   [WebEngageEventName.DIAGNOSTIC_TRACK_ORDER_VIEWED]: {
     'Patient UHID': string;
     'Patient Name': string;
     'Latest Order Status': string;
     'Order id': string;
     Source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary';
+    'Circle user' ?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED]: {
     'Order id'?: string;
@@ -1325,8 +1333,6 @@ export interface WebEngageEvents {
       | 'Copy Link to PDF';
   };
   [WebEngageEventName.DIAGNOSTIC_FEEDBACK_GIVEN]: {
-    'Patient UHID': string;
-    'Patient Name': string;
     Rating: string | number;
     'Thing to Improve selected': string;
   };
@@ -1335,10 +1341,10 @@ export interface WebEngageEvents {
     'Item ID': string; // (SKUID)
     Source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
     Section?: string;
-    'Circle user' : string; 
+    'Circle user': string;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
-    'Order id': string | number;
+    'Order id': any;
     Pincode: string | number;
     'Patient UHID': string;
     'Order amount': number; // Optional
@@ -1378,6 +1384,7 @@ export interface WebEngageEvents {
     'Item name': string;
     Pincode: string | number;
     Mode: 'Customer' | 'Automated';
+    'Circle user'?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE]: {
     'Item ID'?: string | number;
@@ -1389,6 +1396,8 @@ export interface WebEngageEvents {
     'Slot Time': string;
     'Slot Date': string;
     'Order id': string;
+    'Patient Name': string;
+    'Display Order ID': number;
   };
   [WebEngageEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED]: {
     UHID: string;

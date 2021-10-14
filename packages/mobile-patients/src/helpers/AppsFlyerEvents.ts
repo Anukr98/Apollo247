@@ -17,7 +17,8 @@ export type CircleNavigationSource =
   | 'My Account-My membership section'
   | 'Corporate Membership Page'
   | 'Circle Membership page'
-  | 'VC Doctor Card';
+  | 'VC Doctor Card'
+  | 'Diagnostic Review page'
 
 export type CIRCLE_EVENT_DATA = {
   userId: string;
@@ -328,6 +329,9 @@ export interface AppsFlyerEvents {
     'cart size': number;
     af_revenue: number;
     af_currency: string;
+    af_content_id: Array<string>,
+    af_quantity: Array<number>,
+    af_price: Array<number | undefined>,
     af_order_id?: string;
     'order id'?: string;
     orderAutoId?: string;

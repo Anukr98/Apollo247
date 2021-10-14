@@ -60,6 +60,7 @@ export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
   const pharmacyPincode =
     asyncPincode?.pincode || pharmacyLocation?.pincode || locationDetails?.pincode;
   const { currentPatient } = useAllCurrentPatients();
+  const movedFrom = 'Special Offers';
 
   useEffect(() => {
     fetchDataForBrandProducts();
@@ -134,10 +135,11 @@ export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
     );
   };
 
-  const onPressProduct = (urlKey: string, sku: string) => {
+  const onPressProduct = (urlKey: string, sku: string, movedFrom: string) => {
     props.navigation.navigate(AppRoutes.ProductDetailPage, {
       urlKey,
       sku,
+      movedFrom,
     });
   };
 
@@ -149,7 +151,7 @@ export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
     return (
       <View style={styles.hotSellersContainer}>
         <View style={styles.hotSellersBoxStyles}>
-          <TouchableOpacity onPress={() => onPressProduct(item?.url_key, item?.sku)}>
+          <TouchableOpacity onPress={() => onPressProduct(item?.url_key, item?.sku, movedFrom)}>
             {
               <View style={styles.squareContainer}>
                 {loading ? (
@@ -292,7 +294,7 @@ export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
       props.navigation,
       currentPatient,
       !!isPharmacyLocationServiceable,
-      { source: 'Pharmacy Partial Search', categoryId: category_id },
+      { source: 'Special Offers', categoryId: category_id },
       JSON.stringify(cartItems),
       () => setItemsLoading({ ...itemsLoading, [sku]: false }),
       pharmacyCircleAttributes!

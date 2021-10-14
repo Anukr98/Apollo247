@@ -419,7 +419,6 @@ const styles = StyleSheet.create({
     tintColor: theme.colors.APP_YELLOW_COLOR,
   },
   searchIconStyle: {
-    marginLeft: -16,
     height: 23,
     width: 23,
     tintColor: theme.colors.SHERPA_BLUE,
@@ -433,7 +432,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: theme.colors.SHERPA_BLUE,
   },
-  currentLocationContainer: { paddingLeft: '4%', paddingTop: '5%' },
+  currentLocationContainer: { paddingLeft: '4%', paddingTop: 1 },
   currentLocationHeadingText: {
     ...theme.fonts.IBMPlexSansSemiBold(16),
     lineHeight: 21,

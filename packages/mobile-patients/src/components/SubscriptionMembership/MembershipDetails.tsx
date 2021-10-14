@@ -66,7 +66,6 @@ import { CardContent } from '@aph/mobile-patients/src/components/SubscriptionMem
 import { BenefitsConsumedTab } from '@aph/mobile-patients/src/components/SubscriptionMembership/Components/BenefitsConsumedTab';
 import { CircleSavings } from '@aph/mobile-patients/src/components/SubscriptionMembership/Components/CircleSavings';
 import { FAQComponent } from '@aph/mobile-patients/src/components/SubscriptionMembership/Components/FAQComponent';
-import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
 import { UserConstentPopup } from '@aph/mobile-patients/src/components/SubscriptionMembership/UserConsentPopup';
 import { DiabeticQuestionairePopup } from '@aph/mobile-patients/src/components/SubscriptionMembership/DiabeticQuestionairePopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -367,7 +366,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         let tempCorporateData = corporateSubscriptions[subscriptionIndex];
         let corporateBenefits: CorporateBenefits[] = [];
         if (benefits?.length) {
-          benefits?.forEach((item) => {
+          benefits?.forEach((item: any) => {
             const benefit: CorporateBenefits = {
               benefitName: item?.benefitName,
               benefitShortDesc: item?.benefitShortDesc,
@@ -382,7 +381,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         }
         let faqs: CorporateFaq[] = [];
         if (corporateFaqs?.length) {
-          corporateFaqs?.forEach((item) => {
+          corporateFaqs?.forEach((item: any) => {
             const faq = {
               faqQuestion: item?.packFaqQuestion,
               faqAnswer: item?.packFaqAnswer,
@@ -460,9 +459,9 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
             let corporatePlan: SubscriptionData[] = [];
             Object.keys(groupPlans).forEach((plan_name) => {
               if (plan_name !== 'APOLLO' && plan_name !== 'HDFC') {
-                groupPlans[plan_name]?.forEach((subscription) => {
+                groupPlans[plan_name]?.forEach((subscription: any) => {
                   const plan = setSubscriptionData(subscription, false, true);
-                  corporatePlan.push(plan);
+                  corporatePlan.push(plan!);
                 });
               }
             });
@@ -471,13 +470,13 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
 
             if (hdfcPlan) {
               const hdfcSubscription = setSubscriptionData(hdfcPlan[0]);
-              setHdfcUserSubscriptions && setHdfcUserSubscriptions(hdfcSubscription);
+              setHdfcUserSubscriptions && setHdfcUserSubscriptions(hdfcSubscription!);
 
               const subscriptionName = g(hdfcSubscription, 'name')
                 ? g(hdfcSubscription, 'name')
                 : '';
               if (g(hdfcSubscription, 'isActive')) {
-                setHdfcPlanName && setHdfcPlanName(subscriptionName);
+                setHdfcPlanName && setHdfcPlanName(subscriptionName!);
               }
               if (
                 subscriptionName === Hdfc_values.PLATINUM_PLAN &&
@@ -509,7 +508,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
 
   const fireCircleMembershipPageViewed = (_circleData: any) => {
     const circlePriceAndDuration = _circleData?.plan_summary?.find(
-      (_item) => _item?.subPlanId === circlePlanValidity?.plan_id
+      (_item: any) => _item?.subPlanId === circlePlanValidity?.plan_id
     );
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_MEMBERSHIP_PAGE_VIEWED] = {
       navigation_source: circleEventSource,
@@ -530,7 +529,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     const planSummary: CirclePlanSummary[] = [];
     const summary = plan?.plan_summary;
     if (summary && summary.length) {
-      summary.forEach((value) => {
+      summary.forEach((value: any) => {
         const plan_summary: CirclePlanSummary = {
           price: value?.price,
           renewMode: value?.renew_mode,
@@ -557,7 +556,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     const benefits = plan.benefits;
     const circleBenefits: PlanBenefits[] = [];
     if (benefits && benefits.length) {
-      benefits.forEach((item) => {
+      benefits.forEach((item: any) => {
         const ctaAction = item?.cta_action;
         const benefitCtaAction: BenefitCtaAction = {
           type: ctaAction?.type,
@@ -611,7 +610,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       const benefits = plan.benefits;
       const planBenefits: PlanBenefits[] = [];
       if (benefits && benefits.length) {
-        benefits.forEach((item) => {
+        benefits.forEach((item: any) => {
           const ctaAction = g(item, 'cta_action');
           if (
             g(ctaAction, 'meta', 'action') === string.common.CorporateVaccineBenefit &&
@@ -694,7 +693,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       const deliverySavings = savings?.delivery || 0;
       const totalSavings = consultSavings + pharmaSavings + diagnosticsSavings + deliverySavings;
       const docOnCallBenefit = circlebenefits?.filter(
-        (value) => value?.attribute === Circle.DOC_ON_CALL
+        (value: any) => value?.attribute === Circle.DOC_ON_CALL
       );
       setTotalCircleSavings &&
         setTotalCircleSavings({
@@ -742,7 +741,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const renderActivePlans = () => {
     return (
       areBenefitsAvailable &&
-      benefits.map((value) => {
+      benefits?.map((value: any) => {
         const {
           headerContent,
           description,
@@ -1059,11 +1058,11 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   };
 
   const renderBenefitsConsumed = () => {
-    const benefitsConsumed = benefits.filter((benefit) => {
-      return benefit.attributeType?.type !== 'unlimited';
+    const benefitsConsumed = benefits?.filter((benefit: any) => {
+      return benefit?.attributeType?.type !== 'unlimited';
     });
 
-    if (benefitsConsumed.length) {
+    if (benefitsConsumed?.length) {
       return <BenefitsConsumedTab benefitsConsumed={benefitsConsumed} />;
     } else {
       return <></>;
@@ -1540,7 +1539,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       {showAvailPopup && (
         <AvailNowPopup
           onClose={() => setShowAvailPopup(false)}
-          transactionAmount={upgradeTransactionValue}
+          transactionAmount={upgradeTransactionValue!}
           planName={upgradePlanName}
           navigation={props.navigation}
         />

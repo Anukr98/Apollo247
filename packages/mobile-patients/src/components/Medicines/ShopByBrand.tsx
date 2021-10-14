@@ -8,7 +8,7 @@ import {
   CommonLogEvent,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { Brand, getAllBrands } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { Brand, getAllBrands, getBrandPagesData } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
@@ -170,10 +170,35 @@ export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
                   activeOpacity={1}
                   onPress={() => {
                     CommonLogEvent(AppRoutes.ShopByBrand, 'Naviagte to search by brand view');
-                    props.navigation.navigate(AppRoutes.MedicineListing, {
-                      title: item.title,
-                      category_id: item.category_id,
-                    });
+                    getBrandPagesData(item?.url_key)
+                      .then(({ data }) => {
+                        const couponResponse = data;
+                        if (
+                          !!couponResponse &&
+                          couponResponse?.success === true &&
+                          !!couponResponse?.data &&
+                          couponResponse?.data?.length > 0
+                        ) {
+                          props.navigation.navigate(AppRoutes.BrandPages, {
+                            movedFrom: 'home',
+                            brandData: couponResponse?.data,
+                            category_id: item.category_id,
+                            title: item.title || 'Products',
+                          });
+                        } else {
+                          props.navigation.navigate(AppRoutes.MedicineListing, {
+                            category_id: item.category_id,
+                            title: item.title || 'Products',
+                          });
+                        }
+                      })
+                      .catch(({ error }) => {
+                        CommonBugFender('MedicinePage_fetchBrandPageData', error);
+                        props.navigation.navigate(AppRoutes.MedicineListing, {
+                          category_id: item.category_id,
+                          title: item.title,
+                        });
+                      });
                   }}
                 >
                   <Text

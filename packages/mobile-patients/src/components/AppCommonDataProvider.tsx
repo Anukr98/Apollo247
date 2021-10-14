@@ -229,6 +229,8 @@ export interface AppCommonDataContextProps {
   setUrology: ((arg0: { id: string; data: getDoctorsBySpecialtyAndFilters }) => void) | null;
   needHelpToContactInMessage: string;
   setNeedHelpToContactInMessage: ((value: string) => void) | null;
+  needHelpTicketReferenceText: string;
+  setNeedHelpTicketReferenceText: ((value: string) => void) | null;
   needHelpReturnPharmaOrderSuccessMessage: string;
   setNeedHelpReturnPharmaOrderSuccessMessage: ((value: string) => void) | null;
   covidVaccineCta: any;
@@ -338,6 +340,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setUrology: null,
   needHelpToContactInMessage: '',
   setNeedHelpToContactInMessage: null,
+  needHelpTicketReferenceText: '',
+  setNeedHelpTicketReferenceText: null,
   needHelpReturnPharmaOrderSuccessMessage: '',
   setNeedHelpReturnPharmaOrderSuccessMessage: null,
   covidVaccineCta: null,
@@ -501,6 +505,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
 
   const [needHelpToContactInMessage, setNeedHelpToContactInMessage] = useState<
     AppCommonDataContextProps['needHelpToContactInMessage']
+  >('');
+
+  const [needHelpTicketReferenceText, setNeedHelpTicketReferenceText] = useState<
+    AppCommonDataContextProps['needHelpTicketReferenceText']
   >('');
 
   const [
@@ -704,6 +712,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setEnt,
         needHelpToContactInMessage,
         setNeedHelpToContactInMessage,
+        needHelpTicketReferenceText,
+        setNeedHelpTicketReferenceText,
         needHelpReturnPharmaOrderSuccessMessage,
         setNeedHelpReturnPharmaOrderSuccessMessage,
         covidVaccineCta,

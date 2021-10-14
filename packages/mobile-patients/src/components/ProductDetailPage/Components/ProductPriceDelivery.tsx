@@ -19,7 +19,6 @@ export interface ProductPriceDeliveryProps {
   isExpress: boolean;
   isInStock: boolean;
   isSellOnline: boolean;
-  manufacturer?: string;
   showPincodePopup: (show: boolean) => void;
   deliveryTime?: string;
   deliveryError?: string;
@@ -40,7 +39,6 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     price,
     specialPrice,
     isInStock,
-    manufacturer,
     showPincodePopup,
     deliveryError,
     deliveryTime,
@@ -123,17 +121,6 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     ) : (
       <View style={[styles.inStockContainer, { backgroundColor: '#890000' }]}>
         <Text style={styles.stockText}>Out Of Stock</Text>
-      </View>
-    );
-  };
-
-  const renderManufacturer = () => {
-    return (
-      <View style={styles.manufacture}>
-        <Text
-          style={theme.viewStyles.text('R', 14, '#02475B', 1, 16, 0.35)}
-        >{`Manufacturer :`}</Text>
-        <Text style={styles.label}>{manufacturer}</Text>
       </View>
     );
   };
@@ -235,7 +222,6 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
         {renderIsInStock()}
       </View>
       {!!circleSubscriptionId && !!cashback && renderCareCashback()}
-      {!!manufacturer && !isPharma && renderManufacturer()}
       {showMultiVariantOption && renderMultiVariantOptions()}
       {isSellOnline && renderDeliverTo()}
       {!isBanned &&
@@ -248,6 +234,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
 const styles = StyleSheet.create({
   container: {
     marginVertical: 10,
+    paddingHorizontal: 15,
   },
   cardStyle: {
     flexDirection: 'row',
@@ -275,9 +262,6 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
   stockText: theme.viewStyles.text('M', 13, '#FFFFFF', 1, 18),
-  manufacture: {
-    marginTop: 7,
-  },
   deliveryTo: {
     flexDirection: 'row',
     marginVertical: 10,

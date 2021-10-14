@@ -427,10 +427,17 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         return 'th';
     }
   };
-
+  
   const getFormattedDateTimeWithBefore = (time: string) => {
     let day = parseInt(moment(time).format('D'));
     let getDaySubscript = getFormattedDaySubscript(day);
+    const isExpectedDateChanged =orderDetails.oldOrderTat! && statusToShowNewItems.includes(orderDetails.currentStatus!);
+    const days = new Date().getDate() - parseInt(time.split('-')[0]);
+    if (isExpectedDateChanged && days == -1) {
+      let finalDateTime = 'Arriving Tomorrow' + ' before ' + moment(time).format(string.time.TwelveHourFormat);
+      return finalDateTime;
+    }
+    
     let finalDateTime =
       day +
       getDaySubscript +
@@ -1981,7 +1988,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         ? 'Non Cart'
         : 'Cart',
       'Customer ID': currentPatient && currentPatient.id,
-      'Delivery date': orderDetails.orderTat
+      'Delivery Date': orderDetails.orderTat
         ? moment(orderDetails.orderTat).format('ddd, D MMMM, hh:mm A')
         : undefined,
       'Mobile number': currentPatient && currentPatient.mobileNumber,

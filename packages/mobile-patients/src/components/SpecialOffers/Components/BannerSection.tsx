@@ -2,13 +2,20 @@ import React, { useState } from 'react';
 import { View, Image as ImageNative, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { productsThumbnailUrl } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  postCleverTapEvent,
+  productsThumbnailUrl,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { renderMedicineBannerShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import Carousel from 'react-native-snap-carousel';
 import AsyncStorage from '@react-native-community/async-storage';
 import { USER_AGENT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
 import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const { width: winWidth } = Dimensions.get('window');
 
@@ -32,6 +39,14 @@ export const BannerSection: React.FC<BannerSectionProps> = (props) => {
 
   const renderSliderItem = ({ item, index }: { item; index: number }) => {
     const handleOnPress = () => {
+      const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_BANNER] = {
+        'Nav src': 'Special Offers',
+        'Banner position': slideIndex + 1,
+        Name: item?.name,
+        'IP ID': item?.ip_id,
+        'IP section name': item?.ip_section_name,
+      };
+      postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_BANNER, cleverTapEventAttributes);
       if (item.category_id) {
         props.navigation.navigate(AppRoutes.MedicineListing, {
           category_id: item.category_id,

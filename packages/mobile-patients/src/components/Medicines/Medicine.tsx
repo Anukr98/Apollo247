@@ -74,6 +74,7 @@ import {
   Brand,
   callToExotelApi,
   DealsOfTheDaySection,
+  getBrandPagesData,
   getMedicinePageProducts,
   getMedicineSearchSuggestionsApi,
   getNearByStoreDetailsApi,
@@ -1341,8 +1342,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_BANNER] = {
         'Banner position': slideIndex + 1,
       };
+      const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_BANNER] = {
+        'Nav src': 'Home Page',
+        'Banner position': slideIndex + 1,
+        Name: item?.name,
+        'IP ID': item?.ip_id,
+        'IP section name': item?.ip_section_name,
+      };
       postWebEngageEvent(WebEngageEventName.PHARMACY_BANNER_CLICK, eventAttributes);
-      postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_BANNER, eventAttributes);
+      postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_BANNER, cleverTapEventAttributes);
       if (item.category_id) {
         props.navigation.navigate(AppRoutes.MedicineListing, {
           category_id: item.category_id,
@@ -1854,10 +1862,36 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               imgUrl,
               () => {
                 postwebEngageCategoryClickedEvent(item.category_id, item.title, title, 'Home');
-                props.navigation.navigate(AppRoutes.MedicineListing, {
-                  category_id: item.category_id,
-                  title: item.title || 'Products',
-                });
+
+                getBrandPagesData(item?.url_key)
+                  .then(({ data }) => {
+                    const couponResponse = data;
+                    if (
+                      !!couponResponse &&
+                      couponResponse?.success === true &&
+                      !!couponResponse?.data &&
+                      couponResponse?.data?.length > 0
+                    ) {
+                      props.navigation.navigate(AppRoutes.BrandPages, {
+                        movedFrom: 'home',
+                        brandData: couponResponse?.data,
+                        category_id: item.category_id,
+                        title: item.title || 'Products',
+                      });
+                    } else {
+                      props.navigation.navigate(AppRoutes.MedicineListing, {
+                        category_id: item.category_id,
+                        title: item.title || 'Products',
+                      });
+                    }
+                  })
+                  .catch(({ error }) => {
+                    CommonBugFender('MedicinePage_fetchBrandPageData', error);
+                    props.navigation.navigate(AppRoutes.MedicineListing, {
+                      category_id: item.category_id,
+                      title: item.title || 'Products',
+                    });
+                  });
               },
               {
                 marginHorizontal: 4,
@@ -2270,6 +2304,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             props.navigation.navigate(AppRoutes.SpecialOffersScreen, {
               movedFrom: 'home',
             });
+            const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_SPECIAL_OFFERS_CLICKED] = {
+              'Nav src': 'Pharmacy Home',
+            };
+            postCleverTapEvent(
+              CleverTapEventName.PHARMACY_SPECIAL_OFFERS_CLICKED,
+              cleverTapEventAttributes
+            );
           }}
         />
         {sectionsView}
@@ -2364,19 +2405,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       },
     });
     const effectivePrice = Math.round(cartDiscountTotal - cartTotalCashback);
+    const circleMember = circleSubscriptionId && !isCircleExpired;
+    const nonCircleMember = !circleSubscriptionId || isCircleExpired;
     const showNudgeMessage =
-      pharmaHomeNudgeMessage?.show === 'yes' && pharmaHomeNudgeMessage?.nudgeMessage;
-    const showByUserType =
-      pharmaHomeNudgeMessage?.userType == 'all' ||
-      (pharmaHomeNudgeMessage?.userType == 'circle' && circleSubscriptionId && !isCircleExpired) ||
-      (pharmaHomeNudgeMessage?.userType == 'non-circle' &&
-        (!circleSubscriptionId || isCircleExpired));
+      pharmaHomeNudgeMessage?.show === 'yes' &&
+      ((circleMember && !!pharmaHomeNudgeMessage?.nudgeMessage) ||
+        (nonCircleMember && !!pharmaHomeNudgeMessage?.nudgeMessageNonCircle));
 
     return (
       <View style={[circleStyles.container, { backgroundColor: 'white' }]}>
-        {showNudgeMessage && showByUserType && (
-          <NudgeMessage nudgeMessage={pharmaHomeNudgeMessage} />
-        )}
+        {!!showNudgeMessage && <NudgeMessage nudgeMessage={pharmaHomeNudgeMessage} />}
         <View style={circleStyles.content}>
           <View
             style={{

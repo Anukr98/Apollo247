@@ -11,7 +11,7 @@ interface CertifiedCardProps {
   titleStyle?: StyleProp<TextStyle>;
 }
 
-export const CertifiedCard: React.FC<CertifiedCardProps> = (props) => {
+const CertifiedCard: React.FC<CertifiedCardProps> = (props) => {
   return (
     <View style={[styles.container, props.containerStyle]}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -23,6 +23,8 @@ export const CertifiedCard: React.FC<CertifiedCardProps> = (props) => {
     </View>
   );
 };
+
+export default React.memo(CertifiedCard);
 
 const styles = StyleSheet.create({
   container: {
