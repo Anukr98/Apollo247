@@ -3804,7 +3804,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const onClickCircleBenefits = (
-    membershipState: 'Expired' | 'About to Expire' | 'Not Expiring',
+    membershipState: 'Expired' | 'About to Expire' | 'Not Expiring' | 'New User',
     action: any
   ) => {
     postCircleWEGEvent(
@@ -3943,16 +3943,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       <View style={[styles.circleContainer, { borderWidth: 0 }]}>
         <CircleTypeCard7
           onButtonPress={() => {
-            onClickCircleBenefits('Not Expiring', string.Hdfc_values.MEMBERSHIP_DETAIL_CIRCLE);
-            props.navigation.navigate(AppRoutes.MembershipDetails, {
-              membershipType: 'CIRCLE PLAN',
-              isActive: true,
-              comingFrom: 'Circle Benifits(Home Screen)',
-              circleEventSource: 'Landing Home Page',
-            });
+            setShowCirclePlans(true);
+            onClickCircleBenefits('New User', 'renew');
           }}
-          price={healthCredits?.toString()}
-          validity={circleSavings?.toString()}
+          price={'199'}
+          validity={'6'}
         />
       </View>
     );
