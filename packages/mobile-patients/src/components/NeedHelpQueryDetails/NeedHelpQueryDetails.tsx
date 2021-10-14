@@ -8,12 +8,18 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  ArrowRight,
+  CrossPopup,
+  DropdownGreen,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT,
   SEND_HELP_EMAIL,
   CREATE_HELP_TICKET,
   GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS,
+  CANCEL_MEDICINE_ORDER_OMS,
+  GET_MEDICINE_ORDER_CANCEL_REASONS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetMedicineOrderShipmentDetails,
@@ -27,7 +33,12 @@ import {
   SendHelpEmail,
   SendHelpEmailVariables,
 } from '@aph/mobile-patients/src/graphql/types/SendHelpEmail';
-import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  aphConsole,
+  handleGraphQlError,
+  navigateToHome,
+  g,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
   WebEngageEvents,
@@ -38,7 +49,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
+import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
   FlatList,
   ListRenderItemInfo,
@@ -47,6 +58,8 @@ import {
   Text,
   View,
   BackHandler,
+  Alert,
+  Linking,
 } from 'react-native';
 import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
@@ -65,6 +78,18 @@ import {
   TicketNumberMutation,
   TicketNumberMutationVariables,
 } from '@aph/mobile-patients/src/graphql/types/TicketNumberMutation';
+import { Overlay } from 'react-native-elements';
+import { DropDown, Option } from '@aph/mobile-patients/src/components/ui/DropDown';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import {
+  GetMedicineOrderCancelReasons,
+  GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons,
+} from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderCancelReasons';
+import {
+  CancelMedicineOrderOMS,
+  CancelMedicineOrderOMSVariables,
+} from '@aph/mobile-patients/src/graphql/types/CancelMedicineOrderOMS';
+import { Spinner } from '../ui/Spinner';
 
 export interface Props
   extends NavigationScreenProps<{
@@ -83,6 +108,8 @@ export interface Props
     payment: any[];
     additionalInfo: boolean;
     etd: any;
+    billNumber: any;
+    refetchOrders: () => void;
   }> {}
 
 export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
@@ -102,7 +129,9 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const additionalInfo = navigation.getParam('additionalInfo') || false;
   const [showEmailPopup, setShowEmailPopup] = useState<boolean>(email ? false : true);
   const [requestEmailWithoutAction, setRequestEmailWithoutAction] = useState<boolean>(true);
-  const medicineOrderStatus = navigation.getParam('medicineOrderStatus');
+  const [medicineOrderStatus, setMedicineOrderStatus] = useState<MEDICINE_ORDER_STATUS>(
+    navigation.getParam('medicineOrderStatus')!
+  );
   const { saveNeedHelpQuery, getQueryData, getQueryDataByOrderStatus } = Helpers;
   const [queries, setQueries] = useState<NeedHelpHelpers.HelpSectionQuery[]>(_queries || []);
   const subQueriesData = getQueryData(queries, queryIdLevel1, queryIdLevel2);
@@ -122,27 +151,71 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const [tatBreach, setTatBreach] = React.useState<Boolean>(true);
   const [raiseOrderDelayQuery, setRaiseOrderDelayQuery] = React.useState<boolean>(false);
   const [etd, setEtd] = React.useState<string>(navigation.getParam('etd'));
+  const [isCancelVisible, setCancelVisible] = useState(false);
+  const [selectedReason, setSelectedReason] = useState('');
+  const [comment, setComment] = useState('');
+  const [overlayDropdown, setOverlayDropdown] = useState(false);
   const apolloClient = useApolloClient();
+  const [cancellationReasons, setCancellationReasons] = useState<
+    GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons[]
+  >([]);
+  const [click, setClick] = useState<string>('');
+  const [showSpinner, setShowSpinner] = useState(false);
+  const billNumber = navigation.getParam('billNumber');
+  const refetchOrders = navigation.getParam('refetchOrders');
+
   const { getHelpSectionQueries } = NeedHelpHelpers;
 
   const orderDelayTitle = 'My order is getting Delayed';
+  const orderCancelId = '093b687f-fad1-4b55-b53f-be2312987142'; //id for order cancel title
+  const [cancellationAllowed, setCancellationAllowed] = useState<boolean>(false);
+  const [message, setMessage] = useState<string>('');
+  const [cancellationRequestRaised, setCancellationRequestRaised] = useState<boolean>(false);
+  const [cancellationRequestRejected, setCancellationrequestRejected] = useState<boolean>(
+    false
+  );
+  const [flatlistData, setFlatlistData] = useState<any[]>([]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', () => {
-      if (orderDelayed) {
-        setOrderDelayed(false);
+      if (
+        medicineOrderStatus === MEDICINE_ORDER_STATUS.CANCELLED ||
+        medicineOrderStatus === MEDICINE_ORDER_STATUS.CANCEL_REQUEST
+      ) {
+        navigation.navigate(AppRoutes.OrderDetailsScene, {
+          orderAutoId: orderId,
+          status: medicineOrderStatus,
+        });
+      }
+      if (click?.length > 0) {
+        setClick('');
         return true;
       } else navigation.goBack();
     });
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', () => {
-        if (orderDelayed) {
-          setOrderDelayed(false);
+        if (
+          medicineOrderStatus === MEDICINE_ORDER_STATUS.CANCELLED ||
+          medicineOrderStatus === MEDICINE_ORDER_STATUS.CANCEL_REQUEST
+        ) {
+          navigation.navigate(AppRoutes.OrderDetailsScene, {
+            orderAutoId: orderId,
+            status: medicineOrderStatus,
+          });
+        }
+        if (click?.length > 0) {
+          setClick('');
           return true;
         } else navigation.goBack();
       });
     };
-  }, [orderDelayed]);
+  }, [click, medicineOrderStatus]);
+
+  useEffect(() => {
+    if (cancellationAllowed && !cancellationRequestRaised && click === orderCancelId) {
+      getCancellationReasons();
+    }
+  }, [click]);
 
   useEffect(() => {
     if (!_queries) {
@@ -194,6 +267,21 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       variables: vars,
       fetchPolicy: 'no-cache',
     });
+    setCancellationAllowed(
+      data?.getMedicineOrderOMSDetailsWithAddress?.orderCancellationAllowedDetails
+        ?.cancellationAllowed
+    );
+    setCancellationRequestRaised(
+      data?.getMedicineOrderOMSDetailsWithAddress?.orderCancellationAllowedDetails
+        ?.cancellationRequestRaised!
+    );
+    setCancellationrequestRejected(
+      data?.getMedicineOrderOMSDetailsWithAddress?.orderCancellationAllowedDetails
+        ?.cancellationRequestRejected!
+    );
+    setMessage(
+      data?.getMedicineOrderOMSDetailsWithAddress?.orderCancellationAllowedDetails?.message || ''
+    );
     setTatBreach(data?.getMedicineOrderOMSDetailsWithAddress?.tatBreached);
     const order = data?.getMedicineOrderOMSDetailsWithAddress?.medicineOrderDetails;
     const paymentDetails = order?.medicineOrderPayments || [];
@@ -204,6 +292,257 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       ) || [];
     setFetchRefund(refundDetails);
     setFetchPayment(paymentDetails);
+  };
+  const vars: getMedicineOrderOMSDetailsWithAddressVariables = {
+    patientId: currentPatient && currentPatient.id,
+    orderAutoId: billNumber ? 0 : Number(orderId),
+    billNumber: billNumber || '',
+  };
+
+  const { data, loading, refetch } = useQuery<
+    getMedicineOrderOMSDetailsWithAddress,
+    getMedicineOrderOMSDetailsWithAddressVariables
+  >(GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS, {
+    variables: vars,
+    fetchPolicy: 'no-cache',
+  });
+
+  const getCancellationReasons = () => {
+    setShowSpinner(true);
+    client
+      .query<GetMedicineOrderCancelReasons>({
+        query: GET_MEDICINE_ORDER_CANCEL_REASONS,
+        variables: {},
+        fetchPolicy: 'no-cache',
+      })
+      .then((data) => {
+        if (
+          data.data.getMedicineOrderCancelReasons &&
+          data.data.getMedicineOrderCancelReasons.cancellationReasons &&
+          data.data.getMedicineOrderCancelReasons.cancellationReasons.length > 0
+        ) {
+          let cancellationArray: any = [];
+          data.data.getMedicineOrderCancelReasons.cancellationReasons.forEach(
+            (cancellationReasons, index) => {
+              if (cancellationReasons && cancellationReasons.isUserReason) {
+                cancellationArray.push(cancellationReasons);
+              }
+            }
+          );
+          setCancellationReasons(cancellationArray);
+          setCancelVisible(true);
+        }
+      })
+      .catch((error) => {
+        setClick('');
+        handleGraphQlError(error);
+      })
+      .finally(() => {
+        setShowSpinner(false);
+      });
+  };
+
+  const onPressConfirmCancelOrder = () => {
+    setShowSpinner(true);
+    const variables: CancelMedicineOrderOMSVariables = {
+      medicineOrderCancelOMSInput: {
+        orderNo: typeof orderId == 'string' ? parseInt(orderId, 10) : orderId,
+        cancelReasonCode:
+          cancellationReasons &&
+          cancellationReasons.find((item) => item.description == selectedReason)!.reasonCode,
+        cancelReasonText: comment,
+      },
+    };
+
+    client
+      .mutate<CancelMedicineOrderOMS, CancelMedicineOrderOMSVariables>({
+        mutation: CANCEL_MEDICINE_ORDER_OMS,
+        variables,
+      })
+      .then(({ data }) => {
+        aphConsole.log({
+          s: data,
+        });
+        const setInitialSate = () => {
+          setShowSpinner(false);
+          setCancelVisible(false);
+          setComment('');
+          setSelectedReason('');
+          setClick('');
+        };
+        const requestStatus = g(data, 'cancelMedicineOrderOMS', 'orderStatus');
+        if (
+          requestStatus == MEDICINE_ORDER_STATUS.CANCEL_REQUEST ||
+          requestStatus == MEDICINE_ORDER_STATUS.CANCELLED
+        ) {
+          const data = getQueryDataByOrderStatus(
+            subQueriesData,
+            isOrderRelatedIssue,
+            requestStatus
+          );
+          setMedicineOrderStatus(MEDICINE_ORDER_STATUS.CANCELLED);
+          setFlatlistData(data);
+          showAphAlert &&
+            showAphAlert({
+              title: 'Hi :)',
+              description:
+                requestStatus == MEDICINE_ORDER_STATUS.CANCELLED
+                  ? string.orderDetailScreen.cancelled
+                  : requestStatus == MEDICINE_ORDER_STATUS.CANCEL_REQUEST
+                  ? string.orderDetailScreen.cancellationRequest
+                  : '',
+            });
+          refetch()
+            .then(() => {
+              setInitialSate();
+            })
+            .catch((e) => {
+              CommonBugFender('OrderDetailsScene_refetch', e);
+              setInitialSate();
+            });
+          refetchOrders && refetchOrders();
+        } else {
+          Alert.alert('Error', g(data, 'cancelMedicineOrderOMS', 'orderStatus')!);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('OrderDetailsScene_onPressConfirmCancelOrder_SAVE_ORDER_CANCEL_STATUS', e);
+        setShowSpinner(false);
+        handleGraphQlError(e);
+        setClick('');
+      });
+  };
+
+  const renderReturnOrderOverlay = () => {
+    const optionsDropdown = overlayDropdown && (
+      <Overlay
+        onBackdropPress={() => setOverlayDropdown(false)}
+        isVisible={overlayDropdown}
+        overlayStyle={styles.dropdownOverlayStyle}
+      >
+        <DropDown
+          cardContainer={{
+            margin: 0,
+          }}
+          options={cancellationReasons.map(
+            (cancellationReasons, i) =>
+              ({
+                onPress: () => {
+                  setSelectedReason(cancellationReasons.description!);
+                  setOverlayDropdown(false);
+                },
+                optionText: cancellationReasons.description,
+              } as Option)
+          )}
+        />
+      </Overlay>
+    );
+
+    const heading = (
+      <View
+        style={styles.headingView}
+      >
+        <Text
+          style={{
+            ...theme.fonts.IBMPlexSansMedium(16),
+            color: theme.colors.SHERPA_BLUE,
+            textAlign: 'center',
+          }}
+        >
+          Cancel Order
+        </Text>
+      </View>
+    );
+
+    const content = (
+      <View style={{ paddingHorizontal: 16 }}>
+        <Text
+          style={styles.contentView}
+        >
+          Why are you cancelling this order?
+        </Text>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => {
+            setOverlayDropdown(true);
+          }}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text
+              style={[
+                {
+                  flex: 0.9,
+                  ...theme.fonts.IBMPlexSansMedium(18),
+                  color: theme.colors.SHERPA_BLUE,
+                },
+                selectedReason ? {} : { opacity: 0.3 },
+              ]}
+              numberOfLines={1}
+            >
+              {selectedReason || 'Select reason for cancelling'}
+            </Text>
+            <View style={{ flex: 0.1 }}>
+              <DropdownGreen style={{ alignSelf: 'flex-end' }} />
+            </View>
+          </View>
+          <View
+            style={{
+              marginTop: 5,
+              backgroundColor: theme.colors.CONSULT_SUCCESS_TEXT,
+              height: 2,
+            }}
+          />
+        </TouchableOpacity>
+        <TextInputComponent
+          value={comment}
+          onChangeText={(text) => {
+            setComment(text);
+          }}
+          label={'Add Comments (Optional)'}
+          placeholder={'Enter your comments here…'}
+        />
+      </View>
+    );
+
+    const bottomButton = (
+      <Button
+        style={{ margin: 16, marginTop: 32, width: 'auto' }}
+        onPress={onPressConfirmCancelOrder}
+        disabled={!!!selectedReason && showSpinner}
+        title={'SUBMIT REQUEST'}
+      />
+    );
+
+    return (
+      isCancelVisible && (
+        <View
+          style={styles.cancel}
+        >
+          <View style={{ marginHorizontal: 20 }}>
+            <TouchableOpacity
+              style={{ marginTop: 38, alignSelf: 'flex-end' }}
+              onPress={() => {
+                setCancelVisible(!isCancelVisible);
+                setSelectedReason('');
+                setComment('');
+                setClick('');
+              }}
+            >
+              <CrossPopup />
+            </TouchableOpacity>
+            <View style={{ height: 16 }} />
+            <View
+              style={styles.cancelView}
+            >
+              {optionsDropdown}
+              {heading}
+              {content}
+              {bottomButton}
+            </View>
+          </View>
+        </View>
+      )
+    );
   };
 
   const cleverTapEvent = (eventName: CleverTapEventName, extraAttributes?: Object) => {
@@ -219,8 +558,17 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   };
   const renderHeader = () => {
     const onPressBack = () => {
-      if (orderDelayed) {
-        return setOrderDelayed(false);
+      if (
+        medicineOrderStatus === MEDICINE_ORDER_STATUS.CANCELLED ||
+        medicineOrderStatus === MEDICINE_ORDER_STATUS.CANCEL_REQUEST
+      ) {
+        return navigation.navigate(AppRoutes.OrderDetailsScene, {
+          orderAutoId: orderId,
+          status: medicineOrderStatus,
+        });
+      }
+      if (click?.length > 0) {
+        return setClick('');
       }
       navigation.goBack();
       cleverTapEvent(
@@ -295,21 +643,21 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           : parentQuery?.id == helpSectionQueryId.diagnostic
           ? ORDER_TYPE.DIAGNOSTICS
           : null;
-      const reason =
-        subQueries?.length > 0
-          ? subQueries?.find(({ id }) => id === selectedQueryId)?.title
-          : subQueriesData?.title;
-      const variables: TicketNumberMutationVariables = {
-        createHelpTicketHelpEmailInput: {
-          category: parentQuery?.title,
-          reason: reason,
-          comments: comments,
-          patientId: currentPatient?.id,
-          email: email,
-          orderId: queryOrderId,
-          orderType,
-        },
-      };
+          const reason =
+          subQueries?.length > 0
+            ? subQueries?.find(({ id }) => id === selectedQueryId)?.title
+            : subQueriesData?.title;
+        const variables: TicketNumberMutationVariables = {
+          createHelpTicketHelpEmailInput: {
+            category: parentQuery?.title,
+            reason: reason,
+            comments: comments,
+            patientId: currentPatient?.id,
+            email: email,
+            orderId: queryOrderId,
+            orderType,
+          },
+        };
 
       let res = await client.mutate<TicketNumberMutation, TicketNumberMutationVariables>({
         mutation: CREATE_HELP_TICKET,
@@ -476,6 +824,13 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const renderItem = ({ item }: ListRenderItemInfo<NeedHelpHelpers.HelpSectionQuery>) => {
     const onPress = () => {
       const isReturnQuery = item?.id === helpSectionQueryId.returnOrder;
+      setClick(item?.title!);
+      if (item?.id === orderCancelId && !raiseOrderDelayQuery) {
+        setClick(orderCancelId);
+        setSelectedQueryId('');
+        setComments('');
+        return;
+      }
       if (item?.queries?.length) {
         navigation.push(AppRoutes.NeedHelpQueryDetails, {
           queryIdLevel2: item?.id,
@@ -549,13 +904,13 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     );
   };
 
-  const capitalizeStatusMessage = (str: string) => {
+  const capitalizeStatusMessage =(str: string)=>{
     var splitStr = str.toLowerCase().split(' ');
     for (var i = 0; i < splitStr.length; i++) {
-      splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
+        splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);     
     }
-    return `"${splitStr.join(' ')}"`;
-  };
+    return `"${splitStr.join(' ')}"`
+ }
 
   const renderReasons = () => {
     if (!subQueries?.length) {
@@ -567,26 +922,40 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       !!medicineOrderStatusDate &&
       moment(new Date()).diff(moment(medicineOrderStatusDate), 'hours') <= 48;
 
-    if (!showReturnOrder) {
-      data = data.filter((item) => item?.id !== helpSectionQueryId.returnOrder);
-    }
+      if (!showReturnOrder) {
+        data = data.filter((item) => item?.id !== helpSectionQueryId.returnOrder);
+      }
+  
+      const showMessage = (tat: boolean) => {
+        if (tat) {
+          const str = string.needHelpQueryDetails.tatBreachedTrue;
+          const newStr = str.replace(
+            '{{medicineOrderStatus}}',
+            capitalizeStatusMessage(medicineOrderStatus?.replace('_', ' ') || '')
+          );
+          return newStr;
+        } else {
+          const str = string.needHelpQueryDetails.tatBreachedFalse;
+          const newStr = str.replace(
+            '{{medicineOrderStatus}}',
+            capitalizeStatusMessage(medicineOrderStatus?.replace('_', ' ') || '')
+          );
+          const finalStringToBeSend = newStr.replace('{{etd}}', etd);
+          return finalStringToBeSend;
+        }
+      };
 
-    const showMessage = (tat: boolean) => {
-      if (tat) {
-        const str = string.needHelpQueryDetails.tatBreachedTrue;
-        const newStr = str.replace(
-          '{{medicineOrderStatus}}',
-          capitalizeStatusMessage(medicineOrderStatus?.replace('_', ' ') || '')
+    const renderCancelOrder = () => {
+      if (!cancellationAllowed) {
+        return (
+          <>
+            <View style={styles.flatListContainer2}>
+              <Text style={styles.flatListItem}>
+                {message ? message : string.needHelpQueryDetails.message}
+              </Text>
+            </View>
+          </>
         );
-        return newStr;
-      } else {
-        const str = string.needHelpQueryDetails.tatBreachedFalse;
-        const newStr = str.replace(
-          '{{medicineOrderStatus}}',
-          capitalizeStatusMessage(medicineOrderStatus?.replace('_', ' ') || '')
-        );
-        const finalStringToBeSend = newStr.replace('{{etd}}', etd);
-        return finalStringToBeSend;
       }
     };
 
@@ -640,19 +1009,27 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
     return (
       <>
+        <>{renderReturnOrderOverlay()}</>
+        {(loading || showSpinner) && <Spinner style={{ zIndex: 200 }} />}
         <SafeAreaView>
-          {orderDelayed ? (
+          {orderDelayed && click === orderDelayTitle ? (
             <>{renderOrderStatus()}</>
+          ) : click === orderCancelId ? (
+            !cancellationAllowed ? (
+              <>{renderCancelOrder()}</>
+            ) : null
           ) : (
-            <View style={styles.flatListContainer}>
-              <FlatList
-                data={data}
-                renderItem={renderItem}
-                keyExtractor={(_, i) => `${i}`}
-                bounces={false}
-                ItemSeparatorComponent={renderDivider}
-              />
-            </View>
+            !isCancelVisible && (
+              <View style={styles.flatListContainer}>
+                <FlatList
+                  data={flatlistData?.length > 0 ? flatlistData : data}
+                  renderItem={renderItem}
+                  keyExtractor={(_, i) => `${i}`}
+                  bounces={false}
+                  ItemSeparatorComponent={renderDivider}
+                />
+              </View>
+            )
           )}
         </SafeAreaView>
       </>
@@ -665,7 +1042,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
   const renderHeading = () => {
     const title = headingTitle;
-    if (orderDelayed) {
+    if (click) {
       return;
     }
     const text = orderId
@@ -676,10 +1053,12 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
   const renderSubHeading = () => {
     const text = 'SELECT YOUR ISSUE';
-    if (orderDelayed) {
+    if (click) {
       return (
         <Text style={[styles.subHeading, styles.txtBold, styles.subHeadingText]}>
-          My Order is getting delayed
+          {cancellationAllowed && click === orderCancelId && !cancellationRequestRaised
+            ? null
+            : click}
         </Text>
       );
     }
@@ -778,4 +1157,42 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
+  dropdownOverlayStyle: {
+    padding: 0,
+    margin: 0,
+    height: 'auto',
+    borderRadius: 10,
+  },
+  cancel:{
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    justifyContent: 'flex-start',
+    flex: 1,
+    left: 0,
+    right: 0,
+    zIndex: 100,
+  },
+  cancelView:{
+    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+    borderBottomLeftRadius: 10,
+  },
+  contentView:{
+    marginBottom: 12,
+    color: theme.colors.SKY_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(17),
+    lineHeight: 24,
+  },
+  headingView:{
+    ...theme.viewStyles.cardContainer,
+    backgroundColor: theme.colors.WHITE,
+    padding: 18,
+    marginBottom: 24,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  }
 });
