@@ -5123,8 +5123,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <View style={{ flexDirection: 'row', backgroundColor: '#fff', marginBottom: -8 }}>
           {isSearchFocus ? null : renderProfileDrop()}
         </View>
-        {/* below line could be added for now not in designs */}
-        {/* <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text> */}
+
         {renderGlobalSearch()}
         {searchLoading ? (
           renderGlobalSearchShimmer()
