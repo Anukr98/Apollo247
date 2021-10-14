@@ -670,8 +670,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     alignSelf: 'center',
     paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: '#F9D5B4',
     borderRadius: 6,
     width: '90%',
   },
@@ -3858,7 +3856,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
        */
     }
     return (
-      <LinearGradientComponent style={styles.circleContainer} colors={['#FFEEDB', '#FFFCFA']}>
+      <LinearGradientComponent
+        style={[
+          styles.circleContainer,
+          {
+            borderWidth: circleStatus !== 'active' ? 1 : 0,
+            borderColor: circleStatus !== 'active' ? '#F9D5B4' : '',
+          },
+        ]}
+        colors={['#FFEEDB', '#FFFCFA']}
+      >
         {expiry > 0 && circleStatus === 'active' && renew && circleSavings > 0 ? (
           <CircleTypeCard1
             onButtonPress={() => {
@@ -3892,7 +3899,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             credits={healthCredits?.toString()}
             savings={circleSavings?.toString()}
           />
-        ) : expiry > 0 && circleStatus === 'active' && !renew ? (
+        ) : expiry < 0 && circleStatus === 'active' && !renew ? (
           <CircleTypeCard4
             onButtonPress={() => {
               onClickCircleBenefits('Not Expiring', string.Hdfc_values.MEMBERSHIP_DETAIL_CIRCLE);
@@ -3906,7 +3913,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             credits={healthCredits?.toString()}
             savings={circleSavings?.toString()}
           />
-        ) : circleStatus === 'disabled' && circleSavings > 0 ? (
+        ) : circleStatus !== 'disabled' && circleSavings > 0 ? (
           <CircleTypeCard5
             onButtonPress={() => {
               setShowCirclePlans(true);
@@ -3917,7 +3924,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             expired={expired}
             renew={renew}
           />
-        ) : circleStatus === 'disabled' ? (
+        ) : circleStatus !== 'disabled' ? (
           <CircleTypeCard6
             onButtonPress={() => {
               setShowCirclePlans(true);
