@@ -188,12 +188,12 @@ const styles = StyleSheet.create({
     margin: 10,
   },
   homeBanner: {
-    borderRadius: 5,
+    borderRadius: 6,
     borderColor: '#D3D3D3',
-    borderWidth: 0.5,
+    borderWidth: 1,
     height: 150,
-    width: '95%',
-    margin: 10,
+    width: '90%',
+    margin: 16,
   },
   subPlanTwoShimmer1: {
     borderRadius: 5,
@@ -433,7 +433,7 @@ export const renderCircleShimmer = () => {
 
 export const renderBannerShimmer = () => {
   return (
-    <View style={{ backgroundColor: '#f0f1ec', paddingHorizontal: 8 }}>
+    <View>
       <ShimmerPlaceHolder LinearGradient={LinearGradient} shimmerStyle={styles.homeBanner} />
       <View style={styles.sliderDotsContainer}>
         <View style={styles.sliderDots} />
