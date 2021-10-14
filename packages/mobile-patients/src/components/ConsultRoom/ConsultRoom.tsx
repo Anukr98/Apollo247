@@ -770,6 +770,11 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   activeAppointmentsContainer: {
+    shadowColor: theme.colors.SHADOW_GRAY,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
     marginVertical: 10,
     borderColor: '#D4D4D4',
     borderWidth: 1,
