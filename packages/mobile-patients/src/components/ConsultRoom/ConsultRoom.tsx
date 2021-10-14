@@ -270,8 +270,8 @@ const styles = StyleSheet.create({
   searchBarMainViewStyle: {
     flexDirection: 'row',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginTop: 6,
+    paddingVertical: 18,
+    marginTop: 1,
     alignItems: 'center',
     justifyContent: 'center',
     maxHeight: '100%',
@@ -4379,10 +4379,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         style={{
           justifyContent: 'space-between',
           flexDirection: 'row',
-          paddingTop: 16,
-          paddingHorizontal: 16,
+          padding: 16,
           backgroundColor: '#FDFBF9',
-          paddingBottom: 15,
         }}
       >
         <View style={{ flexDirection: 'row' }}>
