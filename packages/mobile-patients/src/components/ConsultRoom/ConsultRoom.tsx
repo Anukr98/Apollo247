@@ -3934,7 +3934,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return (
       <View
         style={{
-          paddingHorizontal: 20,
+          paddingHorizontal: 18,
         }}
       >
         {renderHealthArticleAndResources()}
@@ -4023,7 +4023,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             </Text>
           </View>
         </ImageBackground>
-        {/* <Image style={{ position: 'absolute', top: 24, alignSelf: 'center', width: 80, height: 80 }} source={require('@aph/mobile-patients/src/images/home/coronavirus_image.png')} /> */}
         <View style={{ padding: 16, paddingTop: 24 }}>
           {renderContent(string.common.healthBlog, string.common.healthBlogDescription)}
           {renderCovidHelpButtons()}
