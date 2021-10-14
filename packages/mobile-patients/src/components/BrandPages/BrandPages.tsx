@@ -108,6 +108,7 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
           undefined,
           undefined,
           undefined,
+          undefined,
           movedFromBrandPages
         );
       }
@@ -210,6 +211,7 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
             props.navigation,
             res?.routeName,
             res?.id ? res?.id : undefined,
+            undefined,
             undefined,
             undefined,
             undefined,

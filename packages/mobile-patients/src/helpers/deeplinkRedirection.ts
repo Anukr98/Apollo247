@@ -460,7 +460,8 @@ export const pushTheView = (
   isCorporateSubscribed?: boolean,
   vaccinationCmsIdentifier?: string,
   vaccinationSubscriptionId?: string,
-  params?: any
+  params?: any,
+  movedFromBrandPages?: boolean,
 ) => {
   setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
   switch (routeName) {
