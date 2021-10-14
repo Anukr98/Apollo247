@@ -664,12 +664,15 @@ const styles = StyleSheet.create({
   },
   circleContainer: {
     backgroundColor: theme.colors.WHITE,
-    marginTop: 15,
-    marginBottom: 10,
-    padding: 6,
-    width: '100%',
+    marginVertical: 12,
+    marginHorizontal: 16,
+    paddingHorizontal: 6,
     alignSelf: 'center',
-    paddingTop: 15,
+    paddingTop: 12,
+    borderWidth: 1,
+    borderColor: '#F9D5B4',
+    borderRadius: 6,
+    width: '90%',
   },
 
   circleCardsContainer: {
