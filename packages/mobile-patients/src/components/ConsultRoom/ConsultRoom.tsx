@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   covidCardContainer: {
-    borderRadius: 8,
+    borderRadius: 10,
     backgroundColor: theme.colors.WHITE,
     overflow: 'hidden',
     marginBottom: 18,
