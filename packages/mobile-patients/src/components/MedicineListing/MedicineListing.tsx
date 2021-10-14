@@ -69,7 +69,8 @@ export interface Props
     breadCrumb?: Pick<Category, 'title' | 'category_id'>[];
     categoryName?: string;
   }> {
-  brandsPageSeComing?: boolean | undefined;
+  comingFromBrandPage?: boolean | undefined;
+  currentBrandPageTab?: string;
 }
 
 // export const MedicineListing: React.FC<Props> = ({ navigation }) => {
@@ -92,7 +93,8 @@ export const MedicineListing: React.FC<Props> = (props) => {
   const breadCrumb = navigation.getParam('breadCrumb') || [];
   const categoryName = navigation.getParam('categoryName') || '';
 
-  const brandsPageSeComing = props?.brandsPageSeComing ? props?.brandsPageSeComing : false;
+  const comingFromBrandPage = props?.comingFromBrandPage ? props?.comingFromBrandPage : false;
+  const currentBrandPageTab = props?.currentBrandPageTab ? props?.currentBrandPageTab : '';
 
   const { pinCode } = useShoppingCart();
 
@@ -118,8 +120,8 @@ export const MedicineListing: React.FC<Props> = (props) => {
   const [bannerImage, setBannerImage] = React.useState<string>('');
   const onEndReachedCalledDuringMomentum = React.useRef(true);
 
-  const HEADER_MAX_HEIGHT = 140;
-  const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? 60 : 73;
+  const HEADER_MAX_HEIGHT = comingFromBrandPage ? 0 : 140;
+  const HEADER_MIN_HEIGHT = comingFromBrandPage ? 0 : Platform.OS === 'ios' ? 60 : 73;
   const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
 
   const scrollY = Animated.add(scroll, Platform.OS === 'ios' ? HEADER_MAX_HEIGHT : 0);
@@ -156,6 +158,14 @@ export const MedicineListing: React.FC<Props> = (props) => {
   };
 
   useEffect(() => {
+    if (currentBrandPageTab) {
+      setCategoryId(navigation.getParam('category_id') || '');
+      setSortBy(null);
+      setFilterBy({});
+    }
+  }, [currentBrandPageTab]);
+
+  useEffect(() => {
     if (categoryId && !searchText) {
       searchProductsByCategory(
         categoryId,
@@ -170,7 +180,7 @@ export const MedicineListing: React.FC<Props> = (props) => {
     } else if (categoryName) {
       getCategoryIdByName(categoryName);
     }
-  }, [sortBy, filterBy]);
+  }, [sortBy, filterBy, categoryId, searchText, currentBrandPageTab]);
 
   useEffect(() => {
     const filterContent = filterOptions.filter(({ values }) => values?.length);
@@ -321,7 +331,9 @@ export const MedicineListing: React.FC<Props> = (props) => {
         data?.design[0]?.mobile_banner_image.endsWith('.png') ||
         data?.design[0]?.mobile_banner_image.endsWith('.jpeg')
       )
-        setBannerImage(data?.design[0]?.mobile_banner_image);
+        comingFromBrandPage
+          ? setBannerImage('')
+          : setBannerImage(data?.design[0]?.mobile_banner_image);
       updateProducts(pageId, existingProducts, data);
       setProductsTotal(data.count);
       updateLoading(pageId, false);
@@ -425,6 +437,7 @@ export const MedicineListing: React.FC<Props> = (props) => {
       setFilterVisible,
       setSortByVisible,
       showFilterOption,
+      comingFromBrandPage,
     };
     return <MedicineListingSections {...props} />;
   };
@@ -603,7 +616,7 @@ export const MedicineListing: React.FC<Props> = (props) => {
   };
   return (
     <SafeAreaView style={container}>
-      {brandsPageSeComing == false && renderHeader()}
+      {comingFromBrandPage == false && renderHeader()}
       <View style={styles.fill}>
         <Animated.ScrollView
           style={{ ...styles.fill }}

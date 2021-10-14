@@ -1856,8 +1856,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               () => {
                 postwebEngageCategoryClickedEvent(item.category_id, item.title, title, 'Home');
 
-                // just pass item.url_key in place of adidas for brand name
-                getBrandPagesData('holland-barrett')
+                getBrandPagesData(item?.url_key)
                   .then(({ data }) => {
                     const couponResponse = data;
                     if (

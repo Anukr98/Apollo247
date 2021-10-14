@@ -38,6 +38,7 @@ export enum ProductPageViewedSource {
   MULTI_VARIANT = 'multivariant',
   PDP_ALL_SUSBTITUTES = 'PDP All Substitutes',
   PDP_FAST_SUSBTITUTES = 'PDP Fast Substitutes',
+  BRAND_PAGES = 'brandPages',
 }
 
 export enum CleverTapEventName {

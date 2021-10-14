@@ -34,6 +34,7 @@ export enum ProductPageViewedSource {
   CROSS_SELLING_PRODUCTS = 'cross selling products',
   SIMILAR_PRODUCTS = 'similar products',
   MULTI_VARIANT = 'multivariant',
+  BRAND_PAGES = 'brandPages',
 }
 
 export enum WebEngageEventName {

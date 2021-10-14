@@ -436,7 +436,8 @@ export const pushTheView = (
   voipAppointmentId?: MutableRefObject<string>,
   isCorporateSubscribed?: boolean,
   vaccinationCmsIdentifier?: string,
-  vaccinationSubscriptionId?: string
+  vaccinationSubscriptionId?: string,
+  movedFromBrandPages?: boolean,
 ) => {
   setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
   switch (routeName) {
@@ -461,16 +462,25 @@ export const pushTheView = (
       break;
     case 'MedicineDetail':
       const isUrlKey = id.indexOf('-') !== -1;
-      navigateToView(navigation, AppRoutes.ProductDetailPage, {
-        sku: isUrlKey ? null : id,
-        urlKey: isUrlKey ? id : null,
-        movedFrom: ProductPageViewedSource.DEEP_LINK,
-      });
+      if (movedFromBrandPages && movedFromBrandPages === true) {
+        navigation.navigate(AppRoutes.ProductDetailPage, {
+          sku: isUrlKey ? null : id,
+          urlKey: isUrlKey ? id : null,
+          movedFrom: ProductPageViewedSource.BRAND_PAGES 
+        });
+      } else {
+        navigateToView(navigation, AppRoutes.ProductDetailPage, {
+          sku: isUrlKey ? null : id,
+          urlKey: isUrlKey ? id : null,
+          movedFrom: ProductPageViewedSource.DEEP_LINK, 
+        });
+      }
       break;
     case 'Test':
       navigation.navigate('TESTS', { movedFrom: 'deeplink' });
       break;
     case 'ConsultRoom':
+      movedFromBrandPages ? navigation.goBack() :
       navigation.replace(AppRoutes.ConsultRoom);
       break;
     case 'Speciality':
@@ -508,7 +518,11 @@ export const pushTheView = (
       navigateToView(navigation, AppRoutes.MedicineListing, { searchText: id });
       break;
     case 'MedicineCategory':
-      navigateToView(navigation, AppRoutes.MedicineListing, { categoryName: id });
+      if (movedFromBrandPages && movedFromBrandPages === true) {
+        navigation.navigate( AppRoutes.MedicineListing, { categoryName: id, movedFrom: 'brandPages' });
+      } else {
+        navigateToView(navigation, AppRoutes.MedicineListing, { categoryName: id });
+      }
       break;
     case 'MedicineSearch':
       if (id && !id.includes('=')) {
@@ -695,16 +709,16 @@ const navigateToView = (
   routeName: AppRoutes,
   routeParams?: any
 ) => {
-  navigation.dispatch(
-    StackActions.reset({
-      index: 1,
-      key: null,
-      actions: [
-        NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom }),
-        NavigationActions.navigate({ routeName: routeName, params: routeParams || {} }),
-      ],
-    })
-  );
+    navigation.dispatch(
+      StackActions.reset({
+        index: 1,
+        key: null,
+        actions: [
+          NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom }),
+          NavigationActions.navigate({ routeName: routeName, params: routeParams || {} }),
+        ],
+      })
+    );
 };
 
 const handleEncodedURI = (encodedString: string) => {

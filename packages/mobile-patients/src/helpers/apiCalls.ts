@@ -649,6 +649,7 @@ export interface BrandPageApiResponse {
 export interface BrandData {
   brandName: string;
   brandMainBannerImg: string;
+  brandMobileBannerImg?: string;
   brandBannersList: BrandBannerData[];
   brandMenuList: BrandMenuData[];
 }
@@ -660,8 +661,8 @@ export interface BrandBannerData {
 
 export interface BrandMenuData {
   MenuName: string;
-  MenuRedirectionUrl: string;
-  MenuContent?: string;
+  MenuRedirectionUrl: string | null;
+  MenuContent?: string | null;
 }
 
 
