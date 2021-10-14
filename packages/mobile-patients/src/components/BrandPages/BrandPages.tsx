@@ -16,8 +16,8 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { USER_AGENT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { MedicineListing } from '../MedicineListing/MedicineListing';
-import { ProductPageViewedSource } from '../../helpers/CleverTapEvents';
-import { handleOpenURL, pushTheView } from '../../helpers/deeplinkRedirection';
+import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
 
 export interface BrandPagesProps
   extends NavigationScreenProps<{
@@ -66,7 +66,7 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
       <TouchableOpacity activeOpacity={1}>
         <ImageNative
           resizeMode="stretch"
-          style={{ width: '100%', height: imgHeight }}
+          style={{ width: '100%', minHeight: imgHeight }}
           source={{
             uri: imageUrl,
             headers: {
@@ -234,7 +234,7 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
     <SafeAreaView style={styles.container}>
       {renderHeader()}
       <ScrollView>
-        {renderMainBanner()}
+        {imageUrl !== '' && renderMainBanner()}
         <View style={styles.menuContainer}>
           <FlatList
             horizontal={true}
