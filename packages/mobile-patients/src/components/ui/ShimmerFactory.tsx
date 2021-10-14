@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     width: cardWidth,
     marginBottom: 20,
     marginLeft: 20,
-    borderRadius: 10,
+    borderRadius: 6,
     justifyContent: 'center',
   },
   vaccineAppointmentBlock: {
