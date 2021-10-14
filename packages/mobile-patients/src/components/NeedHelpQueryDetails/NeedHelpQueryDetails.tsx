@@ -84,11 +84,11 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
   GetMedicineOrderCancelReasons,
   GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons,
-} from '../../graphql/types/GetMedicineOrderCancelReasons';
+} from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderCancelReasons';
 import {
   CancelMedicineOrderOMS,
   CancelMedicineOrderOMSVariables,
-} from '../../graphql/types/CancelMedicineOrderOMS';
+} from '@aph/mobile-patients/src/graphql/types/CancelMedicineOrderOMS';
 import { Spinner } from '../ui/Spinner';
 
 export interface Props
@@ -168,13 +168,13 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
   const orderDelayTitle = 'My order is getting Delayed';
   const orderCancelId = '093b687f-fad1-4b55-b53f-be2312987142'; //id for order cancel title
-  const [cancellationAllowed, setCancellationAllowed] = React.useState<boolean>(false);
-  const [message, setMessage] = React.useState<string>('');
-  const [cancellationRequestRaised, setCancellationRequestRaised] = React.useState<boolean>(false);
-  const [cancellationRequestRejected, setCancellationrequestRejected] = React.useState<boolean>(
+  const [cancellationAllowed, setCancellationAllowed] = useState<boolean>(false);
+  const [message, setMessage] = useState<string>('');
+  const [cancellationRequestRaised, setCancellationRequestRaised] = useState<boolean>(false);
+  const [cancellationRequestRejected, setCancellationrequestRejected] = useState<boolean>(
     false
   );
-  const [flatlistData, setFlatlistData] = React.useState<any[]>([]);
+  const [flatlistData, setFlatlistData] = useState<any[]>([]);
 
   React.useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', () => {
@@ -464,14 +464,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     const content = (
       <View style={{ paddingHorizontal: 16 }}>
         <Text
-          style={[
-            {
-              marginBottom: 12,
-              color: '#0087ba',
-              ...theme.fonts.IBMPlexSansMedium(17),
-              lineHeight: 24,
-            },
-          ]}
+          style={styles.contentView}
         >
           Why are you cancelling this order?
         </Text>
@@ -530,17 +523,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     return (
       isCancelVisible && (
         <View
-          style={{
-            backgroundColor: 'rgba(0,0,0,0.8)',
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            justifyContent: 'flex-start',
-            flex: 1,
-            left: 0,
-            right: 0,
-            zIndex: 100,
-          }}
+          style={styles.cancel}
         >
           <View style={{ marginHorizontal: 20 }}>
             <TouchableOpacity
@@ -556,13 +539,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
             </TouchableOpacity>
             <View style={{ height: 16 }} />
             <View
-              style={{
-                backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-                borderTopLeftRadius: 10,
-                borderTopRightRadius: 10,
-                borderBottomRightRadius: 10,
-                borderBottomLeftRadius: 10,
-              }}
+              style={styles.cancelView}
             >
               {optionsDropdown}
               {heading}
@@ -1192,5 +1169,29 @@ const styles = StyleSheet.create({
     margin: 0,
     height: 'auto',
     borderRadius: 10,
+  },
+  cancel:{
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    justifyContent: 'flex-start',
+    flex: 1,
+    left: 0,
+    right: 0,
+    zIndex: 100,
+  },
+  cancelView:{
+    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+    borderBottomLeftRadius: 10,
+  },
+  contentView:{
+    marginBottom: 12,
+    color: theme.colors.SKY_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(17),
+    lineHeight: 24,
   },
 });
