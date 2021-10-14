@@ -3408,7 +3408,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
             <Text
               style={{
-                ...theme.viewStyles.text('M', 20, '#A15D59', 1, 30),
+                ...theme.viewStyles.text('SB', 20, '#A15D59', 1, 30),
                 marginHorizontal: 10,
               }}
             >
@@ -3417,7 +3417,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
             <Text
               style={{
-                ...theme.viewStyles.text('R', 14, '#B3A293', 1, 18),
+                ...theme.viewStyles.text('M', 14, '#B3A293', 1, 18),
                 marginHorizontal: 10,
               }}
             >
@@ -3435,7 +3435,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   borderWidth: 1,
                   borderStyle: 'dashed',
                   backgroundColor: '#fff',
-                  padding: 4,
+                  paddingVertical: 2,
+                  paddingHorizontal: 8,
                   justifyContent: 'center',
                   alignItems: 'center',
                 }}
@@ -3448,7 +3449,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <View style={styles.bottomRightArrowView}>
                 <Button
                   title={`SHOP NOW`}
-                  style={{ width: 106, height: 32 }}
+                  style={{ width: 106, height: 32, borderRadius: 4 }}
                   onPress={() => {}}
                   disabled={false}
                 />
