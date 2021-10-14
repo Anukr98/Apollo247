@@ -2971,54 +2971,56 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         saveUserChange={true}
         cleverTapProfileClickEvent={() => cleverTapEventForProfileClick()}
         cleverTapEventForAddMemberClick={() => cleverTapEventForAddMemberClick()}
-        childView={
-          <View
-            style={{
-              flexDirection: 'row',
-              paddingRight: 8,
-              borderRightWidth: 0,
-              borderRightColor: 'rgba(2, 71, 91, 0.2)',
-            }}
-          >
-            {currentPatient?.gender === Gender.MALE ? (
-              !!circleSubscriptionId ? (
-                <MaleCircleIcon style={styles.profileIcon} />
-              ) : (
-                <MaleIcon style={styles.profileIcon} />
-              )
-            ) : !!circleSubscriptionId ? (
-              <FemaleCircleIcon style={styles.profileIcon} />
-            ) : (
-              <FemaleIcon style={styles.profileIcon} />
-            )}
-            <Text style={styles.hiTextStyle}>{'hi'}</Text>
-            <View style={styles.nameTextContainerStyle}>
-              <View style={{ flexDirection: 'row', flex: 1 }}>
-                <Text style={styles.nameTextStyle} numberOfLines={1}>
-                  {currentPatient?.firstName || ''}
-                </Text>
-                {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
-                  <LinkedUhidIcon
-                    style={{
-                      width: 22,
-                      height: 20,
-                      marginLeft: 5,
-                      marginTop: Platform.OS === 'ios' ? 16 : 20,
-                    }}
-                    resizeMode={'contain'}
-                  />
-                ) : null}
-                <View style={{ paddingTop: 12, marginLeft: 6 }}>
-                  <DropdownGreen />
-                </View>
-              </View>
-              {currentPatient && <View style={styles.seperatorStyle} />}
-            </View>
-          </View>
-        }
+        childView={{}}
         unsetloaderDisplay={true}
       />
     );
+  };
+
+  const renderProfileIconAsChildView = () => {
+    <View
+      style={{
+        flexDirection: 'row',
+        paddingRight: 8,
+        borderRightWidth: 0,
+        borderRightColor: 'rgba(2, 71, 91, 0.2)',
+      }}
+    >
+      {currentPatient?.gender === Gender.MALE ? (
+        !!circleSubscriptionId ? (
+          <MaleCircleIcon style={styles.profileIcon} />
+        ) : (
+          <MaleIcon style={styles.profileIcon} />
+        )
+      ) : !!circleSubscriptionId ? (
+        <FemaleCircleIcon style={styles.profileIcon} />
+      ) : (
+        <FemaleIcon style={styles.profileIcon} />
+      )}
+      <Text style={styles.hiTextStyle}>{'hi'}</Text>
+      <View style={styles.nameTextContainerStyle}>
+        <View style={{ flexDirection: 'row', flex: 1 }}>
+          <Text style={styles.nameTextStyle} numberOfLines={1}>
+            {currentPatient?.firstName || ''}
+          </Text>
+          {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
+            <LinkedUhidIcon
+              style={{
+                width: 22,
+                height: 20,
+                marginLeft: 5,
+                marginTop: Platform.OS === 'ios' ? 16 : 20,
+              }}
+              resizeMode={'contain'}
+            />
+          ) : null}
+          <View style={{ paddingTop: 12, marginLeft: 6 }}>
+            <DropdownGreen />
+          </View>
+        </View>
+        {currentPatient && <View style={styles.seperatorStyle} />}
+      </View>
+    </View>;
   };
 
   const cleverTapEventForProfileClick = () => {
@@ -5116,13 +5118,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: 'white' }}>
+    <View style={{ flex: 1, backgroundColor: theme.colors.WHITE }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
         {isSearchFocus ? null : renderTopIcons()}
-        <View style={{ flexDirection: 'row', backgroundColor: '#fff', marginBottom: -8 }}>
-          {isSearchFocus ? null : renderProfileDrop()}
-        </View>
-
         {renderGlobalSearch()}
         {searchLoading ? (
           renderGlobalSearchShimmer()
