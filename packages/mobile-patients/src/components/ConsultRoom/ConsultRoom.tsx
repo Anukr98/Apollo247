@@ -67,6 +67,7 @@ import {
   CashbackIcon,
   WhiteArrowRight,
   DeliveryInIcon,
+  MedicineHomeIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   BannerDisplayType,
@@ -431,8 +432,8 @@ const styles = StyleSheet.create({
     color: theme.colors.WHITE,
   },
   menuOptionIconStyle: {
-    height: 40,
-    width: 40,
+    height: 36,
+    width: 36,
     resizeMode: 'contain',
   },
   menuOption2IconStyle: {
@@ -592,9 +593,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   bottomRightArrowView: {
-    marginRight: 5,
+    marginHorizontal: 5,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   bottom2TextView: {
     alignItems: 'flex-start',
@@ -1712,7 +1713,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     {
       id: 1,
       title: 'Buy Medicines and Essentials',
-      image: <MedicineCartIcon style={[styles.menuOptionIconStyle]} />,
+      image: <MedicineHomeIcon style={[styles.menuOptionIconStyle]} />,
       subCardColor: '#EAF6FF',
       subtitleColor: '#2D6E85',
       subtitle: 'Health Credits Available',
@@ -3171,8 +3172,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     <View
                       style={{
                         flexDirection: 'row',
-                        marginVertical: 8,
-                        paddingVertical: 8,
+                        marginVertical: 6,
+                        paddingVertical: 4,
                         justifyContent: 'flex-start',
                       }}
                     >
