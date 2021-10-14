@@ -3940,19 +3940,21 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderCircleBuyNow = () => {
     return (
-      <CircleTypeCard7
-        onButtonPress={() => {
-          onClickCircleBenefits('Not Expiring', string.Hdfc_values.MEMBERSHIP_DETAIL_CIRCLE);
-          props.navigation.navigate(AppRoutes.MembershipDetails, {
-            membershipType: 'CIRCLE PLAN',
-            isActive: true,
-            comingFrom: 'Circle Benifits(Home Screen)',
-            circleEventSource: 'Landing Home Page',
-          });
-        }}
-        price={healthCredits?.toString()}
-        validity={circleSavings?.toString()}
-      />
+      <View style={styles.circleContainer}>
+        <CircleTypeCard7
+          onButtonPress={() => {
+            onClickCircleBenefits('Not Expiring', string.Hdfc_values.MEMBERSHIP_DETAIL_CIRCLE);
+            props.navigation.navigate(AppRoutes.MembershipDetails, {
+              membershipType: 'CIRCLE PLAN',
+              isActive: true,
+              comingFrom: 'Circle Benifits(Home Screen)',
+              circleEventSource: 'Landing Home Page',
+            });
+          }}
+          price={healthCredits?.toString()}
+          validity={circleSavings?.toString()}
+        />
+      </View>
     );
   };
 
@@ -5169,6 +5171,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 {renderHeadings('Circle Membership and More')}
                 {circleDataLoading && renderCircleShimmer()}
                 <View>{isCircleMember === 'yes' && !circleDataLoading && renderCircle()}</View>
+                {renderCircleBuyNow()}
                 {showCirclePlans && renderCircleSubscriptionPlans()}
                 {showCircleActivationcr && renderCircleActivation()}
                 {bannerLoading && renderBannerShimmer()}
