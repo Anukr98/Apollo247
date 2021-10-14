@@ -225,6 +225,7 @@ import { CircleTypeCard3 } from '@aph/mobile-patients/src/components/ui/CircleTy
 import { CircleTypeCard4 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard4';
 import { CircleTypeCard5 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard5';
 import { CircleTypeCard6 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard6';
+import { CircleTypeCard7 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard7';
 import { Overlay } from 'react-native-elements';
 import { HdfcConnectPopup } from '@aph/mobile-patients/src/components/SubscriptionMembership/HdfcConnectPopup';
 import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
@@ -253,7 +254,6 @@ import { getUniqueId } from 'react-native-device-info';
 import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
 import _ from 'lodash';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { Title } from 'react-native-paper';
 
 const { Vitals } = NativeModules;
 

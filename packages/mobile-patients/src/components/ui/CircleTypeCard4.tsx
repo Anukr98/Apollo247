@@ -1,8 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Text, Image } from 'react-native';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   planContainer: {
@@ -38,7 +36,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface CircleTypeCard4Props extends NavigationScreenProps {
+export interface CircleTypeCard4Props {
   onButtonPress: () => void;
   savings?: string;
   expiry?: string;

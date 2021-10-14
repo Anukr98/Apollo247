@@ -70,7 +70,7 @@ export const CircleTypeCard7: React.FC<CircleTypeCard7Props> = (props) => {
             style={{ height: 32, ...theme.viewStyles.text('B', 15, '#FC9916', 1, 18) }}
             onPress={onButtonPress}
           >
-            EXPLORE
+            EXPLORE addeefe
           </Text>
         </View>
       </View>
