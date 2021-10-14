@@ -440,14 +440,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
     const heading = (
       <View
-        style={{
-          ...theme.viewStyles.cardContainer,
-          backgroundColor: theme.colors.WHITE,
-          padding: 18,
-          marginBottom: 24,
-          borderTopLeftRadius: 10,
-          borderTopRightRadius: 10,
-        }}
+        style={styles.headingView}
       >
         <Text
           style={{
@@ -1194,4 +1187,12 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(17),
     lineHeight: 24,
   },
+  headingView:{
+    ...theme.viewStyles.cardContainer,
+    backgroundColor: theme.colors.WHITE,
+    padding: 18,
+    marginBottom: 24,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  }
 });
