@@ -562,10 +562,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   bottom2CardView: {
-    ...theme.viewStyles.cardViewStyle,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 15,
-    minHeight: 78,
+    minHeight: 90,
     width: width / 2 - 22,
     marginRight: 12,
     marginBottom: 12,
