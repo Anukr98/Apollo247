@@ -4377,9 +4377,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return (
       <View
         style={{
-          justifyContent: 'space-between',
           flexDirection: 'row',
-          padding: 16,
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingHorizontal: 16,
+          paddingVertical: 14,
           backgroundColor: '#FDFBF9',
         }}
       >
