@@ -187,10 +187,10 @@ export enum CANCELLATION_TIME {
 }
 export interface CancellationAllowedResult {
   cancellationTime: CANCELLATION_TIME;
-  cancellationAllowed: Boolean;
-  message?: String;
-  cancellationRequestRaised?: Boolean;
-  cancellationRequestRejected?: Boolean;
+  cancellationAllowed: boolean;
+  message?: string;
+  cancellationRequestRaised?: boolean;
+  cancellationRequestRejected?: boolean;
 }
 
 export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress {

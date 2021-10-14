@@ -167,11 +167,11 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const { getHelpSectionQueries } = NeedHelpHelpers;
 
   const orderDelayTitle = 'My order is getting Delayed';
-  const orderCancelTitle = 'I would like to cancel the order!';
-  const [cancellationAllowed, setCancellationAllowed] = React.useState<Boolean>(false);
-  const [message, setMessage] = React.useState<String>('');
-  const [cancellationRequestRaised, setCancellationRequestRaised] = React.useState<Boolean>(false);
-  const [cancellationRequestRejected, setCancellationrequestRejected] = React.useState<Boolean>(
+  const orderCancelId = '093b687f-fad1-4b55-b53f-be2312987142'; //id for order cancel title
+  const [cancellationAllowed, setCancellationAllowed] = React.useState<boolean>(false);
+  const [message, setMessage] = React.useState<string>('');
+  const [cancellationRequestRaised, setCancellationRequestRaised] = React.useState<boolean>(false);
+  const [cancellationRequestRejected, setCancellationrequestRejected] = React.useState<boolean>(
     false
   );
   const [flatlistData, setFlatlistData] = React.useState<any[]>([]);
@@ -212,7 +212,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   }, [click, medicineOrderStatus]);
 
   React.useEffect(() => {
-    if (cancellationAllowed && !cancellationRequestRaised && click === orderCancelTitle) {
+    if (cancellationAllowed && !cancellationRequestRaised && click === orderCancelId) {
       getCancellationReasons();
     }
   }, [click]);
@@ -855,8 +855,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     const onPress = () => {
       const isReturnQuery = item?.id === helpSectionQueryId.returnOrder;
       setClick(item?.title!);
-      if (item?.title === orderCancelTitle && !raiseOrderDelayQuery) {
-        setClick(orderCancelTitle);
+      if (item?.id === orderCancelId && !raiseOrderDelayQuery) {
+        setClick(orderCancelId);
         setSelectedQueryId('');
         setComments('');
         return;
@@ -952,28 +952,28 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       !!medicineOrderStatusDate &&
       moment(new Date()).diff(moment(medicineOrderStatusDate), 'hours') <= 48;
 
-    if (!showReturnOrder) {
-      data = data.filter((item) => item?.id !== helpSectionQueryId.returnOrder);
-    }
-
-    const showMessage = (tat: boolean) => {
-      if (tat) {
-        const str = string.needHelpQueryDetails.tatBreachedTrue;
-        const newStr = str.replace(
-          '{{medicineOrderStatus}}',
-          capitalizeStatusMessage(medicineOrderStatus?.replace('_', ' ') || '')
-        );
-        return newStr;
-      } else {
-        const str = string.needHelpQueryDetails.tatBreachedFalse;
-        const newStr = str.replace(
-          '{{medicineOrderStatus}}',
-          capitalizeStatusMessage(medicineOrderStatus?.replace('_', ' ') || '')
-        );
-        const finalStringToBeSend = newStr.replace('{{etd}}', etd);
-        return finalStringToBeSend;
+      if (!showReturnOrder) {
+        data = data.filter((item) => item?.id !== helpSectionQueryId.returnOrder);
       }
-    };
+  
+      const showMessage = (tat: boolean) => {
+        if (tat) {
+          const str = string.needHelpQueryDetails.tatBreachedTrue;
+          const newStr = str.replace(
+            '{{medicineOrderStatus}}',
+            capitalizeStatusMessage(medicineOrderStatus?.replace('_', ' ') || '')
+          );
+          return newStr;
+        } else {
+          const str = string.needHelpQueryDetails.tatBreachedFalse;
+          const newStr = str.replace(
+            '{{medicineOrderStatus}}',
+            capitalizeStatusMessage(medicineOrderStatus?.replace('_', ' ') || '')
+          );
+          const finalStringToBeSend = newStr.replace('{{etd}}', etd);
+          return finalStringToBeSend;
+        }
+      };
 
     const renderCancelOrder = () => {
       if (!cancellationAllowed) {
@@ -1044,7 +1044,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         <SafeAreaView>
           {orderDelayed && click === orderDelayTitle ? (
             <>{renderOrderStatus()}</>
-          ) : click === orderCancelTitle ? (
+          ) : click === orderCancelId ? (
             !cancellationAllowed ? (
               <>{renderCancelOrder()}</>
             ) : null
@@ -1086,7 +1086,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     if (click) {
       return (
         <Text style={[styles.subHeading, styles.txtBold, styles.subHeadingText]}>
-          {cancellationAllowed && click === orderCancelTitle && !cancellationRequestRaised
+          {cancellationAllowed && click === orderCancelId && !cancellationRequestRaised
             ? null
             : click}
         </Text>
