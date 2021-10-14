@@ -11,7 +11,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginVertical: 2,
-    backgroundColor: theme.colors.CLEAR,
   },
 
   subPlanOne: {

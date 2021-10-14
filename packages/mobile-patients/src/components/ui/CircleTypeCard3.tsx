@@ -76,7 +76,7 @@ export const CircleTypeCard3: React.FC<CircleTypeCard3Props> = (props) => {
             style={{ width: 155, height: 32, ...theme.viewStyles.text('B', 15, '#FC9916', 1, 18) }}
             onPress={onButtonPress}
           >
-            EXPLORE BENEFITS
+            EXPLORE
           </Text>
         </View>
       </View>
