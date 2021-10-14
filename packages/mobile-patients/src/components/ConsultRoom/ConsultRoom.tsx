@@ -579,6 +579,7 @@ const styles = StyleSheet.create({
     marginTop: 'auto',
     marginHorizontal: 2,
     borderRadius: 4,
+    height: 28,
   },
   bottomImageView: {
     alignItems: 'center',
@@ -3166,13 +3167,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               return (
                 <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
                   <View style={[styles.bottom2CardView, { width: width - 32 }]}>
-                    <View style={{ marginLeft: -12, marginVertical: 8 }}>
+                    <View style={{ marginLeft: -12, marginVertical: 3 }}>
                       <DeliveryInIcon />
                     </View>
                     <View
                       style={{
                         flexDirection: 'row',
-                        marginVertical: 6,
+                        marginVertical: 2,
                         paddingVertical: 4,
                         justifyContent: 'flex-start',
                       }}
