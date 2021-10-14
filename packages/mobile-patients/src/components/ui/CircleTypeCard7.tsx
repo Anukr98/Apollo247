@@ -20,13 +20,13 @@ const styles = StyleSheet.create({
   },
 
   subPlanTwo: {
-    flex: 0.5,
+    flex: 0.7,
     alignItems: 'flex-start',
     justifyContent: 'center',
   },
 
   subPlanThree: {
-    flex: 0.5,
+    flex: 0.3,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -71,11 +71,11 @@ export const CircleTypeCard7: React.FC<CircleTypeCard7Props> = (props) => {
           colors={['#FFEEDB', '#FFFCFA']}
         >
           <View style={styles.subPlanTwo}>
-            <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 0.7, 16) }}>
+            <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE, 1, 20) }}>
               Free Deliveries and Cashbacks
-              <Text style={{ ...theme.viewStyles.text('M', 15, theme.colors.SHERPA_BLUE, 1, 18) }}>
-                Buy Circle @ ₹ for 6 months
-              </Text>
+            </Text>
+            <Text style={{ ...theme.viewStyles.text('M', 10, theme.colors.LIGHT_BLUE, 1, 20) }}>
+              Buy Circle @ ₹{price || 'Unable to Load'} for {validity || 'Unable to Load'} months
             </Text>
           </View>
 
@@ -84,7 +84,7 @@ export const CircleTypeCard7: React.FC<CircleTypeCard7Props> = (props) => {
               style={{ height: 32, ...theme.viewStyles.text('B', 15, '#FC9916', 1, 18) }}
               onPress={onButtonPress}
             >
-              EXPLORE addeefe
+              EXPLORE
             </Text>
           </View>
         </LinearGradientComponent>
