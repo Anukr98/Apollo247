@@ -129,7 +129,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const additionalInfo = navigation.getParam('additionalInfo') || false;
   const [showEmailPopup, setShowEmailPopup] = useState<boolean>(email ? false : true);
   const [requestEmailWithoutAction, setRequestEmailWithoutAction] = useState<boolean>(true);
-  const [medicineOrderStatus, setMedicineOrderStatus] = React.useState<MEDICINE_ORDER_STATUS>(
+  const [medicineOrderStatus, setMedicineOrderStatus] = useState<MEDICINE_ORDER_STATUS>(
     navigation.getParam('medicineOrderStatus')!
   );
   const { saveNeedHelpQuery, getQueryData, getQueryDataByOrderStatus } = Helpers;
@@ -159,7 +159,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const [cancellationReasons, setCancellationReasons] = useState<
     GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons[]
   >([]);
-  const [click, setClick] = React.useState<string>('');
+  const [click, setClick] = useState<string>('');
   const [showSpinner, setShowSpinner] = useState(false);
   const billNumber = navigation.getParam('billNumber');
   const refetchOrders = navigation.getParam('refetchOrders');
