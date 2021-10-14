@@ -4933,7 +4933,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         style={{
           width: width,
           marginBottom: 2,
-          padding: 16,
+          paddingVertical: 16,
           backgroundColor: '#fff',
           justifyContent: 'flex-start',
         }}
@@ -4945,6 +4945,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             backgroundColor: searchResultsTabHeader[key].backgroundColor,
             marginVertical: 16,
             paddingVertical: 8,
+            borderRadius: 4,
           }}
         >
           {index !== 0 ? searchResultsTabHeader[key].icon() : null}
