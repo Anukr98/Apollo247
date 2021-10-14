@@ -3200,7 +3200,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     >
                       <View style={styles.bottom2ImageView}>{item.image2}</View>
                       <View style={styles.bottom2TextView}>
-                        <Text style={[theme.viewStyles.text('R', 11, item.subtitleColor!, 1, 18)]}>
+                        <Text style={[theme.viewStyles.text('M', 11, item.subtitleColor!, 1, 18)]}>
                           ₹ {healthCredits ? healthCredits : 0} {item.subtitle}
                         </Text>
                       </View>
@@ -3241,7 +3241,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     >
                       <View style={styles.bottom2ImageView}>{item.image2}</View>
                       <View style={styles.bottom2TextView}>
-                        <Text style={[theme.viewStyles.text('R', 11, item.subtitleColor!, 1, 18)]}>
+                        <Text style={[theme.viewStyles.text('M', 11, item.subtitleColor!, 1, 18)]}>
                           {item.subtitle}
                         </Text>
                       </View>
