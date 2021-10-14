@@ -74,6 +74,7 @@ import {
   Brand,
   callToExotelApi,
   DealsOfTheDaySection,
+  getBrandPagesData,
   getMedicinePageProducts,
   getMedicineSearchSuggestionsApi,
   getNearByStoreDetailsApi,
@@ -1861,10 +1862,36 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               imgUrl,
               () => {
                 postwebEngageCategoryClickedEvent(item.category_id, item.title, title, 'Home');
-                props.navigation.navigate(AppRoutes.MedicineListing, {
-                  category_id: item.category_id,
-                  title: item.title || 'Products',
-                });
+
+                getBrandPagesData(item?.url_key)
+                  .then(({ data }) => {
+                    const couponResponse = data;
+                    if (
+                      !!couponResponse &&
+                      couponResponse?.success === true &&
+                      !!couponResponse?.data &&
+                      couponResponse?.data?.length > 0
+                    ) {
+                      props.navigation.navigate(AppRoutes.BrandPages, {
+                        movedFrom: 'home',
+                        brandData: couponResponse?.data,
+                        category_id: item.category_id,
+                        title: item.title || 'Products',
+                      });
+                    } else {
+                      props.navigation.navigate(AppRoutes.MedicineListing, {
+                        category_id: item.category_id,
+                        title: item.title || 'Products',
+                      });
+                    }
+                  })
+                  .catch(({ error }) => {
+                    CommonBugFender('MedicinePage_fetchBrandPageData', error);
+                    props.navigation.navigate(AppRoutes.MedicineListing, {
+                      category_id: item.category_id,
+                      title: item.title || 'Products',
+                    });
+                  });
               },
               {
                 marginHorizontal: 4,
