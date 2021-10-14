@@ -3164,11 +3164,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             if (item?.id === 1) {
               return (
                 <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
-                  <View style={[styles.bottom2CardView, { width: width - 32, height: 90 }]}>
-                    <View style={{ marginLeft: -12, marginBottom: 4 }}>
+                  <View style={[styles.bottom2CardView, { width: width - 32 }]}>
+                    <View style={{ marginLeft: -12, marginVertical: 8 }}>
                       <DeliveryInIcon />
                     </View>
-                    <View style={{ flexDirection: 'row', marginVertical: 8, paddingBottom: 8 }}>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        marginVertical: 8,
+                        paddingVertical: 8,
+                        justifyContent: 'flex-start',
+                      }}
+                    >
                       <View style={styles.topImageView}>
                         {item.image}
                         <Text style={[styles.topTextStyle, { color: theme.colors.SHERPA_BLUE }]}>
