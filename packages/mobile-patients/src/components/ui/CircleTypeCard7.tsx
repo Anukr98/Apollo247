@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Text, Image } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 
 const styles = StyleSheet.create({
   planContainer: {
@@ -55,24 +56,26 @@ export const CircleTypeCard7: React.FC<CircleTypeCard7Props> = (props) => {
           />
         </View>
 
-        <View style={styles.subPlanTwo}>
-          <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 0.7, 16) }}>
-            Available Health{'\n'}Credits:
-            <Text style={{ ...theme.viewStyles.text('M', 15, theme.colors.SHERPA_BLUE, 1, 18) }}>
-              {' '}
-              {price || 0}
+        <LinearGradientComponent style={styles.circleContainer} colors={['#FFEEDB', '#FFFCFA']}>
+          <View style={styles.subPlanTwo}>
+            <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 0.7, 16) }}>
+              Available Health{'\n'}Credits:
+              <Text style={{ ...theme.viewStyles.text('M', 15, theme.colors.SHERPA_BLUE, 1, 18) }}>
+                {' '}
+                {price || 0}
+              </Text>
             </Text>
-          </Text>
-        </View>
+          </View>
 
-        <View style={styles.subPlanThree}>
-          <Text
-            style={{ height: 32, ...theme.viewStyles.text('B', 15, '#FC9916', 1, 18) }}
-            onPress={onButtonPress}
-          >
-            EXPLORE addeefe
-          </Text>
-        </View>
+          <View style={styles.subPlanThree}>
+            <Text
+              style={{ height: 32, ...theme.viewStyles.text('B', 15, '#FC9916', 1, 18) }}
+              onPress={onButtonPress}
+            >
+              EXPLORE addeefe
+            </Text>
+          </View>
+        </LinearGradientComponent>
       </View>
     </View>
   );

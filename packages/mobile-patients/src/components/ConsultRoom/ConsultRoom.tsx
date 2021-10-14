@@ -668,7 +668,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     paddingHorizontal: 6,
     alignSelf: 'center',
-    paddingTop: 12,
+    paddingVertical: 6,
     borderWidth: 1,
     borderColor: '#F9D5B4',
     borderRadius: 6,
@@ -3940,7 +3940,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderCircleBuyNow = () => {
     return (
-      <View style={styles.circleContainer}>
+      <View style={[styles.circleContainer, { borderWidth: 0 }]}>
         <CircleTypeCard7
           onButtonPress={() => {
             onClickCircleBenefits('Not Expiring', string.Hdfc_values.MEMBERSHIP_DETAIL_CIRCLE);
