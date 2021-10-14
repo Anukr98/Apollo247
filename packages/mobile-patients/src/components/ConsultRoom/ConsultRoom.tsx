@@ -4881,12 +4881,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const renderSearchResults = () => {
     return (
       <ScrollView style={{ flex: 1, backgroundColor: '#FDFBF9' }} bounces={false}>
-        <View style={{ width: width, marginBottom: 6, padding: 16, backgroundColor: '#fff' }}>
+        <View
+          style={{ width: width, marginBottom: 6, paddingHorizontal: 16, backgroundColor: '#fff' }}
+        >
           <View
             style={{
               height: 1.5,
-              backgroundColor: '#FDFBF9',
-              marginTop: -4,
+              backgroundColor: '#D4D4D4',
               marginBottom: 4,
               marginHorizontal: -16,
             }}

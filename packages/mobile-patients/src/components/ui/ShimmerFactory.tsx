@@ -465,12 +465,11 @@ export const renderOffersForYouShimmer = () => {
 
 export const renderGlobalSearchShimmer = () => {
   return (
-    <View style={{ width: width, marginBottom: 6, padding: 16, backgroundColor: '#fff' }}>
+    <View style={{ width: width, marginBottom: 6, paddingHorizontal: 16, backgroundColor: '#fff' }}>
       <View
         style={{
           height: 1.5,
           backgroundColor: '#D4D4D4',
-          marginTop: -4,
           marginBottom: 4,
           marginHorizontal: -16,
         }}
