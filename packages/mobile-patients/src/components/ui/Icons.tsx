@@ -1024,11 +1024,19 @@ export const TimeGreenIcon: React.FC<IconProps> = (props) => (
     source={require('./icons/schedule_green.webp')}
   />
 );
+
 export const MedicineCartIcon: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 56, width: 56, resizeMode: 'contain' }}
     {...props}
     source={require('./icons/ic_medicines.webp')}
+  />
+);
+export const MedicineHomeIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 36, width: 36, resizeMode: 'contain' }}
+    {...props}
+    source={require('./icons/ic_medicine.webp')}
   />
 );
 
