@@ -9,7 +9,8 @@ const styles = StyleSheet.create({
   planContainer: {
     flexDirection: 'row',
     flex: 1,
-    marginVertical: 5,
+    marginVertical: 2,
+    justifyContent: 'space-between',
   },
 
   subPlanOne: {
@@ -17,11 +18,11 @@ const styles = StyleSheet.create({
   },
 
   subPlanTwo: {
-    flex: 0.3,
+    flex: 0.4,
   },
 
   subPlanThree: {
-    flex: 0.5,
+    flex: 0.4,
     alignItems: 'center',
   },
 
