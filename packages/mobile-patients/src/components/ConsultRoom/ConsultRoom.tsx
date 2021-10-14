@@ -546,10 +546,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   topTextStyle: {
-    ...theme.viewStyles.text('SB', 15, theme.colors.WHITE, 1, 18),
+    ...theme.viewStyles.text('SB', 15, theme.colors.LIGHT_BLUE, 1, 18),
     textAlign: 'center',
     alignSelf: 'center',
-    marginHorizontal: 10,
+    marginLeft: 10,
   },
   bottomCardView: {
     flexDirection: 'row',
@@ -573,6 +573,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     padding: 4,
     justifyContent: 'center',
+    backgroundColor: theme.colors.BLUE_FADED_FLAT,
   },
   bottom2SubCardView: {
     flexDirection: 'row',
@@ -601,12 +602,13 @@ const styles = StyleSheet.create({
   bottom2TextView: {
     alignItems: 'flex-start',
     justifyContent: 'center',
-    marginRight: 4,
+    marginLeft: 2,
   },
   bottom2ImageView: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 9,
+    marginLeft: 8,
+    marginRight: 2,
   },
   bottom2SubImage: {
     height: 20,
@@ -3167,7 +3169,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               return (
                 <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
                   <View style={[styles.bottom2CardView, { width: width - 32 }]}>
-                    <View style={{ marginLeft: -12, marginVertical: 3 }}>
+                    <View style={{ marginLeft: -12, marginBottom: 4 }}>
                       <DeliveryInIcon />
                     </View>
                     <View
@@ -3180,7 +3182,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     >
                       <View style={styles.topImageView}>
                         {item.image}
-                        <Text style={[styles.topTextStyle, { color: theme.colors.SHERPA_BLUE }]}>
+                        <Text style={[styles.topTextStyle, { color: theme.colors.LIGHT_BLUE }]}>
                           {item.title}
                         </Text>
                       </View>
@@ -3210,18 +3212,23 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               return (
                 <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
                   <View style={styles.bottom2CardView}>
-                    <View style={{ flexDirection: 'row', marginTop: 6 }}>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        marginTop: 6,
+                        alignItems: 'center',
+                        justifyContent: 'flex-start',
+                      }}
+                    >
                       <View style={styles.bottom2ImageView}>{item.image}</View>
                       <View style={styles.bottom2TextView}>
                         <Text
-                          style={[theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 18)]}
+                          style={[theme.viewStyles.text('SB', 14, theme.colors.LIGHT_BLUE, 1, 18)]}
                         >
                           {item.title}
                         </Text>
                       </View>
-                      <View style={styles.bottomRightArrowView}>
-                        <ArrowRight />
-                      </View>
+                      <ArrowRight />
                     </View>
 
                     <View
