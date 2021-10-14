@@ -44,6 +44,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     borderColor: '#F9D5B4',
     padding: 6,
+    alignItems: 'center',
   },
 });
 
@@ -86,10 +87,10 @@ export const CircleTypeCard7: React.FC<CircleTypeCard7Props> = (props) => {
 
           <View style={styles.subPlanThree}>
             <Text
-              style={{ height: 32, ...theme.viewStyles.text('B', 15, '#FC9916', 1, 18) }}
+              style={{ ...theme.viewStyles.text('B', 15, '#FC9916', 1, 18) }}
               onPress={onButtonPress}
             >
-              EXPLORE
+              BUY NOW
             </Text>
           </View>
         </LinearGradientComponent>
