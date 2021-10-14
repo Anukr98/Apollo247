@@ -4385,9 +4385,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           paddingBottom: 15,
         }}
       >
-        <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-          <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row' }}>
+          <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+            <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
+          </TouchableOpacity>
+          {renderProfileDrop()}
+        </View>
         <View style={{ flexDirection: 'row' }}>
           <TouchableOpacity activeOpacity={1} onPress={onPressCart}>
             <CartIcon />
