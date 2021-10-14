@@ -770,8 +770,8 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   activeAppointmentsContainer: {
-    marginTop: 20,
-    marginBottom: 20,
+    marginTop: 12,
+    marginBottom: 12,
     shadowColor: '#4c808080',
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.4,
@@ -3104,8 +3104,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           container={[
             styles.activeAppointmentsContainer,
             {
-              marginTop: source == 'prohealth' ? 3 : 20,
-              marginBottom: source == 'prohealth' ? 3 : 10,
+              marginTop: source == 'prohealth' ? 3 : 12,
+              marginBottom: source == 'prohealth' ? 3 : 8,
             },
           ]}
           title={text}
