@@ -387,7 +387,18 @@ export const renderCovidVaccinationShimmer = () => {
 
 export const renderCircleShimmer = () => {
   return (
-    <LinearGradientComponent colors={['#FFEEDB', '#FFFCFA']} style={{ paddingTop: 10 }}>
+    <LinearGradientComponent
+      colors={['#FFEEDB', '#FFFCFA']}
+      style={{
+        marginVertical: 6,
+        marginHorizontal: 16,
+        padding: 6,
+        borderWidth: 1,
+        borderColor: '#F9D5B4',
+        borderRadius: 6,
+        width: '90%',
+      }}
+    >
       <View style={styles.planContainer}>
         <View style={styles.subPlanOne}>
           <Image

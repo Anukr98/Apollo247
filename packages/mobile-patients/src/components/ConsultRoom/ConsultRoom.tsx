@@ -5166,7 +5166,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 {renderHeadings('Circle Membership and More')}
                 {circleDataLoading && renderCircleShimmer()}
                 <View>{isCircleMember === 'yes' && !circleDataLoading && renderCircle()}</View>
-                {renderCircleBuyNow()}
+                {isCircleMember === 'no' && !circleDataLoading && renderCircleBuyNow()}
                 {showCirclePlans && renderCircleSubscriptionPlans()}
                 {showCircleActivationcr && renderCircleActivation()}
                 {bannerLoading && renderBannerShimmer()}
