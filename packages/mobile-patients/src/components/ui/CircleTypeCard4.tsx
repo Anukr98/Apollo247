@@ -9,8 +9,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 5,
+    justifyContent: 'space-between',
+    marginVertical: 2,
+    backgroundColor: theme.colors.CLEAR,
   },
 
   subPlanOne: {
@@ -20,13 +21,13 @@ const styles = StyleSheet.create({
   },
 
   subPlanTwo: {
-    flex: 0.3,
+    flex: 0.4,
     alignItems: 'flex-start',
     justifyContent: 'center',
   },
 
   subPlanThree: {
-    flex: 0.5,
+    flex: 0.4,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -70,10 +71,10 @@ export const CircleTypeCard4: React.FC<CircleTypeCard4Props> = (props) => {
 
         <View style={styles.subPlanThree}>
           <Text
-            style={{ width: 155, height: 32, ...theme.viewStyles.text('B', 15, '#FC9916', 1, 18) }}
+            style={{ height: 32, ...theme.viewStyles.text('B', 15, '#FC9916', 1, 18) }}
             onPress={onButtonPress}
           >
-            EXPLORE BENEFITS
+            EXPLORE
           </Text>
         </View>
       </View>
