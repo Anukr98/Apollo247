@@ -14,18 +14,19 @@ const styles = StyleSheet.create({
 
   subPlanOne: {
     flex: 0.2,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
+    paddingVertical: 6,
   },
 
   subPlanTwo: {
-    flex: 0.4,
+    flex: 0.5,
     alignItems: 'flex-start',
     justifyContent: 'center',
   },
 
   subPlanThree: {
-    flex: 0.4,
+    flex: 0.5,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -34,6 +35,15 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: 46,
     height: 29,
+  },
+
+  subPlanTwoThreeDevider: {
+    flex: 0.8,
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderRadius: 6,
+    borderColor: '#F9D5B4',
+    padding: 6,
   },
 });
 
@@ -56,7 +66,10 @@ export const CircleTypeCard7: React.FC<CircleTypeCard7Props> = (props) => {
           />
         </View>
 
-        <LinearGradientComponent style={styles.circleContainer} colors={['#FFEEDB', '#FFFCFA']}>
+        <LinearGradientComponent
+          style={styles.subPlanTwoThreeDevider}
+          colors={['#FFEEDB', '#FFFCFA']}
+        >
           <View style={styles.subPlanTwo}>
             <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 0.7, 16) }}>
               Available Health{'\n'}Credits:
