@@ -274,7 +274,8 @@ const styles = StyleSheet.create({
     marginTop: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    maxHeight: '100%',
+    height: '100%',
+    backgroundColor: theme.colors.WHITE,
   },
   searchBarViewStyle: {
     backgroundColor: theme.colors.ICE_BERG_FLAT,
@@ -4745,7 +4746,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const renderGlobalSearch = () => {
     return (
       <View>
-        <View style={[styles.searchBarMainViewStyle, { backgroundColor: '#fff' }]}>
+        <View style={styles.searchBarMainViewStyle}>
           <View style={styles.searchBarViewStyle}>
             <SearchAreaIcon style={{ width: 20, height: 20 }} />
             <TextInput
