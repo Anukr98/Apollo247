@@ -456,17 +456,12 @@ export const renderOffersForYouShimmer = () => {
       }}
     >
       <ShimmerPlaceHolder
-        shimmerColors={['#FDFBF7', '#F5D5CE']}
+        shimmerColors={['#FFE7AA', '#FCDCFF']}
         shimmerStyle={{
-          ...theme.viewStyles.cardViewStyle,
-          shadowOffset: { width: 0, height: 5 },
-          elevation: 15,
-          minHeight: 98,
+          height: 150,
           marginRight: 12,
           marginBottom: 12,
           borderRadius: 6,
-          padding: 4,
-          justifyContent: 'center',
           width: width - 32,
         }}
       />
