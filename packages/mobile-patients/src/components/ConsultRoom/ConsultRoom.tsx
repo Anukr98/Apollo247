@@ -274,7 +274,6 @@ const styles = StyleSheet.create({
     marginTop: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    height: '100%',
     backgroundColor: theme.colors.WHITE,
   },
   searchBarViewStyle: {
@@ -4887,7 +4886,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderSearchResults = () => {
     return (
-      <ScrollView style={{ flex: 1, backgroundColor: '#FDFBF9' }} bounces={false}>
+      <ScrollView style={{ flex: 1, backgroundColor: theme.colors.WHITE }} bounces={false}>
         <View
           style={{ width: width, marginBottom: 6, paddingHorizontal: 16, backgroundColor: '#fff' }}
         >
