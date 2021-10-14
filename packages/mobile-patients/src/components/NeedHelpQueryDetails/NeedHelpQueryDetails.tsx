@@ -176,7 +176,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   );
   const [flatlistData, setFlatlistData] = useState<any[]>([]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', () => {
       if (
         medicineOrderStatus === MEDICINE_ORDER_STATUS.CANCELLED ||
@@ -211,7 +211,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     };
   }, [click, medicineOrderStatus]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (cancellationAllowed && !cancellationRequestRaised && click === orderCancelId) {
       getCancellationReasons();
     }
@@ -488,7 +488,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           <View
             style={{
               marginTop: 5,
-              backgroundColor: '#00b38e',
+              backgroundColor: theme.colors.CONSULT_SUCCESS_TEXT,
               height: 2,
             }}
           />
