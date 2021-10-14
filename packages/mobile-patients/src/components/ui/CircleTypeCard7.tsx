@@ -72,10 +72,9 @@ export const CircleTypeCard7: React.FC<CircleTypeCard7Props> = (props) => {
         >
           <View style={styles.subPlanTwo}>
             <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 0.7, 16) }}>
-              Available Health{'\n'}Credits:
+              Free Deliveries and Cashbacks
               <Text style={{ ...theme.viewStyles.text('M', 15, theme.colors.SHERPA_BLUE, 1, 18) }}>
-                {' '}
-                {price || 0}
+                Buy Circle @ ₹ for 6 months
               </Text>
             </Text>
           </View>
