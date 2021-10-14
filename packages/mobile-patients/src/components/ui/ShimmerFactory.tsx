@@ -1006,6 +1006,23 @@ export const renderPackageItemPriceShimmer = () => {
   );
 };
 
+export const renderAppointmentCountShimmer = () => {
+  return (
+    <ShimmerPlaceHolder
+      shimmerColors={['#E8E8E8', theme.colors.LIGHT_BLUE]}
+      LinearGradient={LinearGradient}
+      shimmerStyle={{
+        height: 40,
+        width: 40,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#E8E8E8',
+        borderRadius: 6,
+      }}
+    />
+  );
+};
+
 export const renderDiagnosticWidgetShimmer = (showHeading: boolean) => {
   return (
     <View style={{ marginLeft: 16 }}>

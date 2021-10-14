@@ -235,6 +235,7 @@ import {
   CovidButtonShimmer,
   renderGlobalSearchShimmer,
   renderOffersForYouShimmer,
+  renderAppointmentCountShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { ConsultedDoctorsCard } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultedDoctorsCard';
 import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
@@ -3129,7 +3130,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderListCount = (count: string | number) => {
-    return (
+    return appointmentLoading ? (
+      renderAppointmentCountShimmer()
+    ) : (
       <View
         style={{
           height: 40,
