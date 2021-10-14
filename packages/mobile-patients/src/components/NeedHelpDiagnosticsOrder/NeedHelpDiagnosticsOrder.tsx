@@ -14,6 +14,7 @@ import {
   GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
   GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT,
   SEND_HELP_EMAIL,
+  CREATE_HELP_TICKET,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetMedicineOrderShipmentDetails,
@@ -72,6 +73,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList as orderListByMobile } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { OrderTestCard } from '@aph/mobile-patients/src/components/Tests/components/OrderTestCard';
+import {
+  TicketNumberMutation,
+  TicketNumberMutationVariables,
+} from '@aph/mobile-patients/src/graphql/types/TicketNumberMutation';
 type orderList = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList;
 const screenheight = Dimensions.get('window').height;
 
@@ -83,7 +88,7 @@ export interface Props
     email: string;
     orderId?: string;
     isOrderRelatedIssue?: boolean;
-    medicineOrderStatus?: MEDICINE_ORDER_STATUS;
+    medicineOrderStatus?: DIAGNOSTIC_ORDER_STATUS;
     isConsult?: boolean;
     medicineOrderStatusDate?: any;
     sourcePage: WebEngageEvents[WebEngageEventName.HELP_TICKET_SUBMITTED]['Source_Page'];
@@ -115,7 +120,7 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
   const client = useApolloClient();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
-  const { needHelpToContactInMessage } = useAppCommonData();
+  const { needHelpToContactInMessage, needHelpTicketReferenceText } = useAppCommonData();
   const isConsult = navigation.getParam('isConsult') || false;
   const [selectedQueryId, setSelectedQueryId] = useState<string>('');
   const [comments, setComments] = useState<string>('');
@@ -322,12 +327,12 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
     );
   };
   const onPressHelp = (item: any) => {
-    const currentStatusDate = item?.medicineOrdersStatus?.find(
-      (i) => i?.orderStatus === item?.currentStatus
+    const currentStatusDate = item?.diagnosticOrdersStatus?.find(
+      (i) => i?.orderStatus === item?.orderStatus
     )?.statusDate;
     navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
       isOrderRelatedIssue: true,
-      medicineOrderStatus: item.currentStatus,
+      medicineOrderStatus: item.orderStatus,
       medicineOrderStatusDate: currentStatusDate,
       orderId: item?.displayId,
       queryIdLevel1,
@@ -424,40 +429,25 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
   };
 
   const onSuccess = (res: any) => {
+    let ticket = res?.data?.createHelpTicket?.ticket;
+    let ticketNumber = ticket?.ticketNumber;
+    let referenceNumberText = ticketNumber
+      ? needHelpTicketReferenceText.replace('#ticketNumber', '#' + ticketNumber)
+      : '';
+
     showAphAlert!({
       title: string.common.hiWithSmiley,
-      description: needHelpToContactInMessage || string.needHelpSubmitMessage,
+      description:
+        (needHelpToContactInMessage || string.needHelpSubmitMessage) + '. ' + referenceNumberText,
       unDismissable: true,
       onPressOk: () => {
         hideAphAlert!();
-        openHelpChatScreen(res);
+        navigation.navigate(AppRoutes.HelpChatScreen, {
+          ticket: ticket,
+          level: queryIdLevel2 ? 3 : queryIdLevel1 ? 2 : 1,
+        });
       },
     });
-  };
-
-  const openHelpChatScreen = (response: any) => {
-    let ticketId = response?.data?.sendHelpEmail.split(':')[1] || 0;
-    let ticket = {
-      closedTime: null,
-      createdTime: '',
-      customFields: {
-        Business: '',
-        __typename: '',
-      },
-      id: ticketId,
-      modifiedTime: '2021-08-26T11:30:46.000Z',
-      status: '',
-      statusType: 'Open',
-      subject: '',
-      ticketNumber: '',
-    };
-
-    if (ticketId) {
-      navigation.navigate(AppRoutes.HelpChatScreen, {
-        ticketId: ticketId,
-        ticket: ticket,
-      });
-    }
   };
 
   const onError = () => {
@@ -479,8 +469,8 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
           ? ORDER_TYPE.CONSULT
           : null;
       const reason = subQueries?.find(({ id }) => id === selectedQueryId)?.title;
-      const variables: SendHelpEmailVariables = {
-        helpEmailInput: {
+      const variables: TicketNumberMutationVariables = {
+        createHelpTicketHelpEmailInput: {
           category: parentQuery?.title,
           reason,
           comments: comments,
@@ -491,8 +481,8 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
         },
       };
 
-      let response = await client.query<SendHelpEmail, SendHelpEmailVariables>({
-        query: SEND_HELP_EMAIL,
+      let response = await client.mutate<TicketNumberMutation, TicketNumberMutationVariables>({
+        mutation: CREATE_HELP_TICKET,
         variables,
       });
 

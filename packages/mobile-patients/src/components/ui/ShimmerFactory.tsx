@@ -314,6 +314,22 @@ const styles = StyleSheet.create({
     marginTop: 12,
     height: 40,
   },
+  itemPrice: {
+    ...theme.viewStyles.cardViewStyle,
+    width: '90%',
+    marginRight: 5,
+    marginTop: 5,
+    height: 50,
+    zIndex: 1,
+  },
+  itemPackagePrice: {
+    ...theme.viewStyles.cardViewStyle,
+    width: '100%',
+    marginRight: 5,
+    marginTop: 5,
+    height: 60,
+    zIndex: 1,
+  },
   rowStyle: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -324,20 +340,38 @@ const styles = StyleSheet.create({
     width: 150,
     margin: 12,
   },
-  itemPrice: {
-    ...theme.viewStyles.cardViewStyle,
-    width: '90%',
-    marginRight: 5,
-    marginTop: 5,
-    height: 40,
+  prescriptionOption: {
+    borderRadius: 5,
+    borderColor: '#D3D3D3',
+    borderWidth: 0.5,
+    height: 250,
+    width: '95%',
+    margin: 10,
   },
-
-  itemPackagePrice: {
-    ...theme.viewStyles.cardViewStyle,
+  specialOffersCouponContainer: {
+    marginTop: 20,
+    marginHorizontal: 18,
+  },
+  specialOffersCouponShimmer: {
+    borderRadius: 1,
+    height: 100,
     width: '100%',
-    marginRight: 5,
-    marginTop: 5,
+    marginBottom: 16,
+  },
+  specialOffersCouponButtonShimmer: {
+    borderRadius: 5,
+    height: 45,
+    width: '100%',
+    marginBottom: 16,
+  },
+  specialOffersDealsContainer: {
+    marginTop: 25,
+    marginHorizontal: 18,
+  },
+  specialOffersDealsShimmer: {
+    borderRadius: 3,
     height: 60,
+    width: '100%',
   },
 });
 
@@ -804,6 +838,25 @@ export const renderSlotItemShimmer = () => {
     />
   );
 };
+export const renderItemPriceShimmer = () => {
+  return (
+    <ShimmerPlaceHolder
+      shimmerColors={shimmerColors}
+      LinearGradient={LinearGradient}
+      shimmerStyle={styles.itemPrice}
+    />
+  );
+};
+
+export const renderPackageItemPriceShimmer = () => {
+  return (
+    <ShimmerPlaceHolder
+      shimmerColors={shimmerColors}
+      LinearGradient={LinearGradient}
+      shimmerStyle={styles.itemPackagePrice}
+    />
+  );
+};
 
 export const renderDiagnosticWidgetShimmer = (showHeading: boolean) => {
   return (
@@ -901,22 +954,48 @@ export const renderPharmaFetchAddressHeadingShimmer = () => {
   );
 };
 
-export const renderItemPriceShimmer = () => {
+export const pharmaPrescriptionShimmer = () => {
   return (
-    <ShimmerPlaceHolder
-      shimmerColors={shimmerColors}
-      LinearGradient={LinearGradient}
-      shimmerStyle={styles.itemPrice}
-    />
+    <View style={{ backgroundColor: '#f0f1ec', paddingHorizontal: 8 }}>
+      <ShimmerPlaceHolder
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.prescriptionOption}
+      />
+    </View>
   );
 };
 
-export const renderPackageItemPriceShimmer = () => {
+export const renderSpecialOffersPageShimmer = () => {
   return (
-    <ShimmerPlaceHolder
-      shimmerColors={shimmerColors}
-      LinearGradient={LinearGradient}
-      shimmerStyle={styles.itemPackagePrice}
-    />
+    <View>
+      <View>
+        <ShimmerPlaceHolder LinearGradient={LinearGradient} shimmerStyle={styles.banner1} />
+        <View style={[styles.sliderDotsContainer, { position: 'absolute', bottom: 20 }]}>
+          <View style={styles.sliderDots} />
+          <View style={styles.sliderDots} />
+          <View style={styles.sliderDots} />
+        </View>
+      </View>
+      <View style={styles.specialOffersCouponContainer}>
+        <ShimmerPlaceHolder
+          LinearGradient={LinearGradient}
+          shimmerStyle={styles.specialOffersCouponShimmer}
+        />
+        <ShimmerPlaceHolder
+          LinearGradient={LinearGradient}
+          shimmerStyle={styles.specialOffersCouponShimmer}
+        />
+        <ShimmerPlaceHolder
+          LinearGradient={LinearGradient}
+          shimmerStyle={styles.specialOffersCouponButtonShimmer}
+        />
+      </View>
+      <View style={styles.specialOffersDealsContainer}>
+        <ShimmerPlaceHolder
+          LinearGradient={LinearGradient}
+          shimmerStyle={styles.specialOffersDealsShimmer}
+        />
+      </View>
+    </View>
   );
 };

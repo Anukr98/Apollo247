@@ -5,7 +5,7 @@ import {
   NavigationActions,
 } from 'react-navigation';
 import { setBugFenderLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { postCleverTapEvent, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { postCleverTapEvent, postWebEngageEvent,  navigateToScreenWithEmptyStack, } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -60,7 +60,7 @@ export const handleOpenURL = (event: any) => {
           setBugFenderLog('DEEP_LINK_SPECIALITY_ID', linkId);
         }
       }
-    } catch (error) { }
+    } catch (error) {}
     const routeNameParam = route?.split('?');
 
     route = routeNameParam ? routeNameParam?.[0]?.toLowerCase() : '';
@@ -386,6 +386,29 @@ export const handleOpenURL = (event: any) => {
           id: linkId ? linkId : undefined,
         };
         break;
+      case 'testordersummary':
+      case 'test-order-summary':
+        return {
+          routeName: 'TestOrderSummary',
+          id: linkId ? linkId : undefined
+        }
+      break;
+
+      case 'testordersummary':
+      case 'test-order-summary':
+        return {
+          routeName: 'TestOrderSummary',
+          id: linkId ? linkId : undefined,
+        };
+        break;
+
+      case 'testordersummary':
+      case 'test-order-summary':
+        return {
+          routeName: 'TestOrderSummary',
+          id: linkId ? linkId : undefined,
+        };
+        break;
 
       case 'testordersummary':
       case 'test-order-summary':
@@ -437,7 +460,7 @@ export const pushTheView = (
   isCorporateSubscribed?: boolean,
   vaccinationCmsIdentifier?: string,
   vaccinationSubscriptionId?: string,
-  movedFromBrandPages?: boolean,
+  params?: any
 ) => {
   setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
   switch (routeName) {
@@ -466,13 +489,13 @@ export const pushTheView = (
         navigation.navigate(AppRoutes.ProductDetailPage, {
           sku: isUrlKey ? null : id,
           urlKey: isUrlKey ? id : null,
-          movedFrom: ProductPageViewedSource.BRAND_PAGES 
+          movedFrom: ProductPageViewedSource.BRAND_PAGES
         });
       } else {
         navigateToView(navigation, AppRoutes.ProductDetailPage, {
           sku: isUrlKey ? null : id,
           urlKey: isUrlKey ? id : null,
-          movedFrom: ProductPageViewedSource.DEEP_LINK, 
+          movedFrom: ProductPageViewedSource.DEEP_LINK,
         });
       }
       break;
@@ -678,8 +701,24 @@ export const pushTheView = (
       });
       break;
     case 'TestsCart':
-      navigateToView(navigation, AppRoutes.TestsCart);
+      navigateToView(navigation, AppRoutes.AddPatients);
       break;
+    case 'PaymentMethods':
+      navigateToScreenWithEmptyStack(navigation, AppRoutes.PaymentMethods, params);
+      break;
+    case 'TestOrderSummary':
+        navigateToView(navigation, AppRoutes.TestOrderDetails, {
+          orderId: id,
+          goToHomeOnBack: true,
+          setOrders: null,
+          selectedOrder: null,
+          refundStatusArr: [],
+          comingFrom:'deeplink',
+          showOrderSummaryTab: true,
+          disableTrackOrder: true,
+
+        })
+        break;
     default:
       const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
         source: 'deeplink',

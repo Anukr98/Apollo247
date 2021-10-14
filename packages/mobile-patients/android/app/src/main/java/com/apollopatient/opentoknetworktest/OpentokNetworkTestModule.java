@@ -30,10 +30,6 @@ public class OpentokNetworkTestModule extends ReactContextBaseJavaModule {
 
     private static ReactApplicationContext reactContext;
 
-    private static final String SESSION_ID = "2_MX40NzMyNTc3MX5-MTYzMDkxMzI3OTAwOX5icU9mb2lJTWJyMnR1UGZtOGNQN21PKzd-fg";
-    private static final String TOKEN = "T1==cGFydG5lcl9pZD00NzMyNTc3MSZzaWc9MjQ3ZDVhN2FkZTIzOTYwNmFkM2E2YzY5OWUyNGM4ZmIzNDM0MDQ4MzpzZXNzaW9uX2lkPTJfTVg0ME56TXlOVGMzTVg1LU1UWXpNRGt4TXpJM09UQXdPWDVpY1U5bWIybEpUV0p5TW5SMVVHWnRPR05RTjIxUEt6ZC1mZyZjcmVhdGVfdGltZT0xNjMwOTEzMjc5Jm5vbmNlPTAuMTgxMzYxMDg0OTg1ODY3Nzgmcm9sZT1tb2RlcmF0b3ImZXhwaXJlX3RpbWU9MTYzMzUwNTI3OSZpbml0aWFsX2xheW91dF9jbGFzc19saXN0PQ==";
-    private static final String APIKEY = "47325771";
-
     private static final String LOGTAG = "quality-stats-demo";
     private Session mSession;
     private Publisher mPublisher;
@@ -74,17 +70,14 @@ public class OpentokNetworkTestModule extends ReactContextBaseJavaModule {
 
 
     @ReactMethod
-    public void startNetworkTest(String name, Promise promise) {
+    public void startNetworkTest(String API_KEY, String SESSION_ID, String TOKEN, Promise promise) {
         //Log.d(LOGTAG, "startNetworkTest ---- ");
-
-
-        sessionConnect(promise);
-
+        sessionConnect(API_KEY, SESSION_ID, TOKEN, promise);
         final Handler handler = new Handler(Looper.getMainLooper());
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                // Log.i(LOGTAG, "Timeout after 30000 secs --- ");
+                //  Log.i(LOGTAG, "Timeout after 30000 secs --- ");
                 promise.resolve("BAD: Voice-only - Your bandwidth is too low for video");
             }
         }, 30000);
@@ -92,16 +85,16 @@ public class OpentokNetworkTestModule extends ReactContextBaseJavaModule {
 
     }
 
-    public void sessionConnect(Promise promise) {
-        //  Log.i(LOGTAG, "Connecting session");
+    public void sessionConnect(String API_KEY, String SESSION_ID, String TOKEN, Promise promise) {
+        // Log.i(LOGTAG, "Connecting session");
         if (mSession == null) {
-            //  Log.i(LOGTAG, "mSession session null");
+            // Log.i(LOGTAG, "mSession session null");
 
-            mSession = new Session.Builder(reactContext, APIKEY, SESSION_ID).build();
+            mSession = new Session.Builder(reactContext, API_KEY, SESSION_ID).build();
             mSession.setSessionListener(new Session.SessionListener() {
                 @Override
                 public void onConnected(Session session) {
-                    //  Log.i(LOGTAG, "Session is connected");
+                    // Log.i(LOGTAG, "Session is connected");
 
                     mPublisher = new Publisher.Builder(reactContext).build();
                     // Log.i(LOGTAG, "Created new publisher -- " + mPublisher);
@@ -109,7 +102,7 @@ public class OpentokNetworkTestModule extends ReactContextBaseJavaModule {
                     mPublisher.setPublisherListener(new PublisherKit.PublisherListener() {
                         @Override
                         public void onStreamCreated(PublisherKit publisherKit, Stream stream) {
-                            //Log.i(LOGTAG, "Publisher onStreamCreated");
+                            // Log.i(LOGTAG, "Publisher onStreamCreated");
                             if (mSubscriber == null) {
                                 subscribeToStream(stream, promise);
                             }
@@ -117,7 +110,7 @@ public class OpentokNetworkTestModule extends ReactContextBaseJavaModule {
 
                         @Override
                         public void onStreamDestroyed(PublisherKit publisherKit, Stream stream) {
-                            //  Log.i(LOGTAG, "Publisher onStreamDestroyed");
+                            // Log.i(LOGTAG, "Publisher onStreamDestroyed");
                             if (mSubscriber == null) {
                                 unsubscribeFromStream(stream);
                             }
@@ -125,8 +118,8 @@ public class OpentokNetworkTestModule extends ReactContextBaseJavaModule {
 
                         @Override
                         public void onError(PublisherKit publisherKit, OpentokError opentokError) {
-                            //    Log.i(LOGTAG, "Publisher kit: " + publisherKit.getName());
-                            //   Log.i(LOGTAG, "Publisher error: " + opentokError.getMessage());
+//                            Log.i(LOGTAG, "Publisher kit: " + publisherKit.getName());
+//                            Log.i(LOGTAG, "Publisher error: " + opentokError.getMessage());
 
 
                             promise.resolve("BAD: Voice-only - Your bandwidth is too low for video");
@@ -134,7 +127,7 @@ public class OpentokNetworkTestModule extends ReactContextBaseJavaModule {
                     });
                     mPublisher.setAudioFallbackEnabled(true);
 
-                    //  Log.i(LOGTAG, "Publishing -- " + mPublisher + mSession);
+                    // Log.i(LOGTAG, "Publishing -- " + mPublisher + mSession);
 
                     mSession.publish(mPublisher);
                 }
@@ -152,23 +145,23 @@ public class OpentokNetworkTestModule extends ReactContextBaseJavaModule {
 
                 @Override
                 public void onStreamReceived(Session session, Stream stream) {
-                    //  Log.i(LOGTAG, "Session onStreamReceived");
+                    // Log.i(LOGTAG, "Session onStreamReceived");
                 }
 
                 @Override
                 public void onStreamDropped(Session session, Stream stream) {
-                    //  Log.i(LOGTAG, "Session onStreamDropped");
+                    // Log.i(LOGTAG, "Session onStreamDropped");
                 }
 
                 @Override
                 public void onError(Session session, OpentokError opentokError) {
-                    //   Log.i(LOGTAG, "Session error: " + opentokError.getMessage());
+                    // Log.i(LOGTAG, "Session error: " + opentokError.getMessage());
 
                     promise.resolve("BAD: Voice-only - Your bandwidth is too low for video");
                 }
             });
 
-            //  Log.i(LOGTAG, "Checking your available bandwidth Please wait ! ");
+            // Log.i(LOGTAG, "Checking your available bandwidth Please wait ! ");
             mSession.connect(TOKEN);
         } else {
             // Log.i(LOGTAG, "mSession session not null");
@@ -176,12 +169,12 @@ public class OpentokNetworkTestModule extends ReactContextBaseJavaModule {
     }
 
     private void subscribeToStream(Stream stream, Promise promise) {
-        //  Log.i(LOGTAG, "subscribeToStream -- ");
+        //Log.i(LOGTAG, "subscribeToStream -- ");
         mSubscriber = new Subscriber.Builder(reactContext, stream).build();
         mSubscriber.setSubscriberListener(new SubscriberKit.SubscriberListener() {
             @Override
             public void onConnected(SubscriberKit subscriberKit) {
-                //        Log.i(LOGTAG, "Subscriber onConnected");
+                // Log.i(LOGTAG, "Subscriber onConnected");
             }
 
             @Override
@@ -191,7 +184,7 @@ public class OpentokNetworkTestModule extends ReactContextBaseJavaModule {
 
             @Override
             public void onError(SubscriberKit subscriberKit, OpentokError opentokError) {
-                //   Log.i(LOGTAG, "Subscriber error: " + opentokError.getMessage());
+                //Log.i(LOGTAG, "Subscriber error: " + opentokError.getMessage());
                 promise.resolve("BAD: Voice-only - Your bandwidth is too low for video");
             }
         });
@@ -222,7 +215,7 @@ public class OpentokNetworkTestModule extends ReactContextBaseJavaModule {
     }
 
     private void checkVideoStats(SubscriberKit.SubscriberVideoStats stats) {
-        // Log.i(LOGTAG, "checkVideoStats -- ");
+        //Log.i(LOGTAG, "checkVideoStats -- ");
 
         double videoTimestamp = stats.timeStamp / 1000;
 
@@ -253,7 +246,7 @@ public class OpentokNetworkTestModule extends ReactContextBaseJavaModule {
             mPrevVideoTimestamp = videoTimestamp;
             mPrevVideoBytes = stats.videoBytesReceived;
 
-            //  Log.i(LOGTAG, "Video bandwidth (bps): " + mVideoBw + " Video Bytes received: " + stats.videoBytesReceived + " Video packet lost: " + stats.videoPacketsLost + " Video packet loss ratio: " + mVideoPLRatio);
+            // Log.i(LOGTAG, "Video bandwidth (bps): " + mVideoBw + " Video Bytes received: " + stats.videoBytesReceived + " Video packet lost: " + stats.videoPacketsLost + " Video packet loss ratio: " + mVideoPLRatio);
 
         }
     }
@@ -270,17 +263,17 @@ public class OpentokNetworkTestModule extends ReactContextBaseJavaModule {
             //   Log.i(LOGTAG, "mVideoPLRatio = " + mVideoPLRatio);
 
             if (mVideoBw < 150000 || mVideoPLRatio > 0.03) { //POOR
-                //     Log.i(LOGTAG, "Voice-only - Your bandwidth is too low for video");
-                //     Log.i(LOGTAG, "Test Result - POOR");
+                // Log.i(LOGTAG, "Voice-only - Your bandwidth is too low for video");
+                //Log.i(LOGTAG, "Test Result - POOR");
 
                 promise.resolve("BAD: Voice-only - Your bandwidth is too low for video");
             } else if (mVideoBw > 900000 || mVideoPLRatio < 0.005) { //Excellent
 
-                //    Log.i(LOGTAG, "Test Result - GOOD Excellent ");
+                //Log.i (LOGTAG, "Test Result - GOOD Excellent ");
 
                 promise.resolve("GOOD: Voice-only - excellent network");
             } else {
-                //    Log.i(LOGTAG, "Test Result - AVERAGE");
+                // Log.i(LOGTAG, "Test Result - AVERAGE");
                 promise.resolve("AVERAGE:  All good - okay ");
             }
 

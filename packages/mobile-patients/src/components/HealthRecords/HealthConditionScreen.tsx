@@ -49,6 +49,7 @@ import {
   postCleverTapIfNewSession,
   removeObjectProperty,
   postCleverTapEvent,
+  phrSortByDate,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -200,22 +201,27 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
 
   useEffect(() => {
     const healthConditionsArray: any[] = [];
-    medicalMedications?.forEach((medicationRecord: any) => {
-      medicationRecord && healthConditionsArray.push(medicationRecord);
+    let mergeArray: { type: string; data: any }[] = [];
+    medicalMedications?.forEach((c: any) => {
+      mergeArray.push({ type: 'health-conditions', data: c });
     });
-    medicalConditions?.forEach((medicalConditionsRecord: any) => {
-      medicalConditionsRecord && healthConditionsArray.push(medicalConditionsRecord);
+    medicalConditions?.forEach((c: any) => {
+      mergeArray.push({ type: 'health-conditions', data: c });
+      // medicalConditionsRecord && healthConditionsArray.push(medicalConditionsRecord);
     });
-    medicalHealthRestrictions?.forEach((healthRestrictionRecord: any) => {
-      healthRestrictionRecord && healthConditionsArray.push(healthRestrictionRecord);
+    medicalHealthRestrictions?.forEach((c: any) => {
+      mergeArray.push({ type: 'health-conditions', data: c });
+      // healthRestrictionRecord && healthConditionsArray.push(healthRestrictionRecord);
     });
-    medicalAllergies?.forEach((allergyRecord: any) => {
-      allergyRecord && healthConditionsArray.push(allergyRecord);
+    medicalAllergies?.forEach((c: any) => {
+      mergeArray.push({ type: 'health-conditions', data: c });
+      // allergyRecord && healthConditionsArray.push(allergyRecord);
     });
-    familyHistory?.forEach((familyHistoryRecord: any) => {
-      familyHistoryRecord && healthConditionsArray.push(familyHistoryRecord);
+    familyHistory?.forEach((c: any) => {
+      mergeArray.push({ type: 'health-conditions', data: c });
+      // familyHistoryRecord && healthConditionsArray.push(familyHistoryRecord);
     });
-    const sortedData = phrSortWithDate(healthConditionsArray);
+    const sortedData = phrSortByDate(mergeArray);
     setHealthConditionMainData(sortedData);
   }, [
     medicalConditions,
@@ -633,27 +639,27 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
   const renderHealthConditionItems = (item: any, index: number) => {
     const renderHealthConditionTopView = () => {
       const getHealthConditionTypeIcon = () => {
-        return item?.allergyName ? (
+        return item?.data?.allergyName ? (
           <PhrAllergyIcon style={{ width: 11.85, height: 13.14, marginRight: 10.5 }} />
-        ) : item?.medicineName ? (
+        ) : item?.data?.medicineName ? (
           <PhrMedicationIcon style={{ width: 12.82, height: 13.14, marginRight: 9.8 }} />
-        ) : item?.restrictionName ? (
+        ) : item?.data?.restrictionName ? (
           <PhrRestrictionIcon style={{ width: 14, height: 14, marginRight: 9 }} />
-        ) : item?.medicalConditionName ? (
+        ) : item?.data?.medicalConditionName ? (
           <PhrMedicalIcon style={{ width: 14, height: 14.03, marginRight: 8 }} />
-        ) : item?.diseaseName ? (
+        ) : item?.data?.diseaseName ? (
           <PhrFamilyHistoryIcon style={{ width: 14, height: 17.14, marginRight: 9 }} />
         ) : null;
       };
-      const getHealthConditionTypeTitle = item?.allergyName
+      const getHealthConditionTypeTitle = item?.data?.allergyName
         ? 'Allergies'
-        : item?.medicineName
+        : item?.data?.medicineName
         ? 'Medications'
-        : item?.restrictionName
+        : item?.data?.restrictionName
         ? 'Health Restrictions'
-        : item?.medicalConditionName
+        : item?.data?.medicalConditionName
         ? 'Medical Conditions'
-        : item?.diseaseName
+        : item?.data?.diseaseName
         ? 'Family History'
         : '';
       return (
@@ -666,21 +672,22 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
       );
     };
     const prescriptionName =
-      item?.allergyName ||
-      item?.medicineName ||
-      item?.restrictionName ||
-      item?.medicalConditionName ||
-      item?.diseaseName ||
+      item?.data?.allergyName ||
+      item?.data?.medicineName ||
+      item?.data?.restrictionName ||
+      item?.data?.medicalConditionName ||
+      item?.data?.diseaseName ||
       '';
-    const dateText = getPrescriptionDate(item?.startDateTime || item?.recordDateTime);
-    const soureName = getSourceName(item?.source) || '-';
+    const dateText = getPrescriptionDate(item?.data?.startDateTime || item?.data?.recordDateTime);
+    const soureName = getSourceName(item?.data?.source) || '-';
     const selfUpload = true;
     const showEditDeleteOption =
       soureName === string.common.clicnical_document_text || soureName === '-' ? true : false;
-    const familyMember = _.capitalize(item?.familyMember) || '';
+    const familyMember = _.capitalize(item?.data?.familyMember) || '';
+    const realItem = item?.data;
     return (
       <HealthRecordCard
-        item={item}
+        item={realItem}
         index={index}
         editDeleteData={editDeleteData(MedicalRecordType.ALLERGY)}
         showUpdateDeleteOption={showEditDeleteOption}

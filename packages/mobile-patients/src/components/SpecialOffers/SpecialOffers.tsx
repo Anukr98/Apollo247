@@ -20,6 +20,7 @@ import { CouponsSection } from '@aph/mobile-patients/src/components/SpecialOffer
 import { DealsByCategorySection } from '@aph/mobile-patients/src/components/SpecialOffers/Components/DealsByCategorySection';
 import { DealsByBrandsSection } from '@aph/mobile-patients/src/components/SpecialOffers/Components/DealsByBrandsSection';
 import { HotSellersSection } from '@aph/mobile-patients/src/components/SpecialOffers/Components/HotSellersSection';
+import { renderSpecialOffersPageShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 
 export interface SpecialOffersScreenProps
   extends NavigationScreenProps<{
@@ -29,12 +30,13 @@ export interface SpecialOffersScreenProps
 export const SpecialOffersScreen: React.FC<SpecialOffersScreenProps> = (props) => {
   const movedFrom = props.navigation.getParam('movedFrom');
   const { medicineHomeBannerData, medicineHotSellersData } = useShoppingCart();
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const { showAphAlert } = useUIElements();
   const [widgetOrderData, setWidgetOrderData] = useState<SpecialOffersWidgetsApiResponse>();
   const [categoryData, setCategoryData] = useState<SpecialOffersCategoryApiResponse>();
   const [offersData, setOffersData] = useState<SpecialOffersCouponsApiResponse>();
   const [brandsData, setBrandsData] = useState<SpecialOffersBrandsApiResponse>();
+  const totalResponsesGenerated = [1, 1, 0, 0, 0];
   const [widgetArray, setWidgetArray] = useState([
     'Carousel Banner',
     'Offers',
@@ -65,16 +67,18 @@ export const SpecialOffersScreen: React.FC<SpecialOffersScreenProps> = (props) =
 
   const fetchCouponsData = async () => {
     try {
-      setLoading(true);
       const offersResponse = await getSpecialOffersPageCoupons();
       setOffersData(offersResponse.data);
-      setLoading(false);
+      totalResponsesGenerated[2] = 1;
     } catch (e) {
-      setLoading(false);
+      totalResponsesGenerated[2] = 1;
       showAphAlert!({
         title: string.common.uhOh,
         description: "We're sorry! Unable to fetch products right now, please try later.",
       });
+    }
+    if (totalResponsesGenerated.every((val, i, arr) => val === arr[0])) {
+      setLoading(false);
     }
   };
 
@@ -82,42 +86,43 @@ export const SpecialOffersScreen: React.FC<SpecialOffersScreenProps> = (props) =
     try {
       const categoryResponse = await getSpecialOffersPageCategory();
       setCategoryData(categoryResponse.data);
-      setLoading(false);
+      totalResponsesGenerated[3] = 1;
     } catch (e) {
-      setLoading(false);
+      totalResponsesGenerated[3] = 1;
       showAphAlert!({
         title: string.common.uhOh,
         description: "We're sorry! Unable to fetch products right now, please try later.",
       });
+    }
+    if (totalResponsesGenerated.every((val, i, arr) => val === arr[0])) {
+      setLoading(false);
     }
   };
 
   const fetchBrandsData = async () => {
     try {
-      setLoading(true);
       const brandResponse = await getSpecialOffersPageBrands();
       setBrandsData(brandResponse.data);
-      setLoading(false);
+      totalResponsesGenerated[4] = 1;
     } catch (e) {
-      setLoading(false);
+      totalResponsesGenerated[4] = 1;
       showAphAlert!({
         title: string.common.uhOh,
         description: "We're sorry! Unable to fetch products right now, please try later.",
       });
     }
+    if (totalResponsesGenerated.every((val, i, arr) => val === arr[0])) {
+      setLoading(false);
+    }
   };
 
   const fetchWidgetOrderForSpecialOffersScreen = async () => {
     try {
-      setLoading(true);
       const widgetOrderResponse = await getSpecialOffersPageWidgets();
       if (widgetOrderResponse && widgetOrderResponse.data) {
         setWidgetOrderData(widgetOrderResponse.data);
       }
-      setLoading(false);
-    } catch (e) {
-      setLoading(false);
-    }
+    } catch (e) {}
   };
 
   const renderHeader = () => {
@@ -127,50 +132,54 @@ export const SpecialOffersScreen: React.FC<SpecialOffersScreenProps> = (props) =
   return (
     <SafeAreaView style={styles.container}>
       {renderHeader()}
-      <ScrollView>
-        {widgetArray.map((widget) => {
-          switch (widget) {
-            case 'Carousel Banner':
-              {
-                return medicineHomeBannerData ? (
-                  <BannerSection navigation={props.navigation} />
-                ) : null;
-              }
-              break;
-            case 'Offers':
-              {
-                return offersData ? <CouponsSection offersData={offersData.response} /> : null;
-              }
-              break;
-            case 'Deals by Category':
-              {
-                return categoryData ? (
-                  <DealsByCategorySection
-                    categoryData={categoryData}
-                    navigation={props.navigation}
-                  />
-                ) : null;
-              }
-              break;
-            case 'Top Deals on Brands':
-              {
-                return brandsData ? (
-                  <DealsByBrandsSection brandsData={brandsData} navigation={props.navigation} />
-                ) : null;
-              }
-              break;
-            case 'Offers for you':
-              {
-                return medicineHotSellersData ? (
-                  <HotSellersSection navigation={props.navigation} />
-                ) : null;
-              }
-              break;
-            default:
-              null;
-          }
-        })}
-      </ScrollView>
+      {loading ? (
+        renderSpecialOffersPageShimmer()
+      ) : (
+        <ScrollView>
+          {widgetArray.map((widget) => {
+            switch (widget) {
+              case 'Carousel Banner':
+                {
+                  return medicineHomeBannerData ? (
+                    <BannerSection navigation={props.navigation} />
+                  ) : null;
+                }
+                break;
+              case 'Offers':
+                {
+                  return offersData ? <CouponsSection offersdata={offersData.response} /> : null;
+                }
+                break;
+              case 'Deals by Category':
+                {
+                  return categoryData ? (
+                    <DealsByCategorySection
+                      categoryData={categoryData}
+                      navigation={props.navigation}
+                    />
+                  ) : null;
+                }
+                break;
+              case 'Top Deals on Brands':
+                {
+                  return brandsData ? (
+                    <DealsByBrandsSection brandsData={brandsData} navigation={props.navigation} />
+                  ) : null;
+                }
+                break;
+              case 'Offers for you':
+                {
+                  return medicineHotSellersData ? (
+                    <HotSellersSection navigation={props.navigation} />
+                  ) : null;
+                }
+                break;
+              default:
+                null;
+            }
+          })}
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 };

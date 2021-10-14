@@ -71,6 +71,7 @@ export const CheckReschedulePopup: React.FC<CheckRescheduleProps> = (props) => {
   } = props;
   const [resheduleoverlay, setResheduleoverlay] = useState<boolean>(false);
   const doctorDetails = data?.doctorInfo!;
+  const apptType = data?.appointmentType;
   const { currentPatient } = useAllCurrentPatients();
   const [belowThree, setBelowThree] = useState<boolean>(false);
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
@@ -201,7 +202,9 @@ export const CheckReschedulePopup: React.FC<CheckRescheduleProps> = (props) => {
       .then(({ data }: any) => {
         setLoading!(false);
         try {
-          data[0] && setNextSlotAvailable(data?.[0]?.availableSlot);
+          data[0] && setNextSlotAvailable(
+            apptType == 'ONLINE' ? data?.[0]?.availableSlot :
+            data?.[0]?.physicalAvailableSlot);
         } catch (error) {
           CommonBugFender('AppointmentOnlineDetails_fetchNextDoctorAvailableData_try', error);
           setNextSlotAvailable('');
@@ -364,7 +367,7 @@ export const CheckReschedulePopup: React.FC<CheckRescheduleProps> = (props) => {
           patientId={currentPatient?.id}
           clinics={doctorDetails?.doctorHospital || []}
           doctorId={doctorDetails?.id}
-          renderTab={'Consult Online'}
+          renderTab={apptType == 'ONLINE' ? 'Consult Online' : 'Visit Clinic'}
           rescheduleCount={newRescheduleCount}
           secretaryData={secretaryData}
           appointmentId={data?.id}

@@ -139,6 +139,11 @@ export function PharmacyCartViewedEvent(
     ...pharmacyUserTypeAttribute,
     ...pharmacyCircleEvent,
   };
+
+  let revenue = 0
+  shoppingCart?.cartItems?.forEach(item => {
+    revenue+=(item?.quantity * (item?.specialPrice ? item?.specialPrice : item?.price))
+  })
   const appsFlyerEvents = {
     'Total items in cart': shoppingCart?.cartItems?.length,
     'Sub Total': shoppingCart?.cartTotal,
@@ -158,6 +163,11 @@ export function PharmacyCartViewedEvent(
           af_price: item?.specialPrice,
         })
     ),
+    "af_content_id": shoppingCart?.cartItems?.map(item => `${item?.id}`),
+    "af_quantity": shoppingCart?.cartItems?.map(item => item?.quantity),
+    "af_price": shoppingCart?.cartItems?.map(item => item?.specialPrice ? item?.specialPrice : item?.price),
+    "af_revenue": revenue,
+    "af_currency": "INR",
     'Service Area': 'Pharmacy',
     af_customer_user_id: id,
     af_content_type: "Cart Page",
@@ -165,6 +175,7 @@ export function PharmacyCartViewedEvent(
     ...pharmacyCircleEvent,
   };
   
+
   const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CART_VIEWED] = {
     'Total items in cart': shoppingCart?.cartItems?.length,
     'Sub total': shoppingCart?.cartTotal,
