@@ -770,16 +770,11 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   activeAppointmentsContainer: {
-    marginTop: 12,
-    marginBottom: 12,
-    shadowColor: '#4c808080',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.4,
-    shadowRadius: 5,
-    elevation: 4,
-    borderStyle: 'solid',
-    borderColor: '#7EA2AD',
-    borderRadius: 4,
+    marginVertical: 10,
+    borderColor: '#D4D4D4',
+    borderWidth: 1,
+    borderRadius: 6,
+    backgroundColor: '#FAFEFF',
   },
   covidIconStyle: {
     marginLeft: 10,
@@ -3136,8 +3131,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           width: 40,
           justifyContent: 'center',
           alignItems: 'center',
-          backgroundColor: theme.colors.CARD_BG,
-          borderRadius: 5,
+          backgroundColor: '#E8E8E8',
+          borderRadius: 6,
         }}
       >
         {appointmentLoading ? (
