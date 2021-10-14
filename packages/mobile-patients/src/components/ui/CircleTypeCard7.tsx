@@ -1,8 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Text, Image } from 'react-native';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   planContainer: {
@@ -38,15 +36,14 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface CircleTypeCard4Props extends NavigationScreenProps {
+export interface CircleTypeCard7Props {
   onButtonPress: () => void;
-  savings?: string;
-  expiry?: string;
-  credits?: string;
+  price?: string;
+  validity?: string;
 }
 
-export const CircleTypeCard4: React.FC<CircleTypeCard4Props> = (props) => {
-  const { onButtonPress, credits } = props;
+export const CircleTypeCard7: React.FC<CircleTypeCard7Props> = (props) => {
+  const { onButtonPress, price, validity } = props;
 
   return (
     <View>
@@ -63,7 +60,7 @@ export const CircleTypeCard4: React.FC<CircleTypeCard4Props> = (props) => {
             Available Health{'\n'}Credits:
             <Text style={{ ...theme.viewStyles.text('M', 15, theme.colors.SHERPA_BLUE, 1, 18) }}>
               {' '}
-              {credits || 0}
+              {price || 0}
             </Text>
           </Text>
         </View>
