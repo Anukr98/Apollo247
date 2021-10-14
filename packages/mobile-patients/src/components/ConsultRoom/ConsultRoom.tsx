@@ -3907,7 +3907,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             renew={renew}
           />
         ) : null}
-
+        {/* these banners might get added in new design */}
         {/* {renderCircleBannerCards} */}
 
         <View style={styles.circleRowsContainer}>
@@ -3935,6 +3935,24 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           ) : null}
         </View>
       </LinearGradientComponent>
+    );
+  };
+
+  const renderCircleBuyNow = () => {
+    return (
+      <CircleTypeCard7
+        onButtonPress={() => {
+          onClickCircleBenefits('Not Expiring', string.Hdfc_values.MEMBERSHIP_DETAIL_CIRCLE);
+          props.navigation.navigate(AppRoutes.MembershipDetails, {
+            membershipType: 'CIRCLE PLAN',
+            isActive: true,
+            comingFrom: 'Circle Benifits(Home Screen)',
+            circleEventSource: 'Landing Home Page',
+          });
+        }}
+        price={healthCredits?.toString()}
+        validity={circleSavings?.toString()}
+      />
     );
   };
 
