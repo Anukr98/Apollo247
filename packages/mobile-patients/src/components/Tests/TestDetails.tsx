@@ -88,6 +88,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import moment from 'moment';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
+import { CallToOrderView } from './components/CallToOrderView';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
@@ -219,6 +220,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [reportTat, setReportTat] = useState<string>('');
   const [showBottomBar, setShowBottomBar] = useState<boolean>(false);
   const [priceHeight, setPriceHeight] = useState<number>(0);
+  const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
 
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
 
@@ -1273,6 +1275,20 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       </View>
     );
   };
+  const renderCallToOrder = () => {
+    return (
+      <CallToOrderView
+        customMargin = {80}
+        slideCallToOrder = {slideCallToOrder}
+        onPressSmallView = {() => {
+          setSlideCallToOrder(false);
+        }}
+        onPressCross = {() => {
+          setSlideCallToOrder(true);
+        }}
+      />
+    )
+  }
 
   return (
     <SafeAreaView
@@ -1311,6 +1327,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               ? renderWidgetsView()
               : null}
           </ScrollView>
+          {renderCallToOrder()}
           <StickyBottomComponent>
             {showBottomBar && renderPriceView(true)}
             <Button

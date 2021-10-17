@@ -44,6 +44,7 @@ import {
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { DiagnosticProductListingPageViewed } from './Events';
+import { CallToOrderView } from './components/CallToOrderView';
 
 export interface TestListingProps
   extends NavigationScreenProps<{
@@ -72,6 +73,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const limit = 10;
   const [currentOffset, setCurrentOffset] = useState<number>(1);
   const [testLength, setTestLength] = useState<number>(limit);
+  const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
   const client = useApolloClient();
 
@@ -409,6 +411,20 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       </>
     );
   };
+  const renderCallToOrder = () => {
+    return (
+      <CallToOrderView
+        customMargin = {80}
+        slideCallToOrder = {slideCallToOrder}
+        onPressSmallView = {() => {
+          setSlideCallToOrder(false);
+        }}
+        onPressCross = {() => {
+          setSlideCallToOrder(true);
+        }}
+      />
+    )
+  }
 
   return (
     <View style={{ flex: 1 }}>
@@ -417,6 +433,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         {!errorStates ? renderBreadCrumb() : null}
         {error ? renderEmptyMessage() : null}
         <View style={{ flex: 1, marginBottom: '5%' }}>{renderList()}</View>
+        {renderCallToOrder()}
         {showLoadMore ? renderLoadMore() : null}
       </SafeAreaView>
       {loading && widgetsData?.length == 0 && <Spinner />}

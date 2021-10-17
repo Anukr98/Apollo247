@@ -199,6 +199,7 @@ import {
   getDiagnosticOrdersListByMobile,
   getDiagnosticOrdersListByMobileVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
+import { CallToOrderView } from './components/CallToOrderView';
 const rankArr = ['1', '2', '3', '4', '5', '6'];
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
@@ -2857,65 +2858,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderCallToOrder = () => {
     return (
-      <View
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          flexDirection: 'row',
+      <CallToOrderView
+        cartItems = {cartItems}
+        slideCallToOrder = {slideCallToOrder}
+        onPressSmallView = {() => {
+          setSlideCallToOrder(false);
         }}
-      >
-        {!slideCallToOrder ? (
-          <TouchableOpacity
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'center',
-              alignItems: 'center',
-              backgroundColor: '#346CD9',
-              height: 50,
-              width: 150,
-              borderBottomRightRadius: 10,
-              borderTopRightRadius: 10,
-              marginBottom: !!cartItems && cartItems?.length > 0 ? 60 : 20,
-            }}
-          >
-            <WhiteCall style={{ width: 20, height: 20, paddingHorizontal: 10 }} />
-            <Text style={styles.callToOrderText}>Call to Order</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'center',
-              alignItems: 'center',
-              backgroundColor: '#346CD9',
-              height: 50,
-              width: 50,
-              borderBottomRightRadius: 10,
-              borderTopRightRadius: 10,
-              marginBottom: !!cartItems && cartItems?.length > 0 ? 60 : 20,
-            }}
-            onPress={() => {
-              setSlideCallToOrder(false);
-            }}
-          >
-            <WhiteCall style={{ width: 20, height: 20, padding: 5 }} />
-          </TouchableOpacity>
-        )}
-        <View style={{ marginLeft: -10, marginTop: -10 }}>
-          {!slideCallToOrder ? (
-            <TouchableOpacity
-              onPress={() => {
-                setSlideCallToOrder(true);
-              }}
-            >
-              <BlueCross style={{ width: 20, height: 20 }} />
-            </TouchableOpacity>
-          ) : null}
-        </View>
-      </View>
-    );
-  };
+        onPressCross = {() => {
+          setSlideCallToOrder(true);
+        }}
+      />
+    )
+  }
 
   return (
     <View style={{ flex: 1 }}>
