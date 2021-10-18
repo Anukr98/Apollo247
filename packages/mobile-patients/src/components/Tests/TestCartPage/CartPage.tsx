@@ -568,13 +568,13 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     const getExisitngItems = patientCartItems
       ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
       ?.flat();
-    const getUniqueItems = [...new Set(getExisitngItems)];
-    const arrayToChoose = isModifyFlow ? cartItems : getUniqueItems;
+    const selectedUnqiueItems = getExisitngItems?.filter((i) => i?.isSelected);
+    const arrayToChoose = isModifyFlow ? cartItems : selectedUnqiueItems;
 
     if (results?.length == 0) {
       setLoading?.(false);
     }
-    const disabledCartItems = getUniqueItems?.filter(
+    const disabledCartItems = arrayToChoose?.filter(
       (cartItem) =>
         !results?.find(
           (d: findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics) =>
@@ -584,7 +584,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     let isItemDisable = false,
       isPriceChange = false;
     if (arrayToChoose?.length > 0) {
-      arrayToChoose?.map((cartItem) => {
+      arrayToChoose?.map((cartItem, index: number) => {
         const isItemInCart = results?.findIndex(
           (item: any) => String(item?.itemId) === String(cartItem?.id)
         );
@@ -655,10 +655,12 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                   ? [Number(results?.[isItemInCart]?.itemId)]
                   : results?.[isItemInCart]?.inclusions,
               collectionMethod: TEST_COLLECTION_TYPE.HC,
-              isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG, //commented for future ref
+              isSelected: isModifyFlow
+                ? AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG
+                : cartItem?.isSelected,
             };
 
-            updateCartItemsLocally(updatedObject);
+            updateCartItemsLocally(updatedObject, index, arrayToChoose?.length);
             isModifyFlow && updateModifiedPatientCartItem?.(updatedObject);
           }
           setLoading?.(false);
@@ -682,14 +684,21 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     !!isNavigate && isNavigate && _navigateToNextScreen();
   };
 
-  function updateCartItemsLocally(updatedItems: DiagnosticsCartItem) {
+  function updateCartItemsLocally(
+    updatedItems: DiagnosticsCartItem,
+    index: number,
+    lengthOfArray: number
+  ) {
     const newPatientCartItem = patientCartItems?.map((patientItems: DiagnosticPatientCartItem) => {
       const findLineItemsIndex = patientItems?.cartItems?.findIndex(
-        (lineItems: DiagnosticsCartItem) => lineItems?.id === updatedItems?.id
+        (lineItems: DiagnosticsCartItem) =>
+          lineItems?.id === updatedItems?.id && lineItems?.isSelected
       );
       if (findLineItemsIndex !== -1) {
-        const getCurrentPatientCartItems = patientItems.cartItems[findLineItemsIndex].isSelected!;
-        updatedItems['isSelected'] = getCurrentPatientCartItems;
+        /**commented for future ref */
+        // const getCurrentPatientCartItems = patientItems?.cartItems?.[findLineItemsIndex]
+        //   ?.isSelected!;
+        // updatedItems['isSelected'] = getCurrentPatientCartItems;
         patientItems.cartItems[findLineItemsIndex] = updatedItems;
         const patientLineItemObj: DiagnosticPatientCartItem = {
           patientId: patientItems?.patientId,
@@ -700,12 +709,18 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         return patientItems;
       }
     });
-    setPatientCartItems?.([...newPatientCartItem!]?.slice(0));
+    if (isModifyFlow) {
+      setPatientCartItems?.([...newPatientCartItem!]?.slice(0));
+    } else if (index == lengthOfArray - 1) {
+      setPatientCartItems?.([...newPatientCartItem!]?.slice(0));
+    }
 
     const foundIndex = cartItems?.findIndex((item) => item?.id == updatedItems?.id);
     if (foundIndex !== -1) {
-      cartItems[foundIndex] = { ...cartItems[foundIndex], ...updatedItems };
-      setCartItems?.([...cartItems]?.slice(0));
+      if (index == lengthOfArray - 1 || isModifyFlow) {
+        cartItems[foundIndex] = { ...cartItems[foundIndex], ...updatedItems };
+        setCartItems?.([...cartItems]?.slice(0));
+      }
     }
   }
 
@@ -742,8 +757,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           //call prices api.
           getDiagnosticsAvailability(getServiceableResponse?.cityID!, cartItems)
             .then(({ data }) => {
-              const diagnosticItems =
-                g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
+              const diagnosticItems = data?.findDiagnosticsByItemIDsAndCityID?.diagnostics || [];
               updatePricesInCart(diagnosticItems, navigate);
               patientCartItems?.length == 0 && setLoading?.(false);
             })
@@ -1248,7 +1262,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
-          const product = g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics');
+          const product = data?.findDiagnosticsByItemIDsAndCityID?.diagnostics;
 
           if (product) {
             func && func(product[0]!);
