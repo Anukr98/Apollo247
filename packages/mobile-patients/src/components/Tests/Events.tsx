@@ -35,8 +35,7 @@ import {
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
-async function createPatientAttributes(currentPatient: any) {
-  const diagnosticUserType = await AsyncStorage.getItem('diagnosticUserType');
+function createPatientAttributes(currentPatient: any) {
   const patientAttributes = {
     'Patient UHID': g(currentPatient, 'uhid'),
     'Patient Gender': g(currentPatient, 'gender'),
