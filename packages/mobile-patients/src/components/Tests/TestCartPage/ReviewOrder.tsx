@@ -30,10 +30,13 @@ import {
   aphConsole,
   formatAddressWithLandmark,
   g,
+  getCircleNoSubscriptionText,
+  getUserType,
   isDiagnosticSelectedCartEmpty,
   isEmptyObject,
   isSmallDevice,
   nameFormater,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   DiagnosticPatientCartItem,
@@ -135,6 +138,7 @@ import { CirclePlansListOverlay } from '@aph/mobile-patients/src/components/Test
 import { debounce } from 'lodash';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { Decimal } from 'decimal.js';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const screenWidth = Dimensions.get('window').width;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
@@ -218,6 +222,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   } = useDiagnosticsCart();
 
   const {
+    circlePlanSelected,
     circleSubscriptionId,
     setCircleMembershipCharges,
     setCircleSubPlanId,
@@ -225,6 +230,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setCirclePlanSelected,
     setIsCircleSubscription,
   } = useShoppingCart();
+
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { setauthToken } = useAppCommonData();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -242,7 +249,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   var slotBookedArray = ['slot', 'already', 'booked', 'select a slot'];
 
-  const { currentPatient } = useAllCurrentPatients();
   const { cusId, isfetchingId } = useGetJuspayId();
   const [phleboMin, setPhleboMin] = useState(0);
   const [showAllPreviousItems, setShowAllPreviousItems] = useState<boolean>(false);
@@ -1025,6 +1031,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     props.navigation.navigate(AppRoutes.CommonWebView, {
       url: AppConfig.Configuration.CIRLCE_PHARMA_URL,
       source: 'Diagnostic Cart',
+      circleEventSource: 'Cart(Diagnostic)',
     });
   };
 
@@ -1109,6 +1116,23 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   function _onTogglePlans() {
     setIsCircleAddedToCart?.(!isCircleAddedToCart);
     setIsCirclePlanRemoved?.(!isCirclePlanRemoved);
+    const circleData = circlePlanSelected;
+    const cleverTapEventAttributes = {
+      navigation_source: 'Cart(Diagnostic)',
+      circle_end_date: getCircleNoSubscriptionText(),
+      circle_start_date: getCircleNoSubscriptionText(),
+      circle_planid: circleData?.subPlanId,
+      customer_id: currentPatient?.id,
+      duration_in_month: circleData?.durationInMonth,
+      user_type: getUserType(allCurrentPatients),
+      price: circleData?.currentSellingPrice,
+    };
+    if (!isCircleAddedToCart) {
+      postCleverTapEvent(CleverTapEventName.CIRCLE_PLAN_TO_CART, cleverTapEventAttributes);
+    }
+    if (!isCirclePlanRemoved) {
+      postCleverTapEvent(CleverTapEventName.CIRCLE_PLAN_REMOVE_FROM_CART, cleverTapEventAttributes);
+    }
   }
 
   function _navigateToViewCirclePlans() {

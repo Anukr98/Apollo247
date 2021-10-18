@@ -691,6 +691,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     props.navigation.navigate(AppRoutes.MembershipDetails, {
       membershipType: 'CIRCLE PLAN',
       isActive: true,
+      circleEventSource:'Cart(Diagnostic)'
     });
   }
 

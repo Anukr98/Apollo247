@@ -759,9 +759,15 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   };
 
   function _navigateToCartPage() {
-    props.navigation.navigate(AppRoutes.AddPatients, {
-      orderDetails: modifiedOrder,
-    });
+    if (isModify) {
+      props.navigation.navigate(AppRoutes.CartPage, {
+        orderDetails: modifiedOrder,
+      });
+    } else {
+      props.navigation.navigate(AppRoutes.AddPatients, {
+        orderDetails: modifiedOrder,
+      });
+    }
   }
 
   const renderStickyBottom = () => {

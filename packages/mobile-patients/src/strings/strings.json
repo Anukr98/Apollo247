@@ -461,6 +461,7 @@
     "tatBreachedTrue": "Your order status is {{medicineOrderStatus}}. Due to heavy order volumes, we are facing unexpected delays in shipping. We sincerely apologize for the inconvenience. We are working proactively to deliver at the earliest.",
     "tatBreachedFalse": "Your order status is {{medicineOrderStatus}}. You will receive your order by {{etd}}. We are working proactively to deliver at the earliest."
   },
+  "time":{"TwelveHourFormat":"hh:mm A"},
   "doctor_search_listing": {
     "pleaseWait": "Please Wait!",
     "lookingForBestDoctors": "We are looking for the\nbest doctors for you :)",
