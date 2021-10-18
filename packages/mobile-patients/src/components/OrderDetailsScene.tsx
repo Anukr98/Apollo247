@@ -460,13 +460,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const getFormattedDateTimeWithBefore = (time: string) => {
     let day = parseInt(moment(time).format('D'));
     let getDaySubscript = getFormattedDaySubscript(day);
-    const isExpectedDateChanged =orderDetails.oldOrderTat! && statusToShowNewItems.includes(orderDetails.currentStatus!);
-    const days = new Date().getDate() - parseInt(time.split('-')[0]);
-    if (isExpectedDateChanged && days == -1) {
-      let finalDateTime = 'Arriving Tomorrow' + ' before ' + moment(time).format(string.time.TwelveHourFormat);
-      return finalDateTime;
-    }
-    
+
     let finalDateTime =
       day +
       getDaySubscript +
@@ -591,7 +585,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     MEDICINE_ORDER_STATUS.VERIFICATION_DONE,
     MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
   ];
-
+ 
   const renderOrderTrackTopView = () => {
     const diffInTat = checkOrderTatDiff();
 
@@ -682,6 +676,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const isDelhiveryOrEcomExpressProvider = ['Delhivery Express', 'Ecom Express'].includes(
       shipmentTrackingProvider!
     );
+    const isExpectedDateChanged =
+      orderDetails.oldOrderTat! && statusToShowNewItems.includes(orderDetails.currentStatus!);
+    const days = new Date().getDate() - parseInt(tatInfo ? tatInfo?.split('-')[0] : '');
 
     return (
       <View>
@@ -797,7 +794,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                         : 'EXPECTED DELIVERY - '}
                     </Text>
                     <Text style={styles.expectedDeliveryDateText}>
-                      {orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+                      {isExpectedDateChanged && days == -1
+                        ? 'Arriving Tomorrow' +
+                          ' before ' +
+                          moment(tatInfo).format(string.time.TwelveHourFormat)
+                        : orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
                         ? getFormattedDateTime(currentOrderStatus && currentOrderStatus.statusDate)
                         : isDelivered
                         ? getFormattedDate(isDelivered.statusDate)
@@ -2234,11 +2235,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       MEDICINE_ORDER_STATUS.ORDER_FAILED,
       MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE,
     ];
-    
+
     const cancelNotAllowedWrtCurrentStatus = statusWrtCurrent.includes(currentStatus!);
 
     return (
-      !cancelNotAllowedWrtCurrentStatus && cancellationAllowed && (
+      !cancelNotAllowedWrtCurrentStatus &&
+      cancellationAllowed && (
         <View>
           {Array.from({ length: 10 })
             .reverse()
