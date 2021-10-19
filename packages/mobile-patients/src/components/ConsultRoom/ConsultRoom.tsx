@@ -4962,16 +4962,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               RECENT SEARCHES
             </Text>
           </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <SearchNoResultIcon style={{ width: 20, height: 20 }} />
+          <View style={{ flexDirection: 'row', alignItems: 'center', padding: 4 }}>
+            <TimeBlueIcon style={{ width: 24, height: 24, margin: 2 }} />
             <Text
               style={{
                 ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
                 marginLeft: 14,
               }}
             >
-              {string.home.search_not_available}
+              {'Some Recent Search Item'}
             </Text>
+
+            <ArrowRight style={{ marginLeft: 'auto' }} />
           </View>
 
           <View
@@ -4991,16 +4993,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               SEARCH SUGGESTIONS
             </Text>
           </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <SearchNoResultIcon style={{ width: 20, height: 20 }} />
+          <View style={{ flexDirection: 'row', alignItems: 'center', padding: 4 }}>
+            <TimeBlueIcon style={{ width: 24, height: 24, margin: 2 }} />
             <Text
               style={{
                 ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
                 marginLeft: 14,
               }}
             >
-              {string.home.search_not_available}
+              {'Some Suggest Search Item'}
             </Text>
+            <ArrowRight style={{ marginLeft: 'auto' }} />
           </View>
         </View>
       </ScrollView>
