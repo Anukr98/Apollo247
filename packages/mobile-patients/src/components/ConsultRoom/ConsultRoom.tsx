@@ -5146,10 +5146,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
           <View
             style={{
-              padding: 6,
+              paddingVertical: 4,
               alignItems: 'center',
               justifyContent: 'center',
-              borderRadius: 5,
+              borderRadius: 4,
               borderWidth: 1,
               borderStyle: 'solid',
               borderColor: '#E6E6E6',
@@ -5161,11 +5161,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           </View>
           <View
             style={{
-              padding: 6,
+              padding: 4,
               alignItems: 'flex-start',
               justifyContent: 'center',
               flex: 0.7,
-              marginLeft: 2,
+              marginLeft: 4,
             }}
           >
             <Text
@@ -5181,17 +5181,24 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 ? item?.displayName || item?.name
                 : string.home.search_not_available}
             </Text>
-            <Text
-              style={{
-                ...theme.viewStyles.text('R', 12, theme.colors.LIGHT_BLUE, 1, 14),
-              }}
-            >
-              {key === MedicalRecordType.TEST_REPORT
-                ? 'Total Tests - ' + item?.diagnostic_inclusions.length
-                : key === MedicalRecordType.CONSULTATION
-                ? item?.symptoms || item?.specialtydisplayName
-                : null}
-            </Text>
+
+            {key === MedicalRecordType.TEST_REPORT ? (
+              <Text
+                style={{
+                  ...theme.viewStyles.text('R', 12, theme.colors.LIGHT_BLUE, 1, 14),
+                }}
+              >
+                Total Tests - {item?.diagnostic_inclusions.length}
+              </Text>
+            ) : key === MedicalRecordType.CONSULTATION ? (
+              <Text
+                style={{
+                  ...theme.viewStyles.text('R', 12, theme.colors.LIGHT_BLUE, 1, 14),
+                }}
+              >
+                {item?.symptoms || item?.specialtydisplayName}
+              </Text>
+            ) : null}
           </View>
           <View style={{ flex: 0.1, marginLeft: 'auto' }}>
             <ArrowRight />
@@ -5202,8 +5209,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           style={{
             height: 1,
             backgroundColor: '#E6E6E6',
-            marginVertical: 2,
-            marginHorizontal: -8,
+            marginVertical: 6,
+            marginHorizontal: -2,
           }}
         />
       </View>
