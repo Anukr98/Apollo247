@@ -278,6 +278,13 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         CommonBugFender('SubmittedPrescription_ADD_PRESCRIPTION_RECORD', error);
       });
     } else {
+      const prescriptionUrl = EPrescriptionsProps?.[0]?.uploadedUrl
+      DiagnosticPrescriptionSubmitted(
+        currentPatient,
+        prescriptionUrl ? prescriptionUrl : '',
+        inputData?.prescriptionName ? inputData?.prescriptionName : '',
+        isDiagnosticCircleSubscription
+      );
       setOnSumbitSuccess(true)
     }
   };
