@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Text, Image, Dimensions } from 'react-native';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 const { width } = Dimensions.get('window');
 
@@ -66,60 +66,43 @@ export interface CircleTypeCard5Props {
 }
 
 export const CircleTypeCard5: React.FC<CircleTypeCard5Props> = (props) => {
-  const { onButtonPress, savings, expired, credits, renew } = props;
+  const { onButtonPress, expired, credits, renew, savings } = props;
   return (
     <View>
       <View style={styles.planContainer}>
         <View style={styles.subPlanOne}>
-          <Text style={styles.alertText}>Expired</Text>
-
           <Image
             style={styles.circleLogo}
             source={require('@aph/mobile-patients/src/components/ui/icons/circleLogo.webp')}
           />
         </View>
-        <View style={styles.subPlanTwo}>
-          <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 1, 16) }}>
-            Previous{'\n'}Savings:
-          </Text>
-          <Text style={{ ...theme.viewStyles.text('M', 20, '#666666', 1, 25) }}>₹{savings}</Text>
-          {credits ? (
-            <View style={[styles.planContainer, { width: width }]}>
-              <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
-                Available Health Credits:
-              </Text>
-              <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 1, 16) }}>
-                {' '}
-                {credits || 0}
-              </Text>
-            </View>
-          ) : null}
-        </View>
-
-        <View style={styles.subPlanThree}>
-          <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 1, 16) }}>
-            Plan Expired{'\n'}on:
-          </Text>
-          <Text style={{ ...theme.viewStyles.text('M', 20, '#666666', 1, 25) }}>{expired}</Text>
-        </View>
-
-        {renew ? (
-          <View
-            style={[
-              styles.subPlanFour,
-              {
-                marginTop: credits ? -20 : 0,
-              },
-            ]}
-          >
-            <Button
-              title={`RENEW NOW`}
-              style={{ width: 106, height: 32 }}
-              onPress={onButtonPress}
-              disabled={false}
-            />
+        <LinearGradientComponent
+          style={styles.subPlanTwoThreeDevider}
+          colors={[theme.colors.LIGHT_BLUE, theme.colors.LIGHT_BLUE]}
+        >
+          <View style={styles.subPlanTwo}>
+            <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.WHITE, 1, 20) }}>
+              You saved ₹{savings || 'Unable to Load'} with circle
+            </Text>
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 10, theme.colors.WHITE, 1, 20),
+                fontStyle: 'italic',
+              }}
+            >
+              Plan Expired on {expired}
+            </Text>
           </View>
-        ) : null}
+
+          <View style={styles.subPlanThree}>
+            <Text
+              style={{ ...theme.viewStyles.text('B', 15, '#FC9916', 1, 18) }}
+              onPress={onButtonPress}
+            >
+              RENEW
+            </Text>
+          </View>
+        </LinearGradientComponent>
       </View>
     </View>
   );

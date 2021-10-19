@@ -2,7 +2,6 @@ import React from 'react';
 import { View, StyleSheet, Text, Image, Dimensions } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
-import { Savings } from '../MedicineCart/Components/Savings';
 const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
