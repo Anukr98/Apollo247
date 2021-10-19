@@ -4983,9 +4983,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
     const listitems = recentSearches.map((item) => {
       return (
-        <View>
+        <TouchableOpacity onPress={() => onSearchTextChange(item)}>
           <View style={{ flexDirection: 'row', alignItems: 'center', padding: 4 }}>
-            <TimeBlueIcon style={{ width: 24, height: 24, margin: 2 }} />
+            <TimeBlueIcon style={{ width: 24, height: 24, marginHorizontal: 4 }} />
             <Text
               style={{
                 ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
@@ -4998,13 +4998,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           </View>
           <View
             style={{
-              height: 1.5,
+              height: 1,
               backgroundColor: '#D4D4D4',
               marginVertical: 6,
-              marginHorizontal: -8,
             }}
           />
-        </View>
+        </TouchableOpacity>
       );
     });
 
