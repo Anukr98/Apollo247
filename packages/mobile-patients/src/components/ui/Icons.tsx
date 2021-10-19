@@ -1035,7 +1035,7 @@ export const TimeBlueIcon: React.FC<IconProps> = (props) => (
 
 export const DropDownProfile: React.FC<IconProps> = (props) => (
   <IconBase
-    style={{ height: 24, width: 24, resizeMode: 'contain' }}
+    style={{ height: 6, width: 12, resizeMode: 'contain' }}
     {...props}
     source={require('./icons/dropdownGreenNew.webp')}
   />
@@ -1043,7 +1043,7 @@ export const DropDownProfile: React.FC<IconProps> = (props) => (
 
 export const WalletHomeHC: React.FC<IconProps> = (props) => (
   <IconBase
-    style={{ height: 24, width: 24, resizeMode: 'contain' }}
+    style={{ height: 20, width: 20, resizeMode: 'contain' }}
     {...props}
     source={require('./icons/walletHC.webp')}
   />

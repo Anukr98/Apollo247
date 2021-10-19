@@ -1731,7 +1731,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       subCardColor: '#EAF6FF',
       subtitleColor: '#2D6E85',
       subtitle: 'Health Credits Available',
-      image2: <Card style={styles.bottom2SubImage} />,
+      image2: <WalletHomeHC style={styles.bottom2SubImage} />,
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Home Screen');
