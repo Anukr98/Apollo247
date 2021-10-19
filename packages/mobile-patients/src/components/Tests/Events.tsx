@@ -262,7 +262,6 @@ export const firePurchaseEvent = (
     af_order_id: orderId,
     af_customer_user_id: currentPatient?.id,
   };
-  console.log({ appsFlyerAttributes });
   postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   postAppsFlyerEvent(AppsFlyerEventName.PURCHASE, appsFlyerAttributes);
 };
