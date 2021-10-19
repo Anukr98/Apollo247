@@ -2,7 +2,6 @@ import React from 'react';
 import { View, StyleSheet, Text, Image, Dimensions } from 'react-native';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { NavigationScreenProps } from 'react-navigation';
 const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -57,7 +56,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface CircleTypeCard5Props extends NavigationScreenProps {
+export interface CircleTypeCard5Props {
   onButtonPress: () => void;
   savings?: string;
   expiry?: string;
@@ -104,21 +103,23 @@ export const CircleTypeCard5: React.FC<CircleTypeCard5Props> = (props) => {
           <Text style={{ ...theme.viewStyles.text('M', 20, '#666666', 1, 25) }}>{expired}</Text>
         </View>
 
-        {renew ? <View
-          style={[
-            styles.subPlanFour,
-            {
-              marginTop: credits ? -20 : 0,
-            },
-          ]}
-        >
-          <Button
-            title={`RENEW NOW`}
-            style={{ width: 106, height: 32 }}
-            onPress={onButtonPress}
-            disabled={false}
-          />
-        </View> : null}
+        {renew ? (
+          <View
+            style={[
+              styles.subPlanFour,
+              {
+                marginTop: credits ? -20 : 0,
+              },
+            ]}
+          >
+            <Button
+              title={`RENEW NOW`}
+              style={{ width: 106, height: 32 }}
+              onPress={onButtonPress}
+              disabled={false}
+            />
+          </View>
+        ) : null}
       </View>
     </View>
   );
