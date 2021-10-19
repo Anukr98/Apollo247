@@ -5119,7 +5119,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
-                marginTop: 'auto',
+                marginBottom: 'auto',
                 justifyContent: 'space-between',
               }}
             >
@@ -5143,16 +5143,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const renderSearchItemDetails = (item: any, index: number, key: string) => {
     return (
       <View style={{ marginBottom: 6 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
           <View
             style={{
               padding: 6,
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: 5,
-              borderWidth: 1.5,
+              borderWidth: 1,
               borderStyle: 'solid',
-              borderColor: '#D4D4D4',
+              borderColor: '#E6E6E6',
               width: 36,
               height: 36,
             }}
@@ -5164,8 +5164,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               padding: 6,
               alignItems: 'flex-start',
               justifyContent: 'center',
-              width: '65%',
-              marginLeft: 8,
+              flex: 0.7,
+              marginLeft: 2,
             }}
           >
             <Text
@@ -5193,16 +5193,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 : null}
             </Text>
           </View>
-
-          <ArrowRight style={{ marginLeft: 'auto' }} />
+          <View style={{ flex: 0.1, marginLeft: 'auto' }}>
+            <ArrowRight />
+          </View>
         </View>
+
         <View
           style={{
-            height: 1.5,
-            backgroundColor: '#D4D4D4',
-            marginTop: 2,
-            marginBottom: 2,
-            marginHorizontal: -16,
+            height: 1,
+            backgroundColor: '#E6E6E6',
+            marginVertical: 2,
+            marginHorizontal: -8,
           }}
         />
       </View>
