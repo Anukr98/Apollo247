@@ -108,7 +108,8 @@ export const InitiateWalletTxn = (
   requestId: string,
   clientAuthToken: string,
   paymentOrderId: string,
-  wallet: string
+  wallet: string,
+  offerId?: any
 ) => {
   const walletPayload = {
     requestId: requestId,
@@ -119,6 +120,7 @@ export const InitiateWalletTxn = (
       paymentMethod: wallet,
       endUrls: [AppConfig.Configuration.baseUrl],
       clientAuthToken: clientAuthToken,
+      offers: !!offerId ? [offerId] : null,
     },
   };
   HyperSdkReact.process(JSON.stringify(walletPayload));
@@ -278,7 +280,8 @@ export const InitiateSavedCardTxn = (
   clientAuthToken: string,
   paymentOrderId: string,
   cardInfo: any,
-  cvv: string
+  cvv: string,
+  offerId?: string
 ) => {
   const payload = {
     requestId: requestId,
@@ -291,8 +294,11 @@ export const InitiateSavedCardTxn = (
       cardToken: cardInfo?.card_token,
       cardSecurityCode: cvv,
       clientAuthToken: clientAuthToken,
+      offers: !!offerId ? [offerId] : null,
     },
   };
+  console.log('cardPayload >>>>', payload);
+
   HyperSdkReact.process(JSON.stringify(payload));
 };
 

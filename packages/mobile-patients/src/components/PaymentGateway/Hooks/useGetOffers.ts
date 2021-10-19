@@ -36,5 +36,5 @@ export const useGetOffers = (paymentOrderId: string, businessLine: string) => {
     initiate();
   }, []);
 
-  return { offers };
+  return offers;
 };
