@@ -1025,6 +1025,14 @@ export const TimeGreenIcon: React.FC<IconProps> = (props) => (
   />
 );
 
+export const TimeBlueIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24, resizeMode: 'contain' }}
+    {...props}
+    source={require('./icons/recentTimeIcon.webp')}
+  />
+);
+
 export const MedicineCartIcon: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 56, width: 56, resizeMode: 'contain' }}

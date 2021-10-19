@@ -68,6 +68,7 @@ import {
   WhiteArrowRight,
   DeliveryInIcon,
   MedicineHomeIcon,
+  TimeBlueIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   BannerDisplayType,
