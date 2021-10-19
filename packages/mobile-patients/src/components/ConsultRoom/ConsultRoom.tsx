@@ -5017,23 +5017,30 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderSearchResults = () => {
     return (
+      // <View>
+      //   <View
+      //     style={{
+      //       height: 1,
+      //       backgroundColor: '#D4D4D4',
+      //       marginBottom: 4,
+      //       marginHorizontal: -16,
+      //     }}
+      //   />
       <ScrollView style={{ flex: 1, backgroundColor: theme.colors.WHITE }} bounces={false}>
         <View
-          style={{ width: width, marginBottom: 6, paddingHorizontal: 16, backgroundColor: '#fff' }}
+          style={{
+            width: width,
+            marginBottom: 6,
+            paddingHorizontal: 16,
+            backgroundColor: '#fff',
+          }}
         >
-          <View
-            style={{
-              height: 1.5,
-              backgroundColor: '#D4D4D4',
-              marginBottom: 4,
-              marginHorizontal: -16,
-            }}
-          />
           {searchResults?.length >= 0
             ? searchResults.map((item, index) => renderSearchItem(item, index))
             : renderGlobalSearchNoResults()}
         </View>
       </ScrollView>
+      // </View>
     );
   };
 
@@ -5063,9 +5070,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return (
       <View
         style={{
-          width: width,
+          width: width - 32,
           marginBottom: 2,
-          paddingVertical: 16,
+          paddingVertical: 8,
+          marginRight: 8,
           backgroundColor: '#fff',
           justifyContent: 'flex-start',
         }}
@@ -5132,7 +5140,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 View All Results {searchResultsTabHeader[key].title}
               </Text>
 
-              <ArrowRight />
+              <ArrowRight style={{ marginLeft: 'auto' }} />
             </View>
           )}
         </TouchableOpacity>
@@ -5164,7 +5172,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               padding: 4,
               alignItems: 'flex-start',
               justifyContent: 'center',
-              flex: 0.7,
+              flex: 0.8,
               marginLeft: 4,
             }}
           >
@@ -5200,7 +5208,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </Text>
             ) : null}
           </View>
-          <View style={{ flex: 0.1, marginLeft: 'auto' }}>
+          <View style={{ marginLeft: 'auto' }}>
             <ArrowRight />
           </View>
         </View>
@@ -5210,7 +5218,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             height: 1,
             backgroundColor: '#E6E6E6',
             marginVertical: 6,
-            marginHorizontal: -2,
+            marginRight: 4,
           }}
         />
       </View>
