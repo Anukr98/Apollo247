@@ -287,7 +287,28 @@ const appStaticVariables = {
   enableCredWebView: false,
   DIAGNOSTICS_REPORT_TAT_BREACH_TEXT: "Reports are delayed by a few hours, but should be available any time soon.",
   TrueCaller_Login_Enabled: false,
-  DIAGNOSTICS_NO_CIRCLE_SAVINGS_TEXT : 'Extra 15% off on lab tests and cashback on medicine orders'
+  DIAGNOSTICS_NO_CIRCLE_SAVINGS_TEXT : 'Extra 15% off on lab tests and cashback on medicine orders',
+  DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER : {
+    "ctaCityId": "21",
+    "ctaDetailsOnCityId": {
+      "ctaProductPageArray": [
+        "HOME",
+        "TESTDETAIL"
+      ],
+      "ctaDelaySeconds": 10,
+      "ctaText": "Talk to our health advisors",
+      "ctaPhoneNumber": "040-4821-3322"
+    },
+    "ctaDetailsDefault": {
+      "ctaProductPageArray": [
+        "HOME",
+        "TESTDETAIL"
+      ],
+      "ctaDelaySeconds": 3,
+      "ctaText": "Call to Order",
+      "ctaPhoneNumber": "040-4821-3322"
+    }
+  }
 };
 
 const DEV_top_specialties = [

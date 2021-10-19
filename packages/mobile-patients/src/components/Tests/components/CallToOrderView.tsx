@@ -1,7 +1,8 @@
 import { BlueCross, WhiteCall } from '@aph/mobile-patients/src/components/ui/Icons';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface CallToOrderViewProps {
   cartItems?: any;
@@ -14,7 +15,11 @@ interface CallToOrderViewProps {
 
 export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
   const { cartItems, containerStyle, slideCallToOrder, onPressSmallView, onPressCross, customMargin } = props;
-
+  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER
+  const onPressCallToOrderCta = () => {
+    const phoneNumber = callToOrderDetails?.ctaDetailsOnCityId ? callToOrderDetails?.ctaDetailsOnCityId?.ctaPhoneNumber : callToOrderDetails?.ctaDetailsDefault?.ctaPhoneNumber
+    Linking.openURL(`tel:${phoneNumber}`)
+  }
   return (
     <>
       <View style={[styles.container, containerStyle]}>
@@ -26,6 +31,9 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
                 marginBottom: customMargin ? customMargin : !!cartItems && cartItems?.length > 0 ? 60 : 20,
               },
             ]}
+            onPress={()=>{
+              onPressCallToOrderCta()
+            }}
           >
             <WhiteCall style={styles.whiteCallIcon} />
             <Text style={styles.callToOrderText}>Call to Order</Text>
