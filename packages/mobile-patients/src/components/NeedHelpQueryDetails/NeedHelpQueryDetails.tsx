@@ -166,14 +166,13 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
   const { getHelpSectionQueries } = NeedHelpHelpers;
 
-  const orderDelayTitle = 'My order is getting Delayed';
+  const orderDelayId = '2ccddab4-1d4c-4e69-a277-b29c39d41358'; //id for order delay title
   const orderCancelId = '093b687f-fad1-4b55-b53f-be2312987142'; //id for order cancel title
   const [cancellationAllowed, setCancellationAllowed] = useState<boolean>(false);
   const [message, setMessage] = useState<string>('');
+  const [subheading, setSubheading] = useState<string>('');
   const [cancellationRequestRaised, setCancellationRequestRaised] = useState<boolean>(false);
-  const [cancellationRequestRejected, setCancellationrequestRejected] = useState<boolean>(
-    false
-  );
+  const [cancellationRequestRejected, setCancellationrequestRejected] = useState<boolean>(false);
   const [flatlistData, setFlatlistData] = useState<any[]>([]);
 
   useEffect(() => {
@@ -189,6 +188,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       }
       if (click?.length > 0) {
         setClick('');
+        setSubheading('');
         return true;
       } else navigation.goBack();
     });
@@ -205,6 +205,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         }
         if (click?.length > 0) {
           setClick('');
+          setSubheading('');
           return true;
         } else navigation.goBack();
       });
@@ -369,6 +370,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           setComment('');
           setSelectedReason('');
           setClick('');
+          setSubheading('');
         };
         const requestStatus = g(data, 'cancelMedicineOrderOMS', 'orderStatus');
         if (
@@ -380,7 +382,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
             isOrderRelatedIssue,
             requestStatus
           );
-          setMedicineOrderStatus(MEDICINE_ORDER_STATUS.CANCELLED);
+          setMedicineOrderStatus(requestStatus);
           setFlatlistData(data);
           showAphAlert &&
             showAphAlert({
@@ -439,9 +441,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     );
 
     const heading = (
-      <View
-        style={styles.headingView}
-      >
+      <View style={styles.headingView}>
         <Text
           style={{
             ...theme.fonts.IBMPlexSansMedium(16),
@@ -456,11 +456,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
     const content = (
       <View style={{ paddingHorizontal: 16 }}>
-        <Text
-          style={styles.contentView}
-        >
-          Why are you cancelling this order?
-        </Text>
+        <Text style={styles.contentView}>Why are you cancelling this order?</Text>
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
@@ -515,9 +511,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
     return (
       isCancelVisible && (
-        <View
-          style={styles.cancel}
-        >
+        <View style={styles.cancel}>
           <View style={{ marginHorizontal: 20 }}>
             <TouchableOpacity
               style={{ marginTop: 38, alignSelf: 'flex-end' }}
@@ -526,14 +520,13 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
                 setSelectedReason('');
                 setComment('');
                 setClick('');
+                setSubheading('');
               }}
             >
               <CrossPopup />
             </TouchableOpacity>
             <View style={{ height: 16 }} />
-            <View
-              style={styles.cancelView}
-            >
+            <View style={styles.cancelView}>
               {optionsDropdown}
               {heading}
               {content}
@@ -558,6 +551,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   };
   const renderHeader = () => {
     const onPressBack = () => {
+      setSubheading('');
       if (
         medicineOrderStatus === MEDICINE_ORDER_STATUS.CANCELLED ||
         medicineOrderStatus === MEDICINE_ORDER_STATUS.CANCEL_REQUEST
@@ -643,21 +637,21 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           : parentQuery?.id == helpSectionQueryId.diagnostic
           ? ORDER_TYPE.DIAGNOSTICS
           : null;
-          const reason =
-          subQueries?.length > 0
-            ? subQueries?.find(({ id }) => id === selectedQueryId)?.title
-            : subQueriesData?.title;
-        const variables: TicketNumberMutationVariables = {
-          createHelpTicketHelpEmailInput: {
-            category: parentQuery?.title,
-            reason: reason,
-            comments: comments,
-            patientId: currentPatient?.id,
-            email: email,
-            orderId: queryOrderId,
-            orderType,
-          },
-        };
+      const reason =
+        subQueries?.length > 0
+          ? subQueries?.find(({ id }) => id === selectedQueryId)?.title
+          : subQueriesData?.title;
+      const variables: TicketNumberMutationVariables = {
+        createHelpTicketHelpEmailInput: {
+          category: parentQuery?.title,
+          reason: reason,
+          comments: comments,
+          patientId: currentPatient?.id,
+          email: email,
+          orderId: queryOrderId,
+          orderType,
+        },
+      };
 
       let res = await client.mutate<TicketNumberMutation, TicketNumberMutationVariables>({
         mutation: CREATE_HELP_TICKET,
@@ -824,7 +818,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const renderItem = ({ item }: ListRenderItemInfo<NeedHelpHelpers.HelpSectionQuery>) => {
     const onPress = () => {
       const isReturnQuery = item?.id === helpSectionQueryId.returnOrder;
-      setClick(item?.title!);
+      setClick(item?.id!);
+      setSubheading(item?.title!);
       if (item?.id === orderCancelId && !raiseOrderDelayQuery) {
         setClick(orderCancelId);
         setSelectedQueryId('');
@@ -884,7 +879,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         setRaiseOrderDelayQuery(false);
         setComments('');
       }
-      !raiseOrderDelayQuery && item?.title === orderDelayTitle && setOrderDelayed(true);
+      !raiseOrderDelayQuery && item?.id === orderDelayId && setOrderDelayed(true);
     };
     return (
       <>
@@ -892,11 +887,11 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           {item?.title}
         </Text>
         {item?.id === selectedQueryId
-          ? item?.title === orderDelayTitle
+          ? item?.id === orderDelayId
             ? null
             : renderTextInputAndCTAs()
           : null}
-        {item?.title === orderDelayTitle &&
+        {item?.id === orderDelayId &&
           item?.id === selectedQueryId &&
           raiseOrderDelayQuery &&
           renderTextInputAndCTAs()}
@@ -904,13 +899,13 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     );
   };
 
-  const capitalizeStatusMessage =(str: string)=>{
+  const capitalizeStatusMessage = (str: string) => {
     var splitStr = str.toLowerCase().split(' ');
     for (var i = 0; i < splitStr.length; i++) {
-        splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);     
+      splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
     }
-    return `"${splitStr.join(' ')}"`
- }
+    return `"${splitStr.join(' ')}"`;
+  };
 
   const renderReasons = () => {
     if (!subQueries?.length) {
@@ -922,28 +917,28 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       !!medicineOrderStatusDate &&
       moment(new Date()).diff(moment(medicineOrderStatusDate), 'hours') <= 48;
 
-      if (!showReturnOrder) {
-        data = data.filter((item) => item?.id !== helpSectionQueryId.returnOrder);
+    if (!showReturnOrder) {
+      data = data.filter((item) => item?.id !== helpSectionQueryId.returnOrder);
+    }
+
+    const showMessage = (tat: boolean) => {
+      if (tat) {
+        const str = string.needHelpQueryDetails.tatBreachedTrue;
+        const newStr = str.replace(
+          '{{medicineOrderStatus}}',
+          capitalizeStatusMessage(medicineOrderStatus?.replace('_', ' ') || '')
+        );
+        return newStr;
+      } else {
+        const str = string.needHelpQueryDetails.tatBreachedFalse;
+        const newStr = str.replace(
+          '{{medicineOrderStatus}}',
+          capitalizeStatusMessage(medicineOrderStatus?.replace('_', ' ') || '')
+        );
+        const finalStringToBeSend = newStr.replace('{{etd}}', etd);
+        return finalStringToBeSend;
       }
-  
-      const showMessage = (tat: boolean) => {
-        if (tat) {
-          const str = string.needHelpQueryDetails.tatBreachedTrue;
-          const newStr = str.replace(
-            '{{medicineOrderStatus}}',
-            capitalizeStatusMessage(medicineOrderStatus?.replace('_', ' ') || '')
-          );
-          return newStr;
-        } else {
-          const str = string.needHelpQueryDetails.tatBreachedFalse;
-          const newStr = str.replace(
-            '{{medicineOrderStatus}}',
-            capitalizeStatusMessage(medicineOrderStatus?.replace('_', ' ') || '')
-          );
-          const finalStringToBeSend = newStr.replace('{{etd}}', etd);
-          return finalStringToBeSend;
-        }
-      };
+    };
 
     const renderCancelOrder = () => {
       if (!cancellationAllowed) {
@@ -1012,7 +1007,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         <>{renderReturnOrderOverlay()}</>
         {(loading || showSpinner) && <Spinner style={{ zIndex: 200 }} />}
         <SafeAreaView>
-          {orderDelayed && click === orderDelayTitle ? (
+          {orderDelayed && click === orderDelayId ? (
             <>{renderOrderStatus()}</>
           ) : click === orderCancelId ? (
             !cancellationAllowed ? (
@@ -1053,12 +1048,12 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
   const renderSubHeading = () => {
     const text = 'SELECT YOUR ISSUE';
-    if (click) {
+    if (subheading) {
       return (
         <Text style={[styles.subHeading, styles.txtBold, styles.subHeadingText]}>
           {cancellationAllowed && click === orderCancelId && !cancellationRequestRaised
             ? null
-            : click}
+            : subheading}
         </Text>
       );
     }
@@ -1163,7 +1158,7 @@ const styles = StyleSheet.create({
     height: 'auto',
     borderRadius: 10,
   },
-  cancel:{
+  cancel: {
     backgroundColor: 'rgba(0,0,0,0.8)',
     position: 'absolute',
     width: '100%',
@@ -1174,25 +1169,25 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 100,
   },
-  cancelView:{
+  cancelView: {
     backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
     borderBottomRightRadius: 10,
     borderBottomLeftRadius: 10,
   },
-  contentView:{
+  contentView: {
     marginBottom: 12,
     color: theme.colors.SKY_BLUE,
     ...theme.fonts.IBMPlexSansMedium(17),
     lineHeight: 24,
   },
-  headingView:{
+  headingView: {
     ...theme.viewStyles.cardContainer,
     backgroundColor: theme.colors.WHITE,
     padding: 18,
     marginBottom: 24,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-  }
+  },
 });
