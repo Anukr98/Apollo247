@@ -4831,6 +4831,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             </Text>
           ) : null}
         </View>
+        {isSearchFocus ? (
+          <View
+            style={{
+              height: 0.5,
+              backgroundColor: '#D4D4D4',
+              marginBottom: 4,
+              marginHorizontal: -16,
+            }}
+          />
+        ) : null}
       </View>
     );
   };
@@ -4946,15 +4956,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return (
       <ScrollView style={{ flex: 1, backgroundColor: theme.colors.WHITE }} bounces={false}>
         <View style={{ width: width, marginBottom: 6, padding: 16, backgroundColor: '#fff' }}>
-          <View
-            style={{
-              height: 1.5,
-              backgroundColor: '#D4D4D4',
-              marginTop: -4,
-              marginBottom: 4,
-              marginHorizontal: -16,
-            }}
-          />
           {getRecentORSuggestList('RECENT')}
         </View>
       </ScrollView>

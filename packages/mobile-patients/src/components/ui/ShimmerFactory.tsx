@@ -483,14 +483,6 @@ export const renderGlobalSearchShimmer = () => {
     >
       <View
         style={{
-          height: 1.5,
-          backgroundColor: '#D4D4D4',
-          marginBottom: 4,
-          marginHorizontal: -16,
-        }}
-      />
-      <View
-        style={{
           flexDirection: 'row',
           alignItems: 'center',
           backgroundColor: '#EAF6FF',
