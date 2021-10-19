@@ -4931,6 +4931,83 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
+  const renderSearchRecentandSuggest = () => {
+    return (
+      <View style={{ width: width, marginBottom: 6, padding: 16, backgroundColor: '#fff' }}>
+        <View
+          style={{
+            height: 1.5,
+            backgroundColor: '#D4D4D4',
+            marginTop: -4,
+            marginBottom: 4,
+            marginHorizontal: -16,
+          }}
+        />
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: '#EAF6FF',
+            marginVertical: 16,
+            paddingVertical: 8,
+          }}
+        >
+          {searchResultsTabHeader[MedicalRecordType.MEDICATION].icon()}
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
+              marginLeft: 14,
+            }}
+          >
+            RECENT SEARCHES
+          </Text>
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <SearchNoResultIcon style={{ width: 20, height: 20 }} />
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+              marginLeft: 14,
+            }}
+          >
+            {string.home.search_not_available}
+          </Text>
+        </View>
+
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: '#FEE7DA',
+            marginVertical: 16,
+            paddingVertical: 8,
+          }}
+        >
+          {searchResultsTabHeader[MedicalRecordType.TEST_REPORT].icon()}
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
+              marginLeft: 14,
+            }}
+          >
+            SEARCH SUGGESTIONS
+          </Text>
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <SearchNoResultIcon style={{ width: 20, height: 20 }} />
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+              marginLeft: 14,
+            }}
+          >
+            {string.home.search_not_available}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
   const renderSearchResults = () => {
     return (
       <ScrollView style={{ flex: 1, backgroundColor: theme.colors.WHITE }} bounces={false}>
@@ -5179,7 +5256,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         ) : searchText?.length > 2 ? (
           renderSearchResults()
         ) : isSearchFocus ? (
-          renderGlobalSearchNoResults()
+          renderSearchRecentandSuggest()
         ) : (
           <ScrollView style={{ flex: 1 }} bounces={false}>
             <View style={{ width: '100%' }}>
