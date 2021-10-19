@@ -4039,7 +4039,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         style={{
           paddingHorizontal: 20,
           paddingTop: 12,
-          paddingBottom: 4,
+          marginTop: 12,
         }}
       >
         <Text style={{ ...theme.viewStyles.text('B', 16, theme.colors.LIGHT_BLUE, undefined, 20) }}>
