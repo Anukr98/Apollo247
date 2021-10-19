@@ -69,6 +69,8 @@ import {
   DeliveryInIcon,
   MedicineHomeIcon,
   TimeBlueIcon,
+  WalletHomeHC,
+  DropDownProfile,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   BannerDisplayType,
