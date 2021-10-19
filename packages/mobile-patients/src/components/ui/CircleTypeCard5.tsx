@@ -8,29 +8,26 @@ const styles = StyleSheet.create({
   planContainer: {
     flexDirection: 'row',
     flex: 1,
-    marginVertical: 5,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginVertical: 2,
   },
 
   subPlanOne: {
     flex: 0.2,
-    overflow: 'hidden',
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-    padding: 5,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    paddingVertical: 6,
   },
 
   subPlanTwo: {
-    flex: 0.2,
+    flex: 0.7,
     alignItems: 'flex-start',
     justifyContent: 'center',
+    paddingLeft: 8,
   },
 
   subPlanThree: {
-    flex: 0.3,
-    alignItems: 'flex-start',
-  },
-
-  subPlanFour: {
     flex: 0.3,
     alignItems: 'center',
     justifyContent: 'center',
@@ -40,9 +37,17 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: 46,
     height: 29,
-    marginTop: -5,
   },
 
+  subPlanTwoThreeDevider: {
+    flex: 0.8,
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderRadius: 6,
+    borderColor: '#4D9CB3',
+    padding: 6,
+    alignItems: 'center',
+  },
   alertText: {
     transform: [{ rotate: '-43deg' }],
     ...theme.viewStyles.text('M', 9, '#fff', 1, 11),
