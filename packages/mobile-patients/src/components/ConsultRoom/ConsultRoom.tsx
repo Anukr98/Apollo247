@@ -2998,44 +2998,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         style={{
           flexDirection: 'row',
           paddingRight: 8,
-          borderRightWidth: 0,
+          marginLeft: 4,
           borderRightColor: 'rgba(2, 71, 91, 0.2)',
           alignItems: 'center',
         }}
       >
-        {currentPatient?.gender === Gender.MALE ? (
-          !!circleSubscriptionId ? (
-            <MaleCircleIcon style={styles.profileIcon} />
-          ) : (
-            <MaleIcon style={styles.profileIcon} />
-          )
-        ) : !!circleSubscriptionId ? (
-          <FemaleCircleIcon style={styles.profileIcon} />
-        ) : (
-          <FemaleIcon style={styles.profileIcon} />
-        )}
         <Text style={styles.hiTextStyle}>{'hi'}</Text>
         <View style={styles.nameTextContainerStyle}>
           <View style={{ flexDirection: 'row', flex: 1 }}>
             <Text style={styles.nameTextStyle} numberOfLines={1}>
               {currentPatient?.firstName || ''}
             </Text>
-            {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
-              <LinkedUhidIcon
-                style={{
-                  width: 22,
-                  height: 20,
-                  marginLeft: 5,
-                  marginTop: Platform.OS === 'ios' ? 16 : 20,
-                }}
-                resizeMode={'contain'}
-              />
-            ) : null}
-            <View style={{ padding: 6, justifyContent: 'center' }}>
+
+            <View style={{ padding: 6, justifyContent: 'flex-end' }}>
               <DropDownProfile />
             </View>
           </View>
-          {currentPatient && <View style={styles.seperatorStyle} />}
         </View>
       </View>
     );
