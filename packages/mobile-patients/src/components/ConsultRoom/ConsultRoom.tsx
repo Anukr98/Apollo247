@@ -4955,66 +4955,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               marginHorizontal: -16,
             }}
           />
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginVertical: 16,
-              paddingVertical: 8,
-            }}
-          >
-            <Text
-              style={{
-                ...theme.viewStyles.text('SB', 16, theme.colors.LIGHT_BLUE, 1, 24),
-                marginLeft: 14,
-              }}
-            >
-              RECENT SEARCHES
-            </Text>
-          </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', padding: 4 }}>
-            <TimeBlueIcon style={{ width: 24, height: 24, margin: 2 }} />
-            <Text
-              style={{
-                ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
-                marginLeft: 14,
-              }}
-            >
-              {'Some Recent Search Item'}
-            </Text>
-
-            <ArrowRight style={{ marginLeft: 'auto' }} />
-          </View>
-
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginVertical: 16,
-              paddingVertical: 8,
-            }}
-          >
-            <Text
-              style={{
-                ...theme.viewStyles.text('SB', 16, theme.colors.LIGHT_BLUE, 1, 24),
-                marginLeft: 14,
-              }}
-            >
-              SEARCH SUGGESTIONS
-            </Text>
-          </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', padding: 4 }}>
-            <TimeBlueIcon style={{ width: 24, height: 24, margin: 2 }} />
-            <Text
-              style={{
-                ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
-                marginLeft: 14,
-              }}
-            >
-              {'Some Suggest Search Item'}
-            </Text>
-            <ArrowRight style={{ marginLeft: 'auto' }} />
-          </View>
+          {getRecentORSuggestList('RECENT')}
         </View>
       </ScrollView>
     );
@@ -5051,7 +4992,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 marginLeft: 14,
               }}
             >
-              {'Some Suggest Search Item'}
+              {item}
             </Text>
             <ArrowRight style={{ marginLeft: 'auto' }} />
           </View>
@@ -5059,9 +5000,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             style={{
               height: 1.5,
               backgroundColor: '#D4D4D4',
-              marginTop: -4,
-              marginBottom: 4,
-              marginHorizontal: -16,
+              marginVertical: 6,
+              marginHorizontal: -8,
             }}
           />
         </View>
