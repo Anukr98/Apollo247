@@ -4802,7 +4802,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderGlobalSearch = () => {
     return (
-      <View>
+      <View style={{ backgroundColor: theme.colors.WHITE }}>
         <View style={styles.searchBarMainViewStyle}>
           <View style={styles.searchBarViewStyle}>
             <SearchAreaIcon style={{ width: 20, height: 20 }} />
@@ -4954,8 +4954,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderSearchRecentandSuggest = () => {
     return (
-      <ScrollView style={{ flex: 1, backgroundColor: theme.colors.WHITE }} bounces={false}>
-        <View style={{ width: width, marginBottom: 6, padding: 16, backgroundColor: '#fff' }}>
+      <ScrollView
+        style={{ flex: 1, backgroundColor: theme.colors.WHITE, marginTop: -1 }}
+        bounces={false}
+      >
+        <View
+          style={{ width: width, marginBottom: 6, paddingHorizontal: 16, backgroundColor: '#fff' }}
+        >
           {getRecentORSuggestList('RECENT')}
         </View>
       </ScrollView>
