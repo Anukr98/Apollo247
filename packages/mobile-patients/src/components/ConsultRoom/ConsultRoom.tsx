@@ -592,11 +592,11 @@ const styles = StyleSheet.create({
   bottomTextView: {
     alignItems: 'flex-start',
     justifyContent: 'center',
-    marginRight: 6,
+    marginRight: 1,
     flex: 1,
   },
   bottomRightArrowView: {
-    marginHorizontal: 5,
+    marginHorizontal: 3,
     justifyContent: 'center',
     alignItems: 'flex-start',
   },
