@@ -3,18 +3,50 @@ import { StyleSheet, Text, View, TouchableOpacity, FlatList } from 'react-native
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CollapseView } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CollapseView';
 import { WalletIcon } from '@aph/mobile-patients/src/components/PaymentGateway/Components/WalletIcon';
-import { paymentModeVersionCheck } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  paymentModeVersionCheck,
+  getBestOffer,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { OutagePrompt } from '@aph/mobile-patients/src/components/PaymentGateway/Components/OutagePrompt';
+import { OffersIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 
 export interface WalletsProps {
-  onPressPayNow: (wallet: string) => void;
+  onPressPayNow: (wallet: string, bestOffer?: any) => void;
   wallets: any;
+  offers: any;
 }
 
 export const Wallets: React.FC<WalletsProps> = (props) => {
-  const { onPressPayNow, wallets } = props;
+  const { onPressPayNow, wallets, offers } = props;
+
+  const renderTitle = (item: any, bestOffer: any) => {
+    return (
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <WalletIcon imageUrl={item?.item?.image_url} />
+        <View>
+          <Text style={styles.walletName}>{item?.item?.payment_method_name}</Text>
+          {!!bestOffer ? (
+            <View style={styles.offer}>
+              <OffersIcon style={styles.offerIcon} />
+              <Text style={styles.offerTitle}>{getOfferDescription(bestOffer, item)}</Text>
+            </View>
+          ) : null}
+        </View>
+      </View>
+    );
+  };
+
+  const getOfferDescription = (bestOffer: any, item: any) => {
+    const orderBreakup = bestOffer?.order_breakup;
+    return parseFloat(orderBreakup?.discount_amount) > 50
+      ? `Get ₹${orderBreakup?.discount_amount} off on ${item?.item?.payment_method_name} wallet`
+      : parseFloat(orderBreakup?.cashback_amount) > 50
+      ? `Get ₹${orderBreakup?.cashback_amount} cashback on ${item?.item?.payment_method_name} wallet`
+      : bestOffer?.offer_description?.description;
+  };
 
   const renderWallet = (item: any) => {
+    const bestOffer = getBestOffer(offers, item?.item?.payment_method_code);
     return (
       <View>
         <OutagePrompt
@@ -28,9 +60,9 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
             borderBottomWidth: item?.index == wallets.length - 1 ? 0 : 1,
             opacity: item?.item?.outage_status == 'DOWN' ? 0.5 : 1,
           }}
-          onPress={() => onPressPayNow(item?.item?.payment_method_code)}
+          onPress={() => onPressPayNow(item?.item?.payment_method_code, bestOffer)}
         >
-          <WalletIcon imageUrl={item?.item?.image_url} />
+          {renderTitle(item, bestOffer)}
           <Text style={styles.payNow}>PAY NOW</Text>
         </TouchableOpacity>
       </View>
@@ -63,14 +95,36 @@ const styles = StyleSheet.create({
   },
   wallet: {
     flexDirection: 'row',
-    paddingBottom: 18,
-    marginTop: 15,
+    paddingVertical: 16,
     borderColor: 'rgba(0,0,0,0.1)',
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
   payNow: {
-    ...theme.fonts.IBMPlexSansBold(14),
-    lineHeight: 24,
+    ...theme.fonts.IBMPlexSansBold(13),
+    lineHeight: 17,
     color: '#FC9916',
+  },
+  walletName: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    lineHeight: 18,
+    color: '#01475B',
+    marginLeft: 12,
+  },
+  offer: {
+    flexDirection: 'row',
+    marginLeft: 12,
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  offerTitle: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    lineHeight: 18,
+    color: '#34AA55',
+    marginLeft: 4,
+  },
+  offerIcon: {
+    height: 16,
+    width: 16,
   },
 });
