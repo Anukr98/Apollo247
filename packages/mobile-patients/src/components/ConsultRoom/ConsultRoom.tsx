@@ -4819,7 +4819,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               underlineColorAndroid={'transparent'}
               onChangeText={(value) => onSearchTextChange(value)}
             />
-            {isSearchFocus ? (
+            {isSearchFocus && searchText?.length >= 1 ? (
               <TouchableOpacity onPress={onCancelTextClick}>
                 <RemoveIconGrey style={{ width: 20, height: 20 }} />
               </TouchableOpacity>
@@ -5075,12 +5075,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             flexDirection: 'row',
             alignItems: 'center',
             backgroundColor: searchResultsTabHeader[key].backgroundColor,
-            marginVertical: 16,
+            marginVertical: 12,
             paddingVertical: 8,
             borderRadius: 4,
           }}
         >
-          {/* {index !== 0 ? searchResultsTabHeader[key].icon() : null} */}
+          {/* icons can be added here */}
           <Text
             style={{
               ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
