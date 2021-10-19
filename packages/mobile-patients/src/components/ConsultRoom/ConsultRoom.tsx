@@ -3491,7 +3491,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const offersCount = 2;
+  const offersCount = 1;
   // 'CIRCLE' || 'MEDICINE' || 'MULTIPLE'
   const offerType = 'MEDICINE';
 
@@ -5029,14 +5029,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               marginHorizontal: -16,
             }}
           />
-          {console.log('csk total', searchResults.length)}
-          <FlatList
-            keyExtractor={(_, index) => `${index}`}
-            bounces={false}
-            data={searchResults}
-            ListEmptyComponent={renderGlobalSearchNoResults()}
-            renderItem={({ item, index }) => renderSearchItem(item, index)}
-          />
+          {searchResults?.length >= 0
+            ? searchResults.map((item, index) => renderSearchItem(item, index))
+            : renderGlobalSearchNoResults()}
         </View>
       </ScrollView>
     );
@@ -5085,7 +5080,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             borderRadius: 4,
           }}
         >
-          {index !== 0 ? searchResultsTabHeader[key].icon() : null}
+          {/* {index !== 0 ? searchResultsTabHeader[key].icon() : null} */}
           <Text
             style={{
               ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
@@ -5098,32 +5093,33 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           </Text>
         </View>
         <TouchableOpacity onPress={() => (data.length === 0 ? null : onClickSearchItem(key))}>
-          <FlatList
-            keyExtractor={(_, index) => `${key},${index}`}
-            bounces={false}
-            data={data}
-            ListEmptyComponent={
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <SearchNoResultIcon style={{ width: 26, height: 26 }} />
-                <Text
-                  style={{
-                    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
-                    marginLeft: 14,
-                  }}
-                >
-                  {string.home.search_not_available}
-                </Text>
-              </View>
-            }
-            renderItem={({ item, index }) => renderSearchItemDetails(item, index, key)}
-          />
+          <View>
+            <FlatList
+              keyExtractor={(_, index) => `${key},${index}`}
+              bounces={false}
+              data={data}
+              ListEmptyComponent={
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <SearchNoResultIcon style={{ width: 26, height: 26 }} />
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+                      marginLeft: 14,
+                    }}
+                  >
+                    {string.home.search_not_available}
+                  </Text>
+                </View>
+              }
+              renderItem={({ item, index }) => renderSearchItemDetails(item, index, key)}
+            />
+          </View>
           {data.length === 0 ? null : (
             <View
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
-                marginVertical: 2,
-                paddingVertical: 2,
+                marginTop: 'auto',
                 justifyContent: 'space-between',
               }}
             >
@@ -5168,8 +5164,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               padding: 6,
               alignItems: 'flex-start',
               justifyContent: 'center',
-              maxWidth: '70%',
-              marginLeft: 12,
+              width: '65%',
+              marginLeft: 8,
             }}
           >
             <Text
@@ -5198,17 +5194,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             </Text>
           </View>
 
-          <View
-            style={{
-              padding: 6,
-              alignItems: 'flex-start',
-              justifyContent: 'center',
-              marginLeft: 'auto',
-              marginRight: 2,
-            }}
-          >
-            <ArrowRight />
-          </View>
+          <ArrowRight style={{ marginLeft: 'auto' }} />
         </View>
         <View
           style={{
