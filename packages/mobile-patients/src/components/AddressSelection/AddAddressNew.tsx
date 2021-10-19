@@ -26,6 +26,7 @@ import {
   formatAddressForApi,
   findAddrComponents,
   postFirebaseEvent,
+  isEmptyObject,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
@@ -37,6 +38,7 @@ import {
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const FakeMarker = require('@aph/mobile-patients/src/components/ui/icons/ic-marker.webp');
 const icon_gps = require('@aph/mobile-patients/src/components/ui/icons/ic_gps_fixed.webp');
@@ -114,6 +116,10 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
   const [isConfirmButtonDisabled, setConfirmButtonDisabled] = useState<boolean>(false);
   const { setLoading: setLoadingContext } = useUIElements();
   const { pharmacyLocation, diagnosticLocation } = useAppCommonData();
+  const locationToSelect =
+    !!diagnosticLocation && !isEmptyObject(diagnosticLocation)
+      ? diagnosticLocation
+      : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_LOCATION;
   const _map = useRef(null);
   const [region, setRegion] = useState({
     latitude: Number(latitude),
@@ -122,13 +128,17 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
     longitudeDelta: longitudeDelta,
   });
 
-  useEffect(() => {
-    //added just to track the crash.
+  function fireAddressFireBaseEvent(lat?: number, long?: number) {
     const firebaseAttributes: FirebaseEvents[FirebaseEventName.ADDADDRESS_LAT_LNG] = {
-      latitude: latitude,
-      longitude: longitude,
+      latitude: !!lat ? Number(lat) : latitude,
+      longitude: !!long ? Number(long) : longitude,
     };
     postFirebaseEvent(FirebaseEventName.ADDADDRESS_LAT_LNG, firebaseAttributes);
+  }
+
+  useEffect(() => {
+    //added just to track the crash.
+    fireAddressFireBaseEvent();
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -246,13 +256,13 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
     } else {
       if (ComingFrom == AppRoutes.AddPatients) {
         setRegion({
-          latitude: Number(diagnosticLocation?.latitude),
-          longitude: Number(diagnosticLocation?.longitude),
+          latitude: Number(locationToSelect?.latitude || 0),
+          longitude: Number(locationToSelect?.longitude || 0),
           latitudeDelta: latitudeDelta,
           longitudeDelta: longitudeDelta,
         });
-        createLocationResponse(diagnosticLocation);
-        const address = formatLocalAddress(diagnosticLocation);
+        createLocationResponse(locationToSelect);
+        const address = formatLocalAddress(locationToSelect);
         setAddressString(address);
       } else {
         setLoadingContext?.(true);
@@ -295,7 +305,7 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
   }, []);
 
   const setAddressFromHomepage = () => {
-    const checkPinCodeFrom = source == 'Diagnostics Cart' ? diagnosticLocation : pharmacyLocation;
+    const checkPinCodeFrom = source == 'Diagnostics Cart' ? locationToSelect : pharmacyLocation;
     if (checkPinCodeFrom) {
       //get pincode from pharam's pincode.
       const zipcode = checkPinCodeFrom?.pincode;

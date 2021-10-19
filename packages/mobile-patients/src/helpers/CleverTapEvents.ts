@@ -1661,7 +1661,7 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.DIAGNOSTIC_PRESCRIPTION_SUBMITTED]: {
     Source: string;
-    PrescriptionUrl: any;
+    PrescriptionUrl?: any;
     'Item name': string;
     'Circle user': string;
   };
