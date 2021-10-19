@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderWidth: 1,
     borderRadius: 6,
-    borderColor: '#F9D5B4',
+    borderColor: '#4D9CB3',
     padding: 6,
     alignItems: 'center',
   },
@@ -83,15 +83,15 @@ export const CircleTypeCard6: React.FC<CircleTypeCard6Props> = (props) => {
         </View>
         <LinearGradientComponent
           style={styles.subPlanTwoThreeDevider}
-          colors={['#FFEEDB', '#FFFCFA']}
+          colors={[theme.colors.LIGHT_BLUE, theme.colors.LIGHT_BLUE]}
         >
           <View style={styles.subPlanTwo}>
-            <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE, 1, 20) }}>
+            <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.WHITE, 1, 20) }}>
               Free Deliveries and Cashbacks
             </Text>
             <Text
               style={{
-                ...theme.viewStyles.text('M', 10, theme.colors.LIGHT_BLUE, 1, 20),
+                ...theme.viewStyles.text('M', 10, theme.colors.WHITE, 1, 20),
                 fontStyle: 'italic',
               }}
             >
