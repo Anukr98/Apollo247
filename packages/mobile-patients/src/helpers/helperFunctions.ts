@@ -1561,6 +1561,19 @@ export const postCleverTapEvent = (eventName: CleverTapEventName, attributes: Ob
   } catch (error) { }
 };
 
+/**
+ * To check is user logged into clevertap or not
+ * @param _currentPatient current patient user object
+ */
+ export const checkCleverTapLoginStatus = async (_currentPatient: any) => {
+  CleverTap.profileGetProperty('Phone', (error, res) => {
+    if (res === null) {
+      //user is not logged into clevertap
+      onCleverTapUserLogin(_currentPatient);
+    }
+  });
+};
+
 export const onCleverTapUserLogin = async (_currentPatient: any) => {
   try {
     const _userProfile = {

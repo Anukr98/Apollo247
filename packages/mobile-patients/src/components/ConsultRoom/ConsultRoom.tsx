@@ -136,7 +136,7 @@ import {
   getCleverTapCircleMemberValues,
   getAge,
   removeObjectNullUndefinedProperties,
-  fileToBase64,
+  checkCleverTapLoginStatus,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -886,6 +886,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   }, [currentPatient]);
 
+  useEffect(() => {
+    checkCleverTapLoginStatus(currentPatient);
+  }, [currentPatient]);
+
   //to be called only when the user lands via app launch
   const logHomePageViewed = async (attributes: any) => {
     const isAppOpened = await AsyncStorage.getItem('APP_OPENED');
@@ -1552,7 +1556,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const eventAttributes:
           | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
           | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
-          source: 'app home',
+            source: 'app home',
         };
         setTimeout(
           () => postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED, eventAttributes),
