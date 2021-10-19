@@ -369,9 +369,9 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   hiTextStyle: {
-    marginLeft: 10,
+    marginLeft: 7,
     color: '#02475b',
-    ...theme.fonts.IBMPlexSansSemiBold(26),
+    ...theme.fonts.IBMPlexSansMedium(18),
   },
   nameTextContainerStyle: {
     maxWidth: '70%',
@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
   nameTextStyle: {
     marginLeft: 7,
     color: '#02475b',
-    ...theme.fonts.IBMPlexSansSemiBold(26),
+    ...theme.fonts.IBMPlexSansMedium(18),
   },
   seperatorStyle: {
     height: 2,
@@ -3000,6 +3000,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           paddingRight: 8,
           borderRightWidth: 0,
           borderRightColor: 'rgba(2, 71, 91, 0.2)',
+          alignItems: 'center',
         }}
       >
         {currentPatient?.gender === Gender.MALE ? (
@@ -3030,8 +3031,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 resizeMode={'contain'}
               />
             ) : null}
-            <View style={{ paddingTop: 12, marginLeft: 6 }}>
-              <DropdownGreen />
+            <View style={{ padding: 6, justifyContent: 'center' }}>
+              <DropDownProfile />
             </View>
           </View>
           {currentPatient && <View style={styles.seperatorStyle} />}
