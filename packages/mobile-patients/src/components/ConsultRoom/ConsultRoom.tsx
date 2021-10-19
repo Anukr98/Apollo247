@@ -3181,23 +3181,23 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     <View style={{ marginLeft: -12, marginBottom: 4 }}>
                       <DeliveryInIcon />
                     </View>
+
                     <View
                       style={{
                         flexDirection: 'row',
                         marginVertical: 2,
                         paddingVertical: 4,
+                        marginLeft: 10,
                         justifyContent: 'flex-start',
+                        alignItems: 'center',
                       }}
                     >
-                      <View style={styles.topImageView}>
-                        {item.image}
-                        <Text style={[styles.topTextStyle, { color: theme.colors.LIGHT_BLUE }]}>
-                          {item.title}
-                        </Text>
-                      </View>
-                      <View style={styles.bottomRightArrowView}>
-                        <ArrowRight />
-                      </View>
+                      {item.image}
+                      <Text style={[styles.topTextStyle, { color: theme.colors.LIGHT_BLUE }]}>
+                        {item.title}
+                      </Text>
+
+                      <ArrowRight />
                     </View>
                     <View
                       style={[
