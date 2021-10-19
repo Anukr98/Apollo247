@@ -25,6 +25,7 @@ const styles = StyleSheet.create({
     flex: 0.7,
     alignItems: 'flex-start',
     justifyContent: 'center',
+    paddingLeft: 8,
   },
 
   subPlanThree: {
@@ -71,7 +72,7 @@ export interface CircleTypeCard6Props {
 }
 
 export const CircleTypeCard6: React.FC<CircleTypeCard6Props> = (props) => {
-  const { onButtonPress, expired, credits, renew, expiry } = props;
+  const { onButtonPress, expired, credits, renew, savings } = props;
   return (
     <View>
       <View style={styles.planContainer}>
@@ -86,8 +87,8 @@ export const CircleTypeCard6: React.FC<CircleTypeCard6Props> = (props) => {
           colors={[theme.colors.LIGHT_BLUE, theme.colors.LIGHT_BLUE]}
         >
           <View style={styles.subPlanTwo}>
-            <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.WHITE, 1, 20) }}>
-              Free Deliveries and Cashbacks
+            <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.WHITE, 1, 20) }}>
+              You saved ₹{savings || 'Unable to Load'} with circle
             </Text>
             <Text
               style={{
@@ -95,7 +96,7 @@ export const CircleTypeCard6: React.FC<CircleTypeCard6Props> = (props) => {
                 fontStyle: 'italic',
               }}
             >
-              Buy Circle @ ₹{Savings || 'Unable to Load'} for {expired + '-' + expiry} months
+              Plan Expired on {expired}
             </Text>
           </View>
 
@@ -104,7 +105,7 @@ export const CircleTypeCard6: React.FC<CircleTypeCard6Props> = (props) => {
               style={{ ...theme.viewStyles.text('B', 15, '#FC9916', 1, 18) }}
               onPress={onButtonPress}
             >
-              BUY NOW
+              RENEW
             </Text>
           </View>
         </LinearGradientComponent>
