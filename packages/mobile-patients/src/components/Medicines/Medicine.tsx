@@ -71,6 +71,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
+  availabilityApi247,
   Brand,
   callToExotelApi,
   DealsOfTheDaySection,
@@ -2012,7 +2013,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             Source: 'Pharmacy Home',
           };
           postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
-          props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
+          props.navigation.navigate(AppRoutes.MedicineListing, {
+            searchText,
+            comingFromSearch: true,
+            navSrcForSearchSuccess: 'Pharmacy Home',
+          });
           setSearchText('');
           setMedicineList([]);
         }}
@@ -2036,7 +2041,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 Source: 'Pharmacy Home',
               };
               postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
-              props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
+              props.navigation.navigate(AppRoutes.MedicineListing, {
+                searchText,
+                comingFromSearch: true,
+                navSrcForSearchSuccess: 'Pharmacy Home',
+              });
             }
           }}
           value={searchText}
@@ -2067,7 +2076,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const client = useApolloClient();
 
-  const onAddCartItem = (item: MedicineProduct) => {
+  const onAddCartItem = (
+    item: MedicineProduct,
+    comingFromSearch: boolean,
+    cleverTapSearchSuccessEventAttributes: object
+  ) => {
     const {
       sku,
       mou,
@@ -2114,7 +2127,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       { source: 'Pharmacy Partial Search', categoryId: category_id },
       JSON.stringify(cartItems),
       () => setItemsLoading({ ...itemsLoading, [sku]: false }),
-      pharmacyCircleAttributes!
+      pharmacyCircleAttributes!,
+      () => {},
+      comingFromSearch,
+      cleverTapSearchSuccessEventAttributes
     );
   };
 
@@ -2143,6 +2159,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     data: ListRenderItemInfo<MedicineProduct | SearchSuggestion>
   ) => {
     const { item, index } = data;
+    const key = 'queryName';
+    const keywordArr = [];
+    medicineList.map((obj) => {
+      if (Object.keys(obj).includes(key)) {
+        keywordArr.push(obj?.queryName);
+      }
+    });
     return (
       <MedicineSearchSuggestionItem
         onPress={() => {
@@ -2151,7 +2174,21 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             props.navigation.navigate(AppRoutes.MedicineListing, {
               category_id: item?.categoryId,
               title: item?.queryName || 'Products',
+              comingFromSearch: true,
+              navSrcForSearchSuccess: 'Pharmacy Home',
             });
+            const cleverTapSearchSuccessEventAttributes = {
+              'Nav src': 'Pharmacy Home',
+              Status: 'Carry',
+              Keyword: searchText,
+              'Suggested keyword': item?.queryName,
+              Position: index + 1,
+              'Suggested keyword position': index + 1,
+            };
+            postCleverTapEvent(
+              CleverTapEventName.PHARMACY_SEARCH_SUCCESS,
+              cleverTapSearchSuccessEventAttributes
+            );
           }
           if (item?.url_key || item?.sku) {
             props.navigation.navigate(AppRoutes.ProductDetailPage, {
@@ -2159,10 +2196,56 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               sku: item.sku,
               movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
             });
+            let availability = false;
+            const pincode = asyncPincode?.pincode || pinCode || pharmacyPincode;
+            availabilityApi247(pincode, item?.sku)
+              .then((res) => {
+                availability = g(res, 'data', 'response', '0' as any, 'exist');
+              })
+              .catch((error) => {
+                availability = false;
+              });
+            const discount = getDiscountPercentage(item?.price, item?.special_price);
+            const discountPercentage = discount ? discount + '%' : '0%';
+            const cleverTapEventAttributes = {
+              'Nav src': 'Pharmacy Home',
+              Status: 'Success',
+              Keyword: searchText,
+              Position: index + 1,
+              Source: 'Partial search',
+              Action: 'Product detail page viewed',
+              'Product availability': availability ? 'Is in stock' : 'Out of stock',
+              'Product position': index + 1 - keywordArr?.length,
+              'Results shown': medicineList?.length,
+              'SKU ID': item?.sku,
+              'Product name': item?.name,
+              Discount: discountPercentage,
+            };
+            postCleverTapEvent(
+              CleverTapEventName.PHARMACY_SEARCH_SUCCESS,
+              cleverTapEventAttributes
+            );
           }
         }}
         onPressAddToCart={() => {
-          onAddCartItem(item);
+          const comingFromSearch = true;
+          const discount = getDiscountPercentage(item?.price, item?.special_price);
+          const discountPercentage = discount ? discount + '%' : '0%';
+          const cleverTapSearchSuccessEventAttributes = {
+            'Nav src': 'Pharmacy Home',
+            Status: 'Success',
+            Keyword: searchText,
+            Position: index + 1,
+            Source: 'Partial search',
+            Action: 'Add to cart',
+            'Product availability': 'Available',
+            'Product position': index + 1 - keywordArr?.length,
+            'Results shown': medicineList?.length,
+            'SKU ID': item?.sku,
+            'Product name': item?.name,
+            Discount: discountPercentage,
+          };
+          onAddCartItem(item, comingFromSearch, cleverTapSearchSuccessEventAttributes);
           setCurrentProductIdInCart(item.sku);
           item.pack_form ? setItemPackForm(item.pack_form) : setItemPackForm('');
           item.suggested_qty
@@ -2225,7 +2308,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 Source: 'Pharmacy Home',
               };
               postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
-              props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
+              props.navigation.navigate(AppRoutes.MedicineListing, {
+                searchText,
+                comingFromSearch: true,
+                navSrcForSearchSuccess: 'Pharmacy Home',
+              });
               setSearchText('');
               setMedicineList([]);
             }}

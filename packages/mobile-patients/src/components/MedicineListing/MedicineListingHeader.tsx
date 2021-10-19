@@ -13,9 +13,14 @@ import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
 export interface Props {
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
   movedFrom?: 'registration' | 'deeplink' | 'home' | 'productdetail' | 'brandPages';
+  navSrcForSearchSuccess?: string;
 }
 
-export const MedicineListingHeader: React.FC<Props> = ({ navigation, movedFrom }) => {
+export const MedicineListingHeader: React.FC<Props> = ({
+  navigation,
+  movedFrom,
+  navSrcForSearchSuccess,
+}) => {
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { cartItems } = useShoppingCart();
 
@@ -49,7 +54,9 @@ export const MedicineListingHeader: React.FC<Props> = ({ navigation, movedFrom }
       );
     };
     const onPressSearchIcon = () => {
-      navigation.navigate(AppRoutes.MedicineSearch);
+      navigation.navigate(AppRoutes.MedicineSearch, {
+        navSrcForSearchSuccess,
+      });
     };
 
     const icons = [

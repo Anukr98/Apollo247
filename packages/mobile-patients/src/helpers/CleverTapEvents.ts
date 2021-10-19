@@ -167,6 +167,7 @@ export enum CleverTapEventName {
   PHARMACY_APPLY_COUPON_CLICKED = 'Pharmacy Apply Coupon Clicked',
   PHARMACY_SPECIAL_OFFERS_CLICKED = 'Special Offers Clicked',
   PHARMACY_CHRONIC_UPSELL_NUDGE = 'Chronic Upsell Nudge',
+  PHARMACY_SEARCH_SUCCESS = 'Pharmacy Search Success',
 
   // Help Section Events
   BACK_NAV_ON_NEED_HELP_CLICKED= 'Back Nav On Need Help Clicked',
@@ -1458,6 +1459,23 @@ export interface CleverTapEvents {
   [CleverTapEventName.PHARMACY_CHRONIC_UPSELL_NUDGE]: {
     'SKU ID': string;
     'Quantity shown': number | null;
+  };
+
+  [CleverTapEventName.PHARMACY_SEARCH_SUCCESS]: {
+    'Nav src': string;
+    Status: 'Success' | 'Carry';
+    Keyword: string;
+    'Suggested keyword'?: string;
+    Position: number;
+    'Suggested keyword position'?: number;
+    Source?: 'Full search' | 'Partial search';
+    Action?: 'Add to cart' | 'Product detail page viewed';
+    'Product availability'?: 'Is in stock' | 'Out of stock' | '';
+    'Product position'?: number;
+    'Results shown'?: number;
+    'SKU ID'?: string;
+    'Product name'?: string;
+    Discount?: string;
   };
 
   // ********** Diagnostic Events *******
