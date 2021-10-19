@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     flex: 0.8,
     flexDirection: 'row',
     borderWidth: 1,
-    borderRadius: 6,
+    borderRadius: 8,
     borderColor: '#4D9CB3',
     padding: 6,
     alignItems: 'center',

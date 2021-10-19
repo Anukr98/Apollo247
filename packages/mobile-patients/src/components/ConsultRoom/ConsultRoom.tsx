@@ -3845,7 +3845,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const cardlist = dataBannerCards(darktheme);
 
     const expired = circlePlanValidity
-      ? dateFormatterDDMM(circlePlanValidity?.endDate, 'DD/MM')
+      ? dateFormatterDDMM(circlePlanValidity?.endDate, 'DD MMM YYYY')
       : '';
 
     {
