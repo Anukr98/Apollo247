@@ -3864,7 +3864,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             borderColor: circleStatus !== 'active' ? '#F9D5B4' : '',
           },
         ]}
-        colors={['#FFEEDB', '#FFFCFA']}
+        colors={circleStatus === 'disabled' ? ['#FFEEDB', '#FFFCFA'] : ['#fff', '#fff']}
       >
         {expiry > 0 && circleStatus === 'active' && renew && circleSavings > 0 ? (
           <CircleTypeCard1
