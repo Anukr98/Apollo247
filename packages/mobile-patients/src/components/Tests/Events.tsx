@@ -893,6 +893,7 @@ export function DiagnosticPrescriptionSubmitted(
   const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes: CleverTapEvents[CleverTapEventName.DIAGNOSTIC_PRESCRIPTION_SUBMITTED] = {
     ...getPatientAttributes,
+    'Mobile Number': currentPatient?.mobileNumber,
     Source: 'Apollo247App',
     PrescriptionUrl: prescriptionUrl,
     'Item name': itemName,
