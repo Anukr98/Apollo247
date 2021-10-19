@@ -5178,6 +5178,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           renderGlobalSearchShimmer()
         ) : searchText?.length > 2 ? (
           renderSearchResults()
+        ) : isSearchFocus ? (
+          renderGlobalSearchNoResults()
         ) : (
           <ScrollView style={{ flex: 1 }} bounces={false}>
             <View style={{ width: '100%' }}>
