@@ -5017,15 +5017,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderSearchResults = () => {
     return (
-      // <View>
-      //   <View
-      //     style={{
-      //       height: 1,
-      //       backgroundColor: '#D4D4D4',
-      //       marginBottom: 4,
-      //       marginHorizontal: -16,
-      //     }}
-      //   />
       <ScrollView style={{ flex: 1, backgroundColor: theme.colors.WHITE }} bounces={false}>
         <View
           style={{
@@ -5040,15 +5031,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             : renderGlobalSearchNoResults()}
         </View>
       </ScrollView>
-      // </View>
-    );
-  };
-
-  const renderSearchLoader = () => {
-    return (
-      <View style={styles.loaderViewStyle}>
-        <Spinner style={styles.loaderStyle} />
-      </View>
     );
   };
 
