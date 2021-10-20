@@ -1653,12 +1653,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 getBrandPagesData(item?.url_key)
                   .then(({ data }) => {
                     const response = data;
-                    if (
-                      !!response &&
-                      response?.success === true &&
-                      !!response?.data &&
-                      response?.data?.length > 0
-                    ) {
+                    if (response?.success === true && response?.data?.length) {
                       props.navigation.navigate(AppRoutes.BrandPages, {
                         movedFrom: 'home',
                         brandData: response?.data,
@@ -1892,12 +1887,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 getBrandPagesData(item?.url_key)
                   .then(({ data }) => {
                     const response = data;
-                    if (
-                      !!response &&
-                      response?.success === true &&
-                      !!response?.data &&
-                      response?.data?.length > 0
-                    ) {
+                    if (response?.success === true && response?.data?.length) {
                       props.navigation.navigate(AppRoutes.BrandPages, {
                         movedFrom: 'home',
                         brandData: response?.data,
@@ -2587,12 +2577,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       getBrandPagesData(category?.url_key)
         .then(({ data }) => {
           const response = data;
-          if (
-            !!response &&
-            response?.success === true &&
-            !!response?.data &&
-            response?.data?.length > 0
-          ) {
+          if (response?.success === true && response?.data?.length) {
             props.navigation.navigate(AppRoutes.BrandPages, {
               movedFrom: 'home',
               brandData: response?.data,
