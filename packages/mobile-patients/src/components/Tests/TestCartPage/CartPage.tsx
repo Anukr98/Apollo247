@@ -1496,6 +1496,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   };
 
   function _onPressAddItemToPatients(itemList: any) {
+    /**
+     * add items to rest of the patients as non-selected.
+     */
     if (!!widgetSelectedItem) {
       if (isModifyFlow) {
         addCartItem?.(widgetSelectedItem!);
@@ -1509,21 +1512,35 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         addCartItem?.(widgetSelectedItem!);
         itemList?.map((item: any) => {
           const getCurrentPatient = patientCartItems?.find(
-            (pCartItem) => pCartItem?.patientId == item?.id
+            (pCartItem) => pCartItem?.patientId === item?.id
           );
-          const getCurrenPatientItem = !!getCurrentPatient && getCurrentPatient?.cartItems;
-          const allItems = !!getCurrenPatientItem
-            ? getCurrenPatientItem.concat(widgetSelectedItem)
+          const getCurrentPatientItem = !!getCurrentPatient && getCurrentPatient?.cartItems;
+          const allItems = !!getCurrentPatientItem
+            ? getCurrentPatientItem.concat(widgetSelectedItem)
             : [widgetSelectedItem];
           addPatientCartItem?.(item?.id, allItems!);
+          updateUnselectedPatientsCart(item);
         });
       }
     }
   }
 
+  function updateUnselectedPatientsCart(item: any) {
+    const getAllUnselectedPatients = patientCartItems?.filter(
+      (pCartItem) => pCartItem?.patientId !== item?.id
+    );
+    getAllUnselectedPatients?.length > 0 &&
+      getAllUnselectedPatients?.map((patients) => {
+        const setUnselectItems = JSON.parse(JSON.stringify(widgetSelectedItem));
+        setUnselectItems['isSelected'] = false;
+        const addedItems = !!patients.cartItems && patients.cartItems?.concat(setUnselectItems);
+        addPatientCartItem?.(patients?.patientId, addedItems!);
+      });
+  }
+
   function _validatePricesWithAddress() {
     // getAddressServiceability(true);
-    _navigateToNextScreen()
+    _navigateToNextScreen();
   }
 
   function _navigateToNextScreen() {
@@ -1545,55 +1562,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     });
   }
 
-  //change this for modified orders
-  function createItemPrice() {
-    modifyPricesForItemArray =
-      isModifyFlow &&
-      modifiedOrder?.diagnosticOrderLineItems?.map(
-        (item: orderListLineItems) =>
-          ({
-            itemId: Number(item?.itemId),
-            price: item?.price,
-            quantity: 1,
-            groupPlan: item?.groupPlan,
-          } as DiagnosticLineItem)
-      );
-
-    pricesForItemArray = cartItems?.map(
-      (item, index) =>
-        ({
-          itemId: Number(item?.id),
-          price:
-            isDiagnosticCircleSubscription && item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
-              ? Number(item?.circleSpecialPrice)
-              : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
-              ? Number(item?.discountSpecialPrice)
-              : Number(item?.specialPrice) || Number(item?.price),
-          quantity: 1,
-          groupPlan: isDiagnosticCircleSubscription
-            ? item?.groupPlan!
-            : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
-            ? item?.groupPlan
-            : DIAGNOSTIC_GROUP_PLAN.ALL,
-          preTestingRequirement:
-            !!reportGenDetails && reportGenDetails?.[index]?.itemPrepration
-              ? reportGenDetails?.[index]?.itemPrepration
-              : null,
-          reportGenerationTime:
-            !!reportGenDetails && reportGenDetails?.[index]?.itemReportTat
-              ? reportGenDetails?.[index]?.itemReportTat
-              : null,
-        } as DiagnosticLineItem)
-    );
-    const itemPricingObject = isModifyFlow
-      ? [modifyPricesForItemArray, pricesForItemArray].flat(1)
-      : pricesForItemArray;
-    return {
-      itemPricingObject,
-      pricesForItemArray,
-    };
-  }
-
   function checkIsItemRemovedFromAll(
     pCartItems: DiagnosticPatientCartItem[],
     itemId: number | string
@@ -1607,63 +1575,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       !!getAllItemIds && getAllItemIds?.filter((itemIds: number) => itemIds == Number(itemId));
     return selectedItemPresent;
   }
-
-  function onChangeCartItems(
-    updatedCartItems: any,
-    removedTest: string,
-    removedTestItemId: any,
-    patientId: string
-  ) {
-    const findIndex = patientCartItemsCopy?.findIndex(
-      (item: DiagnosticPatientCartItem) => item?.patientId == patientId
-    );
-    const getSelectedItemInCart = checkIsItemRemovedFromAll(
-      patientCartItemsCopy,
-      removedTestItemId
-    );
-
-    patientCartItemsCopy[findIndex].cartItems = updatedCartItems;
-
-    setDiagnosticSlot?.(null);
-    setPatientCartItems?.(patientCartItemsCopy);
-    if (getSelectedItemInCart?.length == 1) {
-      removeCartItem?.(removedTestItemId);
-      const newCartItems = cartItems?.filter(
-        (item) => Number(item?.id) !== Number(removedTestItemId)
-      );
-      setCartItems?.(newCartItems);
-    }
-
-    isModifyFlow && setModifiedPatientCart?.(updatedCartItems);
-    //refetch the areas
-    if (deliveryAddressId != '') {
-      const selectedAddressIndex = addresses?.findIndex(
-        (address) => address?.id == deliveryAddressId
-      );
-      let removedItems = removedTestItemId?.join(', ');
-      DiagnosticRemoveFromCartClicked(
-        removedItems,
-        removedTest,
-        addresses?.[selectedAddressIndex]?.zipcode!,
-        'Automated'
-      );
-    }
-  }
-
-  const renderDuplicateMessage = (duplicateTests: string, higherPricesName: string) => {
-    const getUniqueDuplicateName = [...new Set(duplicateTests?.split(','))]?.join(',');
-    const getUniqueHighPricesName = [...new Set(higherPricesName?.split(','))]?.join(',');
-    showAphAlert?.({
-      title: 'Your cart has been revised!',
-      description: isModifyFlow
-        ? `The "${getUniqueDuplicateName}" has been removed from your cart as it is already included in your order. Kindly proceed to pay the revised amount`
-        : `The "${getUniqueDuplicateName}" has been removed from your cart as it is already included in another test "${getUniqueHighPricesName}" in your cart. Kindly proceed to pay the revised amount`,
-      onPressOk: () => {
-        setLoading?.(false);
-        hideAphAlert?.();
-      },
-    });
-  };
 
   const disableCTA = isModifyFlow
     ? (!(!!addressText && isServiceable) && modifiedPatientCart?.length == 0) ||
