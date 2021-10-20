@@ -1650,10 +1650,31 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               productsThumbnailUrl(item.image_url),
               () => {
                 postwebEngageCategoryClickedEvent(item.category_id, item.title, title, 'Home');
-                props.navigation.navigate(AppRoutes.MedicineListing, {
-                  category_id: item.category_id,
-                  title: item.title || 'Products',
-                });
+
+                getBrandPagesData(item?.url_key)
+                  .then(({ data }) => {
+                    const response = data;
+                    if (response?.success === true && response?.data?.length) {
+                      props.navigation.navigate(AppRoutes.BrandPages, {
+                        movedFrom: 'home',
+                        brandData: response?.data,
+                        category_id: item.category_id,
+                        title: item.title || 'Products',
+                      });
+                    } else {
+                      props.navigation.navigate(AppRoutes.MedicineListing, {
+                        category_id: item.category_id,
+                        title: item.title || 'Products',
+                      });
+                    }
+                  })
+                  .catch(({ error }) => {
+                    CommonBugFender('MedicinePage_fetchBrandPageData', error);
+                    props.navigation.navigate(AppRoutes.MedicineListing, {
+                      category_id: item.category_id,
+                      title: item.title || 'Products',
+                    });
+                  });
               },
               {
                 marginHorizontal: 4,
@@ -1866,16 +1887,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
                 getBrandPagesData(item?.url_key)
                   .then(({ data }) => {
-                    const couponResponse = data;
-                    if (
-                      !!couponResponse &&
-                      couponResponse?.success === true &&
-                      !!couponResponse?.data &&
-                      couponResponse?.data?.length > 0
-                    ) {
+                    const response = data;
+                    if (response?.success === true && response?.data?.length) {
                       props.navigation.navigate(AppRoutes.BrandPages, {
                         movedFrom: 'home',
-                        brandData: couponResponse?.data,
+                        brandData: response?.data,
                         category_id: item.category_id,
                         title: item.title || 'Products',
                       });
@@ -2644,11 +2660,33 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         tree?.[0]?.title,
         'Category Tree'
       );
-      props.navigation.navigate(AppRoutes.MedicineListing, {
-        category_id: category.category_id,
-        title: category.title,
-        breadCrumb: tree,
-      });
+
+      getBrandPagesData(category?.url_key)
+        .then(({ data }) => {
+          const response = data;
+          if (response?.success === true && response?.data?.length) {
+            props.navigation.navigate(AppRoutes.BrandPages, {
+              movedFrom: 'home',
+              brandData: response?.data,
+              category_id: category.category_id,
+              title: category.title,
+            });
+          } else {
+            props.navigation.navigate(AppRoutes.MedicineListing, {
+              category_id: category.category_id,
+              title: category.title || 'Products',
+              breadCrumb: tree,
+            });
+          }
+        })
+        .catch(({ error }) => {
+          CommonBugFender('MedicinePage_fetchBrandPageData', error);
+          props.navigation.navigate(AppRoutes.MedicineListing, {
+            category_id: category.category_id,
+            title: category.title,
+            breadCrumb: tree,
+          });
+        });
     };
     const onPressDismissView = () => {
       setCategoryTreeVisible(false);
