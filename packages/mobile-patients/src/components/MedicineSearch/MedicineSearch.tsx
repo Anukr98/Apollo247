@@ -29,6 +29,7 @@ import {
   addPharmaItemToCart,
   formatToCartItem,
   g,
+  getAvailabilityForSearchSuccess,
   getDiscountPercentage,
   postCleverTapEvent,
   productsThumbnailUrl,
@@ -273,14 +274,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       });
       if (recentlySearchedProducts) {
         const pincode = asyncPincode?.pincode || pharmacyPincode;
-        let availability = false;
-        availabilityApi247(pincode, sku)
-          .then((res) => {
-            availability = g(res, 'data', 'response', '0' as any, 'exist');
-          })
-          .catch((error) => {
-            availability = false;
-          });
+        const availability = getAvailabilityForSearchSuccess(pincode, sku);
         const cleverTapEventAttributes = {
           'Nav src': navSrcForSearchSuccess,
           Status: 'Success',
@@ -373,14 +367,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
         movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
       });
       const pincode = asyncPincode?.pincode || pharmacyPincode;
-      let availability = false;
-      availabilityApi247(pincode, item?.sku)
-        .then((res) => {
-          availability = g(res, 'data', 'response', '0' as any, 'exist');
-        })
-        .catch((error) => {
-          availability = false;
-        });
+      const availability = getAvailabilityForSearchSuccess(pincode, item?.sku);
       const discount = getDiscountPercentage(item?.price, item?.special_price);
       const discountPercentage = discount ? discount + '%' : '0%';
       const cleverTapEventAttributes = {

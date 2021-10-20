@@ -110,6 +110,7 @@ import {
   getIsMedicine,
   getUserType,
   getCleverTapCircleMemberValues,
+  getAvailabilityForSearchSuccess,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { USER_AGENT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
@@ -2212,15 +2213,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               sku: item.sku,
               movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
             });
-            let availability = false;
             const pincode = asyncPincode?.pincode || pinCode || pharmacyPincode;
-            availabilityApi247(pincode, item?.sku)
-              .then((res) => {
-                availability = g(res, 'data', 'response', '0' as any, 'exist');
-              })
-              .catch((error) => {
-                availability = false;
-              });
+            const availability = getAvailabilityForSearchSuccess(pincode, item?.sku);
             const discount = getDiscountPercentage(item?.price, item?.special_price);
             const discountPercentage = discount ? discount + '%' : '0%';
             const cleverTapEventAttributes = {

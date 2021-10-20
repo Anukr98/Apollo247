@@ -3780,3 +3780,15 @@ export const convertDateToEpochFormat = (value: Date) => {
   const epochValue = value ? `$D_${Math.floor(value.getTime() / 1000.0)}` : '';
   return epochValue;
 };
+
+export const getAvailabilityForSearchSuccess = (pincode: string, sku: string) => {
+  let availability = false;
+      availabilityApi247(pincode, sku)
+        .then((res) => {
+          availability = g(res, 'data', 'response', '0' as any, 'exist');
+        })
+        .catch((error) => {
+          availability = false;
+        });
+    return availability;    
+};

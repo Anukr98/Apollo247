@@ -9,6 +9,7 @@ import {
   addPharmaItemToCart,
   formatToCartItem,
   g,
+  getAvailabilityForSearchSuccess,
   getDiscountPercentage,
   postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -142,14 +143,7 @@ export const ProductList: React.FC<Props> = ({
     }
     if (comingFromSearch !== false) {
       const pincode = asyncPincode?.pincode || pharmacyPincode;
-      let availability = false;
-      availabilityApi247(pincode, item?.sku)
-        .then((res) => {
-          availability = g(res, 'data', 'response', '0' as any, 'exist');
-        })
-        .catch((error) => {
-          availability = false;
-        });
+      const availability = getAvailabilityForSearchSuccess(pincode, item?.sku);
       const discount = getDiscountPercentage(item?.price, item?.special_price);
       const discountPercentage = discount ? discount + '%' : '0%';
       const cleverTapEventAttributes = {
