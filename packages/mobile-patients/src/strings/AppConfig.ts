@@ -289,23 +289,17 @@ const appStaticVariables = {
   TrueCaller_Login_Enabled: false,
   DIAGNOSTICS_NO_CIRCLE_SAVINGS_TEXT : 'Extra 15% off on lab tests and cashback on medicine orders',
   DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER : {
-    "ctaCityId": "21",
-    "ctaDetailsOnCityId": {
-      "ctaProductPageArray": [
-        "HOME",
-        "TESTDETAIL"
-      ],
-      "ctaDelaySeconds": 10,
-      "ctaText": "Talk to our health advisors",
-      "ctaPhoneNumber": "040-4821-3322"
-    },
+    "ctaDetailsOnCityId": [
+      {
+        "ctaCityId": "9",
+        "ctaProductPageArray": ["HOME","TESTLISTING","TESTCART","TESTDETAIL"],
+        "ctaDelaySeconds": 0,
+        "ctaPhoneNumber": "040-4821-3009"
+      }
+    ],
     "ctaDetailsDefault": {
-      "ctaProductPageArray": [
-        "HOME",
-        "TESTDETAIL"
-      ],
+      "ctaProductPageArray": ["HOME","TESTLISTING","TESTCART","TESTDETAIL"],
       "ctaDelaySeconds": 3,
-      "ctaText": "Call to Order",
       "ctaPhoneNumber": "040-4821-3322"
     }
   }

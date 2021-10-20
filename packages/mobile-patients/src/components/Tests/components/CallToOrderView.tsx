@@ -1,26 +1,52 @@
 import { BlueCross, WhiteCall } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface CallToOrderViewProps {
+  delaySeconds?: any;
   cartItems?: any;
   customMargin?: any;
   slideCallToOrder?: boolean;
   containerStyle?: any;
+  cityId?: any;
   onPressSmallView?: () => void;
   onPressCross?: () => void;
 }
 
 export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
-  const { cartItems, containerStyle, slideCallToOrder, onPressSmallView, onPressCross, customMargin } = props;
-  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER
+  const {
+    cartItems,
+    containerStyle,
+    slideCallToOrder,
+    onPressSmallView,
+    onPressCross,
+    customMargin,
+    cityId,
+  } = props;
+  const callToOrderDetails = JSON.parse(
+    AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER
+  );
+  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
+  const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
+    if (item?.ctaCityId == cityId) {
+      return item;
+    }
+  });
+  const phoneNumber = ctaDetailMatched?.[0]?.ctaPhoneNumber
+    ? ctaDetailMatched?.[0]?.ctaPhoneNumber
+    : callToOrderDetails?.ctaDetailsDefault?.ctaPhoneNumber;
   const onPressCallToOrderCta = () => {
-    const phoneNumber = callToOrderDetails?.ctaDetailsOnCityId ? callToOrderDetails?.ctaDetailsOnCityId?.ctaPhoneNumber : callToOrderDetails?.ctaDetailsDefault?.ctaPhoneNumber
-    Linking.openURL(`tel:${phoneNumber}`)
-  }
-  return (
+    Linking.openURL(`tel:${phoneNumber}`);
+  };
+  let ctaDelaySeconds = ctaDetailMatched?.[0]?.ctaDelaySeconds;
+  useEffect(() => {
+    setTimeout(() => {
+      ctaDelaySeconds = 0;
+    }, ctaDetailMatched?.[0]?.ctaDelaySeconds);
+  }, []);
+  return !!ctaDetailMatched && ctaDetailMatched?.length == 1 && ctaDelaySeconds == 0 ? (
     <>
       <View style={[styles.container, containerStyle]}>
         {!slideCallToOrder ? (
@@ -28,11 +54,15 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
             style={[
               styles.fullView,
               {
-                marginBottom: customMargin ? customMargin : !!cartItems && cartItems?.length > 0 ? 60 : 20,
+                marginBottom: customMargin
+                  ? customMargin
+                  : !!cartItems && cartItems?.length > 0
+                  ? 60
+                  : 20,
               },
             ]}
-            onPress={()=>{
-              onPressCallToOrderCta()
+            onPress={() => {
+              onPressCallToOrderCta();
             }}
           >
             <WhiteCall style={styles.whiteCallIcon} />
@@ -43,7 +73,11 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
             style={[
               styles.smallView,
               {
-                marginBottom: customMargin ? customMargin : !!cartItems && cartItems?.length > 0 ? 60 : 20,
+                marginBottom: customMargin
+                  ? customMargin
+                  : !!cartItems && cartItems?.length > 0
+                  ? 60
+                  : 20,
               },
             ]}
             onPress={onPressSmallView}
@@ -60,7 +94,7 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
         </View>
       </View>
     </>
-  );
+  ) : null;
 };
 
 const styles = StyleSheet.create({
@@ -100,5 +134,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   blueCrossView: { marginLeft: -10, marginTop: -10 },
-  blueCrossIcon: { width: 20, height: 20 }
+  blueCrossIcon: { width: 20, height: 20 },
 });

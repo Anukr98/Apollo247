@@ -2859,17 +2859,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const renderCallToOrder = () => {
     return (
       <CallToOrderView
-        cartItems = {cartItems}
-        slideCallToOrder = {slideCallToOrder}
-        onPressSmallView = {() => {
+        cartItems={cartItems}
+        slideCallToOrder={slideCallToOrder}
+        onPressSmallView={() => {
           setSlideCallToOrder(false);
         }}
-        onPressCross = {() => {
+        cityId = {cityId}
+        onPressCross={() => {
           setSlideCallToOrder(true);
         }}
       />
-    )
-  }
+    );
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -2928,6 +2929,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 keyboardShouldPersistTaps="always"
                 showsVerticalScrollIndicator={false}
                 nestedScrollEnabled={true}
+                onScroll={()=>{
+                  setSlideCallToOrder(true)
+                }}
               >
                 {renderSections()}
                 {!!cartItems && cartItems?.length > 0 ? <View style={{ height: 20 }} /> : null}

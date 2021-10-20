@@ -1308,6 +1308,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             ref={scrollViewRef}
             scrollEventThrottle={16}
             onScroll={(event) => {
+              setSlideCallToOrder(true)
               // show price if price is scrolled off the screen
               priceViewRef?.current &&
                 priceViewRef?.current?.measure(
