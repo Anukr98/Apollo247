@@ -777,11 +777,12 @@ interface CircleAttributes {
   circle_end_date?: Date | string;
   user_type?: string;
   navigation_source?: string | CircleEventSource;
-  duration_in_month?: string | number;
+  duration_in_months?: string | number;
   corporate_name?: string;
   source_identifier?: string;
   price?: number | string;
   destination?: string;
+  plan_id?: string;
 }
 
 interface CircleRenewalSubscriptionAttributes {

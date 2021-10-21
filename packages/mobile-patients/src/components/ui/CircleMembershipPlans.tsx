@@ -200,11 +200,11 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   const fireCleverTapCircleEvents = () => {
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_POP_UP_VIEWED_PLANS_ONLY] = {
       navigation_source: circleEventSource,
-      circle_planid: getCircleNoSubscriptionText(),
+      plan_id: getCircleNoSubscriptionText(),
       circle_end_date: getCircleNoSubscriptionText(),
       circle_start_date: getCircleNoSubscriptionText(),
       customer_id: currentPatient?.id,
-      duration_in_month: getCircleNoSubscriptionText(),
+      duration_in_months: getCircleNoSubscriptionText(),
       user_type: getUserType(allCurrentPatients),
       price: getCircleNoSubscriptionText(),
     };
@@ -352,9 +352,9 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       navigation_source: circleEventSource,
       circle_end_date: getCircleNoSubscriptionText(),
       circle_start_date: getCircleNoSubscriptionText(),
-      circle_planid: circleData?.subPlanId,
+      plan_id: circleData?.subPlanId,
       customer_id: currentPatient?.id,
-      duration_in_month: circleData?.durationInMonth,
+      duration_in_months: circleData?.durationInMonth,
       user_type: getUserType(allCurrentPatients),
       price: circleData?.currentSellingPrice,
     };
