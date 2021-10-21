@@ -3135,7 +3135,7 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
       statusString = 'Order completed';
       break;
     case DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING:
-      statusString = 'Payment pending';
+      statusString = 'Confirmation Pending';
       break;
     case DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED:
       statusString = 'Payment failed';
