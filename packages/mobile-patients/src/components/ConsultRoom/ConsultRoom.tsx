@@ -103,6 +103,7 @@ import {
   UPDATE_PATIENT_MEDICAL_PARAMETERS,
   GET_PRISM_AUTH_TOKEN,
   GET_DOCTOR_LIST,
+  GET_PERSONALIZED_OFFERS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getPrismAuthTokenVariables,
@@ -252,6 +253,7 @@ import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/Heal
 import _ from 'lodash';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Title } from 'react-native-paper';
+import Reactotron from 'reactotron-react-native';
 
 const { Vitals } = NativeModules;
 
@@ -944,6 +946,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const _searchInputRef = useRef(null);
   const [searchText, setSearchText] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [offersList, setOffersList] = useState([]);
   const [searchQuery, setSearchQuery] = useState({});
   const [prismAuthToken, setPrismAuthToken] = useState<string>('');
   const testSearchResults = useRef<
@@ -1184,6 +1187,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   useEffect(() => {
+    getOffers();
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setVaccineLoacalStorageData();
       checkApisToCall();
@@ -2347,6 +2351,21 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
+  const getOffers = async () => {
+    try {
+      const res = await client
+        .query({
+          query: GET_PERSONALIZED_OFFERS,
+          fetchPolicy: 'no-cache',
+        });
+        const offers = res?.data?.getPersonalizedOffers?.response?.personalized_data?.offers_for_you;
+        // Reactotron.log('RESPONSE', offers);
+        if (offers && offers.length) {
+          setOffersList(offers);
+        }
+    } catch (error) {}
+  }
+
   const getProductCashbackDetails = () => {
     client
       .query<GetCashbackDetailsOfPlanById>({
@@ -3298,7 +3317,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             }}
           >
             <Text style={{ ...theme.viewStyles.text('R', 12, '#fff', 1, 18) }}>
-              {item?.notchTitle}
+              {item?.notch_text?.text}
             </Text>
           </View>
 
@@ -3308,7 +3327,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               marginHorizontal: 10,
             }}
           >
-            {item?.title}
+            {item?.title?.text}
           </Text>
 
           <Text
@@ -3317,9 +3336,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               marginHorizontal: 10,
             }}
           >
-            {item?.title2}
+            {item?.subtitle?.text}
           </Text>
-          {item?.couponStatus ? (
+          {item?.is_active ? (
             <View
               style={{
                 flexDirection: 'row',
@@ -3342,7 +3361,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 }}
               >
                 <Text style={{ ...theme.viewStyles.text('R', 12, '#A15D59', 1, 18) }}>
-                  Coupon: Try247
+                  {`Coupon: ${item?.coupon_code}`}
                 </Text>
               </View>
 
@@ -3547,27 +3566,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       );
     }
   };
-
-  const offersList = [
-    {
-      id: 1,
-      colors: ['#FCEFD0', '#FFE7AA'],
-      couponStatus: true,
-      title: 'Flat 25% off + ₹100 cashback',
-      title2: 'on first medicine order',
-      notchTitle: 'Ends in 12:22 Hr',
-      notchColor: '#0B92DE',
-    },
-    {
-      id: 2,
-      colors: ['#FCDCFF', '#FBD0FF'],
-      couponStatus: false,
-      title: 'First Doctor Consult Free',
-      title2: 'on select doctor',
-      notchTitle: 'FREE',
-      notchColor: '#3BCA9F',
-    },
-  ];
 
   const dataBannerCards = (darktheme: any) => {
     const datatoadd = bannerDataHome?.filter((item: any) => item?.banner_display_type === 'card');
