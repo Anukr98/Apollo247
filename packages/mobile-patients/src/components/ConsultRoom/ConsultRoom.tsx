@@ -926,7 +926,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [membershipPlans, setMembershipPlans] = useState<any>([]);
   const [circleDataLoading, setCircleDataLoading] = useState<boolean>(true);
-  const { getPatientApiCall } = useAuth();
+  const { getPatientApiCall, buildApolloClient, validateAndReturnAuthToken } = useAuth();
   const [selectedProfile, setSelectedProfile] = useState<string>('');
   const [isLocationSearchVisible, setLocationSearchVisible] = useState(false);
   const [showList, setShowList] = useState<boolean>(false);
@@ -2352,14 +2352,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const getOffers = async () => {
+    const authToken: string = await validateAndReturnAuthToken();
+    const apolloClient = buildApolloClient(authToken);
     try {
-      const res = await client
+      const res = await apolloClient
         .query({
           query: GET_PERSONALIZED_OFFERS,
           fetchPolicy: 'no-cache',
         });
         const offers = res?.data?.getPersonalizedOffers?.response?.personalized_data?.offers_for_you;
-        // Reactotron.log('RESPONSE', offers);
+        Reactotron.log('RESPONSE', offers);
         if (offers && offers.length) {
           setOffersList(offers);
         }
