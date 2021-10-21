@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   callToOrderText: {
-    ...theme.viewStyles.text('SB', 14, 'white', 1),
+    ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1),
     paddingHorizontal: 10,
   },
   fullView: {
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#346CD9',
+    backgroundColor: theme.colors.DARK_BLUE,
     height: 50,
     width: 50,
     borderBottomRightRadius: 10,
