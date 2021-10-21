@@ -55,11 +55,19 @@ export const SavedCard: React.FC<SavedCardProps> = (props) => {
       <Text style={styles.cardNo}>
         {cardInfo?.card_number?.slice(-7)}
         {' • '}
-        {cardInfo?.card_issuer + cardInfo?.card_type}
+        {cardInfo?.card_issuer?.replace('Bank', ' ') + camelize(cardInfo?.card_type)}
         {' Card'}
       </Text>
     );
   };
+
+  function camelize(str: any) {
+    return str
+      .replace(/(?:^\w|[A-Z]|\b\w)/g, function(word: any, index: any) {
+        return index === 0 ? word.toUpperCase() : word.toLowerCase();
+      })
+      .replace(/\s+/g, '');
+  }
 
   const renderCardInfo = () => {
     return (
