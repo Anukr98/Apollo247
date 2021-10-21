@@ -1165,6 +1165,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Diagnostics_No_Saving_Text',
       PROD: 'Diagnostics_No_Saving_Text',
     },
+    Diagnostics_City_Level_Call_To_Order: {
+      QA: 'QA_Diagnostics_City_Level_Call_To_Order',
+      PROD: 'Diagnostics_City_Level_Call_To_Order',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1471,6 +1475,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
 
       setAppConfig('Diagnostics_No_Saving_Text', 'DIAGNOSTICS_NO_CIRCLE_SAVINGS_TEXT', (key) =>
+        config.getString(key)
+      );
+
+      setAppConfig('Diagnostics_City_Level_Call_To_Order', 'DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER', (key) =>
         config.getString(key)
       );
 

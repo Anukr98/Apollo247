@@ -743,6 +743,9 @@
     "share": "Share on Whatsapp",
     "copy": "Copy Link to PDF"
   },
+  "CallToOrder": {
+    "callToOrderText": "Call to Order"
+  },
   "health_records_home": {
     "description": "Find all your health record(s) & prescription(s) in one place.",
     "view_consult": "VIEW CONSULT",
