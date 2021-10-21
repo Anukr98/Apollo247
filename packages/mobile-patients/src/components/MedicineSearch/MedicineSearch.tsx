@@ -46,7 +46,7 @@ import { CartIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { Badge } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { SuggestedQuantityNudge } from '@aph/mobile-patients/src/components/SuggestedQuantityNudge/SuggestedQuantityNudge';
-import { CleverTapEventName } from '../../helpers/CleverTapEvents';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 type RecentSearch = getPatientPastMedicineSearches_getPatientPastMedicineSearches;
 
