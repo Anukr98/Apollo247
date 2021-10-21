@@ -209,7 +209,8 @@ export const firePurchaseEvent = (
     itemCategories: any = [],
     itemCollectionMethods: any = [],
     itemIndexs: any = [],
-    itemQuantity: any = [];
+    itemQuantity: any = [],
+    itemCurrency: any = [];
 
   !!cartItems &&
     cartItems?.length > 0 &&
@@ -222,15 +223,17 @@ export const firePurchaseEvent = (
       itemObj.item_variant = item.collectionMethod; // "Default" (for Pharmacy) or Virtual / Physcial (for Consultations)
       itemObj.index = index + 1; // Item sequence number in the list
       itemObj.af_quantity = 1;
+      itemObj.af_currency = 'INR';
       items.push(itemObj);
 
       itemIds.push(item?.id);
       itemNames.push(item?.name);
       itemPrices.push(!!item?.specialPrice ? String(item.specialPrice) : String(item.price));
-      itemCategories.push('Diagnositcs');
+      itemCategories.push('Diagnostics');
       itemCollectionMethods.push(item?.collectionMethod);
       itemIndexs.push(String(index));
       itemQuantity.push(String(1));
+      itemCurrency.push('INR');
     });
 
   let appsFlyerObject = {} as any;
@@ -241,6 +244,7 @@ export const firePurchaseEvent = (
   appsFlyerObject.item_variant = itemCollectionMethods;
   appsFlyerObject.index = itemIndexs;
   appsFlyerObject.af_quantity = itemQuantity;
+  appsFlyerObject.af_currency = itemCurrency;
 
   const stringifiedAppsFlyerObject = JSON.stringify(appsFlyerObject);
 
@@ -889,6 +893,7 @@ export function DiagnosticPrescriptionSubmitted(
   const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes: CleverTapEvents[CleverTapEventName.DIAGNOSTIC_PRESCRIPTION_SUBMITTED] = {
     ...getPatientAttributes,
+    'Mobile Number': currentPatient?.mobileNumber,
     Source: 'Apollo247App',
     PrescriptionUrl: prescriptionUrl,
     'Item name': itemName,
