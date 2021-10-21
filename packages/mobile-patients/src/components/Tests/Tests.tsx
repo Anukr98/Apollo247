@@ -199,7 +199,7 @@ import {
   getDiagnosticOrdersListByMobile,
   getDiagnosticOrdersListByMobileVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
-import { CallToOrderView } from './components/CallToOrderView';
+import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 const rankArr = ['1', '2', '3', '4', '5', '6'];
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),

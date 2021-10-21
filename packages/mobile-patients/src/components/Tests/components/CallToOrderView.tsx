@@ -1,5 +1,6 @@
 import { BlueCross, WhiteCall } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect } from 'react';
 import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -46,7 +47,7 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
       ctaDelaySeconds = 0;
     }, ctaDetailMatched?.[0]?.ctaDelaySeconds);
   }, []);
-  return !!ctaDetailMatched && ctaDetailMatched?.length == 1 && ctaDelaySeconds == 0 ? (
+  return ctaDetailMatched?.length === 1 && ctaDelaySeconds == 0 ? (
     <>
       <View style={[styles.container, containerStyle]}>
         {!slideCallToOrder ? (
@@ -66,7 +67,7 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
             }}
           >
             <WhiteCall style={styles.whiteCallIcon} />
-            <Text style={styles.callToOrderText}>Call to Order</Text>
+            <Text style={styles.callToOrderText}>{string.CallToOrder.callToOrderText}</Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
@@ -112,7 +113,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#346CD9',
+    backgroundColor: theme.colors.DARK_BLUE,
     height: 50,
     width: 150,
     borderBottomRightRadius: 10,

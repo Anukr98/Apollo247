@@ -44,7 +44,7 @@ import {
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { DiagnosticProductListingPageViewed } from './Events';
-import { CallToOrderView } from './components/CallToOrderView';
+import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 
 export interface TestListingProps
   extends NavigationScreenProps<{
