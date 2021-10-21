@@ -539,7 +539,11 @@ export const pushTheView = (
       break;
 
     case 'MedicineSearchText':
-      navigateToView(navigation, AppRoutes.MedicineListing, { searchText: id });
+      if (movedFromBrandPages && movedFromBrandPages === true) {
+        navigation.navigate( AppRoutes.MedicineListing, { searchText: id, movedFrom: 'brandPages' });
+      } else {
+      navigateToView(navigation, AppRoutes.MedicineListing, { searchText: id }); 
+      }
       break;
     case 'MedicineCategory':
       if (movedFromBrandPages && movedFromBrandPages === true) {

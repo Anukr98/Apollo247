@@ -65,7 +65,7 @@ export interface Props
     title?: string; // mandatory if category_id passed
     sortBy?: SortByOption; // support for deep link
     filterBy?: SelectedFilters; // support for deep link
-    movedFrom?: 'registration' | 'deeplink' | 'home';
+    movedFrom?: 'registration' | 'deeplink' | 'home' | 'brandPages';
     breadCrumb?: Pick<Category, 'title' | 'category_id'>[];
     categoryName?: string;
     comingFromSearch?: boolean;
@@ -94,9 +94,8 @@ export const MedicineListing: React.FC<Props> = (props) => {
   const titleNavProp = navigation.getParam('title') || '';
   const breadCrumb = navigation.getParam('breadCrumb') || [];
   const categoryName = navigation.getParam('categoryName') || '';
-
   const comingFromBrandPage = props?.comingFromBrandPage ? props?.comingFromBrandPage : false;
-  const currentBrandPageTab = props?.currentBrandPageTab ? props?.currentBrandPageTab : '';
+  const currentBrandPageTab = props?.currentBrandPageTab || '';
 
   const { pinCode } = useShoppingCart();
 
@@ -315,8 +314,7 @@ export const MedicineListing: React.FC<Props> = (props) => {
     try {
       updateLoading(pageId, true);
       const _selectedFilters = formatFilters(selectedFilters, filters);
-      if (_selectedFilters.category != navigation.getParam('category_id'))
-        setBottomCategoryId(_selectedFilters?.category);
+      if (_selectedFilters.category != categoryId) setBottomCategoryId(_selectedFilters?.category);
       else {
         setFilterBy({});
       }
