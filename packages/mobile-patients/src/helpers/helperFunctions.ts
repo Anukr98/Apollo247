@@ -2636,7 +2636,9 @@ export const addPharmaItemToCart = (
   itemsInCart?: string,
   onComplete?: () => void,
   pharmacyCircleAttributes?: PharmacyCircleEvent,
-  onAddedSuccessfully?: () => void
+  onAddedSuccessfully?: () => void,
+  comingFromSearch?: boolean,
+  cleverTapSearchSuccessEventAttributes?: object,
 ) => {
   const outOfStockMsg = 'Sorry, this item is out of stock in your area.';
 
@@ -2707,9 +2709,17 @@ export const addPharmaItemToCart = (
     .then((res) => {
       const availability = g(res, 'data', 'response', '0' as any, 'exist');
       if (availability) {
+        if (comingFromSearch === true) {
+          cleverTapSearchSuccessEventAttributes['Product availability'] = 'Is in stock';
+          postCleverTapEvent(CleverTapEventName.PHARMACY_SEARCH_SUCCESS, cleverTapSearchSuccessEventAttributes);
+        }
         addToCart();
         onAddedSuccessfully?.();
       } else {
+        if (comingFromSearch === true) {
+          cleverTapSearchSuccessEventAttributes['Product availability'] = 'Out of stock';
+          postCleverTapEvent(CleverTapEventName.PHARMACY_SEARCH_SUCCESS, cleverTapSearchSuccessEventAttributes);
+        }
         navigate();
       }
       try {
@@ -3769,4 +3779,16 @@ export const isCartPriceWithInSpecifiedRange = (
 export const convertDateToEpochFormat = (value: Date) => {
   const epochValue = value ? `$D_${Math.floor(value.getTime() / 1000.0)}` : '';
   return epochValue;
+};
+
+export const getAvailabilityForSearchSuccess = (pincode: string, sku: string) => {
+  let availability = false;
+      availabilityApi247(pincode, sku)
+        .then((res) => {
+          availability = g(res, 'data', 'response', '0' as any, 'exist');
+        })
+        .catch((error) => {
+          availability = false;
+        });
+    return availability;    
 };

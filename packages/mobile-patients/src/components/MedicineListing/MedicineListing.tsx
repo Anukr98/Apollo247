@@ -68,6 +68,8 @@ export interface Props
     movedFrom?: 'registration' | 'deeplink' | 'home';
     breadCrumb?: Pick<Category, 'title' | 'category_id'>[];
     categoryName?: string;
+    comingFromSearch?: boolean;
+    navSrcForSearchSuccess?: string;
   }> {
   comingFromBrandPage?: boolean | undefined;
   currentBrandPageTab?: string;
@@ -404,7 +406,19 @@ export const MedicineListing: React.FC<Props> = (props) => {
   };
 
   const renderHeader = () => {
-    return <MedicineListingHeader navigation={navigation} movedFrom={movedFrom} />;
+    let navSrcParamForSearchSuccess = '';
+    if ((categoryId || categoryName) && !searchText) {
+      navSrcParamForSearchSuccess = 'Category Listing';
+    } else if (searchText) {
+      navSrcParamForSearchSuccess = 'Search List';
+    }
+    return (
+      <MedicineListingHeader
+        navigation={navigation}
+        movedFrom={movedFrom}
+        navSrcForSearchSuccess={navSrcParamForSearchSuccess}
+      />
+    );
   };
 
   const renderSections = () => {
@@ -466,6 +480,7 @@ export const MedicineListing: React.FC<Props> = (props) => {
           <>
             <MedicineListingProducts
               data={products}
+              totalProducts={productsTotal}
               ListFooterComponent={renderLoading()}
               ListEmptyComponent={renderProductsNotFound()}
               navigation={navigation}

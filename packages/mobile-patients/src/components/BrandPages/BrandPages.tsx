@@ -58,7 +58,13 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
   });
 
   const renderHeader = () => {
-    return <MedicineListingHeader navigation={props.navigation} movedFrom={'brandPages'} />;
+    return (
+      <MedicineListingHeader
+        navigation={props.navigation}
+        movedFrom={'brandPages'}
+        navSrcForSearchSuccess={'Brand Pages'}
+      />
+    );
   };
 
   const renderMainBanner = () => {

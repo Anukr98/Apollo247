@@ -126,7 +126,13 @@ export const SpecialOffersScreen: React.FC<SpecialOffersScreenProps> = (props) =
   };
 
   const renderHeader = () => {
-    return <MedicineListingHeader navigation={props.navigation} movedFrom={movedFrom} />;
+    return (
+      <MedicineListingHeader
+        navigation={props.navigation}
+        movedFrom={movedFrom}
+        navSrcForSearchSuccess={'Special Offers'}
+      />
+    );
   };
 
   return (
