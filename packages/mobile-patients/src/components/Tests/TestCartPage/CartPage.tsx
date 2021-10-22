@@ -1522,7 +1522,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   }
 
   function _validatePricesWithAddress() {
-    getAddressServiceability(true);
+    // getAddressServiceability(true);
+    _navigateToNextScreen()
   }
 
   function _navigateToNextScreen() {

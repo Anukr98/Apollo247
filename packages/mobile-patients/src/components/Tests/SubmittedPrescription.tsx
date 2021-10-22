@@ -260,10 +260,15 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
       .then(({ data }) => {
         const status = g(data, 'addPatientPrescriptionRecord', 'status');
         const eventInputData = removeObjectProperty(inputData, 'prescriptionFiles');
+        const prescriptionUrl = {
+          'content' :  inputData?.prescriptionFiles?.[0]?.content,
+          'fileName' : inputData?.prescriptionFiles?.[0]?.fileName,
+          'mimeType' : inputData?.prescriptionFiles?.[0]?.mimeType
+        }
         DiagnosticPrescriptionSubmitted(
           currentPatient,
-          inputData?.prescriptionFiles,
-          inputData?.prescriptionName,
+          prescriptionUrl ? prescriptionUrl : '',
+          inputData?.prescriptionName ? inputData?.prescriptionName : '',
           isDiagnosticCircleSubscription
         );
         setOnSumbitSuccess(true);
@@ -273,6 +278,13 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         CommonBugFender('SubmittedPrescription_ADD_PRESCRIPTION_RECORD', error);
       });
     } else {
+      const prescriptionUrl = EPrescriptionsProps?.[0]?.uploadedUrl
+      DiagnosticPrescriptionSubmitted(
+        currentPatient,
+        prescriptionUrl ? prescriptionUrl : '',
+        inputData?.prescriptionName ? inputData?.prescriptionName : '',
+        isDiagnosticCircleSubscription
+      );
       setOnSumbitSuccess(true)
     }
   };

@@ -777,11 +777,12 @@ interface CircleAttributes {
   circle_end_date?: Date | string;
   user_type?: string;
   navigation_source?: string | CircleEventSource;
-  duration_in_month?: string | number;
+  duration_in_months?: string | number;
   corporate_name?: string;
   source_identifier?: string;
   price?: number | string;
   destination?: string;
+  plan_id?: string;
 }
 
 interface CircleRenewalSubscriptionAttributes {
@@ -1143,15 +1144,15 @@ export interface CleverTapEvents {
 
   // *********** Delayed Reminder Event ******* \\
   [CleverTapEventName.CONSULT_DELAYED_MESSAGE_CLICKED]: {
-    'Doctor Name': string,
-    'Doctor Number': string,
-    'Doctor ID': string,
-    'Display Speciality Name':string,
-    'Display ID': number | null,
-    'Patient Name': string,
-    'Patient Phone Number': string,
-    'Phone number clicked': string,
-  }
+    'Doctor Name': string;
+    'Doctor Number': string;
+    'Doctor ID': string;
+    'Display Speciality Name': string;
+    'Display ID': number | null;
+    'Patient Name': string;
+    'Patient Phone Number': string;
+    'Phone number clicked': string;
+  };
   // ********** PharmacyEvents ********** \\
 
   [CleverTapEventName.PHARMACY_SEARCH]: {
@@ -1305,7 +1306,7 @@ export interface CleverTapEvents {
     'Cart ID'?: string; // we don't have cartId before placing order
     'Mode of Delivery': 'Home' | 'Pickup' | 'Home Visit' | 'Clinic Visit';
     'Delivery Date Time'?: string; // Optional (only if Home)
-    'Pincode': string | number;
+    Pincode: string | number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
     'Store ID'?: string;
     'Store Name'?: string;
@@ -1525,9 +1526,9 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED]: {
     'Slot time': string;
-    'No. of slots' : number;
-    'Slot date' : string;
-    'Type': DIAGNOSTIC_SLOT_TYPE;
+    'No. of slots': number;
+    'Slot date': string;
+    Type: DIAGNOSTIC_SLOT_TYPE;
     'Circle user': string;
   };
   [CleverTapEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED]: {
@@ -1538,7 +1539,7 @@ export interface CleverTapEvents {
     'Sub Total': number;
     'Net after discount': number;
     'Pin Code': string | number;
-    'Address': string;
+    Address: string;
     'Home collection charges'?: number;
     'Collection Time Slot': string;
     'Collection Date Slot': string | Date;
@@ -1606,7 +1607,7 @@ export interface CleverTapEvents {
     LOB: string;
     type?: string;
     'Order id'?: string;
-    'Payment mode'?: string
+    'Payment mode'?: string;
   };
   [CleverTapEventName.CONSULT_PAYMENT_INITIATED]: {
     Amount: number;
@@ -1625,7 +1626,7 @@ export interface CleverTapEvents {
     Serviceability: 'Yes' | 'No';
     Pincode: string | number;
     Source: 'Home page' | 'Cart page';
-    'Circle user': string,
+    'Circle user': string;
   };
   [CleverTapEventName.DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE]: {
     'Item ID': string | number;
@@ -1680,7 +1681,7 @@ export interface CleverTapEvents {
     UHID: string;
     'Order id': string;
     'Order status': string;
-    'Circle user': string
+    'Circle user': string;
   };
   [CleverTapEventName.DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED]: {
     Type: 'Category' | 'Widget';
@@ -1690,13 +1691,8 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.DIAGNOSTIC_PRESCRIPTION_SUBMITTED]: {
     Source: string;
-    PrescriptionUrl: any;
-    'Item name': string;
-    'Circle user': string;
-  };
-  [CleverTapEventName.DIAGNOSTIC_PRESCRIPTION_SUBMITTED]: {
-    Source: string;
-    PrescriptionUrl: any;
+    'Mobile Number'?: any;
+    PrescriptionUrl?: any;
     'Item name': string;
     'Circle user': string;
   };
@@ -2154,9 +2150,9 @@ export interface CleverTapEvents {
     'Response TATU': number;
   };
   [CleverTapEventName.PHARMACY_CART_TAT_API_CALLED]: {
-    'TAT 1 day'?: number; 
+    'TAT 1 day'?: number;
     'TAT 1 hour'?: number;
-    'TAT 1 items'?: string; 
+    'TAT 1 items'?: string;
     'TAT 1 amount'?: number;
     'TAT 2 day'?: number;
     'TAT 2 hour'?: number;
@@ -2679,7 +2675,7 @@ export interface CleverTapEvents {
     'Available in mins': string;
     'Doctor city': string;
     'Hospital name': string;
-    'Relation': string;
+    Relation: string;
     'Circle Membership added': string;
     'Circle discount': number;
     'Circle Cashback': number;
@@ -2689,13 +2685,13 @@ export interface CleverTapEvents {
     Rank: number | string;
     Is_TopDoc?: YesOrNo;
     Source:
-    | 'Deeplink'
-    | 'Doctor Card clicked'
-    | 'Search'
-    | 'My Doctors'
-    | 'Appointment CTA'
-    | 'Direct'
-    | 'Past search clicked';
+      | 'Deeplink'
+      | 'Doctor Card clicked'
+      | 'Search'
+      | 'My Doctors'
+      | 'Appointment CTA'
+      | 'Direct'
+      | 'Past search clicked';
     'Doctor card clicked': YesOrNo;
     DOTH: 'T' | 'F';
     'Doctor tab': 'Apollo Tab' | 'Partner' | 'NA';
