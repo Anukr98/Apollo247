@@ -34,6 +34,7 @@ import {
   AppConfig,
   DIAGNOSTIC_ORDER_FAILED_STATUS,
   DIAGNOSTIC_ORDER_FOR_PREPDATA,
+  DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
   DIAGNOSTIC_SHOW_OTP_STATUS,
   DIAGNOSTIC_STATUS_BEFORE_SUBMITTED,
 } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -523,7 +524,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     const prepData = !!props?.orderAttributesObj?.preTestingRequirement
       ? props?.orderAttributesObj?.preTestingRequirement
       : '';
-    return props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED &&
+    return DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(props.orderLevelStatus) &&
       (report || prepData) ? (
       <View style={styles.ratingContainer}>
         {report ? (
