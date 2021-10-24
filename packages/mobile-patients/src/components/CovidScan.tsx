@@ -27,8 +27,20 @@ export const CovidScan: React.FC<CovidScanProps> = (props) => {
   const microPhonePermission = props.navigation.getParam('requestMicroPhonePermission');
   const [loading, setLoading] = useState<boolean>(true);
   const [canGoBack, setCanGoBack] = useState<boolean>(false);
+  const [token, setToken] = useState<string | null>('')
+  const [userMobileNumber, setUserMobileNumber] = useState<string | null>('')
+
+
+  const getAsyncStorageValues = async () => {
+    const jwtToken = await AsyncStorage.getItem("jwt") 
+    setToken(jwtToken)
+    let user = await AsyncStorage.getItem("currentPatient")
+    user = (JSON.parse(user)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber)
+    setUserMobileNumber(user)
+  }
 
   useEffect(() => {
+    getAsyncStorageValues()
     requestMicrophonePermission();
   }, []);
 
@@ -68,11 +80,12 @@ export const CovidScan: React.FC<CovidScanProps> = (props) => {
   };
 
   const renderWebView = () => {
+    const uri = `${props.navigation.getParam('covidUrl')}?utm_token=${token}&utm_mobile_number=${userMobileNumber}`
     return (
       <WebView
         ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
         onLoadEnd={() => setLoading?.(false)}
-        source={{ uri: props.navigation.getParam('covidUrl') }}
+        source={{ uri }}
         onNavigationStateChange={(data) => handleResponse(data, WebViewRef)}
         renderError={() => renderError(WebViewRef)}
       />

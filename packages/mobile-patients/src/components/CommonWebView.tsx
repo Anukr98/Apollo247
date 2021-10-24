@@ -38,6 +38,9 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   const isGoBack = props.navigation.getParam('isGoBack');
   const circleEventSource = props.navigation.getParam('circleEventSource');
   const [canGoBack, setCanGoBack] = useState<boolean>(false);
+  const [token, setToken] = useState<string | null>('')
+  const [userMobileNumber, setUserMobileNumber] = useState<string | null>('')
+
   let WebViewRef: any;
   const client = useApolloClient();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
@@ -61,7 +64,16 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
       postWebEngageEvent(WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED, CircleEventAttributes);
   };
 
+  const getAsyncStorageValues = async () => {
+    const jwtToken = await AsyncStorage.getItem("jwt") 
+    setToken(jwtToken)
+    let user = await AsyncStorage.getItem("currentPatient")
+    user = (JSON.parse(user)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber)
+    setUserMobileNumber(user)
+  }
+
   useEffect(() => {
+    getAsyncStorageValues()
     if (circleEventSource) fireCircleLandingPageViewedEvent();
   }, []);
 
@@ -115,11 +127,12 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   };
 
   const renderWebView = () => {
+    const uri = `${props.navigation.getParam('url')}?utm_token=${token}&utm_mobile_number=${userMobileNumber}`
     return (
       <WebView
         ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
         onLoadEnd={() => setLoading!(false)}
-        source={{ uri: props.navigation.getParam('url') }}
+        source={{ uri }}
         renderError={(errorCode) => renderError(WebViewRef)}
         onNavigationStateChange={(data) => handleResponse(data)}
         onMessage={(event) => {

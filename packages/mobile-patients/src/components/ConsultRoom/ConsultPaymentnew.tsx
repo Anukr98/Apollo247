@@ -52,6 +52,9 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
   const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState<string | null>('')
+  const [userMobileNumber, setUserMobileNumber] = useState<string | null>('')
+
   const displayID = props.navigation.getParam('displayID');
   let WebViewRef: any;
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
@@ -71,7 +74,16 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const { isCircleDoctorOnSelectedConsultMode } = circleDoctorDetails;
   const { circleSubscriptionId } = useShoppingCart();
 
+  const getAsyncStorageValues = async () => {
+    const jwtToken = await AsyncStorage.getItem("jwt") 
+    setToken(jwtToken)
+    let user = await AsyncStorage.getItem("currentPatient")
+    user = (JSON.parse(user)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber)
+    setUserMobileNumber(user)
+  }
+
   useEffect(() => {
+    getAsyncStorageValues()
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -130,7 +142,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
     const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
     let url = `${baseUrl}/consultpayment?appointmentId=${appointmentId}&patientId=${currentPatiendId}&price=${price}&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
       bankCode ? '&bankCode=' + bankCode : ''
-    }`;
+    }&utm_token=${token}&utm_mobile_number=${userMobileNumber}`;
     if (planSelected && isCircleDoctorOnSelectedConsultMode && circleSubscriptionId == '') {
       url = `${url}&planId=${planId}&subPlanId=${planSelected?.subPlanId}&storeCode=${storeCode}`;
     }

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import {
@@ -23,6 +23,7 @@ import { WebView } from 'react-native-webview';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -39,10 +40,16 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const videoLinks = strings.Circle.video_links;
   const [showCircleActivation, setShowCircleActivation] = useState<boolean>(false);
+  const [token, setToken] = useState<string | null>('')
+  const [userMobileNumber, setUserMobileNumber] = useState<string | null>('')
 
   const { currentPatient } = useAllCurrentPatients();
   const planValidity = useRef<string>('');
   const planPurchased = useRef<boolean | undefined>(false);
+
+  useEffect(() => {
+    getAsyncStorageValues()
+  },[])
 
   const renderCircleExpiryBanner = () => {
     const expiry = timeDiffDaysFromNow(circleSubscription?.endDate);
@@ -225,6 +232,14 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
     );
   };
 
+  const getAsyncStorageValues = async () => {
+    const jwtToken = await AsyncStorage.getItem("jwt") 
+    setToken(jwtToken)
+    let user = await AsyncStorage.getItem("currentPatient")
+    user = (JSON.parse(user)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber)
+    setUserMobileNumber(user)
+  }
+
   const renderViewCarousel = () => {
     return (
       <View style={{ backgroundColor: '#FFFFFF' }}>
@@ -256,7 +271,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
           allowsFullscreenVideo
           allowsInlineMediaPlayback
           mediaPlaybackRequiresUserAction
-          source={{ uri: item }}
+          source={{ uri: `${item}?utm_token=${token}&utm_mobile_number=${userMobileNumber}` }}
           style={{
             width: screenWidth,
             height: 150,

@@ -771,6 +771,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [vaccinationSubscriptionName, setVaccinationSubscriptionName] = useState<string>('');
   const [vaccinationSubscriptionPlanId, setVaccinationSubscriptionPlanId] = useState<string>('');
   const [agreedToVaccineTnc, setAgreedToVaccineTnc] = useState<string>('');
+  const [token, setToken] = useState<string | null>('')
+  const [userMobileNumber, setUserMobileNumber] = useState<string | null>('')
 
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
@@ -2358,6 +2360,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       .finally(() => setAppointmentLoading(false));
   };
 
+  const getAsyncStorageValues = async () => {
+    const jwtToken = await AsyncStorage.getItem("jwt") 
+    setToken(jwtToken)
+    let user = await AsyncStorage.getItem("currentPatient")
+    user = (JSON.parse(user)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber)
+    setUserMobileNumber(user)
+  }
+
   useEffect(() => {
     async function fetchData() {
       const userLoggedIn = await AsyncStorage.getItem('gotIt');
@@ -2375,6 +2385,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       setEnableCM(eneabled);
     }
     fetchData();
+    getAsyncStorageValues()
   }, []);
 
   useEffect(() => {
@@ -3106,7 +3117,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <View style={styles.nestedWebView}>
           <WebView
             source={{
-              uri: url,
+              uri: `${url}?utm_token=${token}&utm_mobile_number=${userMobileNumber}`,
             }}
             style={styles.webViewCompo}
             onLoadStart={() => {
