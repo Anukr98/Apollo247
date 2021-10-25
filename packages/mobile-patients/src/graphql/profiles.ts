@@ -6461,3 +6461,60 @@ export const CREATE_VONAGE_SESSION_TOKEN = gql`
     }
   }
 `;
+
+export const SERVER_CART_SAVE_CART = gql`
+  mutation saveCart($cartInputData: CartInputData!) {
+    saveCart(cartInput: $cartInputData) {
+      statusCode
+      errorMessage
+      cartMessage
+      data {
+        patientId
+        longitude
+        latitude
+        zipcode
+        prescriptionDetails {
+          prescriptionImageUrl
+          prismPrescriptionFileId
+        }
+        prescriptionType
+        appointmentId
+        subscriptionDetails {
+          userSubscriptionId
+          planId
+          subPlanId
+          type
+          planAmount
+          currentSellingPrice
+          validDuration
+          durationInDays
+        }
+        medicineOrderCartLineItems {
+          sku
+          name
+          quantity
+          price
+          sellingPrice
+          mou
+          couponDiscountPrice
+          specialPrice
+          thumbnail
+          isExpress
+          isPrescriptionRequired
+          subcategory
+          typeId
+          urlKey
+          isInStock
+          maxOrderQty
+          sellOnline
+          isCouponApplicable
+          tat
+          tatDuration
+          isShippable
+          cashback
+          freeProduct
+        }
+      }
+    }
+  }
+`;
