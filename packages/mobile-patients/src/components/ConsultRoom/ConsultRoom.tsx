@@ -614,7 +614,7 @@ const styles = StyleSheet.create({
   bottom2ImageView: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 8,
+    marginLeft: 6,
     marginRight: 2,
   },
   bottom2SubImage: {
@@ -3227,12 +3227,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     <View
                       style={{
                         flexDirection: 'row',
-                        marginTop: 6,
                         alignItems: 'center',
                         justifyContent: 'flex-start',
+                        marginTop: 'auto',
                       }}
                     >
-                      <View style={styles.bottom2ImageView}>{item.image}</View>
+                      {item.image}
                       <View style={styles.bottom2TextView}>
                         <Text
                           style={[theme.viewStyles.text('SB', 14, theme.colors.LIGHT_BLUE, 1, 18)]}
@@ -3240,7 +3240,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                           {item.title}
                         </Text>
                       </View>
-                      <ArrowRight />
+                      <ArrowRight style={{ marginRight: 'auto' }} />
                     </View>
 
                     <View
