@@ -2598,7 +2598,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   //check if user has any prohealth bookings
   const checkIsProhealthActive = async (currentPatientDetails: any) => {
-    console.log('inside active appointment.');
     setPreviousPatient(currentPatientDetails);
     const storedUhid: any = await AsyncStorage.getItem('selectUserUHId');
     const selectedUHID = storedUhid ? storedUhid : g(currentPatient, 'uhid');
