@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.WHITE,
   },
   searchBarViewStyle: {
-    backgroundColor: theme.colors.ICE_BERG_FLAT,
+    backgroundColor: theme.colors.BLUE_FADED_FLAT,
     flexDirection: 'row',
     padding: 10,
     flex: 1,
@@ -3315,8 +3315,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const getTemplateStyle = (templateName: string) => {
-    return AppConfig.DEFAULT_OFFERS_TEMPLATE?.templates?.[templateName];
+    let template =
+      homeBannerOfferSection && homeBannerOfferSection?.templates?.length
+        ? homeBannerOfferSection?.templates
+        : AppConfig.DEFAULT_OFFERS_TEMPLATE?.templates;
+    let styles = template?.[templateName] || template?.['default'];
+    return styles;
   };
+
   const renderOffersCards = (item: any, index: number) => {
     let offerDesignTemplate = getTemplateStyle(item?.template_name);
     return (
@@ -3340,13 +3346,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         >
           <View
             style={{
-              marginHorizontal: 10,
-              marginTop: 11,
+              marginBottom: 4,
               borderRadius: 4,
               backgroundColor: offerDesignTemplate?.left_notch?.bg_color,
               paddingHorizontal: 8,
               justifyContent: 'center',
               alignItems: 'center',
+              position: 'absolute',
+              top: 12,
+              left: 12,
             }}
           >
             <Text
@@ -3370,6 +3378,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             style={{
               ...theme.viewStyles.text('SB', 20, offerDesignTemplate?.title_text_color, 1, 30),
               marginHorizontal: 10,
+              marginTop: 'auto',
             }}
           >
             {item?.title?.text?.length > 30
@@ -3408,6 +3417,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   paddingHorizontal: 8,
                   justifyContent: 'center',
                   alignItems: 'center',
+                  marginVertical: 4,
                 }}
               >
                 <Text
