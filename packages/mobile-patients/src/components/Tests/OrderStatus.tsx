@@ -80,6 +80,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     clearDiagnoticCartInfo,
     cartItems,
     setIsDiagnosticCircleSubscription,
+    modifyHcCharges,
   } = useDiagnosticsCart();
   const { circleSubscriptionId, circlePlanSelected, setCircleSubscriptionId } = useShoppingCart();
   const client = useApolloClient();
@@ -203,7 +204,13 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     if (modifiedOrderDetails == null) {
       postwebEngageCheckoutCompletedEvent();
     }
-    firePurchaseEvent(orderDetails?.orderId, orderDetails?.amount, cartItems, currentPatient);
+    firePurchaseEvent(
+      orderDetails?.orderId,
+      orderDetails?.amount,
+      cartItems,
+      currentPatient,
+      modifyHcCharges
+    );
     submitReviewOnLabBook();
     firePaymentOrderStatusEvent();
     clearDiagnoticCartInfo?.();
