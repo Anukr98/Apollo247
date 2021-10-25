@@ -222,7 +222,10 @@ import {
   addVoipPushToken,
   addVoipPushTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/addVoipPushToken';
-import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
+import {
+  LinearGradientComponent,
+  LinearGradientVerticalComponent,
+} from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 
 import { CircleTypeCard1 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard1';
 import { CircleTypeCard2 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard2';
@@ -3327,7 +3330,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     let offerDesignTemplate = getTemplateStyle(item?.template_name);
     return (
       <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-        <LinearGradientComponent
+        <LinearGradientVerticalComponent
           colors={[
             offerDesignTemplate?.banner_bg_color?.primary_color,
             offerDesignTemplate?.banner_bg_color?.secondary_color,
@@ -3447,7 +3450,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </View>
             </View>
           ) : null}
-        </LinearGradientComponent>
+        </LinearGradientVerticalComponent>
       </TouchableOpacity>
     );
   };

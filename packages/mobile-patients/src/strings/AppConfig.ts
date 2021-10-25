@@ -1571,8 +1571,8 @@ export const DEFAULT_OFFERS_TEMPLATE : any = {
       "template_name": "pharmacy_first_transaction",
       "banner_bg_color": {
         "gradients": "linear-gradient",
-        "primary_color": "#FFE7AA",
-        "secondary_color": "#FCEFD0"
+        "primary_color": "rgba(252, 239, 208, 0.6)",
+        "secondary_color": "#FFE7AA"
       },
       "title_text_color": "#A15D59",
       "subtitle_text_color": "#A15D59",
@@ -1598,8 +1598,8 @@ export const DEFAULT_OFFERS_TEMPLATE : any = {
       "template_name": "consultation_first",
       "banner_bg_color": {
         "gradients": "linear-gradient",
-        "primary_color": "#FBD0FF",
-        "secondary_color": "#FCDCFF"
+        "primary_color": "rgba(252, 220, 255, 0.6)",
+        "secondary_color": "#FBD0FF"
       },
       "title_text_color": "#81407C",
       "subtitle_text_color": "#81407C",
