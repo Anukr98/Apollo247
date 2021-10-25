@@ -1950,7 +1950,6 @@ export interface UpdatePatientAddressInput {
 
 export interface UpdatePatientInput {
   id: string;
-  whatsAppOptIn?: boolean;
   firstName?: string | null;
   lastName?: string | null;
   mobileNumber?: string | null;

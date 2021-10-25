@@ -1105,10 +1105,6 @@ export const CheckBoxFilled: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/checkboxfilled.webp')} />
 );
 
-export const WhatsAppIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/whatsapp.webp')} />
-);
-
 export const NeedHelpIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_round_live_help.webp')} />
 );
