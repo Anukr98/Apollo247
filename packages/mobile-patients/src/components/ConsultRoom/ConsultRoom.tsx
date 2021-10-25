@@ -568,6 +568,8 @@ const styles = StyleSheet.create({
     width: width / 2 - 20,
     marginRight: 12,
     marginBottom: 12,
+    justifyContent: 'center',
+    flex: 1,
   },
   bottom2CardView: {
     minHeight: 90,
@@ -592,19 +594,20 @@ const styles = StyleSheet.create({
   bottomImageView: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 10,
-    flex: 0.5,
+    marginHorizontal: 4,
+    flex: 0.2,
   },
   bottomTextView: {
     alignItems: 'flex-start',
     justifyContent: 'center',
-    marginRight: 1,
-    flex: 1,
+    marginLeft: 4,
+    flex: 0.7,
   },
   bottomRightArrowView: {
     marginHorizontal: 3,
     justifyContent: 'center',
     alignItems: 'flex-start',
+    flex: 0.1,
   },
   bottom2TextView: {
     alignItems: 'flex-start',
