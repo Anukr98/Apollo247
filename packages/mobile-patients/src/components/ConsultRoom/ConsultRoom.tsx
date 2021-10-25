@@ -253,7 +253,6 @@ import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/Heal
 import _ from 'lodash';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Title } from 'react-native-paper';
-import Reactotron from 'reactotron-react-native';
 
 const { Vitals } = NativeModules;
 
@@ -2362,7 +2361,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           fetchPolicy: 'no-cache',
         });
         const offers = res?.data?.getPersonalizedOffers?.response?.personalized_data?.offers_for_you;
-        Reactotron.log('RESPONSE', offers);
         if (offers && offers.length) {
           setOffersList(offers);
         }
