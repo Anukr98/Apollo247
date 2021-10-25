@@ -607,7 +607,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 3,
     justifyContent: 'center',
     alignItems: 'flex-start',
-    flex: 0.1,
   },
   bottom2TextView: {
     alignItems: 'flex-start',
@@ -3463,12 +3462,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return (
       <View style={styles.menuOptionsContainer}>
         <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-          <LinearGradientComponent
+          <LinearGradientVerticalComponent
             colors={[
               offerDesignTemplate?.banner_bg_color?.primary_color,
               offerDesignTemplate?.banner_bg_color?.secondary_color,
             ]}
-            style={[styles.bottom2CardView, { width: width - 32 }]}
+            style={[styles.bottom2CardView, { width: width - 32, borderColor: '#D4D4D4' }]}
           >
             <View style={{ flexDirection: 'row', marginTop: -5, justifyContent: 'space-between' }}>
               <View
@@ -3537,7 +3536,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   borderWidth: 1,
                   borderStyle: 'dashed',
                   backgroundColor: '#fff',
-                  paddingVertical: 2,
+                  paddingVertical: 1,
                   paddingHorizontal: 8,
                   justifyContent: 'center',
                   alignItems: 'center',
@@ -3571,7 +3570,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 />
               </View>
             </View>
-          </LinearGradientComponent>
+          </LinearGradientVerticalComponent>
         </TouchableOpacity>
       </View>
     );
