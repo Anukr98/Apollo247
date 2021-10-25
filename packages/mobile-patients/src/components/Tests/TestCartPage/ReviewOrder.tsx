@@ -132,7 +132,7 @@ import {
 import CircleCard from '@aph/mobile-patients/src/components/Tests/components/CircleCard';
 import { CirclePlansListOverlay } from '@aph/mobile-patients/src/components/Tests/components/CirclePlansListOverlay';
 import { debounce } from 'lodash';
-import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { CleverTapEventName, CleverTapEvents } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const screenWidth = Dimensions.get('window').width;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
@@ -1071,13 +1071,13 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setIsCircleAddedToCart?.(!isCircleAddedToCart);
     setIsCirclePlanRemoved?.(!isCirclePlanRemoved);
     const circleData = circlePlanSelected;
-    const cleverTapEventAttributes = {
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE] = {
       navigation_source: 'Cart(Diagnostic)',
       circle_end_date: getCircleNoSubscriptionText(),
       circle_start_date: getCircleNoSubscriptionText(),
-      circle_planid: circleData?.subPlanId,
+      plan_id: circleData?.subPlanId,
       customer_id: currentPatient?.id,
-      duration_in_month: circleData?.durationInMonth,
+      duration_in_months: circleData?.durationInMonth,
       user_type: getUserType(allCurrentPatients),
       price: circleData?.currentSellingPrice,
     };

@@ -650,7 +650,8 @@
     "discardAllPatients": "Your cart has been updated, with the selected patient",
     "modifyHeader" : "MODIFY ORDER",
     "codDisableTextForCircle": "Cash on Delivery is unavailable with Circle membership in Cart",
-    "deeplink":"deeplink"
+    "deeplink":"deeplink",
+    "diagnosticSearchLocation": "Search for street name, pincode…"
   },
   "diagnosticCategoryTitle": {
     "category": "category",

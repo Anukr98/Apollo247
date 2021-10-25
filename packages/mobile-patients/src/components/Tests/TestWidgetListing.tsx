@@ -129,12 +129,12 @@ const styles = StyleSheet.create({
     borderRadius: 50 / 2,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f9f9f9',
+    backgroundColor: theme.colors.BGK_GRAY,
   },
   image: {
     width: 30,
     height: 30,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: theme.colors.BGK_GRAY,
   },
   gridPart: {
     alignItems: 'center',
