@@ -108,6 +108,7 @@ import {
   UPDATE_PATIENT_MEDICAL_PARAMETERS,
   GET_PRISM_AUTH_TOKEN,
   GET_DOCTOR_LIST,
+  GET_PERSONALIZED_OFFERS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getPrismAuthTokenVariables,
@@ -926,13 +927,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     locationForDiagnostics,
     diagnosticServiceabilityData,
     axdcCode,
+    homeBannerOfferSection,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [membershipPlans, setMembershipPlans] = useState<any>([]);
   const [circleDataLoading, setCircleDataLoading] = useState<boolean>(true);
-  const { getPatientApiCall } = useAuth();
+  const { getPatientApiCall, buildApolloClient, validateAndReturnAuthToken } = useAuth();
   const [selectedProfile, setSelectedProfile] = useState<string>('');
   const [isLocationSearchVisible, setLocationSearchVisible] = useState(false);
   const [showList, setShowList] = useState<boolean>(false);
@@ -952,6 +954,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const _searchInputRef = useRef(null);
   const [searchText, setSearchText] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [offersList, setOffersList] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState({});
   const [prismAuthToken, setPrismAuthToken] = useState<string>('');
   const testSearchResults = useRef<
@@ -1202,6 +1205,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   useEffect(() => {
+    getOffers();
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setVaccineLoacalStorageData();
       checkApisToCall();
@@ -2365,6 +2369,21 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
+  const getOffers = async () => {
+    const authToken: string = await validateAndReturnAuthToken();
+    const apolloClient = buildApolloClient(authToken);
+    try {
+      const res = await apolloClient.query({
+        query: GET_PERSONALIZED_OFFERS,
+        fetchPolicy: 'no-cache',
+      });
+      const offers = res?.data?.getPersonalizedOffers?.response?.personalized_data?.offers_for_you;
+      if (offers && offers.length > 0) {
+        setOffersList(offers);
+      }
+    } catch (error) {}
+  };
+
   const getProductCashbackDetails = () => {
     client
       .query<GetCashbackDetailsOfPlanById>({
@@ -3274,27 +3293,39 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderOffersForYou = () => {
-    if (offersCount === 1 && offerType === 'CIRCLE') return circleCashbackOffersComponent();
-    else if (offersCount === 1 && offerType === 'MEDICINE') return medCashbackOffersComponent();
-    else if (offersCount > 1 || offerType === 'MULTIPLE')
+    if (offersList?.length === 0) return null;
+    else if (offersList?.length === 1 && offersList?.[0]?.template_name === 'CIRCLE')
+      return circleCashbackOffersComponent();
+    else if (
+      offersList?.length === 1 &&
+      offersList?.[0]?.template_name === 'pharmacy_first_transaction'
+    )
+      return medCashbackOffersComponent(offersList?.[0]);
+    else if (offersList?.length > 1)
       return (
         <View style={styles.menuOptionsContainer}>
           <FlatList
             horizontal={true}
             data={offersList}
             renderItem={({ item, index }) => renderOffersCards(item, index)}
-            keyExtractor={(item, index) => index.toString() + 'offers'}
+            keyExtractor={(item, index) => index.toString() + 'offersForYou'}
           />
         </View>
       );
-    else return null;
   };
 
+  const getTemplateStyle = (templateName: string) => {
+    return AppConfig.DEFAULT_OFFERS_TEMPLATE?.templates?.[templateName];
+  };
   const renderOffersCards = (item: any, index: number) => {
+    let offerDesignTemplate = getTemplateStyle(item?.template_name);
     return (
       <TouchableOpacity activeOpacity={1} onPress={() => {}}>
         <LinearGradientComponent
-          colors={item?.colors}
+          colors={[
+            offerDesignTemplate?.banner_bg_color?.primary_color,
+            offerDesignTemplate?.banner_bg_color?.secondary_color,
+          ]}
           style={[
             styles.bottom2CardView,
             {
@@ -3312,35 +3343,51 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               marginHorizontal: 10,
               marginTop: 11,
               borderRadius: 4,
-              backgroundColor: item?.notchColor,
+              backgroundColor: offerDesignTemplate?.left_notch?.bg_color,
               paddingHorizontal: 8,
               justifyContent: 'center',
               alignItems: 'center',
             }}
           >
-            <Text style={{ ...theme.viewStyles.text('R', 12, '#fff', 1, 18) }}>
-              {item?.notchTitle}
+            <Text
+              style={{
+                ...theme.viewStyles.text(
+                  'R',
+                  12,
+                  offerDesignTemplate?.left_notch?.text_color,
+                  1,
+                  18
+                ),
+              }}
+            >
+              {item?.notch_text?.text?.length > 24
+                ? item?.notch_text?.text?.substring(0, 24)
+                : item?.notch_text?.text}
             </Text>
           </View>
 
           <Text
             style={{
-              ...theme.viewStyles.text('SB', 20, '#958060', 1, 30),
+              ...theme.viewStyles.text('SB', 20, offerDesignTemplate?.title_text_color, 1, 30),
               marginHorizontal: 10,
             }}
           >
-            {item?.title}
+            {item?.title?.text?.length > 30
+              ? item?.title?.text?.substring(0, 30)
+              : item?.title?.text}
           </Text>
 
           <Text
             style={{
-              ...theme.viewStyles.text('M', 14, '#B3A293', 1, 18),
+              ...theme.viewStyles.text('M', 14, offerDesignTemplate?.subtitle_text_color, 1, 18),
               marginHorizontal: 10,
             }}
           >
-            {item?.title2}
+            {item?.subtitle?.text?.length > 24
+              ? item?.subtitle?.text?.substring(0, 24)
+              : item?.subtitle?.text}
           </Text>
-          {item?.couponStatus ? (
+          {item?.is_active ? (
             <View
               style={{
                 flexDirection: 'row',
@@ -3363,8 +3410,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   alignItems: 'center',
                 }}
               >
-                <Text style={{ ...theme.viewStyles.text('R', 12, '#A15D59', 1, 18) }}>
-                  Coupon: Try247
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('R', 12, offerDesignTemplate?.coupon_color, 1, 18),
+                  }}
+                >
+                  {`Coupon: ${
+                    item?.coupon_code?.length > 12
+                      ? item?.coupon_code?.substring(0, 12)
+                      : item?.coupon_code
+                  }`}
                 </Text>
               </View>
 
@@ -3387,12 +3442,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const medCashbackOffersComponent = () => {
+  const medCashbackOffersComponent = (item: any) => {
+    let offerDesignTemplate = getTemplateStyle(item?.template_name);
     return (
       <View style={styles.menuOptionsContainer}>
         <TouchableOpacity activeOpacity={1} onPress={() => {}}>
           <LinearGradientComponent
-            colors={['rgba(252, 239, 208, 0.6)', '#FFE7AA']}
+            colors={[
+              offerDesignTemplate?.banner_bg_color?.primary_color,
+              offerDesignTemplate?.banner_bg_color?.secondary_color,
+            ]}
             style={[styles.bottom2CardView, { width: width - 32 }]}
           >
             <View style={{ flexDirection: 'row', marginTop: -5, justifyContent: 'space-between' }}>
@@ -3401,14 +3460,26 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   marginHorizontal: 10,
                   marginTop: 14,
                   borderRadius: 4,
-                  backgroundColor: '#0B92DE',
+                  backgroundColor: offerDesignTemplate?.left_notch?.bg_color,
                   paddingHorizontal: 4,
                   justifyContent: 'center',
                   alignItems: 'center',
                 }}
               >
-                <Text style={{ ...theme.viewStyles.text('R', 12, '#fff', 1, 18) }}>
-                  Ends in 12:22 Hr
+                <Text
+                  style={{
+                    ...theme.viewStyles.text(
+                      'R',
+                      12,
+                      offerDesignTemplate?.left_notch?.text_color,
+                      1,
+                      18
+                    ),
+                  }}
+                >
+                  {item?.notch_text?.text?.length > 30
+                    ? item?.notch_text?.text?.substring(0, 30)
+                    : item?.notch_text?.text}
                 </Text>
               </View>
 
@@ -3419,20 +3490,24 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
             <Text
               style={{
-                ...theme.viewStyles.text('SB', 20, '#A15D59', 1, 30),
+                ...theme.viewStyles.text('SB', 20, offerDesignTemplate?.title_text_color, 1, 30),
                 marginHorizontal: 10,
               }}
             >
-              Flat 25% off + ₹100 cashback
+              {item?.title?.text?.length > 30
+                ? item?.title?.text?.substring(0, 30)
+                : item?.title?.text}
             </Text>
 
             <Text
               style={{
-                ...theme.viewStyles.text('M', 14, '#B3A293', 1, 18),
+                ...theme.viewStyles.text('M', 14, offerDesignTemplate?.subtitle_text_color, 1, 18),
                 marginHorizontal: 10,
               }}
             >
-              on first Medicine Order
+              {item?.subtitle?.text?.length > 30
+                ? item?.subtitle?.text?.substring(0, 30)
+                : item?.subtitle?.text}
             </Text>
 
             <View
@@ -3452,15 +3527,29 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   alignItems: 'center',
                 }}
               >
-                <Text style={{ ...theme.viewStyles.text('R', 12, '#A15D59', 1, 18) }}>
-                  Coupon: Try247
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('R', 12, offerDesignTemplate?.coupon_color, 1, 18),
+                  }}
+                >
+                  {`Coupon: ${
+                    item?.coupon_code?.length > 12
+                      ? item?.coupon_code?.substring(0, 12)
+                      : item?.coupon_code
+                  }`}
                 </Text>
               </View>
 
               <View style={styles.bottomRightArrowView}>
                 <Button
                   title={`SHOP NOW`}
-                  style={{ width: 106, height: 32, borderRadius: 4 }}
+                  style={{
+                    width: 106,
+                    height: 32,
+                    borderRadius: 4,
+                    backgroundColor: offerDesignTemplate?.cta?.bg_color,
+                  }}
+                  titleTextStyle={{ color: offerDesignTemplate?.cta?.text_color }}
                   onPress={() => {}}
                   disabled={false}
                 />
@@ -3471,10 +3560,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       </View>
     );
   };
-
-  const offersCount = 1;
-  // 'CIRCLE' || 'MEDICINE' || 'MULTIPLE'
-  const offerType = 'MEDICINE';
 
   const circleCashbackOffersComponent = () => {
     return (
@@ -3570,27 +3655,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       );
     }
   };
-
-  const offersList = [
-    {
-      id: 1,
-      colors: ['#FCEFD0', '#FFE7AA'],
-      couponStatus: true,
-      title: 'Flat 25% off + ₹100 cashback',
-      title2: 'on first medicine order',
-      notchTitle: 'Ends in 12:22 Hr',
-      notchColor: '#0B92DE',
-    },
-    {
-      id: 2,
-      colors: ['#FCDCFF', '#FBD0FF'],
-      couponStatus: false,
-      title: 'First Doctor Consult Free',
-      title2: 'on select doctor',
-      notchTitle: 'FREE',
-      notchColor: '#3BCA9F',
-    },
-  ];
 
   const dataBannerCards = (darktheme: any) => {
     const datatoadd = bannerDataHome?.filter((item: any) => item?.banner_display_type === 'card');

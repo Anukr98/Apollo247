@@ -239,6 +239,8 @@ export interface AppCommonDataContextProps {
   setCovidVaccineCtaV2: ((value: any) => void) | null;
   loginSection: any;
   setLoginSection: ((value: any) => void) | null;
+  homeBannerOfferSection: any;
+  setHomeBannerOfferSection: ((value: any) => void) | null;
   phrSession: string;
   setPhrSession: ((value: string) => void) | null;
   isCurrentLocationFetched: boolean;
@@ -350,6 +352,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setCovidVaccineCtaV2: null,
   loginSection: null,
   setLoginSection: null,
+  homeBannerOfferSection: null,
+  setHomeBannerOfferSection: null,
   phrSession: '',
   setPhrSession: null,
   isCurrentLocationFetched: false, // this variable is defined only to avoid asking location multiple times in Home Screen until the app is killed and re-opened again
@@ -525,6 +529,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
   >(null);
 
   const [loginSection, setLoginSection] = useState<AppCommonDataContextProps['loginSection']>(null);
+
+  const [homeBannerOfferSection, setHomeBannerOfferSection] = useState<AppCommonDataContextProps['homeBannerOfferSection']>(null);
 
   const [phrSession, setPhrSession] = useState<AppCommonDataContextProps['phrSession']>('');
 
@@ -722,6 +728,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setCovidVaccineCtaV2,
         loginSection,
         setLoginSection,
+        homeBannerOfferSection,
+        setHomeBannerOfferSection,
         phrSession,
         setPhrSession,
         notificationCount,

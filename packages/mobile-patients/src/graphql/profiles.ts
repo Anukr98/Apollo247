@@ -6411,3 +6411,48 @@ export const CREATE_VONAGE_SESSION_TOKEN = gql`
     }
   }
 `;
+
+export const GET_PERSONALIZED_OFFERS = gql`
+  query getPersonalizedOffers {
+    getPersonalizedOffers {
+      response {
+        personalized_data {
+          offers_for_you {
+            template_name
+            coupon_code
+            notch_text {
+              text
+              values {
+                time_till_expired_at {
+                  value
+                }
+              }
+            }
+            is_active
+            title {
+              text
+              values {
+                cashback_amount {
+                  value
+                }
+                discount_perc {
+                  value
+                }
+              }
+            }
+            subtitle{
+               text  
+            }
+            cta{
+              text
+              path{
+                vertical
+                param
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
