@@ -671,7 +671,7 @@ const styles = StyleSheet.create({
   },
   yellowText: { ...theme.viewStyles.yellowTextStyle, fontSize: screenWidth > 380 ? 13 : 12 },
   listViewContainer: {
-    backgroundColor: '#F9F9F9',
+    backgroundColor: theme.colors.BGK_GRAY,
     borderRadius: 5,
     flex: 1,
     padding: 10,
@@ -713,7 +713,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
     justifyContent: 'space-between',
     flexDirection: 'row',
-    height: 40,
+    minHeight: 40,
     borderBottomLeftRadius: 8,
     borderBottomRightRadius: 8,
     borderRadius: 10,
@@ -781,9 +781,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    width: '57%',
   },
   trackStyle: {
-    ...theme.viewStyles.text('SB', 12, colors.APP_YELLOW, 1, 18),
+    ...theme.viewStyles.text('SB', isSmallDevice ? 11 : 12, colors.APP_YELLOW, 1, 18),
   },
   ratingContainer: {
     backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
