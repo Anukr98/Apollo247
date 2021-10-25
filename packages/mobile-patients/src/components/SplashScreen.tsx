@@ -878,6 +878,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setSavePatientDetails,
     setCovidVaccineCta,
     setLoginSection,
+    setHomeBannerOfferSection,
     setCovidVaccineCtaV2,
     setCartBankOffer,
     setUploadPrescriptionOptions,
@@ -1012,6 +1013,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Login_Section_Key: {
       QA: 'Login_Section_QA',
       PROD: 'Login_Section',
+    },
+    home_banner_offer_template: {
+      QA: 'home_banner_offer_template',
+      PROD: 'home_banner_offer_template',
     },
     Covid_Vaccine_Cta_Key_V2: {
       QA: 'Covid_Vaccine_CTA_V3_QA',
@@ -1235,6 +1240,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.LOGIN_SECTION
       );
       loginSection && setLoginSection!(loginSection);
+
+      const homeBannerOfferSection = getRemoteConfigValue(
+        'home_banner_offer_template',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.LOGIN_SECTION
+      );
+      homeBannerOfferSection && setHomeBannerOfferSection!(homeBannerOfferSection);
 
       const needHelpReturnPharmaOrderSuccessMessage = getRemoteConfigValue(
         'Need_Help_Return_Pharma_Order_Success_Message',

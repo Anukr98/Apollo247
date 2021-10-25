@@ -920,6 +920,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     locationForDiagnostics,
     diagnosticServiceabilityData,
     axdcCode,
+    homeBannerOfferSection,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -3282,8 +3283,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderOffersForYou = () => {
     if (offersCount === 1 && offerType === 'CIRCLE') return circleCashbackOffersComponent();
-    else if (offersCount === 1 && offerType === 'MEDICINE') return medCashbackOffersComponent();
-    else if (offersCount > 1 || offerType === 'MULTIPLE')
+    else if (offersCount === 1 && offerType === 'MEDICINE') return medCashbackOffersComponent(offersList && offersList[0]);
+    else if (offersCount > 1 || offerType === 'MULTIPLE') 
       return (
         <View style={styles.menuOptionsContainer}>
           <FlatList
@@ -3297,11 +3298,107 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     else return null;
   };
 
+  const templateOffers : any = {
+    "templates": [
+      {
+        "template_name": "default",
+        "banner_bg_color": {
+          "gradients": "linear-gradient",
+          "primary_color": "#FFE7AA",
+          "secondary_color": "#FCEFD0"
+        },
+        "title_text_color": "#A15D59",
+        "subtitle_text_color": "#A15D59",
+        "coupon_color": "#A15D59",
+        "left_notch": {
+          "type": "text",
+          "text_color": "#FFFFFF",
+          "bg_color": "#0B92DE",
+          "img_src": ""
+        },
+        "right_notch": {
+          "type": "image",
+          "text_color": "",
+          "bg_color": "",
+          "img_src": "percentage_icon"
+        },
+        "cta": {
+          "bg_color": "#FCB716",
+          "text_color": "#FFFFFF"
+        }
+      },
+      {
+        "template_name": "pharmacy_first_transaction",
+        "banner_bg_color": {
+          "gradients": "linear-gradient",
+          "primary_color": "#FFE7AA",
+          "secondary_color": "#FCEFD0"
+        },
+        "title_text_color": "#A15D59",
+        "subtitle_text_color": "#A15D59",
+        "coupon_color": "#A15D59",
+        "left_notch": {
+          "type": "text",
+          "text_color": "#FFFFFF",
+          "bg_color": "#0B92DE",
+          "img_src": ""
+        },
+        "right_notch": {
+          "type": "image",
+          "text_color": "",
+          "bg_color": "",
+          "img_src": "percentage_icon"
+        },
+        "cta": {
+          "bg_color": "#FCB716",
+          "text_color": "#FFFFFF"
+        }
+      },
+      {
+        "template_name": "consultation_first",
+        "banner_bg_color": {
+          "gradients": "linear-gradient",
+          "primary_color": "#FBD0FF",
+          "secondary_color": "#FCDCFF"
+        },
+        "title_text_color": "#81407C",
+        "subtitle_text_color": "#81407C",
+        "coupon_color": "#81407C",
+        "left_notch": {
+          "type": "text",
+          "text_color": "#FFFFFF",
+          "bg_color": "#3BCA9F",
+          "img_src": ""
+        },
+        "right_notch": {
+          "type": "image",
+          "text_color": "",
+          "bg_color": "",
+          "img_src": "percentage_icon"
+        },
+        "cta": {
+          "bg_color": "#81407C",
+          "text_color": "#FFFFFF"
+        }
+      }
+    ]
+  };
+  const getTemplateStyle =(item: any) =>{
+    let offerDesignTemplate = templateOffers?.templates[0];
+    for(let i = 0; i<templateOffers?.templates.length; i++) { 
+      if(item?.template_name === templateOffers?.templates[i]?.template_name){
+        offerDesignTemplate = templateOffers?.templates[i];
+      }  
+    }
+    return offerDesignTemplate;
+  }
   const renderOffersCards = (item: any, index: number) => {
+    let offerDesignTemplate = getTemplateStyle(item);
+    console.log('homeBannerOfferSection ==== ', homeBannerOfferSection);
     return (
       <TouchableOpacity activeOpacity={1} onPress={() => {}}>
         <LinearGradientComponent
-          colors={item?.colors}
+          colors={[offerDesignTemplate?.banner_bg_color?.primary_color, offerDesignTemplate?.banner_bg_color?.secondary_color]}
           style={[
             styles.bottom2CardView,
             { width: width / 1.9, justifyContent: 'center', alignItems: 'flex-start', height: 165 },
@@ -3312,20 +3409,20 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               marginHorizontal: 10,
               marginTop: 11,
               borderRadius: 4,
-              backgroundColor: item?.notchColor,
+              backgroundColor: offerDesignTemplate?.left_notch?.bg_color,
               paddingHorizontal: 8,
               justifyContent: 'center',
               alignItems: 'center',
             }}
           >
-            <Text style={{ ...theme.viewStyles.text('R', 12, '#fff', 1, 18) }}>
+            <Text style={{ ...theme.viewStyles.text('R', 12, offerDesignTemplate?.left_notch?.text_color, 1, 18) }}>
               {item?.notch_text?.text}
             </Text>
           </View>
 
           <Text
             style={{
-              ...theme.viewStyles.text('M', 20, '#958060', 1, 30),
+              ...theme.viewStyles.text('M', 20, offerDesignTemplate?.title_text_color, 1, 30),
               marginHorizontal: 10,
             }}
           >
@@ -3334,7 +3431,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
           <Text
             style={{
-              ...theme.viewStyles.text('R', 14, '#B3A293', 1, 18),
+              ...theme.viewStyles.text('R', 14, offerDesignTemplate?.subtitle_text_color, 1, 18),
               marginHorizontal: 10,
             }}
           >
@@ -3362,7 +3459,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   alignItems: 'center',
                 }}
               >
-                <Text style={{ ...theme.viewStyles.text('R', 12, '#A15D59', 1, 18) }}>
+                <Text style={{ ...theme.viewStyles.text('R', 12, offerDesignTemplate?.coupon_color, 1, 18) }}>
                   {`Coupon: ${item?.coupon_code}`}
                 </Text>
               </View>
@@ -3386,12 +3483,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const medCashbackOffersComponent = () => {
+  const medCashbackOffersComponent = (item: any) => {
+    let offerDesignTemplate = getTemplateStyle(item);
     return (
       <View style={styles.menuOptionsContainer}>
         <TouchableOpacity activeOpacity={1} onPress={() => {}}>
           <LinearGradientComponent
-            colors={['rgba(252, 239, 208, 0.6)', '#FFE7AA']}
+            colors={[offerDesignTemplate?.banner_bg_color?.primary_color, offerDesignTemplate?.banner_bg_color?.secondary_color]}
             style={[styles.bottom2CardView, { width: width - 32 }]}
           >
             <View style={{ flexDirection: 'row', marginTop: -5, justifyContent: 'space-between' }}>
@@ -3400,14 +3498,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   marginHorizontal: 10,
                   marginTop: 14,
                   borderRadius: 4,
-                  backgroundColor: '#0B92DE',
+                  backgroundColor: offerDesignTemplate?.left_notch?.bg_color,
                   paddingHorizontal: 4,
                   justifyContent: 'center',
                   alignItems: 'center',
                 }}
               >
-                <Text style={{ ...theme.viewStyles.text('R', 12, '#fff', 1, 18) }}>
-                  Ends in 12:22 Hr
+                <Text style={{ ...theme.viewStyles.text('R', 12, offerDesignTemplate?.left_notch?.text_color, 1, 18) }}>
+                {item?.notch_text?.text}
                 </Text>
               </View>
 
@@ -3418,20 +3516,20 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
             <Text
               style={{
-                ...theme.viewStyles.text('M', 20, '#A15D59', 1, 30),
+                ...theme.viewStyles.text('M', 20, offerDesignTemplate?.title_text_color, 1, 30),
                 marginHorizontal: 10,
               }}
             >
-              Flat 25% off + ₹100 cashback
+              {item?.title?.text}
             </Text>
 
             <Text
               style={{
-                ...theme.viewStyles.text('R', 14, '#B3A293', 1, 18),
+                ...theme.viewStyles.text('R', 14, offerDesignTemplate?.subtitle_text_color, 1, 18),
                 marginHorizontal: 10,
               }}
             >
-              on first Medicine Order
+              {item?.subtitle?.text}
             </Text>
 
             <View
@@ -3444,21 +3542,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   borderColor: '#A15D59',
                   borderWidth: 1,
                   borderStyle: 'dashed',
-                  backgroundColor: '#fff',
+                  backgroundColor: '#FFF',
                   padding: 4,
                   justifyContent: 'center',
                   alignItems: 'center',
                 }}
               >
-                <Text style={{ ...theme.viewStyles.text('R', 12, '#A15D59', 1, 18) }}>
-                  Coupon: Try247
+                <Text style={{ ...theme.viewStyles.text('R', 12, offerDesignTemplate?.coupon_color, 1, 18) }}>
+                {`Coupon: ${item?.coupon_code}`}
                 </Text>
               </View>
 
               <View style={styles.bottomRightArrowView}>
                 <Button
                   title={`SHOP NOW`}
-                  style={{ width: 106, height: 32 }}
+                  style={{ width: 106, height: 32, backgroundColor: offerDesignTemplate?.cta?.bg_color }}
+                  titleTextStyle={{ color: offerDesignTemplate?.cta?.text_color }}
                   onPress={() => {}}
                   disabled={false}
                 />

@@ -6440,6 +6440,16 @@ export const GET_PERSONALIZED_OFFERS = gql`
                 }
               }
             }
+            subtitle{
+               text  
+            }
+            cta{
+              text
+              path{
+                vertical
+                param
+              }
+            }
           }
         }
       }
