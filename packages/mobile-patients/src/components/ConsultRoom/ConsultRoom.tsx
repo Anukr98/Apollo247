@@ -946,7 +946,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const _searchInputRef = useRef(null);
   const [searchText, setSearchText] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [offersList, setOffersList] = useState([]);
+  const [offersList, setOffersList] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState({});
   const [prismAuthToken, setPrismAuthToken] = useState<string>('');
   const testSearchResults = useRef<
@@ -2361,7 +2361,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           fetchPolicy: 'no-cache',
         });
         const offers = res?.data?.getPersonalizedOffers?.response?.personalized_data?.offers_for_you;
-        if (offers && offers.length) {
+        if (offers && offers.length > 0) {
           setOffersList(offers);
         }
     } catch (error) {}
@@ -3280,119 +3280,27 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderOffersForYou = () => {
-    if (offersCount === 1 && offerType === 'CIRCLE') return circleCashbackOffersComponent();
-    else if (offersCount === 1 && offerType === 'MEDICINE') return medCashbackOffersComponent(offersList && offersList[0]);
-    else if (offersCount > 1 || offerType === 'MULTIPLE') 
+    if (offersList?.length === 0) return null;
+    else if (offersList?.length === 1 && offersList?.[0]?.template_name === 'CIRCLE') return circleCashbackOffersComponent();
+    else if (offersList?.length === 1 && offersList?.[0]?.template_name === 'pharmacy_first_transaction') return medCashbackOffersComponent(offersList?.[0]);
+    else if (offersList?.length > 1)
       return (
         <View style={styles.menuOptionsContainer}>
           <FlatList
             horizontal={true}
             data={offersList}
             renderItem={({ item, index }) => renderOffersCards(item, index)}
-            keyExtractor={(item, index) => index.toString() + 'offers'}
+            keyExtractor={(item, index) => index.toString() + 'offersForYou'}
           />
         </View>
       );
-    else return null;
   };
 
-  const templateOffers : any = {
-    "templates": [
-      {
-        "template_name": "default",
-        "banner_bg_color": {
-          "gradients": "linear-gradient",
-          "primary_color": "#FFE7AA",
-          "secondary_color": "#FCEFD0"
-        },
-        "title_text_color": "#A15D59",
-        "subtitle_text_color": "#A15D59",
-        "coupon_color": "#A15D59",
-        "left_notch": {
-          "type": "text",
-          "text_color": "#FFFFFF",
-          "bg_color": "#0B92DE",
-          "img_src": ""
-        },
-        "right_notch": {
-          "type": "image",
-          "text_color": "",
-          "bg_color": "",
-          "img_src": "percentage_icon"
-        },
-        "cta": {
-          "bg_color": "#FCB716",
-          "text_color": "#FFFFFF"
-        }
-      },
-      {
-        "template_name": "pharmacy_first_transaction",
-        "banner_bg_color": {
-          "gradients": "linear-gradient",
-          "primary_color": "#FFE7AA",
-          "secondary_color": "#FCEFD0"
-        },
-        "title_text_color": "#A15D59",
-        "subtitle_text_color": "#A15D59",
-        "coupon_color": "#A15D59",
-        "left_notch": {
-          "type": "text",
-          "text_color": "#FFFFFF",
-          "bg_color": "#0B92DE",
-          "img_src": ""
-        },
-        "right_notch": {
-          "type": "image",
-          "text_color": "",
-          "bg_color": "",
-          "img_src": "percentage_icon"
-        },
-        "cta": {
-          "bg_color": "#FCB716",
-          "text_color": "#FFFFFF"
-        }
-      },
-      {
-        "template_name": "consultation_first",
-        "banner_bg_color": {
-          "gradients": "linear-gradient",
-          "primary_color": "#FBD0FF",
-          "secondary_color": "#FCDCFF"
-        },
-        "title_text_color": "#81407C",
-        "subtitle_text_color": "#81407C",
-        "coupon_color": "#81407C",
-        "left_notch": {
-          "type": "text",
-          "text_color": "#FFFFFF",
-          "bg_color": "#3BCA9F",
-          "img_src": ""
-        },
-        "right_notch": {
-          "type": "image",
-          "text_color": "",
-          "bg_color": "",
-          "img_src": "percentage_icon"
-        },
-        "cta": {
-          "bg_color": "#81407C",
-          "text_color": "#FFFFFF"
-        }
-      }
-    ]
-  };
-  const getTemplateStyle =(item: any) =>{
-    let offerDesignTemplate = templateOffers?.templates[0];
-    for(let i = 0; i<templateOffers?.templates.length; i++) { 
-      if(item?.template_name === templateOffers?.templates[i]?.template_name){
-        offerDesignTemplate = templateOffers?.templates[i];
-      }  
-    }
-    return offerDesignTemplate;
+  const getTemplateStyle =(templateName: string) =>{
+    return AppConfig.DEFAULT_OFFERS_TEMPLATE?.templates?.[templateName];
   }
   const renderOffersCards = (item: any, index: number) => {
-    let offerDesignTemplate = getTemplateStyle(item);
-    console.log('homeBannerOfferSection ==== ', homeBannerOfferSection);
+    let offerDesignTemplate = getTemplateStyle(item?.template_name);
     return (
       <TouchableOpacity activeOpacity={1} onPress={() => {}}>
         <LinearGradientComponent
@@ -3414,7 +3322,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             }}
           >
             <Text style={{ ...theme.viewStyles.text('R', 12, offerDesignTemplate?.left_notch?.text_color, 1, 18) }}>
-              {item?.notch_text?.text}
+              {item?.notch_text?.text?.length > 24 ? item?.notch_text?.text?.substring(0, 24) : item?.notch_text?.text}
             </Text>
           </View>
 
@@ -3424,7 +3332,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               marginHorizontal: 10,
             }}
           >
-            {item?.title?.text}
+            {item?.title?.text?.length > 30 ? item?.title?.text?.substring(0, 30) :item?.title?.text}
           </Text>
 
           <Text
@@ -3433,7 +3341,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               marginHorizontal: 10,
             }}
           >
-            {item?.subtitle?.text}
+            {item?.subtitle?.text?.length > 24 ? item?.subtitle?.text?.substring(0, 24) : item?.subtitle?.text}
           </Text>
           {item?.is_active ? (
             <View
@@ -3458,7 +3366,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 }}
               >
                 <Text style={{ ...theme.viewStyles.text('R', 12, offerDesignTemplate?.coupon_color, 1, 18) }}>
-                  {`Coupon: ${item?.coupon_code}`}
+                  {`Coupon: ${item?.coupon_code?.length > 12 ? item?.coupon_code?.substring(0, 12) : item?.coupon_code}`}
                 </Text>
               </View>
 
@@ -3482,7 +3390,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const medCashbackOffersComponent = (item: any) => {
-    let offerDesignTemplate = getTemplateStyle(item);
+    let offerDesignTemplate = getTemplateStyle(item?.template_name);
     return (
       <View style={styles.menuOptionsContainer}>
         <TouchableOpacity activeOpacity={1} onPress={() => {}}>
@@ -3503,7 +3411,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 }}
               >
                 <Text style={{ ...theme.viewStyles.text('R', 12, offerDesignTemplate?.left_notch?.text_color, 1, 18) }}>
-                {item?.notch_text?.text}
+                {item?.notch_text?.text?.length > 30 ? item?.notch_text?.text?.substring(0, 30) : item?.notch_text?.text}
                 </Text>
               </View>
 
@@ -3518,7 +3426,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 marginHorizontal: 10,
               }}
             >
-              {item?.title?.text}
+              {item?.title?.text?.length > 30 ? item?.title?.text?.substring(0, 30) :item?.title?.text}
             </Text>
 
             <Text
@@ -3527,7 +3435,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 marginHorizontal: 10,
               }}
             >
-              {item?.subtitle?.text}
+              {item?.subtitle?.text?.length > 30 ? item?.subtitle?.text?.substring(0, 30) : item?.subtitle?.text}
             </Text>
 
             <View
@@ -3547,7 +3455,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 }}
               >
                 <Text style={{ ...theme.viewStyles.text('R', 12, offerDesignTemplate?.coupon_color, 1, 18) }}>
-                {`Coupon: ${item?.coupon_code}`}
+                {`Coupon: ${item?.coupon_code?.length > 12 ? item?.coupon_code?.substring(0, 12) : item?.coupon_code}`}
                 </Text>
               </View>
 
@@ -3566,10 +3474,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       </View>
     );
   };
-
-  const offersCount = 2;
-  // 'CIRCLE' || 'MEDICINE' || 'MULTIPLE'
-  const offerType = 'CIRCLE';
 
   const circleCashbackOffersComponent = () => {
     return (
