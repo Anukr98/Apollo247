@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.WHITE,
   },
   searchBarViewStyle: {
-    backgroundColor: theme.colors.ICE_BERG_FLAT,
+    backgroundColor: theme.colors.BLUE_FADED_FLAT,
     flexDirection: 'row',
     padding: 10,
     flex: 1,
