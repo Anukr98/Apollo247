@@ -33,6 +33,7 @@ import {
   InitiateCredTxn,
   CheckCredEligibility,
   isPayTmReady,
+  fetchWalletBalance,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -226,7 +227,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   useEffect(() => {
-    !!clientAuthToken && checkCredEligibility();
+    !!clientAuthToken &&
+      (checkCredEligibility(), fetchWalletBalance(currentPatient?.id, clientAuthToken));
   }, [clientAuthToken]);
 
   const checkCredEligibility = () => {
@@ -315,6 +317,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         const eligibleApps = payload?.payload?.apps[0]?.paymentMethodsEligibility;
         setEligibleApps(eligibleApps?.map((item: any) => item?.paymentMethod) || []);
         setCred(eligibleApps?.find((item: any) => item?.paymentMethod == 'CRED'));
+        break;
+      case 'refreshWalletBalances':
+        console.log('payload >>>>', payload);
         break;
       default:
         payload?.error && handleError(payload?.errorMessage);

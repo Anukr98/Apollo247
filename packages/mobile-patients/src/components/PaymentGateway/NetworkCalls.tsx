@@ -297,8 +297,6 @@ export const InitiateSavedCardTxn = (
       offers: !!offerId ? [offerId] : null,
     },
   };
-  console.log('cardPayload >>>>', payload);
-
   HyperSdkReact.process(JSON.stringify(payload));
 };
 
@@ -346,6 +344,41 @@ export const InitiateCredTxn = (
       clientAuthToken: clientAuthToken,
       application: 'CRED',
       walletMobileNumber: mobileNo, //required for collect and web-redirect flow
+    },
+  };
+  HyperSdkReact.process(JSON.stringify(payload));
+};
+
+export const fetchWalletBalance = (requestId: string, clientAuthToken: string) => {
+  const payload = {
+    requestId: requestId,
+    service: AppConfig.Configuration.jusPayService,
+    payload: {
+      action: 'refreshWalletBalances',
+      clientAuthToken: clientAuthToken,
+    },
+  };
+  HyperSdkReact.process(JSON.stringify(payload));
+};
+
+export const linkWallet = (
+  requestId: string,
+  clientAuthToken: string,
+  paymentOrderId: string,
+  paymentMethod: string,
+  sdkPresent: string
+) => {
+  const payload = {
+    requestId: requestId,
+    service: AppConfig.Configuration.jusPayService,
+    payload: {
+      action: 'walletTxn',
+      orderId: paymentOrderId,
+      paymentMethod: paymentMethod,
+      shouldLink: true,
+      sdkPresent: sdkPresent,
+      endUrls: [AppConfig.Configuration.baseUrl],
+      clientAuthToken: clientAuthToken,
     },
   };
   HyperSdkReact.process(JSON.stringify(payload));
