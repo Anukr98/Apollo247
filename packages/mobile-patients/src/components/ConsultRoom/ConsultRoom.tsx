@@ -3365,7 +3365,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             <Text
               style={{
                 ...theme.viewStyles.text(
-                  'R',
+                  'M',
                   12,
                   offerDesignTemplate?.left_notch?.text_color,
                   1,
