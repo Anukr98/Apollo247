@@ -3440,12 +3440,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
               <View
                 style={{
-                  width: 24,
-                  height: 24,
+                  width: 26,
+                  height: 26,
                   justifyContent: 'center',
                   alignItems: 'center',
-                  borderRadius: 12,
+                  borderRadius: 13,
                   backgroundColor: '#FC9916',
+                  marginVertical: 4,
                 }}
               >
                 <WhiteArrowRight />
