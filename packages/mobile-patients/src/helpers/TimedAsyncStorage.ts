@@ -7,7 +7,6 @@ export const setItem = (key: string, value: any, expiry?: number) => {
   value.expireAt = getExpireDate(expireInMinutes);
   //stringify object
   const objectToStore = JSON.stringify(value);
-
   //store object
   AsyncStorage.setItem(key, objectToStore);
 };

@@ -2626,19 +2626,23 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         /**
          * caching the api for 24 hrs.
          */
-        const getCachedApiResult = await getItem('mobileNumber_CM_Result');
+        const getCachedApiResult: any = await getItem('mobileNumber_CM_Result');
         const getPhoneNumber =
           patientDetails?.mobileNumber?.length > 10
             ? patientDetails?.mobileNumber?.slice(patientDetails?.mobileNumber?.length - 10)
             : patientDetails?.mobileNumber;
-        if (!!getCachedApiResult) {
-          updateSDKOption(getCachedApiResult, selectedUHID, currentPatientDetails);
+        if (!!getCachedApiResult && getCachedApiResult?.data) {
+          updateSDKOption(getCachedApiResult?.data, selectedUHID, currentPatientDetails);
         } else {
           const res: any = await GetAllUHIDSForNumber_CM(getPhoneNumber! || '');
           if (res?.data?.response && res?.data?.errorCode === 0) {
             let resultData = res?.data?.response?.signUpUserData;
             if (resultData?.length > 0) {
-              setItem('mobileNumber_CM_Result', resultData, 1440); //storing the result for 24 hrs, for a logged in user
+              const obj = {
+                data: resultData,
+                expireAt: 1440,
+              };
+              setItem('mobileNumber_CM_Result', obj, obj?.expireAt); //storing the result for 24 hrs, for a logged in user
               updateSDKOption(resultData, selectedUHID, currentPatientDetails);
             }
           }
