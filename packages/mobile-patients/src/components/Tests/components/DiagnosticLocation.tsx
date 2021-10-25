@@ -336,7 +336,7 @@ export const DiagnosticLocation: React.FC<DiagnosticLocationProps> = (props) => 
               search(value);
             }
           }}
-          placeholder="Search for your location"
+          placeholder={string.diagnostics.diagnosticSearchLocation}
           _itemsNotFound={false}
           inputStyle={styles.searchTextStyle}
           inputContainerStyle={{
