@@ -9,6 +9,7 @@ import { Spinner } from './ui/Spinner';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
+  getAsyncStorageValues,
   getCircleNoSubscriptionText,
   getUserType,
   postCleverTapEvent,
@@ -63,17 +64,14 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
     source == ('Pharma' || 'Product Detail' || 'Pharma Cart') &&
       postWebEngageEvent(WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED, CircleEventAttributes);
   };
-
-  const getAsyncStorageValues = async () => {
-    const jwtToken = await AsyncStorage.getItem("jwt") 
-    setToken(jwtToken)
-    let user = await AsyncStorage.getItem("currentPatient")
-    user = (JSON.parse(user)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber)
-    setUserMobileNumber(user)
-  }
-
+  
   useEffect(() => {
-    getAsyncStorageValues()
+    const saveSessionValues = async () => {
+      const [loginToken, phoneNumber] = await getAsyncStorageValues()
+      setToken(loginToken)
+      setUserMobileNumber(phoneNumber)
+    }
+    saveSessionValues()
     if (circleEventSource) fireCircleLandingPageViewedEvent();
   }, []);
 

@@ -194,6 +194,7 @@ import {
   permissionHandler,
   postAppointmentCleverTapEvents,
   fileToBase64,
+  getAsyncStorageValues,
 } from '../../helpers/helperFunctions';
 import { mimeType } from '../../helpers/mimeType';
 import { FeedbackPopup } from '../FeedbackPopup';
@@ -1596,16 +1597,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   }, [currentPatient]);
 
-  const getAsyncStorageValues = async () => {
-    const jwtToken = await AsyncStorage.getItem("jwt") 
-    setLoginToken(jwtToken)
-    let user = await AsyncStorage.getItem("currentPatient")
-    user = (JSON.parse(user)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber)
-    setUserMobileNumber(user)
-  }
-
   useEffect(() => {
-    getAsyncStorageValues()
+    const saveSessionValues = async () => {
+      const [loginToken, phoneNumber] = await getAsyncStorageValues()
+      setLoginToken(loginToken)
+      setUserMobileNumber(phoneNumber)
+    }
+    saveSessionValues()
     if (Platform.OS === 'android') {
       handleAndroidCallAcceptListeners();
     } else if (Platform.OS === 'ios') {

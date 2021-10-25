@@ -137,6 +137,7 @@ import {
   getAge,
   removeObjectNullUndefinedProperties,
   fileToBase64,
+  getAsyncStorageValues,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -2360,14 +2361,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       .finally(() => setAppointmentLoading(false));
   };
 
-  const getAsyncStorageValues = async () => {
-    const jwtToken = await AsyncStorage.getItem("jwt") 
-    setToken(jwtToken)
-    let user = await AsyncStorage.getItem("currentPatient")
-    user = (JSON.parse(user)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber)
-    setUserMobileNumber(user)
-  }
-
   useEffect(() => {
     async function fetchData() {
       const userLoggedIn = await AsyncStorage.getItem('gotIt');
@@ -2384,8 +2377,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       const eneabled = AppConfig.Configuration.ENABLE_CONDITIONAL_MANAGEMENT;
       setEnableCM(eneabled);
     }
+    const saveSessionValues = async () => {
+      const [loginToken, phoneNumber] = await getAsyncStorageValues();
+      setToken(loginToken);
+      setUserMobileNumber(phoneNumber);
+    }
     fetchData();
-    getAsyncStorageValues()
+    saveSessionValues();
   }, []);
 
   useEffect(() => {

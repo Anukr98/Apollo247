@@ -12,7 +12,7 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import { CircleMembershipActivation } from '@aph/mobile-patients/src/components/ui/CircleMembershipActivation';
 import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
-import { timeDiffDaysFromNow } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getAsyncStorageValues, timeDiffDaysFromNow } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import moment from 'moment';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
@@ -48,7 +48,12 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
   const planPurchased = useRef<boolean | undefined>(false);
 
   useEffect(() => {
-    getAsyncStorageValues()
+    const saveSessionValues = async () => {
+      const [loginToken, phoneNumber] = await getAsyncStorageValues()
+      setToken(loginToken)
+      setUserMobileNumber(phoneNumber)
+    }
+    saveSessionValues()
   },[])
 
   const renderCircleExpiryBanner = () => {
@@ -231,14 +236,6 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
       </View>
     );
   };
-
-  const getAsyncStorageValues = async () => {
-    const jwtToken = await AsyncStorage.getItem("jwt") 
-    setToken(jwtToken)
-    let user = await AsyncStorage.getItem("currentPatient")
-    user = (JSON.parse(user)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber)
-    setUserMobileNumber(user)
-  }
 
   const renderViewCarousel = () => {
     return (

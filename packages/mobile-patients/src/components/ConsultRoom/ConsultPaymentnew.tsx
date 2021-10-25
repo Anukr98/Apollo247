@@ -25,6 +25,7 @@ import {
   isPhysicalConsultation,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { getAsyncStorageValues } from '../../helpers/helperFunctions';
 
 export interface ConsultPaymentnewProps extends NavigationScreenProps {}
 
@@ -74,16 +75,13 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const { isCircleDoctorOnSelectedConsultMode } = circleDoctorDetails;
   const { circleSubscriptionId } = useShoppingCart();
 
-  const getAsyncStorageValues = async () => {
-    const jwtToken = await AsyncStorage.getItem("jwt") 
-    setToken(jwtToken)
-    let user = await AsyncStorage.getItem("currentPatient")
-    user = (JSON.parse(user)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber)
-    setUserMobileNumber(user)
-  }
-
   useEffect(() => {
-    getAsyncStorageValues()
+    const saveSessionValues = async () => {
+      const [loginToken, phoneNumber] = await getAsyncStorageValues()
+      setToken(loginToken)
+      setUserMobileNumber(phoneNumber)
+    }
+    saveSessionValues()
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
