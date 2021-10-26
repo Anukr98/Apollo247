@@ -57,7 +57,7 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
           msg={item?.item?.payment_method_name + ' is'}
         />
         <TouchableOpacity
-          disabled={item?.item?.outage_status == 'DOWN' ? false : false}
+          disabled={item?.item?.outage_status == 'DOWN' ? true : false}
           style={{
             ...styles.wallet,
             borderBottomWidth: item?.index == wallets.length - 1 ? 0 : 1,
