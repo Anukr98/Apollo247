@@ -249,7 +249,11 @@ export const MedicineListing: React.FC<Props> = (props) => {
     if (keys?.length) {
       keys.forEach((key) => {
         if (selectedFilters?.[key]?.length) {
-          selectedFilter[key] = selectedFilters[key];
+          if (key === 'price' || key === 'discount_percentage') {
+            selectedFilter[key] = { min: selectedFilters[key][0], max: selectedFilters[key][1] };
+          } else {
+            selectedFilter[key] = selectedFilters[key];
+          }
         }
       });
     }
@@ -545,13 +549,47 @@ export const MedicineListing: React.FC<Props> = (props) => {
       onClose();
       setFilterBy(appliedFilters);
     };
-    const filters = filterOptions.filter(({ values }) => values?.length);
+    const valuesToBeRemoved = [
+      'PHARMA',
+      'Non Dpco',
+      'PL',
+      'FMCG',
+      'SHOP BY BRAND',
+      'Banners',
+      'Apollo247',
+      'Apollo247v1',
+      'Special Offers',
+      'Banner 1',
+      'Banner 2',
+      'Banner 3',
+      'MOST VIEWED',
+    ];
+    const filters = filterOptions.filter(
+      ({ attribute }) => attribute !== 'color' && attribute !== '__categories'
+    );
+    const categoryFilter = filterOptions.filter(
+      ({ attribute, values }) =>
+        attribute === '__categories' &&
+        values?.length &&
+        values.map((ele) => valuesToBeRemoved.indexOf(ele.name) === -1)
+    );
+    const categoryValues =
+      categoryFilter?.[0]?.values?.length &&
+      categoryFilter?.[0]?.values.filter(({ name }) => valuesToBeRemoved.indexOf(name) === -1);
+
+    const categoryObject = {
+      attribute: categoryFilter?.[0]?.attribute,
+      name: categoryFilter?.[0]?.name,
+      select_type: categoryFilter?.[0]?.select_type,
+      values: categoryValues,
+    };
+    const newFilters = [...filters, categoryObject];
 
     return (
       filterVisible && (
         <MedicineListingFilter
           isVisible={true}
-          filters={filters}
+          filters={newFilters}
           selectedFilters={filterBy}
           onClose={onClose}
           onApplyFilters={onApplyFilters}
