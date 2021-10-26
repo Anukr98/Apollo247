@@ -1,7 +1,8 @@
 import AsyncStorage from '@react-native-community/async-storage';
 import { reject } from 'lodash';
 
-export const setItem = (key: string, value: any, expireInMinutes = 60) => {
+export const setItem = (key: string, value: any, expiry = 60) => {
+  const expireInMinutes = !!expiry ? expiry : 60;
   //set expire at
   value.expireAt = getExpireDate(expireInMinutes);
   //stringify object
