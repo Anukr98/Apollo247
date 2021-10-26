@@ -140,6 +140,7 @@ export interface CMSTestDetails {
   diagnosticOverview: any;
   diagnosticInclusionName: any;
   diagnosticWidgetsData: any;
+  diagnosticItemAliases?: any;
 }
 
 export interface TestDetailsProps
@@ -879,6 +880,24 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     );
   };
 
+  const renderAliasName = () => {
+    const aliasName =
+      cmsTestDetails?.diagnosticItemAliases &&
+      cmsTestDetails?.diagnosticItemAliases != '' &&
+      cmsTestDetails?.diagnosticItemAliases?.length > 0;
+    const jointAliasName = aliasName && cmsTestDetails?.diagnosticItemAliases?.join();
+    return (
+      <View style={{ marginTop: 4 }}>
+        {aliasName ? (
+          <Text style={styles.italicStyle}>
+            {string.diagnostics.alsoKnownAs}
+            {jointAliasName}
+          </Text>
+        ) : null}
+      </View>
+    );
+  };
+
   /**
    * if not coming from the config report tat, then if not by drupal then show from local db.
    */
@@ -965,6 +984,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               cmsTestDetails?.diagnosticItemName ||
               testInfo?.itemName}
           </Text>
+          {renderAliasName()}
         </View>
         {renderSeparator(true)}
         {renderCardMidView()}
@@ -1278,17 +1298,17 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const renderCallToOrder = () => {
     return (
       <CallToOrderView
-        customMargin = {80}
-        slideCallToOrder = {slideCallToOrder}
-        onPressSmallView = {() => {
+        customMargin={80}
+        slideCallToOrder={slideCallToOrder}
+        onPressSmallView={() => {
           setSlideCallToOrder(false);
         }}
-        onPressCross = {() => {
+        onPressCross={() => {
           setSlideCallToOrder(true);
         }}
       />
-    )
-  }
+    );
+  };
 
   return (
     <SafeAreaView
@@ -1308,7 +1328,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             ref={scrollViewRef}
             scrollEventThrottle={16}
             onScroll={(event) => {
-              setSlideCallToOrder(true)
+              setSlideCallToOrder(true);
               // show price if price is scrolled off the screen
               priceViewRef?.current &&
                 priceViewRef?.current?.measure(
@@ -1566,5 +1586,11 @@ const styles = StyleSheet.create({
   expressSlotText: {
     ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 18),
     marginLeft: 16,
+  },
+  italicStyle: {
+    fontStyle: 'italic',
+    color: theme.colors.SHERPA_BLUE,
+    lineHeight: 15.6,
+    fontSize: 12,
   },
 });

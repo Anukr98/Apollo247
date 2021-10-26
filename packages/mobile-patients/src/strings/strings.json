@@ -641,7 +641,7 @@
     "patientSwitchError": "Sorry, we couldn’t change name due to an error. Please try again",
     "test":"Test+ included",
     "tests":"Tests+ included",
-    "alsoKnownAs": "Also Known as:",
+    "alsoKnownAs": "Also Known as",
     "addToCart": "ADD TO CART",
     "removeFromCart": "REMOVE",
     "alreadyAdded":"ALREADY ADDED",
