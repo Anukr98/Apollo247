@@ -174,27 +174,27 @@ PODS:
   - JuspaySafeBrowser (0.1.70)
   - JWT (3.0.0-beta.14):
     - Base64 (~> 1.1.2)
-  - JWTDecode (2.6.2)
-  - libwebp (1.2.0):
-    - libwebp/demux (= 1.2.0)
-    - libwebp/mux (= 1.2.0)
-    - libwebp/webp (= 1.2.0)
-  - libwebp/demux (1.2.0):
+  - JWTDecode (2.6.3)
+  - libwebp (1.2.1):
+    - libwebp/demux (= 1.2.1)
+    - libwebp/mux (= 1.2.1)
+    - libwebp/webp (= 1.2.1)
+  - libwebp/demux (1.2.1):
     - libwebp/webp
-  - libwebp/mux (1.2.0):
+  - libwebp/mux (1.2.1):
     - libwebp/demux
-  - libwebp/webp (1.2.0)
+  - libwebp/webp (1.2.1)
   - nanopb (1.30906.0):
     - nanopb/decode (= 1.30906.0)
     - nanopb/encode (= 1.30906.0)
   - nanopb/decode (1.30906.0)
   - nanopb/encode (1.30906.0)
-  - OpenTok (2.20.1)
+  - OpenTok (2.21.0)
   - opentok-react-native (0.17.2):
     - OpenTok
     - React
   - PromisesObjC (1.2.12)
-  - Protobuf (3.18.0)
+  - Protobuf (3.19.0)
   - QBImagePickerController (3.4.0)
   - RCTRequired (0.61.3)
   - RCTSystemSetting (1.7.6):
@@ -507,9 +507,9 @@ PODS:
     - React-Core
   - RSKImageCropper (3.0.2)
   - Salvator (1.0.1)
-  - SDWebImage (5.11.1):
-    - SDWebImage/Core (= 5.11.1)
-  - SDWebImage/Core (5.11.1)
+  - SDWebImage (5.12.1):
+    - SDWebImage/Core (= 5.12.1)
+  - SDWebImage/Core (5.12.1)
   - SDWebImageWebPCoder (0.8.4):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.10)
@@ -855,13 +855,13 @@ SPEC CHECKSUMS:
   IQKeyboardManager: 2a6e97afdafc7becf0cb17a9a8d795e3a980717f
   JuspaySafeBrowser: 72f60fcd42bb61f6a6ad9b733b84810b63cc8c1b
   JWT: ef71dfb03e1f842081e64dc42eef0e164f35d251
-  JWTDecode: 2cc56f950540c95fd11b14ff6388f7c6cb9760ab
-  libwebp: e90b9c01d99205d03b6bb8f2c8c415e5a4ef66f0
+  JWTDecode: 33e5e26e5ddbd21b2065820894c08fef0cad9509
+  libwebp: 98a37e597e40bfdb4c911fc98f2c53d0b12d05fc
   nanopb: 59317e09cf1f1a0af72f12af412d54edf52603fc
-  OpenTok: 62dd91a1297816f61a5e5c91e6ff4ecdffa77364
+  OpenTok: 3a11243cc21b56389f5dfd97355f111748192153
   opentok-react-native: 56e3213e14bcc5222bc2e3e244c3a3b6bb3758ac
   PromisesObjC: 3113f7f76903778cf4a0586bd1ab89329a0b7b97
-  Protobuf: 1a37ebea1338949e9ac35a3f06e80b3f536eec8d
+  Protobuf: e9b99dd5da72f665ec503b19191f245a22188b4d
   QBImagePickerController: d54cf93db6decf26baf6ed3472f336ef35cae022
   RCTRequired: a72523286ea3381f97b28d87529c265baad3ad7d
   RCTSystemSetting: 5107b7350d63b3f7b42a1277d07e4e5d9df879be
@@ -926,7 +926,7 @@ SPEC CHECKSUMS:
   RNVoipPushNotification: be6f70cac9d1fd73e020063093f635f64d97c9c6
   RSKImageCropper: 1ac71e9a82e3f41eea3eedfff8eacb0d3821c9ec
   Salvator: e388abcd1c8a526aff3e952ed94219bb4e12c85f
-  SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
+  SDWebImage: 4dc3e42d9ec0c1028b960a33ac6b637bb432207b
   SDWebImageWebPCoder: f93010f3f6c031e2f8fb3081ca4ee6966c539815
   SSZipArchive: 62d4947b08730e4cda640473b0066d209ff033c9
   Stylish: 28b6e4f177bfb94fae32fd8e6b31a31b38035318
