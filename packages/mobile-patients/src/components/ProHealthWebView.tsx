@@ -1,6 +1,6 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { permissionHandler } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getAsyncStorageValues, permissionHandler } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
@@ -14,6 +14,7 @@ import {
 import { WebView } from 'react-native-webview';
 import { NavigationRoute, NavigationScreenProp, NavigationScreenProps } from 'react-navigation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export interface ProHealthWebViewProps
   extends NavigationScreenProps<{
@@ -27,8 +28,16 @@ export const ProHealthWebView: React.FC<ProHealthWebViewProps> = (props) => {
   const microPhonePermission = props.navigation.getParam('requestMicroPhonePermission');
   const [loading, setLoading] = useState<boolean>(true);
   const [canGoBack, setCanGoBack] = useState<boolean>(false);
+  const [token, setToken] = useState<string | null>('')
+  const [userMobileNumber, setUserMobileNumber] = useState<string | null>('')
 
   useEffect(() => {
+    const saveSessionValues = async () => {
+      const [loginToken, phoneNumber] = await getAsyncStorageValues()
+      setToken(loginToken)
+      setUserMobileNumber(phoneNumber)
+    }
+    saveSessionValues()
     requestMicrophonePermission();
   }, []);
 
@@ -68,11 +77,12 @@ export const ProHealthWebView: React.FC<ProHealthWebViewProps> = (props) => {
   };
 
   const renderWebView = () => {
+    const uri = `${props.navigation.getParam('covidUrl')}?utm_token=${token}&utm_mobile_number=${userMobileNumber}`
     return (
       <WebView
         ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
         onLoadEnd={() => setLoading?.(false)}
-        source={{ uri: props.navigation.getParam('covidUrl') }}
+        source={{ uri }}
         onNavigationStateChange={(data) => handleResponse(data, WebViewRef)}
         renderError={() => renderError(WebViewRef)}
         onMessage={(event) => {

@@ -134,6 +134,7 @@ import {
   getAge,
   removeObjectNullUndefinedProperties,
   fileToBase64,
+  getAsyncStorageValues,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -769,6 +770,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [vaccinationSubscriptionName, setVaccinationSubscriptionName] = useState<string>('');
   const [vaccinationSubscriptionPlanId, setVaccinationSubscriptionPlanId] = useState<string>('');
   const [agreedToVaccineTnc, setAgreedToVaccineTnc] = useState<string>('');
+  const [token, setToken] = useState<string | null>('')
+  const [userMobileNumber, setUserMobileNumber] = useState<string | null>('')
 
   const [proHealthActiveAppointmentCount, setProHealthActiveAppointmentCount] = useState<
     string | number
@@ -2390,7 +2393,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       const eneabled = AppConfig.Configuration.ENABLE_CONDITIONAL_MANAGEMENT;
       setEnableCM(eneabled);
     }
+    const saveSessionValues = async () => {
+      const [loginToken, phoneNumber] = await getAsyncStorageValues();
+      setToken(loginToken);
+      setUserMobileNumber(phoneNumber);
+    }
     fetchData();
+    saveSessionValues();
   }, []);
 
   useEffect(() => {
@@ -3134,7 +3143,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <View style={styles.nestedWebView}>
           <WebView
             source={{
-              uri: url,
+              uri: `${url}?utm_token=${token}&utm_mobile_number=${userMobileNumber}`,
             }}
             style={styles.webViewCompo}
             onLoadStart={() => {

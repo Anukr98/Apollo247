@@ -9,6 +9,7 @@ import { Spinner } from './ui/Spinner';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
+  getAsyncStorageValues,
   getCircleNoSubscriptionText,
   getUserType,
   postCleverTapEvent,
@@ -38,6 +39,9 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   const isGoBack = props.navigation.getParam('isGoBack');
   const circleEventSource = props.navigation.getParam('circleEventSource');
   const [canGoBack, setCanGoBack] = useState<boolean>(false);
+  const [token, setToken] = useState<string | null>('')
+  const [userMobileNumber, setUserMobileNumber] = useState<string | null>('')
+
   let WebViewRef: any;
   const client = useApolloClient();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
@@ -60,8 +64,14 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
     source == ('Pharma' || 'Product Detail' || 'Pharma Cart') &&
       postWebEngageEvent(WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED, CircleEventAttributes);
   };
-
+  
   useEffect(() => {
+    const saveSessionValues = async () => {
+      const [loginToken, phoneNumber] = await getAsyncStorageValues()
+      setToken(loginToken)
+      setUserMobileNumber(phoneNumber)
+    }
+    saveSessionValues()
     if (circleEventSource) fireCircleLandingPageViewedEvent();
   }, []);
 
@@ -115,11 +125,12 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   };
 
   const renderWebView = () => {
+    const uri = `${props.navigation.getParam('url')}?utm_token=${token}&utm_mobile_number=${userMobileNumber}`
     return (
       <WebView
         ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
         onLoadEnd={() => setLoading!(false)}
-        source={{ uri: props.navigation.getParam('url') }}
+        source={{ uri }}
         renderError={(errorCode) => renderError(WebViewRef)}
         onNavigationStateChange={(data) => handleResponse(data)}
         onMessage={(event) => {
