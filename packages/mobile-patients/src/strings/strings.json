@@ -591,7 +591,7 @@
     "hcSampleSubText": "Certified Apollo agent visits your home for sample collection at selected slot time",
     "fastReport": "Fast & Accurate Reports",
     "fastReportSubText": "Get reports in 12 to 24 hours. View or download on app anytime",
-    "orderSuccessPhaleboText": "*The Apollo agent will call you prior to starting his journey to confirm your availability",
+    "orderSuccessPhaleboText": "*Sample Collection Executive may call you prior to starting his journey to confirm your availability",
     "invoiceTimelineText": "Invoice will be available to download after the sample is submitted in the lab",
     "unableToFetchStatus": "Something went wrong. We are unable to fetch status",
     "noSlotAvailable": "Sorry! There are no slots available on {{date}}. Please choose another date.",
@@ -650,7 +650,12 @@
     "discardAllPatients": "Your cart has been updated, with the selected patient",
     "modifyHeader" : "MODIFY ORDER",
     "codDisableTextForCircle": "Cash on Delivery is unavailable with Circle membership in Cart",
-    "deeplink":"deeplink"
+    "deeplink":"deeplink",
+    "prescriptionCallBack": "Expect a call in the next 2 working hours from an Apollo agent to assist you in placing your order.",
+    "prescriptionError": "Sorry cannot submit precription, an error occured",
+    "prescriptionSuccess":"Prescription Successfully Uploaded",
+    "fromHealthRecord":"PRESCRIPTION FROM HEALTH RECORDS",
+    "addMorePrescription":"+ ADD MORE PRESCRIPTIONS"
   },
   "diagnosticCategoryTitle": {
     "category": "category",

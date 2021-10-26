@@ -1066,7 +1066,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
 
   const renderMainView = () => {
     return (
-      <View style={{ margin: 16 }}>
+      <View style={{ margin: 16, flex: 1 }}>
         {renderHeading()}
         {renderSubHeading()}
         {renderPatientsList()}
@@ -1117,9 +1117,9 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 1, 18),
   },
   patientListView: {
+    flex: 1,
     flexGrow: 1,
-    marginBottom: 16,
-    height: screenHeight - 300, //240
+    marginBottom: 20, //16
   },
 
   mainViewStyle: {
