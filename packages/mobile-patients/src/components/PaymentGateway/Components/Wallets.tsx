@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, FlatList } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, FlatList, Dimensions } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CollapseView } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CollapseView';
 import { WalletIcon } from '@aph/mobile-patients/src/components/PaymentGateway/Components/WalletIcon';
@@ -15,15 +15,18 @@ export interface WalletsProps {
   wallets: any;
   offers: any;
 }
+const windowWidth = Dimensions.get('window').width;
 
 export const Wallets: React.FC<WalletsProps> = (props) => {
   const { onPressPayNow, wallets, offers } = props;
-
+  const phonePe = 'https://newassets.apollo247.com/images/upiicons/phone-pe.png';
   const renderTitle = (item: any, bestOffer: any) => {
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <WalletIcon imageUrl={item?.item?.image_url} />
-        <View>
+        <WalletIcon
+          imageUrl={item?.item?.payment_method_name == 'PhonePe' ? phonePe : item?.item?.image_url}
+        />
+        <View style={{ flex: 1, marginRight: 5, paddingRight: 15 }}>
           <Text style={styles.walletName}>{item?.item?.payment_method_name}</Text>
           {!!bestOffer ? (
             <View style={styles.offer}>
@@ -54,7 +57,7 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
           msg={item?.item?.payment_method_name + ' is'}
         />
         <TouchableOpacity
-          disabled={item?.item?.outage_status == 'DOWN' ? true : false}
+          disabled={item?.item?.outage_status == 'DOWN' ? false : false}
           style={{
             ...styles.wallet,
             borderBottomWidth: item?.index == wallets.length - 1 ? 0 : 1,
@@ -62,8 +65,10 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
           }}
           onPress={() => onPressPayNow(item?.item?.payment_method_code, bestOffer)}
         >
-          {renderTitle(item, bestOffer)}
-          <Text style={styles.payNow}>PAY NOW</Text>
+          <View style={{ width: windowWidth - 100 }}>{renderTitle(item, bestOffer)}</View>
+          <View style={{ width: 60 }}>
+            <Text style={styles.payNow}>PAY NOW</Text>
+          </View>
         </TouchableOpacity>
       </View>
     );
@@ -104,6 +109,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansBold(13),
     lineHeight: 17,
     color: '#FC9916',
+    width: 60,
   },
   walletName: {
     ...theme.fonts.IBMPlexSansMedium(14),
@@ -122,6 +128,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     color: '#34AA55',
     marginLeft: 4,
+    flexWrap: 'wrap',
   },
   offerIcon: {
     height: 16,
