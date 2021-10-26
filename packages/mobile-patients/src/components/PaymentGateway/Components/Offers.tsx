@@ -21,13 +21,10 @@ export const Offers: React.FC<offersProps> = (props) => {
           <Image style={{ height: 18, width: 18 }} source={{ uri: imageUrl }} />
           <Text style={styles.offerTitle}>{offer?.offer_description?.title}</Text>
         </View>
-        <View style={{ flexDirection: 'row', marginTop: 2, marginHorizontal: 16 }}>
-          <Text style={styles.offerDescription}>
-            {offer?.offer_description?.description}
-            <Text style={styles.TnC} onPress={() => onPressTnC(offer)}>
-              {'  '}
-              TnC Apply
-            </Text>
+        <View style={styles.offerCont}>
+          <Text style={styles.offerDescription}>{offer?.offer_description?.description}</Text>
+          <Text style={styles.TnC} onPress={() => onPressTnC(offer)}>
+            TnC Apply
           </Text>
         </View>
       </View>
@@ -51,7 +48,7 @@ export const Offers: React.FC<offersProps> = (props) => {
   const renderShowMore = () => {
     return (
       <TouchableOpacity style={styles.showMoreCont} onPress={() => setShowMore(!showMore)}>
-        <Text style={styles.showMore}>Show More</Text>
+        <Text style={styles.showMore}>{showMore ? 'Show Less' : 'Show More'}</Text>
         <DownOrange
           style={{ ...styles.downArrow, transform: [{ rotate: showMore ? '180deg' : '0deg' }] }}
         />
@@ -108,10 +105,19 @@ const styles = StyleSheet.create({
     color: '#01475B',
     marginLeft: 8,
   },
+  offerCont: {
+    flexDirection: 'row',
+    marginTop: 2,
+    marginHorizontal: 16,
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   offerDescription: {
     ...theme.fonts.IBMPlexSansRegular(12),
     lineHeight: 18,
     color: '#01475B',
+    flex: 0.84,
   },
   showMore: {
     ...theme.fonts.IBMPlexSansBold(12),
@@ -135,5 +141,6 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     color: '#FC9916',
     marginLeft: 6,
+    flex: 0.16,
   },
 });
