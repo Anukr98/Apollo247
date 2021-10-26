@@ -1051,22 +1051,47 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
       </View>
     );
   };
-
   const renderGeneralNotes = () => {
     return (
-      <TouchableOpacity
-        onPress={() => {
-          props.navigation.navigate(AppRoutes.CommonWebView, {
-            url: AppConfig.Configuration.APOLLO_TERMS_CONDITIONS,
-          });
-        }}
-      >
-        <Text style={styles.noteTxt}>
-          By proceeding, I agree that I have read and understood the{' '}
-          <Text style={{ color: theme.colors.SKY_BLUE }}>Terms & Conditions</Text> of usage of 24x7
-          and consent to the same.{' '}
+      <Text style={styles.noteTxt}>
+        By proceeding, I agree that I have read and understood the{' '}
+        <Text
+          style={{ color: theme.colors.SKY_BLUE }}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.CommonWebView, {
+              url: AppConfig.Configuration.APOLLO_TERMS_CONDITIONS,
+              isGoBack: true,
+            });
+          }}
+        >
+          Terms & Conditions
+        </Text>{' '}
+        of usage of Apollo 24x7,{' '}
+        <Text
+          style={{ color: theme.colors.SKY_BLUE }}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.CommonWebView, {
+              url: AppConfig.Configuration.APOLLO_PRIVACY_POLICY,
+              isGoBack: true,
+            });
+          }}
+        >
+          Privacy policy
         </Text>
-      </TouchableOpacity>
+        ,{' '}
+        <Text
+          style={{ color: theme.colors.SKY_BLUE }}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.CommonWebView, {
+              url: AppConfig.Configuration.APOLLO_REFUND_POLICY,
+              isGoBack: true,
+            });
+          }}
+        >
+          Refund Policy
+        </Text>{' '}
+        and consent to the same.
+      </Text>
     );
   };
 

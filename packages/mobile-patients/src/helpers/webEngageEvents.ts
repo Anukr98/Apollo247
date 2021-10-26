@@ -491,6 +491,7 @@ export enum WebEngageEventName {
   VACCINE_REGISTRATION_COMPLETED = 'Vaccine Registeration Completed',
   ERROR_WHILE_FETCHING_JWT_TOKEN = 'Error while Fetching JWT token',
   AUTHTOKEN_UPDATED = 'Authtoken Updated',
+  NO_FIREBASE_USER = 'No user on Firebase'
 }
 
 export interface PatientInfo {

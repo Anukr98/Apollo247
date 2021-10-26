@@ -202,6 +202,7 @@ const appStaticVariables = {
   COVID_UPDATES: 'https://www.apollo247.com/blog/covid19-vaccines',
   APOLLO_TERMS_CONDITIONS: 'https://www.apollo247.com/terms?isMobile=true',
   APOLLO_PRIVACY_POLICY: 'https://www.apollo247.com/privacy?isMobile=true',
+  APOLLO_REFUND_POLICY: 'https://www.apollo247.com/refund-policy?isMobile=true',
   LOGIN_SECTION: loginSection,
   COVID_VACCINE_SECTION: covidVaccineSection,
   CART_PRESCRIPTION_OPTIONS: [
@@ -285,7 +286,8 @@ const appStaticVariables = {
   CIRCLE_FACTS:
     '<b>#CircleFact:</b> On an average Circle members <b>save upto ₹400 every month</b>',
   enableCredWebView: false,
-  DIAGNOSTICS_REPORT_TAT_BREACH_TEXT: "Reports are delayed by a few hours, but should be available any time soon.",
+  DIAGNOSTICS_REPORT_TAT_BREACH_TEXT:
+    'Reports are delayed by a few hours, but should be available any time soon.',
   TrueCaller_Login_Enabled: false,
 };
 

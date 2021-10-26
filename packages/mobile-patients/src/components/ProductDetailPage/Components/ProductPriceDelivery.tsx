@@ -190,7 +190,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
           textStyle={styles.circleText}
           logoStyle={styles.circleLogo}
         />
-        <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 17)}>
+        <Text style={theme.viewStyles.text('M', 13, '#02475B', 1, 17)}>
           Effective price for you
           <Text style={{ fontWeight: 'bold' }}>
             {' '}
