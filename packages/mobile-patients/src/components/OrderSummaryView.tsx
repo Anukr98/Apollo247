@@ -304,7 +304,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
     paymentMethod == MEDICINE_ORDER_PAYMENT_TYPE.COD
       ? 'COD'
       : paymentMethod == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS
-      ? 'Prepaid'
+      ? 'ONLINE'
       : 'COD';
 
   const isPrepaid = paymentMethod == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS;
