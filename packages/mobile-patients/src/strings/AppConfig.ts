@@ -2,6 +2,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { PharmaStateCodeMapping } from '@aph/mobile-patients/src/strings/PharmaStateCodeMapping';
 import DeviceInfo from 'react-native-device-info';
 import {
+  CALL_TO_ORDER_CTA_PAGE_ID,
   DIAGNOSTIC_ORDER_STATUS,
   REFUND_STATUSES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -1633,6 +1634,15 @@ export const DIAGNOSTIC_ONLINE_PAYMENT_STATUS = [
 export const DIAGNOSTIC_EDIT_PROFILE_ARRAY = [
   DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
   DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
+];
+
+export const DIAGNOSTIC_CALL_TO_ORDER_CTA = [
+  CALL_TO_ORDER_CTA_PAGE_ID.HOME,
+  CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS,
+  CALL_TO_ORDER_CTA_PAGE_ID.TESTCART,
+  CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL,
+  CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING,
+  CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY,
 ];
 
 type SpecialitiesType = {

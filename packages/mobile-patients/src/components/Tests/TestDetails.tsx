@@ -11,7 +11,7 @@ import {
   InfoIconRed,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { CALL_TO_ORDER_CTA_PAGE_ID, TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 import {
   DIAGNOSTIC_GROUP_PLAN,
@@ -1278,6 +1278,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const renderCallToOrder = () => {
     return (
       <CallToOrderView
+        cityId = {cityIdToUse}
+        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL}
         customMargin = {80}
         slideCallToOrder = {slideCallToOrder}
         onPressSmallView = {() => {

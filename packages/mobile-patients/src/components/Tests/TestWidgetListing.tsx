@@ -18,6 +18,8 @@ import {
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { TestListingHeader } from '@aph/mobile-patients/src/components/Tests/components/TestListingHeader';
+import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
+import { CALL_TO_ORDER_CTA_PAGE_ID } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 export interface TestWidgetListingProps
   extends NavigationScreenProps<{
     movedFrom?: string;
@@ -30,9 +32,11 @@ export const TestWidgetListing: React.FC<TestWidgetListingProps> = (props) => {
   const { diagnosticServiceabilityData } = useAppCommonData();
 
   const dataFromHomePage = props.navigation.getParam('data');
+  const cityId = props.navigation.getParam('cityId');
   const title = dataFromHomePage?.diagnosticWidgetTitle;
 
   const [loading, setLoading] = useState<boolean>(false);
+  const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
 
   const [serviceableObject, setServiceableObject] = useState({} as any);
   Object.keys(serviceableObject)?.length === 0 && serviceableObject?.constructor === Object;
@@ -41,6 +45,22 @@ export const TestWidgetListing: React.FC<TestWidgetListingProps> = (props) => {
       <TestListingHeader navigation={props.navigation} headerText={nameFormater(title, 'upper')} />
     );
   };
+
+  const renderCallToOrder = () => {
+    return (
+      <CallToOrderView
+        cityId = {cityId}
+        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING}
+        slideCallToOrder = {slideCallToOrder}
+        onPressSmallView = {() => {
+          setSlideCallToOrder(false);
+        }}
+        onPressCross = {() => {
+          setSlideCallToOrder(true);
+        }}
+      />
+    )
+  }
 
   const renderItems = (item: any, index: number) => {
     return (
@@ -77,6 +97,7 @@ export const TestWidgetListing: React.FC<TestWidgetListingProps> = (props) => {
             renderItem={({ item, index }) => renderItems(item, index)}
           />
         </View>
+          {renderCallToOrder()}
       </>
     );
   };

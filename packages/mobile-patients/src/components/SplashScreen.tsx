@@ -1478,8 +1478,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         config.getString(key)
       );
 
-      setAppConfig('Diagnostics_City_Level_Call_To_Order', 'DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER', (key) =>
-        config.getString(key)
+      setAppConfig(
+        'Diagnostics_City_Level_Call_To_Order',
+        'DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER',
+        (key) =>
+          JSON.parse(config.getString(key) || 'null') ||
+          AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER
       );
 
       const disincentivizeCodMessage = getRemoteConfigValue(

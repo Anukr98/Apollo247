@@ -12,6 +12,7 @@ interface CallToOrderViewProps {
   slideCallToOrder?: boolean;
   containerStyle?: any;
   cityId?: any;
+  pageId?: any;
   onPressSmallView?: () => void;
   onPressCross?: () => void;
 }
@@ -25,13 +26,12 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
     onPressCross,
     customMargin,
     cityId,
+    pageId,
   } = props;
-  const callToOrderDetails = JSON.parse(
-    AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER
-  );
+  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
   const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
-    if (item?.ctaCityId == cityId) {
+    if (item?.ctaCityId == cityId && item?.ctaProductPageArray.includes(pageId)) {
       return item;
     }
   });

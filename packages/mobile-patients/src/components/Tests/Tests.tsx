@@ -96,6 +96,7 @@ import {
 import { Image } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
 import {
+  CALL_TO_ORDER_CTA_PAGE_ID,
   DIAGNOSTIC_ORDER_STATUS,
   TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -1062,6 +1063,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           postMyOrdersClicked('Diagnostics', currentPatient);
           props.navigation.push(AppRoutes.YourOrdersTest, {
             isTest: true,
+            cityId: cityId
           });
         }}
         container={{
@@ -2371,6 +2373,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
     props.navigation.push(AppRoutes.YourOrdersTest, {
       isTest: true,
+      cityId: cityId
     });
   }
 
@@ -2860,6 +2863,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <CallToOrderView
         cartItems={cartItems}
+        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.HOME}
         slideCallToOrder={slideCallToOrder}
         onPressSmallView={() => {
           setSlideCallToOrder(false);
