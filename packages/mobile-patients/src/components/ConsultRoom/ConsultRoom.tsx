@@ -3323,8 +3323,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return styles;
   };
 
+  const getRedirectActionForOffers = (action: string) => {
+    const actionChooser: any = {
+      pharmacy: 'PHARMACY_LANDING',
+      consulation: 'SPECIALITY_LISTING',
+      diagnostics: 'DIAGNOSTICS_LANDING',
+    };
+    return actionChooser?.[action];
+  };
+
   const renderOffersCards = (item: any, index: number) => {
     let offerDesignTemplate = getTemplateStyle(item?.template_name);
+    console.log(item);
     return (
       <TouchableOpacity activeOpacity={1} onPress={() => {}}>
         <LinearGradientComponent
@@ -3433,7 +3443,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 </Text>
               </View>
 
-              <View
+              <TouchableOpacity
                 style={{
                   width: 24,
                   height: 24,
@@ -3442,9 +3452,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   borderRadius: 12,
                   backgroundColor: '#FC9916',
                 }}
+                onPress={() => {
+                  let action = getRedirectActionForOffers(item?.cta?.path?.vertical?.toLowerCase());
+                  navigateCTAActions({ type: 'REDIRECT', cta_action: action }, '');
+                }}
               >
                 <WhiteArrowRight />
-              </View>
+              </TouchableOpacity>
             </View>
           ) : null}
         </LinearGradientComponent>
@@ -3467,7 +3481,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             <View style={{ flexDirection: 'row', marginTop: -5, justifyContent: 'space-between' }}>
               <View
                 style={{
-                  marginHorizontal: 10,
+                  marginHorizontal: 12,
                   marginTop: 14,
                   borderRadius: 4,
                   backgroundColor: offerDesignTemplate?.left_notch?.bg_color,
@@ -3501,7 +3515,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             <Text
               style={{
                 ...theme.viewStyles.text('SB', 20, offerDesignTemplate?.title_text_color, 1, 30),
-                marginHorizontal: 10,
+                marginHorizontal: 12,
+                marginTop: 6,
               }}
             >
               {item?.title?.text?.length > 30
@@ -3512,7 +3527,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             <Text
               style={{
                 ...theme.viewStyles.text('M', 14, offerDesignTemplate?.subtitle_text_color, 1, 18),
-                marginHorizontal: 10,
+                marginHorizontal: 12,
+                marginTop: 6,
               }}
             >
               {item?.subtitle?.text?.length > 30
@@ -3521,11 +3537,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             </Text>
 
             <View
-              style={{ flexDirection: 'row', marginVertical: 6, justifyContent: 'space-between' }}
+              style={{
+                flexDirection: 'row',
+                marginVertical: 12,
+                marginLeft: 12,
+                marginRight: 9,
+                justifyContent: 'space-between',
+              }}
             >
               <View
                 style={{
-                  marginHorizontal: 10,
                   borderRadius: 4,
                   borderColor: '#A15D59',
                   borderWidth: 1,
@@ -3552,7 +3573,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
               <View style={styles.bottomRightArrowView}>
                 <Button
-                  title={`SHOP NOW`}
+                  title={item?.cta?.text}
                   style={{
                     width: 106,
                     height: 32,
@@ -3560,7 +3581,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     backgroundColor: offerDesignTemplate?.cta?.bg_color,
                   }}
                   titleTextStyle={{ color: offerDesignTemplate?.cta?.text_color }}
-                  onPress={() => {}}
+                  onPress={() => {
+                    let action = getRedirectActionForOffers(
+                      item?.cta?.path?.vertical?.toLowerCase()
+                    );
+                    navigateCTAActions({ type: 'REDIRECT', cta_action: action }, '');
+                  }}
                   disabled={false}
                 />
               </View>
