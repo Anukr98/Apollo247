@@ -57,6 +57,7 @@ import {
   GET_APPOINTMENT_DATA,
   GET_PROHEALTH_HOSPITAL_BY_SLUG,
   GET_ORDER_INFO,
+  GET_PERSONALIZED_OFFERS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
@@ -219,6 +220,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     });
     AppState.addEventListener('change', _handleAppStateChange);
     checkForVersionUpdate();
+    getOffers();
 
     try {
       PrefetchAPIReuqest({
@@ -885,6 +887,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setExpectCallText,
     setNonCartTatText,
     setNonCartDeliveryText,
+    setOffersList,
+    setOffersListLoading,
   } = useAppCommonData();
   const {
     setMinimumCartValue,
@@ -1203,6 +1207,25 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     const key = getKeyBasedOnEnv(APP_ENV, RemoteConfigKeys, remoteConfigKey);
     const value = processValue(key);
     updateAppConfig(appConfigKey, value);
+  };
+
+  const getOffers = async () => {
+    setOffersListLoading && setOffersListLoading(true);
+    const authToken: string = await validateAndReturnAuthToken();
+    const apolloClient = buildApolloClient(authToken);
+    try {
+      const res = await apolloClient.query({
+        query: GET_PERSONALIZED_OFFERS,
+        fetchPolicy: 'no-cache',
+      });
+      const offers = res?.data?.getPersonalizedOffers?.response?.personalized_data?.offers_for_you;
+      if (offers && offers.length > 0) {
+        setOffersList && setOffersList(offers);
+      }
+      setOffersListLoading && setOffersListLoading(false);
+    } catch (error) {
+      setOffersListLoading && setOffersListLoading(false);
+    }
   };
 
   const checkForVersionUpdate = async () => {

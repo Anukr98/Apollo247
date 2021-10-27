@@ -108,7 +108,6 @@ import {
   UPDATE_PATIENT_MEDICAL_PARAMETERS,
   GET_PRISM_AUTH_TOKEN,
   GET_DOCTOR_LIST,
-  GET_PERSONALIZED_OFFERS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getPrismAuthTokenVariables,
@@ -1213,7 +1212,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   useEffect(() => {
-    getOffers();
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setVaccineLoacalStorageData();
       checkApisToCall();
@@ -2374,25 +2372,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       setBannerLoading(false);
       setBannerDataHome && setBannerDataHome([]);
       setBannerData && setBannerData([]);
-    }
-  };
-
-  const getOffers = async () => {
-    setOffersListLoading && setOffersListLoading(true);
-    const authToken: string = await validateAndReturnAuthToken();
-    const apolloClient = buildApolloClient(authToken);
-    try {
-      const res = await apolloClient.query({
-        query: GET_PERSONALIZED_OFFERS,
-        fetchPolicy: 'no-cache',
-      });
-      const offers = res?.data?.getPersonalizedOffers?.response?.personalized_data?.offers_for_you;
-      if (offers && offers.length > 0) {
-        setOffersList && setOffersList(offers);
-      }
-      setOffersListLoading && setOffersListLoading(false);
-    } catch (error) {
-      setOffersListLoading && setOffersListLoading(false);
     }
   };
 
