@@ -63,7 +63,7 @@ import {
 import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import ApolloClient from 'apollo-client';
 import { saveSearch, saveSearchVariables } from '@aph/mobile-patients/src/graphql/types/saveSearch';
-import { SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
+import { GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS, SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -113,6 +113,7 @@ import {
 import Share from 'react-native-share';
 import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientAddressObj } from '../graphql/types/getDiagnosticOrderDetails';
 import { handleOpenURL, pushTheView } from './deeplinkRedirection';
+import { GetAllUserSubscriptionsWithPlanBenefitsV2, GetAllUserSubscriptionsWithPlanBenefitsV2Variables } from '../graphql/types/GetAllUserSubscriptionsWithPlanBenefitsV2';
 
 const width = Dimensions.get('window').width;
 
@@ -3757,4 +3758,23 @@ export const getAsyncStorageValues = async () => {
   let user = await AsyncStorage.getItem("currentPatient");
   user = (JSON.parse(user)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber);
   return [token, user];
+}
+
+export const getCirclePlanDetails = async (mobile_number: string, client: any): Promise<Array<any>> => {
+  let details = []
+  await client.query({
+    query: GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
+    variables: { mobile_number },
+    fetchPolicy: 'no-cache'
+  }).then((data: any) => {
+    const res = data?.data?.GetAllUserSubscriptionsWithPlanBenefitsV2?.response
+    if(res.hasOwnProperty('APOLLO')) {
+      details = res?.APOLLO?.[0]?.plan_summary
+    }
+    else details = []
+  }).catch((err: Error) => {
+    console.log("error",err)
+    details = []
+  })
+  return details
 }
