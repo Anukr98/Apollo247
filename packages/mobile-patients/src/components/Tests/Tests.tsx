@@ -2841,26 +2841,35 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <>
         <Text style={styles.textHeadingModal}>Choose from Gallery</Text>
-        {prescriptionGalleryOptionArray.map((item) => {
+        {prescriptionGalleryOptionArray.map((item, index) => {
           return (
-            <TouchableOpacity
-              style={{ flexDirection: 'row', alignContent: 'center' }}
-              onPress={() => {
-                if (item?.title == 'Photo Library') {
-                  openGallery();
-                } else {
-                  if (Platform.OS === 'android') {
-                    storagePermissions(() => {
-                      onBrowseClicked();
-                    });
+            <>
+              <TouchableOpacity
+                style={[
+                  styles.areaStyles,
+                  {
+                    marginTop: index === 0 ? 0 : 10,
+                    marginBottom: index === prescriptionGalleryOptionArray?.length - 1 ? 20 : 10,
+                  },
+                ]}
+                onPress={() => {
+                  if (item?.title == 'Photo Library') {
+                    openGallery();
                   } else {
-                    onBrowseClicked();
+                    if (Platform.OS === 'android') {
+                      storagePermissions(() => {
+                        onBrowseClicked();
+                      });
+                    } else {
+                      onBrowseClicked();
+                    }
                   }
-                }
-              }}
-            >
-              <Text style={styles.textPrescription}>{item.title}</Text>
-            </TouchableOpacity>
+                }}
+              >
+                <Text style={styles.textPrescription}>{item.title}</Text>
+              </TouchableOpacity>
+              {index === prescriptionOptionArray?.length - 1 ? null : <Spearator />}
+            </>
           );
         })}
       </>

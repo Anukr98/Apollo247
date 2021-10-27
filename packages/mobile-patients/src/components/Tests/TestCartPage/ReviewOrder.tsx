@@ -309,7 +309,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    const itemIds = isModifyFlow ? cartItemsWithId.concat(modifiedOrderItemIds) : cartItemsWithId;
+    const getAllItemIds = isCartEmpty
+      ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
+      ?.flat();
+    const uniqueItemIDS = [...new Set(getAllItemIds?.map((item) => Number(item?.id)))];
+    const itemIds = isModifyFlow ? cartItemsWithId.concat(modifiedOrderItemIds) : uniqueItemIDS;
     populateCartMapping();
     fetchOverallReportTat(itemIds);
     //if not a circle member
