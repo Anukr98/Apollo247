@@ -3328,6 +3328,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return styles;
   };
 
+  const getRedirectActionForOffers = (action: string) => {
+    const actionChooser: any = {
+      pharmacy: 'PHARMACY_LANDING',
+      consulation: 'SPECIALITY_LISTING',
+      diagnostics: 'DIAGNOSTICS_LANDING',
+    };
+    return actionChooser?.[action];
+  };
+
   const renderOffersCards = (item: any, index: number) => {
     let offerDesignTemplate = getTemplateStyle(item?.template_name);
     return (
@@ -3438,7 +3447,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 </Text>
               </View>
 
-              <View
+              <TouchableOpacity
                 style={{
                   width: 26,
                   height: 26,
@@ -3448,9 +3457,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   backgroundColor: '#FC9916',
                   marginVertical: 4,
                 }}
+                onPress={() => {
+                  let action = getRedirectActionForOffers(item?.cta?.path?.vertical?.toLowerCase());
+                  navigateCTAActions({ type: 'REDIRECT', cta_action: action }, '');
+                }}
               >
                 <WhiteArrowRight />
-              </View>
+              </TouchableOpacity>
             </View>
           ) : null}
         </LinearGradientVerticalComponent>
@@ -3473,7 +3486,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             <View style={{ flexDirection: 'row', marginTop: -5, justifyContent: 'space-between' }}>
               <View
                 style={{
-                  marginHorizontal: 10,
+                  marginHorizontal: 12,
                   marginTop: 14,
                   borderRadius: 4,
                   backgroundColor: offerDesignTemplate?.left_notch?.bg_color,
@@ -3507,7 +3520,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             <Text
               style={{
                 ...theme.viewStyles.text('SB', 20, offerDesignTemplate?.title_text_color, 1, 30),
-                marginHorizontal: 10,
+                marginHorizontal: 12,
+                marginTop: 6,
               }}
             >
               {item?.title?.text?.length > 30
@@ -3518,7 +3532,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             <Text
               style={{
                 ...theme.viewStyles.text('M', 14, offerDesignTemplate?.subtitle_text_color, 1, 18),
-                marginHorizontal: 10,
+                marginHorizontal: 12,
+                marginTop: 6,
               }}
             >
               {item?.subtitle?.text?.length > 30
@@ -3527,11 +3542,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             </Text>
 
             <View
-              style={{ flexDirection: 'row', marginVertical: 6, justifyContent: 'space-between' }}
+              style={{
+                flexDirection: 'row',
+                marginVertical: 12,
+                marginLeft: 12,
+                marginRight: 9,
+                justifyContent: 'space-between',
+              }}
             >
               <View
                 style={{
-                  marginHorizontal: 10,
                   borderRadius: 4,
                   borderColor: '#A15D59',
                   borderWidth: 1,
@@ -3558,7 +3578,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
               <View style={styles.bottomRightArrowView}>
                 <Button
-                  title={`SHOP NOW`}
+                  title={item?.cta?.text}
                   style={{
                     width: 106,
                     height: 32,
@@ -3566,7 +3586,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     backgroundColor: offerDesignTemplate?.cta?.bg_color,
                   }}
                   titleTextStyle={{ color: offerDesignTemplate?.cta?.text_color }}
-                  onPress={() => {}}
+                  onPress={() => {
+                    let action = getRedirectActionForOffers(
+                      item?.cta?.path?.vertical?.toLowerCase()
+                    );
+                    navigateCTAActions({ type: 'REDIRECT', cta_action: action }, '');
+                  }}
                   disabled={false}
                 />
               </View>
@@ -4306,11 +4331,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     };
     postHomeWEGEvent(WebEngageEventName.COVID_VACCINATION_SECTION_CLICKED, undefined, attibutes);
 
-    console.log(
-      'check  ConsultRoom  handleCovidCTA vaccinationSubscriptionInclusionId ---',
-      vaccinationSubscriptionInclusionId
-    );
-
     try {
       if (item?.action === string.vaccineBooking.CORPORATE_VACCINATION) {
         postVaccineWidgetEvents(CleverTapEventName.VACCINATION_BOOK_SLOT_CLICKED);
@@ -4669,7 +4689,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   ) => {
     try {
       setSearchLoading(true);
-      console.log('csk med');
 
       medSearchResults.current = [];
       const res = await searchMedicineApi(
@@ -4686,20 +4705,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const products = res?.data?.products || [];
         finalProducts = products.slice(0, 3);
 
-        console.log('csk med ', products.length, res?.data?.product_count);
-
         medSearchResults.current = finalProducts;
       } else {
         medSearchResults.current = [];
       }
 
-      console.log('csk med done', medSearchResults.current.length);
       updateSearchResultList(MedicalRecordType.MEDICATION, finalProducts);
       setSearchLoading(false);
     } catch (error) {
       setSearchLoading(false);
       updateSearchResultList(MedicalRecordType.MEDICATION, []);
-      console.log('csk med ', JSON.stringify(error));
     }
   };
 
@@ -4711,7 +4726,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         ? diagnosticServiceabilityData?.cityId
         : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID;
     setSearchLoading(true);
-    console.log('csk test');
     testSearchResults.current = [];
     try {
       const res = await getDiagnosticsSearchResults('diagnostic', _searchText, Number(cityId));
@@ -4721,26 +4735,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const products = res?.data?.data || [];
 
         finalProducts = products.slice(0, 3);
-        console.log('csk test', products.length);
 
         testSearchResults.current = finalProducts;
       } else {
         testSearchResults.current = [];
       }
 
-      console.log('csk tests done', testSearchResults.current.length);
       updateSearchResultList(MedicalRecordType.TEST_REPORT, testSearchResults.current);
       setSearchLoading(false);
     } catch (error) {
       CommonBugFender('HomeScreen_ConsultRoom', error);
       setSearchLoading(false);
-      console.log('csk test', JSON.stringify(error));
       updateSearchResultList(MedicalRecordType.TEST_REPORT, []);
     }
   };
 
   const onSearchConsults = async (_searchText: string) => {
-    console.log('csk conss');
     if (_searchText.length > 2) {
       setSearchLoading(true);
 
