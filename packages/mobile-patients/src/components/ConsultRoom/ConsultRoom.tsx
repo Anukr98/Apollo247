@@ -3591,6 +3591,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     height: 32,
                     borderRadius: 4,
                     backgroundColor: offerDesignTemplate?.cta?.bg_color,
+                    shadowOffset: { width: 0, height: 0 },
+                    elevation: 0,
                   }}
                   titleTextStyle={{ color: offerDesignTemplate?.cta?.text_color }}
                   onPress={() => {
