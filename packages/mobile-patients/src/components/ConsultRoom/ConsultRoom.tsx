@@ -3461,7 +3461,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   borderRadius: 13,
                   backgroundColor: '#FC9916',
                   marginVertical: 4,
-                  marginRight: 6,
+                  marginRight: 4,
                 }}
                 onPress={() => {
                   let action = getRedirectActionForOffers(item?.cta?.path?.vertical?.toLowerCase());
