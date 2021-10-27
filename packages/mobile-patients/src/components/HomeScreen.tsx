@@ -2598,7 +2598,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         setshowPopUp(true);
         setTimeout(() => {
           setshowPopUp(false);
-          CommonLogEvent(AppRoutes.ConsultRoom, 'ConsultRoom_BottomPopUp clicked');
+          CommonLogEvent(AppRoutes.HomeScreen, 'ConsultRoom_BottomPopUp clicked');
           AsyncStorage.setItem('gotIt', 'true');
         }, 5000);
       }
@@ -2926,19 +2926,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                   postHomeFireBaseEvent(FirebaseEventName.TABBAR_APPOINTMENTS_CLICKED, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED, 'Menu');
                   postHomeCleverTapEvent(CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS, 'Menu');
-                  CommonLogEvent(AppRoutes.ConsultRoom, 'APPOINTMENTS clicked');
+                  CommonLogEvent(AppRoutes.HomeScreen, 'APPOINTMENTS clicked');
                   props.navigation.navigate('APPOINTMENTS');
                 } else if (i == 1) {
                   postHomeFireBaseEvent(FirebaseEventName.VIEW_HELATH_RECORDS, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Menu');
                   postHomeCleverTapEvent(CleverTapEventName.VIEW_HELATH_RECORDS, 'Menu');
-                  CommonLogEvent(AppRoutes.ConsultRoom, 'HEALTH_RECORDS clicked');
+                  CommonLogEvent(AppRoutes.HomeScreen, 'HEALTH_RECORDS clicked');
                   props.navigation.navigate('HEALTH RECORDS');
                 } else if (i == 2) {
                   postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Menu');
                   postHomeCleverTapEvent(CleverTapEventName.BUY_MEDICINES, 'Menu');
-                  CommonLogEvent(AppRoutes.ConsultRoom, 'MEDICINES clicked');
+                  CommonLogEvent(AppRoutes.HomeScreen, 'MEDICINES clicked');
                   const eventAttributes:
                     | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
                     | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
@@ -2962,13 +2962,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                   };
                   postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Menu');
-                  CommonLogEvent(AppRoutes.ConsultRoom, 'TESTS clicked');
+                  CommonLogEvent(AppRoutes.HomeScreen, 'TESTS clicked');
                   props.navigation.navigate('TESTS', { homeScreenAttributes });
                 } else if (i == 4) {
                   postHomeCleverTapEvent(CleverTapEventName.MY_ACCOUNT, 'Menu');
                   postHomeFireBaseEvent(FirebaseEventName.MY_ACCOUNT, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.MY_ACCOUNT);
-                  CommonLogEvent(AppRoutes.ConsultRoom, 'MY_ACCOUNT clicked');
+                  CommonLogEvent(AppRoutes.HomeScreen, 'MY_ACCOUNT clicked');
                   props.navigation.navigate('MY ACCOUNT');
                 }
               }}
@@ -4088,7 +4088,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         <View style={styles.circleButtonLeft}>
           <ImageBackground
             style={styles.circleButtonImage}
-            source={require('../ui/icons/PathLeft.webp')}
+            source={require('@aph/mobile-patients/src/components/ui/icons/PathLeft.webp')}
           />
         </View>
 
@@ -4102,7 +4102,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         <View style={styles.circleButtonRight}>
           <ImageBackground
             style={styles.circleButtonImage}
-            source={require('../ui/icons/PathRight.webp')}
+            source={require('@aph/mobile-patients/src/components/ui/icons/PathRight.webp')}
           />
         </View>
       </View>
@@ -5379,7 +5379,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           </BottomPopUp>
           <TouchableOpacity
             onPress={() => {
-              CommonLogEvent(AppRoutes.ConsultRoom, 'ConsultRoom_BottomPopUp clicked');
+              CommonLogEvent(AppRoutes.HomeScreen, 'ConsultRoom_BottomPopUp clicked');
               AsyncStorage.setItem('gotIt', 'true');
               setshowPopUp(false);
             }}

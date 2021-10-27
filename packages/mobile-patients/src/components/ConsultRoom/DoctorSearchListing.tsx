@@ -117,7 +117,10 @@ import {
 } from 'react-navigation';
 import AsyncStorage from '@react-native-community/async-storage';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
-import { calculateCircleDoctorPricing, getValuesArray } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  calculateCircleDoctorPricing,
+  getValuesArray,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 import _ from 'lodash';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { CirclePlanAddedToCart } from '@aph/mobile-patients/src/components/ui/CirclePlanAddedToCart';
@@ -321,7 +324,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [specialityId, setSpecialityId] = useState<string>(
     props.navigation.getParam('specialityId') || ''
   );
-  const {circlePlanSelected, circleSubscriptionId, circleSubPlanId} = useShoppingCart();
+  const { circlePlanSelected, circleSubscriptionId, circleSubPlanId } = useShoppingCart();
 
   let DoctorsflatListRef: any;
   const filterOptions = (filters: any) => {
@@ -1163,7 +1166,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               key: null,
               actions: [
                 NavigationActions.navigate({
-                  routeName: AppRoutes.ConsultRoom,
+                  routeName: AppRoutes.HomeScreen,
                 }),
               ],
             })
@@ -1250,9 +1253,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Mobile number': currentPatient?.mobileNumber,
       'Patient UHID': currentPatient?.uhid || '',
-      'Patient age': Math.round(
-        moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)
-      ),
+      'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
       'Patient gender': currentPatient?.gender,
     };
     postCleverTapEvent(eventName, eventAttributes);
@@ -1276,7 +1277,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       Is_TopDoc: !!isTopDoc ? 'Yes' : 'No',
       User_Type: getUserType(allCurrentPatients),
     };
-    
+
     const {
       onlineConsultDiscountedPrice,
       cashbackEnabled,
@@ -1311,7 +1312,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       'Appointment CTA': 'NA',
       'Customer ID': g(currentPatient, 'id'),
       'Available in mins': String(doctorDetails?.earliestSlotInMinutes) || '',
-      'Relation': g(currentPatient, 'relation'),
+      Relation: g(currentPatient, 'relation'),
       'Circle Membership added': String(!!circlePlanSelected),
       'Circle discount': onlineConsultDiscountedPrice ? onlineConsultDiscountedPrice : 0,
       'Circle Cashback': cashbackEnabled ? cashbackAmount! : 0,
@@ -1361,9 +1362,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           Number(doctorDetails?.physicalConsultationFees) ||
           Number(doctorDetails?.fee) ||
           undefined,
-          'Mobile number': currentPatient?.mobileNumber || '',
-          'Circle Member': !!circleSubscriptionId,
-          'Circle Plan type': circleSubPlanId,
+        'Mobile number': currentPatient?.mobileNumber || '',
+        'Circle Member': !!circleSubscriptionId,
+        'Circle Plan type': circleSubPlanId,
       };
       eventAttributes['Source'] = 'List';
       postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
@@ -1565,9 +1566,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             }}
             bounces={false}
             data={doctors}
-            renderItem={({ item, index }) =>
-              renderSearchDoctorResultsRow(item, index, {}, filter)
-            }
+            renderItem={({ item, index }) => renderSearchDoctorResultsRow(item, index, {}, filter)}
             keyExtractor={(item) => item!.id}
             onEndReachedThreshold={0.2}
             onEndReached={(info: { distanceFromEnd: number }) => {

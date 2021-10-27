@@ -783,7 +783,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             text: 'CANCEL',
             onPress: () => {
               hideAphAlert!();
-              props.navigation.navigate(AppRoutes.ConsultRoom);
+              props.navigation.navigate(AppRoutes.HomeScreen);
             },
             type: 'white-button',
           },

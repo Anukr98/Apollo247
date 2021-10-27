@@ -636,7 +636,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         deviceTokenAPI(mePatient.id);
         callPhrNotificationApi(mePatient?.id);
         fireUserLoggedInEvent(mePatient, 'Login');
-        navigateTo(AppRoutes.ConsultRoom, {
+        navigateTo(AppRoutes.HomeScreen, {
           previousRoute: 'Login',
         });
       }
@@ -653,7 +653,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         onCleverTapUserLogin(mePatient);
         deviceTokenAPI(mePatient.id);
         callPhrNotificationApi(mePatient?.id);
-        navigateTo(AppRoutes.ConsultRoom, {
+        navigateTo(AppRoutes.HomeScreen, {
           previousRoute: 'Login',
         });
         fireUserLoggedInEvent(mePatient, 'Login');

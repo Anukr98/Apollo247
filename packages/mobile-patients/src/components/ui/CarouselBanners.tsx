@@ -466,7 +466,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
             title: meta?.category_name,
           });
         } else {
-          props.navigation.navigate(AppRoutes.ConsultRoom);
+          props.navigation.navigate(AppRoutes.HomeScreen);
         }
       } else if (type == hdfc_values.CALL_API) {
         if (action == hdfc_values.CALL_EXOTEL_API) {
@@ -499,7 +499,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           });
         }
       } else {
-        props.navigation.navigate(AppRoutes.ConsultRoom);
+        props.navigation.navigate(AppRoutes.HomeScreen);
       }
     }
   };

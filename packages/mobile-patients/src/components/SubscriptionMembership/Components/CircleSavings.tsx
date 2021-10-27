@@ -156,7 +156,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
             key: null,
             actions: [
               NavigationActions.navigate({
-                routeName: AppRoutes.ConsultRoom,
+                routeName: AppRoutes.HomeScreen,
                 params: {
                   skipAutoQuestions: true,
                 },
