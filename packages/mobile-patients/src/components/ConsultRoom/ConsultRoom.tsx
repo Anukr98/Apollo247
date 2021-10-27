@@ -9,7 +9,6 @@ import {
   SubscriptionData,
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { WebView } from 'react-native-webview';
 import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import { dateFormatterDDMM } from '@aph/mobile-patients/src/utils/dateUtil';
@@ -51,9 +50,7 @@ import {
   TestsIcon,
   WhiteArrowRightIcon,
   VaccineTracker,
-  CrossPopup,
   ProHealthIcon,
-  BackArrow,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   BannerDisplayType,
@@ -137,6 +134,7 @@ import {
   getAge,
   removeObjectNullUndefinedProperties,
   fileToBase64,
+  getAsyncStorageValues,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -210,6 +208,7 @@ import {
   PatientInfo as PatientInfoObj,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { getUniqueId } from 'react-native-device-info';
+import { setItem, getItem } from '@aph/mobile-patients/src/helpers/TimedAsyncStorage';
 
 const { Vitals } = NativeModules;
 
@@ -771,7 +770,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [vaccinationSubscriptionName, setVaccinationSubscriptionName] = useState<string>('');
   const [vaccinationSubscriptionPlanId, setVaccinationSubscriptionPlanId] = useState<string>('');
   const [agreedToVaccineTnc, setAgreedToVaccineTnc] = useState<string>('');
+  const [token, setToken] = useState<string | null>('')
+  const [userMobileNumber, setUserMobileNumber] = useState<string | null>('')
 
+  const [proHealthActiveAppointmentCount, setProHealthActiveAppointmentCount] = useState<
+    string | number
+  >('' | 0);
+  const [proActiveAppointments, setProHealthActiveAppointment] = useState([] as any);
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
   const {
@@ -796,6 +801,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const [previousPatient, setPreviousPatient] = useState<any>([]);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [menuViewOptions, setMenuViewOptions] = useState<number[]>([]);
   const [currentAppointments, setCurrentAppointments] = useState<string>('0');
@@ -879,12 +885,25 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   //for prohealth option
   useEffect(() => {
+    checkProhealthStatus();
+  }, [currentPatient]);
+
+  async function checkProhealthStatus() {
+    const storedUhid: any = await AsyncStorage.getItem('selectUserUHId');
     //for new users, patient uhid was coming as blank
     if (currentPatient?.id && currentPatient?.uhid) {
-      checkIsProhealthActive(currentPatient); //to show prohealth option
-      getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
+      //storedUhid would be null for new users and called if both are same, since patient is changed twice.
+      if (
+        currentPatient?.id &&
+        currentPatient?.uhid &&
+        previousPatient?.uhid != currentPatient?.uhid &&
+        (!!storedUhid ? storedUhid == currentPatient?.uhid : storedUhid == null)
+      ) {
+        checkIsProhealthActive(currentPatient); //to show prohealth option
+        getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
+      }
     }
-  }, [currentPatient]);
+  }
 
   //to be called only when the user lands via app launch
   const logHomePageViewed = async (attributes: any) => {
@@ -2374,7 +2393,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       const eneabled = AppConfig.Configuration.ENABLE_CONDITIONAL_MANAGEMENT;
       setEnableCM(eneabled);
     }
+    const saveSessionValues = async () => {
+      const [loginToken, phoneNumber] = await getAsyncStorageValues();
+      setToken(loginToken);
+      setUserMobileNumber(phoneNumber);
+    }
     fetchData();
+    saveSessionValues();
   }, []);
 
   useEffect(() => {
@@ -2585,6 +2610,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   //check if user has any prohealth bookings
   const checkIsProhealthActive = async (currentPatientDetails: any) => {
+    setPreviousPatient(currentPatientDetails);
     const storedUhid: any = await AsyncStorage.getItem('selectUserUHId');
     const selectedUHID = storedUhid ? storedUhid : g(currentPatient, 'uhid');
 
@@ -2608,22 +2634,30 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (patientUHID) {
       setshowSpinner(true);
       try {
+        /**
+         * caching the api for 24 hrs.
+         */
+        const getCachedApiResult: any = await getItem('mobileNumber_CM_Result');
         const getPhoneNumber =
           patientDetails?.mobileNumber?.length > 10
             ? patientDetails?.mobileNumber?.slice(patientDetails?.mobileNumber?.length - 10)
             : patientDetails?.mobileNumber;
-        const res: any = await GetAllUHIDSForNumber_CM(getPhoneNumber! || '');
-        if (res?.data?.response && res?.data?.errorCode === 0) {
-          let resultData = res?.data?.response?.signUpUserData;
-          if (resultData?.length > 0) {
-            let getCurrentProfile = resultData?.find(
-              (item: any) => item?.uhid == (selectedUHID! || currentPatientDetails?.uhid)
-            );
-            //get status for active chron.
-            let isActive = getCurrentProfile?.isChronActive;
-            isActive ? setProHealthActive(true) : setProHealthActive(false);
+        if (!!getCachedApiResult && getCachedApiResult?.data) {
+          updateSDKOption(getCachedApiResult?.data, selectedUHID, currentPatientDetails);
+        } else {
+          const res: any = await GetAllUHIDSForNumber_CM(getPhoneNumber! || '');
+          if (res?.data?.response && res?.data?.errorCode === 0) {
+            let resultData = res?.data?.response?.signUpUserData;
+            if (resultData?.length > 0) {
+              const obj = {
+                data: resultData,
+                expireAt: 1440,
+              };
+              setItem('mobileNumber_CM_Result', obj, obj?.expireAt); //storing the result for 24 hrs, for a logged in user
+              updateSDKOption(resultData, selectedUHID, currentPatientDetails);
+            }
           }
-        } //error code
+        }
         setshowSpinner(false);
       } catch (error) {
         CommonBugFender('ProHealth_checkIsProhealthActive_error_ConsultRoom', error);
@@ -2640,11 +2674,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
-  const [proHealthActiveAppointmentCount, setProHealthActiveAppointmentCount] = useState<
-    string | number
-  >('' || 0);
-
-  const [proActiveAppointments, setProHealthActiveAppointment] = useState([] as any);
+  function updateSDKOption(resultData: any, selectedUHID: string, currentPatientDetails: any) {
+    let getCurrentProfile = resultData?.find(
+      (item: any) => item?.uhid == (selectedUHID! || currentPatientDetails?.uhid)
+    );
+    //get status for active chron.
+    let isActive = getCurrentProfile?.isChronActive;
+    isActive ? setProHealthActive(true) : setProHealthActive(false);
+  }
 
   const getActiveProHealthAppointments = async (currentDetails: any) => {
     //or can use storeUhid, and then call api getPatientsByUhid.
@@ -3106,7 +3143,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <View style={styles.nestedWebView}>
           <WebView
             source={{
-              uri: url,
+              uri: `${url}?utm_token=${token}&utm_mobile_number=${userMobileNumber}`,
             }}
             style={styles.webViewCompo}
             onLoadStart={() => {

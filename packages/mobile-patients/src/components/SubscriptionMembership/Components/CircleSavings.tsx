@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import {
@@ -12,7 +12,7 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import { CircleMembershipActivation } from '@aph/mobile-patients/src/components/ui/CircleMembershipActivation';
 import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
-import { timeDiffDaysFromNow } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getAsyncStorageValues, timeDiffDaysFromNow } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import moment from 'moment';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
@@ -23,6 +23,7 @@ import { WebView } from 'react-native-webview';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -39,10 +40,21 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const videoLinks = strings.Circle.video_links;
   const [showCircleActivation, setShowCircleActivation] = useState<boolean>(false);
+  const [token, setToken] = useState<string | null>('')
+  const [userMobileNumber, setUserMobileNumber] = useState<string | null>('')
 
   const { currentPatient } = useAllCurrentPatients();
   const planValidity = useRef<string>('');
   const planPurchased = useRef<boolean | undefined>(false);
+
+  useEffect(() => {
+    const saveSessionValues = async () => {
+      const [loginToken, phoneNumber] = await getAsyncStorageValues()
+      setToken(loginToken)
+      setUserMobileNumber(phoneNumber)
+    }
+    saveSessionValues()
+  },[])
 
   const renderCircleExpiryBanner = () => {
     const expiry = timeDiffDaysFromNow(circleSubscription?.endDate);
@@ -256,7 +268,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
           allowsFullscreenVideo
           allowsInlineMediaPlayback
           mediaPlaybackRequiresUserAction
-          source={{ uri: item }}
+          source={{ uri: `${item}?utm_token=${token}&utm_mobile_number=${userMobileNumber}` }}
           style={{
             width: screenWidth,
             height: 150,
