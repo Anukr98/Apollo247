@@ -960,6 +960,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [searchText, setSearchText] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [offersList, setOffersList] = useState<any[]>([]);
+  const [offersListLoading, setOffersListLoading] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState({});
   const [prismAuthToken, setPrismAuthToken] = useState<string>('');
   const testSearchResults = useRef<
@@ -2375,6 +2376,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const getOffers = async () => {
+    setOffersListLoading(true);
     const authToken: string = await validateAndReturnAuthToken();
     const apolloClient = buildApolloClient(authToken);
     try {
@@ -2386,7 +2388,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       if (offers && offers.length > 0) {
         setOffersList(offers);
       }
-    } catch (error) {}
+      setOffersListLoading(false);
+    } catch (error) {
+      setOffersListLoading(false);
+    }
   };
 
   const getProductCashbackDetails = () => {
@@ -3390,7 +3395,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
           <Text
             style={{
-              ...theme.viewStyles.text('SB', 20, offerDesignTemplate?.title_text_color, 1, 30),
+              ...theme.viewStyles.text('B', 20, offerDesignTemplate?.title_text_color, 1, 30),
               marginHorizontal: 10,
               marginTop: 'auto',
             }}
@@ -3436,7 +3441,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               >
                 <Text
                   style={{
-                    ...theme.viewStyles.text('R', 12, offerDesignTemplate?.coupon_color, 1, 18),
+                    ...theme.viewStyles.text('M', 12, offerDesignTemplate?.coupon_color, 1, 18),
                   }}
                 >
                   {`Coupon: ${
@@ -3456,6 +3461,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   borderRadius: 13,
                   backgroundColor: '#FC9916',
                   marginVertical: 4,
+                  marginRight: 6,
                 }}
                 onPress={() => {
                   let action = getRedirectActionForOffers(item?.cta?.path?.vertical?.toLowerCase());
@@ -3519,7 +3525,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
             <Text
               style={{
-                ...theme.viewStyles.text('SB', 20, offerDesignTemplate?.title_text_color, 1, 30),
+                ...theme.viewStyles.text('B', 20, offerDesignTemplate?.title_text_color, 1, 30),
                 marginHorizontal: 12,
                 marginTop: 6,
               }}
@@ -3565,7 +3571,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               >
                 <Text
                   style={{
-                    ...theme.viewStyles.text('R', 12, offerDesignTemplate?.coupon_color, 1, 18),
+                    ...theme.viewStyles.text('M', 12, offerDesignTemplate?.coupon_color, 1, 18),
                   }}
                 >
                   {`Coupon: ${
@@ -5331,9 +5337,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <View style={styles.viewName}>
                 {renderMenuOptions()}
 
-                {renderHeadings('Offers For You')}
-                {circleDataLoading && renderOffersForYouShimmer()}
-                {!circleDataLoading && renderOffersForYou()}
+                {!offersListLoading && offersList.length === 0
+                  ? null
+                  : renderHeadings('Offers For You')}
+                {offersListLoading && renderOffersForYouShimmer()}
+                {!offersListLoading && renderOffersForYou()}
 
                 {renderHeadings('My Doctors')}
                 <View>{renderListView('Active Appointments', 'normal')}</View>
