@@ -2034,7 +2034,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           setSelectedReason('');
         };
         const requestStatus = g(data, 'cancelMedicineOrderOMS', 'orderStatus');
-        if (requestStatus == MEDICINE_ORDER_STATUS.CANCEL_REQUEST) {
+        if (
+          requestStatus == MEDICINE_ORDER_STATUS.CANCEL_REQUEST ||
+          requestStatus == MEDICINE_ORDER_STATUS.CANCELLED
+        ) {
           showAphAlert &&
             showAphAlert({
               title: 'Hi :)',
