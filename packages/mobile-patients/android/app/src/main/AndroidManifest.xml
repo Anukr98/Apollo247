@@ -90,12 +90,6 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "link://patienturl -->
-                <data android:scheme="apollopatients" /> 
-                <!-- Accepts URIs that begin with "https:www.apollopharmacy.in -->
-                <data
-                    android:scheme="https" 
-                    android:host="www.apollopharmacy.in"/>
                 <!-- Accepts URIs that begin with "https:www.apollo247.com -->
                 <data 
                     android:scheme="https"
