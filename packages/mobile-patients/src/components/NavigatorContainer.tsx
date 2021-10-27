@@ -7,10 +7,7 @@ import { ChatRoom } from '@aph/mobile-patients/src/components/Consult/ChatRoom';
 import { AppointmentDetails } from '@aph/mobile-patients/src/components/ConsultRoom/AppointmentDetails';
 import { AppointmentDetailsPhysical } from '@aph/mobile-patients/src/components/ConsultRoom/AppointmentDetailsPhysical';
 import { Consult } from '@aph/mobile-patients/src/components/ConsultRoom/Consult';
-import {
-  HomeScreen,
-  tabBarOptions,
-} from '@aph/mobile-patients/src/components/ConsultRoom/HomeScreen';
+import { HomeScreen, tabBarOptions } from '@aph/mobile-patients/src/components/HomeScreen';
 import { DoctorDetails } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorDetails';
 import { DoctorDetailsBookingOnRequest } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorDetailsBookingOnRequest';
 import { DoctorSearch } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearch';
