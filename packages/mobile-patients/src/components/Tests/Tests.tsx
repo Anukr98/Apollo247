@@ -12,7 +12,6 @@ import {
   SectionHeader,
   Spearator,
 } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-
 import {
   CartIcon,
   LocationOff,
@@ -2778,15 +2777,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const prescriptionOptionArray = [
     {
-      icon: <GalleryIcon />,
+      icon: <GalleryIcon style={styles.uploadPresIcon} />,
       title: 'Choose from Gallery',
     },
     {
-      icon: <CameraIcon />,
+      icon: <CameraIcon style={styles.uploadPresIcon} />,
       title: 'Take a Picture',
     },
     {
-      icon: <PrescriptionIcon />,
+      icon: <PrescriptionIcon style={styles.uploadPresIcon} />,
       title: 'Select from my Prescriptions',
     },
   ];
@@ -2804,25 +2803,34 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <>
         <Text style={styles.textHeadingModal}>Upload Prescription</Text>
-        {prescriptionOptionArray.map((item) => {
+        {prescriptionOptionArray.map((item, index: number) => {
           return (
-            <TouchableOpacity
-              onPress={() => {
-                if (item.title == 'Choose from Gallery') {
-                  setIsPrescriptionGallery(true);
-                } else if (item.title == 'Take a Picture') {
-                  setIsPrescriptionUpload(false);
-                  onClickTakePhoto();
-                } else {
-                  setIsPrescriptionUpload(false);
-                  setSelectPrescriptionVisible(true);
-                }
-              }}
-              style={styles.areaStyles}
-            >
-              {item.icon}
-              <Text style={styles.textPrescription}>{item.title}</Text>
-            </TouchableOpacity>
+            <>
+              <TouchableOpacity
+                onPress={() => {
+                  if (item.title == 'Choose from Gallery') {
+                    setIsPrescriptionGallery(true);
+                  } else if (item.title == 'Take a Picture') {
+                    setIsPrescriptionUpload(false);
+                    onClickTakePhoto();
+                  } else {
+                    setIsPrescriptionUpload(false);
+                    setSelectPrescriptionVisible(true);
+                  }
+                }}
+                style={[
+                  styles.areaStyles,
+                  {
+                    marginTop: index === 0 ? 0 : 10,
+                    marginBottom: index === prescriptionOptionArray?.length - 1 ? 20 : 10,
+                  },
+                ]}
+              >
+                {item?.icon}
+                <Text style={styles.textPrescription}>{item?.title}</Text>
+              </TouchableOpacity>
+              {index === prescriptionOptionArray?.length - 1 ? null : <Spearator />}
+            </>
           );
         })}
       </>
@@ -2981,7 +2989,7 @@ const styles = StyleSheet.create({
   paitentModalView: {
     backgroundColor: 'white',
     width: '100%',
-    padding: 10,
+    padding: 16,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
   },
@@ -3009,12 +3017,19 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('B', 17, colors.SHERPA_BLUE),
     marginBottom: 20,
   },
+
   textPrescription: {
-    ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE),
-    marginBottom: 20,
+    ...theme.viewStyles.text('SB', 14, colors.SHERPA_BLUE, 1, 20),
     paddingHorizontal: 10,
+    textAlign: 'center',
   },
-  areaStyles: { flexDirection: 'row', alignContent: 'center' },
+  areaStyles: { flexDirection: 'row', alignItems: 'center' },
+  uploadPresIcon: {
+    height: 18,
+    width: 18,
+    resizeMode: 'contain',
+    tintColor: colors.TEAL_BLUE,
+  },
   buttonStyle: { width: '30%', alignSelf: 'center' },
   prescriptionText: {
     ...theme.viewStyles.text('SB', 15, theme.colors.SHERPA_BLUE, 1, 20),
@@ -3214,12 +3229,12 @@ const styles = StyleSheet.create({
     borderRadius: 50 / 2,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f9f9f9',
+    backgroundColor: theme.colors.BGK_GRAY,
   },
   image: {
     width: 30,
     height: 30,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: theme.colors.BGK_GRAY,
     resizeMode: 'contain',
   },
   gridPart: {

@@ -34,6 +34,7 @@ import {
   AppConfig,
   DIAGNOSTIC_ORDER_FAILED_STATUS,
   DIAGNOSTIC_ORDER_FOR_PREPDATA,
+  DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
   DIAGNOSTIC_SHOW_OTP_STATUS,
   DIAGNOSTIC_STATUS_BEFORE_SUBMITTED,
 } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -525,7 +526,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     const prepData = !!props?.orderAttributesObj?.preTestingRequirement
       ? props?.orderAttributesObj?.preTestingRequirement
       : '';
-    return props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED &&
+    return DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(props.orderLevelStatus) &&
       (report || prepData) ? (
       <View style={styles.ratingContainer}>
         {report ? (
@@ -672,7 +673,7 @@ const styles = StyleSheet.create({
   },
   yellowText: { ...theme.viewStyles.yellowTextStyle, fontSize: screenWidth > 380 ? 12 : 11 },
   listViewContainer: {
-    backgroundColor: '#F9F9F9',
+    backgroundColor: theme.colors.BGK_GRAY,
     borderRadius: 5,
     flex: 1,
     padding: 10,
@@ -714,7 +715,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
     justifyContent: 'space-between',
     flexDirection: 'row',
-    height: 40,
+    minHeight: 40,
     borderBottomLeftRadius: 8,
     borderBottomRightRadius: 8,
     borderRadius: 10,
@@ -782,9 +783,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    width: '57%',
   },
   trackStyle: {
-    ...theme.viewStyles.text('SB', 12, colors.APP_YELLOW, 1, 18),
+    ...theme.viewStyles.text('SB', isSmallDevice ? 11 : 12, colors.APP_YELLOW, 1, 18),
   },
   ratingContainer: {
     backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,

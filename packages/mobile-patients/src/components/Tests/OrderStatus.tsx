@@ -80,6 +80,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     clearDiagnoticCartInfo,
     cartItems,
     setIsDiagnosticCircleSubscription,
+    modifyHcCharges,
   } = useDiagnosticsCart();
   const { circleSubscriptionId, circlePlanSelected, setCircleSubscriptionId } = useShoppingCart();
   const client = useApolloClient();
@@ -203,7 +204,13 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     if (modifiedOrderDetails == null) {
       postwebEngageCheckoutCompletedEvent();
     }
-    firePurchaseEvent(orderDetails?.orderId, orderDetails?.amount, cartItems, currentPatient);
+    firePurchaseEvent(
+      orderDetails?.orderId,
+      orderDetails?.amount,
+      cartItems,
+      currentPatient,
+      modifyHcCharges
+    );
     submitReviewOnLabBook();
     firePaymentOrderStatusEvent();
     clearDiagnoticCartInfo?.();
@@ -342,7 +349,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       refundStatusArr: [],
       goToHomeOnBack: true,
       comingFrom: AppRoutes.TestsCart,
-      showOrderSummaryTab: true,
+      showOrderSummaryTab: false,
       disableTrackOrder: false,
       amount: orderDetails?.amount,
     });
@@ -691,7 +698,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     props.navigation.navigate(AppRoutes.MembershipDetails, {
       membershipType: 'CIRCLE PLAN',
       isActive: true,
-      circleEventSource:'Cart(Diagnostic)'
+      circleEventSource: 'Cart(Diagnostic)',
     });
   }
 
@@ -974,12 +981,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   itemsView: {
-    backgroundColor: '#F9F9F9',
+    backgroundColor: theme.colors.BGK_GRAY,
     margin: 8,
     padding: 8,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#F9F9F9',
+    borderColor: theme.colors.BGK_GRAY,
   },
   moreText: {
     ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW, 1, 18),

@@ -655,7 +655,8 @@
     "prescriptionError": "Sorry cannot submit precription, an error occured",
     "prescriptionSuccess":"Prescription Successfully Uploaded",
     "fromHealthRecord":"PRESCRIPTION FROM HEALTH RECORDS",
-    "addMorePrescription":"+ ADD MORE PRESCRIPTIONS"
+    "addMorePrescription":"+ ADD MORE PRESCRIPTIONS",
+    "diagnosticSearchLocation": "Search for street name, pincode…"
   },
   "diagnosticCategoryTitle": {
     "category": "category",

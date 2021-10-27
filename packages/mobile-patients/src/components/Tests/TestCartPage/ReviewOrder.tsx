@@ -133,8 +133,11 @@ import {
 import CircleCard from '@aph/mobile-patients/src/components/Tests/components/CircleCard';
 import { CirclePlansListOverlay } from '@aph/mobile-patients/src/components/Tests/components/CirclePlansListOverlay';
 import { debounce } from 'lodash';
-import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const screenWidth = Dimensions.get('window').width;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
@@ -224,9 +227,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setIsCircleSubscription,
   } = useShoppingCart();
 
-  const {
-    diagnosticServiceabilityData,
-  } = useAppCommonData();
+  const { diagnosticServiceabilityData } = useAppCommonData();
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { setauthToken } = useAppCommonData();
@@ -1012,7 +1013,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     props.navigation.navigate(AppRoutes.CommonWebView, {
       url: AppConfig.Configuration.CIRLCE_PHARMA_URL,
       source: 'Diagnostic Cart',
-      circleEventSource:'Cart(Diagnostic)'
+      circleEventSource: 'Cart(Diagnostic)',
     });
   };
 
@@ -1078,13 +1079,13 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setIsCircleAddedToCart?.(!isCircleAddedToCart);
     setIsCirclePlanRemoved?.(!isCirclePlanRemoved);
     const circleData = circlePlanSelected;
-    const cleverTapEventAttributes = {
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE] = {
       navigation_source: 'Cart(Diagnostic)',
       circle_end_date: getCircleNoSubscriptionText(),
       circle_start_date: getCircleNoSubscriptionText(),
-      circle_planid: circleData?.subPlanId,
+      plan_id: circleData?.subPlanId,
       customer_id: currentPatient?.id,
-      duration_in_month: circleData?.durationInMonth,
+      duration_in_months: circleData?.durationInMonth,
       user_type: getUserType(allCurrentPatients),
       price: circleData?.currentSellingPrice,
     };
@@ -1094,7 +1095,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     if (!isCirclePlanRemoved) {
       postCleverTapEvent(CleverTapEventName.CIRCLE_PLAN_REMOVE_FROM_CART, cleverTapEventAttributes);
     }
-  };
+  }
 
   function _navigateToViewCirclePlans() {
     setShowCirclePopup(true);
@@ -2238,19 +2239,19 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const renderCallToOrder = () => {
     return (
       <CallToOrderView
-      cityId = {Number(diagnosticServiceabilityData?.cityId)}
-      pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTCART}
-      customMargin={220}
-        slideCallToOrder = {slideCallToOrder}
-        onPressSmallView = {() => {
+        cityId={Number(diagnosticServiceabilityData?.cityId)}
+        pageId={CALL_TO_ORDER_CTA_PAGE_ID.TESTCART}
+        customMargin={220}
+        slideCallToOrder={slideCallToOrder}
+        onPressSmallView={() => {
           setSlideCallToOrder(false);
         }}
-        onPressCross = {() => {
+        onPressCross={() => {
           setSlideCallToOrder(true);
         }}
       />
-    )
-  }
+    );
+  };
 
   return (
     <View style={{ flex: 1 }}>
