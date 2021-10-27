@@ -8,9 +8,9 @@ import { AppointmentDetails } from '@aph/mobile-patients/src/components/ConsultR
 import { AppointmentDetailsPhysical } from '@aph/mobile-patients/src/components/ConsultRoom/AppointmentDetailsPhysical';
 import { Consult } from '@aph/mobile-patients/src/components/ConsultRoom/Consult';
 import {
-  ConsultRoom,
+  HomeScreen,
   tabBarOptions,
-} from '@aph/mobile-patients/src/components/ConsultRoom/ConsultRoom';
+} from '@aph/mobile-patients/src/components/ConsultRoom/HomeScreen';
 import { DoctorDetails } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorDetails';
 import { DoctorDetailsBookingOnRequest } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorDetailsBookingOnRequest';
 import { DoctorSearch } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearch';
@@ -162,7 +162,7 @@ import { ConsultPaymentScreen } from '@aph/mobile-patients/src/components/MyPaym
 
 export enum AppRoutes {
   Login = 'Login',
-  ConsultRoom = 'ConsultRoom',
+  HomeScreen = 'HomeScreen',
   TabBar = 'TabBar',
   DoctorSearch = 'DoctorSearch',
   SignUp = 'SignUp',
@@ -345,9 +345,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
       gesturesEnabled: false,
     },
   },
-  [AppRoutes.ConsultRoom]: {
-    screen: ConsultRoom,
-    path: 'ConsultRoomPage',
+  [AppRoutes.HomeScreen]: {
+    screen: HomeScreen,
+    path: 'HomeScreen',
   },
   [AppRoutes.DoctorSearchListing]: {
     screen: DoctorSearchListing,

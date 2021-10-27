@@ -891,8 +891,8 @@ export const tabBarOptions: TabBarOptions[] = [
   },
 ];
 
-export interface ConsultRoomProps extends NavigationScreenProps {}
-export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
+export interface HomeScreenProps extends NavigationScreenProps {}
+export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const { isIphoneX } = DeviceHelper();
   const {
     setLocationDetails,
