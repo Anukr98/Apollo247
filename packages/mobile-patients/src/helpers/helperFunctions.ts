@@ -3810,3 +3810,9 @@ export const getErrorMsg = (errorCode: string) => {
       break;
   }
 };
+export const getAsyncStorageValues = async () => {
+  const token = await AsyncStorage.getItem('jwt');
+  let user = await AsyncStorage.getItem('currentPatient');
+  user = JSON.parse(user)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber;
+  return [token, user];
+};

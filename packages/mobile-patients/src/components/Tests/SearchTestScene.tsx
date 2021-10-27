@@ -757,9 +757,15 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   };
 
   function _navigateToCartPage() {
-    props.navigation.navigate(AppRoutes.TestsCart, {
-      orderDetails: modifiedOrder,
-    });
+    if (isModify) {
+      props.navigation.navigate(AppRoutes.CartPage, {
+        orderDetails: modifiedOrder,
+      });
+    } else {
+      props.navigation.navigate(AppRoutes.AddPatients, {
+        orderDetails: modifiedOrder,
+      });
+    }
   }
 
   const renderStickyBottom = () => {
@@ -892,6 +898,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     paddingVertical: 0,
     backgroundColor: 'white',
+    marginBottom: GO_TO_CART_HEIGHT,
   },
   cartDetailView: {
     position: 'absolute',

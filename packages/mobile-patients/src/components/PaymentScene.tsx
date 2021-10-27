@@ -22,6 +22,7 @@ import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   postCleverTapEvent,
+  getAsyncStorageValues,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { WebView } from 'react-native-webview';
 import {
@@ -41,6 +42,7 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const styles = StyleSheet.create({
   container: {
@@ -99,6 +101,9 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isfocused, setisfocused] = useState<boolean>(false);
+  const [token, setToken] = useState<string | null>('')
+  const [userMobileNumber, setUserMobileNumber] = useState<string | null>('')
+
   const { pharmacyUserTypeAttribute } = useAppCommonData();
 
   const handleBack = async () => {
@@ -123,6 +128,12 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    const saveSessionValues = async () => {
+      const [loginToken, phoneNumber] = await getAsyncStorageValues()
+      setToken(loginToken)
+      setUserMobileNumber(phoneNumber)
+    }
+    saveSessionValues()
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -290,7 +301,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       isStorePickup ? 'oid' : 'transId'
     }=${transactionId}&pid=${currentPatiendId}&source=mobile&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
       burnHC ? '&hc=' + burnHC : ''
-    }${bankCode ? '&bankCode=' + bankCode : ''}`;
+    }${bankCode ? '&bankCode=' + bankCode : ''}?utm_token=${token}&utm_mobile_number=${userMobileNumber}`;
 
     if (!circleSubscriptionId && isCircleSubscription) {
       url += `${planId ? '&planId=' + planId : ''}${
