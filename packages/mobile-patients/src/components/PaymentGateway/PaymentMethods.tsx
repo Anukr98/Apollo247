@@ -538,13 +538,14 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   async function onPressWallet(wallet: string, bestOffer?: any) {
     triggerWebengege('Wallet-' + wallet, 'WALLET', string.common.phonePeWallet);
     firePaymentInitiatedEvent('WALLET', wallet, null, false, null, false, false);
+    const offerId = bestOffer?.offer_id;
     const token = await getClientToken();
     token
       ? wallet == 'PHONEPE' && phonePeReady
-        ? InitiateUPISDKTxn(requestId, token, paymentId, wallet, 'ANDROID_PHONEPE')
+        ? InitiateUPISDKTxn(requestId, token, paymentId, wallet, 'ANDROID_PHONEPE', offerId)
         : wallet == 'PAYTM' && payTmReady
-        ? InitiateUPISDKTxn(requestId, token, paymentId, wallet, 'ANDROID_PAYTM')
-        : InitiateWalletTxn(requestId, token, paymentId, wallet, bestOffer?.offer_id)
+        ? InitiateUPISDKTxn(requestId, token, paymentId, wallet, 'ANDROID_PAYTM', offerId)
+        : InitiateWalletTxn(requestId, token, paymentId, wallet, offerId)
       : renderErrorPopup();
     const param =
       wallet == 'PHONEPE' && phonePeReady

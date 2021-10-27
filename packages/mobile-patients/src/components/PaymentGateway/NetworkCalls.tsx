@@ -136,7 +136,8 @@ export const InitiateUPISDKTxn = (
   clientAuthToken: string,
   paymentOrderId: string,
   paymentMethod: string,
-  sdkPresent: string
+  sdkPresent: string,
+  offerId?: any
 ) => {
   const IntentPayload: any = {
     requestId: requestId,
@@ -148,6 +149,7 @@ export const InitiateUPISDKTxn = (
       sdkPresent: sdkPresent,
       endUrls: [AppConfig.Configuration.baseUrl],
       clientAuthToken: clientAuthToken,
+      offers: !!offerId ? [offerId] : null,
     },
   };
   if (paymentMethod == 'GOOGLEPAY') {
