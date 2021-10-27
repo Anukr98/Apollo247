@@ -138,6 +138,8 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
             const responseData = selectedPlan;
             fireCirclePlanSelectedEvent();
             if (action == 'PAY') {
+              setDefaultCirclePlan && setDefaultCirclePlan(null);
+              setCirclePlanSelected && setCirclePlanSelected(responseData);
               props.navigation.navigate(AppRoutes.SubscriptionCart);
             } else {
               if (source === 'Diagnostic Cart') {
