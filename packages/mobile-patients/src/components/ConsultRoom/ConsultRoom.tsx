@@ -3325,11 +3325,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const getTemplateStyle = (templateName: string) => {
-    let template =
-      homeBannerOfferSection && homeBannerOfferSection?.templates?.length
-        ? homeBannerOfferSection?.templates
-        : AppConfig.DEFAULT_OFFERS_TEMPLATE?.templates;
-    let styles = template?.[templateName] || template?.['default'];
+    const template =
+      homeBannerOfferSection && homeBannerOfferSection?.templates?.[templateName]
+        ? homeBannerOfferSection?.templates?.[templateName]
+        : AppConfig.DEFAULT_OFFERS_TEMPLATE?.templates?.[templateName];
+    const styles = template || AppConfig.DEFAULT_OFFERS_TEMPLATE?.templates?.['default'];
+
     return styles;
   };
 
@@ -3454,11 +3455,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
               <TouchableOpacity
                 style={{
-                  width: 26,
-                  height: 26,
+                  width: 22,
+                  height: 22,
                   justifyContent: 'center',
                   alignItems: 'center',
-                  borderRadius: 13,
+                  borderRadius: 11,
                   backgroundColor: '#FC9916',
                   marginVertical: 4,
                   marginRight: 4,
