@@ -301,7 +301,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       isStorePickup ? 'oid' : 'transId'
     }=${transactionId}&pid=${currentPatiendId}&source=mobile&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
       burnHC ? '&hc=' + burnHC : ''
-    }${bankCode ? '&bankCode=' + bankCode : ''}?utm_token=${token}&utm_mobile_number=${userMobileNumber}`;
+    }${bankCode ? '&bankCode=' + bankCode : ''}&utm_token=${token}&utm_mobile_number=${userMobileNumber}`;
 
     if (!circleSubscriptionId && isCircleSubscription) {
       url += `${planId ? '&planId=' + planId : ''}${

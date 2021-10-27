@@ -3753,7 +3753,8 @@ export const convertDateToEpochFormat = (value: Date) => {
 };
 
 export const getAsyncStorageValues = async () => {
-  const token = await AsyncStorage.getItem('jwt');
+  let token = await AsyncStorage.getItem('jwt');
+  token = JSON.parse(token)
   let user = await AsyncStorage.getItem("currentPatient");
   user = (JSON.parse(user)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber);
   return [token, user];

@@ -7518,6 +7518,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
   const showWeimageOpen = () => {
+    let uri = `${url}`
+    const queryParamsDelimiterIndex = uri.indexOf('?')
+    if(queryParamsDelimiterIndex !== -1)
+      uri = uri.concat(`&utm_token=${token}&utm_mobile_number=${userMobileNumber}`)
+    else
+      uri = uri.concat(`?utm_token=${token}&utm_mobile_number=${userMobileNumber}`)
+      
     return (
       <View
         style={{
@@ -7551,7 +7558,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             marginBottom: 20,
             borderRadius: 10,
           }}
-          source={{ uri: `${url}?utm_token=${loginToken}&utm_mobile_number=${userMobileNumber}` }}
+          source={{ uri }}
         />
       </View>
     );

@@ -76,7 +76,13 @@ export const CovidScan: React.FC<CovidScanProps> = (props) => {
   };
 
   const renderWebView = () => {
-    const uri = `${props.navigation.getParam('covidUrl')}?utm_token=${token}&utm_mobile_number=${userMobileNumber}`
+    let uri = `${props.navigation.getParam('covidUrl')}`
+    const queryParamsDelimiterIndex = uri.indexOf('?')
+    if(queryParamsDelimiterIndex !== -1)
+      uri = uri.concat(`&utm_token=${token}&utm_mobile_number=${userMobileNumber}`)
+    else
+      uri = uri.concat(`?utm_token=${token}&utm_mobile_number=${userMobileNumber}`)
+      
     return (
       <WebView
         ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}

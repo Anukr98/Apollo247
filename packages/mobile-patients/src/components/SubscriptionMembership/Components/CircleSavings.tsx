@@ -262,13 +262,20 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
   };
 
   const rendeSliderVideo = ({ item }) => {
+    let uri = `${item}`
+    const queryParamsDelimiterIndex = uri.indexOf('?')
+    if(queryParamsDelimiterIndex !== -1)
+      uri = uri.concat(`&utm_token=${token}&utm_mobile_number=${userMobileNumber}`)
+    else
+      uri = uri.concat(`?utm_token=${token}&utm_mobile_number=${userMobileNumber}`)
+      
     return (
       <View style={{ flex: 1 }}>
         <WebView
           allowsFullscreenVideo
           allowsInlineMediaPlayback
           mediaPlaybackRequiresUserAction
-          source={{ uri: `${item}?utm_token=${token}&utm_mobile_number=${userMobileNumber}` }}
+          source={{ uri }}
           style={{
             width: screenWidth,
             height: 150,

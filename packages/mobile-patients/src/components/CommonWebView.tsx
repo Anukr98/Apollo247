@@ -125,7 +125,13 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   };
 
   const renderWebView = () => {
-    const uri = `${props.navigation.getParam('url')}?utm_token=${token}&utm_mobile_number=${userMobileNumber}`
+    let uri = `${props.navigation.getParam('url')}`
+    const queryParamsDelimiterIndex = uri.indexOf('?')
+    if(queryParamsDelimiterIndex !== -1)
+      uri = uri.concat(`&utm_token=${token}&utm_mobile_number=${userMobileNumber}`)
+    else
+      uri = uri.concat(`?utm_token=${token}&utm_mobile_number=${userMobileNumber}`)
+    
     return (
       <WebView
         ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
