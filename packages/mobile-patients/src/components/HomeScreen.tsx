@@ -4081,7 +4081,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     );
   };
 
-  const renderCircleBannerCards = () => {
+  const renderCircleBannerCards = (cardlist: any) => {
     if (cardlist?.length <= 0) return null;
     return (
       <View style={[styles.circleRowsContainer, { paddingRight: 10 }]}>
