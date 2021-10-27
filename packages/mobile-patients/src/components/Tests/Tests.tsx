@@ -31,6 +31,8 @@ import {
   GalleryIcon,
   CameraIcon,
   CrossPopup,
+  WhiteCall,
+  BlueCross
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
@@ -93,6 +95,7 @@ import {
 import { Image } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
 import {
+  CALL_TO_ORDER_CTA_PAGE_ID,
   DIAGNOSTIC_ORDER_STATUS,
   TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -196,6 +199,7 @@ import {
   getDiagnosticOrdersListByMobile,
   getDiagnosticOrdersListByMobileVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
+import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 const rankArr = ['1', '2', '3', '4', '5', '6'];
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
@@ -322,7 +326,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [banners, setBanners] = useState([]);
   const [cityId, setCityId] = useState('');
   const [currentOffset, setCurrentOffset] = useState<number>(1);
-
+  const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
   const [sectionLoading, setSectionLoading] = useState<boolean>(false);
   const [showItemCard, setShowItemCard] = useState<boolean>(false);
   const [bookUsSlideIndex, setBookUsSlideIndex] = useState(0);
@@ -1023,6 +1027,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           postMyOrdersClicked('Diagnostics', currentPatient);
           props.navigation.push(AppRoutes.YourOrdersTest, {
             isTest: true,
+            cityId: cityId
           });
         }}
         container={{
@@ -2332,6 +2337,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
     props.navigation.push(AppRoutes.YourOrdersTest, {
       isTest: true,
+      cityId: cityId
     });
   }
 
@@ -2835,6 +2841,23 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  const renderCallToOrder = () => {
+    return (
+      <CallToOrderView
+        cartItems={cartItems}
+        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.HOME}
+        slideCallToOrder={slideCallToOrder}
+        onPressSmallView={() => {
+          setSlideCallToOrder(false);
+        }}
+        cityId = {cityId}
+        onPressCross={() => {
+          setSlideCallToOrder(true);
+        }}
+      />
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
@@ -2892,10 +2915,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 keyboardShouldPersistTaps="always"
                 showsVerticalScrollIndicator={false}
                 nestedScrollEnabled={true}
+                onScroll={()=>{
+                  setSlideCallToOrder(true)
+                }}
               >
                 {renderSections()}
                 {!!cartItems && cartItems?.length > 0 ? <View style={{ height: 20 }} /> : null}
               </ScrollView>
+              {renderCallToOrder()}
               {!!cartItems && cartItems?.length > 0 ? renderCartDetails() : null}
             </View>
           </>
@@ -2928,6 +2955,10 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     // alignItems: 'center',
     flexDirection: 'column',
+  },
+  callToOrderText: {
+    ...theme.viewStyles.text('SB', 14, 'white', 1),
+    paddingHorizontal: 10,
   },
   paitentModalView: {
     backgroundColor: 'white',

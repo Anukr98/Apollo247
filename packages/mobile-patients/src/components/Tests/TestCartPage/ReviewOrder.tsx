@@ -50,6 +50,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
+  CALL_TO_ORDER_CTA_PAGE_ID,
   DEVICETYPE,
   DiagnosticLineItem,
   DiagnosticsBookingSource,
@@ -132,7 +133,11 @@ import {
 import CircleCard from '@aph/mobile-patients/src/components/Tests/components/CircleCard';
 import { CirclePlansListOverlay } from '@aph/mobile-patients/src/components/Tests/components/CirclePlansListOverlay';
 import { debounce } from 'lodash';
-import { CleverTapEventName, CleverTapEvents } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const screenWidth = Dimensions.get('window').width;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
@@ -222,6 +227,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setIsCircleSubscription,
   } = useShoppingCart();
 
+  const { diagnosticServiceabilityData } = useAppCommonData();
+
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { setauthToken } = useAppCommonData();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
@@ -236,6 +243,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const selectedTimeSlot = props.navigation.getParam('selectedTimeSlot');
   const showPaidPopUp = props.navigation.getParam('showPaidPopUp');
   const selectedAddr = props.navigation.getParam('selectedAddress');
+  const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
   const reportGenDetails = props.navigation.getParam('reportGenDetails');
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   var slotBookedArray = ['slot', 'already', 'booked', 'select a slot'];
@@ -1005,7 +1013,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     props.navigation.navigate(AppRoutes.CommonWebView, {
       url: AppConfig.Configuration.CIRLCE_PHARMA_URL,
       source: 'Diagnostic Cart',
-      circleEventSource:'Cart(Diagnostic)'
+      circleEventSource: 'Cart(Diagnostic)',
     });
   };
 
@@ -1087,7 +1095,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     if (!isCirclePlanRemoved) {
       postCleverTapEvent(CleverTapEventName.CIRCLE_PLAN_REMOVE_FROM_CART, cleverTapEventAttributes);
     }
-  };
+  }
 
   function _navigateToViewCirclePlans() {
     setShowCirclePopup(true);
@@ -2228,6 +2236,23 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     );
   };
 
+  const renderCallToOrder = () => {
+    return (
+      <CallToOrderView
+        cityId={Number(diagnosticServiceabilityData?.cityId)}
+        pageId={CALL_TO_ORDER_CTA_PAGE_ID.TESTCART}
+        customMargin={220}
+        slideCallToOrder={slideCallToOrder}
+        onPressSmallView={() => {
+          setSlideCallToOrder(false);
+        }}
+        onPressCross={() => {
+          setSlideCallToOrder(true);
+        }}
+      />
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={[{ ...theme.viewStyles.container }]}>
@@ -2236,6 +2261,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         <ScrollView bounces={false} style={{ flexGrow: 1 }} showsVerticalScrollIndicator={true}>
           {renderMainView()}
         </ScrollView>
+        {renderCallToOrder()}
         {renderTestProceedBar()}
       </SafeAreaView>
       {isVisible && renderPremiumOverlay()}

@@ -62,6 +62,7 @@ const Common = {
   DEFAULT_BACKGROUND_COLOR: '#f0f1ec',
   INPUT_CURSOR_COLOR: app_green,
   APP_GREEN: app_green,
+  DARK_BLUE: '#346CD9',
   WHITE: white,
   HEX_WHITE: hexWhite,
   SHERPA_BLUE: APP_Sherpa_Blue,

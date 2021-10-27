@@ -1,6 +1,5 @@
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -19,7 +18,6 @@ import {
 import { NavigationScreenProps } from 'react-navigation';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { ExpectCall } from '@aph/mobile-patients/src/components/Medicines/Components/ExpectCall';
 import _ from 'lodash';
 import {
   useShoppingCart,
@@ -28,9 +26,6 @@ import {
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import {
   nameFormater,
-  formatAddressBookAddress,
-  handleGraphQlError,
-  g,
   removeObjectProperty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
@@ -45,10 +40,7 @@ import {
   ADD_PRESCRIPTION_RECORD,
   GET_PATIENT_PRESCRIPTIONS,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  CommonBugFender,
-  setBugFenderLog,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { addPatientPrescriptionRecord } from '@aph/mobile-patients/src/graphql/types/addPatientPrescriptionRecord';
 import {
   AddPrescriptionRecordInput,
@@ -64,34 +56,22 @@ import {
   getPatientPrescriptionsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPatientPrescriptions';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 import LottieView from 'lottie-react-native';
-import { DocumentPickerResponse } from 'react-native-document-picker';
-import ImageResizer from 'react-native-image-resizer';
-import RNFetchBlob from 'rn-fetch-blob';
 import AsyncStorage from '@react-native-community/async-storage';
-import { getPatientPrismMedicalRecordsApi } from '../../helpers/clientCalls';
+import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpers/clientCalls';
 const GreenTickAnimation = '@aph/mobile-patients/src/components/Tests/greenTickAnimation.json';
 
 export interface SubmittedPrescriptionProps extends NavigationScreenProps {
   showHeader?: boolean;
 }
-type PickerImage = any;
-interface Base64Response {
-  uploadedUrl: string;
-  fileCopyUri: string;
-  copyError?: string;
-  type: string;
-  fileName: string;
-  size: number;
-}
+
 export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (props) => {
-  const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
+  const { loading, setLoading } = useUIElements();
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const phyPrescriptionsProp = props.navigation.getParam('phyPrescriptionsProp') || [];
   const ePrescriptionsProp = props.navigation.getParam('ePrescriptionsProp') || [];
-  const [docName, setDocName] = useState<string>('');
   const [PhysicalPrescriptionsProps, setPhysicalPrescriptionsProps] = useState<
     PhysicalPrescription[]
   >(phyPrescriptionsProp);
@@ -100,20 +80,12 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   );
   const { setEPrescriptions, setPhysicalPrescriptions } = useShoppingCart();
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
-  const [testName, settestName] = useState<string>('');
   const [locationName, setLocationName] = useState<string>('');
   const [additionalNotes, setadditionalNotes] = useState<string>('');
-  const [dateOfTest, setdateOfTest] = useState<string>('');
   const [onSumbitSuccess, setOnSumbitSuccess] = useState<boolean>(false);
-  const [Images, setImages] = useState<PickerImage>(props.navigation.state.params ? [] : []);
   const [isErrorOccured, setIsErrorOccured] = useState<boolean>(false);
   const [patientPrescriptions, setPatientPrescriptions] = useState([]) as any;
-  const recordType = props.navigation.state.params
-    ? props.navigation.state.params.recordType
-    : false;
-  const selectedRecordID = props.navigation.state.params
-    ? props.navigation.state.params.selectedRecordID
-    : null;
+
   useEffect(() => {
     setLoading?.(false);
     fetchPatientPrescriptions();
@@ -171,9 +143,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
     return (
       <View style={styles.expectCallView}>
         <PrescriptionCallIcon style={{ margin: 10 }} />
-        <Text style={styles.expectText}>
-          Expect a call in the next 2 hours from an Apollo agent to assist you in placing an order
-        </Text>
+        <Text style={styles.expectText}>{string.diagnostics.prescriptionCallBack}</Text>
       </View>
     );
   };
@@ -387,7 +357,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   const renderErrorMessage = () => {
     return (
       <View style={styles.errorMessageView}>
-        <Text style={styles.errorMsgText}>Sorry cannot submit precription, an error occured</Text>
+        <Text style={styles.errorMsgText}>{string.diagnostics.prescriptionError}</Text>
         <TouchableOpacity
           onPress={() => {
             setIsErrorOccured(false);
@@ -407,9 +377,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
           loop={false}
           style={{ marginBottom: 80 }}
         />
-        {/* This icon is used optional. Commented for future use */}
-        {/* <GreenCircleTick width={55} height={55} /> */}
-        <Text style={styles.successText}>Prescription Successfully Uploaded</Text>
+        <Text style={styles.successText}>{string.diagnostics.prescriptionSuccess}</Text>
       </View>
     );
   };
@@ -493,7 +461,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                                 );
                                 setPhysicalPrescriptionsProps([...filteredPres]);
                               }}
-                              style={{ justifyContent: 'center', alignItems: 'center' }}
+                              style={styles.centerStyle}
                             >
                               <RemoveIcon />
                             </TouchableOpacity>
@@ -506,7 +474,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                 <>
                   {EPrescriptionsProps && EPrescriptionsProps?.length ? (
                     <View>
-                      <Text style={styles.textStyle}>PRESCRIPTION FROM HEALTH RECORDS</Text>
+                      <Text style={styles.textStyle}>{string.diagnostics.fromHealthRecord}</Text>
                       <View style={styles.presText}>
                         {EPrescriptionsProps.map((item: any) => {
                           return (
@@ -528,7 +496,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                                     EPrescriptionsProps?.filter((_item) => _item?.id != item?.id)
                                   );
                                 }}
-                                style={styles.centerAlignWidth}
+                                style={styles.centerStyleWidth}
                               >
                                 <RemoveIcon />
                               </TouchableOpacity>
@@ -549,7 +517,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                     });
                   }}
                 >
-                  <Text style={styles.addPresText}>+ ADD MORE PRESCRIPTIONS</Text>
+                  <Text style={styles.addPresText}>{string.diagnostics.addMorePrescription}</Text>
                 </TouchableOpacity>
               </>
             ) : (
@@ -720,7 +688,8 @@ const styles = StyleSheet.create({
   },
   presStyle: { flex: 1, padding: 10, height: height - 180 },
   containerStyle: { flex: 1, height: height },
-  centerAlignWidth: {
+  centerStyle: { justifyContent: 'center', alignItems: 'center' },
+  centerStyleWidth: {
     justifyContent: 'center',
     width: '10%',
     alignItems: 'center',

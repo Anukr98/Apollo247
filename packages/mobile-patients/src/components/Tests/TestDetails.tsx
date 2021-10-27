@@ -11,7 +11,7 @@ import {
   InfoIconRed,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { CALL_TO_ORDER_CTA_PAGE_ID, TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 import {
   DIAGNOSTIC_GROUP_PLAN,
@@ -88,6 +88,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import moment from 'moment';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
+import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
@@ -139,6 +140,7 @@ export interface CMSTestDetails {
   diagnosticOverview: any;
   diagnosticInclusionName: any;
   diagnosticWidgetsData: any;
+  diagnosticItemAliases?: any;
 }
 
 export interface TestDetailsProps
@@ -219,6 +221,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [reportTat, setReportTat] = useState<string>('');
   const [showBottomBar, setShowBottomBar] = useState<boolean>(false);
   const [priceHeight, setPriceHeight] = useState<number>(0);
+  const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
 
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
 
@@ -877,6 +880,20 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     );
   };
 
+  const renderAliasName = () => {
+    const aliasName =
+      !!cmsTestDetails?.diagnosticItemAliases && cmsTestDetails?.diagnosticItemAliases != '';
+    return (
+      <View style={{ marginTop: 4 }}>
+        {aliasName ? (
+          <Text style={styles.italicStyle}>
+            {string.diagnostics.alsoKnownAs} {cmsTestDetails?.diagnosticItemAliases}
+          </Text>
+        ) : null}
+      </View>
+    );
+  };
+
   /**
    * if not coming from the config report tat, then if not by drupal then show from local db.
    */
@@ -963,6 +980,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               cmsTestDetails?.diagnosticItemName ||
               testInfo?.itemName}
           </Text>
+          {renderAliasName()}
         </View>
         {renderSeparator(true)}
         {renderCardMidView()}
@@ -1273,6 +1291,22 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       </View>
     );
   };
+  const renderCallToOrder = () => {
+    return (
+      <CallToOrderView
+        cityId = {cityIdToUse}
+        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL}
+        customMargin = {80}
+        slideCallToOrder = {slideCallToOrder}
+        onPressSmallView = {() => {
+          setSlideCallToOrder(false);
+        }}
+        onPressCross={() => {
+          setSlideCallToOrder(true);
+        }}
+      />
+    );
+  };
 
   return (
     <SafeAreaView
@@ -1292,6 +1326,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             ref={scrollViewRef}
             scrollEventThrottle={16}
             onScroll={(event) => {
+              setSlideCallToOrder(true);
               // show price if price is scrolled off the screen
               priceViewRef?.current &&
                 priceViewRef?.current?.measure(
@@ -1311,6 +1346,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               ? renderWidgetsView()
               : null}
           </ScrollView>
+          {renderCallToOrder()}
           <StickyBottomComponent>
             {showBottomBar && renderPriceView(true)}
             <Button
@@ -1548,5 +1584,11 @@ const styles = StyleSheet.create({
   expressSlotText: {
     ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 18),
     marginLeft: 16,
+  },
+  italicStyle: {
+    fontStyle: 'italic',
+    color: theme.colors.SHERPA_BLUE,
+    lineHeight: 15.6,
+    fontSize: 12,
   },
 });

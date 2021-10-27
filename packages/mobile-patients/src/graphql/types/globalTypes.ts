@@ -2231,6 +2231,15 @@ export enum SPECIALTY_STATUS {
   TRUE = "TRUE",
 }
 
+export enum CALL_TO_ORDER_CTA_PAGE_ID {
+  HOME = 'HOME',
+  TESTDETAIL = 'TESTDETAIL',
+  MYORDERS = 'MYORDERS',
+  TESTCART = 'TESTCART',
+  TESTORDERSUMMARY = 'TESTORDERSUMMARY',
+  TESTLISTING = 'TESTLISTING',
+}
+
 //==============================================================
 // END Enums and Input Objects
 //==============================================================
