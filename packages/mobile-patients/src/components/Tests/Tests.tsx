@@ -310,7 +310,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const homeScreenAttributes = props.navigation.getParam('homeScreenAttributes');
   const phyPrescriptionUploaded = props.navigation.getParam('phyPrescriptionUploaded') || [];
   const ePresscriptionUploaded = props.navigation.getParam('ePresscriptionUploaded') || [];
-  const { ePrescriptions, physicalPrescriptions } = useShoppingCart();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
 
   const hdfc_values = string.Hdfc_values;
@@ -392,40 +391,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       },
       fetchPolicy: 'no-cache',
     });
-
-  const setWebEnageEventForPinCodeClicked = (
-    mode: string,
-    pincode: string,
-    serviceable: boolean
-  ) => {
-    DiagnosticPinCodeClicked(
-      currentPatient,
-      mode,
-      pincode,
-      serviceable,
-      isDiagnosticCircleSubscription
-    );
-  };
-
-  const postDiagnosticAddToCartEvent = (
-    name: string,
-    id: string,
-    price: number,
-    discountedPrice: number,
-    source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
-    section?: 'Featured tests' | 'Browse packages'
-  ) => {
-    DiagnosticAddToCartEvent(
-      name,
-      id,
-      price,
-      discountedPrice,
-      source,
-      section,
-      currentPatient,
-      isDiagnosticCircleSubscription
-    );
-  };
 
   useEffect(() => {
     if (movedFrom === 'deeplink') {
@@ -2835,26 +2800,35 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <>
         <Text style={styles.textHeadingModal}>Choose from Gallery</Text>
-        {prescriptionGalleryOptionArray.map((item) => {
+        {prescriptionGalleryOptionArray?.map((item, index: number) => {
           return (
-            <TouchableOpacity
-              style={{ flexDirection: 'row', alignContent: 'center' }}
-              onPress={() => {
-                if (item?.title == 'Photo Library') {
-                  openGallery();
-                } else {
-                  if (Platform.OS === 'android') {
-                    storagePermissions(() => {
-                      onBrowseClicked();
-                    });
+            <>
+              <TouchableOpacity
+                style={[
+                  styles.areaStyles,
+                  {
+                    marginTop: index === 0 ? 0 : 10,
+                    marginBottom: index === prescriptionGalleryOptionArray?.length - 1 ? 20 : 10,
+                  },
+                ]}
+                onPress={() => {
+                  if (item?.title == 'Photo Library') {
+                    openGallery();
                   } else {
-                    onBrowseClicked();
+                    if (Platform.OS === 'android') {
+                      storagePermissions(() => {
+                        onBrowseClicked();
+                      });
+                    } else {
+                      onBrowseClicked();
+                    }
                   }
-                }
-              }}
-            >
-              <Text style={styles.textPrescription}>{item.title}</Text>
-            </TouchableOpacity>
+                }}
+              >
+                <Text style={styles.textPrescription}>{item.title}</Text>
+              </TouchableOpacity>
+              {index === prescriptionGalleryOptionArray?.length - 1 ? null : <Spearator />}
+            </>
           );
         })}
       </>

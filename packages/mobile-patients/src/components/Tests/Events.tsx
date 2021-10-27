@@ -898,16 +898,18 @@ export function DiagnosticPrescriptionSubmitted(
   currentPatient: any,
   prescriptionUrl: any,
   itemName: any,
+  userType: string | null,
   isDiagnosticCircleSubscription?: boolean | undefined
 ) {
   const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes: CleverTapEvents[CleverTapEventName.DIAGNOSTIC_PRESCRIPTION_SUBMITTED] = {
     ...getPatientAttributes,
-    'Mobile Number': currentPatient?.mobileNumber,
+    'Patient MobileNumber': currentPatient?.mobileNumber,
+    'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+    'User Type': userType,
     Source: 'Apollo247App',
     PrescriptionUrl: prescriptionUrl,
-    'Item name': itemName,
-    'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+    'Item Name': itemName,
   };
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PRESCRIPTION_SUBMITTED, eventAttributes);
 }
