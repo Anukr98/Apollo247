@@ -882,16 +882,12 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   const renderAliasName = () => {
     const aliasName =
-      cmsTestDetails?.diagnosticItemAliases &&
-      cmsTestDetails?.diagnosticItemAliases != '' &&
-      cmsTestDetails?.diagnosticItemAliases?.length > 0;
-    const jointAliasName = aliasName && cmsTestDetails?.diagnosticItemAliases?.join();
+      !!cmsTestDetails?.diagnosticItemAliases && cmsTestDetails?.diagnosticItemAliases != '';
     return (
       <View style={{ marginTop: 4 }}>
         {aliasName ? (
           <Text style={styles.italicStyle}>
-            {string.diagnostics.alsoKnownAs}
-            {jointAliasName}
+            {string.diagnostics.alsoKnownAs} {cmsTestDetails?.diagnosticItemAliases}
           </Text>
         ) : null}
       </View>
