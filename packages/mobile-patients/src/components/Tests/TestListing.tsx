@@ -45,6 +45,7 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { DiagnosticProductListingPageViewed } from './Events';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
+import { CALL_TO_ORDER_CTA_PAGE_ID } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 export interface TestListingProps
   extends NavigationScreenProps<{
@@ -414,6 +415,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const renderCallToOrder = () => {
     return (
       <CallToOrderView
+        cityId = {cityId}
+        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING}
         customMargin = {80}
         slideCallToOrder = {slideCallToOrder}
         onPressSmallView = {() => {

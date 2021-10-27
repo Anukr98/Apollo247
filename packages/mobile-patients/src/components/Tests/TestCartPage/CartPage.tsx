@@ -67,6 +67,7 @@ import {
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
+  CALL_TO_ORDER_CTA_PAGE_ID,
   DiagnosticLineItem,
   TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -104,6 +105,7 @@ import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/component
 import { MultiSelectPatientListOverlay } from '@aph/mobile-patients/src/components/Tests/components/MultiSelectPatientListOverlay';
 import { LongRightArrow, TestTubes } from '@aph/mobile-patients/src/components/ui/Icons';
 import ItemCard from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
+import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 
 type Address = savePatientAddress_savePatientAddress_patientAddress;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
@@ -184,6 +186,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   //check for the modify flow...
   const [itemSelectedFromWidget, setItemSelectedFromWidget] = useState([] as any);
   const [widgetSelectedItem, setWidgetSelectedItem] = useState([] as any);
+  const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
   const [reportTat, setReportTat] = useState([] as any);
 
   const isCartPresent = isDiagnosticSelectedCartEmpty(
@@ -1601,6 +1604,23 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     );
   };
 
+  const renderCallToOrder = () => {
+    return (
+      <CallToOrderView
+        cityId = {addressCityId}
+        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTCART}
+        customMargin={160}
+        slideCallToOrder = {slideCallToOrder}
+        onPressSmallView = {() => {
+          setSlideCallToOrder(false);
+        }}
+        onPressCross = {() => {
+          setSlideCallToOrder(true);
+        }}
+      />
+    )
+  }
+
   const renderWizard = () => {
     return (
       <TimelineWizard
@@ -1623,6 +1643,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         </ScrollView>
         {renderAddressSection()}
       </SafeAreaView>
+      {renderCallToOrder()}
       {renderStickyBottom()}
     </View>
   );
