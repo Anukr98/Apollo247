@@ -132,7 +132,10 @@ import {
 import CircleCard from '@aph/mobile-patients/src/components/Tests/components/CircleCard';
 import { CirclePlansListOverlay } from '@aph/mobile-patients/src/components/Tests/components/CirclePlansListOverlay';
 import { debounce } from 'lodash';
-import { CleverTapEventName, CleverTapEvents } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const screenWidth = Dimensions.get('window').width;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
@@ -301,7 +304,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    const itemIds = isModifyFlow ? cartItemsWithId.concat(modifiedOrderItemIds) : cartItemsWithId;
+    const getAllItemIds = isCartEmpty
+      ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
+      ?.flat();
+    const uniqueItemIDS = [...new Set(getAllItemIds?.map((item) => Number(item?.id)))];
+    const itemIds = isModifyFlow ? cartItemsWithId.concat(modifiedOrderItemIds) : uniqueItemIDS;
     populateCartMapping();
     fetchOverallReportTat(itemIds);
     //if not a circle member
@@ -1005,7 +1012,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     props.navigation.navigate(AppRoutes.CommonWebView, {
       url: AppConfig.Configuration.CIRLCE_PHARMA_URL,
       source: 'Diagnostic Cart',
-      circleEventSource:'Cart(Diagnostic)'
+      circleEventSource: 'Cart(Diagnostic)',
     });
   };
 
@@ -1087,7 +1094,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     if (!isCirclePlanRemoved) {
       postCleverTapEvent(CleverTapEventName.CIRCLE_PLAN_REMOVE_FROM_CART, cleverTapEventAttributes);
     }
-  };
+  }
 
   function _navigateToViewCirclePlans() {
     setShowCirclePopup(true);
