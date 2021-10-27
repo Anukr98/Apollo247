@@ -31,7 +31,7 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
   const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
-    if (item?.ctaCityId == cityId && item?.ctaProductPageArray.includes(pageId)) {
+    if (item?.ctaCityId == cityId && item?.ctaProductPageArray?.includes(pageId)) {
       return item;
     }
   });
