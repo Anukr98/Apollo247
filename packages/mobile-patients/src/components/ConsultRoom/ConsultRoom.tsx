@@ -770,8 +770,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [vaccinationSubscriptionName, setVaccinationSubscriptionName] = useState<string>('');
   const [vaccinationSubscriptionPlanId, setVaccinationSubscriptionPlanId] = useState<string>('');
   const [agreedToVaccineTnc, setAgreedToVaccineTnc] = useState<string>('');
-  const [token, setToken] = useState<string | null>('')
-  const [userMobileNumber, setUserMobileNumber] = useState<string | null>('')
+  const [token, setToken] = useState<string | null>('');
+  const [userMobileNumber, setUserMobileNumber] = useState<string | null>('');
 
   const [proHealthActiveAppointmentCount, setProHealthActiveAppointmentCount] = useState<
     string | number
@@ -891,17 +891,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   async function checkProhealthStatus() {
     const storedUhid: any = await AsyncStorage.getItem('selectUserUHId');
     //for new users, patient uhid was coming as blank
-    if (currentPatient?.id && currentPatient?.uhid) {
-      //storedUhid would be null for new users and called if both are same, since patient is changed twice.
-      if (
-        currentPatient?.id &&
-        currentPatient?.uhid &&
-        previousPatient?.uhid != currentPatient?.uhid &&
-        (!!storedUhid ? storedUhid == currentPatient?.uhid : storedUhid == null)
-      ) {
-        checkIsProhealthActive(currentPatient); //to show prohealth option
-        getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
-      }
+    //storedUhid would be null for new users and called if both are same, since patient is changed twice.
+    if (
+      currentPatient?.id &&
+      currentPatient?.uhid &&
+      previousPatient?.uhid != currentPatient?.uhid &&
+      (!!storedUhid ? storedUhid == currentPatient?.uhid : storedUhid == null)
+    ) {
+      checkIsProhealthActive(currentPatient); //to show prohealth option
+      getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
     }
   }
 
@@ -2397,7 +2395,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       const [loginToken, phoneNumber] = await getAsyncStorageValues();
       setToken(loginToken);
       setUserMobileNumber(phoneNumber);
-    }
+    };
     fetchData();
     saveSessionValues();
   }, []);
