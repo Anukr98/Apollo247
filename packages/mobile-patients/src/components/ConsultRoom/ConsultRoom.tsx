@@ -933,6 +933,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     diagnosticServiceabilityData,
     axdcCode,
     homeBannerOfferSection,
+    offersList,
+    setOffersList,
+    offersListLoading,
+    setOffersListLoading,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -959,8 +963,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const _searchInputRef = useRef(null);
   const [searchText, setSearchText] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [offersList, setOffersList] = useState<any[]>([]);
-  const [offersListLoading, setOffersListLoading] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState({});
   const [prismAuthToken, setPrismAuthToken] = useState<string>('');
   const testSearchResults = useRef<
@@ -2376,7 +2378,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const getOffers = async () => {
-    setOffersListLoading(true);
+    setOffersListLoading && setOffersListLoading(true);
     const authToken: string = await validateAndReturnAuthToken();
     const apolloClient = buildApolloClient(authToken);
     try {
@@ -2386,11 +2388,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       });
       const offers = res?.data?.getPersonalizedOffers?.response?.personalized_data?.offers_for_you;
       if (offers && offers.length > 0) {
-        setOffersList(offers);
+        setOffersList && setOffersList(offers);
       }
-      setOffersListLoading(false);
+      setOffersListLoading && setOffersListLoading(false);
     } catch (error) {
-      setOffersListLoading(false);
+      setOffersListLoading && setOffersListLoading(false);
     }
   };
 

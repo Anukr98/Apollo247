@@ -241,6 +241,10 @@ export interface AppCommonDataContextProps {
   setLoginSection: ((value: any) => void) | null;
   homeBannerOfferSection: any;
   setHomeBannerOfferSection: ((value: any) => void) | null;
+  offersList: any;
+  setOffersList: ((value: any) => void) | null;
+  offersListLoading: boolean;
+  setOffersListLoading: ((value: boolean) => void) | null;
   phrSession: string;
   setPhrSession: ((value: string) => void) | null;
   isCurrentLocationFetched: boolean;
@@ -354,6 +358,10 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setLoginSection: null,
   homeBannerOfferSection: null,
   setHomeBannerOfferSection: null,
+  offersList: [],
+  setOffersList: null,
+  offersListLoading: false,
+  setOffersListLoading: null,
   phrSession: '',
   setPhrSession: null,
   isCurrentLocationFetched: false, // this variable is defined only to avoid asking location multiple times in Home Screen until the app is killed and re-opened again
@@ -530,7 +538,11 @@ export const AppCommonDataProvider: React.FC = (props) => {
 
   const [loginSection, setLoginSection] = useState<AppCommonDataContextProps['loginSection']>(null);
 
-  const [homeBannerOfferSection, setHomeBannerOfferSection] = useState<AppCommonDataContextProps['homeBannerOfferSection']>(null);
+  const [homeBannerOfferSection, setHomeBannerOfferSection] = useState<
+    AppCommonDataContextProps['homeBannerOfferSection']
+  >(null);
+  const [offersList, setOffersList] = useState<any[]>([]);
+  const [offersListLoading, setOffersListLoading] = useState<boolean>(false);
 
   const [phrSession, setPhrSession] = useState<AppCommonDataContextProps['phrSession']>('');
 
@@ -730,6 +742,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setLoginSection,
         homeBannerOfferSection,
         setHomeBannerOfferSection,
+        offersList,
+        setOffersList,
+        offersListLoading,
+        setOffersListLoading,
         phrSession,
         setPhrSession,
         notificationCount,
