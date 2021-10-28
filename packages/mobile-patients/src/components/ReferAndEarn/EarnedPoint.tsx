@@ -106,7 +106,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
   },
-  shareImage: {},
   earnPointWhyChooseUsimgTitle: {
     textAlign: 'center',
     marginTop: 15,

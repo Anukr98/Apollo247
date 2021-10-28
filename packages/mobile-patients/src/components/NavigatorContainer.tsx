@@ -161,9 +161,9 @@ import { PaymentConfirmation } from '@aph/mobile-patients/src/components/Payment
 import { ConsultPaymentScreen } from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/ConsultPaymentScreen';
 import { ShareReferLink } from '@aph/mobile-patients/src/components//ReferAndEarn/ShareReferLink';
 import { YourRewardsScreen } from '@aph/mobile-patients/src/components//ReferAndEarn/YourRewardsScreen';
-import { EarnedPoints } from '@aph/mobile-patients/src/components//ReferAndEarn/EarnedPoint';
-import { RefererTermsAndCondition } from './ReferAndEarn/RefererTermsAndCondition';
-import { RefererFAQ } from './ReferAndEarn/ReferrerFAQ';
+import { EarnedPoints } from '@aph/mobile-patients/src/components/ReferAndEarn/EarnedPoint';
+import { RefererTermsAndCondition } from '@aph/mobile-patients/src/components/ReferAndEarn/RefererTermsAndCondition';
+import { RefererFAQ } from '@aph/mobile-patients/src/components/ReferAndEarn/ReferrerFAQ';
 
 export enum AppRoutes {
   Login = 'Login',
