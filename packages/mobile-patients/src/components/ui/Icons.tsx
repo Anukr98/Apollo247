@@ -2410,3 +2410,104 @@ export const CoinSavingsIcon: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/coinSavingsIcon.webp')}
   />
 );
+
+export const ReferralBannerIcon: React.FC<IconProps> = (props) => (
+  <Image
+    style={[props.style]}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/Group5447.webp')}
+    {...props}
+  />
+);
+
+export const WhatSAppIcon: React.FC<IconProps> = (props) => (
+  <Image
+    style={[props.style]}
+    source={{
+      uri: 'https://newassets.apollo247.com/images/ReferrerImages/MaskGroup.png',
+    }}
+    {...props}
+  />
+);
+export const CopyLinkIcon: React.FC<IconProps> = (props) => (
+  <Image
+    style={[props.style]}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/shareLink.webp')}
+    {...props}
+  />
+);
+
+export const InviteYourFriendIcon: React.FC<IconProps> = (props) => (
+  <Image
+    style={[props.style]}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/invitation1.webp')}
+    {...props}
+  />
+);
+
+export const FriendReceiveIcon: React.FC<IconProps> = (props) => (
+  <Image
+    style={[props.style]}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/earn-money1.webp')}
+    {...props}
+  />
+);
+
+export const YouReceiveIcon: React.FC<IconProps> = (props) => (
+  <Image
+    style={[props.style]}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/delivered1.webp')}
+    {...props}
+  />
+);
+export const ArrowIcon: React.FC<IconProps> = (props) => (
+  <Image
+    style={[props.style]}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/arrow.webp')}
+    {...props}
+  />
+);
+
+export const ReferRefreshIcon: React.FC<IconProps> = (props) => (
+  <Image
+    style={[props.style]}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/refresh.webp')}
+    {...props}
+  />
+);
+
+export const ReferCheckIcon: React.FC<IconProps> = (props) => (
+  <Image
+    style={[props.style]}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/check.webp')}
+    {...props}
+  />
+);
+
+export const TrophyIcon: React.FC<IconProps> = (props) => (
+  <Image
+    style={[props.style]}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/trophy1.webp')}
+    {...props}
+  />
+);
+export const FastDeliveryIcon: React.FC<IconProps> = (props) => (
+  <Image
+    style={[props.style]}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/fast-delivery1.webp')}
+    {...props}
+  />
+);
+export const ConsultDoctorIcon: React.FC<IconProps> = (props) => (
+  <Image
+    style={[props.style]}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/doctor1.webp')}
+    {...props}
+  />
+);
+export const LabTestAtHomeIcon: React.FC<IconProps> = (props) => (
+  <Image
+    style={[props.style]}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/flask1.webp')}
+    {...props}
+  />
+);

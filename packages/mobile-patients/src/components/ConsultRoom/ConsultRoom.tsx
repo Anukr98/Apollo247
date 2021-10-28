@@ -54,6 +54,7 @@ import {
   CrossPopup,
   ProHealthIcon,
   BackArrow,
+  ReferralBannerIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   BannerDisplayType,
@@ -670,13 +671,13 @@ const styles = StyleSheet.create({
     height: 180,
     width: '100%',
   },
-  rf_en_earnBtnText: {
+  referEarnEarnBtnText: {
     fontSize: 14,
     color: theme.colors.HEX_WHITE,
     fontWeight: '700',
   },
 
-  rf_en_earnBtn: {
+  referEarnearnBtn: {
     backgroundColor: theme.colors.APP_YELLOW_COLOR,
     width: 80,
     height: 35,
@@ -686,27 +687,27 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
 
-  rf_en_rupees: {
+  referEarnrupees: {
     fontSize: 19,
     fontWeight: 'bold',
     color: theme.colors.APP_REFERRAL_BLUE,
     fontStyle: 'italic',
   },
-  rf_en_text: {
+  referEarntext: {
     fontSize: 19,
     fontWeight: '700',
     color: theme.colors.CARD_HEADER,
   },
-  rf_en_textContainer: {
+  referEarntextContainer: {
     width: '55%',
     alignItems: 'flex-end',
   },
-  rf_en_ImageContainer: {
+  referEarnImageContainer: {
     width: '45%',
     height: 90,
     justifyContent: 'flex-end',
   },
-  rf_en_MainContainer: {
+  referEarnMainContainer: {
     backgroundColor: theme.colors.REFERRAL_WHITE_GRAY,
     paddingHorizontal: 20,
     paddingTop: 20,
@@ -4026,26 +4027,23 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderReferralBanner = () => {
     return (
-      <View style={styles.rf_en_MainContainer}>
-        <View style={styles.rf_en_ImageContainer}>
-          <Image
-            source={require('@aph/mobile-patients/src/images/referAndEarn/Group5447.webp')}
-            resizeMode="cover"
-          />
+      <View style={styles.referEarnMainContainer}>
+        <View style={styles.referEarnImageContainer}>
+          <ReferralBannerIcon resizeMode="cover" />
         </View>
-        <View style={styles.rf_en_textContainer}>
-          <Text style={styles.rf_en_text}>
+        <View style={styles.referEarntextContainer}>
+          <Text style={styles.referEarntext}>
             {string.referAndEarn.referAndEarn}{' '}
-            <Text style={styles.rf_en_rupees}>₹{referAndEarnPrice}</Text>
+            <Text style={styles.referEarnrupees}>₹{referAndEarnPrice}</Text>
           </Text>
           <View>
             <TouchableOpacity
               onPress={() => {
                 props.navigation.navigate('ShareReferLink');
               }}
-              style={styles.rf_en_earnBtn}
+              style={styles.referEarnearnBtn}
             >
-              <Text style={styles.rf_en_earnBtnText}>{string.referAndEarn.earnNow}</Text>
+              <Text style={styles.referEarnEarnBtnText}>{string.referAndEarn.earnNow}</Text>
             </TouchableOpacity>
           </View>
         </View>

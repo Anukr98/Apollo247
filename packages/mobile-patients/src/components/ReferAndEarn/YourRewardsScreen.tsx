@@ -17,6 +17,7 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { ReferCheckIcon, ReferRefreshIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 
 export interface YourRewardsScreenProps extends NavigationScreenProps {}
 
@@ -62,27 +63,26 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
   };
   const ClaimedCard = (item: any) => {
     return (
-      <View style={styles.hc_card_container}>
-        <View style={styles.hc_card_Leftcontainer}>
-          <Image
-            source={require('@aph/mobile-patients/src/images/referAndEarn/check.webp')}
-            style={{}}
-            resizeMode="cover"
-          />
+      <View style={styles.healthCreditcontainer}>
+        <View style={styles.healthCreditLeftcontainer}>
+          <ReferCheckIcon />
         </View>
         <View>
-          <Text style={styles.hc_card_refreeName}>{string.referAndEarn.claimed}</Text>
-          <View style={styles.hc_card_flexRow}>
-            <View style={styles.hc_card_claimedRightContaier}>
-              <Text style={styles.hc_card_smallHeadingOne}>
+          <Text style={styles.healthCreditrefreeName}>{string.referAndEarn.claimed}</Text>
+          <View style={styles.healthCreditflexRow}>
+            <View style={styles.healthCreditclaimedRightContaier}>
+              <Text style={styles.healthCreditsmallHeadingOne}>
                 {string.referAndEarn.youEarnedRefreePoints}
               </Text>
-              <Text style={styles.hc_card_smallHeadingTwo}>
+              <Text style={styles.healthCreditsmallHeadingTwo}>
                 {string.referAndEarn.firstTimeLogin}
               </Text>
             </View>
-            <View style={styles.hc_card_totalHC}>
-              <Text style={styles.hc_card_HC}>{userHC}HC</Text>
+            <View style={styles.healthCredittotalHC}>
+              <Text style={styles.healthCreditHC}>
+                {userHC}
+                {string.referAndEarn.hc}
+              </Text>
             </View>
           </View>
         </View>
@@ -92,26 +92,26 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
 
   const ClaimedCardWithExpirationSet = (item: any) => {
     return (
-      <View style={styles.hc_card_container}>
-        <View style={styles.hc_card_Leftcontainer}>
-          <Image
-            source={require('@aph/mobile-patients/src/images/referAndEarn/check.webp')}
-            style={{}}
-            resizeMode="cover"
-          />
+      <View style={styles.healthCreditcontainer}>
+        <View style={styles.healthCreditLeftcontainer}>
+          <ReferCheckIcon />
         </View>
         <View>
-          <View style={styles.hc_card_RightInnercontainer}>
-            <Text style={styles.hc_card_refreeName}>{string.referAndEarn.refreeName}</Text>
-            <Text style={styles.hc_card_exporationText}>{string.referAndEarn.expireOn}</Text>
+          <View style={styles.healthCreditRightInnercontainer}>
+            <Text style={styles.healthCreditrefreeName}>{string.referAndEarn.refreeName}</Text>
+            <Text style={styles.healthCreditexporationText}>{string.referAndEarn.expireOn}</Text>
           </View>
-
-          <View style={styles.hc_card_flexRow}>
-            <View style={styles.hc_card_claimedRightContaier}>
-              <Text style={styles.hc_card_smallHeadingOne}>{string.referAndEarn.purchasedOn}</Text>
+          <View style={styles.healthCreditflexRow}>
+            <View style={styles.healthCreditclaimedRightContaier}>
+              <Text style={styles.healthCreditsmallHeadingOne}>
+                {string.referAndEarn.purchasedOn}
+              </Text>
             </View>
-            <View style={styles.hc_card_totalHC}>
-              <Text style={styles.hc_card_HC}>{userHC}HC</Text>
+            <View style={styles.healthCredittotalHC}>
+              <Text style={styles.healthCreditHC}>
+                {userHC}
+                {string.referAndEarn.hc}
+              </Text>
             </View>
           </View>
         </View>
@@ -121,16 +121,15 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
 
   const renderPendingCards = (item: any) => {
     return (
-      <View style={styles.hc_card_container}>
-        <View style={styles.hc_card_Leftcontainer}></View>
+      <View style={styles.healthCreditcontainer}>
+        <View style={styles.healthCreditLeftcontainer}></View>
         <View>
-          <View style={styles.hc_card_RightInnercontainer}>
-            <Text style={styles.hc_card_refreeName}>{string.referAndEarn.refreeName}</Text>
+          <View style={styles.healthCreditRightInnercontainer}>
+            <Text style={styles.healthCreditrefreeName}>{string.referAndEarn.refreeName}</Text>
           </View>
-
-          <View style={styles.hc_card_flexRow}>
+          <View style={styles.healthCreditflexRow}>
             <View style={{}}>
-              <Text style={styles.hc_card_smallHeadingOne}>{string.referAndEarn.signedUp}</Text>
+              <Text style={styles.healthCreditsmallHeadingOne}>{string.referAndEarn.signedUp}</Text>
             </View>
           </View>
         </View>
@@ -141,17 +140,16 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
   const noReferralReward = () => {
     return (
       <View style={styles.noReferralReward_container}>
-        <View style={styles.no_rf_innerContainer}>
-          <Text style={styles.no_rf_heading}>{string.referAndEarn.noReferralReward}</Text>
-          <Text style={styles.no_rf_subHeading}>{string.referAndEarn.youHaveNotInvited}t</Text>
+        <View style={styles.NoReferralinnerContainer}>
+          <Text style={styles.NoReferralheading}>{string.referAndEarn.noReferralReward}</Text>
+          <Text style={styles.NoReferralsubHeading}>{string.referAndEarn.youHaveNotInvited}t</Text>
           <TouchableOpacity
             onPress={() => {
               navigation.navigate('EarnedPoints');
-              // shareLinkMethod();
             }}
-            style={styles.no_rf_referBtn}
+            style={styles.NoReferralreferBtn}
           >
-            <Text style={styles.no_rf_btnText}>{string.referAndEarn.referYourFriend}</Text>
+            <Text style={styles.NoReferralbtnText}>{string.referAndEarn.referYourFriend}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -165,14 +163,6 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
           flex: 1,
         }}
       >
-        {/* <FlatList
-          data={Array.from({ length: 1 }, (_, index) => index + 1)}
-          renderItem={({ item }) => ClaimedCard(item)}
-        />
-        <FlatList
-          data={Array.from({ length: 2 }, (_, index) => index + 1)}
-          renderItem={({ item }) => ClaimedCardWithExpirationSet(item)}
-        /> */}
         {noReferralReward()}
       </View>
     );
@@ -191,10 +181,10 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
   const CustomTabBarHeader = () => {
     return (
       <View style={styles.customTabBarMainContainer}>
-        <TouchableOpacity onPress={() => selectTabBar(1)} style={styles.cs_tbr_btn}>
+        <TouchableOpacity onPress={() => selectTabBar(1)} style={styles.customTabBarbtn}>
           <Text
             style={[
-              styles.cs_tbr_text,
+              styles.customTabBartext,
               selectedTab === 1 ? styles.selectedTabText : styles.unSelectedTabText,
             ]}
           >
@@ -202,10 +192,10 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
           </Text>
           <View style={selectedTab === 1 ? styles.horizontalBackground : {}} />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => selectTabBar(2)} style={styles.cs_tbr_btn}>
+        <TouchableOpacity onPress={() => selectTabBar(2)} style={styles.customTabBarbtn}>
           <Text
             style={[
-              styles.cs_tbr_text,
+              styles.customTabBartext,
               selectedTab === 2 ? styles.selectedTabText : styles.unSelectedTabText,
             ]}
           >
@@ -219,17 +209,13 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
   const renderTotalHCContainer = () => {
     return (
       <View style={styles.totalHcMainContainer}>
-        <View style={styles.to_HC_texContainer}>
-          <Text style={styles.to_HC_totalHC}>
+        <View style={styles.totalHCtexContainer}>
+          <Text style={styles.totalHCtotalHC}>
             {string.referAndEarn.totalHC}: {totalReward}
           </Text>
-          <View style={styles.to_HC_refresh}>
+          <View style={styles.totalHCrefresh}>
             <TouchableOpacity onPress={() => {}}>
-              <Image
-                source={require('@aph/mobile-patients/src/images/referAndEarn/refresh.webp')}
-                style={{}}
-                resizeMode="cover"
-              />
+              <ReferRefreshIcon />
             </TouchableOpacity>
           </View>
         </View>
@@ -276,24 +262,24 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.CONSULT_SUCCESS_TEXT,
     height: 3,
   },
-  to_HC_refresh: {
+  totalHCrefresh: {
     position: 'absolute',
     right: 20,
   },
-  to_HC_totalHC: {
+  totalHCtotalHC: {
     fontWeight: '700',
   },
-  to_HC_texContainer: {
+  totalHCtexContainer: {
     alignItems: 'center',
   },
   totalHcMainContainer: {
     backgroundColor: theme.colors.HEX_WHITE,
     paddingVertical: 30,
   },
-  cs_tbr_text: {
+  customTabBartext: {
     fontSize: 17,
   },
-  cs_tbr_btn: {
+  customTabBarbtn: {
     width: Dimensions.get('screen').width / 2,
     alignItems: 'center',
   },
@@ -306,10 +292,10 @@ const styles = StyleSheet.create({
     paddingTop: 18,
     backgroundColor: theme.colors.HEX_WHITE,
   },
-  hc_card_flexRow: {
+  healthCreditflexRow: {
     flexDirection: 'row',
   },
-  hc_card_container: {
+  healthCreditcontainer: {
     backgroundColor: theme.colors.HEX_WHITE,
     paddingHorizontal: 14,
     paddingVertical: 20,
@@ -319,24 +305,24 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     flexDirection: 'row',
   },
-  hc_card_Leftcontainer: {
+  healthCreditLeftcontainer: {
     marginRight: 10,
   },
-  hc_card_RightInnercontainer: {
+  healthCreditRightInnercontainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingRight: 10,
   },
-  hc_card_refreeName: {
+  healthCreditrefreeName: {
     marginBottom: 10,
     fontWeight: '500',
   },
-  no_rf_btnText: {
+  NoReferralbtnText: {
     color: theme.colors.HEX_WHITE,
     fontSize: 14,
     fontWeight: '700',
   },
-  no_rf_referBtn: {
+  NoReferralreferBtn: {
     backgroundColor: theme.colors.TANGERINE_YELLOW,
     alignItems: 'center',
     justifyContent: 'center',
@@ -344,7 +330,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 25,
   },
-  no_rf_subHeading: {
+  NoReferralsubHeading: {
     color: theme.colors.BORDER_BOTTOM_COLOR,
     fontWeight: '400',
     fontSize: 18,
@@ -352,13 +338,13 @@ const styles = StyleSheet.create({
     width: 250,
     textAlign: 'center',
   },
-  no_rf_heading: {
+  NoReferralheading: {
     color: theme.colors.LIGHT_BLUE,
     fontWeight: '600',
     fontSize: 18,
     marginBottom: 15,
   },
-  no_rf_innerContainer: {
+  NoReferralinnerContainer: {
     alignItems: 'center',
   },
   noReferralReward_container: {
@@ -366,24 +352,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  hc_card_claimedRightContaier: {
+  healthCreditclaimedRightContaier: {
     width: '75%',
   },
-  hc_card_smallHeadingOne: {
+  healthCreditsmallHeadingOne: {
     fontSize: 14,
     marginBottom: 5,
   },
-  hc_card_smallHeadingTwo: {
+  healthCreditsmallHeadingTwo: {
     fontSize: 14,
   },
-  hc_card_totalHC: {
+  healthCredittotalHC: {
     width: '20%',
     justifyContent: 'flex-end',
   },
-  hc_card_HC: {
+  healthCreditHC: {
     fontWeight: '700',
   },
-  hc_card_exporationText: {
+  healthCreditexporationText: {
     color: theme.colors.EXPIRE_TEXT,
     fontSize: 13,
     fontWeight: '400',

@@ -1418,5 +1418,8 @@
     "deleiveryInHours":"Delivery in 2 hours",
     "consultDoctorIn15Minutes":"Consult doctor in 15 mins",
     "labTestAtHome":"Lab test at home",
+    "hc":"HC",
+    "shareLinkText":"Please install Apollo 247 using below link ",
+    "referalLink":"Referral Link"
   }
 }

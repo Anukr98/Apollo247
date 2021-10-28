@@ -5,6 +5,12 @@ import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import {
+  ConsultDoctorIcon,
+  FastDeliveryIcon,
+  LabTestAtHomeIcon,
+  TrophyIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 
 export interface EarnedPointsProps extends NavigationScreenProps {}
 
@@ -28,63 +34,55 @@ export const EarnedPoints: React.FC<EarnedPointsProps> = (props) => {
           }}
         />
         <View style={styles.earned_main_container}>
-          <Text style={styles.erd_mainHeading}>{string.referAndEarn.congratulation}</Text>
-          <View style={styles.erd_trophy_maincontainer}>
-            <View style={styles.erd_trophy_container}>
-              <Image
-                source={require('@aph/mobile-patients/src/images/referAndEarn/trophy1.webp')}
-                style={{}}
-                resizeMode="cover"
-              />
+          <Text style={styles.earneDmainHeading}>{string.referAndEarn.congratulation}</Text>
+          <View style={styles.earneDtrophy_maincontainer}>
+            <View style={styles.earneDtrophy_container}>
+              <TrophyIcon />
             </View>
           </View>
-          <View style={styles.erd_otherTextContainer}>
-            <Text style={styles.erd_giftedHeading}>{string.referAndEarn.yourFriendGiftYou}</Text>
-            <Text style={styles.erd_totalGifted}>{initialEarn} HC</Text>
+          <View style={styles.earneDotherTextContainer}>
+            <Text style={styles.earneDgiftedHeading}>{string.referAndEarn.yourFriendGiftYou}</Text>
+            <Text style={styles.earneDtotalGifted}>
+              {initialEarn} {string.referAndEarn.hc}
+            </Text>
             <TouchableOpacity
-              style={styles.erd_reedemBtn}
+              style={styles.earneDreedemBtn}
               onPress={() => {
                 navigation.navigate('TabBar');
               }}
             >
-              <Text style={styles.erd_reedemBtnText}>{string.referAndEarn.reedeemPoints}</Text>
+              <Text style={styles.earneDreedemBtnText}>{string.referAndEarn.reedeemPoints}</Text>
             </TouchableOpacity>
           </View>
         </View>
-        <View style={styles.erd_whyChooseApolloContainer}>
-          <Text style={styles.erd_wca_title}>{string.referAndEarn.whyChooseApollo247}</Text>
-          <View style={styles.erd_wca_imageTextContainer}>
-            <View style={styles.erd_wca_imageTextSubContainer}>
-              <View style={styles.erd_wca_img_container}>
-                <Image
-                  source={require('@aph/mobile-patients/src/images/referAndEarn/fast-delivery1.webp')}
-                  style={styles.shareImage}
-                  resizeMode="cover"
-                />
+        <View style={styles.earneDwhyChooseApolloContainer}>
+          <Text style={styles.earnedWhyChooseUstitle}>
+            {string.referAndEarn.whyChooseApollo247}
+          </Text>
+          <View style={styles.earnedWhyChooseUsimageTextContainer}>
+            <View style={styles.earnedWhyChooseUsimageTextSubContainer}>
+              <View style={styles.earnedWhyChooseUsimg_container}>
+                <FastDeliveryIcon />
               </View>
-              <Text style={styles.erd_wca_imgTitle}>{string.referAndEarn.deleiveryInHours}</Text>
+              <Text style={styles.earnedWhyChooseUsimgTitle}>
+                {string.referAndEarn.deleiveryInHours}
+              </Text>
             </View>
-            <View style={styles.erd_wca_imageTextSubContainer}>
-              <View style={styles.erd_wca_img_container}>
-                <Image
-                  source={require('@aph/mobile-patients/src/images/referAndEarn/doctor1.webp')}
-                  style={styles.shareImage}
-                  resizeMode="cover"
-                />
+            <View style={styles.earnedWhyChooseUsimageTextSubContainer}>
+              <View style={styles.earnedWhyChooseUsimg_container}>
+                <ConsultDoctorIcon />
               </View>
-              <Text style={styles.erd_wca_imgTitle}>
+              <Text style={styles.earnedWhyChooseUsimgTitle}>
                 {string.referAndEarn.consultDoctorIn15Minutes}
               </Text>
             </View>
-            <View style={styles.erd_wca_imageTextSubContainer}>
-              <View style={styles.erd_wca_img_container}>
-                <Image
-                  source={require('@aph/mobile-patients/src/images/referAndEarn/flask1.webp')}
-                  style={styles.shareImage}
-                  resizeMode="cover"
-                />
+            <View style={styles.earnedWhyChooseUsimageTextSubContainer}>
+              <View style={styles.earnedWhyChooseUsimg_container}>
+                <LabTestAtHomeIcon />
               </View>
-              <Text style={styles.erd_wca_imgTitle}>{string.referAndEarn.labTestAtHome}</Text>
+              <Text style={styles.earnedWhyChooseUsimgTitle}>
+                {string.referAndEarn.labTestAtHome}
+              </Text>
             </View>
           </View>
         </View>
@@ -98,14 +96,14 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
   },
   shareImage: {},
-  erd_wca_imgTitle: {
+  earnedWhyChooseUsimgTitle: {
     textAlign: 'center',
     marginTop: 15,
     color: theme.colors.LIGHT_BLUE,
     fontSize: 13,
     fontWeight: '600',
   },
-  erd_wca_img_container: {
+  earnedWhyChooseUsimg_container: {
     height: 60,
     width: 60,
     justifyContent: 'center',
@@ -114,31 +112,31 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     padding: 5,
   },
-  erd_wca_imageTextSubContainer: {
+  earnedWhyChooseUsimageTextSubContainer: {
     width: 100,
     alignItems: 'center',
   },
-  erd_wca_imageTextContainer: {
+  earnedWhyChooseUsimageTextContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 30,
   },
-  erd_wca_title: {
+  earnedWhyChooseUstitle: {
     marginTop: 20,
     fontSize: 18,
     color: theme.colors.LIGHT_BLUE,
     fontWeight: '600',
   },
-  erd_whyChooseApolloContainer: {
+  earneDwhyChooseApolloContainer: {
     backgroundColor: theme.colors.LIGHT_GREEN_ONE,
     flex: 1,
     alignItems: 'center',
   },
-  erd_reedemBtnText: {
+  earneDreedemBtnText: {
     color: theme.colors.HEX_WHITE,
     fontWeight: '700',
   },
-  erd_reedemBtn: {
+  earneDreedemBtn: {
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: theme.colors.TANGERINE_YELLOW,
@@ -147,29 +145,29 @@ const styles = StyleSheet.create({
     marginTop: 20,
     borderRadius: 5,
   },
-  erd_totalGifted: {
+  earneDtotalGifted: {
     marginTop: 5,
     fontSize: 20,
     color: theme.colors.LIGHT_BLUE,
     fontWeight: '700',
   },
-  erd_giftedHeading: {
+  earneDgiftedHeading: {
     marginTop: 20,
     fontSize: 20,
     color: theme.colors.LIGHT_BLUE,
   },
-  erd_otherTextContainer: {
+  earneDotherTextContainer: {
     alignItems: 'center',
   },
-  erd_trophy_container: {
+  earneDtrophy_container: {
     backgroundColor: theme.colors.LIGHT_BLUE_TWO,
     borderRadius: 100,
     padding: 9,
   },
-  erd_trophy_maincontainer: {
+  earneDtrophy_maincontainer: {
     marginTop: 30,
   },
-  erd_mainHeading: {
+  earneDmainHeading: {
     fontSize: 22,
     color: theme.colors.LIGHT_BLUE,
     fontWeight: '600',

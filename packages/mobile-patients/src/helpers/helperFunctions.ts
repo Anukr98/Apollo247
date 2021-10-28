@@ -2327,7 +2327,7 @@ export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Ob
     appsFlyer.logEvent(
       eventName,
       attributes,
-      (res) => { console.log(res) },
+      (res) => { },
       (err) => { }
     );
   } catch (error) { }
@@ -3765,4 +3765,9 @@ export const isCartPriceWithInSpecifiedRange = (
   } catch (error) {
     return false;
   }
+};
+
+export const convertDateToEpochFormat = (value: Date) => {
+  const epochValue = value ? `$D_${Math.floor(value.getTime() / 1000.0)}` : '';
+  return epochValue;
 };

@@ -159,9 +159,9 @@ import { SubmittedPrescription } from '@aph/mobile-patients/src/components/Tests
 import { SpecialOffersScreen } from '@aph/mobile-patients/src/components/SpecialOffers/SpecialOffers';
 import { PaymentConfirmation } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentConfirmaiton';
 import { ConsultPaymentScreen } from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/ConsultPaymentScreen';
-import { ShareReferLink } from './ReferAndEarn/ShareReferLink';
-import { YourRewardsScreen } from './ReferAndEarn/YourRewardsScreen';
-import { EarnedPoints } from './ReferAndEarn/EarnedPoint';
+import { ShareReferLink } from '@aph/mobile-patients/src/components//ReferAndEarn/ShareReferLink';
+import { YourRewardsScreen } from '@aph/mobile-patients/src/components//ReferAndEarn/YourRewardsScreen';
+import { EarnedPoints } from '@aph/mobile-patients/src/components//ReferAndEarn/EarnedPoint';
 
 export enum AppRoutes {
   Login = 'Login',
