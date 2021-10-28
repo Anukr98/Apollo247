@@ -26,13 +26,23 @@ import {
   WhatsAppIconReferral,
   YouReceiveIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { LinkCopiedToast } from '@aph/mobile-patients/src/components/ReferAndEarn/LinkCopiedToast';
 
 export interface ShareReferLinkProps extends NavigationScreenProps {}
 
 export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
   const [referShareAmount, setReferShareAmount] = useState<string>('100');
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const [linkCopied, setLinkCopied] = useState(false);
   const { navigation } = props;
+
+  useEffect(() => {
+    if (linkCopied) {
+      setTimeout(() => {
+        setLinkCopied(false);
+      }, 2000);
+    }
+  }, [linkCopied]);
 
   const onWhatsAppShare = () => {
     generateReferrerLink((res: any) => {
@@ -51,7 +61,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
   const copyLinkToShare = () => {
     generateReferrerLink((res: any) => {
       Clipboard.setString(string.referAndEarn.shareLinkText + res);
-      Alert.alert('Link Copied');
+      setLinkCopied(true);
     });
   };
 
@@ -173,6 +183,9 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
     );
   };
 
+  const renderLinkCopiedToast = () => {
+    return <LinkCopiedToast />;
+  };
   const renderCheckRewardsContainer = () => {
     return (
       <TouchableOpacity
@@ -222,6 +235,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
           {renderHowItWork()}
           {renderCheckRewardsContainer()}
         </ScrollView>
+        {linkCopied && renderLinkCopiedToast()}
       </SafeAreaView>
     </View>
   );
