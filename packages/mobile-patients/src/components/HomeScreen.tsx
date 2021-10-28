@@ -872,6 +872,24 @@ const styles = StyleSheet.create({
     marginBottom: 'auto',
     justifyContent: 'space-between',
   },
+  searchItemIcon: {
+    paddingVertical: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderStyle: 'solid',
+    borderColor: '#E6E6E6',
+    width: 36,
+    height: 36,
+  },
+  searchItemText: {
+    padding: 4,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    flex: 0.8,
+    marginLeft: 4,
+  },
 });
 
 type menuOptions = {
@@ -5192,30 +5210,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     return (
       <View style={{ marginBottom: 6 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-          <View
-            style={{
-              paddingVertical: 4,
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: 4,
-              borderWidth: 1,
-              borderStyle: 'solid',
-              borderColor: '#E6E6E6',
-              width: 36,
-              height: 36,
-            }}
-          >
+          <View style={styles.searchItemIcon}>
             {searchResultsTabHeader[key].icon({ width: 26, height: 26 })}
           </View>
-          <View
-            style={{
-              padding: 4,
-              alignItems: 'flex-start',
-              justifyContent: 'center',
-              flex: 0.8,
-              marginLeft: 4,
-            }}
-          >
+          <View style={styles.searchItemText}>
             <Text
               style={{
                 ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
