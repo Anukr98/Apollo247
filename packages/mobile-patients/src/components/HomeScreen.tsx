@@ -3034,8 +3034,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const saveRecentSearchTerm = async (search: string) => {
     const authToken: string = await validateAndReturnAuthToken();
     const apolloClient = buildApolloClient(authToken);
-    console.log('csk save', 'here----------------');
-
     apolloClient
       .mutate<saveRecentVariables>({
         mutation: SAVE_RECENT_SEARCH,
