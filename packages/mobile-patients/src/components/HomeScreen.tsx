@@ -933,9 +933,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     axdcCode,
     homeBannerOfferSection,
     offersList,
-    setOffersList,
     offersListLoading,
-    setOffersListLoading,
+    recentGlobalSearchList,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -5048,7 +5047,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         </Text>
       </View>
     );
-    const listitems = recentSearches.map((item) => {
+    const listitems = recentGlobalSearchList.map((item: any) => {
       return (
         <TouchableOpacity onPress={() => onSearchTextChange(item)}>
           <View style={{ flexDirection: 'row', alignItems: 'center', padding: 4 }}>
@@ -5059,7 +5058,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                 marginLeft: 14,
               }}
             >
-              {item}
+              {item.text}
             </Text>
             <ArrowRight style={{ marginLeft: 'auto' }} />
           </View>
