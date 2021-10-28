@@ -3961,6 +3961,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const renderCircle = () => {
+    /**
+     * CircleTypeCard0                    -> never subscribed
+     * CircleTypeCard1 && CircleTypeCard2 -> expiring soon in x days
+     * CircleTypeCard3 && CircleTypeCard4 -> latest active plans
+     * CircleTypeCard5 && CircleTypeCard6 ->  the expired plans
+     */
     const expiry = circlePlanValidity ? timeDiffDaysFromNow(circlePlanValidity?.endDate) : '';
 
     const renew = renewNow !== '' && renewNow === 'yes' ? true : false;
@@ -3972,13 +3978,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       ? dateFormatterDDMM(circlePlanValidity?.endDate, 'DD MMM YYYY')
       : '';
 
-    {
-      /**
-       * CircleTypeCard1 && CircleTypeCard2 -> expiring soon in x days
-       * CircleTypeCard3 && CircleTypeCard4 -> latest active plans
-       * CircleTypeCard5 && CircleTypeCard6 ->  the expired plans
-       */
-    }
     return (
       <LinearGradientComponent
         style={[
