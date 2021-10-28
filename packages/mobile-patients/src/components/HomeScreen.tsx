@@ -851,6 +851,27 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.WHITE,
   },
+  searchResMainContainer: {
+    width: width - 32,
+    marginBottom: 2,
+    paddingVertical: 8,
+    marginRight: 8,
+    backgroundColor: '#fff',
+    justifyContent: 'flex-start',
+  },
+  searchRowHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 12,
+    paddingVertical: 8,
+    borderRadius: 4,
+  },
+  viewAllContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 'auto',
+    justifyContent: 'space-between',
+  },
 });
 
 type menuOptions = {
@@ -5108,25 +5129,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
   const renderSearchItem = ({ key, data }: any, index: number) => {
     return (
-      <View
-        style={{
-          width: width - 32,
-          marginBottom: 2,
-          paddingVertical: 8,
-          marginRight: 8,
-          backgroundColor: '#fff',
-          justifyContent: 'flex-start',
-        }}
-      >
+      <View style={styles.searchResMainContainer}>
         <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            backgroundColor: searchResultsTabHeader[key].backgroundColor,
-            marginVertical: 12,
-            paddingVertical: 8,
-            borderRadius: 4,
-          }}
+          style={[
+            styles.searchRowHeader,
+            { backgroundColor: searchResultsTabHeader[key].backgroundColor },
+          ]}
         >
           {/* icons can be added here */}
           <Text
@@ -5163,14 +5171,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             />
           </View>
           {data.length === 0 ? null : (
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginBottom: 'auto',
-                justifyContent: 'space-between',
-              }}
-            >
+            <View style={styles.viewAllContainer}>
               <Text
                 style={{
                   ...theme.viewStyles.text('M', 15, theme.colors.APP_YELLOW, 1, 24),
