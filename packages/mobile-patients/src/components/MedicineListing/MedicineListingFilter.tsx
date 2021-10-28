@@ -118,11 +118,20 @@ export const MedicineListingFilter: React.FC<Props> = ({
       </>
     );
 
+    let filterName = '';
+    if (filter?.name === 'Price_filter') {
+      filterName = 'Price';
+    } else if (filter?.name === 'Discount percent') {
+      filterName = 'Discount';
+    } else {
+      filterName = filter?.name;
+    }
+
     return (
       <ListItem
         key={filter.name}
         leftElement={highlightView}
-        title={filter.name}
+        title={filterName}
         rightIcon={rightIcon}
         onPress={onPress}
         bottomDivider

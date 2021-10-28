@@ -573,17 +573,22 @@ export const MedicineListing: React.FC<Props> = (props) => {
         values?.length &&
         values.map((ele) => valuesToBeRemoved.indexOf(ele.name) === -1)
     );
-    const categoryValues =
-      categoryFilter?.[0]?.values?.length &&
-      categoryFilter?.[0]?.values.filter(({ name }) => valuesToBeRemoved.indexOf(name) === -1);
+    let newFilters = [];
+    if (categoryFilter?.length) {
+      const categoryValues =
+        categoryFilter?.[0]?.values?.length &&
+        categoryFilter?.[0]?.values.filter(({ name }) => valuesToBeRemoved.indexOf(name) === -1);
 
-    const categoryObject = {
-      attribute: categoryFilter?.[0]?.attribute,
-      name: categoryFilter?.[0]?.name,
-      select_type: categoryFilter?.[0]?.select_type,
-      values: categoryValues,
-    };
-    const newFilters = [...filters, categoryObject];
+      const categoryObject = {
+        attribute: categoryFilter?.[0]?.attribute,
+        name: categoryFilter?.[0]?.name,
+        select_type: categoryFilter?.[0]?.select_type,
+        values: categoryValues,
+      };
+      newFilters = [...filters, categoryObject];
+    } else {
+      newFilters = [...filters];
+    }
 
     return (
       filterVisible && (
