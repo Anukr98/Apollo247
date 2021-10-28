@@ -168,7 +168,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
               />
             </View>
             <Text style={[styles.reportGenTextStyle, styles.reportBGText]}>
-              {!!reportTat?.preOrderReportTATMessage && reportTat?.preOrderReportTATMessage != ''
+              {!!reportTat?.preOrderReportTATMessage
                 ? reportTat?.preOrderReportTATMessage
                 : `Report in ${reportGenItem?.itemReportTat}`}
             </Text>
