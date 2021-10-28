@@ -916,7 +916,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setVaccineLoacalStorageData();
     cleverTapEventForLoginDone();
     fetchUserAgent();
-    checkUserRegisterThroughReferral();
   }, []);
 
   const fetchUserAgent = () => {
@@ -2418,6 +2417,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           setshowPopUp(false);
           CommonLogEvent(AppRoutes.ConsultRoom, 'ConsultRoom_BottomPopUp clicked');
           AsyncStorage.setItem('gotIt', 'true');
+          checkUserRegisterThroughReferral();
         }, 5000);
       }
       const eneabled = AppConfig.Configuration.ENABLE_CONDITIONAL_MANAGEMENT;
@@ -2912,12 +2912,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const checkUserRegisterThroughReferral = async () => {
     const referrerInstall = await AsyncStorage.getItem('referrerInstall');
-    setTimeout(() => {
-      if (referrerInstall && referrerInstall === '1') {
-        AsyncStorage.removeItem('referrerInstall');
-        props.navigation.navigate('EarnedPoints');
-      }
-    }, 1500);
+    if (referrerInstall === 'true') {
+      AsyncStorage.removeItem('referrerInstall');
+      props.navigation.navigate('EarnedPoints');
+    }
   };
 
   const cleverTapEventForAddMemberClick = () => {

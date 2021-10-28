@@ -305,10 +305,9 @@ const SignUp: React.FC<SignUpProps> = (props) => {
       };
       postAppsFlyerEvent(AppsFlyerEventName.REGISTRATION_REFERRER, eventAttribute);
       AsyncStorage.removeItem('app_referral_data');
-      handleOpenURLs(true);
-    } else {
-      handleOpenURLs(false);
+      AsyncStorage.setItem('referrerInstall', 'true');
     }
+    handleOpenURLs();
   };
 
   const getDeviceCountAPICall = async () => {
@@ -612,36 +611,21 @@ const SignUp: React.FC<SignUpProps> = (props) => {
     } catch (error) {}
   };
 
-  const handleOpenURLs = async (referrer: boolean) => {
+  const handleOpenURLs = async () => {
     try {
       deferredDeepLinkRedirectionData(props.navigation, async () => {
         const event: any = await AsyncStorage.getItem('deeplink');
         const data = handleOpenURL(event);
         const { routeName, id, isCall, timeout, mediaSource } = data;
-        if (referrer === true) {
-          AsyncStorage.setItem('referrerInstall', '1');
-          props.navigation.dispatch(
-            StackActions.reset({
-              index: 0,
-              key: null,
-              actions: [
-                NavigationActions.navigate({
-                  routeName: 'ConsultRoom',
-                }),
-              ],
-            })
-          );
-        } else {
-          pushTheView(
-            props.navigation,
-            routeName,
-            id ? id : undefined,
-            isCall,
-            undefined,
-            undefined,
-            mediaSource
-          );
-        }
+        pushTheView(
+          props.navigation,
+          routeName,
+          id ? id : undefined,
+          isCall,
+          undefined,
+          undefined,
+          mediaSource
+        );
       });
     } catch (error) {}
   };
