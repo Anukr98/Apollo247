@@ -1746,7 +1746,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       / /g,
       '_'
     );
-    // downloadLabTest(removeWhiteSpaces(order?.labReportURL)!, appointmentDate, patientName, order);
+    downloadLabTest(removeWhiteSpaces(order?.labReportURL)!, appointmentDate, patientName, order);
   }
 
   async function downloadLabTest(
