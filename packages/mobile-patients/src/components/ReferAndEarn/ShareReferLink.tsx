@@ -60,11 +60,11 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
     appsFlyer.generateInviteLink(
       {
         channel: 'gmail',
-        campaign: '1',
+        campaign: '8a8cd6d4-fcb3-4014-85f4-907bddda5ca0',
         customerID: g(currentPatient, 'id'),
         sub2: 'AppReferral',
         userParams: {
-          rewardId: '1',
+          rewardId: '80f84670-2c07-422a-b0db-2086d265fde5',
           linkToUse: 'ForReferrarInstall',
         },
       },

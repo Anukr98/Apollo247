@@ -2910,9 +2910,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
-  const checkUserRegisterThroughReferral = () => {
+  const checkUserRegisterThroughReferral = async () => {
+    const referrerInstall = await AsyncStorage.getItem('referrerInstall');
     setTimeout(() => {
-      if (props.navigation.state.params?.referralInitiate == true) {
+      if (referrerInstall && referrerInstall === '1') {
+        AsyncStorage.removeItem('referrerInstall');
         props.navigation.navigate('EarnedPoints');
       }
     }, 1500);

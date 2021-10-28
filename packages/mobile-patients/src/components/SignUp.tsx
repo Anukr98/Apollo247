@@ -619,9 +619,18 @@ const SignUp: React.FC<SignUpProps> = (props) => {
         const data = handleOpenURL(event);
         const { routeName, id, isCall, timeout, mediaSource } = data;
         if (referrer === true) {
-          props.navigation.replace('ConsultRoom', {
-            referralInitiate: true,
-          });
+          AsyncStorage.setItem('referrerInstall', '1');
+          props.navigation.dispatch(
+            StackActions.reset({
+              index: 0,
+              key: null,
+              actions: [
+                NavigationActions.navigate({
+                  routeName: 'ConsultRoom',
+                }),
+              ],
+            })
+          );
         } else {
           pushTheView(
             props.navigation,
@@ -709,6 +718,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
 
                       const patientsDetails: UpdatePatientInput = {
                         id: mePatient.id,
+                        // whatsAppOptIn: whatsAppOptIn,  It will use in future, but right now this is not working So I just commented it
                         mobileNumber: mePatient.mobileNumber,
                         firstName: firstName.trim(),
                         lastName: lastName.trim(),
