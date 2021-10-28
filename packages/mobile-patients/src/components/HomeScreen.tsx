@@ -841,6 +841,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#EAF6FF',
     borderRadius: 6,
   },
+  recentOrSuggestContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 16,
+    paddingVertical: 8,
+  },
+  scrollView: {
+    flex: 1,
+    backgroundColor: theme.colors.WHITE,
+  },
 });
 
 type menuOptions = {
@@ -5005,10 +5015,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
   const renderSearchRecentandSuggest = () => {
     return (
-      <ScrollView
-        style={{ flex: 1, backgroundColor: theme.colors.WHITE, marginTop: -1 }}
-        bounces={false}
-      >
+      <ScrollView style={[styles.scrollView, { marginTop: -1 }]} bounces={false}>
         <View
           style={{ width: width, marginBottom: 6, paddingHorizontal: 16, backgroundColor: '#fff' }}
         >
@@ -5020,14 +5027,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
   const getRecentORSuggestList = (listType: string) => {
     const header = (
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          marginVertical: 16,
-          paddingVertical: 8,
-        }}
-      >
+      <View style={styles.recentOrSuggestContainer}>
         <Text
           style={{
             ...theme.viewStyles.text('SB', 16, theme.colors.LIGHT_BLUE, 1, 24),
@@ -5074,7 +5074,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
   const renderSearchResults = () => {
     return (
-      <ScrollView style={{ flex: 1, backgroundColor: theme.colors.WHITE }} bounces={false}>
+      <ScrollView style={styles.scrollView} bounces={false}>
         <View
           style={{
             width: width,
@@ -5307,7 +5307,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         ) : isSearchFocus ? (
           renderSearchRecentandSuggest()
         ) : (
-          <ScrollView style={{ flex: 1 }} bounces={false}>
+          <ScrollView style={styles.scrollView} bounces={false}>
             <View style={{ width: '100%' }}>
               <View style={styles.viewName}>
                 {renderMenuOptions()}
