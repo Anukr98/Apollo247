@@ -58,7 +58,7 @@ import moment from 'moment';
 import { DownloadNew, ShareBlue } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 import {
-  downloadDocument,
+  shareDocument,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 export interface TestPdfRenderProps extends NavigationScreenProps {
   uri: string;
@@ -74,6 +74,7 @@ export const TestPdfRender: React.FC<TestPdfRenderProps> = (props) => {
   const uri = props.uri || props.navigation.getParam('uri');
   const title = props.title || props.navigation.getParam('title');
   const order = props.order || props.navigation.getParam('order');
+  const isReport = props.order || props.navigation.getParam('isReport');
   const isPopup = props.isPopup || props.navigation.getParam('isPopup');
   const setDisplayPdf = props.setDisplayPdf || props.navigation.getParam('setDisplayPdf');
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
@@ -148,7 +149,7 @@ export const TestPdfRender: React.FC<TestPdfRenderProps> = (props) => {
     );
   };
   const shareReport = () => {
-    downloadDocument(uri, 'application/pdf', order?.displayId)
+    shareDocument(uri, 'application/pdf', order?.displayId, isReport)
   }
 
   return (

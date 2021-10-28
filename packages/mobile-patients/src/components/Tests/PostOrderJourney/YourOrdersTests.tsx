@@ -1722,21 +1722,19 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   }
 
   function _onPressViewReportAction(order: orderList) {
-    console.log('order :>> ', order?.labReportURL);
-    let link = 'https://report.apollodiagnostics.in/Apollo/Design/lab/labreportnew_ShortSMS.aspx?LabNo=ugmlyH9sr8WL3E2U2M3F0g4eGwPl76h4qH9zb6Z45i4=&Token=mELirpUhRYksFj7k8/XBcQ=='
-    props.navigation.navigate(AppRoutes.TestPdfRender, {
-      uri: link,
-      order: order,
-    });
-    // if (!!order?.labReportURL && order?.labReportURL != '') {
-    //   setActiveOrder(order);
-    //   _onPressViewReport(order);
-    // } else if (!!order?.visitNo && order?.visitNo != '') {
-    //   //directly open the phr section
-    //   fetchTestReportResult(order);
-    // } else {
-    //   props.navigation.navigate(AppRoutes.HealthRecordsHome);
-    // }
+    if (!!order?.labReportURL && order?.labReportURL != '') {
+      setActiveOrder(order);
+      props.navigation.navigate(AppRoutes.TestPdfRender, {
+        uri: order?.labReportURL,
+        order: order,
+        isReport: true
+      });
+    } else if (!!order?.visitNo && order?.visitNo != '') {
+      //directly open the phr section
+      fetchTestReportResult(order);
+    } else {
+      props.navigation.navigate(AppRoutes.HealthRecordsHome);
+    }
   }
 
   function _onPressViewReport(order: orderList) {

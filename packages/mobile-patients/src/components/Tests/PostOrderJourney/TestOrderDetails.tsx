@@ -1289,6 +1289,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   function _onPressViewReportAction() {
     if (!!selectedOrder?.labReportURL && selectedOrder?.labReportURL != '') {
       onPressViewReport(true);
+      props.navigation.navigate(AppRoutes.TestPdfRender, {
+        uri: selectedOrder?.labReportURL,
+        order: selectedOrder,
+        isReport: true
+      });
     } else if (!!selectedOrder?.visitNo && selectedOrder?.visitNo != '') {
       //directly open the phr section
       fetchTestReportResult();

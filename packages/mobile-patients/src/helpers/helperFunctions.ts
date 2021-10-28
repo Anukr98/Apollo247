@@ -3682,14 +3682,17 @@ export const isDiagnosticSelectedCartEmpty = (patientCartItems: DiagnosticPatien
   });
   return finalPatientCartItems
 }
-export const downloadDocument = (
+export const shareDocument = (
   fileUrl: string = '',
   type: string = 'application/pdf',
-  orderId: number
+  orderId: number,
+  isReport?: boolean
 ) => {
   let filePath: string | null = null;
   let file_url_length = fileUrl.length;
   let viewReportOrderId = orderId;
+  const isReportApollo = isReport ? 'labreport' : 'labinvoice';
+  const dynamicFileName = `Apollo247_${orderId}_${isReportApollo}.pdf`;
   const configOptions = { fileCache: true };
   RNFetchBlob.config(configOptions)
     .fetch('GET', fileUrl.replace(/\s/g, ''))
@@ -3699,7 +3702,7 @@ export const downloadDocument = (
     })
     .then(async (base64Data) => {
       base64Data = `data:${type};base64,` + base64Data;
-      await Share.open({ title: '', url: base64Data });
+      await Share.open({ title: dynamicFileName, url: base64Data });
       // remove the image or pdf from device's storage
       // await RNFS.unlink(filePath);
     })
