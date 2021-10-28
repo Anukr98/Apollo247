@@ -833,6 +833,14 @@ const styles = StyleSheet.create({
     height: 180,
     width: '100%',
   },
+  countContainer: {
+    height: 40,
+    width: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#EAF6FF',
+    borderRadius: 6,
+  },
 });
 
 type menuOptions = {
@@ -3146,16 +3154,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     return appointmentLoading ? (
       renderAppointmentCountShimmer()
     ) : (
-      <View
-        style={{
-          height: 40,
-          width: 40,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: '#E8E8E8',
-          borderRadius: 6,
-        }}
-      >
+      <View style={styles.countContainer}>
         <Text style={{ ...theme.viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 20, 0) }}>
           {count}
         </Text>
