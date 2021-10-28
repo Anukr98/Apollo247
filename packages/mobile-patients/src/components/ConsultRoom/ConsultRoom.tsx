@@ -672,12 +672,12 @@ const styles = StyleSheet.create({
   },
   rf_en_earnBtnText: {
     fontSize: 14,
-    color: '#ffffff',
+    color: theme.colors.HEX_WHITE,
     fontWeight: '700',
   },
 
   rf_en_earnBtn: {
-    backgroundColor: '#FCB716',
+    backgroundColor: theme.colors.APP_YELLOW_COLOR,
     width: 80,
     height: 35,
     alignItems: 'center',
@@ -689,13 +689,13 @@ const styles = StyleSheet.create({
   rf_en_rupees: {
     fontSize: 19,
     fontWeight: 'bold',
-    color: '#4E69FF',
+    color: theme.colors.APP_REFERRAL_BLUE,
     fontStyle: 'italic',
   },
   rf_en_text: {
     fontSize: 19,
     fontWeight: '700',
-    color: '#02475B',
+    color: theme.colors.CARD_HEADER,
   },
   rf_en_textContainer: {
     width: '55%',
@@ -707,12 +707,12 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   rf_en_MainContainer: {
-    backgroundColor: '#FAFEFF',
+    backgroundColor: theme.colors.REFERRAL_WHITE_GRAY,
     paddingHorizontal: 20,
     paddingTop: 20,
     marginHorizontal: 10,
     borderWidth: 1,
-    borderColor: '#D4D4D4',
+    borderColor: theme.colors.REFERRAL_BORDER_GRAY,
     borderRadius: 5,
     flexDirection: 'row',
   },
@@ -862,6 +862,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [bannerLoading, setBannerLoading] = useState<boolean>(false);
   let circleActivated = props.navigation.getParam('circleActivated');
   const circleActivatedRef = useRef<boolean>(circleActivated);
+  const [referAndEarnPrice, setReferAndEarnPrice] = useState('100');
 
   //prohealth
   const [isProHealthActive, setProHealthActive] = useState<boolean>(false);
@@ -1888,7 +1889,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const setSubscriptionData = (plan: any, isUpgradePlan?: boolean, isCorporatePlan?: boolean) => {
-
     try {
       const group = plan.group;
       const groupData: GroupPlan = {
@@ -4035,9 +4035,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         </View>
         <View style={styles.rf_en_textContainer}>
           <Text style={styles.rf_en_text}>
-            Refer & Earn <Text style={styles.rf_en_rupees}>₹100</Text>
+            {string.referAndEarn.referAndEarn}{' '}
+            <Text style={styles.rf_en_rupees}>₹{referAndEarnPrice}</Text>
           </Text>
-
           <View>
             <TouchableOpacity
               onPress={() => {
@@ -4045,7 +4045,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               }}
               style={styles.rf_en_earnBtn}
             >
-              <Text style={styles.rf_en_earnBtnText}>Earn Now</Text>
+              <Text style={styles.rf_en_earnBtnText}>{string.referAndEarn.earnNow}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -4063,9 +4063,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
               <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text>
               {renderMenuOptions()}
-
               {renderReferralBanner()}
-
               {circleDataLoading && renderCircleShimmer()}
               <View style={{ backgroundColor: '#f0f1ec' }}>
                 {isCircleMember === 'yes' && !circleDataLoading && renderCircle()}

@@ -11,17 +11,21 @@ import {
   Alert,
 } from 'react-native';
 import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
-import { Header } from '../ui/Header';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import appsFlyer from 'react-native-appsflyer';
 import Share from 'react-native-share';
-import { g } from '../../helpers/helperFunctions';
-import { useAllCurrentPatients } from '../../hooks/authHooks';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 export interface ShareReferLinkProps extends NavigationScreenProps {}
 
 export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
+  const [referShareAmount, setReferShareAmount] = useState<string>('100');
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const { navigation } = props;
 
   const onWhatsAppShare = () => {
     generateReferrerLink((res: any) => {
@@ -66,22 +70,27 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
   const renderReferShare = () => {
     return (
       <LinearGradientComponent
-        colors={['#31CD95', '#D1FFF7']}
+        colors={[theme.colors.GREEN_GRADIENT_ONE, theme.colors.GREEN_GRADIENT_TWO]}
         style={styles.referShareMainContainer}
       >
         <View>
           <View style={styles.ref_shr_textContainer}>
-            <Text style={styles.ref_shr_text}>Refer & Earn</Text>
-            <Text style={styles.ref_shr_amount}>₹100</Text>
+            <Text style={styles.ref_shr_text}>{string.referAndEarn.referAndEarn}</Text>
+            <Text style={styles.ref_shr_amount}>₹{referShareAmount}</Text>
             <View>
-              <Text style={styles.ref_shr_otherDetails}>Your friend got ₹100 on signup & </Text>
-              <Text style={styles.ref_shr_otherDetails}>You get $100 on their first </Text>
+              <Text style={styles.ref_shr_otherDetails}>
+                {string.referAndEarn.yourFriendGot} ₹{referShareAmount}{' '}
+                {string.referAndEarn.onSignUp}{' '}
+              </Text>
+              <Text style={styles.ref_shr_otherDetails}>
+                {string.referAndEarn.youGet} ₹{referShareAmount} {string.referAndEarn.onTheirFirst}{' '}
+              </Text>
             </View>
           </View>
           <View style={styles.ref_shr_btnTextContainer}>
             <View style={styles.ref_shr_referViaContainer}>
               <View style={styles.ref_shr_referViaHRLineLeft} />
-              <Text style={styles.ref_shr_referViaText}>Refer Via</Text>
+              <Text style={styles.ref_shr_referViaText}>{string.referAndEarn.referVia}</Text>
               <View style={styles.ref_shr_referViaHRLineRight} />
             </View>
             <View style={styles.ref_shr_btnContainer}>
@@ -115,7 +124,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
   const renderHowItWork = () => {
     return (
       <View style={styles.howItWorkMainContainer}>
-        <Text style={styles.hw_wk_mainHeading}>How it works?</Text>
+        <Text style={styles.hw_wk_mainHeading}>{string.referAndEarn.howItWorks}</Text>
         <View style={styles.hw_wk_listMainContainer}>
           <View style={styles.hw_wk_listSpecificContainer}>
             <View style={styles.hw_wk_listContainer}>
@@ -125,7 +134,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
                 resizeMode="cover"
               />
             </View>
-            <Text style={styles.hw_wk_listText}>Invite your friend</Text>
+            <Text style={styles.hw_wk_listText}>{string.referAndEarn.inviteYourFriend}</Text>
           </View>
           <View style={styles.hw_wk_listSpecificContainer}>
             <View style={styles.hw_wk_listContainer}>
@@ -135,7 +144,10 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
                 resizeMode="cover"
               />
             </View>
-            <Text style={styles.hw_wk_listText}>Friend receives Rs100</Text>
+            <Text style={styles.hw_wk_listText}>
+              {string.referAndEarn.friendReceiveRs}
+              {referShareAmount}
+            </Text>
           </View>
           <View style={styles.hw_wk_listSpecificContainer}>
             <View style={styles.hw_wk_listContainer}>
@@ -145,18 +157,21 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
                 resizeMode="cover"
               />
             </View>
-            <Text style={styles.hw_wk_listText}>You receive 100 once order get delivered</Text>
+            <Text style={styles.hw_wk_listText}>
+              {string.referAndEarn.youReceive} {referShareAmount}{' '}
+              {string.referAndEarn.onceOrderGetDelivered}
+            </Text>
           </View>
         </View>
         <View style={styles.hw_wk_linkMainContainer}>
           <TouchableOpacity style={styles.hw_wk_linkBtnForTC}>
             <View style={styles.hw_wk_linkContainer} />
-            <Text style={styles.hw_wk_linkText}>Terms and Condition</Text>
+            <Text style={styles.hw_wk_linkText}>{string.referAndEarn.termsAndCondition}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.hw_wk_linkBtn}>
             <View style={styles.hw_wk_linkContainer} />
-            <Text style={styles.hw_wk_linkText}>FAQs</Text>
+            <Text style={styles.hw_wk_linkText}>{string.referAndEarn.FAQs}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -167,11 +182,11 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
     return (
       <TouchableOpacity
         onPress={() => {
-          props.navigation.navigate('YourRewardsScreen');
+          navigation.navigate('YourRewardsScreen');
         }}
         style={styles.ch_rw_btn}
       >
-        <Text style={styles.ch_rw_text}>Check Rewards</Text>
+        <Text style={styles.ch_rw_text}>{string.referAndEarn.checkRewards}</Text>
         <Image
           source={require('@aph/mobile-patients/src/images/referAndEarn/arrow.webp')}
           style={styles.ch_rw_icon}
@@ -184,11 +199,11 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
   const renderInitialHC = () => {
     return (
       <View style={styles.initialHCMainContainer}>
-        <Text style={styles.ini_hc}>100 HC</Text>
-        <Text style={styles.ini_hc_expiration}>Expires on 20 Aug 2021</Text>
+        <Text style={styles.ini_hc}>{referShareAmount} HC</Text>
+        <Text style={styles.ini_hc_expiration}>{string.referAndEarn.ExpireON} 20 Aug 2021</Text>
         <View style={styles.ini_hc_reedemContainer}>
           <TouchableOpacity>
-            <Text style={styles.ini_hc_reedemContainerText}>REDEEM NOW</Text>
+            <Text style={styles.ini_hc_reedemContainerText}>{string.referAndEarn.reedemNow}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -196,12 +211,12 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
   };
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#01475b" />
+      <StatusBar barStyle="light-content" backgroundColor={theme.colors.SHERPA_BLUE} />
       <SafeAreaView style={styles.container}>
         <Header
           leftIcon="backArrow"
           title="Refer And Earn"
-          onPressLeftIcon={() => props.navigation.goBack()}
+          onPressLeftIcon={() => navigation.goBack()}
           container={{
             borderColor: 'transparent',
           }}
@@ -222,33 +237,33 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f1ec',
+    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
   },
   initialHCMainContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.HEX_WHITE,
     paddingTop: 20,
     alignItems: 'center',
   },
   ini_hc: {
-    color: '#02475B',
+    color: theme.colors.LIGHT_BLUE,
     fontWeight: '700',
     fontSize: 30,
   },
   ini_hc_expiration: {
-    color: '#02475B',
+    color: theme.colors.LIGHT_BLUE,
     fontWeight: '500',
     fontSize: 13,
   },
   ini_hc_reedemContainer: {
     paddingVertical: 15,
-    borderTopColor: '#bbb',
+    borderTopColor: theme.colors.DARK_GRAY,
     borderTopWidth: 1,
     width: '100%',
     alignItems: 'center',
     marginTop: 10,
   },
   ini_hc_reedemContainerText: {
-    color: '#FC9916',
+    color: theme.colors.TANGERINE_YELLOW,
     fontWeight: '800',
     fontSize: 14,
   },
@@ -264,16 +279,16 @@ const styles = StyleSheet.create({
   ref_shr_text: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#02475B',
+    color: theme.colors.LIGHT_BLUE,
   },
   ref_shr_amount: {
     fontSize: 35,
-    fontWeight: '800',
-    color: '#ffffff',
+    fontWeight: 'bold',
+    color: theme.colors.LIGHT_BLUE,
   },
   ref_shr_otherDetails: {
     fontSize: 13,
-    color: '#ffffff',
+    color: theme.colors.LIGHT_BLUE,
     fontWeight: '600',
   },
   ref_shr_btnTextContainer: {
@@ -288,17 +303,17 @@ const styles = StyleSheet.create({
   },
   ref_shr_referViaHRLineLeft: {
     width: 50,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.LIGHT_BLUE,
     height: 1,
     marginRight: 5,
   },
   ref_shr_referViaHRLineRight: {
     width: 50,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.LIGHT_BLUE,
     height: 1,
     marginLeft: 5,
   },
-  ref_shr_referViaText: { color: '#fff' },
+  ref_shr_referViaText: { color: theme.colors.LIGHT_BLUE },
   ref_shr_btnContainer: {
     width: 200,
     flexDirection: 'row',
@@ -314,12 +329,12 @@ const styles = StyleSheet.create({
     height: 17,
   },
   ch_rw_text: {
-    color: '#02475B',
+    color: theme.colors.LIGHT_BLUE,
     fontSize: 17,
     fontWeight: '700',
   },
   ch_rw_btn: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.HEX_WHITE,
     marginTop: 10,
     flexDirection: 'row',
     alignItems: 'center',
@@ -329,25 +344,25 @@ const styles = StyleSheet.create({
   },
   hw_wk_linkText: {
     fontSize: 14,
-    color: '#f89623',
+    color: theme.colors.REFERRAL_CIRCLE_DOT,
     fontWeight: '400',
   },
   hw_wk_linkContainer: {
     width: 10,
     height: 10,
-    backgroundColor: '#f89623',
+    backgroundColor: theme.colors.REFERRAL_CIRCLE_DOT,
     borderRadius: 5,
     marginRight: 10,
   },
   howItWorkMainContainer: {
     paddingVertical: 12,
     paddingHorizontal: 18,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.HEX_WHITE,
   },
   hw_wk_mainHeading: {
     fontWeight: '700',
     fontSize: 18,
-    color: '#02475B',
+    color: theme.colors.LIGHT_BLUE,
     marginBottom: 20,
   },
   hw_wk_listMainContainer: {
@@ -366,7 +381,7 @@ const styles = StyleSheet.create({
   hw_wk_listImageCircle: {
     width: 44,
     height: 44,
-    backgroundColor: '#007C9D',
+    backgroundColor: theme.colors.TURQUOISE_LIGHT_BLUE,
     opacity: 0.2,
     position: 'absolute',
     borderRadius: 22,
@@ -374,7 +389,7 @@ const styles = StyleSheet.create({
     top: -4,
   },
   hw_wk_listText: {
-    color: '#02475B',
+    color: theme.colors.LIGHT_BLUE,
     fontSize: 15,
   },
   hw_wk_linkBtn: {

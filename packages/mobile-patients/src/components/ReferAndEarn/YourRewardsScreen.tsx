@@ -10,18 +10,23 @@ import {
   FlatList,
 } from 'react-native';
 import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
-import { Header } from '../ui/Header';
-import { createMaterialTopTabNavigator, createAppContainer } from 'react-navigation';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import Share from 'react-native-share';
 import appsFlyer from 'react-native-appsflyer';
-import { useAllCurrentPatients } from '../../hooks/authHooks';
-import { g } from '../../helpers/helperFunctions';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 export interface YourRewardsScreenProps extends NavigationScreenProps {}
 
 export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
   const [selectedTab, selectTabBar] = useState(1);
+  const [totalReward, setTotalReward] = useState<number>(200.0);
+  const [userHC, setUserHC] = useState<number | string>('100');
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+
+  const { navigation } = props;
 
   const shareLinkMethod = () => {
     generateReferrerLink((referralLink) => {
@@ -66,14 +71,18 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
           />
         </View>
         <View>
-          <Text style={styles.hc_card_refreeName}>Claimed</Text>
+          <Text style={styles.hc_card_refreeName}>{string.referAndEarn.claimed}</Text>
           <View style={styles.hc_card_flexRow}>
             <View style={styles.hc_card_claimedRightContaier}>
-              <Text style={styles.hc_card_smallHeadingOne}>You earned refree points on 3rd</Text>
-              <Text style={styles.hc_card_smallHeadingTwo}>Aug, 2021 first time Login.</Text>
+              <Text style={styles.hc_card_smallHeadingOne}>
+                {string.referAndEarn.youEarnedRefreePoints}
+              </Text>
+              <Text style={styles.hc_card_smallHeadingTwo}>
+                {string.referAndEarn.firstTimeLogin}
+              </Text>
             </View>
             <View style={styles.hc_card_totalHC}>
-              <Text style={styles.hc_card_HC}>100HC</Text>
+              <Text style={styles.hc_card_HC}>{userHC}HC</Text>
             </View>
           </View>
         </View>
@@ -93,16 +102,16 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
         </View>
         <View>
           <View style={styles.hc_card_RightInnercontainer}>
-            <Text style={styles.hc_card_refreeName}>Shriya Singh</Text>
-            <Text style={styles.hc_card_exporationText}>Expires on 12 Sep,21</Text>
+            <Text style={styles.hc_card_refreeName}>{string.referAndEarn.refreeName}</Text>
+            <Text style={styles.hc_card_exporationText}>{string.referAndEarn.expireOn}</Text>
           </View>
 
           <View style={styles.hc_card_flexRow}>
             <View style={styles.hc_card_claimedRightContaier}>
-              <Text style={styles.hc_card_smallHeadingOne}>Purchased On 20th July</Text>
+              <Text style={styles.hc_card_smallHeadingOne}>{string.referAndEarn.purchasedOn}</Text>
             </View>
             <View style={styles.hc_card_totalHC}>
-              <Text style={styles.hc_card_HC}>100HC</Text>
+              <Text style={styles.hc_card_HC}>{userHC}HC</Text>
             </View>
           </View>
         </View>
@@ -116,14 +125,12 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
         <View style={styles.hc_card_Leftcontainer}></View>
         <View>
           <View style={styles.hc_card_RightInnercontainer}>
-            <Text style={styles.hc_card_refreeName}>Shriya Singh</Text>
+            <Text style={styles.hc_card_refreeName}>{string.referAndEarn.refreeName}</Text>
           </View>
 
           <View style={styles.hc_card_flexRow}>
             <View style={{}}>
-              <Text style={styles.hc_card_smallHeadingOne}>
-                Signed up 20th July, Purchase is Pending.
-              </Text>
+              <Text style={styles.hc_card_smallHeadingOne}>{string.referAndEarn.signedUp}</Text>
             </View>
           </View>
         </View>
@@ -135,16 +142,16 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
     return (
       <View style={styles.noReferralReward_container}>
         <View style={styles.no_rf_innerContainer}>
-          <Text style={styles.no_rf_heading}>No referral rewards</Text>
-          <Text style={styles.no_rf_subHeading}>You have not invited your friends yet</Text>
+          <Text style={styles.no_rf_heading}>{string.referAndEarn.noReferralReward}</Text>
+          <Text style={styles.no_rf_subHeading}>{string.referAndEarn.youHaveNotInvited}t</Text>
           <TouchableOpacity
             onPress={() => {
-              props.navigation.navigate('EarnedPoints');
+              navigation.navigate('EarnedPoints');
               // shareLinkMethod();
             }}
             style={styles.no_rf_referBtn}
           >
-            <Text style={styles.no_rf_btnText}>Refer Your Friend</Text>
+            <Text style={styles.no_rf_btnText}>{string.referAndEarn.referYourFriend}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -191,7 +198,7 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
               selectedTab === 1 ? styles.selectedTabText : styles.unSelectedTabText,
             ]}
           >
-            Claimed
+            {string.referAndEarn.claimed}
           </Text>
           <View style={selectedTab === 1 ? styles.horizontalBackground : {}} />
         </TouchableOpacity>
@@ -202,7 +209,7 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
               selectedTab === 2 ? styles.selectedTabText : styles.unSelectedTabText,
             ]}
           >
-            Pending
+            {string.referAndEarn.pending}
           </Text>
           <View style={selectedTab === 2 ? styles.horizontalBackground : {}} />
         </TouchableOpacity>
@@ -213,7 +220,9 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
     return (
       <View style={styles.totalHcMainContainer}>
         <View style={styles.to_HC_texContainer}>
-          <Text style={styles.to_HC_totalHC}>Total HC: 200.00</Text>
+          <Text style={styles.to_HC_totalHC}>
+            {string.referAndEarn.totalHC}: {totalReward}
+          </Text>
           <View style={styles.to_HC_refresh}>
             <TouchableOpacity onPress={() => {}}>
               <Image
@@ -234,7 +243,7 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
         <Header
           leftIcon="backArrow"
           title="Your Rewards"
-          onPressLeftIcon={() => props.navigation.goBack()}
+          onPressLeftIcon={() => navigation.goBack()}
           container={{
             borderColor: 'transparent',
           }}
@@ -252,7 +261,7 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f1ec',
+    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
   },
   shareImage: {},
   selectedTabText: {
@@ -264,7 +273,7 @@ const styles = StyleSheet.create({
   horizontalBackground: {
     marginTop: 15,
     width: '80%',
-    backgroundColor: '#00B38E',
+    backgroundColor: theme.colors.CONSULT_SUCCESS_TEXT,
     height: 3,
   },
   to_HC_refresh: {
@@ -278,7 +287,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   totalHcMainContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.HEX_WHITE,
     paddingVertical: 30,
   },
   cs_tbr_text: {
@@ -290,22 +299,22 @@ const styles = StyleSheet.create({
   },
   customTabBarMainContainer: {
     flexDirection: 'row',
-    borderBottomColor: '#bababa',
-    borderTopColor: '#bababa',
+    borderBottomColor: theme.colors.DARK_GRAY,
+    borderTopColor: theme.colors.DARK_GRAY,
     borderBottomWidth: 1,
     borderTopWidth: 1,
     paddingTop: 18,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.HEX_WHITE,
   },
   hc_card_flexRow: {
     flexDirection: 'row',
   },
   hc_card_container: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.HEX_WHITE,
     paddingHorizontal: 14,
     paddingVertical: 20,
     borderWidth: 2,
-    borderColor: '#ccc',
+    borderColor: theme.colors.LIGHT_GRAY_2,
     marginBottom: 5,
     borderRadius: 5,
     flexDirection: 'row',
@@ -323,12 +332,12 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   no_rf_btnText: {
-    color: '#fff',
+    color: theme.colors.HEX_WHITE,
     fontSize: 14,
     fontWeight: '700',
   },
   no_rf_referBtn: {
-    backgroundColor: '#FC9916',
+    backgroundColor: theme.colors.TANGERINE_YELLOW,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 5,
@@ -336,7 +345,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
   },
   no_rf_subHeading: {
-    color: '#979797',
+    color: theme.colors.BORDER_BOTTOM_COLOR,
     fontWeight: '400',
     fontSize: 18,
     marginBottom: 25,
@@ -344,7 +353,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   no_rf_heading: {
-    color: '#02475B',
+    color: theme.colors.LIGHT_BLUE,
     fontWeight: '600',
     fontSize: 18,
     marginBottom: 15,
@@ -375,7 +384,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   hc_card_exporationText: {
-    color: '#FE5959',
+    color: theme.colors.EXPIRE_TEXT,
     fontSize: 13,
     fontWeight: '400',
   },

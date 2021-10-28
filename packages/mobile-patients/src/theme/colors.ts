@@ -4,7 +4,7 @@ const clear = 'transparent';
 const semiDarkClear = 'rgba(0, 0, 0, 0.3)';
 const lightColor = 'rgb(216, 216, 216)';
 const darkColor = 'rgb(115, 118, 131)';
-
+const darkGray = '#bbbbbb';
 const hexWhite = '#ffffff';
 const app_green = '#00b38e';
 const APP_Sherpa_Blue = '#01475b';
@@ -58,6 +58,7 @@ const Card = {
 };
 
 const Common = {
+  DARK_GRAY: darkGray,
   BLACK_COLOR: black,
   DEFAULT_BACKGROUND_COLOR: '#f0f1ec',
   INPUT_CURSOR_COLOR: app_green,
@@ -129,6 +130,17 @@ const Common = {
   TANGERINE_YELLOW: tangerine_yellow,
   TEXT_LIGHT_YELLOW: text_light_yellow,
   DEEP_RED: deepRed,
+  ORANGE: "#FF774B",
+  LIGHT_ORANGE_YELLOW: "#FCA317",
+  APP_REFERRAL_BLUE: '#4E69FF',
+  REFERRAL_WHITE_GRAY: '#FAFEFF',
+  REFERRAL_BORDER_GRAY: '#D4D4D4',
+  REFERRAL_CIRCLE_DOT: '#f89623',
+  GREEN_GRADIENT_ONE: '#31CD95',
+  GREEN_GRADIENT_TWO: '#D1FFF7',
+  EXPIRE_TEXT: '#FE5959',
+  LIGHT_GREEN_ONE: '#E8EDF0',
+  LIGHT_BLUE_TWO: '#DCF0FF'
 };
 
 const Header = {

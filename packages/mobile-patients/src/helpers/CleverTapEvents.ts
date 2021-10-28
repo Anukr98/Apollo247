@@ -44,7 +44,7 @@ export enum ProductPageViewedSource {
 export enum DiagnosticHomePageSource {
   TAB_BAR = "247 Home bottom bar",
   HOMEPAGE_CTA = "247 Home CTA",
-  BANNER  = "247 Home banner",
+  BANNER = "247 Home banner",
   DEEPLINK = "Deeplink"
 }
 
@@ -158,33 +158,33 @@ export enum CleverTapEventName {
   PHARMACY_CHRONIC_UPSELL_NUDGE = 'Chronic Upsell Nudge',
 
   // Help Section Events
-  BACK_NAV_ON_NEED_HELP_CLICKED= 'Back Nav On Need Help Clicked',
-  VIEW_PREVIOUS_TICKETS_CTA_ON_NEED_HELP= 'View Previous Tickets CTA On Need Help Clicked',
-  LATEST_CS_TICKETS_ON_NEED_HELP= 'Latest CS Ticket On Need Help Clicked',
-  EDIT_EMAIL_ADDRESS_ON_NEED_HELP= 'Edit Email Address On Need Help Clicked',
-  BU_MODULE_TILE_ON_NEED_HELP= 'BU/Module Tile On Need Help Clicked',
-  NEED_HELP_SCROLLED= 'Need Help Screen Scrolled',
-  BACK_NAV_ON_C1= 'Back Nav On C1 Help Clicked',
-  ORDER_NAV_ON_C1_HELP= 'Order Nav On C1 Help Clicked',
-  ORDER_REL_ISSUES_ON_C1_HELP= 'Order Rel Issues On C1 Help Clicked',
-  CANCEL_ON_C1_HELP= 'Cancel On C1 Help Clicked',
-  PREV_ORDERS_TILE_ON_C1_HELP= 'Prev Orders Tile On C1 Help Clicked',
-  NON_ORDER_ISSUES_ON_C1_HELP= 'Non Order Issues On C1 Help Clicked',
-  DETAILS_INPUTBOX_ON_C1_HELP= 'Details Inputbox On C1 Help Clicked',
-  SUBMIT_CTA_ON_C1_HELP= 'Submit CTA On C1 Help Clicked',
-  TICKET_ACKNOWLEDGEMENT_ON_C1_HELP_DISPLAYED= 'Ticket Acknowledgement On C1 Help Displayed',
-  C1_HELP_SCREEN_SCROLLED= 'C1 Help Screen Scrolled',
-  BACK_NAV_ON_C2_HELP= 'Back Nav On C2 Help Clicked',
-  DETAILS_INPUT_ON_C2_HELP= 'Details Inputbox On C2 Help Clicked',
-  SUBMIT_CTA_ON_C2_HELP= 'Submit CTA On C2 Help Clicked',
-  TICKET_ACKNOWLEDGEMENT_ON_C2_HELP_DISPLAYED= 'Ticket Acknowledgement On C2 Help Displayed',
-  CHAT_INPUTBOX_ON_TICKET_CHAT= 'Chat Inputbox On Ticket Chat Clicked',
-  SEND_BUTTON_ON_TICKET_CHAT_CLICKED= 'Send Button On Ticket Chat Clicked',
-  REOPEN_CTA_ON_TICKET_CHAT= 'Reopen CTA on Ticket Chat Clicked',
-  TICKET_ACKNOWLEDGEMENT_ON_CHAT_DISPLAYED= 'Ticket Acknowledgement Ticket Chat Displayed',
-  TICKET_CHAT_SCREEN_SCROLLED= 'Ticket Chat Screen Scrolled',
-  CS_TICKET_ON_PREVIOUS_TICKETS= 'CS Ticket On Prev Tickets Clicked',
-  PREVIOUS_TICKET_SCREEN_SCROLLED= 'Prev Tickets Screen Scrolled',
+  BACK_NAV_ON_NEED_HELP_CLICKED = 'Back Nav On Need Help Clicked',
+  VIEW_PREVIOUS_TICKETS_CTA_ON_NEED_HELP = 'View Previous Tickets CTA On Need Help Clicked',
+  LATEST_CS_TICKETS_ON_NEED_HELP = 'Latest CS Ticket On Need Help Clicked',
+  EDIT_EMAIL_ADDRESS_ON_NEED_HELP = 'Edit Email Address On Need Help Clicked',
+  BU_MODULE_TILE_ON_NEED_HELP = 'BU/Module Tile On Need Help Clicked',
+  NEED_HELP_SCROLLED = 'Need Help Screen Scrolled',
+  BACK_NAV_ON_C1 = 'Back Nav On C1 Help Clicked',
+  ORDER_NAV_ON_C1_HELP = 'Order Nav On C1 Help Clicked',
+  ORDER_REL_ISSUES_ON_C1_HELP = 'Order Rel Issues On C1 Help Clicked',
+  CANCEL_ON_C1_HELP = 'Cancel On C1 Help Clicked',
+  PREV_ORDERS_TILE_ON_C1_HELP = 'Prev Orders Tile On C1 Help Clicked',
+  NON_ORDER_ISSUES_ON_C1_HELP = 'Non Order Issues On C1 Help Clicked',
+  DETAILS_INPUTBOX_ON_C1_HELP = 'Details Inputbox On C1 Help Clicked',
+  SUBMIT_CTA_ON_C1_HELP = 'Submit CTA On C1 Help Clicked',
+  TICKET_ACKNOWLEDGEMENT_ON_C1_HELP_DISPLAYED = 'Ticket Acknowledgement On C1 Help Displayed',
+  C1_HELP_SCREEN_SCROLLED = 'C1 Help Screen Scrolled',
+  BACK_NAV_ON_C2_HELP = 'Back Nav On C2 Help Clicked',
+  DETAILS_INPUT_ON_C2_HELP = 'Details Inputbox On C2 Help Clicked',
+  SUBMIT_CTA_ON_C2_HELP = 'Submit CTA On C2 Help Clicked',
+  TICKET_ACKNOWLEDGEMENT_ON_C2_HELP_DISPLAYED = 'Ticket Acknowledgement On C2 Help Displayed',
+  CHAT_INPUTBOX_ON_TICKET_CHAT = 'Chat Inputbox On Ticket Chat Clicked',
+  SEND_BUTTON_ON_TICKET_CHAT_CLICKED = 'Send Button On Ticket Chat Clicked',
+  REOPEN_CTA_ON_TICKET_CHAT = 'Reopen CTA on Ticket Chat Clicked',
+  TICKET_ACKNOWLEDGEMENT_ON_CHAT_DISPLAYED = 'Ticket Acknowledgement Ticket Chat Displayed',
+  TICKET_CHAT_SCREEN_SCROLLED = 'Ticket Chat Screen Scrolled',
+  CS_TICKET_ON_PREVIOUS_TICKETS = 'CS Ticket On Prev Tickets Clicked',
+  PREVIOUS_TICKET_SCREEN_SCROLLED = 'Prev Tickets Screen Scrolled',
 
   // Diagnostics Events
   DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
@@ -223,7 +223,7 @@ export enum CleverTapEventName {
   DIAGNOSTIC_PRESCRIPTION_SUBMITTED = 'Diagnostic prescription submitted',
 
   // Network Test
-  PRE_CALL_TEST= 'Pre Call Test Completed',
+  PRE_CALL_TEST = 'Pre Call Test Completed',
 
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
@@ -1122,15 +1122,15 @@ export interface CleverTapEvents {
 
   // *********** Delayed Reminder Event ******* \\
   [CleverTapEventName.CONSULT_DELAYED_MESSAGE_CLICKED]: {
-    'Doctor Name': string,
-    'Doctor Number': string,
-    'Doctor ID': string,
-    'Display Speciality Name': string,
-    'Display ID': number | null,
-    'Patient Name': string,
-    'Patient Phone Number': string,
-    'Phone number clicked': string,
-  }
+    'Doctor Name': string;
+    'Doctor Number': string;
+    'Doctor ID': string;
+    'Display Speciality Name': string;
+    'Display ID': number | null;
+    'Patient Name': string;
+    'Patient Phone Number': string;
+    'Phone number clicked': string;
+  };
   // ********** PharmacyEvents ********** \\
 
   [CleverTapEventName.PHARMACY_SEARCH]: {
@@ -1212,18 +1212,18 @@ export interface CleverTapEvents {
     'Discounted Price'?: number;
     Quantity: number;
     Source:
-      | 'Pharmacy Home'
-      | 'Pharmacy PDP'
-      | 'Pharmacy List'
-      | 'Pharmacy Partial Search'
-      | 'Pharmacy Full Search'
-      | 'Similar Widget'
-      | 'Pharmacy Cart'
-      | 'Category Tree'
-      | 'PDP All Substitutes'
-      | 'PDP Fast Substitutes'
-      | 'Special Offers'
-      | 'Chronic Upsell Nudge';
+    | 'Pharmacy Home'
+    | 'Pharmacy PDP'
+    | 'Pharmacy List'
+    | 'Pharmacy Partial Search'
+    | 'Pharmacy Full Search'
+    | 'Similar Widget'
+    | 'Pharmacy Cart'
+    | 'Category Tree'
+    | 'PDP All Substitutes'
+    | 'PDP Fast Substitutes'
+    | 'Special Offers'
+    | 'Chronic Upsell Nudge';
     Brand?: string;
     'Brand ID'?: string;
     'Category Name'?: string;
@@ -1466,13 +1466,13 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.DIAGNOSTIC_TEST_DESCRIPTION]: {
     Source:
-      | 'Full Search'
-      | 'Home Page'
-      | 'Cart Page'
-      | 'Partial Search'
-      | 'Deeplink'
-      | 'Popular search'
-      | 'Category page';
+    | 'Full Search'
+    | 'Home Page'
+    | 'Cart Page'
+    | 'Partial Search'
+    | 'Deeplink'
+    | 'Popular search'
+    | 'Category page';
     'Item Name': string;
     'Item Type'?: string;
     'Item Code': string;
@@ -1498,8 +1498,8 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED]: {
     'Slot time': string;
-    'No. of slots' : number;
-    'Slot date' : string;
+    'No. of slots': number;
+    'Slot date': string;
     'Type': DIAGNOSTIC_SLOT_TYPE;
     'Circle user': string;
   };
@@ -1529,10 +1529,10 @@ export interface CleverTapEvents {
     Source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary';
     'Report generated': 'Yes' | 'No';
     'Action taken':
-      | 'View Report'
-      | 'Download Report PDF'
-      | 'Share on Whatsapp'
-      | 'Copy Link to PDF';
+    | 'View Report'
+    | 'Download Report PDF'
+    | 'Share on Whatsapp'
+    | 'Copy Link to PDF';
     'Circle user'?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_FEEDBACK_GIVEN]: {
@@ -1544,14 +1544,14 @@ export interface CleverTapEvents {
     'Item Name': string;
     'Item ID': string; // (SKUID)
     Source:
-      | 'Home page'
-      | 'Full search'
-      | 'Details page'
-      | 'Partial search'
-      | 'Listing page'
-      | 'Popular search'
-      | 'Category page'
-      | 'Prescription';
+    | 'Home page'
+    | 'Full search'
+    | 'Details page'
+    | 'Partial search'
+    | 'Listing page'
+    | 'Popular search'
+    | 'Category page'
+    | 'Prescription';
     Section?: string;
     'Circle user'?: string;
   };
@@ -1938,7 +1938,6 @@ export interface CleverTapEvents {
     'Circle member': boolean;
     'Circle plan type': string;
     'Doctor type': string;
-
   };
   [CleverTapEventName.CONSULT_COUPON_APPLIED]: {
     CouponCode: string;
@@ -2138,12 +2137,12 @@ export interface CleverTapEvents {
 
   [CleverTapEventName.ADD_RECORD]: {
     Source:
-      | 'Doctor Consultation'
-      | 'Test Report'
-      | 'Hospitalization'
-      | 'Health Condition'
-      | 'Bill'
-      | 'Insurance'; // List/Profile
+    | 'Doctor Consultation'
+    | 'Test Report'
+    | 'Hospitalization'
+    | 'Health Condition'
+    | 'Bill'
+    | 'Insurance'; // List/Profile
   };
 
   [CleverTapEventName.UPLOAD_PRESCRIPTION]: PatientInfo;
