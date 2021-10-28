@@ -45,6 +45,8 @@ import {
   navigateToHome,
   setCleverTapAppsFlyerCustID,
   clevertapEventForAppsflyerDeeplink,
+  checkUniversalURL,
+  removeNullFromObj,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -247,16 +249,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     getDeviceToken();
     initializeRealTimeUninstall();
     setCleverTapAppsFlyerCustID();
-    InitiateAppsFlyer(props.navigation, (resources) => {
-      redirectRoute(
-        resources?.routeName,
-        resources?.id,
-        resources?.isCall,
-        resources?.timeout,
-        resources?.mediaSource,
-        resources?.data
-      );
-    });
   }, []);
 
   useEffect(() => {
@@ -408,7 +400,21 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     try {
       Linking.getInitialURL()
         .then((url) => {
-          triggerUTMCustomEvent(url);
+          InitiateAppsFlyer(
+            props.navigation,
+            (resources) => {
+              redirectRoute(
+                resources?.routeName,
+                resources?.id,
+                resources?.isCall,
+                resources?.timeout,
+                resources?.mediaSource,
+                resources?.data
+              );
+            },
+            url,
+            (isFirstLaunch) => triggerUTMCustomEvent(url, isFirstLaunch)
+          );
           setBugFenderLog('DEEP_LINK_URL', url);
           if (url) {
             try {
@@ -436,7 +442,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         try {
           setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
           const data: any = handleOpenURL(event.url);
-          catchSourceUrlDataUsingAppsFlyer();
+          catchSourceUrlDataUsingAppsFlyer(event.url);
           redirectRoute(
             data?.routeName,
             data?.id,
@@ -731,21 +737,31 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     fetchData();
   };
 
-  const triggerUTMCustomEvent = async (url: string | null) => {
+  const triggerUTMCustomEvent = async (url: string | null, isFirstLaunch: boolean) => {
     try {
       if (url) {
       } else {
         postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
           source: 'Organic',
+          is_first_launch: isFirstLaunch,
         });
       }
     } catch (error) {}
   };
 
-  const catchSourceUrlDataUsingAppsFlyer = async () => {
+  const catchSourceUrlDataUsingAppsFlyer = async (redirectUrl: string | null) => {
     onDeepLinkCanceller = await appsFlyer.onDeepLink(async (res) => {
-      clevertapEventForAppsflyerDeeplink(res.data);
-      onDeepLinkCanceller();
+      if (redirectUrl && checkUniversalURL(redirectUrl).universal) {
+        clevertapEventForAppsflyerDeeplink(
+          removeNullFromObj({
+            ...res.data,
+            appUrl: checkUniversalURL(redirectUrl).appUrl,
+          })
+        );
+      } else {
+        clevertapEventForAppsflyerDeeplink(res.data);
+        onDeepLinkCanceller();
+      }
     });
   };
 

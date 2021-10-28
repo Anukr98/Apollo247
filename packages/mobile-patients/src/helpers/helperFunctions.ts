@@ -2161,21 +2161,27 @@ export const storagePermissions = (doRequest?: () => void) => {
 
 export const InitiateAppsFlyer = (
   navigation: NavigationScreenProp<NavigationRoute<object>, object>,
-  redirectWithOutDeferred: (data: any) => void | undefined
+  redirectWithOutDeferred: (data: any) => void | undefined,
+  redirectUrl: string | null,
+  launchSourceEvent: (isFirstLaunch: boolean) => void
 ) => {
   appsFlyer.initSdk(
     {
       devKey: 'pP3MjHNkZGiMCamkJ7YpbH',
-      isDebug: false,
+      isDebug: true,
       appId: Platform.OS === 'ios' ? '1496740273' : 'com.apollo.patientapp',
       onInstallConversionDataListener: true, //Optional
       onDeepLinkListener: true, //Optional
     },
-    (result) => { },
+    (result) => {
+
+    },
     (error) => { }
   );
+  let isFirstLaunch = false
   onInstallConversionDataCanceller = appsFlyer.onInstallConversionData((res) => {
     if (JSON.parse(res.data.is_first_launch || 'null') == true) {
+      isFirstLaunch = true
       try {
         if (res.data.af_dp !== undefined) {
           AsyncStorage.setItem('deeplink', res.data.af_dp);
@@ -2200,6 +2206,7 @@ export const InitiateAppsFlyer = (
   });
 
 
+
   onAppOpenAttributionCanceller = appsFlyer.onAppOpenAttribution(async (res) => {
     // for iOS universal links
     if (Platform.OS === 'ios') {
@@ -2221,25 +2228,54 @@ export const InitiateAppsFlyer = (
       } catch (error) { }
     }
   });
+  let isDeepLinked = false
   onDeepLinkCanceller = appsFlyer.onDeepLink(res => {
+    isDeepLinked = true
     if (res.isDeferred) {
       getInstallResources()
       const url = handleOpenURL(res.data.deep_link_value);
       AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url))
     }
     if (!res.isDeferred) {
-      clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data))
-      const url = handleOpenURL(res.data.deep_link_value);
-      AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url))
-      redirectWithOutDeferred(url)
-    }
-    if (res.status == "success") {
-      clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data))
+      if (redirectUrl && checkUniversalURL(redirectUrl).universal) {
+        clevertapEventForAppsflyerDeeplink(removeNullFromObj({
+          ...res.data,
+          appUrl: checkUniversalURL(redirectUrl).appUrl
+        }))
+      }
+      else {
+        clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data))
+        const url = handleOpenURL(res.data.deep_link_value);
+        AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url))
+        redirectWithOutDeferred(url)
+      }
+
     }
   })
+  setTimeout(() => {
+    !isDeepLinked && launchSourceEvent(isFirstLaunch)
+  }, 5000)
 };
 
-const removeNullFromObj = (obj: any) => {
+
+export const checkUniversalURL = (url: string) => {
+  if (url.indexOf(string.common.apollo247UniversalLink) != -1
+    || url.indexOf(string.common.apolloPharmacyUniversalLink) != -1
+  ) {
+    if (url.indexOf('?') != -1) {
+      var splitedArray = url.split('?');
+      return { universal: true, appUrl: splitedArray[0] }
+    }
+    else {
+      return { universal: true, appUrl: url }
+    }
+  }
+  else {
+    return { universal: false }
+  }
+}
+
+export const removeNullFromObj = (obj: any) => {
   for (var propName in obj) {
     if (obj[propName] === null || obj[propName] === undefined) {
       delete obj[propName];
@@ -2297,6 +2333,10 @@ export const APPStateActive = () => {
   if (onAppOpenAttributionCanceller) {
     onAppOpenAttributionCanceller();
     onAppOpenAttributionCanceller = null;
+  }
+  if (onDeepLinkCanceller) {
+    onDeepLinkCanceller();
+    onDeepLinkCanceller = null;
   }
 };
 
@@ -3744,4 +3784,9 @@ export const isCartPriceWithInSpecifiedRange = (
   } catch (error) {
     return false;
   }
+};
+
+export const convertDateToEpochFormat = (value: Date) => {
+  const epochValue = value ? `$D_${Math.floor(value.getTime() / 1000.0)}` : '';
+  return epochValue;
 };

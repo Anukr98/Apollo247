@@ -162,7 +162,9 @@
     "Card": "Card",
     "Cash": "Cash",
     "android": "android",
-    "ios":"ios"
+    "ios":"ios",
+    "apollo247UniversalLink": "www.apollo247.com",
+    "apolloPharmacyUniversalLink":"www.apollopharmacy.in"
   },
   "diagnosticsLocation":{
     "savedAddressText": "Saved Addresses",
