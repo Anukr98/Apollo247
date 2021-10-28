@@ -507,10 +507,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     width: width,
     shadowColor: 'black',
-    shadowOffset: { width: 0, height: -12 },
+    shadowOffset: { width: 0, height: -6 },
     shadowOpacity: 0.6,
     shadowRadius: 12,
-    elevation: 12,
+    elevation: 8,
     marginTop: 6,
   },
   tabBarViewStyle: {

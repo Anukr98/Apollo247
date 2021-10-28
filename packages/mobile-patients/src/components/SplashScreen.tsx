@@ -889,6 +889,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setNonCartDeliveryText,
     setOffersList,
     setOffersListLoading,
+    setRecentGlobalSearchList,
   } = useAppCommonData();
   const {
     setMinimumCartValue,
@@ -1219,9 +1220,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         fetchPolicy: 'no-cache',
       });
       const offers = res?.data?.getPersonalizedOffers?.response?.personalized_data?.offers_for_you;
+      const recent =
+        res?.data?.getPersonalizedOffers?.response?.personalized_data?.global_search_text
+          ?.search_text;
       if (offers && offers.length > 0) {
         setOffersList && setOffersList(offers);
       }
+      if (recent && recent.length > 0)
+        setRecentGlobalSearchList && setRecentGlobalSearchList(recent);
       setOffersListLoading && setOffersListLoading(false);
     } catch (error) {
       setOffersListLoading && setOffersListLoading(false);

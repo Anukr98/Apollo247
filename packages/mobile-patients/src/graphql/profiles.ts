@@ -6451,6 +6451,12 @@ export const GET_PERSONALIZED_OFFERS = gql`
               }
             }
           }
+          global_search_text{
+            search_text{
+              text,
+              created_at
+            }
+          }
         }
       }
     }

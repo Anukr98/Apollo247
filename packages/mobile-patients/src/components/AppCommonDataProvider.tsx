@@ -241,6 +241,8 @@ export interface AppCommonDataContextProps {
   setLoginSection: ((value: any) => void) | null;
   homeBannerOfferSection: any;
   setHomeBannerOfferSection: ((value: any) => void) | null;
+  recentGlobalSearchList: any;
+  setRecentGlobalSearchList: ((value: any) => void) | null;
   offersList: any;
   setOffersList: ((value: any) => void) | null;
   offersListLoading: boolean;
@@ -358,6 +360,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setLoginSection: null,
   homeBannerOfferSection: null,
   setHomeBannerOfferSection: null,
+  recentGlobalSearchList: [],
+  setRecentGlobalSearchList: null,
   offersList: [],
   setOffersList: null,
   offersListLoading: false,
@@ -541,6 +545,9 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [homeBannerOfferSection, setHomeBannerOfferSection] = useState<
     AppCommonDataContextProps['homeBannerOfferSection']
   >(null);
+  const [recentGlobalSearchList, setRecentGlobalSearchList] = useState<
+    AppCommonDataContextProps['recentGlobalSearchList']
+  >([]);
   const [offersList, setOffersList] = useState<any[]>([]);
   const [offersListLoading, setOffersListLoading] = useState<boolean>(false);
 
@@ -742,6 +749,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setLoginSection,
         homeBannerOfferSection,
         setHomeBannerOfferSection,
+        recentGlobalSearchList,
+        setRecentGlobalSearchList,
         offersList,
         setOffersList,
         offersListLoading,
