@@ -5,7 +5,6 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect } from 'react';
 import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 interface CallToOrderViewProps {
   delaySeconds?: any;
