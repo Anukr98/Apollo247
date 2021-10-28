@@ -103,6 +103,7 @@ import {
   GET_ONEAPOLLO_USER,
   GET_PLAN_DETAILS_BY_PLAN_ID,
   GET_DOCTOR_LIST,
+  SAVE_RECENT_SEARCH,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   searchPHRApiWithAuthToken,
@@ -248,6 +249,7 @@ import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from 
 import { getUniqueId } from 'react-native-device-info';
 import _ from 'lodash';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { saveRecentVariables } from '@aph/mobile-patients/src/graphql/types/saveRecent';
 
 const { Vitals } = NativeModules;
 
@@ -2972,6 +2974,26 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     );
   };
 
+  const saveRecentSearchTerm = async (search: string) => {
+    const authToken: string = await validateAndReturnAuthToken();
+    const apolloClient = buildApolloClient(authToken);
+    console.log('csk save', 'here----------------');
+
+    apolloClient
+      .mutate<saveRecentVariables>({
+        mutation: SAVE_RECENT_SEARCH,
+        variables: {
+          searchText: search,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((i) => console.log('csk save res', JSON.stringify(i)))
+      .catch((e) => {
+        CommonBugFender('HomeScreen_SaveSearchAPIFailure', e);
+        console.log('csk save res', JSON.stringify(e));
+      });
+  };
+
   const renderProfileDrop = () => {
     return (
       <ProfileList
@@ -4674,6 +4696,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         axdcCode,
         pinCode
       );
+
       let finalProducts: any[] = [];
 
       if (res?.data?.products) {
@@ -4739,12 +4762,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           const finalDoctors = doctors.slice(0, 3);
           const finalSpecialities = specialities.slice(0, 1);
           finalProducts = [...finalDoctors, ...finalSpecialities];
-          console.log(
-            'csk cons -',
-            doctors.length,
-            specialities.length,
-            JSON.stringify(finalProducts)
-          );
+
           consultSearchResults.current = finalProducts;
         } else {
           consultSearchResults.current = [];
@@ -4776,15 +4794,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     });
   };
 
-  const fetchProceduresAndSymptoms = (searchString: string) => {
-    const queryParams: ProceduresAndSymptomsParams = {
-      text: searchString,
-    };
-    return searchProceduresAndSymptoms(queryParams);
-  };
-
   const updateSearchResultList = (itemKey: string, itemData: any) => {
-    // const newState = searchResults.length===0?
     // [...searchResults, { key: itemKey, data: itemData }];
     const newState = [
       { key: MedicalRecordType.MEDICATION, data: medSearchResults.current },
@@ -4817,11 +4827,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
     onSearchConsults(_searchText)
       .then(() => {
-        console.log('final search res-m', JSON.stringify(searchResults.length));
+        console.log('final search res-c', JSON.stringify(searchResults.length));
       })
       .catch((e) => {
         CommonBugFender('HomeScreen_ConsultRoom_onSearchConsultsFunction', e);
       });
+
+    const save = _.debounce(saveRecentSearchTerm, 1000);
+    try {
+      //save(_searchText);
+    } catch (e) {}
   };
 
   interface searchHeaders {
@@ -4894,15 +4909,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const renderGlobalSearchNoResults = () => {
     return (
       <View style={{ width: width, marginBottom: 6, padding: 16, backgroundColor: '#fff' }}>
-        <View
-          style={{
-            height: 1.5,
-            backgroundColor: '#D4D4D4',
-            marginTop: -4,
-            marginBottom: 4,
-            marginHorizontal: -16,
-          }}
-        />
         <View
           style={{
             flexDirection: 'row',
@@ -5035,7 +5041,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     );
     const listitems = recentGlobalSearchList.map((item: any) => {
       return (
-        <TouchableOpacity onPress={() => onSearchTextChange(item)}>
+        <TouchableOpacity onPress={() => onSearchTextChange(item.text)}>
           <View style={{ flexDirection: 'row', alignItems: 'center', padding: 4 }}>
             <TimeBlueIcon style={{ width: 24, height: 24, marginHorizontal: 4 }} />
             <Text
@@ -5068,6 +5074,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const renderSearchResults = () => {
+    console.log('csk i am here', searchResults.length);
     return (
       <ScrollView style={{ flex: 1, backgroundColor: theme.colors.WHITE }} bounces={false}>
         <View
@@ -5078,7 +5085,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             backgroundColor: '#fff',
           }}
         >
-          {searchResults?.length >= 0
+          {searchResults?.length > 0
             ? searchResults.map((item, index) => renderSearchItem(item, index))
             : renderGlobalSearchNoResults()}
         </View>
