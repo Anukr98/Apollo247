@@ -112,7 +112,6 @@ export const MultiVariant: React.FC<MultiVariantProps> = (props) => {
         return ele[0].toUpperCase() + ele.slice(1, ele.length);
       });
       const labelToBeDisplayed = label.join(' ');
-      console.log(label);
       return (
         <View style={{ marginBottom: 7 }}>
           <View style={styles.flexRow}>
