@@ -14,7 +14,7 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import Share from 'react-native-share';
 import appsFlyer from 'react-native-appsflyer';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, replaceVariableInString } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { ReferCheckIcon, ReferRefreshIcon } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -61,7 +61,7 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
       (err) => {}
     );
   };
-  const ClaimedCard = (item: any) => {
+  const ClaimedCard = () => {
     return (
       <View style={styles.healthCreditcontainer}>
         <View style={styles.healthCreditLeftcontainer}>
@@ -75,13 +75,14 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
                 {string.referAndEarn.youEarnedRefreePoints}
               </Text>
               <Text style={styles.healthCreditsmallHeadingTwo}>
+                {string.referAndEarn.dummyRewardData.selfClaimed.firstTimeLogin}
                 {string.referAndEarn.firstTimeLogin}
               </Text>
             </View>
             <View style={styles.healthCredittotalHC}>
               <Text style={styles.healthCreditHC}>
-                {userHC}
-                {string.referAndEarn.hc}
+                {string.referAndEarn.dummyRewardData.selfClaimed.rewardPoints}
+                {string.referAndEarn.dummyRewardData.currencytype}
               </Text>
             </View>
           </View>
@@ -98,19 +99,17 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
         </View>
         <View>
           <View style={styles.healthCreditRightInnercontainer}>
-            <Text style={styles.healthCreditrefreeName}>{string.referAndEarn.refreeName}</Text>
-            <Text style={styles.healthCreditexporationText}>{string.referAndEarn.expireOn}</Text>
+            <Text style={styles.healthCreditrefreeName}>{item.name}</Text>
+            <Text style={styles.healthCreditexporationText}>{item.expiryDate}</Text>
           </View>
           <View style={styles.healthCreditflexRow}>
             <View style={styles.healthCreditclaimedRightContaier}>
-              <Text style={styles.healthCreditsmallHeadingOne}>
-                {string.referAndEarn.purchasedOn}
-              </Text>
+              <Text style={styles.healthCreditsmallHeadingOne}>{item.firstTxnDate}</Text>
             </View>
             <View style={styles.healthCredittotalHC}>
               <Text style={styles.healthCreditHC}>
-                {userHC}
-                {string.referAndEarn.hc}
+                {item.rewardPoints}
+                {string.referAndEarn.dummyRewardData.currencytype}
               </Text>
             </View>
           </View>
@@ -125,11 +124,16 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
         <View style={styles.healthCreditLeftcontainer}></View>
         <View>
           <View style={styles.healthCreditRightInnercontainer}>
-            <Text style={styles.healthCreditrefreeName}>{string.referAndEarn.refreeName}</Text>
+            <Text style={styles.healthCreditrefreeName}>{item.name}</Text>
           </View>
           <View style={styles.healthCreditflexRow}>
             <View style={{}}>
-              <Text style={styles.healthCreditsmallHeadingOne}>{string.referAndEarn.signedUp}</Text>
+              <Text style={styles.healthCreditsmallHeadingOne}>
+                {replaceVariableInString(string.referAndEarn.signedUp, {
+                  signedUpDate: item.firstTxnDate,
+                })}
+                {string.referAndEarn.purchaseIsPending}
+              </Text>
             </View>
           </View>
         </View>
@@ -156,22 +160,26 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
     );
   };
 
-  const ClaimedSection = () => {
+  const renderClaimedSection = () => {
     return (
       <View
         style={{
           flex: 1,
         }}
       >
-        {noReferralReward()}
+        <ClaimedCard />
+        <FlatList
+          data={string.referAndEarn.dummyRewardData.claimed}
+          renderItem={({ item }) => ClaimedCardWithExpirationSet(item)}
+        />
       </View>
     );
   };
-  const PendingSection = () => {
+  const renderPendingSection = () => {
     return (
       <View>
         <FlatList
-          data={Array.from({ length: 5 }, (_, index) => index + 1)}
+          data={string.referAndEarn.dummyRewardData.pending}
           renderItem={({ item }) => renderPendingCards(item)}
         />
       </View>
@@ -211,7 +219,10 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
       <View style={styles.totalHcMainContainer}>
         <View style={styles.totalHCtexContainer}>
           <Text style={styles.totalHCtotalHC}>
-            {string.referAndEarn.totalHC}: {totalReward}
+            {replaceVariableInString(string.referAndEarn.total, {
+              currencyType: string.referAndEarn.dummyRewardData.currencytype,
+              earnedPoints: string.referAndEarn.dummyRewardData.totalEarn.toString(),
+            })}
           </Text>
           <View style={styles.totalHCrefresh}>
             <TouchableOpacity onPress={() => {}}>
@@ -239,7 +250,7 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
         />
         {renderTotalHCContainer()}
         <CustomTabBarHeader />
-        {selectedTab === 1 ? ClaimedSection() : PendingSection()}
+        {selectedTab === 1 ? renderClaimedSection() : renderPendingSection()}
       </SafeAreaView>
     </View>
   );

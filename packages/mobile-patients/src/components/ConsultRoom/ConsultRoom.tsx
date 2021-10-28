@@ -4034,7 +4034,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <View style={styles.referEarntextContainer}>
           <Text style={styles.referEarntext}>
             {string.referAndEarn.referAndEarn}{' '}
-            <Text style={styles.referEarnrupees}>₹{referAndEarnPrice}</Text>
+            <Text style={styles.referEarnrupees}>₹{referAndEarnPrice && referAndEarnPrice}</Text>
           </Text>
           <View>
             <TouchableOpacity

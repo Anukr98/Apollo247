@@ -2249,7 +2249,6 @@ export const InitiateAppsFlyer = (
     }
   })
 };
-
 const removeNullFromObj = (obj: any) => {
   for (var propName in obj) {
     if (obj[propName] === null || obj[propName] === undefined) {
@@ -3771,3 +3770,12 @@ export const convertDateToEpochFormat = (value: Date) => {
   const epochValue = value ? `$D_${Math.floor(value.getTime() / 1000.0)}` : '';
   return epochValue;
 };
+
+export const replaceVariableInString = (str: string, mapObj: { [propName: string]: string; }) => {
+  let newArrayWithUpdatedString = Object.keys(mapObj).map(item => '{' + item + '}')
+  let rgx = new RegExp(newArrayWithUpdatedString.join("|"), "gi")
+  str = str.replace(rgx, function (matched) {
+    return mapObj[matched.replace(/{|}/gi, '')];
+  });
+  return str
+}

@@ -14,7 +14,7 @@ import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import appsFlyer from 'react-native-appsflyer';
 import Share from 'react-native-share';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, replaceVariableInString } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -24,8 +24,7 @@ import {
   CopyLinkIcon,
   FriendReceiveIcon,
   InviteYourFriendIcon,
-  WhatSAppIcon,
-  WhatsAppIcon,
+  WhatsAppIconReferral,
   YouReceiveIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 
@@ -85,14 +84,15 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
         <View>
           <View style={styles.referSharetextContainer}>
             <Text style={styles.referSharetext}>{string.referAndEarn.referAndEarn}</Text>
-            <Text style={styles.referShareamount}>₹{referShareAmount}</Text>
+            <Text style={styles.referShareamount}>₹{referShareAmount && referShareAmount}</Text>
             <View>
               <Text style={styles.referShareotherDetails}>
-                {string.referAndEarn.yourFriendGot} ₹{referShareAmount}{' '}
+                {string.referAndEarn.yourFriendGot} ₹{referShareAmount && referShareAmount}{' '}
                 {string.referAndEarn.onSignUp}{' '}
               </Text>
               <Text style={styles.referShareotherDetails}>
-                {string.referAndEarn.youGet} ₹{referShareAmount} {string.referAndEarn.onTheirFirst}{' '}
+                {string.referAndEarn.youGet} ₹{referShareAmount && referShareAmount}{' '}
+                {string.referAndEarn.onTheirFirst}{' '}
               </Text>
             </View>
           </View>
@@ -104,7 +104,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
             </View>
             <View style={styles.referSharebtnContainer}>
               <TouchableOpacity onPress={() => onWhatsAppShare()}>
-                <WhatSAppIcon style={styles.referShareimage} />
+                <WhatsAppIconReferral style={styles.referShareimage} />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => {
@@ -139,7 +139,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
             </View>
             <Text style={styles.howWorklistText}>
               {string.referAndEarn.friendReceiveRs}
-              {referShareAmount}
+              {referShareAmount && referShareAmount}
             </Text>
           </View>
           <View style={styles.howWorklistSpecificContainer}>
@@ -148,17 +148,25 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
               <YouReceiveIcon />
             </View>
             <Text style={styles.howWorklistText}>
-              {string.referAndEarn.youReceive} {referShareAmount}{' '}
-              {string.referAndEarn.onceOrderGetDelivered}
+              {replaceVariableInString(string.referAndEarn.youReceive, {
+                referShareAmount: referShareAmount ? referShareAmount : '',
+              })}
+              ¯
             </Text>
           </View>
         </View>
         <View style={styles.howWorklinkMainContainer}>
-          <TouchableOpacity style={styles.howWorklinkBtnForTC}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('RefererTermsAndCondition')}
+            style={styles.howWorklinkBtnForTC}
+          >
             <View style={styles.howWorklinkContainer} />
             <Text style={styles.howWorklinkText}>{string.referAndEarn.termsAndCondition}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.howWorklinkBtn}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('RefererFAQ')}
+            style={styles.howWorklinkBtn}
+          >
             <View style={styles.howWorklinkContainer} />
             <Text style={styles.howWorklinkText}>{string.referAndEarn.FAQs}</Text>
           </TouchableOpacity>
@@ -185,7 +193,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
     return (
       <View style={styles.initialHCMainContainer}>
         <Text style={styles.initialHC}>
-          {referShareAmount} {string.referAndEarn.hc}
+          {referShareAmount && referShareAmount} {string.referAndEarn.hc}
         </Text>
         <Text style={styles.initialHCexpiration}>{string.referAndEarn.ExpireON} 20 Aug 2021</Text>
         <View style={styles.initialHCreedemContainer}>

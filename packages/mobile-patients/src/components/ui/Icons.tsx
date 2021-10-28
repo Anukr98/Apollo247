@@ -2414,16 +2414,16 @@ export const CoinSavingsIcon: React.FC<IconProps> = (props) => (
 export const ReferralBannerIcon: React.FC<IconProps> = (props) => (
   <Image
     style={[props.style]}
-    source={require('@aph/mobile-patients/src/images/referAndEarn/Group5447.webp')}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/referralBanner/referralbanner.webp')}
     {...props}
   />
 );
 
-export const WhatSAppIcon: React.FC<IconProps> = (props) => (
+export const WhatsAppIconReferral: React.FC<IconProps> = (props) => (
   <Image
     style={[props.style]}
     source={{
-      uri: 'https://newassets.apollo247.com/images/ReferrerImages/MaskGroup.png',
+      uri: 'https://newassets.apollo247.com/images/ReferrerImages/whatsApp/whatsAppIcon.png',
     }}
     {...props}
   />
@@ -2431,7 +2431,7 @@ export const WhatSAppIcon: React.FC<IconProps> = (props) => (
 export const CopyLinkIcon: React.FC<IconProps> = (props) => (
   <Image
     style={[props.style]}
-    source={require('@aph/mobile-patients/src/images/referAndEarn/shareLink.webp')}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/copyLink/copyLinkIcon.webp')}
     {...props}
   />
 );
@@ -2439,7 +2439,7 @@ export const CopyLinkIcon: React.FC<IconProps> = (props) => (
 export const InviteYourFriendIcon: React.FC<IconProps> = (props) => (
   <Image
     style={[props.style]}
-    source={require('@aph/mobile-patients/src/images/referAndEarn/invitation1.webp')}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/invitation/invitation.webp')}
     {...props}
   />
 );
@@ -2447,7 +2447,7 @@ export const InviteYourFriendIcon: React.FC<IconProps> = (props) => (
 export const FriendReceiveIcon: React.FC<IconProps> = (props) => (
   <Image
     style={[props.style]}
-    source={require('@aph/mobile-patients/src/images/referAndEarn/earn-money1.webp')}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/earnMoney/earnMoney.webp')}
     {...props}
   />
 );
@@ -2455,14 +2455,14 @@ export const FriendReceiveIcon: React.FC<IconProps> = (props) => (
 export const YouReceiveIcon: React.FC<IconProps> = (props) => (
   <Image
     style={[props.style]}
-    source={require('@aph/mobile-patients/src/images/referAndEarn/delivered1.webp')}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/delivered/delivered.webp')}
     {...props}
   />
 );
 export const ArrowIcon: React.FC<IconProps> = (props) => (
   <Image
     style={[props.style]}
-    source={require('@aph/mobile-patients/src/images/referAndEarn/arrow.webp')}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/faqArrow/rightArrow.webp')}
     {...props}
   />
 );
@@ -2470,7 +2470,7 @@ export const ArrowIcon: React.FC<IconProps> = (props) => (
 export const ReferRefreshIcon: React.FC<IconProps> = (props) => (
   <Image
     style={[props.style]}
-    source={require('@aph/mobile-patients/src/images/referAndEarn/refresh.webp')}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/refresh/refresh.webp')}
     {...props}
   />
 );
@@ -2478,7 +2478,7 @@ export const ReferRefreshIcon: React.FC<IconProps> = (props) => (
 export const ReferCheckIcon: React.FC<IconProps> = (props) => (
   <Image
     style={[props.style]}
-    source={require('@aph/mobile-patients/src/images/referAndEarn/check.webp')}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/gotRewardCheck/checkCircleReward.webp')}
     {...props}
   />
 );
@@ -2486,28 +2486,44 @@ export const ReferCheckIcon: React.FC<IconProps> = (props) => (
 export const TrophyIcon: React.FC<IconProps> = (props) => (
   <Image
     style={[props.style]}
-    source={require('@aph/mobile-patients/src/images/referAndEarn/trophy1.webp')}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/congratsRewards/congratsRewards.webp')}
     {...props}
   />
 );
 export const FastDeliveryIcon: React.FC<IconProps> = (props) => (
   <Image
     style={[props.style]}
-    source={require('@aph/mobile-patients/src/images/referAndEarn/fast-delivery1.webp')}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/deliveredInHours/deliiveredInHours.webp')}
     {...props}
   />
 );
 export const ConsultDoctorIcon: React.FC<IconProps> = (props) => (
   <Image
     style={[props.style]}
-    source={require('@aph/mobile-patients/src/images/referAndEarn/doctor1.webp')}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/consultInMinutes/consultInMinutes.webp')}
     {...props}
   />
 );
 export const LabTestAtHomeIcon: React.FC<IconProps> = (props) => (
   <Image
     style={[props.style]}
-    source={require('@aph/mobile-patients/src/images/referAndEarn/flask1.webp')}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/labAtHome/labTestAtHome.webp')}
+    {...props}
+  />
+);
+
+export const FaqRightArrow: React.FC<IconProps> = (props) => (
+  <Image
+    style={[props.style]}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/faqArrow/rightArrow.webp')}
+    {...props}
+  />
+);
+
+export const FaqDownArrow: React.FC<IconProps> = (props) => (
+  <Image
+    style={[props.style]}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/faqArrow/downArrow.webp')}
     {...props}
   />
 );

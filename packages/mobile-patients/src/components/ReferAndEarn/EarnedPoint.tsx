@@ -18,6 +18,69 @@ export const EarnedPoints: React.FC<EarnedPointsProps> = (props) => {
   const [initialEarn, setInitialEarn] = useState<string>('100');
 
   const { navigation } = props;
+
+  const renderYourGifterReward = () => {
+    return (
+      <View style={styles.earnPointsMainContainer}>
+        <Text style={styles.earnPointmainHeading}>{string.referAndEarn.congratulation}</Text>
+        <View style={styles.earnPointtrophyMainContainer}>
+          <View style={styles.earnPointtrophy_container}>
+            <TrophyIcon />
+          </View>
+        </View>
+        <View style={styles.earnPointotherTextContainer}>
+          <Text style={styles.earnPointgiftedHeading}>{string.referAndEarn.yourFriendGiftYou}</Text>
+          <Text style={styles.earnPointtotalGifted}>
+            {initialEarn} {string.referAndEarn.hc}
+          </Text>
+          <TouchableOpacity
+            style={styles.earnPointreedemBtn}
+            onPress={() => {
+              navigation.navigate('TabBar');
+            }}
+          >
+            <Text style={styles.earnPointreedemBtnText}>{string.referAndEarn.reedeemPoints}</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
+  const renderWhyChooseUsSection = () => {
+    return (
+      <View style={styles.earnPointwhyChooseApolloContainer}>
+        <Text style={styles.earnPointWhyChooseUstitle}>
+          {string.referAndEarn.whyChooseApollo247}
+        </Text>
+        <View style={styles.earnPointWhyChooseUsimageTextContainer}>
+          <View style={styles.earnPointWhyChooseUsimageTextSubContainer}>
+            <View style={styles.earnPointWhyChooseUsimg_container}>
+              <FastDeliveryIcon />
+            </View>
+            <Text style={styles.earnPointWhyChooseUsimgTitle}>
+              {string.referAndEarn.deleiveryInHours}
+            </Text>
+          </View>
+          <View style={styles.earnPointWhyChooseUsimageTextSubContainer}>
+            <View style={styles.earnPointWhyChooseUsimg_container}>
+              <ConsultDoctorIcon />
+            </View>
+            <Text style={styles.earnPointWhyChooseUsimgTitle}>
+              {string.referAndEarn.consultDoctorIn15Minutes}
+            </Text>
+          </View>
+          <View style={styles.earnPointWhyChooseUsimageTextSubContainer}>
+            <View style={styles.earnPointWhyChooseUsimg_container}>
+              <LabTestAtHomeIcon />
+            </View>
+            <Text style={styles.earnPointWhyChooseUsimgTitle}>
+              {string.referAndEarn.labTestAtHome}
+            </Text>
+          </View>
+        </View>
+      </View>
+    );
+  };
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
@@ -33,59 +96,8 @@ export const EarnedPoints: React.FC<EarnedPointsProps> = (props) => {
             fontSize: 18,
           }}
         />
-        <View style={styles.earned_main_container}>
-          <Text style={styles.earneDmainHeading}>{string.referAndEarn.congratulation}</Text>
-          <View style={styles.earneDtrophy_maincontainer}>
-            <View style={styles.earneDtrophy_container}>
-              <TrophyIcon />
-            </View>
-          </View>
-          <View style={styles.earneDotherTextContainer}>
-            <Text style={styles.earneDgiftedHeading}>{string.referAndEarn.yourFriendGiftYou}</Text>
-            <Text style={styles.earneDtotalGifted}>
-              {initialEarn} {string.referAndEarn.hc}
-            </Text>
-            <TouchableOpacity
-              style={styles.earneDreedemBtn}
-              onPress={() => {
-                navigation.navigate('TabBar');
-              }}
-            >
-              <Text style={styles.earneDreedemBtnText}>{string.referAndEarn.reedeemPoints}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-        <View style={styles.earneDwhyChooseApolloContainer}>
-          <Text style={styles.earnedWhyChooseUstitle}>
-            {string.referAndEarn.whyChooseApollo247}
-          </Text>
-          <View style={styles.earnedWhyChooseUsimageTextContainer}>
-            <View style={styles.earnedWhyChooseUsimageTextSubContainer}>
-              <View style={styles.earnedWhyChooseUsimg_container}>
-                <FastDeliveryIcon />
-              </View>
-              <Text style={styles.earnedWhyChooseUsimgTitle}>
-                {string.referAndEarn.deleiveryInHours}
-              </Text>
-            </View>
-            <View style={styles.earnedWhyChooseUsimageTextSubContainer}>
-              <View style={styles.earnedWhyChooseUsimg_container}>
-                <ConsultDoctorIcon />
-              </View>
-              <Text style={styles.earnedWhyChooseUsimgTitle}>
-                {string.referAndEarn.consultDoctorIn15Minutes}
-              </Text>
-            </View>
-            <View style={styles.earnedWhyChooseUsimageTextSubContainer}>
-              <View style={styles.earnedWhyChooseUsimg_container}>
-                <LabTestAtHomeIcon />
-              </View>
-              <Text style={styles.earnedWhyChooseUsimgTitle}>
-                {string.referAndEarn.labTestAtHome}
-              </Text>
-            </View>
-          </View>
-        </View>
+        {renderYourGifterReward()}
+        {renderWhyChooseUsSection()}
       </SafeAreaView>
     </View>
   );
@@ -96,14 +108,14 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
   },
   shareImage: {},
-  earnedWhyChooseUsimgTitle: {
+  earnPointWhyChooseUsimgTitle: {
     textAlign: 'center',
     marginTop: 15,
     color: theme.colors.LIGHT_BLUE,
     fontSize: 13,
     fontWeight: '600',
   },
-  earnedWhyChooseUsimg_container: {
+  earnPointWhyChooseUsimg_container: {
     height: 60,
     width: 60,
     justifyContent: 'center',
@@ -112,31 +124,31 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     padding: 5,
   },
-  earnedWhyChooseUsimageTextSubContainer: {
+  earnPointWhyChooseUsimageTextSubContainer: {
     width: 100,
     alignItems: 'center',
   },
-  earnedWhyChooseUsimageTextContainer: {
+  earnPointWhyChooseUsimageTextContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 30,
   },
-  earnedWhyChooseUstitle: {
+  earnPointWhyChooseUstitle: {
     marginTop: 20,
     fontSize: 18,
     color: theme.colors.LIGHT_BLUE,
     fontWeight: '600',
   },
-  earneDwhyChooseApolloContainer: {
+  earnPointwhyChooseApolloContainer: {
     backgroundColor: theme.colors.LIGHT_GREEN_ONE,
     flex: 1,
     alignItems: 'center',
   },
-  earneDreedemBtnText: {
+  earnPointreedemBtnText: {
     color: theme.colors.HEX_WHITE,
     fontWeight: '700',
   },
-  earneDreedemBtn: {
+  earnPointreedemBtn: {
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: theme.colors.TANGERINE_YELLOW,
@@ -145,34 +157,34 @@ const styles = StyleSheet.create({
     marginTop: 20,
     borderRadius: 5,
   },
-  earneDtotalGifted: {
+  earnPointtotalGifted: {
     marginTop: 5,
     fontSize: 20,
     color: theme.colors.LIGHT_BLUE,
     fontWeight: '700',
   },
-  earneDgiftedHeading: {
+  earnPointgiftedHeading: {
     marginTop: 20,
     fontSize: 20,
     color: theme.colors.LIGHT_BLUE,
   },
-  earneDotherTextContainer: {
+  earnPointotherTextContainer: {
     alignItems: 'center',
   },
-  earneDtrophy_container: {
+  earnPointtrophy_container: {
     backgroundColor: theme.colors.LIGHT_BLUE_TWO,
     borderRadius: 100,
     padding: 9,
   },
-  earneDtrophy_maincontainer: {
+  earnPointtrophyMainContainer: {
     marginTop: 30,
   },
-  earneDmainHeading: {
+  earnPointmainHeading: {
     fontSize: 22,
     color: theme.colors.LIGHT_BLUE,
     fontWeight: '600',
   },
-  earned_main_container: {
+  earnPointsMainContainer: {
     backgroundColor: theme.colors.HEX_WHITE,
     marginVertical: 5,
     alignItems: 'center',
