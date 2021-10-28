@@ -159,6 +159,9 @@ import { SubmittedPrescription } from '@aph/mobile-patients/src/components/Tests
 import { SpecialOffersScreen } from '@aph/mobile-patients/src/components/SpecialOffers/SpecialOffers';
 import { PaymentConfirmation } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentConfirmaiton';
 import { ConsultPaymentScreen } from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/ConsultPaymentScreen';
+import { ShareReferLink } from './ReferAndEarn/ShareReferLink';
+import { YourRewardsScreen } from './ReferAndEarn/YourRewardsScreen';
+import { EarnedPoints } from './ReferAndEarn/EarnedPoint';
 
 export enum AppRoutes {
   Login = 'Login',
@@ -305,6 +308,9 @@ export enum AppRoutes {
   SpecialOffersScreen = 'SpecialOffersScreen',
   PaymentConfirmation = 'PaymentConfirmation',
   ConsultPaymentScreen = 'ConsultPaymentScreen',
+  ShareReferLink = 'ShareReferLink',
+  YourRewardsScreen = 'YourRewardsScreen',
+  EarnedPoints = 'EarnedPoints',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -776,6 +782,15 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ConsultPaymentScreen]: {
     screen: ConsultPaymentScreen,
+  },
+  [AppRoutes.ShareReferLink]: {
+    screen: ShareReferLink,
+  },
+  [AppRoutes.YourRewardsScreen]: {
+    screen: YourRewardsScreen,
+  },
+  [AppRoutes.EarnedPoints]: {
+    screen: EarnedPoints,
   },
 };
 

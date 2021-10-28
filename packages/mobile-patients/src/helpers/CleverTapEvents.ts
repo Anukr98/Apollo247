@@ -98,7 +98,7 @@ export enum CleverTapEventName {
   CONSULT_PERMISSIONS = 'Consult permissions',
 
   //Consult Dealyed
-  CONSULT_DELAYED_MESSAGE_CLICKED='Consult Delayed Message clicked',
+  CONSULT_DELAYED_MESSAGE_CLICKED = 'Consult Delayed Message clicked',
 
   // Symptom Tracker Events
   SYMPTOM_TRACKER_SELECT_OTHER_MEMBER_CLICKED = 'Symptom_Select other member clicked',
@@ -590,7 +590,9 @@ export enum CleverTapEventName {
   //Upload Prescription
   PHARMACY_PRESCRIPTION_UPLOADED = 'Pharmacy Prescription Uploaded',
   // Custom UTM Events
-  CUSTOM_UTM_VISITED = 'App launch source'
+  CUSTOM_UTM_VISITED = 'App launch source',
+
+
 }
 
 export interface PatientInfo {
@@ -1123,7 +1125,7 @@ export interface CleverTapEvents {
     'Doctor Name': string,
     'Doctor Number': string,
     'Doctor ID': string,
-    'Display Speciality Name':string,
+    'Display Speciality Name': string,
     'Display ID': number | null,
     'Patient Name': string,
     'Patient Phone Number': string,
@@ -1936,7 +1938,7 @@ export interface CleverTapEvents {
     'Circle member': boolean;
     'Circle plan type': string;
     'Doctor type': string;
-    
+
   };
   [CleverTapEventName.CONSULT_COUPON_APPLIED]: {
     CouponCode: string;

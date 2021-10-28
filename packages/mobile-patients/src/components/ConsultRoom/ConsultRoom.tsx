@@ -3967,6 +3967,88 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return <ConsultedDoctorsCard navigation={props.navigation} />;
   };
 
+  const renderReferralBanner = () => {
+    return (
+      <View
+        style={{
+          backgroundColor: '#f89623',
+          paddingHorizontal: 20,
+          paddingVertical: 20,
+        }}
+      >
+        <View
+          style={{
+            width: '65%',
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 28,
+              fontWeight: '700',
+              color: '#02475B',
+            }}
+          >
+            Refer & Earn
+          </Text>
+          <Text
+            style={{
+              fontSize: 35,
+              fontWeight: '800',
+              color: '#ffffff',
+            }}
+          >
+            $100
+          </Text>
+          <View>
+            <Text
+              style={{
+                fontSize: 13,
+                color: '#ffffff',
+                fontWeight: '600',
+              }}
+            >
+              Your friend got $100 on signup &{' '}
+            </Text>
+            <Text
+              style={{
+                fontSize: 13,
+                color: '#ffffff',
+                fontWeight: '600',
+              }}
+            >
+              You get $100 on their first{' '}
+            </Text>
+          </View>
+          <View>
+            <TouchableOpacity
+              onPress={() => {
+                props.navigation.navigate('ShareReferLink');
+              }}
+              style={{
+                backgroundColor: '#194858',
+                width: 135,
+                height: 25,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginTop: 20,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 11,
+                  color: '#ffffff',
+                  fontWeight: '700',
+                }}
+              >
+                REFER YOUR FRIEND
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
@@ -3977,6 +4059,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
               <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text>
               {renderMenuOptions()}
+
+              {renderReferralBanner()}
 
               {circleDataLoading && renderCircleShimmer()}
               <View style={{ backgroundColor: '#f0f1ec' }}>

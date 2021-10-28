@@ -2306,7 +2306,7 @@ export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Ob
     appsFlyer.logEvent(
       eventName,
       attributes,
-      (res) => { },
+      (res) => { console.log(res) },
       (err) => { }
     );
   } catch (error) { }
