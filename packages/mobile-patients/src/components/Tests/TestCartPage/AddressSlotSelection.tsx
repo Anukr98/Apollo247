@@ -405,7 +405,6 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
         {renderWizard()}
         {renderMainView()}
       </SafeAreaView>
-      {renderCallToOrder()}
       {renderStickyBottom()}
     </View>
   );

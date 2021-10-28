@@ -4,6 +4,8 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect } from 'react';
 import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 interface CallToOrderViewProps {
   delaySeconds?: any;
@@ -28,13 +30,21 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
     cityId,
     pageId,
   } = props;
+  const {
+    isDiagnosticLocationServiceable
+  } = useAppCommonData();
+  const {
+    addresses,
+  } = useShoppingCart();
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
-  const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
-    if (item?.ctaCityId == cityId && item?.ctaProductPageArray?.includes(pageId)) {
-      return item;
-    }
-  });
+  const ctaDetailMatched = isDiagnosticLocationServiceable ? ctaDetailArray?.filter((item: any) => {
+      if (item?.ctaCityId == cityId && item?.ctaProductPageArray?.includes(pageId)) {
+        return item;
+      } else {
+        [callToOrderDetails?.ctaDetailsDefault]
+      }
+  }) : [callToOrderDetails?.ctaDetailsDefault];
   const phoneNumber = ctaDetailMatched?.[0]?.ctaPhoneNumber
     ? ctaDetailMatched?.[0]?.ctaPhoneNumber
     : callToOrderDetails?.ctaDetailsDefault?.ctaPhoneNumber;
@@ -47,7 +57,7 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
       ctaDelaySeconds = 0;
     }, ctaDetailMatched?.[0]?.ctaDelaySeconds);
   }, []);
-  return ctaDetailMatched?.length === 1 && ctaDelaySeconds == 0 ? (
+  return ctaDetailMatched?.length === 1 ? (
     <>
       <View style={[styles.container, containerStyle]}>
         {!slideCallToOrder ? (
