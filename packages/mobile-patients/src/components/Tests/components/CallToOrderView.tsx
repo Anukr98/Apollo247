@@ -33,9 +33,6 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
   const {
     isDiagnosticLocationServiceable
   } = useAppCommonData();
-  const {
-    addresses,
-  } = useShoppingCart();
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
   const ctaDetailMatched = isDiagnosticLocationServiceable ? ctaDetailArray?.filter((item: any) => {
