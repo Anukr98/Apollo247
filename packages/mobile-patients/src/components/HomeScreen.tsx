@@ -5074,7 +5074,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const renderSearchResults = () => {
-    console.log('csk i am here', searchResults.length);
     return (
       <ScrollView style={{ flex: 1, backgroundColor: theme.colors.WHITE }} bounces={false}>
         <View
@@ -5082,6 +5081,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             width: width,
             marginBottom: 6,
             paddingHorizontal: 16,
+            paddingBottom: 16,
             backgroundColor: '#fff',
           }}
         >
@@ -5181,7 +5181,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                 View All Results {searchResultsTabHeader[key].title}
               </Text>
 
-              <ArrowRight style={{ marginLeft: 'auto' }} />
+              <ArrowRight style={{ marginLeft: 'auto', tintColor: theme.colors.APP_YELLOW }} />
             </View>
           )}
         </TouchableOpacity>
