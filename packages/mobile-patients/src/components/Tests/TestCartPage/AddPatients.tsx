@@ -1116,7 +1116,6 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
         {renderMainView()}
         {renderPatientDetailsOverlay()}
       </SafeAreaView>
-      {renderCallToOrder()}
       {renderStickyBottom()}
     </View>
   );

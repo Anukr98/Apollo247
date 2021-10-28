@@ -2265,7 +2265,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         <ScrollView bounces={false} style={{ flexGrow: 1 }} showsVerticalScrollIndicator={true}>
           {renderMainView()}
         </ScrollView>
-        {renderCallToOrder()}
         {renderTestProceedBar()}
       </SafeAreaView>
       {isVisible && renderPremiumOverlay()}
