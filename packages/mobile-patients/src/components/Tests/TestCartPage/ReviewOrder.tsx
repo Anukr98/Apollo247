@@ -223,6 +223,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setCircleSubscriptionId,
     setCirclePlanSelected,
     setIsCircleSubscription,
+    circlePlanValidity
   } = useShoppingCart();
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
@@ -1080,8 +1081,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const circleData = circlePlanSelected;
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE] = {
       navigation_source: 'Cart(Diagnostic)',
-      circle_end_date: getCircleNoSubscriptionText(),
-      circle_start_date: getCircleNoSubscriptionText(),
+      circle_end_date: circlePlanValidity?.endDate ? circlePlanValidity?.endDate : getCircleNoSubscriptionText(),
+      circle_start_date: circlePlanValidity?.startDate ? circlePlanValidity?.startDate : getCircleNoSubscriptionText(),
       plan_id: circleData?.subPlanId,
       customer_id: currentPatient?.id,
       duration_in_months: circleData?.durationInMonth,

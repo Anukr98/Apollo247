@@ -7,10 +7,12 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Spinner } from './ui/Spinner';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider'
 import AsyncStorage from '@react-native-community/async-storage';
 import {
   getAsyncStorageValues,
   getCircleNoSubscriptionText,
+  getCirclePlanDetails,
   getUserType,
   postCleverTapEvent,
   postWebEngageEvent,
@@ -53,7 +55,9 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
     setCircleMembershipCharges,
     setCircleSubPlanId,
     setAutoCirlcePlanAdded,
+    circlePlanValidity
   } = useShoppingCart();
+  const { circleSubscription } = useAppCommonData()
   const { setIsCircleAddedToCart, setSelectedCirclePlan } = useDiagnosticsCart();
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const fireCirclePlanSelectedEvent = () => {
@@ -78,25 +82,33 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
     if (circleEventSource) fireCircleLandingPageViewedEvent();
   }, []);
 
-  const fireCircleLandingPageViewedEvent = () => {
+  const fireCircleLandingPageViewedEvent = async () => {
+    const mobile_number = currentPatient?.mobileNumber
+    let circlePriceAndDuration
+    if(mobile_number)
+        await getCirclePlanDetails(mobile_number, client).then(res => {
+          circlePriceAndDuration = res?.find((item: any) => item?.subPlanId === circlePlanValidity?.plan_id)
+        })
+
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_LANDING_PAGE_VIEWED] = {
       navigation_source: circleEventSource,
-      circle_end_date: getCircleNoSubscriptionText(),
-      circle_start_date: getCircleNoSubscriptionText(),
-      plan_id: getCircleNoSubscriptionText(),
+      circle_end_date: circlePlanValidity?.endDate ? circlePlanValidity?.endDate : getCircleNoSubscriptionText(),
+      circle_start_date: circlePlanValidity?.startDate ? circlePlanValidity?.startDate : getCircleNoSubscriptionText(),
+      plan_id: circlePlanValidity?.plan_id ? circlePlanValidity?.plan_id : getCircleNoSubscriptionText(),
       customer_id: currentPatient?.id,
-      duration_in_months: getCircleNoSubscriptionText(),
+      duration_in_months: circleSubscription ? circlePriceAndDuration?.durationInMonth : getCircleNoSubscriptionText(),
       user_type: getUserType(allCurrentPatients),
-      price: getCircleNoSubscriptionText(),
+      price: circleSubscription ? circlePriceAndDuration?.price : getCircleNoSubscriptionText(),
     };
     postCleverTapEvent(CleverTapEventName.CIRCLE_LANDING_PAGE_VIEWED, cleverTapEventAttributes);
   };
 
   const fireCirclePlanToCartEvent = (circleData: any) => {
+      
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE] = {
       navigation_source: circleEventSource,
-      circle_end_date: getCircleNoSubscriptionText(),
-      circle_start_date: getCircleNoSubscriptionText(),
+      circle_end_date: circlePlanValidity?.endDate ? circlePlanValidity?.endDate : getCircleNoSubscriptionText(),
+      circle_start_date: circlePlanValidity?.startDate ? circlePlanValidity?.startDate : getCircleNoSubscriptionText(),
       plan_id: circleData?.subPlanId,
       customer_id: currentPatient?.id,
       duration_in_months: circleData?.durationInMonth,
