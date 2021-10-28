@@ -2129,12 +2129,12 @@ export const callPermissions = (
 };
 
 export const getUTMdataFromURL = (url: string) => {
-  var result: any = { appUrl: null, utm_source: null, utm_medium: null, utm_campaign: null };
+  var result: any = { sourceUrl: null, utm_source: null, utm_medium: null, utm_campaign: null };
   if (url.indexOf('?') != -1) {
     try {
       var splitedArray = url.split('?');
       var main_url_array = splitedArray[1].split('&');
-      result.appUrl = splitedArray[0];
+      result.sourceUrl = splitedArray[0];
       main_url_array.forEach((item) => {
         let utmAr = item.split('=');
         result[utmAr[0]] = utmAr[1];
@@ -2144,7 +2144,7 @@ export const getUTMdataFromURL = (url: string) => {
       return false;
     }
   } else {
-    result.appUrl = url;
+    result.sourceUrl = url;
     return result;
   }
 };
@@ -2238,10 +2238,19 @@ export const InitiateAppsFlyer = (
     }
     if (!res.isDeferred) {
       if (redirectUrl && checkUniversalURL(redirectUrl).universal) {
-        clevertapEventForAppsflyerDeeplink(removeNullFromObj({
-          ...res.data,
-          appUrl: checkUniversalURL(redirectUrl).appUrl
-        }))
+        if (Object.keys(res.data).length < 2) {
+          clevertapEventForAppsflyerDeeplink(removeNullFromObj({
+            sourceUrl: checkUniversalURL(redirectUrl).sourceUrl,
+            channel: 'Organic'
+          }))
+        }
+        else {
+          clevertapEventForAppsflyerDeeplink(removeNullFromObj({
+            ...res.data,
+            sourceUrl: checkUniversalURL(redirectUrl).sourceUrl
+          }))
+        }
+
       }
       else {
         clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data))
@@ -2264,10 +2273,10 @@ export const checkUniversalURL = (url: string) => {
   ) {
     if (url.indexOf('?') != -1) {
       var splitedArray = url.split('?');
-      return { universal: true, appUrl: splitedArray[0] }
+      return { universal: true, sourceUrl: splitedArray[0] }
     }
     else {
-      return { universal: true, appUrl: url }
+      return { universal: true, sourceUrl: url }
     }
   }
   else {

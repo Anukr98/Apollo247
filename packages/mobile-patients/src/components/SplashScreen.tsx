@@ -742,7 +742,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       if (url) {
       } else {
         postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
-          source: 'Organic',
+          channel: 'channel',
           is_first_launch: isFirstLaunch,
         });
       }
