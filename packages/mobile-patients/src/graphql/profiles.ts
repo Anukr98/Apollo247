@@ -6309,6 +6309,7 @@ export const GET_DIAGNOSTIC_REPORT_TAT = gql`
     ) {
       maxReportTAT
       reportTATMessage
+      preOrderReportTATMessage
       itemLevelReportTATs {
         itemId
         reportTATMessage
