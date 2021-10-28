@@ -12,6 +12,7 @@ export interface getConfigurableReportTAT_getConfigurableReportTAT_itemLevelRepo
   itemId: number | null;
   reportTATMessage: string | null;
   reportTATInUTC: any | null;
+  preOrderReportTATMessage: string | null;
 }
 
 export interface getConfigurableReportTAT_getConfigurableReportTAT {

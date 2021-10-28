@@ -58,7 +58,9 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
 
   const hasExtraData =
     !!reportGenItem &&
-    (reportGenItem?.itemPrepration || reportTat?.reportTATMessage || reportGenItem?.itemReportTat);
+    (reportGenItem?.itemPrepration ||
+      reportTat?.preOrderReportTATMessage ||
+      reportGenItem?.itemReportTat);
   const inclusionCount = !!reportGenItem && reportGenItem?.itemParameterCount;
 
   const showSavingsView =
@@ -153,12 +155,21 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const renderReportTat_preTestingReqrmnt = () => {
     return !!hasExtraData ? (
       <View style={styles.reportView}>
-        {reportTat?.reportTATMessage || reportGenItem?.itemReportTat ? (
+        {reportTat?.preOrderReportTATMessage || reportGenItem?.itemReportTat ? (
           <View style={[styles.reportGenViewStyle, styles.reportViewStyle]}>
-            <TestTimeIcon style={[styles.timeIconStyle, { marginLeft: 4 }]} />
-            <Text style={[styles.reportGenTextStyle, { textAlign: 'right' }]}>
-              {!!reportTat?.reportTATMessage && reportTat?.reportTATMessage != ''
-                ? reportTat?.reportTATMessage
+            <View style={styles.clockIconView}>
+              <TestTimeIcon
+                style={[
+                  styles.timeIconStyle,
+                  {
+                    marginLeft: 4,
+                  },
+                ]}
+              />
+            </View>
+            <Text style={[styles.reportGenTextStyle, styles.reportBGText]}>
+              {!!reportTat?.preOrderReportTATMessage && reportTat?.preOrderReportTATMessage != ''
+                ? reportTat?.preOrderReportTATMessage
                 : `Report in ${reportGenItem?.itemReportTat}`}
             </Text>
           </View>
@@ -170,7 +181,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
               {
                 justifyContent: 'flex-start',
                 marginLeft:
-                  !!reportTat?.reportTATMessage || !!reportGenItem?.itemReportTat ? -4 : -8,
+                  !!reportTat?.preOrderReportTATMessage || !!reportGenItem?.itemReportTat ? -4 : -8,
               },
             ]}
           >
@@ -286,10 +297,6 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   reportViewStyle: {
-    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: theme.colors.TEST_CARD_BUTTOM_BG,
     maxWidth: 185, //160
     minWidth: 100,
     justifyContent: 'flex-start',
@@ -337,4 +344,23 @@ const styles = StyleSheet.create({
     paddingRight: 16,
   },
   removeIconStyle: { height: 22, width: 22, resizeMode: 'contain' },
+  clockIconView: {
+    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG, // backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
+    borderTopLeftRadius: 4,
+    borderBottomLeftRadius: 4,
+    borderWidth: 1,
+    borderColor: 'transparent',
+    paddingRight: 1,
+  },
+  reportBGText: {
+    textAlign: 'right',
+    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG, // backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
+    borderTopRightRadius: 4,
+    borderBottomRightRadius: 4,
+    borderWidth: 1,
+    borderColor: 'transparent',
+    paddingRight: 6,
+    paddingLeft: 3,
+    marginLeft: 0,
+  },
 });

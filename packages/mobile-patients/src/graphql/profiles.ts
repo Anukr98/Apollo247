@@ -6314,6 +6314,7 @@ export const GET_DIAGNOSTIC_REPORT_TAT = gql`
         itemId
         reportTATMessage
         reportTATInUTC
+        preOrderReportTATMessage
       }
     }
   }
