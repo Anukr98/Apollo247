@@ -12,6 +12,7 @@ import {
   Dimensions,
   Image,
   TouchableOpacity,
+  Platform,
   BackHandler,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
@@ -57,6 +58,8 @@ import {
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 const { height } = Dimensions.get('window');
 import LottieView from 'lottie-react-native';
+import AsyncStorage from '@react-native-community/async-storage';
+import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpers/clientCalls';
 const GreenTickAnimation = '@aph/mobile-patients/src/components/Tests/greenTickAnimation.json';
 
 export interface SubmittedPrescriptionProps extends NavigationScreenProps {
@@ -81,6 +84,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   const [additionalNotes, setadditionalNotes] = useState<string>('');
   const [onSumbitSuccess, setOnSumbitSuccess] = useState<boolean>(false);
   const [isErrorOccured, setIsErrorOccured] = useState<boolean>(false);
+  const [patientPrescriptions, setPatientPrescriptions] = useState([]) as any;
 
   useEffect(() => {
     setLoading?.(false);
@@ -132,7 +136,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         }
       })
       .catch((error) => {
-        CommonBugFender('AddressBook__getAddressList', error);
+        CommonBugFender('fetchPatientPrescriptions_SubmiitedPrescriptions', error);
       });
   };
   const renderExpectCall = () => {
@@ -187,6 +191,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   };
 
   const onSubmitPrescription = () => {
+    setLoading?.(true);
     const inputData: AddPrescriptionRecordInput = {
       id: PhysicalPrescriptionsProps?.length
         ? ''
@@ -229,34 +234,126 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         .then(({ data }) => {
           const status = data?.addPatientPrescriptionRecord?.status;
           const eventInputData = removeObjectProperty(inputData, 'prescriptionFiles');
-          const prescriptionUrl = {
-            content: inputData?.prescriptionFiles?.[0]?.content,
-            fileName: inputData?.prescriptionFiles?.[0]?.fileName,
-            mimeType: inputData?.prescriptionFiles?.[0]?.mimeType,
-          };
-          DiagnosticPrescriptionSubmitted(
-            currentPatient,
-            prescriptionUrl ? prescriptionUrl : '',
-            inputData?.prescriptionName ? inputData?.prescriptionName : '',
-            isDiagnosticCircleSubscription
-          );
-          setOnSumbitSuccess(true);
+          getUploadedRecords(inputData, 'physicalPrescription');
         })
         .catch((error) => {
+          setLoading?.(false);
           setIsErrorOccured(true);
           CommonBugFender('SubmittedPrescription_ADD_PRESCRIPTION_RECORD', error);
         });
     } else {
-      const prescriptionUrl = EPrescriptionsProps?.[0]?.uploadedUrl;
+      getUploadedRecords(inputData, 'uploaded');
+    }
+  };
+
+  async function getUploadedRecords(inputData: AddPrescriptionRecordInput, source: string) {
+    const getUserType = await AsyncStorage.getItem('diagnosticUserType');
+    const diagnosticUserType = !!getUserType && JSON.parse(getUserType);
+    const getUploadedItemName = inputData?.prescriptionName;
+    const getUploadedItemData = inputData?.dateOfPrescription;
+
+    try {
+      const getUploadedResponse: any = await getPatientPrismMedicalRecordsApi(
+        client,
+        currentPatient?.id,
+        [MedicalRecordType.PRESCRIPTION],
+        'Diagnostics'
+      );
+      const getPrescriptionResponse =
+        !!getUploadedResponse &&
+        getUploadedResponse?.getPatientPrismMedicalRecords_V3?.prescriptions;
+      if (!!getPrescriptionResponse && getPrescriptionResponse?.errorCode == 0) {
+        const getAllPrescriptions = getPrescriptionResponse?.response;
+        if (getAllPrescriptions?.length > 0) {
+          const getSortedPrescriptions = getAllPrescriptions?.sort((a: any, b: any) => {
+            return new Date(b?.date).getTime() - new Date(a?.date).getTime();
+          });
+          const findSelectedPrescription = getSortedPrescriptions?.find(
+            (item: any) =>
+              item?.date == getUploadedItemData && item?.prescriptionName == getUploadedItemName
+          );
+          //send that one to webengage.
+          !!findSelectedPrescription
+            ? triggerPrescriptionSubmittedEvent(
+                inputData,
+                diagnosticUserType,
+                findSelectedPrescription
+              )
+            : triggerPrescriptionSubmittedEvent_1(inputData, diagnosticUserType, source);
+        } else {
+          triggerPrescriptionSubmittedEvent_1(inputData, diagnosticUserType, source);
+        }
+      } else {
+        triggerPrescriptionSubmittedEvent_1(inputData, diagnosticUserType, source);
+      }
+    } catch (error) {
+      triggerPrescriptionSubmittedEvent_1(inputData, diagnosticUserType, source);
+      CommonBugFender('getPatientPrismMedicalRecordsApi_getPatientPrismMedicalRecordsApi', error);
+    } finally {
+      setLoading?.(false);
+    }
+  }
+
+  function triggerPrescriptionSubmittedEvent_1(inputData: any, userType: string, source: string) {
+    if (source == 'physicalPrescription') {
+      const prescriptionUrl = {
+        content: inputData?.prescriptionFiles?.[0]?.content,
+        fileName: inputData?.prescriptionFiles?.[0]?.fileName,
+        mimeType: inputData?.prescriptionFiles?.[0]?.mimeType,
+      };
+
       DiagnosticPrescriptionSubmitted(
         currentPatient,
         prescriptionUrl ? prescriptionUrl : '',
         inputData?.prescriptionName ? inputData?.prescriptionName : '',
+        userType,
         isDiagnosticCircleSubscription
       );
-      setOnSumbitSuccess(true);
+    } else {
+      let uploadUrl;
+      if (EPrescriptionsProps?.length == 1) {
+        uploadUrl = EPrescriptionsProps?.[0]?.uploadedUrl;
+      } else {
+        uploadUrl = EPrescriptionsProps?.map(
+          (attributes, index: number) => `${index + 1} - ${attributes?.uploadedUrl}`
+        )?.join(' ');
+      }
+      DiagnosticPrescriptionSubmitted(
+        currentPatient,
+        !!uploadUrl ? uploadUrl : '',
+        inputData?.prescriptionName ? inputData?.prescriptionName : '',
+        userType,
+        isDiagnosticCircleSubscription
+      );
     }
-  };
+    setOnSumbitSuccess(true);
+  }
+
+  async function triggerPrescriptionSubmittedEvent(
+    inputData: AddPrescriptionRecordInput,
+    userType: string,
+    responseResult: any
+  ) {
+    let url;
+    if (responseResult?.prescriptionFiles?.length == 1) {
+      url = responseResult?.prescriptionFiles?.[0]?.fileUrl;
+    } else {
+      url = responseResult?.prescriptionFiles?.map(
+        (attributes: any, index: number) => `${index + 1} - ${attributes?.file_Url}`
+      );
+    }
+
+    const newUrl = url?.map((item: any) => item)?.join(' ');
+    DiagnosticPrescriptionSubmitted(
+      currentPatient,
+      !!newUrl ? newUrl : '',
+      inputData?.prescriptionName ? inputData?.prescriptionName : '',
+      userType,
+      isDiagnosticCircleSubscription
+    );
+    setOnSumbitSuccess(true);
+  }
+
   const renderErrorMessage = () => {
     return (
       <View style={styles.errorMessageView}>
@@ -282,6 +379,31 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         />
         <Text style={styles.successText}>{string.diagnostics.prescriptionSuccess}</Text>
       </View>
+    );
+  };
+
+  const renderButtonCTA = () => {
+    return (
+      <Button
+        title={onSumbitSuccess ? 'GO TO HOME' : 'SUBMIT'}
+        style={styles.buttonStyle}
+        disabled={EPrescriptionsProps?.length || PhysicalPrescriptionsProps?.length ? false : true}
+        onPress={() => {
+          if (onSumbitSuccess) {
+            setEPrescriptions?.([]);
+            setPhysicalPrescriptions?.([]);
+            props.navigation.navigate('TESTS', {
+              phyPrescriptionUploaded: [],
+              ePresscriptionUploaded: [],
+              phyPrescriptionsProp: [],
+              ePrescriptionsProp: [],
+              movedFrom: '',
+            });
+          } else {
+            onSubmitPrescription();
+          }
+        }}
+      />
     );
   };
 
@@ -402,32 +524,11 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
               renderSuccessUploadView()
             )}
           </View>
-          <View>
-            {renderExpectCall()}
-            <Button
-              title={onSumbitSuccess ? 'GO TO HOME' : 'SUBMIT'}
-              style={styles.buttonStyle}
-              disabled={
-                EPrescriptionsProps?.length || PhysicalPrescriptionsProps?.length ? false : true
-              }
-              onPress={() => {
-                if (onSumbitSuccess) {
-                  setEPrescriptions?.([]);
-                  setPhysicalPrescriptions?.([]);
-                  props.navigation.navigate('TESTS', {
-                    phyPrescriptionUploaded: [],
-                    ePresscriptionUploaded: [],
-                    phyPrescriptionsProp: [],
-                    ePrescriptionsProp: [],
-                    movedFrom: '',
-                  });
-                } else {
-                  onSubmitPrescription();
-                }
-              }}
-            />
-          </View>
         </ScrollView>
+        <View>
+          {renderExpectCall()}
+          {renderButtonCTA()}
+        </View>
       </SafeAreaView>
       {loading && !props?.showHeader ? null : loading && <Spinner />}
     </View>
