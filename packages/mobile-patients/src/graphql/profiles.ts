@@ -6462,3 +6462,13 @@ export const GET_PERSONALIZED_OFFERS = gql`
     }
   }
 `;
+
+export const SAVE_RECENT_SEARCH=gql`
+mutation saveRecent($searchText: String){
+  saveRecentSearchData(saveRecentSearchTextInput: {
+    searchText: $searchText
+  }){
+    success
+  }
+}
+`; 
