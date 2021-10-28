@@ -1227,7 +1227,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         setOffersList && setOffersList(offers);
       }
       if (recent && recent.length > 0)
-        setRecentGlobalSearchList && setRecentGlobalSearchList(recent);
+        setRecentGlobalSearchList && setRecentGlobalSearchList(recent.slice(0, 4));
       setOffersListLoading && setOffersListLoading(false);
     } catch (error) {
       setOffersListLoading && setOffersListLoading(false);

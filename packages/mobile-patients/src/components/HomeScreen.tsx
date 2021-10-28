@@ -4835,7 +4835,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
     const save = _.debounce(saveRecentSearchTerm, 1000);
     try {
-      //save(_searchText);
+      save(_searchText);
     } catch (e) {}
   };
 
