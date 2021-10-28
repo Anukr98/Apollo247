@@ -2394,8 +2394,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
     const saveSessionValues = async () => {
       const [loginToken, phoneNumber] = await getAsyncStorageValues();
-      setToken(loginToken);
-      setUserMobileNumber(phoneNumber);
+      setToken(JSON.parse(loginToken));
+      setUserMobileNumber(
+        JSON.parse(phoneNumber)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber
+      );
     };
     fetchData();
     saveSessionValues();
@@ -3129,8 +3131,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const openWebView = (url: any) => {
     Keyboard.dismiss();
-    let uri = formatUrl(`${url}`, token, userMobileNumber)
-      
+    let uri = formatUrl(`${url}`, token, userMobileNumber);
+
     return (
       <View style={styles.viewWebStyles}>
         <Header

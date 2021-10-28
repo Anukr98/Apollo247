@@ -37,8 +37,10 @@ export const ProHealthWebView: React.FC<ProHealthWebViewProps> = (props) => {
   useEffect(() => {
     const saveSessionValues = async () => {
       const [loginToken, phoneNumber] = await getAsyncStorageValues();
-      setToken(loginToken);
-      setUserMobileNumber(phoneNumber);
+      setToken(JSON.parse(loginToken));
+      setUserMobileNumber(
+        JSON.parse(phoneNumber)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber
+      );
     };
     saveSessionValues();
     requestMicrophonePermission();
