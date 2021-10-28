@@ -670,6 +670,52 @@ const styles = StyleSheet.create({
     height: 180,
     width: '100%',
   },
+  rf_en_earnBtnText: {
+    fontSize: 14,
+    color: '#ffffff',
+    fontWeight: '700',
+  },
+
+  rf_en_earnBtn: {
+    backgroundColor: '#FCB716',
+    width: 80,
+    height: 35,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 15,
+    borderRadius: 5,
+  },
+
+  rf_en_rupees: {
+    fontSize: 19,
+    fontWeight: 'bold',
+    color: '#4E69FF',
+    fontStyle: 'italic',
+  },
+  rf_en_text: {
+    fontSize: 19,
+    fontWeight: '700',
+    color: '#02475B',
+  },
+  rf_en_textContainer: {
+    width: '55%',
+    alignItems: 'flex-end',
+  },
+  rf_en_ImageContainer: {
+    width: '45%',
+    height: 90,
+    justifyContent: 'flex-end',
+  },
+  rf_en_MainContainer: {
+    backgroundColor: '#FAFEFF',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    marginHorizontal: 10,
+    borderWidth: 1,
+    borderColor: '#D4D4D4',
+    borderRadius: 5,
+    flexDirection: 'row',
+  },
 });
 
 type menuOptions = {
@@ -3980,100 +4026,26 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderReferralBanner = () => {
     return (
-      <View
-        style={{
-          backgroundColor: '#FAFEFF',
-          paddingHorizontal: 20,
-          paddingTop: 20,
-          marginHorizontal: 10,
-          borderWidth: 1,
-          borderColor: '#D4D4D4',
-          borderRadius: 5,
-          flexDirection: 'row',
-        }}
-      >
-        <View
-          style={{
-            width: '45%',
-            height: 80,
-            justifyContent: 'flex-end',
-          }}
-        >
+      <View style={styles.rf_en_MainContainer}>
+        <View style={styles.rf_en_ImageContainer}>
           <Image
-            source={require('@aph/mobile-patients/src/images/referAndEarn/Group5447.png')}
+            source={require('@aph/mobile-patients/src/images/referAndEarn/Group5447.webp')}
             resizeMode="cover"
           />
         </View>
-        <View
-          style={{
-            width: '55%',
-            alignItems: 'flex-end',
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 19,
-              fontWeight: '700',
-              color: '#02475B',
-            }}
-          >
-            Refer & Earn{' '}
-            <Text
-              style={{
-                fontSize: 19,
-                fontWeight: 'bold',
-                color: '#4E69FF',
-                fontStyle: 'italic',
-              }}
-            >
-              $100
-            </Text>
+        <View style={styles.rf_en_textContainer}>
+          <Text style={styles.rf_en_text}>
+            Refer & Earn <Text style={styles.rf_en_rupees}>₹100</Text>
           </Text>
 
-          {/* <View>
-            <Text
-              style={{
-                fontSize: 13,
-                color: '#ffffff',
-                fontWeight: '600',
-              }}
-            >
-              Your friend got $100 on signup &{' '}
-            </Text>
-            <Text
-              style={{
-                fontSize: 13,
-                color: '#ffffff',
-                fontWeight: '600',
-              }}
-            >
-              You get $100 on their first{' '}
-            </Text>
-          </View> */}
           <View>
             <TouchableOpacity
               onPress={() => {
                 props.navigation.navigate('ShareReferLink');
               }}
-              style={{
-                backgroundColor: '#FCB716',
-                width: 80,
-                height: 35,
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginTop: 15,
-                borderRadius: 10,
-              }}
+              style={styles.rf_en_earnBtn}
             >
-              <Text
-                style={{
-                  fontSize: 14,
-                  color: '#ffffff',
-                  fontWeight: '700',
-                }}
-              >
-                Earn Now
-              </Text>
+              <Text style={styles.rf_en_earnBtnText}>Earn Now</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -2175,7 +2175,6 @@ export const InitiateAppsFlyer = (
     (error) => { }
   );
   onInstallConversionDataCanceller = appsFlyer.onInstallConversionData((res) => {
-    console.log(res, 'On INstall Conversion')
     if (JSON.parse(res.data.is_first_launch || 'null') == true) {
       try {
         if (res.data.af_dp !== undefined) {

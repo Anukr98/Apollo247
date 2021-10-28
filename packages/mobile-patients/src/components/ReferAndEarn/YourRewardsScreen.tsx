@@ -12,31 +12,53 @@ import {
 import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
 import { Header } from '../ui/Header';
 import { createMaterialTopTabNavigator, createAppContainer } from 'react-navigation';
+import Share from 'react-native-share';
+import appsFlyer from 'react-native-appsflyer';
+import { useAllCurrentPatients } from '../../hooks/authHooks';
+import { g } from '../../helpers/helperFunctions';
 
 export interface YourRewardsScreenProps extends NavigationScreenProps {}
 
 export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
   const [selectedTab, selectTabBar] = useState(1);
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
 
+  const shareLinkMethod = () => {
+    generateReferrerLink((referralLink) => {
+      const shareOptions = {
+        title: 'Referral Link',
+        url: referralLink,
+        message: 'Please install Apollo 247 using below link',
+        failOnCancel: false,
+        showAppsToView: true,
+      };
+      Share.open(shareOptions);
+    });
+  };
+
+  const generateReferrerLink = (success: (data: any) => void) => {
+    appsFlyer.setAppInviteOneLinkID('775G');
+    appsFlyer.generateInviteLink(
+      {
+        channel: 'gmail',
+        campaign: '1',
+        customerID: g(currentPatient, 'id'),
+        sub2: 'AppReferral',
+        userParams: {
+          rewardId: '1',
+          linkToUse: 'ForReferrarInstall',
+        },
+      },
+      (link) => {
+        success(link);
+      },
+      (err) => {}
+    );
+  };
   const ClaimedCard = (item: any) => {
     return (
-      <View
-        style={{
-          backgroundColor: '#fff',
-          paddingHorizontal: 14,
-          paddingVertical: 20,
-          borderWidth: 2,
-          borderColor: '#ccc',
-          marginBottom: 5,
-          borderRadius: 5,
-          flexDirection: 'row',
-        }}
-      >
-        <View
-          style={{
-            marginRight: 10,
-          }}
-        >
+      <View style={styles.hc_card_container}>
+        <View style={styles.hc_card_Leftcontainer}>
           <Image
             source={require('@aph/mobile-patients/src/images/referAndEarn/check.webp')}
             style={{}}
@@ -44,53 +66,14 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
           />
         </View>
         <View>
-          <Text
-            style={{
-              marginBottom: 10,
-              fontWeight: '500',
-            }}
-          >
-            Claimed
-          </Text>
-          <View
-            style={{
-              flexDirection: 'row',
-            }}
-          >
-            <View
-              style={{
-                width: '75%',
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 14,
-                  marginBottom: 5,
-                }}
-              >
-                You earned refree points on 3rd
-              </Text>
-              <Text
-                style={{
-                  fontSize: 14,
-                }}
-              >
-                Aug, 2021 first time Login.
-              </Text>
+          <Text style={styles.hc_card_refreeName}>Claimed</Text>
+          <View style={styles.hc_card_flexRow}>
+            <View style={styles.hc_card_claimedRightContaier}>
+              <Text style={styles.hc_card_smallHeadingOne}>You earned refree points on 3rd</Text>
+              <Text style={styles.hc_card_smallHeadingTwo}>Aug, 2021 first time Login.</Text>
             </View>
-            <View
-              style={{
-                width: '20%',
-                justifyContent: 'flex-end',
-              }}
-            >
-              <Text
-                style={{
-                  fontWeight: '700',
-                }}
-              >
-                100HC
-              </Text>
+            <View style={styles.hc_card_totalHC}>
+              <Text style={styles.hc_card_HC}>100HC</Text>
             </View>
           </View>
         </View>
@@ -100,23 +83,8 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
 
   const ClaimedCardWithExpirationSet = (item: any) => {
     return (
-      <View
-        style={{
-          backgroundColor: '#fff',
-          paddingHorizontal: 14,
-          paddingVertical: 20,
-          borderWidth: 2,
-          borderColor: '#ccc',
-          marginBottom: 5,
-          borderRadius: 5,
-          flexDirection: 'row',
-        }}
-      >
-        <View
-          style={{
-            marginRight: 10,
-          }}
-        >
+      <View style={styles.hc_card_container}>
+        <View style={styles.hc_card_Leftcontainer}>
           <Image
             source={require('@aph/mobile-patients/src/images/referAndEarn/check.webp')}
             style={{}}
@@ -124,64 +92,17 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
           />
         </View>
         <View>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              paddingRight: 10,
-            }}
-          >
-            <Text
-              style={{
-                marginBottom: 10,
-                fontWeight: '500',
-              }}
-            >
-              Shriya Singh
-            </Text>
-            <Text
-              style={{
-                color: '#FE5959',
-                fontSize: 13,
-                fontWeight: '400',
-              }}
-            >
-              Expires on 12 Sep,21
-            </Text>
+          <View style={styles.hc_card_RightInnercontainer}>
+            <Text style={styles.hc_card_refreeName}>Shriya Singh</Text>
+            <Text style={styles.hc_card_exporationText}>Expires on 12 Sep,21</Text>
           </View>
 
-          <View
-            style={{
-              flexDirection: 'row',
-            }}
-          >
-            <View
-              style={{
-                width: '75%',
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 14,
-                  marginBottom: 5,
-                }}
-              >
-                Purchased On 20th July
-              </Text>
+          <View style={styles.hc_card_flexRow}>
+            <View style={styles.hc_card_claimedRightContaier}>
+              <Text style={styles.hc_card_smallHeadingOne}>Purchased On 20th July</Text>
             </View>
-            <View
-              style={{
-                width: '20%',
-                justifyContent: 'flex-end',
-              }}
-            >
-              <Text
-                style={{
-                  fontWeight: '700',
-                }}
-              >
-                100HC
-              </Text>
+            <View style={styles.hc_card_totalHC}>
+              <Text style={styles.hc_card_HC}>100HC</Text>
             </View>
           </View>
         </View>
@@ -191,53 +112,16 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
 
   const renderPendingCards = (item: any) => {
     return (
-      <View
-        style={{
-          backgroundColor: '#fff',
-          paddingHorizontal: 14,
-          paddingVertical: 20,
-          borderWidth: 2,
-          borderColor: '#ccc',
-          marginBottom: 5,
-          borderRadius: 5,
-          flexDirection: 'row',
-        }}
-      >
-        <View
-          style={{
-            marginRight: 10,
-          }}
-        ></View>
+      <View style={styles.hc_card_container}>
+        <View style={styles.hc_card_Leftcontainer}></View>
         <View>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              paddingRight: 10,
-            }}
-          >
-            <Text
-              style={{
-                marginBottom: 10,
-                fontWeight: '500',
-              }}
-            >
-              Shriya Singh
-            </Text>
+          <View style={styles.hc_card_RightInnercontainer}>
+            <Text style={styles.hc_card_refreeName}>Shriya Singh</Text>
           </View>
 
-          <View
-            style={{
-              flexDirection: 'row',
-            }}
-          >
+          <View style={styles.hc_card_flexRow}>
             <View style={{}}>
-              <Text
-                style={{
-                  fontSize: 14,
-                  marginBottom: 5,
-                }}
-              >
+              <Text style={styles.hc_card_smallHeadingOne}>
                 Signed up 20th July, Purchase is Pending.
               </Text>
             </View>
@@ -249,62 +133,18 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
 
   const noReferralReward = () => {
     return (
-      <View
-        style={{
-          flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <View
-          style={{
-            alignItems: 'center',
-          }}
-        >
-          <Text
-            style={{
-              color: '#02475B',
-              fontWeight: '600',
-              fontSize: 18,
-              marginBottom: 15,
-            }}
-          >
-            No referral rewards
-          </Text>
-          <Text
-            style={{
-              color: '#979797',
-              fontWeight: '400',
-              fontSize: 18,
-              marginBottom: 25,
-              width: 250,
-              textAlign: 'center',
-            }}
-          >
-            You have not invited your friends yet
-          </Text>
+      <View style={styles.noReferralReward_container}>
+        <View style={styles.no_rf_innerContainer}>
+          <Text style={styles.no_rf_heading}>No referral rewards</Text>
+          <Text style={styles.no_rf_subHeading}>You have not invited your friends yet</Text>
           <TouchableOpacity
             onPress={() => {
               props.navigation.navigate('EarnedPoints');
+              // shareLinkMethod();
             }}
-            style={{
-              backgroundColor: '#FC9916',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: 5,
-              paddingVertical: 10,
-              paddingHorizontal: 25,
-            }}
+            style={styles.no_rf_referBtn}
           >
-            <Text
-              style={{
-                color: '#fff',
-                fontSize: 14,
-                fontWeight: '700',
-              }}
-            >
-              Refer Your Friend
-            </Text>
+            <Text style={styles.no_rf_btnText}>Refer Your Friend</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -343,29 +183,11 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
 
   const CustomTabBarHeader = () => {
     return (
-      <View
-        style={{
-          flexDirection: 'row',
-          borderBottomColor: '#bababa',
-          borderTopColor: '#bababa',
-          borderBottomWidth: 1,
-          borderTopWidth: 1,
-          paddingTop: 18,
-          backgroundColor: '#fff',
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => selectTabBar(1)}
-          style={{
-            width: Dimensions.get('screen').width / 2,
-            alignItems: 'center',
-          }}
-        >
+      <View style={styles.customTabBarMainContainer}>
+        <TouchableOpacity onPress={() => selectTabBar(1)} style={styles.cs_tbr_btn}>
           <Text
             style={[
-              {
-                fontSize: 17,
-              },
+              styles.cs_tbr_text,
               selectedTab === 1 ? styles.selectedTabText : styles.unSelectedTabText,
             ]}
           >
@@ -373,18 +195,10 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
           </Text>
           <View style={selectedTab === 1 ? styles.horizontalBackground : {}} />
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => selectTabBar(2)}
-          style={{
-            width: Dimensions.get('screen').width / 2,
-            alignItems: 'center',
-          }}
-        >
+        <TouchableOpacity onPress={() => selectTabBar(2)} style={styles.cs_tbr_btn}>
           <Text
             style={[
-              {
-                fontSize: 17,
-              },
+              styles.cs_tbr_text,
               selectedTab === 2 ? styles.selectedTabText : styles.unSelectedTabText,
             ]}
           >
@@ -397,30 +211,10 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
   };
   const renderTotalHCContainer = () => {
     return (
-      <View
-        style={{
-          backgroundColor: '#fff',
-          paddingVertical: 30,
-        }}
-      >
-        <View
-          style={{
-            alignItems: 'center',
-          }}
-        >
-          <Text
-            style={{
-              fontWeight: '700',
-            }}
-          >
-            Total HC: 200.00
-          </Text>
-          <View
-            style={{
-              position: 'absolute',
-              right: 20,
-            }}
-          >
+      <View style={styles.totalHcMainContainer}>
+        <View style={styles.to_HC_texContainer}>
+          <Text style={styles.to_HC_totalHC}>Total HC: 200.00</Text>
+          <View style={styles.to_HC_refresh}>
             <TouchableOpacity onPress={() => {}}>
               <Image
                 source={require('@aph/mobile-patients/src/images/referAndEarn/refresh.webp')}
@@ -472,5 +266,117 @@ const styles = StyleSheet.create({
     width: '80%',
     backgroundColor: '#00B38E',
     height: 3,
+  },
+  to_HC_refresh: {
+    position: 'absolute',
+    right: 20,
+  },
+  to_HC_totalHC: {
+    fontWeight: '700',
+  },
+  to_HC_texContainer: {
+    alignItems: 'center',
+  },
+  totalHcMainContainer: {
+    backgroundColor: '#fff',
+    paddingVertical: 30,
+  },
+  cs_tbr_text: {
+    fontSize: 17,
+  },
+  cs_tbr_btn: {
+    width: Dimensions.get('screen').width / 2,
+    alignItems: 'center',
+  },
+  customTabBarMainContainer: {
+    flexDirection: 'row',
+    borderBottomColor: '#bababa',
+    borderTopColor: '#bababa',
+    borderBottomWidth: 1,
+    borderTopWidth: 1,
+    paddingTop: 18,
+    backgroundColor: '#fff',
+  },
+  hc_card_flexRow: {
+    flexDirection: 'row',
+  },
+  hc_card_container: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 14,
+    paddingVertical: 20,
+    borderWidth: 2,
+    borderColor: '#ccc',
+    marginBottom: 5,
+    borderRadius: 5,
+    flexDirection: 'row',
+  },
+  hc_card_Leftcontainer: {
+    marginRight: 10,
+  },
+  hc_card_RightInnercontainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingRight: 10,
+  },
+  hc_card_refreeName: {
+    marginBottom: 10,
+    fontWeight: '500',
+  },
+  no_rf_btnText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  no_rf_referBtn: {
+    backgroundColor: '#FC9916',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 25,
+  },
+  no_rf_subHeading: {
+    color: '#979797',
+    fontWeight: '400',
+    fontSize: 18,
+    marginBottom: 25,
+    width: 250,
+    textAlign: 'center',
+  },
+  no_rf_heading: {
+    color: '#02475B',
+    fontWeight: '600',
+    fontSize: 18,
+    marginBottom: 15,
+  },
+  no_rf_innerContainer: {
+    alignItems: 'center',
+  },
+  noReferralReward_container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  hc_card_claimedRightContaier: {
+    width: '75%',
+  },
+  hc_card_smallHeadingOne: {
+    fontSize: 14,
+    marginBottom: 5,
+  },
+  hc_card_smallHeadingTwo: {
+    fontSize: 14,
+  },
+  hc_card_totalHC: {
+    width: '20%',
+    justifyContent: 'flex-end',
+  },
+  hc_card_HC: {
+    fontWeight: '700',
+  },
+  hc_card_exporationText: {
+    color: '#FE5959',
+    fontSize: 13,
+    fontWeight: '400',
   },
 });
