@@ -742,7 +742,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       if (url) {
       } else {
         postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
-          channel: 'channel',
+          channel: 'Organic',
           is_first_launch: isFirstLaunch,
         });
       }
@@ -752,16 +752,25 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const catchSourceUrlDataUsingAppsFlyer = async (redirectUrl: string | null) => {
     onDeepLinkCanceller = await appsFlyer.onDeepLink(async (res) => {
       if (redirectUrl && checkUniversalURL(redirectUrl).universal) {
-        clevertapEventForAppsflyerDeeplink(
-          removeNullFromObj({
-            ...res.data,
-            appUrl: checkUniversalURL(redirectUrl).appUrl,
-          })
-        );
+        if (Object.keys(res.data).length < 2) {
+          clevertapEventForAppsflyerDeeplink(
+            removeNullFromObj({
+              source_url: checkUniversalURL(redirectUrl).source_url,
+              channel: 'Organic',
+            })
+          );
+        } else {
+          clevertapEventForAppsflyerDeeplink(
+            removeNullFromObj({
+              ...res.data,
+              source_url: checkUniversalURL(redirectUrl).source_url,
+            })
+          );
+        }
       } else {
         clevertapEventForAppsflyerDeeplink(res.data);
-        onDeepLinkCanceller();
       }
+      onDeepLinkCanceller();
     });
   };
 

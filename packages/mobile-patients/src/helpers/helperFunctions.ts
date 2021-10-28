@@ -2129,12 +2129,12 @@ export const callPermissions = (
 };
 
 export const getUTMdataFromURL = (url: string) => {
-  var result: any = { sourceUrl: null, utm_source: null, utm_medium: null, utm_campaign: null };
+  var result: any = { source_url: null, utm_source: null, utm_medium: null, utm_campaign: null };
   if (url.indexOf('?') != -1) {
     try {
       var splitedArray = url.split('?');
       var main_url_array = splitedArray[1].split('&');
-      result.sourceUrl = splitedArray[0];
+      result.source_url = splitedArray[0];
       main_url_array.forEach((item) => {
         let utmAr = item.split('=');
         result[utmAr[0]] = utmAr[1];
@@ -2144,7 +2144,7 @@ export const getUTMdataFromURL = (url: string) => {
       return false;
     }
   } else {
-    result.sourceUrl = url;
+    result.source_url = url;
     return result;
   }
 };
@@ -2240,14 +2240,14 @@ export const InitiateAppsFlyer = (
       if (redirectUrl && checkUniversalURL(redirectUrl).universal) {
         if (Object.keys(res.data).length < 2) {
           clevertapEventForAppsflyerDeeplink(removeNullFromObj({
-            sourceUrl: checkUniversalURL(redirectUrl).sourceUrl,
+            source_url: checkUniversalURL(redirectUrl).source_url,
             channel: 'Organic'
           }))
         }
         else {
           clevertapEventForAppsflyerDeeplink(removeNullFromObj({
             ...res.data,
-            sourceUrl: checkUniversalURL(redirectUrl).sourceUrl
+            source_url: checkUniversalURL(redirectUrl).source_url
           }))
         }
 
@@ -2273,10 +2273,10 @@ export const checkUniversalURL = (url: string) => {
   ) {
     if (url.indexOf('?') != -1) {
       var splitedArray = url.split('?');
-      return { universal: true, sourceUrl: splitedArray[0] }
+      return { universal: true, source_url: splitedArray[0] }
     }
     else {
-      return { universal: true, sourceUrl: url }
+      return { universal: true, source_url: url }
     }
   }
   else {
