@@ -119,10 +119,6 @@ import {
 import Share from 'react-native-share';
 import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientAddressObj } from '../graphql/types/getDiagnosticOrderDetails';
 import { handleOpenURL, pushTheView } from './deeplinkRedirection';
-import {
-  GetAllUserSubscriptionsWithPlanBenefitsV2,
-  GetAllUserSubscriptionsWithPlanBenefitsV2Variables,
-} from '../graphql/types/GetAllUserSubscriptionsWithPlanBenefitsV2';
 
 const width = Dimensions.get('window').width;
 
@@ -1095,7 +1091,7 @@ export const findAddrComponents = (
 };
 
 /**
- * Calculates great-circle distances between the two points – that is, the shortest distance over the earth’s surface – using the ‘Haversine’ formula.
+ * Calculates great-circle distances between the two points â€“ that is, the shortest distance over the earthâ€™s surface â€“ using the â€˜Haversineâ€™ formula.
  */
 export const distanceBwTwoLatLng = (lat1: number, lon1: number, lat2: number, lon2: number) => {
   const deg2rad = (deg: number) => deg * (Math.PI / 180);
@@ -1289,7 +1285,7 @@ export const isValidText = (value: string) =>
 export const isValidName = (value: string) =>
   value == ' '
     ? false
-    : value == '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
+    : value == '' || /^[a-zA-Z]+((['â€™ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
     ? true
     : false;
 
@@ -2926,7 +2922,8 @@ export const calculateCashbackForItem = (
 };
 
 export const readableParam = (param: string) => {
-  const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;';
+  const a =
+    'Ã Ã¡Ã¢Ã¤Ã¦Ã£Ã¥ÄÄƒÄ…Ã§Ä‡ÄÄ‘ÄÃ¨Ã©ÃªÃ«Ä“Ä—Ä™Ä›ÄŸÇµá¸§Ã®Ã¯Ã­Ä«Ä¯Ã¬Å‚á¸¿Ã±Å„Ç¹ÅˆÃ´Ã¶Ã²Ã³Å“Ã¸ÅÃµÅ‘á¹•Å•Å™ÃŸÅ›Å¡ÅŸÈ™Å¥È›Ã»Ã¼Ã¹ÃºÅ«Ç˜Å¯Å±Å³áºƒáºÃ¿Ã½Å¾ÅºÅ¼Â·/_,:;';
   const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz------';
   const p = new RegExp(a.split('').join('|'), 'g');
 
@@ -3767,8 +3764,7 @@ export const convertDateToEpochFormat = (value: Date) => {
 
 export const getAsyncStorageValues = async () => {
   const token = await AsyncStorage.getItem('jwt');
-  let user = await AsyncStorage.getItem('currentPatient');
-  user = JSON.parse(user)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber;
+  const user = await AsyncStorage.getItem('currentPatient');
   return [token, user];
 };
 
@@ -3791,4 +3787,13 @@ export const getCirclePlanDetails = async (
     })
     .catch((err: Error) => {});
   return details;
+};
+
+export const formatUrl = (url: string, token: string, userMobileNumber: string): string => {
+  let uri = url;
+  const queryParamsDelimiterIndex = uri.indexOf('?');
+  if (queryParamsDelimiterIndex !== -1)
+    uri = uri.concat(`&utm_token=${token}&utm_mobile_number=${userMobileNumber}`);
+  else uri = uri.concat(`?utm_token=${token}&utm_mobile_number=${userMobileNumber}`);
+  return uri;
 };

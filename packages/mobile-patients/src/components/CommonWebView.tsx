@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, View, Platform, NavState, BackHandler } from 'react-native';
+import { SafeAreaView, View, NavState, BackHandler } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { WebView } from 'react-native-webview';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -16,6 +16,7 @@ import {
   getUserType,
   postCleverTapEvent,
   postWebEngageEvent,
+  formatUrl,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -41,8 +42,8 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   const isGoBack = props.navigation.getParam('isGoBack');
   const circleEventSource = props.navigation.getParam('circleEventSource');
   const [canGoBack, setCanGoBack] = useState<boolean>(false);
-  const [token, setToken] = useState<string | null>('')
-  const [userMobileNumber, setUserMobileNumber] = useState<string | null>('')
+  const [token, setToken] = useState<string | null>('');
+  const [userMobileNumber, setUserMobileNumber] = useState<string | null>('');
 
   let WebViewRef: any;
   const client = useApolloClient();
@@ -68,14 +69,16 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
     source == ('Pharma' || 'Product Detail' || 'Pharma Cart') &&
       postWebEngageEvent(WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED, CircleEventAttributes);
   };
-  
+
   useEffect(() => {
     const saveSessionValues = async () => {
-      const [loginToken, phoneNumber] = await getAsyncStorageValues()
-      setToken(loginToken)
-      setUserMobileNumber(phoneNumber)
-    }
-    saveSessionValues()
+      const [loginToken, phoneNumber] = await getAsyncStorageValues();
+      setToken(JSON.parse(loginToken));
+      setUserMobileNumber(
+        JSON.parse(phoneNumber)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber
+      );
+    };
+    saveSessionValues();
     if (circleEventSource) fireCircleLandingPageViewedEvent();
   }, []);
 
@@ -137,7 +140,8 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   };
 
   const renderWebView = () => {
-    const uri = `${props.navigation.getParam('url')}?utm_token=${token}&utm_mobile_number=${userMobileNumber}`
+    let uri = formatUrl(props?.navigation?.getParam('url'), token, userMobileNumber);
+
     return (
       <WebView
         ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
