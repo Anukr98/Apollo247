@@ -4,7 +4,6 @@ import {
   Text,
   StatusBar,
   StyleSheet,
-  Image,
   ScrollView,
   TouchableOpacity,
   Clipboard,
@@ -78,7 +77,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
   const renderReferShare = () => {
     return (
       <LinearGradientComponent
-        colors={[theme.colors.GREEN_GRADIENT_ONE, theme.colors.GREEN_GRADIENT_TWO]}
+        colors={[theme.colors.BLUE_GRADIENT_ONE, theme.colors.GREEN_GRADIENT_TWO]}
         style={styles.referShareMainContainer}
       >
         <View>
@@ -151,7 +150,6 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
               {replaceVariableInString(string.referAndEarn.youReceive, {
                 referShareAmount: referShareAmount ? referShareAmount : '',
               })}
-              ¯
             </Text>
           </View>
         </View>
@@ -273,16 +271,16 @@ const styles = StyleSheet.create({
   referSharetext: {
     fontSize: 28,
     fontWeight: '700',
-    color: theme.colors.LIGHT_BLUE,
+    color: theme.colors.WHITE,
   },
   referShareamount: {
     fontSize: 35,
     fontWeight: 'bold',
-    color: theme.colors.LIGHT_BLUE,
+    color: theme.colors.WHITE,
   },
   referShareotherDetails: {
     fontSize: 13,
-    color: theme.colors.LIGHT_BLUE,
+    color: theme.colors.WHITE,
     fontWeight: '600',
   },
   referSharebtnTextContainer: {
@@ -297,17 +295,17 @@ const styles = StyleSheet.create({
   },
   referSharereferViaHRLineLeft: {
     width: 50,
-    backgroundColor: theme.colors.LIGHT_BLUE,
+    backgroundColor: theme.colors.WHITE,
     height: 1,
     marginRight: 5,
   },
   referSharereferViaHRLineRight: {
     width: 50,
-    backgroundColor: theme.colors.LIGHT_BLUE,
+    backgroundColor: theme.colors.WHITE,
     height: 1,
     marginLeft: 5,
   },
-  referSharereferViaText: { color: theme.colors.LIGHT_BLUE },
+  referSharereferViaText: { color: theme.colors.WHITE },
   referSharebtnContainer: {
     width: 200,
     flexDirection: 'row',

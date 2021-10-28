@@ -196,7 +196,6 @@ const SignUp: React.FC<SignUpProps> = (props) => {
   const [oneApolloRegistrationCalled, setoneApolloRegistrationCalled] = useState<boolean>(false);
   const [whatsAppOptIn, setWhatsAppOptIn] = useState<boolean>(false);
   const isOneTimeUpdate = useRef<boolean>(false);
-  const [isReferralInstall, setReferralInstall] = useState<boolean>(false);
 
   useEffect(() => {
     const isValidReferralCode = /^[a-zA-Z]{4}[0-9]{4}$/.test(referral);
@@ -294,7 +293,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
 
   const postAppsFlyerEventAppInstallViaReferral = async () => {
     const referralData: any = await AsyncStorage.getItem('app_referral_data');
-    if (referralData) {
+    if (referralData !== null) {
       const { af_referrer_customer_id, campaign, rewardId, shortlink } = JSON.parse(referralData);
       const eventAttribute = {
         referrer_id: af_referrer_customer_id,
@@ -306,7 +305,9 @@ const SignUp: React.FC<SignUpProps> = (props) => {
       };
       postAppsFlyerEvent(AppsFlyerEventName.REGISTRATION_REFERRER, eventAttribute);
       AsyncStorage.removeItem('app_referral_data');
-      setReferralInstall(true);
+      handleOpenURLs(true);
+    } else {
+      handleOpenURLs(false);
     }
   };
 
@@ -611,14 +612,14 @@ const SignUp: React.FC<SignUpProps> = (props) => {
     } catch (error) {}
   };
 
-  const handleOpenURLs = async () => {
+  const handleOpenURLs = async (referrer: boolean) => {
     try {
       deferredDeepLinkRedirectionData(props.navigation, async () => {
         const event: any = await AsyncStorage.getItem('deeplink');
         const data = handleOpenURL(event);
         const { routeName, id, isCall, timeout, mediaSource } = data;
-        if (isReferralInstall === true) {
-          props.navigation.navigate('ConsultRoom', {
+        if (referrer === true) {
+          props.navigation.replace('ConsultRoom', {
             referralInitiate: true,
           });
         } else {
@@ -740,8 +741,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
                       AsyncStorage.setItem('gotIt', patient ? 'true' : 'false'),
                       onCleverTapUserLogin(data?.updatePatient?.patient),
                       createOneApolloUser(data?.updatePatient?.patient?.id!),
-                      postAppsFlyerEventAppInstallViaReferral(),
-                      handleOpenURLs())
+                      postAppsFlyerEventAppInstallViaReferral())
                     : null}
                   {error
                     ? (signOut(),

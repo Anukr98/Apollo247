@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StatusBar, StyleSheet, Image, ScrollView } from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import { View, Text, StatusBar, StyleSheet, TouchableOpacity } from 'react-native';
 import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -36,7 +35,7 @@ export const EarnedPoints: React.FC<EarnedPointsProps> = (props) => {
           <TouchableOpacity
             style={styles.earnPointreedemBtn}
             onPress={() => {
-              navigation.navigate('TabBar');
+              navigation.navigate('MEDICINES');
             }}
           >
             <Text style={styles.earnPointreedemBtnText}>{string.referAndEarn.reedeemPoints}</Text>
@@ -88,7 +87,7 @@ export const EarnedPoints: React.FC<EarnedPointsProps> = (props) => {
         <Header
           leftIcon="backArrow"
           title="Refer And Earn"
-          onPressLeftIcon={() => navigation.navigate('ConsultRoom')}
+          onPressLeftIcon={() => navigation.replace('ConsultRoom')}
           container={{
             borderColor: 'transparent',
           }}
@@ -114,6 +113,7 @@ const styles = StyleSheet.create({
     color: theme.colors.LIGHT_BLUE,
     fontSize: 13,
     fontWeight: '600',
+    width: 90,
   },
   earnPointWhyChooseUsimg_container: {
     height: 60,

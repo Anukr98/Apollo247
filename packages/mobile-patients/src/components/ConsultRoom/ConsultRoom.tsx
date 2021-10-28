@@ -2911,13 +2911,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const checkUserRegisterThroughReferral = () => {
-    if (!props.navigation.state.params?.previousRoute) {
-      return null;
-    } else if (props.navigation.state.params?.referralInitiate == true) {
-      setTimeout(() => {
+    setTimeout(() => {
+      if (props.navigation.state.params?.referralInitiate == true) {
         props.navigation.navigate('EarnedPoints');
-      }, 1000);
-    }
+      }
+    }, 1500);
   };
 
   const cleverTapEventForAddMemberClick = () => {
