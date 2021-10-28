@@ -32,7 +32,7 @@ import {
   CameraIcon,
   CrossPopup,
   WhiteCall,
-  BlueCross
+  BlueCross,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
@@ -1027,7 +1027,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           postMyOrdersClicked('Diagnostics', currentPatient);
           props.navigation.push(AppRoutes.YourOrdersTest, {
             isTest: true,
-            cityId: cityId
+            cityId: cityId,
           });
         }}
         container={{
@@ -2337,7 +2337,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
     props.navigation.push(AppRoutes.YourOrdersTest, {
       isTest: true,
-      cityId: cityId
+      cityId: cityId,
     });
   }
 
@@ -2845,12 +2845,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <CallToOrderView
         cartItems={cartItems}
-        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.HOME}
+        pageId={CALL_TO_ORDER_CTA_PAGE_ID.HOME}
         slideCallToOrder={slideCallToOrder}
         onPressSmallView={() => {
           setSlideCallToOrder(false);
         }}
-        cityId = {cityId}
+        cityId={cityId}
         onPressCross={() => {
           setSlideCallToOrder(true);
         }}
@@ -2915,8 +2915,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 keyboardShouldPersistTaps="always"
                 showsVerticalScrollIndicator={false}
                 nestedScrollEnabled={true}
-                onScroll={()=>{
-                  setSlideCallToOrder(true)
+                onScroll={() => {
+                  setSlideCallToOrder(true);
                 }}
               >
                 {renderSections()}
