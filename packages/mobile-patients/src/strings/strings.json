@@ -651,7 +651,12 @@
     "modifyHeader" : "MODIFY ORDER",
     "codDisableTextForCircle": "Cash on Delivery is unavailable with Circle membership in Cart",
     "deeplink":"deeplink",
-    "diagnosticSearchLocation": "Search for street name, pincode…"
+    "diagnosticSearchLocation": "Search for street name, pincode…",
+    "prescriptionCallBack": "Expect a call in the next 2 working hours from an Apollo agent to assist you in placing your order.",
+    "prescriptionError": "Sorry cannot submit precription, an error occured",
+    "prescriptionSuccess":"Prescription Successfully Uploaded",
+    "fromHealthRecord":"PRESCRIPTION FROM HEALTH RECORDS",
+    "addMorePrescription":"+ ADD MORE PRESCRIPTIONS"
   },
   "diagnosticCategoryTitle": {
     "category": "category",
