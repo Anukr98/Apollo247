@@ -414,6 +414,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         },
       })
       .then((_data) => {
+        console.log(_data, 'FjJFJJFJFJ');
         setLoading && setLoading(false);
         props.navigation.state.params!.DisplayId = _data.data.getSDLatestCompletedCaseSheet!.caseSheetDetails!.appointment!.displayId;
         setcaseSheetDetails(_data.data.getSDLatestCompletedCaseSheet!.caseSheetDetails!);

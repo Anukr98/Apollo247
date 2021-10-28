@@ -868,6 +868,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setVaccineLoacalStorageData();
     cleverTapEventForLoginDone();
     fetchUserAgent();
+    checkUserRegisterThroughReferral();
   }, []);
 
   const fetchUserAgent = () => {
@@ -2862,6 +2863,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
+  const checkUserRegisterThroughReferral = () => {
+    if (!props.navigation.state.params?.previousRoute) {
+      return null;
+    } else if (props.navigation.state.params?.referralInitiate == true) {
+      setTimeout(() => {
+        props.navigation.navigate('EarnedPoints');
+      }, 1000);
+    }
+  };
+
   const cleverTapEventForAddMemberClick = () => {
     let eventAttributes = {
       'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
@@ -3971,35 +3982,55 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return (
       <View
         style={{
-          backgroundColor: '#f89623',
+          backgroundColor: '#FAFEFF',
           paddingHorizontal: 20,
-          paddingVertical: 20,
+          paddingTop: 20,
+          marginHorizontal: 10,
+          borderWidth: 1,
+          borderColor: '#D4D4D4',
+          borderRadius: 5,
+          flexDirection: 'row',
         }}
       >
         <View
           style={{
-            width: '65%',
+            width: '45%',
+            height: 80,
+            justifyContent: 'flex-end',
+          }}
+        >
+          <Image
+            source={require('@aph/mobile-patients/src/images/referAndEarn/Group5447.png')}
+            resizeMode="cover"
+          />
+        </View>
+        <View
+          style={{
+            width: '55%',
+            alignItems: 'flex-end',
           }}
         >
           <Text
             style={{
-              fontSize: 28,
+              fontSize: 19,
               fontWeight: '700',
               color: '#02475B',
             }}
           >
-            Refer & Earn
+            Refer & Earn{' '}
+            <Text
+              style={{
+                fontSize: 19,
+                fontWeight: 'bold',
+                color: '#4E69FF',
+                fontStyle: 'italic',
+              }}
+            >
+              $100
+            </Text>
           </Text>
-          <Text
-            style={{
-              fontSize: 35,
-              fontWeight: '800',
-              color: '#ffffff',
-            }}
-          >
-            $100
-          </Text>
-          <View>
+
+          {/* <View>
             <Text
               style={{
                 fontSize: 13,
@@ -4018,29 +4049,30 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             >
               You get $100 on their first{' '}
             </Text>
-          </View>
+          </View> */}
           <View>
             <TouchableOpacity
               onPress={() => {
                 props.navigation.navigate('ShareReferLink');
               }}
               style={{
-                backgroundColor: '#194858',
-                width: 135,
-                height: 25,
+                backgroundColor: '#FCB716',
+                width: 80,
+                height: 35,
                 alignItems: 'center',
                 justifyContent: 'center',
-                marginTop: 20,
+                marginTop: 15,
+                borderRadius: 10,
               }}
             >
               <Text
                 style={{
-                  fontSize: 11,
+                  fontSize: 14,
                   color: '#ffffff',
                   fontWeight: '700',
                 }}
               >
-                REFER YOUR FRIEND
+                Earn Now
               </Text>
             </TouchableOpacity>
           </View>

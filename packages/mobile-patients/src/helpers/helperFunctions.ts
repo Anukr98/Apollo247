@@ -2175,6 +2175,7 @@ export const InitiateAppsFlyer = (
     (error) => { }
   );
   onInstallConversionDataCanceller = appsFlyer.onInstallConversionData((res) => {
+    console.log(res, 'On INstall Conversion')
     if (JSON.parse(res.data.is_first_launch || 'null') == true) {
       try {
         if (res.data.af_dp !== undefined) {
@@ -2182,6 +2183,17 @@ export const InitiateAppsFlyer = (
         }
         if (res.data.af_sub1 !== null) {
           AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
+        }
+
+        if (res.data.linkToUse !== null && res.data.linkToUse === 'ForReferrarInstall') {
+          const responseData = res.data
+          setAppReferralData({
+            af_channel: responseData.af_channel,
+            af_referrer_customer_id: responseData.af_referrer_customer_id,
+            campaign: responseData.campaign,
+            rewardId: responseData.rewardId,
+            shortlink: responseData.shortlink
+          })
         }
 
         setBugFenderLog('APPS_FLYER_DEEP_LINK', res.data.af_dp);
@@ -2246,6 +2258,16 @@ const removeNullFromObj = (obj: any) => {
     }
   }
   return obj
+}
+
+const setAppReferralData = (data: {
+  af_channel: string,
+  af_referrer_customer_id: string,
+  campaign: number | string,
+  rewardId: string,
+  shortlink: string
+}) => {
+  AsyncStorage.setItem('app_referral_data', JSON.stringify(data))
 }
 
 const getInstallResources = () => {

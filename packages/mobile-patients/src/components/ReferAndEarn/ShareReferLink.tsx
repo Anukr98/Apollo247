@@ -7,6 +7,8 @@ import {
   Image,
   ScrollView,
   TouchableOpacity,
+  Clipboard,
+  AlertIOS,
 } from 'react-native';
 import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
 import { Header } from '../ui/Header';
@@ -16,6 +18,7 @@ import { g, postAppsFlyerEvent, postCleverTapEvent } from '../../helpers/helperF
 import { CleverTapEventName } from '../../helpers/CleverTapEvents';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
+import { TextInput } from 'react-native-paper';
 
 export interface ShareReferLinkProps extends NavigationScreenProps {}
 
@@ -24,7 +27,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
 
   const onWhatsAppShare = () => {
-    generateReferrerLink().then((res: any) => {
+    generateReferrerLink((res: any) => {
       const shareOptions = {
         title: 'Referral Link',
         url: res,
@@ -33,38 +36,49 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
         showAppsToView: true,
         social: Share.Social.WHATSAPP,
       };
-      console.log(res);
-      // Share.shareSingle(shareOptions).catch((e) => console.log(e));
+      Share.shareSingle(shareOptions).catch((e) => console.log(e));
     });
   };
 
   const copyLinkToShare = () => {
-    // const eventAttributes = {
-    //   Referee_Id: '1234',
-    //   Referrer_ID: '1221',
-    //   Campaign_ID: '121',
-    //   Reward_ID: '11',
+    // const shareOptions = {
+    //   title: 'Referral Link',
+    //   url: referralLink,
+    //   message: 'Please install Apollo 247 using below link',
+    //   failOnCancel: false,
+    //   showAppsToView: true,
     // };
-    // postAppsFlyerEvent(AppsFlyerEventName.REGISTRATION_REFERRER, eventAttributes);
-    const shareOptions = {
-      title: 'Referral Link',
-      url: referralLink,
-      message: 'Please install Apollo 247 using below link',
-      failOnCancel: false,
-      showAppsToView: true,
-    };
-    Share.open(shareOptions);
+    // Share.open(shareOptions);
+    generateReferrerLink((res: any) => {
+      // const shareOptions = {
+      //   title: 'Referral Link',
+      //   url: res,
+      //   message: 'Please install Apollo 247 using below link',
+      //   failOnCancel: false,
+      //   showAppsToView: true,
+      //   social: Share.Social.WHATSAPP,
+      // };
+      // Clipboard.setString('Please install Apollo 247 using below link ' + res);
+      AlertIOS.alert('JGJGJJGJG');
+      // Share.shareSingle(shareOptions).catch((e) => console.log(e));
+    });
   };
 
-  const generateReferrerLink = () => {
+  const generateReferrerLink = (success: (data: any) => void) => {
+    appsFlyer.setAppInviteOneLinkID('775G');
     appsFlyer.generateInviteLink(
       {
         channel: 'gmail',
         campaign: '1',
         customerID: g(currentPatient, 'id'),
+        sub2: 'AppReferral',
+        userParams: {
+          rewardId: '1',
+          linkToUse: 'ForReferrarInstall',
+        },
       },
       (link) => {
-        return link;
+        success(link);
       },
       (err) => {}
     );
@@ -165,8 +179,13 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
             >
               <TouchableOpacity onPress={() => onWhatsAppShare()}>
                 <Image
-                  source={require('@aph/mobile-patients/src/images/referAndEarn/whatsapp-icon-seeklogo.webp')}
-                  style={styles.shareImage}
+                  source={{
+                    uri: 'https://newassets.apollo247.com/images/ReferrerImages/MaskGroup.png',
+                  }}
+                  style={{
+                    width: 60,
+                    height: 60,
+                  }}
                   resizeMode="cover"
                 />
               </TouchableOpacity>
@@ -177,7 +196,10 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
               >
                 <Image
                   source={require('@aph/mobile-patients/src/images/referAndEarn/shareLink.webp')}
-                  style={styles.shareImage}
+                  style={{
+                    width: 60,
+                    height: 60,
+                  }}
                   resizeMode="cover"
                 />
               </TouchableOpacity>
@@ -373,7 +395,10 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
         </Text>
         <Image
           source={require('@aph/mobile-patients/src/images/referAndEarn/arrow.webp')}
-          style={styles.shareImage}
+          style={{
+            width: 12,
+            height: 17,
+          }}
           resizeMode="cover"
         />
       </TouchableOpacity>
@@ -462,5 +487,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f0f1ec',
   },
-  shareImage: {},
+  shareImage: {
+    width: 100,
+    height: 100,
+  },
 });

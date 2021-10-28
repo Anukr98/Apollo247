@@ -14,7 +14,7 @@ export const EarnedPoints: React.FC<EarnedPointsProps> = (props) => {
         <Header
           leftIcon="backArrow"
           title="Refer And Earn"
-          onPressLeftIcon={() => props.navigation.goBack()}
+          onPressLeftIcon={() => props.navigation.navigate('ConsultRoom')}
           container={{
             borderColor: 'transparent',
           }}

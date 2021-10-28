@@ -1,6 +1,14 @@
-import React from 'react';
-import { View, Text, StatusBar, StyleSheet, Image, Dimensions, FlatList } from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StatusBar,
+  StyleSheet,
+  Image,
+  Dimensions,
+  TouchableOpacity,
+  FlatList,
+} from 'react-native';
 import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
 import { Header } from '../ui/Header';
 import { createMaterialTopTabNavigator, createAppContainer } from 'react-navigation';
@@ -8,6 +16,8 @@ import { createMaterialTopTabNavigator, createAppContainer } from 'react-navigat
 export interface YourRewardsScreenProps extends NavigationScreenProps {}
 
 export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
+  const [selectedTab, selectTabBar] = useState(1);
+
   const ClaimedCard = (item: any) => {
     return (
       <View
@@ -331,37 +341,60 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
     );
   };
 
-  const TopTabBar = createAppContainer(
-    createMaterialTopTabNavigator(
-      {
-        Claimed: ClaimedSection,
-        Pending: PendingSection,
-      },
-      {
-        initialRouteName: 'Claimed',
-        tabBarOptions: {
-          upperCaseLabel: false,
-          style: {
-            backgroundColor: '#fff',
-          },
-          labelStyle: {
-            color: '#000',
-            fontWeight: '600',
-            fontSize: 15,
-          },
-          activeBackgroundColor: '#000',
-          indicatorStyle: {
-            backgroundColor: '#00B38E',
-            alignContent: 'center',
-            height: 5,
-            width: 150,
-            marginHorizontal: 20,
-          },
-        },
-      }
-    )
-  );
-
+  const CustomTabBarHeader = () => {
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          borderBottomColor: '#bababa',
+          borderTopColor: '#bababa',
+          borderBottomWidth: 1,
+          borderTopWidth: 1,
+          paddingTop: 18,
+          backgroundColor: '#fff',
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => selectTabBar(1)}
+          style={{
+            width: Dimensions.get('screen').width / 2,
+            alignItems: 'center',
+          }}
+        >
+          <Text
+            style={[
+              {
+                fontSize: 17,
+              },
+              selectedTab === 1 ? styles.selectedTabText : styles.unSelectedTabText,
+            ]}
+          >
+            Claimed
+          </Text>
+          <View style={selectedTab === 1 ? styles.horizontalBackground : {}} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => selectTabBar(2)}
+          style={{
+            width: Dimensions.get('screen').width / 2,
+            alignItems: 'center',
+          }}
+        >
+          <Text
+            style={[
+              {
+                fontSize: 17,
+              },
+              selectedTab === 2 ? styles.selectedTabText : styles.unSelectedTabText,
+            ]}
+          >
+            Pending
+          </Text>
+          <View style={selectedTab === 2 ? styles.horizontalBackground : {}} />
+        </TouchableOpacity>
+      </View>
+    );
+  };
   const renderTotalHCContainer = () => {
     return (
       <View
@@ -416,7 +449,8 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
           }}
         />
         {renderTotalHCContainer()}
-        <TopTabBar />
+        <CustomTabBarHeader />
+        {selectedTab === 1 ? ClaimedSection() : PendingSection()}
       </SafeAreaView>
     </View>
   );
@@ -427,4 +461,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f1ec',
   },
   shareImage: {},
+  selectedTabText: {
+    opacity: 1,
+  },
+  unSelectedTabText: {
+    opacity: 0.6,
+  },
+  horizontalBackground: {
+    marginTop: 15,
+    width: '80%',
+    backgroundColor: '#00B38E',
+    height: 3,
+  },
 });

@@ -177,6 +177,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
   const [showReferralCode, setShowReferralCode] = useState<boolean>(false);
   const [oneApolloRegistrationCalled, setoneApolloRegistrationCalled] = useState<boolean>(false);
   const isOneTimeUpdate = useRef<boolean>(false);
+  const [isReferralInstall, setReferralInstall] = useState<boolean>(false);
 
   useEffect(() => {
     const isValidReferralCode = /^[a-zA-Z]{4}[0-9]{4}$/.test(referral);
@@ -271,6 +272,23 @@ const SignUp: React.FC<SignUpProps> = (props) => {
       }
     }
   }
+
+  const postAppsFlyerEventAppInstallViaReferral = async () => {
+    const referralData: any = await AsyncStorage.getItem('app_referral_data');
+    if (referralData) {
+      const { af_referrer_customer_id, campaign, rewardId, shortlink } = JSON.parse(referralData);
+      const eventAttribute = {
+        ReferrerId: af_referrer_customer_id,
+        RefereeId: currentPatient ? currentPatient.id : '',
+        CampaignID: campaign,
+        RewardId: rewardId,
+        Shortlink: shortlink,
+      };
+      postAppsFlyerEvent(AppsFlyerEventName.REGISTRATION_REFERRER, eventAttribute);
+      AsyncStorage.removeItem('app_referral_data');
+      setReferralInstall(true);
+    }
+  };
 
   const getDeviceCountAPICall = async () => {
     const uniqueId = await DeviceInfo.getUniqueId();
@@ -564,15 +582,21 @@ const SignUp: React.FC<SignUpProps> = (props) => {
         const event: any = await AsyncStorage.getItem('deeplink');
         const data = handleOpenURL(event);
         const { routeName, id, isCall, timeout, mediaSource } = data;
-        pushTheView(
-          props.navigation,
-          routeName,
-          id ? id : undefined,
-          isCall,
-          undefined,
-          undefined,
-          mediaSource
-        );
+        if (isReferralInstall === true) {
+          props.navigation.navigate('ConsultRoom', {
+            referralInitiate: true,
+          });
+        } else {
+          pushTheView(
+            props.navigation,
+            routeName,
+            id ? id : undefined,
+            isCall,
+            undefined,
+            undefined,
+            mediaSource
+          );
+        }
       });
     } catch (error) {}
   };
@@ -681,6 +705,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
                       AsyncStorage.setItem('gotIt', patient ? 'true' : 'false'),
                       onCleverTapUserLogin(data?.updatePatient?.patient),
                       createOneApolloUser(data?.updatePatient?.patient?.id!),
+                      postAppsFlyerEventAppInstallViaReferral(),
                       handleOpenURLs())
                     : null}
                   {error
