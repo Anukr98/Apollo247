@@ -104,7 +104,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
             </View>
             <View style={styles.referSharebtnContainer}>
               <TouchableOpacity onPress={() => onWhatsAppShare()}>
-                <WhatsAppIconReferral style={styles.referShareimage} />
+                <WhatsAppIconReferral style={styles.whatsIconImage} />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => {
@@ -318,6 +318,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
   },
+  whatsIconImage: {},
   checkRewardicon: {
     width: 12,
     height: 17,

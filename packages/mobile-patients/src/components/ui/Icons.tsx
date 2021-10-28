@@ -2422,9 +2422,7 @@ export const ReferralBannerIcon: React.FC<IconProps> = (props) => (
 export const WhatsAppIconReferral: React.FC<IconProps> = (props) => (
   <Image
     style={[props.style]}
-    source={{
-      uri: 'https://newassets.apollo247.com/images/ReferrerImages/whatsApp/whatsAppIcon.png',
-    }}
+    source={require('@aph/mobile-patients/src/images/referAndEarn/whatsApp/whatsAppIcon.webp')}
     {...props}
   />
 );
