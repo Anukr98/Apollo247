@@ -9,7 +9,6 @@ import {
   SubscriptionData,
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { WebView } from 'react-native-webview';
 import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import { dateFormatterDDMM } from '@aph/mobile-patients/src/utils/dateUtil';
@@ -83,7 +82,6 @@ import { dateFormatter } from '@aph/mobile-patients/src/utils/dateUtil';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import { CircleMembershipActivation } from '@aph/mobile-patients/src/components/ui/CircleMembershipActivation';
@@ -104,25 +102,16 @@ import {
   GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
   GET_ONEAPOLLO_USER,
   GET_PLAN_DETAILS_BY_PLAN_ID,
-  GET_PAST_CONSULTS_PRESCRIPTIONS,
-  UPDATE_PATIENT_MEDICAL_PARAMETERS,
-  GET_PRISM_AUTH_TOKEN,
   GET_DOCTOR_LIST,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  getPrismAuthTokenVariables,
-  getPrismAuthToken,
-} from '@aph/mobile-patients/src/graphql/types/getPrismAuthToken';
 import {
   searchPHRApiWithAuthToken,
   getDiagnosticsSearchResults,
   MedFilter,
   MedicineProduct,
-  MedicineProductsResponse,
   searchMedicineApi,
   searchProceduresAndSymptoms,
   ProceduresAndSymptomsParams,
-  ProceduresAndSymptomsResult,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
@@ -175,7 +164,6 @@ import {
   getAge,
   removeObjectNullUndefinedProperties,
   isValidSearch,
-  getPhrHighlightText,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -258,7 +246,6 @@ import {
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import { getUniqueId } from 'react-native-device-info';
-import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
 import _ from 'lodash';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 
@@ -962,7 +949,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const [searchText, setSearchText] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState({});
-  const [prismAuthToken, setPrismAuthToken] = useState<string>('');
   const testSearchResults = useRef<
     searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
   >([]);
