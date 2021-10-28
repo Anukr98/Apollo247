@@ -3759,3 +3759,12 @@ export const getAsyncStorageValues = async () => {
   user = (JSON.parse(user)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber);
   return [token, user];
 }
+
+export const formatUrl = (url: string, token: string, userMobileNumber: string): string => {
+  let uri = url
+  const queryParamsDelimiterIndex = uri.indexOf('?');
+    if (queryParamsDelimiterIndex !== -1)
+      uri = uri.concat(`&utm_token=${token}&utm_mobile_number=${userMobileNumber}`);
+    else uri = uri.concat(`?utm_token=${token}&utm_mobile_number=${userMobileNumber}`);
+  return uri
+}

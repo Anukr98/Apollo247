@@ -1,6 +1,6 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { getAsyncStorageValues, permissionHandler } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { formatUrl, getAsyncStorageValues, permissionHandler } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
@@ -76,12 +76,7 @@ export const CovidScan: React.FC<CovidScanProps> = (props) => {
   };
 
   const renderWebView = () => {
-    let uri = `${props.navigation.getParam('covidUrl')}`
-    const queryParamsDelimiterIndex = uri.indexOf('?')
-    if(queryParamsDelimiterIndex !== -1)
-      uri = uri.concat(`&utm_token=${token}&utm_mobile_number=${userMobileNumber}`)
-    else
-      uri = uri.concat(`?utm_token=${token}&utm_mobile_number=${userMobileNumber}`)
+    let uri = formatUrl(`${props.navigation.getParam('covidUrl')}`, token, userMobileNumber)
       
     return (
       <WebView

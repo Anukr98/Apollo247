@@ -135,6 +135,7 @@ import {
   removeObjectNullUndefinedProperties,
   fileToBase64,
   getAsyncStorageValues,
+  formatUrl,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -3128,12 +3129,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const openWebView = (url: any) => {
     Keyboard.dismiss();
-    let uri = `${url}`
-    const queryParamsDelimiterIndex = uri.indexOf('?')
-    if(queryParamsDelimiterIndex !== -1)
-      uri = uri.concat(`&utm_token=${token}&utm_mobile_number=${userMobileNumber}`)
-    else
-      uri = uri.concat(`?utm_token=${token}&utm_mobile_number=${userMobileNumber}`)
+    let uri = formatUrl(`${url}`, token, userMobileNumber)
       
     return (
       <View style={styles.viewWebStyles}>

@@ -195,6 +195,7 @@ import {
   postAppointmentCleverTapEvents,
   fileToBase64,
   getAsyncStorageValues,
+  formatUrl,
 } from '../../helpers/helperFunctions';
 import { mimeType } from '../../helpers/mimeType';
 import { FeedbackPopup } from '../FeedbackPopup';
@@ -7518,12 +7519,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
   const showWeimageOpen = () => {
-    let uri = `${url}`
-    const queryParamsDelimiterIndex = uri.indexOf('?')
-    if(queryParamsDelimiterIndex !== -1)
-      uri = uri.concat(`&utm_token=${token}&utm_mobile_number=${userMobileNumber}`)
-    else
-      uri = uri.concat(`?utm_token=${token}&utm_mobile_number=${userMobileNumber}`)
+    let uri = formatUrl(`${url}`, loginToken, userMobileNumber)
       
     return (
       <View
