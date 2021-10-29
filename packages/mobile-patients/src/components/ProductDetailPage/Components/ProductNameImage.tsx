@@ -164,12 +164,7 @@ export const ProductNameImage: React.FC<ProductNameImageProps> = (props) => {
 
   return (
     <View style={styles.cardStyle}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <View style={{ width: '70%' }}>
-          <Text style={styles.name}>{name}</Text>
-        </View>
-        {renderIsInStock()}
-      </View>
+      <Text style={styles.name}>{name}</Text>
       {!!merchandising && renderMerchandisingTag()}
       {!!images.length && renderImageCarousel()}
       {isPrescriptionRequired && renderPrescriptionRequired()}

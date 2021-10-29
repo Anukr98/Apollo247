@@ -97,6 +97,33 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     );
   };
 
+  const renderIsInStock = () => {
+    return showDeliverySpinner ? (
+      <ActivityIndicator
+        style={{ alignItems: 'flex-end', marginRight: 20 }}
+        animating={true}
+        size="small"
+        color="green"
+      />
+    ) : isBanned ? (
+      <View style={[styles.inStockContainer, { backgroundColor: '#890000' }]}>
+        <Text style={styles.stockText}>Banned for Sale</Text>
+      </View>
+    ) : !isSellOnline ? (
+      <View style={[styles.inStockContainer, { backgroundColor: '#890000' }]}>
+        <Text style={styles.stockText}>NOT AVAILABLE FOR ONLINE SALE</Text>
+      </View>
+    ) : isInStock ? (
+      <View style={styles.inStockContainer}>
+        <Text style={styles.stockText}>In Stock</Text>
+      </View>
+    ) : (
+      <View style={[styles.inStockContainer, { backgroundColor: '#890000' }]}>
+        <Text style={styles.stockText}>Out Of Stock</Text>
+      </View>
+    );
+  };
+
   const renderDeliverTo = () => {
     let deliveryAddress = addresses.find((item) => item.id == deliveryAddressId);
     const location = asyncPincode?.pincode
@@ -221,6 +248,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
 
   return (
     <View style={styles.container}>
+      <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>{renderIsInStock()}</View>
       <View style={styles.cardStyle}>{renderProductPrice()}</View>
       {!!circleSubscriptionId && !!cashback ? renderCareCashback() : rendergetCircleMembership()}
       {showMultiVariantOption && renderMultiVariantOptions()}
@@ -296,4 +324,12 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('R', 12, '#02475B', 1, 22),
     fontWeight: '500',
   },
+  inStockContainer: {
+    paddingHorizontal: 5,
+    paddingVertical: 3,
+    backgroundColor: '#00B38E',
+    borderRadius: 5,
+    marginBottom: 5,
+  },
+  stockText: theme.viewStyles.text('M', 13, '#FFFFFF', 1, 18),
 });
