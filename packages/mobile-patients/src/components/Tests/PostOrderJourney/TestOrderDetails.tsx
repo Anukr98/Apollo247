@@ -67,6 +67,7 @@ import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
+  CALL_TO_ORDER_CTA_PAGE_ID,
   DIAGNOSTIC_ORDER_STATUS,
   FEEDBACKTYPE,
   MedicalRecordType,
@@ -103,6 +104,8 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetailsByDisplayID';
 
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 const DROP_DOWN_ARRAY_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
@@ -149,9 +152,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [scrollYValue, setScrollYValue] = useState(0);
   const [slotDuration, setSlotDuration] = useState(0);
   const [loading1, setLoading] = useState<boolean>(true);
+  const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
   const [orderLevelStatus, setOrderLevelStatus] = useState([] as any);
   const [showInclusionStatus, setShowInclusionStatus] = useState<boolean>(false);
   const [showError, setError] = useState<boolean>(false);
+  const [showOrderDetailsError, setShowErrorDetailsError] = useState<boolean>(false);
   const [dropDownItemListIndex, setDropDownItemListIndex] = useState([] as any);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
 
@@ -161,7 +166,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: setY, animated: true });
   };
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
-
+  const {
+    diagnosticServiceabilityData,
+  } = useAppCommonData();
   //for showing the order level status.
   const fetchOrderLevelStatus = (orderId: string) =>
     client.query<getHCOrderFormattedTrackingHistory, getHCOrderFormattedTrackingHistoryVariables>({
@@ -232,7 +239,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     try {
       let response = await fetchOrderLevelStatus(orderId);
       if (!!response && response?.data && !response?.errors) {
-        let getOrderLevelStatus = g(response, 'data', 'getHCOrderFormattedTrackingHistory');
+        let getOrderLevelStatus = response?.data?.getHCOrderFormattedTrackingHistory;
         setOrderLevelStatus(getOrderLevelStatus);
         getOrderLevelStatus?.statusHistory?.length == 0 && setError(true);
         setError(false);
@@ -257,16 +264,16 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             AppConfig.Configuration.DEFAULT_PHELBO_ETA
         );
         setOrderDetails(getOrderDetails);
-        setError(false);
+        setShowErrorDetailsError(false);
       } else {
         setOrderDetails([]);
-        setError(true);
+        setShowErrorDetailsError(true);
       }
       setLoading?.(false);
     } catch (error) {
       setLoading?.(false);
       setOrderDetails([]);
-      setError(true);
+      setShowErrorDetailsError(true);
       CommonBugFender('getDiagnosticOrderDetails_TestOrderDetails', error);
     }
   }
@@ -1410,21 +1417,29 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     );
   };
 
+  const renderErrorCard = () => {
+    return (
+      <Card
+        cardContainer={[styles.noDataCard]}
+        heading={string.common.uhOh}
+        description={string.diagnostics.unableToFetchStatus}
+        descriptionTextStyle={{ fontSize: 14 }}
+        headingTextStyle={{ fontSize: 14 }}
+      />
+    );
+  };
+
   const renderError = () => {
-    if (
-      refundStatusArr?.length > 0 && showError
-        ? orderStatusList?.length == 0
-        : showError && _.isEmpty(orderLevelStatus)
-    ) {
-      return (
-        <Card
-          cardContainer={[styles.noDataCard]}
-          heading={string.common.uhOh}
-          description={string.diagnostics.unableToFetchStatus}
-          descriptionTextStyle={{ fontSize: 14 }}
-          headingTextStyle={{ fontSize: 14 }}
-        />
-      );
+    if (selectedTab === string.orders.trackOrder) {
+      if (
+        refundStatusArr?.length > 0 && showError
+          ? orderStatusList?.length == 0
+          : showError && _.isEmpty(orderLevelStatus)
+      ) {
+        return renderErrorCard();
+      }
+    } else {
+      return showOrderDetailsError && renderErrorCard();
     }
   };
 
@@ -1450,6 +1465,23 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       >
         <More />
       </MaterialMenu>
+    );
+  };
+
+  const renderCallToOrder = () => {
+    return (
+      <CallToOrderView
+        cityId={Number(diagnosticServiceabilityData?.cityId)}
+        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY}
+        customMargin={80}
+        slideCallToOrder={slideCallToOrder}
+        onPressSmallView={() => {
+          setSlideCallToOrder(false);
+        }}
+        onPressCross={() => {
+          setSlideCallToOrder(true);
+        }}
+      />
     );
   };
 
@@ -1481,6 +1513,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
           {renderError()}
         </ScrollView>
+        {renderCallToOrder()}
         {selectedTab == string.orders.trackOrder &&
         orderDetails?.attributesObj?.reportTATMessage &&
         !DIAGNOSTIC_FAILURE_STATUS_ARRAY?.includes(selectedOrder?.orderStatus) &&

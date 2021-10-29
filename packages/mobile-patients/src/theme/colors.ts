@@ -62,6 +62,7 @@ const Common = {
   DEFAULT_BACKGROUND_COLOR: '#f0f1ec',
   INPUT_CURSOR_COLOR: app_green,
   APP_GREEN: app_green,
+  DARK_BLUE: '#346CD9',
   WHITE: white,
   HEX_WHITE: hexWhite,
   SHERPA_BLUE: APP_Sherpa_Blue,
@@ -131,7 +132,9 @@ const Common = {
   DEEP_RED: deepRed,
   ORANGE: "#FF774B",
   LIGHT_ORANGE_YELLOW: "#FCA317",
-  GREEN_BACKGROUND: "#F5FFFD"
+  GREEN_BACKGROUND: "#F5FFFD",
+  BGK_GRAY : '#f9f9f9',
+  TEAL_BLUE: '#3F7281'
 };
 
 const Header = {

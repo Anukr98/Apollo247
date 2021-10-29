@@ -12,11 +12,13 @@ export interface getConfigurableReportTAT_getConfigurableReportTAT_itemLevelRepo
   itemId: number | null;
   reportTATMessage: string | null;
   reportTATInUTC: any | null;
+  preOrderReportTATMessage: string | null;
 }
 
 export interface getConfigurableReportTAT_getConfigurableReportTAT {
   __typename: "getConfigurableReportTATResult";
   maxReportTAT: any;
+  preOrderReportTATMessage: string | null;
   reportTATMessage: string | null;
   itemLevelReportTATs: (getConfigurableReportTAT_getConfigurableReportTAT_itemLevelReportTATs | null)[] | null;
 }

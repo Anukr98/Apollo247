@@ -347,6 +347,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       AsyncStorage.removeItem('hasAgreedVaccineTnC');
       AsyncStorage.removeItem('circleSubscriptionId');
       AsyncStorage.removeItem('diagnosticUserType');
+      AsyncStorage.removeItem('mobileNumber_CM_Result'); //removing sdk cached api result
       clearCartInfo && clearCartInfo();
       clearDiagnoticCartInfo && clearDiagnoticCartInfo();
       setShowMultiPatientMsg?.(true);

@@ -622,7 +622,7 @@
     "hcSampleSubText": "Certified Apollo agent visits your home for sample collection at selected slot time",
     "fastReport": "Fast & Accurate Reports",
     "fastReportSubText": "Get reports in 12 to 24 hours. View or download on app anytime",
-    "orderSuccessPhaleboText": "*The Apollo agent will call you prior to starting his journey to confirm your availability",
+    "orderSuccessPhaleboText": "*Sample Collection Executive may call you prior to starting his journey to confirm your availability",
     "invoiceTimelineText": "Invoice will be available to download after the sample is submitted in the lab",
     "unableToFetchStatus": "Something went wrong. We are unable to fetch status",
     "noSlotAvailable": "Sorry! There are no slots available on {{date}}. Please choose another date.",
@@ -672,7 +672,7 @@
     "patientSwitchError": "Sorry, we couldn’t change name due to an error. Please try again",
     "test":"Test+ included",
     "tests":"Tests+ included",
-    "alsoKnownAs": "Also Known as:",
+    "alsoKnownAs": "Also Known as",
     "addToCart": "ADD TO CART",
     "removeFromCart": "REMOVE",
     "alreadyAdded":"ALREADY ADDED",
@@ -681,7 +681,13 @@
     "discardAllPatients": "Your cart has been updated, with the selected patient",
     "modifyHeader" : "MODIFY ORDER",
     "codDisableTextForCircle": "Cash on Delivery is unavailable with Circle membership in Cart",
-    "deeplink":"deeplink"
+    "deeplink":"deeplink",
+    "prescriptionCallBack": "Expect a call in the next 2 working hours from an Apollo agent to assist you in placing your order.",
+    "prescriptionError": "Sorry cannot submit precription, an error occured",
+    "prescriptionSuccess":"Prescription Successfully Uploaded",
+    "fromHealthRecord":"PRESCRIPTION FROM HEALTH RECORDS",
+    "addMorePrescription":"+ ADD MORE PRESCRIPTIONS",
+    "diagnosticSearchLocation": "Search for street name, pincode…"
   },
   "diagnosticCategoryTitle": {
     "category": "category",
@@ -773,6 +779,9 @@
     "download": "Download Report PDF",
     "share": "Share on Whatsapp",
     "copy": "Copy Link to PDF"
+  },
+  "CallToOrder": {
+    "callToOrderText": "Call to Order"
   },
   "health_records_home": {
     "description": "Find all your health record(s) & prescription(s) in one place.",

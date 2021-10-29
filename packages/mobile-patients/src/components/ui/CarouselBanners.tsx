@@ -529,6 +529,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       circlePlanValidity={planValidity.current || props.circlePlanValidity}
       from={from}
       source={source}
+      circleEventSource={'Landing Home Page banners'}
     />
   );
 

@@ -53,6 +53,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
+  CALL_TO_ORDER_CTA_PAGE_ID,
   DEVICETYPE,
   diagnosticLineItem,
   DiagnosticLineItem,
@@ -138,7 +139,11 @@ import { CirclePlansListOverlay } from '@aph/mobile-patients/src/components/Test
 import { debounce } from 'lodash';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { Decimal } from 'decimal.js';
-import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const screenWidth = Dimensions.get('window').width;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
@@ -229,7 +234,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setCircleSubscriptionId,
     setCirclePlanSelected,
     setIsCircleSubscription,
+    circlePlanValidity,
   } = useShoppingCart();
+
+  const { diagnosticServiceabilityData } = useAppCommonData();
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { setauthToken } = useAppCommonData();
@@ -245,6 +253,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const selectedTimeSlot = props.navigation.getParam('selectedTimeSlot');
   const showPaidPopUp = props.navigation.getParam('showPaidPopUp');
   const selectedAddr = props.navigation.getParam('selectedAddress');
+  const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
   const reportGenDetails = props.navigation.getParam('reportGenDetails');
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   var slotBookedArray = ['slot', 'already', 'booked', 'select a slot'];
@@ -311,7 +320,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    const itemIds = isModifyFlow ? cartItemsWithId.concat(modifiedOrderItemIds) : cartItemsWithId;
+    const getAllItemIds = isCartEmpty
+      ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
+      ?.flat();
+    const uniqueItemIDS = [...new Set(getAllItemIds?.map((item) => Number(item?.id)))];
+    const itemIds = isModifyFlow ? cartItemsWithId.concat(modifiedOrderItemIds) : uniqueItemIDS;
     populateCartMapping();
     fetchOverallReportTat(itemIds);
     //if not a circle member
@@ -1117,13 +1130,17 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setIsCircleAddedToCart?.(!isCircleAddedToCart);
     setIsCirclePlanRemoved?.(!isCirclePlanRemoved);
     const circleData = circlePlanSelected;
-    const cleverTapEventAttributes = {
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE] = {
       navigation_source: 'Cart(Diagnostic)',
-      circle_end_date: getCircleNoSubscriptionText(),
-      circle_start_date: getCircleNoSubscriptionText(),
-      circle_planid: circleData?.subPlanId,
+      circle_end_date: circlePlanValidity?.endDate
+        ? circlePlanValidity?.endDate
+        : getCircleNoSubscriptionText(),
+      circle_start_date: circlePlanValidity?.startDate
+        ? circlePlanValidity?.startDate
+        : getCircleNoSubscriptionText(),
+      plan_id: circleData?.subPlanId,
       customer_id: currentPatient?.id,
-      duration_in_month: circleData?.durationInMonth,
+      duration_in_months: circleData?.durationInMonth,
       user_type: getUserType(allCurrentPatients),
       price: circleData?.currentSellingPrice,
     };
@@ -2412,6 +2429,23 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         donePages={[SCREEN_NAMES.PATIENT, SCREEN_NAMES.CART, SCREEN_NAMES.SCHEDULE]}
         navigation={props.navigation}
         isModify={isModifyFlow}
+      />
+    );
+  };
+
+  const renderCallToOrder = () => {
+    return (
+      <CallToOrderView
+        cityId={Number(diagnosticServiceabilityData?.cityId)}
+        pageId={CALL_TO_ORDER_CTA_PAGE_ID.TESTCART}
+        customMargin={220}
+        slideCallToOrder={slideCallToOrder}
+        onPressSmallView={() => {
+          setSlideCallToOrder(false);
+        }}
+        onPressCross={() => {
+          setSlideCallToOrder(true);
+        }}
       />
     );
   };
