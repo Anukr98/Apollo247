@@ -152,7 +152,6 @@ import { AddVaccinationRecord } from '@aph/mobile-patients/src/components/Health
 import { CowinCertificateOTPScreen } from '@aph/mobile-patients/src/components/HealthRecords/CowinCertificateOTPScreen';
 import { CowinCertificateGetOTP } from '@aph/mobile-patients/src/components/HealthRecords/CowinCertificateGetOTP';
 import { CowinProfileSelection } from '@aph/mobile-patients/src/components/HealthRecords/CowinProfileSelection';
-import { CowinCertificateViewer } from '@aph/mobile-patients/src/components/HealthRecords/CowinCertificateViewer';
 import { PostShareAppointmentSelectorScreen } from '@aph/mobile-patients/src/components/ConsultRoom/PostShareAppointmentSelectorScreen';
 import { PrescriptionCamera } from '@aph/mobile-patients/src/components/Tests/PrescriptionCamera';
 import { SubmittedPrescription } from '@aph/mobile-patients/src/components/Tests/SubmittedPrescription';
@@ -160,6 +159,7 @@ import { SpecialOffersScreen } from '@aph/mobile-patients/src/components/Special
 import { PaymentConfirmation } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentConfirmaiton';
 import { ConsultPaymentScreen } from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/ConsultPaymentScreen';
 import { CouponScreen } from '@aph/mobile-patients/src/components/Tests/TestCartPage/CouponScreen';
+import { TestPdfRender } from '@aph/mobile-patients/src/components/Tests/TestPdfRender';
 
 export enum AppRoutes {
   Login = 'Login',
@@ -307,6 +307,7 @@ export enum AppRoutes {
   PaymentConfirmation = 'PaymentConfirmation',
   ConsultPaymentScreen = 'ConsultPaymentScreen',
   CouponScreen = 'CouponScreen',
+  TestPdfRender = 'TestPdfRender',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -781,6 +782,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.CouponScreen]: {
     screen: CouponScreen,
+  },
+  [AppRoutes.TestPdfRender]: {
+    screen: TestPdfRender,
   },
 };
 

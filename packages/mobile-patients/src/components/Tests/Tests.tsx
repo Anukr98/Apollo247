@@ -2284,8 +2284,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
         currentPatient
       );
       if (!!item?.labReportURL && item?.labReportURL != '') {
-        onPressViewReport();
         setClickedItem(item);
+        props.navigation.navigate(AppRoutes.TestPdfRender, {
+          uri: item?.labReportURL,
+          order: item,
+          isReport: true
+        });
       } else {
         showAphAlert?.({
           title: string.common.uhOh,

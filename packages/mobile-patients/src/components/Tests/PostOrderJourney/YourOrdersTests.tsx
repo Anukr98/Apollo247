@@ -1724,7 +1724,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   function _onPressViewReportAction(order: orderList) {
     if (!!order?.labReportURL && order?.labReportURL != '') {
       setActiveOrder(order);
-      _onPressViewReport(order);
+      props.navigation.navigate(AppRoutes.TestPdfRender, {
+        uri: order?.labReportURL,
+        order: order,
+        isReport: true
+      });
     } else if (!!order?.visitNo && order?.visitNo != '') {
       //directly open the phr section
       fetchTestReportResult(order);
