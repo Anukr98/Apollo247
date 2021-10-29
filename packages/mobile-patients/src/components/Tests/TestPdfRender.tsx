@@ -1,26 +1,15 @@
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   orderList,
-  TestBreadcrumbLink,
-  useDiagnosticsCart,
 } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { Card } from '@aph/mobile-patients/src/components/ui/Card';
-import { GET_WIDGETS_PRICING_BY_ITEMID_CITYID } from '@aph/mobile-patients/src/graphql/profiles';
 
 import {
   downloadDiagnosticReport,
-  g,
   getPatientNameById,
-  nameFormater,
   removeWhiteSpaces,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
-import React, { useEffect, useState } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
+import React, { useState } from 'react';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import {
   Dimensions,
@@ -28,35 +17,19 @@ import {
   StyleSheet,
   Text,
   View,
-  FlatList,
   TouchableOpacity,
-  Image as ImageNative,
-  Image,
 } from 'react-native';
 import {
   NavigationScreenProps,
-  StackActions,
-  NavigationActions,
   ScrollView,
 } from 'react-navigation';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
-import { PackageCard } from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
-import { TestListingHeader } from '@aph/mobile-patients/src/components/Tests/components/TestListingHeader';
-import { Breadcrumb } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
-import {
-  findDiagnosticsWidgetsPricing,
-  findDiagnosticsWidgetsPricingVariables,
-} from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
-import { getDiagnosticListingWidget } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { useUIElements } from '../UIElementsProvider';
-import { RenderPdf } from '../ui/RenderPdf';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import Pdf from 'react-native-pdf';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import moment from 'moment';
 import { DownloadNew, ShareBlue } from '@aph/mobile-patients/src/components/ui/Icons';
-import { useAllCurrentPatients } from '../../hooks/authHooks';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
   shareDocument,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
