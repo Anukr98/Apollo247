@@ -47,6 +47,7 @@ import {
   clevertapEventForAppsflyerDeeplink,
   checkUniversalURL,
   removeNullFromObj,
+  filterAppLaunchSoruceAttributesByKey,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -761,14 +762,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           );
         } else {
           clevertapEventForAppsflyerDeeplink(
-            removeNullFromObj({
+            filterAppLaunchSoruceAttributesByKey({
               ...res.data,
               source_url: checkUniversalURL(redirectUrl).source_url,
             })
           );
         }
       } else {
-        clevertapEventForAppsflyerDeeplink(res.data);
+        clevertapEventForAppsflyerDeeplink(filterAppLaunchSoruceAttributesByKey(res.data));
       }
       onDeepLinkCanceller();
     });
