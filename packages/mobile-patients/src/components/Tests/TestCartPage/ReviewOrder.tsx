@@ -1248,7 +1248,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           {isDiagnosticCircleSubscription ||
           (!isDiagnosticCircleSubscription && hideCirclePurchaseInModify)
             ? null
-            : renderCirclePurchase()}
+            : allMembershipPlans?.length > 0 && renderCirclePurchase()}
           {renderCouponView()}
           {renderPrices(
             string.diagnosticsCoupons.totalMrp,
