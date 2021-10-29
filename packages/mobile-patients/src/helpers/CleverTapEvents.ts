@@ -311,6 +311,7 @@ export enum CleverTapEventName {
   //HomePage Events
   MANAGE_DIABETES = 'Diabetes Program Viewed',
   HOME_VIEWED = 'Home page viewed',
+  OFFERS_CTA_CLICKED = 'Offers cta clicked',
   MOBILE_NUMBER_ENTERED = 'Login Mobile Number Entered',
   OTP_VERIFICATION_SUCCESS = 'OTP Verification Success',
   OTP_ENTERED = 'Login OTP Submitted',

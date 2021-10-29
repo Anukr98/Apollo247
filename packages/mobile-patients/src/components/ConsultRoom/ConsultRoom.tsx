@@ -1641,7 +1641,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         'Nav src': 'app launch',
       };
     }
-    if (eventName == CleverTapEventName.COVID_VACCINATION_SECTION_CLICKED) {
+    if (
+      eventName == CleverTapEventName.COVID_VACCINATION_SECTION_CLICKED ||
+      CleverTapEventName.OFFERS_CTA_CLICKED
+    ) {
       eventAttributes = { ...eventAttributes, ...attributes };
     }
     postCleverTapEvent(eventName, eventAttributes);
@@ -3457,10 +3460,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   backgroundColor: '#FC9916',
                   marginVertical: 4,
                 }}
-                onPress={() => {
-                  let action = getRedirectActionForOffers(item?.cta?.path?.vertical?.toLowerCase());
-                  navigateCTAActions({ type: 'REDIRECT', cta_action: action }, '');
-                }}
+                onPress={() => onOfferCtaPressed(item, index + 1)}
               >
                 <WhiteArrowRight />
               </TouchableOpacity>
@@ -3586,12 +3586,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     backgroundColor: offerDesignTemplate?.cta?.bg_color,
                   }}
                   titleTextStyle={{ color: offerDesignTemplate?.cta?.text_color }}
-                  onPress={() => {
-                    let action = getRedirectActionForOffers(
-                      item?.cta?.path?.vertical?.toLowerCase()
-                    );
-                    navigateCTAActions({ type: 'REDIRECT', cta_action: action }, '');
-                  }}
+                  onPress={() => onOfferCtaPressed(item, 1)}
                   disabled={false}
                 />
               </View>
@@ -3600,6 +3595,21 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         </TouchableOpacity>
       </View>
     );
+  };
+
+  const onOfferCtaPressed = (item: any, index: number) => {
+    let attributes = {
+      'Tile in the sequence': index,
+      'Coupon Code': item?.coupon_code,
+      'Offer Title': item?.title?.text,
+      'Offer Subtitle': item?.subtitle?.text,
+      'Offer Notch Test': item?.notch_text?.text,
+      'Offer CTA Text': item?.cta?.text,
+      'Offer Expiry': item?.expired_at,
+    };
+    postHomeCleverTapEvent(CleverTapEventName.OFFERS_CTA_CLICKED, 'Home Screen', attributes);
+    let action = getRedirectActionForOffers(item?.cta?.path?.vertical?.toLowerCase());
+    navigateCTAActions({ type: 'REDIRECT', cta_action: action }, '');
   };
 
   const circleCashbackOffersComponent = () => {
