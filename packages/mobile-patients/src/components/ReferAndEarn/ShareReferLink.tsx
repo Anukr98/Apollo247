@@ -19,7 +19,7 @@ import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
-  ArrowIcon,
+  FaqRightArrow,
   CopyLinkIcon,
   FriendReceiveIcon,
   InviteYourFriendIcon,
@@ -195,7 +195,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
         style={styles.checkRewardbtn}
       >
         <Text style={styles.checkRewardtext}>{string.referAndEarn.checkRewards}</Text>
-        <ArrowIcon />
+        <FaqRightArrow />
       </TouchableOpacity>
     );
   };

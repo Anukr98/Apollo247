@@ -2457,13 +2457,6 @@ export const YouReceiveIcon: React.FC<IconProps> = (props) => (
     {...props}
   />
 );
-export const ArrowIcon: React.FC<IconProps> = (props) => (
-  <Image
-    style={[props.style]}
-    source={require('@aph/mobile-patients/src/images/referAndEarn/faqArrow/rightArrow.webp')}
-    {...props}
-  />
-);
 
 export const ReferRefreshIcon: React.FC<IconProps> = (props) => (
   <Image
