@@ -381,7 +381,6 @@ dependencies {
     //JusPay
     implementation "in.juspay:google-pay-client-api:1.0.0"
     implementation 'in.juspay:hypersdk:2.0.3-rc.06'
-    implementation "androidx.browser.customtabs.CustomTabsIntent"
     implementation "in.juspay:amazonpay-hardened-silentpay-sdk:1.0.0"
     implementation "in.juspay:amazonpay-silentpay-sdk:1.0.0"
 }

@@ -368,7 +368,8 @@ export const linkWallet = (
   clientAuthToken: string,
   paymentOrderId: string,
   paymentMethod: string,
-  sdkPresent: string
+  sdkPresent: string,
+  offerId?: string
 ) => {
   const payload = {
     requestId: requestId,
@@ -376,11 +377,42 @@ export const linkWallet = (
     payload: {
       action: 'walletTxn',
       orderId: paymentOrderId,
+      paymentMethodType: 'Wallet',
       paymentMethod: paymentMethod,
       shouldLink: true,
       sdkPresent: sdkPresent,
       endUrls: [AppConfig.Configuration.baseUrl],
       clientAuthToken: clientAuthToken,
+      offers: !!offerId ? [offerId] : null,
+    },
+  };
+  console.log('link wallet payload >>>>', payload);
+  HyperSdkReact.process(JSON.stringify(payload));
+};
+
+export const directWalletDebit = (
+  requestId: string,
+  clientAuthToken: string,
+  paymentOrderId: string,
+  paymentMethod: string,
+  sdkPresent: string,
+  directWalletToken: string,
+  offerId?: string
+) => {
+  const payload = {
+    requestId: requestId,
+    service: AppConfig.Configuration.jusPayService,
+    payload: {
+      action: 'walletTxn',
+      orderId: paymentOrderId,
+      paymentMethodType: 'Wallet',
+      paymentMethod: paymentMethod,
+      shouldLink: true,
+      sdkPresent: sdkPresent,
+      endUrls: [AppConfig.Configuration.baseUrl],
+      clientAuthToken: clientAuthToken,
+      directWalletToken: directWalletToken,
+      offers: !!offerId ? [offerId] : null,
     },
   };
   HyperSdkReact.process(JSON.stringify(payload));
