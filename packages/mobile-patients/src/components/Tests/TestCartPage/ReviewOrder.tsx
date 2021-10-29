@@ -225,6 +225,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setCircleSubscriptionId,
     setCirclePlanSelected,
     setIsCircleSubscription,
+    circlePlanValidity
   } = useShoppingCart();
 
   const { diagnosticServiceabilityData } = useAppCommonData();
@@ -309,7 +310,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    const itemIds = isModifyFlow ? cartItemsWithId.concat(modifiedOrderItemIds) : cartItemsWithId;
+    const getAllItemIds = isCartEmpty
+      ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
+      ?.flat();
+    const uniqueItemIDS = [...new Set(getAllItemIds?.map((item) => Number(item?.id)))];
+    const itemIds = isModifyFlow ? cartItemsWithId.concat(modifiedOrderItemIds) : uniqueItemIDS;
     populateCartMapping();
     fetchOverallReportTat(itemIds);
     //if not a circle member
@@ -1081,8 +1086,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const circleData = circlePlanSelected;
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE] = {
       navigation_source: 'Cart(Diagnostic)',
-      circle_end_date: getCircleNoSubscriptionText(),
-      circle_start_date: getCircleNoSubscriptionText(),
+      circle_end_date: circlePlanValidity?.endDate ? circlePlanValidity?.endDate : getCircleNoSubscriptionText(),
+      circle_start_date: circlePlanValidity?.startDate ? circlePlanValidity?.startDate : getCircleNoSubscriptionText(),
       plan_id: circleData?.subPlanId,
       customer_id: currentPatient?.id,
       duration_in_months: circleData?.durationInMonth,
@@ -2261,7 +2266,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         <ScrollView bounces={false} style={{ flexGrow: 1 }} showsVerticalScrollIndicator={true}>
           {renderMainView()}
         </ScrollView>
-        {renderCallToOrder()}
         {renderTestProceedBar()}
       </SafeAreaView>
       {isVisible && renderPremiumOverlay()}

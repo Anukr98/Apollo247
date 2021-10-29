@@ -32,7 +32,7 @@ import {
   CameraIcon,
   CrossPopup,
   WhiteCall,
-  BlueCross
+  BlueCross,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
@@ -314,7 +314,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const homeScreenAttributes = props.navigation.getParam('homeScreenAttributes');
   const phyPrescriptionUploaded = props.navigation.getParam('phyPrescriptionUploaded') || [];
   const ePresscriptionUploaded = props.navigation.getParam('ePresscriptionUploaded') || [];
-  const { ePrescriptions, physicalPrescriptions } = useShoppingCart();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
 
   const hdfc_values = string.Hdfc_values;
@@ -396,40 +395,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       },
       fetchPolicy: 'no-cache',
     });
-
-  const setWebEnageEventForPinCodeClicked = (
-    mode: string,
-    pincode: string,
-    serviceable: boolean
-  ) => {
-    DiagnosticPinCodeClicked(
-      currentPatient,
-      mode,
-      pincode,
-      serviceable,
-      isDiagnosticCircleSubscription
-    );
-  };
-
-  const postDiagnosticAddToCartEvent = (
-    name: string,
-    id: string,
-    price: number,
-    discountedPrice: number,
-    source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
-    section?: 'Featured tests' | 'Browse packages'
-  ) => {
-    DiagnosticAddToCartEvent(
-      name,
-      id,
-      price,
-      discountedPrice,
-      source,
-      section,
-      currentPatient,
-      isDiagnosticCircleSubscription
-    );
-  };
 
   useEffect(() => {
     if (movedFrom === 'deeplink') {
@@ -1062,7 +1027,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           postMyOrdersClicked('Diagnostics', currentPatient);
           props.navigation.push(AppRoutes.YourOrdersTest, {
             isTest: true,
-            cityId: cityId
+            cityId: cityId,
           });
         }}
         container={{
@@ -2376,7 +2341,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
     props.navigation.push(AppRoutes.YourOrdersTest, {
       isTest: true,
-      cityId: cityId
+      cityId: cityId,
     });
   }
 
@@ -2845,26 +2810,35 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <>
         <Text style={styles.textHeadingModal}>Choose from Gallery</Text>
-        {prescriptionGalleryOptionArray.map((item) => {
+        {prescriptionGalleryOptionArray?.map((item, index: number) => {
           return (
-            <TouchableOpacity
-              style={{ flexDirection: 'row', alignContent: 'center' }}
-              onPress={() => {
-                if (item?.title == 'Photo Library') {
-                  openGallery();
-                } else {
-                  if (Platform.OS === 'android') {
-                    storagePermissions(() => {
-                      onBrowseClicked();
-                    });
+            <>
+              <TouchableOpacity
+                style={[
+                  styles.areaStyles,
+                  {
+                    marginTop: index === 0 ? 0 : 10,
+                    marginBottom: index === prescriptionGalleryOptionArray?.length - 1 ? 20 : 10,
+                  },
+                ]}
+                onPress={() => {
+                  if (item?.title == 'Photo Library') {
+                    openGallery();
                   } else {
-                    onBrowseClicked();
+                    if (Platform.OS === 'android') {
+                      storagePermissions(() => {
+                        onBrowseClicked();
+                      });
+                    } else {
+                      onBrowseClicked();
+                    }
                   }
-                }
-              }}
-            >
-              <Text style={styles.textPrescription}>{item.title}</Text>
-            </TouchableOpacity>
+                }}
+              >
+                <Text style={styles.textPrescription}>{item.title}</Text>
+              </TouchableOpacity>
+              {index === prescriptionGalleryOptionArray?.length - 1 ? null : <Spearator />}
+            </>
           );
         })}
       </>
@@ -2875,12 +2849,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <CallToOrderView
         cartItems={cartItems}
-        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.HOME}
+        pageId={CALL_TO_ORDER_CTA_PAGE_ID.HOME}
         slideCallToOrder={slideCallToOrder}
         onPressSmallView={() => {
           setSlideCallToOrder(false);
         }}
-        cityId = {cityId}
+        cityId={cityId}
         onPressCross={() => {
           setSlideCallToOrder(true);
         }}
@@ -2945,8 +2919,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 keyboardShouldPersistTaps="always"
                 showsVerticalScrollIndicator={false}
                 nestedScrollEnabled={true}
-                onScroll={()=>{
-                  setSlideCallToOrder(true)
+                onScroll={() => {
+                  setSlideCallToOrder(true);
                 }}
               >
                 {renderSections()}

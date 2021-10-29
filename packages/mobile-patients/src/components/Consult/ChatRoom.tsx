@@ -195,6 +195,7 @@ import {
   postAppointmentCleverTapEvents,
   fileToBase64,
   getAsyncStorageValues,
+  formatUrl,
 } from '../../helpers/helperFunctions';
 import { mimeType } from '../../helpers/mimeType';
 import { FeedbackPopup } from '../FeedbackPopup';
@@ -872,8 +873,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const followChatLimit = AppConfig.Configuration.FollowUp_Chat_Limit || 4;
   const [availableMessages, setavailableMessages] = useState(followChatLimit);
   const [currentCaseSheet, setcurrentCaseSheet] = useState<any>([]);
-  const [loginToken, setLoginToken] = useState<string | null>('')
-  const [userMobileNumber, setUserMobileNumber] = useState<string | null>('')
+  const [loginToken, setLoginToken] = useState<string | null>('');
+  const [userMobileNumber, setUserMobileNumber] = useState<string | null>('');
   let appointmentData: any = props.navigation.getParam('data');
   const caseSheet = followUpChatDaysCaseSheet(appointmentData.caseSheet);
   const followUpChatDaysCurrentCaseSheet = followUpChatDaysCaseSheet(currentCaseSheet);
@@ -1599,11 +1600,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   useEffect(() => {
     const saveSessionValues = async () => {
-      const [loginToken, phoneNumber] = await getAsyncStorageValues()
-      setLoginToken(loginToken)
-      setUserMobileNumber(phoneNumber)
-    }
-    saveSessionValues()
+      const [loginToken, phoneNumber] = await getAsyncStorageValues();
+      setLoginToken(JSON.parse(loginToken));
+      setUserMobileNumber(
+        JSON.parse(phoneNumber)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber
+      );
+    };
+    saveSessionValues();
     if (Platform.OS === 'android') {
       handleAndroidCallAcceptListeners();
     } else if (Platform.OS === 'ios') {
@@ -7518,6 +7521,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
   const showWeimageOpen = () => {
+    let uri = formatUrl(`${url}`, loginToken, userMobileNumber);
+
     return (
       <View
         style={{
@@ -7551,7 +7556,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             marginBottom: 20,
             borderRadius: 10,
           }}
-          source={{ uri: `${url}?utm_token=${loginToken}&utm_mobile_number=${userMobileNumber}` }}
+          source={{ uri }}
         />
       </View>
     );

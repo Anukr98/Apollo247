@@ -135,6 +135,7 @@ import {
   removeObjectNullUndefinedProperties,
   fileToBase64,
   getAsyncStorageValues,
+  formatUrl,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -2393,8 +2394,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
     const saveSessionValues = async () => {
       const [loginToken, phoneNumber] = await getAsyncStorageValues();
-      setToken(loginToken);
-      setUserMobileNumber(phoneNumber);
+      setToken(JSON.parse(loginToken));
+      setUserMobileNumber(
+        JSON.parse(phoneNumber)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber
+      );
     };
     fetchData();
     saveSessionValues();
@@ -3129,6 +3132,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const openWebView = (url: any) => {
     Keyboard.dismiss();
+    let uri = formatUrl(`${url}`, token, userMobileNumber);
+
     return (
       <View style={styles.viewWebStyles}>
         <Header
@@ -3142,7 +3147,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <View style={styles.nestedWebView}>
           <WebView
             source={{
-              uri: `${url}?utm_token=${token}&utm_mobile_number=${userMobileNumber}`,
+              uri,
             }}
             style={styles.webViewCompo}
             onLoadStart={() => {
