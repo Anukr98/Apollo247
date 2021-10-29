@@ -333,7 +333,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
     userType: string,
     responseResult: any
   ) {
-    let url;
+    let url, allUrls, uploadUrl;
     if (responseResult?.prescriptionFiles?.length == 1) {
       url = responseResult?.prescriptionFiles?.[0]?.fileUrl;
     } else {
@@ -342,7 +342,17 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
       );
     }
 
-    const newUrl = url?.map((item: any) => item)?.join(' ');
+    if (EPrescriptionsProps?.length > 0) {
+      url = responseResult?.prescriptionFiles?.map((attributes: any) => `${attributes?.file_Url}`);
+      uploadUrl = EPrescriptionsProps?.map((attributes) => `${attributes?.uploadedUrl}`);
+      allUrls = url?.concat(uploadUrl);
+    }
+
+    const concatendatedUrl = allUrls?.map((item: any, index: number) => `${index + 1} - ${item}`);
+    const urlToUse = EPrescriptionsProps?.length > 0 ? concatendatedUrl : url;
+
+    const newUrl = urlToUse?.map((item: any) => item)?.join(' ');
+
     DiagnosticPrescriptionSubmitted(
       currentPatient,
       !!newUrl ? newUrl : '',
