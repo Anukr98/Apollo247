@@ -2503,14 +2503,6 @@ export const LabTestAtHomeIcon: React.FC<IconProps> = (props) => (
   />
 );
 
-export const FaqRightArrow: React.FC<IconProps> = (props) => (
-  <Image
-    style={[props.style]}
-    source={require('@aph/mobile-patients/src/images/referAndEarn/faqArrow/rightArrow.webp')}
-    {...props}
-  />
-);
-
 export const FaqDownArrow: React.FC<IconProps> = (props) => (
   <Image
     style={[props.style]}

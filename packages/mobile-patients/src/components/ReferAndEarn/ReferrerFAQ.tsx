@@ -4,7 +4,7 @@ import { FlatList, NavigationScreenProps, SafeAreaView } from 'react-navigation'
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { FaqDownArrow, FaqRightArrow } from '../ui/Icons';
+import { FaqDownArrow, ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
 
 interface FAQType {
   id: number;
@@ -28,7 +28,7 @@ export const RefererFAQ: React.FC<RefererFAQProps> = (props) => {
           <View style={styles.faqArrowTextContainer}>
             <Text style={styles.faqQuestion}>{item.question}</Text>
 
-            {openIndexId == item.id ? <FaqDownArrow /> : <FaqRightArrow />}
+            {openIndexId == item.id ? <FaqDownArrow /> : <ArrowRight />}
           </View>
         </TouchableOpacity>
 
