@@ -84,7 +84,6 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   const [additionalNotes, setadditionalNotes] = useState<string>('');
   const [onSumbitSuccess, setOnSumbitSuccess] = useState<boolean>(false);
   const [isErrorOccured, setIsErrorOccured] = useState<boolean>(false);
-  const [patientPrescriptions, setPatientPrescriptions] = useState([]) as any;
 
   useEffect(() => {
     setLoading?.(false);

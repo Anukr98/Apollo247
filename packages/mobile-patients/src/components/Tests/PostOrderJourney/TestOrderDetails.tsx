@@ -156,6 +156,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [orderLevelStatus, setOrderLevelStatus] = useState([] as any);
   const [showInclusionStatus, setShowInclusionStatus] = useState<boolean>(false);
   const [showError, setError] = useState<boolean>(false);
+  const [showOrderDetailsError, setShowErrorDetailsError] = useState<boolean>(false);
   const [dropDownItemListIndex, setDropDownItemListIndex] = useState([] as any);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
 
@@ -238,7 +239,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     try {
       let response = await fetchOrderLevelStatus(orderId);
       if (!!response && response?.data && !response?.errors) {
-        let getOrderLevelStatus = g(response, 'data', 'getHCOrderFormattedTrackingHistory');
+        let getOrderLevelStatus = response?.data?.getHCOrderFormattedTrackingHistory;
         setOrderLevelStatus(getOrderLevelStatus);
         getOrderLevelStatus?.statusHistory?.length == 0 && setError(true);
         setError(false);
@@ -263,16 +264,16 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             AppConfig.Configuration.DEFAULT_PHELBO_ETA
         );
         setOrderDetails(getOrderDetails);
-        setError(false);
+        setShowErrorDetailsError(false);
       } else {
         setOrderDetails([]);
-        setError(true);
+        setShowErrorDetailsError(true);
       }
       setLoading?.(false);
     } catch (error) {
       setLoading?.(false);
       setOrderDetails([]);
-      setError(true);
+      setShowErrorDetailsError(true);
       CommonBugFender('getDiagnosticOrderDetails_TestOrderDetails', error);
     }
   }
@@ -1416,21 +1417,29 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     );
   };
 
+  const renderErrorCard = () => {
+    return (
+      <Card
+        cardContainer={[styles.noDataCard]}
+        heading={string.common.uhOh}
+        description={string.diagnostics.unableToFetchStatus}
+        descriptionTextStyle={{ fontSize: 14 }}
+        headingTextStyle={{ fontSize: 14 }}
+      />
+    );
+  };
+
   const renderError = () => {
-    if (
-      refundStatusArr?.length > 0 && showError
-        ? orderStatusList?.length == 0
-        : showError && _.isEmpty(orderLevelStatus)
-    ) {
-      return (
-        <Card
-          cardContainer={[styles.noDataCard]}
-          heading={string.common.uhOh}
-          description={string.diagnostics.unableToFetchStatus}
-          descriptionTextStyle={{ fontSize: 14 }}
-          headingTextStyle={{ fontSize: 14 }}
-        />
-      );
+    if (selectedTab === string.orders.trackOrder) {
+      if (
+        refundStatusArr?.length > 0 && showError
+          ? orderStatusList?.length == 0
+          : showError && _.isEmpty(orderLevelStatus)
+      ) {
+        return renderErrorCard();
+      }
+    } else {
+      return showOrderDetailsError && renderErrorCard();
     }
   };
 
