@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
   hiTextStyle: {
     marginLeft: 7,
     color: '#02475b',
-    ...theme.fonts.IBMPlexSansMedium(18),
+    ...theme.fonts.IBMPlexSansMedium(16),
   },
   nameTextContainerStyle: {
     maxWidth: '70%',
@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
   nameTextStyle: {
     marginLeft: 7,
     color: '#02475b',
-    ...theme.fonts.IBMPlexSansMedium(18),
+    ...theme.fonts.IBMPlexSansMedium(16),
   },
   seperatorStyle: {
     height: 2,
@@ -981,6 +981,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     offersList,
     offersListLoading,
     recentGlobalSearchList,
+    setRecentGlobalSearchList,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -3042,7 +3043,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         },
         fetchPolicy: 'no-cache',
       })
-      .then((i) => console.log('csk save res', JSON.stringify(i)))
+      .then((i) => {
+        const listToAdd: string[] =
+          recentGlobalSearchList.length > 3
+            ? recentGlobalSearchList.slice(0, 3)
+            : recentGlobalSearchList;
+        setRecentGlobalSearchList && setRecentGlobalSearchList([{ text: search }, ...listToAdd]);
+        console.log('csk save res', JSON.stringify(i), listToAdd, [{ text: search }, ...listToAdd]);
+      })
       .catch((e) => {
         CommonBugFender('HomeScreen_SaveSearchAPIFailure', e);
         console.log('csk save res', JSON.stringify(e));
@@ -3072,7 +3080,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           paddingRight: 8,
           marginLeft: 4,
           borderRightColor: 'rgba(2, 71, 91, 0.2)',
-          alignItems: 'center',
+          alignItems: 'flex-end',
         }}
       >
         <Text style={styles.hiTextStyle}>{'hi'}</Text>
@@ -4566,7 +4574,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           backgroundColor: '#FDFBF9',
         }}
       >
-        <View style={{ flexDirection: 'row' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <TouchableOpacity activeOpacity={1} onPress={() => {}}>
             <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
           </TouchableOpacity>
@@ -4878,7 +4886,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         CommonBugFender('HomeScreen_ConsultRoom_onSearchConsultsFunction', e);
       });
 
-    const save = _.debounce(saveRecentSearchTerm, 1000);
+    const save = _.debounce(saveRecentSearchTerm, 500);
     try {
       save(_searchText);
     } catch (e) {}
