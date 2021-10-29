@@ -11,7 +11,10 @@ import {
   InfoIconRed,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import { CALL_TO_ORDER_CTA_PAGE_ID, TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  CALL_TO_ORDER_CTA_PAGE_ID,
+  TEST_COLLECTION_TYPE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 import {
   DIAGNOSTIC_GROUP_PLAN,
@@ -497,7 +500,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         itemIds
       );
       if (result?.data?.getConfigurableReportTAT) {
-        const getMaxReportTat = result?.data?.getConfigurableReportTAT?.maxReportTAT!;
+        const getMaxReportTat = result?.data?.getConfigurableReportTAT?.preOrderReportTATMessage!;
         setReportTat(getMaxReportTat);
       } else {
         setReportTat('');
@@ -913,7 +916,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                 <Text style={styles.reportTimeText}>Get reports earliest by</Text>
                 <Text style={styles.reportTime}>
                   {reportTat != ''
-                    ? moment(reportTat)?.format('ddd, DD MMM , hh:mm A')
+                    ? reportTat
                     : cmsTestDetails?.diagnosticReportCustomerText
                     ? cmsTestDetails?.diagnosticReportCustomerText
                     : cmsTestDetails?.diagnosticReportGenerationTime}
@@ -1294,11 +1297,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const renderCallToOrder = () => {
     return (
       <CallToOrderView
-        cityId = {cityIdToUse}
-        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL}
-        customMargin = {80}
-        slideCallToOrder = {slideCallToOrder}
-        onPressSmallView = {() => {
+        cityId={cityIdToUse}
+        pageId={CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL}
+        customMargin={80}
+        slideCallToOrder={slideCallToOrder}
+        onPressSmallView={() => {
           setSlideCallToOrder(false);
         }}
         onPressCross={() => {
