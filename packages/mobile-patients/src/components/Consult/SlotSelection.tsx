@@ -236,7 +236,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   const actualPrice = isCircleDoctorOnSelectedConsultMode
     ? isOnlineSelected
       ? circleSubscriptionId
-        ? cashbackEnabled 
+        ? cashbackEnabled
           ? onlineConsultMRPPrice
           : onlineConsultSlashedPrice
         : onlineConsultMRPPrice
@@ -251,16 +251,16 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if(doctorDetails){
+    if (doctorDetails) {
       fetchNextAvailabilitySlot(selectedTab, true);
     }
-  }, [doctorDetails])
+  }, [doctorDetails]);
   useEffect(() => {
     onlineSlotsCount && nextAvailableDate && calculateNextNDates(onlineSlotsCount);
   }, [onlineSlotsCount, nextAvailableDate]);
 
   useEffect(() => {
-    physicalSlotsCount && nextAvailableDate && calculateNextNDates(physicalSlotsCount);    
+    physicalSlotsCount && nextAvailableDate && calculateNextNDates(physicalSlotsCount);
   }, [physicalSlotsCount, nextAvailableDate]);
 
   useEffect(() => {
@@ -302,7 +302,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   const fetchNextAvailabilitySlot = async (
     consultType: string = consultTabs[0].title,
     callOnLaunch: boolean = false
-  ) => {    
+  ) => {
     try {
       const todayDate = moment(new Date()).format('YYYY-MM-DD');
       const res: any = await getNextAvailableSlots(client, [doctorId] || [], todayDate);
@@ -317,7 +317,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
         consultType === consultOnlineTab
           ? fetchOnlineTotalAvailableSlots(nextAvailableDate, callOnLaunch)
           : fetchPhysicalTotalAvailableSlots(nextAvailableDate, callOnLaunch);
-        
+
         if (!callOnLaunch) {
           const checkAvailabilityDate = datesSlots?.filter(
             (date: any) =>
@@ -331,7 +331,11 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           const slotsIndex = datesSlots?.indexOf(checkAvailabilityDate?.[0]);
           const dateIndex = date().isToday ? 0 : date().isTomorrow ? 1 : slotsIndex;
           setTimeout(() => {
-            dateScrollViewRef && dateScrollViewRef.current.scrollToIndex({ index: dateIndex });
+            try {
+              dateScrollViewRef && dateScrollViewRef.current.scrollToIndex({ index: dateIndex });
+            } catch (e) {
+              CommonBugFender('SlotSelection_scrollToIndex', e);
+            }
           }, 500);
         }
       }
@@ -358,13 +362,13 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
 
       setTimeArray(defaultTimeData);
       const availableSlots = res?.data?.getDoctorAvailableSlots?.availableSlots;
-      const slotCounts = res?.data?.getDoctorAvailableSlots?.slotCounts;      
+      const slotCounts = res?.data?.getDoctorAvailableSlots?.slotCounts;
       callOnLaunch && setOnlineSlotsCount(slotCounts);
       if (availableSlots) {
         setTotalSlots(availableSlots?.length);
         setTimeArrayData(availableSlots, selectedDate);
       }
-      slotCounts && calculateNextNDates(slotCounts);      
+      slotCounts && calculateNextNDates(slotCounts);
     } catch (error) {
       CommonBugFender('SlotSelection_fetchTotalAvailableSlots', error);
     }
@@ -386,17 +390,16 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           },
         },
       });
-      
+
       const availableSlots = res?.data?.getDoctorPhysicalAvailableSlots?.availableSlots;
       const slotCounts = res?.data?.getDoctorPhysicalAvailableSlots?.slotCounts;
       callOnLaunch && setPhysicalSlotsCount(slotCounts);
       if (availableSlots) {
         setTotalSlots(availableSlots?.length);
         setTimeArrayData(availableSlots, selectedDate);
-      }      
+      }
       slotCounts && calculateNextNDates(slotCounts);
     } catch (error) {
-      console.log('SlotSelection_fetchTotalAvailableSlotsPhysical', error);
       CommonBugFender('SlotSelection_fetchTotalAvailableSlots', error);
     }
   };
@@ -422,7 +425,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
       const isTomorrow = tomorrow.toDate().toDateString() == dateString;
       // if (isToday || isTomorrow) {
       //   console.log('CHECKING2', isTomorrow ? 1 : 0);
-        
+
       //   setSelectedDateIndex(isTomorrow ? 1 : 0);
       // }
     }
@@ -599,6 +602,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           setIsOnlineSelected(tab === consultOnlineTab);
           if (tab !== selectedTab) {
             setTotalSlots(-1);
+
             setLoadTotalSlots(true);
             slotSelected.current = false;
             setSelectedDateIndexHighlight(0);
@@ -612,7 +616,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     );
   };
 
-  const renderSlotsDates = () => {    
+  const renderSlotsDates = () => {
     return (
       <FlatList
         data={datesSlots}
@@ -627,14 +631,14 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     );
   };
 
-  const renderSlotsDatesItems = (item: SlotsType, index: number) => {            
-    if (item?.count === 0 && index === selectedDateIndexHiglight && !slotSelected.current){
+  const renderSlotsDatesItems = (item: SlotsType, index: number) => {
+    if (item?.count === 0 && index === selectedDateIndexHiglight && !slotSelected.current) {
       handleDateSelection(item, index + 1);
     }
     const textColor =
       index === selectedDateIndexHiglight || item?.count === 0
         ? 'white'
-        : theme.colors.SEARCH_UNDERLINE_COLOR;        
+        : theme.colors.SEARCH_UNDERLINE_COLOR;
     return (
       <TouchableOpacity
         key={index}
@@ -653,7 +657,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
         ]}
         onPress={() => {
           slotSelected.current = true;
-          handleDateSelection(item, index)
+          handleDateSelection(item, index);
         }}
       >
         {totalSlots === -1 ? (
@@ -680,11 +684,13 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     const todayDate = moment(new Date());
     const tomorrowDate = moment(new Date()).add('1', 'day');
     const date = index === 0 ? todayDate : index === 1 ? tomorrowDate : item?.date;
-    setLoadTotalSlots(true);
-    if(slotSelected.current)
+
+    if (slotSelected.current) {
+      setLoadTotalSlots(true);
       isOnlineSelected
         ? fetchOnlineTotalAvailableSlots(date)
         : fetchPhysicalTotalAvailableSlots(date);
+    }
   };
 
   const renderSelectedDate = () => {
@@ -724,16 +730,18 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
       />
     );
   };
-  
+
   const renderEmptyComponent = () => {
-    if(loadTotalSlots){
+    if (loadTotalSlots) {
       return (
         <View style={styles.emptyComponentView}>
-          {Array(6).fill(1).map(renderSlotItemShimmer)}
+          {Array(6)
+            .fill(1)
+            .map(renderSlotItemShimmer)}
         </View>
-      )
-    }  
-  }
+      );
+    }
+  };
 
   const renderListHeaderComponent = () => {
     return (
@@ -745,28 +753,26 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     );
   };
 
- const renderSharePHR = () => {
-   return (
-     <View style={styles.sharePHRContainer}>
-       <TouchableOpacity
-         activeOpacity={1}
-         onPress={() => {
-           setSharePHR(!sharePHR);
-         }}
-         style={styles.checkBoxStyleContainer}
-       >
-         {sharePHR ? (
-           <CheckBoxFilled style={styles.checkBoxStyle} resizeMode={'contain'} />
-         ) : (
-           <CheckBox style={styles.checkBoxStyle} resizeMode={'contain'} />
-         )}
-       </TouchableOpacity>
-       <Text style={styles.sharePHRText}>
-         {string.common.sharePHR}
-       </Text>
-     </View>
-   );
- };
+  const renderSharePHR = () => {
+    return (
+      <View style={styles.sharePHRContainer}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => {
+            setSharePHR(!sharePHR);
+          }}
+          style={styles.checkBoxStyleContainer}
+        >
+          {sharePHR ? (
+            <CheckBoxFilled style={styles.checkBoxStyle} resizeMode={'contain'} />
+          ) : (
+            <CheckBox style={styles.checkBoxStyle} resizeMode={'contain'} />
+          )}
+        </TouchableOpacity>
+        <Text style={styles.sharePHRText}>{string.common.sharePHR}</Text>
+      </View>
+    );
+  };
 
   const renderFooterComponent = () => {
     if (loadTotalSlots) return;
@@ -968,12 +974,19 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     );
     const slotsIndex = datesSlots?.indexOf(checkAvailabilityDate?.[0]);
     const dateIndex = date().isToday ? 0 : date().isTomorrow ? 1 : slotsIndex;
+
     setTimeout(() => {
-      dateScrollViewRef && dateScrollViewRef.current.scrollToIndex({ index: dateIndex });
+      try {
+        dateScrollViewRef && dateScrollViewRef.current.scrollToIndex({ index: dateIndex });
+      } catch (e) {
+        CommonBugFender('SlotSelection_scrollToIndex', e);
+      }
     }, 500);
+
     setIsSlotDateSelected(true);
     setSelectedDateIndex(dateIndex);
     setSelectedDateIndexHighlight(dateIndex);
+
     setLoadTotalSlots(true);
     isOnlineSelected
       ? fetchOnlineTotalAvailableSlots(nextAvailableDate)
@@ -1010,7 +1023,11 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
                 setFirstSelectedSlot(item?.label);
                 setSelectedTimeSlot(item?.time?.[0]);
                 setTimeout(() => {
-                  slotsScrollViewRef.current.scrollToIndex({ index });
+                  try {
+                    slotsScrollViewRef.current.scrollToIndex({ index });
+                  } catch (e) {
+                    CommonBugFender('SlotSelection_scrollToIndex', e);
+                  }
                 }, 300);
               }}
             >
@@ -1274,7 +1291,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: 'transparent',
     marginHorizontal: Platform.OS === 'ios' ? 45 : 60,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   sharePHRText: {
     ...theme.fonts.IBMPlexSansMedium(12),
