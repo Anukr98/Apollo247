@@ -74,7 +74,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
         customerID: g(currentPatient, 'id'),
         sub2: 'AppReferral',
         userParams: {
-          rewardId: '80f84670-2c07-422a-b0db-2086d265fde5',
+          rewardId: '59a79676-592c-4e62-9a80-71c6224b14cf',
           linkToUse: 'ForReferrarInstall',
         },
       },
