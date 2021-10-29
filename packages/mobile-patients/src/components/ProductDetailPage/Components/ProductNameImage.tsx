@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, Image, Dimensions, TouchableOpacity } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  Image,
+  Dimensions,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Carousel from 'react-native-snap-carousel';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -22,12 +30,26 @@ export interface ProductNameImageProps {
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
   sku: string;
   merchandising?: number | null;
+  isInStock: boolean;
+  isSellOnline: boolean;
+  isBanned: boolean;
+  showDeliverySpinner: boolean;
 }
 
 const { width } = Dimensions.get('window');
 
 export const ProductNameImage: React.FC<ProductNameImageProps> = (props) => {
-  const { name, isPrescriptionRequired, images, sku, merchandising } = props;
+  const {
+    name,
+    isPrescriptionRequired,
+    images,
+    sku,
+    merchandising,
+    isInStock,
+    isBanned,
+    isSellOnline,
+    showDeliverySpinner,
+  } = props;
   const [slideIndex, setSlideIndex] = useState(0);
 
   const renderImageCarousel = () => {
@@ -109,9 +131,45 @@ export const ProductNameImage: React.FC<ProductNameImageProps> = (props) => {
     }
   };
 
+  const renderIsInStock = () => {
+    return (
+      <View style={isBanned || !isSellOnline ? { flex: 1 } : { flex: 0 }}>
+        {showDeliverySpinner ? (
+          <ActivityIndicator
+            style={{ alignItems: 'flex-end', marginRight: 10, marginTop: 10 }}
+            animating={true}
+            size="small"
+            color="green"
+          />
+        ) : isBanned ? (
+          <View style={[styles.inStockContainer, { backgroundColor: '#890000' }]}>
+            <Text style={styles.stockText}>Banned for Sale</Text>
+          </View>
+        ) : !isSellOnline ? (
+          <View style={[styles.inStockContainer, { backgroundColor: '#890000' }]}>
+            <Text style={styles.stockText}>NOT AVAILABLE FOR ONLINE SALE</Text>
+          </View>
+        ) : isInStock ? (
+          <View style={styles.inStockContainer}>
+            <Text style={styles.stockText}>In Stock</Text>
+          </View>
+        ) : (
+          <View style={[styles.inStockContainer, { backgroundColor: '#890000' }]}>
+            <Text style={styles.stockText}>Out Of Stock</Text>
+          </View>
+        )}
+      </View>
+    );
+  };
+
   return (
     <View style={styles.cardStyle}>
-      <Text style={styles.name}>{name}</Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <View style={{ width: '70%' }}>
+          <Text style={styles.name}>{name}</Text>
+        </View>
+        {renderIsInStock()}
+      </View>
       {!!merchandising && renderMerchandisingTag()}
       {!!images.length && renderImageCarousel()}
       {isPrescriptionRequired && renderPrescriptionRequired()}
@@ -164,4 +222,13 @@ const styles = StyleSheet.create({
   },
   discountBadgeIcon: { height: 17, width: 110 },
   discountBadgeView: { marginTop: 7 },
+  inStockContainer: {
+    paddingHorizontal: 5,
+    paddingVertical: 3,
+    backgroundColor: '#00B38E',
+    borderRadius: 5,
+    marginBottom: 25,
+    marginTop: 10,
+  },
+  stockText: theme.viewStyles.text('M', 13, '#FFFFFF', 1, 18),
 });
