@@ -136,7 +136,7 @@ export const ProductNameImage: React.FC<ProductNameImageProps> = (props) => {
       <View style={isBanned || !isSellOnline ? { flex: 1 } : { flex: 0 }}>
         {showDeliverySpinner ? (
           <ActivityIndicator
-            style={{ alignItems: 'flex-end', marginRight: 10, marginTop: 10 }}
+            style={styles.activityIndicatorStyle}
             animating={true}
             size="small"
             color="green"
@@ -226,4 +226,9 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   stockText: theme.viewStyles.text('M', 13, '#FFFFFF', 1, 18),
+  activityIndicatorStyle: {
+    alignItems: 'flex-end',
+    marginRight: 10,
+    marginTop: 10,
+  },
 });
