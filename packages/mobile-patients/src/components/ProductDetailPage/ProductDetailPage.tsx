@@ -1267,6 +1267,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 navigation={props.navigation}
                 sku={medicineDetails?.sku}
                 merchandising={medicineDetails?.merchandising}
+                isInStock={isInStock}
+                isSellOnline={medicineDetails?.sell_online === 1}
+                isBanned={medicineDetails?.banned === 'Yes'}
+                showDeliverySpinner={showDeliverySpinner}
               />
               <ProductPriceDelivery
                 price={medicineDetails?.price}
