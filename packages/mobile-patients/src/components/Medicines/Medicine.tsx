@@ -2712,7 +2712,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
         {pageLoading ? renderMedicinesShimmer() : null}
 
-        <View style={{ flex: 1, paddingBottom: !!cartItems?.length ? 80 : 0 }}>
+        <View
+          style={{
+            paddingBottom: !!cartItems?.length ? 80 : 0,
+            marginBottom: !!cartItems?.length ? 117 : 65,
+          }}
+        >
           {renderSections()}
           {renderOverlay()}
           {!!cartItems?.length && renderCircleCartDetails()}
