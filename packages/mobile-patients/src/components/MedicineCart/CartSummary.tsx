@@ -148,6 +148,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   const { cusId, isfetchingId } = useGetJuspayId();
   const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
+  const [tatUpdated, setTatUpdated] = useState<boolean>(false);
 
   useEffect(() => {
     hasUnserviceableproduct();
@@ -178,6 +179,13 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   useEffect(() => {
     !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
   }, [isfetchingId]);
+
+  useEffect(() => {
+    if (tatUpdated) {
+      initiateOrder();
+      setTatUpdated(false);
+    }
+  }, [orders, tatUpdated]);
 
   const initiateHyperSDK = async (cusId: any) => {
     try {
@@ -514,7 +522,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       orders?.length > 1,
       splitOrderDetails
     );
-    initiateOrder();
+    setTatUpdated(true);
   }
 
   const initiateOrder = async () => {
