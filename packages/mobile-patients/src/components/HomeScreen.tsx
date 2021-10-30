@@ -4922,7 +4922,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       <View style={{ backgroundColor: theme.colors.WHITE }}>
         <View style={styles.searchBarMainViewStyle}>
           <View style={styles.searchBarViewStyle}>
-            <SearchAreaIcon style={{ width: 20, height: 20, tintColor: 'rgba(2,71,91,0.7)' }} />
+            <SearchAreaIcon
+              style={{ width: 20, height: 20, tintColor: theme.colors.HOME_SEARCH_PLACEHOLDER }}
+            />
             <TextInput
               placeholder={'Search for Medicines, Doctors, Lab Tests'}
               autoCapitalize={'none'}
@@ -4932,7 +4934,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               ref={_searchInputRef}
               onFocus={() => setIsSearchFocus(true)}
               value={searchText}
-              placeholderTextColor={theme.colors.placeholderTextColor}
+              placeholderTextColor={theme.colors.HOME_SEARCH_PLACEHOLDER}
               underlineColorAndroid={'transparent'}
               onChangeText={(value) => onSearchTextChange(value)}
             />

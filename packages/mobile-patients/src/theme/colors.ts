@@ -172,6 +172,7 @@ const TextInput = {
   INPUT_FAILURE_TEXT: '#890000',
   INPUT_INFO: tangerine_yellow,
   placeholderTextColor: 'rgba(1,48,91, 0.3)',
+  HOME_SEARCH_PLACEHOLDER:'rgba(2,71,91,0.7)',
   searchAreaPlaceholderTextColor: 'rgba(1,71,91,0.6)',
   light_label: '#658f9b',
 };
