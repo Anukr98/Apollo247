@@ -4944,16 +4944,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             </Text>
           ) : null}
         </View>
-        {
-          <View
-            style={{
-              height: 0.5,
-              backgroundColor: '#D4D4D4',
-              marginBottom: 4,
-              marginHorizontal: -16,
-            }}
-          />
-        }
+
+        <View
+          style={{
+            height: 0.5,
+            backgroundColor: '#D4D4D4',
+            marginHorizontal: -16,
+          }}
+        />
       </View>
     );
   };
