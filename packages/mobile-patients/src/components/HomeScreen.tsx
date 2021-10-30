@@ -4570,8 +4570,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           alignItems: 'center',
           justifyContent: 'space-between',
           paddingHorizontal: 16,
-          paddingVertical: 14,
-          backgroundColor: '#FDFBF9',
+          paddingVertical: 10,
+          backgroundColor: '#fff',
         }}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
