@@ -585,13 +585,15 @@ const styles = StyleSheet.create({
     flex: 0.2,
   },
   bottomTextView: {
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-    marginLeft: 4,
-    flex: 0.7,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    marginLeft: 2,
+    flex: 0.65,
   },
   bottomRightArrowView: {
-    marginHorizontal: 3,
+    flex: 0.15,
+    marginRight: 4,
     justifyContent: 'center',
     alignItems: 'flex-start',
   },
@@ -3327,7 +3329,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                 <View style={styles.bottomCardView}>
                   <View style={styles.bottomImageView}>{item.image}</View>
                   <View style={styles.bottomTextView}>
-                    <Text style={[theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 18)]}>
+                    <Text
+                      style={[theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20)]}
+                    >
                       {item.title}
                     </Text>
                   </View>
