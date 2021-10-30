@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
     marginLeft: 18,
   },
   textInputStyle: {
-    ...theme.viewStyles.text('R', 14, theme.colors.LIGHT_BLUE, 1, 20),
+    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 20),
     flex: 1,
     paddingHorizontal: 10,
     paddingTop: 0,
@@ -3248,7 +3248,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                         {item.title}
                       </Text>
 
-                      <ArrowRight />
+                      <ArrowRight style={{ marginRight: 'auto' }} />
                     </View>
                     <View
                       style={[
@@ -4918,7 +4918,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       <View style={{ backgroundColor: theme.colors.WHITE }}>
         <View style={styles.searchBarMainViewStyle}>
           <View style={styles.searchBarViewStyle}>
-            <SearchAreaIcon style={{ width: 20, height: 20 }} />
+            <SearchAreaIcon style={{ width: 20, height: 20, tintColor: 'rgba(2,71,91,0.7)' }} />
             <TextInput
               placeholder={'Search for Medicines, Doctors, Lab Tests'}
               autoCapitalize={'none'}
