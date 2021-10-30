@@ -427,13 +427,13 @@ const styles = StyleSheet.create({
     color: theme.colors.WHITE,
   },
   menuOptionIconStyle: {
-    height: 36,
-    width: 36,
+    height: 32,
+    width: 32,
     resizeMode: 'contain',
   },
   menuOption2IconStyle: {
     height: 30,
-    width: 30,
+    width: 24,
     resizeMode: 'contain',
   },
   menuOption2SubIconStyle: {
@@ -598,7 +598,7 @@ const styles = StyleSheet.create({
   bottom2TextView: {
     alignItems: 'flex-start',
     justifyContent: 'center',
-    marginLeft: 2,
+    marginLeft: 4,
   },
   bottom2ImageView: {
     alignItems: 'center',
@@ -3229,14 +3229,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               return (
                 <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
                   <View style={[styles.bottom2CardView, { width: width - 32 }]}>
-                    <View style={{ marginLeft: -12, marginBottom: 4 }}>
+                    <View style={{ marginLeft: -11 }}>
                       <DeliveryInIcon />
                     </View>
 
                     <View
                       style={{
                         flexDirection: 'row',
-                        marginVertical: 2,
+                        marginBottom: 2,
                         paddingVertical: 4,
                         marginLeft: 10,
                         justifyContent: 'flex-start',
