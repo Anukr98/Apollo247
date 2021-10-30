@@ -661,7 +661,7 @@ const styles = StyleSheet.create({
   },
   circleContainer: {
     backgroundColor: theme.colors.WHITE,
-    marginVertical: 12,
+    marginTop: 12,
     marginHorizontal: 16,
     paddingHorizontal: 6,
     alignSelf: 'center',
@@ -1844,7 +1844,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     {
       id: 4,
       title: 'Book Doctor by Symptoms',
-      image: <Symptomtracker style={styles.menuOptionIconStyle} />,
+      image: <Symptomtracker style={styles.menuOption2SubIconStyle} />,
       onPress: () => {
         const eventAttributes:
           | WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_PAGE_CLICKED]
@@ -1867,7 +1867,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     {
       id: 5,
       title: 'Book Covid Vaccination',
-      image: <BookVaccineIcon style={styles.menuOptionIconStyle} />,
+      image: <BookVaccineIcon style={styles.menuOption2SubIconStyle} />,
       onPress: () => {
         const itemTo = covidVaccineCtaV2?.data?.filter(
           (item: any) => item?.title === 'Book Vaccination Slot'
@@ -1878,7 +1878,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     {
       id: 6,
       title: 'Manage Diabetes',
-      image: <Diabetes style={styles.menuOptionIconStyle} />,
+      image: <Diabetes style={styles.menuOption2SubIconStyle} />,
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.MANAGE_DIABETES, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.MANAGE_DIABETES);
@@ -1895,7 +1895,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       title: 'View Health Records',
       image: (
         <View>
-          <PrescriptionMenu style={styles.menuOptionIconStyle} />
+          <PrescriptionMenu style={styles.menuOption2SubIconStyle} />
           {renderBadgeView()}
         </View>
       ),
@@ -1913,7 +1913,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     {
       id: 7,
       title: 'ProHealth',
-      image: <ProHealthIcon style={styles.menuOptionIconStyle} />,
+      image: <ProHealthIcon style={styles.menuOption2SubIconStyle} />,
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.PROHEALTH, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.PROHEALTH);
