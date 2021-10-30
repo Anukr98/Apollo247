@@ -4945,7 +4945,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             </Text>
           ) : null}
         </View>
-        {isSearchFocus ? (
+        {
           <View
             style={{
               height: 0.5,
@@ -4954,7 +4954,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               marginHorizontal: -16,
             }}
           />
-        ) : null}
+        }
       </View>
     );
   };
