@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
   searchBarMainViewStyle: {
     flexDirection: 'row',
     paddingHorizontal: 16,
-    paddingVertical: 18,
+    paddingVertical: 12,
     marginTop: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -362,16 +362,14 @@ const styles = StyleSheet.create({
   },
   hiTextStyle: {
     marginLeft: 7,
-    color: '#02475b',
-    ...theme.fonts.IBMPlexSansMedium(16),
+    ...theme.viewStyles.text('SB', 14, theme.colors.LIGHT_BLUE, 1, 20),
   },
   nameTextContainerStyle: {
     maxWidth: '70%',
   },
   nameTextStyle: {
-    marginLeft: 7,
-    color: '#02475b',
-    ...theme.fonts.IBMPlexSansMedium(16),
+    marginLeft: 4,
+    ...theme.viewStyles.text('SB', 14, theme.colors.LIGHT_BLUE, 1, 20),
   },
   seperatorStyle: {
     height: 2,
