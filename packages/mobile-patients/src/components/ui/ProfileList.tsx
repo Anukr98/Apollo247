@@ -287,7 +287,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   const renderPicker = () => {
     const usersList = moveSelectedToTop();
     return (
-      <View style={{ backgroundColor: '#FDFBF9' }}>
+      <View style={{ backgroundColor: '#fff' }}>
         <MaterialMenu
           showProfilePic={showProfilePic}
           showMenu={props.showList}

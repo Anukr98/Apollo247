@@ -575,7 +575,6 @@ const styles = StyleSheet.create({
   bottom2SubCardView: {
     flexDirection: 'row',
     marginTop: 'auto',
-    marginHorizontal: 2,
     borderRadius: 4,
     height: 28,
   },
@@ -608,8 +607,8 @@ const styles = StyleSheet.create({
     marginRight: 2,
   },
   bottom2SubImage: {
-    height: 20,
-    width: 20,
+    height: 18,
+    width: 18,
     resizeMode: 'contain',
   },
   covidSubContainer: {
