@@ -4902,17 +4902,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const searchResultsTabHeader: searchHeaders = {
     MEDICATION: {
       title: 'In Medicines',
-      icon: (s: any) => <MedicineIcon style={{ width: 20, height: 20, marginLeft: 8, ...s }} />,
+      icon: (s: any) => <MedicineHomeIcon style={{ width: 24, height: 24, ...s }} />,
       backgroundColor: '#EAF6FF',
     },
     TEST_REPORT: {
       title: 'In Lab Tests',
-      icon: (s: any) => <TestsCartIcon style={{ width: 20, height: 20, marginLeft: 8, ...s }} />,
+      icon: (s: any) => <LabTestBrownIcon style={{ width: 18, height: 24, ...s }} />,
       backgroundColor: '#FEE7DA',
     },
     CONSULTATION: {
       title: 'In Consult',
-      icon: (s: any) => <DoctorIcon style={{ width: 20, height: 20, marginLeft: 8, ...s }} />,
+      icon: (s: any) => <DoctorIcon style={{ width: 18, height: 24, ...s }} />,
       backgroundColor: '#E5FFFD',
     },
   };
