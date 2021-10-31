@@ -1607,9 +1607,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const renderCallToOrder = () => {
     return (
       <CallToOrderView
-        cityId = {addressCityId}
+        cityId = {deliveryAddressCityId}
         pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTCART}
-        customMargin={160}
+        customMargin={showNonServiceableText ? 240 : 180}
         slideCallToOrder = {slideCallToOrder}
         onPressSmallView = {() => {
           setSlideCallToOrder(false);
