@@ -6429,6 +6429,7 @@ export const GET_PERSONALIZED_OFFERS = gql`
               }
             }
             is_active
+            expired_at
             title {
               text
               values {
