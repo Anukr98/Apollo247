@@ -3361,6 +3361,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         <View style={styles.menuOptionsContainer}>
           <FlatList
             horizontal={true}
+            showsHorizontalScrollIndicator={false}
             data={offersList}
             renderItem={({ item, index }) => renderOffersCards(item, index)}
             keyExtractor={(item, index) => index.toString() + 'offersForYou'}
