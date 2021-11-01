@@ -53,7 +53,7 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
       ctaDelaySeconds = 0;
     }, ctaDetailMatched?.[0]?.ctaDelaySeconds);
   }, []);
-  return ctaDetailMatched?.length === 1 ? (
+  return (
     <>
       <View style={[styles.container, containerStyle]}>
         {!slideCallToOrder ? (
@@ -101,7 +101,7 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
         </View>
       </View>
     </>
-  ) : null;
+  );
 };
 
 const styles = StyleSheet.create({

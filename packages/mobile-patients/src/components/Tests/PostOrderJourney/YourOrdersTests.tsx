@@ -1811,6 +1811,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         bounces={false}
         data={orders}
         extraData={orderListData}
+        onScroll={()=>{
+          setSlideCallToOrder(true)
+        }}
         renderItem={({ item, index }) => renderOrder(item, index)}
         initialNumToRender={10}
         ListEmptyComponent={renderNoOrders()}
