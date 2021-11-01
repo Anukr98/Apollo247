@@ -1499,7 +1499,14 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           data={[{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]}
           selectedTab={selectedTab}
         />
-        <ScrollView bounces={false} style={{ flex: 1 }} ref={scrollViewRef}>
+        <ScrollView
+          bounces={false}
+          style={{ flex: 1 }}
+          ref={scrollViewRef}
+          onScroll={() => {
+            setSlideCallToOrder(true);
+          }}
+        >
           {selectedTab == string.orders.trackOrder ? renderOrderTracking() : renderOrderSummary()}
 
           {renderError()}

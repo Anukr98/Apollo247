@@ -93,6 +93,9 @@ export const TestWidgetListing: React.FC<TestWidgetListingProps> = (props) => {
           <FlatList
             data={dataFromHomePage?.diagnosticWidgetData}
             numColumns={4}
+            onScroll={()=>{
+              setSlideCallToOrder(true)
+            }}
             keyExtractor={(_, index) => `${index}`}
             renderItem={({ item, index }) => renderItems(item, index)}
           />
