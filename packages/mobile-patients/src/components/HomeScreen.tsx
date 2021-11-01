@@ -3052,11 +3052,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             ? recentGlobalSearchList.slice(0, 3)
             : recentGlobalSearchList;
         setRecentGlobalSearchList && setRecentGlobalSearchList([{ text: search }, ...listToAdd]);
-        console.log('csk save res', JSON.stringify(i), listToAdd, [{ text: search }, ...listToAdd]);
       })
       .catch((e) => {
         CommonBugFender('HomeScreen_SaveSearchAPIFailure', e);
-        console.log('csk save res', JSON.stringify(e));
       });
   };
 
@@ -4833,14 +4831,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           consultSearchResults.current = [];
         }
 
-        console.log('csk cons done', consultSearchResults.current.length);
         updateSearchResultList(MedicalRecordType.CONSULTATION, consultSearchResults.current);
         setSearchLoading(false);
       } catch (e) {
         CommonBugFender('HomeScreen_ConsultRoom', e);
         setSearchLoading(false);
         updateSearchResultList(MedicalRecordType.CONSULTATION, []);
-        console.log('csk cons', JSON.stringify(e));
       }
     }
   };
@@ -4870,13 +4866,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const onSearchExecute = async (_searchText: string) => {
-    console.log('csk search start');
 
     setSearchLoading(true);
     setSearchResults([]);
     onSearchTests(_searchText)
       .then(() => {
-        console.log('final search res-t', JSON.stringify(searchResults.length));
       })
       .catch((e) => {
         CommonBugFender('HomeScreen_ConsultRoom_onSearchTests', e);
@@ -4884,7 +4878,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
     onSearchMedicines(_searchText, null, {}, [])
       .then(() => {
-        console.log('final search res-m', JSON.stringify(searchResults.length));
       })
       .catch((e) => {
         CommonBugFender('HomeScreen_ConsultRoom_onSearchMedicinesFunction', e);
@@ -4892,7 +4885,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
     onSearchConsults(_searchText)
       .then(() => {
-        console.log('final search res-c', JSON.stringify(searchResults.length));
       })
       .catch((e) => {
         CommonBugFender('HomeScreen_ConsultRoom_onSearchConsultsFunction', e);
@@ -5157,7 +5149,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const onClickSearchItem = (key: string) => {
-    console.log('onClickSearchItem ==== ', key);
     // todo: for view all results
     // postHomeCleverTapEvent(
     //   CleverTapEventName.VIEW_ALL_SEARCH_RESULT_CLICKED,
