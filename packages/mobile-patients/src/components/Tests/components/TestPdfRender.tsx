@@ -1,6 +1,4 @@
-import {
-  orderList,
-} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { orderList } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 import {
@@ -9,20 +7,10 @@ import {
   removeWhiteSpaces,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import {
-  Dimensions,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-} from 'react-native';
-import {
-  NavigationScreenProps,
-  ScrollView,
-} from 'react-navigation';
+import { Dimensions, SafeAreaView, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import Pdf from 'react-native-pdf';
@@ -30,29 +18,26 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import moment from 'moment';
 import { DownloadNew, ShareBlue } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import {
-  shareDocument,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
-export interface TestPdfRenderProps extends NavigationScreenProps {
-  uri: string;
-  title: string;
-  order: any;
-  isPopup: boolean;
+import { shareDocument } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { Overlay } from 'react-native-elements';
+interface TestPdfRenderProps {
+  uri?: string;
+  title?: string;
+  order?: any;
+  isPopup?: boolean;
+  isReport?: boolean;
   setDisplayPdf?: () => void;
+  onPressClose: () => void;
 }
 
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
+const { CLEAR } = theme.colors;
 
 export const TestPdfRender: React.FC<TestPdfRenderProps> = (props) => {
-  const uri = props.uri || props.navigation.getParam('uri');
-  const title = props.title || props.navigation.getParam('title');
-  const order = props.order || props.navigation.getParam('order');
-  const isReport = props.order || props.navigation.getParam('isReport');
-  const isPopup = props.isPopup || props.navigation.getParam('isPopup');
-  const setDisplayPdf = props.setDisplayPdf || props.navigation.getParam('setDisplayPdf');
-  const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
+  const { uri, order, isPopup, isReport, onPressClose } = props;
+  const { loading, setLoading } = useUIElements();
 
-  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const { allCurrentPatients } = useAllCurrentPatients();
   const [serviceableObject, setServiceableObject] = useState({} as any);
   Object.keys(serviceableObject)?.length === 0 && serviceableObject?.constructor === Object;
   const renderHeader = () => {
@@ -64,7 +49,7 @@ export const TestPdfRender: React.FC<TestPdfRenderProps> = (props) => {
         }}
         leftIcon={'backArrow'}
         title={'VIEW REPORTS'}
-        onPressLeftIcon={() => props.navigation.goBack()}
+        onPressLeftIcon={() => onPressClose()}
       />
     );
   };
@@ -78,9 +63,12 @@ export const TestPdfRender: React.FC<TestPdfRenderProps> = (props) => {
       / /g,
       '_'
     );
-    // downloadLabTest(removeWhiteSpaces(order?.labReportURL)!, appointmentDate, patientName, order);
     downloadLabTest(removeWhiteSpaces(uri)!, appointmentDate, patientName, order);
   }
+
+  useEffect(() => {
+    setLoading?.(false);
+  }, [])
   async function downloadLabTest(
     pdfUrl: string,
     appointmentDate: string,
@@ -122,10 +110,23 @@ export const TestPdfRender: React.FC<TestPdfRenderProps> = (props) => {
     );
   };
   const shareReport = () => {
-    shareDocument(uri, 'application/pdf', order?.displayId, isReport)
-  }
+    setLoading?.(true);
+    shareDocument(uri, 'application/pdf', order?.displayId, isReport);
+    setTimeout(() => {
+      setLoading?.(false);
+    }, 5000);
+  };
 
   return (
+    <Overlay
+      isVisible
+      onRequestClose={() => onPressClose()}
+      windowBackgroundColor={'rgba(0, 0, 0, 0.6)'}
+      containerStyle={{ marginBottom: 0 }}
+      fullScreen
+      transparent
+      overlayStyle={styles.phrOverlayStyle}
+    >
     <View style={{ flex: 1 }}>
       <SafeAreaView>
         {renderHeader()}
@@ -152,17 +153,29 @@ export const TestPdfRender: React.FC<TestPdfRenderProps> = (props) => {
               <Text style={styles.textStyles}>Share</Text>
             </TouchableOpacity>
           </View>
-          <ScrollView
-            minimumZoomScale={1} maximumZoomScale={5}
-          >{PDFView()}</ScrollView>
+          <ScrollView minimumZoomScale={1} maximumZoomScale={5}>
+            {PDFView()}
+          </ScrollView>
         </View>
       </SafeAreaView>
       {loading && <Spinner />}
     </View>
+    </Overlay>
   );
 };
 
 const styles = StyleSheet.create({
+  phrOverlayStyle: {
+    padding: 0,
+    margin: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: CLEAR,
+    overflow: 'hidden',
+    elevation: 0,
+    bottom: 0,
+    position: 'absolute',
+  },
   downloadContainerView: {
     backgroundColor: 'white',
     width: '100%',
