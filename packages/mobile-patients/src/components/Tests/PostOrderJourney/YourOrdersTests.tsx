@@ -1738,7 +1738,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
   useEffect(() => {
     setShowViewReportModal(true);
-  }, [activeOrder])
+  }, [activeOrder?.labReportURL])
 
   function _onPressViewReportAction(order: orderList) {
     if (!!order?.labReportURL && order?.labReportURL != '') {
