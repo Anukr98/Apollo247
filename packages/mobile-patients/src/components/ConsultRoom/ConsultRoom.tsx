@@ -1588,7 +1588,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       (eventName == CleverTapEventName.BUY_MEDICINES ||
         eventName == CleverTapEventName.ORDER_TESTS ||
         eventName == CleverTapEventName.VIEW_HELATH_RECORDS ||
-        eventName == CleverTapEventName.NEED_HELP)
+        eventName == CleverTapEventName.NEED_HELP ||
+        eventName == CleverTapEventName.OFFERS_CTA_CLICKED)
     ) {
       (eventAttributes as HomeScreenAttributes)['Source'] = source;
     }
@@ -5070,7 +5071,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
     const listitems = recentSearches.map((item) => {
       return (
-        <TouchableOpacity onPress={() => onSearchTextChange(item)}>
+        <TouchableOpacity
+          onPress={() => {
+            postHomeCleverTapEvent(
+              CleverTapEventName.RECENT_SEARCH_CLICKED_UNDER_SEARCH_BAR,
+              'Search bar'
+            );
+            onSearchTextChange(item);
+          }}
+        >
           <View style={{ flexDirection: 'row', alignItems: 'center', padding: 4 }}>
             <TimeBlueIcon style={{ width: 24, height: 24, marginHorizontal: 4 }} />
             <Text
@@ -5122,14 +5131,32 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const onClickSearchItem = (key: string) => {
+    console.log('onClickSearchItem ==== ', key);
+    // todo: for view all results
+    // postHomeCleverTapEvent(
+    //   CleverTapEventName.VIEW_ALL_SEARCH_RESULT_CLICKED,
+    //   'Search bar'
+    // );
     switch (key) {
       case MedicalRecordType.MEDICATION:
+        postHomeCleverTapEvent(
+          CleverTapEventName.OPTION_FROM_MEDICINE_CLICKED_ON_SEARCH_BAR_PAGE,
+          'Search bar'
+        );
         props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
         break;
       case MedicalRecordType.TEST_REPORT:
+        postHomeCleverTapEvent(
+          CleverTapEventName.OPTION_FROM_DIAGNOSTIC_CLICKED_ON_SEARCH_BAR_PAGE,
+          'Search bar'
+        );
         props.navigation.navigate(AppRoutes.SearchTestScene, { searchText: searchText });
         break;
       case MedicalRecordType.CONSULTATION:
+        postHomeCleverTapEvent(
+          CleverTapEventName.OPTION_FROM_CONSULT_CLICKED_ON_SEARCH_BAR_PAGE,
+          'Search bar'
+        );
         props.navigation.navigate(AppRoutes.DoctorSearch, { searchText: searchText });
         break;
     }

@@ -311,7 +311,6 @@ export enum CleverTapEventName {
   //HomePage Events
   MANAGE_DIABETES = 'Diabetes Program Viewed',
   HOME_VIEWED = 'Home page viewed',
-  OFFERS_CTA_CLICKED = 'Offers cta clicked',
   MOBILE_NUMBER_ENTERED = 'Login Mobile Number Entered',
   OTP_VERIFICATION_SUCCESS = 'OTP Verification Success',
   OTP_ENTERED = 'Login OTP Submitted',
@@ -320,6 +319,13 @@ export enum CleverTapEventName {
   TRUECALLER_EVENT_ERRORS = 'Truecaller event errors',
   TRUECALLER_APOLLO247_LOGIN_ERRORS = 'Apollo247 truecaller login errors',
   LOGIN_WITH_TRUECALLER_CLICKED = 'Login with truecaller clicked',
+  OFFERS_CTA_CLICKED = 'Offers cta clicked',
+  RECENT_SEARCH_CLICKED_UNDER_SEARCH_BAR = 'Recent search clicked under search bar',
+  SEARCH_SUGGESTION_CLICKED_UNDER_SEARCH_BAR = 'Search suggestion clicked under search bar',
+  OPTION_FROM_MEDICINE_CLICKED_ON_SEARCH_BAR_PAGE = 'A option from medicine clicked on search bar page',
+  OPTION_FROM_DIAGNOSTIC_CLICKED_ON_SEARCH_BAR_PAGE = 'A option from diagnostic clicked on search bar page',
+  OPTION_FROM_CONSULT_CLICKED_ON_SEARCH_BAR_PAGE = 'A option from consult clicked on search bar page',
+  VIEW_ALL_SEARCH_RESULT_CLICKED = 'When someone clicks on veiw all search result',
 
   FAQs_ARTICLES_CLICKED = 'Vaccination FAQs & Articles clicked',
   VACCINATION_CALL_A_DOCTOR_CLICKED = 'Vaccination Call a doctor clicked',
@@ -699,7 +705,7 @@ export interface HomeScreenAttributes {
   'Customer ID': string;
   User_Type: string;
   isConsulted: string;
-  Source?: 'Home Screen' | 'Menu' | 'My Account Screen';
+  Source?: 'Home Screen' | 'Menu' | 'My Account Screen' | 'Search bar';
   'Page Name'?: string;
   'Nav src'?:
   | 'hero banner'
