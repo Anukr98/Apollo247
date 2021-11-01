@@ -99,6 +99,7 @@ import {
   getPatientPrismMedicalRecordsApi,
   switchDiagnosticOrderPatientId,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { TestPdfRender } from '@aph/mobile-patients/src/components/Tests/components/TestPdfRender';
 import { Overlay } from 'react-native-elements';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
@@ -180,6 +181,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [selectRescheduleReason, setSelectRescheduleReason] = useState<string>('');
   const [showMultiUhidOption, setShowMultiUhidOption] = useState<boolean>(false);
   const [isMultiUhid, setIsMultiUhid] = useState<boolean>(false);
+  const [showViewReportModal, setShowViewReportModal] = useState<boolean>(false);
   const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
   const [multipleOrdersList, setMultipleOrdersList] = useState<
     | (getDiagnosticOrdersListByParentOrderID_getDiagnosticOrdersListByParentOrderID_ordersList | null)[]
@@ -1720,15 +1722,25 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setDistanceCharges?.(0);
     setModifiedPatientCart?.([]);
   }
+  const renderViewReportModal = () => {
+    return (
+      <View>
+        <TestPdfRender
+          uri={activeOrder?.labReportURL ? activeOrder?.labReportURL : ''}
+          order={activeOrder}
+          isReport={true}
+          onPressClose={()=>{
+            setShowViewReportModal(false)
+          }}
+        />
+      </View>
+    );
+  };
 
   function _onPressViewReportAction(order: orderList) {
     if (!!order?.labReportURL && order?.labReportURL != '') {
       setActiveOrder(order);
-      props.navigation.navigate(AppRoutes.TestPdfRender, {
-        uri: order?.labReportURL,
-        order: order,
-        isReport: true
-      });
+      setShowViewReportModal(true);
     } else if (!!order?.visitNo && order?.visitNo != '') {
       //directly open the phr section
       fetchTestReportResult(order);
@@ -2061,6 +2073,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         {showBottomOverlay && renderBottomPopUp()}
         {showPatientsOverlay && renderPatientsOverlay()}
         {showPatientListOverlay && renderPatientsListOverlay()}
+        {showViewReportModal ? renderViewReportModal() : null}
       </SafeAreaView>
       {loading && !props?.showHeader ? null : loading && <Spinner />}
     </View>

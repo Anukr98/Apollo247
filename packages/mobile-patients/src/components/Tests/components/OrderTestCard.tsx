@@ -142,7 +142,8 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     return (
       <View style={styles.listViewContainer}>
         {renderTestNames()}
-        {props.showReportOption ? renderViewReport() : null}
+        {/* {props.showReportOption ? renderViewReport() : null} */}
+        {renderViewReport()}
       </View>
     );
   };
