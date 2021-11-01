@@ -287,7 +287,14 @@ const appStaticVariables = {
   enableCredWebView: false,
   DIAGNOSTICS_REPORT_TAT_BREACH_TEXT: "Reports are delayed by a few hours, but should be available any time soon.",
   TrueCaller_Login_Enabled: false,
-  DIAGNOSTICS_NO_CIRCLE_SAVINGS_TEXT : 'Extra 15% off on lab tests and cashback on medicine orders'
+  DIAGNOSTICS_NO_CIRCLE_SAVINGS_TEXT : 'Extra 15% off on lab tests and cashback on medicine orders',
+  FREE_CONSULT_MESSAGE: {
+    prescriptionMessage: 'An Apollo doctor will call you as soon are they are available',
+    orderConfirmationMessage: 'An Apollo doctor will call you as soon are they are available',
+    orderSummaryMessage: 'Free Doctor Consult Booked. You will receive a call soon.',
+    message: 'An Apollo doctor will call you as soon are they are available',
+    doctorNumber: '04048214566 or 04071565134'
+  },
 };
 
 const DEV_top_specialties = [

@@ -19,6 +19,7 @@ import {
   RxPrescriptionCallIc,
   RxPrescriptionIc,
   RxPrescriptionLaterIc,
+  DoctorConsultIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -37,6 +38,7 @@ import {
   pharmaPrescriptionOptionVariables,
 } from '@aph/mobile-patients/src/graphql/types/pharmaPrescriptionOption';
 import { pharmaPrescriptionShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export interface Props {
   selectedOption: PrescriptionType | null;
@@ -69,6 +71,7 @@ export const PrescriptionOptions: React.FC<Props> = ({
   const configPrescriptionOptions = AppConfig.Configuration.CART_PRESCRIPTION_OPTIONS;
   const [prescriptionsLoading, setPrescriptionsLoading] = useState<boolean>(false);
   const [cartPrescriptionOptions, setCartPrescriptionOptions] = useState<any[]>([]);
+  const { setSelectedPrescriptionType } = useAppCommonData();
 
   useEffect(() => {
     getPrescriptionOptions();
@@ -113,7 +116,7 @@ export const PrescriptionOptions: React.FC<Props> = ({
           onSelectOption(PrescriptionType.UPLOADED, ePrescriptions, physicalPrescriptions);
         }}
         checked={selectedOption === PrescriptionType.UPLOADED}
-        leftIcon={<RxPrescriptionIc resizeMode={'contain'} />}
+        leftIcon={<RxPrescriptionIc resizeMode={'contain'} style={{ height: 38, width: 27 }} />}
       />
     );
   };
@@ -189,9 +192,12 @@ export const PrescriptionOptions: React.FC<Props> = ({
       <PrescriptionOption
         title={title}
         subtitle={renderNoPrescriptionDetails()}
-        onPress={() => onSelectOption(PrescriptionType.CONSULT)}
+        onPress={() => {
+          onSelectOption(PrescriptionType.CONSULT);
+          setSelectedPrescriptionType && setSelectedPrescriptionType('CONSULT');
+        }}
         checked={selectedOption === PrescriptionType.CONSULT}
-        leftIcon={<RxPrescriptionCallIc resizeMode={'contain'} />}
+        leftIcon={<DoctorConsultIcon resizeMode={'contain'} style={{ height: 40, width: 30 }} />}
       />
     );
   };
@@ -201,9 +207,7 @@ export const PrescriptionOptions: React.FC<Props> = ({
       <>
         <View style={{ flexDirection: 'row' }}>
           <Text style={styles.lightWeightBlueConsultation}>
-            {
-              'Get a consultation by our expert doctor within the next 30 minutes\n(Working hours: 8am to 8pm)'
-            }
+            {AppConfig.Configuration.FREE_CONSULT_MESSAGE.prescriptionMessage}
           </Text>
           <View style={styles.amountAndFreeText}>
             <Text style={styles.lightWeightBlueLineThrough}>{'₹399'}</Text>
@@ -402,8 +406,9 @@ const styles = StyleSheet.create({
     marginTop: 18,
   },
   rxPrescriptionLaterIc: {
-    height: 20,
-    width: 20,
+    height: 25,
+    width: 25,
+    marginRight: 3,
   },
   profileWrapper: { marginVertical: 10, flexDirection: 'row', flexWrap: 'wrap' },
   profileBtnContainer: { margin: 5, marginLeft: 0, marginRight: 10 },
