@@ -375,7 +375,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             key: null,
             actions: [
               NavigationActions.navigate({
-                routeName: AppRoutes.ConsultRoom,
+                routeName: AppRoutes.HomeScreen,
                 params: {
                   skipAutoQuestions: true,
                 },
@@ -773,7 +773,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
               } else if (isRenew) {
                 setShowCirclePlans(true);
               } else {
-                props.navigation.navigate(AppRoutes.ConsultRoom, {});
+                props.navigation.navigate(AppRoutes.HomeScreen, {});
                 if (isActive && !isCare) {
                   const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_EXPLORE_PLAN_CLICKED] = {
                     'User ID': g(currentPatient, 'id'),

@@ -186,7 +186,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
       } else if (status === SUCCESS) {
         props.navigationProps.navigate(AppRoutes.Consult, {});
       } else {
-        props.navigationProps.navigate(AppRoutes.ConsultRoom, {});
+        props.navigationProps.navigate(AppRoutes.HomeScreen, {});
       }
     } else {
       if (status === FAILED) {
@@ -196,7 +196,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
           orderAutoId: orderID,
         });
       } else {
-        props.navigationProps.navigate(AppRoutes.ConsultRoom, {});
+        props.navigationProps.navigate(AppRoutes.HomeScreen, {});
       }
     }
   };

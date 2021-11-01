@@ -57,6 +57,7 @@ import {
   GET_APPOINTMENT_DATA,
   GET_PROHEALTH_HOSPITAL_BY_SLUG,
   GET_ORDER_INFO,
+  GET_PERSONALIZED_OFFERS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
@@ -219,6 +220,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     });
     AppState.addEventListener('change', _handleAppStateChange);
     checkForVersionUpdate();
+    getOffers();
 
     try {
       PrefetchAPIReuqest({
@@ -781,7 +783,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             text: 'CANCEL',
             onPress: () => {
               hideAphAlert!();
-              props.navigation.navigate(AppRoutes.ConsultRoom);
+              props.navigation.navigate(AppRoutes.HomeScreen);
             },
             type: 'white-button',
           },
@@ -885,6 +887,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setExpectCallText,
     setNonCartTatText,
     setNonCartDeliveryText,
+    setOffersList,
+    setOffersListLoading,
+    setRecentGlobalSearchList,
   } = useAppCommonData();
   const {
     setMinimumCartValue,
@@ -1203,6 +1208,30 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     const key = getKeyBasedOnEnv(APP_ENV, RemoteConfigKeys, remoteConfigKey);
     const value = processValue(key);
     updateAppConfig(appConfigKey, value);
+  };
+
+  const getOffers = async () => {
+    setOffersListLoading && setOffersListLoading(true);
+    const authToken: string = await validateAndReturnAuthToken();
+    const apolloClient = buildApolloClient(authToken);
+    try {
+      const res = await apolloClient.query({
+        query: GET_PERSONALIZED_OFFERS,
+        fetchPolicy: 'no-cache',
+      });
+      const offers = res?.data?.getPersonalizedOffers?.response?.personalized_data?.offers_for_you;
+      const recent =
+        res?.data?.getPersonalizedOffers?.response?.personalized_data?.global_search_text
+          ?.search_text;
+      if (offers && offers.length > 0) {
+        setOffersList && setOffersList(offers);
+      }
+      if (recent && recent.length > 0)
+        setRecentGlobalSearchList && setRecentGlobalSearchList(recent.slice(0, 4));
+      setOffersListLoading && setOffersListLoading(false);
+    } catch (error) {
+      setOffersListLoading && setOffersListLoading(false);
+    }
   };
 
   const checkForVersionUpdate = async () => {

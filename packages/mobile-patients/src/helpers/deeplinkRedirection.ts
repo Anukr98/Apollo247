@@ -490,7 +490,7 @@ export const pushTheView = (
       navigation.navigate('TESTS', { movedFrom: 'deeplink' });
       break;
     case 'ConsultRoom':
-      navigation.replace(AppRoutes.ConsultRoom);
+      navigation.replace(AppRoutes.HomeScreen);
       break;
     case 'Speciality':
       setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', id);
@@ -633,7 +633,7 @@ export const pushTheView = (
           isCorporatePlan: true,
         });
       } else {
-        navigation.replace(AppRoutes.ConsultRoom);
+        navigation.replace(AppRoutes.HomeScreen);
       }
       break;
     case 'vaccinelisting':
@@ -706,7 +706,7 @@ export const pushTheView = (
         source: 'deeplink',
       };
       postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
-      navigation.replace(AppRoutes.ConsultRoom);
+      navigation.replace(AppRoutes.HomeScreen);
       break;
   }
 };
@@ -718,7 +718,7 @@ const webViewGoBack = (navigation: NavigationScreenProp<NavigationRoute<object>,
       key: null,
       actions: [
         NavigationActions.navigate({
-          routeName: AppRoutes.ConsultRoom,
+          routeName: AppRoutes.HomeScreen,
         }),
       ],
     })
@@ -735,7 +735,7 @@ const navigateToView = (
       index: 1,
       key: null,
       actions: [
-        NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom }),
+        NavigationActions.navigate({ routeName: AppRoutes.HomeScreen }),
         NavigationActions.navigate({ routeName: routeName, params: routeParams || {} }),
       ],
     })

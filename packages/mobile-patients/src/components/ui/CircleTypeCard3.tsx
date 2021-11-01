@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface CircleTypeCard3Props extends NavigationScreenProps {
+export interface CircleTypeCard3Props {
   onButtonPress: () => void;
   savings?: string;
   expiry?: string;
