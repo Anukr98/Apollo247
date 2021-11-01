@@ -4870,20 +4870,27 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     setSearchLoading(true);
     setSearchResults([]);
     onSearchTests(_searchText)
-      .then(() => {})
+      .then(() => {
+        Keyboard.dismiss();
+      })
       .catch((e) => {
+        Keyboard.dismiss();
         CommonBugFender('HomeScreen_ConsultRoom_onSearchTests', e);
       });
 
     onSearchMedicines(_searchText, null, {}, [])
       .then(() => {})
       .catch((e) => {
+        Keyboard.dismiss();
         CommonBugFender('HomeScreen_ConsultRoom_onSearchMedicinesFunction', e);
       });
 
     onSearchConsults(_searchText)
-      .then(() => {})
+      .then(() => {
+        Keyboard.dismiss();
+      })
       .catch((e) => {
+        Keyboard.dismiss();
         CommonBugFender('HomeScreen_ConsultRoom_onSearchConsultsFunction', e);
       });
 
