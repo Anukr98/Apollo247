@@ -1047,7 +1047,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           '',
           AppConfig.Configuration.FREE_CONSULT_MESSAGE.orderSummaryMessage
             .replace('{{doctor_name}}', order?.consultInfo?.doctorName)
-            .replace('{{slot_time}}', order?.consultInfo?.appointmentDateTime),
+            .replace(
+              '{{slot_time}}',
+              moment(order?.consultInfo?.appointmentDateTime).format('DD MMM YYYY, hh:mm A')
+            ),
         ],
         [MEDICINE_ORDER_STATUS.DELIVERED]: [
           '',
