@@ -5358,7 +5358,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                 {!appointmentLoading && currentAppointments === '0'
                   ? null
                   : renderHeadings('My Doctors')}
-                <View>{renderListView('Active Appointments', 'normal')}</View>
+                {!appointmentLoading && currentAppointments === '0'
+                  ? null
+                  : renderListView('Active Appointments', 'normal')}
                 <View>{renderAllConsultedDoctors()}</View>
 
                 {renderHeadings('Circle Membership and More')}
