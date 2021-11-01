@@ -87,6 +87,7 @@ const isIphoneX = DeviceInfo.hasNotch();
 export interface SearchTestSceneProps
   extends NavigationScreenProps<{
     searchText: string;
+    duplicateOrderId?: any;
   }> {}
 
 export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
@@ -125,12 +126,14 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     setModifiedPatientCart,
     setDistanceCharges,
     setDeliveryAddressId,
+    setCartItems,
   } = useDiagnosticsCart();
   const { cartItems: shopCartItems } = useShoppingCart();
   const { showAphAlert, setLoading: setGlobalLoading, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
+  const duplicateOrderId = props.navigation.getParam('duplicateOrderId');
   const showGoToCart = !!cartItems && cartItems?.length > 0;
 
   //add the cityId in case of modifyFlow
@@ -150,6 +153,11 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
 
   useEffect(() => {
     if (isModify) {
+      if (duplicateOrderId?.length > 0) {
+        duplicateOrderId?.map((id: string) =>
+          setCartItems?.(cartItems?.filter((val) => Number(val?.id) == Number(id)))
+        );
+      }
       const unSelectRemainingPatients = patientCartItems?.filter(
         (item) => item?.patientId !== modifiedOrder?.patientId
       );
