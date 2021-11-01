@@ -5355,8 +5355,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                   : renderHeadings('Offers For You')}
                 {offersListLoading && renderOffersForYouShimmer()}
                 {!offersListLoading && renderOffersForYou()}
-
-                {renderHeadings('My Doctors')}
+                {!appointmentLoading && currentAppointments === '0'
+                  ? null
+                  : renderHeadings('My Doctors')}
                 <View>{renderListView('Active Appointments', 'normal')}</View>
                 <View>{renderAllConsultedDoctors()}</View>
 
