@@ -292,8 +292,6 @@ const appStaticVariables = {
     prescriptionMessage: 'An Apollo doctor will call you as soon are they are available',
     orderConfirmationMessage: 'An Apollo doctor will call you as soon are they are available',
     orderSummaryMessage: 'Free Doctor Consult Booked. You will receive a call soon.',
-    message: 'An Apollo doctor will call you as soon are they are available',
-    doctorNumber: '04048214566 or 04071565134'
   },
 };
 
