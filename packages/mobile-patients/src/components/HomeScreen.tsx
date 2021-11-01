@@ -5071,6 +5071,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const getRecentORSuggestList = (listType: string) => {
+    const heading = listType === 'SUGGEST' ? 'SEARCH SUGGESTIONS' : 'RECENT SEARCHES';
     const header = (
       <View style={styles.recentOrSuggestContainer}>
         <Text
@@ -5079,7 +5080,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             marginLeft: 14,
           }}
         >
-          {listType === 'SUGGEST' ? 'SEARCH SUGGESTIONS' : 'RECENT SEARCHES'}
+          {recentGlobalSearchList.length >= 1 ? heading : null}
         </Text>
       </View>
     );
