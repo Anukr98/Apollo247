@@ -824,7 +824,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 26,
     marginBottom: 12,
     padding: 0,
-    width: width - 40,
+    width: width - 36,
     alignSelf: 'center',
     height: 150,
   },
