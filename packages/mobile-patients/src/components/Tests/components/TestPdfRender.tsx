@@ -63,7 +63,6 @@ export const TestPdfRender: React.FC<TestPdfRenderProps> = (props) => {
       / /g,
       '_'
     );
-    // downloadLabTest(removeWhiteSpaces(order?.labReportURL)!, appointmentDate, patientName, order);
     downloadLabTest(removeWhiteSpaces(uri)!, appointmentDate, patientName, order);
   }
 
