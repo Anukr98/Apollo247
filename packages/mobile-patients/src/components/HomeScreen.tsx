@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   covidCardContainer: {
-    borderRadius: 12,
+    borderRadius: 6,
     backgroundColor: theme.colors.WHITE,
     overflow: 'hidden',
     marginBottom: 18,
@@ -690,7 +690,7 @@ const styles = StyleSheet.create({
     borderStyle: 'solid',
     borderColor: '#FC9916',
     padding: 8,
-    borderRadius: 12,
+    borderRadius: 6,
     alignItems: 'center',
   },
   circleCardsTexts: {
@@ -4866,26 +4866,22 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const onSearchExecute = async (_searchText: string) => {
-
     setSearchLoading(true);
     setSearchResults([]);
     onSearchTests(_searchText)
-      .then(() => {
-      })
+      .then(() => {})
       .catch((e) => {
         CommonBugFender('HomeScreen_ConsultRoom_onSearchTests', e);
       });
 
     onSearchMedicines(_searchText, null, {}, [])
-      .then(() => {
-      })
+      .then(() => {})
       .catch((e) => {
         CommonBugFender('HomeScreen_ConsultRoom_onSearchMedicinesFunction', e);
       });
 
     onSearchConsults(_searchText)
-      .then(() => {
-      })
+      .then(() => {})
       .catch((e) => {
         CommonBugFender('HomeScreen_ConsultRoom_onSearchConsultsFunction', e);
       });
