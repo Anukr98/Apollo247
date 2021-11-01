@@ -99,7 +99,12 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
 
   const renderIsInStock = () => {
     return showDeliverySpinner ? (
-      <ActivityIndicator style={{ marginLeft: 20 }} animating={true} size="small" color="green" />
+      <ActivityIndicator
+        style={styles.activityIndicatorStyle}
+        animating={true}
+        size="small"
+        color="green"
+      />
     ) : isBanned ? (
       <View style={styles.inStockContainer}>
         <Text style={styles.stockText}>Banned for Sale</Text>
@@ -330,5 +335,11 @@ const styles = StyleSheet.create({
   inStockText: {
     ...theme.viewStyles.text('M', 14, '#00B38E', 1, 18),
     fontWeight: '500',
+  },
+  activityIndicatorStyle: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    marginTop: 5,
+    marginLeft: 10,
   },
 });

@@ -585,7 +585,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     MEDICINE_ORDER_STATUS.VERIFICATION_DONE,
     MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
   ];
- 
+
   const renderOrderTrackTopView = () => {
     const diffInTat = checkOrderTatDiff();
 
@@ -1045,11 +1045,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         ],
         [MEDICINE_ORDER_STATUS.CONSULT_PENDING]: [
           '',
-          `Doctor Consult Booked! You will receive a call soon.  Doctor Name: ${
-            order?.consultInfo?.doctorName
-          }, Slot time: ${moment(order?.consultInfo?.appointmentDateTime).format(
-            'DD MMM YYYY, hh:mm A'
-          )}`,
+          AppConfig.Configuration.FREE_CONSULT_MESSAGE.orderSummaryMessage
+            .replace('{{doctor_name}}', order?.consultInfo?.doctorName)
+            .replace(
+              '{{slot_time}}',
+              moment(order?.consultInfo?.appointmentDateTime).format('DD MMM YYYY, hh:mm A')
+            ),
         ],
         [MEDICINE_ORDER_STATUS.DELIVERED]: [
           '',

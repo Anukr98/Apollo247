@@ -450,7 +450,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
         Status: 'Success',
         Keyword: searchText,
         Position: index + 1,
-        Source: 'Parial search',
+        Source: 'Partial search',
         Action: 'Add to cart',
         'Product availability': 'Available',
         'Product position': index + 1 - keywordArr?.length,
