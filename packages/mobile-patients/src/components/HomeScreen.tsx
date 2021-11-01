@@ -1633,7 +1633,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       (eventName == CleverTapEventName.BUY_MEDICINES ||
         eventName == CleverTapEventName.ORDER_TESTS ||
         eventName == CleverTapEventName.VIEW_HELATH_RECORDS ||
-        eventName == CleverTapEventName.NEED_HELP)
+        eventName == CleverTapEventName.NEED_HELP ||
+        eventName == CleverTapEventName.OFFERS_CTA_CLICKED)
     ) {
       (eventAttributes as HomeScreenAttributes)['Source'] = source;
     }
@@ -1686,7 +1687,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         'Nav src': 'app launch',
       };
     }
-    if (eventName == CleverTapEventName.COVID_VACCINATION_SECTION_CLICKED) {
+    if (
+      eventName == CleverTapEventName.COVID_VACCINATION_SECTION_CLICKED ||
+      CleverTapEventName.OFFERS_CTA_CLICKED
+    ) {
       eventAttributes = { ...eventAttributes, ...attributes };
     }
     postCleverTapEvent(eventName, eventAttributes);
@@ -3048,11 +3052,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             ? recentGlobalSearchList.slice(0, 3)
             : recentGlobalSearchList;
         setRecentGlobalSearchList && setRecentGlobalSearchList([{ text: search }, ...listToAdd]);
-        console.log('csk save res', JSON.stringify(i), listToAdd, [{ text: search }, ...listToAdd]);
       })
       .catch((e) => {
         CommonBugFender('HomeScreen_SaveSearchAPIFailure', e);
-        console.log('csk save res', JSON.stringify(e));
       });
   };
 
@@ -3507,10 +3509,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                   marginVertical: 4,
                   marginRight: 4,
                 }}
-                onPress={() => {
-                  let action = getRedirectActionForOffers(item?.cta?.path?.vertical?.toLowerCase());
-                  navigateCTAActions({ type: 'REDIRECT', cta_action: action }, '');
-                }}
+                onPress={() => onOfferCtaPressed(item, index + 1)}
               >
                 <WhiteArrowRight />
               </TouchableOpacity>
@@ -3638,12 +3637,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                     elevation: 0,
                   }}
                   titleTextStyle={{ color: offerDesignTemplate?.cta?.text_color }}
-                  onPress={() => {
-                    let action = getRedirectActionForOffers(
-                      item?.cta?.path?.vertical?.toLowerCase()
-                    );
-                    navigateCTAActions({ type: 'REDIRECT', cta_action: action }, '');
-                  }}
+                  onPress={() => onOfferCtaPressed(item, 1)}
                   disabled={false}
                 />
               </View>
@@ -3652,6 +3646,21 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         </TouchableOpacity>
       </View>
     );
+  };
+
+  const onOfferCtaPressed = (item: any, index: number) => {
+    let attributes = {
+      'Tile in the sequence': index,
+      'Coupon Code': item?.coupon_code,
+      'Offer Title': item?.title?.text,
+      'Offer Subtitle': item?.subtitle?.text,
+      'Offer Notch Test': item?.notch_text?.text,
+      'Offer CTA Text': item?.cta?.text,
+      'Offer Expiry': item?.expired_at,
+    };
+    postHomeCleverTapEvent(CleverTapEventName.OFFERS_CTA_CLICKED, 'Home Screen', attributes);
+    let action = getRedirectActionForOffers(item?.cta?.path?.vertical?.toLowerCase());
+    navigateCTAActions({ type: 'REDIRECT', cta_action: action }, '');
   };
 
   const circleCashbackOffersComponent = () => {
@@ -4822,14 +4831,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           consultSearchResults.current = [];
         }
 
-        console.log('csk cons done', consultSearchResults.current.length);
         updateSearchResultList(MedicalRecordType.CONSULTATION, consultSearchResults.current);
         setSearchLoading(false);
       } catch (e) {
         CommonBugFender('HomeScreen_ConsultRoom', e);
         setSearchLoading(false);
         updateSearchResultList(MedicalRecordType.CONSULTATION, []);
-        console.log('csk cons', JSON.stringify(e));
       }
     }
   };
@@ -4859,13 +4866,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const onSearchExecute = async (_searchText: string) => {
-    console.log('csk search start');
 
     setSearchLoading(true);
     setSearchResults([]);
     onSearchTests(_searchText)
       .then(() => {
-        console.log('final search res-t', JSON.stringify(searchResults.length));
       })
       .catch((e) => {
         CommonBugFender('HomeScreen_ConsultRoom_onSearchTests', e);
@@ -4873,7 +4878,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
     onSearchMedicines(_searchText, null, {}, [])
       .then(() => {
-        console.log('final search res-m', JSON.stringify(searchResults.length));
       })
       .catch((e) => {
         CommonBugFender('HomeScreen_ConsultRoom_onSearchMedicinesFunction', e);
@@ -4881,7 +4885,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
     onSearchConsults(_searchText)
       .then(() => {
-        console.log('final search res-c', JSON.stringify(searchResults.length));
       })
       .catch((e) => {
         CommonBugFender('HomeScreen_ConsultRoom_onSearchConsultsFunction', e);
@@ -5085,7 +5088,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     );
     const listitems = recentGlobalSearchList.map((item: any) => {
       return (
-        <TouchableOpacity onPress={() => onSearchTextChange(item.text)}>
+        <TouchableOpacity
+          onPress={() => {
+            postHomeCleverTapEvent(
+              CleverTapEventName.RECENT_SEARCH_CLICKED_UNDER_SEARCH_BAR,
+              'Search bar'
+            );
+            onSearchTextChange(item.text);
+          }}
+        >
           <View style={{ flexDirection: 'row', alignItems: 'center', padding: 4 }}>
             <TimeBlueIcon style={{ width: 24, height: 24, marginHorizontal: 4 }} />
             <Text
@@ -5138,14 +5149,31 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const onClickSearchItem = (key: string) => {
+    // todo: for view all results
+    // postHomeCleverTapEvent(
+    //   CleverTapEventName.VIEW_ALL_SEARCH_RESULT_CLICKED,
+    //   'Search bar'
+    // );
     switch (key) {
       case MedicalRecordType.MEDICATION:
+        postHomeCleverTapEvent(
+          CleverTapEventName.OPTION_FROM_MEDICINE_CLICKED_ON_SEARCH_BAR_PAGE,
+          'Search bar'
+        );
         props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
         break;
       case MedicalRecordType.TEST_REPORT:
+        postHomeCleverTapEvent(
+          CleverTapEventName.OPTION_FROM_DIAGNOSTIC_CLICKED_ON_SEARCH_BAR_PAGE,
+          'Search bar'
+        );
         props.navigation.navigate(AppRoutes.SearchTestScene, { searchText: searchText });
         break;
       case MedicalRecordType.CONSULTATION:
+        postHomeCleverTapEvent(
+          CleverTapEventName.OPTION_FROM_CONSULT_CLICKED_ON_SEARCH_BAR_PAGE,
+          'Search bar'
+        );
         props.navigation.navigate(AppRoutes.DoctorSearch, { searchText: searchText });
         break;
     }
