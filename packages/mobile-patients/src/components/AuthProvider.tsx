@@ -142,6 +142,10 @@ export const AuthProvider: React.FC = (props) => {
         postWebEngageEvent(WebEngageEventName.AUTHTOKEN_UPDATED, {
           PatientId: currentPatientId,
         });
+      } else {
+        postWebEngageEvent(WebEngageEventName.NO_FIREBASE_USER, {
+          PatientId: currentPatientId,
+        });
       }
     });
     // unsubscribe on unmounting
@@ -330,6 +334,10 @@ export const AuthProvider: React.FC = (props) => {
             apolloClient = buildApolloClient(jwt);
             authStateRegistered = false;
             resolve(jwt);
+          } else {
+            postWebEngageEvent(WebEngageEventName.NO_FIREBASE_USER, {
+              PatientId: currentPatientId,
+            });
           }
           setIsSigningIn(false);
         });
