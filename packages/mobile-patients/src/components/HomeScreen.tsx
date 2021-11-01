@@ -821,15 +821,15 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: '#D4D4D4',
     marginTop: 8,
-    marginHorizontal: 24,
-    marginBottom: 14,
+    marginHorizontal: 26,
+    marginBottom: 12,
     padding: 0,
     width: width - 40,
     alignSelf: 'center',
-    height: 180,
+    height: 150,
   },
   proHealthBannerImage: {
-    height: 180,
+    height: 150,
     width: '100%',
   },
   countContainer: {
@@ -4622,7 +4622,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         <ImageBackground
           style={styles.proHealthBannerImage}
           source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_banner.webp')}
-          resizeMode={'stretch'}
+          resizeMode={'contain'}
           borderRadius={10}
         ></ImageBackground>
       </TouchableOpacity>
