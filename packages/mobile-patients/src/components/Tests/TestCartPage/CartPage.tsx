@@ -76,7 +76,9 @@ import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/help
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
+  DiagnosticAddresssSelected,
   DiagnosticAddToCartClicked,
+  DiagnosticCartViewed,
   DiagnosticRemoveFromCartClicked,
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { CartItemCard } from '@aph/mobile-patients/src/components/Tests/components/CartItemCard';
@@ -152,9 +154,11 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     modifiedOrderItemIds,
     addPatientCartItem,
     addCartItem,
+    newAddressAddedCartPage,
+    setNewAddressAddedCartPage,
   } = useDiagnosticsCart();
 
-  const { setAddresses: setMedAddresses } = useShoppingCart();
+  const { setAddresses: setMedAddresses, circleSubscriptionId } = useShoppingCart();
 
   const {
     locationDetails,
@@ -212,6 +216,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   var overallDuplicateArray = [] as any;
 
   useEffect(() => {
+    triggerCartPageViewed();
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setIsFocused(true);
       BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -225,6 +230,35 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       willBlur && willBlur.remove();
     };
   }, []);
+
+  function triggerAddressSelected(servicable: 'Yes' | 'No') {
+    const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
+    const pinCodeFromAddress = addressToUse?.zipcode!;
+    DiagnosticAddresssSelected(
+      newAddressAddedCartPage != '' ? 'New' : 'Existing',
+      servicable,
+      pinCodeFromAddress,
+      'Cart page',
+      currentPatient,
+      isDiagnosticCircleSubscription
+    );
+    newAddressAddedCartPage != '' && setNewAddressAddedCartPage?.('');
+  }
+
+  function triggerCartPageViewed() {
+    const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
+    const pinCodeFromAddress = addressToUse?.zipcode!;
+    const cityFromAddress = addressToUse?.city;
+    DiagnosticCartViewed(
+      'cart page',
+      currentPatient,
+      cartItems,
+      isDiagnosticCircleSubscription,
+      pinCodeFromAddress,
+      cityFromAddress,
+      false
+    );
+  }
 
   function handleBack() {
     if (isModifyFlow) {
@@ -769,17 +803,20 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
               setLoading?.(false);
               errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
             });
+          triggerAddressSelected('Yes');
         } else {
           //non-serviceable
           setLoading?.(false);
           setIsServiceable(false);
           setShowNonServiceableText(true);
           setAddressCityId(String(AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID));
+          triggerAddressSelected('No');
         }
       } else {
         setLoading?.(false);
         setIsServiceable(false);
         setShowNonServiceableText(true);
+        triggerAddressSelected('No');
       }
     } catch (error) {
       CommonBugFender('AddPatients_getAddressServiceability', error);
@@ -1607,19 +1644,19 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const renderCallToOrder = () => {
     return (
       <CallToOrderView
-        cityId = {deliveryAddressCityId}
-        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTCART}
+        cityId={deliveryAddressCityId}
+        pageId={CALL_TO_ORDER_CTA_PAGE_ID.TESTCART}
         customMargin={showNonServiceableText ? 240 : 180}
-        slideCallToOrder = {slideCallToOrder}
-        onPressSmallView = {() => {
+        slideCallToOrder={slideCallToOrder}
+        onPressSmallView={() => {
           setSlideCallToOrder(false);
         }}
-        onPressCross = {() => {
+        onPressCross={() => {
           setSlideCallToOrder(true);
         }}
       />
-    )
-  }
+    );
+  };
 
   const renderWizard = () => {
     return (
@@ -1638,9 +1675,14 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       <SafeAreaView style={[{ ...theme.viewStyles.container }]}>
         {renderHeader()}
         {renderWizard()}
-        <ScrollView bounces={false} style={{ flexGrow: 1 }} showsVerticalScrollIndicator={false} onScroll={()=>{
-          setSlideCallToOrder(true);
-        }}>
+        <ScrollView
+          bounces={false}
+          style={{ flexGrow: 1 }}
+          showsVerticalScrollIndicator={false}
+          onScroll={() => {
+            setSlideCallToOrder(true);
+          }}
+        >
           {renderMainView()}
         </ScrollView>
         {renderAddressSection()}

@@ -201,7 +201,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const isDeep = props.navigation.getParam('movedFrom');
   const itemId =
     movedFrom == AppRoutes.TestsCart ? testDetails?.ItemID : props.navigation.getParam('itemId');
-
+  const source = props.navigation.getParam('source');
   const isAlreadyPartOfOrder =
     !!modifiedOrderItemIds &&
     modifiedOrderItemIds?.length &&
@@ -593,7 +593,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         isDeep == 'deeplink'
           ? 'Deeplink'
           : movedFrom == AppRoutes.SearchTestScene
-          ? 'Popular search'
+          ? source
           : testInfo?.source! || testDetails?.source,
         itemName,
         testInfo?.type! || testDetails?.type,

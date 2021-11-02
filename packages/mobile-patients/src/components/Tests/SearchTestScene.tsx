@@ -319,14 +319,16 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     name: string,
     id: string,
     price: number,
-    discountedPrice: number
+    discountedPrice: number,
+    source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE
   ) => {
     DiagnosticAddToCartEvent(
       name,
       id,
       price,
       discountedPrice,
-      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.POPULAR_SEARCH,
+      source,
+      undefined,
       currentPatient,
       isDiagnosticCircleSubscription
     );
@@ -339,6 +341,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const onAddCartItem = (
     itemId: string | number,
     itemName: string,
+    source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
     rate?: number,
     collectionType?: TEST_COLLECTION_TYPE,
     pricesObject?: any,
@@ -348,7 +351,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     inclusions?: any[]
   ) => {
     savePastSearch(`${itemId}`, itemName).catch((e) => {});
-    postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, 0, 0);
+    postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, 0, 0, source);
     const addedItem = {
       id: `${itemId}`,
       name: stripHtml(itemName),
@@ -622,12 +625,16 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           CommonLogEvent(AppRoutes.SearchTestScene, 'Search suggestion Item');
           props.navigation.navigate(AppRoutes.TestDetails, {
             itemId: product?.diagnostic_item_id,
-            source: 'Full search',
+            source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PARTIAL_SEARCH,
             comingFrom: AppRoutes.SearchTestScene,
           });
         }}
         onPressAddToCart={() => {
-          onAddCartItem(product?.diagnostic_item_id, product?.diagnostic_item_name);
+          onAddCartItem(
+            product?.diagnostic_item_id,
+            product?.diagnostic_item_name,
+            DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PARTIAL_SEARCH
+          );
         }}
         data={product}
         loading={true}
@@ -749,12 +756,12 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           props.navigation.navigate(AppRoutes.TestDetails, {
             itemId: item?.diagnostic_item_id,
             itemName: item?.diagnostic_item_name,
-            source: 'Popular search',
+            source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.POPULAR_SEARCH,
             comingFrom: AppRoutes.SearchTestScene,
           });
         }}
         onPressAddToCart={() => {
-          onAddCartItem(item?.diagnostic_item_id, item?.diagnostic_item_name);
+          onAddCartItem(item?.diagnostic_item_id, item?.diagnostic_item_name, source);
         }}
         data={item}
         loading={true}
