@@ -118,6 +118,7 @@ export const Savings: React.FC<SavingsProps> = (props) => {
         <ListItem
           topDivider
           containerStyle={styles.listItemTotal}
+          title={<Text />}
           rightTitle={`₹${totalSaved.toFixed(2)}`}
           rightTitleStyle={styles.sherpaBlueBoldText}
         />

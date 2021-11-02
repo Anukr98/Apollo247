@@ -1113,6 +1113,17 @@ export const getlocationDataFromLatLang = async (latitude: number, longitude: nu
   }
 };
 
+/**
+ * Method to filter addresses to find postal_code type address
+ */
+ const filterPinCodeAddressFromList = (googleAPIResponse: any) => {
+  const suggestionList = googleAPIResponse?.data?.results;
+  const [pinCodeAddress] = suggestionList?.filter((address: any) =>
+    address?.address_components?.some((components: any) => components?.types?.includes('postal_code'))
+  );
+  return pinCodeAddress?.address_components ? pinCodeAddress?.address_components : '';
+};
+
 const getlocationData = (
   resolve: (value?: LocationData | PromiseLike<LocationData> | undefined) => void,
   reject: (reason?: any) => void,
@@ -1128,8 +1139,7 @@ const getlocationData = (
       }
       getPlaceInfoByLatLng(latitude, longitude)
         .then((response) => {
-          const addrComponents =
-            g(response, 'data', 'results', '0' as any, 'address_components') || [];
+          const addrComponents = filterPinCodeAddressFromList(response);
           if (addrComponents.length == 0) {
             reject('Unable to get location.');
           } else {
@@ -1567,6 +1577,19 @@ export const postCleverTapEvent = (eventName: CleverTapEventName, attributes: Ob
   try {
     CleverTap.recordEvent(eventName, attributes);
   } catch (error) {}
+};
+
+/**
+ * To check is user logged into clevertap or not
+ * @param _currentPatient current patient user object
+ */
+ export const checkCleverTapLoginStatus = async (_currentPatient: any) => {
+  CleverTap.profileGetProperty('Phone', (error, res) => {
+    if (res === null) {
+      //user is not logged into clevertap
+      onCleverTapUserLogin(_currentPatient);
+    }
+  });
 };
 
 export const onCleverTapUserLogin = async (_currentPatient: any) => {

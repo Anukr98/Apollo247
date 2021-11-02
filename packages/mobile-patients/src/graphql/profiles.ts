@@ -5199,6 +5199,11 @@ export const GET_ORDER_INFO = gql`
           orderAutoId
         }
       }
+      DiagnosticsPaymentDetails {
+        ordersList {
+          allowPayment
+        }
+      }
     }
   }
 `;
