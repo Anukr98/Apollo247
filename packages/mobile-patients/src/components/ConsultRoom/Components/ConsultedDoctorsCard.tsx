@@ -28,12 +28,11 @@ import {
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { ConsultMode } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { myConsultedDoctorsClickedWEBEngage } from '@aph/mobile-patients/src/helpers/CommonEvents';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const { width } = Dimensions.get('window');
 export const cardWidth = width / 2 - 25;
-export let myDocCount = 0;
 
 interface ConsultedDoctorProps extends NavigationScreenProps {}
 
@@ -45,6 +44,7 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
   const [doctors, setDoctors] = useState<
     (getPatientPastConsultedDoctors_getPatientPastConsultedDoctors | null)[]
   >([]);
+  const { myDoctorsCount, setMyDoctorsCount } = useAppCommonData();
 
   useEffect(() => {
     currentPatient && getPastConsultedDoctors();
@@ -65,8 +65,7 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
       if (res) {
         setDoctors(res?.data?.getPatientPastConsultedDoctors);
       }
-      myDocCount = res?.data?.getPatientPastConsultedDoctors.length;
-      console.log('csk log', JSON.stringify(res));
+      setMyDoctorsCount && setMyDoctorsCount(res?.data?.getPatientPastConsultedDoctors.length);
       setLoading(false);
     } catch (error) {
       CommonBugFender('getPastConsultedDoctors', error);
