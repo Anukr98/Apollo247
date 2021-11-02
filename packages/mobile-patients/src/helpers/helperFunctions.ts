@@ -3803,7 +3803,7 @@ export const convertDateToEpochFormat = (value: Date) => {
 
 
 export const filterAppLaunchSoruceAttributesByKey = (raw: any) => {
-  let validObjKeys = ["CT Session Id", "CT Source", "CT App Version", "deep_link_value", "is_deferred", "campaign", "match_type", "media_source", "source", "utm_campaign", "utm_medium", "source_url", "utm_source", "install_time", "is_first_launch", "is_incentivized", "retargeting_conversion_type", "orig_cost", "cost_cents_USD", "iscache", "click_time", "is_retargeting", "adgroupid", "keyword", "adtype", "device", "utm_content", "is_mobile_data_terms_signed", "is_fb", "is_paid", "adgroup"];
+  let validObjKeys = ["CT Session Id", "channel", "CT Source", "CT App Version", "deep_link_value", "is_deferred", "campaign", "match_type", "media_source", "source", "utm_campaign", "utm_medium", "source_url", "utm_source", "install_time", "is_first_launch", "is_incentivized", "retargeting_conversion_type", "orig_cost", "cost_cents_USD", "iscache", "click_time", "is_retargeting", "adgroupid", "keyword", "adtype", "device", "utm_content", "is_mobile_data_terms_signed", "is_fb", "is_paid", "adgroup", "campaign_id"];
   let filteredObj = removeNullFromObj(raw)
   return Object.keys(filteredObj).filter(key => validObjKeys.includes(key)).reduce((obj: any, key) => {
     obj[key] = filteredObj[key];
