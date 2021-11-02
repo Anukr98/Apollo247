@@ -99,7 +99,7 @@ export const TestPdfRender: React.FC<TestPdfRenderProps> = (props) => {
     return (
       <Pdf
         key={uri}
-        source={{ uri: uri }}
+        source={{ uri: uri, cache: true }}
         style={{
           marginTop: 6,
           marginHorizontal: 10,
@@ -114,7 +114,7 @@ export const TestPdfRender: React.FC<TestPdfRenderProps> = (props) => {
     shareDocument(uri, 'application/pdf', order?.displayId, isReport);
     setTimeout(() => {
       setLoading?.(false);
-    }, 5000);
+    }, 2000);
   };
 
   return (

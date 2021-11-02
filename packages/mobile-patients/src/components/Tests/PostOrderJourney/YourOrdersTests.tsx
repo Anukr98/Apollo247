@@ -1726,10 +1726,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     return (
       <View>
         <TestPdfRender
-          uri={activeOrder?.labReportURL ? activeOrder?.labReportURL : ''}
+          uri={activeOrder?.labReportURL || ''}
           order={activeOrder}
           isReport={true}
           onPressClose={()=>{
+            setActiveOrder(activeOrder);
             setShowViewReportModal(false)
           }}
         />
