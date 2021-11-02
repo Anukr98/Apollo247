@@ -154,9 +154,10 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   useEffect(() => {
     if (isModify) {
       if (duplicateOrderId?.length > 0) {
-        duplicateOrderId?.map((id: string) =>
-          setCartItems?.(cartItems?.filter((val) => Number(val?.id) == Number(id)))
+        const filteredArray = cartItems?.filter(
+          (cItem) => !duplicateOrderId?.includes(Number(cItem?.id))
         );
+        setCartItems?.(filteredArray);
       }
       const unSelectRemainingPatients = patientCartItems?.filter(
         (item) => item?.patientId !== modifiedOrder?.patientId
@@ -485,8 +486,10 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             conatinerstyles={{ paddingBottom: 0 }}
             inputStyle={[
               styles.searchValueStyle,
-              isNoTestsFound ? { borderBottomColor: '#e50000' } : {},
-              isFocus ? { borderColor: colors.APP_GREEN, borderWidth: 2 } : {},
+              isNoTestsFound ? { borderColor: '#e50000' } : {},
+              isFocus
+                ? { borderColor: isNoTestsFound ? '#e50000' : colors.APP_GREEN, borderWidth: 2 }
+                : {},
             ]}
             textInputprops={{
               ...(isNoTestsFound ? { selectionColor: '#e50000' } : {}),

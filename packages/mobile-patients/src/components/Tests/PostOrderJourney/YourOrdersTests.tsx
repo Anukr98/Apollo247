@@ -1669,7 +1669,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     updateModifyData(order, getOrderItems);
     if (!!isAlreadyPartOfOrder && isAlreadyPartOfOrder?.length > 0) {
       isAlreadyPartOfOrder?.map((id: number) => {
-        setCartItems?.(cartItems?.filter((val) => Number(val?.id) == Number(id)));
+        removeCartItem?.(String(id));
         !!findSelectedPatient && removePatientCartItem?.(order?.patientId, String(id));
       });
       showAphAlert?.({
@@ -1689,7 +1689,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     props.navigation.push(AppRoutes.SearchTestScene, {
       searchText: '',
       isModify: true,
-      duplicateOrderId: duplicateId,
+      duplicateOrderId: duplicateId?.map((item: string | number) => Number(item)),
     });
   }
 
