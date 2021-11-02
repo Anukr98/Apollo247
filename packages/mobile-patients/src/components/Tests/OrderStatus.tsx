@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Dimensions,
   Platform,
+  Modal
 } from 'react-native';
 import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
 import {
@@ -130,6 +131,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const [apiOrderDetails, setApiOrderDetails] = useState([] as any);
   const [timeDate, setTimeDate] = useState<string>('');
   const [isSingleUhid, setIsSingleUhid] = useState<boolean>(false);
+  const [showPassportModal, setShowPassportModal] = useState<boolean>(false);
   const [showMoreArray, setShowMoreArray] = useState([] as any);
   const [apiPrimaryOrderDetails, setApiPrimaryOrderDetails] = useState([] as any);
   const [primaryOrderId, setPrimaryOrderId] = useState<string>('');
@@ -552,6 +554,34 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     );
   };
 
+  const renderAddPassportView = () => {
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          borderRadius: 4,
+          borderWidth: 1,
+          borderColor: '#D4D4D4',
+          backgroundColor: 'white',
+          padding: 10,
+          marginVertical: 10,
+        }}
+      >
+        <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1) }}>
+          {string.diagnostics.addOrEditPassportText}
+        </Text>
+        <TouchableOpacity onPress={()=>{
+          setShowPassportModal(true)
+        }}>
+          <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.APP_YELLOW_COLOR) }}>
+            ADD
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   const renderTests = () => {
     const arrayToUse = apiOrderDetails;
     return (
@@ -752,6 +782,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
             {renderOrderPlacedMsg()}
             {renderCartSavings()}
             {isCircleAddedToCart && !isEmptyObject(circlePlanDetails) && renderCirclePurchaseCard()}
+            {renderAddPassportView()}
             {renderPickUpTime()}
             {renderNoticeText()}
             {/* {enable_cancelellation_policy ? renderCancelationPolicy() : null} */}
@@ -761,6 +792,23 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
           </View>
         </ScrollView>
       </SafeAreaView>
+      {showPassportModal && (
+        <Modal
+        onRequestClose={()=>{
+          setShowPassportModal(false)
+        }}
+        >
+          <View style={{height:200}}>
+            <Text>Add Passport Number</Text>
+            {apiOrderDetails?.[0]?.ordersList?.map((item: any) => {
+              const { patientName, patientSalutation } = extractPatientDetails(item?.patientObj);
+              <View style={{ flexDirection: 'row' }}>
+                <Text>{nameFormater(`${patientSalutation} ${patientName}`, 'title')}</Text>
+              </View>;
+            })}
+          </View>
+        </Modal>
+      )}
       {backToHome()}
     </View>
   );
