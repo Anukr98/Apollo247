@@ -16,7 +16,8 @@ const styles = StyleSheet.create({
   container: {
     ...theme.viewStyles.cardViewStyle,
     ...theme.viewStyles.shadowStyle,
-    padding: 12,
+    paddingLeft: 12,
+    paddingVertical: 12,
     height: 56,
     marginHorizontal: 16,
     marginTop: 4,
@@ -82,7 +83,7 @@ export const ListCard: React.FC<ListCardProps> = (props) => {
               </TouchableOpacity>
             )}
           </View>
-          {rightIcon ? rightIcon : <ArrowRight style={{ marginLeft: 'auto' }} />}
+          {rightIcon ? rightIcon : <ArrowRight style={{ marginRight: 'auto' }} />}
         </View>
         {children}
       </View>
