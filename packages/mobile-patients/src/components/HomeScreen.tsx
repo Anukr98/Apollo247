@@ -981,6 +981,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     offersListLoading,
     recentGlobalSearchList,
     setRecentGlobalSearchList,
+    myDoctorsCount,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;

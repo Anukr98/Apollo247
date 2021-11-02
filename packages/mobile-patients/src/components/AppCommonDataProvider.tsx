@@ -239,6 +239,8 @@ export interface AppCommonDataContextProps {
   setCovidVaccineCtaV2: ((value: any) => void) | null;
   loginSection: any;
   setLoginSection: ((value: any) => void) | null;
+  myDoctorsCount: number;
+  setMyDoctorsCount: ((value: number) => void) | null;
   homeBannerOfferSection: any;
   setHomeBannerOfferSection: ((value: any) => void) | null;
   recentGlobalSearchList: any;
@@ -360,6 +362,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setLoginSection: null,
   homeBannerOfferSection: null,
   setHomeBannerOfferSection: null,
+  myDoctorsCount: 0,
+  setMyDoctorsCount: null,
   recentGlobalSearchList: [],
   setRecentGlobalSearchList: null,
   offersList: [],
@@ -541,7 +545,9 @@ export const AppCommonDataProvider: React.FC = (props) => {
   >(null);
 
   const [loginSection, setLoginSection] = useState<AppCommonDataContextProps['loginSection']>(null);
-
+  const [myDoctorsCount, setMyDoctorsCount] = useState<AppCommonDataContextProps['myDoctorsCount']>(
+    0
+  );
   const [homeBannerOfferSection, setHomeBannerOfferSection] = useState<
     AppCommonDataContextProps['homeBannerOfferSection']
   >(null);
@@ -747,6 +753,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setCovidVaccineCtaV2,
         loginSection,
         setLoginSection,
+        myDoctorsCount,
+        setMyDoctorsCount,
         homeBannerOfferSection,
         setHomeBannerOfferSection,
         recentGlobalSearchList,

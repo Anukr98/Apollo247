@@ -33,6 +33,7 @@ import { myConsultedDoctorsClickedWEBEngage } from '@aph/mobile-patients/src/hel
 
 const { width } = Dimensions.get('window');
 export const cardWidth = width / 2 - 25;
+export let myDocCount = 0;
 
 interface ConsultedDoctorProps extends NavigationScreenProps {}
 
@@ -64,6 +65,8 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
       if (res) {
         setDoctors(res?.data?.getPatientPastConsultedDoctors);
       }
+      myDocCount = res?.data?.getPatientPastConsultedDoctors.length;
+      console.log('csk log', JSON.stringify(res));
       setLoading(false);
     } catch (error) {
       CommonBugFender('getPastConsultedDoctors', error);
