@@ -2190,6 +2190,17 @@ export const InitiateAppsFlyer = (
           AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
         }
 
+        if (res.data.linkToUse !== null && res.data.linkToUse === 'ForReferrarInstall') {
+          const responseData = res.data
+          setAppReferralData({
+            af_channel: responseData.af_channel,
+            af_referrer_customer_id: responseData.af_referrer_customer_id,
+            campaign: responseData.campaign,
+            rewardId: responseData.rewardId,
+            shortlink: responseData.shortlink
+          })
+        }
+
         setBugFenderLog('APPS_FLYER_DEEP_LINK', res.data.af_dp);
         setBugFenderLog('APPS_FLYER_DEEP_LINK_Referral_Code', res.data.af_sub1);
 
@@ -2292,6 +2303,16 @@ export const removeNullFromObj = (obj: any) => {
     }
   }
   return obj
+}
+
+const setAppReferralData = (data: {
+  af_channel: string,
+  af_referrer_customer_id: string,
+  campaign: number | string,
+  rewardId: string,
+  shortlink: string
+}) => {
+  AsyncStorage.setItem('app_referral_data', JSON.stringify(data))
 }
 
 const getInstallResources = () => {
@@ -3809,4 +3830,12 @@ export const filterAppLaunchSoruceAttributesByKey = (raw: any) => {
     obj[key] = filteredObj[key];
     return obj;
   }, {});
+}
+export const replaceVariableInString = (str: string, mapObj: { [propName: string]: string; }) => {
+  let newArrayWithUpdatedString = Object.keys(mapObj).map(item => '{' + item + '}')
+  let rgx = new RegExp(newArrayWithUpdatedString.join("|"), "gi")
+  str = str.replace(rgx, function (matched) {
+    return mapObj[matched.replace(/{|}/gi, '')];
+  });
+  return str
 }
