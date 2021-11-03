@@ -261,7 +261,6 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     marginLeft: 16,
     marginTop: 12,
-    marginBottom: 8,
   },
   searchBarMainViewStyle: {
     flexDirection: 'row',
@@ -3391,6 +3390,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const renderOffersCards = (item: any, index: number) => {
+    const textForNotch = getNotchText(item?.expired_at, item?.notch_text?.text);
     let offerDesignTemplate = getTemplateStyle(item?.template_name);
     return (
       <TouchableOpacity activeOpacity={1} onPress={() => {}}>
@@ -3435,9 +3435,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                 ),
               }}
             >
-              {item?.notch_text?.text?.length > 24
-                ? item?.notch_text?.text?.substring(0, 24)
-                : item?.notch_text?.text}
+              {textForNotch.length > 24
+                ? textForNotch?.substring(textForNotch.length - 24, textForNotch.length)
+                : textForNotch}
             </Text>
           </View>
 
@@ -3520,6 +3520,28 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         </LinearGradientVerticalComponent>
       </TouchableOpacity>
     );
+  };
+
+  const getNotchText = (expired_at: string, notch_text: string) => {
+    let textForNotch = '';
+    try {
+      const expiryTime = new Date(expired_at).getTime();
+      const now = new Date().getTime();
+      const diff: number = expiryTime - now;
+      let ms = diff;
+      const dd = Math.floor(ms / 1000 / 60 / 60 / 24);
+      ms -= dd * 1000 * 60 * 60 * 24;
+      const hh = Math.floor(ms / 1000 / 60 / 60);
+      ms -= hh * 1000 * 60 * 60;
+      const mm = Math.floor(ms / 1000 / 60);
+      textForNotch =
+        diff > 0
+          ? notch_text?.replace('{time_till_expiry}', `${hh} Hrs ${mm} Min`)
+          : 'Offer Expired';
+    } catch (e) {
+      console.log('csk error', JSON.stringify(e));
+    }
+    return textForNotch;
   };
 
   const medCashbackOffersComponent = (item: any) => {
