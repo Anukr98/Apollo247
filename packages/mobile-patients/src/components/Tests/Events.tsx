@@ -403,8 +403,6 @@ export async function DiagnosticCartViewed(
     eventAttributes['Coupon code used'] = couponCode;
     eventAttributes['Coupon Discount'] = couponDiscount;
   }
-  console.log('cartPage viewed');
-  console.log({ eventAttributes });
   // fireCircleBenifitAppliedEvent(currentPatient, validity, circleSubId, isCircle);
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CART_VIEWED, eventAttributes);
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_CART_VIEWED, eventAttributes);
@@ -888,7 +886,7 @@ export function DiagnosticPatientSelected(
 }
 
 export function DiagnosticProductListingPageViewed(
-  type: any,
+  type: 'Category' | 'Widget',
   source: any,
   categoryName: string,
   sectionName: string
@@ -896,7 +894,7 @@ export function DiagnosticProductListingPageViewed(
   const eventAttributes: CleverTapEvents[CleverTapEventName.DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED] = {
     Type: type,
     Source: source,
-    'Category name': categoryName,
+    'Category Name': categoryName,
     'Section name': sectionName,
   };
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED, eventAttributes);
