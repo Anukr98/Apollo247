@@ -27,12 +27,8 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
   const renderTitle = (item: any, bestOffer: any) => {
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <WalletIcon
-          imageUrl={item?.item?.payment_method_name == 'PhonePe' ? phonePe : item?.item?.image_url}
-        />
-        <View style={{ flex: 1, marginRight: 5, paddingRight: 15 }}>
+        <View style={{ marginRight: 5, paddingRight: 15 }}>
           <Text style={styles.walletName}>{item?.item?.payment_method_name}</Text>
-          {renderOffer(item, bestOffer)}
         </View>
       </View>
     );
@@ -42,7 +38,9 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
     return !!bestOffer ? (
       <View style={styles.offer}>
         <OffersIcon style={styles.offerIcon} />
-        <Text style={styles.offerTitle}>{getOfferDescription(bestOffer, item)}</Text>
+        <Text numberOfLines={2} style={styles.offerTitle}>
+          {getOfferDescription(bestOffer, item)}
+        </Text>
       </View>
     ) : null;
   };
@@ -100,9 +98,17 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
           }}
           onPress={() => onPress(item, bestOffer)}
         >
-          <View style={{ width: windowWidth - 160 }}>{renderTitle(item, bestOffer)}</View>
-          <View style={{ width: 120, alignItems: 'flex-end' }}>
-            <Text style={styles.payNow}>{renderButton(item)}</Text>
+          <WalletIcon
+            imageUrl={
+              item?.item?.payment_method_name == 'PhonePe' ? phonePe : item?.item?.image_url
+            }
+          />
+          <View style={{ width: windowWidth - 75 }}>
+            <View style={styles.walletCont}>
+              {renderTitle(item, bestOffer)}
+              <Text style={styles.payNow}>{renderButton(item)}</Text>
+            </View>
+            {renderOffer(item, bestOffer)}
           </View>
         </TouchableOpacity>
       </View>
@@ -135,16 +141,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   wallet: {
-    flexDirection: 'row',
     paddingVertical: 16,
     borderColor: 'rgba(0,0,0,0.1)',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: 'row',
   },
   payNow: {
     ...theme.fonts.IBMPlexSansBold(13),
     lineHeight: 17,
     color: '#FC9916',
+  },
+  walletCont: {
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexDirection: 'row',
   },
   walletName: {
     ...theme.fonts.IBMPlexSansMedium(14),
@@ -153,9 +162,9 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   offer: {
+    marginRight: 20,
     flexDirection: 'row',
     marginLeft: 12,
-    alignItems: 'center',
     marginTop: 2,
   },
   offerTitle: {
@@ -166,6 +175,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   offerIcon: {
+    marginTop: 2,
     height: 16,
     width: 16,
   },

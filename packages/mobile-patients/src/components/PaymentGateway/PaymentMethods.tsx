@@ -323,7 +323,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         setCred(eligibleApps?.find((item: any) => item?.paymentMethod == 'CRED'));
         break;
       case 'refreshWalletBalances':
-        console.log('payload >>>>', payload);
         setLinkedWallets(payload?.payload?.list);
         break;
       default:
@@ -570,8 +569,10 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     firePaymentInitiatedEvent('WALLET', wallet, null, false, null, false, false);
     const offerId = bestOffer?.offer_id;
     const token = await getClientToken();
+    const sdkPresent =
+      Platform.OS == 'android' ? 'ANDROID_AMAZONPAY_TOKENIZED' : 'IOS_AMAZONPAY_TOKENIZED';
     token
-      ? linkWallet(requestId, token, paymentId, wallet, 'ANDROID_AMAZONPAY_TOKENIZED', offerId)
+      ? linkWallet(requestId, token, paymentId, wallet, sdkPresent, offerId)
       : renderErrorPopup();
   }
 
