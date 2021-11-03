@@ -192,6 +192,15 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const isCartPresent = isDiagnosticSelectedCartEmpty(
     isModifyFlow ? modifiedPatientCart : patientCartItems
   );
+  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
+  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
+  const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
+      if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTCART)) {
+        return item;
+      } else {
+        return null
+      }
+  });
 
   const patientsOnCartPage = !!isCartPresent && isCartPresent?.map((item) => item?.patientId);
   const patientListForOverlay =
@@ -1605,21 +1614,20 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   };
 
   const renderCallToOrder = () => {
-    return (
+    return ctaDetailMatched?.length ? (
       <CallToOrderView
-        cityId = {deliveryAddressCityId}
-        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTCART}
+        cityId={deliveryAddressCityId}
         customMargin={showNonServiceableText ? 240 : 180}
-        slideCallToOrder = {slideCallToOrder}
-        onPressSmallView = {() => {
+        slideCallToOrder={slideCallToOrder}
+        onPressSmallView={() => {
           setSlideCallToOrder(false);
         }}
-        onPressCross = {() => {
+        onPressCross={() => {
           setSlideCallToOrder(true);
         }}
       />
-    )
-  }
+    ) : null;
+  };
 
   const renderWizard = () => {
     return (

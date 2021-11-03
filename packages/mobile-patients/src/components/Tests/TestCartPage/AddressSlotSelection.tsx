@@ -370,22 +370,7 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
       </View>
     );
   };
-  const renderCallToOrder = () => {
-    return (
-      <CallToOrderView
-        cityId = {Number(diagnosticServiceabilityData?.cityId)}
-        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTCART}
-        customMargin = {80}
-        slideCallToOrder = {slideCallToOrder}
-        onPressSmallView = {() => {
-          setSlideCallToOrder(false);
-        }}
-        onPressCross = {() => {
-          setSlideCallToOrder(true);
-        }}
-      />
-    )
-  }
+  
 
   const renderWizard = () => {
     return (

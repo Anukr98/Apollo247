@@ -362,7 +362,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [fetchAddressLoading, setFetchAddressLoading] = useState<boolean>(false);
 
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
-
+  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
+  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
+  const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
+      if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.HOME)) {
+        return item;
+      } else {
+        return null
+      }
+  });
   const cache = new Cache({
     namespace: 'tests',
     policy: {
@@ -2859,10 +2867,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderCallToOrder = () => {
-    return (
+    return ctaDetailMatched?.length ? (
       <CallToOrderView
         cartItems={cartItems}
-        pageId={CALL_TO_ORDER_CTA_PAGE_ID.HOME}
         slideCallToOrder={slideCallToOrder}
         onPressSmallView={() => {
           setSlideCallToOrder(false);
@@ -2872,7 +2879,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           setSlideCallToOrder(true);
         }}
       />
-    );
+    ) : null;
   };
 
   return (

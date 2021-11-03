@@ -225,7 +225,15 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [showBottomBar, setShowBottomBar] = useState<boolean>(false);
   const [priceHeight, setPriceHeight] = useState<number>(0);
   const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
-
+  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
+  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
+  const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
+      if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL)) {
+        return item;
+      } else {
+        return null
+      }
+  });
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
 
   const itemName =
@@ -1295,10 +1303,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     );
   };
   const renderCallToOrder = () => {
-    return (
+    return ( ctaDetailMatched?.length ? 
       <CallToOrderView
         cityId={cityIdToUse}
-        pageId={CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL}
         customMargin={80}
         slideCallToOrder={slideCallToOrder}
         onPressSmallView={() => {
@@ -1307,7 +1314,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         onPressCross={() => {
           setSlideCallToOrder(true);
         }}
-      />
+      /> : null
     );
   };
 
