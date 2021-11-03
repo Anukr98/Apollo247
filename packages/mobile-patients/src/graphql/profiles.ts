@@ -6300,12 +6300,14 @@ export const GET_DIAGNOSTIC_REPORT_TAT = gql`
     $cityId: Int!
     $pincode: Int!
     $itemIds: [Int]!
+    $source: REPORT_TAT_SOURCE
   ) {
     getConfigurableReportTAT(
       slotDateTimeInUTC: $slotDateTimeInUTC
       cityId: $cityId
       pincode: $pincode
       itemIds: $itemIds
+      source: $source
     ) {
       maxReportTAT
       reportTATMessage

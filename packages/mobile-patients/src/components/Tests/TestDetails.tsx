@@ -13,6 +13,7 @@ import {
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import {
   CALL_TO_ORDER_CTA_PAGE_ID,
+  REPORT_TAT_SOURCE,
   TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
@@ -228,11 +229,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
   const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
-      if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL)) {
-        return item;
-      } else {
-        return null
-      }
+    if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL)) {
+      return item;
+    } else {
+      return null;
+    }
   });
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
 
@@ -505,7 +506,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         !!diagnosticSlot && !isEmptyObject(diagnosticSlot) ? dateTimeInUTC : null,
         id,
         !!pincode ? Number(pincode) : 0,
-        itemIds
+        itemIds,
+        REPORT_TAT_SOURCE.TEST_DETAILS_PAGE
       );
       if (result?.data?.getConfigurableReportTAT) {
         const getMaxReportTat = result?.data?.getConfigurableReportTAT?.preOrderReportTATMessage!;
@@ -914,6 +916,18 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         ? reportTat
         : !!cmsTestDetails?.diagnosticReportGenerationTime ||
           !cmsTestDetails?.diagnosticReportCustomerText;
+    const heading =
+      !!reportTat &&
+      reportTat
+        ?.split(' ')
+        ?.slice(0, 2)
+        ?.join(' ');
+    const configurableTat =
+      !!reportTat &&
+      reportTat
+        ?.split(' ')
+        ?.slice(2)
+        ?.join(' ');
     return (
       <>
         {!!showReportTat && showReportTat != '' ? (
@@ -921,10 +935,12 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             <View style={styles.midCardView}>
               <ClockIcon style={styles.clockIconStyle} />
               <View style={styles.midCardTextView}>
-                <Text style={styles.reportTimeText}>Get reports earliest by</Text>
+                <Text style={styles.reportTimeText}>
+                  {!!heading ? heading : 'Get reports earliest by'}
+                </Text>
                 <Text style={styles.reportTime}>
-                  {reportTat != ''
-                    ? reportTat
+                  {!!configurableTat
+                    ? nameFormater(configurableTat, 'default')
                     : cmsTestDetails?.diagnosticReportCustomerText
                     ? cmsTestDetails?.diagnosticReportCustomerText
                     : cmsTestDetails?.diagnosticReportGenerationTime}
@@ -1303,10 +1319,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     );
   };
   const renderCallToOrder = () => {
-    return ( ctaDetailMatched?.length ? 
+    return ctaDetailMatched?.length ? (
       <CallToOrderView
         cityId={cityIdToUse}
-        customMargin={80}
+        customMargin={90}
         slideCallToOrder={slideCallToOrder}
         onPressSmallView={() => {
           setSlideCallToOrder(false);
@@ -1314,8 +1330,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         onPressCross={() => {
           setSlideCallToOrder(true);
         }}
-      /> : null
-    );
+      />
+    ) : null;
   };
 
   return (
