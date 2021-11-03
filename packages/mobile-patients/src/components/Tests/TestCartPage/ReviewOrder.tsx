@@ -1617,7 +1617,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           itemNames?.push(isFromApi ? findItem?.itemName : findItem?.name);
         }
         //in case of modify. => only for single uhid
-        else if (isModifyFlow) {
+        if (isModifyFlow) {
           const getModifiedOrderLineItems = modifiedOrder?.diagnosticOrderLineItems;
           itemIds?.map((id: number) => {
             const findItem =
