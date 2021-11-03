@@ -16,7 +16,8 @@ const styles = StyleSheet.create({
   container: {
     ...theme.viewStyles.cardViewStyle,
     ...theme.viewStyles.shadowStyle,
-    paddingLeft: 12,
+    paddingLeft: 8,
+    paddingRight: 2,
     paddingVertical: 12,
     height: 56,
     marginHorizontal: 16,

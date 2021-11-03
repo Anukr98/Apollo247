@@ -4208,8 +4208,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       <View
         style={{
           paddingHorizontal: 20,
-          paddingTop: 12,
-          marginTop: 12,
+          marginTop: 18,
         }}
       >
         <Text style={{ ...theme.viewStyles.text('B', 16, theme.colors.LIGHT_BLUE, undefined, 20) }}>
