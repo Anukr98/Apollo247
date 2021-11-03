@@ -3393,7 +3393,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     const textForNotch = getNotchText(item?.expired_at, item?.notch_text?.text);
     let offerDesignTemplate = getTemplateStyle(item?.template_name);
     return (
-      <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+      <TouchableOpacity activeOpacity={1} onPress={() => onOfferCtaPressed(item, index + 1)}>
         <LinearGradientVerticalComponent
           colors={[
             offerDesignTemplate?.banner_bg_color?.primary_color,
