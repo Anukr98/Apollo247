@@ -3390,6 +3390,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const renderOffersCards = (item: any, index: number) => {
+    console.log('csk ', item?.expired_at);
     const textForNotch = getNotchText(item?.expired_at, item?.notch_text?.text);
     let offerDesignTemplate = getTemplateStyle(item?.template_name);
     return (
@@ -3529,9 +3530,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       const now = new Date().getTime();
       const diff: number = expiryTime - now;
       let ms = diff;
-      const dd = Math.floor(ms / 1000 / 60 / 60 / 24);
+      const dd = Math.floor(ms / 1000 / 3600 / 24);
       ms -= dd * 1000 * 60 * 60 * 24;
-      const hh = Math.floor(ms / 1000 / 60 / 60);
+      const hh = Math.floor(ms / 1000 / 3600);
       ms -= hh * 1000 * 60 * 60;
       const mm = Math.floor(ms / 1000 / 60);
       textForNotch =
@@ -4208,7 +4209,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       <View
         style={{
           paddingHorizontal: 20,
-          marginTop: 18,
+          marginTop: 16,
         }}
       >
         <Text style={{ ...theme.viewStyles.text('B', 16, theme.colors.LIGHT_BLUE, undefined, 20) }}>
