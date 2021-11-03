@@ -82,7 +82,7 @@ export enum FirebaseEventName {
   BROWSE_PACKAGE = 'Browse Package',
   DIAGNOSTIC_ITEM_VIEWED = 'DiagnosticItemViewed',
   DIAGNOSTIC_CART_ADDRESS_SELECTED_SUCCESS = 'AddressSelected',
-  DIAGNOSTIC_ORDER_PLACE = "diagnostics order placed",
+  DIAGNOSTIC_ORDER_PLACE = "diagnostics_order_placed",
 
   // Health Records
   CONSULT_RX = 'Consult & RX',

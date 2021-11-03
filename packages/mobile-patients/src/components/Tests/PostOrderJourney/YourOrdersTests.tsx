@@ -154,6 +154,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     patientCartItems,
     setDistanceCharges,
     setModifiedPatientCart,
+    setCartItems,
   } = useDiagnosticsCart();
   const { width, height } = Dimensions.get('window');
 
@@ -1695,7 +1696,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       getOrderItems?.filter((val) => getCartItemsWithId?.includes(val));
 
     updateModifyData(order, getOrderItems);
-
     if (!!isAlreadyPartOfOrder && isAlreadyPartOfOrder?.length > 0) {
       isAlreadyPartOfOrder?.map((id: number) => {
         removeCartItem?.(String(id));
@@ -1704,7 +1704,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       showAphAlert?.({
         onPressOk: () => {
           hideAphAlert && hideAphAlert();
-          _navigateToSearchPage(order?.patientId);
+          _navigateToSearchPage(order?.patientId, isAlreadyPartOfOrder);
         },
         title: string.common.uhOh,
         description: string.diagnostics.modifyItemAlreadyExist,
@@ -1714,10 +1714,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   }
 
-  function _navigateToSearchPage(patientId: string) {
+  function _navigateToSearchPage(patientId: string, duplicateId?: any) {
     props.navigation.push(AppRoutes.SearchTestScene, {
       searchText: '',
       isModify: true,
+      duplicateOrderId: duplicateId?.map((item: string | number) => Number(item)),
     });
   }
 
