@@ -159,7 +159,6 @@ import { SpecialOffersScreen } from '@aph/mobile-patients/src/components/Special
 import { PaymentConfirmation } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentConfirmaiton';
 import { ConsultPaymentScreen } from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/ConsultPaymentScreen';
 import { CouponScreen } from '@aph/mobile-patients/src/components/Tests/TestCartPage/CouponScreen';
-import { TestPdfRender } from '@aph/mobile-patients/src/components/Tests/TestPdfRender';
 
 export enum AppRoutes {
   Login = 'Login',
@@ -307,7 +306,6 @@ export enum AppRoutes {
   PaymentConfirmation = 'PaymentConfirmation',
   ConsultPaymentScreen = 'ConsultPaymentScreen',
   CouponScreen = 'CouponScreen',
-  TestPdfRender = 'TestPdfRender',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -782,9 +780,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.CouponScreen]: {
     screen: CouponScreen,
-  },
-  [AppRoutes.TestPdfRender]: {
-    screen: TestPdfRender,
   },
 };
 

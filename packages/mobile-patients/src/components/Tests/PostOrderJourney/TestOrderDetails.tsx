@@ -96,6 +96,7 @@ import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components
 
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
+import { TestPdfRender } from '@aph/mobile-patients/src/components/Tests/components/TestPdfRender';
 
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import {
@@ -158,6 +159,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [showError, setError] = useState<boolean>(false);
   const [showOrderDetailsError, setShowErrorDetailsError] = useState<boolean>(false);
   const [dropDownItemListIndex, setDropDownItemListIndex] = useState([] as any);
+  const [showViewReportModal, setShowViewReportModal] = useState<boolean>(false);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
 
   const [orderDetails, setOrderDetails] = useState([] as any);
@@ -1286,15 +1288,25 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       </View>
     );
   };
+  const renderViewReportModal = () => {
+    return (
+      <View>
+        <TestPdfRender
+          uri={selectedOrder?.labReportURL ? selectedOrder?.labReportURL : ''}
+          order={selectedOrder}
+          isReport={true}
+          onPressClose={()=>{
+            setShowViewReportModal(false)
+          }}
+        />
+      </View>
+    );
+  };
 
   function _onPressViewReportAction() {
     if (!!selectedOrder?.labReportURL && selectedOrder?.labReportURL != '') {
       onPressViewReport(true);
-      props.navigation.navigate(AppRoutes.TestPdfRender, {
-        uri: selectedOrder?.labReportURL,
-        order: selectedOrder,
-        isReport: true
-      });
+      setShowViewReportModal(true);
     } else if (!!selectedOrder?.visitNo && selectedOrder?.visitNo != '') {
       //directly open the phr section
       fetchTestReportResult();
@@ -1513,7 +1525,14 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           data={[{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]}
           selectedTab={selectedTab}
         />
-        <ScrollView bounces={false} style={{ flex: 1 }} ref={scrollViewRef}>
+        <ScrollView
+          bounces={false}
+          style={{ flex: 1 }}
+          ref={scrollViewRef}
+          onScroll={() => {
+            setSlideCallToOrder(true);
+          }}
+        >
           {selectedTab == string.orders.trackOrder ? renderOrderTracking() : renderOrderSummary()}
 
           {renderError()}
@@ -1529,6 +1548,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       </SafeAreaView>
 
       {renderFeedbackPopup()}
+      {showViewReportModal ? renderViewReportModal() : null}
       {loading1 && <Spinner style={{ zIndex: 200 }} />}
     </View>
   );

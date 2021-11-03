@@ -673,7 +673,7 @@
     "test":"Test+ included",
     "tests":"Tests+ included",
     "alsoKnownAs": "Also Known as",
-    "addToCart": "ADD TO CART",
+    "addToCart": "ADD",
     "removeFromCart": "REMOVE",
     "alreadyAdded":"ALREADY ADDED",
     "nonServiceableMsg1": "Diagnostics services are not available.",

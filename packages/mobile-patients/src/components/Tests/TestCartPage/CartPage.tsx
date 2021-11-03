@@ -1607,9 +1607,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const renderCallToOrder = () => {
     return (
       <CallToOrderView
-        cityId = {addressCityId}
+        cityId = {deliveryAddressCityId}
         pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTCART}
-        customMargin={160}
+        customMargin={showNonServiceableText ? 240 : 180}
         slideCallToOrder = {slideCallToOrder}
         onPressSmallView = {() => {
           setSlideCallToOrder(false);
@@ -1638,7 +1638,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       <SafeAreaView style={[{ ...theme.viewStyles.container }]}>
         {renderHeader()}
         {renderWizard()}
-        <ScrollView bounces={false} style={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+        <ScrollView bounces={false} style={{ flexGrow: 1 }} showsVerticalScrollIndicator={false} onScroll={()=>{
+          setSlideCallToOrder(true);
+        }}>
           {renderMainView()}
         </ScrollView>
         {renderAddressSection()}

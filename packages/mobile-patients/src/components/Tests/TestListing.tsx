@@ -21,6 +21,7 @@ import {
   View,
   Image as ImageNative,
   ActivityIndicator,
+  ScrollView
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import {
@@ -357,7 +358,9 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     return (
       <>
         {!!actualItemsToShow && actualItemsToShow?.length > 0 ? (
-          <View style={{ flex: 1 }}>
+          <ScrollView style={{ flex: 1 }} onScroll={()=>{
+            setSlideCallToOrder(true)
+          }}>
             <Text style={styles.headingText}>
               {deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle}{' '}
               {actualItemsToShow?.length > 0 && (
@@ -407,7 +410,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                 sourceScreen={AppRoutes.TestListing}
               />
             )}
-          </View>
+          </ScrollView>
         ) : null}
       </>
     );
