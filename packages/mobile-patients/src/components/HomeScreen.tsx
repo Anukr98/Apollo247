@@ -5206,7 +5206,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           CleverTapEventName.OPTION_FROM_CONSULT_CLICKED_ON_SEARCH_BAR_PAGE,
           'Search bar'
         );
-        props.navigation.navigate(AppRoutes.DoctorSearch, { searchText: searchText });
+        pdp
+          ? props.navigation.navigate(AppRoutes.DoctorSearchListing, nav_props)
+          : props.navigation.navigate(AppRoutes.DoctorSearch, { searchText: searchText });
         break;
     }
   };
@@ -5288,6 +5290,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             productPageViewedEventProps: null,
             urlKey: item?.url_key,
           }
+        : key === MedicalRecordType.CONSULTATION
+        ? { specialities: [item?.specialtydisplayName], MoveDoctor: 'MoveDoctor' }
         : {};
     return (
       <TouchableOpacity onPress={() => onClickSearchItem(key, true, nav_props)}>
