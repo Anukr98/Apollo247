@@ -5274,11 +5274,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const renderSearchItemDetails = (item: any, index: number, key: string) => {
     if (index === 0) console.log('csk data', JSON.stringify(item));
     const nav_props =
-      MedicalRecordType.TEST_REPORT === key
+      key === MedicalRecordType.TEST_REPORT
         ? {
             itemId: item?.diagnostic_item_id,
             source: 'Full search',
             comingFrom: AppRoutes.HomeScreen,
+          }
+        : key === MedicalRecordType.MEDICATION
+        ? {
+            sku: item?.sku,
+            movedFrom: AppRoutes.HomeScreen,
+            sectionName: null,
+            productPageViewedEventProps: null,
+            urlKey: item?.url_key,
           }
         : {};
     return (
