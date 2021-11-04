@@ -5176,7 +5176,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     );
   };
 
-  const onClickSearchItem = (key: string) => {
+  const onClickSearchItem = (key: string, pdp: boolean = false, nav_props: any = {}) => {
     // todo: for view all results
     // postHomeCleverTapEvent(
     //   CleverTapEventName.VIEW_ALL_SEARCH_RESULT_CLICKED,
@@ -5188,14 +5188,18 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           CleverTapEventName.OPTION_FROM_MEDICINE_CLICKED_ON_SEARCH_BAR_PAGE,
           'Search bar'
         );
-        props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
+        pdp
+          ? props.navigation.navigate(AppRoutes.ProductDetailPage, nav_props)
+          : props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
         break;
       case MedicalRecordType.TEST_REPORT:
         postHomeCleverTapEvent(
           CleverTapEventName.OPTION_FROM_DIAGNOSTIC_CLICKED_ON_SEARCH_BAR_PAGE,
           'Search bar'
         );
-        props.navigation.navigate(AppRoutes.SearchTestScene, { searchText: searchText });
+        pdp
+          ? props.navigation.navigate(AppRoutes.TestDetails, nav_props)
+          : props.navigation.navigate(AppRoutes.SearchTestScene, { searchText: searchText });
         break;
       case MedicalRecordType.CONSULTATION:
         postHomeCleverTapEvent(
@@ -5228,101 +5232,110 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               : searchResultsTabHeader[key].title}
           </Text>
         </View>
-        <TouchableOpacity onPress={() => (data.length === 0 ? null : onClickSearchItem(key))}>
-          <View>
-            <FlatList
-              keyExtractor={(_, index) => `${key},${index}`}
-              bounces={false}
-              data={data}
-              ListEmptyComponent={
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <SearchNoResultIcon style={{ width: 26, height: 26 }} />
-                  <Text
-                    style={{
-                      ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
-                      marginLeft: 14,
-                    }}
-                  >
-                    {string.home.search_not_available}
-                  </Text>
-                </View>
-              }
-              renderItem={({ item, index }) => renderSearchItemDetails(item, index, key)}
-            />
-          </View>
-          {data.length === 0 ? null : (
-            <View style={styles.viewAllContainer}>
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 15, theme.colors.APP_YELLOW, 1, 24),
-                }}
-                onPress={() => onClickSearchItem(key)}
-              >
-                View All Results {searchResultsTabHeader[key].title}
-              </Text>
+        <View>
+          <FlatList
+            keyExtractor={(_, index) => `${key},${index}`}
+            bounces={false}
+            data={data}
+            ListEmptyComponent={
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <SearchNoResultIcon style={{ width: 26, height: 26 }} />
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+                    marginLeft: 14,
+                  }}
+                >
+                  {string.home.search_not_available}
+                </Text>
+              </View>
+            }
+            renderItem={({ item, index }) => renderSearchItemDetails(item, index, key)}
+          />
+        </View>
+        {data.length === 0 ? null : (
+          <View style={styles.viewAllContainer}>
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 15, theme.colors.APP_YELLOW, 1, 24),
+              }}
+              onPress={() => onClickSearchItem(key)}
+            >
+              View All Results {searchResultsTabHeader[key].title}
+            </Text>
 
-              <ArrowRight style={{ marginLeft: 'auto', tintColor: theme.colors.APP_YELLOW }} />
-            </View>
-          )}
-        </TouchableOpacity>
+            <ArrowRight style={{ marginLeft: 'auto', tintColor: theme.colors.APP_YELLOW }} />
+          </View>
+        )}
       </View>
     );
   };
 
   const renderSearchItemDetails = (item: any, index: number, key: string) => {
+    if (index === 0) console.log('csk data', JSON.stringify(item));
+    const nav_props =
+      MedicalRecordType.TEST_REPORT === key
+        ? {
+            itemId: item?.diagnostic_item_id,
+            source: 'Full search',
+            comingFrom: AppRoutes.HomeScreen,
+          }
+        : {};
     return (
-      <View style={{ marginBottom: 6 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-          <View style={styles.searchItemIcon}>
-            {searchResultsTabHeader[key].icon({ width: 26, height: 26 })}
-          </View>
-          <View style={styles.searchItemText}>
-            <Text
-              style={{
-                ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
-              }}
-            >
-              {key === MedicalRecordType.TEST_REPORT
-                ? item?.diagnostic_item_name
-                : key === MedicalRecordType.MEDICATION
-                ? item?.name
-                : key === MedicalRecordType.CONSULTATION
-                ? item?.displayName || item?.name
-                : string.home.search_not_available}
-            </Text>
+      <TouchableOpacity onPress={() => onClickSearchItem(key, true, nav_props)}>
+        <View style={{ marginBottom: 6 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+            <View style={styles.searchItemIcon}>
+              {searchResultsTabHeader[key].icon({ width: 26, height: 26 })}
+            </View>
+            <View style={styles.searchItemText}>
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+                }}
+              >
+                {key === MedicalRecordType.TEST_REPORT
+                  ? item?.diagnostic_item_name
+                  : key === MedicalRecordType.MEDICATION
+                  ? item?.name
+                  : key === MedicalRecordType.CONSULTATION
+                  ? item?.displayName || item?.name
+                  : string.home.search_not_available}
+              </Text>
 
-            {key === MedicalRecordType.TEST_REPORT ? (
-              <Text
-                style={{
-                  ...theme.viewStyles.text('R', 12, theme.colors.LIGHT_BLUE, 1, 14),
-                }}
-              >
-                Total Tests - {item?.diagnostic_inclusions.length}
-              </Text>
-            ) : key === MedicalRecordType.CONSULTATION ? (
-              <Text
-                style={{
-                  ...theme.viewStyles.text('R', 12, theme.colors.LIGHT_BLUE, 1, 14),
-                }}
-              >
-                {item?.symptoms || item?.specialtydisplayName}
-              </Text>
-            ) : null}
+              {key === MedicalRecordType.TEST_REPORT ? (
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('R', 12, theme.colors.LIGHT_BLUE, 1, 14),
+                  }}
+                >
+                  Total Tests - {item?.diagnostic_inclusions.length}
+                </Text>
+              ) : key === MedicalRecordType.CONSULTATION ? (
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('R', 12, theme.colors.LIGHT_BLUE, 1, 14),
+                  }}
+                >
+                  {item?.symptoms || item?.specialtydisplayName}
+                </Text>
+              ) : null}
+            </View>
+            <View style={{ marginLeft: 'auto' }}>
+              <ArrowRight />
+            </View>
           </View>
-          <View style={{ marginLeft: 'auto' }}>
-            <ArrowRight />
-          </View>
+
+          <View
+            style={{
+              height: 1,
+              backgroundColor: '#E6E6E6',
+              marginVertical: 6,
+              marginRight: 4,
+            }}
+          />
         </View>
-
-        <View
-          style={{
-            height: 1,
-            backgroundColor: '#E6E6E6',
-            marginVertical: 6,
-            marginRight: 4,
-          }}
-        />
-      </View>
+      </TouchableOpacity>
     );
   };
 
