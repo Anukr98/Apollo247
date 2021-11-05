@@ -149,10 +149,10 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
     const name = consultProfile?.firstName || currentPatient?.firstName;
     const title = isPrescriptionLater
       ? 'Share Prescription Later Selected'
-      : `Doctor Consult Option Selected for ${name}`;
+      : `FREE Consult will be booked for ${name}`;
     const description = isPrescriptionLater
       ? 'You have to share prescription later for order to be verified successfully.'
-      : AppConfig.Configuration.FREE_CONSULT_MESSAGE.orderConfirmationMessage;
+      : AppConfig.Configuration.FREE_CONSULT_MESSAGE.reviewOrderMessage;
     const note = isPrescriptionLater
       ? 'Delivery TAT will be on hold till the prescription is submitted.'
       : 'Delivery TAT will be on hold till the consult is completed.';
