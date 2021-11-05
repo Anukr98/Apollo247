@@ -1010,7 +1010,10 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     const name = consultProfile?.firstName || currentPatient?.firstName;
     const title = isPrescriptionLater
       ? 'Share Prescription Later Selected'
-      : `FREE Consult booked for ${name}`;
+      : AppConfig.Configuration.FREE_CONSULT_MESSAGE.orderConfirmationHeader.replace(
+          '{Patient Name}',
+          name
+        );
     const description = isPrescriptionLater
       ? 'You have to share prescription later for order to be verified successfully.'
       : AppConfig.Configuration.FREE_CONSULT_MESSAGE.orderConfirmationMessage;
