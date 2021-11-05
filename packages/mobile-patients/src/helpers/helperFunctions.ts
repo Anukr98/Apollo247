@@ -66,7 +66,10 @@ import {
 import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import ApolloClient from 'apollo-client';
 import { saveSearch, saveSearchVariables } from '@aph/mobile-patients/src/graphql/types/saveSearch';
-import { SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
+  SAVE_SEARCH,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -1088,7 +1091,7 @@ export const findAddrComponents = (
 };
 
 /**
- * Calculates great-circle distances between the two points – that is, the shortest distance over the earth’s surface – using the ‘Haversine’ formula.
+ * Calculates great-circle distances between the two points â€“ that is, the shortest distance over the earthâ€™s surface â€“ using the â€˜Haversineâ€™ formula.
  */
 export const distanceBwTwoLatLng = (lat1: number, lon1: number, lat2: number, lon2: number) => {
   const deg2rad = (deg: number) => deg * (Math.PI / 180);
@@ -1282,7 +1285,7 @@ export const isValidText = (value: string) =>
 export const isValidName = (value: string) =>
   value == ' '
     ? false
-    : value == '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
+    : value == '' || /^[a-zA-Z]+((['â€™ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
     ? true
     : false;
 
@@ -2919,7 +2922,8 @@ export const calculateCashbackForItem = (
 };
 
 export const readableParam = (param: string) => {
-  const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;';
+  const a =
+    'Ã Ã¡Ã¢Ã¤Ã¦Ã£Ã¥ÄÄƒÄ…Ã§Ä‡ÄÄ‘ÄÃ¨Ã©ÃªÃ«Ä“Ä—Ä™Ä›ÄŸÇµá¸§Ã®Ã¯Ã­Ä«Ä¯Ã¬Å‚á¸¿Ã±Å„Ç¹ÅˆÃ´Ã¶Ã²Ã³Å“Ã¸ÅÃµÅ‘á¹•Å•Å™ÃŸÅ›Å¡ÅŸÈ™Å¥È›Ã»Ã¼Ã¹ÃºÅ«Ç˜Å¯Å±Å³áºƒáºÃ¿Ã½Å¾ÅºÅ¼Â·/_,:;';
   const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz------';
   const p = new RegExp(a.split('').join('|'), 'g');
 
@@ -3647,7 +3651,7 @@ export const setAsyncDiagnosticLocation = (address: any) => {
 
 export const checkPatientAge = (_selectedPatient: any, fromNewProfile: boolean = false) => {
   let age = !!_selectedPatient?.dateOfBirth ? getAge(_selectedPatient?.dateOfBirth) : null;
-  if (age != null && age != undefined && age <= 10) {
+  if (age != null && age != undefined && age < 10) {
     return true;
   }
   return false;
@@ -3809,4 +3813,40 @@ export const getErrorMsg = (errorCode: string) => {
       return 'This offer is not valid for this transaction.';
       break;
   }
+};
+
+export const getAsyncStorageValues = async () => {
+  const token = await AsyncStorage.getItem('jwt');
+  const user = await AsyncStorage.getItem('currentPatient');
+  return [token, user];
+};
+
+export const getCirclePlanDetails = async (
+  mobile_number: string,
+  client: any
+): Promise<Array<any>> => {
+  let details = [];
+  await client
+    .query({
+      query: GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
+      variables: { mobile_number },
+      fetchPolicy: 'no-cache',
+    })
+    .then((data: any) => {
+      const res = data?.data?.GetAllUserSubscriptionsWithPlanBenefitsV2?.response;
+      if (res.hasOwnProperty('APOLLO')) {
+        details = res?.APOLLO?.[0]?.plan_summary;
+      } else details = [];
+    })
+    .catch((err: Error) => {});
+  return details;
+};
+
+export const formatUrl = (url: string, token: string, userMobileNumber: string): string => {
+  let uri = url;
+  const queryParamsDelimiterIndex = uri.indexOf('?');
+  if (queryParamsDelimiterIndex !== -1)
+    uri = uri.concat(`&utm_token=${token}&utm_mobile_number=${userMobileNumber}`);
+  else uri = uri.concat(`?utm_token=${token}&utm_mobile_number=${userMobileNumber}`);
+  return uri;
 };

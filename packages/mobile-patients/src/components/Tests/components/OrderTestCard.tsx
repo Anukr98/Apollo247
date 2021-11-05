@@ -114,17 +114,19 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
             <Text style={styles.testForText}>
               Tests for {props.gender != '' && props.gender} {props.patientName}
             </Text>
-            {props.showEditIcon ? (
-              <TouchableOpacity
-                activeOpacity={1}
-                onPress={props.onPressEditPatient}
-                style={styles.editIconTouch}
-              >
-                <EditProfile style={styles.editIcon} />
-              </TouchableOpacity>
-            ) : null}
           </View>
         )}
+        {props.showEditIcon ? (
+          <View style={styles.editIconView}>
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={props.onPressEditPatient}
+              style={styles.editIconTouch}
+            >
+              <EditProfile style={styles.editIcon} />
+            </TouchableOpacity>
+          </View>
+        ) : null}
         {props.showAddTest ? (
           <TouchableOpacity
             activeOpacity={1}
@@ -837,7 +839,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   patientNameView: {
-    width: '65%',
+    width: '58%',
     justifyContent: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
@@ -869,11 +871,12 @@ const styles = StyleSheet.create({
     maxWidth: '60%',
   },
   vaccinationText: { ...theme.viewStyles.text('M', 12, colors.WHITE, 1, 15) },
+  editIconView: { justifyContent: 'center', marginHorizontal: 3, marginRight: 6 },
   editIconTouch: {
-    marginHorizontal: 8,
     width: 20,
     height: 20,
     justifyContent: 'center',
+    alignItems: 'center',
   },
   editIcon: { height: 16, width: 16, resizeMode: 'contain' },
 });
