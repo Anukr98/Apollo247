@@ -293,6 +293,8 @@ const appStaticVariables = {
     reviewOrderMessage: 'Our Apollo doctor will call you for a free consultation. Order will be processed only after the consultation in completed successfully.',
     orderConfirmationMessage: 'An Apollo doctor will call you as soon are they are available.',
     orderSummaryMessage: 'Free Doctor Consult Booked. You will receive a call soon.',
+    reviewOrderHeader: 'FREE Consult will be booked for you',
+    orderConfirmationHeader: 'FREE Consult booked for you',
   },
 };
 

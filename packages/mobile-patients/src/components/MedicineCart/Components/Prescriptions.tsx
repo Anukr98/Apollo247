@@ -149,7 +149,10 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
     const name = consultProfile?.firstName || currentPatient?.firstName;
     const title = isPrescriptionLater
       ? 'Share Prescription Later Selected'
-      : `FREE Consult will be booked for ${name}`;
+      : AppConfig.Configuration.FREE_CONSULT_MESSAGE.reviewOrderHeader.replace(
+          '{Patient Name}',
+          name
+        );
     const description = isPrescriptionLater
       ? 'You have to share prescription later for order to be verified successfully.'
       : AppConfig.Configuration.FREE_CONSULT_MESSAGE.reviewOrderMessage;
