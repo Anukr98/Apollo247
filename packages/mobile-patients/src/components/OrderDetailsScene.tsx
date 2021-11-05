@@ -1049,7 +1049,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             .replace('{{doctor_name}}', order?.consultInfo?.doctorName)
             .replace(
               '{{slot_time}}',
-              moment(order?.consultInfo?.appointmentDateTime).format('DD MMM YYYY, hh:mm A')
+              moment(order?.consultInfo?.appointmentDateTime).format('DD MMM, hh:mm A')
             ),
         ],
         [MEDICINE_ORDER_STATUS.DELIVERED]: [
