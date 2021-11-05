@@ -80,6 +80,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     clearDiagnoticCartInfo,
     cartItems,
     setIsDiagnosticCircleSubscription,
+    modifyHcCharges,
   } = useDiagnosticsCart();
   const { circleSubscriptionId, circlePlanSelected, setCircleSubscriptionId } = useShoppingCart();
   const client = useApolloClient();
@@ -105,6 +106,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       : orderCartSaving;
   const couldBeSaved =
     !isDiagnosticCircleSubscription && orderCircleSaving > 0 && orderCircleSaving > orderCartSaving;
+  const isModifyCod = modifiedOrderDetails && isCOD;
 
   const fetchOrderDetails = (orderId: string) =>
     client.query<getDiagnosticOrderDetails, getDiagnosticOrderDetailsVariables>({
@@ -153,6 +155,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
         const getSlotDuration =
           response?.data?.getDiagnosticOrderDetails?.ordersList?.attributesObj
             ?.slotDurationInMinutes || AppConfig.Configuration.DEFAULT_PHELBO_ETA;
+
         setApiPrimaryOrderDetails([getOrderDetailsResponse]!);
         setSlotDuration(getSlotDuration);
       } else {
@@ -171,7 +174,6 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     try {
       let response: any = await getDiagnosticRefundOrders(client, paymentId);
       if (response?.data?.data?.getOrderInternal) {
-        console.log({ response });
         const getResponse = response?.data?.data?.getOrderInternal?.DiagnosticsPaymentDetails;
         const getSlotDateTime = getResponse?.ordersList?.[0]?.slotDateTimeInUTC;
         const primaryOrderID = getResponse?.ordersList?.[0]?.primaryOrderID;
@@ -198,12 +200,19 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
 
   useEffect(() => {
     isCircleAddedToCart && setIsDiagnosticCircleSubscription?.(true);
-    fetchOrderDetailsFromPayments();
+    /**if modify + cod - then don't call fetch getOrderInternal */
+    isModifyCod ? getOrderDetails(modifiedOrderDetails?.id) : fetchOrderDetailsFromPayments();
     isCircleAddedToCart && getUserSubscriptionsByStatus();
     if (modifiedOrderDetails == null) {
       postwebEngageCheckoutCompletedEvent();
     }
-    firePurchaseEvent(orderDetails?.orderId, orderDetails?.amount, cartItems, currentPatient);
+    firePurchaseEvent(
+      orderDetails?.orderId,
+      orderDetails?.amount,
+      cartItems,
+      currentPatient,
+      modifyHcCharges
+    );
     submitReviewOnLabBook();
     firePaymentOrderStatusEvent();
     clearDiagnoticCartInfo?.();
@@ -342,7 +351,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       refundStatusArr: [],
       goToHomeOnBack: true,
       comingFrom: AppRoutes.TestsCart,
-      showOrderSummaryTab: true,
+      showOrderSummaryTab: false,
       disableTrackOrder: false,
       amount: orderDetails?.amount,
     });
@@ -560,8 +569,11 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       </View>
     );
   };
+
+  /**
+   * this is called when modifying a non-primary order (prepaid) or modify + cod
+   */
   const renderTestsModify = () => {
-    //define type
     const arrayToUse = apiPrimaryOrderDetails;
     return (
       <View>
@@ -576,11 +588,14 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
 
   const renderPatientTestView = (order: any, item: any) => {
+    const getModifiedOrderId = orderDetails?.orderId;
     const displayId = order?.displayId;
     const lineItemsLength = order?.diagnosticOrderLineItems?.length;
     const lineItems = order?.diagnosticOrderLineItems;
     const remainingItems = !!lineItemsLength && lineItemsLength - 1;
     const { patientName, patientSalutation } = extractPatientDetails(order?.patientObj);
+    const isNewlyModified =
+      lineItemsLength?.length > 0 && lineItems?.[0]?.editOrderID === getModifiedOrderId;
     return (
       <>
         <View style={styles.outerView}>
@@ -599,11 +614,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
                   style={[
                     {
                       flexDirection: 'row',
-                      maxWidth: !!lineItems?.[0]?.editOrderID
-                        ? width > 350
-                          ? '68%'
-                          : '57%'
-                        : '75%',
+                      maxWidth: !!isNewlyModified ? (width > 350 ? '68%' : '57%') : '75%',
                       flex: 1,
                     },
                   ]}
@@ -612,7 +623,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
                   <Text style={[styles.testName]}>
                     {nameFormater(lineItems?.[0]?.itemName, 'title')}
                   </Text>
-                  {!!lineItems?.[0]?.editOrderID ? renderNewTag() : null}
+                  {!!isNewlyModified ? renderNewTag() : null}
                   {remainingItems > 0 && (
                     <TouchableOpacity onPress={() => _onPressMore(order)} style={{ marginLeft: 2 }}>
                       <Text style={styles.moreText}>+ {remainingItems} MORE</Text>
@@ -649,20 +660,22 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   }
 
   const renderMore = (item: any, lineItems: any) => {
+    const getModifiedOrderId = orderDetails?.orderId;
     return (
       <View style={styles.itemsView}>
         {lineItems?.map((items: any, index: number) => {
+          const isNewlyModified = items?.editOrderID === getModifiedOrderId;
           return (
             <View
               style={{
                 flexDirection: 'row',
-                maxWidth: !!items.editOrderID ? '72%' : '75%',
+                maxWidth: !!isNewlyModified ? '72%' : '75%',
                 flex: 1,
               }}
             >
               <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
               <Text style={[styles.testName]}>{nameFormater(items?.itemName, 'default')}</Text>
-              {!!items.editOrderID ? renderNewTag() : null}
+              {!!isNewlyModified ? renderNewTag() : null}
               {lineItems?.length - 1 == index && (
                 <TouchableOpacity onPress={() => _onPressLess(item)} style={{ marginLeft: 2 }}>
                   <Text style={styles.moreText}> LESS</Text>
@@ -691,7 +704,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     props.navigation.navigate(AppRoutes.MembershipDetails, {
       membershipType: 'CIRCLE PLAN',
       isActive: true,
-      circleEventSource:'Cart(Diagnostic)'
+      circleEventSource: 'Cart(Diagnostic)',
     });
   }
 
@@ -748,7 +761,9 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
             {renderPickUpTime()}
             {renderNoticeText()}
             {/* {enable_cancelellation_policy ? renderCancelationPolicy() : null} */}
-            {!!primaryOrderId && primaryOrderId != '' ? renderTestsModify() : renderTests()}
+            {(!!primaryOrderId && primaryOrderId != '') || (modifiedOrderDetails && isCOD)
+              ? renderTestsModify()
+              : renderTests()}
             {isSingleUhid && renderOrderSummary()}
             {renderInvoiceTimeline()}
           </View>
@@ -974,12 +989,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   itemsView: {
-    backgroundColor: '#F9F9F9',
+    backgroundColor: theme.colors.BGK_GRAY,
     margin: 8,
     padding: 8,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#F9F9F9',
+    borderColor: theme.colors.BGK_GRAY,
   },
   moreText: {
     ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW, 1, 18),
