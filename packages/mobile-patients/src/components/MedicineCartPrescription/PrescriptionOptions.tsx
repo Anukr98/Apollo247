@@ -90,7 +90,7 @@ export const PrescriptionOptions: React.FC<Props> = ({
         pharmaPrescriptionOptionVariables
       >({
         query: GET_PHARMACY_PRESCRIPTION_OPTION,
-        variables: tatDetailsForPrescriptionOptions,
+        variables: { pharmaPrescriptionOptionInput: tatDetailsForPrescriptionOptions },
         fetchPolicy: 'no-cache',
       });
       const { data } = response;
