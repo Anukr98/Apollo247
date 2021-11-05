@@ -687,7 +687,14 @@
     "prescriptionSuccess":"Prescription Successfully Uploaded",
     "fromHealthRecord":"PRESCRIPTION FROM HEALTH RECORDS",
     "addMorePrescription":"+ ADD MORE PRESCRIPTIONS",
-    "diagnosticSearchLocation": "Search for street name, pincode…"
+    "diagnosticSearchLocation": "Search for street name, pincode…",
+    "itemAdded": "item added",
+    "itemsAdded": "items added",
+    "goToCart": "Go to cart",
+    "invalidFileSize": "Invalid File Size. File size must be less than 25MB.",
+    "invalidFileType":"Invalid File Type. File type must be PDF.",
+    "prescriptionHeading":"Place your order via prescription",
+    "test247Text": "Limited period offer"
   },
   "diagnosticCategoryTitle": {
     "category": "category",
@@ -708,7 +715,8 @@
     "homeCollectionText" : "Collection and hygiene charges",
     "paidSlotText": "Paid slot charges",
     "patientSelectionLimit" : "You can add only {{count}} patients. Please remove extra patients",
-    "multiPatientMsg": "You can now book tests for your family and friends in a single order"
+    "multiPatientMsg": "You can now book tests for your family and friends in a single order",
+    "nonCircleMsg": "Extra 15% off for circle customers. TnC Apply"
   },
   "orders": {
     "urOrders": "MY ORDERS",

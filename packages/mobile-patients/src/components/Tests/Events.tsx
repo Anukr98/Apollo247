@@ -888,7 +888,7 @@ export function DiagnosticProductListingPageViewed(
   const eventAttributes: CleverTapEvents[CleverTapEventName.DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED] = {
     Type: type,
     Source: source,
-    'Category name': categoryName,
+    'Category Name': categoryName,
     'Section name': sectionName,
   };
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED, eventAttributes);
@@ -912,4 +912,27 @@ export function DiagnosticPrescriptionSubmitted(
     'Item Name': itemName,
   };
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PRESCRIPTION_SUBMITTED, eventAttributes);
+}
+
+export function DiagnosticHomePageClicked(
+  currentPatient: any,
+  userType: any,
+  navSrc: string,
+  circleMember: any,
+  deviceId: any
+) {
+  const eventAttributes = {
+    'Patient name': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+    'Patient UHID': currentPatient?.uhid,
+    Relation: currentPatient?.relation,
+    'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
+    'Patient gender': currentPatient?.gender,
+    'Mobile Number': currentPatient?.mobileNumber,
+    'Customer ID': currentPatient?.id,
+    User_Type: userType,
+    'Nav src': navSrc,
+    'Circle Member': circleMember,
+    'Device Id': deviceId,
+  };
+  postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);
 }

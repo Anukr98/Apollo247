@@ -131,6 +131,8 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList 
   visitNo: string | null;
   invoiceURL: string | null;
   labReportURL: string | null;
+  couponDiscAmount: number | null;
+  paymentOrderId: string | null;
   diagnosticOrderLineItems: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems | null)[] | null;
   diagnosticOrdersStatus: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrdersStatus | null)[] | null;
 }

@@ -223,7 +223,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
             {isCircleDiscount ? (
               <CircleLogo style={styles.circleLogoIcon} />
             ) : (
-              <SpecialDiscountText isImage={true} text={'TEST 247'} />
+              <SpecialDiscountText isImage={true} text={string.diagnostics.test247Text} />
             )}
             <Text
               style={[

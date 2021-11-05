@@ -495,7 +495,8 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     title: string,
     price: string | number,
     isDiscount: boolean,
-    customStyle?: boolean
+    customStyle?: boolean,
+    fontSize?: number
   ) => {
     return (
       <View style={styles.pricesContainer}>
@@ -505,9 +506,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
               styles.commonText,
               {
                 ...theme.viewStyles.text(
-                  customStyle ? 'B' : 'M',
-                  customStyle ? 14 : 12,
-                  colors.SHERPA_BLUE,
+                  customStyle ? (fontSize == 2 ? 'B' : 'SB') : fontSize == 2 ? 'B' : 'SB',
+                  customStyle ? 16 : 14,
+                  isDiscount ? colors.APP_GREEN : colors.SHERPA_BLUE,
                   1,
                   customStyle ? 20 : 15
                 ),
@@ -523,9 +524,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
               styles.commonText,
               {
                 ...theme.viewStyles.text(
-                  customStyle ? 'B' : 'M',
-                  customStyle ? 14 : 12,
-                  colors.SHERPA_BLUE,
+                  customStyle ? (fontSize == 2 ? 'B' : 'SB') : fontSize == 2 ? 'B' : 'SB',
+                  customStyle ? 16 : 14,
+                  isDiscount ? colors.APP_GREEN : colors.SHERPA_BLUE,
                   1,
                   customStyle ? 20 : 15
                 ),
@@ -542,23 +543,35 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   };
 
   const renderPricesCard = () => {
+    const totalSaving = totalCartSaving + totalDiscountSaving;
+    const couponDiscount = orderDetails?.couponDiscAmount;
     return (
       <View>
         {renderHeading('Total Charges')}
         <View style={styles.orderSummaryView}>
-          {renderPrices('Total MRP', grossCharges, false)}
-          {renderPrices('Circle Discount', totalCircleSaving, true)}
-          {renderPrices('Cart Savings', totalCartSaving, true)}
-          {renderPrices('Coupon Discount', totalDiscountSaving, true)}
+          {renderPrices('Total MRP', grossCharges, false, false, 1)}
+          {renderPrices('Discount on MRP', totalSaving, true, false, 1)} {/**totalCartSavings */}
+          {renderPrices('Circle Discount', totalCircleSaving, true, false, 1)}
+          {renderPrices('Coupon Discount', !!couponDiscount ? couponDiscount : 0, true, false, 1)}
+          {/**totalDiscountSaving */}
           {renderPrices(
             string.diagnosticsCartPage.homeCollectionText,
             HomeCollectionCharges,
-            false
+            false,
+            false,
+            1
           )}
           {!!paidSlotCharges &&
-            renderPrices(string.diagnosticsCartPage.paidSlotText, paidSlotCharges, false)}
+            renderPrices(string.diagnosticsCartPage.paidSlotText, paidSlotCharges, false, false, 1)}
+          {/** when added circle membership */}
+          {/* {renderPrices(
+            string.diagnosticsCircle.circleMembership,
+            HomeCollectionCharges,
+            false,
+            false
+          )} */}
           <Spearator style={{ marginTop: 6, marginBottom: 6 }} />
-          {renderPrices('Total', orderDetails?.totalPrice, false, true)}
+          {renderPrices('Total', orderDetails?.totalPrice, false, true, 2)}
         </View>
       </View>
     );

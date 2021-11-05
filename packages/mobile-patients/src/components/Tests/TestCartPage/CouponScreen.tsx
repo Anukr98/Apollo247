@@ -50,6 +50,8 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
     coupon,
     couponDiscount,
     setCouponDiscount,
+    couponCircleBenefits,
+    setCouponCircleBenefits,
   } = useDiagnosticsCart();
   const { circleSubscriptionId, hdfcSubscriptionId } = useShoppingCart();
   const {
@@ -213,12 +215,14 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
         if (resp?.data?.errorCode == 0) {
           if (resp?.data?.response?.valid) {
             const responseData = resp?.data?.response;
+            const getCircleBenefits = responseData?.circleBenefits;
             /**
              * case for if user is claiming circle benefits, but coupon => circleBenefits as false
              */
             if (
               (isDiagnosticCircleSubscription || isCircleAddedToCart) &&
-              !responseData?.circleBenefits
+              !responseData?.circleBenefits &&
+              setSubscription == undefined
             ) {
               validateAppliedCoupon(coupon, cartItemsWithQuan, applyingFromList, false);
             } else {
@@ -228,6 +232,8 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
                 successMessage: successMessage,
               });
               setCouponDiscount?.(responseData?.discount);
+              setCouponCircleBenefits?.(getCircleBenefits);
+              setLoadingOverlay?.(false);
               props.navigation.goBack();
             }
           } else {
@@ -236,9 +242,11 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
             const getErrorResponseReason = resp?.data?.response?.reason;
             !applyingFromList && setCouponError(getErrorResponseReason);
             applyingFromList && setCouponListError(getErrorResponseReason);
+            setLoadingOverlay?.(false);
             setCouponDiscount?.(0);
             setDisableCouponsList([...disableCouponsList, coupon]);
             saveDisableCoupons(coupon);
+            setCouponCircleBenefits?.(false); //reset it to default value
           }
           //add event here
         } else {
@@ -248,8 +256,10 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
           CommonBugFender('validateAppliedCoupon_CouponScreen', getCouponErrorMsg);
           !applyingFromList && setCouponError(getCouponErrorMsg);
           applyingFromList && setCouponListError(getCouponErrorMsg);
+          setLoadingOverlay?.(false);
           setCouponDiscount?.(0);
           saveDisableCoupons(coupon);
+          setCouponCircleBenefits?.(false); //reset it to default value
         }
       })
       .catch((error) => {
@@ -258,10 +268,11 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
         CommonBugFender('validateAppliedCoupon_CouponScreen', error);
         !applyingFromList && setCouponError(string.diagnosticsCoupons.unableToValidate);
         applyingFromList && setCouponListError(string.diagnosticsCoupons.unableToValidate);
+        setLoadingOverlay?.(false);
         setCouponDiscount?.(0);
         saveDisableCoupons(coupon);
-      })
-      .finally(() => setLoadingOverlay?.(false));
+        setCouponCircleBenefits?.(false); //reset it to default value
+      });
   };
 
   function _onPressApplyCoupon(coupon: string, appliedFromList: boolean) {

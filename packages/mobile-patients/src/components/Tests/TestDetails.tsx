@@ -13,6 +13,7 @@ import {
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import {
   CALL_TO_ORDER_CTA_PAGE_ID,
+  REPORT_TAT_SOURCE,
   TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
@@ -497,7 +498,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         !!diagnosticSlot && !isEmptyObject(diagnosticSlot) ? dateTimeInUTC : null,
         id,
         !!pincode ? Number(pincode) : 0,
-        itemIds
+        itemIds,
+        REPORT_TAT_SOURCE.TEST_DETAILS_PAGE
       );
       if (result?.data?.getConfigurableReportTAT) {
         const getMaxReportTat = result?.data?.getConfigurableReportTAT?.preOrderReportTATMessage!;
@@ -506,6 +508,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         setReportTat('');
       }
     } catch (error) {
+      console.log({ error });
       CommonBugFender('fetchReportTat_TestDetails', error);
       setReportTat('');
     }
@@ -843,7 +846,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           !testInfo?.promoteCircle &&
           groupPlan != DIAGNOSTIC_GROUP_PLAN.ALL ? (
           <View style={styles.rowStyle}>
-            <SpecialDiscountText isImage={true} text={'TEST 247'} />
+            <SpecialDiscountText isImage={true} text={string.diagnostics.test247Text} />
             {renderSavingView(
               'Savings',
               specialDiscountSaving,
@@ -906,6 +909,18 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         ? reportTat
         : !!cmsTestDetails?.diagnosticReportGenerationTime ||
           !cmsTestDetails?.diagnosticReportCustomerText;
+    const heading =
+      !!reportTat &&
+      reportTat
+        ?.split(' ')
+        ?.slice(0, 2)
+        ?.join(' ');
+    const configurableTat =
+      !!reportTat &&
+      reportTat
+        ?.split(' ')
+        ?.slice(2)
+        ?.join(' ');
     return (
       <>
         {!!showReportTat && showReportTat != '' ? (
@@ -913,10 +928,12 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             <View style={styles.midCardView}>
               <ClockIcon style={styles.clockIconStyle} />
               <View style={styles.midCardTextView}>
-                <Text style={styles.reportTimeText}>Get reports earliest by</Text>
+                <Text style={styles.reportTimeText}>
+                  {!!heading ? heading : 'Get reports earliest by'}
+                </Text>
                 <Text style={styles.reportTime}>
-                  {reportTat != ''
-                    ? reportTat
+                  {!!configurableTat
+                    ? nameFormater(configurableTat, 'default')
                     : cmsTestDetails?.diagnosticReportCustomerText
                     ? cmsTestDetails?.diagnosticReportCustomerText
                     : cmsTestDetails?.diagnosticReportGenerationTime}
@@ -1299,7 +1316,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       <CallToOrderView
         cityId={cityIdToUse}
         pageId={CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL}
-        customMargin={80}
+        customMargin={90}
         slideCallToOrder={slideCallToOrder}
         onPressSmallView={() => {
           setSlideCallToOrder(false);
@@ -1579,14 +1596,16 @@ const styles = StyleSheet.create({
   outerExpressView: { backgroundColor: theme.colors.APP_GREEN, marginBottom: 2 },
   innerExpressView: {
     flexDirection: 'row',
-    padding: 8,
+    padding: 4,
+    paddingLeft: 8,
+    paddingRight: 8,
     alignItems: 'center',
     width: '97%',
   },
-  expressSlotIcon: { width: 37, height: 37, resizeMode: 'contain' },
+  expressSlotIcon: { width: 35, height: 35, resizeMode: 'contain' },
   expressSlotText: {
     ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 18),
-    marginLeft: 16,
+    marginLeft: 10,
   },
   italicStyle: {
     fontStyle: 'italic',

@@ -120,7 +120,8 @@ import {
   DiagnosticsRescheduleSource, 
   slotInfo,
   ProcessDiagnosticHCOrderInputCOD,
-  DiagnosticsBookingSource
+  DiagnosticsBookingSource,
+  REPORT_TAT_SOURCE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { insertMessageVariables } from '@aph/mobile-patients/src/graphql/types/insertMessage';
 import {
@@ -1441,7 +1442,8 @@ export const getReportTAT = (
   slotDateTimeInUTC: string| null,
   cityId: number,
   pincode: number,
-  itemIds: number[]
+  itemIds: number[],
+  source?: REPORT_TAT_SOURCE
 ) =>
 {
   return client.query<getConfigurableReportTAT, getConfigurableReportTATVariables>({
@@ -1453,7 +1455,8 @@ export const getReportTAT = (
       slotDateTimeInUTC: slotDateTimeInUTC,
       cityId: cityId,
       pincode: pincode,
-      itemIds: itemIds
+      itemIds: itemIds,
+      source: source
     },
     fetchPolicy: 'no-cache',
   }); 

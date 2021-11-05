@@ -226,6 +226,9 @@ export interface DiagnosticsCartContextProps {
 
   isCirclePlanRemoved: boolean;
   setIsCirclePlanRemoved: ((value: boolean) => void) | null;
+
+  couponCircleBenefits: boolean;
+  setCouponCircleBenefits: ((value: boolean) => void) | null;
 }
 
 export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>({
@@ -360,6 +363,8 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   setSelectedCirclePlan: null,
   isCirclePlanRemoved: false,
   setIsCirclePlanRemoved: null,
+  couponCircleBenefits: false,
+  setCouponCircleBenefits: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -559,6 +564,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
 
   const [isCirclePlanRemoved, setIsCirclePlanRemoved] = useState<
     DiagnosticsCartContextProps['isCirclePlanRemoved']
+  >(false);
+
+  const [couponCircleBenefits, setCouponCircleBenefits] = useState<
+    DiagnosticsCartContextProps['couponCircleBenefits']
   >(false);
 
   const setShowMultiPatientMsg: DiagnosticsCartContextProps['setShowMultiPatientMsg'] = (value) => {
@@ -942,6 +951,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     );
     setIsCirclePlanRemoved?.(false);
     setSelectedCirclePlan?.(null);
+    setCouponCircleBenefits?.(false);
   };
 
   useEffect(() => {
@@ -1120,6 +1130,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         setSelectedCirclePlan,
         isCirclePlanRemoved,
         setIsCirclePlanRemoved,
+        couponCircleBenefits,
+        setCouponCircleBenefits,
       }}
     >
       {props.children}

@@ -134,7 +134,8 @@ const Common = {
   LIGHT_ORANGE_YELLOW: "#FCA317",
   GREEN_BACKGROUND: "#F5FFFD",
   BGK_GRAY : '#f9f9f9',
-  TEAL_BLUE: '#3F7281'
+  TEAL_BLUE: '#3F7281',
+  DISCOUNT_GREEN: "#34AA55"
 };
 
 const Header = {

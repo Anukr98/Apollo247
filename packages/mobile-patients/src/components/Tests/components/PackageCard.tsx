@@ -235,7 +235,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
           </View>
         ) : promoteDiscount && specialDiscountSaving > 0 && !promoteCircle ? (
           <View style={styles.flexRow}>
-            <SpecialDiscountText isImage={true} text={'TEST 247'} />
+            <SpecialDiscountText isImage={true} text={string.diagnostics.test247Text} />
             {renderSavingView(
               'Savings',
               specialDiscountSaving,
