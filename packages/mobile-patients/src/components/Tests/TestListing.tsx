@@ -21,7 +21,7 @@ import {
   View,
   Image as ImageNative,
   ActivityIndicator,
-  ScrollView
+  ScrollView,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import {
@@ -172,8 +172,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     });
 
   useEffect(() => {
-    let source = movedFrom == 'Tests' ? '247 Home' : movedFrom == 'deeplink' ? 'Deeplink' : ''
-    DiagnosticProductListingPageViewed(widgetType, source, widgetName, title);
+    let source = movedFrom == 'Tests' ? '247 Home' : movedFrom == 'deeplink' ? 'Deeplink' : '';
+    DiagnosticProductListingPageViewed(widgetType, source, widgetName!, title);
   }, []);
 
   const fetchWidgetsPrices = async (widgetsData: any) => {
@@ -358,9 +358,12 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     return (
       <>
         {!!actualItemsToShow && actualItemsToShow?.length > 0 ? (
-          <ScrollView style={{ flex: 1 }} onScroll={()=>{
-            setSlideCallToOrder(true)
-          }}>
+          <ScrollView
+            style={{ flex: 1 }}
+            onScroll={() => {
+              setSlideCallToOrder(true);
+            }}
+          >
             <Text style={styles.headingText}>
               {deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle}{' '}
               {actualItemsToShow?.length > 0 && (
@@ -418,19 +421,19 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const renderCallToOrder = () => {
     return (
       <CallToOrderView
-        cityId = {cityId}
-        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING}
-        customMargin = {80}
-        slideCallToOrder = {slideCallToOrder}
-        onPressSmallView = {() => {
+        cityId={cityId}
+        pageId={CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING}
+        customMargin={80}
+        slideCallToOrder={slideCallToOrder}
+        onPressSmallView={() => {
           setSlideCallToOrder(false);
         }}
-        onPressCross = {() => {
+        onPressCross={() => {
           setSlideCallToOrder(true);
         }}
       />
-    )
-  }
+    );
+  };
 
   return (
     <View style={{ flex: 1 }}>

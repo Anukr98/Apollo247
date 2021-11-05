@@ -208,6 +208,7 @@ export enum CleverTapEventName {
   DIAGNOSTIC_ORDER_SUMMARY_VIEWED = 'Diagnostic order summary viewed',
   DIAGNOSTIC_VIEW_REPORT_CLICKED = 'Diagnostic view reports',
 
+  DIAGNOSTIC_PATIENT_SELECTED = 'Diagnostic patient selected',
   DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE = 'Diagnostic address selected',
   DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE = 'Diagonstic cart item removed',
   DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE = 'Diagnostic add item clicked',
@@ -1499,7 +1500,7 @@ export interface CleverTapEvents {
       | 'Cart Page'
       | 'Partial Search'
       | 'Deeplink'
-      | 'Popular search'
+      | 'Popular Search'
       | 'Category page';
     'Item Name': string;
     'Item Type'?: string;
@@ -1510,19 +1511,19 @@ export interface CleverTapEvents {
     'Item Price'?: number | string;
     'Circle user'?: string;
   };
-
   [CleverTapEventName.DIAGNOSTIC_CART_VIEWED]: {
-    //this is already done
+    'Page source': string;
     'Total items in cart': number;
-    'Prescription Required?': 'Yes' | 'No';
+    'Cart Items': object[];
+    'Circle user': 'Yes' | 'No';
+    Pincode: string | number;
+    city: string;
+    UHID: string;
+    'Prescription Needed'?: 'Yes' | 'No';
+    'Net after discount'?: number; //item total
     'Delivery charge'?: number;
     'Coupon code used'?: string;
-    'Total Discount': number;
-    'Net after discount': number; //item total
-    'Cart Items': object[];
-    Pincode: string | number;
-    UHID: string;
-    'Circle user': string;
+    'Coupon Discount'?: number;
   };
   [CleverTapEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED]: {
     'Slot time': string;
@@ -1573,14 +1574,14 @@ export interface CleverTapEvents {
     'Item ID': string; // (SKUID)
     Source:
       | 'Home page'
-      | 'Full search'
+      | 'Full Search'
       | 'Details page'
-      | 'Partial search'
+      | 'Partial Search'
       | 'Listing page'
-      | 'Popular search'
+      | 'Popular Search'
       | 'Category page'
       | 'Prescription';
-    Section?: string;
+    'Section name'?: string;
     'Circle user'?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_ORDER_PLACED]: {
@@ -1697,6 +1698,11 @@ export interface CleverTapEvents {
     'Circle user': string;
     'User Type':any
   };
+  [CleverTapEventName.DIAGNOSTIC_PATIENT_SELECTED]: {
+    'No. of patients': number;
+    'Patient UHID': string;
+    'Patient name': string;
+},
 
   // ********** ConsultEvents ********** \\
   [CleverTapEventName.CONSULT_REPORT_UPLOAD_IN_CHATROOM]: ConsultRoomDoctorPatientInfo;

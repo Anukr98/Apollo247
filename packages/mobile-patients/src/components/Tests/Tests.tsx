@@ -2926,6 +2926,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             </View>
             <View style={{ flex: 1 }}>
               <ScrollView
+                scrollEventThrottle={16}
                 removeClippedSubviews={true}
                 bounces={false}
                 style={{ flex: 1, marginBottom: !!cartItems && cartItems?.length > 0 ? 30 : 0 }}
