@@ -1690,10 +1690,11 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.DIAGNOSTIC_PRESCRIPTION_SUBMITTED]: {
     Source: string;
-    'Mobile Number'?: any;
+    'Patient MobileNumber'?: any;
     PrescriptionUrl?: any;
-    'Item name': string;
+    'Item Name': string;
     'Circle user': string;
+    'User Type':any
   };
 
   // ********** ConsultEvents ********** \\
