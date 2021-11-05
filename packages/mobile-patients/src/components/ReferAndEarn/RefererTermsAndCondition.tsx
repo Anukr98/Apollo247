@@ -66,6 +66,8 @@ const styles = StyleSheet.create({
   listMainContainer: {
     paddingHorizontal: 20,
     paddingVertical: 20,
+    backgroundColor: theme.colors.WHITE,
+    marginTop: 2,
   },
   listItemContainer: {
     marginBottom: 20,

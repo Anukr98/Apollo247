@@ -1382,7 +1382,11 @@
     "readTermsAndConditions": "Read the Terms & Conditions"
   },
   "referAndEarn":{
+    "referrHC": "100",
+    "currency":"₹",
+    "validUpTo":"500",
     "referAndEarn": "Refer & Earn",
+    "referAndEarnLine2": "Your friends get ₹100 on signup",
     "earnNow": "Earn Now",
     "yourFriendGot": "Your friend got",
     "onSignUp":"on signup &",
@@ -1391,8 +1395,9 @@
     "referVia": "Refer Via",
     "howItWorks": "How it works?",
     "inviteYourFriend": "Invite your friend",
-    "friendReceiveRs": "Friend receives Rs",
-    "youReceive": "You receive {referShareAmount} once order get delivered",
+    "friendReceiveRs": "Friend receives Rs{referShareAmount} on signup",
+    "youReceive": "You get Rs{referShareAmount} on their first\ntransaction",
+    "notValidForOrder": "Not valid for order below Rs.{validRuppes}***",
     "onceOrderGetDelivered":"once order get delivered",
     "termsAndCondition": "Terms and Condition",
     "FAQs":"FAQs",
@@ -1420,8 +1425,8 @@
     "consultDoctorIn15Minutes":"Consult doctor in 15 mins",
     "labTestAtHome":"Lab test at home",
     "hc":"HC",
-    "shareLinkText":"Please install Apollo 247 using below link ",
-    "referalLink":"Referral Link",
+    "shareLinkText":"Save on medical bills like me!\nSign up on Apollo 247 app and get Flat ₹100 health credits",
+    "referalLink":"Referrel Link",
     "refererTermsAndCondition":[
       {
         "id":1,
