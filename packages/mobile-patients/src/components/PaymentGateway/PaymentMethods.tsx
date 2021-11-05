@@ -286,8 +286,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const handleResponsePayload = (payload: any) => {
     const status = payload?.payload?.status;
     const action = payload?.payload?.action;
-    console.log('payload >>>>', JSON.stringify(payload));
-
     switch (action) {
       case 'getPaymentMethods':
         if (!payload?.error) {
