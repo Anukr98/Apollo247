@@ -3,19 +3,19 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { CartInputData, PrescriptionType, PLAN_ID, PLAN, CouponApplicable } from "./globalTypes";
+import { PrescriptionType, PLAN_ID, PLAN, CouponApplicable } from "./globalTypes";
 
 // ====================================================
-// GraphQL mutation operation: saveCart
+// GraphQL query operation: fetchCart
 // ====================================================
 
-export interface saveCart_saveCart_data_amount_circleSavings {
+export interface fetchCart_fetchCart_data_amount_circleSavings {
   __typename: "CartCircleSavingsResponse";
   membershipCashBack: number | null;
   circleDelivery: number | null;
 }
 
-export interface saveCart_saveCart_data_amount {
+export interface fetchCart_fetchCart_data_amount {
   __typename: "CartAmount";
   estimatedAmount: number | null;
   deliveryCharges: number | null;
@@ -25,23 +25,23 @@ export interface saveCart_saveCart_data_amount {
   totalCashBack: number | null;
   cartTotal: number | null;
   packagingCharges: number | null;
-  circleSavings: saveCart_saveCart_data_amount_circleSavings | null;
+  circleSavings: fetchCart_fetchCart_data_amount_circleSavings | null;
 }
 
-export interface saveCart_saveCart_data_couponDetails {
+export interface fetchCart_fetchCart_data_couponDetails {
   __typename: "CartCouponResponse";
   coupon: string | null;
   couponMessage: string | null;
   valid: boolean | null;
 }
 
-export interface saveCart_saveCart_data_prescriptionDetails {
+export interface fetchCart_fetchCart_data_prescriptionDetails {
   __typename: "PrescriptionDetailsResponse";
   prescriptionImageUrl: string | null;
   prismPrescriptionFileId: string | null;
 }
 
-export interface saveCart_saveCart_data_subscriptionDetails {
+export interface fetchCart_fetchCart_data_subscriptionDetails {
   __typename: "CartSubscriptionResponse";
   userSubscriptionId: string | null;
   planId: PLAN_ID | null;
@@ -53,7 +53,7 @@ export interface saveCart_saveCart_data_subscriptionDetails {
   durationInMonth: number | null;
 }
 
-export interface saveCart_saveCart_data_medicineOrderCartLineItems {
+export interface fetchCart_fetchCart_data_medicineOrderCartLineItems {
   __typename: "LineItemsResponse";
   sku: string | null;
   magentoId: number | null;
@@ -82,35 +82,35 @@ export interface saveCart_saveCart_data_medicineOrderCartLineItems {
   shipmentNo: number | null;
 }
 
-export interface saveCart_saveCart_data {
+export interface fetchCart_fetchCart_data {
   __typename: "CartDataResponse";
   patientId: string;
-  amount: saveCart_saveCart_data_amount;
+  amount: fetchCart_fetchCart_data_amount;
   noOfShipments: number | null;
   longitude: number | null;
   latitude: number | null;
   zipcode: string | null;
   patientAddressId: string | null;
-  couponDetails: saveCart_saveCart_data_couponDetails | null;
-  prescriptionDetails: (saveCart_saveCart_data_prescriptionDetails | null)[] | null;
+  couponDetails: fetchCart_fetchCart_data_couponDetails | null;
+  prescriptionDetails: (fetchCart_fetchCart_data_prescriptionDetails | null)[] | null;
   prescriptionType: PrescriptionType | null;
   appointmentId: string | null;
-  subscriptionDetails: saveCart_saveCart_data_subscriptionDetails | null;
-  medicineOrderCartLineItems: saveCart_saveCart_data_medicineOrderCartLineItems[] | null;
+  subscriptionDetails: fetchCart_fetchCart_data_subscriptionDetails | null;
+  medicineOrderCartLineItems: fetchCart_fetchCart_data_medicineOrderCartLineItems[] | null;
 }
 
-export interface saveCart_saveCart {
+export interface fetchCart_fetchCart {
   __typename: "CartResponse";
   statusCode: number | null;
   errorMessage: string | null;
   cartMessage: string | null;
-  data: saveCart_saveCart_data | null;
+  data: fetchCart_fetchCart_data | null;
 }
 
-export interface saveCart {
-  saveCart: saveCart_saveCart;
+export interface fetchCart {
+  fetchCart: fetchCart_fetchCart;
 }
 
-export interface saveCartVariables {
-  cartInputData: CartInputData;
+export interface fetchCartVariables {
+  patientId: string;
 }
