@@ -2232,6 +2232,48 @@ export enum SPECIALTY_STATUS {
   TRUE = "TRUE",
 }
 
+export enum CouponApplicable {
+  APPLIED = "APPLIED",
+  ITEM_AT_HIGHER_DISCOUNT = "ITEM_AT_HIGHER_DISCOUNT",
+  NOT_APPLICABLE = "NOT_APPLICABLE",
+}
+
+export enum PLAN_ID {
+  CIRCLEPlan = "CIRCLEPlan",
+}
+
+export interface CartInputData {
+  patientId: string;
+  medicineOrderCartLineItems?: (InputCartLineItems | null)[] | null;
+  zipcode?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  patientAddressId?: string | null;
+  coupon?: string | null;
+  prescriptionDetails?: CartPrescriptionDetails | null;
+  prescriptionType?: PrescriptionType | null;
+  appointmentId?: string | null;
+  subscription?: CartSubscription | null;
+}
+
+export interface CartPrescriptionDetails {
+  prescriptionImageUrl?: string | null;
+  prismPrescriptionFileId?: string | null;
+  uhid?: string | null;
+}
+
+export interface CartSubscription {
+  userSubscriptionId?: string | null;
+  planId?: PLAN_ID | null;
+  subPlanId?: string | null;
+  TYPE?: PLAN | null;
+}
+
+export interface InputCartLineItems {
+  medicineSKU: string;
+  quantity?: number | null;
+}
+
 //==============================================================
 // END Enums and Input Objects
 //==============================================================

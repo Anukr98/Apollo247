@@ -8,17 +8,14 @@ export interface CartTotalSectionProps {}
 
 export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
   const { circleMembershipCharges, serverCartAmount, cartCircleSubscriptionId } = useShoppingCart();
-  // console.log('serverCartAmount >>>> ', serverCartAmount);
-  const {
-    cartTotal,
-    cartSavings,
-    couponSavings,
-    deliveryCharges,
-    estimatedAmount,
-    isFreeDelivery,
-    totalCashBack,
-    packagingCharges,
-  } = serverCartAmount;
+  const cartTotal = serverCartAmount?.cartTotal;
+  const cartSavings = serverCartAmount?.cartSavings;
+  const couponSavings = serverCartAmount?.couponSavings;
+  const deliveryCharges = serverCartAmount?.deliveryCharges;
+  const estimatedAmount = serverCartAmount?.estimatedAmount;
+  const isDeliveryFree = serverCartAmount?.isDeliveryFree;
+  const totalCashBack = serverCartAmount?.totalCashBack;
+  const packagingCharges = serverCartAmount?.packagingCharges;
 
   const renderCartTotal = () => {
     return cartTotal ? (
@@ -58,7 +55,7 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
             <Text style={styles.circleMessage}>(Free for Circle Members)</Text>
           )}
         </View>
-        {deliveryCharges && !isFreeDelivery ? (
+        {deliveryCharges && !isDeliveryFree ? (
           <Text style={styles.text}>+₹{deliveryCharges.toFixed(2)}</Text>
         ) : (
           <View style={{ flexDirection: 'row', justifyContent: 'center' }}>

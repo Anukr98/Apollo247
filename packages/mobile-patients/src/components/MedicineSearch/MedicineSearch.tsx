@@ -41,6 +41,7 @@ import { CartIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { Badge } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { SuggestedQuantityNudge } from '@aph/mobile-patients/src/components/SuggestedQuantityNudge/SuggestedQuantityNudge';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 type RecentSearch = getPatientPastMedicineSearches_getPatientPastMedicineSearches;
 
@@ -61,6 +62,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
   const [suggestedQuantity, setSuggestedQuantity] = useState<string>(null);
 
   const { currentPatient } = useAllCurrentPatients();
+  const { setUserActionPayload } = useServerCart();
   const {
     locationDetails,
     pharmacyLocation,
@@ -78,10 +80,11 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     pharmacyCircleAttributes,
     cartItems,
     asyncPincode,
+    serverCartItems,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
 
-  const cartItemsCount = cartItems.length + diagnosticCartItems.length;
+  const cartItemsCount = serverCartItems.length + diagnosticCartItems.length;
 
   const { data } = useQuery<
     getPatientPastMedicineSearches,
@@ -353,6 +356,14 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
         ? setMaxOrderQty(+item.suggested_qty)
         : setMaxOrderQty(0);
       setCurrentProductQuantityInCart(1);
+      setUserActionPayload?.({
+        medicineOrderCartLineItems: [
+          {
+            medicineSKU: item?.sku,
+            quantity: 1,
+          },
+        ],
+      });
     };
 
     const products: MedicineSearchSuggestionItemProps[] = searchResults.map((item) => {
@@ -362,11 +373,27 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
         if (qty < item.MaxOrderQty) {
           updateCartItem!({ id, quantity: qty + 1 });
           setCurrentProductQuantityInCart(qty + 1);
+          setUserActionPayload?.({
+            medicineOrderCartLineItems: [
+              {
+                medicineSKU: item?.sku,
+                quantity: qty + 1,
+              },
+            ],
+          });
         }
       };
       const onPressSubstract = () => {
         qty == 1 ? removeCartItem!(id) : updateCartItem!({ id, quantity: qty - 1 });
         setCurrentProductQuantityInCart(qty - 1);
+        setUserActionPayload?.({
+          medicineOrderCartLineItems: [
+            {
+              medicineSKU: item?.sku,
+              quantity: qty - 1,
+            },
+          ],
+        });
       };
 
       return {

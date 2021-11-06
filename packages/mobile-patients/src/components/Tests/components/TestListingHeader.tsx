@@ -18,7 +18,7 @@ export interface Props {
 
 export const TestListingHeader: React.FC<Props> = ({ navigation, movedFrom, headerText }) => {
   const { cartItems: diagnosticCartItems, modifiedOrder } = useDiagnosticsCart();
-  const { cartItems } = useShoppingCart();
+  const { serverCartItems } = useShoppingCart();
 
   const onBackPress = () => {
     if (movedFrom === 'registration') {
@@ -50,7 +50,7 @@ export const TestListingHeader: React.FC<Props> = ({ navigation, movedFrom, head
   };
 
   const renderHeaderRightView = () => {
-    const cartItemsCount = cartItems?.length + diagnosticCartItems?.length;
+    const cartItemsCount = serverCartItems?.length + diagnosticCartItems?.length;
     const onPressCartIcon = () => {
       if (!!modifiedOrder && !isEmptyObject(modifiedOrder)) {
         navigation.navigate(AppRoutes.CartPage, {

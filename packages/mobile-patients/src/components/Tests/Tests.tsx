@@ -279,7 +279,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setNewAddressAddedHomePage,
   } = useDiagnosticsCart();
   const {
-    cartItems: shopCartItems,
+    serverCartItems: shopCartItems,
     setCircleSubscriptionId,
     setHdfcSubscriptionId,
     setIsCircleSubscription,

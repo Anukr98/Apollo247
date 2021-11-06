@@ -111,6 +111,7 @@ import { FrequentlyBoughtTogether } from '@aph/mobile-patients/src/components/Pr
 import { postPharmacyAddNewAddressCompleted } from '../../helpers/webEngageEventHelpers';
 import { CouponSectionPDP } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/CouponSectionPDP';
 import { CircleBannerPDP } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/CircleBannerPDP';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 export type ProductPageViewedEventProps = Pick<
   WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED],
@@ -164,6 +165,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     newAddressAdded,
     setNewAddressAdded,
   } = useShoppingCart();
+  const { setUserActionPayload } = useServerCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
@@ -415,7 +417,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 
   const setMedicineData = (productDetails: MedicineProductDetails) => {
     setMedicineDetails(productDetails || {});
-    setIsPharma(productDetails?.type_id.toLowerCase() === 'pharma');
+    setIsPharma(productDetails?.type_id?.toLowerCase() === 'pharma');
     trackTagalysViewEvent(productDetails);
     savePastSearch(client, {
       typeId: productDetails?.sku,
@@ -1018,6 +1020,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         quantity: productQuantity,
       });
       setCurrentProductQuantityInCart(productQuantity);
+      setUserActionPayload?.({
+        medicineOrderCartLineItems: [
+          {
+            medicineSKU: sku,
+            quantity: productQuantity,
+          },
+        ],
+      });
     } else {
       addCartItem!({
         id: sku,
@@ -1041,6 +1051,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       });
       setCurrentProductIdInCart(sku);
       setCurrentProductQuantityInCart(productQuantity);
+      setUserActionPayload?.({
+        medicineOrderCartLineItems: [
+          {
+            medicineSKU: sku,
+            quantity: productQuantity,
+          },
+        ],
+      });
     }
     postwebEngageAddToCartEvent(
       medicine_details,

@@ -4,6 +4,8 @@ import {
   MedicineCartOMSItem,
   PrescriptionType,
   PharmaPrescriptionOptionInput,
+  CartInputData,
+  InputCartLineItems,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { Store, GetStoreInventoryResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -20,90 +22,12 @@ import { addToCartTagalysEvent } from '@aph/mobile-patients/src/helpers/Tagalys'
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Decimal } from 'decimal.js';
 import { pharmaSubstitution_pharmaSubstitution_substitutes } from '@aph/mobile-patients/src/graphql/types/pharmaSubstitution';
-
-export type ServerCartResponse = {
-  statusCode: number;
-  errorMessage: string | null;
-  data: ServerCartDataResponse | null;
-};
-
-type ServerCartDataResponse = {
-  patientId: string;
-  amount: ServerCartAmount;
-  medicineOrderCartLineItems: ServerCartLineItemsResponse[];
-  zipcode: string;
-  latitude?: number;
-  longitude?: number;
-  patientAddressId?: string;
-  coupon?: string;
-  couponMessage?: string;
-  prescriptionDetails?: ServerPrescriptionDetails[];
-  prescriptionType?: PrescriptionType;
-  appointmentId?: string;
-  subscriptionDetails?: ServerCartSubscriptionResponse;
-  tat?: string;
-};
-
-type ServerCartAmount = {
-  cartTotal: number;
-  estimatedAmount: number;
-  deliveryCharges?: number;
-  cartSavings?: number;
-  couponSavings?: number;
-  totalCashBack?: number;
-  isFreeDelivery?: boolean;
-  packagingCharges?: number;
-};
-
-type ServerCartLineItemsResponse = {
-  sku: string;
-  name: string;
-  price: number;
-  quantity: number;
-  mou: string;
-  image: string;
-  thumbnail: string;
-  smallImage: string;
-  isExpress: string;
-  isInContract: string;
-  isPrescriptionRequired: string;
-  description: string;
-  subcategory: string;
-  typeId: string;
-  urlKey: string;
-  isInStock: number;
-  MaxOrderQty: number;
-  sellOnline: number;
-  manufacturer: string;
-  dcAvailability: string;
-  tat: Date;
-  tatDuration: string;
-  sellingPrice: number;
-  isCouponApplicable: boolean;
-  cashback: number;
-};
-
-type ServerPrescriptionDetails = {
-  prescriptionImageUrl?: String;
-  prismPrescriptionFileId?: String;
-};
-
-type ServerCartSubscriptionResponse = {
-  userSubscriptionId?: string;
-  planId?: string; // PLAN_ID;
-  subPlanId?: string;
-  type?: string; // PLAN;
-  planAmount?: number;
-  currentSellingPrice?: number;
-  durationInMonths?: number;
-  validDuration?: number;
-};
-
-type ServerCartCouponDetails = {
-  coupon?: string;
-  couponMessage?: string;
-};
-
+import {
+  saveCart_saveCart_data_amount,
+  saveCart_saveCart_data_couponDetails,
+  saveCart_saveCart_data_medicineOrderCartLineItems,
+  saveCart_saveCart_data_prescriptionDetails,
+} from '@aph/mobile-patients/src/graphql/types/saveCart';
 export interface ShoppingCartItem {
   id: string;
   name: string;
@@ -125,25 +49,6 @@ export interface ShoppingCartItem {
   circleCashbackAmt?: number;
   url_key?: string;
   subcategory?: string | null;
-  // server cart
-  // sku?: string;
-  // image?: string;
-  // smallImage?: string;
-  // isExpress?: boolean;
-  // isInContract?: string;
-  // dcAvailability?: string;
-  // isPrescriptionRequired?: boolean;
-  // description?: string;
-  // typeId?: string;
-  // urlKey?: string;
-  // MaxOrderQty?: number;
-  // sellOnline?: number;
-  // manufacturer?: string;
-  // tat?: String;
-  // tatDuration?: string;
-  // tatPrice?: number;
-  // isCouponApplicable?: boolean;
-  // cashback?: number;
 }
 
 export interface CouponProducts {
@@ -253,22 +158,26 @@ export interface NudgeMessageCart {
 
 export interface ShoppingCartContextProps {
   // server cart values start
-  serverCartItems: ServerCartLineItemsResponse[];
-  setServerCartItems: ((items: ServerCartLineItemsResponse[]) => void) | null;
-  serverCartAmount: ServerCartAmount | null;
-  setServerCartAmount: ((items: ServerCartAmount) => void) | null;
+  serverCartItems: saveCart_saveCart_data_medicineOrderCartLineItems[];
+  setServerCartItems: ((items: saveCart_saveCart_data_medicineOrderCartLineItems[]) => void) | null;
+  serverCartAmount: saveCart_saveCart_data_amount | null;
+  setServerCartAmount: ((items: saveCart_saveCart_data_amount) => void) | null;
   cartCircleSubscriptionId: string;
   setCartCircleSubscriptionId: ((id: string) => void) | null;
-  cartCoupon: ServerCartCouponDetails | null;
-  setCartCoupon: ((coupon: ServerCartCouponDetails) => void) | null;
+  cartCoupon: saveCart_saveCart_data_couponDetails | null;
+  setCartCoupon: ((coupon: saveCart_saveCart_data_couponDetails) => void) | null;
   cartTat: string;
   setCartTat: ((tat: string) => void) | null;
   cartAddressId: string;
   setCartAddressId: ((address: string) => void) | null;
-  cartPrescriptions: ServerPrescriptionDetails[];
-  setCartPrescriptions: ((prescriptions: ServerPrescriptionDetails[]) => void) | null;
+  cartPrescriptions: saveCart_saveCart_data_prescriptionDetails[];
+  setCartPrescriptions:
+    | ((prescriptions: saveCart_saveCart_data_prescriptionDetails[]) => void)
+    | null;
   isCartPrescriptionRequired: boolean;
   setIsCartPrescriptionRequired: ((value: boolean) => void) | null;
+  isSplitCart: boolean;
+  setIsSplitCart: ((value: boolean) => void) | null;
   // server cart values stop
   cartItems: ShoppingCartItem[];
   setCartItems: ((items: ShoppingCartItem[]) => void) | null;
@@ -430,6 +339,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setCartPrescriptions: null,
   isCartPrescriptionRequired: false,
   setIsCartPrescriptionRequired: null,
+  isSplitCart: false,
+  setIsSplitCart: null,
 
   cartItems: [],
   setCartItems: null,
@@ -596,6 +507,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [isCartPrescriptionRequired, setIsCartPrescriptionRequired] = useState<
     ShoppingCartContextProps['isCartPrescriptionRequired']
   >(false);
+  const [isSplitCart, setIsSplitCart] = useState<ShoppingCartContextProps['isSplitCart']>(false);
 
   const [cartItems, _setCartItems] = useState<ShoppingCartContextProps['cartItems']>([]);
   const [couponDiscount, setCouponDiscount] = useState<ShoppingCartContextProps['couponDiscount']>(
@@ -1067,6 +979,17 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setIsCartPrescriptionRequired(false);
       }
     }
+    if (serverCartItems.length > 1) {
+      var tatArr = serverCartItems.map((item) => item?.tat);
+      var isSameTat = tatArr.every((tat) => tat === tatArr[0]);
+      var tatDurationArr = serverCartItems.map((item) => item?.tatDuration);
+      var isSameTatDuration = tatDurationArr.every(
+        (tatDuration) => tatDuration === tatDurationArr[0]
+      );
+      setIsSplitCart(!(isSameTat && isSameTatDuration));
+    } else {
+      setIsSplitCart(false);
+    }
   }, [cartPrescriptions, serverCartItems]);
 
   useEffect(() => {
@@ -1436,6 +1359,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setCartPrescriptions,
         isCartPrescriptionRequired,
         setIsCartPrescriptionRequired,
+        isSplitCart,
+        setIsSplitCart,
 
         cartItems,
         setCartItems,

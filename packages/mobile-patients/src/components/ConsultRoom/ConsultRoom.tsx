@@ -792,8 +792,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     pharmacyCircleAttributes,
     setIsCircleExpired,
     circleSubPlanId,
+    serverCartItems,
   } = useShoppingCart();
-  const cartItemsCount = cartItems.length + shopCartItems.length;
+  const cartItemsCount = cartItems.length + serverCartItems.length;
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);

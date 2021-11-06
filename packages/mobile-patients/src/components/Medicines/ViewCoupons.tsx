@@ -33,6 +33,7 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -197,6 +198,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     circleStatus,
     activeUserSubscriptions,
   } = useAppCommonData();
+  const { setUserActionPayload } = useServerCart();
   const selectedAddress = addresses?.find((item) => item.id == deliveryAddressId);
   const pharmacyPincode =
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
@@ -285,6 +287,9 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
             setCoupon!({
               ...resp?.data?.response,
               successMessage: successMessage,
+            });
+            setUserActionPayload?.({
+              coupon: resp?.data?.response?.coupon || '',
             });
             if (isFromSubscription) {
               setSubscriptionCoupon?.({

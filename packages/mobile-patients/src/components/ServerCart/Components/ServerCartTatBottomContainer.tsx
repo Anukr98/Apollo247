@@ -1,4 +1,3 @@
-import { TatCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/TatCard';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -15,10 +14,13 @@ import {
   uploadPrescriptionClickedEvent,
 } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { CartTatCard } from '@aph/mobile-patients/src/components/ServerCart/Components/CartTatCard';
 
 export interface ServerCartTatBottomContainerProps extends NavigationScreenProps {
   onPressProceedtoPay?: () => void;
+  onPressTatCard?: () => void;
   screen?: string;
+  showAddressPopup: () => void;
 }
 
 export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainerProps> = (
@@ -26,23 +28,22 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
 ) => {
   const {
     grandTotal,
-    uploadPrescriptionRequired,
     prescriptionType,
     addresses,
-    cartItems,
     minimumCartValue,
     isValidCartValue,
     circleMembershipCharges,
 
+    serverCartItems,
     cartAddressId,
     cartTat,
+    isCartPrescriptionRequired,
   } = useShoppingCart();
-  const { onPressProceedtoPay, screen } = props;
+  const { onPressProceedtoPay, screen, showAddressPopup } = props;
   const { currentPatient } = useAllCurrentPatients();
-  // console.log('cartAddressId >>>>>>> ', cartAddressId);
   const selectedAddress = addresses.find((item) => item.id == cartAddressId);
-  const unServiceable = !!cartItems.find(
-    ({ unavailableOnline, unserviceable }) => unavailableOnline || unserviceable
+  const unServiceable = !serverCartItems.find(
+    ({ isShippable, sellOnline }) => isShippable || sellOnline
   );
 
   const onPressAddDeliveryAddress = () => {
@@ -54,8 +55,8 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
   };
 
   const onPressSelectDeliveryAddress = () => {
-    selectDeliveryAddressClickedEvent(currentPatient?.id, JSON.stringify(cartItems));
-    // showAddressPopup();
+    selectDeliveryAddressClickedEvent(currentPatient?.id, JSON.stringify(serverCartItems));
+    showAddressPopup();
   };
 
   const onPressUploadPrescription = () => {
@@ -68,12 +69,7 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
   const onPressAddMoreMedicines = () => props.navigation.navigate('MEDICINES');
 
   const onPressTatCard = () => {
-    // todo:
-    // uploadPrescriptionRequired
-    //   ? onPressUploadPrescription()
-    //   : physicalPrescriptions?.length > 0
-    //   ? uploadPhysicalPrescriptons()
-    //   : onPressReviewOrder();
+    isCartPrescriptionRequired ? onPressUploadPrescription() : onPressReviewOrder();
   };
 
   function getTitle() {
@@ -89,7 +85,7 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
   }
 
   function isPrescriptionRequired() {
-    if (uploadPrescriptionRequired) {
+    if (isCartPrescriptionRequired) {
       return screen === 'MedicineCart' ? true : !prescriptionType;
     } else {
       return false;
@@ -118,7 +114,7 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
   };
 
   function isdisabled() {
-    if (cartItems && cartItems.length && !unServiceable && isValidCartValue) {
+    if (serverCartItems?.length && !unServiceable && isValidCartValue) {
       return false;
     } else {
       return true;
@@ -149,11 +145,11 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
   const renderTatCard = () => {
     if (selectedAddress) {
       return (
-        <TatCard
+        <CartTatCard
           deliveryTime={cartTat}
           deliveryAddress={formatSelectedAddress(selectedAddress!)}
           onPressChangeAddress={() => {
-            // showAddressPopup()
+            showAddressPopup();
           }}
           onPressTatCard={screen === 'MedicineCart' && isValidCartValue ? onPressTatCard : () => {}}
         />

@@ -167,6 +167,7 @@ import { getUniqueId } from 'react-native-device-info';
 import { Cache } from 'react-native-cache';
 import { setItem, getItem } from '@aph/mobile-patients/src/helpers/TimedAsyncStorage';
 import { SuggestedQuantityNudge } from '@aph/mobile-patients/src/components/SuggestedQuantityNudge/SuggestedQuantityNudge';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 const styles = StyleSheet.create({
   scrollViewStyle: {
@@ -287,6 +288,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   } = useAppCommonData();
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const {
+    serverCartItems,
     cartItems,
     setCartItems,
     addCartItem,
@@ -323,12 +325,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setMedicineHomeBannerData,
     setMedicineHotSellersData,
   } = useShoppingCart();
+  const { setUserActionPayload } = useServerCart();
   const {
     cartItems: diagnosticCartItems,
     setIsDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
   const hdfc_values = string.Hdfc_values;
-  const cartItemsCount = cartItems?.length + diagnosticCartItems?.length;
+  const cartItemsCount = serverCartItems?.length + diagnosticCartItems?.length;
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [allBrandData, setAllBrandData] = useState<Brand[]>([]);
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
@@ -805,6 +808,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         const deliveryAddress = addresses.find((item) => item.defaultAddress);
         if (deliveryAddress) {
           setDeliveryAddressId!(deliveryAddress?.id);
+          setUserActionPayload?.({
+            patientAddressId: deliveryAddress?.id,
+            zipcode: deliveryAddress?.zipcode,
+            latitude: deliveryAddress?.latitude,
+            longitude: deliveryAddress?.longitude,
+          });
           updateServiceability(deliveryAddress?.zipcode!);
           const formattedLocation = formatAddressToLocation(deliveryAddress);
           if (!pharmacyLocation?.pincode) {
@@ -825,6 +834,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       const deliveryAddress = addressList.find((item) => item.defaultAddress);
       if (deliveryAddress) {
         setDeliveryAddressId!(deliveryAddress?.id);
+        setUserActionPayload?.({
+          patientAddressId: deliveryAddress?.id,
+          zipcode: deliveryAddress?.zipcode,
+          latitude: deliveryAddress?.latitude,
+          longitude: deliveryAddress?.longitude,
+        });
         updateServiceability(deliveryAddress?.zipcode!);
         const formattedLocation = formatAddressToLocation(deliveryAddress);
         if (!pharmacyLocation?.pincode) {
@@ -860,6 +875,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       setAddresses!(updatedAddresses);
       patientAddress?.defaultAddress && setDeliveryAddressId!(patientAddress?.id);
       const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
+      setUserActionPayload?.({
+        patientAddressId: deliveryAddress?.id,
+        zipcode: deliveryAddress?.zipcode,
+        latitude: deliveryAddress?.latitude,
+        longitude: deliveryAddress?.longitude,
+      });
       const formattedLocation = formatAddressToLocation(deliveryAddress! || null);
       setLocationValues(formattedLocation);
 
@@ -2147,6 +2168,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             ? setMaxOrderQty(+item.suggested_qty)
             : setMaxOrderQty(0);
           setCurrentProductQuantityInCart(1);
+          setUserActionPayload?.({
+            medicineOrderCartLineItems: [
+              {
+                medicineSKU: item?.sku,
+                quantity: 1,
+              },
+            ],
+          });
         }}
         onPressNotify={() => {
           onNotifyMeClick(item.name);
@@ -2156,11 +2185,27 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           if (q == getMaxQtyForMedicineItem(item.MaxOrderQty)) return;
           onUpdateCartItem(item.sku, getItemQuantity(item.sku) + 1);
           setCurrentProductQuantityInCart(q + 1);
+          setUserActionPayload?.({
+            medicineOrderCartLineItems: [
+              {
+                medicineSKU: item?.sku,
+                quantity: q + 1,
+              },
+            ],
+          });
         }}
         onPressSubstract={() => {
           const q = getItemQuantity(item.sku);
           q == 1 ? onRemoveCartItem(item.sku) : onUpdateCartItem(item.sku, q - 1);
           setCurrentProductQuantityInCart(q - 1);
+          setUserActionPayload?.({
+            medicineOrderCartLineItems: [
+              {
+                medicineSKU: item?.sku,
+                quantity: q - 1,
+              },
+            ],
+          });
         }}
         quantity={getItemQuantity(item.sku)}
         data={item}

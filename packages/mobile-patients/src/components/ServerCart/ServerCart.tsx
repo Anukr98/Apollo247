@@ -114,17 +114,50 @@ import { CartTotalSection } from './Components/CartTotalSection';
 import { ServerCartItemsList } from './Components/ServerCartItemsList';
 import { CouponSection } from '@aph/mobile-patients/src/components/ServerCart/Components/CouponSection';
 import { ServerCartTatBottomContainer } from '@aph/mobile-patients/src/components/ServerCart/Components/ServerCartTatBottomContainer';
+import { CartSavings } from '@aph/mobile-patients/src/components/ServerCart/Components/CartSavings';
+import { UnServiceableMessage } from '@aph/mobile-patients/src/components/ServerCart/Components/UnServiceableMessag';
 
 export interface ServerCartProps extends NavigationScreenProps {}
 
 export const ServerCart: React.FC<ServerCartProps> = (props) => {
-  const { serverCartItems, cartCircleSubscriptionId, serverCartAmount } = useShoppingCart();
-  const { fetchServerCart } = useServerCart();
+  const {
+    serverCartItems,
+    cartCircleSubscriptionId,
+    serverCartAmount,
+    addresses,
+    cartAddressId,
+    newAddressAdded,
+    setNewAddressAdded,
+    cartTat,
+  } = useShoppingCart();
+  const { showAphAlert, hideAphAlert } = useUIElements();
+  const { fetchServerCart, setUserActionPayload } = useServerCart();
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     fetchServerCart();
   }, []);
+
+  useEffect(() => {
+    if (addresses?.length && newAddressAdded && cartTat) {
+      const newAddress = addresses.filter((value) => value.id === newAddressAdded)?.[0];
+      postPharmacyAddNewAddressCompleted(
+        'Cart',
+        newAddress?.zipcode || '',
+        formatAddress(newAddress),
+        moment(cartTat, AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT).toDate(),
+        moment(cartTat).diff(new Date(), 'd'),
+        'Yes'
+      );
+      setUserActionPayload?.({
+        patientAddressId: newAddress?.id,
+        zipcode: newAddress?.zipcode,
+        latitude: newAddress?.latitude,
+        longitude: newAddress?.longitude,
+      });
+      setNewAddressAdded && setNewAddressAdded('');
+    }
+  }, [newAddressAdded, cartTat]);
 
   const renderEmptyCart = () => (
     <EmptyCart
@@ -134,66 +167,70 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     />
   );
 
-  const renderHeader = () => <CartHeader navigation={props.navigation} />;
-
-  // message to user about unserviceable items in cart
-  const renderUnServiceable = () => <UnServiceable style={{ marginTop: 24 }} />;
-
-  const renderCartItems = () => (
-    <ServerCartItemsList
-      screen={'serverCart'}
-      setloading={setLoading}
-      onPressProduct={(item) => {
-        props.navigation.navigate(AppRoutes.ProductDetailPage, {
-          urlKey: item?.url_key,
-          sku: item.id,
-          movedFrom: ProductPageViewedSource.CART,
-        });
-      }}
-    />
-  );
-
-  const renderCouponSection = () => (
-    <CouponSection
-      onPressApplyCoupon={() => props.navigation.navigate(AppRoutes.ViewCoupons)}
-      onPressRemove={() => {}}
-    />
-  );
-
   const renderAmountSection = () => (
     <View>
       <View style={styles.amountHeader}>
         <Text style={styles.amountHeaderText}>TOTAL CHARGES</Text>
       </View>
       <ApplyCircleBenefits navigation={props.navigation} />
-      {renderCouponSection()}
+      <CouponSection
+        onPressApplyCoupon={() => props.navigation.navigate(AppRoutes.ViewCoupons)}
+        onPressRemove={() => {
+          setUserActionPayload?.({
+            coupon: '',
+          });
+        }}
+      />
       {!!serverCartAmount && <CartTotalSection />}
+      <CartSavings />
     </View>
   );
+
+  function showAddressPopup() {
+    showAphAlert!({
+      title: string.common.selectAddress,
+      removeTopIcon: true,
+      children: (
+        <ChooseAddress
+          addresses={addresses}
+          deliveryAddressId={cartAddressId}
+          onPressAddAddress={() => {
+            props.navigation.navigate(AppRoutes.AddAddressNew, {
+              source: 'Cart' as AddressSource,
+              addOnly: true,
+            });
+            postPharmacyAddNewAddressClick('Cart');
+            hideAphAlert!();
+          }}
+          onPressEditAddress={(address) => {
+            props.navigation.push(AppRoutes.AddAddressNew, {
+              KeyName: 'Update',
+              addressDetails: address,
+              ComingFrom: AppRoutes.MedicineCart,
+            });
+            hideAphAlert!();
+          }}
+          onPressSelectAddress={(address) => {
+            setUserActionPayload?.({
+              patientAddressId: address.id,
+              zipcode: address.zipcode,
+              latitude: address.latitude,
+              longitude: address.longitude,
+            });
+            setAsyncPharmaLocation(address);
+            hideAphAlert!();
+          }}
+        />
+      ),
+    });
+  }
 
   const renderProceedBar = () => {
     return (
       <ServerCartTatBottomContainer
+        showAddressPopup={showAddressPopup}
         navigation={props.navigation}
-        // onPressAddDeliveryAddress={() => {
-        //   // props.navigation.navigate(AppRoutes.AddAddressNew, {
-        //   //   source: 'Cart' as AddressSource,
-        //   //   addOnly: true,
-        //   // });
-        //   // postPharmacyAddNewAddressClick('Cart');
-        // }}
-        // onPressSelectDeliveryAddress={() => {
-        //   // selectDeliveryAddressClickedEvent(currentPatient?.id, JSON.stringify(cartItems));
-        //   // showAddressPopup();
-        // }}
-        // onPressUploadPrescription={() => {}}
-        // deliveryTime={'sadsd'}
-        // onPressChangeAddress={() => {}}
         screen={'MedicineCart'}
-        // onPressReviewOrder={() => {}}
-        // onPressAddMoreMedicines={() => {
-        //   props.navigation.navigate('MEDICINES');
-        // }}
         onPressTatCard={() => {
           // uploadPrescriptionRequired
           //   ? redirectToUploadPrescription()
@@ -207,24 +244,34 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
 
   const renderScreen = () => (
     <>
-      {renderUnServiceable()}
-      {renderCartItems()}
+      <UnServiceableMessage style={{ marginTop: 24 }} />
+      <ServerCartItemsList
+        screen={'serverCart'}
+        setloading={setLoading}
+        onPressProduct={(item) => {
+          props.navigation.navigate(AppRoutes.ProductDetailPage, {
+            urlKey: item?.url_key,
+            sku: item.id,
+            movedFrom: ProductPageViewedSource.CART,
+          });
+        }}
+      />
+      {renderAmountSection()}
     </>
   );
 
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
-        {renderHeader()}
+        <CartHeader navigation={props.navigation} />
         <ScrollView
           contentContainerStyle={{
             paddingBottom: 200,
           }}
         >
-          {serverCartItems?.length ? renderScreen() : renderEmptyCart()}
-          {renderAmountSection()}
+          {!!serverCartItems?.length ? renderScreen() : renderEmptyCart()}
         </ScrollView>
-        {renderProceedBar()}
+        {!!serverCartItems?.length && renderProceedBar()}
       </SafeAreaView>
     </View>
   );
@@ -237,7 +284,6 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
     borderBottomWidth: 0.5,
     borderColor: 'rgba(2,71,91, 0.3)',
-    // marginTop: 20,
     marginHorizontal: 20,
   },
   amountHeaderText: {
