@@ -558,16 +558,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const renderAddPassportView = () => {
     return (
       <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          borderRadius: 4,
-          borderWidth: 1,
-          borderColor: '#D4D4D4',
-          backgroundColor: 'white',
-          padding: 10,
-          marginVertical: 10,
-        }}
+        style={styles.passportView}
       >
         <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1) }}>
           {string.diagnostics.addOrEditPassportText}
@@ -819,6 +810,16 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     // marginHorizontal: 20,
     marginTop: 40,
+  },
+  passportView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#D4D4D4',
+    backgroundColor: 'white',
+    padding: 10,
+    marginVertical: 10,
   },
   overlayStyle: {
     padding: 0,
