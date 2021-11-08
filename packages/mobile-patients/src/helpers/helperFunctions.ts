@@ -3842,7 +3842,8 @@ export const getErrorMsg = (errorCode: string) => {
 
 export const getAsyncStorageValues = async () => {
   const token = await AsyncStorage.getItem('jwt');
-  const user = await AsyncStorage.getItem('currentPatient');
+  let user = await AsyncStorage.getItem('currentPatient');
+  user = JSON.parse(user)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber;
   return [token, user];
 };
 

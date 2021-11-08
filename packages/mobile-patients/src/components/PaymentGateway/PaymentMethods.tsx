@@ -33,6 +33,8 @@ import {
   InitiateCredTxn,
   CheckCredEligibility,
   isPayTmReady,
+  fetchWalletBalance,
+  linkWallet,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -161,6 +163,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [offers, setOffers] = useState<any>([]);
   const [selectedPayment, setSelectedPaymentOption] = useState<any>({});
   const [offer, setoffer] = useState<any>(null);
+  const [linkedWallets, setLinkedWallets] = useState<any>([]);
   const requestId = currentPatient?.id || customerId || 'apollo247';
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const defaultClevertapEventParams = {
@@ -226,7 +229,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   useEffect(() => {
-    !!clientAuthToken && checkCredEligibility();
+    !!clientAuthToken &&
+      (checkCredEligibility(), fetchWalletBalance(currentPatient?.id, clientAuthToken));
   }, [clientAuthToken]);
 
   const checkCredEligibility = () => {
@@ -315,6 +319,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         const eligibleApps = payload?.payload?.apps[0]?.paymentMethodsEligibility;
         setEligibleApps(eligibleApps?.map((item: any) => item?.paymentMethod) || []);
         setCred(eligibleApps?.find((item: any) => item?.paymentMethod == 'CRED'));
+        break;
+      case 'refreshWalletBalances':
+        setLinkedWallets(payload?.payload?.list);
         break;
       default:
         payload?.error && handleError(payload?.errorMessage);
@@ -533,13 +540,14 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   async function onPressWallet(wallet: string, bestOffer?: any) {
     triggerWebengege('Wallet-' + wallet, 'WALLET', string.common.phonePeWallet);
     firePaymentInitiatedEvent('WALLET', wallet, null, false, null, false, false);
+    const offerId = bestOffer?.offer_id;
     const token = await getClientToken();
     token
       ? wallet == 'PHONEPE' && phonePeReady
-        ? InitiateUPISDKTxn(requestId, token, paymentId, wallet, 'ANDROID_PHONEPE')
+        ? InitiateUPISDKTxn(requestId, token, paymentId, wallet, 'ANDROID_PHONEPE', offerId)
         : wallet == 'PAYTM' && payTmReady
-        ? InitiateUPISDKTxn(requestId, token, paymentId, wallet, 'ANDROID_PAYTM')
-        : InitiateWalletTxn(requestId, token, paymentId, wallet, bestOffer?.offer_id)
+        ? InitiateUPISDKTxn(requestId, token, paymentId, wallet, 'ANDROID_PAYTM', offerId)
+        : InitiateWalletTxn(requestId, token, paymentId, wallet, offerId)
       : renderErrorPopup();
     const param =
       wallet == 'PHONEPE' && phonePeReady
@@ -553,6 +561,15 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         paymentMode: wallet,
         additionalParam: param,
       });
+  }
+
+  async function onPressLinkWallet(wallet: string, bestOffer?: any) {
+    firePaymentInitiatedEvent('WALLET', wallet, null, false, null, false, false);
+    const offerId = bestOffer?.offer_id;
+    const token = await getClientToken();
+    token
+      ? linkWallet(requestId, token, paymentId, wallet, 'ANDROID_AMAZONPAY_TOKENIZED', offerId)
+      : renderErrorPopup();
   }
 
   async function onPressCred() {
@@ -890,7 +907,16 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderWallets = (wallets: any) => {
-    return <Wallets wallets={wallets} onPressPayNow={onPressWallet} offers={offers} />;
+    return (
+      <Wallets
+        wallets={wallets}
+        onPressPayNow={onPressWallet}
+        onPressLinkWallet={onPressLinkWallet}
+        offers={offers}
+        linked={linkedWallets}
+        amount={amount}
+      />
+    );
   };
 
   const renderCred = (info: any) => {
