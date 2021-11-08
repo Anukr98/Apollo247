@@ -24,15 +24,6 @@ import {
   ScrollView
 } from 'react-native';
 import { Overlay } from 'react-native-elements';
-import {
-  AddPatientCircleIcon,
-  CrossPopup,
-  GreenCircleTick,
-  MinusPatientCircleIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import LottieView from 'lottie-react-native';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 const { width, height } = Dimensions.get('window');
@@ -64,7 +55,7 @@ export const PassportPaitentOverlay: React.FC<PassportPaitentOverlayProps> = (pr
       passportNo: '',
       displayId: '',
     },
-  ] || []);
+  ]);
   useEffect(() => {
     let newArray = [...data]
     let obj = {
@@ -84,13 +75,13 @@ export const PassportPaitentOverlay: React.FC<PassportPaitentOverlayProps> = (pr
         <View style={styles.inputView}>
           <TextInputComponent
             autoFocus={true}
-            placeholder={'Enter Passport Number'}
-            placeholderTextColor={'rgba(1, 71, 91, 0.4)'}
+            placeholder={string.enterPassport}
+            placeholderTextColor={theme.colors.SHERPA_BLUE_LIGHT}
             value={data[index]?.passportNo}
             onChangeText={(value: any) => {
               let newArray = [...data]
-              newArray[index].displayId = item?.displayId;
-              newArray[index].passportNo = value;
+              newArray[index]?.displayId = item?.displayId;
+              newArray[index]?.passportNo = value;
               setData(newArray);
             }}
             inputStyle={styles.inputStyle}
@@ -125,7 +116,7 @@ export const PassportPaitentOverlay: React.FC<PassportPaitentOverlayProps> = (pr
         <View style={{ flex: 1 }}>
           <View style={styles.modalMainView}>
             <View style={styles.paitentModalView}>
-              <Text style={styles.textHeadingModal}>Add Passport Number</Text>
+              <Text style={styles.textHeadingModal}>{string.addPassport}</Text>
               <View style={{flex: 1}}>
                 <FlatList
                   bounces={false}

@@ -233,6 +233,8 @@
   "reviewOrder": "REVIEW ORDER",
   "placeOrder": "PLACE ORDER",
   "microphone": "microphone",
+  "enterPassport": "Enter Passport Number",
+  "addPassport": "Add Passport Number",
   "enableMicrophoneToRecordCough": "Enable microphone from settings to record your cough.",
   "BORJourney": {
     "point1": "Register your Request through the Form.\n\nIf request is accepted, we will contact you for the Appointment booking and Payment.",
