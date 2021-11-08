@@ -190,7 +190,7 @@ export const PrescriptionOptions: React.FC<Props> = ({
   const renderNoPrescription = (title: string) => {
     return (
       <PrescriptionOption
-        title={title}
+        title={AppConfig.Configuration.FREE_CONSULT_MESSAGE.prescriptionOptionHeader || title}
         subtitle={renderNoPrescriptionDetails()}
         onPress={() => {
           onSelectOption(PrescriptionType.CONSULT);

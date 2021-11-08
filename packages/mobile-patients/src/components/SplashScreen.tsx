@@ -1485,9 +1485,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.FREE_CONSULT_MESSAGE
       );
 
-      // clearing free consult prescription type of previous order
-      setSelectedPrescriptionType && setSelectedPrescriptionType('');
-
       const disincentivizeCodMessage = getRemoteConfigValue(
         'Disincentivize_COD_Message',
         (key) => config.getString(key) || ''
