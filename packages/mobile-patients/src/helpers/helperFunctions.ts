@@ -3762,6 +3762,59 @@ export const convertDateToEpochFormat = (value: Date) => {
   return epochValue;
 };
 
+export const getPaymentMethodsInfo = (paymentMethods: any, paymentMode: string) => {
+  try {
+    const paymentMethodInfo = paymentMethods
+      ?.filter((item: any) => item?.name == paymentMode)?.[0]
+      ?.payment_methods?.map((item: any) => {
+        return {
+          payment_method_type: paymentMode,
+          payment_method: item?.payment_method_code,
+          payment_method_reference: item?.payment_method_code,
+        };
+      });
+    return !!paymentMethodInfo ? paymentMethodInfo : [];
+  } catch (error) {
+    return [];
+  }
+};
+
+export const getBestOffer = (offers: any, paymentCode: string) => {
+  try {
+    const bestOfferId = offers?.best_offer_combinations?.filter(
+      (item: any) => item?.payment_method_reference == paymentCode
+    )?.[0]?.offers[0]?.offer_id;
+    const offer = offers?.offers?.filter((item: any) => item?.offer_id == bestOfferId)?.[0];
+    return offer;
+  } catch (error) {
+    return null;
+  }
+};
+
+export const getErrorMsg = (errorCode: string) => {
+  switch (errorCode) {
+    case 'JP701':
+      return 'This offer is not valid for this transaction.';
+      break;
+    case 'JP702':
+      return 'Internal Error while applying the offer.';
+      break;
+    case 'JP703':
+      return 'This offer is not valid for this transaction.';
+      break;
+    case 'JP704':
+      return 'This offer is not valid for this transaction.';
+      break;
+    case 'JP705':
+    case 'JP706':
+      return 'Internal Error while applying the offer. ';
+      break;
+    case 'JP708':
+      return 'This offer is not valid for this transaction.';
+      break;
+  }
+};
+
 export const getAsyncStorageValues = async () => {
   const token = await AsyncStorage.getItem('jwt');
   const user = await AsyncStorage.getItem('currentPatient');
