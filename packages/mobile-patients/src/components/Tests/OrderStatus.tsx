@@ -71,6 +71,7 @@ import {
   GetSubscriptionsOfUserByStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 import AsyncStorage from '@react-native-community/async-storage';
+import { PassportPaitentOverlay } from '@aph/mobile-patients/src/components/Tests/components/PassportPaitentOverlay';
 
 export interface OrderStatusProps extends NavigationScreenProps {}
 
@@ -772,6 +773,19 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       </View>
     );
   };
+  const renderPassportPaitentView = () => {
+    return (
+      <PassportPaitentOverlay
+        patientArray={apiOrderDetails?.[0]?.ordersList}
+        onPressClose={() => {
+          setShowPassportModal(false);
+        }}
+        onPressDone={() => {
+          setShowPassportModal(false);
+        }}
+      />
+    );
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.DEFAULT_BACKGROUND_COLOR }}>
@@ -791,24 +805,9 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
             {renderInvoiceTimeline()}
           </View>
         </ScrollView>
+        {showPassportModal && renderPassportPaitentView()}
       </SafeAreaView>
-      {showPassportModal && (
-        <Modal
-        onRequestClose={()=>{
-          setShowPassportModal(false)
-        }}
-        >
-          <View style={{height:200}}>
-            <Text>Add Passport Number</Text>
-            {apiOrderDetails?.[0]?.ordersList?.map((item: any) => {
-              const { patientName, patientSalutation } = extractPatientDetails(item?.patientObj);
-              <View style={{ flexDirection: 'row' }}>
-                <Text>{nameFormater(`${patientSalutation} ${patientName}`, 'title')}</Text>
-              </View>;
-            })}
-          </View>
-        </Modal>
-      )}
+       
       {backToHome()}
     </View>
   );
@@ -820,6 +819,17 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     // marginHorizontal: 20,
     marginTop: 40,
+  },
+  overlayStyle: {
+    padding: 0,
+    margin: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: colors.CLEAR,
+    overflow: 'hidden',
+    elevation: 0,
+    bottom: 0,
+    position: 'absolute',
   },
   header: {
     flexDirection: 'row',
