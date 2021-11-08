@@ -190,7 +190,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
       }
     } else {
       if (status === FAILED) {
-        props.navigationProps.navigate(AppRoutes.MedicineCart, {});
+        props.navigationProps.navigate(AppRoutes.ServerCart, {});
       } else if (status === SUCCESS) {
         props.navigationProps.navigate(AppRoutes.OrderDetailsScene, {
           orderAutoId: orderID,

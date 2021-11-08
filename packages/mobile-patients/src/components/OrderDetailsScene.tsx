@@ -427,17 +427,19 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         return 'th';
     }
   };
-  
+
   const getFormattedDateTimeWithBefore = (time: string) => {
     let day = parseInt(moment(time).format('D'));
     let getDaySubscript = getFormattedDaySubscript(day);
-    const isExpectedDateChanged =orderDetails.oldOrderTat! && statusToShowNewItems.includes(orderDetails.currentStatus!);
+    const isExpectedDateChanged =
+      orderDetails.oldOrderTat! && statusToShowNewItems.includes(orderDetails.currentStatus!);
     const days = new Date().getDate() - parseInt(time.split('-')[0]);
     if (isExpectedDateChanged && days == -1) {
-      let finalDateTime = 'Arriving Tomorrow' + ' before ' + moment(time).format(string.time.TwelveHourFormat);
+      let finalDateTime =
+        'Arriving Tomorrow' + ' before ' + moment(time).format(string.time.TwelveHourFormat);
       return finalDateTime;
     }
-    
+
     let finalDateTime =
       day +
       getDaySubscript +
@@ -502,7 +504,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           index: 1,
           actions: [
             NavigationActions.navigate({ routeName: AppRoutes.MyOrdersScreen }),
-            NavigationActions.navigate({ routeName: AppRoutes.MedicineCart }),
+            NavigationActions.navigate({ routeName: AppRoutes.ServerCart }),
           ],
         });
         props.navigation.dispatch(resetAction);
@@ -2260,7 +2262,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           itemDetails={{ total, unavailable }}
           onContinue={() => {
             setReOrderDetails({ total: 0, unavailable: [] });
-            props.navigation.navigate(AppRoutes.MedicineCart);
+            props.navigation.navigate(AppRoutes.ServerCart);
           }}
           onClose={() => {
             setReOrderDetails({ total: 0, unavailable: [] });

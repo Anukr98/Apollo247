@@ -452,7 +452,7 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
             props.navigation.push(AppRoutes.AddAddressNew, {
               KeyName: 'Update',
               addressDetails: address,
-              ComingFrom: AppRoutes.MedicineCart,
+              ComingFrom: AppRoutes.ServerCart,
             });
             hideAphAlert!();
           }}

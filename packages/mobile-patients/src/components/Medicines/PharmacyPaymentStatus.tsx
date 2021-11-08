@@ -919,7 +919,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       setCircleMembershipCharges && setCircleMembershipCharges(0);
       setIsCircleSubscription && setIsCircleSubscription(false);
       setCirclePlanSelected?.(null);
-      props.navigation.navigate(AppRoutes.MedicineCart);
+      props.navigation.navigate(AppRoutes.ServerCart);
     } else {
       clearCircleSubscriptionData();
       moveToHome();

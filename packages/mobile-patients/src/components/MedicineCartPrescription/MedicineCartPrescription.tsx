@@ -4,6 +4,7 @@ import {
   PrescriptionOptions,
 } from '@aph/mobile-patients/src/components/MedicineCartPrescription';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -33,6 +34,7 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
     consultProfile,
     setConsultProfile,
   } = useShoppingCart();
+  const { setUserActionPayload } = useServerCart();
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const { setLoading, showAphAlert } = useUIElements();
@@ -101,6 +103,7 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
   const onPressContinue = async () => {
     try {
       setLoading?.(true);
+      let saveEprescription: any[] = [];
       if (prescriptionType === PrescriptionType.UPLOADED) {
         const updatedPrescriptions = await Helpers.updatePrescriptionUrls(
           client,
@@ -108,10 +111,35 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
           physicalPrescriptions
         );
         setPhysicalPrescriptions!(updatedPrescriptions);
+        // saveEprescription = [...updatedPrescriptions, ...ePrescriptions]?.map((pres) => ({
+        //   prescriptionImageUrl: pres.uploadedUrl,
+        //   prismPrescriptionFileId: pres.prismPrescriptionFileId,
+        //   uhid: currentPatient?.uhid,
+        // }));
+
+        [...updatedPrescriptions, ...ePrescriptions]?.map((pres) => {
+          const prescriptionData = {
+            prescriptionImageUrl: pres.uploadedUrl,
+            prismPrescriptionFileId: pres.prismPrescriptionFileId,
+            uhid: currentPatient?.uhid,
+          };
+          setUserActionPayload?.({
+            prescriptionDetails: prescriptionData,
+            prescriptionType: prescriptionType,
+          });
+        });
       } else {
+        setUserActionPayload?.({
+          prescriptionDetails: {},
+          prescriptionType: prescriptionType,
+        });
         setEPrescriptions!([]);
         setPhysicalPrescriptions!([]);
       }
+      // setUserActionPayload?.({
+      //   prescriptionDetails: saveEprescription,
+      //   prescriptionType: prescriptionType,
+      // });
       navigation.navigate(AppRoutes.CartSummary);
       setLoading?.(false);
       postEvent(prescriptionType);
