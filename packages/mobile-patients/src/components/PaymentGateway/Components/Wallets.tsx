@@ -60,7 +60,6 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
     const linkedWallet = linked?.filter(
       (item: any) => item?.wallet == item?.item?.payment_method_code
     );
-    console.log('linkedWallet >>', linkedWallet);
     return item?.item?.payment_method_code == 'AMAZONPAY'
       ? linkedWallet?.[0]?.linked
         ? Number(linkedWallet?.[0]?.currentBalance) < amount
