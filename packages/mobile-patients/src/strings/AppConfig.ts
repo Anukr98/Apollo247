@@ -295,6 +295,7 @@ const appStaticVariables = {
     orderSummaryMessage: 'Free Doctor Consult Booked. You will receive a call soon.',
     reviewOrderHeader: 'FREE Consult will be booked for you',
     orderConfirmationHeader: 'FREE Consult booked for you',
+    prescriptionOptionHeader: "I don't have a prescription",
   },
 };
 
