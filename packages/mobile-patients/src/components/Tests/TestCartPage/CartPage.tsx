@@ -1647,6 +1647,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           onScroll={() => {
             setSlideCallToOrder(true);
           }}
+          scrollEventThrottle={16}
         >
           {renderMainView()}
         </ScrollView>

@@ -29,7 +29,7 @@ import {
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DiagnosticOrderSummaryViewed } from '@aph/mobile-patients/src/components/Tests/Events';
-import { Down, Up, DownloadOrange } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Down, Up, DownloadOrange, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
 export interface LineItemPricing {
@@ -47,11 +47,18 @@ export interface TestOrderSummaryViewProps {
   refundDetails?: any;
   refundTransactionId?: string;
   slotDuration?: any;
+  subscriptionDetails?: any;
+  onPressViewAll?: () => void;
 }
 
 export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props) => {
-  const { orderDetails, refundDetails, refundTransactionId, slotDuration } = props;
-  console.log({ orderDetails });
+  const {
+    orderDetails,
+    refundDetails,
+    refundTransactionId,
+    slotDuration,
+    subscriptionDetails,
+  } = props;
   const filterOrderLineItem =
     !!orderDetails &&
     orderDetails?.diagnosticOrderLineItems?.filter((item: any) => !item?.isRemoved);
@@ -542,6 +549,53 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     );
   };
 
+  function _navigateToCircleBenefits() {
+    props.onPressViewAll?.();
+  }
+
+  const renderSubscriptionCard = () => {
+    const duration = !!subscriptionDetails && subscriptionDetails?.group_plan?.valid_duration;
+    const circlePurchasePrice =
+      !!subscriptionDetails && subscriptionDetails?.payment_reference?.amount_paid;
+    const validity = moment(new Date(), 'DD/MM/YYYY').add('days', subscriptionDetails?.expires_in);
+    return (
+      <>
+        {renderHeading(string.diagnosticsCircle.circleMembership)}
+        <View style={styles.circlePurchaseDetailsCard}>
+          <View style={{ flexDirection: 'row' }}>
+            <CircleLogo style={styles.circleLogoIcon} />
+            <View style={styles.circlePurchaseDetailsView}>
+              <Text style={styles.circlePurchaseText}>
+                Congrats! You have successfully purchased the {duration} months (Trial) Circle Plan
+                for {string.common.Rs}
+                {circlePurchasePrice}
+              </Text>
+              {!!totalCircleSaving && totalCircleSaving > 0 && (
+                <Text style={{ ...styles.savedTxt, marginTop: 8, fontWeight: '600' }}>
+                  You {''}
+                  <Text style={styles.savedAmt}>
+                    saved {string.common.Rs}
+                    {totalCircleSaving}
+                  </Text>
+                  {''} on your purchase.
+                </Text>
+              )}
+              <Text style={styles.circlePlanValidText}>
+                {`Valid till: ${moment(validity)?.format('D MMM YYYY')}`}
+              </Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            onPress={() => _navigateToCircleBenefits()}
+            style={styles.viewAllBenefitsTouch}
+          >
+            <Text style={styles.yellowText}>VIEW ALL BENEFITS</Text>
+          </TouchableOpacity>
+        </View>
+      </>
+    );
+  };
+
   const renderPricesCard = () => {
     const totalSaving = totalCartSaving + totalDiscountSaving;
     const couponDiscount = orderDetails?.couponDiscAmount;
@@ -651,6 +705,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
         {!!getModifiedLineItems && getModifiedLineItems?.length > 0
           ? renderOrderBreakdownCard(getModifiedLineItems, string.diagnostics.currentCharges)
           : null}
+        {isPrepaid && !!subscriptionDetails ? renderSubscriptionCard() : null}
         {renderPricesCard()}
         {(orderDetails?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED && !isPrepaid) ||
         DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY.includes(orderDetails?.orderStatus)
@@ -853,4 +908,35 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   addressTextStyle: { ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1, 18) },
+  circlePurchaseDetailsCard: {
+    ...theme.viewStyles.cardContainer,
+    marginBottom: 30,
+    padding: 16,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: 'transparent',
+    borderLeftColor: '#007C9D',
+    borderLeftWidth: 4,
+  },
+  circleLogoIcon: { height: 45, width: 45, resizeMode: 'contain' },
+  circlePurchaseDetailsView: { width: '85%', marginHorizontal: 8 },
+  circlePurchaseText: { ...theme.viewStyles.text('R', 11, colors.SHERPA_BLUE, 1, 16) },
+  circlePlanValidText: {
+    ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 0.6, 16),
+    marginTop: 6,
+  },
+  savedTxt: {
+    color: '#02475B',
+    ...theme.fonts.IBMPlexSansRegular(12),
+    lineHeight: 16,
+  },
+  savedAmt: {
+    color: theme.colors.APP_GREEN,
+    ...theme.fonts.IBMPlexSansSemiBold(12),
+  },
+  viewAllBenefitsTouch: {
+    alignSelf: 'flex-end',
+    height: 25,
+    justifyContent: 'center',
+  },
 });

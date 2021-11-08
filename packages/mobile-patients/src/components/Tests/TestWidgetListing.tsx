@@ -49,18 +49,18 @@ export const TestWidgetListing: React.FC<TestWidgetListingProps> = (props) => {
   const renderCallToOrder = () => {
     return (
       <CallToOrderView
-        cityId = {cityId}
-        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING}
-        slideCallToOrder = {slideCallToOrder}
-        onPressSmallView = {() => {
+        cityId={cityId}
+        pageId={CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING}
+        slideCallToOrder={slideCallToOrder}
+        onPressSmallView={() => {
           setSlideCallToOrder(false);
         }}
-        onPressCross = {() => {
+        onPressCross={() => {
           setSlideCallToOrder(true);
         }}
       />
-    )
-  }
+    );
+  };
 
   const renderItems = (item: any, index: number) => {
     return (
@@ -93,14 +93,15 @@ export const TestWidgetListing: React.FC<TestWidgetListingProps> = (props) => {
           <FlatList
             data={dataFromHomePage?.diagnosticWidgetData}
             numColumns={4}
-            onScroll={()=>{
-              setSlideCallToOrder(true)
+            onScroll={() => {
+              setSlideCallToOrder(true);
             }}
+            scrollEventThrottle={16}
             keyExtractor={(_, index) => `${index}`}
             renderItem={({ item, index }) => renderItems(item, index)}
           />
         </View>
-          {renderCallToOrder()}
+        {renderCallToOrder()}
       </>
     );
   };

@@ -68,13 +68,17 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   CALL_TO_ORDER_CTA_PAGE_ID,
+  DIAGNOSTIC_ORDER_PAYMENT_TYPE,
   DIAGNOSTIC_ORDER_STATUS,
   FEEDBACKTYPE,
   MedicalRecordType,
   REFUND_STATUSES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
-import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  getDiagnosticRefundOrders,
+  getPatientPrismMedicalRecordsApi,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 
 import { RefundCard } from '@aph/mobile-patients/src/components/Tests/components/RefundCard';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
@@ -161,16 +165,15 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [dropDownItemListIndex, setDropDownItemListIndex] = useState([] as any);
   const [showViewReportModal, setShowViewReportModal] = useState<boolean>(false);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
-
   const [orderDetails, setOrderDetails] = useState([] as any);
+  const [orderSubscriptionDetails, setOrderSubscriptionDetails] = useState([] as any);
   const scrollToSlots = (yValue?: number) => {
     const setY = yValue == undefined ? scrollYValue : yValue;
     scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: setY, animated: true });
   };
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
-  const {
-    diagnosticServiceabilityData,
-  } = useAppCommonData();
+  const { diagnosticServiceabilityData } = useAppCommonData();
+  const isPrepaid = selectedOrder?.paymentType === DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
   //for showing the order level status.
   const fetchOrderLevelStatus = (orderId: string) =>
     client.query<getHCOrderFormattedTrackingHistory, getHCOrderFormattedTrackingHistoryVariables>({
@@ -206,6 +209,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     } else {
       callOrderLevelStatusApi(orderId);
       callOrderDetailsApi(orderId);
+      console.log({ selectedOrder });
+      !!selectedOrder?.paymentOrderId &&
+        isPrepaid &&
+        callGetOrderInternal(selectedOrder?.paymentOrderId); //for getting the circle membership in case of prepaid
     }
   }, []);
 
@@ -214,7 +221,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     try {
       const res = await getOrderDetails(displayId);
       const { data } = res;
-      const getData = g(data, 'getDiagnosticOrderDetailsByDisplayID', 'ordersList');
+      const getData = data?.getDiagnosticOrderDetailsByDisplayID?.ordersList;
       const getOrderId = getData?.id;
       if (!!getOrderId) {
         callOrderLevelStatusApi(getOrderId);
@@ -229,13 +236,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       setError(true);
     }
   };
-  const sampleCollectedArray = [
-    DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
-    DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
-    DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
-    DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
-    DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
-  ];
 
   async function callOrderLevelStatusApi(orderId: string) {
     try {
@@ -277,6 +277,21 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       setOrderDetails([]);
       setShowErrorDetailsError(true);
       CommonBugFender('getDiagnosticOrderDetails_TestOrderDetails', error);
+    }
+  }
+
+  async function callGetOrderInternal(paymentId: string) {
+    setLoading?.(true);
+    try {
+      let response: any = await getDiagnosticRefundOrders(client, String(paymentId));
+      const getSubscriptionDetails =
+        response?.data?.data?.getOrderInternal?.SubscriptionOrderDetails;
+      setOrderSubscriptionDetails?.(getSubscriptionDetails);
+    } catch (error) {
+      setOrderSubscriptionDetails([]);
+      CommonBugFender('getOrderInternal_TestOrderDetails', error);
+    } finally {
+      setLoading?.(false);
     }
   }
 
@@ -1295,8 +1310,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           uri={selectedOrder?.labReportURL ? selectedOrder?.labReportURL : ''}
           order={selectedOrder}
           isReport={true}
-          onPressClose={()=>{
-            setShowViewReportModal(false)
+          onPressClose={() => {
+            setShowViewReportModal(false);
           }}
         />
       </View>
@@ -1419,6 +1434,14 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     );
   };
 
+  function _onPressViewAll() {
+    props.navigation.navigate(AppRoutes.MembershipDetails, {
+      membershipType: 'CIRCLE PLAN',
+      isActive: true,
+      circleEventSource: 'Cart(Diagnostic)',
+    });
+  }
+
   const renderOrderSummary = () => {
     return (
       !!g(orderDetails, 'totalPrice') && (
@@ -1429,6 +1452,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           onPressDownloadInvoice={onPressInvoice}
           refundDetails={refundStatusArr}
           refundTransactionId={refundTransactionId}
+          subscriptionDetails={orderSubscriptionDetails}
+          onPressViewAll={_onPressViewAll}
         />
       )
     );
@@ -1489,7 +1514,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     return (
       <CallToOrderView
         cityId={Number(diagnosticServiceabilityData?.cityId)}
-        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY}
+        pageId={CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY}
         customMargin={80}
         slideCallToOrder={slideCallToOrder}
         onPressSmallView={() => {
@@ -1532,6 +1557,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           onScroll={() => {
             setSlideCallToOrder(true);
           }}
+          scrollEventThrottle={16}
         >
           {selectedTab == string.orders.trackOrder ? renderOrderTracking() : renderOrderSummary()}
 

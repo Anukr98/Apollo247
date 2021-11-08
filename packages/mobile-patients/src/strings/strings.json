@@ -204,7 +204,8 @@
     "yourEfectivePrice": "Your effective price is",
     "effectivePrice":"Effective price would be",
     "circleMembership": "Circle Membership",
-    "onThisOrder": "on this order."
+    "onThisOrder": "on this order.",
+    "congratsText": "Congrats! You have successfully purchased the {{duration}} {{months}} (Trial) Circle Plan for {{symbol}}{planPrice}"
   },
   "components": {
     "medicineDetails": {

@@ -255,7 +255,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const selectedTimeSlot = props.navigation.getParam('selectedTimeSlot');
   const showPaidPopUp = props.navigation.getParam('showPaidPopUp');
   const selectedAddr = props.navigation.getParam('selectedAddress');
-  const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
   const reportGenDetails = props.navigation.getParam('reportGenDetails');
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   var slotBookedArray = ['slot', 'already', 'booked', 'select a slot'];
@@ -2457,23 +2456,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         donePages={[SCREEN_NAMES.PATIENT, SCREEN_NAMES.CART, SCREEN_NAMES.SCHEDULE]}
         navigation={props.navigation}
         isModify={isModifyFlow}
-      />
-    );
-  };
-
-  const renderCallToOrder = () => {
-    return (
-      <CallToOrderView
-        cityId={Number(diagnosticServiceabilityData?.cityId)}
-        pageId={CALL_TO_ORDER_CTA_PAGE_ID.TESTCART}
-        customMargin={220}
-        slideCallToOrder={slideCallToOrder}
-        onPressSmallView={() => {
-          setSlideCallToOrder(false);
-        }}
-        onPressCross={() => {
-          setSlideCallToOrder(true);
-        }}
       />
     );
   };
