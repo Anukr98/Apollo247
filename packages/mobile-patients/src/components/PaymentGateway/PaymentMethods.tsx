@@ -73,6 +73,7 @@ import {
   paymentModeVersionCheck,
   goToConsultRoom,
   getPaymentMethodsInfo,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PaymentStatus,
@@ -298,6 +299,10 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         setisTxnProcessing(false);
         break;
       case 'upiTxn':
+        postWebEngageEvent('UPI txn Response', {
+          payload: payload?.payload,
+          availableApps: payload?.payload?.availableApps,
+        });
         let activityRes = payload?.payload?.otherInfo?.response?.dropoutInfo?.activityResponse;
         activityRes = !!activityRes && activityRes != {} && JSON.parse(activityRes);
         activityRes?.Status == 'FAILURE' || activityRes?.Status == 'Failed'
