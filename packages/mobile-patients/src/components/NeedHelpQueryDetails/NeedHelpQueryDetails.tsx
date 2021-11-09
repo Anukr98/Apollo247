@@ -820,7 +820,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       const isReturnQuery = item?.id === helpSectionQueryId.returnOrder;
       setClick(item?.id!);
       setSubheading(item?.title!);
-      if (item?.id === orderCancelId && !raiseOrderDelayQuery) {
+      if (item?.id === orderCancelId && !raiseOrderDelayQuery && cancellationAllowed) {
         setClick(orderCancelId);
         setSelectedQueryId('');
         setComments('');
@@ -1009,10 +1009,6 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         <SafeAreaView>
           {orderDelayed && click === orderDelayId ? (
             <>{renderOrderStatus()}</>
-          ) : click === orderCancelId ? (
-            !cancellationAllowed ? (
-              <>{renderCancelOrder()}</>
-            ) : null
           ) : (
             !isCancelVisible && (
               <View style={styles.flatListContainer}>
