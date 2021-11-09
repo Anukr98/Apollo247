@@ -4596,6 +4596,7 @@ export const GET_PHARMA_TRANSACTION_STATUS_V2 = gql`
       paymentStatus
       paymentDateTime
       paymentMode
+      paymentMethod
       isSubstitution
       substitutionTime
       substitutionMessage
