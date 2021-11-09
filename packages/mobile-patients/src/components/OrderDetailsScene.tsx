@@ -84,6 +84,7 @@ import {
   postCleverTapEvent,
   postWebEngageEvent,
   reOrderMedicines,
+  getFormattedDateTimeWithBefore,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postPharmacyMyOrderTrackingClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -440,35 +441,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const getFormattedDateTime = (time: string) => {
     let finalDateTime =
       moment(time).format('D MMMM YYYY') + ' at ' + moment(time).format('hh:mm A');
-    return finalDateTime;
-  };
-
-  const getFormattedDaySubscript = (day: number) => {
-    if (day > 3 && day < 21) return 'th';
-    switch (day % 10) {
-      case 1:
-        return 'st';
-      case 2:
-        return 'nd';
-      case 3:
-        return 'rd';
-      default:
-        return 'th';
-    }
-  };
-
-  const getFormattedDateTimeWithBefore = (time: string) => {
-    let day = parseInt(moment(time).format('D'));
-    let getDaySubscript = getFormattedDaySubscript(day);
-
-    let finalDateTime =
-      day +
-      getDaySubscript +
-      ' ' +
-      moment(time).format('MMMM') +
-      ' before ' +
-      moment(time).format('hh:mm A');
-
     return finalDateTime;
   };
 
