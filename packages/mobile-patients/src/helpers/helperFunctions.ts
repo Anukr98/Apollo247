@@ -3896,3 +3896,32 @@ export const formatUrl = (url: string, token: string, userMobileNumber: string):
   else uri = uri.concat(`?utm_token=${token}&utm_mobile_number=${userMobileNumber}`);
   return uri;
 };
+
+export const getFormattedDaySubscript = (day: number) => {
+  if (day > 3 && day < 21) return 'th';
+  switch (day % 10) {
+    case 1:
+      return 'st';
+    case 2:
+      return 'nd';
+    case 3:
+      return 'rd';
+    default:
+      return 'th';
+  }
+};
+
+export const getFormattedDateTimeWithBefore = (time: string) => {
+  const day = parseInt(moment(time).format('D'), 10);
+  const getDaySubscript = getFormattedDaySubscript(day);
+
+  const finalDateTime =
+    day +
+    getDaySubscript +
+    ' ' +
+    moment(time).format('MMMM') +
+    ' before ' +
+    moment(time).format('hh:mm A');
+
+  return finalDateTime;
+};
