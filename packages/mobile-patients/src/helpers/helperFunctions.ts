@@ -1116,6 +1116,17 @@ export const getlocationDataFromLatLang = async (latitude: number, longitude: nu
   }
 };
 
+/**
+ * Method to filter addresses to find postal_code type address
+ */
+ const filterPinCodeAddressFromList = (googleAPIResponse: any) => {
+  const suggestionList = googleAPIResponse?.data?.results;
+  const [pinCodeAddress] = suggestionList?.filter((address: any) =>
+    address?.address_components?.some((components: any) => components?.types?.includes('postal_code'))
+  );
+  return pinCodeAddress?.address_components ? pinCodeAddress?.address_components : '';
+};
+
 const getlocationData = (
   resolve: (value?: LocationData | PromiseLike<LocationData> | undefined) => void,
   reject: (reason?: any) => void,
@@ -1131,8 +1142,7 @@ const getlocationData = (
       }
       getPlaceInfoByLatLng(latitude, longitude)
         .then((response) => {
-          const addrComponents =
-            g(response, 'data', 'results', '0' as any, 'address_components') || [];
+          const addrComponents = filterPinCodeAddressFromList(response);
           if (addrComponents.length == 0) {
             reject('Unable to get location.');
           } else {
@@ -1570,6 +1580,19 @@ export const postCleverTapEvent = (eventName: CleverTapEventName, attributes: Ob
   try {
     CleverTap.recordEvent(eventName, attributes);
   } catch (error) {}
+};
+
+/**
+ * To check is user logged into clevertap or not
+ * @param _currentPatient current patient user object
+ */
+ export const checkCleverTapLoginStatus = async (_currentPatient: any) => {
+  CleverTap.profileGetProperty('Phone', (error, res) => {
+    if (res === null) {
+      //user is not logged into clevertap
+      onCleverTapUserLogin(_currentPatient);
+    }
+  });
 };
 
 export const onCleverTapUserLogin = async (_currentPatient: any) => {
@@ -3651,7 +3674,7 @@ export const setAsyncDiagnosticLocation = (address: any) => {
 
 export const checkPatientAge = (_selectedPatient: any, fromNewProfile: boolean = false) => {
   let age = !!_selectedPatient?.dateOfBirth ? getAge(_selectedPatient?.dateOfBirth) : null;
-  if (age != null && age != undefined && age <= 10) {
+  if (age != null && age != undefined && age < 10) {
     return true;
   }
   return false;
@@ -3760,6 +3783,59 @@ export const isCartPriceWithInSpecifiedRange = (
 export const convertDateToEpochFormat = (value: Date) => {
   const epochValue = value ? `$D_${Math.floor(value.getTime() / 1000.0)}` : '';
   return epochValue;
+};
+
+export const getPaymentMethodsInfo = (paymentMethods: any, paymentMode: string) => {
+  try {
+    const paymentMethodInfo = paymentMethods
+      ?.filter((item: any) => item?.name == paymentMode)?.[0]
+      ?.payment_methods?.map((item: any) => {
+        return {
+          payment_method_type: paymentMode,
+          payment_method: item?.payment_method_code,
+          payment_method_reference: item?.payment_method_code,
+        };
+      });
+    return !!paymentMethodInfo ? paymentMethodInfo : [];
+  } catch (error) {
+    return [];
+  }
+};
+
+export const getBestOffer = (offers: any, paymentCode: string) => {
+  try {
+    const bestOfferId = offers?.best_offer_combinations?.filter(
+      (item: any) => item?.payment_method_reference == paymentCode
+    )?.[0]?.offers[0]?.offer_id;
+    const offer = offers?.offers?.filter((item: any) => item?.offer_id == bestOfferId)?.[0];
+    return offer;
+  } catch (error) {
+    return null;
+  }
+};
+
+export const getErrorMsg = (errorCode: string) => {
+  switch (errorCode) {
+    case 'JP701':
+      return 'This offer is not valid for this transaction.';
+      break;
+    case 'JP702':
+      return 'Internal Error while applying the offer.';
+      break;
+    case 'JP703':
+      return 'This offer is not valid for this transaction.';
+      break;
+    case 'JP704':
+      return 'This offer is not valid for this transaction.';
+      break;
+    case 'JP705':
+    case 'JP706':
+      return 'Internal Error while applying the offer. ';
+      break;
+    case 'JP708':
+      return 'This offer is not valid for this transaction.';
+      break;
+  }
 };
 
 export const getAsyncStorageValues = async () => {

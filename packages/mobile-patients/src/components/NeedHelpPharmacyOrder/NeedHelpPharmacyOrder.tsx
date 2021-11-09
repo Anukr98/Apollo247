@@ -43,12 +43,12 @@ export interface Props
 
 export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
   const sourcePage = navigation.getParam('sourcePage');
-  const pageTitle = navigation.getParam('pageTitle') || string.pharmacy.toUpperCase();
+  const pageTitle = navigation.getParam('pageTitle') || string.medicines.toUpperCase();
   const queryIdLevel1 = navigation.getParam('queryIdLevel1') || '';
   const email = navigation.getParam('email') || '';
   const queries = navigation.getParam('queries');
 
-  const breadCrumb = [{ title: string.needHelp }, { title: string.pharmacy }];
+  const breadCrumb = [{ title: string.needHelp }, { title: string.medicines }];
 
   const { currentPatient, allCurrentPatients, profileAllPatients } = useAllCurrentPatients();
   const { circlePlanValidity, circleSubscriptionId } = useShoppingCart();

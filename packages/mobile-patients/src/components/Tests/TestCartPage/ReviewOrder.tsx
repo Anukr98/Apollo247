@@ -223,7 +223,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setCircleSubscriptionId,
     setCirclePlanSelected,
     setIsCircleSubscription,
-    circlePlanValidity
+    circlePlanValidity,
   } = useShoppingCart();
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
@@ -1081,8 +1081,12 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const circleData = circlePlanSelected;
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE] = {
       navigation_source: 'Cart(Diagnostic)',
-      circle_end_date: circlePlanValidity?.endDate ? circlePlanValidity?.endDate : getCircleNoSubscriptionText(),
-      circle_start_date: circlePlanValidity?.startDate ? circlePlanValidity?.startDate : getCircleNoSubscriptionText(),
+      circle_end_date: circlePlanValidity?.endDate
+        ? circlePlanValidity?.endDate
+        : getCircleNoSubscriptionText(),
+      circle_start_date: circlePlanValidity?.startDate
+        ? circlePlanValidity?.startDate
+        : getCircleNoSubscriptionText(),
       plan_id: circleData?.subPlanId,
       customer_id: currentPatient?.id,
       duration_in_months: circleData?.durationInMonth,
@@ -1135,7 +1139,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           {isDiagnosticCircleSubscription ||
           (!isDiagnosticCircleSubscription && hideCirclePurchaseInModify)
             ? null
-            : renderCirclePurchase()}
+            : allMembershipPlans?.length > 0 && renderCirclePurchase()}
           {renderPrices('Total MRP', totalPriceExcludingAnyDiscounts.toFixed(2))}
 
           {couponDiscount > 0 && renderPrices('Coupon Discount', couponDiscount?.toFixed(2))}
@@ -1608,7 +1612,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           itemNames?.push(isFromApi ? findItem?.itemName : findItem?.name);
         }
         //in case of modify. => only for single uhid
-        else if (isModifyFlow) {
+        if (isModifyFlow) {
           const getModifiedOrderLineItems = modifiedOrder?.diagnosticOrderLineItems;
           itemIds?.map((id: number) => {
             const findItem =
