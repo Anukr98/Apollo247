@@ -883,7 +883,10 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       noteText =
         'Note : In case your account has been debited, you should get the refund in 10-14 business days.';
     } else if (paymentMode === 'COD') {
-      noteText = 'Note - Your order is confirmed and has been placed successfully.';
+      noteText =
+        selectedPrescriptionType === 'CONSULT'
+          ? 'Note - Your order will be confirmed once the consultation is completed with a valid prescription'
+          : 'Note - Your order is confirmed and has been placed successfully.';
     } else if (status != success && status != failure && status != aborted) {
       noteText =
         'Note : Your payment is in progress and this may take a couple of minutes to confirm your booking. We’ll intimate you once your bank confirms the payment.';

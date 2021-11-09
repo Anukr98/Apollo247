@@ -64,6 +64,7 @@ export const PrescriptionOptions: React.FC<Props> = ({
     ePrescriptions,
     physicalPrescriptions,
     tatDetailsForPrescriptionOptions,
+    consultProfile,
   } = useShoppingCart();
   const client = useApolloClient();
   const prescriptionPopupRef = useRef<UploadPrescriprionPopupRefProps | null>(null);
@@ -215,15 +216,17 @@ export const PrescriptionOptions: React.FC<Props> = ({
           </View>
         </View>
         {selectedOption === PrescriptionType.CONSULT && [
-          <Text style={styles.consultationFor}>{'This consultation is for:'}</Text>,
+          <Text style={styles.consultationFor}>{'You are buying medicines for:'}</Text>,
           <Divider />,
           renderProfiles(),
           <View style={styles.consultAttentionView}>
             <FreeShippingIcon style={styles.freeShippingIcon} />
             <Text style={styles.lightWeightBlue}>
-              {
-                'Please make sure the consult is for the right person else consult can get cancelled.'
-              }
+              Please make sure the medicine ordered is for{' '}
+              <Text style={styles.lightWeightBlueBold}>
+                {consultProfile?.firstName || currentPatient?.firstName}
+              </Text>{' '}
+              only, else order will not be delivered.
             </Text>
           </View>,
         ]}
@@ -249,7 +252,7 @@ export const PrescriptionOptions: React.FC<Props> = ({
       };
       return {
         onPress,
-        title: isAddNewMember ? '+Add Member' : patient?.firstName!,
+        title: isAddNewMember ? '+Add Patient Name' : patient?.firstName!,
         containerStyle: styles.profileBtnContainer,
         buttonStyle: isSelectedProfile ? styles.profileBtnSelected : styles.profileBtn,
         titleStyle: isSelectedProfile ? styles.profileBtnTitleSelected : styles.profileBtnTitle,
@@ -360,6 +363,10 @@ const styles = StyleSheet.create({
   },
   lightWeightBlue: {
     ...text('R', 13, '#02475B'),
+  },
+  lightWeightBlueBold: {
+    ...text('R', 13, '#02475B'),
+    fontWeight: '500',
   },
   lightWeightBlueLineThrough: {
     ...text('R', 13, '#02475B'),
