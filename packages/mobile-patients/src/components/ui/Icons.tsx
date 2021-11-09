@@ -2424,6 +2424,14 @@ export const CoinSavingsIcon: React.FC<IconProps> = (props) => (
   />
 );
 
+export const OfferBlueIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/offerIcon.webp')} />
+);
+
+export const InvalidOfferIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/invalidIcon.webp')} />
+);
+
 export const DoctorConsultIcon: React.FC<IconProps> = (props) => (
   <IconBase
     size="sm"

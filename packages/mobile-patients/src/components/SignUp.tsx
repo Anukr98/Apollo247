@@ -7,8 +7,7 @@ import {
   Gift,
   Mascot,
   WhiteTickIcon,
-  BackArrow,
-  WhatsAppIcon,
+  BackArrow, 
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -84,7 +83,6 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
-import { CheckBox } from 'react-native-elements'
 
 const styles = StyleSheet.create({
   container: {
@@ -141,22 +139,6 @@ const styles = StyleSheet.create({
     marginTop: 15,
     position: 'absolute',
   },
-  whatsAppOptinContainer: {
-    marginVertical: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    marginHorizontal: -15
-  },
-  whatsAppOptinCheckboxContainer: {
-    width: "90%",
-    flexDirection: "row",
-    alignItems: "center"
-  },
-  whatsAppIcon: {
-    height: 22,
-    width: 22,
-    resizeMode: "contain",
-  }
 });
 
 type genderOptions = {
@@ -194,7 +176,6 @@ const SignUp: React.FC<SignUpProps> = (props) => {
   const [deviceToken, setDeviceToken] = useState<string>('');
   const [showReferralCode, setShowReferralCode] = useState<boolean>(false);
   const [oneApolloRegistrationCalled, setoneApolloRegistrationCalled] = useState<boolean>(false);
-  const [whatsAppOptIn, setWhatsAppOptIn] = useState<boolean>(false)
   const isOneTimeUpdate = useRef<boolean>(false);
 
   useEffect(() => {
@@ -493,19 +474,6 @@ const SignUp: React.FC<SignUpProps> = (props) => {
             autoCapitalize="none"
             keyboardType="email-address"
           />
-          <View style = {styles.whatsAppOptinContainer}>
-            <View style = {styles.whatsAppOptinCheckboxContainer}>
-              <CheckBox
-                checked = {whatsAppOptIn}
-                onPress = {() => setWhatsAppOptIn(!whatsAppOptIn)}
-                size = {15}
-              />
-              <Text style = {{ marginLeft: -10 }}>Send me personalised health tips and offers on</Text>
-            </View>
-            <View style = {{ width: "10%" }}>
-              <WhatsAppIcon style = {styles.whatsAppIcon} />
-            </View>
-          </View>
           {showReferralCode && renderReferral()}
         </Card>
       </View>
@@ -681,7 +649,6 @@ const SignUp: React.FC<SignUpProps> = (props) => {
 
                       const patientsDetails: UpdatePatientInput = {
                         id: mePatient.id,
-                        whatsAppOptIn: whatsAppOptIn,
                         mobileNumber: mePatient.mobileNumber,
                         firstName: firstName.trim(),
                         lastName: lastName.trim(),
