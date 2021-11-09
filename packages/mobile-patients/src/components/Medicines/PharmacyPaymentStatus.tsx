@@ -143,6 +143,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const [paymentRefId, setpaymentRefId] = useState<string>('');
   const [orderDateTime, setorderDateTime] = useState('');
   const [paymentMode, setPaymentMode] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
   const cleverTapCheckoutEventAttributes = props.navigation.getParam(
     'cleverTapCheckoutEventAttributes'
@@ -223,6 +224,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         setpaymentRefId(pharmaPaymentStatus?.paymentRefId);
         status == pending && setStatus(pharmaPaymentStatus?.paymentStatus);
         setPaymentMode(pharmaPaymentStatus?.paymentMode);
+        setPaymentMethod(pharmaPaymentStatus?.paymentMethod);
         setTransactionId(pharmaPaymentStatus?.bankTxnId);
         setIsCircleBought(!!pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
         setTotalCashBack(pharmaPaymentStatus?.planPurchaseDetails?.totalCashBack);
@@ -817,7 +819,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
                 {textComponent('Mode of Payment', undefined, theme.colors.ASTRONAUT_BLUE, false)}
               </View>
               <View style={{ justifyContent: 'flex-start', marginTop: 5 }}>
-                {textComponent(paymentMode, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
+                {textComponent(paymentMethod, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
               </View>
             </View>
           )}
