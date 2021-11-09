@@ -1719,6 +1719,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           firstName
           lastName
           gender
+          dateOfBirth
         }
         patientAddressObj {
           addressLine1
@@ -5147,6 +5148,7 @@ export const GET_INTERNAL_ORDER = gql`
             firstName
             lastName
             gender
+            dateOfBirth
           }
           diagnosticOrderLineItems {
             itemId
@@ -6462,6 +6464,17 @@ export const CREATE_VONAGE_SESSION_TOKEN = gql`
     createVonageSessionToken(appointmentId: $appointmentId) {
       token
       sessionId
+    }
+  }
+`;
+
+export const UPDATE_PASSPORT_DETAILS = gql`
+  mutation updatePassportDetails($passportDetailsInput: [PassportDetailsInput]){
+    updatePassportDetails(passportDetailsInput: $passportDetailsInput) {
+      status
+      message
+      displayId
+      data
     }
   }
 `;

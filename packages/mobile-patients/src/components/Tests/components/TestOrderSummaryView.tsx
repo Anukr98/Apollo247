@@ -27,10 +27,16 @@ import {
   DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DiagnosticOrderSummaryViewed } from '@aph/mobile-patients/src/components/Tests/Events';
 import { Down, Up, DownloadOrange } from '@aph/mobile-patients/src/components/ui/Icons';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
+import { PassportPaitentOverlay } from '@aph/mobile-patients/src/components/Tests/components/PassportPaitentOverlay';
+import { useApolloClient } from 'react-apollo-hooks';
+import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
+import { UPDATE_PASSPORT_DETAILS } from '@aph/mobile-patients/src/graphql/profiles';
+import { updatePassportDetails, updatePassportDetailsVariables } from '@aph/mobile-patients/src/graphql/types/updatePassportDetails';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 
 export interface LineItemPricing {
   packageMrp: number;
@@ -54,6 +60,8 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const filterOrderLineItem =
     !!orderDetails &&
     orderDetails?.diagnosticOrderLineItems?.filter((item: any) => !item?.isRemoved);
+  const client = useApolloClient();
+  const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
 
   const isPrepaid = orderDetails?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
   const salutation = !!orderDetails?.patientObj?.gender
@@ -64,6 +72,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
   const [showPreviousCard, setShowPreviousCard] = useState<boolean>(true);
+  const [showPassportModal, setShowPassportModal] = useState<boolean>(false);
   const [showCurrCard, setShowCurrCard] = useState<boolean>(true);
 
   useEffect(() => {
@@ -309,6 +318,35 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
         <Text style={styles.headingText}>{title}</Text>
       </View>
     );
+  };
+  const updatePassportDetails = async (data: any) => {
+    try {
+      setLoadingContext?.(true);
+      const res = await client.mutate<updatePassportDetails, updatePassportDetailsVariables>({
+        mutation: UPDATE_PASSPORT_DETAILS,
+        context: {
+          sourceHeaders,
+        },
+        variables: { passportDetailsInput: data },
+      });
+      setLoadingContext?.(false);
+      if (
+        !res?.data?.updatePassportDetails?.[0]?.status &&
+        res?.data?.updatePassportDetails?.[0]?.message
+      ) {
+        showAphAlert?.({
+          title: string.common.uhOh,
+          description: res?.data?.updatePassportDetails?.[0]?.message || 'Something went wrong',
+        });
+      }
+    } catch (error) {
+      setLoadingContext?.(false);
+      showAphAlert?.({
+        title: string.common.uhOh,
+        description: 'Something went wrong',
+      });
+      CommonBugFender('updatePassportDetails_TestOrderSummaryView', error);
+    }
   };
 
   const renderItemsCard = () => {
@@ -592,6 +630,39 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       </View>
     );
   };
+  const renderAddPassportView = () => {
+    return (
+      <View
+        style={styles.passportView}
+      >
+        <Text style={styles.textupper}>
+          {string.diagnostics.addOrEditPassportText}
+        </Text>
+        <TouchableOpacity onPress={()=>{
+          setShowPassportModal(true)
+        }}>
+          <Text style={styles.textlower}>
+            ADD
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderPassportPaitentView = () => {
+    return (
+      <PassportPaitentOverlay
+        patientArray={[orderDetails]}
+        onPressClose={() => {
+          setShowPassportModal(false);
+        }}
+        onPressDone={(response: any) => {
+          updatePassportDetails(response)
+          setShowPassportModal(false);
+        }}
+      />
+    );
+  };
 
   const renderNewTag = () => {
     return (
@@ -622,6 +693,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           : null}
         {renderOrderId()}
         {renderSlotView()}
+        {renderAddPassportView()}
         {renderAddress()}
         {renderHeading(
           `Tests for ${salutation != '' && salutation}${orderDetails?.patientObj?.firstName! ||
@@ -642,6 +714,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
         DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY.includes(orderDetails?.orderStatus)
           ? null
           : renderPaymentCard()}
+          {showPassportModal && renderPassportPaitentView()}
       </View>
     </ScrollView>
   );
@@ -679,6 +752,18 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     alignItems: 'center',
   },
+  passportView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#D4D4D4',
+    backgroundColor: 'white',
+    padding: 10,
+    marginVertical: 10,
+  },
+  textupper: { ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1) },
+  textlower: { ...theme.viewStyles.text('SB', 14, theme.colors.APP_YELLOW_COLOR) },
   commonText: {
     ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 11 : 12),
     color: colors.SHERPA_BLUE,

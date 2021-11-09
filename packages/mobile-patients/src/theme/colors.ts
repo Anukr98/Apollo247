@@ -4,6 +4,7 @@ const clear = 'transparent';
 const semiDarkClear = 'rgba(0, 0, 0, 0.3)';
 const lightColor = 'rgb(216, 216, 216)';
 const darkColor = 'rgb(115, 118, 131)';
+const sherpa_blue_light = 'rgba(1, 71, 91, 0.4)'
 
 const hexWhite = '#ffffff';
 const app_green = '#00b38e';
@@ -133,7 +134,8 @@ const Common = {
   ORANGE: "#FF774B",
   LIGHT_ORANGE_YELLOW: "#FCA317",
   BGK_GRAY : '#f9f9f9',
-  TEAL_BLUE: '#3F7281'
+  TEAL_BLUE: '#3F7281',
+  SHERPA_BLUE_LIGHT: sherpa_blue_light
 };
 
 const Header = {
