@@ -54,26 +54,20 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
       : bestOffer?.offer_description?.description;
   };
 
-  const renderButton = (item: any) => {
-    const linkedWallet = linked?.filter(
-      (item: any) => item?.wallet == item?.item?.payment_method_code
-    );
+  const renderButton = (item: any, linkedWallet: any) => {
     return item?.item?.payment_method_code == 'AMAZONPAY'
-      ? linkedWallet?.[0]?.linked
-        ? Number(linkedWallet?.[0]?.currentBalance) < amount
+      ? linkedWallet?.linked
+        ? Number(linkedWallet?.currentBalance) < amount
           ? 'ADD MONEY & PAY'
           : 'PAY NOW'
         : 'LINK ACCOUNT'
       : 'PAY NOW';
   };
 
-  const onPress = (item: any, bestOffer: any) => {
-    const linkedWallet = linked?.filter(
-      (item: any) => item?.wallet == item?.item?.payment_method_code
-    );
+  const onPress = (item: any, linkedWallet: any, bestOffer: any) => {
     return item?.item?.payment_method_code == 'AMAZONPAY'
-      ? linkedWallet?.[0]?.linked
-        ? Number(linkedWallet?.[0]?.currentBalance) < amount
+      ? linkedWallet?.linked
+        ? Number(linkedWallet?.currentBalance) < amount
           ? 'ADD MONEY & PAY'
           : onPressPayNow(item?.item?.payment_method_code, bestOffer)
         : onPressLinkWallet(item?.item?.payment_method_code, bestOffer)
@@ -82,6 +76,10 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
 
   const renderWallet = (item: any) => {
     const bestOffer = getBestOffer(offers, item?.item?.payment_method_code);
+    const linkedWallet = linked?.filter(
+      (wallet: any) => wallet?.wallet == item?.item?.payment_method_code
+    )?.[0];
+    console.log('linkedWallet >>>', linkedWallet);
     return (
       <View>
         <OutagePrompt
@@ -95,7 +93,7 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
             borderBottomWidth: item?.index == wallets.length - 1 ? 0 : 1,
             opacity: item?.item?.outage_status == 'DOWN' ? 0.5 : 1,
           }}
-          onPress={() => onPress(item, bestOffer)}
+          onPress={() => onPress(item, linkedWallet, bestOffer)}
         >
           <WalletIcon
             imageUrl={
@@ -105,7 +103,7 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
           <View style={{ width: windowWidth - 75 }}>
             <View style={styles.walletCont}>
               {renderTitle(item, bestOffer)}
-              <Text style={styles.payNow}>{renderButton(item)}</Text>
+              <Text style={styles.payNow}>{renderButton(item, linkedWallet)}</Text>
             </View>
             {renderOffer(item, bestOffer)}
           </View>

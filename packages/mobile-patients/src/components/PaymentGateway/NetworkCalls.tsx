@@ -360,6 +360,21 @@ export const fetchWalletBalance = (requestId: string, clientAuthToken: string) =
       clientAuthToken: clientAuthToken,
     },
   };
+  console.log('refreshWalletBalances payload >>', payload);
+  HyperSdkReact.process(JSON.stringify(payload));
+};
+
+export const createAPayWallet = (requestId: string, clientAuthToken: string) => {
+  const payload = {
+    requestId: requestId,
+    service: AppConfig.Configuration.jusPayService,
+    payload: {
+      action: 'createWallet',
+      walletName: 'AMAZONPAY',
+      clientAuthToken: clientAuthToken,
+    },
+  };
+  console.log('createAPayWallet payload >>', payload);
   HyperSdkReact.process(JSON.stringify(payload));
 };
 

@@ -34,6 +34,7 @@ import {
   CheckCredEligibility,
   isPayTmReady,
   fetchWalletBalance,
+  createAPayWallet,
   linkWallet,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -164,6 +165,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [selectedPayment, setSelectedPaymentOption] = useState<any>({});
   const [offer, setoffer] = useState<any>(null);
   const [linkedWallets, setLinkedWallets] = useState<any>([]);
+  const [createWallet, setcreateWallet] = useState<boolean>(false);
   const requestId = currentPatient?.id || customerId || 'apollo247';
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const defaultClevertapEventParams = {
@@ -230,7 +232,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   useEffect(() => {
     !!clientAuthToken &&
-      (checkCredEligibility(), fetchWalletBalance(currentPatient?.id, clientAuthToken));
+      (checkCredEligibility(), createAPayWallet(currentPatient?.id, clientAuthToken));
   }, [clientAuthToken]);
 
   const checkCredEligibility = () => {
@@ -241,6 +243,10 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   useEffect(() => {
     !!paymentMethods && fetchOffers();
   }, [paymentMethods, amount]);
+
+  useEffect(() => {
+    createWallet && fetchWalletBalance(currentPatient?.id, clientAuthToken);
+  }, [createWallet]);
 
   async function fetchOffers(paymentInfo?: any) {
     try {
@@ -320,7 +326,12 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         setEligibleApps(eligibleApps?.map((item: any) => item?.paymentMethod) || []);
         setCred(eligibleApps?.find((item: any) => item?.paymentMethod == 'CRED'));
         break;
+      case 'createWallet':
+        console.log('createWallet response >>>>', JSON.stringify(payload));
+        setcreateWallet(true);
+        break;
       case 'refreshWalletBalances':
+        console.log('refreshWalletBalances response >>>>', JSON.stringify(payload));
         setLinkedWallets(payload?.payload?.list);
         break;
       default:
