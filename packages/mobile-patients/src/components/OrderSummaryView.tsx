@@ -300,12 +300,12 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
       'healthCreditsRedemptionRequest',
       'RedeemedPoints'
     ) || 0;
-  const paymentMethodToDisplay =
-    paymentMethod == MEDICINE_ORDER_PAYMENT_TYPE.COD
-      ? 'COD'
-      : paymentMethod == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS
-      ? 'ONLINE'
-      : 'COD';
+  const paymentMethodToDisplay = g(
+    orderDetails,
+    'medicineOrderPayments',
+    '0' as any,
+    'paymentMethod'
+  );
 
   const isPrepaid = paymentMethod == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS;
   const prepaidBilledValue = isPrepaid
@@ -850,7 +850,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
               )}
               {!offlineOrderNumber && amountPaid != 0 && !billingDetails && (
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <Text style={styles.paymentLeftText}>{PaymentModes[paymentMode]}</Text>
+                  <Text style={styles.paymentLeftText}>{paymentMethodToDisplay}</Text>
                   <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
                     {string.common.Rs}{' '}
                     {isCartItemsUpdated
