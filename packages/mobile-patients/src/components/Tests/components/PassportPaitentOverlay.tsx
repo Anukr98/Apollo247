@@ -31,7 +31,7 @@ const { width, height } = Dimensions.get('window');
 const { SHERPA_BLUE, APP_YELLOW, CARD_BG, WHITE, APP_GREEN, CLEAR } = theme.colors;
 
 interface PassportPaitentOverlayProps {
-  onPressDone: () => void;
+  onPressDone: (response: any) => void;
   onPressClose: () => void;
   onPressAndroidBack?: () => void;
   title?: string;
@@ -129,7 +129,9 @@ export const PassportPaitentOverlay: React.FC<PassportPaitentOverlayProps> = (pr
               <StickyBottomComponent>
                 <Button
                   title={'DONE'}
-                  onPress={() => onPressDone()}
+                  onPress={() => {
+                    onPressDone(data)
+                  }}
                   style={{ width: '100%' }}
                 />
               </StickyBottomComponent>

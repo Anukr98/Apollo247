@@ -6467,7 +6467,7 @@ export const CREATE_VONAGE_SESSION_TOKEN = gql`
 `;
 
 export const UPDATE_PASSPORT_DETAILS = gql`
-  mutation updatePassportDetails($passportDetailsInput: PassportDetailsInput){
+  mutation updatePassportDetails($passportDetailsInput: [PassportDetailsInput]){
     updatePassportDetails(passportDetailsInput: $passportDetailsInput) {
       status
       message
