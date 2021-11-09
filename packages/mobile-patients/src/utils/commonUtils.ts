@@ -237,9 +237,12 @@ export const getPricesForItem = (
 
   //if change here then change in the testCart
   const discount = calculatePackageDiscounts(itemPackageMrp, price, specialPrice);
-  const circleDiscount = calculatePackageDiscounts(itemPackageMrp, circlePrice, circleSpecialPrice);
+  const circleDiscount = calculatePackageDiscounts(
+    0, //itemPackageMrp is removed
+    circlePrice, 
+    circleSpecialPrice);
   const specialDiscount = calculatePackageDiscounts(
-    itemPackageMrp,
+   itemPackageMrp,
     discountPrice,
     discountSpecialPrice
   );

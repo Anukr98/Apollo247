@@ -122,6 +122,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     }
     try {
       const result: any = await getDiagnosticListingWidget('diagnostic-list', widgetName);
+      console.log({ result });
       if (result?.data?.success && result?.data?.data?.diagnosticWidgetData?.length > 0) {
         const getWidgetsData = result?.data?.data;
         setWidgetsData(getWidgetsData);
@@ -132,6 +133,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         setError(true);
       }
     } catch (error) {
+      console.log({ error });
       CommonBugFender('fetchWidgets_TestListing', error);
       setWidgetsData([]);
       setLoading?.(false);

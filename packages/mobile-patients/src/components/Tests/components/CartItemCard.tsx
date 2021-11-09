@@ -10,11 +10,15 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { isSmallDevice, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { diagnosticsDisplayPrice } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  calculatePackageDiscounts,
+  diagnosticsDisplayPrice,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
 import moment from 'moment';
+import DiscountPercentage from './DiscountPercentage';
 
 interface CartItemCardProps {
   index: number;
@@ -91,22 +95,27 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
             },
           ]}
         >
-          <View style={{ width: '87%' }}>
-            {!!slashedPrice && (
-              <View style={{ alignItems: 'flex-end' }}>
-                <Text style={styles.packageSlashedPrice}>
-                  {string.common.Rs}
-                  {slashedPrice}
-                </Text>
-              </View>
-            )}
-          </View>
           <View style={{ flexDirection: 'row' }}>
             <View style={styles.itemNameView}>
               <Text style={styles.cartItemText}>{nameFormater(cartItem?.name, 'default')}</Text>
             </View>
             <View style={[styles.rightView]}>
-              <View style={styles.priceView}>
+              {!!slashedPrice && (
+                <View style={{ flex: 0.5, alignItems: 'flex-end', marginRight: 2 }}>
+                  <Text style={styles.packageSlashedPrice}>
+                    {string.common.Rs}
+                    <Text style={{ textDecorationLine: 'line-through' }}>{slashedPrice}</Text>
+                  </Text>
+                </View>
+              )}
+              <View
+                style={[
+                  styles.priceView,
+                  !!slashedPrice
+                    ? { flex: 0.6 }
+                    : { flex: 1, alignItems: 'flex-end', marginRight: 5 },
+                ]}
+              >
                 <Text style={styles.mainPriceText}>
                   {string.common.Rs}
                   {priceToShow}
@@ -129,6 +138,23 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   };
 
   const renderInclusionsCount = () => {
+    const discount = calculatePackageDiscounts(
+      cartItem?.packageMrp,
+      cartItem?.price,
+      cartItem?.specialPrice
+    );
+    const circleDiscount = calculatePackageDiscounts(
+      0, //itemPackageMrp is removed
+      cartItem?.circlePrice,
+      cartItem?.circleSpecialPrice
+    );
+    const specialDiscount = calculatePackageDiscounts(
+      cartItem?.packageMrp,
+      cartItem?.discountPrice,
+      cartItem?.discountSpecialPrice
+    );
+    const promoteCircle = cartItem?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE; //if circle discount is more
+    const promoteDiscount = promoteCircle ? false : discount < specialDiscount;
     return (
       <View
         style={[
@@ -146,8 +172,18 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
             }`}</Text>
           </View>
         ) : null}
-        {showSavingsView && renderSavingView(true)}
-        {!showSavingsView && showDiscountSavingsView && renderSavingView(false)}
+        {/* {showSavingsView && renderDisountPercentage(true)}
+        {!showSavingsView && showDiscountSavingsView && renderSavingView(false)} */}
+        {renderPercentageDiscount(
+          promoteCircle && isCircleSubscribed
+            ? circleDiscount
+            : promoteDiscount
+            ? specialDiscount
+            : discount,
+          promoteCircle && isCircleSubscribed ? true : false,
+          promoteDiscount && specialDiscount > 0 ? specialDiscount : 0,
+          discount > 0 ? discount : 0
+        )}
       </View>
     );
   };
@@ -220,11 +256,11 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
       <>
         {!!savingAmount && savingAmount > 0 ? (
           <View style={styles.flexRow}>
-            {isCircleDiscount ? (
+            {/* {isCircleDiscount ? (
               <CircleLogo style={styles.circleLogoIcon} />
             ) : (
-              <SpecialDiscountText isImage={true} text={string.diagnostics.test247Text} />
-            )}
+              <SpecialDiscountText isImage={false} text={string.diagnostics.test247Text} />
+            )} */}
             <Text
               style={[
                 styles.savingTextStyle,
@@ -233,7 +269,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
                 },
               ]}
             >
-              {'Savings'} {string.common.Rs}
+              {'save'} {string.common.Rs}
               {savingAmount}
             </Text>
           </View>
@@ -242,16 +278,36 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     );
   };
 
+  const renderPercentageDiscount = (
+    discount: string | number,
+    isOnlyCircle: boolean,
+    specialDiscount: number,
+    hasOtherDiscount: number
+  ) => {
+    const discountPrice =
+      specialDiscount > 0 ? specialDiscount : hasOtherDiscount > 0 ? hasOtherDiscount : 0;
+    return (
+      <View style={{ alignItems: 'flex-end' }}>
+        <DiscountPercentage
+          discount={discount}
+          isOnlyCircle={isOnlyCircle}
+          discountPrice={discountPrice}
+        />
+      </View>
+    );
+  };
+
   return <View>{renderCartItems()}</View>;
 };
 
 const styles = StyleSheet.create({
   packageSlashedPrice: {
-    ...theme.viewStyles.text('SB', isSmallDevice ? 11 : 12, theme.colors.SHERPA_BLUE, 0.6, 16),
-    textDecorationLine: 'line-through',
+    ...theme.viewStyles.text('SB', isSmallDevice ? 9 : 10, theme.colors.SHERPA_BLUE, 0.6, 14),
+    marginTop: 5,
   },
   mainPriceText: {
     ...theme.viewStyles.text('SB', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 1, 16),
+    marginTop: 2,
   },
   cartItemText: {
     ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 1, 22),
@@ -265,15 +321,16 @@ const styles = StyleSheet.create({
   priceView: {
     justifyContent: 'flex-start',
     alignItems: 'center',
-    width: '70%',
     marginTop: 2,
+    flex: 0.6,
   },
   rightView: {
     flex: 1,
     marginLeft: 8,
     flexDirection: 'row',
+    width: '70%',
   },
-  itemNameView: { width: '70%', justifyContent: 'flex-start' },
+  itemNameView: { width: '60%', justifyContent: 'flex-start' },
   cartItemView: {
     justifyContent: 'space-between',
     padding: 16,
@@ -325,7 +382,7 @@ const styles = StyleSheet.create({
   },
   flexRow: {
     flexDirection: 'row',
-    alignSelf: 'flex-end',
+    alignSelf: 'center',
   },
   savingTextStyle: {
     ...theme.viewStyles.text('M', isSmallDevice ? 10.5 : 11, theme.colors.APP_GREEN, 1, 18),

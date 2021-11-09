@@ -310,6 +310,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const hideCirclePurchaseInModify =
     isModifyFlow && modifiedOrder?.paymentType !== DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
   const getConfigValues = AppConfig.Configuration.CIRCLE_PLAN_PRESELECTED;
+  const showCouponView = !isModifyFlow;
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
@@ -1014,7 +1015,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           >
             {title}
           </Text>
-          {!!touchView && touchView && !!!coupon && !coupon?.valid && (
+          {showCouponView && !!touchView && touchView && !!!coupon && !coupon?.valid && (
             <TouchableOpacity onPress={() => _navigateToCoupons()} style={styles.applyCouponTouch}>
               <Text style={styles.couponText}>
                 {nameFormater(string.diagnosticsCoupons.applyCoupon, 'upper')}
@@ -1261,7 +1262,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           (!isDiagnosticCircleSubscription && hideCirclePurchaseInModify)
             ? null
             : allMembershipPlans?.length > 0 && renderCirclePurchase()}
-          {renderCouponView()}
+          {/**for modification no coupon should be applied */}
+          {showCouponView ? renderCouponView() : null}
           {renderPrices(
             string.diagnosticsCoupons.totalMrp,
             totalPriceExcludingAnyDiscounts.toFixed(2)
