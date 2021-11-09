@@ -125,6 +125,7 @@ export interface ProductDetailPageProps
     deliveryError: string;
     sectionName?: string;
     urlKey?: string;
+    navSrcForSearchSuccess?: string;
   }> {}
 
 type PharmacyTatApiCalled =
@@ -1282,7 +1283,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.mainContainer}>
-        <MedicineListingHeader navigation={props.navigation} movedFrom={'productdetail'} />
+        <MedicineListingHeader
+          navigation={props.navigation}
+          movedFrom={'productdetail'}
+          navSrcForSearchSuccess={'PDP'}
+        />
         <View>
           {loading ? (
             <ActivityIndicator

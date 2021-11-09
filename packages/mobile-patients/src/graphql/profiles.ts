@@ -1936,6 +1936,13 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
       billNumber: $billNumber
     ) {
       tatBreached
+      orderCancellationAllowedDetails{
+        cancellationTime
+        cancellationAllowed
+        message
+        cancellationRequestRaised
+        cancellationRequestRejected
+      }
       medicineOrderDetails {
         id
         appointmentId
@@ -1999,6 +2006,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
           }
           paymentMode
           refundAmount
+          paymentMethod
         }
         medicineOrderRefunds {
           refundAmount
@@ -6467,8 +6475,7 @@ export const GET_DIAGNOSTIC_SEARCH_RESULTS = gql`
         }
       }
     }
-  }
-`;
+  }`;
 
 export const GET_PHARMACY_PRESCRIPTION_OPTION = gql`
   query pharmaPrescriptionOption($pharmaPrescriptionOptionInput: PharmaPrescriptionOptionInput) {

@@ -1295,7 +1295,7 @@ export const isValidText = (value: string) =>
 export const isValidName = (value: string) =>
   value == ' '
     ? false
-    : value == '' || /^[a-zA-Z]+((['â€™ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
+    : value == '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
     ? true
     : false;
 
@@ -1586,7 +1586,7 @@ export const postCleverTapEvent = (eventName: CleverTapEventName, attributes: Ob
  * To check is user logged into clevertap or not
  * @param _currentPatient current patient user object
  */
- export const checkCleverTapLoginStatus = async (_currentPatient: any) => {
+export const checkCleverTapLoginStatus = async (_currentPatient: any) => {
   CleverTap.profileGetProperty('Phone', (error, res) => {
     if (res === null) {
       //user is not logged into clevertap
@@ -2649,7 +2649,9 @@ export const addPharmaItemToCart = (
   itemsInCart?: string,
   onComplete?: () => void,
   pharmacyCircleAttributes?: PharmacyCircleEvent,
-  onAddedSuccessfully?: () => void
+  onAddedSuccessfully?: () => void,
+  comingFromSearch?: boolean,
+  cleverTapSearchSuccessEventAttributes?: object,
 ) => {
   const outOfStockMsg = 'Sorry, this item is out of stock in your area.';
 
@@ -2720,9 +2722,17 @@ export const addPharmaItemToCart = (
     .then((res) => {
       const availability = g(res, 'data', 'response', '0' as any, 'exist');
       if (availability) {
+        if (comingFromSearch === true) {
+          cleverTapSearchSuccessEventAttributes['Product availability'] = 'Is in stock';
+          postCleverTapEvent(CleverTapEventName.PHARMACY_SEARCH_SUCCESS, cleverTapSearchSuccessEventAttributes);
+        }
         addToCart();
         onAddedSuccessfully?.();
       } else {
+        if (comingFromSearch === true) {
+          cleverTapSearchSuccessEventAttributes['Product availability'] = 'Out of stock';
+          postCleverTapEvent(CleverTapEventName.PHARMACY_SEARCH_SUCCESS, cleverTapSearchSuccessEventAttributes);
+        }
         navigate();
       }
       try {
@@ -3785,6 +3795,19 @@ export const convertDateToEpochFormat = (value: Date) => {
   return epochValue;
 };
 
+export const getAvailabilityForSearchSuccess = (pincode: string, sku: string) => {
+  let availability = false;
+      availabilityApi247(pincode, sku)
+        .then((res) => {
+          availability = g(res, 'data', 'response', '0' as any, 'exist');
+        })
+        .catch((error) => {
+          availability = false;
+        });
+    return availability;
+};
+
+
 export const getPaymentMethodsInfo = (paymentMethods: any, paymentMode: string) => {
   try {
     const paymentMethodInfo = paymentMethods
@@ -3872,4 +3895,33 @@ export const formatUrl = (url: string, token: string, userMobileNumber: string):
     uri = uri.concat(`&utm_token=${token}&utm_mobile_number=${userMobileNumber}`);
   else uri = uri.concat(`?utm_token=${token}&utm_mobile_number=${userMobileNumber}`);
   return uri;
+};
+
+export const getFormattedDaySubscript = (day: number) => {
+  if (day > 3 && day < 21) return 'th';
+  switch (day % 10) {
+    case 1:
+      return 'st';
+    case 2:
+      return 'nd';
+    case 3:
+      return 'rd';
+    default:
+      return 'th';
+  }
+};
+
+export const getFormattedDateTimeWithBefore = (time: string) => {
+  const day = parseInt(moment(time).format('D'), 10);
+  const getDaySubscript = getFormattedDaySubscript(day);
+
+  const finalDateTime =
+    day +
+    getDaySubscript +
+    ' ' +
+    moment(time).format('MMMM') +
+    ' before ' +
+    moment(time).format('hh:mm A');
+
+  return finalDateTime;
 };

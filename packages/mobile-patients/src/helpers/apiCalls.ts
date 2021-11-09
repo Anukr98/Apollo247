@@ -652,6 +652,33 @@ export interface BoughtTogetherResponse {
   product_count: number;
 }
 
+export interface BrandPageApiResponse {
+  success?: boolean;
+  msg?: string;
+  data?: BrandData[] | null;
+}
+
+export interface BrandData {
+  brandName: string;
+  brandMainBannerImg: string;
+  brandMobileBannerImg?: string;
+  brandBannersList: BrandBannerData[];
+  brandMenuList: BrandMenuData[];
+}
+
+export interface BrandBannerData {
+  brandBannerImgUrl: string;
+  brandRedirectionUrl: string;
+}
+
+export interface BrandMenuData {
+  MenuName: string;
+  MenuRedirectionUrl: string | null;
+  MenuContent?: string | null;
+}
+
+
+
 const config = AppConfig.Configuration;
 
 export const getMedicineDetailsApi = (
@@ -694,7 +721,6 @@ export const getMedicineDetailsApiV2 = (
   );
 };
 
-let cancelSearchMedicineApi247: Canceler | undefined;
 export const searchMedicineApi = async (
   searchText: string,
   pageId: number = 1,
@@ -703,8 +729,6 @@ export const searchMedicineApi = async (
   axdcCode?: string | null,
   pincode?: string | null
 ): Promise<AxiosResponse<PopcSrchPrdApiResponse>> => {
-  const CancelToken = Axios.CancelToken;
-  cancelSearchMedicineApi247 && cancelSearchMedicineApi247();
   return Axios({
     url: config.MED_SEARCH[0],
     method: 'POST',
@@ -719,9 +743,6 @@ export const searchMedicineApi = async (
     headers: {
       Authorization: config.MED_SEARCH[1],
     },
-    cancelToken: new CancelToken((c) => {
-      cancelSearchMedicineApi247 = c;
-    }),
   });
 };
 
@@ -1418,4 +1439,15 @@ export const getTatStaticContent = (
   const baseUrl = config.assetsBaseurl;
   const url = `${baseUrl}/tatCtaStaticContent.json`;
   return Axios.get(url);
+};
+
+export const getBrandPagesData = async (brandName: string): Promise<AxiosResponse<BrandPageApiResponse>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const brandPagesCmsUrl = `${baseurl}/brand-page/${brandName}`;
+  const response = await Axios.get(brandPagesCmsUrl, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+  return response;
 };

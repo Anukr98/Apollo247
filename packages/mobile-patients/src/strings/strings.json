@@ -428,9 +428,16 @@
     "no_conversation_till_now": "No conversation till now !",
     "ticket_creation_lag_time": "It usually takes 10 seconds to submit your ticket, we will update you here once its done."
   },
+  "orderDetailScreen": {
+    "cancellationRequestRaised": "Note: Your cancellation request is under process. You can check the status after sometime.",
+    "cancellationRequestRejected": "Note: Sorry, we could not process your cancellation request. If you still wish to cancel, please reject the delivery at your doorstep.",
+    "cancelled": "Your cancellation request has been accepted and order is cancelled. If prepaid, the amount paid will be refunded automatically.",
+    "cancellationRequest": "Your cancellation request is under process. You can check the status after sometime."
+  },
   "needHelpQueryDetails": {
     "tatBreachedTrue": "Your order status is {{medicineOrderStatus}}. Due to heavy order volumes, we are facing unexpected delays in shipping. We sincerely apologize for the inconvenience. We are working proactively to deliver at the earliest.",
-    "tatBreachedFalse": "Your order status is {{medicineOrderStatus}}. You will receive your order by {{etd}}. We are working proactively to deliver at the earliest."
+    "tatBreachedFalse": "Your order status is {{medicineOrderStatus}}. You will receive your order by {{etd}}. We are working proactively to deliver at the earliest.",
+    "message": "Your order is processed. If you still wish to cancel, please reject the delivery at your doorstep."
   },
   "time":{"TwelveHourFormat":"hh:mm A"},
   "doctor_search_listing": {

@@ -101,6 +101,9 @@ import {
 import { SubstituteItemsCard } from '@aph/mobile-patients/src/components/Medicines/Components/SubstituteItemsCard';
 import InAppReview from 'react-native-in-app-review';
 import DeviceInfo from 'react-native-device-info';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { PrescriptionInfoView } from '@aph/mobile-patients/src/components/MedicineCart/Components/PrescriptionInfoView';
 
 enum SUBSTITUTION_RESPONSE {
   OK = 'OK',
@@ -125,6 +128,8 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     cartTotalCashback,
     pharmacyCircleAttributes,
     deliveryCharges,
+    prescriptionType,
+    consultProfile,
   } = useShoppingCart();
   const [loading, setLoading] = useState<boolean>(true);
   const { success, failure, aborted, pending } = Payment;
@@ -160,7 +165,12 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const [circlePlanDetails, setCirclePlanDetails] = useState({});
   const [codOrderProcessing, setcodOrderProcessing] = useState<boolean>(false);
-  const { apisToCall, pharmacyUserTypeAttribute } = useAppCommonData();
+  const {
+    apisToCall,
+    pharmacyUserTypeAttribute,
+    selectedPrescriptionType,
+    setSelectedPrescriptionType,
+  } = useAppCommonData();
 
   const [showSubstituteMessage, setShowSubstituteMessage] = useState<boolean>(false);
   const [substituteMessage, setSubstituteMessage] = useState<string>('');
@@ -339,6 +349,8 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       apiCallEnums.plansCashback,
     ];
     navigateToHome(props.navigation);
+    // clearing free consult option selected
+    setSelectedPrescriptionType && setSelectedPrescriptionType('');
   };
 
   const firePaymentOrderStatusEvent = (backEndStatus: string) => {
@@ -920,6 +932,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       setIsCircleSubscription && setIsCircleSubscription(false);
       setCirclePlanSelected?.(null);
       props.navigation.navigate(AppRoutes.MedicineCart);
+      setSelectedPrescriptionType && setSelectedPrescriptionType('');
     } else {
       clearCircleSubscriptionData();
       moveToHome();
@@ -992,6 +1005,32 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     );
   };
 
+  const renderPrescriptionInfo = () => {
+    const isPrescriptionLater = prescriptionType === PrescriptionType.LATER;
+    const name = consultProfile?.firstName || currentPatient?.firstName;
+    const title = isPrescriptionLater
+      ? 'Share Prescription Later Selected'
+      : AppConfig.Configuration.FREE_CONSULT_MESSAGE.orderConfirmationHeader.replace(
+          '{Patient Name}',
+          name
+        );
+    const description = isPrescriptionLater
+      ? 'You have to share prescription later for order to be verified successfully.'
+      : AppConfig.Configuration.FREE_CONSULT_MESSAGE.orderConfirmationMessage;
+    const note = isPrescriptionLater
+      ? 'Delivery TAT will be on hold till the prescription is submitted.'
+      : 'Delivery TAT will be on hold till the consult is completed.';
+    return (
+      <PrescriptionInfoView
+        title={title}
+        description={description}
+        note={note}
+        style={{ marginHorizontal: 20 }}
+        uploadNowToBeShown={false}
+      />
+    );
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
@@ -1010,6 +1049,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
               !isCircleBought
                 ? renderCircleSavingsOnPurchase()
                 : null}
+              {selectedPrescriptionType === 'CONSULT' && renderPrescriptionInfo()}
               {renderCODNote()}
               {status != failure && status != aborted && appointmentHeader()}
               {status != failure && status != aborted && appointmentCard()}

@@ -2431,3 +2431,11 @@ export const OfferBlueIcon: React.FC<IconProps> = (props) => (
 export const InvalidOfferIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/invalidIcon.webp')} />
 );
+
+export const DoctorConsultIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/doctorConsultIcon-1.webp')}
+  />
+);

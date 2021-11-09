@@ -909,6 +909,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     checkCleverTapLoginStatus(currentPatient);
   }, [currentPatient]);
 
+  useEffect(() => {
+    checkCleverTapLoginStatus(currentPatient);
+  }, [currentPatient]);
+
   //to be called only when the user lands via app launch
   const logHomePageViewed = async (attributes: any) => {
     const isAppOpened = await AsyncStorage.getItem('APP_OPENED');

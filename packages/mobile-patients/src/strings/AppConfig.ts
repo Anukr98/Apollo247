@@ -290,7 +290,16 @@ const appStaticVariables = {
   DIAGNOSTICS_REPORT_TAT_BREACH_TEXT:
     'Reports are delayed by a few hours, but should be available any time soon.',
   TrueCaller_Login_Enabled: false,
-  DIAGNOSTICS_NO_CIRCLE_SAVINGS_TEXT: 'Extra 15% off on lab tests and cashback on medicine orders',
+  DIAGNOSTICS_NO_CIRCLE_SAVINGS_TEXT : 'Extra 15% off on lab tests and cashback on medicine orders',
+  FREE_CONSULT_MESSAGE: {
+    prescriptionMessage: 'Get a FREE Consultation by our expert doctor within the next 30 mins.',
+    reviewOrderMessage: 'Our Apollo doctor will call you for a free consultation. Order will be processed only after the consultation in completed successfully.',
+    orderConfirmationMessage: 'An Apollo doctor will call you as soon are they are available.',
+    orderSummaryMessage: 'Free Doctor Consult Booked. You will receive a call soon.',
+    reviewOrderHeader: 'FREE Consult will be booked for you',
+    orderConfirmationHeader: 'FREE Consult booked for you',
+    prescriptionOptionHeader: "I don't have a prescription",
+  },
 };
 
 const DEV_top_specialties = [
