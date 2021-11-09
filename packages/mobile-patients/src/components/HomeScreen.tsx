@@ -489,15 +489,9 @@ const styles = StyleSheet.create({
     color: theme.colors.WHITE,
   },
   tabBarMainViewStyle: {
-    backgroundColor: theme.colors.WHITE,
+    backgroundColor: '#F8F8F8',
     flexDirection: 'row',
     width: width,
-    shadowColor: 'black',
-    shadowOffset: { width: 0, height: -10 },
-    shadowOpacity: 0.35,
-    shadowRadius: 18,
-    elevation: 8,
-    marginTop: 6,
   },
   tabBarViewStyle: {
     width: width / 5,
@@ -2963,74 +2957,85 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
   const renderBottomTabBar = () => {
     return (
-      <View style={[styles.tabBarMainViewStyle, { height: showPopUp ? 0 : isIphoneX() ? 87 : 57 }]}>
-        {tabBarOptions.map((tabBarOptions, i) => (
-          <View key={i}>
-            <TouchableOpacity
-              activeOpacity={1}
-              key={i}
-              onPress={() => {
-                if (i === 0) {
-                  postHomeFireBaseEvent(FirebaseEventName.TABBAR_APPOINTMENTS_CLICKED, 'Menu');
-                  postHomeWEGEvent(WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED, 'Menu');
-                  postHomeCleverTapEvent(CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS, 'Menu');
-                  CommonLogEvent(AppRoutes.HomeScreen, 'APPOINTMENTS clicked');
-                  props.navigation.navigate('APPOINTMENTS');
-                } else if (i == 1) {
-                  postHomeFireBaseEvent(FirebaseEventName.VIEW_HELATH_RECORDS, 'Menu');
-                  postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Menu');
-                  postHomeCleverTapEvent(CleverTapEventName.VIEW_HELATH_RECORDS, 'Menu');
-                  CommonLogEvent(AppRoutes.HomeScreen, 'HEALTH_RECORDS clicked');
-                  props.navigation.navigate('HEALTH RECORDS');
-                } else if (i == 2) {
-                  postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Menu');
-                  postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Menu');
-                  postHomeCleverTapEvent(CleverTapEventName.BUY_MEDICINES, 'Menu');
-                  CommonLogEvent(AppRoutes.HomeScreen, 'MEDICINES clicked');
-                  const eventAttributes:
-                    | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
-                    | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
-                    source: 'app home',
-                  };
-                  setTimeout(
-                    () =>
-                      postCleverTapEvent(
-                        CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED,
-                        eventAttributes
-                      ),
-                    500
-                  );
-                  postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
-                  props.navigation.navigate('MEDICINES');
-                } else if (i == 3) {
-                  const homeScreenAttributes = {
-                    'Nav src': 'Bottom bar',
-                    'Page Name': 'Home Screen',
-                    Source: DiagnosticHomePageSource.TAB_BAR,
-                  };
-                  postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Menu');
-                  postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Menu');
-                  CommonLogEvent(AppRoutes.HomeScreen, 'TESTS clicked');
-                  props.navigation.navigate('TESTS', { homeScreenAttributes });
-                } else if (i == 4) {
-                  postHomeCleverTapEvent(CleverTapEventName.MY_ACCOUNT, 'Menu');
-                  postHomeFireBaseEvent(FirebaseEventName.MY_ACCOUNT, 'Menu');
-                  postHomeWEGEvent(WebEngageEventName.MY_ACCOUNT);
-                  CommonLogEvent(AppRoutes.HomeScreen, 'MY_ACCOUNT clicked');
-                  props.navigation.navigate('MY ACCOUNT');
-                }
-              }}
-            >
-              <View style={styles.tabBarViewStyle} key={i}>
-                <View>
-                  {tabBarOptions.image}
-                  {i === 1 && renderBadgeView()}
+      <View>
+        <View
+          style={{
+            height: 0.5,
+            backgroundColor: '#D4D4D4',
+            marginHorizontal: -16,
+          }}
+        />
+        <View
+          style={[styles.tabBarMainViewStyle, { height: showPopUp ? 0 : isIphoneX() ? 87 : 57 }]}
+        >
+          {tabBarOptions.map((tabBarOptions, i) => (
+            <View key={i}>
+              <TouchableOpacity
+                activeOpacity={1}
+                key={i}
+                onPress={() => {
+                  if (i === 0) {
+                    postHomeFireBaseEvent(FirebaseEventName.TABBAR_APPOINTMENTS_CLICKED, 'Menu');
+                    postHomeWEGEvent(WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED, 'Menu');
+                    postHomeCleverTapEvent(CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS, 'Menu');
+                    CommonLogEvent(AppRoutes.HomeScreen, 'APPOINTMENTS clicked');
+                    props.navigation.navigate('APPOINTMENTS');
+                  } else if (i == 1) {
+                    postHomeFireBaseEvent(FirebaseEventName.VIEW_HELATH_RECORDS, 'Menu');
+                    postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Menu');
+                    postHomeCleverTapEvent(CleverTapEventName.VIEW_HELATH_RECORDS, 'Menu');
+                    CommonLogEvent(AppRoutes.HomeScreen, 'HEALTH_RECORDS clicked');
+                    props.navigation.navigate('HEALTH RECORDS');
+                  } else if (i == 2) {
+                    postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Menu');
+                    postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Menu');
+                    postHomeCleverTapEvent(CleverTapEventName.BUY_MEDICINES, 'Menu');
+                    CommonLogEvent(AppRoutes.HomeScreen, 'MEDICINES clicked');
+                    const eventAttributes:
+                      | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
+                      | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
+                      source: 'app home',
+                    };
+                    setTimeout(
+                      () =>
+                        postCleverTapEvent(
+                          CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED,
+                          eventAttributes
+                        ),
+                      500
+                    );
+                    postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
+                    props.navigation.navigate('MEDICINES');
+                  } else if (i == 3) {
+                    const homeScreenAttributes = {
+                      'Nav src': 'Bottom bar',
+                      'Page Name': 'Home Screen',
+                      Source: DiagnosticHomePageSource.TAB_BAR,
+                    };
+                    postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Menu');
+                    postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Menu');
+                    CommonLogEvent(AppRoutes.HomeScreen, 'TESTS clicked');
+                    props.navigation.navigate('TESTS', { homeScreenAttributes });
+                  } else if (i == 4) {
+                    postHomeCleverTapEvent(CleverTapEventName.MY_ACCOUNT, 'Menu');
+                    postHomeFireBaseEvent(FirebaseEventName.MY_ACCOUNT, 'Menu');
+                    postHomeWEGEvent(WebEngageEventName.MY_ACCOUNT);
+                    CommonLogEvent(AppRoutes.HomeScreen, 'MY_ACCOUNT clicked');
+                    props.navigation.navigate('MY ACCOUNT');
+                  }
+                }}
+              >
+                <View style={styles.tabBarViewStyle} key={i}>
+                  <View>
+                    {tabBarOptions.image}
+                    {i === 1 && renderBadgeView()}
+                  </View>
+                  <Text style={styles.tabBarTitleStyle}>{tabBarOptions.title}</Text>
                 </View>
-                <Text style={styles.tabBarTitleStyle}>{tabBarOptions.title}</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        ))}
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
       </View>
     );
   };
