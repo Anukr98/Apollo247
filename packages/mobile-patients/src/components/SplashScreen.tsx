@@ -754,26 +754,28 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   const catchSourceUrlDataUsingAppsFlyer = async (redirectUrl: string | null) => {
     onDeepLinkCanceller = await appsFlyer.onDeepLink(async (res) => {
-      if (redirectUrl && checkUniversalURL(redirectUrl).universal) {
-        if (Object.keys(res?.data).length < 2) {
-          clevertapEventForAppsflyerDeeplink(
-            removeNullFromObj({
-              source_url: checkUniversalURL(redirectUrl).source_url,
-              channel: 'Organic',
-            })
-          );
+      try {
+        if (redirectUrl && checkUniversalURL(redirectUrl).universal) {
+          if (Object.keys(res?.data).length < 2) {
+            clevertapEventForAppsflyerDeeplink(
+              removeNullFromObj({
+                source_url: checkUniversalURL(redirectUrl).source_url,
+                channel: 'Organic',
+              })
+            );
+          } else {
+            clevertapEventForAppsflyerDeeplink(
+              filterAppLaunchSoruceAttributesByKey({
+                ...res?.data,
+                source_url: checkUniversalURL(redirectUrl).source_url,
+              })
+            );
+          }
         } else {
-          clevertapEventForAppsflyerDeeplink(
-            filterAppLaunchSoruceAttributesByKey({
-              ...res?.data,
-              source_url: checkUniversalURL(redirectUrl).source_url,
-            })
-          );
+          clevertapEventForAppsflyerDeeplink(filterAppLaunchSoruceAttributesByKey(res?.data));
         }
-      } else {
-        clevertapEventForAppsflyerDeeplink(filterAppLaunchSoruceAttributesByKey(res?.data));
-      }
-      onDeepLinkCanceller();
+        onDeepLinkCanceller();
+      } catch (e) {}
     });
   };
 
