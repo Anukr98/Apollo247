@@ -282,12 +282,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const hideWhtsappQueryOption = moment(new Date()).diff(moment(orderDeliveryDate), 'hours') > 48;
 
   useEffect(() => {
-    if (isCancelOrder && !loading) {
-      showCancelOrder();
-    }
-  }, [loading]);
-
-  useEffect(() => {
     updateRateDeliveryBtnVisibility();
   }, [orderDetails]);
 
@@ -1908,7 +1902,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       <Button
         style={{ margin: 16, marginTop: 32, width: 'auto' }}
         onPress={onPressConfirmCancelOrder}
-        disabled={!!!selectedReason && showSpinner}
+        disabled={(!!!selectedReason && showSpinner) || selectedReason === ''}
         title={'SUBMIT REQUEST'}
       />
     );
@@ -2138,7 +2132,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b') }}
         onPress={(item) => {
           if (item.value == 'Cancel Order') {
-            showCancelOrder();
+            getCancellationReasons();
           }
         }}
       >
