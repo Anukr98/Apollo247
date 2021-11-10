@@ -10,12 +10,10 @@ import {
   LabTestAtHomeIcon,
   TrophyIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { useReferralProgram } from '@aph/mobile-patients/src/components/ReferralProgramProvider';
 
 export interface EarnedPointsProps extends NavigationScreenProps {}
 
 export const EarnedPoints: React.FC<EarnedPointsProps> = (props) => {
-  const { refreeReward } = useReferralProgram();
   const { navigation } = props;
 
   const renderYourGifterReward = () => {
@@ -30,7 +28,7 @@ export const EarnedPoints: React.FC<EarnedPointsProps> = (props) => {
         <View style={styles.earnPointotherTextContainer}>
           <Text style={styles.earnPointgiftedHeading}>{string.referAndEarn.yourFriendGiftYou}</Text>
           <Text style={styles.earnPointtotalGifted}>
-            {refreeReward} {string.referAndEarn.hc}
+            {string.referAndEarn.referrHC} {string.referAndEarn.hc}
           </Text>
           <TouchableOpacity
             style={styles.earnPointreedemBtn}

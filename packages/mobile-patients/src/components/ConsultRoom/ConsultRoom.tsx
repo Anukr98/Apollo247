@@ -2876,37 +2876,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const checkUserRegisterThroughReferral = async () => {
     const referrerInstall = await AsyncStorage.getItem('referrerInstall');
     if (referrerInstall === 'true') {
-      checkRefreeRewardData().then((refResponse: InitiateRefreeType) => {
-        if (refResponse.isRefree) {
-          props.navigation.navigate('EarnedPoints');
-        }
-      });
+      props.navigation.navigate('EarnedPoints');
       AsyncStorage.removeItem('referrerInstall');
     }
-  };
-
-  const checkRefreeRewardData = async () => {
-    let responseData = { isRefree: false, rewardValue: 0 };
-    try {
-      const response = await client.query({
-        query: GET_HC_REFREE_RECORD,
-        variables: { id: g(currentPatient, 'id') },
-        fetchPolicy: 'no-cache',
-      });
-      const { data } = response;
-      if (data?.getReferralRewardDetails?.referee?.name != null) {
-        responseData.isRefree == true;
-        responseData.rewardValue = data?.getReferralRewardDetails?.referee?.rewardValue;
-        setRefreeReward?.({
-          isRefree: false,
-          rewardValue: data?.getReferralRewardDetails?.referee?.rewardValue,
-          rewardExpirationDate: data?.getReferralRewardDetails?.referee?.registrationDate,
-        });
-      }
-    } catch (error) {
-      CommonBugFender('ShareReferralLink_generatingCampaignId', error);
-    }
-    return responseData;
   };
 
   const cleverTapEventForAddMemberClick = () => {

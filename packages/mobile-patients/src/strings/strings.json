@@ -1384,7 +1384,7 @@
   "referAndEarn":{
     "referrHC": "100",
     "currency":"₹",
-    "validUpTo":"500",
+    "validUpTo":"300",
     "referAndEarn": "Refer & Earn",
     "referAndEarnLine2": "Your friends get ₹100 on signup",
     "earnNow": "Earn Now",
@@ -1416,7 +1416,7 @@
     "noReferralReward":"No referral rewards",
     "youHaveNotInvited":"You have not invited your friends yet",
     "referYourFriend":"Refer Your Friend",
-    "total":"Total {currencyType} : {earnedPoints}",
+    "total":"Earned {currencyType} : {earnedPoints}",
     "congratulation":"Congratulations!",
     "yourFriendGiftYou":"Your friend gifted you",
     "reedeemPoints":"Reedem Points",
@@ -1434,63 +1434,80 @@
       },
       {
         "id":2,
-        "condition":"If the person being referred is a pre-existing user of the Apollo247 app or website and has already availed at least one service through the Apollo247 app or website, they will not receive referral credits."
+        "condition":"Referrers will get 100 HC only after the first medicine order is delivered and the return period is passed (i.e 3 days). For 1st diagnostic orders, once the report is generated the referrer will get 100 HC."
       },
       {
         "id":3,
-        "condition":"If a user receives multiple referral links, only the first link in chronological order will be counted for validation."
+        "condition":"HC will only be credited to the referrer’s account if the referee places an order of min 300 and above."
       },
       {
         "id":4,
-        "condition":"Apollo247 reserves the right to allocate different reward values to different users and different service categories."
+        "condition":"Credits will only be credited for the 1st order of the referee on the App be it for Pharmacy or diagnostic. Referral rewards are not applicable for consultations booked via the app."
       },
       {
         "id":5,
-        "condition":"Apollo247 reserves the right to declare any reward null at any point in time at its own discretion."
+        "condition":"If the person being referred is a pre-existing user of the Apollo247 app or website and has already availed at least one service through the Apollo247 app or website, they will not receive referral credits."
       },
       {
         "id":6,
-        "condition":"Apollo247 reserves the right to block usage of rewards or credits for certain users at its own discretion."
+        "condition":"If a user receives multiple referral links, only the first link in chronological order will be counted for validation."
       },
       {
         "id":7,
-        "condition":"Apollo247 reserves the right to change the nature of the referral program and introduce other kinds of rewards and discounts for the sender and/or receiver"
+        "condition":"Apollo247 reserves the right to allocate different reward values to different users and different service categories."
       },
       {
         "id":8,
-        "condition":"Any rewards earned as part of this program are strictly non-transferable and shall be used by the same user on the same device ID"
+        "condition":"Apollo247 reserves the right to declare any reward null at any point in time at its own discretion."
+      },
+      {
+        "id":9,
+        "condition":"Apollo247 reserves the right to block usage of rewards or credits for certain users at its own discretion."
+      },
+      {
+        "id":10,
+        "condition":"Apollo247 reserves the right to change the nature of the referral program and introduce other kinds of rewards and discounts for the sender and/or receiver."
+      },
+      {
+        "id":11,
+        "condition":"Any rewards earned as part of this program are strictly non-transferable and shall be used by the same user on the same device ID."
       }
     ],
     "refererFAQs":[
       {
         "id":1,
         "question":"Who is eligible to get a referral reward?",
-        "answer":"Fixed amount of Rs 100 redeemable on all Apollo247 services. You can redeem your health credit on your order. The reward can change in the future, depending upon availability."
+        "answer":"Who hasn't tried any Apollo247 service before either on Apollo 247 App or website."
       },
       {
         "id":2,
-        "question":"What will I earn by referring?",
-        "answer":"Fixed amount of Rs 100 redeemable on all Apollo247 services. You can redeem your health credit on your order. The reward can change in the future, depending upon availability."
+        "question":"What is the value of 1HC ?",
+        "answer":"1 HC = 1 Rs"
       },
       {
         "id":3,
-        "question":"Will these rewards have an expiry duration?",
-        "answer":"Fixed amount of Rs 100 redeemable on all Apollo247 services. You can redeem your health credit on your order. The reward can change in the future, depending upon availability."
+        "question":"What will I earn by referring?",
+        "answer":"Fixed amount of ₹100 redeemable on all Apollo247 services. You can redeem your health credit on your order. The reward can change in the future, depending upon availability."
       },
       {
         "id":4,
-        "question":"How many health credits can you earn?",
-        "answer":"Fixed amount of Rs 100 redeemable on all Apollo247 services. You can redeem your health credit on your order. The reward can change in the future, depending upon availability."
+        "question":"Will these rewards have an expiry duration?",
+        "answer":"Yes. The reward will expire in 7 days. Apollo247 reserves the right to change the expiry date of upcoming rewards at any point in time at its discretion."
       },
       {
         "id":5,
-        "question":"I already have some health credits. Can I redeem both?",
-        "answer":"Fixed amount of Rs 100 redeemable on all Apollo247 services. You can redeem your health credit on your order. The reward can change in the future, depending upon availability."
+        "question":"How many health credits can you earn?",
+        "answer":"You can refer a maximum of 100 people and earn 10,000 health credits from referrals."
       },
       {
         "id":6,
+        "question":"I already have some health credits. Can I redeem both?",
+        "answer":"Yes you can redeem both in the same booking."
+      },
+      {
+        "id":7,
         "question":"Can I gift these rewards?",
-        "answer":"Fixed amount of Rs 100 redeemable on all Apollo247 services. You can redeem your health credit on your order. The reward can change in the future, depending upon availability."
+        "answer":"No. These rewards are non-transferable and can be only used by the referrer from his registered account."
       }
     ],
     "referralFaqHeading":"Referrals: FAQs",

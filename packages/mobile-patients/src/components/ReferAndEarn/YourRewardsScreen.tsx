@@ -43,6 +43,7 @@ type RefreeInitialData = {
   name: string | null;
   rewardValue: string | null;
   rewardType: string | null;
+  expirationDate: string | null;
 };
 
 export interface YourRewardsScreenProps extends NavigationScreenProps {}
@@ -59,6 +60,7 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
     name: null,
     rewardValue: null,
     rewardType: null,
+    expirationDate: null,
   });
   const client = useApolloClient();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
@@ -90,6 +92,11 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
       return '';
     }
   };
+  const getExpirationDate = (regisetrationDate: any) => {
+    let date = new Date(`${regisetrationDate}`);
+    date.setDate(date.getDate() + 30);
+    return getRequiredDateFormat(`${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`);
+  };
 
   const getAllRefreeRecord = async () => {
     try {
@@ -104,11 +111,15 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
         setTotalReward(data?.getReferralRewardDetails?.totalRewardValue);
         setRewardType(data?.getReferralRewardDetails?.rewardType);
         setClaimedRefreeList(data?.getReferralRewardDetails?.claimed);
+
         setInitialRefreeData({
           name: data?.getReferralRewardDetails?.referee?.name,
           registrationDate: data?.getReferralRewardDetails?.referee?.registrationDate,
           rewardType: data?.getReferralRewardDetails?.referee?.rewardType,
           rewardValue: data?.getReferralRewardDetails?.referee?.rewardValue,
+          expirationDate: getExpirationDate(
+            data?.getReferralRewardDetails?.referee?.registrationDate
+          ),
         });
         setshowSpinner(false);
       }
@@ -123,7 +134,13 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
           <ReferCheckIcon />
         </View>
         <View>
-          <Text style={styles.healthCreditrefreeName}>{initialRefreeData.name}</Text>
+          <View style={styles.healthCreditRightInnercontainer}>
+            <Text style={styles.healthCreditrefreeName}>{initialRefreeData.name}</Text>
+            <Text style={styles.healthCreditexporationText}>
+              {initialRefreeData.expirationDate}
+            </Text>
+          </View>
+
           <View style={styles.healthCreditflexRow}>
             <View style={styles.healthCreditclaimedRightContaier}>
               <Text style={styles.healthCreditsmallHeadingOne}>

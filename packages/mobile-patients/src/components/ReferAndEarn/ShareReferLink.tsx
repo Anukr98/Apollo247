@@ -51,6 +51,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
     rewardValue: 0,
     rewardRegisteration: '',
     expirationData: '',
+    showHCSection: false,
   });
   const {
     rewardId,
@@ -78,14 +79,18 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
       });
       const { data } = response;
       if (data?.getReferralRewardDetails?.referee?.name != null) {
-        let refreeRegisterationDate: any = new Date(`${refreeReward?.rewardRegisteration}`);
+        let refreeRegisterationDate: any = new Date(
+          `${data?.getReferralRewardDetails?.referee?.registrationDate}`
+        );
         refreeRegisterationDate.setDate(refreeRegisterationDate.getDate() + hcExpirationTime);
-
         setRefreeReward({
           isRefree: true,
           rewardValue: data?.getReferralRewardDetails?.referee?.rewardValue,
           rewardRegisteration: data?.getReferralRewardDetails?.referee?.registrationDate,
           expirationData: getRequiredDateFormat(refreeRegisterationDate),
+          showHCSection: checkReferralExpirationDate(
+            data?.getReferralRewardDetails?.referee?.registrationDate
+          ),
         });
       }
     } catch (error) {
@@ -158,6 +163,13 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
   const copyLinkToShare = () => {
     Clipboard.setString(string.referAndEarn.shareLinkText + '\n' + referrerLink);
     setLinkCopied(true);
+  };
+
+  const checkReferralExpirationDate = (registerationDate: String) => {
+    let refreeRegisterationDate = new Date(`${registerationDate}`);
+    let currenDate = new Date();
+    refreeRegisterationDate.setDate(refreeRegisterationDate.getDate() + hcExpirationTime);
+    return refreeRegisterationDate.getTime() > currenDate.getTime();
   };
 
   const generateReferrerLink = () => {
@@ -323,12 +335,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
       </View>
     );
   };
-  const checkReferralExpirationDate = () => {
-    let refreeRegisterationDate = new Date(`${refreeReward?.rewardRegisteration}`);
-    let currenDate = new Date();
-    refreeRegisterationDate.setDate(refreeRegisterationDate.getDate() + hcExpirationTime);
-    return refreeRegisterationDate.getTime() > currenDate.getTime();
-  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={theme.colors.SHERPA_BLUE} />
@@ -345,7 +352,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
           }}
         />
         <ScrollView>
-          {refreeReward.isRefree && checkReferralExpirationDate() && renderInitialHC()}
+          {refreeReward.showHCSection && renderInitialHC()}
           {renderReferShare()}
           {renderHowItWork()}
           {renderCheckRewardsContainer()}
