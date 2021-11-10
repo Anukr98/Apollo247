@@ -2928,7 +2928,7 @@ export const calculateCashbackForItem = (
   const cashbackFactor =
     getThirdLevelCashback() || getSecondLevelCashback() || getFirstLevelCashback();
   const cashback = cashbackFactor ? ((price * cashbackFactor) / 100).toFixed(2) : '0';
-  return cashback || 0;
+  return parseInt(cashback, 10) || 0;
 };
 
 export const readableParam = (param: string) => {
