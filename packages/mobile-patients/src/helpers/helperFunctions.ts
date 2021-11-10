@@ -2247,31 +2247,33 @@ export const InitiateAppsFlyer = (
       const url = handleOpenURL(res.data.deep_link_value);
       AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url))
     }
-    if (!res.isDeferred) {
-      if (redirectUrl && checkUniversalURL(redirectUrl).universal) {
-        if (Object.keys(res.data).length < 2) {
-          clevertapEventForAppsflyerDeeplink(removeNullFromObj({
-            source_url: checkUniversalURL(redirectUrl).source_url,
-            channel: 'Organic'
-          }))
+    try {
+      if (!res.isDeferred) {
+        if (redirectUrl && checkUniversalURL(redirectUrl).universal) {
+          if (Object.keys(res.data).length < 2) {
+            clevertapEventForAppsflyerDeeplink(removeNullFromObj({
+              source_url: checkUniversalURL(redirectUrl).source_url,
+              channel: 'Organic'
+            }))
+          }
+          else {
+            clevertapEventForAppsflyerDeeplink(
+              filterAppLaunchSoruceAttributesByKey({
+                ...res.data,
+                source_url: checkUniversalURL(redirectUrl).source_url
+              }))
+          }
+
         }
         else {
-          clevertapEventForAppsflyerDeeplink(
-            filterAppLaunchSoruceAttributesByKey({
-              ...res.data,
-              source_url: checkUniversalURL(redirectUrl).source_url
-            }))
+          clevertapEventForAppsflyerDeeplink(filterAppLaunchSoruceAttributesByKey(res.data))
+          const url = handleOpenURL(res.data.deep_link_value);
+          AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url))
+          redirectWithOutDeferred(url)
         }
-
       }
-      else {
-        clevertapEventForAppsflyerDeeplink(filterAppLaunchSoruceAttributesByKey(res.data))
-        const url = handleOpenURL(res.data.deep_link_value);
-        AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url))
-        redirectWithOutDeferred(url)
-      }
+    } catch (e) { }
 
-    }
   })
   setTimeout(() => {
     !isDeepLinked && launchSourceEvent(isFirstLaunch)
@@ -2322,9 +2324,12 @@ const getInstallResources = () => {
   })
 }
 export const clevertapEventForAppsflyerDeeplink = (eventArributes: any) => {
-  postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
-    ...eventArributes
-  });
+  try {
+    postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
+      ...eventArributes
+    });
+  } catch (e) { }
+
 }
 
 export const deferredDeepLinkRedirectionData = async (

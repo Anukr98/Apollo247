@@ -401,21 +401,23 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     try {
       Linking.getInitialURL()
         .then((url) => {
-          InitiateAppsFlyer(
-            props.navigation,
-            (resources) => {
-              redirectRoute(
-                resources?.routeName,
-                resources?.id,
-                resources?.isCall,
-                resources?.timeout,
-                resources?.mediaSource,
-                resources?.data
-              );
-            },
-            url,
-            (isFirstLaunch) => triggerUTMCustomEvent(url, isFirstLaunch)
-          );
+          try {
+            InitiateAppsFlyer(
+              props.navigation,
+              (resources) => {
+                redirectRoute(
+                  resources?.routeName,
+                  resources?.id,
+                  resources?.isCall,
+                  resources?.timeout,
+                  resources?.mediaSource,
+                  resources?.data
+                );
+              },
+              url,
+              (isFirstLaunch) => triggerUTMCustomEvent(url, isFirstLaunch)
+            );
+          } catch (e) {}
           setBugFenderLog('DEEP_LINK_URL', url);
           if (url) {
             try {
@@ -753,7 +755,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const catchSourceUrlDataUsingAppsFlyer = async (redirectUrl: string | null) => {
     onDeepLinkCanceller = await appsFlyer.onDeepLink(async (res) => {
       if (redirectUrl && checkUniversalURL(redirectUrl).universal) {
-        if (Object.keys(res.data).length < 2) {
+        if (Object.keys(res?.data).length < 2) {
           clevertapEventForAppsflyerDeeplink(
             removeNullFromObj({
               source_url: checkUniversalURL(redirectUrl).source_url,
@@ -763,13 +765,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         } else {
           clevertapEventForAppsflyerDeeplink(
             filterAppLaunchSoruceAttributesByKey({
-              ...res.data,
+              ...res?.data,
               source_url: checkUniversalURL(redirectUrl).source_url,
             })
           );
         }
       } else {
-        clevertapEventForAppsflyerDeeplink(filterAppLaunchSoruceAttributesByKey(res.data));
+        clevertapEventForAppsflyerDeeplink(filterAppLaunchSoruceAttributesByKey(res?.data));
       }
       onDeepLinkCanceller();
     });
