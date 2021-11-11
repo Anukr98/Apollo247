@@ -558,22 +558,29 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
 
   const renderAddPassportView = () => {
-    return (
-      <View
-        style={styles.passportView}
-      >
+    const itemIdArray = apiOrderDetails?.[0]?.ordersList?.diagnosticOrderLineItems?.filter(
+      (item: any) => {
+        if (AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS.includes(item?.itemId)) {
+          return item?.itemId;
+        }
+      }
+    );
+    return itemIdArray?.length ? (
+      <View style={styles.passportView}>
         <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1) }}>
           {string.diagnostics.addOrEditPassportText}
         </Text>
-        <TouchableOpacity onPress={()=>{
-          setShowPassportModal(true)
-        }}>
+        <TouchableOpacity
+          onPress={() => {
+            setShowPassportModal(true);
+          }}
+        >
           <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.APP_YELLOW_COLOR) }}>
             ADD
           </Text>
         </TouchableOpacity>
       </View>
-    );
+    ) : null;
   };
 
   const renderTests = () => {

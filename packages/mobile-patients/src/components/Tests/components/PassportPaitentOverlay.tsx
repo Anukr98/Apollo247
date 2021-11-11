@@ -26,6 +26,7 @@ import {
 import { Overlay } from 'react-native-elements';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 const { width, height } = Dimensions.get('window');
 
 const { SHERPA_BLUE, APP_YELLOW, CARD_BG, WHITE, APP_GREEN, CLEAR } = theme.colors;
@@ -70,6 +71,7 @@ export const PassportPaitentOverlay: React.FC<PassportPaitentOverlayProps> = (pr
   }, [])
   const renderModalView = (item: any, index: any) => {
     const { patientName, patientSalutation } = extractPatientDetails(item?.patientObj);
+    
     return (
       <>
         <View style={styles.inputView}>

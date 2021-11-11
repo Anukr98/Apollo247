@@ -1169,6 +1169,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Diagnostics_City_Level_Call_To_Order',
       PROD: 'Diagnostics_City_Level_Call_To_Order',
     },
+    Diagnostics_Covid_Item_Ids: {
+      QA: 'QA_Diagnostics_Covid_Item_Ids',
+      PROD: 'Diagnostics_Covid_Item_Ids',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1484,6 +1488,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) =>
           JSON.parse(config.getString(key) || 'null') ||
           AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER
+      );
+
+      setAppConfig(
+        'Diagnostics_Covid_Item_Ids',
+        'DIAGNOSTICS_COVID_ITEM_IDS',
+        (key) =>
+          JSON.parse(config.getString(key) || 'null') ||
+          AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS
       );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
