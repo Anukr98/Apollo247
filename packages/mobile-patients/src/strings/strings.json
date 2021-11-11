@@ -233,6 +233,8 @@
   "reviewOrder": "REVIEW ORDER",
   "placeOrder": "PLACE ORDER",
   "microphone": "microphone",
+  "enterPassport": "Enter Passport Number",
+  "addPassport": "Add Passport Number",
   "enableMicrophoneToRecordCough": "Enable microphone from settings to record your cough.",
   "BORJourney": {
     "point1": "Register your Request through the Form.\n\nIf request is accepted, we will contact you for the Appointment booking and Payment.",
@@ -593,6 +595,7 @@
     "fastReportSubText": "Get reports in 12 to 24 hours. View or download on app anytime",
     "orderSuccessPhaleboText": "*Sample Collection Executive may call you prior to starting his journey to confirm your availability",
     "invoiceTimelineText": "Invoice will be available to download after the sample is submitted in the lab",
+    "addOrEditPassportText": "Add Passport Number to your Report",
     "unableToFetchStatus": "Something went wrong. We are unable to fetch status",
     "noSlotAvailable": "Sorry! There are no slots available on {{date}}. Please choose another date.",
     "updateAddressLatLngMessage": "Unable to locate address. Please update.",

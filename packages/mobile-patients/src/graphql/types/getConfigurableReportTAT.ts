@@ -3,6 +3,8 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+import { REPORT_TAT_SOURCE } from "./globalTypes";
+
 // ====================================================
 // GraphQL query operation: getConfigurableReportTAT
 // ====================================================
@@ -32,4 +34,5 @@ export interface getConfigurableReportTATVariables {
   cityId: number;
   pincode: number;
   itemIds: (number | null)[];
+  source?: REPORT_TAT_SOURCE | null;
 }

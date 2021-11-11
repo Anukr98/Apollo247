@@ -161,7 +161,15 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [dropDownItemListIndex, setDropDownItemListIndex] = useState([] as any);
   const [showViewReportModal, setShowViewReportModal] = useState<boolean>(false);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
-
+  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
+  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
+  const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
+      if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY)) {
+        return item;
+      } else {
+        return null
+      }
+  });
   const [orderDetails, setOrderDetails] = useState([] as any);
   const scrollToSlots = (yValue?: number) => {
     const setY = yValue == undefined ? scrollYValue : yValue;
@@ -1305,7 +1313,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   function _onPressViewReportAction() {
     if (!!selectedOrder?.labReportURL && selectedOrder?.labReportURL != '') {
-      onPressViewReport(true);
       setShowViewReportModal(true);
     } else if (!!selectedOrder?.visitNo && selectedOrder?.visitNo != '') {
       //directly open the phr section
@@ -1486,10 +1493,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const renderCallToOrder = () => {
-    return (
+    return ctaDetailMatched?.length ? (
       <CallToOrderView
         cityId={Number(diagnosticServiceabilityData?.cityId)}
-        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY}
         customMargin={80}
         slideCallToOrder={slideCallToOrder}
         onPressSmallView={() => {
@@ -1499,7 +1505,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           setSlideCallToOrder(true);
         }}
       />
-    );
+    ) : null;
   };
 
   return (

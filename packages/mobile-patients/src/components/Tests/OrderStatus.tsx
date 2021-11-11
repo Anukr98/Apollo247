@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Dimensions,
   Platform,
+  Modal
 } from 'react-native';
 import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
 import {
@@ -70,6 +71,7 @@ import {
   GetSubscriptionsOfUserByStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 import AsyncStorage from '@react-native-community/async-storage';
+import { PassportPaitentOverlay } from '@aph/mobile-patients/src/components/Tests/components/PassportPaitentOverlay';
 
 export interface OrderStatusProps extends NavigationScreenProps {}
 
@@ -131,6 +133,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const [apiOrderDetails, setApiOrderDetails] = useState([] as any);
   const [timeDate, setTimeDate] = useState<string>('');
   const [isSingleUhid, setIsSingleUhid] = useState<boolean>(false);
+  const [showPassportModal, setShowPassportModal] = useState<boolean>(false);
   const [showMoreArray, setShowMoreArray] = useState([] as any);
   const [apiPrimaryOrderDetails, setApiPrimaryOrderDetails] = useState([] as any);
   const [primaryOrderId, setPrimaryOrderId] = useState<string>('');
@@ -554,6 +557,32 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     );
   };
 
+  const renderAddPassportView = () => {
+    const itemIdArray = apiOrderDetails?.[0]?.ordersList?.diagnosticOrderLineItems?.filter(
+      (item: any) => {
+        if (AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS.includes(item?.itemId)) {
+          return item?.itemId;
+        }
+      }
+    );
+    return itemIdArray?.length ? (
+      <View style={styles.passportView}>
+        <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1) }}>
+          {string.diagnostics.addOrEditPassportText}
+        </Text>
+        <TouchableOpacity
+          onPress={() => {
+            setShowPassportModal(true);
+          }}
+        >
+          <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.APP_YELLOW_COLOR) }}>
+            ADD
+          </Text>
+        </TouchableOpacity>
+      </View>
+    ) : null;
+  };
+
   const renderTests = () => {
     const arrayToUse = apiOrderDetails;
     return (
@@ -748,6 +777,19 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       </View>
     );
   };
+  const renderPassportPaitentView = () => {
+    return (
+      <PassportPaitentOverlay
+        patientArray={apiOrderDetails?.[0]?.ordersList}
+        onPressClose={() => {
+          setShowPassportModal(false);
+        }}
+        onPressDone={() => {
+          setShowPassportModal(false);
+        }}
+      />
+    );
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.DEFAULT_BACKGROUND_COLOR }}>
@@ -758,6 +800,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
             {renderOrderPlacedMsg()}
             {renderCartSavings()}
             {isCircleAddedToCart && !isEmptyObject(circlePlanDetails) && renderCirclePurchaseCard()}
+            {renderAddPassportView()}
             {renderPickUpTime()}
             {renderNoticeText()}
             {/* {enable_cancelellation_policy ? renderCancelationPolicy() : null} */}
@@ -768,7 +811,9 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
             {renderInvoiceTimeline()}
           </View>
         </ScrollView>
+        {showPassportModal && renderPassportPaitentView()}
       </SafeAreaView>
+       
       {backToHome()}
     </View>
   );
@@ -780,6 +825,27 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     // marginHorizontal: 20,
     marginTop: 40,
+  },
+  passportView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#D4D4D4',
+    backgroundColor: 'white',
+    padding: 10,
+    marginVertical: 10,
+  },
+  overlayStyle: {
+    padding: 0,
+    margin: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: colors.CLEAR,
+    overflow: 'hidden',
+    elevation: 0,
+    bottom: 0,
+    position: 'absolute',
   },
   header: {
     flexDirection: 'row',

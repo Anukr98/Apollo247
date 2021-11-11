@@ -20,6 +20,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import { TestListingHeader } from '@aph/mobile-patients/src/components/Tests/components/TestListingHeader';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import { CALL_TO_ORDER_CTA_PAGE_ID } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 export interface TestWidgetListingProps
   extends NavigationScreenProps<{
     movedFrom?: string;
@@ -45,22 +46,30 @@ export const TestWidgetListing: React.FC<TestWidgetListingProps> = (props) => {
       <TestListingHeader navigation={props.navigation} headerText={nameFormater(title, 'upper')} />
     );
   };
+  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
+  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
+  const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
+      if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING)) {
+        return item;
+      } else {
+        return null
+      }
+  });
 
   const renderCallToOrder = () => {
-    return (
+    return ctaDetailMatched?.length ? (
       <CallToOrderView
-        cityId = {cityId}
-        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING}
-        slideCallToOrder = {slideCallToOrder}
-        onPressSmallView = {() => {
+        cityId={cityId}
+        slideCallToOrder={slideCallToOrder}
+        onPressSmallView={() => {
           setSlideCallToOrder(false);
         }}
-        onPressCross = {() => {
+        onPressCross={() => {
           setSlideCallToOrder(true);
         }}
       />
-    )
-  }
+    ) : null;
+  };
 
   const renderItems = (item: any, index: number) => {
     return (

@@ -22,7 +22,7 @@ export enum AppEnv {
   QA6 = 'QA6',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA2 as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA5 as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -304,7 +304,8 @@ const appStaticVariables = {
       "ctaDelaySeconds": 3,
       "ctaPhoneNumber": "040-4821-3322"
     }
-  }
+  },
+  DIAGNOSTICS_COVID_ITEM_IDS : [2446]
 };
 
 const DEV_top_specialties = [
