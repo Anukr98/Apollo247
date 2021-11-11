@@ -3417,35 +3417,37 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             },
           ]}
         >
-          <View
-            style={{
-              marginBottom: 4,
-              borderRadius: 4,
-              backgroundColor: offerDesignTemplate?.left_notch?.bg_color,
-              paddingHorizontal: 8,
-              justifyContent: 'center',
-              alignItems: 'center',
-              position: 'absolute',
-              top: 12,
-              left: 12,
-            }}
-          >
-            <Text
+          {textForNotch.length > 1 ? (
+            <View
               style={{
-                ...theme.viewStyles.text(
-                  'M',
-                  12,
-                  offerDesignTemplate?.left_notch?.text_color,
-                  1,
-                  18
-                ),
+                marginBottom: 4,
+                borderRadius: 4,
+                backgroundColor: offerDesignTemplate?.left_notch?.bg_color,
+                paddingHorizontal: 8,
+                justifyContent: 'center',
+                alignItems: 'center',
+                position: 'absolute',
+                top: 12,
+                left: 12,
               }}
             >
-              {textForNotch.length > 24
-                ? textForNotch?.substring(textForNotch.length - 24, textForNotch.length)
-                : textForNotch}
-            </Text>
-          </View>
+              <Text
+                style={{
+                  ...theme.viewStyles.text(
+                    'M',
+                    12,
+                    offerDesignTemplate?.left_notch?.text_color,
+                    1,
+                    18
+                  ),
+                }}
+              >
+                {textForNotch.length > 24
+                  ? textForNotch?.substring(textForNotch.length - 24, textForNotch.length)
+                  : textForNotch}
+              </Text>
+            </View>
+          ) : null}
 
           <Text
             style={{
