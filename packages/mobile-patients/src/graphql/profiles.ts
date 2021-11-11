@@ -6071,7 +6071,7 @@ export const DIAGNOSITC_EXOTEL_CALLING = gql`
   }
 `;
 
-export const GET_DIAGNOSTIC_SERVICEABILITY = gql `
+export const GET_DIAGNOSTIC_SERVICEABILITY = gql`
   query getDiagnosticServiceability ($latitude: Float!, $longitude : Float!){
     getDiagnosticServiceability(latitude : $latitude, longitude: $longitude){
       status
@@ -6085,7 +6085,7 @@ export const GET_DIAGNOSTIC_SERVICEABILITY = gql `
   }
 `;
 
-export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS_V2 = gql `
+export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS_V2 = gql`
 query getCustomizedSlotsv2($patientAddressObj: patientAddressObj! , $patientsObjWithLineItems : [patientObjWithLineItems] , $billAmount: Float!, $selectedDate : Date!, $serviceability : DiagnosticsServiceability, $diagnosticOrdersId : String, $patientAddressID: String, $bookingSource: DiagnosticsBookingSource){
   getCustomizedSlotsv2(patientAddressObj : $patientAddressObj, patientsObjWithLineItems :$patientsObjWithLineItems, billAmount: $billAmount, selectedDate : $selectedDate, serviceability : $serviceability, diagnosticOrdersId: $diagnosticOrdersId, patientAddressID: $patientAddressID, bookingSource: $bookingSource){
     available_slots {
@@ -6122,7 +6122,7 @@ export const SAVE_DIAGNOSTIC_ORDER_V2 = gql`
   }
 `;
 
-export const GET_DIAGNOSTIC_PHLEBO_CHARGES = gql `
+export const GET_DIAGNOSTIC_PHLEBO_CHARGES = gql`
   query getPhleboCharges($chargeDetailsInput: ChargeDetailsInput) {
     getPhleboCharges(chargeDetailsInput: $chargeDetailsInput) {
       charges
@@ -6131,7 +6131,7 @@ export const GET_DIAGNOSTIC_PHLEBO_CHARGES = gql `
   }
 `;
 
-export const DIAGNOSTIC_RESCHEDULE_V2 =  gql`
+export const DIAGNOSTIC_RESCHEDULE_V2 = gql`
   mutation rescheduleDiagnosticsOrderv2($parentOrderID: ID!, $slotInfo: slotInfo!, $selectedDate: Date!, $comment: String, $reason: String!, $source: DiagnosticsRescheduleSource) {
     rescheduleDiagnosticsOrderv2(parentOrderID : $parentOrderID, slotInfo: $slotInfo, selectedDate: $selectedDate, comment: $comment, reason : $reason, source: $source) {
     status
@@ -6141,7 +6141,7 @@ export const DIAGNOSTIC_RESCHEDULE_V2 =  gql`
   }
 `;
 
-export const DIAGNOSTIC_CANCEL_V2 = gql `
+export const DIAGNOSTIC_CANCEL_V2 = gql`
   mutation cancelDiagnosticOrdersv2($cancellationDiagnosticsInput: CancellationDiagnosticsInputv2) {
     cancelDiagnosticOrdersv2(cancellationDiagnosticsInput: $cancellationDiagnosticsInput) {
       status
@@ -6150,7 +6150,7 @@ export const DIAGNOSTIC_CANCEL_V2 = gql `
   }
 `;
 
-export const DIAGNOSTIC_WRAPPER_PROCESS_HC = gql `
+export const DIAGNOSTIC_WRAPPER_PROCESS_HC = gql`
   mutation wrapperProcessDiagnosticHCOrderCOD($processDiagnosticHCOrdersInput: [ProcessDiagnosticHCOrderInputCOD]) {
     wrapperProcessDiagnosticHCOrderCOD(processDiagnosticHCOrdersInput: $processDiagnosticHCOrdersInput) {
       result {
@@ -6200,7 +6200,7 @@ export const GET_DIAGNOSTIC_ORDERSLIST_BY_PARENT_ORDER_ID = gql`
   }
 `;
 
-export const GET_DIAGNOSTIC_PAYMENT_SETTINGS  = gql`
+export const GET_DIAGNOSTIC_PAYMENT_SETTINGS = gql`
   query getDiagnosticPaymentSettings($paymentOrderId: String!) {
     getDiagnosticPaymentSettings(paymentOrderId: $paymentOrderId) {
       cod
@@ -6410,4 +6410,47 @@ export const CREATE_VONAGE_SESSION_TOKEN = gql`
       sessionId
     }
   }
+`;
+
+
+export const GET_HC_REFREE_RECORD = gql`
+  query rewardDetail($id: String!) {
+    getReferralRewardDetails(id: $id){
+      totalRewardValue
+      rewardType
+      claimed{
+        expiryDate
+        rewardType
+        name
+        rewardValue
+        txnDate
+      }
+      pending{
+        name
+        registrationDate
+      }
+      referee{
+          registrationDate
+          name
+          rewardValue
+          rewardType
+      }
+    }
+  }
+`;
+
+export const GET_REWARD_ID = gql`
+  query rewardInfo($reward:REWARD_TYPES!){
+    getRewardInfoByRewardType(rewardType:$reward){
+        id
+    }
+  }
+`;
+
+export const GET_CAMPAIGN_ID_FOR_REFERRER = gql`
+ query campaignInfo($camp:CAMPAIGN_TYPES!){
+  getCampaignInfoByCampaignType(campaignType:$camp){
+    id
+  }
+}
 `;

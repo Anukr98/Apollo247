@@ -55,6 +55,7 @@ import {
   ProHealthIcon,
   BackArrow,
   ReferralBannerIcon,
+  ArrowRight,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   BannerDisplayType,
@@ -86,6 +87,7 @@ import {
   GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
   GET_ONEAPOLLO_USER,
   GET_PLAN_DETAILS_BY_PLAN_ID,
+  GET_HC_REFREE_RECORD,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
@@ -211,6 +213,11 @@ import {
   PatientInfo as PatientInfoObj,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { getUniqueId } from 'react-native-device-info';
+import { ReferralBanner } from '@aph/mobile-patients/src/components/ui/ReferralBanner';
+import {
+  InitiateRefreeType,
+  useReferralProgram,
+} from '@aph/mobile-patients/src/components/ReferralProgramProvider';
 
 const { Vitals } = NativeModules;
 
@@ -671,52 +678,6 @@ const styles = StyleSheet.create({
     height: 180,
     width: '100%',
   },
-  referEarnEarnBtnText: {
-    fontSize: 14,
-    color: theme.colors.HEX_WHITE,
-    fontWeight: '700',
-  },
-
-  referEarnearnBtn: {
-    backgroundColor: theme.colors.APP_YELLOW_COLOR,
-    width: 80,
-    height: 35,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 15,
-    borderRadius: 5,
-  },
-
-  referEarnrupees: {
-    fontSize: 19,
-    fontWeight: 'bold',
-    color: theme.colors.APP_REFERRAL_BLUE,
-    fontStyle: 'italic',
-  },
-  referEarntext: {
-    fontSize: 19,
-    fontWeight: '700',
-    color: theme.colors.CARD_HEADER,
-  },
-  referEarntextContainer: {
-    width: '55%',
-    alignItems: 'flex-end',
-  },
-  referEarnImageContainer: {
-    width: '45%',
-    height: 90,
-    justifyContent: 'flex-end',
-  },
-  referEarnMainContainer: {
-    backgroundColor: theme.colors.REFERRAL_WHITE_GRAY,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    marginHorizontal: 10,
-    borderWidth: 1,
-    borderColor: theme.colors.REFERRAL_BORDER_GRAY,
-    borderRadius: 5,
-    flexDirection: 'row',
-  },
 });
 
 type menuOptions = {
@@ -820,6 +781,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [agreedToVaccineTnc, setAgreedToVaccineTnc] = useState<string>('');
 
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
+
+  const { refreeReward, setRefreeReward } = useReferralProgram();
 
   const {
     cartItems: shopCartItems,
@@ -2913,8 +2876,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const checkUserRegisterThroughReferral = async () => {
     const referrerInstall = await AsyncStorage.getItem('referrerInstall');
     if (referrerInstall === 'true') {
-      AsyncStorage.removeItem('referrerInstall');
       props.navigation.navigate('EarnedPoints');
+      AsyncStorage.removeItem('referrerInstall');
     }
   };
 
@@ -4024,29 +3987,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderReferralBanner = () => {
-    return (
-      <View style={styles.referEarnMainContainer}>
-        <View style={styles.referEarnImageContainer}>
-          <ReferralBannerIcon resizeMode="cover" />
-        </View>
-        <View style={styles.referEarntextContainer}>
-          <Text style={styles.referEarntext}>
-            {string.referAndEarn.referAndEarn}{' '}
-            <Text style={styles.referEarnrupees}>₹{referAndEarnPrice && referAndEarnPrice}</Text>
-          </Text>
-          <View>
-            <TouchableOpacity
-              onPress={() => {
-                props.navigation.navigate('ShareReferLink');
-              }}
-              style={styles.referEarnearnBtn}
-            >
-              <Text style={styles.referEarnEarnBtnText}>{string.referAndEarn.earnNow}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    );
+    return <ReferralBanner {...props} />;
   };
 
   return (

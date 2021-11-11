@@ -66,6 +66,7 @@ const styles = StyleSheet.create({
   listMainContainer: {
     paddingHorizontal: 20,
     paddingVertical: 20,
+    marginTop: 2,
   },
   listItemContainer: {
     marginBottom: 20,
@@ -73,7 +74,7 @@ const styles = StyleSheet.create({
   listItemId: {},
   listItemText: {
     fontSize: 15,
-    color: theme.colors.LIGHT_BLUE,
+    color: theme.colors.BLACK_COLOR,
     fontWeight: '600',
   },
 });

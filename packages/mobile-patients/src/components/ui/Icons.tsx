@@ -2510,3 +2510,10 @@ export const FaqDownArrow: React.FC<IconProps> = (props) => (
     {...props}
   />
 );
+export const ShareLinkBannerIcon: React.FC<IconProps> = (props) => (
+  <Image
+    style={[props.style]}
+    source={require('@aph/mobile-patients/src/images/shareLinkBanner/shareRefereLink.webp')}
+    {...props}
+  />
+);
