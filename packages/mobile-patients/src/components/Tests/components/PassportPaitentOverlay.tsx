@@ -76,7 +76,7 @@ export const PassportPaitentOverlay: React.FC<PassportPaitentOverlayProps> = (pr
       <>
         <View style={styles.inputView}>
           <TextInputComponent
-            autoFocus={true}
+            autoFocus={false}
             placeholder={string.enterPassport}
             placeholderTextColor={theme.colors.SHERPA_BLUE_LIGHT}
             value={data[index]?.passportNo}
