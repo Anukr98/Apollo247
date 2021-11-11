@@ -360,7 +360,6 @@ export const fetchWalletBalance = (requestId: string, clientAuthToken: string) =
       clientAuthToken: clientAuthToken,
     },
   };
-  console.log('refreshWalletBalances payload >>', payload);
   HyperSdkReact.process(JSON.stringify(payload));
 };
 
@@ -374,34 +373,6 @@ export const createAPayWallet = (requestId: string, clientAuthToken: string) => 
       clientAuthToken: clientAuthToken,
     },
   };
-  console.log('createAPayWallet payload >>', payload);
-  HyperSdkReact.process(JSON.stringify(payload));
-};
-
-export const linkWallet = (
-  requestId: string,
-  clientAuthToken: string,
-  paymentOrderId: string,
-  paymentMethod: string,
-  sdkPresent: string,
-  offerId?: string
-) => {
-  const payload = {
-    requestId: requestId,
-    service: AppConfig.Configuration.jusPayService,
-    payload: {
-      action: 'walletTxn',
-      orderId: paymentOrderId,
-      paymentMethodType: 'Wallet',
-      paymentMethod: paymentMethod,
-      shouldLink: true,
-      sdkPresent: sdkPresent,
-      endUrls: [AppConfig.Configuration.baseUrl],
-      clientAuthToken: clientAuthToken,
-      offers: !!offerId ? [offerId] : null,
-    },
-  };
-  console.log('link wallet payload >>>>', payload);
   HyperSdkReact.process(JSON.stringify(payload));
 };
 
@@ -422,7 +393,6 @@ export const directWalletDebit = (
       orderId: paymentOrderId,
       paymentMethodType: 'Wallet',
       paymentMethod: paymentMethod,
-      shouldLink: true,
       sdkPresent: sdkPresent,
       endUrls: [AppConfig.Configuration.baseUrl],
       clientAuthToken: clientAuthToken,
