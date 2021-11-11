@@ -20,7 +20,7 @@ export interface ServerCartTatBottomContainerProps extends NavigationScreenProps
   onPressProceedtoPay?: () => void;
   onPressTatCard?: () => void;
   screen?: string;
-  showAddressPopup: () => void;
+  showAddressPopup?: () => void;
 }
 
 export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainerProps> = (
@@ -45,6 +45,7 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
   const unServiceable = !serverCartItems.find(
     ({ isShippable, sellOnline }) => isShippable || sellOnline
   );
+  const isFromCart = screen === 'MedicineCart';
 
   const onPressAddDeliveryAddress = () => {
     props.navigation.navigate(AppRoutes.AddAddressNew, {
@@ -56,7 +57,7 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
 
   const onPressSelectDeliveryAddress = () => {
     selectDeliveryAddressClickedEvent(currentPatient?.id, JSON.stringify(serverCartItems));
-    showAddressPopup();
+    showAddressPopup?.();
   };
 
   const onPressUploadPrescription = () => {
@@ -64,7 +65,7 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
     props.navigation.navigate(AppRoutes.MedicineCartPrescription);
   };
 
-  const onPressReviewOrder = () => props.navigation.navigate(AppRoutes.CartSummary);
+  const onPressReviewOrder = () => props.navigation.navigate(AppRoutes.ReviewCart);
 
   const onPressAddMoreMedicines = () => props.navigation.navigate('MEDICINES');
 
@@ -79,14 +80,14 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
         : string.addDeliveryAddress
       : isPrescriptionRequired()
       ? string.proceed
-      : screen == 'MedicineCart'
+      : isFromCart
       ? string.reviewOrder
       : string.proceedToPay;
   }
 
   function isPrescriptionRequired() {
     if (isCartPrescriptionRequired) {
-      return screen === 'MedicineCart' ? true : !prescriptionType;
+      return isFromCart ? true : !prescriptionType;
     } else {
       return false;
     }
@@ -99,7 +100,7 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
         : onPressAddDeliveryAddress()
       : isPrescriptionRequired()
       ? onPressUploadPrescription()
-      : screen == 'MedicineCart'
+      : isFromCart
       ? onPressReviewOrder()
       : onPressProceedtoPay?.();
   }
@@ -149,9 +150,9 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
           deliveryTime={cartTat}
           deliveryAddress={formatSelectedAddress(selectedAddress!)}
           onPressChangeAddress={() => {
-            showAddressPopup();
+            showAddressPopup?.();
           }}
-          onPressTatCard={screen === 'MedicineCart' && isValidCartValue ? onPressTatCard : () => {}}
+          onPressTatCard={isFromCart && isValidCartValue ? onPressTatCard : () => {}}
         />
       );
     } else {
@@ -172,11 +173,18 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
     );
   };
 
+  const renderTatDetails = () =>
+    isFromCart && (
+      <>
+        {renderTatCard()}
+        {cartAddressId != '' && isPrescriptionRequired() && renderPrescriptionMessage()}
+        {!isValidCartValue && renderMinimumCartMessage()}
+      </>
+    );
+
   return (
     <View style={styles.container}>
-      {renderTatCard()}
-      {cartAddressId != '' && isPrescriptionRequired() && renderPrescriptionMessage()}
-      {screen === 'MedicineCart' && !isValidCartValue && renderMinimumCartMessage()}
+      {renderTatDetails()}
       <View style={styles.subContainer}>
         {renderTotal()}
         {renderButton()}

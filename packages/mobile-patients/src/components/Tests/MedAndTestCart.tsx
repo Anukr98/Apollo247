@@ -41,7 +41,7 @@ export interface MedAndTestCartProps
   }> {}
 
 export const MedAndTestCart: React.FC<MedAndTestCartProps> = (props) => {
-  const { cartItems } = useShoppingCart();
+  const { serverCartItems } = useShoppingCart();
   const { cartItems: testCartItems } = useDiagnosticsCart();
   const backDataFunctionality = async () => {
     BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
@@ -53,9 +53,9 @@ export const MedAndTestCart: React.FC<MedAndTestCartProps> = (props) => {
     {
       id: 1,
       title: `Medicines & Essentials`,
-      descripiton: cartItems.length > 0 ? `${cartItems.length} Items` : 'No Items',
+      descripiton: serverCartItems.length > 0 ? `${serverCartItems.length} Items` : 'No Items',
       image: <MedicineCartIcon />,
-      cartCount: cartItems.length,
+      cartCount: serverCartItems.length,
     },
     {
       id: 2,

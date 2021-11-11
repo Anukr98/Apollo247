@@ -132,10 +132,12 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     cartTat,
     cartSubscriptionDetails,
     setCartCoupon,
+    isCartPrescriptionRequired,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { fetchServerCart, setUserActionPayload, fetchAddress } = useServerCart();
   const [loading, setLoading] = useState<boolean>(false);
+  const { currentPatient } = useAllCurrentPatients();
 
   const circlePlanAddedToCart =
     !!cartSubscriptionDetails?.currentSellingPrice && !cartCircleSubscriptionId;
@@ -240,6 +242,11 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     });
   }
 
+  const onPressUploadPrescription = () => {
+    uploadPrescriptionClickedEvent(currentPatient?.id);
+    props.navigation.navigate(AppRoutes.MedicineCartPrescription);
+  };
+
   const renderProceedBar = () => {
     return (
       <ServerCartTatBottomContainer
@@ -247,11 +254,9 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
         navigation={props.navigation}
         screen={'MedicineCart'}
         onPressTatCard={() => {
-          // uploadPrescriptionRequired
-          //   ? redirectToUploadPrescription()
-          //   : physicalPrescriptions?.length > 0
-          //   ? uploadPhysicalPrescriptons()
-          //   : onPressReviewOrder();
+          isCartPrescriptionRequired
+            ? onPressUploadPrescription()
+            : props.navigation.navigate(AppRoutes.ReviewCart);
         }}
       />
     );

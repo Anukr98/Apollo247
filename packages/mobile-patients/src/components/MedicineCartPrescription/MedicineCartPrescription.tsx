@@ -24,7 +24,6 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
   const scrollViewRef = useRef<ScrollView | null>(null);
 
   const {
-    cartItems,
     prescriptionType,
     setPrescriptionType,
     physicalPrescriptions,
@@ -33,6 +32,7 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
     setEPrescriptions,
     consultProfile,
     setConsultProfile,
+    serverCartItems,
   } = useShoppingCart();
   const { setUserActionPayload } = useServerCart();
   const client = useApolloClient();
@@ -51,7 +51,9 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderItemsNeedPrescription = () => {
-    const reqItems = cartItems.filter(({ prescriptionRequired }) => prescriptionRequired);
+    const reqItems = serverCartItems.filter(
+      ({ isPrescriptionRequired }) => isPrescriptionRequired == '1'
+    );
     const count = reqItems.length;
     const heading = `${count} ITEM${count > 1 ? 'S' : ''} IN CART NEED PRESCRIPTION`;
     const items = reqItems.map(({ name }) => (
@@ -140,7 +142,7 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
       //   prescriptionDetails: saveEprescription,
       //   prescriptionType: prescriptionType,
       // });
-      navigation.navigate(AppRoutes.CartSummary);
+      navigation.navigate(AppRoutes.ReviewCart);
       setLoading?.(false);
       postEvent(prescriptionType);
     } catch (error) {
