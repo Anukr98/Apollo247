@@ -71,13 +71,7 @@ export const PassportPaitentOverlay: React.FC<PassportPaitentOverlayProps> = (pr
   }, [])
   const renderModalView = (item: any, index: any) => {
     const { patientName, patientSalutation } = extractPatientDetails(item?.patientObj);
-    const itemIdArray =
-    item?.diagnosticOrderLineItems.filter((item: any) => {
-      if (AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS.includes(item?.itemId)) {
-        return item?.itemId
-      }
-    });
-    console.log('item :>> ', itemIdArray);
+    
     return (
       <>
         <View style={styles.inputView}>
