@@ -27,7 +27,6 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
   props
 ) => {
   const {
-    grandTotal,
     prescriptionType,
     addresses,
     minimumCartValue,
@@ -38,6 +37,7 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
     cartAddressId,
     cartTat,
     isCartPrescriptionRequired,
+    serverCartAmount,
   } = useShoppingCart();
   const { onPressProceedtoPay, screen, showAddressPopup } = props;
   const { currentPatient } = useAllCurrentPatients();
@@ -108,7 +108,7 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
   const renderTotal = () => {
     return (
       <View>
-        <Text style={styles.total}>₹{grandTotal.toFixed(2)}</Text>
+        <Text style={styles.total}>₹{serverCartAmount?.estimatedAmount}</Text>
         <Text style={styles.text}>{screen == 'summary' ? 'Total Amount' : 'Home Delivery'}</Text>
       </View>
     );
@@ -161,7 +161,10 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
   };
 
   const renderMinimumCartMessage = () => {
-    const cartTotal = circleMembershipCharges ? grandTotal - circleMembershipCharges : grandTotal;
+    const cartTotalAmount = serverCartAmount?.estimatedAmount || 0;
+    const cartTotal = circleMembershipCharges
+      ? cartTotalAmount - circleMembershipCharges
+      : cartTotalAmount;
     const toAdd = (minimumCartValue - cartTotal)?.toFixed(2);
     return (
       <View style={styles.minCartContainer}>

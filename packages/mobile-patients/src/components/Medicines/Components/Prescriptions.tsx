@@ -16,6 +16,7 @@ import {
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { EPrescriptionCard } from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
 import { PhysicalPrescriptionCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/PhysicalPrescriptionCard';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 export interface PrescriptionsProps {
   onPressUploadMore: () => void;
   screen?: string;
@@ -26,6 +27,7 @@ export interface PrescriptionsProps {
 
 export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
   const { removeEPrescription, removePhysicalPrescription } = useShoppingCart();
+  const { setUserActionPayload } = useServerCart();
   const { onPressUploadMore, screen, style, physicalPrescriptions, ePrescriptions } = props;
 
   const renderHeader = () => {
@@ -61,6 +63,12 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
         arrayLength={arrayLength}
         onRemove={() => {
           removePhysicalPrescription && removePhysicalPrescription(item.title);
+          setUserActionPayload?.({
+            prescriptionDetails: {
+              prismPrescriptionFileId: item?.prismPrescriptionFileId,
+              prescriptionImageUrl: '',
+            },
+          });
         }}
         showTick={true}
       />
@@ -94,6 +102,12 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
         forPatient={item.forPatient}
         onRemove={() => {
           removeEPrescription && removeEPrescription(item.id);
+          setUserActionPayload({
+            prescriptionDetails: {
+              prismPrescriptionFileId: item?.prismPrescriptionFileId,
+              prescriptionImageUrl: '',
+            },
+          });
         }}
         showTick={true}
       />

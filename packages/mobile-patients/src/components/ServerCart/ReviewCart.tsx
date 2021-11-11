@@ -119,9 +119,8 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
     cartPriceNotUpdateRange,
 
     serverCartItems,
-    // noOfShipments,
+    noOfShipments,
   } = useShoppingCart();
-  const noOfShipments = 2;
   const {
     pharmacyUserTypeAttribute,
     pharmacyLocation,
@@ -148,7 +147,6 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
 
   const { fetchReviewCart } = useServerCart();
-  console.log('noOfShipments >>> ', noOfShipments);
 
   useEffect(() => {
     hasUnserviceableproduct();

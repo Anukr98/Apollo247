@@ -32,6 +32,7 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -102,6 +103,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
     deliveryAddressId,
     setDeliveryAddressId,
   } = useShoppingCart();
+  const { setUserActionPayload } = useServerCart();
 
   const renderLabel = (label: string, rightText?: string) => {
     return (
@@ -217,6 +219,12 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
               onPress={() => {
                 CommonLogEvent('MEDICINE_UPLOAD_PRESCRIPTION', `removePhysicalPrescription`);
                 removePhysicalPrescription && removePhysicalPrescription(item.title);
+                setUserActionPayload?.({
+                  prescriptionDetails: {
+                    prismPrescriptionFileId: item?.prismPrescriptionFileId,
+                    prescriptionImageUrl: '',
+                  },
+                });
               }}
             >
               <CrossYellow />
@@ -259,6 +267,14 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
         forPatient={item.forPatient}
         onRemove={() => {
           removeEPrescription && removeEPrescription(item.id);
+          if (!isTest) {
+            setUserActionPayload({
+              prescriptionDetails: {
+                prismPrescriptionFileId: item?.prismPrescriptionFileId,
+                prescriptionImageUrl: '',
+              },
+            });
+          }
         }}
       />
     );
