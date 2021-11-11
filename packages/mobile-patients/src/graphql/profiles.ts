@@ -6493,13 +6493,17 @@ export const SERVER_CART_SAVE_CART = gql`
           coupon
           couponMessage
           valid
+          textOffer
+          reason
+          circleBenefits
         }
         prescriptionDetails {
           prescriptionImageUrl
           prismPrescriptionFileId
+          uhid
+          appointmentId
         }
         prescriptionType
-        appointmentId
         subscriptionDetails {
           userSubscriptionId
           planId
@@ -6509,6 +6513,7 @@ export const SERVER_CART_SAVE_CART = gql`
           currentSellingPrice
           validDuration
           durationInMonth
+          subscriptionApplied
         }
         medicineOrderCartLineItems {
           sku
@@ -6573,13 +6578,17 @@ export const SERVER_CART_FETCH_CART = gql`
           coupon
           couponMessage
           valid
+          textOffer
+          reason
+          circleBenefits
         }
         prescriptionDetails {
           prescriptionImageUrl
           prismPrescriptionFileId
+          uhid
+          appointmentId
         }
         prescriptionType
-        appointmentId
         subscriptionDetails {
           userSubscriptionId
           planId
@@ -6589,6 +6598,7 @@ export const SERVER_CART_FETCH_CART = gql`
           currentSellingPrice
           validDuration
           durationInMonth
+          subscriptionApplied
         }
         medicineOrderCartLineItems {
           sku
@@ -6653,13 +6663,17 @@ export const SERVER_CART_REVIEW_CART = gql`
           coupon
           couponMessage
           valid
+          textOffer
+          reason
+          circleBenefits
         }
         prescriptionDetails {
           prescriptionImageUrl
           prismPrescriptionFileId
+          uhid
+          appointmentId
         }
         prescriptionType
-        appointmentId
         subscriptionDetails {
           userSubscriptionId
           planId
@@ -6669,6 +6683,7 @@ export const SERVER_CART_REVIEW_CART = gql`
           currentSellingPrice
           validDuration
           durationInMonth
+          subscriptionApplied
         }
         medicineOrderCartLineItems {
           sku
@@ -6697,6 +6712,29 @@ export const SERVER_CART_REVIEW_CART = gql`
           freeProduct
           shipmentNo
         }
+      }
+    }
+  }
+`;
+
+export const SAVE_MEDICINE_ORDER_V3 = gql`
+  mutation saveMedicineOrderV3($medicineOrderInput: SaveMedicineOrderV3Input) {
+    saveMedicineOrderV3(medicineOrderInput: $medicineOrderInput) {
+      errorCode
+      errorMessage
+      data {
+        transactionId
+        orders {
+          id
+          orderAutoId
+          estimatedAmount
+        }
+        isSubstitution
+        substitutionTime
+        substitutionMessage
+        isCodEligible
+        codMessage
+        paymentOrderId
       }
     }
   }
