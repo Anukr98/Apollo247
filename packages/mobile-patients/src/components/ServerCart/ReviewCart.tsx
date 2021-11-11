@@ -28,25 +28,16 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { TatCardwithoutAddress } from '@aph/mobile-patients/src/components/MedicineCart/Components/TatCardwithoutAddress';
 import { Prescriptions } from '@aph/mobile-patients/src/components/MedicineCart/Components/Prescriptions';
-import { ProceedBar } from '@aph/mobile-patients/src/components/MedicineCart/Components/ProceedBar';
 import {
   g,
   formatAddress,
   getShipmentPrice,
-  validateCoupon,
-  getPackageIds,
   getCheckoutCompletedEventAttributes,
   getCleverTapCheckoutCompletedEventAttributes,
   isCartPriceWithInSpecifiedRange,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import {
-  availabilityApi247,
-  GetTatResponse247,
-  TatApiInput247,
-  getDeliveryTAT247,
-} from '@aph/mobile-patients/src/helpers/apiCalls';
+import { GetTatResponse247 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   postwebEngageProceedToPayEvent,
@@ -65,8 +56,6 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { postPhamracyCartAddressSelectedSuccess } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import moment from 'moment';
-import { AmountCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/AmountCard';
-import { Shipments } from '@aph/mobile-patients/src/components/MedicineCart/Components/Shipments';
 import {
   MedicineOrderShipmentInput,
   PrescriptionType,
@@ -92,10 +81,15 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
 import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
 import { WhatsAppStatus } from '@aph/mobile-patients/src/components/ui/WhatsAppStatus';
+import { CartTotalSection } from '@aph/mobile-patients/src/components/ServerCart/Components/CartTotalSection';
+import { ReviewTatCard } from '@aph/mobile-patients/src/components/ServerCart/Components/ReviewTatCard';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import { ReviewShipments } from '@aph/mobile-patients/src/components/ServerCart/Components/ReviewShipments';
+import { ServerCartTatBottomContainer } from '@aph/mobile-patients/src/components/ServerCart/Components/ServerCartTatBottomContainer';
 
-export interface CartSummaryProps extends NavigationScreenProps {}
+export interface ReviewCartProps extends NavigationScreenProps {}
 
-export const CartSummary: React.FC<CartSummaryProps> = (props) => {
+export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
   const {
     cartItems,
     addresses,
@@ -123,6 +117,9 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     circleMembershipCharges,
     circlePlanSelected,
     cartPriceNotUpdateRange,
+
+    serverCartItems,
+    noOfShipments,
   } = useShoppingCart();
   const {
     pharmacyUserTypeAttribute,
@@ -149,8 +146,11 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
 
+  const { fetchReviewCart } = useServerCart();
+
   useEffect(() => {
     hasUnserviceableproduct();
+    fetchReviewCart();
     AppState.addEventListener('change', handleAppStateChange);
     return () => {
       AppState.removeEventListener('change', handleAppStateChange);
@@ -164,16 +164,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   const handleAppStateChange = (nextAppState: AppStateStatus) => {
     setappState(nextAppState);
   };
-
-  useEffect(() => {
-    if (appState == 'active') {
-      availabilityTat(deliveryAddressId, true);
-    }
-  }, [appState]);
-
-  useEffect(() => {
-    availabilityTat(deliveryAddressId);
-  }, [cartItems, deliveryAddressId]);
 
   useEffect(() => {
     !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
@@ -238,62 +228,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   };
 
   function hasUnserviceableproduct() {
-    const unserviceableItems = cartItems.filter((item) => item.unserviceable) || [];
+    const unserviceableItems = serverCartItems.filter((item) => !item?.isShippable) || [];
     unserviceableItems?.length && props.navigation.goBack();
-  }
-
-  async function availabilityTat(id: string, forceCheck?: boolean) {
-    const newCartItems =
-      cartItems.map(({ id, quantity }) => id + quantity).toString() + deliveryAddressId;
-    if (newCartItems == lastCartItems && !forceCheck) {
-      return;
-    }
-    if (id && cartItems.length > 0) {
-      setloading(true);
-      setlastCartItems(newCartItems);
-      const skus = cartItems.map((item) => item.id);
-      const selectedAddress: any = addresses.find((item) => item.id == id);
-      try {
-        const response = await availabilityApi247(selectedAddress.zipcode || '', skus.join(','));
-        const items = g(response, 'data', 'response') || [];
-        const unserviceableSkus = items.filter(({ exist }) => exist == false).map(({ sku }) => sku);
-        const updatedCartItems = cartItems.map((item) => ({
-          ...item,
-          unserviceable: unserviceableSkus.indexOf(item.id) != -1,
-        }));
-        setCartItems!(updatedCartItems);
-        const serviceableItems = updatedCartItems
-          .filter((item) => !item.unserviceable)
-          .map((item) => {
-            return { sku: item.id, qty: item.quantity };
-          });
-
-        const tatInput: TatApiInput247 = {
-          pincode: selectedAddress.zipcode || '',
-          lat: selectedAddress?.latitude!,
-          lng: selectedAddress?.longitude!,
-          items: serviceableItems,
-          userType: isCircleSubscription || !!circleSubscriptionId ? 'circle' : 'regular',
-        };
-        try {
-          const res = await getDeliveryTAT247(tatInput);
-          const response = res?.data?.response;
-          setOrders?.(response);
-          let inventoryData: any = [];
-          response?.forEach((order: any) => {
-            inventoryData = inventoryData.concat(order?.items);
-          });
-          setloading!(false);
-          addressSelectedEvent(selectedAddress, response[0]?.tat, response);
-          updatePricesAfterTat(inventoryData, updatedCartItems);
-          if (unserviceableSkus.length) {
-            props.navigation.goBack();
-          }
-        } catch (error) {
-          handleTatApiFailure(selectedAddress, error);
-        }
-      } catch (error) {}
-    }
   }
 
   const genericServiceableDate = moment()
@@ -466,34 +402,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
 
   async function onPressProceedtoPay() {
     setloading(true);
-    if (coupon && cartTotal > 0) {
-      try {
-        const response = await validateCoupon(
-          coupon.coupon,
-          coupon.message,
-          pharmacyPincode,
-          g(currentPatient, 'mobileNumber'),
-          setCoupon,
-          cartTotal,
-          productDiscount,
-          cartItems,
-          setCouponProducts,
-          getPackageIds(activeUserSubscriptions)
-        );
-        if (response !== 'success') {
-          removeCouponWithAlert(response);
-        }
-      } catch (error) {
-        CommonBugFender(`${AppRoutes.CartSummary}_onPressProceedtoPay`, Error(error));
-        showAphAlert?.({
-          title: string.common.uhOh,
-          description: string.common.somethingWentWrong,
-        });
-        return;
-      }
-    }
-    await availabilityTat(deliveryAddressId, true);
-    setloading(true);
     let splitOrderDetails: any = {};
     if (orders?.length > 1) {
       orders?.forEach((order: any, index: number) => {
@@ -573,6 +481,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     };
     return orderDetails;
   };
+
   const renderAlert = (message: string) => {
     showAphAlert!({
       title: string.common.uhOh,
@@ -604,18 +513,19 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         <View style={styles.amountHeader}>
           <Text style={styles.amountHeaderText}>ORDER SUMMARY</Text>
         </View>
-        <AmountCard />
+        <CartTotalSection />
       </View>
     );
   };
+
   const renderTatCard = () => {
-    return orders?.length > 1 ? null : (
-      <TatCardwithoutAddress style={{ marginTop: 10 }} deliveryDate={orders?.[0]?.tat} />
+    return noOfShipments > 1 ? null : (
+      <ReviewTatCard style={{ marginTop: 10 }} deliveryDate={serverCartItems?.[0]?.tat} />
     );
   };
 
   const renderCartItems = () => {
-    return <Shipments setloading={setloading} />;
+    return <ReviewShipments setloading={setloading} />;
   };
 
   const renderPrescriptions = () => {
@@ -647,8 +557,9 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         />
       </View>
     ) : (
-      <ProceedBar
+      <ServerCartTatBottomContainer
         screen={'summary'}
+        navigation={props.navigation}
         onPressProceedtoPay={() => {
           physicalPrescriptions?.length > 0 ? uploadPhysicalPrescriptons() : onPressProceedtoPay();
         }}
@@ -676,6 +587,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
           {renderAddress()}
           {renderAmountSection()}
+          {/* todo: prescription */}
           {uploadPrescriptionRequired &&
             prescriptionType !== PrescriptionType.UPLOADED &&
             renderPrescriptions()}

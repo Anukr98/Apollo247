@@ -10,15 +10,10 @@ export interface CartSavingsProps {}
 
 export const CartSavings: React.FC<CartSavingsProps> = (props) => {
   const {
-    couponDiscount,
-    productDiscount,
-    isCircleSubscription,
     cartTotalCashback,
-    circleMembershipCharges,
-    coupon,
-    // deliveryCharges,
     serverCartAmount,
     cartCircleSubscriptionId,
+    cartSubscriptionDetails,
   } = useShoppingCart();
   const [savingDetailsVisible, setSavingDetailsVisible] = useState(true);
 
@@ -32,19 +27,8 @@ export const CartSavings: React.FC<CartSavingsProps> = (props) => {
   const deliverySavings = isDeliveryFree || circleDeliverySavings > 0 ? deliveryCharges : 0;
   const totalSavings =
     cartSavings + couponSavings + deliverySavings + totalCashBack + circleMembershipCashback;
-
   const deliveryFeeSavings = deliveryCharges ? 0 : AppConfig.Configuration.DELIVERY_CHARGES;
-  const totalSaved =
-    coupon && !coupon?.circleBenefits
-      ? deliveryFeeSavings + productDiscount + couponDiscount
-      : isCircleSubscription || circleMembershipCharges
-      ? deliveryFeeSavings + productDiscount + couponDiscount + cartTotalCashback
-      : productDiscount;
-  const totalCouldSaveByCircle =
-    AppConfig.Configuration.DELIVERY_CHARGES +
-    cartTotalCashback +
-    productDiscount +
-    (coupon?.circleBenefits ? couponDiscount : 0);
+  const totalCouldSaveByCircle = deliveryFeeSavings + cartTotalCashback + cartSavings;
 
   const renderYouSavedCard = () => {
     return (
@@ -71,7 +55,6 @@ export const CartSavings: React.FC<CartSavingsProps> = (props) => {
   };
 
   const renderSavingDetails = () => {
-    const isCircle = isCircleSubscription || (circleMembershipCharges && !coupon);
     return (
       <>
         {!!circleMembershipCashback && (
@@ -140,18 +123,20 @@ export const CartSavings: React.FC<CartSavingsProps> = (props) => {
   };
 
   const renderYouCouldSaveCard = () => {
-    return (
-      totalCouldSaveByCircle > totalSaved && (
-        <View style={styles.youCouldSaveCard}>
-          <Text style={styles.youText}>
-            <Text>{'You could'}</Text>
-            <Text style={styles.saveText}>{` save ₹${totalCouldSaveByCircle.toFixed(2)} `}</Text>
-            <Text>{'on your purchase with'}</Text>
-          </Text>
-          <CircleLogo style={styles.circleLogo} />
-        </View>
-      )
-    );
+    if (!cartCircleSubscriptionId && !cartSubscriptionDetails?.currentSellingPrice) {
+      return (
+        totalCouldSaveByCircle > totalSavings && (
+          <View style={styles.youCouldSaveCard}>
+            <Text style={styles.youText}>
+              <Text>{'You could'}</Text>
+              <Text style={styles.saveText}>{` save ₹${totalCouldSaveByCircle.toFixed(2)} `}</Text>
+              <Text>{'on your purchase with'}</Text>
+            </Text>
+            <CircleLogo style={styles.circleLogo} />
+          </View>
+        )
+      );
+    }
   };
 
   return (

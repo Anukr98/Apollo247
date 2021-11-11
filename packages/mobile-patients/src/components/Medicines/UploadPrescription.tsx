@@ -1017,7 +1017,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
             props.navigation.push(AppRoutes.AddAddressNew, {
               KeyName: 'Update',
               addressDetails: address,
-              ComingFrom: AppRoutes.MedicineCart,
+              ComingFrom: AppRoutes.ServerCart,
             });
             hideAphAlert!();
           }}

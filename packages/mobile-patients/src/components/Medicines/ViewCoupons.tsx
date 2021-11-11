@@ -171,20 +171,17 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
   const [couponList, setCouponList] = useState<pharma_coupon[]>([]); // normal coupons
   const [appliedCouponName, setAppliedCouponName] = useState<string>('');
   const { currentPatient } = useAllCurrentPatients();
+  const [couponTextApplied, setCouponTextApplied] = useState<boolean>(false);
   const {
-    setCoupon,
-    coupon: cartCoupon,
-    cartItems,
-    cartTotal,
-    setCouponProducts,
     pinCode,
     addresses,
     deliveryAddressId,
     circleSubscriptionId,
     hdfcSubscriptionId,
-    setIsFreeDelivery,
     circlePlanSelected,
-    setSubscriptionCoupon,
+    cartCoupon,
+    serverCartItems,
+    serverCartAmount,
   } = useShoppingCart();
   const { showAphAlert, setLoading } = useUIElements();
   const [shimmerLoading, setShimmerLoading] = useState<boolean>(true);
@@ -234,7 +231,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('fetchingConsultCoupons', error);
-        props.navigation.goBack();
+        goBackToPreviousScreen();
         showAphAlert!({
           title: string.common.uhOh,
           description: "Sorry, we're unable to fetch coupon codes right now. Please try again.",
@@ -242,115 +239,58 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
       });
   }, []);
 
+  useEffect(() => {
+    // server cart coupon flow
+    if (!isFromConsult) {
+      if (cartCoupon?.valid) {
+        fireCouponAppliedEvents(cartCoupon?.coupon || '', cartCoupon?.valid);
+        props.navigation.goBack();
+      } else if (cartCoupon?.valid == false && cartCoupon?.couponMessage) {
+        fireCouponAppliedEvents(cartCoupon?.coupon || '', cartCoupon?.valid);
+        const error = cartCoupon?.couponMessage || 'Coupon not applicable';
+        const couponName = cartCoupon?.coupon || '';
+        if (couponTextApplied) {
+          setCouponError(error);
+        } else {
+          setCouponListError(error);
+        }
+        setDisableCouponsList([...disableCouponsList, couponName]);
+        saveDisableCoupons(couponName);
+      }
+    }
+  }, [cartCoupon]);
+
+  const fireCouponAppliedEvents = (couponName: string, isValid: boolean) => {
+    try {
+      const couponSavings = serverCartAmount?.couponSavings || 0;
+      const eventAttributes: WebEngageEvents[WebEngageEventName.CART_COUPON_APPLIED] = {
+        'Coupon Code': couponName,
+        'Discounted amount': isValid ? couponSavings : 'Not Applicable',
+        'Customer ID': currentPatient?.id,
+        'Cart Items': serverCartItems?.length ? JSON.stringify(serverCartItems) : '',
+      };
+      const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CART_COUPON_APPLIED] = {
+        'Coupon code': couponName || undefined,
+        'Discounted amount': isValid ? couponSavings : 'Not Applicable',
+        'Customer ID': currentPatient?.id,
+        'Cart items': serverCartItems?.length ? JSON.stringify(serverCartItems) : undefined,
+      };
+      const cleverTapAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_COUPON_ACTION] = {
+        'Coupon code': couponName || undefined,
+        Action: 'Applied',
+      };
+      postCleverTapEvent(CleverTapEventName.PHARMACY_COUPON_ACTION, cleverTapAttributes);
+      postCleverTapEvent(CleverTapEventName.CART_COUPON_APPLIED, cleverTapEventAttributes);
+      postWebEngageEvent(WebEngageEventName.CART_COUPON_APPLIED, eventAttributes);
+    } catch (error) {}
+  };
+
   const isCircleCoupon = (coupon: pharma_coupon) => {
     return !!coupon?.circleBenefits;
   };
 
   const isProductOfferCoupon = (coupon: pharma_coupon) => {
     return coupon?.frontEndCategory?.toLowerCase() === 'productOffers'.toLowerCase();
-  };
-
-  const applyCoupon = (
-    coupon: string,
-    cartItems: ShoppingCartItem[],
-    applyingFromList?: boolean
-  ) => {
-    CommonLogEvent(AppRoutes.ViewCoupons, 'Select coupon');
-    setLoading?.(true);
-    let data = {
-      mobile: g(currentPatient, 'mobileNumber'),
-      billAmount:
-        isFromSubscription && circlePlanSelected?.currentSellingPrice
-          ? circlePlanSelected?.currentSellingPrice
-          : cartTotal.toFixed(2),
-      coupon: coupon,
-      pinCode: pharmacyPincode,
-      products: cartItems?.map((item) => ({
-        sku: item?.id,
-        categoryId: item?.productType,
-        mrp: item?.price,
-        quantity: item?.quantity,
-        specialPrice: item?.specialPrice || item?.price,
-      })),
-      packageIds: packageId,
-      email: g(currentPatient, 'emailAddress'),
-    };
-    if (isFromSubscription && circlePlanSelected?.subPlanId) {
-      data['subscriptionType'] = `APOLLO:${circlePlanSelected?.subPlanId}`;
-    }
-    console.log('validateConsultCoupon data >> ', data);
-    validateConsultCoupon(data)
-      .then((resp: any) => {
-        if (resp?.data?.errorCode == 0) {
-          if (resp?.data?.response?.valid) {
-            const successMessage = resp?.data?.response?.successMessage || '';
-            setCoupon!({
-              ...resp?.data?.response,
-              successMessage: successMessage,
-            });
-            setUserActionPayload?.({
-              coupon: resp?.data?.response?.coupon || '',
-            });
-            if (isFromSubscription) {
-              setSubscriptionCoupon?.({
-                ...g(resp?.data, 'response')!,
-                successMessage: successMessage,
-              });
-            }
-            setIsFreeDelivery?.(!!resp?.data?.response?.freeDelivery);
-            props.navigation.goBack();
-          } else {
-            !applyingFromList && setCouponError(g(resp.data, 'response', 'reason'));
-            applyingFromList && setCouponListError(g(resp.data, 'response', 'reason'));
-            setDisableCouponsList([...disableCouponsList, coupon]);
-            saveDisableCoupons(coupon);
-          }
-
-          const products = g(resp?.data, 'response', 'products');
-          if (products?.length) {
-            const freeProducts = products?.filter((product) => {
-              return product?.couponFree === 1;
-            });
-            setCouponProducts!(freeProducts);
-          }
-
-          const eventAttributes: WebEngageEvents[WebEngageEventName.CART_COUPON_APPLIED] = {
-            'Coupon Code': coupon,
-            'Discounted amount': g(resp?.data, 'response', 'valid')
-              ? g(resp.data, 'response', 'discount')
-              : 'Not Applicable',
-            'Customer ID': g(currentPatient, 'id'),
-            'Cart Items': cartItems?.length ? JSON.stringify(cartItems) : '',
-          };
-          const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CART_COUPON_APPLIED] = {
-            'Coupon code': coupon || undefined,
-            'Discounted amount': g(resp?.data, 'response', 'valid')
-              ? g(resp.data, 'response', 'discount')
-              : 'Not Applicable',
-            'Customer ID': g(currentPatient, 'id'),
-            'Cart items': cartItems?.length ? JSON.stringify(cartItems) : undefined,
-          };
-          const cleverTapAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_COUPON_ACTION] = {
-            'Coupon code': coupon || undefined,
-            Action: 'Applied',
-          };
-          postCleverTapEvent(CleverTapEventName.PHARMACY_COUPON_ACTION, cleverTapAttributes);
-          postCleverTapEvent(CleverTapEventName.CART_COUPON_APPLIED, cleverTapEventAttributes);
-          postWebEngageEvent(WebEngageEventName.CART_COUPON_APPLIED, eventAttributes);
-        } else {
-          CommonBugFender('validatingPharmaCoupon', g(resp?.data, 'errorMsg'));
-          !applyingFromList && setCouponError(g(resp?.data, 'errorMsg'));
-          applyingFromList && setCouponListError(g(resp?.data, 'errorMsg'));
-          saveDisableCoupons(coupon);
-        }
-      })
-      .catch((error) => {
-        CommonBugFender('validatingPharmaCoupon', error);
-        !applyingFromList && setCouponError('Sorry, unable to validate coupon right now.');
-        applyingFromList && setCouponListError('Sorry, unable to validate coupon right now.');
-        saveDisableCoupons(coupon);
-      })
-      .finally(() => setLoading?.(false));
   };
 
   const saveDisableCoupons = (couponName: string) => {
@@ -394,7 +334,10 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
                 if (isFromConsult) {
                   applyConsultCoupon(couponText, false);
                 } else {
-                  applyCoupon(couponText, cartItems);
+                  setCouponTextApplied(true);
+                  setUserActionPayload?.({
+                    coupon: couponText || '',
+                  });
                 }
               }}
             >
@@ -516,7 +459,10 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     if (isFromConsult) {
       applyConsultCoupon(couponText, true);
     } else {
-      applyCoupon(couponText, cartItems, true);
+      setCouponTextApplied(false);
+      setUserActionPayload?.({
+        coupon: couponText || '',
+      });
     }
   };
 
@@ -574,6 +520,15 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     );
   };
 
+  const goBackToPreviousScreen = () => {
+    if (!isFromConsult) {
+      setUserActionPayload?.({
+        coupon: '',
+      });
+    }
+    props.navigation.goBack();
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -581,7 +536,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
           leftIcon="backArrow"
           title={'APPLY COUPON'}
           container={{ borderBottomWidth: 0 }}
-          onPressLeftIcon={() => props.navigation.goBack()}
+          onPressLeftIcon={goBackToPreviousScreen}
         />
         <ScrollView bounces={false} contentContainerStyle={{ padding: 15 }}>
           {renderInputWithValidation()}

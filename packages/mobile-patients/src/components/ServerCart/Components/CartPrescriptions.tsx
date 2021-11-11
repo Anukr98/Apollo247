@@ -27,7 +27,7 @@ import {
   ViewStyle,
 } from 'react-native';
 
-export interface PrescriptionsProps {
+export interface CartPrescriptionsProps {
   onPressUploadMore?: () => void;
   ePresProps?: Partial<EPrescriptionCardProps>;
   myPresProps?: Partial<PhysicalPrescriptionCardProps>;
@@ -37,7 +37,7 @@ export interface PrescriptionsProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
+export const CartPrescriptions: React.FC<CartPrescriptionsProps> = (props) => {
   const {
     physicalPrescriptions,
     ePrescriptions,

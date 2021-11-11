@@ -1029,7 +1029,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         setEPrescriptions?.([presToAdd]);
         setLoading?.(false);
         postCleverTapUploadPrescriptionEvents('Health Records', 'Cart');
-        props.navigation.push(AppRoutes.MedicineCart);
+        props.navigation.push(AppRoutes.ServerCart);
       } catch (error) {
         setLoading?.(false);
         showAphAlert?.({

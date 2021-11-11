@@ -547,7 +547,7 @@ export const pushTheView = (
       }
       break;
     case 'MedicineCart':
-      navigateToView(navigation, AppRoutes.MedicineCart, {
+      navigateToView(navigation, AppRoutes.ServerCart, {
         movedFrom: 'splashscreen',
       });
       break;

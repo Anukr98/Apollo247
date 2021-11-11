@@ -31,7 +31,7 @@ export const CartHeader: React.FC<CartHeaderProps> = (props) => {
       title={'YOUR CART'}
       rightComponent={headerRightComponent()}
       onPressLeftIcon={() => {
-        CommonLogEvent(AppRoutes.MedicineCart, 'Go back to add items');
+        CommonLogEvent(AppRoutes.ServerCart, 'Go back to add items');
         // setCoupon!(null);
         props.navigation.goBack();
       }}

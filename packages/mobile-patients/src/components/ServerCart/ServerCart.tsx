@@ -69,7 +69,6 @@ import {
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { Prescriptions } from '@aph/mobile-patients/src/components/MedicineCart/Components/Prescriptions';
 import { UnServiceable } from '@aph/mobile-patients/src/components/MedicineCart/Components/UnServiceable';
 import { SuggestProducts } from '@aph/mobile-patients/src/components/MedicineCart/Components/SuggestProducts';
 import { EmptyCart } from '@aph/mobile-patients/src/components/MedicineCart/Components/EmptyCart';
@@ -116,6 +115,8 @@ import { CouponSection } from '@aph/mobile-patients/src/components/ServerCart/Co
 import { ServerCartTatBottomContainer } from '@aph/mobile-patients/src/components/ServerCart/Components/ServerCartTatBottomContainer';
 import { CartSavings } from '@aph/mobile-patients/src/components/ServerCart/Components/CartSavings';
 import { UnServiceableMessage } from '@aph/mobile-patients/src/components/ServerCart/Components/UnServiceableMessag';
+import { CartCircleItem } from '@aph/mobile-patients/src/components/ServerCart/Components/CartCircleItem';
+import { CartPrescriptions } from '@aph/mobile-patients/src/components/ServerCart/Components/CartPrescriptions';
 
 export interface ServerCartProps extends NavigationScreenProps {}
 
@@ -129,13 +130,23 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     newAddressAdded,
     setNewAddressAdded,
     cartTat,
+    cartSubscriptionDetails,
+    setCartCoupon,
+    isCartPrescriptionRequired,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
-  const { fetchServerCart, setUserActionPayload } = useServerCart();
+  const { fetchServerCart, setUserActionPayload, fetchAddress } = useServerCart();
   const [loading, setLoading] = useState<boolean>(false);
+  const { currentPatient } = useAllCurrentPatients();
+
+  const circlePlanAddedToCart =
+    !!cartSubscriptionDetails?.currentSellingPrice && !cartCircleSubscriptionId;
 
   useEffect(() => {
     fetchServerCart();
+    if (!addresses?.length) {
+      fetchAddress();
+    }
   }, []);
 
   useEffect(() => {
@@ -174,7 +185,13 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
       </View>
       <ApplyCircleBenefits navigation={props.navigation} />
       <CouponSection
-        onPressApplyCoupon={() => props.navigation.navigate(AppRoutes.ViewCoupons)}
+        onPressApplyCoupon={() => {
+          setCartCoupon?.(null);
+          setUserActionPayload?.({
+            coupon: '',
+          });
+          props.navigation.navigate(AppRoutes.ViewCoupons);
+        }}
         onPressRemove={() => {
           setUserActionPayload?.({
             coupon: '',
@@ -206,7 +223,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
             props.navigation.push(AppRoutes.AddAddressNew, {
               KeyName: 'Update',
               addressDetails: address,
-              ComingFrom: AppRoutes.MedicineCart,
+              ComingFrom: AppRoutes.ServerCart,
             });
             hideAphAlert!();
           }}
@@ -225,6 +242,11 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     });
   }
 
+  const onPressUploadPrescription = () => {
+    uploadPrescriptionClickedEvent(currentPatient?.id);
+    props.navigation.navigate(AppRoutes.MedicineCartPrescription);
+  };
+
   const renderProceedBar = () => {
     return (
       <ServerCartTatBottomContainer
@@ -232,12 +254,21 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
         navigation={props.navigation}
         screen={'MedicineCart'}
         onPressTatCard={() => {
-          // uploadPrescriptionRequired
-          //   ? redirectToUploadPrescription()
-          //   : physicalPrescriptions?.length > 0
-          //   ? uploadPhysicalPrescriptons()
-          //   : onPressReviewOrder();
+          isCartPrescriptionRequired
+            ? onPressUploadPrescription()
+            : props.navigation.navigate(AppRoutes.ReviewCart);
         }}
+      />
+    );
+  };
+
+  const renderPrescriptions = () => {
+    return (
+      <CartPrescriptions
+        onPressUploadMore={() => {
+          props.navigation.navigate(AppRoutes.MedicineCartPrescription);
+        }}
+        style={{ marginTop: 20 }}
       />
     );
   };
@@ -256,7 +287,9 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
           });
         }}
       />
+      {circlePlanAddedToCart && <CartCircleItem />}
       {renderAmountSection()}
+      {renderPrescriptions()}
     </>
   );
 

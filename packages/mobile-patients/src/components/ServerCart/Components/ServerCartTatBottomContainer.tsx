@@ -20,14 +20,13 @@ export interface ServerCartTatBottomContainerProps extends NavigationScreenProps
   onPressProceedtoPay?: () => void;
   onPressTatCard?: () => void;
   screen?: string;
-  showAddressPopup: () => void;
+  showAddressPopup?: () => void;
 }
 
 export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainerProps> = (
   props
 ) => {
   const {
-    grandTotal,
     prescriptionType,
     addresses,
     minimumCartValue,
@@ -38,6 +37,7 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
     cartAddressId,
     cartTat,
     isCartPrescriptionRequired,
+    serverCartAmount,
   } = useShoppingCart();
   const { onPressProceedtoPay, screen, showAddressPopup } = props;
   const { currentPatient } = useAllCurrentPatients();
@@ -45,6 +45,7 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
   const unServiceable = !serverCartItems.find(
     ({ isShippable, sellOnline }) => isShippable || sellOnline
   );
+  const isFromCart = screen === 'MedicineCart';
 
   const onPressAddDeliveryAddress = () => {
     props.navigation.navigate(AppRoutes.AddAddressNew, {
@@ -56,7 +57,7 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
 
   const onPressSelectDeliveryAddress = () => {
     selectDeliveryAddressClickedEvent(currentPatient?.id, JSON.stringify(serverCartItems));
-    showAddressPopup();
+    showAddressPopup?.();
   };
 
   const onPressUploadPrescription = () => {
@@ -64,7 +65,7 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
     props.navigation.navigate(AppRoutes.MedicineCartPrescription);
   };
 
-  const onPressReviewOrder = () => props.navigation.navigate(AppRoutes.CartSummary);
+  const onPressReviewOrder = () => props.navigation.navigate(AppRoutes.ReviewCart);
 
   const onPressAddMoreMedicines = () => props.navigation.navigate('MEDICINES');
 
@@ -79,14 +80,14 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
         : string.addDeliveryAddress
       : isPrescriptionRequired()
       ? string.proceed
-      : screen == 'MedicineCart'
+      : isFromCart
       ? string.reviewOrder
       : string.proceedToPay;
   }
 
   function isPrescriptionRequired() {
     if (isCartPrescriptionRequired) {
-      return screen === 'MedicineCart' ? true : !prescriptionType;
+      return isFromCart ? true : !prescriptionType;
     } else {
       return false;
     }
@@ -99,7 +100,7 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
         : onPressAddDeliveryAddress()
       : isPrescriptionRequired()
       ? onPressUploadPrescription()
-      : screen == 'MedicineCart'
+      : isFromCart
       ? onPressReviewOrder()
       : onPressProceedtoPay?.();
   }
@@ -107,7 +108,7 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
   const renderTotal = () => {
     return (
       <View>
-        <Text style={styles.total}>₹{grandTotal.toFixed(2)}</Text>
+        <Text style={styles.total}>₹{serverCartAmount?.estimatedAmount}</Text>
         <Text style={styles.text}>{screen == 'summary' ? 'Total Amount' : 'Home Delivery'}</Text>
       </View>
     );
@@ -149,9 +150,9 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
           deliveryTime={cartTat}
           deliveryAddress={formatSelectedAddress(selectedAddress!)}
           onPressChangeAddress={() => {
-            showAddressPopup();
+            showAddressPopup?.();
           }}
-          onPressTatCard={screen === 'MedicineCart' && isValidCartValue ? onPressTatCard : () => {}}
+          onPressTatCard={isFromCart && isValidCartValue ? onPressTatCard : () => {}}
         />
       );
     } else {
@@ -160,7 +161,10 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
   };
 
   const renderMinimumCartMessage = () => {
-    const cartTotal = circleMembershipCharges ? grandTotal - circleMembershipCharges : grandTotal;
+    const cartTotalAmount = serverCartAmount?.estimatedAmount || 0;
+    const cartTotal = circleMembershipCharges
+      ? cartTotalAmount - circleMembershipCharges
+      : cartTotalAmount;
     const toAdd = (minimumCartValue - cartTotal)?.toFixed(2);
     return (
       <View style={styles.minCartContainer}>
@@ -172,11 +176,18 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
     );
   };
 
+  const renderTatDetails = () =>
+    isFromCart && (
+      <>
+        {renderTatCard()}
+        {cartAddressId != '' && isPrescriptionRequired() && renderPrescriptionMessage()}
+        {!isValidCartValue && renderMinimumCartMessage()}
+      </>
+    );
+
   return (
     <View style={styles.container}>
-      {renderTatCard()}
-      {cartAddressId != '' && isPrescriptionRequired() && renderPrescriptionMessage()}
-      {screen === 'MedicineCart' && !isValidCartValue && renderMinimumCartMessage()}
+      {renderTatDetails()}
       <View style={styles.subContainer}>
         {renderTotal()}
         {renderButton()}

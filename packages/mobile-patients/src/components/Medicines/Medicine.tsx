@@ -325,7 +325,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setMedicineHomeBannerData,
     setMedicineHotSellersData,
   } = useShoppingCart();
-  const { setUserActionPayload } = useServerCart();
+  const { setUserActionPayload, fetchServerCart } = useServerCart();
   const {
     cartItems: diagnosticCartItems,
     setIsDiagnosticCircleSubscription,
@@ -747,6 +747,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   useEffect(() => {
     setBannerData && setBannerData([]); // default banners to be empty
     fetchAddress();
+    fetchServerCart();
   }, []);
 
   const getUserBanners = async () => {
@@ -1314,7 +1315,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           activeOpacity={1}
           onPress={() =>
             props.navigation.navigate(
-              diagnosticCartItems?.length ? AppRoutes.MedAndTestCart : AppRoutes.MedicineCart
+              diagnosticCartItems?.length ? AppRoutes.MedAndTestCart : AppRoutes.ServerCart
             )
           }
         >
@@ -2527,7 +2528,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           <TouchableOpacity
             style={circleStyles.cartButton}
             onPress={() => {
-              props.navigation.navigate(AppRoutes.MedicineCart);
+              props.navigation.navigate(AppRoutes.ServerCart);
             }}
           >
             <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0)}>GO TO CART</Text>

@@ -487,7 +487,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               onPress={() => {
                 CommonLogEvent(AppRoutes.SearchMedicineScene, 'Navigate to your cart');
                 props.navigation.navigate(
-                  diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.MedicineCart
+                  diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.ServerCart
                 );
               }}
             >
@@ -1144,7 +1144,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         <StickyBottomComponent style={{ position: 'relative' }} defaultBG>
           <Button
             title={'PROCEED'}
-            onPress={() => props.navigation.navigate(AppRoutes.MedicineCart)}
+            onPress={() => props.navigation.navigate(AppRoutes.ServerCart)}
             style={{ marginHorizontal: 40, flex: 1 }}
           />
         </StickyBottomComponent>
