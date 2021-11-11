@@ -528,3 +528,23 @@ export const createPatientObjLineItems = (patientCartItems: DiagnosticPatientCar
   });
   return array;
 }
+
+  //take care for the modified order & cicle added to cart case
+export const createDiagnosticValidateCouponLineItems = (selectedItem: any, isCircle: boolean) =>{
+  var pricesForItemArray = selectedItem?.map((item: any, index: number) => ({
+    testId: Number(item?.id),
+    categoryId: '',
+    mrp: Number(item?.price), //will always be price, irrespective of any plan
+    specialPrice:
+      isCircle && item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+        ? Number(item?.circleSpecialPrice)
+        : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+        ? Number(item?.discountSpecialPrice)
+        : Number(item?.specialPrice) || Number(item?.price), // discounted price for any plan
+    quantity: item?.mou,
+    type: item?.inclusions?.length > 1 ? 'package' : 'test',
+  }));
+  return {
+    pricesForItemArray,
+  };
+}

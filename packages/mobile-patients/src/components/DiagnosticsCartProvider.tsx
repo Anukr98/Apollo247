@@ -779,8 +779,12 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     (item: DiagnosticsCartItem) => item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
   );
 
+  //update this logic.
   const withAll = allCartItems?.filter((item: DiagnosticsCartItem) =>
-    isDiagnosticCircleSubscription || isCircleAddedToCart
+    (isDiagnosticCircleSubscription || isCircleAddedToCart) && !!coupon && !coupon?.circleBenefits
+      ? item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.CIRCLE ||
+        item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
+      : isDiagnosticCircleSubscription || isCircleAddedToCart
       ? item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.ALL
       : item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.CIRCLE ||
         item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL

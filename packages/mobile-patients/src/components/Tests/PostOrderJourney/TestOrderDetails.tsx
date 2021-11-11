@@ -166,7 +166,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [showViewReportModal, setShowViewReportModal] = useState<boolean>(false);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
   const [orderDetails, setOrderDetails] = useState([] as any);
-  const [orderSubscriptionDetails, setOrderSubscriptionDetails] = useState([] as any);
+  const [orderSubscriptionDetails, setOrderSubscriptionDetails] = useState(null);
   const scrollToSlots = (yValue?: number) => {
     const setY = yValue == undefined ? scrollYValue : yValue;
     scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: setY, animated: true });
@@ -288,7 +288,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         response?.data?.data?.getOrderInternal?.SubscriptionOrderDetails;
       setOrderSubscriptionDetails?.(getSubscriptionDetails);
     } catch (error) {
-      setOrderSubscriptionDetails([]);
+      setOrderSubscriptionDetails(null);
       CommonBugFender('getOrderInternal_TestOrderDetails', error);
     } finally {
       setLoading?.(false);

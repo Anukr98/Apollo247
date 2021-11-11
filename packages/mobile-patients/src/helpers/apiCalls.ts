@@ -1365,6 +1365,7 @@ export const getDiagnosticListingWidget = (
 ): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
   const getWidgets = `${baseurl}/${pageName}/${widgetName}`;
+  console.log({getWidgets})
   return Axios.get(getWidgets, {
     headers: {
       Authorization: config.DRUPAL_CONFIG[1],
@@ -1427,9 +1428,13 @@ export const getTatStaticContent = (
 };
 
 export const fetchDiagnosticCoupons = (
-  type: string
+  type: string,
+  packageId?: any,
 ): Promise<AxiosResponse<any>> => {
   const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
-  const url = `${baseUrl}/frontend?type=${type}`;
+  let url = `${baseUrl}/frontend?type=${type}`;
+  if (!!packageId) {
+    url += `&packageId=${packageId}`;
+  }
   return Axios.get(url);
 };

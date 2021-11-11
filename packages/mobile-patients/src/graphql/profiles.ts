@@ -1752,6 +1752,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         invoiceURL
         labReportURL
         couponDiscAmount
+        couponCode
         paymentOrderId
         attributesObj{
           initialCollectionCharges
@@ -1771,6 +1772,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           groupPlan
           editOrderID
           isRemoved
+          couponDiscAmount
           itemObj {
             itemType
             testPreparationData

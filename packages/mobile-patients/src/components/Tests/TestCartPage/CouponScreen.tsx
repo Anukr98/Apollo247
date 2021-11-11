@@ -28,6 +28,7 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { Overlay } from 'react-native-elements';
+import { createDiagnosticValidateCouponLineItems } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const screenHeight = Dimensions.get('window').height;
 export interface CouponScreenProps
@@ -52,6 +53,7 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
     setCouponDiscount,
     couponCircleBenefits,
     setCouponCircleBenefits,
+    circleSaving,
   } = useDiagnosticsCart();
   const { circleSubscriptionId, hdfcSubscriptionId } = useShoppingCart();
   const {
@@ -92,8 +94,7 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
   async function getDiagnosticCoupons() {
     setLoading?.(true);
     try {
-      const result = await fetchDiagnosticCoupons('Diag');
-      console.log({ result });
+      const result = await fetchDiagnosticCoupons('Diag', packageId);
       if (!!result?.data?.response && result?.data?.response?.length > 0) {
         const getCoupons = result?.data?.response;
         setLoading?.(false);
@@ -135,31 +136,6 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
     return true;
   }
 
-  //take care for the modified order & cicle added to cart case
-  const createValidateCouponLineItems = (selectedItem: any, isCircle: boolean) => {
-    console.log({ selectedItem });
-    console.log({ isCircle });
-    //here mrp & special price is based on the lowest plan available
-    var pricesForItemArray = selectedItem?.map((item: any, index: number) => ({
-      testId: Number(item?.id),
-      categoryId: '',
-      mrp: Number(item?.price), //will always be price, irrespective of any plan
-      //discounted price for any plan
-      specialPrice:
-        isCircle && item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
-          ? Number(item?.circleSpecialPrice)
-          : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
-          ? Number(item?.discountSpecialPrice)
-          : Number(item?.specialPrice) || Number(item?.price),
-      quantity: item?.mou,
-      type: selectedItem?.inclusions?.length > 1 ? 'package' : 'test',
-    }));
-
-    return {
-      pricesForItemArray,
-    };
-  };
-
   const saveDisableCoupons = (couponName: string) => {
     console.log('in save disable flow..');
     console.log({ couponName });
@@ -176,6 +152,16 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
     }
   };
 
+  function recalculateBillAmount() {
+    /**
+     * remove the circle subscription charges
+     */
+    const withOutCircleSavings =
+      toPayPrice + (isDiagnosticCircleSubscription ? circleSaving : 0) - couponDiscount;
+    console.log({ withOutCircleSavings });
+    return withOutCircleSavings;
+  }
+
   //this will differ in modify flow.
   const validateAppliedCoupon = (
     coupon: string,
@@ -189,7 +175,8 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
     console.log({ applyingFromList });
     console.log({ setSubscription });
     setLoadingOverlay?.(true);
-    const createLineItemsForPayload = createValidateCouponLineItems(
+
+    const createLineItemsForPayload = createDiagnosticValidateCouponLineItems(
       cartItemsWithQuan,
       setSubscription != undefined
         ? false
@@ -198,15 +185,21 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
         : isCircleAddedToCart
     );
     console.log({ createLineItemsForPayload });
+    console.log({ toPayPrice });
+    console.log({ couponDiscount });
     let data = {
       mobile: currentPatient?.mobileNumber,
-      billAmount: Number(toPayPrice - couponDiscount), //this is basically the price that user will actually pay
+      billAmount:
+        setSubscription == undefined
+          ? Number(toPayPrice - couponDiscount)
+          : recalculateBillAmount(), //this is basically the price that user will actually pay
       coupon: coupon,
       pinCode: String(getPincode),
       diagnostics: createLineItemsForPayload?.pricesForItemArray?.map((item: any) => item), //define type
       packageIds: setSubscription != undefined ? [] : packageId, //array of all subscriptions of user
     };
-    console.log('payload for validate api');
+
+    console.log('payload for validate api ');
     console.log({ data });
     validateConsultCoupon(data)
       .then((resp: any) => {

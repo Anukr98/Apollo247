@@ -1,5 +1,4 @@
 import {
-  CircleLogo,
   RemoveIcon,
   TestInfoIcon,
   TestTimeIcon,
@@ -16,9 +15,7 @@ import {
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
-import moment from 'moment';
-import DiscountPercentage from './DiscountPercentage';
+import DiscountPercentage from '@aph/mobile-patients/src/components/Tests/components/DiscountPercentage';
 
 interface CartItemCardProps {
   index: number;
@@ -99,24 +96,15 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
             <View style={styles.itemNameView}>
               <Text style={styles.cartItemText}>{nameFormater(cartItem?.name, 'default')}</Text>
             </View>
-            <View style={[styles.rightView]}>
-              {!!slashedPrice && (
-                <View style={{ flex: 0.5, alignItems: 'flex-end', marginRight: 2 }}>
-                  <Text style={styles.packageSlashedPrice}>
-                    {string.common.Rs}
-                    <Text style={{ textDecorationLine: 'line-through' }}>{slashedPrice}</Text>
-                  </Text>
-                </View>
-              )}
-              <View
-                style={[
-                  styles.priceView,
-                  !!slashedPrice
-                    ? { flex: 0.6 }
-                    : { flex: 1, alignItems: 'flex-end', marginRight: 5 },
-                ]}
-              >
+            <View style={styles.rightView}>
+              <View style={styles.priceView}>
                 <Text style={styles.mainPriceText}>
+                  {!!slashedPrice && (
+                    <Text style={styles.packageSlashedPrice}>
+                      {string.common.Rs}
+                      <Text style={{ textDecorationLine: 'line-through' }}>{slashedPrice}</Text>
+                    </Text>
+                  )}{' '}
                   {string.common.Rs}
                   {priceToShow}
                 </Text>
@@ -304,29 +292,31 @@ const styles = StyleSheet.create({
   packageSlashedPrice: {
     ...theme.viewStyles.text('SB', isSmallDevice ? 9 : 10, theme.colors.SHERPA_BLUE, 0.6, 14),
     marginTop: 5,
+    marginRight: 6,
   },
   mainPriceText: {
-    ...theme.viewStyles.text('SB', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 1, 16),
+    ...theme.viewStyles.text('SB', isSmallDevice ? 12.5 : 14, theme.colors.SHERPA_BLUE, 1, 16),
     marginTop: 2,
   },
   cartItemText: {
     ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 1, 22),
   },
   removeTouch: {
-    height: 30,
-    width: 30,
+    height: isSmallDevice ? 28 : 30,
+    width: isSmallDevice ? 28 : 30,
     alignSelf: 'flex-start',
     alignItems: 'flex-start',
   },
   priceView: {
     justifyContent: 'flex-start',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     marginTop: 2,
-    flex: 0.6,
+    marginRight: 4,
+    flex: 1,
   },
   rightView: {
     flex: 1,
-    marginLeft: 8,
+    marginLeft: 6,
     flexDirection: 'row',
     width: '70%',
   },
