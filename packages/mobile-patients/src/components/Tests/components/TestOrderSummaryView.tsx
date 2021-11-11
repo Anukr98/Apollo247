@@ -25,6 +25,7 @@ import {
   DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
   DIAGNOSTIC_STATUS_BEFORE_SUBMITTED,
   DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY,
+  AppConfig,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -631,22 +632,24 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     );
   };
   const renderAddPassportView = () => {
-    return (
-      <View
-        style={styles.passportView}
-      >
-        <Text style={styles.textupper}>
-          {string.diagnostics.addOrEditPassportText}
-        </Text>
-        <TouchableOpacity onPress={()=>{
-          setShowPassportModal(true)
-        }}>
-          <Text style={styles.textlower}>
-            ADD
-          </Text>
+    const itemIdArray = 
+      orderDetails?.diagnosticOrderLineItems?.filter((item: any) => {
+      if (AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS.includes(item?.itemId)) {
+        return item?.itemId
+      }
+    });
+    return itemIdArray?.length ? (
+      <View style={styles.passportView}>
+        <Text style={styles.textupper}>{string.diagnostics.addOrEditPassportText}</Text>
+        <TouchableOpacity
+          onPress={() => {
+            setShowPassportModal(true);
+          }}
+        >
+          <Text style={styles.textlower}>ADD</Text>
         </TouchableOpacity>
       </View>
-    );
+    ) : null;
   };
 
   const renderPassportPaitentView = () => {

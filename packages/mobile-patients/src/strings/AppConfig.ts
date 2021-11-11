@@ -304,7 +304,8 @@ const appStaticVariables = {
       "ctaDelaySeconds": 3,
       "ctaPhoneNumber": "040-4821-3322"
     }
-  }
+  },
+  DIAGNOSTICS_COVID_ITEM_IDS : [2446]
 };
 
 const DEV_top_specialties = [
