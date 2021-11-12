@@ -25,6 +25,9 @@ import {
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { circleValidity } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import AsyncStorage from '@react-native-community/async-storage';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import { searchDiagnosticItem_searchDiagnosticItem_data } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticItem';
 import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import {
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
@@ -196,7 +199,8 @@ export const firePurchaseEvent = (
   orderId: string,
   grandTotal: number,
   cartItems: any,
-  currentPatient: any
+  currentPatient: any,
+  homeCollectionCharges: number
 ) => {
   let items: any = [],
     itemIds: any = [],
@@ -205,28 +209,31 @@ export const firePurchaseEvent = (
     itemCategories: any = [],
     itemCollectionMethods: any = [],
     itemIndexs: any = [],
-    itemQuantity: any = [];
+    itemQuantity: any = [],
+    itemCurrency: any = [];
 
   !!cartItems &&
     cartItems?.length > 0 &&
     cartItems?.forEach((item: any, index: number) => {
       let itemObj: any = {};
-      itemObj.af_content = item?.name;
-      itemObj.af_content_id = item?.id;
-      itemObj.af_price = !!item?.specialPrice ? item.specialPrice : item.price;
-      itemObj.af_category = 'Diagnostics';
+      itemObj.item_name = item?.name;
+      itemObj.item_id = item?.id;
+      itemObj.price = !!item?.specialPrice ? item.specialPrice : item.price;
+      itemObj.item_category = 'Diagnostics';
       itemObj.item_variant = item.collectionMethod; // "Default" (for Pharmacy) or Virtual / Physcial (for Consultations)
       itemObj.index = index + 1; // Item sequence number in the list
-      itemObj.af_quantity = 1;
+      itemObj.quantity = 1;
+      itemObj.currency = 'INR';
       items.push(itemObj);
 
       itemIds.push(item?.id);
       itemNames.push(item?.name);
       itemPrices.push(!!item?.specialPrice ? String(item.specialPrice) : String(item.price));
-      itemCategories.push('Diagnositcs');
+      itemCategories.push('Diagnostics');
       itemCollectionMethods.push(item?.collectionMethod);
       itemIndexs.push(String(index));
       itemQuantity.push(String(1));
+      itemCurrency.push('INR');
     });
 
   let appsFlyerObject = {} as any;
@@ -237,6 +244,7 @@ export const firePurchaseEvent = (
   appsFlyerObject.item_variant = itemCollectionMethods;
   appsFlyerObject.index = itemIndexs;
   appsFlyerObject.af_quantity = itemQuantity;
+  appsFlyerObject.af_currency = itemCurrency;
 
   const stringifiedAppsFlyerObject = JSON.stringify(appsFlyerObject);
 
@@ -254,6 +262,16 @@ export const firePurchaseEvent = (
     af_order_id: orderId,
     af_customer_user_id: currentPatient?.id,
   };
+
+  const fireBaseSuccessEvent = {
+    transaction_id: orderId,
+    currency: 'INR',
+    value: Number(grandTotal), //total revenue
+    items: items,
+    shipping: homeCollectionCharges,
+  };
+
+  postFirebaseEvent(FirebaseEventName.DIAGNOSTIC_ORDER_PLACE, fireBaseSuccessEvent);
   postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   postAppsFlyerEvent(AppsFlyerEventName.PURCHASE, appsFlyerAttributes);
 };
@@ -880,15 +898,18 @@ export function DiagnosticPrescriptionSubmitted(
   currentPatient: any,
   prescriptionUrl: any,
   itemName: any,
+  userType: string | null,
   isDiagnosticCircleSubscription?: boolean | undefined
 ) {
   const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes: CleverTapEvents[CleverTapEventName.DIAGNOSTIC_PRESCRIPTION_SUBMITTED] = {
     ...getPatientAttributes,
+    'Patient MobileNumber': currentPatient?.mobileNumber,
+    'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+    'User Type': userType,
     Source: 'Apollo247App',
     PrescriptionUrl: prescriptionUrl,
-    'Item name': itemName,
-    'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+    'Item Name': itemName,
   };
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PRESCRIPTION_SUBMITTED, eventAttributes);
 }

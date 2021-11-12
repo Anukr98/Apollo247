@@ -492,6 +492,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
         if (type == hdfc_values.WEB_VIEW) {
           props.navigation.navigate(AppRoutes.CommonWebView, {
             url,
+            circleEventSource,
           });
         } else {
           props.navigation.navigate(AppRoutes.TestDetails, {
@@ -529,6 +530,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       circlePlanValidity={planValidity.current || props.circlePlanValidity}
       from={from}
       source={source}
+      circleEventSource={'Landing Home Page banners'}
     />
   );
 
@@ -572,6 +574,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           itemWidth={width}
           loop={true}
           autoplay={true}
+          loopClonesPerSide={datatoshow?.length || 0}
         />
         {datatoshow && datatoshow?.length > 1 ? (
           <View style={styles.sliderDotsContainer}>

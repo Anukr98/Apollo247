@@ -90,6 +90,7 @@ const styles = StyleSheet.create({
   },
   faqMainListContainer: {
     padding: 20,
+    backgroundColor: theme.colors.WHITE,
   },
   faqItemContainer: {
     marginBottom: 5,
@@ -122,6 +123,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 20,
     paddingBottom: 10,
+    backgroundColor: theme.colors.WHITE,
+    marginTop: 10,
   },
   faqHeading: {
     fontSize: 22,

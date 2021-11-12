@@ -4,10 +4,14 @@ import { Props as ProductCardProps } from '@aph/mobile-patients/src/components/M
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { availabilityApi247, MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   addPharmaItemToCart,
   formatToCartItem,
+  g,
+  getAvailabilityForSearchSuccess,
+  getDiscountPercentage,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -41,11 +45,12 @@ export interface Props extends Omit<ListProps, 'renderItem'> {
   renderComponent?: ListRenderItem<ProductCardProps>;
   addToCartSource:
     | WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source']
-    | CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Source'];
+    | CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Nav src'];
   movedFrom: ProductPageViewedSource;
   productPageViewedEventProps?: ProductPageViewedEventProps;
   sectionName?: string;
   onAddedSuccessfully?: () => void;
+  totalProducts?: number | undefined;
 }
 
 export const ProductList: React.FC<Props> = ({
@@ -58,6 +63,7 @@ export const ProductList: React.FC<Props> = ({
   renderComponent,
   data,
   contentContainerStyle,
+  totalProducts,
   ...restOfProps
 }) => {
   const isPdp: boolean =
@@ -66,6 +72,13 @@ export const ProductList: React.FC<Props> = ({
     addToCartSource == 'PDP All Substitutes';
   const step: number = 3;
   const initData = data?.length > 4 ? data?.slice(0, step) : data;
+  const comingFromSearch = navigation.getParam('comingFromSearch')
+    ? navigation.getParam('comingFromSearch')
+    : false;
+  const searchText = navigation.getParam('searchText') ? navigation.getParam('searchText') : '';
+  const navSrcForSearchSuccess = navigation.getParam('navSrcForSearchSuccess')
+    ? navigation.getParam('navSrcForSearchSuccess')
+    : '';
   const [dataToShow, setDataToShow] = useState(initData);
   const [lastIndex, setLastIndex] = useState<number>(data?.length > 4 ? step : 0);
   const { currentPatient } = useAllCurrentPatients();
@@ -105,7 +118,7 @@ export const ProductList: React.FC<Props> = ({
 
   useEffect(() => {}, [showSuggestedQuantityNudge]);
 
-  const onPress = (sku: string, urlKey: string) => {
+  const onPress = (sku: string, urlKey: string, index: number, item) => {
     if (
       movedFrom === ProductPageViewedSource.SIMILAR_PRODUCTS ||
       movedFrom === ProductPageViewedSource.PDP_ALL_SUSBTITUTES
@@ -116,6 +129,7 @@ export const ProductList: React.FC<Props> = ({
         sectionName,
         productPageViewedEventProps,
         urlKey,
+        navSrcForSearchSuccess,
       });
     } else {
       navigation.push(AppRoutes.ProductDetailPage, {
@@ -124,7 +138,29 @@ export const ProductList: React.FC<Props> = ({
         sectionName,
         productPageViewedEventProps,
         urlKey,
+        navSrcForSearchSuccess,
       });
+    }
+    if (comingFromSearch !== false) {
+      const pincode = asyncPincode?.pincode || pharmacyPincode;
+      const availability = getAvailabilityForSearchSuccess(pincode, item?.sku);
+      const discount = getDiscountPercentage(item?.price, item?.special_price);
+      const discountPercentage = discount ? discount + '%' : '0%';
+      const cleverTapEventAttributes = {
+        'Nav src': navSrcForSearchSuccess,
+        Status: 'Success',
+        Keyword: searchText,
+        Position: index + 1,
+        Source: 'Full search',
+        Action: 'Product detail page viewed',
+        'Product availability': availability ? 'Is in stock' : 'Out of stock',
+        'Product position': index + 1,
+        'Results shown': data?.length,
+        'SKU ID': item?.sku,
+        'Product name': item?.name,
+        Discount: discountPercentage,
+      };
+      postCleverTapEvent(CleverTapEventName.PHARMACY_SEARCH_SUCCESS, cleverTapEventAttributes);
     }
   };
 
@@ -135,8 +171,24 @@ export const ProductList: React.FC<Props> = ({
     });
   };
 
-  const onPressAddToCart = (item: MedicineProduct) => {
+  const onPressAddToCart = (item: MedicineProduct, index: number) => {
     const { onAddedSuccessfully } = restOfProps;
+    const discount = getDiscountPercentage(item?.price, item?.special_price);
+    const discountPercentage = discount ? discount + '%' : '0%';
+    const cleverTapSearchSuccessEventAttributes = {
+      'Nav src': navSrcForSearchSuccess,
+      Status: 'Success',
+      Keyword: searchText,
+      Position: index + 1,
+      Source: 'Full search',
+      Action: 'Add to cart',
+      'Product availability': 'Available',
+      'Product position': index + 1,
+      'Results shown': totalProducts,
+      'SKU ID': item?.sku,
+      'Product name': item?.name,
+      Discount: discountPercentage,
+    };
     addPharmaItemToCart(
       formatToCartItem(item),
       asyncPincode?.pincode || pharmacyPincode!,
@@ -154,7 +206,9 @@ export const ProductList: React.FC<Props> = ({
       JSON.stringify(cartItems),
       () => {},
       pharmacyCircleAttributes!,
-      onAddedSuccessfully ? onAddedSuccessfully : () => {}
+      onAddedSuccessfully ? onAddedSuccessfully : () => {},
+      comingFromSearch,
+      cleverTapSearchSuccessEventAttributes
     );
     setCurrentProductIdInCart(item.sku);
     item.pack_form ? setItemPackForm(item.pack_form) : setItemPackForm('');
@@ -193,8 +247,8 @@ export const ProductList: React.FC<Props> = ({
       const props: ProductCardProps = {
         ...item,
         quantity: qty,
-        onPress: () => onPress(item.sku, item.url_key),
-        onPressAddToCart: () => onPressAddToCart(item),
+        onPress: () => onPress(item.sku, item.url_key, index, item),
+        onPressAddToCart: () => onPressAddToCart(item, index),
         onPressAddQty: onPressAddQty,
         onPressSubtractQty: onPressSubtractQty,
         onPressNotify: () => onPressNotify(item.name),

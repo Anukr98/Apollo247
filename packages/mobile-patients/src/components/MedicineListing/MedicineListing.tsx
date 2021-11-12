@@ -65,17 +65,24 @@ export interface Props
     title?: string; // mandatory if category_id passed
     sortBy?: SortByOption; // support for deep link
     filterBy?: SelectedFilters; // support for deep link
-    movedFrom?: 'registration' | 'deeplink' | 'home';
+    movedFrom?: 'registration' | 'deeplink' | 'home' | 'brandPages';
     breadCrumb?: Pick<Category, 'title' | 'category_id'>[];
     categoryName?: string;
-  }> {}
+    comingFromSearch?: boolean;
+    navSrcForSearchSuccess?: string;
+  }> {
+  comingFromBrandPage?: boolean | undefined;
+  currentBrandPageTab?: string;
+}
 
-export const MedicineListing: React.FC<Props> = ({ navigation }) => {
+// export const MedicineListing: React.FC<Props> = ({ navigation }) => {
+export const MedicineListing: React.FC<Props> = (props) => {
   interface bottomFilter {
     category_id: string;
     url_key: string;
     title: string;
   }
+  const navigation = props.navigation;
 
   // navigation props
   const searchText = navigation.getParam('searchText') || '';
@@ -87,6 +94,8 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const titleNavProp = navigation.getParam('title') || '';
   const breadCrumb = navigation.getParam('breadCrumb') || [];
   const categoryName = navigation.getParam('categoryName') || '';
+  const comingFromBrandPage = props?.comingFromBrandPage ? props?.comingFromBrandPage : false;
+  const currentBrandPageTab = props?.currentBrandPageTab || '';
 
   const { pinCode } = useShoppingCart();
 
@@ -156,7 +165,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     } else if (categoryName) {
       getCategoryIdByName(categoryName);
     }
-  }, [sortBy, filterBy]);
+  }, [sortBy, filterBy, categoryId, searchText, currentBrandPageTab]);
 
   useEffect(() => {
     const filterContent = filterOptions.filter(({ values }) => values?.length);
@@ -218,6 +227,23 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     }
   };
 
+  const formatSearchFilter = (selectedFilters: SelectedFilters) => {
+    const keys = Object.keys(selectedFilters);
+    const selectedFilter: any = {};
+    if (keys?.length) {
+      keys.forEach((key) => {
+        if (selectedFilters?.[key]?.length) {
+          if (key === 'price' || key === 'discount_percentage') {
+            selectedFilter[key] = { min: selectedFilters[key][0], max: selectedFilters[key][1] };
+          } else {
+            selectedFilter[key] = selectedFilters[key];
+          }
+        }
+      });
+    }
+    return selectedFilter;
+  };
+
   const searchProducts = async (
     searchText: string,
     pageId: number,
@@ -227,7 +253,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   ) => {
     try {
       updateLoading(pageId, true);
-      const _selectedFilters = formatFilters(selectedFilters, filters);
+      const _selectedFilters = formatSearchFilter(selectedFilters);
       const { data } = await searchMedicineApi(
         searchText,
         pageId,
@@ -276,8 +302,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     try {
       updateLoading(pageId, true);
       const _selectedFilters = formatFilters(selectedFilters, filters);
-      if (_selectedFilters.category != navigation.getParam('category_id'))
-        setBottomCategoryId(_selectedFilters?.category);
+      if (_selectedFilters.category != categoryId) setBottomCategoryId(_selectedFilters?.category);
       else {
         setFilterBy({});
       }
@@ -294,7 +319,9 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         data?.design[0]?.mobile_banner_image.endsWith('.png') ||
         data?.design[0]?.mobile_banner_image.endsWith('.jpeg')
       )
-        setBannerImage(data?.design[0]?.mobile_banner_image);
+        comingFromBrandPage
+          ? setBannerImage('')
+          : setBannerImage(data?.design[0]?.mobile_banner_image);
       updateProducts(pageId, existingProducts, data);
       setProductsTotal(data.count);
       updateLoading(pageId, false);
@@ -365,7 +392,19 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderHeader = () => {
-    return <MedicineListingHeader navigation={navigation} movedFrom={movedFrom} />;
+    let navSrcParamForSearchSuccess = '';
+    if ((categoryId || categoryName) && !searchText) {
+      navSrcParamForSearchSuccess = 'Category Listing';
+    } else if (searchText) {
+      navSrcParamForSearchSuccess = 'Search List';
+    }
+    return (
+      <MedicineListingHeader
+        navigation={navigation}
+        movedFrom={movedFrom}
+        navSrcForSearchSuccess={navSrcParamForSearchSuccess}
+      />
+    );
   };
 
   const renderSections = () => {
@@ -398,6 +437,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       setFilterVisible,
       setSortByVisible,
       showFilterOption,
+      comingFromBrandPage,
     };
     return <MedicineListingSections {...props} />;
   };
@@ -426,6 +466,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
           <>
             <MedicineListingProducts
               data={products}
+              totalProducts={productsTotal}
               ListFooterComponent={renderLoading()}
               ListEmptyComponent={renderProductsNotFound()}
               navigation={navigation}
@@ -492,13 +533,52 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       onClose();
       setFilterBy(appliedFilters);
     };
-    const filters = filterOptions.filter(({ values }) => values?.length);
+    const valuesToBeRemoved = [
+      'PHARMA',
+      'Non Dpco',
+      'PL',
+      'FMCG',
+      'SHOP BY BRAND',
+      'Banners',
+      'Apollo247',
+      'Apollo247v1',
+      'Special Offers',
+      'Banner 1',
+      'Banner 2',
+      'Banner 3',
+      'MOST VIEWED',
+    ];
+    const filters = filterOptions.filter(
+      ({ attribute }) => attribute !== 'color' && attribute !== '__categories'
+    );
+    const categoryFilter = filterOptions.filter(
+      ({ attribute, values }) =>
+        attribute === '__categories' &&
+        values?.length &&
+        values.map((ele) => valuesToBeRemoved.indexOf(ele.name) === -1)
+    );
+    let newFilters = [];
+    if (categoryFilter?.length) {
+      const categoryValues =
+        categoryFilter?.[0]?.values?.length &&
+        categoryFilter?.[0]?.values.filter(({ name }) => valuesToBeRemoved.indexOf(name) === -1);
+
+      const categoryObject = {
+        attribute: categoryFilter?.[0]?.attribute,
+        name: categoryFilter?.[0]?.name,
+        select_type: categoryFilter?.[0]?.select_type,
+        values: categoryValues,
+      };
+      newFilters = [...filters, categoryObject];
+    } else {
+      newFilters = [...filters];
+    }
 
     return (
       filterVisible && (
         <MedicineListingFilter
           isVisible={true}
-          filters={filters}
+          filters={newFilters}
           selectedFilters={filterBy}
           onClose={onClose}
           onApplyFilters={onApplyFilters}
@@ -576,7 +656,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   };
   return (
     <SafeAreaView style={container}>
-      {renderHeader()}
+      {comingFromBrandPage == false && renderHeader()}
       <View style={styles.fill}>
         <Animated.ScrollView
           style={{ ...styles.fill }}

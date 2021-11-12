@@ -223,14 +223,19 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
             'Cart Items': JSON.stringify(cartItems),
           };
           const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CART_COUPON_APPLIED] = {
-            'Coupon Code': coupon || undefined,
+            'Coupon code': coupon || undefined,
             'Discounted amount': g(resp.data, 'response', 'valid')
               ? g(resp.data, 'response', 'discount')
               : 'Not Applicable',
             'Customer ID': g(currentPatient, 'id'),
-            'Cart Items': cartItems?.length || undefined,
+            'Cart items': cartItems?.length ? JSON.stringify(cartItems) : undefined,
           };
-          // postCleverTapEvent(CleverTapEventName.CART_COUPON_APPLIED, cleverTapEventAttributes);
+          const cleverTapAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_COUPON_ACTION] = {
+            'Coupon code': coupon || undefined,
+            Action: 'Applied',
+          };
+          postCleverTapEvent(CleverTapEventName.PHARMACY_COUPON_ACTION, cleverTapAttributes);
+          postCleverTapEvent(CleverTapEventName.CART_COUPON_APPLIED, cleverTapEventAttributes);
           postWebEngageEvent(WebEngageEventName.CART_COUPON_APPLIED, eventAttributes);
         } else {
           CommonBugFender('validatingPharmaCoupon', g(resp.data, 'errorMsg'));

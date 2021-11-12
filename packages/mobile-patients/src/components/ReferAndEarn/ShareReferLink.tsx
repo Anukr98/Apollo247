@@ -23,18 +23,80 @@ import {
   CopyLinkIcon,
   FriendReceiveIcon,
   InviteYourFriendIcon,
+  ShareLinkBannerIcon,
   WhatsAppIconReferral,
   YouReceiveIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { LinkCopiedToast } from '@aph/mobile-patients/src/components/ReferAndEarn/LinkCopiedToast';
+import { useReferralProgram } from '@aph/mobile-patients/src/components//ReferralProgramProvider';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  GET_CAMPAIGN_ID_FOR_REFERRER,
+  GET_HC_REFREE_RECORD,
+  GET_REWARD_ID,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
 
 export interface ShareReferLinkProps extends NavigationScreenProps {}
 
+const hcExpirationTime = 30;
 export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
   const [referShareAmount, setReferShareAmount] = useState<string>('100');
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const client = useApolloClient();
   const [linkCopied, setLinkCopied] = useState(false);
+  const [refreeReward, setRefreeReward] = useState({
+    isRefree: false,
+    rewardValue: 0,
+    rewardRegisteration: '',
+    expirationData: '',
+    showHCSection: false,
+  });
+  const {
+    rewardId,
+    setRewardId,
+    campaignId,
+    setCampaignId,
+    referrerLink,
+    setReferrerLink,
+  } = useReferralProgram();
   const { navigation } = props;
+
+  useEffect(() => {
+    getRewardId();
+    getCampaignId();
+    generateReferrerLink();
+    checkRefreeRewardData();
+  }, []);
+
+  const checkRefreeRewardData = async () => {
+    try {
+      const response = await client.query({
+        query: GET_HC_REFREE_RECORD,
+        variables: { id: g(currentPatient, 'id') },
+        fetchPolicy: 'no-cache',
+      });
+      const { data } = response;
+      if (data?.getReferralRewardDetails?.referee?.name != null) {
+        let refreeRegisterationDate: any = new Date(
+          `${data?.getReferralRewardDetails?.referee?.registrationDate}`
+        );
+        refreeRegisterationDate.setDate(refreeRegisterationDate.getDate() + hcExpirationTime);
+        setRefreeReward({
+          isRefree: true,
+          rewardValue: data?.getReferralRewardDetails?.referee?.rewardValue,
+          rewardRegisteration: data?.getReferralRewardDetails?.referee?.registrationDate,
+          expirationData: getRequiredDateFormat(refreeRegisterationDate),
+          showHCSection: checkReferralExpirationDate(
+            data?.getReferralRewardDetails?.referee?.registrationDate
+          ),
+        });
+      }
+    } catch (error) {
+      CommonBugFender('ShareReferralLink_generatingCampaignId', error);
+    }
+  };
 
   useEffect(() => {
     if (linkCopied) {
@@ -44,42 +106,87 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
     }
   }, [linkCopied]);
 
+  const getRewardId = async () => {
+    try {
+      const response = await client.query({
+        query: GET_REWARD_ID,
+        variables: { reward: 'HC' },
+        fetchPolicy: 'no-cache',
+      });
+      const { data } = response;
+      if (data?.getRewardInfoByRewardType?.id) {
+        const rewardId = data?.getRewardInfoByRewardType?.id;
+        setRewardId?.(rewardId);
+      }
+    } catch (error) {
+      CommonBugFender('ShareReferralLink_generatingRewardId', error);
+    }
+  };
+  const getRequiredDateFormat = (date: any) => {
+    if (date != null) {
+      let d = new Date(date);
+      return `${d.getDate()} ${LocalStrings.monthsName[d.getMonth()]}, ${d.getFullYear()}`;
+    } else {
+      return '';
+    }
+  };
+
+  const getCampaignId = async () => {
+    try {
+      const response = await client.query({
+        query: GET_CAMPAIGN_ID_FOR_REFERRER,
+        variables: { camp: 'HC_CAMPAIGN' },
+        fetchPolicy: 'no-cache',
+      });
+      const { data } = response;
+      if (data?.getCampaignInfoByCampaignType?.id) {
+        const campaignId = data?.getCampaignInfoByCampaignType?.id;
+        setCampaignId?.(campaignId);
+      }
+    } catch (error) {
+      CommonBugFender('ShareReferralLink_generatingCampaignId', error);
+    }
+  };
+
   const onWhatsAppShare = () => {
-    generateReferrerLink((res: any) => {
-      const shareOptions = {
-        title: string.referAndEarn.referalLink,
-        url: res,
-        message: string.referAndEarn.shareLinkText,
-        failOnCancel: false,
-        showAppsToView: true,
-        social: Share.Social.WHATSAPP,
-      };
-      Share.shareSingle(shareOptions).catch((e) => console.log(e));
-    });
+    const shareOptions = {
+      title: string.referAndEarn.referalLink,
+      url: referrerLink,
+      message: string.referAndEarn.shareLinkText,
+      failOnCancel: false,
+      showAppsToView: true,
+      social: Share.Social.WHATSAPP,
+    };
+    Share.shareSingle(shareOptions).catch((e) => console.log(e));
   };
 
   const copyLinkToShare = () => {
-    generateReferrerLink((res: any) => {
-      Clipboard.setString(string.referAndEarn.shareLinkText + res);
-      setLinkCopied(true);
-    });
+    Clipboard.setString(string.referAndEarn.shareLinkText + '\n' + referrerLink);
+    setLinkCopied(true);
   };
 
-  const generateReferrerLink = (success: (data: any) => void) => {
+  const checkReferralExpirationDate = (registerationDate: String) => {
+    let refreeRegisterationDate = new Date(`${registerationDate}`);
+    let currenDate = new Date();
+    refreeRegisterationDate.setDate(refreeRegisterationDate.getDate() + hcExpirationTime);
+    return refreeRegisterationDate.getTime() > currenDate.getTime();
+  };
+
+  const generateReferrerLink = () => {
     appsFlyer.setAppInviteOneLinkID('775G');
     appsFlyer.generateInviteLink(
       {
         channel: 'gmail',
-        campaign: '8a8cd6d4-fcb3-4014-85f4-907bddda5ca0',
+        campaign: campaignId,
         customerID: g(currentPatient, 'id'),
         sub2: 'AppReferral',
         userParams: {
-          rewardId: '59a79676-592c-4e62-9a80-71c6224b14cf',
+          rewardId: rewardId,
           linkToUse: 'ForReferrarInstall',
         },
       },
       (link) => {
-        success(link);
+        setReferrerLink?.(link);
       },
       (err) => {}
     );
@@ -91,19 +198,22 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
         style={styles.referShareMainContainer}
       >
         <View>
-          <View style={styles.referSharetextContainer}>
-            <Text style={styles.referSharetext}>{string.referAndEarn.referAndEarn}</Text>
-            <Text style={styles.referShareamount}>₹{referShareAmount && referShareAmount}</Text>
-            <View>
-              <Text style={styles.referShareotherDetails}>
-                {string.referAndEarn.yourFriendGot} ₹{referShareAmount && referShareAmount}{' '}
-                {string.referAndEarn.onSignUp}{' '}
-              </Text>
-              <Text style={styles.referShareotherDetails}>
-                {string.referAndEarn.youGet} ₹{referShareAmount && referShareAmount}{' '}
-                {string.referAndEarn.onTheirFirst}{' '}
-              </Text>
+          <View style={styles.referSharetextMainContainer}>
+            <View style={styles.referSharetextContainer}>
+              <Text style={styles.referSharetext}>{string.referAndEarn.referAndEarn}</Text>
+              <Text style={styles.referShareamount}>₹{referShareAmount && referShareAmount}</Text>
+              <View>
+                <Text style={styles.referShareotherDetails}>
+                  {string.referAndEarn.yourFriendGot} ₹{referShareAmount && referShareAmount}{' '}
+                  {string.referAndEarn.onSignUp}{' '}
+                </Text>
+                <Text style={styles.referShareotherDetails}>
+                  {string.referAndEarn.youGet} ₹{referShareAmount && referShareAmount}{' '}
+                  {string.referAndEarn.onTheirFirst}{' '}
+                </Text>
+              </View>
             </View>
+            <ShareLinkBannerIcon />
           </View>
           <View style={styles.referSharebtnTextContainer}>
             <View style={styles.referSharereferViaContainer}>
@@ -147,8 +257,9 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
               <FriendReceiveIcon />
             </View>
             <Text style={styles.howWorklistText}>
-              {string.referAndEarn.friendReceiveRs}
-              {referShareAmount && referShareAmount}
+              {replaceVariableInString(string.referAndEarn.friendReceiveRs, {
+                referShareAmount: referShareAmount ? referShareAmount : '',
+              })}
             </Text>
           </View>
           <View style={styles.howWorklistSpecificContainer}>
@@ -156,11 +267,18 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
               <View style={styles.howWorklistImageCircle} />
               <YouReceiveIcon />
             </View>
-            <Text style={styles.howWorklistText}>
-              {replaceVariableInString(string.referAndEarn.youReceive, {
-                referShareAmount: referShareAmount ? referShareAmount : '',
-              })}
-            </Text>
+            <View>
+              <Text style={styles.howWorklistText}>
+                {replaceVariableInString(string.referAndEarn.youReceive, {
+                  referShareAmount: referShareAmount ? referShareAmount : '',
+                })}
+              </Text>
+              <Text style={styles.howWorklistTextSpecialNote}>
+                {replaceVariableInString(string.referAndEarn.notValidForOrder, {
+                  validRuppes: string.referAndEarn.validUpTo,
+                })}
+              </Text>
+            </View>
           </View>
         </View>
         <View style={styles.howWorklinkMainContainer}>
@@ -206,15 +324,18 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
         <Text style={styles.initialHC}>
           {referShareAmount && referShareAmount} {string.referAndEarn.hc}
         </Text>
-        <Text style={styles.initialHCexpiration}>{string.referAndEarn.ExpireON} 20 Aug 2021</Text>
+        <Text style={styles.initialHCexpiration}>
+          {string.referAndEarn.ExpireON} {refreeReward.expirationData}
+        </Text>
         <View style={styles.initialHCreedemContainer}>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('MEDICINES')}>
             <Text style={styles.initialHCreedemContainerText}>{string.referAndEarn.reedemNow}</Text>
           </TouchableOpacity>
         </View>
       </View>
     );
   };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={theme.colors.SHERPA_BLUE} />
@@ -231,6 +352,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
           }}
         />
         <ScrollView>
+          {refreeReward.showHCSection && renderInitialHC()}
           {renderReferShare()}
           {renderHowItWork()}
           {renderCheckRewardsContainer()}
@@ -280,7 +402,10 @@ const styles = StyleSheet.create({
     elevation: 15,
   },
   referSharetextContainer: {
-    width: '65%',
+    width: '50%',
+  },
+  referSharetextMainContainer: {
+    flexDirection: 'row',
   },
   referSharetext: {
     fontSize: 28,
@@ -398,6 +523,12 @@ const styles = StyleSheet.create({
   howWorklistText: {
     color: theme.colors.LIGHT_BLUE,
     fontSize: 15,
+    fontWeight: '600',
+  },
+  howWorklistTextSpecialNote: {
+    color: theme.colors.LIGHT_BLUE,
+    fontSize: 12,
+    marginTop: 5,
   },
   howWorklinkBtn: {
     flexDirection: 'row',
