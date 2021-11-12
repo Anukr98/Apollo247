@@ -267,6 +267,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     const promoteCircle = pricesForItem?.promoteCircle;
     const circleDiscountSaving = pricesForItem?.circleDiscountDiffPrice;
     const specialDiscountSaving = pricesForItem?.specialDiscountDiffPrice;
+    const nonCircleDiscountSaving = pricesForItem?.discountDiffPrice;
 
     return (
       <View>
@@ -288,14 +289,13 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
               styles.savingTextStyle
             )}
           </View>
-        ) : circleDiscountSaving > 0 ? (
+        ) : nonCircleDiscountSaving > 0 ? (
           <View style={styles.flexRow}>
-            <CircleHeading isSubscribed={false} />
             {renderSavingView(
-              '',
-              circleSpecialPrice,
-              { marginHorizontal: isSmallDevice ? '1%' : '2%', alignSelf: 'center' },
-              [styles.nonCirclePriceText]
+              'save',
+              nonCircleDiscountSaving,
+              { marginHorizontal: '7%' },
+              styles.savingTextStyle
             )}
           </View>
         ) : null}

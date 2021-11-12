@@ -22,8 +22,6 @@ import {
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   getPricesForItem,
 } from '@aph/mobile-patients/src/utils/commonUtils';
-import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
-import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -153,7 +151,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
                 )}
               </View>
             </View>
-            <View style={{ minHeight: isSmallDevice ? 40 : 35 }}>
+            <View style={{ minHeight: 40 }}>
               <Text style={styles.itemNameText} numberOfLines={2}>
                 {name}
               </Text>
@@ -188,21 +186,14 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     return (
       <>
         {!!discount && discount > 0 ? (
-          <View
-            style={[
-              styles.percentageDiscountView,
-              {
-                marginHorizontal: isOnlyCircle ? 12 : 4,
-              },
-            ]}
-          >
+          <View style={styles.percentageDiscountView}>
             {discountPrice > 0 && (
               <Text style={styles.percentageDiscountText}>
                 {Number(discountPrice).toFixed(0)}% off {isOnlyCircle && '+ '}
               </Text>
             )}
             {isOnlyCircle && (
-              <View style={{ flexDirection: 'row' }}>
+              <View style={styles.percentageDiscountView}>
                 <CircleLogo style={styles.circleLogoIcon} />
                 <Text style={styles.percentageDiscountText}>
                   {Number(discount).toFixed(0)}% off
@@ -232,12 +223,12 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     const promoteCircle = pricesForItem?.promoteCircle;
     const circleDiscountSaving = pricesForItem?.circleDiscountDiffPrice;
     const specialDiscountSaving = pricesForItem?.specialDiscountDiffPrice;
+    const nonCircleDiscountSaving = pricesForItem?.discountDiffPrice;
 
     return (
       <View>
         {isCircleSubscribed && circleDiscountSaving > 0 && !promoteDiscount ? (
           <View style={styles.flexRow}>
-            {/* <CircleLogo style={styles.circleLogoIcon} /> */}
             {renderSavingView(
               'savings',
               circleDiscountSaving,
@@ -247,7 +238,6 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
           </View>
         ) : promoteDiscount && specialDiscountSaving > 0 && !promoteCircle ? (
           <View style={styles.flexRow}>
-            {/* <SpecialDiscountText isImage={true} text={string.diagnostics.test247Text} /> */}
             {renderSavingView(
               'savings',
               specialDiscountSaving,
@@ -255,14 +245,13 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
               styles.savingTextStyle
             )}
           </View>
-        ) : circleDiscountSaving > 0 ? (
+        ) : nonCircleDiscountSaving > 0 ? (
           <View style={styles.flexRow}>
-            <CircleHeading isSubscribed={false} />
             {renderSavingView(
-              '',
-              circleSpecialPrice,
-              { marginHorizontal: isSmallDevice ? '1.5%' : '2.5%', alignSelf: 'center' },
-              [styles.nonCirclePriceText]
+              'save',
+              nonCircleDiscountSaving,
+              { marginHorizontal: '7%' },
+              styles.savingTextStyle
             )}
           </View>
         ) : null}
@@ -331,9 +320,20 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
         : slashedPrice;
 
     return (
-      <>
-        {/** packageCalMrp/mrp + percentage dicount (main price discount + circle discount separately) */}
-        <View style={styles.priceView}>
+      <View style={{ height: 40 }}>
+        {/**pe rcentage dicount (main price discount + circle discount separately) */}
+        {renderPercentageDiscount(
+          promoteCircle && isCircleSubscribed
+            ? circleDiscount
+            : promoteDiscount
+            ? specialDiscount
+            : discount,
+          promoteCircle && isCircleSubscribed ? true : false,
+          promoteDiscount && specialDiscount > 0 ? specialDiscount : 0,
+          discount > 0 ? discount : 0
+        )}
+        {/** packageCalMrp/mrp*/}
+        <View>
           {hasSlashedPrice ? (
             <View style={styles.slashedPriceView}>
               <Text style={styles.slashedPriceText}>
@@ -343,20 +343,17 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
                 </Text>
               </Text>
             </View>
-          ) : null}
-          {renderPercentageDiscount(
-            promoteCircle && isCircleSubscribed
-              ? circleDiscount
-              : promoteDiscount
-              ? specialDiscount
-              : discount,
-            promoteCircle && isCircleSubscribed ? true : false,
-            promoteDiscount && specialDiscount > 0 ? specialDiscount : 0,
-            discount > 0 ? discount : 0
+          ) : (
+            <View style={{ height: 38 }} />
           )}
         </View>
         {/** effective price + total savings */}
-        <View style={{ flexDirection: 'row', marginVertical: hasSlashedPrice ? '1%' : '0%' }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            marginVertical: hasSlashedPrice ? '1%' : '0%',
+          }}
+        >
           {priceToShow ? (
             <Text style={styles.mainPriceText}>
               {`${string.common.Rs}${convertNumberToDecimal(priceToShow)}`}
@@ -368,7 +365,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
             ? renderAnyDiscountView(pricesForItem, packageMrpForItem)
             : null}
         </View>
-      </>
+      </View>
     );
   };
 
@@ -644,8 +641,8 @@ const styles = StyleSheet.create({
   itemCardView: {
     ...theme.viewStyles.card(12, 0),
     elevation: 10,
-    maxHeight: CARD_HEIGHT + 15,
-    minHeight: CARD_HEIGHT + 15,
+    maxHeight: CARD_HEIGHT,
+    minHeight: CARD_HEIGHT,
     width: CARD_WIDTH,
     marginHorizontal: 4,
     marginRight: 10,
@@ -717,8 +714,7 @@ const styles = StyleSheet.create({
     elevation: 0,
   },
   percentageDiscountView: {
-    width: 50,
-    justifyContent: 'center',
+    flexDirection: 'row',
     alignItems: 'center',
   },
   percentageDiscountText: {
@@ -731,7 +727,6 @@ const styles = StyleSheet.create({
     height: 45,
   },
   slashedPriceView: {
-    maxWidth: '65%',
     alignItems: 'flex-start',
     justifyContent: 'center',
   },

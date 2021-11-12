@@ -530,8 +530,11 @@ export const createPatientObjLineItems = (patientCartItems: DiagnosticPatientCar
 }
 
   //take care for the modified order & cicle added to cart case
-export const createDiagnosticValidateCouponLineItems = (selectedItem: any, isCircle: boolean) =>{
-  var pricesForItemArray = selectedItem?.map((item: any, index: number) => ({
+export const createDiagnosticValidateCouponLineItems = (selectedItem: any, isCircle: boolean, discountedItems: any) =>{
+  var pricesForItemArray = selectedItem?.map((item: any, index: number) => {
+    const getIsMrpValue = discountedItems?.find((val: any)=> Number(val?.testId) == Number(item?.id))
+
+    ({
     testId: Number(item?.id),
     categoryId: '',
     mrp: Number(item?.price), //will always be price, irrespective of any plan
@@ -543,7 +546,7 @@ export const createDiagnosticValidateCouponLineItems = (selectedItem: any, isCir
         : Number(item?.specialPrice) || Number(item?.price), // discounted price for any plan
     quantity: item?.mou,
     type: item?.inclusions?.length > 1 ? 'package' : 'test',
-  }));
+  })});
   return {
     pricesForItemArray,
   };

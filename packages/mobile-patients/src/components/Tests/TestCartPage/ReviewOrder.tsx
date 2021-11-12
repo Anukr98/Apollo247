@@ -1930,6 +1930,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         subscriptionInclusionId: null,
         userSubscriptionId: circleSubscriptionId != '' ? circleSubscriptionId : localCircleSubId,
       };
+      if (!!coupon) {
+        bookingOrderInfo.couponCode = coupon?.coupon;
+      }
       console.log({ bookingOrderInfo });
       diagnosticSaveBookHcCollectionV2(client, bookingOrderInfo)
         .then(async ({ data }) => {

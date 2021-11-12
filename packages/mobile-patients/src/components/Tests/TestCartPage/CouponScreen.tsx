@@ -167,6 +167,7 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
     coupon: string,
     cartItemsWithQuan: DiagnosticsCartItem[], //with quantity
     applyingFromList?: boolean,
+    discountedItems?: any,
     setSubscription?: boolean //used to set the circle sub to false, so that circle benefits are not applied against it
   ) => {
     CommonLogEvent(AppRoutes.CouponScreen, 'Select coupon');
@@ -182,7 +183,8 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
         ? false
         : isDiagnosticCircleSubscription
         ? true
-        : isCircleAddedToCart
+        : isCircleAddedToCart,
+      discountedItems
     );
     console.log({ createLineItemsForPayload });
     console.log({ toPayPrice });
@@ -204,20 +206,30 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
     validateConsultCoupon(data)
       .then((resp: any) => {
         console.log('getting response from validate coupon');
-        console.log({ resp });
         if (resp?.data?.errorCode == 0) {
           if (resp?.data?.response?.valid) {
             const responseData = resp?.data?.response;
             const getCircleBenefits = responseData?.circleBenefits;
+            const hasOnMrpTrue = responseData?.diagnostics?.filter((item: any) => item?.onMrp);
+            console.log({ responseData });
+            console.log({ hasOnMrpTrue });
             /**
              * case for if user is claiming circle benefits, but coupon => circleBenefits as false
              */
             if (
-              (isDiagnosticCircleSubscription || isCircleAddedToCart) &&
-              !responseData?.circleBenefits &&
-              setSubscription == undefined
+              ((isDiagnosticCircleSubscription || isCircleAddedToCart) &&
+                !responseData?.circleBenefits &&
+                setSubscription == undefined) ||
+              hasOnMrpTrue?.length > 0
             ) {
-              validateAppliedCoupon(coupon, cartItemsWithQuan, applyingFromList, false);
+              console.log('recall the appi');
+              validateAppliedCoupon(
+                coupon,
+                cartItemsWithQuan,
+                applyingFromList,
+                responseData?.diagnostics,
+                false
+              );
             } else {
               const successMessage = responseData?.successMessage || '';
               setCoupon?.({
