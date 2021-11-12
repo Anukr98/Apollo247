@@ -44,6 +44,7 @@ export interface reviewCartPage_reviewCartPage_data_prescriptionDetails {
   prismPrescriptionFileId: string | null;
   uhid: string | null;
   appointmentId: string | null;
+  meta: any | null;
 }
 
 export interface reviewCartPage_reviewCartPage_data_subscriptionDetails {
