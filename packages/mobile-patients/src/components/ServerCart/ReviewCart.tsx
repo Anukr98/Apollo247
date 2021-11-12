@@ -63,6 +63,8 @@ import {
   OrderCreate,
   one_apollo_store_code,
   PaymentStatus,
+  MEDICINE_ORDER_TYPE,
+  MEDICINE_DELIVERY_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   isSDKInitialised,
@@ -70,15 +72,6 @@ import {
   createHyperServiceObject,
   initiateSDK,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
-import { useGetOrderInfo } from '@aph/mobile-patients/src/components/MedicineCart/Hooks/useGetOrderInfo';
-import {
-  saveMedicineOrderV2,
-  saveMedicineOrderV2Variables,
-} from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderV2';
-import {
-  createOrderInternal,
-  createOrderInternalVariables,
-} from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
 import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
 import { WhatsAppStatus } from '@aph/mobile-patients/src/components/ui/WhatsAppStatus';
 import { CartTotalSection } from '@aph/mobile-patients/src/components/ServerCart/Components/CartTotalSection';
@@ -91,62 +84,28 @@ export interface ReviewCartProps extends NavigationScreenProps {}
 
 export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
   const {
-    cartItems,
     addresses,
     deliveryAddressId,
     uploadPrescriptionRequired,
     prescriptionType,
-    physicalPrescriptions,
-    setCartItems,
-    setPhysicalPrescriptions,
     deliveryTime,
-    setdeliveryTime,
-    pharmacyCircleAttributes,
-    orders,
-    circleSubscriptionId,
-    isCircleSubscription,
-    setOrders,
-    coupon,
-    setCoupon,
-    cartTotal,
-    hdfcSubscriptionId,
-    productDiscount,
     pinCode,
-    setCouponProducts,
-    grandTotal,
-    circleMembershipCharges,
-    circlePlanSelected,
-    cartPriceNotUpdateRange,
 
     serverCartItems,
     noOfShipments,
   } = useShoppingCart();
-  const {
-    pharmacyUserTypeAttribute,
-    pharmacyLocation,
-    locationDetails,
-    setauthToken,
-    activeUserSubscriptions,
-  } = useAppCommonData();
+  const { setauthToken } = useAppCommonData();
   const { showAphAlert, hideAphAlert } = useUIElements();
-  const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
-  const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>(false);
-  const [lastCartItems, setlastCartItems] = useState(
-    cartItems.map(({ id, quantity }) => id + quantity).toString() + deliveryAddressId
-  );
   const [appState, setappState] = useState<string>('');
   const shoppingCart = useShoppingCart();
-  const pharmacyPincode =
-    selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
-  const { OrderInfo, SubscriptionInfo } = useGetOrderInfo();
   const { cusId, isfetchingId } = useGetJuspayId();
   const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
 
-  const { fetchReviewCart } = useServerCart();
+  const { fetchReviewCart, saveMedicineOrderV3 } = useServerCart();
 
   useEffect(() => {
     hasUnserviceableproduct();
@@ -156,10 +115,6 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
       AppState.removeEventListener('change', handleAppStateChange);
     };
   }, []);
-
-  useEffect(() => {
-    onFinishUpload();
-  }, [isPhysicalUploadComplete]);
 
   const handleAppStateChange = (nextAppState: AppStateStatus) => {
     setappState(nextAppState);
@@ -181,305 +136,82 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
     }
   };
 
-  const saveOrder = () =>
-    client.mutate<saveMedicineOrderV2, saveMedicineOrderV2Variables>({
-      mutation: SAVE_MEDICINE_ORDER_OMS_V2,
-      variables: OrderInfo,
-    });
-
-  const saveOrderWithSubscription = () => {
-    const orderSubscriptionInput = {
-      ...OrderInfo,
-      ...SubscriptionInfo,
-    };
-    return client.mutate({
-      mutation: SAVE_ORDER_WITH_SUBSCRIPTION,
-      variables: orderSubscriptionInput,
-      fetchPolicy: 'no-cache',
-    });
-  };
-
-  const createOrderInternal = (shipments: any, subscriptionId?: string) => {
-    const pharmaOrders = shipments.map((item: any) => {
-      return {
-        order_id: JSON.stringify(item?.orderAutoId),
-        amount: item?.estimatedAmount,
-        patient_id: currentPatient?.id,
-      };
-    });
-    const orders: OrderVerticals = { pharma: pharmaOrders };
-    if (subscriptionId) {
-      orders['subscription'] = [
-        {
-          order_id: subscriptionId,
-          amount: Number(circlePlanSelected?.currentSellingPrice),
-          patient_id: currentPatient?.id,
-        },
-      ];
-    }
-    const orderInput: OrderCreate = {
-      orders: orders,
-      total_amount: grandTotal,
-    };
-    return client.mutate<createOrderInternal, createOrderInternalVariables>({
-      mutation: CREATE_INTERNAL_ORDER,
-      variables: { order: orderInput },
-    });
-  };
-
   function hasUnserviceableproduct() {
     const unserviceableItems = serverCartItems.filter((item) => !item?.isShippable) || [];
     unserviceableItems?.length && props.navigation.goBack();
   }
 
-  const genericServiceableDate = moment()
-    .add(2, 'days')
-    .set('hours', 20)
-    .set('minutes', 0)
-    .format(AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT);
-
-  function handleTatApiFailure(
-    selectedAddress: savePatientAddress_savePatientAddress_patientAddress,
-    error: any
-  ) {
-    addressSelectedEvent(selectedAddress, genericServiceableDate);
-    setdeliveryTime?.(genericServiceableDate);
-    postTatResponseFailureEvent(cartItems, selectedAddress.zipcode || '', error);
-    setloading(false);
-  }
-
-  function addressSelectedEvent(
-    address: savePatientAddress_savePatientAddress_patientAddress,
-    tatDate: string,
-    orderInfo?: MedicineOrderShipmentInput[]
-  ) {
-    const orderSelected = !!orderInfo ? orderInfo : orders;
-    let splitOrderDetails: any = {};
-    if (orderSelected?.length > 1) {
-      orderSelected?.forEach((order: any, index: number) => {
-        const momentTatDate = moment(order?.tat);
-        splitOrderDetails['Shipment' + (index + 1) + ' TAT'] = Math.ceil(
-          momentTatDate.diff(currentDate, 'h') / 24
-        );
-        splitOrderDetails['Shipment' + (index + 1) + ' value'] =
-          getShipmentPrice(order?.items, cartItems) +
-          (order?.deliveryCharge || 0) +
-          (order?.packingCharges || 0);
-        splitOrderDetails['Shipment' + (index + 1) + ' items'] = order?.items?.length;
-        splitOrderDetails['Shipment' + (index + 1) + ' site type'] = order?.storeType;
-      });
-    }
-    const currentDate = moment()
-      .hour(0)
-      .minute(0)
-      .second(0);
-    const momentTatDate = moment(tatDate)
-      .hour(0)
-      .minute(0)
-      .second(0);
-    postPhamracyCartAddressSelectedSuccess(
-      address?.zipcode!,
-      formatAddress(address),
-      'Yes',
-      new Date(tatDate),
-      Math.ceil(momentTatDate.diff(currentDate, 'h') / 24),
-      pharmacyCircleAttributes!,
-      moment(tatDate).diff(moment(), 'h'),
-      pharmacyUserTypeAttribute!,
-      JSON.stringify(cartItems),
-      orderSelected?.length > 1,
-      splitOrderDetails
-    );
-  }
-
-  function updatePricesAfterTat(
-    inventoryData: GetTatResponse247['response']['items'],
-    updatedCartItems: ShoppingCartItem[]
-  ) {
-    const updatePrices = AppConfig.Configuration.CART_UPDATE_PRICE_CONFIG.updatePrices;
-    const updatePricePercent = AppConfig.Configuration.CART_UPDATE_PRICE_CONFIG.percentage;
-    const updatePricesNotAllowed = updatePrices === 'No';
-    if (updatePricesNotAllowed) {
-      return;
-    }
-
-    const cartItemsAfterPriceUpdate: ShoppingCartItem[] = [];
-    updatedCartItems.forEach((item) => {
-      const cartItem = { ...item };
-      const storeItem = inventoryData?.find((cartItem) => cartItem?.sku == item?.id);
-      if (storeItem) {
-        const storePrice = Number(cartItem?.mou) * storeItem?.mrp;
-        const allowPriceUpdate =
-          cartItem?.price !== storePrice
-            ? updatePrices === 'ByPercentage'
-              ? isCartPriceWithInSpecifiedRange(
-                  cartItem?.price,
-                  storePrice,
-                  updatePricePercent,
-                  cartPriceNotUpdateRange
-                )
-              : true
-            : false;
-        if (storeItem?.mrp != 0 && allowPriceUpdate) {
-          if (cartItem?.specialPrice) {
-            cartItem['specialPrice'] =
-              Number(cartItem?.mou) * storeItem?.mrp * (cartItem?.specialPrice / cartItem?.price);
-          }
-          cartItem['price'] = Number(cartItem?.mou) * storeItem?.mrp;
-        }
-      }
-      cartItemsAfterPriceUpdate.push(cartItem);
-    });
-    setCartItems!(cartItemsAfterPriceUpdate);
-  }
-
-  const onFinishUpload = () => {
-    if (isPhysicalUploadComplete) {
-      setloading!(false);
-      setisPhysicalUploadComplete(false);
-      onPressProceedtoPay();
-    }
-  };
-
-  const multiplePhysicalPrescriptionUpload = (prescriptions = physicalPrescriptions) => {
-    return Promise.all(
-      prescriptions.map((item) =>
-        client.mutate<uploadDocument>({
-          mutation: UPLOAD_DOCUMENT,
-          fetchPolicy: 'no-cache',
-          variables: {
-            UploadDocumentInput: {
-              base64FileInput: item.base64,
-              category: 'HealthChecks',
-              fileType: item.fileType == 'jpg' ? 'JPEG' : item.fileType.toUpperCase(),
-              patientId: currentPatient && currentPatient!.id,
-            },
-          },
-        })
-      )
-    );
-  };
-
-  async function uploadPhysicalPrescriptons() {
-    const prescriptions = physicalPrescriptions;
-    const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
-    if (unUploadedPres.length > 0) {
-      try {
-        setloading!(true);
-        const data = await multiplePhysicalPrescriptionUpload(unUploadedPres);
-        const uploadUrls = data.map((item) =>
-          item.data!.uploadDocument.status
-            ? {
-                fileId: item.data!.uploadDocument.fileId!,
-                url: item.data!.uploadDocument.filePath!,
-              }
-            : null
-        );
-        const newuploadedPrescriptions = unUploadedPres.map(
-          (item, index) =>
-            ({
-              ...item,
-              uploadedUrl: uploadUrls![index]!.url,
-              prismPrescriptionFileId: uploadUrls![index]!.fileId,
-            } as PhysicalPrescription)
-        );
-        setPhysicalPrescriptions && setPhysicalPrescriptions([...newuploadedPrescriptions]);
-        setisPhysicalUploadComplete(true);
-      } catch (error) {
-        CommonBugFender('CartSummary_physicalPrescriptionUpload', error);
-        setloading!(false);
-        renderAlert('Error occurred while uploading prescriptions.');
-      }
-    } else {
-      onPressProceedtoPay();
-    }
-  }
-
-  const removeCouponWithAlert = (message: string) => {
-    setCoupon!(null);
-    renderAlert(message);
-  };
-
   async function onPressProceedtoPay() {
     setloading(true);
-    let splitOrderDetails: any = {};
-    if (orders?.length > 1) {
-      orders?.forEach((order: any, index: number) => {
-        splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
-          getShipmentPrice(order?.items, cartItems) +
-          (order?.deliveryCharge || 0) +
-          (order?.packingCharges || 0);
-        splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
-      });
-    }
-    postwebEngageProceedToPayEvent(
-      shoppingCart,
-      false,
-      deliveryTime,
-      pharmacyCircleAttributes!,
-      pharmacyUserTypeAttribute!,
-      JSON.stringify(cartItems),
-      orders?.length > 1,
-      splitOrderDetails
-    );
+    // let splitOrderDetails: any = {};
+    // if (orders?.length > 1) {
+    //   orders?.forEach((order: any, index: number) => {
+    //     splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
+    //       getShipmentPrice(order?.items, cartItems) +
+    //       (order?.deliveryCharge || 0) +
+    //       (order?.packingCharges || 0);
+    //     splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
+    //   });
+    // }
+    // postwebEngageProceedToPayEvent(
+    //   shoppingCart,
+    //   false,
+    //   deliveryTime,
+    //   pharmacyCircleAttributes!,
+    //   pharmacyUserTypeAttribute!,
+    //   JSON.stringify(cartItems),
+    //   orders?.length > 1,
+    //   splitOrderDetails
+    // );
     initiateOrder();
   }
 
   const initiateOrder = async () => {
     try {
-      const response =
-        !circleSubscriptionId && circleMembershipCharges
-          ? await saveOrderWithSubscription()
-          : await saveOrder();
-      const { orders, transactionId, errorCode, isCodEligible, errorMessage, codMessage } =
-        response?.data?.saveMedicineOrderV2 || {};
-      if (errorCode == 400 && errorMessage) {
-        setloading(false);
-        renderAlert(errorMessage);
-        return;
-      }
-      const subscriptionId = response?.data?.CreateUserSubscription?.response?._id;
-      const data = await createOrderInternal(orders, subscriptionId);
-      if (data?.data?.createOrderInternal?.success) {
-        const paymentId = data?.data?.createOrderInternal?.payment_order_id!;
-        props.navigation.navigate(AppRoutes.PaymentMethods, {
-          paymentId: paymentId,
-          amount: grandTotal,
-          orderDetails: getOrderDetails(orders, transactionId),
-          businessLine: 'pharma',
-          customerId: cusId,
-          checkoutEventAttributes: getCheckoutCompletedEventAttributes(
-            shoppingCart,
-            paymentId,
-            pharmacyUserTypeAttribute
-          ),
-          cleverTapCheckoutEventAttributes: getCleverTapCheckoutCompletedEventAttributes(
-            shoppingCart,
-            paymentId,
-            pharmacyUserTypeAttribute,
-            orders
-          ),
-          disableCOD: !isCodEligible,
-          paymentCodMessage: codMessage,
-        });
-      }
+      const response = saveMedicineOrderV3(
+        MEDICINE_ORDER_TYPE.CART_ORDER,
+        MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
+        '',
+        false
+      );
+      // const { orders, transactionId, errorCode, isCodEligible, errorMessage, codMessage } =
+      //   response?.data?.saveMedicineOrderV2 || {};
+      // if (errorCode == 400 && errorMessage) {
+      //   setloading(false);
+      //   renderAlert(errorMessage);
+      //   return;
+      // }
+      // const subscriptionId = response?.data?.CreateUserSubscription?.response?._id;
+      // const data = {}; // await createOrderInternal(orders, subscriptionId);
+      // if (data?.data?.createOrderInternal?.success) {
+      //   const paymentId = data?.data?.createOrderInternal?.payment_order_id!;
+      //   props.navigation.navigate(AppRoutes.PaymentMethods, {
+      //     paymentId: paymentId,
+      //     amount: grandTotal,
+      //     orderDetails: getOrderDetails(orders, transactionId),
+      //     businessLine: 'pharma',
+      //     customerId: cusId,
+      //     checkoutEventAttributes: getCheckoutCompletedEventAttributes(
+      //       shoppingCart,
+      //       paymentId,
+      //       pharmacyUserTypeAttribute
+      //     ),
+      //     cleverTapCheckoutEventAttributes: getCleverTapCheckoutCompletedEventAttributes(
+      //       shoppingCart,
+      //       paymentId,
+      //       pharmacyUserTypeAttribute,
+      //       orders
+      //     ),
+      //     disableCOD: !isCodEligible,
+      //     paymentCodMessage: codMessage,
+      //   });
+      // }
       setloading(false);
       setauthToken?.('');
     } catch (error) {
       setloading(false);
       renderAlert('Something went wrong. Please try again after some time');
     }
-  };
-
-  const getOrderDetails = (orders: any, transactionId: string) => {
-    const orderDetails = {
-      displayId: transactionId,
-      orders: orders,
-      orderInfo: OrderInfo,
-      deliveryTime: deliveryTime,
-      isStorePickup: false,
-    };
-    return orderDetails;
   };
 
   const renderAlert = (message: string) => {
@@ -543,25 +275,12 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
   };
 
   const renderButton = () => {
-    return uploadPrescriptionRequired && !prescriptionType ? (
-      <View style={styles.buttonContainer}>
-        <Button
-          disabled={false}
-          title={'UPLOAD PRESCRIPTION'}
-          onPress={() => {
-            uploadPrescriptionClickedEvent(currentPatient?.id);
-            props.navigation.navigate(AppRoutes.MedicineCartPrescription);
-          }}
-          titleTextStyle={{ fontSize: 13, lineHeight: 24, marginVertical: 8 }}
-          style={{ borderRadius: 10 }}
-        />
-      </View>
-    ) : (
+    return (
       <ServerCartTatBottomContainer
         screen={'summary'}
         navigation={props.navigation}
         onPressProceedtoPay={() => {
-          physicalPrescriptions?.length > 0 ? uploadPhysicalPrescriptons() : onPressProceedtoPay();
+          onPressProceedtoPay();
         }}
       />
     );
@@ -587,7 +306,6 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
         <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
           {renderAddress()}
           {renderAmountSection()}
-          {/* todo: prescription */}
           {uploadPrescriptionRequired &&
             prescriptionType !== PrescriptionType.UPLOADED &&
             renderPrescriptions()}

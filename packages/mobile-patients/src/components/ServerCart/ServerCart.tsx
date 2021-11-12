@@ -133,6 +133,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     cartSubscriptionDetails,
     setCartCoupon,
     isCartPrescriptionRequired,
+    cartPrescriptions,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { fetchServerCart, setUserActionPayload, fetchAddress } = useServerCart();
@@ -248,6 +249,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
   };
 
   const renderProceedBar = () => {
+    console.log('cartPrescriptions >>>>> ', cartPrescriptions);
     return (
       <ServerCartTatBottomContainer
         showAddressPopup={showAddressPopup}

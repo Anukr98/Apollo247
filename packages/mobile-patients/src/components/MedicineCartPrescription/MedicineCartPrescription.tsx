@@ -118,8 +118,9 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
           setUserActionPayload?.({
             prescriptionDetails: {
               prescriptionImageUrl: prescription?.uploadedUrl,
-              prismPrescriptionFileId: 'prescription?.prismPrescriptionFileId',
+              prismPrescriptionFileId: prescription?.prismPrescriptionFileId,
               uhid: currentPatient?.uhid,
+              appointmentId: prescription?.appointmentId,
             },
           });
         }
