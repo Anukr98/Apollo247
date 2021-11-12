@@ -436,6 +436,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           code: data,
           sku: products[data].sku,
           available: products[data].is_in_stock,
+          unitOfMeasurement: products[data].unit_of_measurement || '',
         };
       });
       setMultiVariantSkuInformation(skusInformation);
