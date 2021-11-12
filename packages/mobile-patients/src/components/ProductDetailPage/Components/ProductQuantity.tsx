@@ -6,6 +6,7 @@ import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMen
 import { DropdownBlueDown } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Substitutes } from '@aph/mobile-patients/src/components/Medicines/Components/Substitutes';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 export interface ProductQuantityProps {
   maxOrderQuantity: number;
@@ -48,6 +49,8 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
     isPharma,
     setShowSubstituteInfo,
   } = props;
+
+  const { productSubstitutes } = useShoppingCart();
 
   const renderQuantity = () => {
     let maxQuantity: number = getMaxQtyForMedicineItem(maxOrderQuantity);
@@ -115,15 +118,17 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
         {isSellOnline && renderQuantity()}
         {isSellOnline && !!packSize && !!productForm && !!packForm && renderPackSize()}
       </View>
-      <Substitutes
-        sku={sku}
-        name={name}
-        onPressAddToCart={onAddCartItem}
-        isProductInStock={isInStock}
-        isAlternative={!isPharma}
-        navigation={props.navigation}
-        setShowSubstituteInfo={setShowSubstituteInfo}
-      />
+      {!!productSubstitutes && productSubstitutes?.length > 0 && (
+        <Substitutes
+          sku={sku}
+          name={name}
+          onPressAddToCart={onAddCartItem}
+          isProductInStock={isInStock}
+          isAlternative={!isPharma}
+          navigation={props.navigation}
+          setShowSubstituteInfo={setShowSubstituteInfo}
+        />
+      )}
       {isSellOnline && !isBanned && renderCartCTA()}
     </View>
   );

@@ -14,6 +14,7 @@ import {
 } from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
 import { PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import {
@@ -148,10 +149,13 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
     const name = consultProfile?.firstName || currentPatient?.firstName;
     const title = isPrescriptionLater
       ? 'Share Prescription Later Selected'
-      : `Doctor Consult Option Selected for ${name}`;
+      : AppConfig.Configuration.FREE_CONSULT_MESSAGE.reviewOrderHeader.replace(
+          '{Patient Name}',
+          name
+        );
     const description = isPrescriptionLater
       ? 'You have to share prescription later for order to be verified successfully.'
-      : 'An Apollo doctor will call you soon as they are available!';
+      : AppConfig.Configuration.FREE_CONSULT_MESSAGE.reviewOrderMessage;
     const note = isPrescriptionLater
       ? 'Delivery TAT will be on hold till the prescription is submitted.'
       : 'Delivery TAT will be on hold till the consult is completed.';

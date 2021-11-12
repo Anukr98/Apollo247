@@ -14,8 +14,6 @@ import {
 export interface EarnedPointsProps extends NavigationScreenProps {}
 
 export const EarnedPoints: React.FC<EarnedPointsProps> = (props) => {
-  const [initialEarn, setInitialEarn] = useState<string>('100');
-
   const { navigation } = props;
 
   const renderYourGifterReward = () => {
@@ -30,7 +28,7 @@ export const EarnedPoints: React.FC<EarnedPointsProps> = (props) => {
         <View style={styles.earnPointotherTextContainer}>
           <Text style={styles.earnPointgiftedHeading}>{string.referAndEarn.yourFriendGiftYou}</Text>
           <Text style={styles.earnPointtotalGifted}>
-            {initialEarn} {string.referAndEarn.hc}
+            {string.referAndEarn.referrHC} {string.referAndEarn.hc}
           </Text>
           <TouchableOpacity
             style={styles.earnPointreedemBtn}

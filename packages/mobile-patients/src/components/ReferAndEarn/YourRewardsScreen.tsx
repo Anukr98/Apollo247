@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -18,48 +18,114 @@ import { g, replaceVariableInString } from '@aph/mobile-patients/src/helpers/hel
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { ReferCheckIcon, ReferRefreshIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { useApolloClient } from 'react-apollo-hooks';
+import { GET_HC_REFREE_RECORD } from '@aph/mobile-patients/src/graphql/profiles';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useReferralProgram } from '@aph/mobile-patients/src/components/ReferralProgramProvider';
+
+type PendingUserList = {
+  name: string;
+  registrationDate: string;
+};
+
+type ClaimedUserList = {
+  expiryDate: string;
+  rewardType: string;
+  name: string;
+  rewardValue: Number;
+  txnDate: string;
+};
+
+type RefreeInitialData = {
+  registrationDate: string | null;
+  name: string | null;
+  rewardValue: string | null;
+  rewardType: string | null;
+  expirationDate: string | null;
+};
 
 export interface YourRewardsScreenProps extends NavigationScreenProps {}
 
 export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
   const [selectedTab, selectTabBar] = useState(1);
-  const [totalReward, setTotalReward] = useState<number>(200.0);
-  const [userHC, setUserHC] = useState<number | string>('100');
-  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const [totalReward, setTotalReward] = useState<number>(0);
+  const [rewardType, setRewardType] = useState('');
+  const { currentPatient } = useAllCurrentPatients();
+  const [pendingRefreeList, setPendingRefreeList] = useState<PendingUserList[]>([]);
+  const [claimedRefreeList, setClaimedRefreeList] = useState<ClaimedUserList[]>([]);
+  const [initialRefreeData, setInitialRefreeData] = useState<RefreeInitialData>({
+    registrationDate: null,
+    name: null,
+    rewardValue: null,
+    rewardType: null,
+    expirationDate: null,
+  });
+  const client = useApolloClient();
+  const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const { referrerLink } = useReferralProgram();
 
   const { navigation } = props;
 
-  const shareLinkMethod = () => {
-    generateReferrerLink((referralLink) => {
-      const shareOptions = {
-        title: 'Referral Link',
-        url: referralLink,
-        message: 'Please install Apollo 247 using below link',
-        failOnCancel: false,
-        showAppsToView: true,
-      };
-      Share.open(shareOptions);
-    });
+  useEffect(() => {
+    getAllRefreeRecord();
+  }, []);
+
+  const onWhatsAppShare = () => {
+    const shareOptions = {
+      title: string.referAndEarn.referalLink,
+      url: referrerLink,
+      message: string.referAndEarn.shareLinkText,
+      failOnCancel: false,
+      showAppsToView: true,
+      social: Share.Social.WHATSAPP,
+    };
+    Share.shareSingle(shareOptions).catch((e) => console.log(e));
   };
 
-  const generateReferrerLink = (success: (data: any) => void) => {
-    appsFlyer.setAppInviteOneLinkID('775G');
-    appsFlyer.generateInviteLink(
-      {
-        channel: 'gmail',
-        campaign: '1',
-        customerID: g(currentPatient, 'id'),
-        sub2: 'AppReferral',
-        userParams: {
-          rewardId: '1',
-          linkToUse: 'ForReferrarInstall',
-        },
-      },
-      (link) => {
-        success(link);
-      },
-      (err) => {}
-    );
+  const getRequiredDateFormat = (date: string | null) => {
+    if (date != null) {
+      let d = new Date(date);
+      return `${d.getDate()} ${LocalStrings.monthsName[d.getMonth()]}, ${d.getFullYear()}`;
+    } else {
+      return '';
+    }
+  };
+  const getExpirationDate = (regisetrationDate: any) => {
+    let date = new Date(`${regisetrationDate}`);
+    date.setDate(date.getDate() + 30);
+    return getRequiredDateFormat(`${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`);
+  };
+
+  const getAllRefreeRecord = async () => {
+    try {
+      const response = await client.query({
+        query: GET_HC_REFREE_RECORD,
+        variables: { id: g(currentPatient, 'id') },
+        fetchPolicy: 'no-cache',
+      });
+      const { data } = response;
+      if (data?.getReferralRewardDetails) {
+        setPendingRefreeList(data?.getReferralRewardDetails?.pending);
+        setTotalReward(data?.getReferralRewardDetails?.totalRewardValue);
+        setRewardType(data?.getReferralRewardDetails?.rewardType);
+        setClaimedRefreeList(data?.getReferralRewardDetails?.claimed);
+
+        setInitialRefreeData({
+          name: data?.getReferralRewardDetails?.referee?.name,
+          registrationDate: data?.getReferralRewardDetails?.referee?.registrationDate,
+          rewardType: data?.getReferralRewardDetails?.referee?.rewardType,
+          rewardValue: data?.getReferralRewardDetails?.referee?.rewardValue,
+          expirationDate: getExpirationDate(
+            data?.getReferralRewardDetails?.referee?.registrationDate
+          ),
+        });
+        setshowSpinner(false);
+      }
+    } catch (error) {
+      CommonBugFender('ShareReferralLink_generatingCampaignId', error);
+    }
   };
   const ClaimedCard = () => {
     return (
@@ -68,21 +134,27 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
           <ReferCheckIcon />
         </View>
         <View>
-          <Text style={styles.healthCreditrefreeName}>{string.referAndEarn.claimed}</Text>
+          <View style={styles.healthCreditRightInnercontainer}>
+            <Text style={styles.healthCreditrefreeName}>{initialRefreeData.name}</Text>
+            <Text style={styles.healthCreditexporationText}>
+              {initialRefreeData.expirationDate}
+            </Text>
+          </View>
+
           <View style={styles.healthCreditflexRow}>
             <View style={styles.healthCreditclaimedRightContaier}>
               <Text style={styles.healthCreditsmallHeadingOne}>
                 {string.referAndEarn.youEarnedRefreePoints}
               </Text>
               <Text style={styles.healthCreditsmallHeadingTwo}>
-                {string.referAndEarn.dummyRewardData.selfClaimed.firstTimeLogin}
+                {getRequiredDateFormat(initialRefreeData.registrationDate)}
                 {string.referAndEarn.firstTimeLogin}
               </Text>
             </View>
             <View style={styles.healthCredittotalHC}>
               <Text style={styles.healthCreditHC}>
-                {string.referAndEarn.dummyRewardData.selfClaimed.rewardPoints}
-                {string.referAndEarn.dummyRewardData.currencytype}
+                {initialRefreeData.rewardValue}
+                {initialRefreeData.rewardType}
               </Text>
             </View>
           </View>
@@ -91,7 +163,7 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
     );
   };
 
-  const ClaimedCardWithExpirationSet = (item: any) => {
+  const renderClaimedCardWithExpirationSet = (item: ClaimedUserList) => {
     return (
       <View style={styles.healthCreditcontainer}>
         <View style={styles.healthCreditLeftcontainer}>
@@ -100,16 +172,20 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
         <View>
           <View style={styles.healthCreditRightInnercontainer}>
             <Text style={styles.healthCreditrefreeName}>{item.name}</Text>
-            <Text style={styles.healthCreditexporationText}>{item.expiryDate}</Text>
+            <Text style={styles.healthCreditexporationText}>
+              {getRequiredDateFormat(item.expiryDate)}
+            </Text>
           </View>
           <View style={styles.healthCreditflexRow}>
             <View style={styles.healthCreditclaimedRightContaier}>
-              <Text style={styles.healthCreditsmallHeadingOne}>{item.firstTxnDate}</Text>
+              <Text style={styles.healthCreditsmallHeadingOne}>
+                {getRequiredDateFormat(item.txnDate)}
+              </Text>
             </View>
             <View style={styles.healthCredittotalHC}>
               <Text style={styles.healthCreditHC}>
-                {item.rewardPoints}
-                {string.referAndEarn.dummyRewardData.currencytype}
+                {item.rewardValue}
+                {item.rewardType}
               </Text>
             </View>
           </View>
@@ -130,7 +206,7 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
             <View style={{}}>
               <Text style={styles.healthCreditsmallHeadingOne}>
                 {replaceVariableInString(string.referAndEarn.signedUp, {
-                  signedUpDate: item.firstTxnDate,
+                  signedUpDate: getRequiredDateFormat(item.registrationDate),
                 })}
                 {string.referAndEarn.purchaseIsPending}
               </Text>
@@ -149,7 +225,7 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
           <Text style={styles.NoReferralsubHeading}>{string.referAndEarn.youHaveNotInvited}t</Text>
           <TouchableOpacity
             onPress={() => {
-              navigation.navigate('EarnedPoints');
+              onWhatsAppShare();
             }}
             style={styles.NoReferralreferBtn}
           >
@@ -167,21 +243,26 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
           flex: 1,
         }}
       >
-        <ClaimedCard />
-        <FlatList
-          data={string.referAndEarn.dummyRewardData.claimed}
-          renderItem={({ item }) => ClaimedCardWithExpirationSet(item)}
-        />
+        {initialRefreeData.name != null && <ClaimedCard />}
+
+        {claimedRefreeList.length > 0 && (
+          <FlatList
+            data={claimedRefreeList}
+            renderItem={({ item }) => renderClaimedCardWithExpirationSet(item)}
+          />
+        )}
+
+        {claimedRefreeList.length == 0 && initialRefreeData.name == null && noReferralReward()}
       </View>
     );
   };
   const renderPendingSection = () => {
     return (
-      <View>
-        <FlatList
-          data={string.referAndEarn.dummyRewardData.pending}
-          renderItem={({ item }) => renderPendingCards(item)}
-        />
+      <View style={styles.pendingSectionMain}>
+        {pendingRefreeList.length > 0 && (
+          <FlatList data={pendingRefreeList} renderItem={({ item }) => renderPendingCards(item)} />
+        )}
+        {pendingRefreeList.length == 0 && noReferralReward()}
       </View>
     );
   };
@@ -220,12 +301,17 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
         <View style={styles.totalHCtexContainer}>
           <Text style={styles.totalHCtotalHC}>
             {replaceVariableInString(string.referAndEarn.total, {
-              currencyType: string.referAndEarn.dummyRewardData.currencytype,
-              earnedPoints: string.referAndEarn.dummyRewardData.totalEarn.toString(),
+              currencyType: rewardType,
+              earnedPoints: totalReward.toString(),
             })}
           </Text>
           <View style={styles.totalHCrefresh}>
-            <TouchableOpacity onPress={() => {}}>
+            <TouchableOpacity
+              onPress={() => {
+                setshowSpinner(true);
+                getAllRefreeRecord();
+              }}
+            >
               <ReferRefreshIcon />
             </TouchableOpacity>
           </View>
@@ -248,10 +334,12 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
             fontSize: 18,
           }}
         />
+
         {renderTotalHCContainer()}
         <CustomTabBarHeader />
         {selectedTab === 1 ? renderClaimedSection() : renderPendingSection()}
       </SafeAreaView>
+      {showSpinner && <Spinner spinnerProps={{ size: 'large' }} />}
     </View>
   );
 };
@@ -312,7 +400,6 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     borderWidth: 2,
     borderColor: theme.colors.LIGHT_GRAY_2,
-    marginBottom: 5,
     borderRadius: 5,
     flexDirection: 'row',
   },
@@ -384,5 +471,8 @@ const styles = StyleSheet.create({
     color: theme.colors.EXPIRE_TEXT,
     fontSize: 13,
     fontWeight: '400',
+  },
+  pendingSectionMain: {
+    flex: 1,
   },
 });

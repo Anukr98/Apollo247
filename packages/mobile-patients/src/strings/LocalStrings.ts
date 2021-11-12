@@ -87,6 +87,10 @@ const asyncKeys = {
   voipDeviceToken: 'voipDeviceToken',
 };
 
+const months = {
+  monthsName: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+}
+
 export const LocalStrings = {
   ...common,
   ...login,
@@ -96,4 +100,5 @@ export const LocalStrings = {
   ...MyPayments,
   ...voip,
   ...asyncKeys,
+  ...months,
 };

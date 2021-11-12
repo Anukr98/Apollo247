@@ -467,9 +467,6 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
               onChangeText={(text) => {
                 setOthersText(text);
               }}
-              textInputprops={{
-                maxLength: 20,
-              }}
               inputStyle={[styles.otherInputStyle]}
               conatinerstyles={{ paddingBottom: 0 }}
               placeholder={'Please Specify'}

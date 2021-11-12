@@ -141,7 +141,9 @@ const Common = {
   EXPIRE_TEXT: '#FE5959',
   LIGHT_GREEN_ONE: '#E8EDF0',
   LIGHT_BLUE_TWO: '#DCF0FF',
-  BLUE_GRADIENT_ONE: '#1C9FC2'
+  BLUE_GRADIENT_ONE: '#1C9FC2',
+  BGK_GRAY : '#f9f9f9',
+  TEAL_BLUE: '#3F7281'
 };
 
 const Header = {

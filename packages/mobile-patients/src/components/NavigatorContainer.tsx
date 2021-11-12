@@ -152,7 +152,6 @@ import { AddVaccinationRecord } from '@aph/mobile-patients/src/components/Health
 import { CowinCertificateOTPScreen } from '@aph/mobile-patients/src/components/HealthRecords/CowinCertificateOTPScreen';
 import { CowinCertificateGetOTP } from '@aph/mobile-patients/src/components/HealthRecords/CowinCertificateGetOTP';
 import { CowinProfileSelection } from '@aph/mobile-patients/src/components/HealthRecords/CowinProfileSelection';
-import { CowinCertificateViewer } from '@aph/mobile-patients/src/components/HealthRecords/CowinCertificateViewer';
 import { PostShareAppointmentSelectorScreen } from '@aph/mobile-patients/src/components/ConsultRoom/PostShareAppointmentSelectorScreen';
 import { PrescriptionCamera } from '@aph/mobile-patients/src/components/Tests/PrescriptionCamera';
 import { SubmittedPrescription } from '@aph/mobile-patients/src/components/Tests/SubmittedPrescription';
@@ -164,6 +163,7 @@ import { YourRewardsScreen } from '@aph/mobile-patients/src/components//ReferAnd
 import { EarnedPoints } from '@aph/mobile-patients/src/components/ReferAndEarn/EarnedPoint';
 import { RefererTermsAndCondition } from '@aph/mobile-patients/src/components/ReferAndEarn/RefererTermsAndCondition';
 import { RefererFAQ } from '@aph/mobile-patients/src/components/ReferAndEarn/ReferrerFAQ';
+import { BrandPages } from '@aph/mobile-patients/src/components/BrandPages/BrandPages';
 
 export enum AppRoutes {
   Login = 'Login',
@@ -315,6 +315,7 @@ export enum AppRoutes {
   EarnedPoints = 'EarnedPoints',
   RefererTermsAndCondition = 'RefererTermsAndCondition',
   RefererFAQ = 'RefererFAQ',
+  BrandPages = 'BrandPages',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -801,6 +802,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.RefererFAQ]: {
     screen: RefererFAQ,
+  },
+  [AppRoutes.BrandPages]: {
+    screen: BrandPages,
   },
 };
 
