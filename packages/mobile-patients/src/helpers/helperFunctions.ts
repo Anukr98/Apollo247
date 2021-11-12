@@ -3013,25 +3013,19 @@ export const calculateCashbackForItem = (
   sku: any
 ) => {
   const { circleCashback } = useShoppingCart();
-  const getFirstLevelCashback = () => {
-    // categoty level cashback
-    const key = type_id?.toUpperCase();
-    return circleCashback?.[key] || 0;
-  };
-  const getSecondLevelCashback = () => {
-    // sub categoty level cashback
-    const key = `${type_id?.toUpperCase()}~${subcategory}`;
-    return circleCashback?.[key] || 0;
-  };
-  const getThirdLevelCashback = () => {
-    // sku level cashback
-    const key = `${type_id?.toUpperCase()}~${subcategory}~${sku}`;
-    return circleCashback?.[key] || 0;
-  };
-  const cashbackFactor =
-    getThirdLevelCashback() || getSecondLevelCashback() || getFirstLevelCashback();
+  const categoryLevelkey = type_id?.toUpperCase();
+  const subCategoryLevelkey = `${type_id?.toUpperCase()}~${subcategory}`;
+  const skuLevelkey = `${type_id?.toUpperCase()}~${subcategory}~${sku}`;
+  let cashbackFactor = 0;
+  if ( circleCashback?.[skuLevelkey] >= 0) {
+    cashbackFactor = circleCashback?.[skuLevelkey];
+  } else if ( circleCashback?.[subCategoryLevelkey] >= 0) {
+    cashbackFactor = circleCashback?.[subCategoryLevelkey];
+  } else {
+    cashbackFactor = circleCashback?.[categoryLevelkey];
+  }
   const cashback = cashbackFactor ? ((price * cashbackFactor) / 100).toFixed(2) : '0';
-  return cashback || 0;
+  return parseInt(cashback, 10) || 0;
 };
 
 export const readableParam = (param: string) => {
