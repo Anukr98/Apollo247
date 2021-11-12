@@ -402,3 +402,22 @@ export const directWalletDebit = (
   };
   HyperSdkReact.process(JSON.stringify(payload));
 };
+
+export const delinkWallet = (
+  requestId: string,
+  clientAuthToken: string,
+  walletId: string,
+  walletName: string
+) => {
+  const payload = {
+    requestId: requestId,
+    service: AppConfig.Configuration.jusPayService,
+    payload: {
+      action: 'delinkWallet',
+      walletId: walletId,
+      walletName: walletName,
+      clientAuthToken: clientAuthToken,
+    },
+  };
+  HyperSdkReact.process(JSON.stringify(payload));
+};
