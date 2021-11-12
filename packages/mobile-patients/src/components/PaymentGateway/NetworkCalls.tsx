@@ -363,30 +363,16 @@ export const fetchWalletBalance = (requestId: string, clientAuthToken: string) =
   HyperSdkReact.process(JSON.stringify(payload));
 };
 
-export const linkWallet = (
-  requestId: string,
-  clientAuthToken: string,
-  paymentOrderId: string,
-  paymentMethod: string,
-  sdkPresent: string,
-  offerId?: string
-) => {
+export const createAPayWallet = (requestId: string, clientAuthToken: string) => {
   const payload = {
     requestId: requestId,
     service: AppConfig.Configuration.jusPayService,
     payload: {
-      action: 'walletTxn',
-      orderId: paymentOrderId,
-      paymentMethodType: 'Wallet',
-      paymentMethod: paymentMethod,
-      shouldLink: true,
-      sdkPresent: sdkPresent,
-      endUrls: [AppConfig.Configuration.baseUrl],
+      action: 'createWallet',
+      walletName: 'AMAZONPAY',
       clientAuthToken: clientAuthToken,
-      offers: !!offerId ? [offerId] : null,
     },
   };
-  console.log('link wallet payload >>>>', payload);
   HyperSdkReact.process(JSON.stringify(payload));
 };
 
@@ -407,7 +393,6 @@ export const directWalletDebit = (
       orderId: paymentOrderId,
       paymentMethodType: 'Wallet',
       paymentMethod: paymentMethod,
-      shouldLink: true,
       sdkPresent: sdkPresent,
       endUrls: [AppConfig.Configuration.baseUrl],
       clientAuthToken: clientAuthToken,

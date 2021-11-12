@@ -13,23 +13,41 @@ import { OffersIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 export interface WalletsProps {
   onPressPayNow: (wallet: string, bestOffer?: any) => void;
   onPressLinkWallet: (wallet: string, bestOffer?: any) => void;
+  onPressDirectDebit: (wallet: string, token: string, bestOffer?: any) => void;
   wallets: any;
   offers: any;
   linked: any;
   amount: number;
+  createdWallet: any;
 }
 const windowWidth = Dimensions.get('window').width;
 
 export const Wallets: React.FC<WalletsProps> = (props) => {
-  const { onPressPayNow, wallets, offers, linked, amount, onPressLinkWallet } = props;
+  const {
+    onPressPayNow,
+    wallets,
+    offers,
+    linked,
+    amount,
+    onPressLinkWallet,
+    onPressDirectDebit,
+    createdWallet,
+  } = props;
   const phonePe = 'https://newassets.apollo247.com/images/upiicons/phone-pe.png';
 
-  const renderTitle = (item: any, bestOffer: any) => {
+  const renderTitle = (item: any, linkedWallet: any) => {
     return (
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <View style={{ marginRight: 5, paddingRight: 15 }}>
-          <Text style={styles.walletName}>{item?.item?.payment_method_name}</Text>
-        </View>
+      <View style={{ marginRight: 5, paddingRight: 15 }}>
+        <Text style={styles.walletName}>{item?.item?.payment_method_name}</Text>
+        {linkedWallet && linkedWallet?.currentBalance ? (
+          Number(linkedWallet?.currentBalance) < amount ? (
+            <Text style={{ ...styles.walletBalance, color: '#BF2600' }}>
+              Low Balance: ₹{linkedWallet?.currentBalance}
+            </Text>
+          ) : (
+            <Text style={styles.walletBalance}>Balance: ₹{linkedWallet?.currentBalance}</Text>
+          )
+        ) : null}
       </View>
     );
   };
@@ -54,34 +72,33 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
       : bestOffer?.offer_description?.description;
   };
 
-  const renderButton = (item: any) => {
-    const linkedWallet = linked?.filter(
-      (item: any) => item?.wallet == item?.item?.payment_method_code
-    );
+  const renderButton = (item: any, linkedWallet: any) => {
     return item?.item?.payment_method_code == 'AMAZONPAY'
-      ? linkedWallet?.[0]?.linked
-        ? Number(linkedWallet?.[0]?.currentBalance) < amount
+      ? linkedWallet?.linked
+        ? Number(linkedWallet?.currentBalance) < amount
           ? 'ADD MONEY & PAY'
           : 'PAY NOW'
         : 'LINK ACCOUNT'
       : 'PAY NOW';
   };
 
-  const onPress = (item: any, bestOffer: any) => {
-    const linkedWallet = linked?.filter(
-      (item: any) => item?.wallet == item?.item?.payment_method_code
-    );
-    return item?.item?.payment_method_code == 'AMAZONPAY'
-      ? linkedWallet?.[0]?.linked
-        ? Number(linkedWallet?.[0]?.currentBalance) < amount
-          ? 'ADD MONEY & PAY'
-          : onPressPayNow(item?.item?.payment_method_code, bestOffer)
-        : onPressLinkWallet(item?.item?.payment_method_code, bestOffer)
-      : onPressPayNow(item?.item?.payment_method_code, bestOffer);
+  const onPress = (paymentCode: any, linkedWallet: any, bestOffer: any) => {
+    return paymentCode == 'AMAZONPAY'
+      ? linkedWallet?.linked
+        ? Number(linkedWallet?.currentBalance) < amount
+          ? onPressDirectDebit(paymentCode, linkedWallet?.token, bestOffer)
+          : onPressDirectDebit(paymentCode, linkedWallet?.token, bestOffer)
+        : onPressLinkWallet(paymentCode, bestOffer)
+      : onPressPayNow(paymentCode, bestOffer);
   };
 
   const renderWallet = (item: any) => {
-    const bestOffer = getBestOffer(offers, item?.item?.payment_method_code);
+    const paymentCode = item?.item?.payment_method_code;
+    const bestOffer = getBestOffer(offers, paymentCode);
+    const walletCreated =
+      createdWallet?.linked && createdWallet?.wallet == paymentCode ? createdWallet : null;
+    const linkedWallet =
+      walletCreated || linked?.filter((wallet: any) => wallet?.wallet == paymentCode)?.[0];
     return (
       <View>
         <OutagePrompt
@@ -89,13 +106,13 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
           msg={item?.item?.payment_method_name + ' is'}
         />
         <TouchableOpacity
-          disabled={item?.item?.outage_status == 'DOWN' ? true : false}
+          disabled={item?.item?.outage_status == 'DOWN' ? false : false}
           style={{
             ...styles.wallet,
             borderBottomWidth: item?.index == wallets.length - 1 ? 0 : 1,
             opacity: item?.item?.outage_status == 'DOWN' ? 0.5 : 1,
           }}
-          onPress={() => onPress(item, bestOffer)}
+          onPress={() => onPress(paymentCode, linkedWallet, bestOffer)}
         >
           <WalletIcon
             imageUrl={
@@ -104,8 +121,8 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
           />
           <View style={{ width: windowWidth - 75 }}>
             <View style={styles.walletCont}>
-              {renderTitle(item, bestOffer)}
-              <Text style={styles.payNow}>{renderButton(item)}</Text>
+              {renderTitle(item, linkedWallet)}
+              <Text style={styles.payNow}>{renderButton(item, linkedWallet)}</Text>
             </View>
             {renderOffer(item, bestOffer)}
           </View>
@@ -143,6 +160,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderColor: 'rgba(0,0,0,0.1)',
     flexDirection: 'row',
+    alignItems: 'center',
   },
   payNow: {
     ...theme.fonts.IBMPlexSansBold(13),
@@ -158,6 +176,13 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(14),
     lineHeight: 18,
     color: '#01475B',
+    marginLeft: 12,
+  },
+  walletBalance: {
+    ...theme.fonts.IBMPlexSansRegular(12),
+    lineHeight: 16,
+    color: '#01475B',
+    marginTop: 2,
     marginLeft: 12,
   },
   offer: {
