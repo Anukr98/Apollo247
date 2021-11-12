@@ -26,8 +26,13 @@ import {
   nameFormater,
   formatAddressBookAddress,
   handleGraphQlError,
+  formatAddress,
+  g,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import {
+  postPharmacyAddNewAddressClick,
+  postPharmacyAddNewAddressCompleted,
+} from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 import {
   DeleteIconWhite,
@@ -97,7 +102,13 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
     getPatientAddressList_getPatientAddressList_addressList[] | null
   >([]);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
-  const { setAddresses, addresses, deliveryAddressId, setDeliveryAddressId } = useShoppingCart();
+  const {
+    setAddresses,
+    addresses,
+    deliveryAddressId,
+    setDeliveryAddressId,
+    newAddressAdded,
+  } = useShoppingCart();
   const {
     setAddresses: setAdd,
     deliveryAddressId: diagnosticDeliveryAddressId,
@@ -108,6 +119,21 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
   useEffect(() => {
     getAddressList();
   }, []);
+
+  useEffect(() => {
+    const addressLength = addresses.length;
+    if (!!addressLength && !!newAddressAdded) {
+      const selectedAddress = addresses.filter((value) => value.id === newAddressAdded);
+      postPharmacyAddNewAddressCompleted(
+        'My Account',
+        g(selectedAddress[0], 'zipcode')!,
+        formatAddress(selectedAddress[0]),
+        undefined,
+        0,
+        'Yes'
+      );
+    }
+  }, [newAddressAdded]);
 
   const getAddressList = () => {
     client

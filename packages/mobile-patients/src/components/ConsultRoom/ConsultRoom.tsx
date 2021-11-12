@@ -9,7 +9,6 @@ import {
   SubscriptionData,
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { WebView } from 'react-native-webview';
 import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import { dateFormatterDDMM } from '@aph/mobile-patients/src/utils/dateUtil';
@@ -51,9 +50,7 @@ import {
   TestsIcon,
   WhiteArrowRightIcon,
   VaccineTracker,
-  CrossPopup,
   ProHealthIcon,
-  BackArrow,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   BannerDisplayType,
@@ -136,6 +133,9 @@ import {
   getCleverTapCircleMemberValues,
   getAge,
   removeObjectNullUndefinedProperties,
+  fileToBase64,
+  getAsyncStorageValues,
+  formatUrl,
   checkCleverTapLoginStatus,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
@@ -772,7 +772,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [vaccinationSubscriptionName, setVaccinationSubscriptionName] = useState<string>('');
   const [vaccinationSubscriptionPlanId, setVaccinationSubscriptionPlanId] = useState<string>('');
   const [agreedToVaccineTnc, setAgreedToVaccineTnc] = useState<string>('');
+  const [token, setToken] = useState<string | null>('');
+  const [userMobileNumber, setUserMobileNumber] = useState<string | null>('');
 
+  const [proHealthActiveAppointmentCount, setProHealthActiveAppointmentCount] = useState<
+    string | number
+  >('' | 0);
+  const [proActiveAppointments, setProHealthActiveAppointment] = useState([] as any);
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
   const {
@@ -898,6 +904,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
     }
   }
+
+  useEffect(() => {
+    checkCleverTapLoginStatus(currentPatient);
+  }, [currentPatient]);
 
   useEffect(() => {
     checkCleverTapLoginStatus(currentPatient);
@@ -1569,7 +1579,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const eventAttributes:
           | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
           | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
-          source: 'app home',
+          'Nav src': 'app home',
         };
         setTimeout(
           () => postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED, eventAttributes),
@@ -2391,7 +2401,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       const eneabled = AppConfig.Configuration.ENABLE_CONDITIONAL_MANAGEMENT;
       setEnableCM(eneabled);
     }
+    const saveSessionValues = async () => {
+      const [loginToken, phoneNumber] = await getAsyncStorageValues();
+      setToken(JSON.parse(loginToken));
+      setUserMobileNumber(
+        JSON.parse(phoneNumber)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber
+      );
+    };
     fetchData();
+    saveSessionValues();
   }, []);
 
   useEffect(() => {
@@ -2675,12 +2693,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     isActive ? setProHealthActive(true) : setProHealthActive(false);
   }
 
-  const [proHealthActiveAppointmentCount, setProHealthActiveAppointmentCount] = useState<
-    string | number
-  >('' || 0);
-
-  const [proActiveAppointments, setProHealthActiveAppointment] = useState([] as any);
-
   const getActiveProHealthAppointments = async (currentDetails: any) => {
     //or can use storeUhid, and then call api getPatientsByUhid.
     getAllProHealthAppointments(client, currentDetails?.id)
@@ -2746,7 +2758,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   const eventAttributes:
                     | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
                     | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
-                    source: 'app home',
+                    'Nav src': 'app home',
                   };
                   setTimeout(
                     () =>
@@ -3128,6 +3140,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const openWebView = (url: any) => {
     Keyboard.dismiss();
+    let uri = formatUrl(`${url}`, token, userMobileNumber);
+
     return (
       <View style={styles.viewWebStyles}>
         <Header
@@ -3141,7 +3155,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <View style={styles.nestedWebView}>
           <WebView
             source={{
-              uri: url,
+              uri,
             }}
             style={styles.webViewCompo}
             onLoadStart={() => {
@@ -3880,9 +3894,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       >
         <ImageBackground
           style={styles.proHealthBannerImage}
-          source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_banner.webp')}
+          source={{ uri: AppConfig.Configuration.PROHEALTH_BANNER_IMAGE }}
           resizeMode={'stretch'}
-          borderRadius={10}
+          borderRadius={8}
         ></ImageBackground>
       </TouchableOpacity>
     );

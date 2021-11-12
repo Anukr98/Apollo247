@@ -151,7 +151,9 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
             />
             <TouchableOpacity
               onPress={() => {
-                props.navigation.navigate(AppRoutes.SubscriptionCart);
+                props.navigation.navigate(AppRoutes.SubscriptionCart, {
+                  circleEventSource,
+                });
               }}
             >
               <Text style={styles.btnText}>{string.circleDoctors.useAnotherPaymentMethod}</Text>

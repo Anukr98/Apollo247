@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
   CircleCheckIcon,
@@ -11,12 +10,15 @@ import {
 import { TextInput } from 'react-native-gesture-handler';
 import { CvvPopUp } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CvvPopUp';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { OffersIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+
 export interface SavedCardProps {
-  onPressSavedCardPayNow: (cardInfo: any, saveCard: any) => void;
+  onPressSavedCardPayNow: (cardInfo: any, saveCard: any, bestOffer?: any) => void;
   cardTypes: any;
   selectedCardToken: string;
   onPressSavedCard: (cardInfo: any) => void;
   cardInfo: any;
+  bestOffer: any;
 }
 
 export const SavedCard: React.FC<SavedCardProps> = (props) => {
@@ -26,6 +28,7 @@ export const SavedCard: React.FC<SavedCardProps> = (props) => {
     selectedCardToken,
     cardInfo,
     onPressSavedCard,
+    bestOffer,
   } = props;
   const cardSelected = cardInfo?.card_token == selectedCardToken ? true : false;
   const [cvv, setcvv] = useState<string>('');
@@ -52,30 +55,50 @@ export const SavedCard: React.FC<SavedCardProps> = (props) => {
       <Text style={styles.cardNo}>
         {cardInfo?.card_number?.slice(-7)}
         {' • '}
-        {cardInfo?.card_issuer + cardInfo?.card_type}
+        {cardInfo?.card_issuer?.replace('Bank', ' ') + camelize(cardInfo?.card_type)}
         {' Card'}
       </Text>
     );
   };
 
+  function camelize(str: any) {
+    return str
+      .replace(/(?:^\w|[A-Z]|\b\w)/g, function(word: any, index: any) {
+        return index === 0 ? word.toUpperCase() : word.toLowerCase();
+      })
+      .replace(/\s+/g, '');
+  }
+
   const renderCardInfo = () => {
     return (
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          opacity: isExpired ? 0.4 : 1,
-        }}
-      >
+      <View style={{ ...styles.cardInfo, opacity: isExpired ? 0.4 : 1 }}>
         <View>
           <View style={{ flexDirection: 'row' }}>
             {renderCardIcon()}
             {renderCardNo()}
           </View>
           <Text style={styles.name}>{cardInfo?.name_on_card || 'User'}</Text>
+          {!!bestOffer && renderOffer()}
         </View>
         {cardSelected ? <CircleCheckIcon /> : <CircleUncheckIcon />}
+      </View>
+    );
+  };
+
+  const getOfferDescription = () => {
+    const orderBreakup = bestOffer?.order_breakup;
+    return parseFloat(orderBreakup?.discount_amount) > 50
+      ? `Get ₹${orderBreakup?.discount_amount} off with this card`
+      : parseFloat(orderBreakup?.cashback_amount) > 50
+      ? `Get ₹${orderBreakup?.cashback_amount} cashback with this card`
+      : bestOffer?.offer_description?.description;
+  };
+
+  const renderOffer = () => {
+    return (
+      <View style={styles.offer}>
+        <OffersIcon style={styles.offerIcon} />
+        <Text style={styles.offerTitle}>{getOfferDescription()}</Text>
       </View>
     );
   };
@@ -99,9 +122,13 @@ export const SavedCard: React.FC<SavedCardProps> = (props) => {
       <View style={{ alignItems: 'flex-end' }}>
         <Button
           disabled={cvv?.length < 3}
-          title={'PAY NOW'}
+          title={
+            !!bestOffer?.order_breakup?.final_order_amount
+              ? `PAY  ₹${bestOffer?.order_breakup?.final_order_amount}`
+              : 'PAY NOW'
+          }
           titleTextStyle={styles.payNow}
-          onPress={() => onPressSavedCardPayNow(cardInfo, cvv)}
+          onPress={() => onPressSavedCardPayNow(cardInfo, cvv, bestOffer)}
           style={styles.buttonStyle}
         />
       </View>
@@ -131,10 +158,7 @@ export const SavedCard: React.FC<SavedCardProps> = (props) => {
     return (
       <View style={{ ...styles.container, backgroundColor: !cardSelected ? '#fff' : '#F6FFFF' }}>
         <TouchableOpacity
-          style={{
-            ...styles.subContainer,
-            paddingBottom: !cardSelected ? 19 : 16,
-          }}
+          style={styles.subContainer}
           onPress={() => onPressSavedCard(cardInfo)}
           disabled={isExpired ? true : false}
         >
@@ -142,9 +166,7 @@ export const SavedCard: React.FC<SavedCardProps> = (props) => {
           {isExpired && renderExpiredTag()}
           {cardSelected && (
             <>
-              <View
-                style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 }}
-              >
+              <View style={styles.subContainer2}>
                 {renderCvvInput()}
                 {renderPayNow()}
               </View>
@@ -167,6 +189,17 @@ const styles = StyleSheet.create({
   subContainer: {
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0,0,0,0.1)',
+    paddingBottom: 13,
+  },
+  subContainer2: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 12,
+  },
+  cardInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   cardNo: {
     ...theme.fonts.IBMPlexSansMedium(14),
@@ -200,12 +233,12 @@ const styles = StyleSheet.create({
     color: '#01475B',
   },
   payNow: {
-    ...theme.fonts.IBMPlexSansBold(14),
+    ...theme.fonts.IBMPlexSansBold(13),
     lineHeight: 24,
     color: '#fff',
   },
   buttonStyle: {
-    width: 100,
+    width: 150,
     // paddingHorizontal: 18,
     borderRadius: 5,
   },
@@ -239,5 +272,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 8,
     alignSelf: 'flex-start',
+  },
+  offer: {
+    flexDirection: 'row',
+    marginLeft: 41,
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  offerTitle: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    lineHeight: 18,
+    color: '#34AA55',
+    marginLeft: 4,
+  },
+  offerIcon: {
+    height: 16,
+    width: 16,
   },
 });
