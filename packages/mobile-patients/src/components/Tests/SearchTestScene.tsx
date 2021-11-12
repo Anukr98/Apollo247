@@ -761,7 +761,11 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           });
         }}
         onPressAddToCart={() => {
-          onAddCartItem(item?.diagnostic_item_id, item?.diagnostic_item_name, source);
+          onAddCartItem(
+            item?.diagnostic_item_id,
+            item?.diagnostic_item_name,
+            DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.POPULAR_SEARCH
+          );
         }}
         data={item}
         loading={true}
