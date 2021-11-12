@@ -73,7 +73,7 @@ import {
   paymentModeVersionCheck,
   goToConsultRoom,
   getPaymentMethodsInfo,
-  postWebEngageEvent,
+  getIOSPackageName,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PaymentStatus,
@@ -299,10 +299,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         setisTxnProcessing(false);
         break;
       case 'upiTxn':
-        postWebEngageEvent('UPI txn Response', {
-          payload: payload?.payload,
-          availableApps: payload?.payload?.availableApps,
-        });
         let activityRes = payload?.payload?.otherInfo?.response?.dropoutInfo?.activityResponse;
         activityRes = !!activityRes && activityRes != {} && JSON.parse(activityRes);
         activityRes?.Status == 'FAILURE' || activityRes?.Status == 'Failed'
@@ -573,7 +569,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     firePaymentInitiatedEvent('UPI', appName, appName, false, 'Intent', false, false);
 
     const token = await getClientToken();
-    const paymentCode = app?.payment_method_code;
+    let paymentCode = app?.payment_method_code;
+    paymentCode = Platform.OS == 'android' ? paymentCode : getIOSPackageName(paymentCode);
     const sdkPresent = paymentCode == 'com.phonepe.app' && phonePeReady ? 'ANDROID_PHONEPE' : '';
     const paymentMethod = paymentCode == 'com.phonepe.app' ? 'PHONEPE' : '';
     token
@@ -701,7 +698,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       const UPIApps = paymentMethods?.find((item: any) => item?.name == 'UPI')?.payment_methods;
       const apps = UPIApps?.map((app: any) => {
         if (
-          available.includes(app?.payment_method_code) &&
+          available.includes(
+            app?.payment_method_code || getIOSPackageName(app?.payment_method_code)
+          ) &&
           paymentModeVersionCheck(app?.minimum_supported_version)
         ) {
           return app;
