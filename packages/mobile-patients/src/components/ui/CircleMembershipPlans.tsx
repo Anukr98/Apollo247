@@ -42,6 +42,7 @@ import {
   CircleEventSource,
   g,
   getCircleNoSubscriptionText,
+  getCirclePlanDetails,
   getUserType,
   postCleverTapEvent,
   postWebEngageEvent,
@@ -159,6 +160,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     setCircleSubPlanId,
     circleSubscriptionId,
     cartItems,
+    circlePlanValidity
   } = useShoppingCart();
   const {
     setIsDiagnosticCircleSubscription,
@@ -197,16 +199,23 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     }
   }, []);
 
-  const fireCleverTapCircleEvents = () => {
+  const fireCleverTapCircleEvents = async () => {
+    const mobile_number = currentPatient?.mobileNumber
+    let circlePriceAndDuration
+    if(mobile_number)
+        await getCirclePlanDetails(mobile_number, client).then(res => {
+          circlePriceAndDuration = res?.find((item: any) => item?.subPlanId === circlePlanValidity?.plan_id)
+        })
+    
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_POP_UP_VIEWED_PLANS_ONLY] = {
       navigation_source: circleEventSource,
-      circle_planid: getCircleNoSubscriptionText(),
-      circle_end_date: getCircleNoSubscriptionText(),
-      circle_start_date: getCircleNoSubscriptionText(),
+      plan_id: circlePlanValidity?.plan_id ? circlePlanValidity?.plan_id : getCircleNoSubscriptionText(),
+      circle_end_date: circlePlanValidity?.endDate ? circlePlanValidity?.endDate : getCircleNoSubscriptionText(),
+      circle_start_date: circlePlanValidity?.startDate ? circlePlanValidity?.startDate : getCircleNoSubscriptionText(),
       customer_id: currentPatient?.id,
-      duration_in_month: getCircleNoSubscriptionText(),
+      duration_in_months: circleSubscription ? circlePriceAndDuration?.durationInMonth : getCircleNoSubscriptionText(),
       user_type: getUserType(allCurrentPatients),
-      price: getCircleNoSubscriptionText(),
+      price: circleSubscription ? circlePriceAndDuration?.price : getCircleNoSubscriptionText(),
     };
     postCleverTapEvent(
       CleverTapEventName.CIRCLE_POP_UP_VIEWED_PLANS_ONLY,
@@ -350,11 +359,11 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     const circleData = _circlePlan || circlePlanSelected;
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_PLAN_TO_CART] = {
       navigation_source: circleEventSource,
-      circle_end_date: getCircleNoSubscriptionText(),
-      circle_start_date: getCircleNoSubscriptionText(),
-      circle_planid: circleData?.subPlanId,
+      circle_end_date: circlePlanValidity?.endDate ? circlePlanValidity?.endDate : getCircleNoSubscriptionText(),
+      circle_start_date: circlePlanValidity?.startDate ? circlePlanValidity?.startDate : getCircleNoSubscriptionText(),
+      plan_id: circleData?.subPlanId,
       customer_id: currentPatient?.id,
-      duration_in_month: circleData?.durationInMonth,
+      duration_in_months: circleData?.durationInMonth,
       user_type: getUserType(allCurrentPatients),
       price: circleData?.currentSellingPrice,
     };

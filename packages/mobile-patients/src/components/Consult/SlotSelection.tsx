@@ -460,7 +460,11 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
         setSelectedDateIndex(dateIndex);
         setSelectedDateIndexHighlight(dateIndex);
         setTimeout(() => {
-          dateScrollViewRef && dateScrollViewRef.current.scrollToIndex({ index: dateIndex });
+          try {
+            dateScrollViewRef && dateScrollViewRef.current.scrollToIndex({ index: dateIndex });
+          } catch (e) {
+            CommonBugFender('SlotSelection_scroll', e);
+          }
         }, 500);
       }
       setDatesSlots(dates);
