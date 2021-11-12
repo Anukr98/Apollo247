@@ -57,6 +57,7 @@ import {
   getIsMedicine,
   getNetStatus,
   isCartPriceWithInSpecifiedRange,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   pinCodeServiceabilityApi247,
@@ -113,6 +114,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useFetchHealthCredits } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useFetchHealthCredits';
+import { CleverTapEventName, CleverTapEvents } from '../../helpers/CleverTapEvents';
 
 export interface MedicineCartProps extends NavigationScreenProps {}
 
@@ -169,6 +171,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     setAxdcCode,
     pharmacyUserTypeAttribute,
     activeUserSubscriptions,
+    setSelectedPrescriptionType,
   } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
@@ -184,12 +187,16 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const [showCareSelectPlans, setShowCareSelectPlans] = useState<boolean>(true);
   const [tatResponse, setTatResponse] = useState<string>('');
 
+  type PharmacyCartTatApiCalled = CleverTapEvents[CleverTapEventName.PHARMACY_CART_TAT_API_CALLED];
+
   useEffect(() => {
     async function fetchCircleSubscriptionId() {
       const circleSubscriptionID: any = await AsyncStorage.getItem('circleSubscriptionId');
       setCircleSubscriptionId && setCircleSubscriptionId(circleSubscriptionID);
     }
     fetchCircleSubscriptionId();
+    // clearing free consult prescription type of previous order
+    setSelectedPrescriptionType && setSelectedPrescriptionType('');
   }, []);
 
   useEffect(() => {
@@ -436,6 +443,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           userType: isCircleSubscription || !!circleSubscriptionId ? 'circle' : 'regular',
         };
         try {
+          setTatResponse('');
           const res = await getDeliveryTAT247(tatInput);
           const errorCode = res?.data?.errorCode;
           if (errorCode == -1011) {
@@ -457,8 +465,48 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             inventoryData = inventoryData.concat(order?.items);
           });
           setloading!(false);
+          setTatResponse(response[0]?.tat);
+          const currentDate = moment()
+            .hour(0)
+            .minute(0)
+            .second(0);
+          let splitOrderDetails: any = {};
+          if (orders?.length > 1) {
+            orders?.forEach((order: any, index: number) => {
+              const momentTatDate = moment(order[0]?.tat);
+              splitOrderDetails['TAT ' + (index + 1) + ' day'] = Math.ceil(
+                momentTatDate.diff(currentDate, 'h') / 24
+              );
+              splitOrderDetails['TAT ' + (index + 1) + ' hour'] = momentTatDate.diff(
+                currentDate,
+                'h'
+              );
+              splitOrderDetails['TAT ' + (index + 1) + ' items'] = JSON.stringify(order?.items);
+              splitOrderDetails['TAT ' + (index + 1) + ' amount'] =
+                getShipmentPrice(order?.items, cartItems) +
+                (order?.deliveryCharge || 0) +
+                (order?.packingCharges || 0);
+            });
+          } else {
+            const momentTatDate = moment(orders[0]?.tat);
+            splitOrderDetails['TAT 1' + ' day'] = Math.ceil(
+              momentTatDate.diff(currentDate, 'h') / 24
+            );
+            splitOrderDetails['TAT 1' + ' hour'] = momentTatDate.diff(currentDate, 'h');
+            splitOrderDetails['TAT 1' + ' items'] = JSON.stringify(orders[0]?.items);
+            splitOrderDetails['TAT 1' + ' amount'] =
+              getShipmentPrice(orders[0]?.items, cartItems) +
+              (orders?.deliveryCharge || 0) +
+              (orders?.packingCharges || 0);
+          }
+          const eventAttributes: PharmacyCartTatApiCalled = {
+            'Split cart': orders?.length > 1 ? 'Yes' : 'No',
+            Status: 'Success',
+            ...splitOrderDetails,
+          };
+          postCleverTapEvent(CleverTapEventName.PHARMACY_CART_TAT_API_CALLED, eventAttributes);
+          addressSelectedEvent(selectedAddress, response[0]?.tat, response);
           const tatResponse = response?.[0];
-          setTatResponse(tatResponse?.tat);
           const tatDetails: PharmaPrescriptionOptionInput = {
             patientid: currentPatient?.id,
             userType: pharmacyUserTypeAttribute?.User_Type,
@@ -534,15 +582,15 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (orderSelected?.length > 1) {
       orderSelected?.forEach((order: any, index: number) => {
         const momentTatDate = moment(order?.tat);
-        splitOrderDetails['Shipment_' + (index + 1) + '_TAT'] = Math.ceil(
+        splitOrderDetails['Shipment' + (index + 1) + ' TAT'] = Math.ceil(
           momentTatDate.diff(currentDate, 'h') / 24
         );
-        splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
+        splitOrderDetails['Shipment' + (index + 1) + ' value'] =
           getShipmentPrice(order?.items, cartItems) +
           (order?.deliveryCharge || 0) +
           (order?.packingCharges || 0);
-        splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
-        splitOrderDetails['Shipment_' + (index + 1) + '_Site_Type'] = order?.storeType;
+        splitOrderDetails['Shipment' + (index + 1) + ' items'] = order?.items?.length;
+        splitOrderDetails['Shipment' + (index + 1) + ' site type'] = order?.storeType;
       });
     }
     const currentDate = moment()
@@ -680,8 +728,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             cartItem['specialPrice'] =
               Number(cartItem?.mou) * storeItem?.mrp * (cartItem?.specialPrice / cartItem?.price);
           }
+          const previousCartPrice = cartItem['price'];
           cartItem['price'] = Number(cartItem?.mou) * storeItem?.mrp;
-          PricemismatchEvent(cartItem, currentPatient?.mobileNumber, storePrice);
+          PricemismatchEvent(cartItem, currentPatient?.mobileNumber, storePrice, previousCartPrice);
         }
       }
       cartItemsAfterPriceUpdate.push(cartItem);

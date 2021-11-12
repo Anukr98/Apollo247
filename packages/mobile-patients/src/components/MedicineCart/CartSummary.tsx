@@ -148,6 +148,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   const { cusId, isfetchingId } = useGetJuspayId();
   const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
+  const [tatUpdated, setTatUpdated] = useState<boolean>(false);
 
   useEffect(() => {
     hasUnserviceableproduct();
@@ -178,6 +179,13 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   useEffect(() => {
     !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
   }, [isfetchingId]);
+
+  useEffect(() => {
+    if (tatUpdated) {
+      initiateOrder();
+      setTatUpdated(false);
+    }
+  }, [orders, tatUpdated]);
 
   const initiateHyperSDK = async (cusId: any) => {
     try {
@@ -322,15 +330,15 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     if (orderSelected?.length > 1) {
       orderSelected?.forEach((order: any, index: number) => {
         const momentTatDate = moment(order?.tat);
-        splitOrderDetails['Shipment_' + (index + 1) + '_TAT'] = Math.ceil(
+        splitOrderDetails['Shipment' + (index + 1) + ' TAT'] = Math.ceil(
           momentTatDate.diff(currentDate, 'h') / 24
         );
-        splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
+        splitOrderDetails['Shipment' + (index + 1) + ' value'] =
           getShipmentPrice(order?.items, cartItems) +
           (order?.deliveryCharge || 0) +
           (order?.packingCharges || 0);
-        splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
-        splitOrderDetails['Shipment_' + (index + 1) + '_Site_Type'] = order?.storeType;
+        splitOrderDetails['Shipment' + (index + 1) + ' items'] = order?.items?.length;
+        splitOrderDetails['Shipment' + (index + 1) + ' site type'] = order?.storeType;
       });
     }
     const currentDate = moment()
@@ -514,7 +522,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       orders?.length > 1,
       splitOrderDetails
     );
-    initiateOrder();
+    setTatUpdated(true);
   }
 
   const initiateOrder = async () => {
@@ -537,7 +545,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         props.navigation.navigate(AppRoutes.PaymentMethods, {
           paymentId: paymentId,
           amount: grandTotal,
-          orderDetails: getOrderDetails(orders),
+          orderDetails: getOrderDetails(orders, transactionId),
           businessLine: 'pharma',
           customerId: cusId,
           checkoutEventAttributes: getCheckoutCompletedEventAttributes(
@@ -563,8 +571,9 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     }
   };
 
-  const getOrderDetails = (orders: any) => {
+  const getOrderDetails = (orders: any, transactionId: string) => {
     const orderDetails = {
+      displayId: transactionId,
       orders: orders,
       orderInfo: OrderInfo,
       deliveryTime: deliveryTime,

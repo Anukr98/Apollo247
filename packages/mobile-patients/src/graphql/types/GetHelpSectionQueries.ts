@@ -183,6 +183,7 @@ export interface GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries_que
   __typename: "NeedHelpQuery";
   id: string | null;
   title: string | null;
+  message: string | null;
   nonOrderQueries: (string | null)[] | null;
   queriesByOrderStatus: any | null;
   content: GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries_queries_content | null;
@@ -193,6 +194,7 @@ export interface GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries {
   __typename: "NeedHelpQuery";
   id: string | null;
   title: string | null;
+  message: string | null;
   nonOrderQueries: (string | null)[] | null;
   queriesByOrderStatus: any | null;
   content: GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries_content | null;

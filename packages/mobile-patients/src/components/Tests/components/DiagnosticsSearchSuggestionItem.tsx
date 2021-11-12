@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   },
   numberPlate: { ...theme.viewStyles.text('R', 10, '#01475b', 1, 18) },
   addCta: {
-    ...theme.viewStyles.text('B', isSmallDevice ? 13 : 14, '#FCA317', 1, 18, 0),
+    ...theme.viewStyles.text('B', isSmallDevice ? 13 : 14, '#FCA317', 1, 16, 0),
     textTransform: 'uppercase',
     textAlign: 'right',
     width: 'auto',

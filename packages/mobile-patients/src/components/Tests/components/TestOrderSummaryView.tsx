@@ -17,9 +17,7 @@ import {
   REFUND_STATUSES,
   Gender,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  useDiagnosticsCart,
-} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components/StatusCard';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
@@ -63,15 +61,19 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       ? 'Mr. '
       : 'Ms. '
     : '';
-  const {
-    isDiagnosticCircleSubscription,
-  } = useDiagnosticsCart();
+  const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
   const [showPreviousCard, setShowPreviousCard] = useState<boolean>(true);
   const [showCurrCard, setShowCurrCard] = useState<boolean>(true);
 
   useEffect(() => {
-    DiagnosticOrderSummaryViewed(grossCharges, orderDetails?.displayId, orderDetails?.orderStatus, currentPatient, isDiagnosticCircleSubscription);
+    DiagnosticOrderSummaryViewed(
+      grossCharges,
+      orderDetails?.displayId,
+      orderDetails?.orderStatus,
+      currentPatient,
+      isDiagnosticCircleSubscription
+    );
   }, []);
 
   const getCircleObject =
