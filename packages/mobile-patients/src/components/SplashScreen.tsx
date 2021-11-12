@@ -45,6 +45,9 @@ import {
   navigateToHome,
   setCleverTapAppsFlyerCustID,
   clevertapEventForAppsflyerDeeplink,
+  checkUniversalURL,
+  removeNullFromObj,
+  filterAppLaunchSoruceAttributesByKey,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -247,16 +250,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     getDeviceToken();
     initializeRealTimeUninstall();
     setCleverTapAppsFlyerCustID();
-    InitiateAppsFlyer(props.navigation, (resources) => {
-      redirectRoute(
-        resources?.routeName,
-        resources?.id,
-        resources?.isCall,
-        resources?.timeout,
-        resources?.mediaSource,
-        resources?.data
-      );
-    });
   }, []);
 
   useEffect(() => {
@@ -408,7 +401,23 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     try {
       Linking.getInitialURL()
         .then((url) => {
-          triggerUTMCustomEvent(url);
+          try {
+            InitiateAppsFlyer(
+              props.navigation,
+              (resources) => {
+                redirectRoute(
+                  resources?.routeName,
+                  resources?.id,
+                  resources?.isCall,
+                  resources?.timeout,
+                  resources?.mediaSource,
+                  resources?.data
+                );
+              },
+              url,
+              (isFirstLaunch) => triggerUTMCustomEvent(url, isFirstLaunch)
+            );
+          } catch (e) {}
           setBugFenderLog('DEEP_LINK_URL', url);
           if (url) {
             try {
@@ -436,7 +445,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         try {
           setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
           const data: any = handleOpenURL(event.url);
-          catchSourceUrlDataUsingAppsFlyer();
+          catchSourceUrlDataUsingAppsFlyer(event.url);
           redirectRoute(
             data?.routeName,
             data?.id,
@@ -731,21 +740,42 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     fetchData();
   };
 
-  const triggerUTMCustomEvent = async (url: string | null) => {
+  const triggerUTMCustomEvent = async (url: string | null, isFirstLaunch: boolean) => {
     try {
       if (url) {
       } else {
         postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
-          source: 'Organic',
+          channel: 'Organic',
+          is_first_launch: isFirstLaunch,
         });
       }
     } catch (error) {}
   };
 
-  const catchSourceUrlDataUsingAppsFlyer = async () => {
+  const catchSourceUrlDataUsingAppsFlyer = async (redirectUrl: string | null) => {
     onDeepLinkCanceller = await appsFlyer.onDeepLink(async (res) => {
-      clevertapEventForAppsflyerDeeplink(res.data);
-      onDeepLinkCanceller();
+      try {
+        if (redirectUrl && checkUniversalURL(redirectUrl).universal) {
+          if (Object.keys(res?.data).length < 2) {
+            clevertapEventForAppsflyerDeeplink(
+              removeNullFromObj({
+                source_url: checkUniversalURL(redirectUrl).source_url,
+                channel: 'Organic',
+              })
+            );
+          } else {
+            clevertapEventForAppsflyerDeeplink(
+              filterAppLaunchSoruceAttributesByKey({
+                ...res?.data,
+                source_url: checkUniversalURL(redirectUrl).source_url,
+              })
+            );
+          }
+        } else {
+          clevertapEventForAppsflyerDeeplink(filterAppLaunchSoruceAttributesByKey(res?.data));
+        }
+        onDeepLinkCanceller();
+      } catch (e) {}
     });
   };
 
@@ -884,6 +914,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setExpectCallText,
     setNonCartTatText,
     setNonCartDeliveryText,
+    setSelectedPrescriptionType,
   } = useAppCommonData();
   const {
     setMinimumCartValue,
@@ -1160,6 +1191,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     TrueCaller_Login_Enabled: {
       QA: 'TrueCaller_Login_Enabled_QA',
       PROD: 'TrueCaller_Login_Enabled_PROD',
+    },
+    Diagnostics_No_Saving_Text: {
+      QA: 'QA_Diagnostics_No_Saving_Text',
+      PROD: 'Diagnostics_No_Saving_Text',
+    },
+    Free_Consult_Message: {
+      QA: 'QA_Free_Consult_Message',
+      PROD: 'Free_Consult_Message',
     },
   };
 
@@ -1464,6 +1503,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'Diagnostics_Report_Tat_Breach_Text',
         'DIAGNOSTICS_REPORT_TAT_BREACH_TEXT',
         (key) => config.getString(key)
+      );
+
+      setAppConfig('Diagnostics_No_Saving_Text', 'DIAGNOSTICS_NO_CIRCLE_SAVINGS_TEXT', (key) =>
+        config.getString(key)
+      );
+
+      setAppConfig(
+        'Free_Consult_Message',
+        'FREE_CONSULT_MESSAGE',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.FREE_CONSULT_MESSAGE
       );
 
       const disincentivizeCodMessage = getRemoteConfigValue(

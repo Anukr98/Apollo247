@@ -26,8 +26,8 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 
 export const CouponsSection = (props: { offersdata: SpecialOffersCouponsData[] }) => {
-  const { offersData } = props;
-  const newOffersData = offersData.map((ele: any) => ({ ...ele, knowMoreOption: false }));
+  const { offersdata } = props;
+  const newOffersData = offersdata.map((ele: any) => ({ ...ele, knowMoreOption: false }));
   const [couponOffersData, setCouponOffersData] = useState(newOffersData);
   const [visibleOffers, setVisibleOffers] = useState<number>(2);
   const [showPopup, setShowPopup] = useState<Boolean>(false);

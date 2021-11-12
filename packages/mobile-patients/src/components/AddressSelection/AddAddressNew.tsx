@@ -94,6 +94,7 @@ export interface locationResponseProps {
   state?: string;
 }
 export const AddAddressNew: React.FC<MapProps> = (props) => {
+  console.log({ props });
   const KeyName = props.navigation.getParam('KeyName');
   const addressDetails = props.navigation.getParam('addressDetails');
   const addOnly = props.navigation.getParam('addOnly');
@@ -124,8 +125,8 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
   const [region, setRegion] = useState({
     latitude: Number(latitude),
     longitude: Number(longitude),
-    latitudeDelta: latitudeDelta,
-    longitudeDelta: longitudeDelta,
+    latitudeDelta: Math.abs(latitudeDelta),
+    longitudeDelta: Math.abs(longitudeDelta),
   });
 
   function fireAddressFireBaseEvent(lat?: number, long?: number) {
@@ -255,6 +256,7 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
       }
     } else {
       if (ComingFrom == AppRoutes.AddPatients) {
+        fireAddressFireBaseEvent(locationToSelect?.latitude, locationToSelect?.longitude);
         setRegion({
           latitude: Number(locationToSelect?.latitude || 0),
           longitude: Number(locationToSelect?.longitude || 0),

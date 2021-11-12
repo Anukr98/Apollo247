@@ -1,7 +1,8 @@
 import {
+  AppCommonDataContextProps,
   LocationData,
-  AppCommonDataContextProps
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import DeviceInfo from 'react-native-device-info';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   getPlaceInfoByLatLng,
@@ -45,7 +46,10 @@ import {
 } from 'react-native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import Permissions from 'react-native-permissions';
-import { DiagnosticPatientCartItem, DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import {
+  DiagnosticPatientCartItem,
+  DiagnosticsCartItem,
+} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription } from '../graphql/types/getCaseSheet';
 import { apiRoutes } from './apiRoutes';
 import {
@@ -62,7 +66,10 @@ import {
 import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import ApolloClient from 'apollo-client';
 import { saveSearch, saveSearchVariables } from '@aph/mobile-patients/src/graphql/types/saveSearch';
-import { SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
+  SAVE_SEARCH,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -147,7 +154,7 @@ export interface SlotInfo {
   status: string;
   internalSlots: string | null;
   startTime: string;
-  distanceCharges: number | null
+  distanceCharges: number | null;
 }
 
 export enum EDIT_DELETE_TYPE {
@@ -248,13 +255,16 @@ export const getDoctorShareMessage = (doctorData: any) => {
     ? g(doctorData, 'doctorHospital', '0', 'facility', 'name') + ', '
     : '';
   const hospitalCity = g(doctorData, 'doctorHospital', '0', 'facility', 'city') || '';
-  return `Recommending ${doctorData?.displayName} \n\n${doctorData?.displayName
-    } from ${doctorData?.doctorfacility ||
+  return `Recommending ${doctorData?.displayName} \n\n${
+    doctorData?.displayName
+  } from ${doctorData?.doctorfacility ||
     hospitalName + hospitalCity} is one of the top ${doctorData?.specialtydisplayName ||
     doctorData?.specialty?.name ||
-    ''} doctors in the country. \n\nI strongly recommend ${doctorData?.gender ? (doctorData?.gender === Gender.FEMALE ? 'her' : 'him') : ''
-    } for any relevant health issues!\n\nYou can easily consult with ${doctorData?.displayName
-    } online over Apollo 247 App and Website. Click ${doctorData?.profile_deeplink || ''} to book!`;
+    ''} doctors in the country. \n\nI strongly recommend ${
+    doctorData?.gender ? (doctorData?.gender === Gender.FEMALE ? 'her' : 'him') : ''
+  } for any relevant health issues!\n\nYou can easily consult with ${
+    doctorData?.displayName
+  } online over Apollo 247 App and Website. Click ${doctorData?.profile_deeplink || ''} to book!`;
 };
 
 export const formatAddressWithLandmark = (
@@ -315,7 +325,9 @@ export const formatAddressBookAddress = (
 };
 
 export const formatAddressForApi = (
-  address: savePatientAddress_savePatientAddress_patientAddress | getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientAddressObj
+  address:
+    | savePatientAddress_savePatientAddress_patientAddress
+    | getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientAddressObj
 ) => {
   const addrLine1 = [address?.addressLine1, address?.addressLine2, address?.landmark, address?.city]
     .filter((v) => v)
@@ -1022,8 +1034,9 @@ export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult'
     } else if (differenceMinute >= 60 && !isTomorrow) {
       return `${type} at ${moment(nextSlot).format('hh:mm A')}`;
     } else if (isTomorrow && differenceMinute < 2880 - minPassedToday) {
-      return `${type} Tomorrow${type === 'Available' ? ` at ${moment(nextSlot).format('hh:mm A')}` : ''
-        }`;
+      return `${type} Tomorrow${
+        type === 'Available' ? ` at ${moment(nextSlot).format('hh:mm A')}` : ''
+      }`;
     } else if ((diffDays >= 2 && diffDays <= 30) || type == 'Consult') {
       return `${type} in ${diffDays} days`;
     } else {
@@ -1078,7 +1091,7 @@ export const findAddrComponents = (
 };
 
 /**
- * Calculates great-circle distances between the two points – that is, the shortest distance over the earth’s surface – using the ‘Haversine’ formula.
+ * Calculates great-circle distances between the two points â€“ that is, the shortest distance over the earthâ€™s surface â€“ using the â€˜Haversineâ€™ formula.
  */
 export const distanceBwTwoLatLng = (lat1: number, lon1: number, lat2: number, lon2: number) => {
   const deg2rad = (deg: number) => deg * (Math.PI / 180);
@@ -1103,6 +1116,17 @@ export const getlocationDataFromLatLang = async (latitude: number, longitude: nu
   }
 };
 
+/**
+ * Method to filter addresses to find postal_code type address
+ */
+ const filterPinCodeAddressFromList = (googleAPIResponse: any) => {
+  const suggestionList = googleAPIResponse?.data?.results;
+  const [pinCodeAddress] = suggestionList?.filter((address: any) =>
+    address?.address_components?.some((components: any) => components?.types?.includes('postal_code'))
+  );
+  return pinCodeAddress?.address_components ? pinCodeAddress?.address_components : '';
+};
+
 const getlocationData = (
   resolve: (value?: LocationData | PromiseLike<LocationData> | undefined) => void,
   reject: (reason?: any) => void,
@@ -1118,8 +1142,7 @@ const getlocationData = (
       }
       getPlaceInfoByLatLng(latitude, longitude)
         .then((response) => {
-          const addrComponents =
-            g(response, 'data', 'results', '0' as any, 'address_components') || [];
+          const addrComponents = filterPinCodeAddressFromList(response);
           if (addrComponents.length == 0) {
             reject('Unable to get location.');
           } else {
@@ -1173,8 +1196,7 @@ export const doRequestAndAccessLocationModified = (
           if (response === 'denied' || response === 'restricted') {
             if (!showPrompt) {
               // don't show the prompt.
-            }
-            else {
+            } else {
               Alert.alert('Location', 'Enable location access from settings', [
                 {
                   text: 'Cancel',
@@ -1192,7 +1214,7 @@ export const doRequestAndAccessLocationModified = (
               ]);
             }
 
-            var msg = !showPrompt ? response : 'Unable to get location, permission denied'
+            var msg = !showPrompt ? response : 'Unable to get location, permission denied';
             reject(msg);
           } else {
             reject('Unable to get location.');
@@ -1274,8 +1296,8 @@ export const isValidName = (value: string) =>
   value == ' '
     ? false
     : value == '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
-      ? true
-      : false;
+    ? true
+    : false;
 
 export const isValidPhoneNumber = (value: string) => {
   const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(value)
@@ -1331,26 +1353,26 @@ export const reOrderMedicines = async (
   const availableLineItemsSkus = lineItemsDetails.map((v) => v.sku);
   const cartItemsToAdd = lineItemsDetails.map(
     (item, index) =>
-    ({
-      ...formatToCartItem(item),
-      quantity: Math.ceil(
-        (billedLineItems
-          ? billedLineItems[index].issuedQty
-          : isOfflineOrder
+      ({
+        ...formatToCartItem(item),
+        quantity: Math.ceil(
+          (billedLineItems
+            ? billedLineItems[index].issuedQty
+            : isOfflineOrder
             ? Math.ceil(
-              lineItems[index].price! / lineItems[index].mrp! / lineItems[index].quantity!
-            )
+                lineItems[index].price! / lineItems[index].mrp! / lineItems[index].quantity!
+              )
             : lineItems[index].quantity) || 1
-      ),
-    } as ShoppingCartItem)
+        ),
+      } as ShoppingCartItem)
   );
   const unavailableItems = billedLineItems
     ? billedLineItems
-      .filter((item) => !availableLineItemsSkus.includes(item.itemId))
-      .map((item) => item.itemName)
+        .filter((item) => !availableLineItemsSkus.includes(item.itemId))
+        .map((item) => item.itemName)
     : lineItems
-      .filter((item) => !availableLineItemsSkus.includes(item.medicineSKU!))
-      .map((item) => item.medicineName!);
+        .filter((item) => !availableLineItemsSkus.includes(item.medicineSKU!))
+        .map((item) => item.medicineName!);
 
   const eventAttributes: WebEngageEvents[WebEngageEventName.RE_ORDER_MEDICINE] = {
     orderType: 'Cart',
@@ -1381,15 +1403,15 @@ export const reOrderMedicines = async (
   ).join(',');
   const prescriptionsToAdd = prescriptionUrls.map(
     (item, index) =>
-    ({
-      id: appointmentIds?.[index],
-      appointmentId: appointmentIds?.[index],
-      date: moment(g(order, 'createdDate')).format('DD MMM YYYY'),
-      doctorName: `Meds Rx ${(order.id && order.id.substring(0, order.id.indexOf('-'))) || ''}`,
-      forPatient: g(currentPatient, 'firstName') || '',
-      medicines: medicineNames,
-      uploadedUrl: item,
-    } as EPrescription)
+      ({
+        id: appointmentIds?.[index],
+        appointmentId: appointmentIds?.[index],
+        date: moment(g(order, 'createdDate')).format('DD MMM YYYY'),
+        doctorName: `Meds Rx ${(order.id && order.id.substring(0, order.id.indexOf('-'))) || ''}`,
+        forPatient: g(currentPatient, 'firstName') || '',
+        medicines: medicineNames,
+        uploadedUrl: item,
+      } as EPrescription)
   );
 
   return {
@@ -1460,8 +1482,8 @@ export const getDiscountPercentage = (price: number | string, specialPrice?: num
   const discountPercent = !specialPrice
     ? 0
     : Number(price) == Number(specialPrice)
-      ? 0
-      : ((Number(price) - Number(specialPrice)) / Number(price)) * 100;
+    ? 0
+    : ((Number(price) - Number(specialPrice)) / Number(price)) * 100;
   return discountPercent != 0 ? Number(Number(discountPercent).toFixed(1)) : 0;
 };
 
@@ -1542,23 +1564,35 @@ export const getUniqueTestSlots = (slots: any[]) => {
       endTime: val?.slotInfo.endTime!,
       isPaidSlot: val?.slotInfo?.isPaidSlot,
       internalSlots: val?.slotInfo?.internalSlots,
-      distanceCharges: val?.slotInfo?.distanceCharges
-    }))
+      distanceCharges: val?.slotInfo?.distanceCharges,
+    }));
 };
-
 
 const webengage = new WebEngage();
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
     webengage.track(eventName, attributes);
-  } catch (error) { }
+  } catch (error) {}
 };
 
 export const postCleverTapEvent = (eventName: CleverTapEventName, attributes: Object) => {
   try {
     CleverTap.recordEvent(eventName, attributes);
-  } catch (error) { }
+  } catch (error) {}
+};
+
+/**
+ * To check is user logged into clevertap or not
+ * @param _currentPatient current patient user object
+ */
+export const checkCleverTapLoginStatus = async (_currentPatient: any) => {
+  CleverTap.profileGetProperty('Phone', (error, res) => {
+    if (res === null) {
+      //user is not logged into clevertap
+      onCleverTapUserLogin(_currentPatient);
+    }
+  });
 };
 
 export const onCleverTapUserLogin = async (_currentPatient: any) => {
@@ -1576,12 +1610,13 @@ export const onCleverTapUserLogin = async (_currentPatient: any) => {
         _currentPatient?.gender == Gender.MALE
           ? 'M'
           : _currentPatient?.gender == Gender.FEMALE
-            ? 'F'
-            : '',
+          ? 'F'
+          : '',
       DOB: new Date(_currentPatient?.dateOfBirth),
       ...(_currentPatient?.emailAddress && { Email: _currentPatient?.emailAddress }),
       ...(_currentPatient?.photoUrl && { Photo: _currentPatient?.photoUrl }),
       ...(_currentPatient?.createdDate && { CreatedDate: _currentPatient?.createdDate }),
+      isRefree: _currentPatient?.isRefree || false
     };
     CleverTap.onUserLogin(_userProfile);
     AsyncStorage.setItem('createCleverTapProifle', 'true');
@@ -1617,9 +1652,9 @@ export const postwebEngageAddToCartEvent = (
     special_price,
     category_id,
   }: Pick<MedicineProduct, 'sku' | 'name' | 'price' | 'special_price' | 'category_id'>,
-  source: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Source'],
-  sectionName?: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Section Name'],
-  categoryName?: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Category Name'],
+  source: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Nav src'],
+  sectionName?: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Section name'],
+  categoryName?: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Category name'],
   pharmacyCircleAttributes?: PharmacyCircleEvent
 ) => {
   const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART] = {
@@ -1640,19 +1675,19 @@ export const postwebEngageAddToCartEvent = (
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
   const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART] = {
-    'product name': name,
-    'product id (SKUID)': sku,
-    'Category Name': categoryName || undefined,
-    'Section Name': sectionName || undefined,
+    'Product name': name,
+    'SKU ID': sku,
+    'Category name': categoryName || undefined,
+    'Section name': sectionName || undefined,
     'Category ID': category_id || undefined,
     Price: price,
-    'Discounted Price': Number(special_price) || undefined,
+    'Discounted price': Number(special_price) || undefined,
     Quantity: 1,
-    Source: source,
-    'Circle Member':
+    'Nav src': source,
+    'Circle member':
       getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
       undefined,
-    'Circle Membership Value': pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
+    'Circle membership value': pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
   };
   postCleverTapEvent(CleverTapEventName.PHARMACY_ADD_TO_CART, cleverTapEventAttributes);
 };
@@ -1663,8 +1698,8 @@ export const getCleverTapCircleMemberValues = (
   return pharmacyCircleMemeber == 'Yes'
     ? 'Added'
     : pharmacyCircleMemeber == 'No'
-      ? 'Not Added'
-      : 'Existing';
+    ? 'Not Added'
+    : 'Existing';
 };
 
 export const postAppointmentCleverTapEvents = (
@@ -2070,7 +2105,7 @@ export const permissionHandler = (
         Alert.alert(permission.toUpperCase(), deniedMessage, [
           {
             text: 'Cancel',
-            onPress: () => { },
+            onPress: () => {},
           },
           {
             text: 'Ok',
@@ -2082,7 +2117,7 @@ export const permissionHandler = (
         ]);
       }
     })
-    .catch((e) => { });
+    .catch((e) => {});
 };
 
 const consultPermissionCleverTapEvents = (
@@ -2129,12 +2164,12 @@ export const callPermissions = (
 };
 
 export const getUTMdataFromURL = (url: string) => {
-  var result: any = { appUrl: null, utm_source: null, utm_medium: null, utm_campaign: null };
+  var result: any = { source_url: null, utm_source: null, utm_medium: null, utm_campaign: null };
   if (url.indexOf('?') != -1) {
     try {
       var splitedArray = url.split('?');
       var main_url_array = splitedArray[1].split('&');
-      result.appUrl = splitedArray[0];
+      result.source_url = splitedArray[0];
       main_url_array.forEach((item) => {
         let utmAr = item.split('=');
         result[utmAr[0]] = utmAr[1];
@@ -2144,7 +2179,7 @@ export const getUTMdataFromURL = (url: string) => {
       return false;
     }
   } else {
-    result.appUrl = url;
+    result.source_url = url;
     return result;
   }
 };
@@ -2161,21 +2196,25 @@ export const storagePermissions = (doRequest?: () => void) => {
 
 export const InitiateAppsFlyer = (
   navigation: NavigationScreenProp<NavigationRoute<object>, object>,
-  redirectWithOutDeferred: (data: any) => void | undefined
+  redirectWithOutDeferred: (data: any) => void | undefined,
+  redirectUrl: string | null,
+  launchSourceEvent: (isFirstLaunch: boolean) => void
 ) => {
   appsFlyer.initSdk(
     {
       devKey: 'pP3MjHNkZGiMCamkJ7YpbH',
-      isDebug: false,
+      isDebug: true,
       appId: Platform.OS === 'ios' ? '1496740273' : 'com.apollo.patientapp',
       onInstallConversionDataListener: true, //Optional
       onDeepLinkListener: true, //Optional
     },
-    (result) => { },
-    (error) => { }
+    (result) => {},
+    (error) => {}
   );
+  let isFirstLaunch = false
   onInstallConversionDataCanceller = appsFlyer.onInstallConversionData((res) => {
     if (JSON.parse(res.data.is_first_launch || 'null') == true) {
+      isFirstLaunch = true
       try {
         if (res.data.af_dp !== undefined) {
           AsyncStorage.setItem('deeplink', res.data.af_dp);
@@ -2199,7 +2238,7 @@ export const InitiateAppsFlyer = (
         setBugFenderLog('APPS_FLYER_DEEP_LINK_Referral_Code', res.data.af_sub1);
 
         setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
-      } catch (error) { }
+      } catch (error) {}
 
       if (res.data.af_status === 'Non-organic') {
         const media_source = res.data.media_source;
@@ -2209,7 +2248,6 @@ export const InitiateAppsFlyer = (
     } else {
     }
   });
-
 
   onAppOpenAttributionCanceller = appsFlyer.onAppOpenAttribution(async (res) => {
     // for iOS universal links
@@ -2229,34 +2267,85 @@ export const InitiateAppsFlyer = (
         );
 
         setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
-      } catch (error) { }
+      } catch (error) {}
     }
   });
+  let isDeepLinked = false
   onDeepLinkCanceller = appsFlyer.onDeepLink(res => {
+    isDeepLinked = true
     if (res.isDeferred) {
-      getInstallResources()
+      getInstallResources();
       const url = handleOpenURL(res.data.deep_link_value);
-      AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url))
+      AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
     }
-    if (!res.isDeferred) {
-      clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data))
-      const url = handleOpenURL(res.data.deep_link_value);
-      AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url))
-      redirectWithOutDeferred(url)
-    }
-    if (res.status == "success") {
-      clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data))
-    }
+    try {
+      if (!res.isDeferred) {
+        if (redirectUrl && checkUniversalURL(redirectUrl).universal) {
+          if (Object.keys(res.data).length < 2) {
+            clevertapEventForAppsflyerDeeplink(removeNullFromObj({
+              source_url: checkUniversalURL(redirectUrl).source_url,
+              channel: 'Organic'
+            }))
+          }
+          else {
+            clevertapEventForAppsflyerDeeplink(
+              filterAppLaunchSoruceAttributesByKey({
+                ...res.data,
+                source_url: checkUniversalURL(redirectUrl).source_url
+              }))
+          }
+
+        }
+        else {
+          clevertapEventForAppsflyerDeeplink(filterAppLaunchSoruceAttributesByKey(res.data))
+          const url = handleOpenURL(res.data.deep_link_value);
+          AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url))
+          redirectWithOutDeferred(url)
+        }
+      }
+      if (!res.isDeferred) {
+        clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data));
+        const url = handleOpenURL(res.data.deep_link_value);
+        AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
+        redirectWithOutDeferred(url);
+      }
+      if (res.status == 'success') {
+        clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data));
+      }
+    } catch (e) { }
+
   })
+  setTimeout(() => {
+    !isDeepLinked && launchSourceEvent(isFirstLaunch)
+  }, 5000)
 };
-const removeNullFromObj = (obj: any) => {
+
+
+export const checkUniversalURL = (url: string) => {
+  if (url.indexOf(string.common.apollo247UniversalLink) != -1
+    || url.indexOf(string.common.apolloPharmacyUniversalLink) != -1
+  ) {
+    if (url.indexOf('?') != -1) {
+      var splitedArray = url.split('?');
+      return { universal: true, source_url: splitedArray[0] }
+    }
+    else {
+      return { universal: true, source_url: url }
+    }
+  }
+  else {
+    return { universal: false }
+  }
+}
+
+export const removeNullFromObj = (obj: any) => {
   for (var propName in obj) {
     if (obj[propName] === null || obj[propName] === undefined) {
       delete obj[propName];
     }
   }
-  return obj
-}
+  return obj;
+};
 
 const setAppReferralData = (data: {
   af_channel: string,
@@ -2270,15 +2359,15 @@ const setAppReferralData = (data: {
 
 const getInstallResources = () => {
   let installConversation = appsFlyer.onInstallConversionData((res) => {
-    clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data))
-    installConversation()
-  })
-}
+    clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data));
+    installConversation();
+  });
+};
 export const clevertapEventForAppsflyerDeeplink = (eventArributes: any) => {
   postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
-    ...eventArributes
+    ...eventArributes,
   });
-}
+};
 
 export const deferredDeepLinkRedirectionData = async (
   navigation: NavigationScreenProp<NavigationRoute<object>, object>,
@@ -2289,24 +2378,24 @@ export const deferredDeepLinkRedirectionData = async (
 
   if (res) {
     const url = JSON.parse(res);
-    pushTheView(navigation, url?.routeName,
+    pushTheView(
+      navigation,
+      url?.routeName,
       url?.id,
       url?.isCall,
       undefined,
       undefined,
-      url?.mediaSource)
-    AsyncStorage.removeItem('deferred_deep_link_value')
-    success && success()
+      url?.mediaSource
+    );
+    AsyncStorage.removeItem('deferred_deep_link_value');
+    success && success();
+  } else {
+    failure();
   }
-  else {
-    failure()
-  }
-}
-
-
+};
 
 export const UnInstallAppsFlyer = (newFirebaseToken: string) => {
-  appsFlyer.updateServerUninstallToken(newFirebaseToken, (success) => { });
+  appsFlyer.updateServerUninstallToken(newFirebaseToken, (success) => {});
 };
 
 export const APPStateActive = () => {
@@ -2318,6 +2407,10 @@ export const APPStateActive = () => {
     onAppOpenAttributionCanceller();
     onAppOpenAttributionCanceller = null;
   }
+  if (onDeepLinkCanceller) {
+    onDeepLinkCanceller();
+    onDeepLinkCanceller = null;
+  }
 };
 
 export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Object) => {
@@ -2326,10 +2419,10 @@ export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Ob
     appsFlyer.logEvent(
       eventName,
       attributes,
-      (res) => { },
-      (err) => { }
+      (res) => {},
+      (err) => {}
     );
-  } catch (error) { }
+  } catch (error) {}
 };
 
 export const setCleverTapAppsFlyerCustID = () => {
@@ -2338,13 +2431,13 @@ export const setCleverTapAppsFlyerCustID = () => {
       const userId = res;
       SetAppsFlyerCustID(userId?.toString());
     });
-  } catch (error) { }
+  } catch (error) {}
 };
 
 export const SetAppsFlyerCustID = (patientId: string) => {
   try {
-    appsFlyer.setCustomerUserId(patientId, (res) => { });
-  } catch (error) { }
+    appsFlyer.setCustomerUserId(patientId, (res) => {});
+  } catch (error) {}
 };
 
 export const postAppsFlyerAddToCartEvent = (
@@ -2363,7 +2456,7 @@ export const postAppsFlyerAddToCartEvent = (
     af_revenue: Number(special_price) || price,
     af_currency: 'INR',
     item_type: type_id == 'Pharma' ? 'Drugs' : 'FMCG',
-    sku: sku ? sku : "",
+    sku: sku ? sku : '',
     af_content_id: content_id ? content_id : 0,
     ...pharmacyCircleAttributes,
   };
@@ -2373,7 +2466,7 @@ export const postAppsFlyerAddToCartEvent = (
 export const setFirebaseUserId = (userId: string) => {
   try {
     analytics().setUserId(userId);
-  } catch (error) { }
+  } catch (error) {}
 };
 
 export const setCrashlyticsAttributes = async (
@@ -2387,13 +2480,13 @@ export const setCrashlyticsAttributes = async (
         lastName: currentPatient?.lastName!,
       }),
     ]);
-  } catch (error) { }
+  } catch (error) {}
 };
 
 export const postFirebaseEvent = (eventName: FirebaseEventName, attributes: Object) => {
   try {
     analytics().logEvent(eventName, attributes);
-  } catch (error) { }
+  } catch (error) {}
 };
 
 export const postFirebaseAddToCartEvent = (
@@ -2428,7 +2521,7 @@ export const postFirebaseAddToCartEvent = (
       ...pharmacyCircleAttributes,
     };
     postFirebaseEvent(FirebaseEventName.PHARMACY_ADD_TO_CART, eventAttributes);
-  } catch (error) { }
+  } catch (error) {}
 };
 
 export const nameFormater = (
@@ -2484,10 +2577,10 @@ export const getFormattedLocation = (
   return {
     displayName: isModifyAddress
       ? findAddrComponents('locality', addrComponents) ||
-      findAddrComponents('administrative_area_level_2', addrComponents)
+        findAddrComponents('administrative_area_level_2', addrComponents)
       : (area || []).pop() ||
-      findAddrComponents('locality', addrComponents) ||
-      findAddrComponents('administrative_area_level_2', addrComponents),
+        findAddrComponents('locality', addrComponents) ||
+        findAddrComponents('administrative_area_level_2', addrComponents),
 
     latitude: lat,
     longitude: lng,
@@ -2517,8 +2610,8 @@ const getDaysCount = (type: MEDICINE_CONSUMPTION_DURATION | null) => {
   return type == MEDICINE_CONSUMPTION_DURATION.MONTHS
     ? 30
     : type == MEDICINE_CONSUMPTION_DURATION.WEEKS
-      ? 7
-      : 1;
+    ? 7
+    : 1;
 };
 
 export const getPrescriptionItemQuantity = (
@@ -2533,19 +2626,19 @@ export const getPrescriptionItemQuantity = (
   if (medicineUnit == MEDICINE_UNIT.TABLET || medicineUnit == MEDICINE_UNIT.CAPSULE) {
     const medicineDosageMapping = medicineCustomDosage
       ? medicineCustomDosage.split('-').map((item) => {
-        if (item.indexOf('/') > -1) {
-          const dosage = item.split('/').map((item) => Number(item));
-          return (dosage[0] || 1) / (dosage[1] || 1);
-        } else if (item.indexOf('\\') > -1) {
-          const dosage = item.split('\\').map((item) => Number(item));
-          return (dosage[0] || 1) / (dosage[1] || 1);
-        } else {
-          return Number(item);
-        }
-      })
+          if (item.indexOf('/') > -1) {
+            const dosage = item.split('/').map((item) => Number(item));
+            return (dosage[0] || 1) / (dosage[1] || 1);
+          } else if (item.indexOf('\\') > -1) {
+            const dosage = item.split('\\').map((item) => Number(item));
+            return (dosage[0] || 1) / (dosage[1] || 1);
+          } else {
+            return Number(item);
+          }
+        })
       : medicineDosage
-        ? Array.from({ length: 4 }).map(() => Number(medicineDosage))
-        : [1, 1, 1, 1];
+      ? Array.from({ length: 4 }).map(() => Number(medicineDosage))
+      : [1, 1, 1, 1];
 
     const medicineTimingsPerDayCount =
       (medicineTimings || []).reduce(
@@ -2554,12 +2647,12 @@ export const getPrescriptionItemQuantity = (
           (currItem == MEDICINE_TIMINGS.MORNING
             ? medicineDosageMapping[0]
             : currItem == MEDICINE_TIMINGS.NOON
-              ? medicineDosageMapping[1]
-              : currItem == MEDICINE_TIMINGS.EVENING
-                ? medicineDosageMapping[2]
-                : currItem == MEDICINE_TIMINGS.NIGHT
-                  ? medicineDosageMapping[3]
-                  : 1),
+            ? medicineDosageMapping[1]
+            : currItem == MEDICINE_TIMINGS.EVENING
+            ? medicineDosageMapping[2]
+            : currItem == MEDICINE_TIMINGS.NIGHT
+            ? medicineDosageMapping[3]
+            : 1),
         0
       ) || 1;
 
@@ -2616,7 +2709,7 @@ export const savePastSearch = (client: ApolloClient<object>, input: SaveSearchIn
       mutation: SAVE_SEARCH,
       variables: { saveSearchInput: input },
     });
-  } catch (error) { }
+  } catch (error) {}
 };
 
 export const addPharmaItemToCart = (
@@ -2636,7 +2729,9 @@ export const addPharmaItemToCart = (
   itemsInCart?: string,
   onComplete?: () => void,
   pharmacyCircleAttributes?: PharmacyCircleEvent,
-  onAddedSuccessfully?: () => void
+  onAddedSuccessfully?: () => void,
+  comingFromSearch?: boolean,
+  cleverTapSearchSuccessEventAttributes?: object,
 ) => {
   const outOfStockMsg = 'Sorry, this item is out of stock in your area.';
 
@@ -2707,9 +2802,17 @@ export const addPharmaItemToCart = (
     .then((res) => {
       const availability = g(res, 'data', 'response', '0' as any, 'exist');
       if (availability) {
+        if (comingFromSearch === true) {
+          cleverTapSearchSuccessEventAttributes['Product availability'] = 'Is in stock';
+          postCleverTapEvent(CleverTapEventName.PHARMACY_SEARCH_SUCCESS, cleverTapSearchSuccessEventAttributes);
+        }
         addToCart();
         onAddedSuccessfully?.();
       } else {
+        if (comingFromSearch === true) {
+          cleverTapSearchSuccessEventAttributes['Product availability'] = 'Out of stock';
+          postCleverTapEvent(CleverTapEventName.PHARMACY_SEARCH_SUCCESS, cleverTapSearchSuccessEventAttributes);
+        }
         navigate();
       }
       try {
@@ -2726,7 +2829,7 @@ export const addPharmaItemToCart = (
           'Cart Items': JSON.stringify(itemsInCart) || '',
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
-      } catch (error) { }
+      } catch (error) {}
     })
     .catch(() => {
       addToCart();
@@ -2821,21 +2924,21 @@ export const overlyCallPermissions = (
 
           showPermissionPopUp(
             string.callRelatedPermissions.camAndMPPermission.replace('{0}', doctorName),
-            () => callPermissions(() => { }, screenName)
+            () => callPermissions(() => {}, screenName)
           );
         } else if (cameraYes && microphoneNo) {
           showPermissionPopUp(
             string.callRelatedPermissions.onlyMPPermission.replace('{0}', doctorName),
-            () => callPermissions(() => { }, screenName)
+            () => callPermissions(() => {}, screenName)
           );
         } else if (cameraNo && microphoneYes) {
           showPermissionPopUp(
             string.callRelatedPermissions.onlyCameraPermission.replace('{0}', doctorName),
-            () => callPermissions(() => { }, screenName)
+            () => callPermissions(() => {}, screenName)
           );
         }
       })
-      .catch((e) => { });
+      .catch((e) => {});
   } else {
     Permissions.checkMultiple(['camera', 'microphone'])
       .then((response) => {
@@ -2849,10 +2952,10 @@ export const overlyCallPermissions = (
           cameraNo && microphoneNo
             ? string.callRelatedPermissions.camAndMPPermission
             : cameraYes && microphoneNo
-              ? string.callRelatedPermissions.onlyMPPermission
-              : cameraNo && microphoneYes
-                ? string.callRelatedPermissions.onlyCameraPermission
-                : '';
+            ? string.callRelatedPermissions.onlyMPPermission
+            : cameraNo && microphoneYes
+            ? string.callRelatedPermissions.onlyCameraPermission
+            : '';
         if (description) {
           showAphAlert!({
             unDismissable: true,
@@ -2876,14 +2979,14 @@ export const overlyCallPermissions = (
                   hideAphAlert!();
                   onPressAllow();
                   callback?.();
-                  callPermissions(() => { }, screenName);
+                  callPermissions(() => {}, screenName);
                 },
               },
             ],
           });
         }
       })
-      .catch((e) => { });
+      .catch((e) => {});
   }
 };
 
@@ -2926,7 +3029,8 @@ export const calculateCashbackForItem = (
 };
 
 export const readableParam = (param: string) => {
-  const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;';
+  const a =
+    'Ã Ã¡Ã¢Ã¤Ã¦Ã£Ã¥ÄÄƒÄ…Ã§Ä‡ÄÄ‘ÄÃ¨Ã©ÃªÃ«Ä“Ä—Ä™Ä›ÄŸÇµá¸§Ã®Ã¯Ã­Ä«Ä¯Ã¬Å‚á¸¿Ã±Å„Ç¹ÅˆÃ´Ã¶Ã²Ã³Å“Ã¸ÅÃµÅ‘á¹•Å•Å™ÃŸÅ›Å¡ÅŸÈ™Å¥È›Ã»Ã¼Ã¹ÃºÅ«Ç˜Å¯Å±Å³áºƒáºÃ¿Ã½Å¾ÅºÅ¼Â·/_,:;';
   const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz------';
   const p = new RegExp(a.split('').join('|'), 'g');
 
@@ -3169,10 +3273,10 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
       statusString = 'Partial Order Completed';
       break;
     case DIAGNOSTIC_ORDER_STATUS.ORDER_MODIFIED:
-      statusString = !!customText ? 'Order modification' : 'Order modified'
+      statusString = !!customText ? 'Order modification' : 'Order modified';
       break;
     case DIAGNOSTIC_ORDER_STATUS.REFUND_INITIATED:
-      statusString = 'Partial Refund Initiated'
+      statusString = 'Partial Refund Initiated';
       break;
     default:
       statusString = '';
@@ -3180,7 +3284,6 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
   }
   return statusString;
 };
-
 
 export const getShipmentPrice = (shipmentItems: any, cartItems: any) => {
   let total = 0;
@@ -3345,9 +3448,9 @@ export async function downloadDiagnosticReport(
       (result &&
         Platform.OS == 'android' &&
         result?.[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] ===
-        PermissionsAndroid.RESULTS.GRANTED &&
+          PermissionsAndroid.RESULTS.GRANTED &&
         result?.[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] ===
-        PermissionsAndroid.RESULTS.GRANTED) ||
+          PermissionsAndroid.RESULTS.GRANTED) ||
       Platform.OS == 'ios'
     ) {
       const dirs = RNFetchBlob.fs.dirs;
@@ -3397,9 +3500,9 @@ export async function downloadDiagnosticReport(
         result &&
         Platform.OS == 'android' &&
         result?.[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] !==
-        PermissionsAndroid.RESULTS.DENIED &&
+          PermissionsAndroid.RESULTS.DENIED &&
         result?.[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] !==
-        PermissionsAndroid.RESULTS.DENIED
+          PermissionsAndroid.RESULTS.DENIED
       ) {
         storagePermissionsToDownload(() => {
           downloadDiagnosticReport(
@@ -3585,42 +3688,42 @@ export const getCleverTapCheckoutCompletedEventAttributes = (
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
   const eventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED] = {
     'Transaction ID': paymentOrderId,
-    'Order Type': 'Cart',
-    'Prescription Added': !!(physicalPrescriptions.length || ePrescriptions.length),
+    'Order type': 'Cart',
+    'Prescription added': !!(physicalPrescriptions.length || ePrescriptions.length),
     'Shipping information': shippingInformation, // (Home/Store address)
     'Total items in cart': cartItems.length,
-    'Grand Total': cartTotal + deliveryCharges,
-    'Total Discount %': coupon
+    'Grand total': cartTotal + deliveryCharges,
+    'Total discount %': coupon
       ? getFormattedAmount(((couponDiscount + productDiscount) / cartTotal) * 100)
       : 0,
-    'Discount Amount': getFormattedAmount(couponDiscount + productDiscount),
-    'Shipping Charges': deliveryCharges,
+    'Discount amount': getFormattedAmount(couponDiscount + productDiscount),
+    'Shipping charges': deliveryCharges,
     'Net after discount': getFormattedAmount(grandTotal),
     'Payment status': 1,
-    'Service Area': 'Pharmacy',
-    'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
-    af_revenue: getFormattedAmount(grandTotal),
-    'Circle Cashback Amount':
+    'Service area': 'Pharmacy',
+    'Mode of delivery': deliveryAddressId ? 'Home' : 'Pickup',
+    'AF revenue': getFormattedAmount(grandTotal),
+    'Circle cashback amount':
       circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
-    'Split Cart': orders?.length > 1 ? 'Yes' : 'No',
-    'Prescription Option selected': uploadPrescriptionRequired
+    'Split cart': orders?.length > 1 ? 'Yes' : 'No',
+    'Prescription option selected': uploadPrescriptionRequired
       ? 'Prescription Upload'
       : 'Not Applicable',
-    'Circle Member':
+    'Circle member':
       getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
       undefined,
-    'Circle Membership Value': pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
-    'User Type': pharmacyUserTypeAttribute?.User_Type || undefined,
-    'Coupon Applied': coupon?.coupon || undefined,
+    'Circle membership value': pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
+    'User type': pharmacyUserTypeAttribute?.User_Type || undefined,
+    'Coupon applied': coupon?.coupon || undefined,
     Pincode: pinCode || undefined,
-    'Cart Items': JSON.stringify(cartItems),
-    'Order_ID(s)': ordersIds?.map((i) => i?.orderAutoId)?.join(','),
+    'Cart items': JSON.stringify(cartItems),
+    'Order ID(s)': ordersIds?.map((i) => i?.orderAutoId)?.join(','),
   };
   if (store) {
     eventAttributes['Store ID'] = store.storeid;
-    eventAttributes['Store Name'] = store.storename;
-    eventAttributes['Store Number'] = store.phone;
-    eventAttributes['Store Address'] = store.address;
+    eventAttributes['Store name'] = store.storename;
+    eventAttributes['Store number'] = store.phone;
+    eventAttributes['Store address'] = store.address;
   }
   return eventAttributes;
 };
@@ -3637,7 +3740,7 @@ export const getDiagnosticCityLevelPaymentOptions = (cityId: string) => {
       : AppConfig.Configuration.Enable_Diagnostics_COD,
   };
   return paymentValues;
-}
+};
 
 export const setAsyncDiagnosticLocation = (address: any) => {
   if (address) {
@@ -3647,7 +3750,7 @@ export const setAsyncDiagnosticLocation = (address: any) => {
       city: address?.city,
       state: address?.state,
       latitude: Number(address?.latitude),
-      longitude: Number(address?.longitude)
+      longitude: Number(address?.longitude),
     };
     AsyncStorage.setItem('DiagnosticLocation', JSON.stringify(addressSelected));
   }
@@ -3655,7 +3758,7 @@ export const setAsyncDiagnosticLocation = (address: any) => {
 
 export const checkPatientAge = (_selectedPatient: any, fromNewProfile: boolean = false) => {
   let age = !!_selectedPatient?.dateOfBirth ? getAge(_selectedPatient?.dateOfBirth) : null;
-  if (age != null && age != undefined && age <= 10) {
+  if (age != null && age != undefined && age < 10) {
     return true;
   }
   return false;
@@ -3663,22 +3766,23 @@ export const checkPatientAge = (_selectedPatient: any, fromNewProfile: boolean =
 
 export const extractPatientDetails = (patientDetails: any) => {
   const patientName = `${patientDetails?.firstName! || ''} ${patientDetails?.lastName! || ''}`;
-  const genderAgeText = `${nameFormater(patientDetails?.gender!, 'title') || ''}, ${patientDetails?.dateOfBirth ? getAge(patientDetails?.dateOfBirth) || '0' : ''
-    }`;
+  const genderAgeText = `${nameFormater(patientDetails?.gender!, 'title') || ''}, ${
+    patientDetails?.dateOfBirth ? getAge(patientDetails?.dateOfBirth) || '0' : ''
+  }`;
   const patientSalutation = !!patientDetails?.gender
     ? patientDetails?.gender === Gender.FEMALE
       ? 'Ms.'
       : patientDetails?.gender === Gender.MALE
-        ? 'Mr.'
-        : ''
+      ? 'Mr.'
+      : ''
     : '';
 
   return {
     patientName,
     genderAgeText,
-    patientSalutation
-  }
-}
+    patientSalutation,
+  };
+};
 
 export const isDiagnosticSelectedCartEmpty = (patientCartItems: DiagnosticPatientCartItem[]) => {
   const getAllSelectedItems = patientCartItems?.map((item: DiagnosticPatientCartItem) => {
@@ -3693,8 +3797,8 @@ export const isDiagnosticSelectedCartEmpty = (patientCartItems: DiagnosticPatien
       return item;
     }
   });
-  return finalPatientCartItems
-}
+  return finalPatientCartItems;
+};
 export const downloadDocument = (
   fileUrl: string = '',
   type: string = 'application/pdf',
@@ -3765,6 +3869,15 @@ export const convertDateToEpochFormat = (value: Date) => {
   return epochValue;
 };
 
+
+export const filterAppLaunchSoruceAttributesByKey = (raw: any) => {
+  let validObjKeys = ["CT Session Id", "channel", "CT Source", "CT App Version", "deep_link_value", "is_deferred", "campaign", "match_type", "media_source", "source", "utm_campaign", "utm_medium", "source_url", "utm_source", "install_time", "is_first_launch", "is_incentivized", "retargeting_conversion_type", "orig_cost", "cost_cents_USD", "iscache", "click_time", "is_retargeting", "adgroupid", "keyword", "adtype", "device", "utm_content", "is_mobile_data_terms_signed", "is_fb", "is_paid", "adgroup", "campaign_id"];
+  let filteredObj = removeNullFromObj(raw)
+  return Object.keys(filteredObj).filter(key => validObjKeys.includes(key)).reduce((obj: any, key) => {
+    obj[key] = filteredObj[key];
+    return obj;
+  }, {});
+}
 export const replaceVariableInString = (str: string, mapObj: { [propName: string]: string; }) => {
   let newArrayWithUpdatedString = Object.keys(mapObj).map(item => '{' + item + '}')
   let rgx = new RegExp(newArrayWithUpdatedString.join("|"), "gi")
@@ -3773,3 +3886,133 @@ export const replaceVariableInString = (str: string, mapObj: { [propName: string
   });
   return str
 }
+export const getAvailabilityForSearchSuccess = (pincode: string, sku: string) => {
+  let availability = false;
+      availabilityApi247(pincode, sku)
+        .then((res) => {
+          availability = g(res, 'data', 'response', '0' as any, 'exist');
+        })
+        .catch((error) => {
+          availability = false;
+        });
+    return availability;
+};
+
+
+export const getPaymentMethodsInfo = (paymentMethods: any, paymentMode: string) => {
+  try {
+    const paymentMethodInfo = paymentMethods
+      ?.filter((item: any) => item?.name == paymentMode)?.[0]
+      ?.payment_methods?.map((item: any) => {
+        return {
+          payment_method_type: paymentMode,
+          payment_method: item?.payment_method_code,
+          payment_method_reference: item?.payment_method_code,
+        };
+      });
+    return !!paymentMethodInfo ? paymentMethodInfo : [];
+  } catch (error) {
+    return [];
+  }
+};
+
+export const getBestOffer = (offers: any, paymentCode: string) => {
+  try {
+    const bestOfferId = offers?.best_offer_combinations?.filter(
+      (item: any) => item?.payment_method_reference == paymentCode
+    )?.[0]?.offers[0]?.offer_id;
+    const offer = offers?.offers?.filter((item: any) => item?.offer_id == bestOfferId)?.[0];
+    return offer;
+  } catch (error) {
+    return null;
+  }
+};
+
+export const getErrorMsg = (errorCode: string) => {
+  switch (errorCode) {
+    case 'JP701':
+      return 'This offer is not valid for this transaction.';
+      break;
+    case 'JP702':
+      return 'Internal Error while applying the offer.';
+      break;
+    case 'JP703':
+      return 'This offer is not valid for this transaction.';
+      break;
+    case 'JP704':
+      return 'This offer is not valid for this transaction.';
+      break;
+    case 'JP705':
+    case 'JP706':
+      return 'Internal Error while applying the offer. ';
+      break;
+    case 'JP708':
+      return 'This offer is not valid for this transaction.';
+      break;
+  }
+};
+
+export const getAsyncStorageValues = async () => {
+  const token = await AsyncStorage.getItem('jwt');
+  const user = await AsyncStorage.getItem('currentPatient');
+  return [token, user];
+};
+
+export const getCirclePlanDetails = async (
+  mobile_number: string,
+  client: any
+): Promise<Array<any>> => {
+  let details = [];
+  await client
+    .query({
+      query: GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
+      variables: { mobile_number },
+      fetchPolicy: 'no-cache',
+    })
+    .then((data: any) => {
+      const res = data?.data?.GetAllUserSubscriptionsWithPlanBenefitsV2?.response;
+      if (res.hasOwnProperty('APOLLO')) {
+        details = res?.APOLLO?.[0]?.plan_summary;
+      } else details = [];
+    })
+    .catch((err: Error) => {});
+  return details;
+};
+
+export const formatUrl = (url: string, token: string, userMobileNumber: string): string => {
+  let uri = url;
+  const queryParamsDelimiterIndex = uri.indexOf('?');
+  if (queryParamsDelimiterIndex !== -1)
+    uri = uri.concat(`&utm_token=${token}&utm_mobile_number=${userMobileNumber}`);
+  else uri = uri.concat(`?utm_token=${token}&utm_mobile_number=${userMobileNumber}`);
+  return uri;
+};
+
+export const getFormattedDaySubscript = (day: number) => {
+  if (day > 3 && day < 21) return 'th';
+  switch (day % 10) {
+    case 1:
+      return 'st';
+    case 2:
+      return 'nd';
+    case 3:
+      return 'rd';
+    default:
+      return 'th';
+  }
+};
+
+export const getFormattedDateTimeWithBefore = (time: string) => {
+  const day = parseInt(moment(time).format('D'), 10);
+  const getDaySubscript = getFormattedDaySubscript(day);
+
+  const finalDateTime =
+    day +
+    getDaySubscript +
+    ' ' +
+    moment(time).format('MMMM') +
+    ' before ' +
+    moment(time).format('hh:mm A');
+
+  return finalDateTime;
+};

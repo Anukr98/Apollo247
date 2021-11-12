@@ -30,7 +30,7 @@ export const CredPay: React.FC<CredPayProps> = (props) => {
 
   const renderOffer = () => {
     return (
-      <View style={{ flexDirection: 'row', paddingBottom: 15 }}>
+      <View style={{ flexDirection: 'row', paddingBottom: 15, alignItems: 'center' }}>
         <OffersIcon style={styles.offerIcon} />
         <Text style={styles.offermsg}>{credInfo?.layout?.bannerText}</Text>
       </View>

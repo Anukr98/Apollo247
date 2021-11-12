@@ -16,8 +16,12 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ChatWithUs } from '@aph/mobile-patients/src/components/ui/ChatWithUs';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { MEDICINE_ORDER_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  MEDICINE_ORDER_STATUS,
+  MEDICINE_ORDER_TYPE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '../../strings/AppConfig';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -111,6 +115,10 @@ export interface OrderProgressCardProps {
   shouldShowReUploadOption?: boolean | null;
   orderType?: string | null;
   isPrescriptionUploaded?: string | null;
+  index: number;
+  cancellationRequestRaised: Boolean;
+  cancellationRequestRejected: Boolean;
+  length: number;
 }
 
 export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
@@ -258,6 +266,13 @@ export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
             ) : null}
           </View>
         )}
+        <Text style={styles.descriptionSubtextText}>
+          {props.index + 1 == props.length && props.cancellationRequestRaised
+            ? string.orderDetailScreen.cancellationRequestRaised
+            : props.cancellationRequestRejected && props.status != MEDICINE_ORDER_STATUS.SHIPPED
+            ? string.orderDetailScreen.cancellationRequestRejected
+            : null}
+        </Text>
       </View>
     </View>
   );
@@ -267,4 +282,3 @@ OrderProgressCard.defaultProps = {
   showReUploadPrescription: false,
   showChatWithUs: false,
 };
-

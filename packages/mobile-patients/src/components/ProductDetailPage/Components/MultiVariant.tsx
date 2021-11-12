@@ -22,6 +22,8 @@ export const MultiVariant: React.FC<MultiVariantProps> = (props) => {
     pincode,
   } = props;
 
+  const multiVariantsProductsKeys = Object.keys(multiVariantProducts);
+
   const selectedSku = skusInformation?.filter((value) => value.sku == currentSku);
   const [selectedOptions, setSelectedOptions] = useState<string[]>(
     selectedSku?.[0]?.code?.split('_') || []
@@ -33,9 +35,19 @@ export const MultiVariant: React.FC<MultiVariantProps> = (props) => {
   }, [pincode]);
 
   const checkAvailability = () => {
-    const skus = skusInformation?.map((item) => {
-      return item.sku;
-    });
+    const skus = [];
+    if (multiVariantAttributes && multiVariantAttributes?.length > 1) {
+      multiVariantsProductsKeys.map((item) => {
+        if (item.startsWith(selectedOptions[0] + '_')) {
+          const x = multiVariantProducts && multiVariantProducts?.[item]?.sku;
+          skus.push(x);
+        }
+      });
+    } else {
+      skusInformation?.map((item) => {
+        skus.push(item?.sku);
+      });
+    }
     availabilityApi247(pincode, skus.join(',')).then((res) => {
       if (res?.data?.response?.length) {
         const availabilityInfo = skuAvailability?.map((data, index) => {
@@ -52,8 +64,10 @@ export const MultiVariant: React.FC<MultiVariantProps> = (props) => {
 
   const getSkuStatus = (code, index) => {
     let skuStatus;
+    let unit;
     if (selectedOptions[index] === `${code}`) {
       skuStatus = 'selected';
+      unit = selectedSku?.[0]?.unitOfMeasurement || '';
     } else {
       const checkItem = (data) =>
         data.split('_').filter((data) => selectedOptions?.includes(data)).length;
@@ -62,11 +76,19 @@ export const MultiVariant: React.FC<MultiVariantProps> = (props) => {
           ? data?.code.includes(`${code}`) && checkItem(data?.code)
           : data?.code.includes(`${code}`)
       );
-      const status = filteredArray && filteredArray.length ? filteredArray[0].available : '';
+      const status =
+        filteredArray?.[0]?.available ||
+        (index === 0 && multiVariantAttributes && multiVariantAttributes?.length > 1) ||
+        '';
       skuStatus = status ? '' : 'outOfStock';
+      const unit1 =
+        filteredArray?.[0]?.unitOfMeasurement ||
+        (index === 0 && multiVariantAttributes && multiVariantAttributes?.length > 1) ||
+        '';
+      unit = unit1;
     }
 
-    return skuStatus;
+    return [skuStatus, unit];
   };
 
   const handleClick = (variant, code) => {
@@ -93,53 +115,73 @@ export const MultiVariant: React.FC<MultiVariantProps> = (props) => {
       const selectedVariantLabel = multiVariantAttributes?.[index]?.values?.filter(
         (data) => data?.code === selectedOptions?.[index]
       )?.[0]?.label;
+      const label = value?.label.split('_').map((ele) => {
+        return ele[0].toUpperCase() + ele.slice(1, ele.length);
+      });
+      const labelToBeDisplayed = label.join(' ');
+      const unitDisplayed = selectedSku?.[0]?.unitOfMeasurement || '';
       return (
         <View style={{ marginBottom: 7 }}>
           <View style={styles.flexRow}>
             <Text style={theme.viewStyles.text('M', 14, '#02475B', 1, 27, 0.35)}>
-              {`Selected ${value?.label}:`}
+              {`Selected ${labelToBeDisplayed}:`}
             </Text>
             <Text style={theme.viewStyles.text('SB', 14, '#02475B', 1, 27, 0.35)}>
               {selectedVariantLabel}
+              {labelToBeDisplayed === 'Pack Size' ? unitDisplayed : ''}
             </Text>
           </View>
-          <View style={styles.flexRow}>
-            {value?.values?.map((variant) => {
-              const skuStatus = getSkuStatus(variant?.code, index);
-              const isSelected = skuStatus === 'selected';
-              const isOutOfStock = skuStatus === 'outOfStock';
-              return (
-                <TouchableOpacity
-                  style={[
-                    styles.option,
-                    {
-                      backgroundColor: isSelected
-                        ? '#02475B'
-                        : isOutOfStock
-                        ? theme.colors.CARD_BG
-                        : 'white',
-                    },
-                  ]}
-                  onPress={() => {
-                    if (!isSelected) handleClick(index, variant?.code);
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.labelText,
-                      isSelected ? { color: 'white' } : {},
-                      isOutOfStock
-                        ? {
-                            textDecorationLine: 'line-through',
-                          }
-                        : {},
-                    ]}
-                  >
-                    {variant?.label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
+          <View style={[styles.flexRow, styles.textWrapping]}>
+            {value?.values
+              ?.filter((data) =>
+                Boolean(
+                  index === 0 ||
+                    skuAvailability?.find(
+                      (item) =>
+                        `${selectedOptions[0]}_${data?.code}` === item?.code ||
+                        `${data?.code}_${selectedOptions[1]}` === item?.code
+                    )
+                )
+              )
+              .map((variant) => {
+                const [skuStatus, unit] = getSkuStatus(variant?.code, index);
+                const isSelected = skuStatus === 'selected';
+                const isOutOfStock = skuStatus === 'outOfStock';
+                return (
+                  <View style={{ paddingBottom: 5 }}>
+                    <TouchableOpacity
+                      style={[
+                        styles.option,
+                        {
+                          backgroundColor: isSelected
+                            ? '#02475B'
+                            : isOutOfStock
+                            ? theme.colors.CARD_BG
+                            : 'white',
+                        },
+                      ]}
+                      onPress={() => {
+                        if (!isSelected) handleClick(index, variant?.code);
+                      }}
+                    >
+                      <Text
+                        style={[
+                          styles.labelText,
+                          isSelected ? { color: 'white' } : {},
+                          isOutOfStock
+                            ? {
+                                textDecorationLine: 'line-through',
+                              }
+                            : {},
+                        ]}
+                      >
+                        {variant?.label}
+                        {labelToBeDisplayed === 'Pack Size' ? unit : ''}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                );
+              })}
           </View>
         </View>
       );
@@ -162,6 +204,10 @@ const styles = StyleSheet.create({
   },
   flexRow: {
     flexDirection: 'row',
+  },
+  textWrapping: {
+    flexWrap: 'wrap',
+    paddingBottom: 5,
   },
   labelText: {
     ...theme.viewStyles.text('M', 14, '#02475B', 1, 20, 0.35),
