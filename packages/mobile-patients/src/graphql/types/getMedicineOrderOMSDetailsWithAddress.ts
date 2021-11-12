@@ -181,9 +181,22 @@ export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetail
   medicineOrderAddress: getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderAddress | null;
 }
 
+export enum CANCELLATION_TIME {
+  POST_BILLING = 'POST_BILLING',
+  PRE_BILLING = 'PRE_BILLING',
+}
+export interface CancellationAllowedResult {
+  cancellationTime: CANCELLATION_TIME;
+  cancellationAllowed: boolean;
+  message?: string;
+  cancellationRequestRaised?: boolean;
+  cancellationRequestRejected?: boolean;
+}
+
 export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress {
   __typename: "MedicineOrderOMSDetailsResult";
   tatBreached: Boolean;
+  orderCancellationAllowedDetails: CancellationAllowedResult;
   medicineOrderDetails: getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails | null;
 }
 

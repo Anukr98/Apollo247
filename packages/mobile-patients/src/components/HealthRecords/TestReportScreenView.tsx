@@ -44,6 +44,7 @@ import {
   postWebEngagePHR,
   isSmallDevice,
   removeObjectProperty,
+  postCleverTapEvent,
   postCleverTapPHR,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
