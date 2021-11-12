@@ -9,6 +9,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { OutagePrompt } from '@aph/mobile-patients/src/components/PaymentGateway/Components/OutagePrompt';
 import { OffersIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { ActivityIndicator } from 'react-native-paper';
 
 export interface WalletsProps {
   onPressPayNow: (wallet: string, bestOffer?: any) => void;
@@ -19,6 +20,7 @@ export interface WalletsProps {
   linked: any;
   amount: number;
   createdWallet: any;
+  walletLinking: any;
 }
 const windowWidth = Dimensions.get('window').width;
 
@@ -32,6 +34,7 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
     onPressLinkWallet,
     onPressDirectDebit,
     createdWallet,
+    walletLinking,
   } = props;
   const phonePe = 'https://newassets.apollo247.com/images/upiicons/phone-pe.png';
 
@@ -39,7 +42,7 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
     return (
       <View style={{ marginRight: 5, paddingRight: 15 }}>
         <Text style={styles.walletName}>{item?.item?.payment_method_name}</Text>
-        {linkedWallet && linkedWallet?.currentBalance ? (
+        {linkedWallet?.linked ? (
           Number(linkedWallet?.currentBalance) < amount ? (
             <Text style={{ ...styles.walletBalance, color: '#BF2600' }}>
               Low Balance: ₹{linkedWallet?.currentBalance}
@@ -72,8 +75,8 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
       : bestOffer?.offer_description?.description;
   };
 
-  const renderButton = (item: any, linkedWallet: any) => {
-    return item?.item?.payment_method_code == 'AMAZONPAY'
+  const renderButton = (paymentCode: any, linkedWallet: any) => {
+    return paymentCode == 'AMAZONPAY'
       ? linkedWallet?.linked
         ? Number(linkedWallet?.currentBalance) < amount
           ? 'ADD MONEY & PAY'
@@ -85,11 +88,13 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
   const onPress = (paymentCode: any, linkedWallet: any, bestOffer: any) => {
     return paymentCode == 'AMAZONPAY'
       ? linkedWallet?.linked
-        ? Number(linkedWallet?.currentBalance) < amount
-          ? onPressDirectDebit(paymentCode, linkedWallet?.token, bestOffer)
-          : onPressDirectDebit(paymentCode, linkedWallet?.token, bestOffer)
+        ? onPressDirectDebit(paymentCode, linkedWallet?.token, bestOffer)
         : onPressLinkWallet(paymentCode, bestOffer)
       : onPressPayNow(paymentCode, bestOffer);
+  };
+
+  const renderLoader = () => {
+    return <ActivityIndicator size="small" color="#00b38e" style={{ marginRight: 16 }} />;
   };
 
   const renderWallet = (item: any) => {
@@ -106,7 +111,9 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
           msg={item?.item?.payment_method_name + ' is'}
         />
         <TouchableOpacity
-          disabled={item?.item?.outage_status == 'DOWN' ? false : false}
+          disabled={
+            item?.item?.outage_status == 'DOWN' || walletLinking == paymentCode ? true : false
+          }
           style={{
             ...styles.wallet,
             borderBottomWidth: item?.index == wallets.length - 1 ? 0 : 1,
@@ -122,7 +129,11 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
           <View style={{ width: windowWidth - 75 }}>
             <View style={styles.walletCont}>
               {renderTitle(item, linkedWallet)}
-              <Text style={styles.payNow}>{renderButton(item, linkedWallet)}</Text>
+              {walletLinking != paymentCode ? (
+                <Text style={styles.payNow}>{renderButton(paymentCode, linkedWallet)}</Text>
+              ) : (
+                renderLoader()
+              )}
             </View>
             {renderOffer(item, bestOffer)}
           </View>

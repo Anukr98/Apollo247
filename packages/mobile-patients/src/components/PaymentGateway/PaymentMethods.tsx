@@ -166,6 +166,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [offer, setoffer] = useState<any>(null);
   const [linkedWallets, setLinkedWallets] = useState<any>([]);
   const [createdWallet, setcreatedWallet] = useState<any>({});
+  const [walletLinking, setWalletLinking] = useState<any>(null);
   const requestId = currentPatient?.id || customerId || 'apollo247';
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const defaultClevertapEventParams = {
@@ -324,7 +325,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         setCred(eligibleApps?.find((item: any) => item?.paymentMethod == 'CRED'));
         break;
       case 'createWallet':
-        payload?.payload?.linked ? setcreatedWallet(payload?.payload) : renderErrorPopup();
+        setWalletLinking(null);
+        payload?.payload?.linked && setcreatedWallet(payload?.payload);
         break;
       case 'refreshWalletBalances':
         setLinkedWallets(payload?.payload?.list);
@@ -572,6 +574,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressLinkWallet(wallet: string) {
+    setWalletLinking(wallet);
     firePaymentInitiatedEvent('WALLET', wallet, null, false, 'LinkWallet', false, false, 0);
     createAPayWallet(currentPatient?.id, clientAuthToken);
   }
@@ -930,6 +933,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         onPressDirectDebit={onPressWalletDirectDebit}
         offers={offers}
         createdWallet={createdWallet}
+        walletLinking={walletLinking}
         linked={linkedWallets}
         amount={amount}
       />
