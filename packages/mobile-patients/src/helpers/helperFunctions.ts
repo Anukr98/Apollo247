@@ -3840,6 +3840,20 @@ export const getErrorMsg = (errorCode: string) => {
   }
 };
 
+export const getIOSPackageName = (packageName: string) => {
+  switch (packageName) {
+    case 'com.google.android.apps.nbu.paisa.user':
+      return 'tez://upi/pay';
+      break;
+    case 'com.phonepe.app':
+      return 'phonepe://pay';
+      break;
+    case 'net.one97.paytm':
+      return 'paytmmp://upi/pay';
+      break;
+  }
+};
+
 export const getAsyncStorageValues = async () => {
   const token = await AsyncStorage.getItem('jwt');
   let user = await AsyncStorage.getItem('currentPatient');

@@ -74,10 +74,6 @@
 	<false/>
 	<key>ITunesAppleID</key>
 	<string>1496740273</string>
-	<key>LSApplicationQueriesSchemes</key>
-	<array>
-		<string>whatsapp</string>
-	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
@@ -157,6 +153,7 @@
 	<key>LSApplicationQueriesSchemes</key> 
     <array>
         <string>upi</string>
+		<string>whatsapp</string>
         <string>devtools</string>
         <string>phonepe</string>
         <string>paytmmp</string>
