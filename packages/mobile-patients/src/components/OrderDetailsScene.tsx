@@ -131,6 +131,7 @@ export interface OrderDetailsSceneProps
     goToHomeOnBack?: boolean;
     refetchOrders?: () => void;
     reOrder?: boolean;
+    orderType?: string | undefined;
   }> {}
 
 export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
@@ -142,6 +143,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
   const AutoreOrder = props.navigation.getParam('reOrder');
+  const orderType = props.navigation.getParam('orderType') || '';
   const [cancellationReasons, setCancellationReasons] = useState<
     GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons[]
   >([]);
@@ -2356,7 +2358,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               selectedTab={selectedTab}
             />
             {selectedTab == string.orders.trackOrder && renderOrderTrackTopView()}
-            {!!Number(orderAutoId) && (
+            {!!Number(orderAutoId) && orderType !== 'Store Pickup' && (
               <OrderDelayNoticeView
                 orderId={Number(orderAutoId)}
                 containerStyle={selectedTab === string.orders.viewBill && styles.hidden}
