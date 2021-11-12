@@ -291,8 +291,9 @@ const SignUp: React.FC<SignUpProps> = (props) => {
     }
   }
 
-  const postAppsFlyerEventAppInstallViaReferral = async () => {
+  const postAppsFlyerEventAppInstallViaReferral = async (data: any) => {
     const referralData: any = await AsyncStorage.getItem('app_referral_data');
+    onCleverTapUserLogin({ ...data?.updatePatient?.patient, isRefree: referralData !== null });
     if (referralData !== null) {
       const { af_referrer_customer_id, campaign, rewardId, shortlink } = JSON.parse(referralData);
       const eventAttribute = {
@@ -733,9 +734,8 @@ const SignUp: React.FC<SignUpProps> = (props) => {
                       AsyncStorage.setItem('userLoggedIn', 'true'),
                       AsyncStorage.setItem('signUp', 'false'),
                       AsyncStorage.setItem('gotIt', patient ? 'true' : 'false'),
-                      onCleverTapUserLogin(data?.updatePatient?.patient),
                       createOneApolloUser(data?.updatePatient?.patient?.id!),
-                      postAppsFlyerEventAppInstallViaReferral())
+                      postAppsFlyerEventAppInstallViaReferral(data))
                     : null}
                   {error
                     ? (signOut(),

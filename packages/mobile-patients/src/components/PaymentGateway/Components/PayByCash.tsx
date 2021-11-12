@@ -155,8 +155,8 @@ const styles = StyleSheet.create({
     color: '#01475B',
   },
   placeOrder: {
-    ...theme.fonts.IBMPlexSansBold(14),
-    lineHeight: 24,
+    ...theme.fonts.IBMPlexSansBold(13),
+    lineHeight: 17,
     color: '#FC9916',
   },
   codAlertMsg: {

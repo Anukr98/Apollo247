@@ -84,6 +84,7 @@ import {
   postCleverTapEvent,
   postWebEngageEvent,
   reOrderMedicines,
+  getFormattedDateTimeWithBefore,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postPharmacyMyOrderTrackingClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -131,6 +132,7 @@ export interface OrderDetailsSceneProps
     goToHomeOnBack?: boolean;
     refetchOrders?: () => void;
     reOrder?: boolean;
+    status?: string;
     orderType?: string | undefined;
   }> {}
 
@@ -179,6 +181,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const [isCancelVisible, setCancelVisible] = useState(false);
   const [showPrescriptionPopup, setPrescriptionPopUp] = useState(false);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
+  const [cancellationRequestRaised, setCancellationRequestRaised] = useState<Boolean>(false);
+  const [cancellationAllowed, setCancellationAllowed] = React.useState<Boolean>(false);
+  const [cancellationRequestRejected, setCancellationrequestRejected] = React.useState<Boolean>(
+    false
+  );
 
   const vars: getMedicineOrderOMSDetailsWithAddressVariables = {
     patientId: currentPatient && currentPatient.id,
@@ -193,6 +200,29 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     variables: vars,
     fetchPolicy: 'no-cache',
   });
+  React.useEffect(() => {
+    props.navigation.getParam('status') == MEDICINE_ORDER_STATUS.CANCELLED ||
+    props.navigation.getParam('status') == MEDICINE_ORDER_STATUS.CANCEL_REQUEST
+      ? refetch()
+      : null;
+  }, [
+    props.navigation.getParam('status') == MEDICINE_ORDER_STATUS.CANCELLED,
+    props.navigation.getParam('status') == MEDICINE_ORDER_STATUS.CANCEL_REQUEST,
+  ]);
+  React.useEffect(() => {
+    setCancellationRequestRaised(
+      data?.getMedicineOrderOMSDetailsWithAddress?.orderCancellationAllowedDetails
+        ?.cancellationRequestRaised!
+    );
+    setCancellationAllowed(
+      data?.getMedicineOrderOMSDetailsWithAddress?.orderCancellationAllowedDetails
+        ?.cancellationAllowed!
+    );
+    setCancellationrequestRejected(
+      data?.getMedicineOrderOMSDetailsWithAddress?.orderCancellationAllowedDetails
+        ?.cancellationRequestRejected!
+    );
+  }, [data, refetch]);
   const order = g(data, 'getMedicineOrderOMSDetailsWithAddress', 'medicineOrderDetails');
   const shipmentInfo = g(order, 'medicineOrderShipments');
   const shipmentTrackingNumber = shipmentInfo?.[0]?.trackingNo;
@@ -252,12 +282,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   )?.statusDate;
 
   const hideWhtsappQueryOption = moment(new Date()).diff(moment(orderDeliveryDate), 'hours') > 48;
-
-  useEffect(() => {
-    if (isCancelOrder && !loading) {
-      showCancelOrder();
-    }
-  }, [loading]);
 
   useEffect(() => {
     updateRateDeliveryBtnVisibility();
@@ -416,34 +440,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     return finalDateTime;
   };
 
-  const getFormattedDaySubscript = (day: number) => {
-    if (day > 3 && day < 21) return 'th';
-    switch (day % 10) {
-      case 1:
-        return 'st';
-      case 2:
-        return 'nd';
-      case 3:
-        return 'rd';
-      default:
-        return 'th';
-    }
-  };
-
-  const getFormattedDateTimeWithBefore = (time: string) => {
-    let day = parseInt(moment(time).format('D'));
-    let getDaySubscript = getFormattedDaySubscript(day);
-    let finalDateTime =
-      day +
-      getDaySubscript +
-      ' ' +
-      moment(time).format('MMMM') +
-      ' before ' +
-      moment(time).format('hh:mm A');
-
-    return finalDateTime;
-  };
-
   const reOrder = async () => {
     try {
       setLoading!(true);
@@ -470,17 +466,17 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         'Customer ID': g(currentPatient, 'id'),
       };
       const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_RE_ORDER_MEDICINE] = {
-        orderType: !!g(order, 'billNumber')
+        'Order type': !!g(order, 'billNumber')
           ? 'Offline'
           : orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION
           ? 'Non Cart'
           : 'Cart',
-        noOfItemsNotAvailable: unavailableItems.length,
-        source: selectedTab,
-        'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+        'No of items not available': unavailableItems.length,
+        'Nav src': selectedTab,
+        'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
         'Patient UHID': g(currentPatient, 'uhid'),
         Relation: g(currentPatient, 'relation'),
-        'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+        'Patient age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
         'Patient Gender': g(currentPatient, 'gender'),
         'Mobile Number': g(currentPatient, 'mobileNumber'),
         'Customer ID': g(currentPatient, 'id'),
@@ -648,6 +644,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const isDelhiveryOrEcomExpressProvider = ['Delhivery Express', 'Ecom Express'].includes(
       shipmentTrackingProvider!
     );
+    const isExpectedDateChanged =
+      orderDetails.oldOrderTat! && statusToShowNewItems.includes(orderDetails.currentStatus!);
+    const days = new Date().getDate() - parseInt(tatInfo ? tatInfo?.split('-')[0] : '');
 
     return (
       <View>
@@ -763,7 +762,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                         : 'EXPECTED DELIVERY - '}
                     </Text>
                     <Text style={styles.expectedDeliveryDateText}>
-                      {orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+                      {isExpectedDateChanged && days == -1
+                        ? 'Arriving Tomorrow' +
+                          ' before ' +
+                          moment(tatInfo).format(string.time.TwelveHourFormat)
+                        : orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
                         ? getFormattedDateTime(currentOrderStatus && currentOrderStatus.statusDate)
                         : isDelivered
                         ? getFormattedDate(isDelivered.statusDate)
@@ -1010,11 +1013,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         ],
         [MEDICINE_ORDER_STATUS.CONSULT_PENDING]: [
           '',
-          `Doctor Consult Booked! You will receive a call soon.  Doctor Name: ${
-            order?.consultInfo?.doctorName
-          }, Slot time: ${moment(order?.consultInfo?.appointmentDateTime).format(
-            'DD MMM YYYY, hh:mm A'
-          )}`,
+          AppConfig.Configuration.FREE_CONSULT_MESSAGE.orderSummaryMessage
+            .replace('{{doctor_name}}', order?.consultInfo?.doctorName)
+            .replace(
+              '{{slot_time}}',
+              moment(order?.consultInfo?.appointmentDateTime).format('DD MMM, hh:mm A')
+            ),
         ],
         [MEDICINE_ORDER_STATUS.DELIVERED]: [
           '',
@@ -1464,6 +1468,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                   prescriptionRequired,
                   (orderCancel && orderCancel.statusMessage) || ''
                 )}
+                index={index}
+                cancellationRequestRaised={cancellationRequestRaised}
+                cancellationRequestRejected={cancellationRequestRejected}
+                length={statusList.length}
                 status={getOrderStatusText(order!.orderStatus!)}
                 date={getFormattedDate(order!.statusDate)}
                 time={getFormattedTime(order!.statusDate)}
@@ -1912,7 +1920,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       <Button
         style={{ margin: 16, marginTop: 32, width: 'auto' }}
         onPress={onPressConfirmCancelOrder}
-        disabled={!!!selectedReason && showSpinner}
+        disabled={(!!!selectedReason && showSpinner) || selectedReason === ''}
         title={'SUBMIT REQUEST'}
       />
     );
@@ -1991,7 +1999,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.ORDER_SUMMARY_CLICKED, eventAttributes);
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_ORDER_SUMMARY_CLICKED] = {
-      'Order ID': orderDetails.id,
+      'Order ID(s)': orderDetails.id,
       'Order date': getFormattedOrderPlacedDateTime(orderDetails) || undefined,
       'Order type': !!g(order, 'billNumber')
         ? 'Offline'
@@ -2052,12 +2060,19 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           setSelectedReason('');
         };
         const requestStatus = g(data, 'cancelMedicineOrderOMS', 'orderStatus');
-        if (requestStatus == MEDICINE_ORDER_STATUS.CANCEL_REQUEST) {
+        if (
+          requestStatus == MEDICINE_ORDER_STATUS.CANCEL_REQUEST ||
+          requestStatus == MEDICINE_ORDER_STATUS.CANCELLED
+        ) {
           showAphAlert &&
             showAphAlert({
               title: 'Hi :)',
               description:
-                'Your cancellation request has been accepted and order is cancelled. If prepaid, the amount paid will be refunded automatically.',
+                requestStatus == MEDICINE_ORDER_STATUS.CANCELLED
+                  ? string.orderDetailScreen.cancelled
+                  : requestStatus == MEDICINE_ORDER_STATUS.CANCEL_REQUEST
+                  ? string.orderDetailScreen.cancellationRequest
+                  : '',
             });
           refetch()
             .then(() => {
@@ -2135,7 +2150,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b') }}
         onPress={(item) => {
           if (item.value == 'Cancel Order') {
-            showCancelOrder();
+            getCancellationReasons();
           }
         }}
       >
@@ -2146,33 +2161,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
 
   const renderRightComponent = () => {
     return <View style={styles.headerViewStyle}>{renderMoreMenu()}</View>;
-  };
-
-  const showCancelOrder = () => {
-    const isOrderBilled = order?.currentStatus === MEDICINE_ORDER_STATUS.ORDER_BILLED;
-    if (isOrderBilled) {
-      showAphAlert!({
-        title: string.common.uhOh,
-        description: string.OrderSummery.orderCancellationAfterBillingAlert,
-        ctaContainerStyle: { justifyContent: 'flex-end' },
-        CTAs: [
-          {
-            text: 'CLICK HERE',
-            type: 'orange-link',
-            onPress: () => {
-              Linking.openURL(
-                AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK
-              ).catch((err) =>
-                CommonBugFender(`${AppRoutes.OrderDetailsScene}_Linking.openURL`, err)
-              );
-              hideAphAlert!();
-            },
-          },
-        ],
-      });
-    } else {
-      getCancellationReasons();
-    }
   };
 
   const onPressHelp = () => {
@@ -2191,6 +2179,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       refund: refundDetails,
       payment: paymentDetails,
       etd: getFormattedDateTimeWithBefore(order.orderTat),
+      billNumber,
+      refetchOrders,
     });
   };
 
@@ -2223,30 +2213,19 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
 
     if (currentStatus === undefined) return null;
 
-    const statusIrrespectiveOfCurrent = [
-      MEDICINE_ORDER_STATUS.DELIVERED,
-      MEDICINE_ORDER_STATUS.CANCELLED,
-      MEDICINE_ORDER_STATUS.ORDER_BILLED,
-      MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE,
-    ];
     const statusWrtCurrent = [
       MEDICINE_ORDER_STATUS.PAYMENT_FAILED,
       MEDICINE_ORDER_STATUS.PAYMENT_PENDING,
       MEDICINE_ORDER_STATUS.PAYMENT_ABORTED,
       MEDICINE_ORDER_STATUS.ORDER_FAILED,
+      MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE,
     ];
-
-    const cancelNotAllowedIrrespectiveOfCurrentStatus = order?.medicineOrdersStatus?.find((item) =>
-      statusIrrespectiveOfCurrent.includes(item?.orderStatus!)
-    );
 
     const cancelNotAllowedWrtCurrentStatus = statusWrtCurrent.includes(currentStatus!);
 
-    const cancelNotAllowed =
-      cancelNotAllowedIrrespectiveOfCurrentStatus || cancelNotAllowedWrtCurrentStatus;
-
     return (
-      !cancelNotAllowed && (
+      !cancelNotAllowedWrtCurrentStatus &&
+      cancellationAllowed && (
         <View>
           {Array.from({ length: 10 })
             .reverse()
@@ -2255,7 +2234,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             ))}
           <Button
             style={styles.cancelOrderButton}
-            onPress={showCancelOrder}
+            onPress={getCancellationReasons}
             title={'CANCEL ORDER'}
           />
         </View>

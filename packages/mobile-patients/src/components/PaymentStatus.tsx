@@ -83,6 +83,9 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const orderInfo = props.navigation.getParam('orderInfo');
   const deliveryTime = props.navigation.getParam('deliveryTime');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
+  const cleverTapCheckoutEventAttributes = props.navigation.getParam(
+    'cleverTapCheckoutEventAttributes'
+  );
   const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const [codOrderProcessing, setcodOrderProcessing] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
@@ -286,8 +289,8 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
       'Cart Items': JSON.stringify(cartItems),
     });
     postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, {
-      ...pharmaCheckoutEventAttributes,
-      'Cart Items': cartItems?.length,
+      ...cleverTapCheckoutEventAttributes,
+      'Cart items': cartItems?.length,
     });
     postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, appsflyerEventAttributes);
     firePurchaseEvent();

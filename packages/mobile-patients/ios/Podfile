@@ -123,6 +123,8 @@ target 'ApolloPatient' do
 
   pod 'react-native-user-agent', :path => '../node_modules/react-native-user-agent'
   pod 'react-native-in-app-review', :path => '../node_modules/react-native-in-app-review'
+  pod 'lottie-ios', :path => '../node_modules/lottie-ios'
+  pod 'lottie-react-native', :path => '../node_modules/lottie-react-native'
 
   target 'NotificationService' do
       platform :ios, '10.0'

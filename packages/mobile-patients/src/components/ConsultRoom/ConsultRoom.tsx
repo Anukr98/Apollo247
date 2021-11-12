@@ -9,7 +9,6 @@ import {
   SubscriptionData,
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { WebView } from 'react-native-webview';
 import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import { dateFormatterDDMM } from '@aph/mobile-patients/src/utils/dateUtil';
@@ -51,10 +50,7 @@ import {
   TestsIcon,
   WhiteArrowRightIcon,
   VaccineTracker,
-  CrossPopup,
   ProHealthIcon,
-  BackArrow,
-  ReferralBannerIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   BannerDisplayType,
@@ -86,6 +82,7 @@ import {
   GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
   GET_ONEAPOLLO_USER,
   GET_PLAN_DETAILS_BY_PLAN_ID,
+  GET_HC_REFREE_RECORD,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
@@ -138,6 +135,9 @@ import {
   getAge,
   removeObjectNullUndefinedProperties,
   fileToBase64,
+  getAsyncStorageValues,
+  formatUrl,
+  checkCleverTapLoginStatus,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -211,6 +211,12 @@ import {
   PatientInfo as PatientInfoObj,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { getUniqueId } from 'react-native-device-info';
+import { ReferralBanner } from '@aph/mobile-patients/src/components/ui/ReferralBanner';
+import {
+  InitiateRefreeType,
+  useReferralProgram,
+} from '@aph/mobile-patients/src/components/ReferralProgramProvider';
+import { setItem, getItem } from '@aph/mobile-patients/src/helpers/TimedAsyncStorage';
 
 const { Vitals } = NativeModules;
 
@@ -671,52 +677,6 @@ const styles = StyleSheet.create({
     height: 180,
     width: '100%',
   },
-  referEarnEarnBtnText: {
-    fontSize: 14,
-    color: theme.colors.HEX_WHITE,
-    fontWeight: '700',
-  },
-
-  referEarnearnBtn: {
-    backgroundColor: theme.colors.APP_YELLOW_COLOR,
-    width: 80,
-    height: 35,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 15,
-    borderRadius: 5,
-  },
-
-  referEarnrupees: {
-    fontSize: 19,
-    fontWeight: 'bold',
-    color: theme.colors.APP_REFERRAL_BLUE,
-    fontStyle: 'italic',
-  },
-  referEarntext: {
-    fontSize: 19,
-    fontWeight: '700',
-    color: theme.colors.CARD_HEADER,
-  },
-  referEarntextContainer: {
-    width: '55%',
-    alignItems: 'flex-end',
-  },
-  referEarnImageContainer: {
-    width: '45%',
-    height: 90,
-    justifyContent: 'flex-end',
-  },
-  referEarnMainContainer: {
-    backgroundColor: theme.colors.REFERRAL_WHITE_GRAY,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    marginHorizontal: 10,
-    borderWidth: 1,
-    borderColor: theme.colors.REFERRAL_BORDER_GRAY,
-    borderRadius: 5,
-    flexDirection: 'row',
-  },
 });
 
 type menuOptions = {
@@ -818,8 +778,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [vaccinationSubscriptionName, setVaccinationSubscriptionName] = useState<string>('');
   const [vaccinationSubscriptionPlanId, setVaccinationSubscriptionPlanId] = useState<string>('');
   const [agreedToVaccineTnc, setAgreedToVaccineTnc] = useState<string>('');
+  const [token, setToken] = useState<string | null>('');
+  const [userMobileNumber, setUserMobileNumber] = useState<string | null>('');
 
+  const [proHealthActiveAppointmentCount, setProHealthActiveAppointmentCount] = useState<
+    string | number
+  >('' | 0);
+  const [proActiveAppointments, setProHealthActiveAppointment] = useState([] as any);
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
+
+  const { refreeReward, setRefreeReward } = useReferralProgram();
 
   const {
     cartItems: shopCartItems,
@@ -843,6 +811,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const [previousPatient, setPreviousPatient] = useState<any>([]);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [menuViewOptions, setMenuViewOptions] = useState<number[]>([]);
   const [currentAppointments, setCurrentAppointments] = useState<string>('0');
@@ -927,11 +896,30 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   //for prohealth option
   useEffect(() => {
+    checkProhealthStatus();
+  }, [currentPatient]);
+
+  async function checkProhealthStatus() {
+    const storedUhid: any = await AsyncStorage.getItem('selectUserUHId');
     //for new users, patient uhid was coming as blank
-    if (currentPatient?.id && currentPatient?.uhid) {
+    //storedUhid would be null for new users and called if both are same, since patient is changed twice.
+    if (
+      currentPatient?.id &&
+      currentPatient?.uhid &&
+      previousPatient?.uhid != currentPatient?.uhid &&
+      (!!storedUhid ? storedUhid == currentPatient?.uhid : storedUhid == null)
+    ) {
       checkIsProhealthActive(currentPatient); //to show prohealth option
       getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
     }
+  }
+
+  useEffect(() => {
+    checkCleverTapLoginStatus(currentPatient);
+  }, [currentPatient]);
+
+  useEffect(() => {
+    checkCleverTapLoginStatus(currentPatient);
   }, [currentPatient]);
 
   //to be called only when the user lands via app launch
@@ -1600,7 +1588,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const eventAttributes:
           | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
           | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
-          source: 'app home',
+          'Nav src': 'app home',
         };
         setTimeout(
           () => postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED, eventAttributes),
@@ -2423,7 +2411,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       const eneabled = AppConfig.Configuration.ENABLE_CONDITIONAL_MANAGEMENT;
       setEnableCM(eneabled);
     }
+    const saveSessionValues = async () => {
+      const [loginToken, phoneNumber] = await getAsyncStorageValues();
+      setToken(JSON.parse(loginToken));
+      setUserMobileNumber(
+        JSON.parse(phoneNumber)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber
+      );
+    };
     fetchData();
+    saveSessionValues();
   }, []);
 
   useEffect(() => {
@@ -2634,6 +2630,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   //check if user has any prohealth bookings
   const checkIsProhealthActive = async (currentPatientDetails: any) => {
+    setPreviousPatient(currentPatientDetails);
     const storedUhid: any = await AsyncStorage.getItem('selectUserUHId');
     const selectedUHID = storedUhid ? storedUhid : g(currentPatient, 'uhid');
 
@@ -2657,22 +2654,30 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (patientUHID) {
       setshowSpinner(true);
       try {
+        /**
+         * caching the api for 24 hrs.
+         */
+        const getCachedApiResult: any = await getItem('mobileNumber_CM_Result');
         const getPhoneNumber =
           patientDetails?.mobileNumber?.length > 10
             ? patientDetails?.mobileNumber?.slice(patientDetails?.mobileNumber?.length - 10)
             : patientDetails?.mobileNumber;
-        const res: any = await GetAllUHIDSForNumber_CM(getPhoneNumber! || '');
-        if (res?.data?.response && res?.data?.errorCode === 0) {
-          let resultData = res?.data?.response?.signUpUserData;
-          if (resultData?.length > 0) {
-            let getCurrentProfile = resultData?.find(
-              (item: any) => item?.uhid == (selectedUHID! || currentPatientDetails?.uhid)
-            );
-            //get status for active chron.
-            let isActive = getCurrentProfile?.isChronActive;
-            isActive ? setProHealthActive(true) : setProHealthActive(false);
+        if (!!getCachedApiResult && getCachedApiResult?.data) {
+          updateSDKOption(getCachedApiResult?.data, selectedUHID, currentPatientDetails);
+        } else {
+          const res: any = await GetAllUHIDSForNumber_CM(getPhoneNumber! || '');
+          if (res?.data?.response && res?.data?.errorCode === 0) {
+            let resultData = res?.data?.response?.signUpUserData;
+            if (resultData?.length > 0) {
+              const obj = {
+                data: resultData,
+                expireAt: 1440,
+              };
+              setItem('mobileNumber_CM_Result', obj, obj?.expireAt); //storing the result for 24 hrs, for a logged in user
+              updateSDKOption(resultData, selectedUHID, currentPatientDetails);
+            }
           }
-        } //error code
+        }
         setshowSpinner(false);
       } catch (error) {
         CommonBugFender('ProHealth_checkIsProhealthActive_error_ConsultRoom', error);
@@ -2689,11 +2694,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
-  const [proHealthActiveAppointmentCount, setProHealthActiveAppointmentCount] = useState<
-    string | number
-  >('' || 0);
-
-  const [proActiveAppointments, setProHealthActiveAppointment] = useState([] as any);
+  function updateSDKOption(resultData: any, selectedUHID: string, currentPatientDetails: any) {
+    let getCurrentProfile = resultData?.find(
+      (item: any) => item?.uhid == (selectedUHID! || currentPatientDetails?.uhid)
+    );
+    //get status for active chron.
+    let isActive = getCurrentProfile?.isChronActive;
+    isActive ? setProHealthActive(true) : setProHealthActive(false);
+  }
 
   const getActiveProHealthAppointments = async (currentDetails: any) => {
     //or can use storeUhid, and then call api getPatientsByUhid.
@@ -2760,7 +2768,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   const eventAttributes:
                     | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
                     | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
-                    source: 'app home',
+                    'Nav src': 'app home',
                   };
                   setTimeout(
                     () =>
@@ -2913,8 +2921,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const checkUserRegisterThroughReferral = async () => {
     const referrerInstall = await AsyncStorage.getItem('referrerInstall');
     if (referrerInstall === 'true') {
-      AsyncStorage.removeItem('referrerInstall');
       props.navigation.navigate('EarnedPoints');
+      AsyncStorage.removeItem('referrerInstall');
     }
   };
 
@@ -3150,6 +3158,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const openWebView = (url: any) => {
     Keyboard.dismiss();
+    let uri = formatUrl(`${url}`, token, userMobileNumber);
+
     return (
       <View style={styles.viewWebStyles}>
         <Header
@@ -3163,7 +3173,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <View style={styles.nestedWebView}>
           <WebView
             source={{
-              uri: url,
+              uri,
             }}
             style={styles.webViewCompo}
             onLoadStart={() => {
@@ -3902,9 +3912,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       >
         <ImageBackground
           style={styles.proHealthBannerImage}
-          source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_banner.webp')}
+          source={{ uri: AppConfig.Configuration.PROHEALTH_BANNER_IMAGE }}
           resizeMode={'stretch'}
-          borderRadius={10}
+          borderRadius={8}
         ></ImageBackground>
       </TouchableOpacity>
     );
@@ -4024,29 +4034,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderReferralBanner = () => {
-    return (
-      <View style={styles.referEarnMainContainer}>
-        <View style={styles.referEarnImageContainer}>
-          <ReferralBannerIcon resizeMode="cover" />
-        </View>
-        <View style={styles.referEarntextContainer}>
-          <Text style={styles.referEarntext}>
-            {string.referAndEarn.referAndEarn}{' '}
-            <Text style={styles.referEarnrupees}>₹{referAndEarnPrice && referAndEarnPrice}</Text>
-          </Text>
-          <View>
-            <TouchableOpacity
-              onPress={() => {
-                props.navigation.navigate('ShareReferLink');
-              }}
-              style={styles.referEarnearnBtn}
-            >
-              <Text style={styles.referEarnEarnBtnText}>{string.referAndEarn.earnNow}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    );
+    return <ReferralBanner {...props} />;
   };
 
   return (
