@@ -151,6 +151,14 @@ export const MedicineListing: React.FC<Props> = (props) => {
   const { axdcCode } = useAppCommonData();
 
   useEffect(() => {
+    if (currentBrandPageTab) {
+      setCategoryId(navigation.getParam('category_id') || '');
+      setSortBy(null);
+      setFilterBy({});
+    }
+  }, [currentBrandPageTab]);
+
+  useEffect(() => {
     if (categoryId && !searchText) {
       searchProductsByCategory(
         categoryId,
