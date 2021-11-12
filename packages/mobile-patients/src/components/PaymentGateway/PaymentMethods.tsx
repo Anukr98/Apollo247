@@ -504,7 +504,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     isSavedCard: boolean,
     upitxnType: any,
     newCardSaved: boolean,
-    isCOD: boolean
+    isCOD: boolean,
+    walletBalance?: any
   ) {
     PaymentTxnInitiated(
       defaultClevertapEventParams,
@@ -515,7 +516,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       isSavedCard,
       upitxnType,
       newCardSaved,
-      isCOD
+      isCOD,
+      walletBalance
     );
   }
 
@@ -570,7 +572,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressLinkWallet(wallet: string) {
-    firePaymentInitiatedEvent('WALLET', wallet, null, false, null, false, false);
+    firePaymentInitiatedEvent('WALLET', wallet, null, false, 'LinkWallet', false, false, 0);
     createAPayWallet(currentPatient?.id, clientAuthToken);
   }
 

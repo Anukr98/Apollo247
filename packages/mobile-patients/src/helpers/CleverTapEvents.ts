@@ -1694,7 +1694,7 @@ export interface CleverTapEvents {
     PrescriptionUrl?: any;
     'Item Name': string;
     'Circle user': string;
-    'User Type':any
+    'User Type': any;
   };
 
   // ********** ConsultEvents ********** \\
@@ -3126,6 +3126,7 @@ export interface CleverTapEvents {
     TxnType: string;
     ifNewCardSaved: boolean;
     isPaymentLinkTxn: boolean;
+    'Wallet Balance': any;
   };
   [CleverTapEventName.PAYMENT_TXN_RESPONSE]: {
     'Phone Number': string;
