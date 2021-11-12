@@ -203,6 +203,7 @@ const appStaticVariables = {
   COVID_UPDATES: 'https://www.apollo247.com/blog/covid19-vaccines',
   APOLLO_TERMS_CONDITIONS: 'https://www.apollo247.com/terms?isMobile=true',
   APOLLO_PRIVACY_POLICY: 'https://www.apollo247.com/privacy?isMobile=true',
+  APOLLO_REFUND_POLICY: 'https://www.apollo247.com/refund-policy?isMobile=true',
   LOGIN_SECTION: loginSection,
   COVID_VACCINE_SECTION: covidVaccineSection,
   CART_PRESCRIPTION_OPTIONS: [
@@ -286,6 +287,7 @@ const appStaticVariables = {
   CIRCLE_FACTS:
     '<b>#CircleFact:</b> On an average Circle members <b>save upto ₹400 every month</b>',
   enableCredWebView: false,
+  offerIconBaseUrl: 'https://newassets.apollo247.com/images/payment_offer_icons/',
   DIAGNOSTICS_REPORT_TAT_BREACH_TEXT:
     'Reports are delayed by a few hours, but should be available any time soon.',
   TrueCaller_Login_Enabled: false,
@@ -305,7 +307,16 @@ const appStaticVariables = {
       "ctaPhoneNumber": "040-4821-3322"
     }
   },
-  DIAGNOSTICS_COVID_ITEM_IDS : [2446]
+  DIAGNOSTICS_COVID_ITEM_IDS : [2446],
+  FREE_CONSULT_MESSAGE: {
+    prescriptionMessage: 'Get a FREE Consultation by our expert doctor within the next 30 mins.',
+    reviewOrderMessage: 'Our Apollo doctor will call you for a free consultation. Order will be processed only after the consultation in completed successfully.',
+    orderConfirmationMessage: 'An Apollo doctor will call you as soon are they are available.',
+    orderSummaryMessage: 'Free Doctor Consult Booked. You will receive a call soon.',
+    reviewOrderHeader: 'FREE Consult will be booked for you',
+    orderConfirmationHeader: 'FREE Consult booked for you',
+    prescriptionOptionHeader: "I don't have a prescription",
+  },
 };
 
 const DEV_top_specialties = [
@@ -518,7 +529,7 @@ const PharmaApiConfig = {
       pharmaTokenYXV,
     ],
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
-    PRODUCTS_BY_CATEGORY: [`${apolloProdBaseUrl}/categoryproducts_api.php`, pharmaToken201],
+    PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/categoryproducts_api.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
     BOUGHT_TOGETHER: [`${apolloUatBaseUrl}/popsrchboughttogether_api.php`, pharmaToken201],
     SPECIAL_OFFERS_PAGE_WIDGETS: [

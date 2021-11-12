@@ -160,7 +160,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     setCircleSubPlanId,
     circleSubscriptionId,
     cartItems,
-    circlePlanValidity
+    circlePlanValidity,
   } = useShoppingCart();
   const {
     setIsDiagnosticCircleSubscription,
@@ -200,20 +200,30 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   }, []);
 
   const fireCleverTapCircleEvents = async () => {
-    const mobile_number = currentPatient?.mobileNumber
-    let circlePriceAndDuration
-    if(mobile_number)
-        await getCirclePlanDetails(mobile_number, client).then(res => {
-          circlePriceAndDuration = res?.find((item: any) => item?.subPlanId === circlePlanValidity?.plan_id)
-        })
-    
+    const mobile_number = currentPatient?.mobileNumber;
+    let circlePriceAndDuration;
+    if (mobile_number)
+      await getCirclePlanDetails(mobile_number, client).then((res) => {
+        circlePriceAndDuration = res?.find(
+          (item: any) => item?.subPlanId === circlePlanValidity?.plan_id
+        );
+      });
+
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_POP_UP_VIEWED_PLANS_ONLY] = {
       navigation_source: circleEventSource,
-      plan_id: circlePlanValidity?.plan_id ? circlePlanValidity?.plan_id : getCircleNoSubscriptionText(),
-      circle_end_date: circlePlanValidity?.endDate ? circlePlanValidity?.endDate : getCircleNoSubscriptionText(),
-      circle_start_date: circlePlanValidity?.startDate ? circlePlanValidity?.startDate : getCircleNoSubscriptionText(),
+      plan_id: circlePlanValidity?.plan_id
+        ? circlePlanValidity?.plan_id
+        : getCircleNoSubscriptionText(),
+      circle_end_date: circlePlanValidity?.endDate
+        ? circlePlanValidity?.endDate
+        : getCircleNoSubscriptionText(),
+      circle_start_date: circlePlanValidity?.startDate
+        ? circlePlanValidity?.startDate
+        : getCircleNoSubscriptionText(),
       customer_id: currentPatient?.id,
-      duration_in_months: circleSubscription ? circlePriceAndDuration?.durationInMonth : getCircleNoSubscriptionText(),
+      duration_in_months: circleSubscription
+        ? circlePriceAndDuration?.durationInMonth
+        : getCircleNoSubscriptionText(),
       user_type: getUserType(allCurrentPatients),
       price: circleSubscription ? circlePriceAndDuration?.price : getCircleNoSubscriptionText(),
     };
@@ -359,8 +369,12 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     const circleData = _circlePlan || circlePlanSelected;
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_PLAN_TO_CART] = {
       navigation_source: circleEventSource,
-      circle_end_date: circlePlanValidity?.endDate ? circlePlanValidity?.endDate : getCircleNoSubscriptionText(),
-      circle_start_date: circlePlanValidity?.startDate ? circlePlanValidity?.startDate : getCircleNoSubscriptionText(),
+      circle_end_date: circlePlanValidity?.endDate
+        ? circlePlanValidity?.endDate
+        : getCircleNoSubscriptionText(),
+      circle_start_date: circlePlanValidity?.startDate
+        ? circlePlanValidity?.startDate
+        : getCircleNoSubscriptionText(),
       plan_id: circleData?.subPlanId,
       customer_id: currentPatient?.id,
       duration_in_months: circleData?.durationInMonth,
@@ -901,7 +915,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
               //don't have hc with diagnostics
               if (!diagnosticCartItems?.length) {
                 closeModal?.();
-                props.navigation.navigate(AppRoutes.SubscriptionCart);
+                props.navigation.navigate(AppRoutes.SubscriptionCart, { circleEventSource });
               } else {
                 setCircleMembershipCharges &&
                   setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
@@ -914,13 +928,13 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
                 onPurchasePlanThroughHC();
               } else {
                 closeModal?.();
-                props.navigation.navigate(AppRoutes.SubscriptionCart);
+                props.navigation.navigate(AppRoutes.SubscriptionCart, { circleEventSource });
               }
             }
           } else if (from === string.banner_context.PHARMACY_HOME) {
             if (!cartItems?.length) {
               closeModal?.();
-              props.navigation.navigate(AppRoutes.SubscriptionCart);
+              props.navigation.navigate(AppRoutes.SubscriptionCart, { circleEventSource });
             } else {
               setCircleMembershipCharges &&
                 setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);

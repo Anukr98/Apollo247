@@ -37,6 +37,7 @@ export enum ProductPageViewedSource {
   MULTI_VARIANT = 'multivariant',
   PDP_ALL_SUSBTITUTES = 'PDP All Substitutes',
 
+  BRAND_PAGES = 'brandPages',
 }
 
 export enum WebEngageEventName {
@@ -181,7 +182,7 @@ export enum WebEngageEventName {
   COVID_VACCINATION_SECTION_CLICKED = 'Covid Vaccination Section Clicked',
   USER_LOCATION_CONSULT = 'User Location consult',
   USER_CHANGED_LOCATION = 'Change location',
-  
+
   // Diagnostics Events
   DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
   DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'Diagnostic pincode entered',
@@ -491,6 +492,7 @@ export enum WebEngageEventName {
   VACCINE_REGISTRATION_COMPLETED = 'Vaccine Registeration Completed',
   ERROR_WHILE_FETCHING_JWT_TOKEN = 'Error while Fetching JWT token',
   AUTHTOKEN_UPDATED = 'Authtoken Updated',
+  NO_FIREBASE_USER = 'No user on Firebase'
 }
 
 export interface PatientInfo {
@@ -1321,7 +1323,7 @@ export interface WebEngageEvents {
     'Latest Order Status': string;
     'Order id': string;
     Source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary';
-    'Circle user' ?: string; 
+    'Circle user' ?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED]: {
     'Order id'?: string;
@@ -1385,7 +1387,7 @@ export interface WebEngageEvents {
     'Item name': string;
     Pincode: string | number;
     Mode: 'Customer' | 'Automated';
-    'Circle user'?: string; 
+    'Circle user'?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE]: {
     'Item ID'?: string | number;

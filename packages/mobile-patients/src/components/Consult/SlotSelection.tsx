@@ -379,7 +379,6 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
       }
       slotCounts && calculateNextNDates(slotCounts);
     } catch (error) {
-      console.log('SlotSelection_fetchTotalAvailableSlotsPhysical', error);
       CommonBugFender('SlotSelection_fetchTotalAvailableSlots', error);
     }
   };
@@ -583,6 +582,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           setIsOnlineSelected(tab === consultOnlineTab);
           if (tab !== selectedTab) {
             setTotalSlots(-1);
+
             setLoadTotalSlots(true);
             slotSelected.current = false;
             setSelectedDateIndexHighlight(0);
@@ -951,16 +951,19 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     );
     const slotsIndex = datesSlots?.indexOf(checkAvailabilityDate?.[0]);
     const dateIndex = date().isToday ? 0 : date().isTomorrow ? 1 : slotsIndex;
+
     setTimeout(() => {
       try {
         dateScrollViewRef && dateScrollViewRef.current.scrollToIndex({ index: dateIndex });
       } catch (e) {
-        CommonBugFender('SlotSelection_scroll', e);
+        CommonBugFender('SlotSelection_scrollToIndex', e);
       }
     }, 500);
+
     setIsSlotDateSelected(true);
     setSelectedDateIndex(dateIndex);
     setSelectedDateIndexHighlight(dateIndex);
+
     setLoadTotalSlots(true);
     isOnlineSelected
       ? fetchOnlineTotalAvailableSlots(nextAvailableDate)
@@ -1000,7 +1003,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
                   try {
                     slotsScrollViewRef.current.scrollToIndex({ index });
                   } catch (e) {
-                    CommonBugFender('SlotSelection_scroll', e);
+                    CommonBugFender('SlotSelection_scrollToIndex', e);
                   }
                 }, 300);
               }}
@@ -1042,22 +1045,47 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
       </View>
     );
   };
-
   const renderGeneralNotes = () => {
     return (
-      <TouchableOpacity
-        onPress={() => {
-          props.navigation.navigate(AppRoutes.CommonWebView, {
-            url: AppConfig.Configuration.APOLLO_TERMS_CONDITIONS,
-          });
-        }}
-      >
-        <Text style={styles.noteTxt}>
-          By proceeding, I agree that I have read and understood the{' '}
-          <Text style={{ color: theme.colors.SKY_BLUE }}>Terms & Conditions</Text> of usage of 24x7
-          and consent to the same.{' '}
+      <Text style={styles.noteTxt}>
+        By proceeding, I agree that I have read and understood the{' '}
+        <Text
+          style={{ color: theme.colors.SKY_BLUE }}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.CommonWebView, {
+              url: AppConfig.Configuration.APOLLO_TERMS_CONDITIONS,
+              isGoBack: true,
+            });
+          }}
+        >
+          Terms & Conditions
+        </Text>{' '}
+        of usage of Apollo 24x7,{' '}
+        <Text
+          style={{ color: theme.colors.SKY_BLUE }}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.CommonWebView, {
+              url: AppConfig.Configuration.APOLLO_PRIVACY_POLICY,
+              isGoBack: true,
+            });
+          }}
+        >
+          Privacy policy
         </Text>
-      </TouchableOpacity>
+        ,{' '}
+        <Text
+          style={{ color: theme.colors.SKY_BLUE }}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.CommonWebView, {
+              url: AppConfig.Configuration.APOLLO_REFUND_POLICY,
+              isGoBack: true,
+            });
+          }}
+        >
+          Refund Policy
+        </Text>{' '}
+        and consent to the same.
+      </Text>
     );
   };
 

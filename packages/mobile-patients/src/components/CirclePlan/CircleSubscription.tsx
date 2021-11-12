@@ -46,12 +46,15 @@ export const CircleSubscription: React.FC<CirclePaymentProps> = (props) => {
   }, []);
 
   const fireCirclePaymentPageViewedEvent = async () => {
-
     const circleData = circlePlanSelected || selectedPlan;
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE] = {
       navigation_source: circleEventSource,
-      circle_end_date: circlePlanValidity?.endDate ? circlePlanValidity?.endDate : getCircleNoSubscriptionText(),
-      circle_start_date: circlePlanValidity?.startDate ? circlePlanValidity?.startDate : getCircleNoSubscriptionText(),
+      circle_end_date: circlePlanValidity?.endDate
+        ? circlePlanValidity?.endDate
+        : getCircleNoSubscriptionText(),
+      circle_start_date: circlePlanValidity?.startDate
+        ? circlePlanValidity?.startDate
+        : getCircleNoSubscriptionText(),
       plan_id: circleData?.subPlanId,
       customer_id: currentPatient?.id,
       duration_in_months: circleData?.durationInMonth,

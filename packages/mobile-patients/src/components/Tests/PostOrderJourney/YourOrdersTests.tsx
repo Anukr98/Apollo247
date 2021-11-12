@@ -214,11 +214,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
   const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
-      if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS)) {
-        return item;
-      } else {
-        return null
-      }
+    if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS)) {
+      return item;
+    } else {
+      return null;
+    }
   });
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
 
@@ -1737,9 +1737,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           uri={activeOrder?.labReportURL || ''}
           order={activeOrder}
           isReport={true}
-          onPressClose={()=>{
+          onPressClose={() => {
             setActiveOrder(activeOrder);
-            setShowViewReportModal(false)
+            setShowViewReportModal(false);
           }}
         />
       </View>
@@ -1820,8 +1820,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         bounces={false}
         data={orders}
         extraData={orderListData}
-        onScroll={()=>{
-          setSlideCallToOrder(true)
+        onScroll={() => {
+          setSlideCallToOrder(true);
         }}
         renderItem={({ item, index }) => renderOrder(item, index)}
         initialNumToRender={10}

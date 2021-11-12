@@ -109,6 +109,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     borderWidth: 0.5,
     borderColor: '#02475B',
+    marginHorizontal: 15,
   },
   itemContainer: {
     flexDirection: 'column',

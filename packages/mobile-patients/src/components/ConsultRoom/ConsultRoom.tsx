@@ -82,6 +82,7 @@ import {
   GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
   GET_ONEAPOLLO_USER,
   GET_PLAN_DETAILS_BY_PLAN_ID,
+  GET_HC_REFREE_RECORD,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
@@ -136,6 +137,7 @@ import {
   fileToBase64,
   getAsyncStorageValues,
   formatUrl,
+  checkCleverTapLoginStatus,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -209,6 +211,11 @@ import {
   PatientInfo as PatientInfoObj,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { getUniqueId } from 'react-native-device-info';
+import { ReferralBanner } from '@aph/mobile-patients/src/components/ui/ReferralBanner';
+import {
+  InitiateRefreeType,
+  useReferralProgram,
+} from '@aph/mobile-patients/src/components/ReferralProgramProvider';
 import { setItem, getItem } from '@aph/mobile-patients/src/helpers/TimedAsyncStorage';
 
 const { Vitals } = NativeModules;
@@ -780,6 +787,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [proActiveAppointments, setProHealthActiveAppointment] = useState([] as any);
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
+  const { refreeReward, setRefreeReward } = useReferralProgram();
+
   const {
     cartItems: shopCartItems,
     setHdfcPlanName,
@@ -823,6 +832,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [bannerLoading, setBannerLoading] = useState<boolean>(false);
   let circleActivated = props.navigation.getParam('circleActivated');
   const circleActivatedRef = useRef<boolean>(circleActivated);
+  const [referAndEarnPrice, setReferAndEarnPrice] = useState('100');
 
   //prohealth
   const [isProHealthActive, setProHealthActive] = useState<boolean>(false);
@@ -903,6 +913,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
     }
   }
+
+  useEffect(() => {
+    checkCleverTapLoginStatus(currentPatient);
+  }, [currentPatient]);
+
+  useEffect(() => {
+    checkCleverTapLoginStatus(currentPatient);
+  }, [currentPatient]);
 
   //to be called only when the user lands via app launch
   const logHomePageViewed = async (attributes: any) => {
@@ -2387,6 +2405,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           setshowPopUp(false);
           CommonLogEvent(AppRoutes.ConsultRoom, 'ConsultRoom_BottomPopUp clicked');
           AsyncStorage.setItem('gotIt', 'true');
+          checkUserRegisterThroughReferral();
         }, 5000);
       }
       const eneabled = AppConfig.Configuration.ENABLE_CONDITIONAL_MANAGEMENT;
@@ -2897,6 +2916,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         'Device Id': getUniqueId(),
       };
       postCleverTapEvent(CleverTapEventName.LOGIN_DONE, eventAttributes);
+    }
+  };
+
+  const checkUserRegisterThroughReferral = async () => {
+    const referrerInstall = await AsyncStorage.getItem('referrerInstall');
+    if (referrerInstall === 'true') {
+      props.navigation.navigate('EarnedPoints');
+      AsyncStorage.removeItem('referrerInstall');
     }
   };
 
@@ -4007,6 +4034,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return <ConsultedDoctorsCard navigation={props.navigation} />;
   };
 
+  const renderReferralBanner = () => {
+    return <ReferralBanner {...props} />;
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
@@ -4017,7 +4048,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
               <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text>
               {renderMenuOptions()}
-
+              {renderReferralBanner()}
               {circleDataLoading && renderCircleShimmer()}
               <View style={{ backgroundColor: '#f0f1ec' }}>
                 {isCircleMember === 'yes' && !circleDataLoading && renderCircle()}
