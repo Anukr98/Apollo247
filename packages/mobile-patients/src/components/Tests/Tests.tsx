@@ -365,11 +365,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
   const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
-      if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.HOME)) {
-        return item;
-      } else {
-        return null
-      }
+    if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.HOME)) {
+      return item;
+    } else {
+      return null;
+    }
   });
   const cache = new Cache({
     namespace: 'tests',
@@ -2858,7 +2858,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               >
                 <Text style={styles.textPrescription}>{item.title}</Text>
               </TouchableOpacity>
-              {index === prescriptionGalleryOptionArray?.length - 1 ? null : <Spearator />}
+              {index === prescriptionOptionArray?.length - 1 ? null : <Spearator />}
             </>
           );
         })}

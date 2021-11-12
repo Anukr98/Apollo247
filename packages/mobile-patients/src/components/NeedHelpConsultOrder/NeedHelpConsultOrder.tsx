@@ -32,11 +32,11 @@ export interface Props
 type Consult = GetPatientAllAppointmentsForHelp_getPatientAllAppointments_appointments;
 
 export const NeedHelpConsultOrder: React.FC<Props> = ({ navigation }) => {
-  const pageTitle = navigation.getParam('pageTitle') || string.consult.toUpperCase();
+  const pageTitle = navigation.getParam('pageTitle') || string.doctorAppointments.toUpperCase();
   const queryIdLevel1 = navigation.getParam('queryIdLevel1') || NaN;
   const email = navigation.getParam('email') || '';
   const queries = navigation.getParam('queries');
-  const breadCrumb = [{ title: string.needHelp }, { title: string.consult }];
+  const breadCrumb = [{ title: string.needHelp }, { title: string.doctorAppointments }];
 
   const { currentPatient } = useAllCurrentPatients();
   const [displayAll, setDisplayAll] = useState<boolean>(false);

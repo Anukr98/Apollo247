@@ -171,6 +171,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     setAxdcCode,
     pharmacyUserTypeAttribute,
     activeUserSubscriptions,
+    setSelectedPrescriptionType,
   } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
@@ -194,6 +195,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       setCircleSubscriptionId && setCircleSubscriptionId(circleSubscriptionID);
     }
     fetchCircleSubscriptionId();
+    // clearing free consult prescription type of previous order
+    setSelectedPrescriptionType && setSelectedPrescriptionType('');
   }, []);
 
   useEffect(() => {
