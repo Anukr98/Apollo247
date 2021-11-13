@@ -78,6 +78,7 @@ export const CartCircleItem: React.FC<CartCircleItemProps> = (props) => {
                     planId: null,
                     subPlanId: null,
                     TYPE: null,
+                    subscriptionApplied: false,
                   },
                 });
                 fireCleverTapCirclePlanRemovedEvent(

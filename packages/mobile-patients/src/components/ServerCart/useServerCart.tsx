@@ -4,23 +4,14 @@ import { useApolloClient } from 'react-apollo-hooks';
 import {
   GET_PATIENT_ADDRESS_LIST,
   GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS,
-  SAVE_MEDICINE_ORDER_V3,
   SERVER_CART_FETCH_CART,
   SERVER_CART_REVIEW_CART,
   SERVER_CART_SAVE_CART,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  BOOKING_SOURCE,
-  CartInputData,
-  DEVICE_TYPE,
-  MEDICINE_DELIVERY_TYPE,
-  MEDICINE_ORDER_TYPE,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { CartInputData } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { formatAddressToLocation } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { Platform } from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 
 export const useServerCart = () => {
   const client = useApolloClient();
@@ -65,15 +56,12 @@ export const useServerCart = () => {
       })
       .then((result) => {
         const saveCartResponse = result?.data?.saveCart;
+        console.log('======= saveServerCart result: ', JSON.stringify(saveCartResponse));
         if (saveCartResponse?.errorMessage) {
           throw saveCartResponse?.errorMessage;
         }
         if (saveCartResponse?.data?.patientId) {
           const cartResponse = saveCartResponse?.data;
-          console.log(
-            '======= saveServerCart result: ',
-            JSON.stringify(cartResponse?.prescriptionDetails)
-          );
           setCartValues(cartResponse);
         }
       })
@@ -96,30 +84,26 @@ export const useServerCart = () => {
         fetchPolicy: 'no-cache',
       })
       .then((result) => {
-        const saveCartResponse = result?.data?.fetchCart;
-        console.log(
-          '======= fetchServerCart result: ',
-          JSON.stringify(saveCartResponse?.prescriptionDetails)
-        );
-        if (saveCartResponse?.errorMessage) {
-          throw saveCartResponse?.errorMessage;
+        const fetchCartResponse = result?.data?.fetchCart;
+        console.log('======= fetchServerCart result: ', JSON.stringify(fetchCartResponse));
+        if (fetchCartResponse?.errorMessage) {
+          throw fetchCartResponse?.errorMessage;
         }
-        if (saveCartResponse?.data?.patientId) {
-          const cartResponse = saveCartResponse?.data;
-          console.log(
-            '======= fetchServerCart result: ',
-            JSON.stringify(cartResponse?.subscriptionDetails)
-          );
+        if (fetchCartResponse?.data?.patientId) {
+          const cartResponse = fetchCartResponse?.data;
           setCartValues(cartResponse);
         }
       })
       .catch((error) => {
         console.log('======= fetchServerCart error: ', error);
+      })
+      .finally(() => {
+        setUserActionPayload(null);
       });
   };
 
   const fetchReviewCart = () => {
-    console.log('fetchReviewCart cartInputData >>>> ', { patientId: currentPatient?.id });
+    console.log('ReviewCart cartInputData >>>> ', { patientId: currentPatient?.id });
     client
       .query({
         query: SERVER_CART_REVIEW_CART,
@@ -129,21 +113,21 @@ export const useServerCart = () => {
         fetchPolicy: 'no-cache',
       })
       .then((result) => {
-        const saveCartResponse = result?.data?.reviewCart;
-        if (saveCartResponse?.errorMessage) {
-          throw saveCartResponse?.errorMessage;
+        const reviewCartResponse = result?.data?.reviewCartPage;
+        console.log('======= ReviewCart result: ', JSON.stringify(reviewCartResponse));
+        if (reviewCartResponse?.errorMessage) {
+          throw reviewCartResponse?.errorMessage;
         }
-        if (saveCartResponse?.data?.patientId) {
-          const cartResponse = saveCartResponse?.data;
-          console.log(
-            '======= fetchReviewCart result: ',
-            JSON.stringify(cartResponse?.subscriptionDetails?.prescriptionDetails)
-          );
+        if (reviewCartResponse?.data?.patientId) {
+          const cartResponse = reviewCartResponse?.data;
           setCartValues(cartResponse);
         }
       })
       .catch((error) => {
-        console.log('======= fetchReviewCart error: ', error);
+        console.log('======= ReviewCart error: ', error);
+      })
+      .finally(() => {
+        setUserActionPayload(null);
       });
   };
 
@@ -155,7 +139,7 @@ export const useServerCart = () => {
       setServerCartAmount?.(cartResponse?.amount);
       setCartCoupon?.(cartResponse?.couponDetails);
       setCartPrescriptions?.(cartResponse?.prescriptionDetails);
-      setCartAddressId?.('83e7f3b8-ba4e-44c1-8a5d-d211def51941');
+      if (cartResponse?.patientAddressId) setCartAddressId?.(cartResponse?.patientAddressId);
       setCartSubscriptionDetails?.(cartResponse?.subscriptionDetails);
       setNoOfShipments?.(cartResponse?.noOfShipments);
     } catch (error) {}
@@ -205,38 +189,6 @@ export const useServerCart = () => {
       .catch((error) => {});
   };
 
-  const saveMedicineOrderV3 = (
-    cartType: MEDICINE_ORDER_TYPE,
-    medicineDeliveryType: MEDICINE_DELIVERY_TYPE,
-    customerComment: string,
-    showPrescriptionAtStore: boolean
-  ) => {
-    const params = {
-      patientId: currentPatient?.id,
-      cartType,
-      medicineDeliveryType,
-      bookingSource: BOOKING_SOURCE.MOBILE,
-      deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,
-      appVersion: DeviceInfo.getVersion(),
-      customerComment,
-      showPrescriptionAtStore,
-    };
-    console.log(params);
-    client
-      .mutate({
-        mutation: SAVE_MEDICINE_ORDER_V3,
-        variables: { medicineOrderInput: params },
-        fetchPolicy: 'no-cache',
-      })
-      .then((result) => {
-        console.log('V3 ==== ', JSON.stringify(result));
-        return result;
-      })
-      .catch((error) => {
-        console.log('V# ERROR ===== ', error);
-      });
-  };
-
   // const renderAlert = (message: string) => {
   //   showAphAlert!({
   //     title: string.common.uhOh,
@@ -250,6 +202,5 @@ export const useServerCart = () => {
     fetchReviewCart,
     fetchAddress,
     fetchPrescriptionDetails,
-    saveMedicineOrderV3,
   };
 };

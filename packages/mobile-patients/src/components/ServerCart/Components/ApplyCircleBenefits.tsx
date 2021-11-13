@@ -11,8 +11,7 @@ import { NavigationScreenProps } from 'react-navigation';
 export interface ApplyCircleBenefitsProps extends NavigationScreenProps {}
 
 export const ApplyCircleBenefits: React.FC<ApplyCircleBenefitsProps> = (props) => {
-  const { cartCircleSubscriptionId, cartSubscriptionDetails } = useShoppingCart();
-  const isCircleCart = !!cartSubscriptionDetails?.currentSellingPrice;
+  const { isCircleCart } = useShoppingCart();
 
   const renderSelectCirclePlans = () => {
     return (

@@ -183,6 +183,7 @@ export interface ShoppingCartContextProps {
   setCartSubscriptionDetails: ((value: saveCart_saveCart_data_subscriptionDetails) => void) | null;
   noOfShipments: number;
   setNoOfShipments: ((shipments: number) => void) | null;
+  isCircleCart: boolean;
   // server cart values stop
   cartItems: ShoppingCartItem[];
   setCartItems: ((items: ShoppingCartItem[]) => void) | null;
@@ -350,6 +351,7 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setCartSubscriptionDetails: null,
   noOfShipments: 0,
   setNoOfShipments: null,
+  isCircleCart: false,
 
   cartItems: [],
   setCartItems: null,
@@ -801,7 +803,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
   };
 
   const getCartItemQty: ShoppingCartContextProps['getCartItemQty'] = (id) =>
-    cartItems.find(({ id: cId }) => cId == id)?.quantity || 0;
+    serverCartItems.find(({ sku: cId }) => cId == id)?.quantity || 0;
 
   const setCouponProducts: ShoppingCartContextProps['setCouponProducts'] = (items) => {
     _setCouponProducts(items);
@@ -821,6 +823,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
       .reduce((currTotal, currItem) => currTotal + currItem.quantity * currItem.price, 0)
       .toFixed(2)
   );
+
+  const isCircleCart: ShoppingCartContextProps['isCircleCart'] =
+    !!cartCircleSubscriptionId || !!cartSubscriptionDetails?.subscriptionApplied;
 
   const cartDiscountTotal: ShoppingCartContextProps['cartDiscountTotal'] = parseFloat(
     cartItems
@@ -1378,6 +1383,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setCartSubscriptionDetails,
         noOfShipments,
         setNoOfShipments,
+        isCircleCart,
 
         cartItems,
         setCartItems,

@@ -114,13 +114,19 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
   const saveEPrescriptionsToServerCart = (ePrescriptions: EPrescription[]) => {
     try {
       ePrescriptions?.forEach((prescription: EPrescription) => {
-        if (prescription?.prismPrescriptionFileId) {
+        if (prescription?.prismPrescriptionFileId || prescription?.appointmentId) {
           setUserActionPayload?.({
             prescriptionDetails: {
               prescriptionImageUrl: prescription?.uploadedUrl,
-              prismPrescriptionFileId: prescription?.prismPrescriptionFileId,
+              prismPrescriptionFileId: '1620047399195.pdf', // change this!!!!!!
               uhid: currentPatient?.uhid,
               appointmentId: prescription?.appointmentId,
+              meta: {
+                doctorName: prescription?.doctorName,
+                forPatient: prescription?.forPatient,
+                medicines: prescription?.medicines,
+                date: prescription?.date,
+              },
             },
           });
         }

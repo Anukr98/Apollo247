@@ -37,6 +37,7 @@ import {
   pharmaPrescriptionOptionVariables,
 } from '@aph/mobile-patients/src/graphql/types/pharmaPrescriptionOption';
 import { pharmaPrescriptionShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import { CartPrescriptions } from '@aph/mobile-patients/src/components/ServerCart/Components/CartPrescriptions';
 
 export interface Props {
   selectedOption: PrescriptionType | null;
@@ -288,7 +289,7 @@ export const PrescriptionOptions: React.FC<Props> = ({
     return (
       selectedOption === PrescriptionType.UPLOADED && (
         <View style={styles.prescriptionView}>
-          <Prescriptions hideHeader isPlainStyle />
+          <CartPrescriptions isPrescriptionChangeDisabled={false} actionType={'removal'} />
         </View>
       )
     );

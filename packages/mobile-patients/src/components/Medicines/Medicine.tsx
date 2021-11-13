@@ -168,6 +168,7 @@ import { Cache } from 'react-native-cache';
 import { setItem, getItem } from '@aph/mobile-patients/src/helpers/TimedAsyncStorage';
 import { SuggestedQuantityNudge } from '@aph/mobile-patients/src/components/SuggestedQuantityNudge/SuggestedQuantityNudge';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import { CircleBottomContainer } from '@aph/mobile-patients/src/components/Medicines/Components/CircleBottomContainer';
 
 const styles = StyleSheet.create({
   scrollViewStyle: {
@@ -214,16 +215,6 @@ const styles = StyleSheet.create({
     height: '100%',
     width: winWidth,
     backgroundColor: 'rgba(0,0,0,0.31)',
-  },
-  priceStrikeOff: {
-    ...theme.viewStyles.text('M', 13, '#01475b', 1, 20, 0.35),
-    textDecorationLine: 'line-through',
-    color: '#01475b',
-    opacity: 0.6,
-    paddingRight: 5,
-  },
-  discountPercentage: {
-    ...theme.viewStyles.text('M', 13, '#00B38E', 1, 20, 0.35),
   },
   searchContainer: {
     paddingVertical: 10,
@@ -321,7 +312,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setAsyncPincode,
     setIsCircleExpired,
     isCircleExpired,
-    pharmaHomeNudgeMessage,
     setMedicineHomeBannerData,
     setMedicineHotSellersData,
   } = useShoppingCart();
@@ -2114,7 +2104,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const getItemQuantity = (id: string) => {
-    const foundItem = cartItems?.find((item) => item.id == id);
+    const foundItem = serverCartItems?.find((item) => item.sku == id);
     return foundItem ? foundItem.quantity : 0;
   };
 
@@ -2157,18 +2147,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           }
         }}
         onPressAddToCart={() => {
-          onAddCartItem(item);
-          setCurrentProductIdInCart(item.sku);
-          item.pack_form ? setItemPackForm(item.pack_form) : setItemPackForm('');
-          item.suggested_qty
-            ? setSuggestedQuantity(item.suggested_qty)
-            : setSuggestedQuantity(null);
-          item.MaxOrderQty
-            ? setMaxOrderQty(item.MaxOrderQty)
-            : item.suggested_qty
-            ? setMaxOrderQty(+item.suggested_qty)
-            : setMaxOrderQty(0);
-          setCurrentProductQuantityInCart(1);
           setUserActionPayload?.({
             medicineOrderCartLineItems: [
               {
@@ -2360,188 +2338,20 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const renderCartDiscount = () => {
-    const cartDiscountPercent = getDiscountPercentage(cartTotal, cartTotal - productDiscount);
-    return (
-      <>
-        {cartDiscountPercent ? (
-          <View style={{ flexDirection: 'row', marginLeft: 10 }}>
-            <Text style={styles.priceStrikeOff}>
-              ({string.common.Rs}
-              {convertNumberToDecimal(cartTotal)})
-            </Text>
-            <Text style={styles.discountPercentage}>{cartDiscountPercent}% off</Text>
-          </View>
-        ) : null}
-      </>
-    );
-  };
-
-  const renderCircleCartDetails = () => {
-    const circleStyles = StyleSheet.create({
-      container: {
-        position: 'absolute',
-        bottom: 0,
-        ...theme.viewStyles.cardContainer,
-        width: '100%',
-      },
-      content: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        padding: 10,
-      },
-      upgrade: {
-        borderWidth: 2,
-        borderColor: '#FCB716',
-        borderRadius: 8,
-        padding: 5,
-        backgroundColor: '#FFFFFF',
-      },
-      upgradeTo: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-      },
-      circleLogo: {
-        resizeMode: 'contain',
-        width: 35,
-        height: 23,
-        marginLeft: 5,
-      },
-      cartButton: {
-        backgroundColor: '#FCB716',
-        borderRadius: 8,
-        padding: 5,
-        paddingHorizontal: 10,
-        alignItems: 'center',
-        alignSelf: 'center',
-      },
-      circleLogoTwo: {
-        resizeMode: 'contain',
-        width: 35,
-        height: 25,
-        marginRight: 4,
-      },
-    });
-    const effectivePrice = Math.round(cartDiscountTotal - cartTotalCashback);
-    const circleMember = circleSubscriptionId && !isCircleExpired;
-    const nonCircleMember = !circleSubscriptionId || isCircleExpired;
-    const showNudgeMessage =
-      pharmaHomeNudgeMessage?.show === 'yes' &&
-      ((circleMember && !!pharmaHomeNudgeMessage?.nudgeMessage) ||
-        (nonCircleMember && !!pharmaHomeNudgeMessage?.nudgeMessageNonCircle));
-
-    return (
-      <View style={[circleStyles.container, { backgroundColor: 'white' }]}>
-        {!!showNudgeMessage && <NudgeMessage nudgeMessage={pharmaHomeNudgeMessage} />}
-        <View style={circleStyles.content}>
-          <View
-            style={{
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Text style={theme.viewStyles.text('R', 13, '#02475B', 1, 24, 0)}>
-              {!!circleSubscriptionId || isCircleSubscription ? 'Items' : 'Total items'}
-            </Text>
-            <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0)}>
-              {cartItems?.length}
-            </Text>
-          </View>
-          {!!circleSubscriptionId || isCircleSubscription ? (
-            <View
-              style={{
-                borderLeftWidth: 2,
-                borderLeftColor: colors.DEFAULT_BACKGROUND_COLOR,
-                marginTop: 6,
-                marginBottom: 6,
-              }}
-            ></View>
-          ) : null}
-          {cartTotalCashback > 1 ? (
-            <>
-              {!!circleSubscriptionId || isCircleSubscription ? (
-                <View style={{ width: '60%' }}>
-                  <View style={{ flexDirection: 'row' }}>
-                    <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>
-                      MRP{'  '}
-                      {string.common.Rs}
-                      {(cartTotal - productDiscount).toFixed(2)}
-                    </Text>
-                    {renderCartDiscount()}
-                  </View>
-                  <View style={{ flexDirection: 'row' }}>
-                    <CircleLogo style={circleStyles.circleLogoTwo} />
-                    <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0)}>
-                      cashback {string.common.Rs}
-                      {cartTotalCashback.toFixed(2)}
-                    </Text>
-                  </View>
-                  <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-                    <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0)}>
-                      Effective price for you{' '}
-                    </Text>
-                    <Text style={theme.viewStyles.text('SB', 12, '#02475B', 1, 25, 0)}>
-                      {string.common.Rs}
-                      {convertNumberToDecimal(effectivePrice)}
-                    </Text>
-                  </View>
-                </View>
-              ) : (
-                <TouchableOpacity
-                  activeOpacity={1}
-                  onPress={() => {
-                    setShowCirclePopup(true);
-                    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE] = {
-                      'Patient UHID': currentPatient?.uhid,
-                      'Mobile Number': currentPatient?.mobileNumber,
-                      'Customer ID': currentPatient?.id,
-                    };
-                    postWebEngageEvent(
-                      WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE,
-                      eventAttributes
-                    );
-                  }}
-                  style={circleStyles.upgrade}
-                >
-                  <View style={circleStyles.upgradeTo}>
-                    <Text style={theme.viewStyles.text('M', 13, '#FCB716')}>UPGRADE TO</Text>
-                    <CircleLogo style={circleStyles.circleLogo} />
-                  </View>
-                  <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 17, 0)}>
-                    {`Get Circle Cashback of ₹${cartTotalCashback.toFixed(2)}`}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </>
-          ) : (
-            <View
-              style={{
-                marginTop: 13,
-              }}
-            >
-              <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0)}>
-                ₹{cartTotal - productDiscount}
-              </Text>
-            </View>
-          )}
-          <TouchableOpacity
-            style={circleStyles.cartButton}
-            onPress={() => {
-              props.navigation.navigate(AppRoutes.ServerCart);
-            }}
-          >
-            <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0)}>GO TO CART</Text>
-            {!circleSubscriptionId && !isCircleSubscription && cartTotalCashback > 1 && (
-              <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0)}>
-                {`Buy for ${string.common.Rs}${cartDiscountTotal}`}
-              </Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
+  const renderCircleCartDetails = () => (
+    <CircleBottomContainer
+      onPressGoToCart={() => props.navigation.navigate(AppRoutes.ServerCart)}
+      onPressUpgradeTo={() => {
+        setShowCirclePopup(true);
+        const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE] = {
+          'Patient UHID': currentPatient?.uhid,
+          'Mobile Number': currentPatient?.mobileNumber,
+          'Customer ID': currentPatient?.id,
+        };
+        postWebEngageEvent(WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE, eventAttributes);
+      }}
+    />
+  );
 
   const renderCircleMembershipPopup = () => {
     return (
@@ -2615,7 +2425,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <View style={{ flex: 1, paddingBottom: !!cartItems?.length ? 80 : 0 }}>
           {renderSections()}
           {renderOverlay()}
-          {!!cartItems?.length && renderCircleCartDetails()}
+          {!!serverCartItems?.length && renderCircleCartDetails()}
           {renderCategoryTree()}
         </View>
       </SafeAreaView>

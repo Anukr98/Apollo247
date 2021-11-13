@@ -141,7 +141,9 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
 
   const circlePlanAddedToCart =
-    !!cartSubscriptionDetails?.currentSellingPrice && !cartCircleSubscriptionId;
+    !!cartSubscriptionDetails?.currentSellingPrice &&
+    !cartCircleSubscriptionId &&
+    cartSubscriptionDetails?.subscriptionApplied;
 
   useEffect(() => {
     fetchServerCart();
@@ -249,7 +251,6 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
   };
 
   const renderProceedBar = () => {
-    console.log('cartPrescriptions >>>>> ', cartPrescriptions);
     return (
       <ServerCartTatBottomContainer
         showAddressPopup={showAddressPopup}
@@ -271,6 +272,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
           props.navigation.navigate(AppRoutes.MedicineCartPrescription);
         }}
         style={{ marginTop: 20 }}
+        actionType={'removal'}
       />
     );
   };

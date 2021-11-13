@@ -75,15 +75,13 @@ export const ServerCartItemsList: React.FC<ServerCartItemsListProps> = (props) =
           showsVerticalScrollIndicator={false}
           data={serverCartItems}
           renderItem={({ item, index }) => {
-            return isFromCart ? (
+            return (
               <ServerCartItem
                 item={item}
                 onUpdateQuantity={(quantity) => onUpdateQuantity(item, quantity)}
                 onPressDelete={() => onPressDelete(item)}
                 onPressProduct={() => onPressProduct!(item)}
               />
-            ) : (
-              <CartItemCard2 item={item} />
             );
           }}
           keyExtractor={(item) => item.id}

@@ -7,7 +7,10 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 export interface CartTotalSectionProps {}
 
 export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
-  const { circleMembershipCharges, serverCartAmount, cartCircleSubscriptionId } = useShoppingCart();
+  const { cartSubscriptionDetails, serverCartAmount, isCircleCart } = useShoppingCart();
+  const isCircleAddedToCart =
+    !!cartSubscriptionDetails?.currentSellingPrice &&
+    !!cartSubscriptionDetails?.subscriptionApplied;
   const cartTotal = serverCartAmount?.cartTotal;
   const cartSavings = serverCartAmount?.cartSavings;
   const couponSavings = serverCartAmount?.couponSavings;
@@ -49,11 +52,7 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <View>
           <Text style={styles.text}>Delivery charges</Text>
-          {/* later */}
-          {/* circleMembershipCharges */}
-          {(cartCircleSubscriptionId || !!circleMembershipCharges) && (
-            <Text style={styles.circleMessage}>(Free for Circle Members)</Text>
-          )}
+          {isCircleCart && <Text style={styles.circleMessage}>(Free for Circle Members)</Text>}
         </View>
         {deliveryCharges && !isDeliveryFree ? (
           <Text style={styles.text}>+₹{deliveryCharges}</Text>
@@ -92,10 +91,10 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
   };
 
   const renderCircleMembershipCharges = () =>
-    circleMembershipCharges ? (
+    isCircleAddedToCart ? (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <Text style={styles.text}>Circle Membership</Text>
-        <Text style={styles.text}>₹{circleMembershipCharges}</Text>
+        <Text style={styles.text}>₹{cartSubscriptionDetails?.currentSellingPrice}</Text>
       </View>
     ) : null;
 
@@ -104,8 +103,7 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
       {renderCartTotal()}
       {renderProductDiscount()}
       {renderCouponDiscount()}
-      {/* later */}
-      {/* {!!circleMembershipCharges && renderCircleMembershipCharges()} */}
+      {!!isCircleAddedToCart && renderCircleMembershipCharges()}
       {!!deliveryCharges && renderDeliveryCharges()}
       {renderPackagingCharges()}
       {renderSeparator()}
