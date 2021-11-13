@@ -257,10 +257,12 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   };
 
   return (
-    <View style={{ ...styles.card, backgroundColor: itemAvailable ? '#fff' : '#F0F1EC' }}>
-      {renderImage()}
-      {renderProduct()}
-    </View>
+    <TouchableOpacity>
+      <View style={{ ...styles.card, backgroundColor: itemAvailable ? '#fff' : '#F0F1EC' }}>
+        {renderImage()}
+        {renderProduct()}
+      </View>
+    </TouchableOpacity>
   );
 };
 
