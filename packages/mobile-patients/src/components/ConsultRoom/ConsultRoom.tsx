@@ -59,6 +59,7 @@ import {
   BannerDisplayType,
   BookingSource,
   BookingStatus,
+  // DEVICE_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { dateFormatter } from '@aph/mobile-patients/src/utils/dateUtil';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
@@ -111,6 +112,7 @@ import {
   getAllProHealthAppointments,
   getUserBannersList,
   saveTokenDevice,
+  updatePatientAppVersion,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   FirebaseEventName,
@@ -898,9 +900,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
     }
   }
+  const updateAppVersion = (currentPatient: any) => {
+    console.log(currentPatient)
+    if (currentPatient?.id) {
+      console.log("====================")
+      updatePatientAppVersion(client, currentPatient);
+    }
+  };
 
   useEffect(() => {
     checkCleverTapLoginStatus(currentPatient);
+    updateAppVersion(currentPatient);
   }, [currentPatient]);
 
   //to be called only when the user lands via app launch

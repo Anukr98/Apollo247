@@ -8,6 +8,7 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import {
   GET_APPOINTMENT_DATA,
   GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS,
+  // UPDATE_CALLKIT_NOTIFICATION_RECIEVED_STATUS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getAppointmentData as getAppointmentDataQuery,
@@ -21,12 +22,14 @@ import {
   postWebEngageEvent,
   overlyCallPermissions,
   getIsMedicine,
+  updateCallKitNotificationReceivedStatus,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
+// import { ApolloClient } from 'apollo-client';
 import { StyleSheet, Platform, View, TouchableOpacity, Text } from 'react-native';
 import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import { NavigationScreenProps } from 'react-navigation';
@@ -42,6 +45,8 @@ import {
   getMedicineOrderOMSDetailsWithAddressVariables,
 } from '../graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
+// import { handleOpenURL } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
+// import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
   rescheduleTextStyles: {
@@ -99,6 +104,50 @@ type CustomNotificationType =
   | 'Book_Appointment'
   | 'webview'
   | 'patient_chat_message';
+
+// interface CallKitRecievedAcknowledgementResponse {
+//   status: boolean;
+//   error: any;
+// }
+// interface CallKitRecievedAcknowledgementResult {
+//   updateCallKitNotificationReceivedStatus: CallKitRecievedAcknowledgementResponse;
+// }
+// interface CallKitRecievedAcknowledgementVariables {
+//   appointmentId: string;
+// }
+
+// export const callKitRecievedAcknowledgement = (
+//   client: ApolloClient<object>,
+//   appointmentId: string
+// ) => {
+//   const variables = {
+//     appointmentId: appointmentId,
+//   };
+
+//   console.log(
+//     'callKitRecievedAcknowledgement function definition ==============',
+//     appointmentId,
+//     variables,
+//     client
+//   );
+//   if (appointmentId) {
+//     try {
+//       console.log(
+//         'callKitRecievedAcknowledgement function definition ============== Inside',
+//         appointmentId
+//       );
+
+//       client
+//         .mutate<CallKitRecievedAcknowledgementResult, CallKitRecievedAcknowledgementVariables>({
+//           mutation: UPDATE_CALLKIT_NOTIFICATION_RECIEVED_STATUS,
+//           variables: variables,
+//           fetchPolicy: 'no-cache',
+//         })
+//         .then((response) => console.log('============ Nice', response))
+//         .catch((error) => console.log('Error===============', error));
+//     } catch (e) {}
+//   }
+// };
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
 
@@ -792,7 +841,23 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
      * Triggered when a particular notification has been received in foreground
      * */
     const notificationListener = messaging().onMessage((notification) => {
-      aphConsole.log('notificationListener');
+      console.log('notificationListener=======', notification.data?.type);
+
+      if (notification?.data?.type === 'call_start') {
+        // console.log(
+        //   'notificationListener',
+        //   notification.data?.appointmentId
+        //   // callKitRecievedAcknowledgement
+        // );
+        updateCallKitNotificationReceivedStatus(notification.data?.appointmentId);
+        // callKitRecievedAcknowledgement(client, notification.data?.appointmentId); // when call_start notification is recieved
+        // handleOpenURL(
+        //   `${AppConfig.Configuration.returnUrl}/call_start/${notification.data?.appointmentId}`
+        // );
+                // handleOpenURL(
+                //   `${AppConfig.Configuration.returnUrl}/call_start/3f2c2a53-a1b7-4906-9dc9-5e4cb558e632`
+                // );
+      }
       if (notification.data?.type !== 'chat_room' && notification.data?.type !== 'call_started') {
         processNotification(notification, true); // when app in foreground
       }

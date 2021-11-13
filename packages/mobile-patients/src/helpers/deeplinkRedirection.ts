@@ -19,8 +19,12 @@ import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
 import { MutableRefObject } from 'react';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { useMutation } from 'react-apollo-hooks';
+import { UPDATE_CALLKIT_NOTIFICATION_RECIEVED_STATUS } from '../graphql/profiles';
 
 export const handleOpenURL = (event: any) => {
+  console.log("Event=================", event);
+  // const [callkitconfirmation, {data,loading, error}] = useMutation(UPDATE_CALLKIT_NOTIFICATION_RECIEVED_STATUS);
   try {
     let route;
     let data;
@@ -68,6 +72,11 @@ export const handleOpenURL = (event: any) => {
     route = routeNameParam ? routeNameParam?.[0]?.toLowerCase() : '';
     const paramData = getParamData(linkId)?.[0];
     linkId = paramData ? paramData : linkId;
+    console.log("Route-------------------->>>>>>>>>>", route)
+    console.log('linkid=============', linkId);
+    console.log('Param Data=============', paramData);
+    console.log('routeNameParam=============', routeNameParam);
+    console.log('data=============', data);
 
     switch (route) {
       case 'appointments':
@@ -222,6 +231,7 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'doctorcall':
+        console.log('Doctor Call============= =======================================================================================================================1');
         if (data.length === 2 && getCurrentRoute() !== AppRoutes.ChatRoom) {
           return {
             routeName: 'DoctorCall',
@@ -392,9 +402,9 @@ export const handleOpenURL = (event: any) => {
       case 'test-order-summary':
         return {
           routeName: 'TestOrderSummary',
-          id: linkId ? linkId : undefined
-        }
-      break;
+          id: linkId ? linkId : undefined,
+        };
+        break;
 
       case 'testordersummary':
       case 'test-order-summary':
@@ -424,6 +434,12 @@ export const handleOpenURL = (event: any) => {
           routeName: 'PaymentMethods',
           id: linkId ? linkId : undefined,
         };
+      // case 'call_start': 
+      // return callkitconfirmation({
+      //   variables: {
+      //     appointmentId: routeNameParam?.[1],
+      //   }
+      // })
       default:
         if (b === 0) {
           return {
@@ -548,6 +564,9 @@ export const pushTheView = (
       break;
     case 'ChatRoom':
     case 'DoctorCall':
+      console.log(
+        'Doctor Call=============l============= l============= l============= l============= l============= l============= l============= l============= l============= l============= l=============  2'
+      );
       navigateToView(navigation, AppRoutes.ChatRoom, {
         data: id,
         callType: voipCallType ? voipCallType?.toUpperCase() : '',
@@ -592,6 +611,9 @@ export const pushTheView = (
       });
       break;
     case 'DoctorCall':
+      console.log(
+        'Doctor Call============= l============= l============= l============= l============= l============= l============= l============= l============= l============= l============= l============= l============= l============= l============= l============= l============= l============= l============= l============= l============= l============= l============= l============= 3'
+      );
       navigateToView(navigation, AppRoutes.ChatRoom, {
         data: id,
         callType: voipCallType ? voipCallType?.toUpperCase() : '',
@@ -689,18 +711,17 @@ export const pushTheView = (
       navigateToScreenWithEmptyStack(navigation, AppRoutes.PaymentMethods, params);
       break;
     case 'TestOrderSummary':
-        navigateToView(navigation, AppRoutes.TestOrderDetails, {
-          orderId: id,
-          goToHomeOnBack: true,
-          setOrders: null,
-          selectedOrder: null,  
-          refundStatusArr: [],
-          comingFrom:'deeplink',
-          showOrderSummaryTab: true,
-          disableTrackOrder: true,
-          
-        })
-        break;
+      navigateToView(navigation, AppRoutes.TestOrderDetails, {
+        orderId: id,
+        goToHomeOnBack: true,
+        setOrders: null,
+        selectedOrder: null,
+        refundStatusArr: [],
+        comingFrom: 'deeplink',
+        showOrderSummaryTab: true,
+        disableTrackOrder: true,
+      });
+      break;
     default:
       const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
         source: 'deeplink',
