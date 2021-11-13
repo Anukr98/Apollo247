@@ -257,7 +257,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   };
 
   return (
-    <TouchableOpacity>
+    <TouchableOpacity style={{ marginHorizontal: 13, marginBottom: 5 }}>
       <View style={{ ...styles.card, backgroundColor: itemAvailable ? '#fff' : '#F0F1EC' }}>
         {renderImage()}
         {renderProduct()}
@@ -269,9 +269,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
 const styles = StyleSheet.create({
   card: {
     ...theme.viewStyles.cardViewStyle,
-    marginHorizontal: 13,
     borderRadius: 5,
-    marginBottom: 5,
     flexDirection: 'row',
     paddingHorizontal: 10,
     paddingVertical: 8,
