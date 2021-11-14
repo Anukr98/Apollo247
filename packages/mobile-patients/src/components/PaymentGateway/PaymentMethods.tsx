@@ -135,7 +135,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { authToken, setauthToken } = useAppCommonData();
-  const { grandTotal, cartItems, nonCodSKus } = useShoppingCart();
+  const { serverCartAmount } = useShoppingCart();
   const [HCSelected, setHCSelected] = useState<boolean>(false);
   const [burnHc, setburnHc] = useState<number>(0);
   const storeCode =
@@ -207,7 +207,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const updateAmount = () => {
-    const redeemableAmount = grandTotal;
+    const redeemableAmount = serverCartAmount?.estimatedAmount || 0;
     HCSelected
       ? healthCredits >= redeemableAmount
         ? (setburnHc(redeemableAmount), setAmount(Number(Decimal.sub(amount, redeemableAmount))))

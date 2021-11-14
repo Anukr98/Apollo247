@@ -248,6 +248,7 @@ import {
   createVonageSessionToken,
   createVonageSessionTokenVariables,
 } from '../../graphql/types/createVonageSessionToken';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 interface OpentokStreamObject {
   connection: {
@@ -946,12 +947,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
-  const {
-    setEPrescriptions,
-    addMultipleCartItems,
-    circleSubPlanId,
-    circleSubscriptionId,
-  } = useShoppingCart();
+  const { setEPrescriptions, circleSubPlanId, circleSubscriptionId } = useShoppingCart();
+  const { setUserActionPayload } = useServerCart();
   const [name, setname] = useState<string>('');
   const [showRescheduleCancel, setShowRescheduleCancel] = useState<boolean>(false);
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
@@ -4495,27 +4492,30 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (isCartOrder) {
       try {
         setLoading(true);
-        const response: AxiosResponse<MedicineProductDetailsResponse>[] = await Promise.all(
-          medPrescription.map((item) => getMedicineDetailsApi(item?.id!))
-        );
-        const cartItems = response
-          .filter(({ data }) => {
-            const medicine = data?.productdp?.[0];
-            return medicine?.id && medicine?.sku;
-          })
-          .map(({ data }, index) => ({
-            ...formatToCartItem({ ...data?.productdp?.[0]!, image: '' }),
-            quantity: getPrescriptionItemQuantity(
-              medPrescription?.[index]?.medicineUnit,
-              medPrescription?.[index]?.medicineTimings,
-              medPrescription?.[index]?.medicineDosage,
-              medPrescription?.[index]?.medicineCustomDosage,
-              medPrescription?.[index]?.medicineConsumptionDurationInDays,
-              medPrescription?.[index]?.medicineConsumptionDurationUnit,
-              parseInt(data?.productdp?.[0]?.mou || '1', 10)
-            ),
-          }));
-        addMultipleCartItems?.(cartItems);
+        medPrescription?.forEach((value) => {
+          setUserActionPayload?.({
+            medicineOrderCartLineItems: [
+              {
+                medicineSKU: value?.id,
+                quantity: 1,
+              },
+            ],
+          });
+        });
+        setUserActionPayload?.({
+          prescriptionDetails: {
+            prescriptionImageUrl: presToAdd.uploadedUrl,
+            prismPrescriptionFileId: presToAdd.prismPrescriptionFileId,
+            uhid: currentPatient?.id,
+            appointmentId: presToAdd.appointmentId,
+            meta: {
+              doctorName: presToAdd?.doctorName,
+              forPatient: presToAdd?.forPatient,
+              medicines: presToAdd?.medicines,
+              date: presToAdd?.date,
+            },
+          },
+        });
         setEPrescriptions?.([presToAdd]);
         setLoading(false);
         postCleverTapUploadPrescriptionEvents('Consult Room', 'Cart');

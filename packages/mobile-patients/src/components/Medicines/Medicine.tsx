@@ -90,7 +90,6 @@ import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEv
 import { getUserBannersList } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
-  addPharmaItemToCart,
   doRequestAndAccessLocationModified,
   g,
   getDiscountPercentage,
@@ -280,11 +279,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const {
     serverCartItems,
-    cartItems,
-    setCartItems,
-    addCartItem,
-    removeCartItem,
-    updateCartItem,
     addresses,
     setAddresses,
     deliveryAddressId,
@@ -695,13 +689,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       didBlur && didBlur.remove();
     };
   }, []);
-
-  useEffect(() => {
-    // set cart items again to set item cashbacks and total cashback
-    if (cartItems?.length) {
-      setCartItems && setCartItems(cartItems);
-    }
-  }, [cartItems]);
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
@@ -1334,6 +1321,22 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           if (selectedEPres?.length == 0) {
             return;
           }
+          selectedEPres.forEach((presToAdd) => {
+            setUserActionPayload?.({
+              prescriptionDetails: {
+                prescriptionImageUrl: presToAdd.uploadedUrl,
+                prismPrescriptionFileId: presToAdd.prismPrescriptionFileId,
+                uhid: currentPatient?.id,
+                appointmentId: presToAdd.appointmentId,
+                meta: {
+                  doctorName: presToAdd?.doctorName,
+                  forPatient: presToAdd?.forPatient,
+                  medicines: presToAdd?.medicines,
+                  date: presToAdd?.date,
+                },
+              },
+            });
+          });
           setEPrescriptions && setEPrescriptions(selectedEPres);
           props.navigation.navigate(AppRoutes.UploadPrescription, {
             ePrescriptionsProp: selectedEPres,
@@ -1954,12 +1957,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, [searchText]);
 
   useEffect(() => {
-    if (cartItems.find(({ id }) => id?.toUpperCase() === currentProductIdInCart)) {
+    if (serverCartItems.find(({ sku }) => sku?.toUpperCase() === currentProductIdInCart)) {
       if (shownNudgeOnce === false) {
         setShowSuggestedQuantityNudge(true);
       }
     }
-  }, [cartItems, currentProductQuantityInCart, currentProductIdInCart]);
+  }, [serverCartItems, currentProductQuantityInCart, currentProductIdInCart]);
 
   useEffect(() => {
     if (showSuggestedQuantityNudge === false) {
@@ -2052,57 +2055,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const client = useApolloClient();
 
-  const onAddCartItem = (item: MedicineProduct) => {
-    const {
-      sku,
-      mou,
-      name,
-      price,
-      special_price,
-      is_prescription_required,
-      type_id,
-      thumbnail,
-      MaxOrderQty,
-      category_id,
-      url_key,
-      subcategory,
-    } = item;
-    setItemsLoading({ ...itemsLoading, [sku]: true });
-    addPharmaItemToCart(
-      {
-        id: sku,
-        mou,
-        name,
-        price: price,
-        specialPrice: special_price
-          ? typeof special_price == 'string'
-            ? Number(special_price)
-            : special_price
-          : undefined,
-        prescriptionRequired: is_prescription_required == '1',
-        isMedicine: getIsMedicine(type_id?.toLowerCase()) || '0',
-        quantity: Number(1),
-        thumbnail: thumbnail,
-        isInStock: true,
-        maxOrderQty: MaxOrderQty,
-        productType: type_id,
-        circleCashbackAmt: 0,
-        url_key,
-        subcategory,
-      },
-      asyncPincode?.pincode || pharmacyPincode!,
-      addCartItem,
-      null,
-      props.navigation,
-      currentPatient,
-      !!isPharmacyLocationServiceable,
-      { source: 'Pharmacy Partial Search', categoryId: category_id },
-      JSON.stringify(cartItems),
-      () => setItemsLoading({ ...itemsLoading, [sku]: false }),
-      pharmacyCircleAttributes!
-    );
-  };
-
   const getItemQuantity = (id: string) => {
     const foundItem = serverCartItems?.find((item) => item.sku == id);
     return foundItem ? foundItem.quantity : 0;
@@ -2113,15 +2065,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       title: 'Okay! :)',
       description: `You will be notified when ${name} is back in stock.`,
     });
-  };
-
-  const onUpdateCartItem = (id: string, quantity: number) => {
-    updateCartItem!({ id, quantity: quantity });
-    setCurrentProductQuantityInCart(quantity + 1);
-  };
-
-  const onRemoveCartItem = (id: string) => {
-    removeCartItem!(id);
   };
 
   const renderSearchSuggestionItemView = (
@@ -2162,7 +2105,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         onPressAdd={() => {
           const q = getItemQuantity(item.sku);
           if (q == getMaxQtyForMedicineItem(item.MaxOrderQty)) return;
-          onUpdateCartItem(item.sku, getItemQuantity(item.sku) + 1);
           setCurrentProductQuantityInCart(q + 1);
           setUserActionPayload?.({
             medicineOrderCartLineItems: [
@@ -2175,7 +2117,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         }}
         onPressSubstract={() => {
           const q = getItemQuantity(item.sku);
-          q == 1 ? onRemoveCartItem(item.sku) : onUpdateCartItem(item.sku, q - 1);
           setCurrentProductQuantityInCart(q - 1);
           setUserActionPayload?.({
             medicineOrderCartLineItems: [
@@ -2422,7 +2363,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
         {pageLoading ? renderMedicinesShimmer() : null}
 
-        <View style={{ flex: 1, paddingBottom: !!cartItems?.length ? 80 : 0 }}>
+        <View style={{ flex: 1, paddingBottom: !!serverCartItems?.length ? 80 : 0 }}>
           {renderSections()}
           {renderOverlay()}
           {!!serverCartItems?.length && renderCircleCartDetails()}

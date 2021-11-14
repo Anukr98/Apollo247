@@ -25,7 +25,6 @@ import {
   MedicineProduct,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
-  addPharmaItemToCart,
   formatToCartItem,
   productsThumbnailUrl,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -73,9 +72,6 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
   const { showAphAlert } = useUIElements();
   const {
     getCartItemQty,
-    addCartItem,
-    updateCartItem,
-    removeCartItem,
     pinCode,
     pharmacyCircleAttributes,
     cartItems,
@@ -333,20 +329,15 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     };
 
     const onPressAddToCart = (item: MedicineProduct) => {
+      setUserActionPayload?.({
+        medicineOrderCartLineItems: [
+          {
+            medicineSKU: item?.sku,
+            quantity: 1,
+          },
+        ],
+      });
       setItemsAddingToCart({ ...itemsAddingToCart, [item.sku]: true });
-      addPharmaItemToCart(
-        formatToCartItem(item),
-        asyncPincode?.pincode || pharmacyPincode!,
-        addCartItem,
-        null,
-        navigation,
-        currentPatient,
-        !!isPharmacyLocationServiceable,
-        { source: 'Pharmacy Partial Search', categoryId: item.category_id },
-        JSON.stringify(cartItems),
-        () => setItemsAddingToCart({ ...itemsAddingToCart, [item.sku]: false }),
-        pharmacyCircleAttributes!
-      );
       setCurrentProductIdInCart(item.sku);
       item.pack_form ? setItemPackForm(item.pack_form) : setItemPackForm('');
       item.suggested_qty ? setSuggestedQuantity(item.suggested_qty) : setSuggestedQuantity(null);
@@ -356,14 +347,6 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
         ? setMaxOrderQty(+item.suggested_qty)
         : setMaxOrderQty(0);
       setCurrentProductQuantityInCart(1);
-      setUserActionPayload?.({
-        medicineOrderCartLineItems: [
-          {
-            medicineSKU: item?.sku,
-            quantity: 1,
-          },
-        ],
-      });
     };
 
     const products: MedicineSearchSuggestionItemProps[] = searchResults.map((item) => {
@@ -371,7 +354,6 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       const qty = getCartItemQty(id);
       const onPressAdd = () => {
         if (qty < item.MaxOrderQty) {
-          updateCartItem!({ id, quantity: qty + 1 });
           setCurrentProductQuantityInCart(qty + 1);
           setUserActionPayload?.({
             medicineOrderCartLineItems: [
@@ -384,7 +366,6 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
         }
       };
       const onPressSubstract = () => {
-        qty == 1 ? removeCartItem!(id) : updateCartItem!({ id, quantity: qty - 1 });
         setCurrentProductQuantityInCart(qty - 1);
         setUserActionPayload?.({
           medicineOrderCartLineItems: [

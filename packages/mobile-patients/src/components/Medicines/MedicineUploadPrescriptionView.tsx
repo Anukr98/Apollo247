@@ -245,6 +245,22 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
           if (selectedEPres.length == 0) {
             return;
           }
+          selectedEPres.forEach((presToAdd) => {
+            setUserActionPayload?.({
+              prescriptionDetails: {
+                prescriptionImageUrl: presToAdd.uploadedUrl,
+                prismPrescriptionFileId: presToAdd.prismPrescriptionFileId,
+                uhid: currentPatient?.id,
+                appointmentId: presToAdd.appointmentId,
+                meta: {
+                  doctorName: presToAdd?.doctorName,
+                  forPatient: presToAdd?.forPatient,
+                  medicines: presToAdd?.medicines,
+                  date: presToAdd?.date,
+                },
+              },
+            });
+          });
           setEPrescriptions && setEPrescriptions([...selectedEPres]);
         }}
         selectedEprescriptionIds={ePrescriptions.map((item) => item.id)}

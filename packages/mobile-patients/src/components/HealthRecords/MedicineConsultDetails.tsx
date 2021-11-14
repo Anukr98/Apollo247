@@ -39,6 +39,7 @@ import {
   postCleverTapEvent,
 } from '../../helpers/helperFunctions';
 import { CleverTapEventName, CleverTapEvents } from '../../helpers/CleverTapEvents';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 export interface RecordDetailsProps
   extends NavigationScreenProps<{
@@ -61,7 +62,8 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   const prismFile = props.navigation.state.params
     ? props.navigation.state.params.prismPrescriptionFileId
     : '';
-  const { addCartItem, addEPrescription } = useShoppingCart();
+  const { addEPrescription } = useShoppingCart();
+  const { setUserActionPayload } = useServerCart();
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const [pdfUri, setPDFUri] = useState<string>('');
@@ -114,7 +116,14 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           return;
         }
         const cartItem = formatToCartItem({ ...medicineDetails, image: '' });
-        addCartItem!({ ...cartItem, quantity: Number(data.quantity) || 1 });
+        setUserActionPayload?.({
+          medicineOrderCartLineItems: [
+            {
+              medicineSKU: cartItem.id,
+              quantity: Number(data.quantity) || 1,
+            },
+          ],
+        });
         if (medicineDetails.is_prescription_required == '1') {
           addEPrescription!({
             id: data!.id,

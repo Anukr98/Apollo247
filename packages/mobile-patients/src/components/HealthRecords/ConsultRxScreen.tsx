@@ -107,6 +107,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
 import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/Events';
 import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 const { width, height } = Dimensions.get('window');
 
@@ -225,12 +226,8 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     data: any[];
   }> | null>(null);
   const { setLoading: setGlobalLoading } = useUIElements();
-  const {
-    addMultipleCartItems,
-    setEPrescriptions,
-    ePrescriptions,
-    circleSubscriptionId,
-  } = useShoppingCart();
+  const { setEPrescriptions, ePrescriptions, circleSubscriptionId } = useShoppingCart();
+  const { setUserActionPayload } = useServerCart();
   const { locationDetails, setLocationDetails, phrSession, setPhrSession } = useAppCommonData();
   const {
     addMultipleCartItems: addMultipleTestCartItems,
@@ -691,6 +688,17 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
           uploadedUrl: docUrl,
         } as EPrescription;
 
+        medPrescription?.forEach((value, index) => {
+          setUserActionPayload?.({
+            medicineOrderCartLineItems: [
+              {
+                medicineSKU: value?.id,
+                quantity: 1,
+              },
+            ],
+          });
+        });
+
         Promise.all(medPrescription.map((item: any) => getMedicineDetailsApi(item?.id!)))
           .then(async (result) => {
             const medicineAll = result.map(({ data: { productdp } }, index) => {
@@ -728,14 +736,26 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
             });
             const medicines = medicineAll.filter((item: any) => !!item);
 
-            addMultipleCartItems!(medicines as ShoppingCartItem[]);
-
             const rxMedicinesCount =
               medicines.length == 0
                 ? 0
                 : medicines.filter((item: any) => item?.prescriptionRequired).length;
 
             if (rxMedicinesCount) {
+              setUserActionPayload?.({
+                prescriptionDetails: {
+                  prescriptionImageUrl: presToAdd.uploadedUrl,
+                  prismPrescriptionFileId: presToAdd.prismPrescriptionFileId,
+                  uhid: currentPatient?.id,
+                  appointmentId: presToAdd.appointmentId,
+                  meta: {
+                    doctorName: presToAdd?.doctorName,
+                    forPatient: presToAdd?.forPatient,
+                    medicines: presToAdd?.medicines,
+                    date: presToAdd?.date,
+                  },
+                },
+              });
               setEPrescriptions!([
                 ...ePrescriptions.filter((item) => item?.id != presToAdd.id),
                 {

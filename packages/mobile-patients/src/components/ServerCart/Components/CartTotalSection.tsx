@@ -24,7 +24,7 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
     return cartTotal ? (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <Text style={styles.text}>Cart total</Text>
-        <Text style={styles.text}>₹{cartTotal}</Text>
+        <Text style={styles.text}>₹{cartTotal?.toFixed(2)}</Text>
       </View>
     ) : null;
   };
@@ -33,7 +33,7 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
     return cartSavings ? (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <Text style={styles.text}>Product Discount</Text>
-        <Text style={styles.discount}>-₹{cartSavings}</Text>
+        <Text style={styles.discount}>-₹{cartSavings?.toFixed(2)}</Text>
       </View>
     ) : null;
   };
@@ -42,7 +42,7 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
     return couponSavings ? (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <Text style={styles.text}>Coupon savings</Text>
-        <Text style={styles.discount}>-₹{couponSavings}</Text>
+        <Text style={styles.discount}>-₹{couponSavings?.toFixed(2)}</Text>
       </View>
     ) : null;
   };
@@ -55,12 +55,12 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
           {isCircleCart && <Text style={styles.circleMessage}>(Free for Circle Members)</Text>}
         </View>
         {deliveryCharges && !isDeliveryFree ? (
-          <Text style={styles.text}>+₹{deliveryCharges}</Text>
+          <Text style={styles.text}>+₹{deliveryCharges?.toFixed(2)}</Text>
         ) : (
           <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
             <Text style={styles.free}>Free</Text>
             <Text style={{ ...styles.text, textDecorationLine: 'line-through', marginLeft: 5 }}>
-              +₹{deliveryCharges}
+              +₹{deliveryCharges?.toFixed(2)}
             </Text>
           </View>
         )}
@@ -72,7 +72,7 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
     return packagingCharges ? (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <Text style={styles.text}>Packaging Charges</Text>
-        <Text style={styles.text}>+₹{packagingCharges}</Text>
+        <Text style={styles.text}>+₹{packagingCharges?.toFixed(2)}</Text>
       </View>
     ) : null;
   };
@@ -85,7 +85,7 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
     return estimatedAmount ? (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <Text style={styles.toPay}>To Pay</Text>
-        <Text style={styles.toPay}>₹{estimatedAmount}</Text>
+        <Text style={styles.toPay}>₹{estimatedAmount?.toFixed(2)}</Text>
       </View>
     ) : null;
   };
@@ -94,7 +94,7 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
     isCircleAddedToCart ? (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <Text style={styles.text}>Circle Membership</Text>
-        <Text style={styles.text}>₹{cartSubscriptionDetails?.currentSellingPrice}</Text>
+        <Text style={styles.text}>₹{cartSubscriptionDetails?.currentSellingPrice?.toFixed(2)}</Text>
       </View>
     ) : null;
 
