@@ -53,8 +53,8 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState<string | null>('')
-  const [userMobileNumber, setUserMobileNumber] = useState<string | null>('')
+  const [token, setToken] = useState<string | null>('');
+  const [userMobileNumber, setUserMobileNumber] = useState<string | null>('');
 
   const displayID = props.navigation.getParam('displayID');
   let WebViewRef: any;
@@ -77,11 +77,13 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
 
   useEffect(() => {
     const saveSessionValues = async () => {
-      const [loginToken, phoneNumber] = await getAsyncStorageValues()
-      setToken(loginToken)
-      setUserMobileNumber(phoneNumber)
-    }
-    saveSessionValues()
+      const [loginToken, phoneNumber] = await getAsyncStorageValues();
+      setToken(JSON.parse(loginToken));
+      setUserMobileNumber(
+        JSON.parse(phoneNumber)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber
+      );
+    };
+    saveSessionValues();
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);

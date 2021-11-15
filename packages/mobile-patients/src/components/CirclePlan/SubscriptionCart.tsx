@@ -81,6 +81,7 @@ export const SubscriptionCart: React.FC<SubscriptionCartProps> = (props) => {
     setSubscriptionCoupon,
     defaultCirclePlan,
     subscriptionCoupon,
+    circlePlanValidity,
   } = useShoppingCart();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { setLoading } = useUIElements();
@@ -125,8 +126,12 @@ export const SubscriptionCart: React.FC<SubscriptionCartProps> = (props) => {
     const circleData = circlePlanSelected || selectedPlan;
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE] = {
       navigation_source: circleEventSource,
-      circle_end_date: getCircleNoSubscriptionText(),
-      circle_start_date: getCircleNoSubscriptionText(),
+      circle_end_date: circlePlanValidity?.endDate
+        ? circlePlanValidity?.endDate
+        : getCircleNoSubscriptionText(),
+      circle_start_date: circlePlanValidity?.startDate
+        ? circlePlanValidity?.startDate
+        : getCircleNoSubscriptionText(),
       plan_id: circleData?.subPlanId,
       customer_id: currentPatient?.id,
       duration_in_months: circleData?.durationInMonth,
@@ -134,14 +139,12 @@ export const SubscriptionCart: React.FC<SubscriptionCartProps> = (props) => {
       price: circleData?.currentSellingPrice,
     };
     postCleverTapEvent(CleverTapEventName.CIRCLE_PLAN_TO_CART, cleverTapEventAttributes);
-    setTimeout(
-      () =>
-        postCleverTapEvent(
-          CleverTapEventName.CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE,
-          cleverTapEventAttributes
-        ),
-      1000
-    );
+    setTimeout(() => {
+      postCleverTapEvent(
+        CleverTapEventName.CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE,
+        cleverTapEventAttributes
+      );
+    }, 1000);
   };
 
   const createOrderInternal = (subscriptionId: string) => {

@@ -20,6 +20,7 @@ import {
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { postAppsFlyerCircleAddRemoveCartEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
+
 interface CirclePaymentProps extends NavigationScreenProps {
   action?: string;
   selectedPlan?: any;
@@ -33,7 +34,7 @@ export const CircleSubscription: React.FC<CirclePaymentProps> = (props) => {
   const from = props?.navigation?.state?.params?.from;
   const selectedPlan = props.navigation.getParam('selectedPlan');
   const circleEventSource = props.navigation.getParam('circleEventSource');
-  const { circlePlanSelected } = useShoppingCart();
+  const { circlePlanSelected, circlePlanValidity } = useShoppingCart();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
 
   useEffect(() => {
@@ -44,12 +45,16 @@ export const CircleSubscription: React.FC<CirclePaymentProps> = (props) => {
     };
   }, []);
 
-  const fireCirclePaymentPageViewedEvent = () => {
+  const fireCirclePaymentPageViewedEvent = async () => {
     const circleData = circlePlanSelected || selectedPlan;
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE] = {
       navigation_source: circleEventSource,
-      circle_end_date: getCircleNoSubscriptionText(),
-      circle_start_date: getCircleNoSubscriptionText(),
+      circle_end_date: circlePlanValidity?.endDate
+        ? circlePlanValidity?.endDate
+        : getCircleNoSubscriptionText(),
+      circle_start_date: circlePlanValidity?.startDate
+        ? circlePlanValidity?.startDate
+        : getCircleNoSubscriptionText(),
       plan_id: circleData?.subPlanId,
       customer_id: currentPatient?.id,
       duration_in_months: circleData?.durationInMonth,

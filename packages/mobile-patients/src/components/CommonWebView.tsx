@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, View, Platform, NavState, BackHandler } from 'react-native';
+import { SafeAreaView, View, NavState, BackHandler } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { WebView } from 'react-native-webview';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -7,13 +7,16 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Spinner } from './ui/Spinner';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
   getAsyncStorageValues,
   getCircleNoSubscriptionText,
+  getCirclePlanDetails,
   getUserType,
   postCleverTapEvent,
   postWebEngageEvent,
+  formatUrl,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -39,8 +42,8 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   const isGoBack = props.navigation.getParam('isGoBack');
   const circleEventSource = props.navigation.getParam('circleEventSource');
   const [canGoBack, setCanGoBack] = useState<boolean>(false);
-  const [token, setToken] = useState<string | null>('')
-  const [userMobileNumber, setUserMobileNumber] = useState<string | null>('')
+  const [token, setToken] = useState<string | null>('');
+  const [userMobileNumber, setUserMobileNumber] = useState<string | null>('');
 
   let WebViewRef: any;
   const client = useApolloClient();
@@ -52,7 +55,9 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
     setCircleMembershipCharges,
     setCircleSubPlanId,
     setAutoCirlcePlanAdded,
+    circlePlanValidity,
   } = useShoppingCart();
+  const { circleSubscription } = useAppCommonData();
   const { setIsCircleAddedToCart, setSelectedCirclePlan } = useDiagnosticsCart();
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const fireCirclePlanSelectedEvent = () => {
@@ -64,27 +69,46 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
     source == ('Pharma' || 'Product Detail' || 'Pharma Cart') &&
       postWebEngageEvent(WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED, CircleEventAttributes);
   };
-  
+
   useEffect(() => {
     const saveSessionValues = async () => {
-      const [loginToken, phoneNumber] = await getAsyncStorageValues()
-      setToken(loginToken)
-      setUserMobileNumber(phoneNumber)
-    }
-    saveSessionValues()
+      const [loginToken, phoneNumber] = await getAsyncStorageValues();
+      setToken(JSON.parse(loginToken));
+      setUserMobileNumber(
+        JSON.parse(phoneNumber)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber
+      );
+    };
+    saveSessionValues();
     if (circleEventSource) fireCircleLandingPageViewedEvent();
   }, []);
 
-  const fireCircleLandingPageViewedEvent = () => {
+  const fireCircleLandingPageViewedEvent = async () => {
+    const mobile_number = currentPatient?.mobileNumber;
+    let circlePriceAndDuration;
+    if (mobile_number)
+      await getCirclePlanDetails(mobile_number, client).then((res) => {
+        circlePriceAndDuration = res?.find(
+          (item: any) => item?.subPlanId === circlePlanValidity?.plan_id
+        );
+      });
+
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_LANDING_PAGE_VIEWED] = {
       navigation_source: circleEventSource,
-      circle_end_date: getCircleNoSubscriptionText(),
-      circle_start_date: getCircleNoSubscriptionText(),
-      plan_id: getCircleNoSubscriptionText(),
+      circle_end_date: circlePlanValidity?.endDate
+        ? circlePlanValidity?.endDate
+        : getCircleNoSubscriptionText(),
+      circle_start_date: circlePlanValidity?.startDate
+        ? circlePlanValidity?.startDate
+        : getCircleNoSubscriptionText(),
+      plan_id: circlePlanValidity?.plan_id
+        ? circlePlanValidity?.plan_id
+        : getCircleNoSubscriptionText(),
       customer_id: currentPatient?.id,
-      duration_in_months: getCircleNoSubscriptionText(),
+      duration_in_months: circleSubscription
+        ? circlePriceAndDuration?.durationInMonth
+        : getCircleNoSubscriptionText(),
       user_type: getUserType(allCurrentPatients),
-      price: getCircleNoSubscriptionText(),
+      price: circleSubscription ? circlePriceAndDuration?.price : getCircleNoSubscriptionText(),
     };
     postCleverTapEvent(CleverTapEventName.CIRCLE_LANDING_PAGE_VIEWED, cleverTapEventAttributes);
   };
@@ -92,8 +116,12 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   const fireCirclePlanToCartEvent = (circleData: any) => {
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE] = {
       navigation_source: circleEventSource,
-      circle_end_date: getCircleNoSubscriptionText(),
-      circle_start_date: getCircleNoSubscriptionText(),
+      circle_end_date: circlePlanValidity?.endDate
+        ? circlePlanValidity?.endDate
+        : getCircleNoSubscriptionText(),
+      circle_start_date: circlePlanValidity?.startDate
+        ? circlePlanValidity?.startDate
+        : getCircleNoSubscriptionText(),
       plan_id: circleData?.subPlanId,
       customer_id: currentPatient?.id,
       duration_in_months: circleData?.durationInMonth,
@@ -125,7 +153,8 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   };
 
   const renderWebView = () => {
-    const uri = `${props.navigation.getParam('url')}?utm_token=${token}&utm_mobile_number=${userMobileNumber}`
+    let uri = formatUrl(props?.navigation?.getParam('url'), token, userMobileNumber);
+
     return (
       <WebView
         ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
@@ -151,7 +180,9 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
             if (action == 'PAY') {
               setDefaultCirclePlan && setDefaultCirclePlan(null);
               setCirclePlanSelected && setCirclePlanSelected(responseData);
-              props.navigation.navigate(AppRoutes.SubscriptionCart);
+              props.navigation.navigate(AppRoutes.SubscriptionCart, {
+                circleEventSource,
+              });
             } else {
               if (source === 'Diagnostic Cart') {
                 setIsCircleAddedToCart?.(true);

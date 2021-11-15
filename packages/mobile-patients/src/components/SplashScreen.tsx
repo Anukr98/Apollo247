@@ -884,6 +884,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setExpectCallText,
     setNonCartTatText,
     setNonCartDeliveryText,
+    setSelectedPrescriptionType,
   } = useAppCommonData();
   const {
     setMinimumCartValue,
@@ -1164,6 +1165,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Diagnostics_No_Saving_Text: {
       QA: 'QA_Diagnostics_No_Saving_Text',
       PROD: 'Diagnostics_No_Saving_Text',
+    },
+    Free_Consult_Message: {
+      QA: 'QA_Free_Consult_Message',
+      PROD: 'Free_Consult_Message',
     },
   };
 
@@ -1472,6 +1477,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       setAppConfig('Diagnostics_No_Saving_Text', 'DIAGNOSTICS_NO_CIRCLE_SAVINGS_TEXT', (key) =>
         config.getString(key)
+      );
+
+      setAppConfig(
+        'Free_Consult_Message',
+        'FREE_CONSULT_MESSAGE',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.FREE_CONSULT_MESSAGE
       );
 
       const disincentivizeCodMessage = getRemoteConfigValue(

@@ -33,6 +33,7 @@ export interface Props {
   setFilterVisible: React.Dispatch<React.SetStateAction<boolean>>;
   setSortByVisible: React.Dispatch<React.SetStateAction<boolean>>;
   showFilterOption: boolean;
+  comingFromBrandPage: boolean;
 }
 
 export const MedicineListingSections: React.FC<Props> = ({
@@ -49,6 +50,7 @@ export const MedicineListingSections: React.FC<Props> = ({
   setFilterVisible,
   setSortByVisible,
   showFilterOption,
+  comingFromBrandPage,
 }) => {
   const isFiltersApplied = Object.keys(filterBy).find((k) => filterBy[k]?.length);
 
@@ -59,16 +61,18 @@ export const MedicineListingSections: React.FC<Props> = ({
       ? ` | ${productsTotal} Products`
       : '';
 
-  const breadCrumbView = <Breadcrumb links={breadCrumb} />;
+  const breadCrumbView = comingFromBrandPage ? null : <Breadcrumb links={breadCrumb} />;
 
-  const pageTitleView = !!_pageTitle && (
-    <Text style={styles.pageTitle}>
-      {_pageTitle}
-      {!!_productsTotal && <Text style={styles.productsTotal}>{_productsTotal}</Text>}
-    </Text>
-  );
+  const pageTitleView = comingFromBrandPage
+    ? null
+    : !!_pageTitle && (
+        <Text style={styles.pageTitle}>
+          {_pageTitle}
+          {!!_productsTotal && <Text style={styles.productsTotal}>{_productsTotal}</Text>}
+        </Text>
+      );
 
-  const divider = !!_pageTitle && <Divider style={styles.divider} />;
+  const divider = comingFromBrandPage ? null : !!_pageTitle && <Divider style={styles.divider} />;
   const paddingView = <View style={styles.paddingView} />;
 
   const fireListGridViewEvent = (
@@ -135,7 +139,7 @@ export const MedicineListingSections: React.FC<Props> = ({
   const views = [breadCrumbView, pageTitleView, [divider, optionsView]];
 
   return (
-    <View style={styles.sectionWrapper}>
+    <View style={[styles.sectionWrapper, comingFromBrandPage ? { paddingTop: 10 } : {}]}>
       {views.map((view, index, array) => [view, index + 1 !== array.length && paddingView])}
     </View>
   );
