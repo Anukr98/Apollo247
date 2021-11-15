@@ -6432,14 +6432,6 @@ export const GET_PERSONALIZED_OFFERS = gql`
             expired_at
             title {
               text
-              values {
-                cashback_amount {
-                  value
-                }
-                discount_perc {
-                  value
-                }
-              }
             }
             subtitle{
                text  
