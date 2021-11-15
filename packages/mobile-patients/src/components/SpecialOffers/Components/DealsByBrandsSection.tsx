@@ -45,7 +45,7 @@ export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
   const [maxDiscount, setMaxDiscount] = useState<string>('100');
   const { showAphAlert } = useUIElements();
   const heading = 'TOP DEALS ON FEATURED BRANDS';
-  const defaultMinDiscount = '10';
+  const defaultMinDiscount = '1';
   const defaultMaxDiscount = '100';
   const [itemsLoading, setItemsLoading] = useState<{ [key: string]: boolean }>({});
   const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
