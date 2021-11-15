@@ -956,7 +956,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
       try {
         dateScrollViewRef && dateScrollViewRef.current.scrollToIndex({ index: dateIndex });
       } catch (e) {
-        CommonBugFender('SlotSelection_scroll', e);
+        CommonBugFender('SlotSelection_scrollToIndex', e);
       }
     }, 500);
 
@@ -1003,7 +1003,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
                   try {
                     slotsScrollViewRef.current.scrollToIndex({ index });
                   } catch (e) {
-                    CommonBugFender('SlotSelection_scroll', e);
+                    CommonBugFender('SlotSelection_scrollToIndex', e);
                   }
                 }, 300);
               }}
