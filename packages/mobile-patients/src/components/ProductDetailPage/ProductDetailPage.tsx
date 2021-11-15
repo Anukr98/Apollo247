@@ -1093,6 +1093,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           onPressSelectAddress={(address) => {
             updatePlaceInfoByPincode(address?.zipcode);
             setLocationValues(address);
+            setUserActionPayload?.({
+              patientAddressId: address?.id,
+              zipcode: address?.zipcode,
+              latitude: address?.latitude,
+              longitude: address?.longitude,
+            });
             hideAphAlert!();
           }}
           onPressEditAddress={(address) => {
@@ -1142,6 +1148,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         if (response) setLocationValues(response);
         setDeliveryAddressId!('');
         updatePlaceInfoByPincode(response?.pincode);
+        setUserActionPayload?.({
+          zipcode: response?.pincode,
+          latitude: response?.latitude,
+          longitude: response?.longitude,
+        });
       })
       .catch((e) => {
         setLoading!(false);

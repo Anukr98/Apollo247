@@ -308,6 +308,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     isCircleExpired,
     setMedicineHomeBannerData,
     setMedicineHotSellersData,
+    cartAddressId,
   } = useShoppingCart();
   const { setUserActionPayload, fetchServerCart } = useServerCart();
   const {
@@ -335,7 +336,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const IMG_HEIGHT_DEFAULT = 175;
   const [imgHeight, setImgHeight] = useState(IMG_HEIGHT_DEFAULT);
   const [bannerLoading, setBannerLoading] = useState(false);
-  const defaultAddress = addresses.find((item) => item.defaultAddress);
+  const defaultAddress = addresses.find((item) => item.id == cartAddressId);
   const hasLocation = locationDetails || pharmacyLocation || defaultAddress;
   const pharmacyPincode =
     asyncPincode?.pincode || pharmacyLocation?.pincode || locationDetails?.pincode;
@@ -783,20 +784,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   async function fetchAddress() {
     try {
       if (addresses?.length) {
-        const deliveryAddress = addresses.find((item) => item.defaultAddress);
+        const deliveryAddress = addresses.find((item) => item.id == cartAddressId);
         if (deliveryAddress) {
           setDeliveryAddressId!(deliveryAddress?.id);
-          setUserActionPayload?.({
-            patientAddressId: deliveryAddress?.id,
-            zipcode: deliveryAddress?.zipcode,
-            latitude: deliveryAddress?.latitude,
-            longitude: deliveryAddress?.longitude,
-          });
           updateServiceability(deliveryAddress?.zipcode!);
           const formattedLocation = formatAddressToLocation(deliveryAddress);
-          if (!pharmacyLocation?.pincode) {
-            setLocationValues(formattedLocation);
-          }
+          setLocationValues(formattedLocation);
           return;
         }
       }
@@ -809,20 +802,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
       const addressList = (response.data.getPatientAddressList.addressList as Address[]) || [];
       setAddresses!(addressList);
-      const deliveryAddress = addressList.find((item) => item.defaultAddress);
+      const deliveryAddress = addressList.find((item) => item.id == cartAddressId);
       if (deliveryAddress) {
         setDeliveryAddressId!(deliveryAddress?.id);
-        setUserActionPayload?.({
-          patientAddressId: deliveryAddress?.id,
-          zipcode: deliveryAddress?.zipcode,
-          latitude: deliveryAddress?.latitude,
-          longitude: deliveryAddress?.longitude,
-        });
         updateServiceability(deliveryAddress?.zipcode!);
         const formattedLocation = formatAddressToLocation(deliveryAddress);
-        if (!pharmacyLocation?.pincode) {
-          setLocationValues(formattedLocation);
-        }
+        setLocationValues(formattedLocation);
       } else {
         checkLocation(addressList);
       }
@@ -902,6 +887,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             };
             setLocationValues(saveAddress);
             setDefaultAddress(address);
+            setUserActionPayload?.({
+              patientAddressId: address?.id,
+              zipcode: address?.zipcode,
+              latitude: address?.latitude,
+              longitude: address?.longitude,
+            });
           }}
           isAddressLoading={fetchAddressLoading}
           onPressEditAddress={(address) => {
@@ -1104,6 +1095,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         globalLoading!(false);
         if (response) {
           setLocationValues(response);
+          setUserActionPayload?.({
+            zipcode: response?.pincode,
+            latitude: response?.latitude,
+            longitude: response?.longitude,
+          });
         }
         setDeliveryAddressId!('');
         updateServiceability(response.pincode, 'autoDetect');
@@ -1138,6 +1134,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               state: response?.state,
             };
             setLocationValues(saveAddress);
+            setUserActionPayload?.({
+              zipcode: pincode,
+              latitude: latLang?.lat,
+              longitude: latLang?.lng,
+            });
             setDeliveryAddressId!('');
             updateServiceability(pincode, 'pincode');
             globalLoading!(false);
