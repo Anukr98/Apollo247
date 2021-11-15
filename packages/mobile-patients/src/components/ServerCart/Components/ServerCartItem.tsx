@@ -33,11 +33,12 @@ const { width } = Dimensions.get('window');
 
 export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
   const {
-    coupon,
-    isProuctFreeCouponApplied,
-    isCircleSubscription,
+    isCircleCart,
     circleMembershipCharges,
+
+    cartCoupon,
   } = useShoppingCart();
+  const couponApplied = cartCoupon?.coupon && cartCoupon?.valid;
   const { item, onUpdateQuantity, onPressDelete, onPressProduct } = props;
   const [discountedPrice, setDiscountedPrice] = useState<any>(undefined);
   const [mrp, setmrp] = useState<number>(item?.price || 0);
@@ -111,8 +112,8 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
       <View style={styles.lowerCountContainer}>
         <View style={styles.lowerCountInnerView}>
           {renderQuantity()}
-          {itemAvailable && !isProuctFreeCouponApplied && !!coupon && renderCoupon()}
-          {(isCircleSubscription || !!circleMembershipCharges) && renderCareCashback()}
+          {itemAvailable && !item?.freeProduct && !!couponApplied && renderCoupon()}
+          {isCircleCart && renderCareCashback()}
         </View>
         {!item?.freeProduct
           ? discountedPrice || discountedPrice == 0
@@ -126,8 +127,8 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
   };
 
   const renderCareCashback = () => {
-    const cashback = item?.cashback || item?.cashback;
-    if (!!cashback && !coupon) {
+    const cashback = item?.cashback;
+    if (cashback && !couponApplied) {
       return (
         <CareCashbackBanner
           bannerText={`Extra ₹${cashback?.toFixed(2)} Cashback`}
@@ -190,15 +191,15 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
   const renderCoupon = () => {
     return item?.isCouponApplicable == CouponApplicable.APPLIED ||
       item?.couponDiscountPrice ||
-      isProuctFreeCouponApplied ? (
+      item?.freeProduct ? (
       <View style={styles.coupon}>
-        <Text style={styles.couponText}>{`${coupon?.coupon} Applied`}</Text>
+        <Text style={styles.couponText}>{`${cartCoupon?.coupon} Applied`}</Text>
       </View>
     ) : (
       <View style={{ ...styles.coupon, backgroundColor: 'rgba(137,0,0,0.2)' }}>
         <Text style={styles.couponText}>
           {item?.isCouponApplicable == CouponApplicable.NOT_APPLICABLE
-            ? `${coupon?.coupon} Not Applicable`
+            ? `${cartCoupon?.coupon} Not Applicable`
             : 'Item already at higher discount'}
         </Text>
       </View>
