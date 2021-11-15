@@ -2651,6 +2651,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       ? allPatients?.find((patient: any) => patient?.relation === Relation.ME) || allPatients?.[0]
       : null;
     const patientUHID = patientDetails ? (patientDetails?.uhid ? patientDetails?.uhid : '') : '';
+
     if (patientUHID) {
       setshowSpinner(true);
       try {

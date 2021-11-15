@@ -1196,6 +1196,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Diagnostics_No_Saving_Text',
       PROD: 'Diagnostics_No_Saving_Text',
     },
+    Diagnostics_City_Level_Call_To_Order: {
+      QA: 'QA_Diagnostics_City_Level_Call_To_Order',
+      PROD: 'Diagnostics_City_Level_Call_To_Order',
+    },
+    Diagnostics_Covid_Item_Ids: {
+      QA: 'QA_Diagnostics_Covid_Item_Ids',
+      PROD: 'Diagnostics_Covid_Item_Ids',
+    },
     Free_Consult_Message: {
       QA: 'QA_Free_Consult_Message',
       PROD: 'Free_Consult_Message',
@@ -1515,12 +1523,21 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.FREE_CONSULT_MESSAGE
       );
 
-      const disincentivizeCodMessage = getRemoteConfigValue(
-        'Disincentivize_COD_Message',
-        (key) => config.getString(key) || ''
+      setAppConfig(
+        'Diagnostics_City_Level_Call_To_Order',
+        'DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER',
+        (key) =>
+          JSON.parse(config.getString(key) || 'null') ||
+          AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER
       );
 
-      disincentivizeCodMessage && setPaymentCodMessage?.(disincentivizeCodMessage);
+      setAppConfig(
+        'Diagnostics_Covid_Item_Ids',
+        'DIAGNOSTICS_COVID_ITEM_IDS',
+        (key) =>
+          JSON.parse(config.getString(key) || 'null') ||
+          AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS
+      );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';
