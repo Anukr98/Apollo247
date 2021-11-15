@@ -3356,11 +3356,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     if (offersList?.length === 0) return null;
     else if (offersList?.length === 1 && offersList?.[0]?.template_name === 'CIRCLE')
       return circleCashbackOffersComponent();
-    else if (
-      offersList?.length === 1 &&
-      offersList?.[0]?.template_name === 'pharmacy_first_transaction'
-    )
-      return medCashbackOffersComponent(offersList?.[0]);
+    else if (offersList?.length === 1) return medCashbackOffersComponent(offersList?.[0]);
     else if (offersList?.length > 1)
       return (
         <View style={styles.menuOptionsContainer}>
@@ -3456,8 +3452,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               marginTop: 'auto',
             }}
           >
-            {item?.title?.text?.length > 30
-              ? item?.title?.text?.substring(0, 30)
+            {item?.title?.text?.length > 28
+              ? item?.title?.text?.substring(0, 28)
               : item?.title?.text}
           </Text>
 
