@@ -2269,23 +2269,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     );
   };
 
-  const renderCallToOrder = () => {
-    return (
-      <CallToOrderView
-        cityId={Number(diagnosticServiceabilityData?.cityId)}
-        pageId={CALL_TO_ORDER_CTA_PAGE_ID.TESTCART}
-        customMargin={220}
-        slideCallToOrder={slideCallToOrder}
-        onPressSmallView={() => {
-          setSlideCallToOrder(false);
-        }}
-        onPressCross={() => {
-          setSlideCallToOrder(true);
-        }}
-      />
-    );
-  };
-
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={[{ ...theme.viewStyles.container }]}>

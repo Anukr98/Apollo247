@@ -496,6 +496,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
         if (type == hdfc_values.WEB_VIEW) {
           props.navigation.navigate(AppRoutes.CommonWebView, {
             url,
+            circleEventSource,
           });
         } else {
           props.navigation.navigate(AppRoutes.TestDetails, {

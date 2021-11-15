@@ -7,8 +7,9 @@ export interface Props {
   title: string;
   description: string;
   note: string;
-  onPressUpload: () => void;
+  onPressUpload?: () => void;
   style?: StyleProp<ViewStyle>;
+  uploadNowToBeShown?: boolean;
 }
 
 export const PrescriptionInfoView: React.FC<Props> = ({
@@ -17,10 +18,12 @@ export const PrescriptionInfoView: React.FC<Props> = ({
   note,
   onPressUpload,
   style,
+  uploadNowToBeShown,
 }) => {
   const question = 'Already have a prescription, why wait for later?';
   const button = 'UPLOAD NOW';
   const noteHeading = 'Note: ';
+  const showUploadButton = uploadNowToBeShown === false ? false : true;
 
   return (
     <View style={[styles.container, style]}>
@@ -29,10 +32,12 @@ export const PrescriptionInfoView: React.FC<Props> = ({
         <Apollo247Icon style={styles.apollo247Icon} />
         <Text style={styles.rowText}>{description}</Text>
       </View>
-      <TouchableOpacity onPress={onPressUpload}>
-        <Text style={styles.question}>{question}</Text>
-        <Text style={styles.button}>{button}</Text>
-      </TouchableOpacity>
+      {showUploadButton && (
+        <TouchableOpacity onPress={onPressUpload}>
+          <Text style={styles.question}>{question}</Text>
+          <Text style={styles.button}>{button}</Text>
+        </TouchableOpacity>
+      )}
       <Text>
         <Text style={styles.noteHeading}>{noteHeading}</Text>
         <Text style={styles.note}>{note}</Text>
@@ -83,6 +88,7 @@ const styles = StyleSheet.create({
   apollo247Icon: {
     height: 48,
     width: 48,
-    marginTop: -6,
+    marginTop: -3,
+    marginRight: 5,
   },
 });

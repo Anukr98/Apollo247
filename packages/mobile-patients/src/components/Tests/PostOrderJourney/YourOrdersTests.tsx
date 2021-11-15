@@ -211,7 +211,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [showPatientListOverlay, setShowPatientListOverlay] = useState<boolean>(false);
   const [patientListSelectedPatient, setPatientListSelectedPatient] = useState([]);
   const source = props.navigation.getParam('source');
-
+  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
+  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
+  const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
+    if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS)) {
+      return item;
+    } else {
+      return null;
+    }
+  });
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
 
   var rescheduleDate: Date,
@@ -1129,20 +1137,19 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const renderCallToOrder = () => {
-    return (
+    return ctaDetailMatched?.length ? (
       <CallToOrderView
-        cityId = {cityId}
-        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS}
-        slideCallToOrder = {slideCallToOrder}
-        onPressSmallView = {() => {
+        cityId={cityId}
+        slideCallToOrder={slideCallToOrder}
+        onPressSmallView={() => {
           setSlideCallToOrder(false);
         }}
-        onPressCross = {() => {
+        onPressCross={() => {
           setSlideCallToOrder(true);
         }}
       />
-    )
-  }
+    ) : null;
+  };
 
   const renderCancelReasons = () => {
     const selectedOrderRescheduleCount = selectedOrder?.rescheduleCount;
@@ -1730,9 +1737,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           uri={activeOrder?.labReportURL || ''}
           order={activeOrder}
           isReport={true}
-          onPressClose={()=>{
+          onPressClose={() => {
             setActiveOrder(activeOrder);
-            setShowViewReportModal(false)
+            setShowViewReportModal(false);
           }}
         />
       </View>
@@ -1813,8 +1820,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         bounces={false}
         data={orders}
         extraData={orderListData}
-        onScroll={()=>{
-          setSlideCallToOrder(true)
+        onScroll={() => {
+          setSlideCallToOrder(true);
         }}
         renderItem={({ item, index }) => renderOrder(item, index)}
         initialNumToRender={10}

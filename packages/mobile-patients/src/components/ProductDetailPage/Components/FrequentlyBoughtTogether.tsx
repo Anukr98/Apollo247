@@ -107,7 +107,7 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
         </View>
         <View style={styles.plusRightStyle}>
           <Text numberOfLines={1} ellipsizeMode={'clip'} style={styles.dashStyle}>
-            --------------------------------------------------------
+            ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
           </Text>
         </View>
       </View>
@@ -223,6 +223,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginTop: 20,
+    marginHorizontal: 15,
   },
   headingStyle: {
     ...theme.fonts.IBMPlexSansRegular(20),
