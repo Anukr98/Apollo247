@@ -3549,6 +3549,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
   const medCashbackOffersComponent = (item: any) => {
     let offerDesignTemplate = getTemplateStyle(item?.template_name);
+    const textForNotch = getNotchText(item?.expired_at, item?.notch_text?.text);
     return (
       <View style={styles.menuOptionsContainer}>
         <TouchableOpacity activeOpacity={1} onPress={() => {}}>
@@ -3582,9 +3583,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                     ),
                   }}
                 >
-                  {item?.notch_text?.text?.length > 30
-                    ? item?.notch_text?.text?.substring(0, 30)
-                    : item?.notch_text?.text}
+                  {textForNotch.length > 30
+                    ? textForNotch?.substring(textForNotch.length - 30, textForNotch.length)
+                    : textForNotch}
                 </Text>
               </View>
 
@@ -3652,7 +3653,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                 </Text>
               </View>
 
-              <View style={styles.bottomRightArrowView}>
+              <View style={[styles.bottomRightArrowView, { flex: 0.5 }]}>
                 <Button
                   title={item?.cta?.text}
                   style={{
