@@ -75,6 +75,8 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const [showPreviousCard, setShowPreviousCard] = useState<boolean>(true);
   const [showPassportModal, setShowPassportModal] = useState<boolean>(false);
   const [showCurrCard, setShowCurrCard] = useState<boolean>(true);
+  const [passportNo, setPassportNo] = useState<string>('');
+  const [passportData, setPassportData] = useState<any>([])
 
   useEffect(() => {
     DiagnosticOrderSummaryViewed(
@@ -339,6 +341,10 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           title: string.common.uhOh,
           description: res?.data?.updatePassportDetails?.[0]?.message || 'Something went wrong',
         });
+      }
+      if (res?.data?.updatePassportDetails?.[0]?.status) {
+        setPassportNo(data?.[0]?.passportNo);
+        setShowPassportModal(false);
       }
     } catch (error) {
       setLoadingContext?.(false);
@@ -632,22 +638,30 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     );
   };
   const renderAddPassportView = () => {
-    const itemIdArray = 
-      orderDetails?.diagnosticOrderLineItems?.filter((item: any) => {
+    const itemIdArray = orderDetails?.diagnosticOrderLineItems?.filter((item: any) => {
       if (AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS.includes(item?.itemId)) {
-        return item?.itemId
+        return item?.itemId;
       }
     });
     return itemIdArray?.length ? (
-      <View style={styles.passportView}>
-        <Text style={styles.textupper}>{string.diagnostics.addOrEditPassportText}</Text>
-        <TouchableOpacity
-          onPress={() => {
-            setShowPassportModal(true);
-          }}
-        >
-          <Text style={styles.textlower}>ADD</Text>
-        </TouchableOpacity>
+      <View style={styles.passportContainer}>
+        <View style={styles.passportView}>
+          <Text style={styles.textupper}>
+            {passportNo
+              ? string.diagnostics.editpassportText
+              : string.diagnostics.addOrEditPassportText}
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              setShowPassportModal(true);
+            }}
+          >
+            <Text style={styles.textlower}>{passportNo ? 'EDIT' : 'ADD'}</Text>
+          </TouchableOpacity>
+        </View>
+        <View>
+          <Text style={styles.textmedium}>{string.diagnostics.passportNo}{passportNo}</Text>
+        </View>
       </View>
     ) : null;
   };
@@ -663,6 +677,10 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           updatePassportDetails(response)
           setShowPassportModal(false);
         }}
+        onChange={(res)=>{
+          setPassportData(res)
+        }}
+        disableButton={!passportData?.[0]?.passportNo}
       />
     );
   };
@@ -758,6 +776,8 @@ const styles = StyleSheet.create({
   passportView: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  passportContainer: {
     borderRadius: 4,
     borderWidth: 1,
     borderColor: '#D4D4D4',
@@ -767,6 +787,7 @@ const styles = StyleSheet.create({
   },
   textupper: { ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1) },
   textlower: { ...theme.viewStyles.text('SB', 14, theme.colors.APP_YELLOW_COLOR) },
+  textmedium: { ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1) },
   commonText: {
     ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 11 : 12),
     color: colors.SHERPA_BLUE,

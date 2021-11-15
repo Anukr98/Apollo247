@@ -47,10 +47,12 @@ interface PassportPaitentOverlayProps {
   responseMessage?: string | boolean;
   onCloseError?: () => void;
   refetchResult?: () => void;
+  disableButton?: boolean;
+  onChange?: (newArray: any) => void;
 }
 
 export const PassportPaitentOverlay: React.FC<PassportPaitentOverlayProps> = (props) => {
-  const { onPressClose, patientArray, onPressDone } = props;
+  const { onPressClose, patientArray, onPressDone, disableButton, onChange } = props;
   const [data, setData] = useState([
     {
       passportNo: '',
@@ -76,7 +78,7 @@ export const PassportPaitentOverlay: React.FC<PassportPaitentOverlayProps> = (pr
       <>
         <View style={styles.inputView}>
           <TextInputComponent
-            autoFocus={true}
+            autoFocus={false}
             placeholder={string.enterPassport}
             placeholderTextColor={theme.colors.SHERPA_BLUE_LIGHT}
             value={data[index]?.passportNo}
@@ -85,6 +87,7 @@ export const PassportPaitentOverlay: React.FC<PassportPaitentOverlayProps> = (pr
               newArray[index]?.displayId = item?.displayId;
               newArray[index]?.passportNo = value;
               setData(newArray);
+              onChange?.(newArray)
             }}
             inputStyle={styles.inputStyle}
           />
@@ -131,6 +134,7 @@ export const PassportPaitentOverlay: React.FC<PassportPaitentOverlayProps> = (pr
               <StickyBottomComponent>
                 <Button
                   title={'DONE'}
+                  disabled={disableButton}
                   onPress={() => {
                     onPressDone(data)
                   }}
