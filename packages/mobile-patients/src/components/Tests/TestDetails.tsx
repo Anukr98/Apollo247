@@ -93,6 +93,7 @@ import {
 import moment from 'moment';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
+import DiscountPercentage from './components/DiscountPercentage';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
@@ -358,6 +359,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       const discountPrice = pricesForItem?.discountPrice!;
       const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
       const mrpToDisplay = pricesForItem?.mrpToDisplay;
+      const circleDiscount = pricesForItem?.circleDiscount;
+      const specialDiscount = pricesForItem?.specialDiscount;
+      const discount = pricesForItem?.discount;
 
       const partialTestDetails = {
         Rate: price,
@@ -384,6 +388,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         promoteCircle: pricesForItem?.promoteCircle,
         promoteDiscount: pricesForItem?.promoteDiscount,
         groupPlan: pricesForItem?.planToConsider,
+        circleDiscount: circleDiscount,
+        specialDiscount: specialDiscount,
+        discount: discount,
       };
 
       setTestInfo({ ...(partialTestDetails || []) });
@@ -516,6 +523,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         setReportTat('');
       }
     } catch (error) {
+      console.log({ error });
       CommonBugFender('fetchReportTat_TestDetails', error);
       setReportTat('');
     }
@@ -783,7 +791,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       >
         {renderSeparator()}
         <View style={{ marginTop: '2%' }}>
-          {renderSlashedView(slashedPrice, priceToShow)}
+          {renderSlashedView(slashedPrice, priceToShow, true)}
           {!_.isEmpty(testInfo) && renderMainPriceView(priceToShow, true)}
         </View>
       </View>
@@ -793,30 +801,72 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const renderBottomPriceView = (slashedPrice: number, priceToShow: number) => {
     return (
       <View>
-        {renderSlashedView(slashedPrice, priceToShow)}
+        {renderSlashedView(slashedPrice, priceToShow, false)}
         {!_.isEmpty(testInfo) && renderMainPriceView(priceToShow, false)}
       </View>
     );
   };
 
-  const renderSlashedView = (slashedPrice: number, priceToShow: number) => {
+  const renderSlashedView = (
+    slashedPrice: number,
+    priceToShow: number,
+    showPercentage: boolean
+  ) => {
+    const promoteCircle = testInfo?.promoteCircle;
+    const promoteDiscount = testInfo?.promoteDiscount;
+    const circleDiscount = testInfo?.circleDiscount;
+    const specialDiscount = testInfo?.specialDiscount;
+    const discount = testInfo?.discount;
+
     return (
-      <View>
+      <View style={{ flexDirection: 'row' }}>
         {(!isDiagnosticCircleSubscription &&
           testInfo?.promoteCircle &&
           priceToShow == slashedPrice) ||
         priceToShow == slashedPrice ? null : (
           <Text style={styles.slashedPriceText}>
-            {string.common.Rs} {convertNumberToDecimal(slashedPrice)}
+            MRP {string.common.Rs}
+            <Text style={{ textDecorationLine: 'line-through' }}>
+              {convertNumberToDecimal(slashedPrice)}
+            </Text>
           </Text>
         )}
+        {/**percentage discount */}
+        {showPercentage &&
+          renderPercentageDiscount(
+            promoteCircle && isDiagnosticCircleSubscription
+              ? circleDiscount
+              : promoteDiscount
+              ? specialDiscount
+              : discount,
+            promoteCircle && isDiagnosticCircleSubscription ? true : false,
+            promoteDiscount && specialDiscount > 0 ? specialDiscount : 0,
+            discount > 0 ? discount : 0
+          )}
       </View>
+    );
+  };
+
+  const renderPercentageDiscount = (
+    discount: string | number,
+    isOnlyCircle: boolean,
+    specialDiscount: number,
+    hasOtherDiscount: number
+  ) => {
+    const discountPrice =
+      specialDiscount > 0 ? specialDiscount : hasOtherDiscount > 0 ? hasOtherDiscount : 0;
+    return (
+      <DiscountPercentage
+        discount={discount}
+        isOnlyCircle={isOnlyCircle}
+        discountPrice={discountPrice}
+      />
     );
   };
 
   const renderMainPriceView = (priceToShow: number, showSavings: boolean) => {
     return (
-      <View style={styles.flexRowView}>
+      <View style={styles.rowStyle}>
         {!!priceToShow && (
           <Text style={styles.mainPriceText}>
             {string.common.Rs} {convertNumberToDecimal(priceToShow)}
@@ -834,30 +884,26 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     const groupPlan = testInfo?.groupPlan?.groupPlan;
 
     return (
-      <View>
+      <View style={styles.savingsOuterView}>
         {isDiagnosticCircleSubscription &&
         circleDiscountSaving > 0 &&
         !testInfo?.promoteDiscount &&
         groupPlan != DIAGNOSTIC_GROUP_PLAN.ALL ? (
           <View style={styles.rowStyle}>
-            <CircleLogo style={styles.circleLogoIcon} />
-            {renderSavingView(
-              'Savings',
-              circleDiscountSaving,
-              { marginHorizontal: '1%' },
-              styles.savingsText
-            )}
+            {renderSavingView('save', circleDiscountSaving, {}, styles.savingsText)}
           </View>
         ) : testInfo?.promoteDiscount &&
           specialDiscountSaving > 0 &&
           !testInfo?.promoteCircle &&
           groupPlan != DIAGNOSTIC_GROUP_PLAN.ALL ? (
           <View style={styles.rowStyle}>
-            <SpecialDiscountText isImage={true} text={'TEST 247'} />
+            <SpecialDiscountText isImage={false} text={string.diagnostics.test247Text} />
             {renderSavingView(
-              'Savings',
+              'save',
               specialDiscountSaving,
-              { marginHorizontal: '2%' },
+              {
+                marginHorizontal: '2%',
+              },
               styles.savingsText
             )}
           </View>
@@ -867,9 +913,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             {renderSavingView(
               '',
               circleSpecialPrice,
-              {
-                marginHorizontal: '1%',
-              },
+              { marginHorizontal: '2%' },
               styles.savingsText
             )}
           </View>
@@ -887,7 +931,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     return (
       <View style={mainViewStyle}>
         <Text style={textStyle}>
-          {text} {string.common.Rs} {convertNumberToDecimal(price)}
+          {text} {string.common.Rs}
+          {convertNumberToDecimal(price)}
         </Text>
       </View>
     );
@@ -1483,7 +1528,6 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     textAlign: 'left',
     opacity: 0.5,
-    textDecorationLine: 'line-through',
   },
   mainPriceText: {
     ...theme.viewStyles.text('SB', isSmallDevice ? 15 : 16, theme.colors.SHERPA_BLUE),
@@ -1497,8 +1541,7 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   savingsText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 10.5 : 11, theme.colors.APP_GREEN),
-    lineHeight: 18,
+    ...theme.viewStyles.text('M', isSmallDevice ? 10.5 : 11, theme.colors.SHERPA_BLUE, 0.9, 18),
     textAlign: 'center',
     alignSelf: 'center',
   },
@@ -1602,14 +1645,16 @@ const styles = StyleSheet.create({
   outerExpressView: { backgroundColor: theme.colors.APP_GREEN, marginBottom: 2 },
   innerExpressView: {
     flexDirection: 'row',
-    padding: 8,
+    padding: 4,
+    paddingLeft: 8,
+    paddingRight: 8,
     alignItems: 'center',
     width: '97%',
   },
-  expressSlotIcon: { width: 37, height: 37, resizeMode: 'contain' },
+  expressSlotIcon: { width: 35, height: 35, resizeMode: 'contain' },
   expressSlotText: {
     ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 18),
-    marginLeft: 16,
+    marginLeft: 10,
   },
   italicStyle: {
     fontStyle: 'italic',
@@ -1617,4 +1662,5 @@ const styles = StyleSheet.create({
     lineHeight: 15.6,
     fontSize: 12,
   },
+  savingsOuterView: { marginLeft: '3%', justifyContent: 'center' },
 });

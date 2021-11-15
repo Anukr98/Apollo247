@@ -177,6 +177,39 @@
     "denied":"denied",
     "restricted": "restricted"
   },
+  "diagnosticsCoupons":{
+    "couponsText": "Offers and Coupons",
+    "applyCouponText":"Apply Coupon Code",
+    "couponForYou": "Coupons for You",
+    "apply": "Apply",
+    "couponPlcaholder": "Enter Coupon code",
+    "couponFetchError":"Sorry, we're unable to fetch coupon codes right now. Please try again.",
+    "noCouponsText":"No coupons available",
+    "invalidCouponCode":"Invalid Coupon Code",
+    "discountOnMrp": "Discount on MRP",
+    "couponDiscount":"Coupon Discount",
+    "totalMrp":"Total MRP",
+    "circleDiscount": "Circle Discount",
+    "applyCoupon": "Apply Coupon",
+    "unableToValidate": "Sorry, unable to validate coupon right now.",
+    "couponApplied":"Coupon Applied",
+    "couponNotApplied":"Coupon discount not applicable"
+  },
+  "diagnosticsCircle":{
+    "nonCircleHeading" : "Buy Circle Membership",
+    "circleHeading":"Yay! You are a Circle Member",
+    "you": "you",
+    "youCan": "You can",
+    "save": "save",
+    "saved": "saved",
+    "orderCircle": "on this order with Circle!",
+    "viewPlans":"VIEW PLANS",
+    "yourEfectivePrice": "Your effective price is",
+    "effectivePrice":"Effective price would be",
+    "circleMembership": "Circle Membership",
+    "onThisOrder": "on this order.",
+    "congratsText": "Congrats! You have successfully purchased the {{duration}} {{months}} (Trial) Circle Plan for {{symbol}}{planPrice}"
+  },
   "components": {
     "medicineDetails": {
       "helpers": {
@@ -533,7 +566,7 @@
     "pricesChangedMessage": "Few tests prices might have updated or are not available for this address",
     "areaNotAvailableMessage": "Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.",
     "itemAlreadyExist": " added more than once in your cart. Please remove and proceed to pay.",
-    "specialDiscountText": "TESTS247 coupon pre-applied",
+    "specialDiscountText": "Limited period offer coupon pre-applied",
     "unableToOpenReport": "We are facing some issue in opening the report. Please try again later.",
     "responseUnavailableForReport": "Report is not yet available to download. Please try after some time.",
     "disclaimerText": [
@@ -672,7 +705,14 @@
     "prescriptionError": "Sorry cannot submit precription, an error occured",
     "prescriptionSuccess":"Prescription Successfully Uploaded",
     "fromHealthRecord":"PRESCRIPTION FROM HEALTH RECORDS",
-    "addMorePrescription":"+ ADD MORE PRESCRIPTIONS"
+    "addMorePrescription": "+ ADD MORE PRESCRIPTIONS",
+    "itemAdded": "item added",
+    "itemsAdded": "items added",
+    "goToCart": "Go to cart",
+    "invalidFileSize": "Invalid File Size. File size must be less than 25MB.",
+    "invalidFileType":"Invalid File Type. File type must be PDF.",
+    "prescriptionHeading":"Place your order via prescription",
+    "test247Text": "Limited period offer"
   },
   "diagnosticCategoryTitle": {
     "category": "category",
@@ -693,7 +733,8 @@
     "homeCollectionText" : "Collection and hygiene charges",
     "paidSlotText": "Paid slot charges",
     "patientSelectionLimit" : "You can add only {{count}} patients. Please remove extra patients",
-    "multiPatientMsg": "You can now book tests for your family and friends in a single order"
+    "multiPatientMsg": "You can now book tests for your family and friends in a single order",
+    "nonCircleMsg": "Extra 15% off for circle customers. TnC Apply"
   },
   "orders": {
     "urOrders": "MY ORDERS",

@@ -122,7 +122,7 @@ import {
   slotInfo,
   ProcessDiagnosticHCOrderInputCOD,
   DiagnosticsBookingSource,
-  REPORT_TAT_SOURCE
+  REPORT_TAT_SOURCE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { insertMessageVariables } from '@aph/mobile-patients/src/graphql/types/insertMessage';
 import {

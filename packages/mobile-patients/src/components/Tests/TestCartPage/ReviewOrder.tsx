@@ -1,12 +1,16 @@
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import {
+  ArrowRight,
   CheckedIcon,
   CircleLogo,
   Down,
+  OffersIconOrange,
   SavingsIcon,
   Up,
+  OffersIconGreen,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
+  createDiagnosticValidateCouponLineItems,
   createPatientAddressObject,
   createPatientObjLineItems,
   sourceHeaders,
@@ -45,13 +49,17 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonBugFender,
+  CommonLogEvent,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   CALL_TO_ORDER_CTA_PAGE_ID,
   DEVICETYPE,
+  diagnosticLineItem,
   DiagnosticLineItem,
   DiagnosticsBookingSource,
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
@@ -84,6 +92,7 @@ import {
   MODIFY_DIAGNOSTIC_ORDERS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
+  createInternalOrder,
   diagnosticGetPhleboCharges,
   diagnosticSaveBookHcCollectionV2,
   getReportTAT,
@@ -102,6 +111,7 @@ import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelect
 import {
   DIAGNOSTIC_GROUP_PLAN,
   getDiagnosticCartItemReportGenDetails,
+  validateConsultCoupon,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   DIAGNOSTIC_SLOT_TYPE,
@@ -134,6 +144,8 @@ import {
 import CircleCard from '@aph/mobile-patients/src/components/Tests/components/CircleCard';
 import { CirclePlansListOverlay } from '@aph/mobile-patients/src/components/Tests/components/CirclePlansListOverlay';
 import { debounce } from 'lodash';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { Decimal } from 'decimal.js';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import {
   CleverTapEventName,
@@ -216,6 +228,13 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setIsCirclePlanRemoved,
     modifiedOrderItemIds,
     circleGrandTotal,
+    coupon,
+    setCoupon,
+    setCouponDiscount,
+    couponCircleBenefits,
+    setCouponCircleBenefits,
+    couponOnMrp,
+    setCouponOnMrp,
   } = useDiagnosticsCart();
 
   const {
@@ -227,9 +246,16 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setCirclePlanSelected,
     setIsCircleSubscription,
     circlePlanValidity,
+    hdfcSubscriptionId,
   } = useShoppingCart();
 
-  const { diagnosticServiceabilityData } = useAppCommonData();
+  const {
+    diagnosticServiceabilityData,
+    hdfcStatus,
+    hdfcPlanId,
+    circleStatus,
+    circlePlanId,
+  } = useAppCommonData();
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { setauthToken } = useAppCommonData();
@@ -245,7 +271,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const selectedTimeSlot = props.navigation.getParam('selectedTimeSlot');
   const showPaidPopUp = props.navigation.getParam('showPaidPopUp');
   const selectedAddr = props.navigation.getParam('selectedAddress');
-  const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
   const reportGenDetails = props.navigation.getParam('reportGenDetails');
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   var slotBookedArray = ['slot', 'already', 'booked', 'select a slot'];
@@ -266,6 +291,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const [isClicked, setIsClicked] = useState<boolean>(false);
   const [reportTat, setReportTat] = useState<string>('');
 
+  let lineItemWithQuantity: any = [];
   let itemNamesToRemove_global: string[] = [];
   let itemIdsToRemove_global: Number[] = [];
   let itemIdsToKeep_global: Number[] = [];
@@ -277,9 +303,16 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     ? selectedCirclePlan?.currentSellingPrice
     : !!defaultCirclePlan && defaultCirclePlan?.currentSellingPrice;
 
+  const couponCal =
+    !!coupon && (isCircleAddedToCart || isDiagnosticCircleSubscription) && !couponCircleBenefits
+      ? grandTotal + circleSaving
+      : grandTotal;
+
   const toPayPrice = isCircleAddedToCart
-    ? Number(grandTotal) + Number(circlePlanPurchasePrice)
-    : grandTotal;
+    ? Number(grandTotal) +
+      Number(circlePlanPurchasePrice) +
+      (!!coupon && !couponCircleBenefits ? circleSaving : 0)
+    : couponCal;
 
   const nonCircle_CircleEffectivePrice = Number(circleGrandTotal) + Number(circlePlanPurchasePrice);
 
@@ -296,6 +329,51 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const hideCirclePurchaseInModify =
     isModifyFlow && modifiedOrder?.paymentType !== DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
   const getConfigValues = AppConfig.Configuration.CIRCLE_PLAN_PRESELECTED;
+  const showCouponView = !isModifyFlow;
+
+  var localNormalSavings: number;
+
+  function calculateNormalSavings() {
+    var ppp = [] as any;
+    const allItems = patientCartItemsCopy?.map((item: any) => item?.cartItems)?.flat();
+    const withAll = allItems?.filter((item: DiagnosticsCartItem) => {
+      const getAllCouponResponse =
+        couponOnMrp && couponOnMrp?.find((val: any) => Number(val?.testId) == Number(item?.id));
+      const shouldHaveCircleBenefits =
+        (isDiagnosticCircleSubscription || isCircleAddedToCart) && coupon?.circleBenefits;
+      const hasOnMrpTrue = getAllCouponResponse?.onMrp;
+
+      ppp.push(
+        hasOnMrpTrue
+          ? item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.ALL ||
+              item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.CIRCLE ||
+              item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+          : !shouldHaveCircleBenefits
+          ? item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.ALL ||
+            item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.CIRCLE
+          : isDiagnosticCircleSubscription || isCircleAddedToCart
+          ? item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.ALL
+          : item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+      );
+      return ppp;
+    });
+    localNormalSavings = withAll;
+  }
+
+  /**
+   * for coupons packageid
+   */
+  let packageId: string[] = [];
+  if (hdfcSubscriptionId && hdfcStatus === 'active') {
+    packageId.push(`HDFC:${hdfcPlanId}`);
+  }
+  if (circleSubscriptionId && circleStatus === 'active') {
+    packageId.push(`APOLLO:${circlePlanId}`);
+  }
+
+  useEffect(() => {
+    calculateNormalSavings();
+  }, [coupon]);
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
@@ -314,7 +392,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const getAllItemIds = isCartEmpty
       ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
       ?.flat();
-    const uniqueItemIDS = [...new Set(getAllItemIds?.map((item: number) => Number(item?.id)))];
+    const uniqueItemIDS = [
+      ...new Set(getAllItemIds?.map((item: DiagnosticsCartItem) => Number(item?.id))),
+    ];
     const itemIds = isModifyFlow ? cartItemsWithId.concat(modifiedOrderItemIds) : uniqueItemIDS;
     populateCartMapping();
     fetchOverallReportTat(itemIds);
@@ -324,6 +404,13 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     }
     !!selectedCirclePlan && !isEmptyObject(selectedCirclePlan) && _addCircleValues();
   }, []);
+
+  /**this is used for revalidate the coupon if applied, if there is any change in the items */
+  useEffect(() => {
+    if (!!coupon) {
+      revalidateAppliedCoupon(coupon?.coupon, lineItemWithQuantity, false);
+    }
+  }, [patientCartItems]);
 
   useEffect(() => {
     isDiagnosticCircleSubscription
@@ -364,6 +451,23 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     //add coupon code + coupon discount
   }
 
+  useEffect(() => {
+    //modify case
+    if (isModifyFlow && cartItems?.length > 0 && modifiedPatientCart?.length > 0) {
+      //if multi-uhid modify -> don't call phleboCharges api
+      // !!modifiedOrder?.attributesObj?.isMultiUhid && modifiedOrder?.attributesObj?.isMultiUhid
+      //   ? clearCollectionCharges()
+      //   : fetchHC_ChargesForTest();
+      clearCollectionCharges();
+    } else {
+      fetchHC_ChargesForTest();
+    }
+  }, [isCircleAddedToCart]);
+
+  useEffect(() => {
+    !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
+  }, [isfetchingId]);
+
   async function populateCartMapping() {
     const listOfIds = cartItems?.map((item) => Number(item?.id));
     try {
@@ -400,6 +504,136 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     return true;
   }
 
+  function roundOff(value: number | string) {
+    return Math.round(Number(value));
+  }
+
+  function recalculateBillAmount() {
+    /**
+     * remove the circle subscription charges
+     */
+    const withOutCircleSavings =
+      toPayPrice + (isDiagnosticCircleSubscription ? circleSaving : 0) - couponDiscount;
+    console.log({ withOutCircleSavings });
+    return withOutCircleSavings;
+  }
+
+  const revalidateAppliedCoupon = (
+    coupon: string,
+    cartItemsWithQuan: DiagnosticsCartItem[], //with quantity
+    applyingFromList: false,
+    discountedItems?: any,
+    setSubscription?: boolean //used to set the circle sub to false, so that circle benefits are not applied against it
+  ) => {
+    CommonLogEvent(AppRoutes.ReviewOrder, 'Revalidate applied coupon due to cart change');
+    setLoading?.(true);
+    const createLineItemsForPayload = createDiagnosticValidateCouponLineItems(
+      cartItemsWithQuan,
+      setSubscription != undefined
+        ? false
+        : isDiagnosticCircleSubscription
+        ? true
+        : isCircleAddedToCart,
+      discountedItems
+    );
+    const totalBillAmt = createLineItemsForPayload?.pricesForItemArray?.map(
+      (item: any) => item?.specialPrice * item?.quantity
+    );
+    const tt = totalBillAmt?.reduce((curr: number, prev: number) => curr + prev, 0);
+    let data = {
+      mobile: currentPatient?.mobileNumber,
+      billAmount: tt,
+      // billAmount:
+      //   setSubscription == undefined
+      //     ? Number(toPayPrice - couponDiscount)
+      //     : recalculateBillAmount(), //this is basically the price that user will actually pay
+      coupon: coupon,
+      pinCode: String(pinCode),
+      diagnostics: createLineItemsForPayload?.pricesForItemArray?.map((item: any) => item), //define type
+      packageIds: setSubscription != undefined ? [] : packageId, //array of all subscriptions of user
+    };
+    console.log({ data });
+    validateConsultCoupon(data)
+      .then((resp: any) => {
+        console.log('getting response from revalidate coupon');
+        console.log({ resp });
+        if (resp?.data?.errorCode == 0) {
+          if (resp?.data?.response?.valid) {
+            const responseData = resp?.data?.response;
+            const getCircleBenefits = responseData?.circleBenefits;
+            /**
+             * case for if user is claiming circle benefits, but coupon => circleBenefits as false
+             */
+            if (
+              (isDiagnosticCircleSubscription || isCircleAddedToCart) &&
+              !responseData?.circleBenefits &&
+              setSubscription == undefined
+            ) {
+              revalidateAppliedCoupon(
+                coupon,
+                cartItemsWithQuan,
+                applyingFromList,
+                responseData?.diagnostics,
+                false
+              );
+            } else {
+              const successMessage = responseData?.successMessage || '';
+              setCoupon?.({
+                ...responseData,
+                successMessage: successMessage,
+              });
+              const getAllApplicableItems = responseData?.diagnostics?.map(
+                (item: any) => item?.applicable && item?.discountAmt * item?.quantity
+              );
+              const getAllDiscounts = getAllApplicableItems?.reduce(
+                (currentItem: any, prevItem: any) => currentItem + prevItem,
+                0
+              );
+              const getItemsWithMrpTrue = responseData?.diagnostics?.filter(
+                (item: any) => item?.applicable && item?.onMrp
+              );
+              setCouponDiscount?.(getAllDiscounts);
+              setCouponCircleBenefits?.(getCircleBenefits);
+              setCouponOnMrp?.(getItemsWithMrpTrue);
+              setLoading?.(false);
+            }
+          } else {
+            console.log('in else');
+            console.log({ resp });
+            const getErrorResponseReason = resp?.data?.response?.reason;
+            renderCouponInvalidPrompt(getErrorResponseReason);
+            setLoading?.(false);
+            setCoupon?.(null);
+            setCouponDiscount?.(0);
+            setCouponOnMrp?.(null);
+            setCouponCircleBenefits?.(false); //reset it to default value
+          }
+          //add event here
+        } else {
+          console.log('error in validatetion');
+          console.log(resp);
+          const getCouponErrorMsg = resp?.data?.errorMsg;
+          CommonBugFender('revalidateAppliedCoupon_ReviewOrder', getCouponErrorMsg);
+          renderCouponInvalidPrompt(getCouponErrorMsg);
+          setLoading?.(false);
+          setCoupon?.(null);
+          setCouponDiscount?.(0);
+          setCouponOnMrp?.(null);
+          setCouponCircleBenefits?.(false); //reset it to default value
+        }
+      })
+      .catch((error) => {
+        console.log('in catch fo validate');
+        console.log({ error });
+        CommonBugFender('revalidateAppliedCoupon_ReviewOrder', error);
+        renderCouponInvalidPrompt(string.common.somethingWentWrong);
+        setLoading?.(false);
+        setCoupon?.(null);
+        setCouponDiscount?.(0);
+        setCouponOnMrp?.(null);
+        setCouponCircleBenefits?.(false);
+      });
+  };
   const initiateHyperSDK = async (cusId: any) => {
     try {
       const merchantId = AppConfig.Configuration.merchantId;
@@ -426,22 +660,13 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       if (membershipPlans) {
         const defaultPlan = membershipPlans?.filter((item: any) => item?.defaultPack === true);
         if (defaultPlan?.length > 0) {
-          setDefaultCirclePlan(defaultPlan?.[0]);
+          setDefaultCirclePlan?.(defaultPlan?.[0]);
         }
       }
     } catch (error) {
       CommonBugFender('fetchCirclePlans_GetPlanDetailsByPlanId', error);
     }
   };
-
-  const createOrderInternal = (orders: OrderCreate) =>
-    client.mutate<createOrderInternal, createOrderInternalVariables>({
-      mutation: CREATE_INTERNAL_ORDER,
-      context: {
-        sourceHeaders,
-      },
-      variables: { order: orders },
-    });
 
   function clearCollectionCharges() {
     setHcApiCalled(true);
@@ -518,7 +743,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         },
         fetchPolicy: 'no-cache',
       });
-      const phleboMin = g(response, 'data', 'findDiagnosticSettings', 'phleboETAInMinutes') || 45;
+      const phleboMin = response?.data?.findDiagnosticSettings?.phleboETAInMinutes || 45;
       setPhleboMin(phleboMin);
     } catch (error) {
       CommonBugFender('ReviewOrder_fetchFindDiagnosticSettings', error);
@@ -741,6 +966,13 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     );
   };
 
+  const renderCouponInvalidPrompt = (message: string) => {
+    showAphAlert?.({
+      title: string.common.uhOh,
+      description: message || string.common.somethingWentWrong,
+    });
+  };
+
   const renderCartHeading = () => {
     return renderLabel(nameFormater('Items in your cart', 'title'));
   };
@@ -766,7 +998,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         const value = itemsWithQuantity[isPresentIndex];
         value.id = value?.id;
         value.name = value?.name;
-        value.mou = value?.mou + 1;
+        value.mou = Number(value?.mou) + 1;
         value.thumbnail = value?.thumbnail;
         value.price = value?.price;
         value.specialPrice = value?.specialPrice;
@@ -781,8 +1013,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       } else {
         itemsWithQuantity.push(item);
       }
+      lineItemWithQuantity = itemsWithQuantity;
       return itemsWithQuantity;
     });
+
     return (
       <View style={{ backgroundColor: theme.colors.WHITE }}>
         {itemsWithQuantity?.map((item: DiagnosticsCartItem, index: number) => {
@@ -839,9 +1073,15 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   }
 
   const renderItemView = (item: DiagnosticsCartItem) => {
-    const showCirclePrice = isDiagnosticCircleSubscription ? true : isCircleAddedToCart;
+    const showCirclePrice =
+      !!coupon && !couponCircleBenefits
+        ? false
+        : isDiagnosticCircleSubscription
+        ? true
+        : isCircleAddedToCart;
     const priceToShow = diagnosticsDisplayPrice(item, showCirclePrice)?.priceToShow;
     const mrpToDisplay = diagnosticsDisplayPrice(item, showCirclePrice)?.mrpToDisplay;
+    const slashedPrice = diagnosticsDisplayPrice(item, showCirclePrice)?.slashedPrice;
 
     const calTotal = priceToShow * item?.mou;
     const savingAmount =
@@ -852,17 +1092,33 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
     const isGroupPlanCircle = item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.CIRCLE;
 
+    /**
+     * logic to update the new price in ui
+     */
+
+    const getCouponDiscountItem =
+      !!coupon &&
+      coupon?.diagnostics?.find((test: any) => Number(test?.testId) == Number(item?.id));
+    const isCouponApplicable = !!getCouponDiscountItem && getCouponDiscountItem?.applicable;
+    const couponPriceToShow =
+      isCouponApplicable &&
+      (getCouponDiscountItem?.onMrp
+        ? Math.abs(getCouponDiscountItem?.mrp - getCouponDiscountItem?.discountAmt)
+        : Math.abs(getCouponDiscountItem?.specialPrice - getCouponDiscountItem?.discountAmt));
+    const itemCouponSaving =
+      isCouponApplicable && getCouponDiscountItem?.discountAmt * getCouponDiscountItem?.quantity;
+
     return (
       <View>
         <View style={styles.itemView}>
           <View
             style={{
-              width: screenWidth > 350 ? '77%' : '72%',
+              width: screenWidth > 350 ? '73%' : '68%',
             }}
           >
             <Text style={styles.addressTextStyle}>{nameFormater(item?.name, 'default')}</Text>
             {isCircleAddedToCart && totalIndiviualSavingAmount > 0 && isGroupPlanCircle && (
-              <View style={{ flexDirection: 'row', marginTop: 3 }}>
+              <View style={styles.savingsView}>
                 <CircleLogo style={styles.savingCircleIcon} />
                 <Text style={styles.savingTextStyle}>
                   Savings {string.common.Rs}
@@ -870,16 +1126,43 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
                 </Text>
               </View>
             )}
+            {/**for showing the coupon discounts - circle users  */}
+            {isCouponApplicable && (
+              <View style={[styles.savingsView, { marginLeft: -3 }]}>
+                <Text style={styles.savingTextStyle}>
+                  Coupon Savings {string.common.Rs}
+                  {roundOff(itemCouponSaving)}
+                </Text>
+              </View>
+            )}
+            {/** if coupon is not applicable for a sku */}
+            {!!coupon && !isCouponApplicable && (
+              <View style={styles.savingsView}>
+                <Text style={styles.couponNotApplicableText}>
+                  {string.diagnosticsCoupons.couponNotApplied}
+                </Text>
+              </View>
+            )}
           </View>
           <View style={{ alignItems: 'center' }}>
             <Text style={styles.priceTextStyle}>
+              {isCircleAddedToCart && !!slashedPrice && slashedPrice > 0 && (
+                <Text style={styles.slashedPriceText}>
+                  {string.common.Rs}
+                  {slashedPrice}{' '}
+                </Text>
+              )}
               {string.common.Rs}
-              {calTotal}
+              {!!coupon && isCouponApplicable
+                ? roundOff(couponPriceToShow) * item?.mou
+                : roundOff(calTotal)}
             </Text>
             <View style={styles.quantityViewStyle}>
               <Text style={[styles.addressTextStyle, styles.quantityTextStyle]}>
                 {item?.mou} X {string.common.Rs}
-                {priceToShow}
+                {!!coupon && isCouponApplicable
+                  ? roundOff(couponPriceToShow)
+                  : roundOff(priceToShow)}
               </Text>
             </View>
           </View>
@@ -994,11 +1277,12 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     title: string,
     price: string | number,
     customStyle?: boolean,
-    savingView?: boolean
+    savingView?: boolean,
+    touchView?: boolean
   ) => {
     return (
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
-        <View style={{ width: '65%' }}>
+      <View style={styles.lineItemView}>
+        <View style={styles.lineTextView}>
           <Text
             style={[
               styles.commonText,
@@ -1006,10 +1290,17 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
               savingView && { color: theme.colors.APP_GREEN },
             ]}
           >
-            {title} {!!savingView && '(-)'}
+            {title}
           </Text>
+          {showCouponView && !!touchView && touchView && !!!coupon && !coupon?.valid && (
+            <TouchableOpacity onPress={() => _navigateToCoupons()} style={styles.applyCouponTouch}>
+              <Text style={styles.couponText}>
+                {nameFormater(string.diagnosticsCoupons.applyCoupon, 'upper')}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
-        <View style={{ flex: 1, alignItems: 'flex-end' }}>
+        <View style={styles.lineItemPriceView}>
           <Text
             style={[
               customStyle ? styles.pricesBoldText : styles.pricesNormalText,
@@ -1050,13 +1341,23 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const facts = AppConfig.Configuration.CIRCLE_FACTS;
     return (
       <CirclePlansListOverlay
-        title={'Circle Membership'}
-        upperLeftText={isCircleAddedToCart ? 'You' : 'You can'}
-        upperMiddleText={isCircleAddedToCart ? 'saved' : 'save'}
+        title={string.diagnosticsCircle.circleMembership}
+        upperLeftText={
+          isCircleAddedToCart ? string.diagnosticsCircle.you : string.diagnosticsCircle.youCan
+        }
+        upperMiddleText={
+          isCircleAddedToCart ? string.diagnosticsCircle.saved : string.diagnosticsCircle.save
+        }
         circleSaving={circleSaving}
-        upperRightText={isCircleAddedToCart ? 'on this order with Circle!' : 'on this order.'}
+        upperRightText={
+          isCircleAddedToCart
+            ? string.diagnosticsCircle.orderCircle
+            : string.diagnosticsCircle.onThisOrder
+        }
         effectivePriceText={
-          isCircleAddedToCart ? 'Your effective price is' : 'Effective price would be'
+          isCircleAddedToCart
+            ? string.diagnosticsCircle.yourEfectivePrice
+            : string.diagnosticsCircle.effectivePrice
         }
         effectivePrice={isCircleAddedToCart ? grandTotal : circleGrandTotal} //need to change on each plan selection
         membershipPlans={allMembershipPlans}
@@ -1084,16 +1385,26 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     return (
       <View style={styles.circleCardView}>
         <CircleCard
-          heading1={isCircleAddedToCart ? 'Yay! You are a Circle Member' : 'Buy Circle Membership'}
-          upperLeftText={isCircleAddedToCart ? 'You' : 'You can'}
-          upperMiddleText={isCircleAddedToCart ? 'saved' : 'save'}
-          upperRightText={'on this order with Circle!'}
+          heading1={
+            isCircleAddedToCart
+              ? string.diagnosticsCircle.circleHeading
+              : string.diagnosticsCircle.nonCircleHeading
+          }
+          upperLeftText={
+            isCircleAddedToCart ? string.diagnosticsCircle.you : string.diagnosticsCircle.youCan
+          }
+          upperMiddleText={
+            isCircleAddedToCart ? string.diagnosticsCircle.saved : string.diagnosticsCircle.save
+          }
+          upperRightText={string.diagnosticsCircle.orderCircle}
           circleSaving={circleSaving}
           defaultPlanPrice={defaultPlanPurchasePrice}
           defaultPlanMonths={defaultPlanDurationInMonths}
-          rightText={'VIEW PLANS'}
+          rightText={string.diagnosticsCircle.viewPlans}
           effectivePriceText={
-            isCircleAddedToCart ? 'Your effective price is' : 'Effective price would be'
+            isCircleAddedToCart
+              ? string.diagnosticsCircle.yourEfectivePrice
+              : string.diagnosticsCircle.effectivePrice
           }
           toPayPrice={isCircleAddedToCart ? toPayPrice : nonCircle_CircleEffectivePrice}
           isPlanPreselected={isCircleAddedToCart}
@@ -1142,6 +1453,66 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setIsCircleSubscription?.(true);
   }
 
+  function _navigateToCoupons() {
+    props.navigation.navigate(AppRoutes.CouponScreen, {
+      pincode: Number(selectedAddr?.zipcode!),
+      lineItemWithQuantity,
+      toPayPrice,
+    });
+  }
+
+  function _removeAppliedCoupon() {
+    setCoupon?.(null);
+    setCouponDiscount?.(0);
+  }
+
+  const renderCouponView = () => {
+    return <>{!!coupon && coupon?.valid ? renderAppliedCouponView() : renderOffersCouponsView()}</>;
+  };
+
+  const renderAppliedCouponView = () => {
+    return (
+      <View style={[styles.couponViewTouch, styles.appliedCouponBckg]}>
+        <View style={styles.flexRow}>
+          <View style={[styles.offersView, styles.offersViewWidth]}>
+            <OffersIconGreen style={styles.offersIconStyle} />
+            <Text style={[styles.couponText, styles.appliedCouponText]}>
+              {nameFormater(string.diagnosticsCoupons.couponApplied, 'title')}
+            </Text>
+            <View style={styles.couponCodeView}>
+              <Text numberOfLines={1} style={styles.couponCodeText}>
+                {coupon?.coupon}
+              </Text>
+            </View>
+          </View>
+          <TouchableOpacity onPress={() => _removeAppliedCoupon()} style={styles.crossIconTouch}>
+            <Text style={styles.crossIconText}>X </Text>
+          </TouchableOpacity>
+        </View>
+        {!!coupon?.textOffer && coupon?.textOffer != '' && (
+          <Text style={styles.couponOfferText}>{coupon?.textOffer}</Text>
+        )}
+      </View>
+    );
+  };
+
+  const renderOffersCouponsView = () => {
+    return (
+      <TouchableOpacity
+        onPress={() => _navigateToCoupons()}
+        style={[styles.couponViewTouch, styles.flexRow]}
+      >
+        <View style={styles.offersView}>
+          <OffersIconOrange style={styles.offersIconStyle} />
+          <Text style={styles.couponText}>
+            {nameFormater(string.diagnosticsCoupons.couponsText, 'upper')}
+          </Text>
+        </View>
+        <ArrowRight style={{ tintColor: colors.TANGERINE_YELLOW }} />
+      </TouchableOpacity>
+    );
+  };
+
   //change circle purchase price to selected plan
   const renderTotalCharges = () => {
     const anyCartSaving = isDiagnosticCircleSubscription ? cartSaving + circleSaving : cartSaving;
@@ -1151,11 +1522,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         !hideCirclePurchaseInModify &&
         isCircleAddedToCart &&
         circleSaving > 0
-      : isCircleAddedToCart && circleSaving > 0;
-
+      : isCircleAddedToCart && circleSaving > 0 && !!coupon && !couponCircleBenefits
+      ? false
+      : true;
     return (
       <>
-        {/* {renderCouponView()} */}
         <View
           style={[
             styles.totalChargesContainer,
@@ -1168,10 +1539,14 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           {isDiagnosticCircleSubscription ||
           (!isDiagnosticCircleSubscription && hideCirclePurchaseInModify)
             ? null
-            : allMembershipPlans?.length > 0 && renderCirclePurchase()}
-          {renderPrices('Total MRP', totalPriceExcludingAnyDiscounts.toFixed(2))}
+            : allMembershipPlans?.length > 0 && !!!coupon && renderCirclePurchase()}
+          {/**for modification no coupon should be applied */}
+          {showCouponView ? renderCouponView() : null}
+          {renderPrices(
+            string.diagnosticsCoupons.totalMrp,
+            totalPriceExcludingAnyDiscounts.toFixed(2)
+          )}
 
-          {couponDiscount > 0 && renderPrices('Coupon Discount', couponDiscount?.toFixed(2))}
           {isModifyFlow && Number(hcChargesToShow) == 0 ? null : (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={[styles.pricesNormalText, { width: '60%' }]}>
@@ -1209,21 +1584,38 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             )}
           {isCircleAddedToCart &&
             !!circlePlanPurchasePrice &&
-            renderPrices('Circle Membership', circlePlanPurchasePrice?.toFixed(2), false, false)}
-          {normalSaving > 0 && renderPrices('Cart Savings', normalSaving?.toFixed(2), false, true)}
-          {(isDiagnosticCircleSubscription || isCircleAddedToCart) && circleSaving > 0 && (
-            <View style={[styles.rowSpaceBetweenStyle]}>
-              <View style={{ flexDirection: 'row', flex: 0.8 }}>
-                <CircleLogo style={styles.circleLogoIcon} />
+            renderPrices(
+              string.diagnosticsCoupons.circleDiscount,
+              circlePlanPurchasePrice?.toFixed(2),
+              false,
+              false
+            )}
+          {normalSaving > 0 &&
+            renderPrices(
+              string.diagnosticsCoupons.discountOnMrp,
+              normalSaving?.toFixed(2),
+              false,
+              true
+            )}
+          {/**
+           * if is already a circle member, or circle added to cart
+           * + circle savings + circleBenefitsApplied via coupon is true
+           */}
+          {(isDiagnosticCircleSubscription || isCircleAddedToCart) &&
+            circleSaving > 0 &&
+            (!!coupon ? couponCircleBenefits : true) && (
+              <View style={[styles.rowSpaceBetweenStyle]}>
+                <View style={{ flexDirection: 'row', flex: 0.8 }}>
+                  <CircleLogo style={styles.circleLogoIcon} />
+                  <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
+                    Membership discount (-)
+                  </Text>
+                </View>
                 <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
-                  Membership discount (-)
+                  - {string.common.Rs} {circleSaving.toFixed(2)}
                 </Text>
               </View>
-              <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
-                - {string.common.Rs} {circleSaving.toFixed(2)}
-              </Text>
-            </View>
-          )}
+            )}
           {discountSaving > 0 &&
             renderPrices(
               string.diagnostics.specialDiscountText,
@@ -1231,8 +1623,15 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
               false,
               true
             )}
+          {renderPrices(
+            string.diagnosticsCoupons.couponDiscount,
+            couponDiscount?.toFixed(2),
+            false,
+            true,
+            true
+          )}
           <Spearator style={{ marginBottom: 6, marginTop: 6 }} />
-          {renderPrices('To Pay', toPayPrice?.toFixed(2), true)}
+          {renderPrices(string.common.toPay, toPayPrice?.toFixed(2), true)}
           {isCircleAddedToCart && renderCODDisableText()}
         </View>
         {anyCartSaving > 0 && renderCartSavingBanner()}
@@ -1261,13 +1660,18 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     }
   };
 
+  /**
+   * calculation for the savings
+   */
   const renderCartSavingBanner = () => {
     return dashedBanner(
       'You ',
       `saved ${string.common.Rs}${convertNumberToDecimal(
         isDiagnosticCircleSubscription || isCircleAddedToCart
-          ? cartSaving + circleSaving
-          : cartSaving
+          ? !!coupon && !couponCircleBenefits
+            ? cartSaving + couponDiscount
+            : cartSaving + circleSaving + couponDiscount
+          : cartSaving + couponDiscount
       )}`,
       'on this order',
       'left',
@@ -1367,7 +1771,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         {renderAddressHeading()}
         {renderCartItems()}
         {isModifyFlow ? renderPreviouslyAddedItems() : null}
-        {(isDiagnosticCircleSubscription || isCircleAddedToCart) && circleSaving > 0
+        {(isDiagnosticCircleSubscription || isCircleAddedToCart) &&
+        circleSaving > 0 &&
+        (!!coupon ? coupon?.circleBenefits : true)
           ? renderCircleMemberBanner()
           : null}
 
@@ -1486,6 +1892,109 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     }
   };
 
+  function createPatientObjLineItems_2(
+    patientCartItems: DiagnosticPatientCartItem[],
+    isDiagnosticCircleSubscription: boolean,
+    reportGenDetails: any,
+    couponResponse?: any
+  ) {
+    const filterPatientItems = isDiagnosticSelectedCartEmpty(patientCartItems);
+    var array = [] as any; //define type
+
+    filterPatientItems?.map((item) => {
+      const getPricesForItem111 = createPatientObjLineItemsForCoupons(
+        item,
+        isDiagnosticCircleSubscription,
+        reportGenDetails,
+        couponResponse
+      )?.pricesForItemArray;
+      const totalPrice = getPricesForItem111
+        ?.map((item: any) => Number(item?.price))
+        ?.reduce((prev: number, curr: number) => prev + curr, 0);
+      array.push({
+        patientID: item?.patientId,
+        lineItems: getPricesForItem111,
+        totalPrice: roundOff(totalPrice),
+      });
+    });
+    return array;
+  }
+
+  const createPatientObjLineItemsForCoupons = (
+    selectedItem: any,
+    isDiagnosticCircleSubscription: boolean,
+    reportGenDetails: any,
+    couponResponse?: any
+  ) => {
+    var pricesForItemArray = selectedItem?.cartItems?.map((item: any, index: number) => {
+      var arr;
+      console.log({ couponResponse });
+      //!coupon?.circleBenefits ? item?.specialPrice
+      const getSelectedItem = couponResponse?.diagnostics?.find(
+        (x: any) => Number(x?.testId) === Number(item?.id)
+      );
+      const isOnMrp = getSelectedItem?.onMrp;
+      const getPriceValueForItem =
+        (isDiagnosticCircleSubscription || isCircleAddedToCart) &&
+        item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+          ? roundOff(
+              Number(
+                !coupon?.circleBenefits || isOnMrp ? item?.specialPrice : item?.circleSpecialPrice
+              )
+            )
+          : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+          ? roundOff(Number(isOnMrp ? item?.specialPrice : item?.discountSpecialPrice))
+          : roundOff(Number(item?.specialPrice) || Number(item?.price));
+      const getMrpValueForItem =
+        (isDiagnosticCircleSubscription || isCircleAddedToCart) &&
+        item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+          ? roundOff(item?.circlePrice)
+          : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+          ? roundOff(Number(item?.discountPrice))
+          : roundOff(Number(item?.price));
+      /*for coupons
+             isMrp = false => discountAmount will be cal on special price (price) -> price = specialPrice - discountAmount
+             isMrp = true => discountAmount will be on mrp -> mrp =  mrp - discountAmount
+            **/
+      const couponPrice =
+        !!couponResponse && !couponResponse?.isMrp
+          ? getPriceValueForItem - getSelectedItem?.discountAmt
+          : getPriceValueForItem;
+      const couponMrp =
+        !!couponResponse && couponResponse?.isMrp
+          ? getMrpValueForItem - getSelectedItem?.discountAmt
+          : getMrpValueForItem;
+      const couponDiscount = getSelectedItem?.discountAmt;
+      arr = {
+        itemId: Number(item?.id),
+        couponDiscAmount: roundOff(Number(couponDiscount)),
+        price: roundOff(Number(couponPrice)),
+        mrp: roundOff(Number(couponMrp)),
+        groupPlan:
+          isDiagnosticCircleSubscription || isCircleAddedToCart
+            ? item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.CIRCLE &&
+              (!coupon?.circleBenefits || isOnMrp)
+              ? DIAGNOSTIC_GROUP_PLAN.ALL
+              : item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT && isOnMrp
+              ? DIAGNOSTIC_GROUP_PLAN.ALL
+              : item?.groupPlan!
+            : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+            ? isOnMrp
+              ? DIAGNOSTIC_GROUP_PLAN.ALL
+              : item?.groupPlan
+            : DIAGNOSTIC_GROUP_PLAN.ALL,
+        preTestingRequirement:
+          !!reportGenDetails && reportGenDetails?.[index]?.itemPrepration
+            ? reportGenDetails?.[index]?.itemPrepration
+            : null,
+      } as diagnosticLineItem;
+      return arr;
+    });
+    return {
+      pricesForItemArray,
+    };
+  };
+
   const saveHomeCollectionOrder = () => {
     if (toPayPrice == null || toPayPrice == undefined) {
       //do not call the api, if by any chance grandTotal is not a number
@@ -1504,11 +2013,23 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
       );
 
-      getPatientLineItems = createPatientObjLineItems(
-        patientCartItems,
-        isDiagnosticCircleSubscription ? true : isCircleAddedToCart,
-        reportGenDetails
-      ) as (patientObjWithLineItems | null)[];
+      getPatientLineItems = !!coupon
+        ? createPatientObjLineItems_2(
+            patientCartItems,
+            !couponCircleBenefits
+              ? false
+              : isDiagnosticCircleSubscription
+              ? true
+              : isCircleAddedToCart,
+            reportGenDetails,
+            coupon
+          )
+        : (createPatientObjLineItems(
+            patientCartItems,
+            isDiagnosticCircleSubscription ? true : isCircleAddedToCart,
+            reportGenDetails,
+            coupon
+          ) as (patientObjWithLineItems | null)[]);
 
       const bookingOrderInfo: SaveBookHomeCollectionOrderInputv2 = {
         patientAddressID: slotsInput?.addressObject?.patientAddressID,
@@ -1532,8 +2053,13 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         subscriptionInclusionId: null,
         userSubscriptionId: circleSubscriptionId != '' ? circleSubscriptionId : localCircleSubId,
       };
+      if (!!coupon) {
+        bookingOrderInfo.couponCode = coupon?.coupon;
+      }
+      console.log({ bookingOrderInfo });
       diagnosticSaveBookHcCollectionV2(client, bookingOrderInfo)
         .then(async ({ data }) => {
+          console.log({ data });
           const getSaveHomeCollectionResponse =
             data?.saveDiagnosticBookHCOrderv2?.patientsObjWithOrderIDs;
           const checkIsFalse = getSaveHomeCollectionResponse?.find(
@@ -1559,11 +2085,12 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           }
         })
         .catch((error) => {
-          CommonBugFender('TestsCart_saveHomeCollectionOrder', error);
+          aphConsole.log({ error });
+          CommonBugFender('ReviewOrder_saveHomeCollectionOrder', error);
           setLoading?.(false);
           showAphAlert?.({
             unDismissable: true,
-            title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
+            title: `Hi ${currentPatient?.firstName || ''}!`,
             description: string.diagnostics.bookingOrderFailedMessage,
           });
         });
@@ -1849,44 +2376,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     });
   };
 
-  function onChangeCartItems(
-    updatedCartItems: any,
-    removedTest: string,
-    removedTestItemId: any,
-    patientId: string,
-    itemsInCart: DiagnosticsCartItem[]
-  ) {
-    const arrayToSelect = isModifyFlow ? modifiedPatientCart : patientCartItemsCopy;
-    const findIndex = arrayToSelect?.findIndex(
-      (item: DiagnosticPatientCartItem) => item?.patientId == patientId
-    );
-    arrayToSelect[findIndex].cartItems = updatedCartItems;
-
-    setDiagnosticSlot?.(null);
-    setPatientCartItems?.(patientCartItemsCopy);
-    setCartItems?.(updatedCartItems);
-    isModifyFlow &&
-      setModifiedPatientCart?.([
-        {
-          patientId: arrayToSelect[findIndex].patientId,
-          cartItems: updatedCartItems,
-        },
-      ]);
-    if (deliveryAddressId != '') {
-      const selectedAddressIndex = addresses?.findIndex(
-        (address) => address?.id == deliveryAddressId
-      );
-      props.navigation.navigate(AppRoutes.CartPage);
-      let removedItems = removedTestItemId?.join(', ');
-      DiagnosticRemoveFromCartClicked(
-        removedItems,
-        removedTest,
-        addresses?.[selectedAddressIndex]?.zipcode!,
-        'Automated'
-      );
-    }
-  }
-
   //this is changed for saveBooking, for modify (need to add)
   async function callCreateInternalOrder(
     getOrderDetails: any, //getOrderId (in case of modify)
@@ -1948,7 +2437,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         total_amount: toPayPrice,
         customer_id: currentPatient?.primaryPatientId || getPatientId,
       };
-      const response = await createOrderInternal(orderInput);
+      const response = await createInternalOrder(client, orderInput);
       if (response?.data?.createOrderInternal?.success) {
         //check for webenage
         const orderInfo = {
@@ -2011,7 +2500,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const attributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED] = {
       'Order id': orderId,
       Pincode: parseInt(selectedAddr?.zipcode!),
-      'Patient UHID': g(currentPatient, 'id'),
+      'Patient UHID': currentPatient?.id,
       'Total items in order': cartItems?.length,
       'Order amount': toPayPrice,
       'Appointment Date': isModifyFlow
@@ -2286,7 +2775,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   );
 };
 
-const { text, cardViewStyle } = theme.viewStyles;
+const { cardViewStyle } = theme.viewStyles;
 const styles = StyleSheet.create({
   addressOuterView: {
     backgroundColor: theme.colors.WHITE,
@@ -2451,7 +2940,6 @@ const styles = StyleSheet.create({
   },
   savingTextStyle: {
     ...theme.viewStyles.text('M', isSmallDevice ? 10.5 : 11, theme.colors.APP_GREEN, 1, 18),
-    lineHeight: 18,
     textAlign: 'center',
     alignSelf: 'center',
     marginLeft: 3,
@@ -2474,4 +2962,77 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginRight: 5,
   },
+  couponViewTouch: {
+    borderColor: colors.TANGERINE_YELLOW,
+    borderRadius: 4,
+    borderWidth: 1,
+    padding: 10,
+    marginBottom: 16,
+    marginTop: 8,
+  },
+  offersView: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
+  couponText: {
+    marginHorizontal: 6,
+    ...theme.viewStyles.text('B', 14.5, colors.TANGERINE_YELLOW, 1, 24),
+  },
+  offersIconStyle: {
+    height: 24,
+    width: 24,
+    resizeMode: 'contain',
+  },
+  applyCouponTouch: {
+    marginHorizontal: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  lineItemView: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+  lineTextView: { width: '65%', flexDirection: 'row' },
+  lineItemPriceView: { flex: 1, alignItems: 'flex-end' },
+  crossIconText: {
+    ...theme.viewStyles.text('B', 16, colors.SHERPA_BLUE, 1, 24),
+  },
+  couponCodeView: {
+    padding: 14,
+    paddingTop: 4,
+    paddingBottom: 4,
+    borderColor: colors.CONSULT_SUCCESS_TEXT,
+    backgroundColor: colors.TEST_CARD_BUTTOM_BG,
+    borderWidth: 1,
+    borderRadius: 5,
+    borderStyle: 'dashed',
+  },
+  couponCodeText: {
+    ...theme.viewStyles.text('M', 16, colors.CONSULT_SUCCESS_TEXT, 1, 24),
+    flexWrap: 'wrap',
+  },
+  appliedCouponText: {
+    ...theme.viewStyles.text('M', 14.5, colors.SHERPA_BLUE, 1, 24),
+  },
+  crossIconTouch: {
+    width: 40,
+    alignItems: 'flex-end',
+    justifyContent: 'flex-start',
+  },
+  couponOfferText: {
+    ...theme.viewStyles.text('M', 12, colors.APP_GREEN, 1, 18),
+    marginHorizontal: 30,
+  },
+  appliedCouponBckg: {
+    borderColor: colors.APP_GREEN,
+    backgroundColor: colors.GREEN_BACKGROUND,
+  },
+  offersViewWidth: {
+    width: '50%',
+    justifyContent: 'space-between',
+  },
+  couponNotApplicableText: {
+    ...theme.viewStyles.text('M', isSmallDevice ? 10.5 : 11, theme.colors.SHERPA_BLUE, 0.5, 18),
+    textAlign: 'center',
+    alignSelf: 'center',
+  },
+  slashedPriceText: {
+    ...theme.viewStyles.text('SB', 10, theme.colors.SHERPA_BLUE, 0.6, 14),
+    textDecorationLine: 'line-through',
+  },
+  savingsView: { flexDirection: 'row', marginTop: 3 },
 });

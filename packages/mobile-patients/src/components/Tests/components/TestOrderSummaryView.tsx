@@ -6,6 +6,7 @@ import moment from 'moment';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
   formatAddressForApi,
+  isEmptyObject,
   nameFormater,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -30,7 +31,7 @@ import {
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DiagnosticOrderSummaryViewed } from '@aph/mobile-patients/src/components/Tests/Events';
-import { Down, Up, DownloadOrange } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Down, Up, DownloadOrange, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { PassportPaitentOverlay } from '@aph/mobile-patients/src/components/Tests/components/PassportPaitentOverlay';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -54,10 +55,18 @@ export interface TestOrderSummaryViewProps {
   refundDetails?: any;
   refundTransactionId?: string;
   slotDuration?: any;
+  subscriptionDetails?: any;
+  onPressViewAll?: () => void;
 }
 
 export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props) => {
-  const { orderDetails, refundDetails, refundTransactionId, slotDuration } = props;
+  const {
+    orderDetails,
+    refundDetails,
+    refundTransactionId,
+    slotDuration,
+    subscriptionDetails,
+  } = props;
   const filterOrderLineItem =
     !!orderDetails &&
     orderDetails?.diagnosticOrderLineItems?.filter((item: any) => !item?.isRemoved);
@@ -539,7 +548,8 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     title: string,
     price: string | number,
     isDiscount: boolean,
-    customStyle?: boolean
+    customStyle?: boolean,
+    fontSize?: number
   ) => {
     return (
       <View style={styles.pricesContainer}>
@@ -549,9 +559,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
               styles.commonText,
               {
                 ...theme.viewStyles.text(
-                  customStyle ? 'B' : 'M',
-                  customStyle ? 14 : 12,
-                  colors.SHERPA_BLUE,
+                  customStyle ? (fontSize == 2 ? 'B' : 'SB') : fontSize == 2 ? 'B' : 'SB',
+                  customStyle ? 16 : 14,
+                  isDiscount ? colors.APP_GREEN : colors.SHERPA_BLUE,
                   1,
                   customStyle ? 20 : 15
                 ),
@@ -567,9 +577,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
               styles.commonText,
               {
                 ...theme.viewStyles.text(
-                  customStyle ? 'B' : 'M',
-                  customStyle ? 14 : 12,
-                  colors.SHERPA_BLUE,
+                  customStyle ? (fontSize == 2 ? 'B' : 'SB') : fontSize == 2 ? 'B' : 'SB',
+                  customStyle ? 16 : 14,
+                  isDiscount ? colors.APP_GREEN : colors.SHERPA_BLUE,
                   1,
                   customStyle ? 20 : 15
                 ),
@@ -585,24 +595,83 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     );
   };
 
+  function _navigateToCircleBenefits() {
+    props.onPressViewAll?.();
+  }
+
+  const renderSubscriptionCard = () => {
+    const duration = !!subscriptionDetails && subscriptionDetails?.group_plan?.valid_duration;
+    const circlePurchasePrice =
+      !!subscriptionDetails && subscriptionDetails?.payment_reference?.amount_paid;
+    const validity = moment(new Date(), 'DD/MM/YYYY').add('days', subscriptionDetails?.expires_in);
+    return (
+      <>
+        {renderHeading(string.diagnosticsCircle.circleMembership)}
+        <View style={styles.circlePurchaseDetailsCard}>
+          <View style={{ flexDirection: 'row' }}>
+            <CircleLogo style={styles.circleLogoIcon} />
+            <View style={styles.circlePurchaseDetailsView}>
+              <Text style={styles.circlePurchaseText}>
+                Congrats! You have successfully purchased the {duration} months (Trial) Circle Plan
+                for {string.common.Rs}
+                {circlePurchasePrice}
+              </Text>
+              {!!totalCircleSaving && totalCircleSaving > 0 && (
+                <Text style={{ ...styles.savedTxt, marginTop: 8, fontWeight: '600' }}>
+                  You {''}
+                  <Text style={styles.savedAmt}>
+                    saved {string.common.Rs}
+                    {totalCircleSaving}
+                  </Text>
+                  {''} on your purchase.
+                </Text>
+              )}
+              <Text style={styles.circlePlanValidText}>
+                {`Valid till: ${moment(validity)?.format('D MMM YYYY')}`}
+              </Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            onPress={() => _navigateToCircleBenefits()}
+            style={styles.viewAllBenefitsTouch}
+          >
+            <Text style={styles.yellowText}>VIEW ALL BENEFITS</Text>
+          </TouchableOpacity>
+        </View>
+      </>
+    );
+  };
+
   const renderPricesCard = () => {
+    const totalSaving = totalCartSaving + totalDiscountSaving;
+    const couponDiscount = orderDetails?.couponDiscAmount;
     return (
       <View>
         {renderHeading('Total Charges')}
         <View style={styles.orderSummaryView}>
-          {renderPrices('Total MRP', grossCharges, false)}
-          {renderPrices('Circle Discount', totalCircleSaving, true)}
-          {renderPrices('Cart Savings', totalCartSaving, true)}
-          {renderPrices('Coupon Discount', totalDiscountSaving, true)}
+          {renderPrices('Total MRP', grossCharges, false, false, 1)}
+          {renderPrices('Discount on MRP', totalSaving, true, false, 1)} {/**totalCartSavings */}
+          {renderPrices('Circle Discount', totalCircleSaving, true, false, 1)}
+          {renderPrices('Coupon Discount', !!couponDiscount ? couponDiscount : 0, true, false, 1)}
+          {/**totalDiscountSaving */}
           {renderPrices(
             string.diagnosticsCartPage.homeCollectionText,
             HomeCollectionCharges,
-            false
+            false,
+            false,
+            1
           )}
           {!!paidSlotCharges &&
-            renderPrices(string.diagnosticsCartPage.paidSlotText, paidSlotCharges, false)}
+            renderPrices(string.diagnosticsCartPage.paidSlotText, paidSlotCharges, false, false, 1)}
+          {/** when added circle membership */}
+          {/* {renderPrices(
+            string.diagnosticsCircle.circleMembership,
+            HomeCollectionCharges,
+            false,
+            false
+          )} */}
           <Spearator style={{ marginTop: 6, marginBottom: 6 }} />
-          {renderPrices('Total', orderDetails?.totalPrice, false, true)}
+          {renderPrices('Total', orderDetails?.totalPrice, false, true, 2)}
         </View>
       </View>
     );
@@ -730,6 +799,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
         {!!getModifiedLineItems && getModifiedLineItems?.length > 0
           ? renderOrderBreakdownCard(getModifiedLineItems, string.diagnostics.currentCharges)
           : null}
+        {isPrepaid && !!subscriptionDetails ? renderSubscriptionCard() : null}
         {renderPricesCard()}
         {(orderDetails?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED && !isPrepaid) ||
         DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY.includes(orderDetails?.orderStatus)
@@ -948,4 +1018,35 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   addressTextStyle: { ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1, 18) },
+  circlePurchaseDetailsCard: {
+    ...theme.viewStyles.cardContainer,
+    marginBottom: 30,
+    padding: 16,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: 'transparent',
+    borderLeftColor: '#007C9D',
+    borderLeftWidth: 4,
+  },
+  circleLogoIcon: { height: 45, width: 45, resizeMode: 'contain' },
+  circlePurchaseDetailsView: { width: '85%', marginHorizontal: 8 },
+  circlePurchaseText: { ...theme.viewStyles.text('R', 11, colors.SHERPA_BLUE, 1, 16) },
+  circlePlanValidText: {
+    ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 0.6, 16),
+    marginTop: 6,
+  },
+  savedTxt: {
+    color: '#02475B',
+    ...theme.fonts.IBMPlexSansRegular(12),
+    lineHeight: 16,
+  },
+  savedAmt: {
+    color: theme.colors.APP_GREEN,
+    ...theme.fonts.IBMPlexSansSemiBold(12),
+  },
+  viewAllBenefitsTouch: {
+    alignSelf: 'flex-end',
+    height: 25,
+    justifyContent: 'center',
+  },
 });

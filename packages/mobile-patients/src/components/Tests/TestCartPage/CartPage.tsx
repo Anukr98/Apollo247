@@ -1692,6 +1692,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           onScroll={() => {
             setSlideCallToOrder(true);
           }}
+          scrollEventThrottle={16}
         >
           {renderMainView()}
         </ScrollView>
@@ -1803,7 +1804,7 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
   },
   addressOutermostView: {
-    backgroundColor: '#F5FFFD',
+    backgroundColor: theme.colors.GREEN_BACKGROUND,
     maxHeight: 230,
     shadowColor: theme.colors.SHADE_GREY,
     shadowOffset: { width: 0, height: 5 },

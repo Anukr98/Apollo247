@@ -31,6 +31,7 @@ import {
   isEmptyObject,
   isSmallDevice,
   isValidSearch,
+  nameFormater,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -724,6 +725,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
                     keyExtractor={(_, index) => `${index}`}
                     scrollEnabled={false}
                     data={popularPackages}
+                    bounces={false}
                     renderItem={renderPopularDiagnostic}
                   />
                 </View>
@@ -737,6 +739,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
                     keyExtractor={(_, index) => `${index}`}
                     scrollEnabled={false}
                     data={popularTests}
+                    bounces={false}
                     renderItem={renderPopularDiagnostic}
                   />
                 </View>
@@ -798,7 +801,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           {cartCount} {cartItems?.length == 1 ? 'item' : 'items'} added
         </Text>
         <Button
-          title={'GO TO CART'}
+          title={nameFormater(string.diagnostics.goToCart, 'upper')}
           onPress={() => _navigateToCartPage()}
           style={{ width: '60%' }}
         />

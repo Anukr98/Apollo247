@@ -135,6 +135,7 @@ const Common = {
   DEEP_RED: deepRed,
   ORANGE: "#FF774B",
   LIGHT_ORANGE_YELLOW: "#FCA317",
+  GREEN_BACKGROUND: "#F5FFFD",
   BGK_GRAY : '#f9f9f9',
   TEAL_BLUE: '#3F7281',
   SHERPA_BLUE_LIGHT: sherpa_blue_light,
@@ -147,7 +148,8 @@ const Common = {
   EXPIRE_TEXT: '#FE5959',
   LIGHT_GREEN_ONE: '#E8EDF0',
   LIGHT_BLUE_TWO: '#DCF0FF',
-  BLUE_GRADIENT_ONE: '#1C9FC2'
+  BLUE_GRADIENT_ONE: '#1C9FC2',
+  DISCOUNT_GREEN: "#34AA55"
 };
 
 const Header = {

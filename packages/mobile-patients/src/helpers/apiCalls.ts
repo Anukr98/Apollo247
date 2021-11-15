@@ -1380,6 +1380,7 @@ export const getDiagnosticListingWidget = (
 ): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
   const getWidgets = `${baseurl}/${pageName}/${widgetName}`;
+  console.log({getWidgets})
   return Axios.get(getWidgets, {
     headers: {
       Authorization: config.DRUPAL_CONFIG[1],
@@ -1450,4 +1451,16 @@ export const getBrandPagesData = async (brandName: string): Promise<AxiosRespons
     },
   });
   return response;
+};
+
+export const fetchDiagnosticCoupons = (
+  type: string,
+  packageId?: any,
+): Promise<AxiosResponse<any>> => {
+  const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
+  let url = `${baseUrl}/frontend?type=${type}`;
+  if (!!packageId) {
+    url += `&packageId=${packageId}`;
+  }
+  return Axios.get(url);
 };

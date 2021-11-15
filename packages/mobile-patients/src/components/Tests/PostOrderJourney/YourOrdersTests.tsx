@@ -495,7 +495,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       .catch((error) => {
         aphConsole.log({ error });
         // DIAGNOSTIC_CANCELLATION_ALLOWED_BEFORE_IN_HOURS
-        CommonBugFender('TestOrderDetails_callApiAndRefetchOrderDetails', error);
+        CommonBugFender('YourOrdersTests_callApiAndRefetchOrderDetails', error);
         handleGraphQlError(error);
         setLoading!(false);
         setSelectCancelReason('');
@@ -850,7 +850,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         setSelectCancelReason('');
         setCancelReasonComment('');
         setSelectRescheduleReason('');
-        CommonBugFender('TestOrderDetails_callApiAndRefetchOrderDetails', error);
+        CommonBugFender('YourOrdersTests_callApiAndRefetchOrderDetails', error);
         setLoading?.(false);
         if (
           error?.message?.indexOf('RESCHEDULE_COUNT_EXCEEDED') > 0 ||
@@ -1820,6 +1820,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         bounces={false}
         data={orders}
         extraData={orderListData}
+        scrollEventThrottle={16}
         onScroll={() => {
           setSlideCallToOrder(true);
         }}

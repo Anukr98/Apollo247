@@ -1752,7 +1752,10 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         visitNo
         invoiceURL
         labReportURL
-        attributesObj {
+        couponDiscAmount
+        couponCode
+        paymentOrderId
+        attributesObj{
           initialCollectionCharges
           distanceCharges
           homeCollectionCharges
@@ -1770,6 +1773,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           groupPlan
           editOrderID
           isRemoved
+          couponDiscAmount
           itemObj {
             itemType
             testPreparationData
@@ -5167,6 +5171,19 @@ export const GET_INTERNAL_ORDER = gql`
           }
         }
       }
+      SubscriptionOrderDetails{
+        end_date
+        expires_in
+        order_id
+        sub_plan_id
+        payment_reference
+        group_plan{
+          name
+          price
+          valid_duration
+          plan_summary
+        }
+      }
       refunds {
         status
         unique_request_id
@@ -5180,39 +5197,39 @@ export const GET_INTERNAL_ORDER = gql`
   }
 `;
 
-export const GET_APPOINTMENT_INFO = gql`
-  query getAppointmentInfo($order_id: String!) {
-    getOrderInternal(order_id: $order_id) {
-      payment_order_id
-      payment_status
-      AppointmentDetails {
-        displayId
-        amountBreakup {
-          actual_price
-          slashed_price
-        }
-      }
-    }
-  }
-`;
+// export const GET_APPOINTMENT_INFO = gql`
+//   query getAppointmentInfo($order_id: String!) {
+//     getOrderInternal(order_id: $order_id) {
+//       payment_order_id
+//       payment_status
+//       AppointmentDetails {
+//         displayId
+//         amountBreakup {
+//           actual_price
+//           slashed_price
+//         }
+//       }
+//     }
+//   }
+// `;
 
-export const GET_ORDER_INFO = gql`
-  query getOrderInternal($order_id: String!) {
-    getOrderInternal(order_id: $order_id) {
-      id
-      customer_id
-      payment_order_id
-      payment_status
-      total_amount
-      payment_status
-      PharmaOrderDetails {
-        medicineOrderDetails {
-          orderAutoId
-        }
-      }
-    }
-  }
-`;
+// export const GET_ORDER_INFO = gql`
+//   query getOrderInternal($order_id: String!) {
+//     getOrderInternal(order_id: $order_id) {
+//       id
+//       customer_id
+//       payment_order_id
+//       payment_status
+//       total_amount
+//       payment_status
+//       PharmaOrderDetails {
+//         medicineOrderDetails {
+//           orderAutoId
+//         }
+//       }
+//     }
+//   }
+// `;
 
 export const PROCESS_DIAG_COD_ORDER = gql`
   mutation processDiagnosticHCOrder($processDiagnosticHCOrderInput: ProcessDiagnosticHCOrderInput) {
