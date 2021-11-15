@@ -953,13 +953,13 @@ export const getSpecialOffersPageBrands = (): Promise<AxiosResponse<SpecialOffer
   });
 };
 
-export const getSpecialOffersPageBrandsProducts = (activeBrand: string, discount_percentage: object) 
+export const getSpecialOffersPageBrandsProducts = (activeBrand: string, discountPercentage: object) 
 :Promise<AxiosResponse<SpecialOffersBrandsProductsApiResponse>> => {
   const url = `${config.SPECIAL_OFFERS_BRANDS_PRODUCTS[0]}`;
   return Axios.post(url,
     {
       params: activeBrand,
-      filter: { discount_percentage}
+      filters: {discount_percentage : discountPercentage}
     },
     {headers: {
       Authorization: config.SPECIAL_OFFERS_BRANDS_PRODUCTS[1],

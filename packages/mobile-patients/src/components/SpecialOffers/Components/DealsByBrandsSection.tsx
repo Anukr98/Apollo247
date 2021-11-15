@@ -45,7 +45,7 @@ export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
   const [maxDiscount, setMaxDiscount] = useState<string>('100');
   const { showAphAlert } = useUIElements();
   const heading = 'TOP DEALS ON FEATURED BRANDS';
-  const defaultMinDiscount = '1';
+  const defaultMinDiscount = '10';
   const defaultMaxDiscount = '100';
   const [itemsLoading, setItemsLoading] = useState<{ [key: string]: boolean }>({});
   const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
@@ -76,7 +76,7 @@ export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
         discountPercentage
       );
       if (productsResponse?.data?.products) {
-        setProductData(productsResponse.data.products);
+        setProductData(productsResponse?.data?.products);
       } else {
         setProductData([]);
       }
@@ -183,8 +183,10 @@ export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
                 <Text style={styles.priceCancelStyle}>{`${'\u20B9'}${item?.price}`}</Text>
               )}
               {specialPrice && (
-                <Text style={styles.discountStyle}>{`${(getDiscountPercentage,
-                (item?.price, item?.special_price))}%off`}</Text>
+                <Text style={styles.discountStyle}>{`${getDiscountPercentage(
+                  item?.price,
+                  item?.special_price
+                )}%off`}</Text>
               )}
             </View>
           </TouchableOpacity>
