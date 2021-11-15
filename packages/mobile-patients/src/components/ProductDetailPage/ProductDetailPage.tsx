@@ -1374,6 +1374,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 />
               </View>
               <CircleBannerPDP navigation={props.navigation} />
+              {isInStock && !!boughtTogether && boughtTogether.length > 0 && (
+                <FrequentlyBoughtTogether
+                  boughtTogetherArray={boughtTogether}
+                  setShowAddedToCart={setShowAddedToCart}
+                />
+              )}
+              {!!couponData && couponData.length > 0 && (
+                <CouponSectionPDP offersData={couponData} />
+              )}
               <PharmaManufacturer
                 manufacturer={medicineDetails?.manufacturer}
                 composition={medicineDetails?.PharmaOverview?.[0]?.Composition || composition}
@@ -1388,15 +1397,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   navigation={props.navigation}
                   composition={medicineDetails?.PharmaOverview?.[0]?.Composition || composition}
                   setShowSubstituteInfo={setShowSubstituteInfo}
-                />
-              )}
-              {!!couponData && couponData.length > 0 && (
-                <CouponSectionPDP offersData={couponData} />
-              )}
-              {isInStock && !!boughtTogether && boughtTogether.length > 0 && (
-                <FrequentlyBoughtTogether
-                  boughtTogetherArray={boughtTogether}
-                  setShowAddedToCart={setShowAddedToCart}
                 />
               )}
               <ProductInfo
