@@ -678,7 +678,6 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           setShowPassportModal(false);
         }}
         onChange={(res)=>{
-          console.log(`res`, res)
           setPassportData(res)
         }}
         disableButton={!passportData?.[0]?.passportNo}
