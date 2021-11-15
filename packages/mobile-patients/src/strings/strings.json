@@ -190,7 +190,8 @@
     "circleDiscount": "Circle Discount",
     "applyCoupon": "Apply Coupon",
     "unableToValidate": "Sorry, unable to validate coupon right now.",
-    "couponApplied":"Coupon Applied"
+    "couponApplied":"Coupon Applied",
+    "couponNotApplied":"Coupon discount not applicable"
   },
   "diagnosticsCircle":{
     "nonCircleHeading" : "Buy Circle Membership",

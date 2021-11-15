@@ -370,8 +370,6 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     const isPhleboETAElapsed = !!phlObj && phlObj?.isPhleboETAElapsed;
     const phleboETAElapsedMessage = phlObj?.phleboETAElapsedMessage;
 
-    console.log({ showDetailedInfo });
-
     return (
       <>
         {!!otpToShow && DIAGNOSTIC_SHOW_OTP_STATUS.includes(props.orderLevelStatus) ? (

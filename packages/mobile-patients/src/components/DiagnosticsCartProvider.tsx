@@ -99,6 +99,7 @@ export interface DiagnosticsCartContextProps {
   deliveryCharges: number;
   temporaryCartSaving: number;
   temporaryNormalSaving: number;
+  finalDiscountSaving: number;
   hcCharges: number;
   setHcCharges: ((id: number) => void) | null;
 
@@ -229,6 +230,8 @@ export interface DiagnosticsCartContextProps {
 
   couponCircleBenefits: boolean;
   setCouponCircleBenefits: ((value: boolean) => void) | null;
+  couponOnMrp: any;
+  setCouponOnMrp: ((items: any) => void) | null;
 }
 
 export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>({
@@ -262,6 +265,7 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   deliveryCharges: 0,
   temporaryNormalSaving: 0,
   temporaryCartSaving: 0,
+  finalDiscountSaving: 0,
 
   hcCharges: 0,
   setHcCharges: null,
@@ -365,6 +369,8 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   setIsCirclePlanRemoved: null,
   couponCircleBenefits: false,
   setCouponCircleBenefits: null,
+  couponOnMrp: null,
+  setCouponOnMrp: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -569,6 +575,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const [couponCircleBenefits, setCouponCircleBenefits] = useState<
     DiagnosticsCartContextProps['couponCircleBenefits']
   >(false);
+
+  const [couponOnMrp, setCouponOnMrp] = useState<DiagnosticsCartContextProps['couponOnMrp']>(null);
 
   const setShowMultiPatientMsg: DiagnosticsCartContextProps['setShowMultiPatientMsg'] = (value) => {
     _setShowMultiPatientMsg(value);
@@ -794,14 +802,72 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     (item: DiagnosticsCartItem) => item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
   );
 
-  const discountSaving: DiagnosticsCartContextProps['discountSaving'] = withDiscount?.reduce(
-    (currTotal: number, currItem: DiagnosticsCartItem) =>
-      currTotal +
-      (currItem?.packageMrp && currItem?.packageMrp > currItem?.discountSpecialPrice!
-        ? currItem?.packageMrp! - currItem?.discountSpecialPrice!
-        : currItem?.price! - currItem?.discountSpecialPrice!),
-    0
-  );
+  /**
+   * added the coupon check
+   */
+
+  function getDiscountSavingPrice(currentItem: DiagnosticsCartItem) {
+    const getItem =
+      !!coupon && couponOnMrp?.find((item: any) => Number(item?.testId) == Number(currentItem?.id));
+    const isMrpTrue = !!getItem && getItem?.onMrp;
+    console.log({ isMrpTrue });
+    return {
+      isMrpTrue,
+    };
+  }
+
+  console.log({ coupon });
+
+  const discountSaving: DiagnosticsCartContextProps['discountSaving'] = call();
+
+  function call() {
+    return withDiscount?.reduce(
+      (currTotal: number, currItem: DiagnosticsCartItem) =>
+        currTotal +
+        (currItem?.packageMrp && currItem?.packageMrp > currItem?.discountSpecialPrice!
+          ? !!coupon && !couponCircleBenefits
+            ? currItem?.packageMrp! -
+              (getDiscountSavingPrice(currItem)?.isMrpTrue
+                ? currItem?.specialPrice!
+                : currItem?.discountSpecialPrice!)
+            : currItem?.packageMrp! -
+              (getDiscountSavingPrice(currItem)?.isMrpTrue
+                ? currItem?.specialPrice!
+                : currItem?.discountSpecialPrice!)
+          : !!coupon && !couponCircleBenefits
+          ? currItem?.price! -
+            (getDiscountSavingPrice(currItem)?.isMrpTrue
+              ? currItem?.specialPrice!
+              : currItem?.discountSpecialPrice!)
+          : currItem?.price! -
+            (getDiscountSavingPrice(currItem)?.isMrpTrue
+              ? currItem?.specialPrice!
+              : currItem?.discountSpecialPrice!)),
+      0
+    );
+  }
+  const withAllForCoupons = allCartItems?.filter((item: DiagnosticsCartItem) => {
+    var array = [];
+    const getAllCouponResponse =
+      couponOnMrp && couponOnMrp?.find((val: any) => Number(val?.testId) == Number(item?.id));
+    const shouldHaveCircleBenefits =
+      (isDiagnosticCircleSubscription || isCircleAddedToCart) && coupon?.circleBenefits;
+    const hasOnMrpTrue = getAllCouponResponse?.onMrp;
+
+    array.push(
+      hasOnMrpTrue
+        ? item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.ALL ||
+            item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.CIRCLE ||
+            item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+        : !shouldHaveCircleBenefits
+        ? item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.ALL ||
+          item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.CIRCLE
+        : isDiagnosticCircleSubscription || isCircleAddedToCart
+        ? item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.ALL
+        : item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+    );
+    return array;
+  });
 
   const normalSaving: DiagnosticsCartContextProps['normalSaving'] = withAll?.reduce(
     (currTotal: number, currItem: DiagnosticsCartItem) =>
@@ -956,6 +1022,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setIsCirclePlanRemoved?.(false);
     setSelectedCirclePlan?.(null);
     setCouponCircleBenefits?.(false);
+    setCouponOnMrp?.(false);
   };
 
   useEffect(() => {
@@ -1136,6 +1203,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         setIsCirclePlanRemoved,
         couponCircleBenefits,
         setCouponCircleBenefits,
+        couponOnMrp,
+        setCouponOnMrp,
       }}
     >
       {props.children}

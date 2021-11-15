@@ -54,6 +54,7 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
     couponCircleBenefits,
     setCouponCircleBenefits,
     circleSaving,
+    setCouponOnMrp,
   } = useDiagnosticsCart();
   const { circleSubscriptionId, hdfcSubscriptionId } = useShoppingCart();
   const {
@@ -83,7 +84,7 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
   if (hdfcSubscriptionId && hdfcStatus === 'active') {
     packageId.push(`HDFC:${hdfcPlanId}`);
   }
-  if (circleSubscriptionId && circleStatus === 'active') {
+  if (isCircleAddedToCart || (circleSubscriptionId && circleStatus === 'active')) {
     packageId.push(`APOLLO:${circlePlanId}`);
   }
 
@@ -171,12 +172,7 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
     setSubscription?: boolean //used to set the circle sub to false, so that circle benefits are not applied against it
   ) => {
     CommonLogEvent(AppRoutes.CouponScreen, 'Select coupon');
-    console.log({ coupon });
-    console.log({ cartItemsWithQuan });
-    console.log({ applyingFromList });
-    console.log({ setSubscription });
     setLoadingOverlay?.(true);
-
     const createLineItemsForPayload = createDiagnosticValidateCouponLineItems(
       cartItemsWithQuan,
       setSubscription != undefined
@@ -186,15 +182,17 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
         : isCircleAddedToCart,
       discountedItems
     );
-    console.log({ createLineItemsForPayload });
-    console.log({ toPayPrice });
-    console.log({ couponDiscount });
+    const totalBillAmt = createLineItemsForPayload?.pricesForItemArray?.map(
+      (item: any) => item?.specialPrice * item?.quantity
+    );
+    const tt = totalBillAmt?.reduce((curr: number, prev: number) => curr + prev, 0);
     let data = {
       mobile: currentPatient?.mobileNumber,
-      billAmount:
-        setSubscription == undefined
-          ? Number(toPayPrice - couponDiscount)
-          : recalculateBillAmount(), //this is basically the price that user will actually pay
+      billAmount: tt,
+      // billAmount:
+      //   setSubscription == undefined
+      //     ? Number(toPayPrice - couponDiscount)
+      //     : recalculateBillAmount(), //this is basically the price that user will actually pay
       coupon: coupon,
       pinCode: String(getPincode),
       diagnostics: createLineItemsForPayload?.pricesForItemArray?.map((item: any) => item), //define type
@@ -212,7 +210,6 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
             const getCircleBenefits = responseData?.circleBenefits;
             const hasOnMrpTrue = responseData?.diagnostics?.filter((item: any) => item?.onMrp);
             console.log({ responseData });
-            console.log({ hasOnMrpTrue });
             /**
              * case for if user is claiming circle benefits, but coupon => circleBenefits as false
              */
@@ -220,7 +217,7 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
               ((isDiagnosticCircleSubscription || isCircleAddedToCart) &&
                 !responseData?.circleBenefits &&
                 setSubscription == undefined) ||
-              hasOnMrpTrue?.length > 0
+              (hasOnMrpTrue?.length > 0 && setSubscription == undefined)
             ) {
               console.log('recall the appi');
               validateAppliedCoupon(
@@ -236,7 +233,18 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
                 ...responseData,
                 successMessage: successMessage,
               });
-              setCouponDiscount?.(responseData?.discount);
+              const getAllApplicableItems = responseData?.diagnostics?.map(
+                (item: any) => item?.applicable && item?.discountAmt * item?.quantity
+              );
+              const getAllDiscounts = getAllApplicableItems?.reduce(
+                (currentItem: any, prevItem: any) => currentItem + prevItem,
+                0
+              );
+              const getItemsWithMrpTrue = responseData?.diagnostics?.filter(
+                (item: any) => item?.applicable && item?.onMrp
+              );
+              setCouponOnMrp?.(getItemsWithMrpTrue);
+              setCouponDiscount?.(getAllDiscounts); //not using response?.discount since amount was varying
               setCouponCircleBenefits?.(getCircleBenefits);
               setLoadingOverlay?.(false);
               props.navigation.goBack();
@@ -248,6 +256,7 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
             !applyingFromList && setCouponError(getErrorResponseReason);
             applyingFromList && setCouponListError(getErrorResponseReason);
             setLoadingOverlay?.(false);
+            setCouponOnMrp?.(null);
             setCouponDiscount?.(0);
             setDisableCouponsList([...disableCouponsList, coupon]);
             saveDisableCoupons(coupon);
@@ -261,6 +270,7 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
           CommonBugFender('validateAppliedCoupon_CouponScreen', getCouponErrorMsg);
           !applyingFromList && setCouponError(getCouponErrorMsg);
           applyingFromList && setCouponListError(getCouponErrorMsg);
+          setCouponOnMrp?.(null);
           setLoadingOverlay?.(false);
           setCouponDiscount?.(0);
           saveDisableCoupons(coupon);
@@ -273,6 +283,7 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
         CommonBugFender('validateAppliedCoupon_CouponScreen', error);
         !applyingFromList && setCouponError(string.diagnosticsCoupons.unableToValidate);
         applyingFromList && setCouponListError(string.diagnosticsCoupons.unableToValidate);
+        setCouponOnMrp?.(null);
         setLoadingOverlay?.(false);
         setCouponDiscount?.(0);
         saveDisableCoupons(coupon);

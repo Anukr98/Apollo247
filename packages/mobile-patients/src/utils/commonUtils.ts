@@ -529,12 +529,13 @@ export const createPatientObjLineItems = (patientCartItems: DiagnosticPatientCar
   return array;
 }
 
-  //take care for the modified order & cicle added to cart case
+//take care for the modified order & cicle added to cart case
 export const createDiagnosticValidateCouponLineItems = (selectedItem: any, isCircle: boolean, discountedItems: any) =>{
-  var pricesForItemArray = selectedItem?.map((item: any, index: number) => {
-    const getIsMrpValue = discountedItems?.find((val: any)=> Number(val?.testId) == Number(item?.id))
-
-    ({
+  let pricesForItemArray = [] as any;
+  selectedItem?.map((item: any, index: number) => {
+    const getIsMrpValue = discountedItems?.find((val: any)=> Number(val?.testId) == Number(item?.id));
+    const getItemValue = !!getIsMrpValue && getIsMrpValue?.onMrp;
+    pricesForItemArray.push({
     testId: Number(item?.id),
     categoryId: '',
     mrp: Number(item?.price), //will always be price, irrespective of any plan
@@ -542,11 +543,12 @@ export const createDiagnosticValidateCouponLineItems = (selectedItem: any, isCir
       isCircle && item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
         ? Number(item?.circleSpecialPrice)
         : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
-        ? Number(item?.discountSpecialPrice)
+        ? !!getItemValue && getItemValue  ? Number(item?.specialPrice) || Number(item?.price) : Number(item?.discountSpecialPrice)
         : Number(item?.specialPrice) || Number(item?.price), // discounted price for any plan
     quantity: item?.mou,
     type: item?.inclusions?.length > 1 ? 'package' : 'test',
-  })});
+  })
+})
   return {
     pricesForItemArray,
   };

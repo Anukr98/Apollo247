@@ -232,6 +232,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setCouponDiscount,
     couponCircleBenefits,
     setCouponCircleBenefits,
+    couponOnMrp,
+    setCouponOnMrp,
   } = useDiagnosticsCart();
 
   const {
@@ -304,8 +306,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     !!coupon && (isCircleAddedToCart || isDiagnosticCircleSubscription) && !couponCircleBenefits
       ? grandTotal + circleSaving
       : grandTotal;
+
   const toPayPrice = isCircleAddedToCart
-    ? Number(grandTotal) + Number(circlePlanPurchasePrice) //check this
+    ? Number(grandTotal) +
+      Number(circlePlanPurchasePrice) +
+      (!!coupon && !couponCircleBenefits ? circleSaving : 0)
     : couponCal;
 
   const nonCircle_CircleEffectivePrice = Number(circleGrandTotal) + Number(circlePlanPurchasePrice);
@@ -324,6 +329,36 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     isModifyFlow && modifiedOrder?.paymentType !== DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
   const getConfigValues = AppConfig.Configuration.CIRCLE_PLAN_PRESELECTED;
   const showCouponView = !isModifyFlow;
+
+  var localNormalSavings: number;
+
+  function calculateNormalSavings() {
+    var ppp = [] as any;
+    const allItems = patientCartItemsCopy?.map((item: any) => item?.cartItems)?.flat();
+    const withAll = allItems?.filter((item: DiagnosticsCartItem) => {
+      const getAllCouponResponse =
+        couponOnMrp && couponOnMrp?.find((val: any) => Number(val?.testId) == Number(item?.id));
+      const shouldHaveCircleBenefits =
+        (isDiagnosticCircleSubscription || isCircleAddedToCart) && coupon?.circleBenefits;
+      const hasOnMrpTrue = getAllCouponResponse?.onMrp;
+
+      ppp.push(
+        hasOnMrpTrue
+          ? item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.ALL ||
+              item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.CIRCLE ||
+              item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+          : !shouldHaveCircleBenefits
+          ? item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.ALL ||
+            item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.CIRCLE
+          : isDiagnosticCircleSubscription || isCircleAddedToCart
+          ? item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.ALL
+          : item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+      );
+      return ppp;
+    });
+    localNormalSavings = withAll;
+  }
+
   /**
    * for coupons packageid
    */
@@ -334,6 +369,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   if (circleSubscriptionId && circleStatus === 'active') {
     packageId.push(`APOLLO:${circlePlanId}`);
   }
+
+  useEffect(() => {
+    calculateNormalSavings();
+  }, [coupon]);
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
@@ -461,13 +500,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     coupon: string,
     cartItemsWithQuan: DiagnosticsCartItem[], //with quantity
     applyingFromList: false,
+    discountedItems?: any,
     setSubscription?: boolean //used to set the circle sub to false, so that circle benefits are not applied against it
   ) => {
     CommonLogEvent(AppRoutes.ReviewOrder, 'Revalidate applied coupon due to cart change');
-    console.log({ coupon });
-    console.log({ cartItemsWithQuan });
-    console.log({ applyingFromList });
-    console.log({ setSubscription });
     setLoading?.(true);
     const createLineItemsForPayload = createDiagnosticValidateCouponLineItems(
       cartItemsWithQuan,
@@ -475,14 +511,20 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         ? false
         : isDiagnosticCircleSubscription
         ? true
-        : isCircleAddedToCart
+        : isCircleAddedToCart,
+      discountedItems
     );
+    const totalBillAmt = createLineItemsForPayload?.pricesForItemArray?.map(
+      (item: any) => item?.specialPrice * item?.quantity
+    );
+    const tt = totalBillAmt?.reduce((curr: number, prev: number) => curr + prev, 0);
     let data = {
       mobile: currentPatient?.mobileNumber,
-      billAmount:
-        setSubscription == undefined
-          ? Number(toPayPrice - couponDiscount)
-          : recalculateBillAmount(), //this is basically the price that user will actually pay
+      billAmount: tt,
+      // billAmount:
+      //   setSubscription == undefined
+      //     ? Number(toPayPrice - couponDiscount)
+      //     : recalculateBillAmount(), //this is basically the price that user will actually pay
       coupon: coupon,
       pinCode: String(pinCode),
       diagnostics: createLineItemsForPayload?.pricesForItemArray?.map((item: any) => item), //define type
@@ -505,15 +547,32 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
               !responseData?.circleBenefits &&
               setSubscription == undefined
             ) {
-              revalidateAppliedCoupon(coupon, cartItemsWithQuan, applyingFromList, false);
+              revalidateAppliedCoupon(
+                coupon,
+                cartItemsWithQuan,
+                applyingFromList,
+                responseData?.diagnostics,
+                false
+              );
             } else {
               const successMessage = responseData?.successMessage || '';
               setCoupon?.({
                 ...responseData,
                 successMessage: successMessage,
               });
-              setCouponDiscount?.(responseData?.discount);
+              const getAllApplicableItems = responseData?.diagnostics?.map(
+                (item: any) => item?.applicable && item?.discountAmt * item?.quantity
+              );
+              const getAllDiscounts = getAllApplicableItems?.reduce(
+                (currentItem: any, prevItem: any) => currentItem + prevItem,
+                0
+              );
+              const getItemsWithMrpTrue = responseData?.diagnostics?.filter(
+                (item: any) => item?.applicable && item?.onMrp
+              );
+              setCouponDiscount?.(getAllDiscounts);
               setCouponCircleBenefits?.(getCircleBenefits);
+              setCouponOnMrp?.(getItemsWithMrpTrue);
               setLoading?.(false);
             }
           } else {
@@ -524,6 +583,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             setLoading?.(false);
             setCoupon?.(null);
             setCouponDiscount?.(0);
+            setCouponOnMrp?.(null);
             setCouponCircleBenefits?.(false); //reset it to default value
           }
           //add event here
@@ -536,6 +596,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           setLoading?.(false);
           setCoupon?.(null);
           setCouponDiscount?.(0);
+          setCouponOnMrp?.(null);
           setCouponCircleBenefits?.(false); //reset it to default value
         }
       })
@@ -547,6 +608,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         setLoading?.(false);
         setCoupon?.(null);
         setCouponDiscount?.(0);
+        setCouponOnMrp?.(null);
         setCouponCircleBenefits?.(false);
       });
   };
@@ -976,6 +1038,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         : isCircleAddedToCart;
     const priceToShow = diagnosticsDisplayPrice(item, showCirclePrice)?.priceToShow;
     const mrpToDisplay = diagnosticsDisplayPrice(item, showCirclePrice)?.mrpToDisplay;
+    const slashedPrice = diagnosticsDisplayPrice(item, showCirclePrice)?.slashedPrice;
 
     const calTotal = priceToShow * item?.mou;
     const savingAmount =
@@ -1001,20 +1064,18 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         : Math.abs(getCouponDiscountItem?.specialPrice - getCouponDiscountItem?.discountAmt));
     const itemCouponSaving =
       isCouponApplicable && getCouponDiscountItem?.discountAmt * getCouponDiscountItem?.quantity;
-    // console.log({ couponPriceToShow });
-    // console.log({ itemCouponSaving });
 
     return (
       <View>
         <View style={styles.itemView}>
           <View
             style={{
-              width: screenWidth > 350 ? '77%' : '72%',
+              width: screenWidth > 350 ? '73%' : '68%',
             }}
           >
             <Text style={styles.addressTextStyle}>{nameFormater(item?.name, 'default')}</Text>
             {isCircleAddedToCart && totalIndiviualSavingAmount > 0 && isGroupPlanCircle && (
-              <View style={{ flexDirection: 'row', marginTop: 3 }}>
+              <View style={styles.savingsView}>
                 <CircleLogo style={styles.savingCircleIcon} />
                 <Text style={styles.savingTextStyle}>
                   Savings {string.common.Rs}
@@ -1024,7 +1085,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             )}
             {/**for showing the coupon discounts - circle users  */}
             {isCouponApplicable && (
-              <View style={{ flexDirection: 'row', marginTop: 3 }}>
+              <View style={[styles.savingsView, { marginLeft: -3 }]}>
                 <Text style={styles.savingTextStyle}>
                   Coupon Savings {string.common.Rs}
                   {roundOff(itemCouponSaving)}
@@ -1033,13 +1094,21 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             )}
             {/** if coupon is not applicable for a sku */}
             {!!coupon && !isCouponApplicable && (
-              <View style={{ flexDirection: 'row', marginTop: 3 }}>
-                <Text style={styles.couponNotApplicableText}>Coupon discount not applicable</Text>
+              <View style={styles.savingsView}>
+                <Text style={styles.couponNotApplicableText}>
+                  {string.diagnosticsCoupons.couponNotApplied}
+                </Text>
               </View>
             )}
           </View>
           <View style={{ alignItems: 'center' }}>
             <Text style={styles.priceTextStyle}>
+              {isCircleAddedToCart && !!slashedPrice && slashedPrice > 0 && (
+                <Text style={styles.slashedPriceText}>
+                  {string.common.Rs}
+                  {slashedPrice}{' '}
+                </Text>
+              )}
               {string.common.Rs}
               {!!coupon && isCouponApplicable
                 ? roundOff(couponPriceToShow) * item?.mou
@@ -1410,8 +1479,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         !hideCirclePurchaseInModify &&
         isCircleAddedToCart &&
         circleSaving > 0
-      : isCircleAddedToCart && circleSaving > 0;
-
+      : isCircleAddedToCart && circleSaving > 0 && !!coupon && !couponCircleBenefits
+      ? false
+      : true;
     return (
       <>
         <View
@@ -1426,7 +1496,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           {isDiagnosticCircleSubscription ||
           (!isDiagnosticCircleSubscription && hideCirclePurchaseInModify)
             ? null
-            : allMembershipPlans?.length > 0 && renderCirclePurchase()}
+            : allMembershipPlans?.length > 0 && !!!coupon && renderCirclePurchase()}
           {/**for modification no coupon should be applied */}
           {showCouponView ? renderCouponView() : null}
           {renderPrices(
@@ -1660,8 +1730,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         {isModifyFlow ? renderPreviouslyAddedItems() : null}
         {(isDiagnosticCircleSubscription || isCircleAddedToCart) &&
         circleSaving > 0 &&
-        !!coupon &&
-        coupon?.circleBenefits
+        (!!coupon ? coupon?.circleBenefits : true)
           ? renderCircleMemberBanner()
           : null}
 
@@ -1796,7 +1865,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         reportGenDetails,
         couponResponse
       )?.pricesForItemArray;
-      console.log({ getPricesForItem111 });
       const totalPrice = getPricesForItem111
         ?.map((item: any) => Number(item?.price))
         ?.reduce((prev: number, curr: number) => prev + curr, 0);
@@ -1818,19 +1886,26 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     var pricesForItemArray = selectedItem?.cartItems?.map((item: any, index: number) => {
       var arr;
       console.log({ couponResponse });
-      console.log({ item });
+      //!coupon?.circleBenefits ? item?.specialPrice
       const getSelectedItem = couponResponse?.diagnostics?.find(
         (x: any) => Number(x?.testId) === Number(item?.id)
       );
+      const isOnMrp = getSelectedItem?.onMrp;
       const getPriceValueForItem =
-        isDiagnosticCircleSubscription && item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
-          ? roundOff(Number(item?.circleSpecialPrice))
+        (isDiagnosticCircleSubscription || isCircleAddedToCart) &&
+        item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+          ? roundOff(
+              Number(
+                !coupon?.circleBenefits || isOnMrp ? item?.specialPrice : item?.circleSpecialPrice
+              )
+            )
           : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
-          ? roundOff(Number(item?.discountSpecialPrice))
+          ? roundOff(Number(isOnMrp ? item?.specialPrice : item?.discountSpecialPrice))
           : roundOff(Number(item?.specialPrice) || Number(item?.price));
       const getMrpValueForItem =
-        isDiagnosticCircleSubscription && item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
-          ? roundOff(Number(item?.circlePrice))
+        (isDiagnosticCircleSubscription || isCircleAddedToCart) &&
+        item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+          ? roundOff(item?.circlePrice)
           : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
           ? roundOff(Number(item?.discountPrice))
           : roundOff(Number(item?.price));
@@ -1838,7 +1913,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
              isMrp = false => discountAmount will be cal on special price (price) -> price = specialPrice - discountAmount
              isMrp = true => discountAmount will be on mrp -> mrp =  mrp - discountAmount
             **/
-      console.log({ getSelectedItem });
       const couponPrice =
         !!couponResponse && !couponResponse?.isMrp
           ? getPriceValueForItem - getSelectedItem?.discountAmt
@@ -1853,11 +1927,19 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         couponDiscAmount: roundOff(Number(couponDiscount)),
         price: roundOff(Number(couponPrice)),
         mrp: roundOff(Number(couponMrp)),
-        groupPlan: isDiagnosticCircleSubscription
-          ? item?.groupPlan!
-          : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
-          ? item?.groupPlan
-          : DIAGNOSTIC_GROUP_PLAN.ALL,
+        groupPlan:
+          isDiagnosticCircleSubscription || isCircleAddedToCart
+            ? item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.CIRCLE &&
+              (!coupon?.circleBenefits || isOnMrp)
+              ? DIAGNOSTIC_GROUP_PLAN.ALL
+              : item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT && isOnMrp
+              ? DIAGNOSTIC_GROUP_PLAN.ALL
+              : item?.groupPlan!
+            : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+            ? isOnMrp
+              ? DIAGNOSTIC_GROUP_PLAN.ALL
+              : item?.groupPlan
+            : DIAGNOSTIC_GROUP_PLAN.ALL,
         preTestingRequirement:
           !!reportGenDetails && reportGenDetails?.[index]?.itemPrepration
             ? reportGenDetails?.[index]?.itemPrepration
@@ -1906,8 +1988,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             coupon
           ) as (patientObjWithLineItems | null)[]);
 
-      console.log({ getPatientLineItems });
-
       const bookingOrderInfo: SaveBookHomeCollectionOrderInputv2 = {
         patientAddressID: slotsInput?.addressObject?.patientAddressID,
         patientObjWithLineItems: getPatientLineItems?.map((item: any) => item),
@@ -1936,6 +2016,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       console.log({ bookingOrderInfo });
       diagnosticSaveBookHcCollectionV2(client, bookingOrderInfo)
         .then(async ({ data }) => {
+          console.log({ data });
           const getSaveHomeCollectionResponse =
             data?.saveDiagnosticBookHCOrderv2?.patientsObjWithOrderIDs;
           const checkIsFalse = getSaveHomeCollectionResponse?.find(
@@ -2905,6 +2986,10 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', isSmallDevice ? 10.5 : 11, theme.colors.SHERPA_BLUE, 0.5, 18),
     textAlign: 'center',
     alignSelf: 'center',
-    marginLeft: 3,
   },
+  slashedPriceText: {
+    ...theme.viewStyles.text('SB', 10, theme.colors.SHERPA_BLUE, 0.6, 14),
+    textDecorationLine: 'line-through',
+  },
+  savingsView: { flexDirection: 'row', marginTop: 3 },
 });

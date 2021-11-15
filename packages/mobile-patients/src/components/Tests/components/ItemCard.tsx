@@ -159,8 +159,8 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
             <View style={{ minHeight: isSmallDevice ? 25 : 30 }}>
               {getMandatoryParameterCount > 0 ? (
                 <Text style={styles.parameterText}>
-                  {getMandatoryParameterCount} {getMandatoryParameterCount == 1 ? 'test' : 'tests'}{' '}
-                  included
+                  {getMandatoryParameterCount}{' '}
+                  {getMandatoryParameterCount == 1 ? 'parameter' : 'parameters'} included
                 </Text>
               ) : null}
             </View>
@@ -384,6 +384,8 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
         ? string.diagnosticCategoryTitle.item
         : data?.[0]?.diagnosticWidgetType
       : data?.diagnosticWidgetType?.toLowerCase();
+    const inclusions =
+      !!item?.inclusionData && item.inclusionData.map((item: any) => Number(item?.incItemId));
 
     DiagnosticAddToCartEvent(
       item?.itemTitle,
@@ -398,6 +400,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       currentPatient,
       isDiagnosticCircleSubscription
     );
+
     const addedItems = {
       id: `${item?.itemId}`,
       mou: 1,
@@ -412,7 +415,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       collectionMethod: TEST_COLLECTION_TYPE.HC,
       groupPlan: planToConsider?.groupPlan,
       packageMrp: packageCalculatedMrp,
-      inclusions: [Number(item?.itemId)], // since it's a test
+      inclusions: item?.inclusionData == null ? [Number(item?.itemId)] : inclusions,
       isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
     };
     if (sourceScreen === AppRoutes.CartPage) {
