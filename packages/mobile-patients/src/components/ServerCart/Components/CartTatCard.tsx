@@ -18,7 +18,7 @@ export interface CartTatCardProps {
 export const CartTatCard: React.FC<CartTatCardProps> = (props) => {
   const { deliveryTime, deliveryAddress, onPressChangeAddress, onPressTatCard } = props;
   const { serverCartItems, isSplitCart } = useShoppingCart();
-  const unServiceable = !!serverCartItems.find(({ isShippable }) => !isShippable);
+  const unServiceable = !!serverCartItems?.find(({ isShippable }) => !isShippable);
 
   function getGenericDate() {
     const genericServiceableDate = moment()

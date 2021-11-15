@@ -180,7 +180,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     activeUserSubscriptions,
   } = useAppCommonData();
 
-  const cartItemsCount = serverCartItems.length + diagnosticCartItems.length;
+  const cartItemsCount = serverCartItems?.length + diagnosticCartItems.length;
   const scrollViewRef = React.useRef<KeyboardAwareScrollView>(null);
 
   //use states
@@ -227,7 +227,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
 
   const getItemQuantity = (id: string) => {
-    const foundItem = serverCartItems.find((item) => item.sku == id);
+    const foundItem = serverCartItems?.find((item) => item.sku == id);
     return foundItem ? foundItem.quantity : 0;
   };
 
@@ -363,7 +363,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, [sku, isPharma, pincode, props.navigation, medicineDetails]);
 
   useEffect(() => {
-    if (serverCartItems.find(({ sku }) => sku?.toUpperCase() === currentProductIdInCart)) {
+    if (serverCartItems?.find(({ sku }) => sku?.toUpperCase() === currentProductIdInCart)) {
       if (shownNudgeOnce === false) {
         setShowSuggestedQuantityNudge(true);
       }
@@ -1013,7 +1013,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       MaxOrderQty,
       url_key,
     } = medicine_details;
-    if (serverCartItems.find(({ sku }) => sku?.toUpperCase() === sku?.toUpperCase())) {
+    if (serverCartItems?.find(({ sku }) => sku?.toUpperCase() === sku?.toUpperCase())) {
       setCurrentProductQuantityInCart(productQuantity);
       setUserActionPayload?.({
         medicineOrderCartLineItems: [
@@ -1197,7 +1197,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     });
 
   const showProceedButton = medicineDetails?.sku
-    ? !!serverCartItems.find(({ sku }) => sku === medicineDetails?.sku)
+    ? !!serverCartItems?.find(({ sku }) => sku === medicineDetails?.sku)
     : false;
 
   const renderDisclaimerMessage = () => {

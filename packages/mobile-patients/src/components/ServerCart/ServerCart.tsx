@@ -192,12 +192,18 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
           setCartCoupon?.(null);
           setUserActionPayload?.({
             coupon: '',
+            subscription: {
+              subscriptionApplied: cartCircleSubscriptionId ? true : false,
+            },
           });
           props.navigation.navigate(AppRoutes.ViewCoupons);
         }}
         onPressRemove={() => {
           setUserActionPayload?.({
             coupon: '',
+            subscription: {
+              subscriptionApplied: cartCircleSubscriptionId ? true : false,
+            },
           });
         }}
       />

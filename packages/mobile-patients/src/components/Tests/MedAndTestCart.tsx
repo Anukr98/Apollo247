@@ -53,9 +53,9 @@ export const MedAndTestCart: React.FC<MedAndTestCartProps> = (props) => {
     {
       id: 1,
       title: `Medicines & Essentials`,
-      descripiton: serverCartItems.length > 0 ? `${serverCartItems.length} Items` : 'No Items',
+      descripiton: serverCartItems?.length > 0 ? `${serverCartItems?.length} Items` : 'No Items',
       image: <MedicineCartIcon />,
-      cartCount: serverCartItems.length,
+      cartCount: serverCartItems?.length,
     },
     {
       id: 2,

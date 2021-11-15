@@ -1957,7 +1957,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, [searchText]);
 
   useEffect(() => {
-    if (serverCartItems.find(({ sku }) => sku?.toUpperCase() === currentProductIdInCart)) {
+    if (serverCartItems?.find(({ sku }) => sku?.toUpperCase() === currentProductIdInCart)) {
       if (shownNudgeOnce === false) {
         setShowSuggestedQuantityNudge(true);
       }

@@ -20,7 +20,7 @@ export const ShipmentItem: React.FC<ShipmentItemProps> = (props) => {
 
   useEffect(() => {
     setmrp(item?.price);
-    item?.isCouponApplicable == CouponApplicable.APPLIED && item?.couponDiscountPrice
+    item?.isCouponApplicable == CouponApplicable.APPLIED && item?.couponDiscountPrice != 0
       ? setDiscountedPrice(item?.couponDiscountPrice)
       : item?.sellingPrice !== item?.price
       ? setDiscountedPrice(item?.sellingPrice)

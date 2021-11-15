@@ -77,7 +77,7 @@ export const ProductList: React.FC<Props> = ({
   const [suggestedQuantity, setSuggestedQuantity] = useState<string>(null);
 
   useEffect(() => {
-    if (serverCartItems.find(({ id }) => id?.toUpperCase() === currentProductIdInCart)) {
+    if (serverCartItems?.find(({ sku }) => sku?.toUpperCase() === currentProductIdInCart)) {
       if (shownNudgeOnce === false) {
         setShowSuggestedQuantityNudge(true);
       }

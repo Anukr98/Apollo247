@@ -42,7 +42,7 @@ export const MedicineListingHeader: React.FC<Props> = ({ navigation, movedFrom }
   };
 
   const renderHeaderRightView = () => {
-    const cartItemsCount = serverCartItems.length + diagnosticCartItems.length;
+    const cartItemsCount = serverCartItems?.length + diagnosticCartItems.length;
     const onPressCartIcon = () => {
       navigation.navigate(
         diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.ServerCart

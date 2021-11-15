@@ -80,7 +80,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
 
-  const cartItemsCount = serverCartItems.length + diagnosticCartItems.length;
+  const cartItemsCount = serverCartItems?.length + diagnosticCartItems.length;
 
   const { data } = useQuery<
     getPatientPastMedicineSearches,

@@ -49,7 +49,7 @@ export const ReviewShipments: React.FC<ReviewShipmentsProps> = (props) => {
   const getShipmentsArray = () => {
     const shipments: any[] = [];
     for (var shipmentNumber = 1; shipmentNumber <= noOfShipments; shipmentNumber++) {
-      const shipment = serverCartItems.filter((item) => item?.shipmentNo == shipmentNumber);
+      const shipment = serverCartItems?.filter((item) => item?.shipmentNo == shipmentNumber);
       shipments.push({
         items: shipment,
         tat: shipment?.[0]?.tat,

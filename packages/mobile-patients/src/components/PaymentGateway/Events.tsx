@@ -107,7 +107,7 @@ export function PharmaOrderPlaced(
       pharmacyCircleAttributes,
     } = shoppingCart;
     let items: any = [];
-    serverCartItems.forEach((item, index) => {
+    serverCartItems?.forEach((item, index) => {
       let itemObj: any = {};
       itemObj.item_name = item.name; // Product Name or Doctor Name
       itemObj.item_id = item.sku; // Product SKU or Doctor ID
@@ -138,7 +138,7 @@ export function PharmaOrderPlaced(
     });
     const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED] = {
       af_customer_user_id: currentPatient ? currentPatient.id : '',
-      'cart size': serverCartItems.length,
+      'cart size': serverCartItems?.length,
       af_revenue: getFormattedAmount(serverCartAmount?.estimatedAmount || 0),
       af_currency: 'INR',
       af_order_id: paymentOrderId ? paymentOrderId : '0',

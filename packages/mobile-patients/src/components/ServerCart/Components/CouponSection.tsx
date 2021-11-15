@@ -69,7 +69,7 @@ export const CouponSection: React.FC<CouponSectionProps> = (props) => {
 
   return (
     <View style={[styles.couponCard, isFromSubscription ? { marginHorizontal: 20 } : {}]}>
-      {!cartCoupon?.coupon && !!cartCoupon?.valid ? renderApplyCoupon() : renderCouponApplied()}
+      {!cartCoupon?.coupon && !cartCoupon?.valid ? renderApplyCoupon() : renderCouponApplied()}
     </View>
   );
 };
