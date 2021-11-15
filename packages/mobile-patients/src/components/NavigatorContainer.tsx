@@ -164,6 +164,7 @@ import { EarnedPoints } from '@aph/mobile-patients/src/components/ReferAndEarn/E
 import { RefererTermsAndCondition } from '@aph/mobile-patients/src/components/ReferAndEarn/RefererTermsAndCondition';
 import { RefererFAQ } from '@aph/mobile-patients/src/components/ReferAndEarn/ReferrerFAQ';
 import { BrandPages } from '@aph/mobile-patients/src/components/BrandPages/BrandPages';
+import { CouponScreen } from '@aph/mobile-patients/src/components/Tests/TestCartPage/CouponScreen';
 
 export enum AppRoutes {
   Login = 'Login',
@@ -316,6 +317,7 @@ export enum AppRoutes {
   RefererTermsAndCondition = 'RefererTermsAndCondition',
   RefererFAQ = 'RefererFAQ',
   BrandPages = 'BrandPages',
+  CouponScreen = 'CouponScreen',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -805,6 +807,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.BrandPages]: {
     screen: BrandPages,
+  },
+  [AppRoutes.CouponScreen]: {
+    screen: CouponScreen,
   },
 };
 

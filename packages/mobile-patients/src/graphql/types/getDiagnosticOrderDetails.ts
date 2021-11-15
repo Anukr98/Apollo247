@@ -96,6 +96,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_
   groupPlan: string | null;
   editOrderID: string | null;
   isRemoved: boolean | null;
+  couponDiscAmount: number | null;
   itemObj: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_itemObj | null;
   pricingObj: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_pricingObj | null)[] | null;
   diagnostics: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_diagnostics | null;
@@ -132,6 +133,9 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList 
   visitNo: string | null;
   invoiceURL: string | null;
   labReportURL: string | null;
+  couponDiscAmount: number | null;
+  couponCode: string | null;
+  paymentOrderId: string | null;
   diagnosticOrderLineItems: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems | null)[] | null;
   diagnosticOrdersStatus: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrdersStatus | null)[] | null;
 }

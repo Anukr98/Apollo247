@@ -1,5 +1,4 @@
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
@@ -25,7 +24,6 @@ import {
   getPricesForItem,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
-import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
@@ -38,6 +36,7 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { renderPackageItemPriceShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import DiscountPercentage from './DiscountPercentage';
 const screenWidth = Dimensions.get('window').width;
 const CARD_WIDTH = screenWidth * 0.8; //0.86
 
@@ -116,12 +115,6 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
         !!getMandatoryParamter && getMandatoryParamter?.length > 0 && getMandatoryParamter?.flat(1);
       const dataToShow = getMandatoryParameterCount > 0 ? getParamterData : inclusions;
 
-      const promoteCircle = pricesForItem?.promoteCircle;
-      const promoteDiscount = pricesForItem?.promoteDiscount;
-      const circleDiscount = pricesForItem?.circleDiscount;
-      const specialDiscount = pricesForItem?.specialDiscount;
-      const discount = pricesForItem?.discount;
-
       return (
         <TouchableOpacity
           activeOpacity={1}
@@ -141,13 +134,6 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
                     {name}
                   </Text>
                 </View>
-                {renderPercentageDiscount(
-                  promoteCircle && isCircleSubscribed
-                    ? circleDiscount
-                    : promoteDiscount
-                    ? specialDiscount
-                    : discount
-                )}
               </View>
               {!!inclusions && inclusions?.length > 0 ? (
                 <View style={{ minHeight: isSmallDevice ? 90 : 95 }}>
@@ -184,30 +170,91 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     [cartItems, patientCartItems]
   );
 
-  const renderPercentageDiscount = (discount: string | number) => {
+  const renderPercentageDiscount = (
+    discount: string | number,
+    isOnlyCircle: boolean,
+    specialDiscount: number,
+    hasOtherDiscount: number
+  ) => {
+    const discountPrice =
+      specialDiscount > 0 ? specialDiscount : hasOtherDiscount > 0 ? hasOtherDiscount : 0;
     return (
-      <>
-        {!!discount && discount > 0 ? (
-          <View style={styles.percentageDiscountView}>
-            <Text style={styles.percentageDiscountText}>{Number(discount).toFixed(0)}% off</Text>
-          </View>
-        ) : null}
-      </>
+      <DiscountPercentage
+        discount={discount}
+        isOnlyCircle={isOnlyCircle}
+        discountPrice={discountPrice}
+      />
     );
   };
 
   const renderPricesView = (pricesForItem: any, packageMrpForItem: any, getItem: any) => {
     const promoteCircle = pricesForItem?.promoteCircle;
     const promoteDiscount = pricesForItem?.promoteDiscount;
+    const specialPrice = pricesForItem?.specialPrice!;
+    const price = pricesForItem?.price!;
+    const circleSpecialPrice = pricesForItem?.circleSpecialPrice!;
+    const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
+
+    const circleDiscount = pricesForItem?.circleDiscount;
+    const specialDiscount = pricesForItem?.specialDiscount;
+    const discount = pricesForItem?.discount;
+
+    //1. circle sub + promote circle -> circleSpecialPrice
+    //2. circle sub + discount -> dicount Price
+    //3. circle sub + none -> special price | price
+    //4. non-circle + promote circle -> special price | price
+    //5. non-circle + promte disocunt -> discount price
+    //6. non-circle + none -> special price | price
+
+    let priceToShow;
+    if (isCircleSubscribed) {
+      if (promoteDiscount) {
+        priceToShow = discountSpecialPrice;
+      } else if (promoteCircle) {
+        priceToShow = circleSpecialPrice;
+      } else {
+        priceToShow = specialPrice || price;
+      }
+    } else {
+      if (promoteDiscount) {
+        priceToShow = discountSpecialPrice;
+      } else {
+        priceToShow = specialPrice || price;
+      }
+    }
+    const slashedPrice =
+      !!packageMrpForItem && packageMrpForItem > price ? packageMrpForItem : price;
 
     return pricesForItem || packageMrpForItem ? (
       <View>
-        {promoteCircle || promoteDiscount ? (
-          renderAnyDiscountView(pricesForItem, packageMrpForItem)
-        ) : (
-          <View style={{ height: 20 }} />
-        )}
-        {renderMainPriceView(pricesForItem, packageMrpForItem, getItem)}
+        <View style={{ flexDirection: 'row' }}>
+          {/**slashed price */}
+          {(!isCircleSubscribed && promoteCircle && priceToShow == slashedPrice) ||
+          priceToShow == slashedPrice ? (
+            <View style={{ height: 20 }} />
+          ) : (
+            <View style={{ alignItems: 'flex-start' }}>
+              <Text style={styles.slashedPriceText}>
+                MRP {string.common.Rs}
+                <Text style={{ textDecorationLine: 'line-through' }}>
+                  {`${convertNumberToDecimal(slashedPrice)}`}
+                </Text>
+              </Text>
+            </View>
+          )}
+          {/**show percentage discount */}
+          {renderPercentageDiscount(
+            promoteCircle && isCircleSubscribed
+              ? circleDiscount
+              : promoteDiscount
+              ? specialDiscount
+              : discount,
+            promoteCircle && isCircleSubscribed ? true : false,
+            promoteDiscount && specialDiscount > 0 ? specialDiscount : 0,
+            discount > 0 ? discount : 0
+          )}
+        </View>
+        {renderMainPriceView(pricesForItem, packageMrpForItem, getItem, priceToShow)}
       </View>
     ) : (
       renderPackageItemPriceShimmer()
@@ -220,37 +267,35 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     const promoteCircle = pricesForItem?.promoteCircle;
     const circleDiscountSaving = pricesForItem?.circleDiscountDiffPrice;
     const specialDiscountSaving = pricesForItem?.specialDiscountDiffPrice;
+    const nonCircleDiscountSaving = pricesForItem?.discountDiffPrice;
 
     return (
       <View>
         {isCircleSubscribed && circleDiscountSaving > 0 && !promoteDiscount ? (
           <View style={styles.flexRow}>
-            <CircleLogo style={styles.circleLogoIcon} />
             {renderSavingView(
-              'Savings',
+              'save',
               circleDiscountSaving,
-              { marginHorizontal: '1%' },
+              { marginHorizontal: '7%' },
               styles.savingTextStyle
             )}
           </View>
         ) : promoteDiscount && specialDiscountSaving > 0 && !promoteCircle ? (
           <View style={styles.flexRow}>
-            <SpecialDiscountText isImage={true} text={'TEST 247'} />
             {renderSavingView(
-              'Savings',
+              'save',
               specialDiscountSaving,
-              { marginHorizontal: '1%' },
+              { marginHorizontal: '7%' },
               styles.savingTextStyle
             )}
           </View>
-        ) : circleDiscountSaving > 0 ? (
+        ) : nonCircleDiscountSaving > 0 ? (
           <View style={styles.flexRow}>
-            <CircleHeading isSubscribed={false} />
             {renderSavingView(
-              '',
-              circleSpecialPrice,
-              { marginHorizontal: isSmallDevice ? '1%' : '2%', alignSelf: 'center' },
-              [styles.nonCirclePriceText]
+              'save',
+              nonCircleDiscountSaving,
+              { marginHorizontal: '7%' },
+              styles.savingTextStyle
             )}
           </View>
         ) : null}
@@ -274,38 +319,14 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     );
   };
 
-  const renderMainPriceView = (pricesForItem: any, packageMrpForItem: any, getItem: any) => {
+  const renderMainPriceView = (
+    pricesForItem: any,
+    packageMrpForItem: any,
+    getItem: any,
+    priceToShow: number
+  ) => {
     const promoteCircle = pricesForItem?.promoteCircle;
     const promoteDiscount = pricesForItem?.promoteDiscount;
-    const specialPrice = pricesForItem?.specialPrice!;
-    const price = pricesForItem?.price!;
-    const circleSpecialPrice = pricesForItem?.circleSpecialPrice!;
-    const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
-
-    //1. circle sub + promote circle -> circleSpecialPrice
-    //2. circle sub + discount -> dicount Price
-    //3. circle sub + none -> special price | price
-    //4. non-circle + promote circle -> special price | price
-    //5. non-circle + promte disocunt -> discount price
-    //6. non-circle + none -> special price | price
-    let priceToShow;
-    if (isCircleSubscribed) {
-      if (promoteDiscount) {
-        priceToShow = discountSpecialPrice;
-      } else if (promoteCircle) {
-        priceToShow = circleSpecialPrice;
-      } else {
-        priceToShow = specialPrice || price;
-      }
-    } else {
-      if (promoteDiscount) {
-        priceToShow = discountSpecialPrice;
-      } else {
-        priceToShow = specialPrice || price;
-      }
-    }
-    const slashedPrice =
-      !!packageMrpForItem && packageMrpForItem > price ? packageMrpForItem : price;
 
     const hasItem =
       !!cartItems && cartItems?.find((items) => Number(items?.id) == Number(getItem?.itemId));
@@ -323,13 +344,11 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
         ) : (
           renderPackageItemPriceShimmer()
         )}
-        {/**slashed price */}
-        {(!isCircleSubscribed && promoteCircle && priceToShow == slashedPrice) ||
-        priceToShow == slashedPrice ? null : (
-          <Text style={styles.slashedPriceText}>
-            ({string.common.Rs}
-            {convertNumberToDecimal(slashedPrice)})
-          </Text>
+        {/**savings view */}
+        {promoteCircle || promoteDiscount ? (
+          renderAnyDiscountView(pricesForItem, packageMrpForItem)
+        ) : (
+          <View style={{ height: 20 }} />
         )}
         {renderAddToCart(isAddedToCart, getItem, pricesForItem, packageMrpForItem)}
       </View>
@@ -582,7 +601,7 @@ const styles = StyleSheet.create({
   imagePlaceholderStyle: { backgroundColor: '#f7f8f5', opacity: 0.5, borderRadius: 5 },
   imageStyle: { height: 40, width: 40, marginBottom: 8 },
   itemNameText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 16.5 : 18, theme.colors.SHERPA_BLUE, 1, 24),
+    ...theme.viewStyles.text('SB', isSmallDevice ? 16 : 17, theme.colors.SHERPA_BLUE, 1, 26),
     textAlign: 'left',
   },
   inclusionsText: {
@@ -602,35 +621,27 @@ const styles = StyleSheet.create({
   },
   imageIcon: { height: 40, width: 40 },
   savingTextStyle: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 10.5 : 11, theme.colors.APP_GREEN),
-    lineHeight: 18,
+    ...theme.viewStyles.text('M', isSmallDevice ? 10.5 : 11, colors.SHERPA_BLUE, 1, 20),
     textAlign: 'center',
     alignSelf: 'center',
   },
   nonCirclePriceText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 12.5 : 13, theme.colors.SHERPA_BLUE),
+    ...theme.viewStyles.text('M', isSmallDevice ? 12.5 : 13, colors.SHERPA_BLUE),
     lineHeight: 16,
     textAlign: 'center',
     alignSelf: 'center',
   },
   mainPriceText: {
-    ...theme.viewStyles.text('SB', isSmallDevice ? 15 : 16, theme.colors.SHERPA_BLUE),
+    ...theme.viewStyles.text('SB', isSmallDevice ? 15 : 16, colors.SHERPA_BLUE),
     lineHeight: 21,
     textAlign: 'left',
     alignSelf: 'flex-start',
   },
   slashedPriceText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE),
+    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, colors.SHERPA_BLUE),
     lineHeight: 21,
     textAlign: 'center',
     opacity: 0.5,
-    textDecorationLine: 'line-through',
-    marginHorizontal: '5%',
-  },
-  circleLogoIcon: {
-    height: 20,
-    width: isSmallDevice ? 32 : 36,
-    resizeMode: 'contain',
   },
   inclusionName: {
     ...theme.viewStyles.text('R', isSmallDevice ? 10.5 : 11, theme.colors.SHERPA_BLUE, 1, 13),
@@ -657,19 +668,5 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
     shadowColor: 'white',
     elevation: 0,
-  },
-  percentageDiscountView: {
-    backgroundColor: colors.DISCOUNT_LIGHT_BLUE,
-    borderWidth: 1,
-    borderRadius: 12,
-    borderColor: colors.DISCOUNT_BLUE_COLOR,
-    height: 30,
-    width: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  percentageDiscountText: {
-    ...theme.viewStyles.text('M', 10, colors.DISCOUNT_BLUE_COLOR, 1, 12),
-    textAlign: 'center',
   },
 });
