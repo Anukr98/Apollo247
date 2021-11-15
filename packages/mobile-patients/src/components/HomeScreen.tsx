@@ -3391,7 +3391,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const renderOffersCards = (item: any, index: number) => {
-    console.log('csk ', item?.expired_at);
     const textForNotch = getNotchText(item?.expired_at, item?.notch_text?.text);
     let offerDesignTemplate = getTemplateStyle(item?.template_name);
     return (
