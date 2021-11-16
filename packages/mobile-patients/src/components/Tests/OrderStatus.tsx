@@ -595,14 +595,19 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
 
   const renderAddPassportView = () => {
-    const itemIdArray = apiOrderDetails?.[0]?.ordersList?.[0]?.diagnosticOrderLineItems?.filter(
-      (item: any) => {
-        if (AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS.includes(item?.itemId)) {
-          return item?.itemId;
+    const itemArray = apiOrderDetails?.[0]?.ordersList?.map((obj: any) => {
+      const itemObjArr = obj?.diagnosticOrderLineItems?.filter((_item: any) => {
+        if (AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS.includes(_item?.itemId)) {
+          return _item;
         }
-      }
-    );
-    return itemIdArray?.length ? (
+      });
+      return itemObjArr;
+    });
+    const itemIdArray = itemArray?.filter((item: any) => {
+      return item?.length != 0;
+    });
+    const paitentArrLen = apiOrderDetails?.[0]?.ordersList?.length;
+    return itemIdArray?.length && paitentArrLen && itemIdArray?.length == paitentArrLen ? (
       <View style={styles.passportContainer}>
         <View style={styles.passportView}>
           <Text style={styles.textupper}>
@@ -618,8 +623,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
             <Text style={styles.textlower}>{passportNo ? 'EDIT' : 'ADD'}</Text>
           </TouchableOpacity>
         </View>
-        <View>
-        </View>
+        <View></View>
       </View>
     ) : null;
   };
