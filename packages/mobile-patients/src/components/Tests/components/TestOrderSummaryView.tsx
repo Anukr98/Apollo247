@@ -323,7 +323,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     );
   };
   useEffect(() => {
-    setPassportNo(orderDetails?.passportNo ? orderDetails?.passportNo : '');
+    setPassportNo(!!orderDetails?.passportNo ? orderDetails?.passportNo : '');
     if (orderDetails?.passportNo) {
       const passData = [
         {
