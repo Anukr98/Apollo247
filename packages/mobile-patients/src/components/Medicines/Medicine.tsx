@@ -167,6 +167,9 @@ import { getUniqueId } from 'react-native-device-info';
 import { Cache } from 'react-native-cache';
 import { setItem, getItem } from '@aph/mobile-patients/src/helpers/TimedAsyncStorage';
 import { SuggestedQuantityNudge } from '@aph/mobile-patients/src/components/SuggestedQuantityNudge/SuggestedQuantityNudge';
+import { WhatsappRedirectionStickyNote } from '@aph/mobile-patients/src/components/Medicines/Components/WhatsappRedirectionStickyNote';
+import { WhatsappRedirectionBanner } from '@aph/mobile-patients/src/components/Medicines/Components/WhatsappRedirectionBanner';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const styles = StyleSheet.create({
   scrollViewStyle: {
@@ -353,6 +356,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const pharmacyPincode =
     asyncPincode?.pincode || pharmacyLocation?.pincode || locationDetails?.pincode;
   const [isFocused, setIsFocused] = useState<boolean>(false);
+  const [showWhatsappRedirectionIcon, setShowWhatsappRedirectionIcon] = useState<boolean>(true);
+  const scrollViewRef = React.useRef<KeyboardAwareScrollView>(null);
+  const windowHeight = Dimensions.get('window').height;
   type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
   const postwebEngageCategoryClickedEvent = (
     categoryId: string,
@@ -2175,6 +2181,22 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const bannerScrollRef = React.useRef<View>(null);
+
+  const renderWhatsappBanner = () => {
+    return (
+      <View
+        ref={bannerScrollRef}
+        onLayout={(event) => {
+          const layout = event.nativeEvent.layout;
+          setShowWhatsappRedirectionIcon(layout.y > 0);
+        }}
+      >
+        <WhatsappRedirectionBanner />
+      </View>
+    );
+  };
+
   const renderSections = () => {
     if (!data) {
       return null;
@@ -2183,6 +2205,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const metaData = [
       ...(data?.metadata || []),
       { section_key: 'circleBanners', section_name: '', section_position: 4, visible: true },
+      {
+        section_key: 'whatsappRedirectionBanner',
+        section_name: '',
+        section_position: 9,
+        visible: true,
+      },
     ];
 
     const staticSectionKeys = [
@@ -2192,6 +2220,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       'circleBanners',
       'recommended_products',
       'shop_by_brand',
+      'whatsappRedirectionBanner',
     ];
     const sectionsView = metaData
       .filter((item) => item.visible)
@@ -2209,6 +2238,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             ? renderCarouselBanners()
             : section_key === 'recommended_products'
             ? renderHotSellers(section_name, recommendedProducts, -1)
+            : section_key === 'whatsappRedirectionBanner'
+            ? renderWhatsappBanner()
             : section_key === 'shop_by_brand'
             ? renderShopByBrand(section_name, data[section_key] || [])
             : null;
@@ -2522,20 +2553,37 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
-        <View style={{ backgroundColor: 'white' }}>
-          {renderTopView()}
-          {renderSearchInput()}
-          {renderSearchResults()}
-        </View>
+        <KeyboardAwareScrollView
+          ref={scrollViewRef}
+          bounces={false}
+          keyboardShouldPersistTaps="always"
+          onScroll={(event) => {
+            bannerScrollRef.current &&
+              bannerScrollRef.current.measure(
+                (x: any, y: any, width: any, height: any, pagex: any, pagey: any) => {
+                  setShowWhatsappRedirectionIcon(pagey === 0);
+                  if (Platform.OS === 'android') {
+                    setShowWhatsappRedirectionIcon(pagey < 0 || pagey > windowHeight);
+                  } else if (Platform.OS === 'ios') setShowWhatsappRedirectionIcon(pagey === 0);
+                }
+              );
+          }}
+        >
+          <View style={{ backgroundColor: 'white' }}>
+            {renderTopView()}
+            {renderSearchInput()}
+            {renderSearchResults()}
+          </View>
 
-        {pageLoading ? renderMedicinesShimmer() : null}
+          {pageLoading ? renderMedicinesShimmer() : null}
 
-        <View style={{ flex: 1, paddingBottom: !!cartItems?.length ? 80 : 0 }}>
-          {renderSections()}
-          {renderOverlay()}
-          {!!cartItems?.length && renderCircleCartDetails()}
-          {renderCategoryTree()}
-        </View>
+          <View style={{ flex: 1, paddingBottom: !!cartItems?.length ? 80 : 0 }}>
+            {renderSections()}
+            {renderOverlay()}
+            {!!cartItems?.length && renderCircleCartDetails()}
+            {renderCategoryTree()}
+          </View>
+        </KeyboardAwareScrollView>
       </SafeAreaView>
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
       {showCirclePopup && renderCircleMembershipPopup()}
@@ -2555,6 +2603,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setCurrentProductQuantityInCart={setCurrentProductQuantityInCart}
           />
         )}
+      {showWhatsappRedirectionIcon && <WhatsappRedirectionStickyNote />}
     </View>
   );
 };
