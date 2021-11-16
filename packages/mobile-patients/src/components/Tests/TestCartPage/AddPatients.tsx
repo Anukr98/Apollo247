@@ -387,22 +387,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       cartItems?.filter((cItem) => !disabledCartItemIds?.find((dItem) => dItem == cItem?.id))
     );
   };
-  const renderCallToOrder = () => {
-    return (
-      <CallToOrderView
-        cityId = {Number(diagnosticServiceabilityData?.cityId)}
-        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTCART}
-        customMargin = {80}
-        slideCallToOrder = {slideCallToOrder}
-        onPressSmallView = {() => {
-          setSlideCallToOrder(false);
-        }}
-        onPressCross = {() => {
-          setSlideCallToOrder(true);
-        }}
-      />
-    )
-  }
+  
 
   const removeDisabledPatientCartItems = (disabledCartItemIds: string[]) => {
     hideAphAlert?.();

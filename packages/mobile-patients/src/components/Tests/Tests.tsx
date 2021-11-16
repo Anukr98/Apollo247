@@ -200,6 +200,7 @@ import {
   getDiagnosticOrdersListByMobileVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
+import { TestPdfRender } from '@aph/mobile-patients/src/components/Tests/components/TestPdfRender';
 const rankArr = ['1', '2', '3', '4', '5', '6'];
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
@@ -328,6 +329,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [currentOffset, setCurrentOffset] = useState<number>(1);
   const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
   const [sectionLoading, setSectionLoading] = useState<boolean>(false);
+  const [showViewReportModal, setShowViewReportModal] = useState<boolean>(false);
   const [showItemCard, setShowItemCard] = useState<boolean>(false);
   const [bookUsSlideIndex, setBookUsSlideIndex] = useState(0);
   const [showbookingStepsModal, setShowBookingStepsModal] = useState(false);
@@ -360,7 +362,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [fetchAddressLoading, setFetchAddressLoading] = useState<boolean>(false);
 
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
-
+  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
+  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
+  const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
+    if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.HOME)) {
+      return item;
+    } else {
+      return null;
+    }
+  });
   const cache = new Cache({
     namespace: 'tests',
     policy: {
@@ -1405,6 +1415,21 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  const renderViewReportModal = () => {
+    return (
+      <View>
+        <TestPdfRender
+          uri={clickedItem?.labReportURL}
+          order={clickedItem}
+          isReport={true}
+          onPressClose={() => {
+            setShowViewReportModal(false);
+          }}
+        />
+      </View>
+    );
+  };
+
   const renderNonServiceableToolTip = (isNoLocation: boolean) => {
     return (
       <TouchableOpacity
@@ -2285,11 +2310,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       );
       if (!!item?.labReportURL && item?.labReportURL != '') {
         setClickedItem(item);
-        props.navigation.navigate(AppRoutes.TestPdfRender, {
-          uri: item?.labReportURL,
-          order: item,
-          isReport: true
-        });
+        setShowViewReportModal(true);
       } else {
         showAphAlert?.({
           title: string.common.uhOh,
@@ -2837,7 +2858,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               >
                 <Text style={styles.textPrescription}>{item.title}</Text>
               </TouchableOpacity>
-              {index === prescriptionGalleryOptionArray?.length - 1 ? null : <Spearator />}
+              {index === prescriptionOptionArray?.length - 1 ? null : <Spearator />}
             </>
           );
         })}
@@ -2846,10 +2867,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderCallToOrder = () => {
-    return (
+    return ctaDetailMatched?.length ? (
       <CallToOrderView
         cartItems={cartItems}
-        pageId={CALL_TO_ORDER_CTA_PAGE_ID.HOME}
         slideCallToOrder={slideCallToOrder}
         onPressSmallView={() => {
           setSlideCallToOrder(false);
@@ -2859,7 +2879,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           setSlideCallToOrder(true);
         }}
       />
-    );
+    ) : null;
   };
 
   return (
@@ -2913,6 +2933,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             </View>
             <View style={{ flex: 1 }}>
               <ScrollView
+                scrollEventThrottle={16}
                 removeClippedSubviews={true}
                 bounces={false}
                 style={{ flex: 1, marginBottom: !!cartItems && cartItems?.length > 0 ? 30 : 0 }}
@@ -2935,6 +2956,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         {showUnserviceablePopup && renderNonServiceableToolTip(false)}
         {showNoLocationPopUp && renderNonServiceableToolTip(true)}
       </SafeAreaView>
+      {showViewReportModal ? renderViewReportModal() : null}
       {showbookingStepsModal ? renderBookingStepsModal() : null}
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
     </View>

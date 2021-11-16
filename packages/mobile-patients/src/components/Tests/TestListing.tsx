@@ -21,6 +21,7 @@ import {
   View,
   Image as ImageNative,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import {
@@ -81,7 +82,15 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const [widgetsData, setWidgetsData] = useState([] as any);
   const [loading, setLoading] = useState<boolean>(true);
   const [isPriceAvailable, setIsPriceAvailable] = useState<boolean>(false);
-
+  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
+  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
+  const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
+    if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING)) {
+      return item;
+    } else {
+      return null;
+    }
+  });
   const errorStates = !loading && widgetsData?.length == 0;
   let deepLinkWidgetName: string;
 
@@ -171,8 +180,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     });
 
   useEffect(() => {
-    let source = movedFrom == 'Tests' ? '247 Home' : movedFrom == 'deeplink' ? 'Deeplink' : ''
-    DiagnosticProductListingPageViewed(widgetType, source, widgetName, title);
+    let source = movedFrom == 'Tests' ? '247 Home' : movedFrom == 'deeplink' ? 'Deeplink' : '';
+    DiagnosticProductListingPageViewed(widgetType, source, widgetName!, title);
   }, []);
 
   const fetchWidgetsPrices = async (widgetsData: any) => {
@@ -357,7 +366,12 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     return (
       <>
         {!!actualItemsToShow && actualItemsToShow?.length > 0 ? (
-          <View style={{ flex: 1 }}>
+          <ScrollView
+            style={{ flex: 1 }}
+            onScroll={() => {
+              setSlideCallToOrder(true);
+            }}
+          >
             <Text style={styles.headingText}>
               {deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle}{' '}
               {actualItemsToShow?.length > 0 && (
@@ -407,27 +421,26 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                 sourceScreen={AppRoutes.TestListing}
               />
             )}
-          </View>
+          </ScrollView>
         ) : null}
       </>
     );
   };
   const renderCallToOrder = () => {
-    return (
+    return ctaDetailMatched?.length ? (
       <CallToOrderView
-        cityId = {cityId}
-        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING}
-        customMargin = {80}
-        slideCallToOrder = {slideCallToOrder}
-        onPressSmallView = {() => {
+        cityId={cityId}
+        customMargin={80}
+        slideCallToOrder={slideCallToOrder}
+        onPressSmallView={() => {
           setSlideCallToOrder(false);
         }}
-        onPressCross = {() => {
+        onPressCross={() => {
           setSlideCallToOrder(true);
         }}
       />
-    )
-  }
+    ) : null;
+  };
 
   return (
     <View style={{ flex: 1 }}>

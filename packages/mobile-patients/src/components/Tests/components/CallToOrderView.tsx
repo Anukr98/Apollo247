@@ -2,7 +2,7 @@ import { BlueCross, WhiteCall } from '@aph/mobile-patients/src/components/ui/Ico
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState,  } from 'react';
 import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
@@ -13,7 +13,6 @@ interface CallToOrderViewProps {
   slideCallToOrder?: boolean;
   containerStyle?: any;
   cityId?: any;
-  pageId?: any;
   onPressSmallView?: () => void;
   onPressCross?: () => void;
 }
@@ -27,7 +26,6 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
     onPressCross,
     customMargin,
     cityId,
-    pageId,
   } = props;
   const {
     isDiagnosticLocationServiceable
@@ -35,7 +33,7 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
   const ctaDetailMatched = isDiagnosticLocationServiceable ? ctaDetailArray?.filter((item: any) => {
-      if (item?.ctaCityId == cityId && item?.ctaProductPageArray?.includes(pageId)) {
+      if (item?.ctaCityId == cityId) {
         return item;
       } else {
         [callToOrderDetails?.ctaDetailsDefault]
@@ -47,13 +45,13 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
   const onPressCallToOrderCta = () => {
     Linking.openURL(`tel:${phoneNumber}`);
   };
-  let ctaDelaySeconds = ctaDetailMatched?.[0]?.ctaDelaySeconds;
+  const [ctaDelaySeconds, setCtaDelaySeconds] = useState(ctaDetailMatched?.[0]?.ctaDelaySeconds)
   useEffect(() => {
     setTimeout(() => {
-      ctaDelaySeconds = 0;
-    }, ctaDetailMatched?.[0]?.ctaDelaySeconds);
-  }, []);
-  return ctaDetailMatched?.length === 1 ? (
+      setCtaDelaySeconds(0);
+    }, ctaDetailMatched?.[0]?.ctaDelaySeconds * 1000);
+  }, [ctaDelaySeconds]);
+  return (ctaDelaySeconds == 0 ? 
     <>
       <View style={[styles.container, containerStyle]}>
         {!slideCallToOrder ? (
@@ -101,7 +99,7 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
         </View>
       </View>
     </>
-  ) : null;
+  : null);
 };
 
 const styles = StyleSheet.create({

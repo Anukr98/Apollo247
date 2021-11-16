@@ -69,6 +69,7 @@ import {
 import {
   CALL_TO_ORDER_CTA_PAGE_ID,
   DiagnosticLineItem,
+  REPORT_TAT_SOURCE,
   TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -76,7 +77,9 @@ import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/help
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
+  DiagnosticAddresssSelected,
   DiagnosticAddToCartClicked,
+  DiagnosticCartViewed,
   DiagnosticRemoveFromCartClicked,
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { CartItemCard } from '@aph/mobile-patients/src/components/Tests/components/CartItemCard';
@@ -152,9 +155,11 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     modifiedOrderItemIds,
     addPatientCartItem,
     addCartItem,
+    newAddressAddedCartPage,
+    setNewAddressAddedCartPage,
   } = useDiagnosticsCart();
 
-  const { setAddresses: setMedAddresses } = useShoppingCart();
+  const { setAddresses: setMedAddresses, circleSubscriptionId } = useShoppingCart();
 
   const {
     locationDetails,
@@ -192,6 +197,15 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const isCartPresent = isDiagnosticSelectedCartEmpty(
     isModifyFlow ? modifiedPatientCart : patientCartItems
   );
+  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
+  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
+  const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
+    if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTCART)) {
+      return item;
+    } else {
+      return null;
+    }
+  });
 
   const patientsOnCartPage = !!isCartPresent && isCartPresent?.map((item) => item?.patientId);
   const patientListForOverlay =
@@ -212,6 +226,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   var overallDuplicateArray = [] as any;
 
   useEffect(() => {
+    triggerCartPageViewed();
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setIsFocused(true);
       BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -225,6 +240,35 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       willBlur && willBlur.remove();
     };
   }, []);
+
+  function triggerAddressSelected(servicable: 'Yes' | 'No') {
+    const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
+    const pinCodeFromAddress = addressToUse?.zipcode!;
+    DiagnosticAddresssSelected(
+      newAddressAddedCartPage != '' ? 'New' : 'Existing',
+      servicable,
+      pinCodeFromAddress,
+      'Cart page',
+      currentPatient,
+      isDiagnosticCircleSubscription
+    );
+    newAddressAddedCartPage != '' && setNewAddressAddedCartPage?.('');
+  }
+
+  function triggerCartPageViewed() {
+    const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
+    const pinCodeFromAddress = addressToUse?.zipcode!;
+    const cityFromAddress = addressToUse?.city;
+    DiagnosticCartViewed(
+      'cart page',
+      currentPatient,
+      cartItems,
+      isDiagnosticCircleSubscription,
+      pinCodeFromAddress,
+      cityFromAddress,
+      false
+    );
+  }
 
   function handleBack() {
     if (isModifyFlow) {
@@ -380,7 +424,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         null,
         Number(addressCityId),
         !!pincode ? Number(pincode) : 0,
-        listOfIds!
+        listOfIds!,
+        REPORT_TAT_SOURCE.CART_PAGE
       );
       if (result?.data?.getConfigurableReportTAT) {
         const getMaxReportTat = result?.data?.getConfigurableReportTAT?.itemLevelReportTATs;
@@ -769,17 +814,20 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
               setLoading?.(false);
               errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
             });
+          triggerAddressSelected('Yes');
         } else {
           //non-serviceable
           setLoading?.(false);
           setIsServiceable(false);
           setShowNonServiceableText(true);
           setAddressCityId(String(AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID));
+          triggerAddressSelected('No');
         }
       } else {
         setLoading?.(false);
         setIsServiceable(false);
         setShowNonServiceableText(true);
+        triggerAddressSelected('No');
       }
     } catch (error) {
       CommonBugFender('AddPatients_getAddressServiceability', error);
@@ -1605,21 +1653,20 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   };
 
   const renderCallToOrder = () => {
-    return (
+    return ctaDetailMatched?.length ? (
       <CallToOrderView
-        cityId = {addressCityId}
-        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTCART}
-        customMargin={160}
-        slideCallToOrder = {slideCallToOrder}
-        onPressSmallView = {() => {
+        cityId={deliveryAddressCityId}
+        customMargin={showNonServiceableText ? 240 : 180}
+        slideCallToOrder={slideCallToOrder}
+        onPressSmallView={() => {
           setSlideCallToOrder(false);
         }}
-        onPressCross = {() => {
+        onPressCross={() => {
           setSlideCallToOrder(true);
         }}
       />
-    )
-  }
+    ) : null;
+  };
 
   const renderWizard = () => {
     return (
@@ -1638,7 +1685,14 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       <SafeAreaView style={[{ ...theme.viewStyles.container }]}>
         {renderHeader()}
         {renderWizard()}
-        <ScrollView bounces={false} style={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          bounces={false}
+          style={{ flexGrow: 1 }}
+          showsVerticalScrollIndicator={false}
+          onScroll={() => {
+            setSlideCallToOrder(true);
+          }}
+        >
           {renderMainView()}
         </ScrollView>
         {renderAddressSection()}

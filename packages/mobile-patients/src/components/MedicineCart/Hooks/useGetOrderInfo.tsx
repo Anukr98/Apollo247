@@ -103,6 +103,7 @@ export const useGetOrderInfo = () => {
       shipments: shipments,
       appointmentId: appointmentIds?.length ? appointmentIds.join(',') : '',
       isCashBack: !!totalCashBack,
+      prescriptionType,
     },
   };
 

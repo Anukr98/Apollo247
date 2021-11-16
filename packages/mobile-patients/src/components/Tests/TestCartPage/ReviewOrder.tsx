@@ -90,6 +90,7 @@ import {
   processDiagnosticsCODOrderV2,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
+  DiagnosticCartViewed,
   DiagnosticModifyOrder,
   DiagnosticProceedToPay,
   DiagnosticRemoveFromCartClicked,
@@ -225,7 +226,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setCircleSubscriptionId,
     setCirclePlanSelected,
     setIsCircleSubscription,
-    circlePlanValidity
+    circlePlanValidity,
   } = useShoppingCart();
 
   const { diagnosticServiceabilityData } = useAppCommonData();
@@ -313,7 +314,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const getAllItemIds = isCartEmpty
       ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
       ?.flat();
-    const uniqueItemIDS = [...new Set(getAllItemIds?.map((item) => Number(item?.id)))];
+    const uniqueItemIDS = [...new Set(getAllItemIds?.map((item: number) => Number(item?.id)))];
     const itemIds = isModifyFlow ? cartItemsWithId.concat(modifiedOrderItemIds) : uniqueItemIDS;
     populateCartMapping();
     fetchOverallReportTat(itemIds);
@@ -339,6 +340,29 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             : getConfigValues
         );
   }, []);
+
+  useEffect(() => {
+    triggerCartPageViewed();
+  }, [toPayPrice]);
+
+  function triggerCartPageViewed() {
+    const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
+    const pinCodeFromAddress = addressToUse?.zipcode!;
+    const cityFromAddress = addressToUse?.city;
+    DiagnosticCartViewed(
+      'review page',
+      currentPatient,
+      cartItems,
+      isDiagnosticCircleSubscription,
+      pinCodeFromAddress,
+      cityFromAddress,
+      false,
+      toPayPrice,
+      hcCharges,
+      circleSubscriptionId
+    );
+    //add coupon code + coupon discount
+  }
 
   async function populateCartMapping() {
     const listOfIds = cartItems?.map((item) => Number(item?.id));
@@ -447,7 +471,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
   }, [isfetchingId]);
 
-  async function fetchOverallReportTat(_cartItemId: string | number[]) {
+  async function fetchOverallReportTat(_cartItemId: string | number[] | any) {
     const removeSpaces =
       typeof _cartItemId == 'string' ? _cartItemId?.replace(/\s/g, '')?.split(',') : null;
     const listOfIds =
@@ -1086,8 +1110,12 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const circleData = circlePlanSelected;
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE] = {
       navigation_source: 'Cart(Diagnostic)',
-      circle_end_date: circlePlanValidity?.endDate ? circlePlanValidity?.endDate : getCircleNoSubscriptionText(),
-      circle_start_date: circlePlanValidity?.startDate ? circlePlanValidity?.startDate : getCircleNoSubscriptionText(),
+      circle_end_date: circlePlanValidity?.endDate
+        ? circlePlanValidity?.endDate
+        : getCircleNoSubscriptionText(),
+      circle_start_date: circlePlanValidity?.startDate
+        ? circlePlanValidity?.startDate
+        : getCircleNoSubscriptionText(),
       plan_id: circleData?.subPlanId,
       customer_id: currentPatient?.id,
       duration_in_months: circleData?.durationInMonth,
@@ -1140,7 +1168,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           {isDiagnosticCircleSubscription ||
           (!isDiagnosticCircleSubscription && hideCirclePurchaseInModify)
             ? null
-            : renderCirclePurchase()}
+            : allMembershipPlans?.length > 0 && renderCirclePurchase()}
           {renderPrices('Total MRP', totalPriceExcludingAnyDiscounts.toFixed(2))}
 
           {couponDiscount > 0 && renderPrices('Coupon Discount', couponDiscount?.toFixed(2))}
@@ -1613,7 +1641,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           itemNames?.push(isFromApi ? findItem?.itemName : findItem?.name);
         }
         //in case of modify. => only for single uhid
-        else if (isModifyFlow) {
+        if (isModifyFlow) {
           const getModifiedOrderLineItems = modifiedOrder?.diagnosticOrderLineItems;
           itemIds?.map((id: number) => {
             const findItem =
@@ -2237,23 +2265,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         donePages={[SCREEN_NAMES.PATIENT, SCREEN_NAMES.CART, SCREEN_NAMES.SCHEDULE]}
         navigation={props.navigation}
         isModify={isModifyFlow}
-      />
-    );
-  };
-
-  const renderCallToOrder = () => {
-    return (
-      <CallToOrderView
-        cityId={Number(diagnosticServiceabilityData?.cityId)}
-        pageId={CALL_TO_ORDER_CTA_PAGE_ID.TESTCART}
-        customMargin={220}
-        slideCallToOrder={slideCallToOrder}
-        onPressSmallView={() => {
-          setSlideCallToOrder(false);
-        }}
-        onPressCross={() => {
-          setSlideCallToOrder(true);
-        }}
       />
     );
   };
