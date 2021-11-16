@@ -1539,8 +1539,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS
       );
 
-      disincentivizeCodMessage && setPaymentCodMessage?.(disincentivizeCodMessage);
-
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';
       const appVersion = coerce(isIOS ? iOS_Version : Android_Version)?.version;
