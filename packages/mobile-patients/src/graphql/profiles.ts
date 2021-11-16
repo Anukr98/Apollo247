@@ -4982,6 +4982,21 @@ export const GET_DOCTOR_LIST = gql`
   }
 `;
 
+export const PATIENT_PAST_LOCATIONS = gql`
+  query getPatientPastLocations($patientId: String, $patientMobile: String) {
+    getPatientPastLocations(patientId: $patientId, patientMobile: $patientMobile) {
+      pastLocations {
+        city
+        pincode
+      }
+      popularCities {
+        city
+        pincode
+      }
+    }
+  }
+`;
+
 export const GET_DIAGNOSTIC_AREAS = gql`
   query getAreas($pincode: Int!, $itemIDs: [Int]!) {
     getAreas(pincode: $pincode, itemIDs: $itemIDs) {

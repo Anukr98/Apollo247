@@ -133,6 +133,8 @@ const Common = {
   TANGERINE_YELLOW: tangerine_yellow,
   TEXT_LIGHT_YELLOW: text_light_yellow,
   DEEP_RED: deepRed,
+  SKY_LIGHT_BLUE: '#C6EAFE',
+  GOLDEN: '#FECF62',
   ORANGE: "#FF774B",
   LIGHT_ORANGE_YELLOW: "#FCA317",
   BGK_GRAY : '#f9f9f9',

@@ -427,6 +427,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [showDoctorSharePopup, setShowDoctorSharePopup] = useState<boolean>(false);
   const callCleverTapEvent = useRef<boolean>(true);
   const consultModeSelected = props.navigation.getParam('consultModeSelected');
+  const isPayrollDoctor = doctorDetails?.doctorType === DoctorType.PAYROLL;
   const {
     isCircleDoctor,
     physicalConsultMRPPrice,
@@ -446,7 +447,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     circleSubPlanId,
   } = useShoppingCart();
   const chatDays = doctorDetails?.chatDays;
-  const isPayrollDoctor = doctorDetails?.doctorType === DoctorType.PAYROLL;
   const isPhysical =
     doctorDetails &&
     doctorDetails?.availableModes?.filter(
@@ -743,7 +743,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     const {
       onlineConsultDiscountedPrice,
       cashbackEnabled,
-      cashbackAmount
+      cashbackAmount,
     } = calculateCircleDoctorPricing(doctorDetails);
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED] = {
       'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
@@ -777,7 +777,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Appointment CTA': cleverTapAppointmentAttributes?.appointmentCTA || 'NA',
       'Customer ID': g(currentPatient, 'id'),
       'Available in mins': 'NA',
-      'Relation': g(currentPatient, 'relation'),
+      Relation: g(currentPatient, 'relation'),
       'Circle Membership added': String(!!circlePlanSelected),
       'Circle discount': onlineConsultDiscountedPrice ? onlineConsultDiscountedPrice : 0,
       'Circle Cashback': cashbackEnabled ? cashbackAmount! : 0,
@@ -895,7 +895,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         CommonBugFender('DoctorDetails_getNetStatus', e);
       });
   };
-  
+
   const renderCareDoctorPricing = (consultType: ConsultMode) => {
     return (
       <View style={{ paddingBottom: showCircleSubscribed ? 16 : 3 }}>

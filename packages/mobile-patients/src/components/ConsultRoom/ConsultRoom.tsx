@@ -51,6 +51,10 @@ import {
   WhiteArrowRightIcon,
   VaccineTracker,
   ProHealthIcon,
+  BackArrow,
+  ArrowRight,
+  HospitalVisit,
+  VideoConsult,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   BannerDisplayType,
@@ -676,6 +680,27 @@ const styles = StyleSheet.create({
   proHealthBannerImage: {
     height: 180,
     width: '100%',
+  },
+  secondaryConsultationCtaContainer: {
+    marginVertical: 16,
+  },
+  secondaryConsultationCtaHeading: { ...theme.viewStyles.text('SB', 16, '#02475B') },
+  secondaryCtaButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 6,
+  },
+  secondaryCtaButton: {
+    borderWidth: 1,
+    borderColor: '#D4D4D4',
+    borderRadius: 4,
+    flex: 0.45,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#FAFEFF',
   },
 });
 
@@ -1392,10 +1417,24 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     postWebEngageEvent(eventName, eventAttributes);
   };
 
+  const postHospitalVisitClicked = () => {
+    const attributes: CleverTapEvents[CleverTapEventName.CONSULT_HOSPITAL_CLICKED] = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Mobile number': g(currentPatient, 'mobileNumber'),
+    };
+    postCleverTapEvent(CleverTapEventName.CONSULT_HOSPITAL_CLICKED, attributes);
+  };
+
   const postHomeCleverTapEvent = (
     eventName: CleverTapEventName,
     source?: HomeScreenAttributes['Source'],
-    attributes?: any
+    attributes?: any,
+    ctaType?: string
   ) => {
     let eventAttributes: HomeScreenAttributes = {
       'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
@@ -1445,6 +1484,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         isConsulted: getUserType(allCurrentPatients),
         'Circle Member': !!circleSubscriptionId,
         'Circle Plan type': circleSubPlanId || '',
+        CTA: ctaType,
       };
     }
     if (eventName == CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS) {
@@ -1570,9 +1610,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
         postHomeCleverTapEvent(
           CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED,
-          'Home Screen'
+          'Home Screen',
+          {},
+          'Primary'
         );
-        props.navigation.navigate(AppRoutes.DoctorSearch);
+        props.navigation.navigate(AppRoutes.DoctorSearch, {
+          isOnlineConsultMode: true,
+          consultTypeCta: 'Primary',
+        });
         //props.navigation.navigate(AppRoutes.PostShareAppointmentSelectorScreen);
       },
     },
@@ -4033,6 +4078,66 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const renderAllConsultedDoctors = () => {
     return <ConsultedDoctorsCard navigation={props.navigation} />;
   };
+  const renderSecondaryConsultationCta = () => (
+    <View style={styles.secondaryConsultationCtaContainer}>
+      <Text style={styles.secondaryConsultationCtaHeading}>{'Book Doctor Consult'}</Text>
+      <View style={styles.secondaryCtaButtonsContainer}>
+        <TouchableOpacity
+          style={styles.secondaryCtaButton}
+          onPress={() => {
+            postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
+            postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
+            postHomeCleverTapEvent(
+              CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED,
+              'Home Screen',
+              {},
+              'Secondary'
+            );
+            postHospitalVisitClicked();
+            props.navigation.navigate(AppRoutes.DoctorSearch, {
+              isOnlineConsultMode: false,
+              consultTypeCta: 'Secondary',
+            });
+          }}
+        >
+          <HospitalVisit
+            style={{
+              height: 18,
+              width: 18,
+            }}
+          />
+          <Text style={{ ...theme.viewStyles.text('SB', 13, '#02475B') }}>Hospital Visit</Text>
+          <ArrowRight />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.secondaryCtaButton}
+          onPress={() => {
+            postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
+            postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
+            postHomeCleverTapEvent(
+              CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED,
+              'Home Screen',
+              {},
+              'Secondary'
+            );
+            props.navigation.navigate(AppRoutes.DoctorSearch, {
+              isOnlineConsultMode: true,
+              consultTypeCta: 'Secondary',
+            });
+          }}
+        >
+          <VideoConsult
+            style={{
+              height: 18,
+              width: 18,
+            }}
+          />
+          <Text style={{ ...theme.viewStyles.text('SB', 13, '#02475B') }}>Video Consult</Text>
+          <ArrowRight />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 
   const renderReferralBanner = () => {
     return <ReferralBanner {...props} />;
@@ -4059,6 +4164,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <View style={{ backgroundColor: '#f0f1ec' }}>
                 {covidVaccineCtaV2?.data?.length > 0 && renderCovidContainer()}
               </View>
+              <View style={{ paddingHorizontal: 20 }}>{renderSecondaryConsultationCta()}</View>
               {bannerLoading && renderBannerShimmer()}
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
               {/**added prohealth banner */}
