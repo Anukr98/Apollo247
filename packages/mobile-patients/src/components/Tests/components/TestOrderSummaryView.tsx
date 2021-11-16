@@ -322,6 +322,18 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       </View>
     );
   };
+  useEffect(() => {
+    setPassportNo(!!orderDetails?.passportNo ? orderDetails?.passportNo : '');
+    if (!!orderDetails?.passportNo) {
+      const passData = [
+        {
+          displayId: orderDetails?.displayId,
+          passportNo: orderDetails?.passportNo,
+        },
+      ];
+      setPassportData(passData);
+    }
+  }, []);
   const updatePassportDetails = async (data: any) => {
     try {
       setLoadingContext?.(true);
@@ -680,6 +692,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
         onChange={(res)=>{
           setPassportData(res)
         }}
+        value={passportNo}
         disableButton={!passportData?.[0]?.passportNo}
       />
     );
