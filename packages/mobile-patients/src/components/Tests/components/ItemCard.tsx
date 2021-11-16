@@ -159,8 +159,8 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
             <View style={{ minHeight: isSmallDevice ? 25 : 30 }}>
               {getMandatoryParameterCount > 0 ? (
                 <Text style={styles.parameterText}>
-                  {getMandatoryParameterCount}{' '}
-                  {getMandatoryParameterCount == 1 ? 'parameter' : 'parameters'} included
+                  {getMandatoryParameterCount} {getMandatoryParameterCount == 1 ? 'test' : 'tests'}{' '}
+                  included
                 </Text>
               ) : null}
             </View>
@@ -610,6 +610,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
             ? {
                 alignSelf: actualItemsToShow?.length > 1 ? 'center' : 'flex-start',
                 marginLeft: '1.5%',
+                backgroundColor: 'red',
               }
             : {}
         }

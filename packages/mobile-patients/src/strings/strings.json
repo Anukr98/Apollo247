@@ -712,7 +712,9 @@
     "invalidFileSize": "Invalid File Size. File size must be less than 25MB.",
     "invalidFileType":"Invalid File Type. File type must be PDF.",
     "prescriptionHeading":"Place your order via prescription",
-    "test247Text": "Limited period offer"
+    "test247Text": "Limited period offer",
+    "frequentlyBrought": "FREQUENTLY BROUGHT",
+    "topBookedTests": "TOP BOOKED TESTS"
   },
   "diagnosticCategoryTitle": {
     "category": "category",
