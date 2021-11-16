@@ -1616,6 +1616,7 @@ export const onCleverTapUserLogin = async (_currentPatient: any) => {
       ...(_currentPatient?.emailAddress && { Email: _currentPatient?.emailAddress }),
       ...(_currentPatient?.photoUrl && { Photo: _currentPatient?.photoUrl }),
       ...(_currentPatient?.createdDate && { CreatedDate: _currentPatient?.createdDate }),
+      isRefree: _currentPatient?.isRefree || false
     };
     CleverTap.onUserLogin(_userProfile);
     AsyncStorage.setItem('createCleverTapProifle', 'true');
@@ -2163,12 +2164,12 @@ export const callPermissions = (
 };
 
 export const getUTMdataFromURL = (url: string) => {
-  var result: any = { appUrl: null, utm_source: null, utm_medium: null, utm_campaign: null };
+  var result: any = { source_url: null, utm_source: null, utm_medium: null, utm_campaign: null };
   if (url.indexOf('?') != -1) {
     try {
       var splitedArray = url.split('?');
       var main_url_array = splitedArray[1].split('&');
-      result.appUrl = splitedArray[0];
+      result.source_url = splitedArray[0];
       main_url_array.forEach((item) => {
         let utmAr = item.split('=');
         result[utmAr[0]] = utmAr[1];
@@ -2178,7 +2179,7 @@ export const getUTMdataFromURL = (url: string) => {
       return false;
     }
   } else {
-    result.appUrl = url;
+    result.source_url = url;
     return result;
   }
 };
@@ -2195,12 +2196,14 @@ export const storagePermissions = (doRequest?: () => void) => {
 
 export const InitiateAppsFlyer = (
   navigation: NavigationScreenProp<NavigationRoute<object>, object>,
-  redirectWithOutDeferred: (data: any) => void | undefined
+  redirectWithOutDeferred: (data: any) => void | undefined,
+  redirectUrl: string | null,
+  launchSourceEvent: (isFirstLaunch: boolean) => void
 ) => {
   appsFlyer.initSdk(
     {
       devKey: 'pP3MjHNkZGiMCamkJ7YpbH',
-      isDebug: false,
+      isDebug: true,
       appId: Platform.OS === 'ios' ? '1496740273' : 'com.apollo.patientapp',
       onInstallConversionDataListener: true, //Optional
       onDeepLinkListener: true, //Optional
@@ -2208,14 +2211,27 @@ export const InitiateAppsFlyer = (
     (result) => {},
     (error) => {}
   );
+  let isFirstLaunch = false
   onInstallConversionDataCanceller = appsFlyer.onInstallConversionData((res) => {
     if (JSON.parse(res.data.is_first_launch || 'null') == true) {
+      isFirstLaunch = true
       try {
         if (res.data.af_dp !== undefined) {
           AsyncStorage.setItem('deeplink', res.data.af_dp);
         }
         if (res.data.af_sub1 !== null) {
           AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
+        }
+
+        if (res.data.linkToUse !== null && res.data.linkToUse === 'ForReferrarInstall') {
+          const responseData = res.data
+          setAppReferralData({
+            af_channel: responseData.af_channel,
+            af_referrer_customer_id: responseData.af_referrer_customer_id,
+            campaign: responseData.campaign,
+            rewardId: responseData.rewardId,
+            shortlink: responseData.shortlink
+          })
         }
 
         setBugFenderLog('APPS_FLYER_DEEP_LINK', res.data.af_dp);
@@ -2254,25 +2270,75 @@ export const InitiateAppsFlyer = (
       } catch (error) {}
     }
   });
-  onDeepLinkCanceller = appsFlyer.onDeepLink((res) => {
+  let isDeepLinked = false
+  onDeepLinkCanceller = appsFlyer.onDeepLink(res => {
+    isDeepLinked = true
     if (res.isDeferred) {
       getInstallResources();
       const url = handleOpenURL(res.data.deep_link_value);
       AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
     }
-    if (!res.isDeferred) {
-      clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data));
-      const url = handleOpenURL(res.data.deep_link_value);
-      AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
-      redirectWithOutDeferred(url);
-    }
-    if (res.status == 'success') {
-      clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data));
-    }
-  });
+    try {
+      if (!res.isDeferred) {
+        if (redirectUrl && checkUniversalURL(redirectUrl).universal) {
+          if (Object.keys(res.data).length < 2) {
+            clevertapEventForAppsflyerDeeplink(removeNullFromObj({
+              source_url: checkUniversalURL(redirectUrl).source_url,
+              channel: 'Organic'
+            }))
+          }
+          else {
+            clevertapEventForAppsflyerDeeplink(
+              filterAppLaunchSoruceAttributesByKey({
+                ...res.data,
+                source_url: checkUniversalURL(redirectUrl).source_url
+              }))
+          }
+
+        }
+        else {
+          clevertapEventForAppsflyerDeeplink(filterAppLaunchSoruceAttributesByKey(res.data))
+          const url = handleOpenURL(res.data.deep_link_value);
+          AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url))
+          redirectWithOutDeferred(url)
+        }
+      }
+      if (!res.isDeferred) {
+        clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data));
+        const url = handleOpenURL(res.data.deep_link_value);
+        AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
+        redirectWithOutDeferred(url);
+      }
+      if (res.status == 'success') {
+        clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data));
+      }
+    } catch (e) { }
+
+  })
+  setTimeout(() => {
+    !isDeepLinked && launchSourceEvent(isFirstLaunch)
+  }, 5000)
 };
 
-const removeNullFromObj = (obj: any) => {
+
+export const checkUniversalURL = (url: string) => {
+  if (url.indexOf(string.common.apollo247UniversalLink) != -1
+    || url.indexOf(string.common.apolloPharmacyUniversalLink) != -1
+  ) {
+    if (url.indexOf('?') != -1) {
+      var splitedArray = url.split('?');
+      return { universal: true, source_url: splitedArray[0] }
+    }
+    else {
+      return { universal: true, source_url: url }
+    }
+  }
+  else {
+    return { universal: false }
+  }
+}
+
+export const removeNullFromObj = (obj: any) => {
   for (var propName in obj) {
     if (obj[propName] === null || obj[propName] === undefined) {
       delete obj[propName];
@@ -2280,6 +2346,16 @@ const removeNullFromObj = (obj: any) => {
   }
   return obj;
 };
+
+const setAppReferralData = (data: {
+  af_channel: string,
+  af_referrer_customer_id: string,
+  campaign: number | string,
+  rewardId: string,
+  shortlink: string
+}) => {
+  AsyncStorage.setItem('app_referral_data', JSON.stringify(data))
+}
 
 const getInstallResources = () => {
   let installConversation = appsFlyer.onInstallConversionData((res) => {
@@ -2330,6 +2406,10 @@ export const APPStateActive = () => {
   if (onAppOpenAttributionCanceller) {
     onAppOpenAttributionCanceller();
     onAppOpenAttributionCanceller = null;
+  }
+  if (onDeepLinkCanceller) {
+    onDeepLinkCanceller();
+    onDeepLinkCanceller = null;
   }
 };
 
@@ -3178,7 +3258,7 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
       statusString = 'Order completed';
       break;
     case DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING:
-      statusString = 'Payment pending';
+      statusString = 'Confirmation Pending';
       break;
     case DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED:
       statusString = 'Payment failed';
@@ -3728,11 +3808,14 @@ export const isDiagnosticSelectedCartEmpty = (patientCartItems: DiagnosticPatien
 export const downloadDocument = (
   fileUrl: string = '',
   type: string = 'application/pdf',
-  orderId: number
+  orderId: number,
+  isReport?: boolean
 ) => {
   let filePath: string | null = null;
   let file_url_length = fileUrl.length;
   let viewReportOrderId = orderId;
+  const isReportApollo = isReport ? 'labreport' : 'labinvoice';
+  const dynamicFileName = `Apollo247_${orderId}_${isReportApollo}.pdf`;
   const configOptions = { fileCache: true };
   RNFetchBlob.config(configOptions)
     .fetch('GET', fileUrl.replace(/\s/g, ''))
@@ -3742,7 +3825,7 @@ export const downloadDocument = (
     })
     .then(async (base64Data) => {
       base64Data = `data:${type};base64,` + base64Data;
-      await Share.open({ title: '', url: base64Data });
+      await Share.open({ title: dynamicFileName, url: base64Data });
       // remove the image or pdf from device's storage
       // await RNFS.unlink(filePath);
     })
@@ -3795,6 +3878,23 @@ export const convertDateToEpochFormat = (value: Date) => {
   return epochValue;
 };
 
+
+export const filterAppLaunchSoruceAttributesByKey = (raw: any) => {
+  let validObjKeys = ["CT Session Id", "channel", "CT Source", "CT App Version", "deep_link_value", "is_deferred", "campaign", "match_type", "media_source", "source", "utm_campaign", "utm_medium", "source_url", "utm_source", "install_time", "is_first_launch", "is_incentivized", "retargeting_conversion_type", "orig_cost", "cost_cents_USD", "iscache", "click_time", "is_retargeting", "adgroupid", "keyword", "adtype", "device", "utm_content", "is_mobile_data_terms_signed", "is_fb", "is_paid", "adgroup", "campaign_id"];
+  let filteredObj = removeNullFromObj(raw)
+  return Object.keys(filteredObj).filter(key => validObjKeys.includes(key)).reduce((obj: any, key) => {
+    obj[key] = filteredObj[key];
+    return obj;
+  }, {});
+}
+export const replaceVariableInString = (str: string, mapObj: { [propName: string]: string; }) => {
+  let newArrayWithUpdatedString = Object.keys(mapObj).map(item => '{' + item + '}')
+  let rgx = new RegExp(newArrayWithUpdatedString.join("|"), "gi")
+  str = str.replace(rgx, function (matched) {
+    return mapObj[matched.replace(/{|}/gi, '')];
+  });
+  return str
+}
 export const getAvailabilityForSearchSuccess = (pincode: string, sku: string) => {
   let availability = false;
       availabilityApi247(pincode, sku)

@@ -21,6 +21,7 @@ import {
   View,
   Image as ImageNative,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import {
@@ -44,6 +45,8 @@ import {
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { DiagnosticProductListingPageViewed } from './Events';
+import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
+import { CALL_TO_ORDER_CTA_PAGE_ID } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 export interface TestListingProps
   extends NavigationScreenProps<{
@@ -72,13 +75,22 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const limit = 10;
   const [currentOffset, setCurrentOffset] = useState<number>(1);
   const [testLength, setTestLength] = useState<number>(limit);
+  const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
   const client = useApolloClient();
 
   const [widgetsData, setWidgetsData] = useState([] as any);
   const [loading, setLoading] = useState<boolean>(true);
   const [isPriceAvailable, setIsPriceAvailable] = useState<boolean>(false);
-
+  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
+  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
+  const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
+    if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING)) {
+      return item;
+    } else {
+      return null;
+    }
+  });
   const errorStates = !loading && widgetsData?.length == 0;
   let deepLinkWidgetName: string;
 
@@ -168,8 +180,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     });
 
   useEffect(() => {
-    let source = movedFrom == 'Tests' ? '247 Home' : movedFrom == 'deeplink' ? 'Deeplink' : ''
-    DiagnosticProductListingPageViewed(widgetType, source, widgetName, title);
+    let source = movedFrom == 'Tests' ? '247 Home' : movedFrom == 'deeplink' ? 'Deeplink' : '';
+    DiagnosticProductListingPageViewed(widgetType, source, widgetName!, title);
   }, []);
 
   const fetchWidgetsPrices = async (widgetsData: any) => {
@@ -354,7 +366,12 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     return (
       <>
         {!!actualItemsToShow && actualItemsToShow?.length > 0 ? (
-          <View style={{ flex: 1 }}>
+          <ScrollView
+            style={{ flex: 1 }}
+            onScroll={() => {
+              setSlideCallToOrder(true);
+            }}
+          >
             <Text style={styles.headingText}>
               {deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle}{' '}
               {actualItemsToShow?.length > 0 && (
@@ -404,10 +421,25 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                 sourceScreen={AppRoutes.TestListing}
               />
             )}
-          </View>
+          </ScrollView>
         ) : null}
       </>
     );
+  };
+  const renderCallToOrder = () => {
+    return ctaDetailMatched?.length ? (
+      <CallToOrderView
+        cityId={cityId}
+        customMargin={80}
+        slideCallToOrder={slideCallToOrder}
+        onPressSmallView={() => {
+          setSlideCallToOrder(false);
+        }}
+        onPressCross={() => {
+          setSlideCallToOrder(true);
+        }}
+      />
+    ) : null;
   };
 
   return (
@@ -417,6 +449,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         {!errorStates ? renderBreadCrumb() : null}
         {error ? renderEmptyMessage() : null}
         <View style={{ flex: 1, marginBottom: '5%' }}>{renderList()}</View>
+        {renderCallToOrder()}
         {showLoadMore ? renderLoadMore() : null}
       </SafeAreaView>
       {loading && widgetsData?.length == 0 && <Spinner />}

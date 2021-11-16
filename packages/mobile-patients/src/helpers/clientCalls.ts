@@ -122,6 +122,7 @@ import {
   slotInfo,
   ProcessDiagnosticHCOrderInputCOD,
   DiagnosticsBookingSource,
+  REPORT_TAT_SOURCE
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { insertMessageVariables } from '@aph/mobile-patients/src/graphql/types/insertMessage';
 import {
@@ -1514,8 +1515,10 @@ export const getReportTAT = (
   slotDateTimeInUTC: string | null,
   cityId: number,
   pincode: number,
-  itemIds: number[]
-) => {
+  itemIds: number[],
+  source?: REPORT_TAT_SOURCE
+) =>
+{
   return client.query<getConfigurableReportTAT, getConfigurableReportTATVariables>({
     query: GET_DIAGNOSTIC_REPORT_TAT,
     context: {
@@ -1526,26 +1529,7 @@ export const getReportTAT = (
       cityId: cityId,
       pincode: pincode,
       itemIds: itemIds,
-    },
-    fetchPolicy: 'no-cache',
-  });
-};
-
-export const getDiagnosticSearchResults = (
-  client: ApolloClient<object>,
-  keyword: string,
-  cityId: number,
-  results: number
-) => {
-  return client.query<searchDiagnosticItem, searchDiagnosticItemVariables>({
-    query: GET_DIAGNOSTIC_SEARCH_RESULTS,
-    context: {
-      sourceHeaders,
-    },
-    variables: {
-      keyword: keyword,
-      cityId: cityId,
-      size: results,
+      source: source
     },
     fetchPolicy: 'no-cache',
   });

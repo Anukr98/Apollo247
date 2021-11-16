@@ -438,6 +438,43 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     return finalDateTime;
   };
 
+  const getFormattedDaySubscript = (day: number) => {
+    if (day > 3 && day < 21) return 'th';
+    switch (day % 10) {
+      case 1:
+        return 'st';
+      case 2:
+        return 'nd';
+      case 3:
+        return 'rd';
+      default:
+        return 'th';
+    }
+  };
+
+  const getFormattedDateTimeWithBefore = (time: string) => {
+    let day = parseInt(moment(time).format('D'));
+    let getDaySubscript = getFormattedDaySubscript(day);
+    const isExpectedDateChanged =
+      orderDetails.oldOrderTat! && statusToShowNewItems.includes(orderDetails.currentStatus!);
+    const days = new Date().getDate() - parseInt(time.split('-')[0]);
+    if (isExpectedDateChanged && days == -1) {
+      let finalDateTime =
+        'Arriving Tomorrow' + ' before ' + moment(time).format(string.time.TwelveHourFormat);
+      return finalDateTime;
+    }
+
+    let finalDateTime =
+      day +
+      getDaySubscript +
+      ' ' +
+      moment(time).format('MMMM') +
+      ' before ' +
+      moment(time).format('hh:mm A');
+
+    return finalDateTime;
+  };
+
   const reOrder = async () => {
     try {
       setLoading!(true);

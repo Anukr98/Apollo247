@@ -1719,6 +1719,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           firstName
           lastName
           gender
+          dateOfBirth
         }
         patientAddressObj {
           addressLine1
@@ -5156,6 +5157,7 @@ export const GET_INTERNAL_ORDER = gql`
             firstName
             lastName
             gender
+            dateOfBirth
           }
           diagnosticOrderLineItems {
             itemId
@@ -6346,19 +6348,23 @@ export const GET_DIAGNOSTIC_REPORT_TAT = gql`
     $cityId: Int!
     $pincode: Int!
     $itemIds: [Int]!
+    $source: REPORT_TAT_SOURCE
   ) {
     getConfigurableReportTAT(
       slotDateTimeInUTC: $slotDateTimeInUTC
       cityId: $cityId
       pincode: $pincode
       itemIds: $itemIds
+      source: $source
     ) {
       maxReportTAT
       reportTATMessage
+      preOrderReportTATMessage
       itemLevelReportTATs {
         itemId
         reportTATMessage
         reportTATInUTC
+        preOrderReportTATMessage
       }
     }
   }
@@ -6477,7 +6483,7 @@ export const GET_DIAGNOSTIC_SEARCH_RESULTS = gql`
       }
     }
   }`;
-
+  
 export const GET_PHARMACY_PRESCRIPTION_OPTION = gql`
   query pharmaPrescriptionOption($pharmaPrescriptionOptionInput: PharmaPrescriptionOptionInput) {
     pharmaPrescriptionOption(pharmaPrescriptionOptionInput: $pharmaPrescriptionOptionInput) {
@@ -6551,4 +6557,57 @@ export const CREATE_VONAGE_SESSION_TOKEN = gql`
       sessionId
     }
   }
+`;
+
+export const UPDATE_PASSPORT_DETAILS = gql`
+  mutation updatePassportDetails($passportDetailsInput: [PassportDetailsInput]){
+    updatePassportDetails(passportDetailsInput: $passportDetailsInput) {
+      status
+      message
+      displayId
+      data
+    }
+  }
+`;
+
+export const GET_HC_REFREE_RECORD = gql`
+  query rewardDetail($id: String!) {
+    getReferralRewardDetails(id: $id){
+      totalRewardValue
+      rewardType
+      claimed{
+        expiryDate
+        rewardType
+        name
+        rewardValue
+        txnDate
+      }
+      pending{
+        name
+        registrationDate
+      }
+      referee{
+          registrationDate
+          name
+          rewardValue
+          rewardType
+      }
+    }
+  }
+`;
+
+export const GET_REWARD_ID = gql`
+  query rewardInfo($reward:REWARD_TYPES!){
+    getRewardInfoByRewardType(rewardType:$reward){
+        id
+    }
+  }
+`;
+
+export const GET_CAMPAIGN_ID_FOR_REFERRER = gql`
+ query campaignInfo($camp:CAMPAIGN_TYPES!){
+  getCampaignInfoByCampaignType(campaignType:$camp){
+    id
+  }
+}
 `;
