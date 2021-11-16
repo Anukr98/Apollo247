@@ -613,7 +613,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       <View style={styles.passportContainer}>
         <View style={styles.passportView}>
           <Text style={styles.textupper}>
-            {passportNo
+            {passportNo?.length
               ? string.diagnostics.editpassportText
               : string.diagnostics.addOrEditPassportText}
           </Text>
@@ -622,7 +622,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
               setShowPassportModal(true);
             }}
           >
-            <Text style={styles.textlower}>{passportNo ? 'EDIT' : 'ADD'}</Text>
+            <Text style={styles.textlower}>{passportNo?.length ? 'EDIT' : 'ADD'}</Text>
           </TouchableOpacity>
         </View>
         <View></View>
