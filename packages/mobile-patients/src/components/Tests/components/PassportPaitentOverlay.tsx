@@ -82,7 +82,7 @@ export const PassportPaitentOverlay: React.FC<PassportPaitentOverlayProps> = (pr
             autoFocus={false}
             placeholder={string.enterPassport}
             placeholderTextColor={theme.colors.SHERPA_BLUE_LIGHT}
-            value={data[index]?.passportNo || value}
+            value={data?.[index]?.passportNo || value}
             onChangeText={(value: any) => {
               let newArray = [...data]
               newArray[index]?.displayId = item?.displayId;
