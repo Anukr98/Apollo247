@@ -14,7 +14,7 @@ import {
   Image,
   TouchableOpacity,
   Platform,
-  BackHandler
+  BackHandler,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -22,7 +22,6 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import { ExpectCall } from '@aph/mobile-patients/src/components/Medicines/Components/ExpectCall';
 import _ from 'lodash';
 import {
-  useShoppingCart,
   PhysicalPrescription,
   EPrescription,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
@@ -44,7 +43,7 @@ import {
   RemoveIcon,
   WhiteCross,
   PrescriptionColored,
-  Pdf
+  Pdf,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
@@ -75,7 +74,7 @@ import LottieView from 'lottie-react-native';
 import { DocumentPickerResponse } from 'react-native-document-picker';
 import ImageResizer from 'react-native-image-resizer';
 import RNFetchBlob from 'rn-fetch-blob';
-const GreenTickAnimation = '@aph/mobile-patients/src/components/Tests/greenTickAnimation.json'
+const GreenTickAnimation = '@aph/mobile-patients/src/components/Tests/greenTickAnimation.json';
 
 export interface SubmittedPrescriptionProps extends NavigationScreenProps {
   showHeader?: boolean;
@@ -102,7 +101,6 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   const [EPrescriptionsProps, setEPrescriptionsProps] = useState<EPrescription[]>(
     ePrescriptionsProp
   );
-  const { setEPrescriptions, setPhysicalPrescriptions } = useShoppingCart();
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const [testName, settestName] = useState<string>('');
   const [locationName, setLocationName] = useState<string>('');
@@ -112,8 +110,8 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   const [Images, setImages] = useState<PickerImage>(props.navigation.state.params ? [] : []);
   const [isErrorOccured, setIsErrorOccured] = useState<boolean>(false);
   const recordType = props.navigation.state.params
-  ? props.navigation.state.params.recordType
-  : false;
+    ? props.navigation.state.params.recordType
+    : false;
   const selectedRecordID = props.navigation.state.params
     ? props.navigation.state.params.selectedRecordID
     : null;
@@ -122,12 +120,11 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
     fetchPatientPrescriptions();
   }, []);
 
-
   useEffect(() => {
     setTimeout(() => {
       setIsErrorOccured(false);
     }, 3000);
-  }, [isErrorOccured])
+  }, [isErrorOccured]);
   useEffect(() => {
     if (onSumbitSuccess) {
       BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -138,18 +135,15 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   }, [onSumbitSuccess]);
 
   const handleBack = () => {
-      setEPrescriptions?.([]);
-      setPhysicalPrescriptions?.([]);
-      props.navigation.navigate('TESTS', {
-        phyPrescriptionUploaded: [],
-        ePresscriptionUploaded: [],
-        phyPrescriptionsProp: [],
-        ePrescriptionsProp: [],
-        movedFrom: '',
-      });
+    props.navigation.navigate('TESTS', {
+      phyPrescriptionUploaded: [],
+      ePresscriptionUploaded: [],
+      phyPrescriptionsProp: [],
+      ePrescriptionsProp: [],
+      movedFrom: '',
+    });
     return true;
   };
-
 
   const fetchPatientPrescriptions = () => {
     client
@@ -173,9 +167,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   };
   const renderExpectCall = () => {
     return (
-      <View
-        style={styles.expectCallView}
-      >
+      <View style={styles.expectCallView}>
         <PrescriptionCallIcon style={{ margin: 10 }} />
         <Text style={styles.expectText}>
           Expect a call in the next 2 hours from an Apollo agent to assist you in placing an order
@@ -202,44 +194,53 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         (item: any, index: any) =>
           EPrescriptionsProps?.findIndex((obj) => obj?.id == item?.id) === index
       );
-      setEPrescriptionsProps(ePrescriptionArray)
+      setEPrescriptionsProps(ePrescriptionArray);
     }
     if (PhysicalPrescriptionsProps && PhysicalPrescriptionsProps?.length) {
       const phyPrescriptionArray = PhysicalPrescriptionsProps?.filter(
         (item: any, index: any) =>
-        PhysicalPrescriptionsProps?.findIndex((obj) => obj?.title == item?.title) === index
+          PhysicalPrescriptionsProps?.findIndex((obj) => obj?.title == item?.title) === index
       );
-      setPhysicalPrescriptionsProps(phyPrescriptionArray)
+      setPhysicalPrescriptionsProps(phyPrescriptionArray);
     }
-  }, [])
+  }, []);
 
   const getAddedImages = () => {
     let imagesArray = [] as any;
-    
+
     PhysicalPrescriptionsProps?.forEach((item: any) => {
       let imageObj = {} as any;
       imageObj.fileName = item?.title + '.' + item?.fileType;
       imageObj.mimeType = mimeType(item?.title + '.' + item?.fileType);
       imageObj.content = item?.base64;
-      imagesArray.push(imageObj); 
+      imagesArray.push(imageObj);
     });
     return imagesArray;
   };
 
-  
   const onSubmitPrescription = () => {
     const inputData: AddPrescriptionRecordInput = {
-      id: PhysicalPrescriptionsProps?.length ? '' : EPrescriptionsProps?.[0]?.id ? EPrescriptionsProps?.[0]?.id : '',
+      id: PhysicalPrescriptionsProps?.length
+        ? ''
+        : EPrescriptionsProps?.[0]?.id
+        ? EPrescriptionsProps?.[0]?.id
+        : '',
       patientId: currentPatient?.id || '',
       prescriptionName: PhysicalPrescriptionsProps?.[0]?.title
         ? PhysicalPrescriptionsProps?.[0]?.title
         : EPrescriptionsProps?.[0]?.fileName
         ? EPrescriptionsProps?.[0]?.fileName
         : '',
-      issuingDoctor: PhysicalPrescriptionsProps?.length ? '' : EPrescriptionsProps?.[0]?.doctorName ? EPrescriptionsProps?.[0]?.doctorName : '',
+      issuingDoctor: PhysicalPrescriptionsProps?.length
+        ? ''
+        : EPrescriptionsProps?.[0]?.doctorName
+        ? EPrescriptionsProps?.[0]?.doctorName
+        : '',
       location: locationName,
       additionalNotes: additionalNotes,
-      dateOfPrescription: PhysicalPrescriptionsProps?.length ? moment().format('YYYY-MM-DD') : EPrescriptionsProps?.[0]?.date
+      dateOfPrescription: PhysicalPrescriptionsProps?.length
+        ? moment().format('YYYY-MM-DD')
+        : EPrescriptionsProps?.[0]?.date
         ? moment(EPrescriptionsProps?.[0]?.date, 'DD MMM YYYY').format('YYYY-MM-DD')
         : moment().format('YYYY-MM-DD'),
       recordType: MedicalRecordType.PRESCRIPTION,
@@ -250,38 +251,36 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         : [],
     };
     if (PhysicalPrescriptionsProps && PhysicalPrescriptionsProps?.length) {
-    client
-      .mutate<addPatientPrescriptionRecord>({
-        mutation: ADD_PRESCRIPTION_RECORD,
-        variables: {
-          AddPrescriptionRecordInput: inputData,
-        },
-      })
-      .then(({ data }) => {
-        const status = g(data, 'addPatientPrescriptionRecord', 'status');
-        const eventInputData = removeObjectProperty(inputData, 'prescriptionFiles');
-        DiagnosticPrescriptionSubmitted(
-          currentPatient,
-          inputData?.prescriptionFiles,
-          inputData?.prescriptionName,
-          isDiagnosticCircleSubscription
-        );
-        setOnSumbitSuccess(true);
-      })
-      .catch((error) => {
-        setIsErrorOccured(true);
-        CommonBugFender('SubmittedPrescription_ADD_PRESCRIPTION_RECORD', error);
-      });
+      client
+        .mutate<addPatientPrescriptionRecord>({
+          mutation: ADD_PRESCRIPTION_RECORD,
+          variables: {
+            AddPrescriptionRecordInput: inputData,
+          },
+        })
+        .then(({ data }) => {
+          const status = g(data, 'addPatientPrescriptionRecord', 'status');
+          const eventInputData = removeObjectProperty(inputData, 'prescriptionFiles');
+          DiagnosticPrescriptionSubmitted(
+            currentPatient,
+            inputData?.prescriptionFiles,
+            inputData?.prescriptionName,
+            isDiagnosticCircleSubscription
+          );
+          setOnSumbitSuccess(true);
+        })
+        .catch((error) => {
+          setIsErrorOccured(true);
+          CommonBugFender('SubmittedPrescription_ADD_PRESCRIPTION_RECORD', error);
+        });
     } else {
-      setOnSumbitSuccess(true)
+      setOnSumbitSuccess(true);
     }
   };
   const renderErrorMessage = () => {
     return (
       <View style={styles.errorMessageView}>
-        <Text style={styles.errorMsgText}>
-          Sorry cannot submit precription, an error occured
-        </Text>
+        <Text style={styles.errorMsgText}>Sorry cannot submit precription, an error occured</Text>
         <TouchableOpacity
           onPress={() => {
             setIsErrorOccured(false);
@@ -343,7 +342,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                           <View style={styles.phyView}>
                             <View style={styles.phyView2}>
                               <View style={styles.phyView3}>
-                                {item.fileType == 'application/pdf' || item.fileType == 'pdf'  ? (
+                                {item.fileType == 'application/pdf' || item.fileType == 'pdf' ? (
                                   <Pdf style={styles.pdfIconStyle} />
                                 ) : (
                                   <Image
@@ -354,13 +353,16 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                               </View>
                               <Text style={styles.leftText}>{item?.title}</Text>
                             </View>
-                            <TouchableOpacity onPress={()=>{
-                              const phyPrescription = PhysicalPrescriptionsProps;
-                              const filteredPres = phyPrescription?.filter(
-                                (_item) => _item?.title != item?.title
-                              );
-                              setPhysicalPrescriptionsProps([...filteredPres]);
-                            }} style={{ justifyContent: 'center',alignItems: 'center' }}>
+                            <TouchableOpacity
+                              onPress={() => {
+                                const phyPrescription = PhysicalPrescriptionsProps;
+                                const filteredPres = phyPrescription?.filter(
+                                  (_item) => _item?.title != item?.title
+                                );
+                                setPhysicalPrescriptionsProps([...filteredPres]);
+                              }}
+                              style={{ justifyContent: 'center', alignItems: 'center' }}
+                            >
                               <RemoveIcon />
                             </TouchableOpacity>
                           </View>
@@ -381,16 +383,25 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                                 <View style={styles.epresView3}>
                                   <PrescriptionColored style={{ height: 35 }} />
                                 </View>
-                                <View style={{ flexDirection: 'column', width:'80%' }}>
+                                <View style={{ flexDirection: 'column', width: '80%' }}>
                                   <Text style={styles.healthText}>{item?.doctorName}</Text>
                                   <Text style={styles.healthDetailText}>
                                     {item?.date} • Prescription for {item?.forPatient}
                                   </Text>
                                 </View>
                               </View>
-                              <TouchableOpacity onPress={()=>{
-                                setEPrescriptionsProps(EPrescriptionsProps?.filter((_item) => _item?.id != item?.id));
-                              }} style={{ justifyContent: 'center', width: '10%',alignItems:'center' }}>
+                              <TouchableOpacity
+                                onPress={() => {
+                                  setEPrescriptionsProps(
+                                    EPrescriptionsProps?.filter((_item) => _item?.id != item?.id)
+                                  );
+                                }}
+                                style={{
+                                  justifyContent: 'center',
+                                  width: '10%',
+                                  alignItems: 'center',
+                                }}
+                              >
                                 <RemoveIcon />
                               </TouchableOpacity>
                             </View>
@@ -422,17 +433,17 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
             <Button
               title={onSumbitSuccess ? 'GO TO HOME' : 'SUBMIT'}
               style={styles.buttonStyle}
-              disabled={EPrescriptionsProps?.length || PhysicalPrescriptionsProps?.length ? false : true}
+              disabled={
+                EPrescriptionsProps?.length || PhysicalPrescriptionsProps?.length ? false : true
+              }
               onPress={() => {
                 if (onSumbitSuccess) {
-                  setEPrescriptions?.([]);
-                  setPhysicalPrescriptions?.([]);
-                  props.navigation.navigate('TESTS',{
-                  phyPrescriptionUploaded: [],
-                  ePresscriptionUploaded: [],
-                  phyPrescriptionsProp: [],
-                  ePrescriptionsProp: [],
-                  movedFrom: ''
+                  props.navigation.navigate('TESTS', {
+                    phyPrescriptionUploaded: [],
+                    ePresscriptionUploaded: [],
+                    phyPrescriptionsProp: [],
+                    ePrescriptionsProp: [],
+                    movedFrom: '',
                   });
                 } else {
                   onSubmitPrescription();
@@ -470,7 +481,7 @@ const styles = StyleSheet.create({
     color: theme.colors.FILTER_CARD_LABEL,
     ...theme.fonts.IBMPlexSansMedium(14),
     alignSelf: 'center',
-    width:'80%'
+    width: '80%',
   },
   healthText: {
     color: theme.colors.FILTER_CARD_LABEL,
@@ -493,47 +504,47 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 12, theme.colors.SHERPA_BLUE, 1, 20),
     paddingHorizontal: 5,
   },
-  expectCallView:{
+  expectCallView: {
     backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
     flexDirection: 'row',
     padding: 10,
     alignContent: 'center',
   },
-  errorMsgText:{ ...theme.viewStyles.text('SB', 12, 'white', 1), padding: 10 },
-  whiteCrossIcon:{ alignSelf: 'center', margin: 10 },
-  phyView:{ flexDirection: 'row', margin: 5, alignContent: 'center' },
-  phyView2:{
+  errorMsgText: { ...theme.viewStyles.text('SB', 12, 'white', 1), padding: 10 },
+  whiteCrossIcon: { alignSelf: 'center', margin: 10 },
+  phyView: { flexDirection: 'row', margin: 5, alignContent: 'center' },
+  phyView2: {
     flexDirection: 'row',
     width: '90%',
     alignContent: 'center',
   },
-  phyView3:{
+  phyView3: {
     paddingLeft: 8,
     paddingRight: 16,
     width: 54,
   },
-  fileBigStyle:{
+  fileBigStyle: {
     height: 45,
     width: 30,
     borderRadius: 5,
   },
-  pdfIconStyle:{
+  pdfIconStyle: {
     height: 40,
     width: 30,
     borderRadius: 5,
   },
-  imageView:{
+  imageView: {
     height: 40,
     width: 30,
     borderRadius: 5,
   },
-  epresView:{ flexDirection: 'row', margin: 5, alignContent: 'center' },
-  epresView2:{
+  epresView: { flexDirection: 'row', margin: 5, alignContent: 'center' },
+  epresView2: {
     flexDirection: 'row',
     width: '90%',
     alignContent: 'center',
   },
-  epresView3:{
+  epresView3: {
     paddingLeft: 8,
     paddingRight: 16,
     width: '12%',
@@ -545,8 +556,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    alignContent:'center',
-    flexDirection:'column',
+    alignContent: 'center',
+    flexDirection: 'column',
   },
   starText: {
     color: theme.colors.RED,
@@ -566,7 +577,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     position: 'absolute',
-    zIndex:1,
+    zIndex: 1,
     alignSelf: 'center',
   },
   textContainerStyle: {

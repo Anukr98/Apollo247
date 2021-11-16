@@ -28,15 +28,11 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
   const scrollViewRef = useRef<ScrollView | null>(null);
 
   const {
-    prescriptionType,
-    setPrescriptionType,
-    physicalPrescriptions,
-    ePrescriptions,
-    setPhysicalPrescriptions,
-    setEPrescriptions,
+    cartPrescriptionType,
     consultProfile,
     setConsultProfile,
     serverCartItems,
+    cartPrescriptions,
   } = useShoppingCart();
   const { setUserActionPayload } = useServerCart();
   const client = useApolloClient();
@@ -81,13 +77,12 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
       <View style={[styles.prescriptionOptions]}>
         <PrescriptionOptions
           navigation={navigation}
-          selectedOption={prescriptionType || PrescriptionType.UPLOADED}
+          selectedOption={cartPrescriptionType || PrescriptionType.UPLOADED}
           patientId={consultProfile?.id || null}
           onSelectPatient={(patient) => {
             setConsultProfile(patient || null);
           }}
           onSelectOption={(option, ePres, physPres) => {
-            setPrescriptionType(option);
             setUserActionPayload({
               prescriptionType: option,
             });
@@ -99,11 +94,6 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
             if (option === PrescriptionType.UPLOADED) {
               saveEPrescriptionsToServerCart(ePres);
               savePhysicalPrescriptionsToServerCart(physPres);
-              setEPrescriptions?.(ePres || []);
-              setPhysicalPrescriptions?.(physPres || []);
-            } else {
-              setEPrescriptions?.([]);
-              setPhysicalPrescriptions?.([]);
             }
           }}
         />
@@ -118,7 +108,7 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
           setUserActionPayload?.({
             prescriptionDetails: {
               prescriptionImageUrl: prescription?.uploadedUrl,
-              prismPrescriptionFileId: '1620047399195.pdf', // change this!!!!!!
+              prismPrescriptionFileId: prescription?.prismPrescriptionFileId,
               uhid: currentPatient?.uhid,
               appointmentId: prescription?.appointmentId,
               meta: {
@@ -171,7 +161,7 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
   const onPressContinue = async () => {
     try {
       navigation.navigate(AppRoutes.ReviewCart);
-      postEvent(prescriptionType);
+      postEvent(cartPrescriptionType);
     } catch (error) {
       showAphAlert?.({
         title: 'Uh oh.. :(',
@@ -181,13 +171,12 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderContinueButton = () => {
-    const isDisabled = prescriptionType
-      ? (prescriptionType === PrescriptionType.UPLOADED &&
-          physicalPrescriptions.length === 0 &&
-          ePrescriptions.length === 0) ||
-        (prescriptionType === PrescriptionType.CONSULT && !consultProfile?.id)
+    console.log('prescriptionType >>>> ', cartPrescriptionType);
+    const isDisabled = cartPrescriptionType
+      ? (cartPrescriptionType === PrescriptionType.UPLOADED && cartPrescriptions.length === 0) ||
+        (cartPrescriptionType === PrescriptionType.CONSULT && !consultProfile?.id)
       : true;
-    const title = [PrescriptionType.CONSULT, PrescriptionType.LATER].includes(prescriptionType!)
+    const title = [PrescriptionType.CONSULT, PrescriptionType.LATER].includes(cartPrescriptionType)
       ? 'CONTINUE WITHOUT PRESCRIPTION'
       : 'CONTINUE WITH PRESCRIPTION';
     return (

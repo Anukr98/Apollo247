@@ -947,7 +947,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
-  const { setEPrescriptions, circleSubPlanId, circleSubscriptionId } = useShoppingCart();
+  const { circleSubPlanId, circleSubscriptionId } = useShoppingCart();
   const { setUserActionPayload } = useServerCart();
   const [name, setname] = useState<string>('');
   const [showRescheduleCancel, setShowRescheduleCancel] = useState<boolean>(false);
@@ -4516,7 +4516,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             },
           },
         });
-        setEPrescriptions?.([presToAdd]);
         setLoading(false);
         postCleverTapUploadPrescriptionEvents('Consult Room', 'Cart');
         props.navigation.push(AppRoutes.ServerCart);
@@ -4530,7 +4529,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
       return;
     }
-    setEPrescriptions?.([presToAdd]);
+    setUserActionPayload?.({
+      prescriptionDetails: {
+        prescriptionImageUrl: presToAdd.uploadedUrl,
+        prismPrescriptionFileId: presToAdd.prismPrescriptionFileId,
+        uhid: currentPatient?.id,
+        appointmentId: presToAdd.appointmentId,
+        meta: {
+          doctorName: presToAdd?.doctorName,
+          forPatient: presToAdd?.forPatient,
+          medicines: presToAdd?.medicines,
+          date: presToAdd?.date,
+        },
+      },
+    });
     postCleverTapUploadPrescriptionEvents('Consult Room', 'Non-Cart');
     props.navigation.navigate(AppRoutes.UploadPrescription, {
       ePrescriptionsProp: [presToAdd],

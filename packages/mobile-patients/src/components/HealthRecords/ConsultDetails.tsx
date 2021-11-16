@@ -849,7 +849,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       </>
     );
   };
-  const { setEPrescriptions } = useShoppingCart();
   const {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
@@ -1033,7 +1032,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             },
           },
         });
-        setEPrescriptions?.([presToAdd]);
         setLoading?.(false);
         postCleverTapUploadPrescriptionEvents('Health Records', 'Cart');
         props.navigation.push(AppRoutes.ServerCart);
@@ -1047,8 +1045,20 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       }
       return;
     }
-
-    setEPrescriptions?.([presToAdd]);
+    setUserActionPayload?.({
+      prescriptionDetails: {
+        prescriptionImageUrl: presToAdd.uploadedUrl,
+        prismPrescriptionFileId: presToAdd.prismPrescriptionFileId,
+        uhid: currentPatient?.id,
+        appointmentId: presToAdd.appointmentId,
+        meta: {
+          doctorName: presToAdd?.doctorName,
+          forPatient: presToAdd?.forPatient,
+          medicines: presToAdd?.medicines,
+          date: presToAdd?.date,
+        },
+      },
+    });
     postCleverTapUploadPrescriptionEvents('Health Records', 'Non-Cart');
     props.navigation.navigate(AppRoutes.UploadPrescription, {
       ePrescriptionsProp: [presToAdd],

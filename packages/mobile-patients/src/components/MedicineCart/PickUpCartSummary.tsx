@@ -51,6 +51,7 @@ import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGat
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
 import { getCheckoutCompletedEventAttributes } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 export interface PickUpCartSummaryProps extends NavigationScreenProps {}
 
@@ -61,13 +62,13 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
     physicalPrescriptions,
     ePrescriptions,
     stores: storesFromContext,
-    setPhysicalPrescriptions,
     pharmacyCircleAttributes,
     circleSubscriptionId,
     circlePlanSelected,
     grandTotal,
     circleMembershipCharges,
   } = useShoppingCart();
+  const { setUserActionPayload } = useServerCart();
   const client = useApolloClient();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
@@ -201,7 +202,15 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
               prismPrescriptionFileId: uploadUrls![index]!.fileId,
             } as PhysicalPrescription)
         );
-        setPhysicalPrescriptions && setPhysicalPrescriptions([...newuploadedPrescriptions]);
+        newuploadedPrescriptions.forEach((item) => {
+          setUserActionPayload?.({
+            prescriptionDetails: {
+              prescriptionImageUrl: item?.uploadedUrl,
+              prismPrescriptionFileId: item?.prismPrescriptionFileId,
+              uhid: currentPatient?.id,
+            },
+          });
+        });
         setisPhysicalUploadComplete(true);
       } catch (error) {
         CommonBugFender('PickUpCartSummary_physicalPrescriptionUpload', error);

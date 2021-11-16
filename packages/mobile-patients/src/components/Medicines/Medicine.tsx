@@ -283,29 +283,20 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setAddresses,
     deliveryAddressId,
     setDeliveryAddressId,
-    cartTotalCashback,
-    cartTotal,
-    isCircleSubscription,
     setCircleMembershipCharges,
     setCircleSubPlanId,
     setCircleSubscriptionId,
     setIsCircleSubscription,
-    productDiscount,
-    cartDiscountTotal,
     setHdfcSubscriptionId,
     setHdfcPlanName,
     setIsFreeDelivery,
-    circleSubscriptionId,
     pinCode,
     setPinCode,
     setCirclePlanValidity,
     pharmacyCircleAttributes,
-    setEPrescriptions,
-    setPhysicalPrescriptions,
     asyncPincode,
     setAsyncPincode,
     setIsCircleExpired,
-    isCircleExpired,
     setMedicineHomeBannerData,
     setMedicineHotSellersData,
     cartAddressId,
@@ -1338,7 +1329,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               },
             });
           });
-          setEPrescriptions && setEPrescriptions(selectedEPres);
           props.navigation.navigate(AppRoutes.UploadPrescription, {
             ePrescriptionsProp: selectedEPres,
             type: 'E-Prescription',
@@ -1480,8 +1470,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 cleverTapEventAttributes
               );
               postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED, eventAttributes);
-              setEPrescriptions && setEPrescriptions([]);
-              setPhysicalPrescriptions && setPhysicalPrescriptions([]);
+              setUserActionPayload?.({
+                prescriptionDetails: null,
+              });
               props.navigation.navigate(AppRoutes.UploadPrescriptionView);
             }}
             style={{ width: Platform.OS == 'android' ? '85%' : '90%' }}

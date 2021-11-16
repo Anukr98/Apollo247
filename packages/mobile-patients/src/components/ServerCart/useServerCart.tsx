@@ -11,6 +11,8 @@ import { CartInputData } from '@aph/mobile-patients/src/graphql/types/globalType
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { formatAddressToLocation } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { getProductsByCategoryApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 
 export const useServerCart = () => {
   const client = useApolloClient();
@@ -30,7 +32,11 @@ export const useServerCart = () => {
     setNoOfShipments,
     setServerCartErrorMessage,
     setServerCartLoading,
+    setCartSuggestedProducts,
+
+    pinCode,
   } = useShoppingCart();
+  const { axdcCode } = useAppCommonData();
   const { setPharmacyLocation } = useAppCommonData();
   const [userActionPayload, setUserActionPayload] = useState<any>(null);
   const genericErrorMessage = 'Oops! Something went wrong.';
@@ -171,8 +177,25 @@ export const useServerCart = () => {
         })
         .catch((error) => {});
     } catch (error) {
-      // renderAlert(`Something went wrong, unable to fetch addresses.`);
+      setServerCartErrorMessage?.('Something went wrong, unable to fetch addresses');
     }
+  };
+
+  const fetchProductSuggestions = async () => {
+    const categoryId = AppConfig.Configuration.PRODUCT_SUGGESTIONS_CATEGORYID;
+    const pageCount = AppConfig.Configuration.PRODUCT_SUGGESTIONS_COUNT;
+    try {
+      const response = await getProductsByCategoryApi(
+        categoryId,
+        pageCount,
+        null,
+        null,
+        axdcCode,
+        pinCode
+      );
+      const products = response?.data?.products.slice(0, 15) || [];
+      setCartSuggestedProducts?.(products);
+    } catch (error) {}
   };
 
   return {
@@ -180,5 +203,6 @@ export const useServerCart = () => {
     fetchServerCart,
     fetchReviewCart,
     fetchAddress,
+    fetchProductSuggestions,
   };
 };

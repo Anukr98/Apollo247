@@ -166,13 +166,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       scrollViewRef.current.scrollTo({ x: 0, y: scrollYValue, animated: true });
   };
   const { currentPatient } = useAllCurrentPatients();
-  const {
-    addMultipleEPrescriptions,
-    addresses,
-    onHoldOptionOrder,
-    setEPrescriptions,
-    setPhysicalPrescriptions,
-  } = useShoppingCart();
+  const { addresses, onHoldOptionOrder } = useShoppingCart();
   const { setUserActionPayload } = useServerCart();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [isCancelVisible, setCancelVisible] = useState(false);
@@ -1618,7 +1612,15 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           setPrescriptionPopUp(false);
           if (selectedType == 'CAMERA_AND_GALLERY') {
             if (response.length == 0) return;
-            setPhysicalPrescriptions && setPhysicalPrescriptions(response);
+            response.forEach((item) => {
+              setUserActionPayload?.({
+                prescriptionDetails: {
+                  prescriptionImageUrl: item?.uploadedUrl,
+                  prismPrescriptionFileId: item?.prismPrescriptionFileId,
+                  uhid: currentPatient?.id,
+                },
+              });
+            });
             props.navigation.navigate(AppRoutes.UploadPrescription, {
               phyPrescriptionsProp: response,
               type,
@@ -1659,7 +1661,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               },
             });
           });
-          setEPrescriptions && setEPrescriptions(selectedEPres);
           props.navigation.navigate(AppRoutes.UploadPrescription, {
             ePrescriptionsProp: selectedEPres,
             type: 'E-Prescription',

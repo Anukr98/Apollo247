@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, FlatList, View } from 'react-native';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { View } from 'react-native';
 import {
   useShoppingCart,
   PhysicalPrescription,
@@ -10,6 +9,8 @@ import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Me
 import { NavigationScreenProps } from 'react-navigation';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { Helpers } from '@aph/mobile-patients/src/components/MedicineCartPrescription';
+import { useApolloClient } from 'react-apollo-hooks';
 
 export interface UploadPrescriptionProps extends NavigationScreenProps {
   showPopUp: boolean;
@@ -19,22 +20,32 @@ export interface UploadPrescriptionProps extends NavigationScreenProps {
 }
 
 export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => {
-  const {
-    physicalPrescriptions,
-    setPhysicalPrescriptions,
-    setEPrescriptions,
-    ePrescriptions,
-  } = useShoppingCart();
+  const { physicalPrescriptions, ePrescriptions } = useShoppingCart();
+  const client = useApolloClient();
   const { setUserActionPayload } = useServerCart();
   const { currentPatient } = useAllCurrentPatients();
   const { showPopUp, onClickClose, type, onUpload } = props;
   const [showEprescriptionUpload, setshowEprescriptionUpload] = useState<boolean>(false);
 
-  const updatePhysicalPrescriptions = (uploadPrescriptions: PhysicalPrescription[]) => {
+  const updatePhysicalPrescriptions = async (uploadPrescriptions: PhysicalPrescription[]) => {
     const itemsToAdd = uploadPrescriptions.filter(
       (p) => !physicalPrescriptions.find((pToFind) => pToFind.base64 == p.base64)
     );
-    setPhysicalPrescriptions && setPhysicalPrescriptions([...itemsToAdd, ...physicalPrescriptions]);
+    const updatedPrescriptions = await Helpers.updatePrescriptionUrls(client, currentPatient?.id, [
+      ...itemsToAdd,
+      ...physicalPrescriptions,
+    ]);
+    updatedPrescriptions?.forEach((prescription: PhysicalPrescription) => {
+      if (prescription?.prismPrescriptionFileId && prescription?.uploadedUrl) {
+        setUserActionPayload?.({
+          prescriptionDetails: {
+            prescriptionImageUrl: prescription?.uploadedUrl,
+            prismPrescriptionFileId: prescription?.prismPrescriptionFileId,
+            uhid: currentPatient?.uhid,
+          },
+        });
+      }
+    });
   };
 
   const renderUploadPrescription = () => {
@@ -96,7 +107,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
               },
             });
           });
-          setEPrescriptions && setEPrescriptions([...selectedEPres]);
         }}
         selectedEprescriptionIds={ePrescriptions.map((item) => item.id)}
         isVisible={showEprescriptionUpload}
