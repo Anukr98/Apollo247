@@ -284,13 +284,26 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       fetchTestDetails_CMS(itemId, null);
       loadTestDetails(itemId);
       fetchReportTat(itemId);
-      getFrequentlyBroughtRecommendations(itemId);
+      loadWidgets(itemId);
     } else if (testName) {
       fetchTestDetails_CMS(99999, testName);
     } else {
       setErrorState(true);
     }
   }, [itemId]);
+
+  useEffect(() => {
+    if (!!testInfo) {
+      (testInfo?.inclusions == null || testInfo?.inclusions?.length == 1) &&
+        (frequentlyBroughtRecommendations?.length == 0 || topBookedTests?.length == 0) &&
+        getFrequentlyBroughtRecommendations(testInfo?.ItemID);
+    }
+  }, [testInfo]);
+
+  function loadWidgets(itemId: number | string) {
+    ((!!testDetails && testDetails?.inclusions == null) || testDetails?.inclusions?.length == 1) &&
+      getFrequentlyBroughtRecommendations(itemId);
+  }
 
   const fetchTestDetails_CMS = async (itemId: string | number, itemName: string | null) => {
     setLoadingContext?.(true);
@@ -609,19 +622,16 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             getItems
           );
         } else {
-          //show in this case the top booked tests
           fetchTopBookedTests(itemId);
           setFrequentlyBroughtShimmer(false);
           setFrequentlyBroughtRecommendations([]);
         }
       } else {
-        //show in this case the top booked tests
         fetchTopBookedTests(itemId);
         setFrequentlyBroughtShimmer(false);
         setFrequentlyBroughtRecommendations([]);
       }
     } catch (error) {
-      //show in this case the top booked tests
       fetchTopBookedTests(itemId);
       setFrequentlyBroughtShimmer(false);
       setFrequentlyBroughtRecommendations([]);

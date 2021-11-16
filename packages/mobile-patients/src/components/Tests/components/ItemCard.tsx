@@ -462,6 +462,8 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     const mrpToDisplay = pricesForItem?.mrpToDisplay;
     const widgetTitle = data?.diagnosticWidgetTitle;
     const widgetType = data?.diagnosticWidgetType;
+    const inclusions =
+      !!item?.inclusionData && item?.inclusionData?.map((item: any) => Number(item?.incItemId));
 
     postHomePageWidgetClicked(item?.itemTitle!, `${item?.itemId}`, widgetTitle);
 
@@ -487,7 +489,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
               ? 'Category page'
               : source,
           type: data?.diagnosticWidgetType,
-          inclusions: [Number(item?.itemId)],
+          inclusions: item?.inclusionData == null ? [Number(item?.itemId)] : inclusions,
         } as TestPackageForDetails,
       });
     } else {
@@ -513,7 +515,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
               ? 'Category page'
               : source,
           type: data?.diagnosticWidgetType,
-          inclusions: [Number(item?.itemId)],
+          inclusions: item?.inclusionData == null ? [Number(item?.itemId)] : inclusions,
         } as TestPackageForDetails,
       });
     }

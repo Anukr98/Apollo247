@@ -442,6 +442,8 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
     const mrpToDisplay = pricesForItem?.mrpToDisplay;
     const widgetTitle = data?.diagnosticWidgetTitle;
+    const inclusions =
+      !!item?.inclusionData && item?.inclusionData?.map((item: any) => Number(item?.incItemId));
 
     postHomePageWidgetClicked(item?.itemTitle!, `${item?.itemId}`, widgetTitle);
     if (sourceScreen === AppRoutes.TestDetails) {
@@ -462,7 +464,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
           mrpToDisplay: mrpToDisplay,
           source: source,
           type: data?.diagnosticWidgetType,
-          inclusions: [Number(item?.itemId)],
+          inclusions: item?.inclusionData == null ? [Number(item?.itemId)] : inclusions,
         } as unknown) as TestPackageForDetails,
       });
     } else {
@@ -483,7 +485,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
           mrpToDisplay: mrpToDisplay,
           source: source,
           type: data?.diagnosticWidgetType,
-          inclusions: [Number(item?.itemId)],
+          inclusions: item?.inclusionData == null ? [Number(item?.itemId)] : inclusions,
         } as TestPackageForDetails,
       });
     }
