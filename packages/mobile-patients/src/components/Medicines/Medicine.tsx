@@ -2561,7 +2561,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             bannerScrollRef.current &&
               bannerScrollRef.current.measure(
                 (x: any, y: any, width: any, height: any, pagex: any, pagey: any) => {
-                  setShowWhatsappRedirectionIcon(pagey === 0);
                   if (Platform.OS === 'android') {
                     setShowWhatsappRedirectionIcon(pagey < 0 || pagey > windowHeight);
                   } else if (Platform.OS === 'ios') setShowWhatsappRedirectionIcon(pagey === 0);
