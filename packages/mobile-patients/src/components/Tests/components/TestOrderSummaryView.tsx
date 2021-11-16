@@ -659,9 +659,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
             <Text style={styles.textlower}>{passportNo ? 'EDIT' : 'ADD'}</Text>
           </TouchableOpacity>
         </View>
-        <View>
+        {passportNo ? <View>
           <Text style={styles.textmedium}>{string.diagnostics.passportNo}{passportNo}</Text>
-        </View>
+        </View> : null}
       </View>
     ) : null;
   };
