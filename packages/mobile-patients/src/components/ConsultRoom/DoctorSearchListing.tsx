@@ -11,6 +11,7 @@ import {
   SearchIcon,
   FamilyDoctorIcon,
   RetryButtonIcon,
+  CallIcon,
   Sort,
   DropdownGreen,
   Toggle,
@@ -69,6 +70,7 @@ import {
   postDoctorShareCleverTapEvents,
   postConsultSearchCleverTapEvent,
   getTimeDiff,
+  checkIfValidUUID,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   getAllSpecialties,
@@ -100,6 +102,7 @@ import {
   ViewStyle,
   Platform,
   Share,
+  Linking,
 } from 'react-native';
 import {
   NavigationActions,
@@ -244,6 +247,37 @@ const styles = StyleSheet.create({
     paddingTop: 4,
     paddingLeft: 20,
   },
+  askApolloView: {
+    flexDirection: 'row',
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    backgroundColor: theme.colors.WHITE,
+  },
+  quickBookBtn: {
+    width: 104,
+    height: 25,
+    padding: 4,
+    backgroundColor: theme.colors.APP_YELLOW,
+  },
+  quickBookText: {
+    ...theme.viewStyles.text('M', 14, theme.colors.WHITE, undefined, 17),
+  },
+  horizontalEnd: {
+    flex: 1,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  askApolloNumber: {
+    ...theme.viewStyles.text('M', 14, theme.colors.APP_YELLOW, undefined, 17),
+  },
+  callLogo: {
+    height: 15,
+    width: 15,
+    marginEnd: 6,
+  },
+  horizontalView: {
+    flexDirection: 'row',
+  },
   sortIcon: {
     width: 17,
     height: 17,
@@ -326,7 +360,6 @@ export type filterDataType = {
 
 export type locationType = { lat: number | string; lng: number | string };
 export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) => {
-  const { locationForDiagnostics, locationDetails, setLocationDetails } = useAppCommonData();
   const typeOfConsult = props.navigation.getParam('typeOfConsult');
   const doctorTypeFilter = props.navigation.getParam('doctorType');
   const [cityFilter, setCityFilter] = useState<[string] | undefined | []>(
@@ -360,6 +393,15 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
     []
   );
+  const {
+    locationForDiagnostics,
+    locationDetails,
+    setLocationDetails,
+    displayAskApolloNumber,
+    displayQuickBookAskApollo,
+  } = useAppCommonData();
+
+  const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
 
   const [isDeepLink, setIsDeepLink] = useState(false);
 
@@ -399,6 +441,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     props.navigation.getParam('specialityId') || ''
   );
   const { circlePlanSelected, circleSubscriptionId, circleSubPlanId } = useShoppingCart();
+  const specialityName = props.navigation.getParam('specialityName');
 
   let DoctorsflatListRef: any;
   const filterOptions = (filters: any) => {
@@ -893,7 +936,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
     const FilterInput: FilterDoctorInput = {
       patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-      specialty: specialityId,
       pincode: pinCode || g(locationDetails, 'pincode') || null,
       doctorType:
         brandFilter === undefined || brandFilter === null
@@ -926,6 +968,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       isCare: careDoctorsSwitch,
       consultMode: filterMode,
     };
+
+    if (checkIfValidUUID(specialityId)) {
+      FilterInput['specialty'] = specialityId;
+    } else {
+      FilterInput['slugName'] = specialityId;
+    }
+
     setBugFenderLog('DOCTOR_FILTER_INPUT', JSON.stringify(FilterInput));
     !pageNo && setshowSpinner(true);
     client
@@ -1340,7 +1389,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         </>
       ) : (
         <>
-          {index === 2 &&  (
+          {index === 2 && (
             <View style={provideLocationStyles.provideLocationOuterContainer}>
               <View style={provideLocationStyles.provideLocationInnerContainer}>
                 <Text style={provideLocationStyles.provideLocationHeadingData}>
@@ -2292,11 +2341,58 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     postWebEngageEvent(WebEngageEventName.VC_CIRCLE_FILTER, eventAttributes);
   };
 
+  const callAskApolloNumber = () => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CLICKED_ON_APOLLO_NUMBER] = {
+      'Screen type': 'Speciality Listing Page',
+      'Patient Number': currentPatient?.mobileNumber,
+      'Speciality ID': specialityId,
+      'Speciality Name': specialityName,
+    };
+    postCleverTapEvent(CleverTapEventName.CLICKED_ON_APOLLO_NUMBER, eventAttributes);
+    Linking.openURL(`tel:${AppConfig.Configuration.Ask_Apollo_Number}`);
+  };
+
+  const navigateToQuickBook = () => {
+    const ctAttributes = {
+      'Screen type': 'Speciality Listing Page',
+      'Patient Number': currentPatient?.mobileNumber,
+      'Speciality ID': specialityId,
+      'Speciality Name': specialityName,
+    };
+    props.navigation.navigate(AppRoutes.AskApolloQuickBook, { ctAttributes });
+  };
+
+  const renderAskApolloView = () => {
+    return (
+      <View style={styles.askApolloView}>
+        {displayQuickBookAskApollo && (
+          <Button
+            title="QUICK BOOK"
+            style={styles.quickBookBtn}
+            titleTextStyle={styles.quickBookText}
+            onPress={navigateToQuickBook}
+          />
+        )}
+        {displayAskApolloNumber && (
+          <View style={styles.horizontalEnd}>
+            <TouchableOpacity onPress={callAskApolloNumber} style={styles.horizontalView}>
+              <CallIcon style={styles.callLogo} />
+              <Text style={styles.askApolloNumber}>
+                {AppConfig.Configuration.Ask_Apollo_Number}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    );
+  };
+
   return (
     <View style={styles.mainContainer}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderTopView()}
         {searchIconClicked && renderDoctorSearchBar()}
+        {(displayQuickBookAskApollo || displayAskApolloNumber) && renderAskApolloView()}
         {renderTopTabBar()}
         {renderDoctorShareComponent()}
         <ScrollView bounces={false} ref={scrollViewRef} contentContainerStyle={{ flex: 1 }}>

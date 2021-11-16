@@ -68,6 +68,7 @@ import {
   TouchableOpacity,
   View,
   Platform,
+  Linking,
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
@@ -85,6 +86,7 @@ import {
   CircleLogo,
   ShareYellowDocIcon,
   Tick,
+  CallIcon,
 } from '../ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -355,6 +357,38 @@ const styles = StyleSheet.create({
     marginTop: -5,
     width: 140,
   },
+  askApolloView: {
+    position: 'absolute',
+    end: 10,
+    zIndex: 3,
+  },
+  askApolloNumber: {
+    ...theme.viewStyles.text('M', 14, theme.colors.APP_YELLOW, undefined, 17),
+  },
+  callLogo: {
+    height: 15,
+    width: 15,
+    marginEnd: 6,
+  },
+  horizontalView: {
+    flexDirection: 'row',
+  },
+  animatedView: {
+    position: 'absolute',
+    height: 160,
+    width: '100%',
+    justifyContent: 'flex-end',
+    flexDirection: 'column',
+  },
+  headerView: {
+    zIndex: 3,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: 56,
+    backgroundColor: 'transparent',
+    borderBottomWidth: 0,
+  },
 });
 type Appointments = {
   date: string;
@@ -410,7 +444,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [availableInMinPhysical, setavailableInMinPhysical] = useState<Number>();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const { getPatientApiCall } = useAuth();
-  const { VirtualConsultationFee } = useAppCommonData();
+  const { VirtualConsultationFee, displayAskApolloNumber } = useAppCommonData();
   const [consultType, setConsultType] = useState<ConsultMode>(ConsultMode.BOTH);
   const [showVideo, setShowVideo] = useState<boolean>(false);
   const [isFocused, setisFocused] = useState<boolean>(false);
@@ -1822,6 +1856,31 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       : string.common.book_apointment;
   };
 
+  const callAskApolloNumber = () => {
+    const doctorClinics = ((doctorDetails && doctorDetails?.doctorHospital) || [])?.filter(
+      (item) => {
+        if (item && item?.facility && item?.facility?.facilityType)
+          return item?.facility?.facilityType === 'HOSPITAL';
+      }
+    );
+    const { id, name } =
+      doctorClinics.length > 0 && doctorDetails!.doctorType !== DoctorType.PAYROLL
+        ? doctorClinics[0].facility
+        : {};
+
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CLICKED_ON_APOLLO_NUMBER] = {
+      'Screen type': 'Doctor Detail Page',
+      'Patient Number': currentPatient?.mobileNumber,
+      'Doctor ID': doctorDetails?.id,
+      'Doctor Name': doctorDetails?.fullName || '',
+      'Doctor Type': doctorDetails?.doctorType,
+      'Doctor Hospital Id': id || '',
+      'Doctor Hospital Name': name || '',
+    };
+    postCleverTapEvent(CleverTapEventName.CLICKED_ON_APOLLO_NUMBER, eventAttributes);
+    Linking.openURL(`tel:${AppConfig.Configuration.Ask_Apollo_Number}`);
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView
@@ -1876,14 +1935,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       )}
       <Animated.View
         style={{
-          position: 'absolute',
-          height: 160,
-          width: '100%',
-          top: statusBarHeight(),
+          ...styles.animatedView,
           backgroundColor: headColor,
-          justifyContent: 'flex-end',
-          flexDirection: 'column',
           transform: [{ translateY: headMov }],
+          top: statusBarHeight() + 20,
         }}
       >
         <View
@@ -1934,18 +1989,25 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       </Animated.View>
       <Header
         container={{
-          zIndex: 3,
-          position: 'absolute',
-          top: statusBarHeight(),
-          left: 0,
-          right: 0,
-          height: 56,
-          backgroundColor: 'transparent',
-          borderBottomWidth: 0,
+          ...styles.headerView,
+          top: statusBarHeight() + 10,
         }}
         leftIcon="backArrow"
-        onPressLeftIcon={() => moveBack()}
+        onPressLeftIcon={moveBack}
       />
+      {displayAskApolloNumber && (
+        <View
+          style={{
+            ...styles.askApolloView,
+            top: statusBarHeight() + 30,
+          }}
+        >
+          <TouchableOpacity onPress={callAskApolloNumber} style={styles.horizontalView}>
+            <CallIcon style={styles.callLogo} />
+            <Text style={styles.askApolloNumber}>{AppConfig.Configuration.Ask_Apollo_Number}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
       {showSpinner && <Spinner />}
       {showOfflinePopup && (
         <NoInterNetPopup

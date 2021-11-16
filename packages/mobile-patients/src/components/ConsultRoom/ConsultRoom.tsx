@@ -52,6 +52,7 @@ import {
   VaccineTracker,
   ProHealthIcon,
   BackArrow,
+  CallIcon,
   ArrowRight,
   HospitalVisit,
   VideoConsult,
@@ -86,6 +87,7 @@ import {
   GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
   GET_ONEAPOLLO_USER,
   GET_PLAN_DETAILS_BY_PLAN_ID,
+  GET_CONFIGURATION_FOR_ASK_APOLLO_LEAD,
   GET_HC_REFREE_RECORD,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -215,6 +217,8 @@ import {
   PatientInfo as PatientInfoObj,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { getUniqueId } from 'react-native-device-info';
+import { Button } from '../ui/Button';
+import { getConfigurationForAskApolloLead } from '@aph/mobile-patients/src/graphql/types/getConfigurationForAskApolloLead';
 import { ReferralBanner } from '@aph/mobile-patients/src/components/ui/ReferralBanner';
 import {
   InitiateRefreeType,
@@ -681,6 +685,36 @@ const styles = StyleSheet.create({
     height: 180,
     width: '100%',
   },
+  askApolloView: {
+    flexDirection: 'row',
+    marginHorizontal: 18,
+    marginBottom: 14,
+  },
+  quickBookBtn: {
+    width: 104,
+    height: 25,
+    padding: 4,
+    backgroundColor: theme.colors.APP_YELLOW,
+  },
+  quickBookText: {
+    ...theme.viewStyles.text('M', 14, theme.colors.WHITE, undefined, 17),
+  },
+  horizontalEnd: {
+    flex: 1,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  askApolloNumber: {
+    ...theme.viewStyles.text('M', 14, theme.colors.APP_YELLOW, undefined, 17),
+  },
+  callLogo: {
+    height: 15,
+    width: 15,
+    marginEnd: 6,
+  },
+  horizontalView: {
+    flexDirection: 'row',
+  },
   secondaryConsultationCtaContainer: {
     marginVertical: 16,
   },
@@ -782,6 +816,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setActiveUserSubscriptions,
     corporateSubscriptions,
     setCorporateSubscriptions,
+    displayQuickBookAskApollo,
+    setDisplayQuickBookAskApollo,
+    displayAskApolloNumber,
+    setDisplayAskApolloNumber,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -1748,6 +1786,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     getUserSubscriptionsByStatus(true);
     checkCircleSelectedPlan();
     setBannerData && setBannerData([]);
+    getAskApolloLeadConfig();
   }, []);
 
   const checkCircleSelectedPlan = async () => {
@@ -2156,6 +2195,23 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       }
     } catch (error) {
       CommonBugFender('CircleMembershipPlans_GetPlanDetailsByPlanId', error);
+    }
+  };
+
+  const getAskApolloLeadConfig = async () => {
+    try {
+      const res = await client.query<getConfigurationForAskApolloLead>({
+        query: GET_CONFIGURATION_FOR_ASK_APOLLO_LEAD,
+        fetchPolicy: 'no-cache',
+      });
+      const {
+        show_phonenumber_mobileapp: displayNumber,
+        show_quickbook_mobileapp: displayQuickbook,
+      } = res?.data?.getConfigurationForAskApolloLead || {};
+      setDisplayAskApolloNumber?.(!!displayNumber);
+      setDisplayQuickBookAskApollo?.(!!displayQuickbook);
+    } catch (error) {
+      CommonBugFender('GetLead_AskApolloConfig', error);
     }
   };
 
@@ -4139,6 +4195,46 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     </View>
   );
 
+  const callAskApolloNumber = () => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CLICKED_ON_APOLLO_NUMBER] = {
+      'Screen type': 'Speciality page',
+      'Patient Number': currentPatient?.mobileNumber,
+    };
+    postCleverTapEvent(CleverTapEventName.CLICKED_ON_APOLLO_NUMBER, eventAttributes);
+    Linking.openURL(`tel:${AppConfig.Configuration.Ask_Apollo_Number}`);
+  };
+
+  const navigateToQuickBook = () => {
+    const ctAttributes = {
+      'Screen type': 'Speciality page',
+      'Patient Number': currentPatient?.mobileNumber,
+    };
+    props.navigation.navigate(AppRoutes.AskApolloQuickBook, { ctAttributes });
+  };
+
+  const renderAskApolloView = () => {
+    return (
+      <View style={styles.askApolloView}>
+        {displayQuickBookAskApollo && (
+          <Button
+            title="QUICK BOOK"
+            style={styles.quickBookBtn}
+            titleTextStyle={styles.quickBookText}
+            onPress={navigateToQuickBook}
+          />
+        )}
+        {displayAskApolloNumber && (
+          <View style={styles.horizontalEnd}>
+            <TouchableOpacity onPress={callAskApolloNumber} style={styles.horizontalView}>
+              <CallIcon style={styles.callLogo} />
+              <Text style={styles.askApolloNumber}>
+                {AppConfig.Configuration.Ask_Apollo_Number}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    );
   const renderReferralBanner = () => {
     return <ReferralBanner {...props} />;
   };
@@ -4153,6 +4249,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
               <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text>
               {renderMenuOptions()}
+              {(displayQuickBookAskApollo || displayAskApolloNumber) && renderAskApolloView()}
               {renderReferralBanner()}
               {circleDataLoading && renderCircleShimmer()}
               <View style={{ backgroundColor: '#f0f1ec' }}>

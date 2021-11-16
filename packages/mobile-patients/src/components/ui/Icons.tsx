@@ -2432,6 +2432,20 @@ export const CoinSavingsIcon: React.FC<IconProps> = (props) => (
   />
 );
 
+export const CallIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/call-apollo.webp')}
+  />
+);
+
+export const CallIconWhite: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/call-white.webp')}
+  />
+);
+
 export const LocationYellow: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_location_yellow.webp')} />
 );

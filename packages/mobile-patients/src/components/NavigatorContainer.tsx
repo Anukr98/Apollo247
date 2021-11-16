@@ -158,6 +158,7 @@ import { SubmittedPrescription } from '@aph/mobile-patients/src/components/Tests
 import { SpecialOffersScreen } from '@aph/mobile-patients/src/components/SpecialOffers/SpecialOffers';
 import { PaymentConfirmation } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentConfirmaiton';
 import { ConsultPaymentScreen } from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/ConsultPaymentScreen';
+import { AskApolloQuickBook } from '@aph/mobile-patients/src/components/Consult/AskApolloQuickBook';
 import { SelectLocation } from '@aph/mobile-patients/src/components/ui/SelectLocation';
 import { ShareReferLink } from '@aph/mobile-patients/src/components//ReferAndEarn/ShareReferLink';
 import { YourRewardsScreen } from '@aph/mobile-patients/src/components//ReferAndEarn/YourRewardsScreen';
@@ -311,6 +312,7 @@ export enum AppRoutes {
   SpecialOffersScreen = 'SpecialOffersScreen',
   PaymentConfirmation = 'PaymentConfirmation',
   ConsultPaymentScreen = 'ConsultPaymentScreen',
+  AskApolloQuickBook = 'AskApolloQuickBook',
   SelectLocation = 'SelectLocation',
   ShareReferLink = 'ShareReferLink',
   YourRewardsScreen = 'YourRewardsScreen',
@@ -792,6 +794,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ConsultPaymentScreen]: {
     screen: ConsultPaymentScreen,
+  },
+  [AppRoutes.AskApolloQuickBook]: {
+    screen: AskApolloQuickBook,
   },
   [AppRoutes.ShareReferLink]: {
     screen: ShareReferLink,

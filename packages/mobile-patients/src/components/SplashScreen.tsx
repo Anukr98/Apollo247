@@ -100,7 +100,7 @@ import { CleverTapEventName } from '../helpers/CleverTapEvents';
 import analytics from '@react-native-firebase/analytics';
 import appsFlyer from 'react-native-appsflyer';
 
-(function() {
+(function () {
   /**
    * Praktice.ai
    * Polyfill for Promise.prototype.finally
@@ -113,16 +113,16 @@ import appsFlyer from 'react-native-appsflyer';
   if (typeof Promise.prototype['finally'] === 'function') {
     return;
   }
-  globalObject.Promise.prototype['finally'] = function(callback: any) {
+  globalObject.Promise.prototype['finally'] = function (callback: any) {
     const constructor = this.constructor;
     return this.then(
-      function(value: any) {
-        return constructor.resolve(callback()).then(function() {
+      function (value: any) {
+        return constructor.resolve(callback()).then(function () {
           return value;
         });
       },
-      function(reason: any) {
-        return constructor.resolve(callback()).then(function() {
+      function (reason: any) {
+        return constructor.resolve(callback()).then(function () {
           throw reason;
         });
       }
@@ -164,12 +164,8 @@ export interface SplashScreenProps extends NavigationScreenProps {}
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { APP_ENV } = AppConfig;
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
-  const {
-    setAllPatients,
-    setMobileAPICalled,
-    validateAndReturnAuthToken,
-    buildApolloClient,
-  } = useAuth();
+  const { setAllPatients, setMobileAPICalled, validateAndReturnAuthToken, buildApolloClient } =
+    useAuth();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [appState, setAppState] = useState(AppState.currentState);
   const [takeToConsultRoom, settakeToConsultRoom] = useState<boolean>(false);
@@ -1192,6 +1188,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'TrueCaller_Login_Enabled_QA',
       PROD: 'TrueCaller_Login_Enabled_PROD',
     },
+    LongChat_Launch_Date: {
+      QA: 'LONG_CHAT_LAUNCH_DATE_QA',
+      PROD: 'LONG_CHAT_LAUNCH_DATE',
+    },
     Diagnostics_No_Saving_Text: {
       QA: 'QA_Diagnostics_No_Saving_Text',
       PROD: 'Diagnostics_No_Saving_Text',
@@ -1498,6 +1498,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
 
       setAppConfig('CircleFacts', 'CIRCLE_FACTS', (key) => config.getString(key));
+
+      setAppConfig('LongChat_Launch_Date', 'LONG_CHAT_LAUNCH_DATE', (key) => config.getString(key));
 
       setAppConfig(
         'Diagnostics_Default_Location',

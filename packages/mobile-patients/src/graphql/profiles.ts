@@ -1937,7 +1937,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
       billNumber: $billNumber
     ) {
       tatBreached
-      orderCancellationAllowedDetails{
+      orderCancellationAllowedDetails {
         cancellationTime
         cancellationAllowed
         message
@@ -6497,8 +6497,9 @@ export const GET_DIAGNOSTIC_SEARCH_RESULTS = gql`
         }
       }
     }
-  }`;
-  
+  }
+`;
+
 export const GET_PHARMACY_PRESCRIPTION_OPTION = gql`
   query pharmaPrescriptionOption($pharmaPrescriptionOptionInput: PharmaPrescriptionOptionInput) {
     pharmaPrescriptionOption(pharmaPrescriptionOptionInput: $pharmaPrescriptionOptionInput) {
@@ -6574,8 +6575,18 @@ export const CREATE_VONAGE_SESSION_TOKEN = gql`
   }
 `;
 
+export const GET_CONFIGURATION_FOR_ASK_APOLLO_LEAD = gql`
+  query getConfigurationForAskApolloLead {
+    getConfigurationForAskApolloLead {
+      show_phonenumber_website
+      show_phonenumber_mobileapp
+      show_quickbook_website
+      show_quickbook_mobileapp
+    }
+  }
+`;
 export const UPDATE_PASSPORT_DETAILS = gql`
-  mutation updatePassportDetails($passportDetailsInput: [PassportDetailsInput]){
+  mutation updatePassportDetails($passportDetailsInput: [PassportDetailsInput]) {
     updatePassportDetails(passportDetailsInput: $passportDetailsInput) {
       status
       message
@@ -6585,44 +6596,51 @@ export const UPDATE_PASSPORT_DETAILS = gql`
   }
 `;
 
+export const GENEREATE_ASK_APOLLO_LEAD = gql`
+  mutation askApolloLead($askApolloLeadInput: AskApolloLeadInput!) {
+    askApolloLead(askApolloLeadInput: $askApolloLeadInput) {
+      message
+    }
+  }
+`;
 export const GET_HC_REFREE_RECORD = gql`
   query rewardDetail($id: String!) {
-    getReferralRewardDetails(id: $id){
+    getReferralRewardDetails(id: $id) {
       totalRewardValue
       rewardType
-      claimed{
+      claimed {
         expiryDate
         rewardType
         name
         rewardValue
         txnDate
       }
-      pending{
+      pending {
         name
         registrationDate
       }
-      referee{
-          registrationDate
-          name
-          rewardValue
-          rewardType
+      referee {
+        registrationDate
+        name
+        rewardValue
+        rewardType
       }
     }
   }
 `;
 
 export const GET_REWARD_ID = gql`
-  query rewardInfo($reward:REWARD_TYPES!){
-    getRewardInfoByRewardType(rewardType:$reward){
-        id
+  query rewardInfo($reward: REWARD_TYPES!) {
+    getRewardInfoByRewardType(rewardType: $reward) {
+      id
     }
   }
 `;
 
 export const GET_CAMPAIGN_ID_FOR_REFERRER = gql`
- query campaignInfo($camp:CAMPAIGN_TYPES!){
-  getCampaignInfoByCampaignType(campaignType:$camp){
-    id
+  query campaignInfo($camp: CAMPAIGN_TYPES!) {
+    getCampaignInfoByCampaignType(campaignType: $camp) {
+      id
+    }
   }
-}
 `;

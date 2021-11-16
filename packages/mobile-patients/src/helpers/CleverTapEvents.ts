@@ -239,6 +239,10 @@ export enum CleverTapEventName {
   // Network Test
   PRE_CALL_TEST = 'Pre Call Test Completed',
 
+  // Ask Apollo
+  CLICKED_ON_APOLLO_NUMBER = 'Clicked on Apollo Number',
+  SUBMITTED_QUICK_BOOK_LEAD = 'Submitted Quick Book Lead',
+
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
   MEDICAL_RECORDS = 'PHR Medical Records',
@@ -1135,6 +1139,34 @@ export interface CleverTapEvents {
     'Consult Display ID': string | number;
     'Doctor Type': string;
     'Doctor Speciality': string;
+  };
+
+  // ********** Ask Apollo  ********** \\
+  [CleverTapEventName.CLICKED_ON_APOLLO_NUMBER]: {
+    'Screen type': string;
+    'Speciality ID'?: string;
+    'Speciality Name'?: string;
+    'Doctor ID'?: string;
+    'Doctor Name'?: string;
+    'Doctor Type'?: string;
+    'Doctor Hospital Id'?: string;
+    'Doctor Hospital Name'?: string;
+    'Patient Number': string;
+  };
+
+  [CleverTapEventName.SUBMITTED_QUICK_BOOK_LEAD]: {
+    'Screen type': string;
+    'Speciality ID'?: string;
+    'Speciality Name'?: string;
+    'Doctor ID'?: string;
+    'Doctor Name'?: string;
+    'Doctor Type'?: string;
+    'Doctor Hospital Id'?: string;
+    'Doctor Hospital Name'?: string;
+    'Patient Number'?: string;
+    'Entered Name'?: string;
+    'Entered Email'?: string;
+    'Entered Mobile Number'?: string;
   };
 
   // *********** Delayed Reminder Event ******* \\

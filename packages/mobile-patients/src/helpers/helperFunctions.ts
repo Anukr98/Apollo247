@@ -3924,6 +3924,18 @@ export const isCartPriceWithInSpecifiedRange = (
   }
 };
 
+export const validateEmail = (value: string) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value);
+
+export const validateName = (value: string) =>
+  /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value);
+
+export const validateNumber = (value: string) => /^\d{10}$/.test(value);
+
+export const checkIfValidUUID = (str: string) => {
+  // Regular expression to check if string is a valid UUID
+  const regexExp = /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
+  return regexExp.test(str);
+};
 export const convertDateToEpochFormat = (value: Date) => {
   const epochValue = value ? `$D_${Math.floor(value.getTime() / 1000.0)}` : '';
   return epochValue;
