@@ -279,6 +279,20 @@ export const GET_AVAILABLE_SLOTS = gql`
   }
 `;
 
+export const GET_INFORMATIVE_CONTENT = gql`
+  query getInformativeContent($uhid: String!, $params: [TestNameInputs]) {
+    getInformativeContent(uhid: $uhid, params: $params) {
+      errorMsg
+      response {
+        testName
+        parameterName
+        loincCode
+        contentCode
+      }
+    }
+  }
+`;
+
 export const GET_PATIENT_FUTURE_APPOINTMENT_COUNT = gql`
   query getPatientFutureAppointmentCount($patientId: String) {
     getPatientFutureAppointmentCount(patientId: $patientId) {

@@ -2237,6 +2237,22 @@ export const AlertTriangle: React.FC<IconProps> = (props) => (
   />
 );
 
+export const ArrowOrange: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/arrowOrange.webp')}
+  />
+);
+
+export const LightBulb: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/light_bulb.webp')}
+  />
+);
+
 export const TestTubes: React.FC<IconProps> = (props) => (
   <IconBase
     size="sm"
