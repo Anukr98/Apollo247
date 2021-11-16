@@ -64,8 +64,6 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
   const { navigation } = props;
 
   useEffect(() => {
-    getRewardId();
-    getCampaignId();
     generateReferrerLink();
     checkRefreeRewardData();
   }, []);
@@ -106,45 +104,12 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
     }
   }, [linkCopied]);
 
-  const getRewardId = async () => {
-    try {
-      const response = await client.query({
-        query: GET_REWARD_ID,
-        variables: { reward: 'HC' },
-        fetchPolicy: 'no-cache',
-      });
-      const { data } = response;
-      if (data?.getRewardInfoByRewardType?.id) {
-        const rewardId = data?.getRewardInfoByRewardType?.id;
-        setRewardId?.(rewardId);
-      }
-    } catch (error) {
-      CommonBugFender('ShareReferralLink_generatingRewardId', error);
-    }
-  };
   const getRequiredDateFormat = (date: any) => {
     if (date != null) {
       let d = new Date(date);
       return `${d.getDate()} ${LocalStrings.monthsName[d.getMonth()]}, ${d.getFullYear()}`;
     } else {
       return '';
-    }
-  };
-
-  const getCampaignId = async () => {
-    try {
-      const response = await client.query({
-        query: GET_CAMPAIGN_ID_FOR_REFERRER,
-        variables: { camp: 'HC_CAMPAIGN' },
-        fetchPolicy: 'no-cache',
-      });
-      const { data } = response;
-      if (data?.getCampaignInfoByCampaignType?.id) {
-        const campaignId = data?.getCampaignInfoByCampaignType?.id;
-        setCampaignId?.(campaignId);
-      }
-    } catch (error) {
-      CommonBugFender('ShareReferralLink_generatingCampaignId', error);
     }
   };
 
@@ -194,7 +159,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
   const renderReferShare = () => {
     return (
       <LinearGradientComponent
-        colors={[theme.colors.BLUE_GRADIENT_ONE, theme.colors.GREEN_GRADIENT_TWO]}
+        colors={[theme.colors.BLUE_GRADIENT_ONE, theme.colors.BLUE_GRADIENT_ONE]}
         style={styles.referShareMainContainer}
       >
         <View>
@@ -342,7 +307,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
       <SafeAreaView style={styles.container}>
         <Header
           leftIcon="backArrow"
-          title="Refer And Earn"
+          title="Refer & Earn"
           onPressLeftIcon={() => navigation.goBack()}
           container={{
             borderColor: 'transparent',

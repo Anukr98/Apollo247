@@ -88,6 +88,8 @@ import {
   GET_ONEAPOLLO_USER,
   GET_PLAN_DETAILS_BY_PLAN_ID,
   GET_HC_REFREE_RECORD,
+  GET_CAMPAIGN_ID_FOR_REFERRER,
+  GET_REWARD_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
@@ -782,7 +784,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
-  const { refreeReward, setRefreeReward } = useReferralProgram();
+  const { refreeReward, setRefreeReward, setRewardId, setCampaignId } = useReferralProgram();
 
   const {
     cartItems: shopCartItems,
@@ -917,6 +919,30 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         CommonBugFender('ConsultRoom_logHomePageMovedAwayError', error);
       }
     }
+  };
+
+  const beforeRedirectGetRewardIdAndCampaignId = async () => {
+    try {
+      const responseCampaign = await await client.query({
+        query: GET_CAMPAIGN_ID_FOR_REFERRER,
+        variables: { camp: 'HC_CAMPAIGN' },
+        fetchPolicy: 'no-cache',
+      });
+      const responseReward = await client.query({
+        query: GET_REWARD_ID,
+        variables: { reward: 'HC' },
+        fetchPolicy: 'no-cache',
+      });
+      if (responseCampaign?.data?.getCampaignInfoByCampaignType?.id) {
+        const campaignId = responseCampaign?.data?.getCampaignInfoByCampaignType?.id;
+        setCampaignId?.(campaignId);
+      }
+      if (responseReward?.data?.getRewardInfoByRewardType?.id) {
+        const rewardId = responseReward?.data?.getRewardInfoByRewardType?.id;
+        setRewardId?.(rewardId);
+      }
+      props.navigation.navigate('ShareReferLink');
+    } catch (e) {}
   };
 
   useEffect(() => {
@@ -3987,7 +4013,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderReferralBanner = () => {
-    return <ReferralBanner {...props} />;
+    return (
+      <ReferralBanner
+        {...props}
+        redirectOnShareReferrer={() => {
+          beforeRedirectGetRewardIdAndCampaignId();
+        }}
+      />
+    );
   };
 
   return (

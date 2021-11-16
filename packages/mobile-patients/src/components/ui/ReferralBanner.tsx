@@ -5,14 +5,16 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { ArrowRight, ReferralBannerIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NavigationScreenProps } from 'react-navigation';
 
-export interface ReferralBannerProps extends NavigationScreenProps {}
+export interface ReferralBannerProps extends NavigationScreenProps {
+  redirectOnShareReferrer: () => void;
+}
 
 export const ReferralBanner: React.FC<ReferralBannerProps> = (props) => {
   return (
     <TouchableOpacity
       style={styles.referEarnMainContainer}
       onPress={() => {
-        props.navigation.navigate('ShareReferLink');
+        props.redirectOnShareReferrer();
       }}
     >
       <View style={styles.referEarnImageContainer}>
