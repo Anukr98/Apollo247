@@ -37,7 +37,10 @@ import { PassportPaitentOverlay } from '@aph/mobile-patients/src/components/Test
 import { useApolloClient } from 'react-apollo-hooks';
 import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import { UPDATE_PASSPORT_DETAILS } from '@aph/mobile-patients/src/graphql/profiles';
-import { updatePassportDetails, updatePassportDetailsVariables } from '@aph/mobile-patients/src/graphql/types/updatePassportDetails';
+import {
+  updatePassportDetails,
+  updatePassportDetailsVariables,
+} from '@aph/mobile-patients/src/graphql/types/updatePassportDetails';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 
 export interface LineItemPricing {
@@ -85,7 +88,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const [showPassportModal, setShowPassportModal] = useState<boolean>(false);
   const [showCurrCard, setShowCurrCard] = useState<boolean>(true);
   const [passportNo, setPassportNo] = useState<string>('');
-  const [passportData, setPassportData] = useState<any>([])
+  const [passportData, setPassportData] = useState<any>([]);
 
   useEffect(() => {
     DiagnosticOrderSummaryViewed(
@@ -292,18 +295,20 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
             {!!bookedForDate ? <Text style={styles.slotText}>{bookedForDate}</Text> : null}
           </View>
         )}
-        <View>
-          <Text style={styles.headingText}>Payment</Text>
-          <Text style={[styles.slotText, { textAlign: 'right' }]}>
-            {isPrepaid ? 'ONLINE' : 'COD'}
-          </Text>
-          {!!orderDetails?.totalPrice ? (
+        {orderDetails?.orderStatus !== DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING ? (
+          <View>
+            <Text style={styles.headingText}>Payment</Text>
             <Text style={[styles.slotText, { textAlign: 'right' }]}>
-              {string.common.Rs}
-              {Number(orderDetails?.totalPrice).toFixed(2)}
+              {isPrepaid ? 'ONLINE' : 'COD'}
             </Text>
-          ) : null}
-        </View>
+            {!!orderDetails?.totalPrice ? (
+              <Text style={[styles.slotText, { textAlign: 'right' }]}>
+                {string.common.Rs}
+                {Number(orderDetails?.totalPrice).toFixed(2)}
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -729,7 +734,10 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           </TouchableOpacity>
         </View>
         <View>
-          <Text style={styles.textmedium}>{string.diagnostics.passportNo}{passportNo}</Text>
+          <Text style={styles.textmedium}>
+            {string.diagnostics.passportNo}
+            {passportNo}
+          </Text>
         </View>
       </View>
     ) : null;
@@ -743,11 +751,11 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           setShowPassportModal(false);
         }}
         onPressDone={(response: any) => {
-          updatePassportDetails(response)
+          updatePassportDetails(response);
           setShowPassportModal(false);
         }}
-        onChange={(res)=>{
-          setPassportData(res)
+        onChange={(res) => {
+          setPassportData(res);
         }}
         disableButton={!passportData?.[0]?.passportNo}
       />
@@ -805,7 +813,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
         DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY.includes(orderDetails?.orderStatus)
           ? null
           : renderPaymentCard()}
-          {showPassportModal && renderPassportPaitentView()}
+        {showPassportModal && renderPassportPaitentView()}
       </View>
     </ScrollView>
   );
