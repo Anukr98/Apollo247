@@ -625,7 +625,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       fetchTopBookedTests(itemId);
       setFrequentlyBroughtShimmer(false);
       setFrequentlyBroughtRecommendations([]);
-      console.log({ error });
       CommonBugFender('TestDetails_fetchRecommendations', error);
     }
   }
