@@ -76,6 +76,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const [showPassportModal, setShowPassportModal] = useState<boolean>(false);
   const [showCurrCard, setShowCurrCard] = useState<boolean>(true);
   const [passportNo, setPassportNo] = useState<string>('');
+  const [newPassValue, setNewPassValue] = useState<string>(passportNo);
   const [passportData, setPassportData] = useState<any>([])
 
   useEffect(() => {
@@ -324,6 +325,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   };
   useEffect(() => {
     setPassportNo(!!orderDetails?.passportNo ? orderDetails?.passportNo : '');
+    setNewPassValue(!!orderDetails?.passportNo ? orderDetails?.passportNo : '');
     if (!!orderDetails?.passportNo) {
       const passData = [
         {
@@ -690,9 +692,10 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           setShowPassportModal(false);
         }}
         onChange={(res)=>{
+          setNewPassValue(res?.passportNo)
           setPassportData(res)
         }}
-        value={passportNo}
+        value={newPassValue}
         disableButton={!passportData?.[0]?.passportNo}
       />
     );
