@@ -4235,6 +4235,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         )}
       </View>
     );
+  };
+
   const renderReferralBanner = () => {
     return <ReferralBanner {...props} />;
   };
