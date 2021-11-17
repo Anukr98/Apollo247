@@ -37,6 +37,7 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
     walletLinking,
   } = props;
   const phonePe = 'https://newassets.apollo247.com/images/upiicons/phone-pe.png';
+  const Apay = 'https://prodaphstorage.blob.core.windows.net/paymentlogos/amazon_pay.png';
 
   const renderTitle = (item: any, linkedWallet: any) => {
     return (
@@ -123,7 +124,11 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
         >
           <WalletIcon
             imageUrl={
-              item?.item?.payment_method_name == 'PhonePe' ? phonePe : item?.item?.image_url
+              item?.item?.payment_method_name == 'PhonePe'
+                ? phonePe
+                : item?.item?.payment_method_name == 'Amazon Pay'
+                ? Apay
+                : item?.item?.image_url
             }
           />
           <View style={{ width: windowWidth - 75 }}>
