@@ -49,10 +49,11 @@ interface PassportPaitentOverlayProps {
   refetchResult?: () => void;
   disableButton?: boolean;
   onChange?: (newArray: any) => void;
+  value?: string
 }
 
 export const PassportPaitentOverlay: React.FC<PassportPaitentOverlayProps> = (props) => {
-  const { onPressClose, patientArray, onPressDone, disableButton, onChange } = props;
+  const { onPressClose, patientArray, onPressDone, disableButton, onChange, value } = props;
   const [data, setData] = useState([
     {
       passportNo: '',
@@ -81,7 +82,7 @@ export const PassportPaitentOverlay: React.FC<PassportPaitentOverlayProps> = (pr
             autoFocus={false}
             placeholder={string.enterPassport}
             placeholderTextColor={theme.colors.SHERPA_BLUE_LIGHT}
-            value={data[index]?.passportNo}
+            value={data?.[index]?.passportNo || value}
             onChangeText={(value: any) => {
               let newArray = [...data]
               newArray[index]?.displayId = item?.displayId;

@@ -136,6 +136,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList 
   couponDiscAmount: number | null;
   couponCode: string | null;
   paymentOrderId: string | null;
+  passportNo: string | null;
   diagnosticOrderLineItems: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems | null)[] | null;
   diagnosticOrdersStatus: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrdersStatus | null)[] | null;
 }

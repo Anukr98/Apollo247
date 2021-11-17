@@ -1755,6 +1755,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         couponDiscAmount
         couponCode
         paymentOrderId
+        passportNo
         attributesObj{
           initialCollectionCharges
           distanceCharges
@@ -2118,6 +2119,7 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         diagnosticDate
         visitNo
         labReportURL
+        passportNo
         slotTimings
         slotId
         slotDateTimeInUTC
