@@ -466,7 +466,6 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       !!item?.inclusionData && item?.inclusionData?.map((item: any) => Number(item?.incItemId));
 
     postHomePageWidgetClicked(item?.itemTitle! || item?.itemName, `${item?.itemId}`, widgetTitle);
-    console.log({ item });
     if (sourceScreen == AppRoutes.TestDetails) {
       navigation.replace(AppRoutes.TestDetails, {
         itemId: item?.itemId,

@@ -1209,6 +1209,24 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       (item: any) => !!item?.TestObservation && item?.TestObservation != ''
     );
 
+    const filterParamters_topFour = cmsTestDetails?.diagnosticInclusionName?.filter(
+      (item: any, index: number) =>
+        index < 4 && !!item?.TestObservation && item?.TestObservation != ''
+    );
+
+    const getDispalyedParameterCount =
+      !!filterParamters_topFour &&
+      filterParamters_topFour?.length > 0 &&
+      filterParamters_topFour?.map((inclusion: any, index: number) =>
+        !!inclusion?.TestObservation
+          ? inclusion?.TestObservation?.filter((item: any) => item?.mandatoryValue === '1')
+          : []
+      );
+
+    const getMandatoryParameterCount_topFour =
+      !!getDispalyedParameterCount &&
+      getDispalyedParameterCount?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
+
     const getMandatoryParamter =
       !!filterParamters &&
       filterParamters?.length > 0 &&
@@ -1257,10 +1275,21 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                       {index == 3 &&
                         inclusions?.length - 4 > 0 &&
                         item?.TestObservation?.length == 0 &&
-                        renderShowMore(inclusions, item?.inclusionName)}
+                        renderShowMore(
+                          getMandatoryParameterCount_topFour ||
+                            cmsTestDetails?.diagnosticInclusionName?.length,
+                          item?.inclusionName
+                        )}
                     </Text>
                   </View>
-                  {renderParamterData(item, inclusions, index, true)}
+                  {renderParamterData(
+                    item,
+                    inclusions,
+                    index,
+                    true,
+                    getMandatoryParameterCount_topFour,
+                    getMandatoryParameterCount
+                  )}
                 </>
               ) : null
             )}
@@ -1274,7 +1303,14 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                     {!!item?.inclusionName ? nameFormater(item?.inclusionName!, 'title') : ''}{' '}
                   </Text>
                 </View>
-                {renderParamterData(item, inclusions, index, false)}
+                {renderParamterData(
+                  item,
+                  inclusions,
+                  index,
+                  false,
+                  getMandatoryParameterCount_topFour,
+                  getMandatoryParameterCount
+                )}
               </>
             ))}
           {isInclusionPrsent && moreInclusions && (
@@ -1287,7 +1323,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     );
   };
 
-  const renderShowMore = (inclusions: any, name: string) => {
+  const renderShowMore = (getMandatoryParametersCount: any, name: string) => {
     return (
       <Text
         onPress={() => setMoreInclusions(!moreInclusions)}
@@ -1305,16 +1341,24 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         ]}
       >
         {'   '}
-        {!moreInclusions && `+${inclusions?.length - 4} MORE`}
+        {!moreInclusions && `+${getMandatoryParametersCount} MORE`}
       </Text>
     );
   };
 
-  const renderParamterData = (item: any, inclusions: any, index: number, showOption: boolean) => {
+  const renderParamterData = (
+    item: any,
+    inclusions: any,
+    index: number,
+    showOption: boolean,
+    count: number,
+    totalCount: number
+  ) => {
     const getMandatoryParameters =
       item?.TestObservation?.length > 0 &&
       item?.TestObservation != '' &&
       item?.TestObservation?.filter((obs: any) => obs?.mandatoryValue === '1');
+
     return (
       <>
         {!!getMandatoryParameters && getMandatoryParameters?.length > 0 ? (
@@ -1326,14 +1370,17 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                 {index == 3 &&
                   inclusions?.length - 4 > 0 &&
                   array?.length - 1 == pIndex &&
-                  renderShowMore(inclusions, para?.observationName)}
+                  renderShowMore(
+                    totalCount - count || inclusions?.length - 4,
+                    para?.observationName
+                  )}
               </Text>
             </View>
           ))
         ) : (
           <>
             {index == 3 && inclusions?.length - 4 > 0 && !moreInclusions
-              ? renderShowMore(inclusions, 'test')
+              ? renderShowMore(totalCount - count || inclusions?.length - 4, 'test')
               : null}
           </>
         )}
