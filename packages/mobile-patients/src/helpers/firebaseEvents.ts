@@ -351,7 +351,7 @@ export interface FirebaseEvents {
     currency?: string;
     coupon?: string;
     shipping?: number; // delivery charges
-    items?: any[]; // cart items
+    items?: string; // cart items
     value?: number; // grand total
     circle_membership_added?: 'Yes' | 'No' | 'Existing';
     payment_type?: 'COD' | 'Prepaid';

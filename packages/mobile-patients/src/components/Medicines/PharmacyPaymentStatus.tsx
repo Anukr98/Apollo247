@@ -589,7 +589,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       currency: 'INR',
       coupon: coupon?.coupon,
       shipping: deliveryCharges,
-      items: cartItems,
+      items: JSON.stringify(cartItems),
       value: grandTotal,
       circle_membership_added: circleMembershipCharges
         ? 'Yes'
