@@ -12,11 +12,13 @@ import { StyleSheet, View } from 'react-native';
 
 export interface Props extends ProductListProps {
   view: 'list' | 'grid';
+  totalProducts?: number;
 }
 
 export const MedicineListingProducts: React.FC<Props> = ({
   data,
   view,
+  totalProducts,
   contentContainerStyle,
   ...restOfProps
 }) => {
@@ -41,6 +43,7 @@ export const MedicineListingProducts: React.FC<Props> = ({
   return (
     <ProductList
       data={data}
+      totalProducts={totalProducts}
       renderComponent={renderItem}
       numColumns={isGridView ? 2 : 1}
       key={view}

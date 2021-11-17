@@ -14,6 +14,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_
   firstName: string | null;
   lastName: string | null;
   gender: string | null;
+  dateOfBirth: string | null;
 }
 
 export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientAddressObj {

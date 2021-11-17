@@ -31,6 +31,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import { needHelpCleverTapEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { getFormattedDateTimeWithBefore } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export interface Props
   extends NavigationScreenProps<{
@@ -119,6 +120,7 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
         queries,
         email,
         sourcePage,
+        etd: getFormattedDateTimeWithBefore(item?.orderTat),
       });
     };
     const onPress = (isCancelOrder?: boolean) => {

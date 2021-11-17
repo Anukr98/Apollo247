@@ -4,7 +4,9 @@ const clear = 'transparent';
 const semiDarkClear = 'rgba(0, 0, 0, 0.3)';
 const lightColor = 'rgb(216, 216, 216)';
 const darkColor = 'rgb(115, 118, 131)';
+const sherpa_blue_light = 'rgba(1, 71, 91, 0.4)'
 
+const darkGray = '#bbbbbb';
 const hexWhite = '#ffffff';
 const app_green = '#00b38e';
 const APP_Sherpa_Blue = '#01475b';
@@ -58,10 +60,12 @@ const Card = {
 };
 
 const Common = {
+  DARK_GRAY: darkGray,
   BLACK_COLOR: black,
   DEFAULT_BACKGROUND_COLOR: '#f0f1ec',
   INPUT_CURSOR_COLOR: app_green,
   APP_GREEN: app_green,
+  DARK_BLUE: '#346CD9',
   WHITE: white,
   HEX_WHITE: hexWhite,
   SHERPA_BLUE: APP_Sherpa_Blue,
@@ -128,7 +132,28 @@ const Common = {
   AQUA_BLUE: '#E3F2F8',
   TANGERINE_YELLOW: tangerine_yellow,
   TEXT_LIGHT_YELLOW: text_light_yellow,
+  PORCELAIN_GRAY: '#E2E8E9',
+  CHAT_TILE_BG: '#0087BA',
+  DIM_BLACK:  'rgba(0, 0, 0, 0.07)',
+  CHAT_BLUE_BORDER: '#B0D7E5',
   DEEP_RED: deepRed,
+  SKY_LIGHT_BLUE: '#C6EAFE',
+  GOLDEN: '#FECF62',
+  ORANGE: "#FF774B",
+  LIGHT_ORANGE_YELLOW: "#FCA317",
+  BGK_GRAY : '#f9f9f9',
+  TEAL_BLUE: '#3F7281',
+  SHERPA_BLUE_LIGHT: sherpa_blue_light,
+  APP_REFERRAL_BLUE: '#4E69FF',
+  REFERRAL_WHITE_GRAY: '#FAFEFF',
+  REFERRAL_BORDER_GRAY: '#D4D4D4',
+  REFERRAL_CIRCLE_DOT: '#f89623',
+  GREEN_GRADIENT_ONE: '#31CD95',
+  GREEN_GRADIENT_TWO: '#D1FFF7',
+  EXPIRE_TEXT: '#FE5959',
+  LIGHT_GREEN_ONE: '#E8EDF0',
+  LIGHT_BLUE_TWO: '#DCF0FF',
+  BLUE_GRADIENT_ONE: '#1C9FC2'
 };
 
 const Header = {
