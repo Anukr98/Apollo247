@@ -345,12 +345,16 @@ export interface FirebaseEvents {
     Pincode: string | number;
   };
   [FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED]: {
-    transaction_id: string; // Order_ID
-    currency: string;
+    order_id: string | number; // Order_ID
+    transaction_id?: string; // payment id 
+    currency?: string;
     coupon?: string;
     shipping?: number; // delivery charges
-    items: any[]; // cart items
-    value: number; // grand total
+    items?: any[]; // cart items
+    value?: number; // grand total
+    circle_membership_added?: 'Yes' | 'No' | 'Existing';
+    payment_type?: 'COD' | 'Prepaid';
+    user_type?: string;
   };
   [FirebaseEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     Order_ID: string | number;

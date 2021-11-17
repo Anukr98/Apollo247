@@ -160,7 +160,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const [circlePlanDetails, setCirclePlanDetails] = useState({});
   const [codOrderProcessing, setcodOrderProcessing] = useState<boolean>(false);
-  const { apisToCall, pharmacyUserTypeAttribute } = useAppCommonData();
+  const { apisToCall, pharmacyUserTypeAttribute, pharmacyUserType } = useAppCommonData();
 
   const [showSubstituteMessage, setShowSubstituteMessage] = useState<boolean>(false);
   const [substituteMessage, setSubstituteMessage] = useState<string>('');
@@ -569,12 +569,20 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       'Cart Items': JSON.stringify(cartItems),
     });
     const firebaseCheckoutEventAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED] = {
-      transaction_id: orderAutoId,
+      order_id: orderAutoId,
+      transaction_id: transId,
       currency: 'INR',
       coupon: coupon?.coupon,
       shipping: deliveryCharges,
       items: cartItems,
       value: grandTotal,
+      circle_membership_added: circleMembershipCharges
+        ? 'Yes'
+        : circleSubscriptionID
+        ? 'Existing'
+        : 'No',
+      payment_type: 'COD',
+      user_type: pharmacyUserType,
     };
     postFirebaseEvent(
       FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED,

@@ -86,7 +86,9 @@ export function PharmaOrderPlaced(
   paymentOrderId: string,
   burnHc: number,
   isCOD: boolean,
-  currentPatient: GetCurrentPatients_getCurrentPatients_patients
+  currentPatient: GetCurrentPatients_getCurrentPatients_patients,
+  orderId: any,
+  pharmacyUserType: string
 ) {
   try {
     const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED] = checkoutEventAttributes;
@@ -109,6 +111,7 @@ export function PharmaOrderPlaced(
       cartTotalCashback,
       pharmacyCircleAttributes,
       deliveryCharges,
+      circleMembershipCharges,
     } = shoppingCart;
     let items: any = [];
     cartItems.forEach((item, index) => {
@@ -136,12 +139,20 @@ export function PharmaOrderPlaced(
     postFirebaseEvent(FirebaseEventName.PURCHASE, firebaseEventAttributes);
 
     const firebaseCheckoutEventAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED] = {
+      order_id: orderId,
       transaction_id: paymentOrderId,
       currency: 'INR',
       coupon: coupon?.coupon,
       shipping: deliveryCharges,
       items: cartItems,
       value: grandTotal,
+      circle_membership_added: circleMembershipCharges
+        ? 'Yes'
+        : circleSubscriptionId
+        ? 'Existing'
+        : 'No',
+      payment_type: 'COD',
+      user_type: pharmacyUserType,
     };
     postFirebaseEvent(
       FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED,

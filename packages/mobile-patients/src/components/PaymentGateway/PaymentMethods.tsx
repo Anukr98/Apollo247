@@ -128,7 +128,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [availableUPIApps, setAvailableUPIapps] = useState([]);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
-  const { authToken, setauthToken } = useAppCommonData();
+  const { authToken, setauthToken, pharmacyUserType } = useAppCommonData();
   const { grandTotal, cartItems, nonCodSKus } = useShoppingCart();
   const [HCSelected, setHCSelected] = useState<boolean>(false);
   const [burnHc, setburnHc] = useState<number>(0);
@@ -606,7 +606,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
             paymentId,
             burnHc,
             isCOD,
-            currentPatient
+            currentPatient,
+            orderDetails?.orderId,
+            pharmacyUserType
           );
         props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
           paymentStatus: paymentStatus,
