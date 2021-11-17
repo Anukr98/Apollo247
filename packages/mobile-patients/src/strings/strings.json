@@ -705,14 +705,17 @@
     "prescriptionError": "Sorry cannot submit precription, an error occured",
     "prescriptionSuccess":"Prescription Successfully Uploaded",
     "fromHealthRecord":"PRESCRIPTION FROM HEALTH RECORDS",
-    "addMorePrescription":"+ ADD MORE PRESCRIPTIONS",
+    "addMorePrescription": "+ ADD MORE PRESCRIPTIONS",
     "itemAdded": "item added",
     "itemsAdded": "items added",
     "goToCart": "Go to cart",
     "invalidFileSize": "Invalid File Size. File size must be less than 25MB.",
     "invalidFileType":"Invalid File Type. File type must be PDF.",
     "prescriptionHeading":"Place your order via prescription",
-    "test247Text": "Limited period offer"
+    "test247Text": "Limited period offer",
+    "frequentlyBrought": "Frequently Brought",
+    "topBookedTests": "Top Booked Tests",
+    "similarPackages":"Similar Packages"
   },
   "diagnosticCategoryTitle": {
     "category": "category",

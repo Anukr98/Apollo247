@@ -2821,7 +2821,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderCallToOrder = () => {
     const CART_AVAILABLE_HEIGHT = isCartAvailable ? GO_TO_CART_HEIGHT : 0;
-
     return ctaDetailMatched?.length ? (
       <CallToOrderView
         cartItems={cartItems}

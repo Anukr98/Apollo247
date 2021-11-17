@@ -810,13 +810,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     const getItem =
       !!coupon && couponOnMrp?.find((item: any) => Number(item?.testId) == Number(currentItem?.id));
     const isMrpTrue = !!getItem && getItem?.onMrp;
-    console.log({ isMrpTrue });
     return {
       isMrpTrue,
     };
   }
-
-  console.log({ coupon });
 
   const discountSaving: DiagnosticsCartContextProps['discountSaving'] = call();
 
