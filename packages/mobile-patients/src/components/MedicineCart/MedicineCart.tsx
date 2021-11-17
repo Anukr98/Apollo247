@@ -953,6 +953,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     return (
       <CartItemsList
         screen={'cart'}
+        loading={loading}
         setloading={setloading}
         onPressProduct={(item) => {
           props.navigation.navigate(AppRoutes.ProductDetailPage, {
