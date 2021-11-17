@@ -89,6 +89,7 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   getDiagnosticCartRecommendations,
   getDiagnosticExpressSlots,
+  getDiagnosticsPackageRecommendations,
   getReportTAT,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import moment from 'moment';
@@ -218,6 +219,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         diagnosticServiceabilityData?.cityId! || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
       );
 
+  const getWidgetTitle = AppConfig.Configuration.DIAGNOSITCS_WIDGET_TITLES;
+
   const [cmsTestDetails, setCmsTestDetails] = useState((([] as unknown) as CMSTestDetails) || []);
   const [testInfo, setTestInfo] = useState(movedFrom == 'TestsCart' ? testDetails : ({} as any));
   const [moreInclusions, setMoreInclusions] = useState(false);
@@ -234,6 +237,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   );
   const [frequentlyBroughtShimmer, setFrequentlyBroughtShimmer] = useState<boolean>(false);
   const [topBookedTests, setTopBookedTests] = useState([] as any);
+  const [packageRecommendations, setPackageRecommendations] = useState([] as any);
+  const [packageRecommendationsShimmer, setPackageRecommendationsShimmer] = useState<boolean>(
+    false
+  );
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
   const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
@@ -294,15 +301,25 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   useEffect(() => {
     if (!!testInfo) {
-      (testInfo?.inclusions == null || testInfo?.inclusions?.length == 1) &&
-        (frequentlyBroughtRecommendations?.length == 0 || topBookedTests?.length == 0) &&
-        getFrequentlyBroughtRecommendations(testInfo?.ItemID);
+      if (testInfo?.inclusions == null || testInfo?.inclusions?.length == 1) {
+        if (frequentlyBroughtRecommendations?.length == 0 || topBookedTests?.length == 0) {
+          getFrequentlyBroughtRecommendations(testInfo?.ItemID);
+        }
+        if (packageRecommendations?.length == 0) {
+          getPackageRecommendationsForTest(testInfo?.ItemID);
+        }
+      }
     }
   }, [testInfo]);
 
   function loadWidgets(itemId: number | string) {
-    ((!!testDetails && testDetails?.inclusions == null) || testDetails?.inclusions?.length == 1) &&
-      getFrequentlyBroughtRecommendations(itemId);
+    /**to be shown only for single tests */
+    if (!!testDetails) {
+      if (testDetails?.inclusions == null || testDetails?.inclusions?.length == 1) {
+        getFrequentlyBroughtRecommendations(itemId);
+        getPackageRecommendationsForTest(itemId);
+      }
+    }
   }
 
   const fetchTestDetails_CMS = async (itemId: string | number, itemName: string | null) => {
@@ -429,10 +446,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     widgets?: any
   ) => {
     let itemIds;
-    if (
-      source == string.diagnostics.frequentlyBrought ||
-      source == string.diagnostics.topBookedTests
-    ) {
+    if (source == getWidgetTitle?.frequentlyBrought || source == getWidgetTitle?.topBookedTests) {
       itemIds = widgetsData; //this will have the item id to be shown
     } else {
       itemIds = widgetsData?.map((item: any) =>
@@ -448,15 +462,12 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       const response = (await res)
         ?.map((item: any) => item?.data?.findDiagnosticsWidgetsPricing?.diagnostics || [])
         ?.flat();
-      if (
-        source == string.diagnostics.frequentlyBrought ||
-        source == string.diagnostics.topBookedTests
-      ) {
+      if (source == getWidgetTitle?.frequentlyBrought || source == getWidgetTitle?.topBookedTests) {
         let _frequentlyBrought: any = [];
         widgets?.forEach((_widget: any) => {
           response?.forEach((_diagItems) => {
             if (_widget?.itemId == _diagItems?.itemId) {
-              if (source == string.diagnostics.frequentlyBrought) {
+              if (source == getWidgetTitle?.frequentlyBrought) {
                 _frequentlyBrought?.push({
                   ..._widget,
                   itemTitle: _widget?.itemName,
@@ -473,7 +484,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             }
           });
         });
-        if (source === string.diagnostics.frequentlyBrought) {
+        if (source === getWidgetTitle?.frequentlyBrought) {
           setFrequentlyBroughtRecommendations?.(_frequentlyBrought);
         } else {
           setTopBookedTests?.(_frequentlyBrought);
@@ -503,6 +514,38 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       setLoadingContext?.(false);
     }
   };
+
+  async function getPackageRecommendationsForTest(itemId: string | number) {
+    setPackageRecommendationsShimmer(true);
+    try {
+      const getPackageRecommendationsResponse = await getDiagnosticsPackageRecommendations(
+        client,
+        Number(itemId!),
+        Number(cityIdToUse)
+      );
+      if (getPackageRecommendationsResponse?.data?.getDiagnosticPackageRecommendations) {
+        const getResult =
+          getPackageRecommendationsResponse?.data?.getDiagnosticPackageRecommendations
+            ?.packageRecommendations;
+        let packageArray: any = [];
+        getResult?.map((item) => {
+          packageArray.push({
+            ...item,
+            itemTitle: item?.itemName,
+            inclusionData: item?.inclusions,
+          });
+        });
+        setPackageRecommendations(packageArray);
+      } else {
+        setPackageRecommendations([]);
+      }
+      setPackageRecommendationsShimmer(false);
+    } catch (error) {
+      setPackageRecommendations([]);
+      setPackageRecommendationsShimmer(false);
+      CommonBugFender('TestDetails_getPackageRecommendationsForTest', error);
+    }
+  }
 
   async function getExpressSlots(
     serviceabilityObject: DiagnosticData,
@@ -618,7 +661,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           fetchWidgetPrices(
             _filterItemIds,
             cityIdToUse,
-            string.diagnostics.frequentlyBrought,
+            getWidgetTitle?.frequentlyBrought,
             getItems
           );
         } else {
@@ -655,12 +698,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         const _filterItemIds = _itemIds?.filter((val: any) =>
           !!alreadyAddedItems && alreadyAddedItems?.length ? !alreadyAddedItems?.includes(val) : val
         );
-        fetchWidgetPrices(
-          _filterItemIds,
-          cityIdToUse,
-          string.diagnostics.topBookedTests,
-          widgetsData
-        );
+        fetchWidgetPrices(_filterItemIds, cityIdToUse, getWidgetTitle?.topBookedTests, widgetsData);
       } else {
         setTopBookedTests([]);
       }
@@ -1530,8 +1568,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             <SectionHeader
               leftText={
                 frequentlyBroughtRecommendations?.length > 2
-                  ? string.diagnostics.frequentlyBrought
-                  : string.diagnostics.topBookedTests
+                  ? getWidgetTitle?.frequentlyBrought
+                  : getWidgetTitle?.topBookedTests
               }
               leftTextStyle={styles.widgetHeading}
               style={{ borderBottomWidth: 0, borderColor: 'transparent' }}
@@ -1548,6 +1586,36 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                   ? frequentlyBroughtRecommendations
                   : topBookedTests
               }
+              isCircleSubscribed={isDiagnosticCircleSubscription}
+              isServiceable={true}
+              isVertical={false}
+              navigation={props.navigation}
+              source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS}
+              sourceScreen={AppRoutes.TestDetails}
+              changeCTA={true}
+            />
+          </View>
+        )}
+      </>
+    );
+  };
+
+  const renderPackageRecommendations = () => {
+    return (
+      <>
+        {packageRecommendationsShimmer ? (
+          renderDiagnosticWidgetTestShimmer(true)
+        ) : (
+          <View style={{ marginTop: 10 }}>
+            <SectionHeader
+              leftText={getWidgetTitle?.similarPackages}
+              leftTextStyle={styles.widgetHeading}
+              style={{ borderBottomWidth: 0, borderColor: 'transparent' }}
+            />
+            <ItemCard
+              diagnosticWidgetData={packageRecommendations}
+              onPressRemoveItemFromCart={(item) => {}}
+              data={packageRecommendations}
               isCircleSubscribed={isDiagnosticCircleSubscription}
               isServiceable={true}
               isVertical={false}
@@ -1602,6 +1670,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             {/** frequently brought together */}
             {(frequentlyBroughtRecommendations?.length > 0 || topBookedTests?.length > 0) &&
               renderFrequentlyBrought()}
+            {/**packages for single test */}
+            {!!packageRecommendations &&
+              packageRecommendations?.length > 0 &&
+              renderPackageRecommendations()}
           </ScrollView>
           {renderCallToOrder()}
           <StickyBottomComponent>

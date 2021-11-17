@@ -713,8 +713,9 @@
     "invalidFileType":"Invalid File Type. File type must be PDF.",
     "prescriptionHeading":"Place your order via prescription",
     "test247Text": "Limited period offer",
-    "frequentlyBrought": "FREQUENTLY BROUGHT",
-    "topBookedTests": "TOP BOOKED TESTS"
+    "frequentlyBrought": "Frequently Brought",
+    "topBookedTests": "Top Booked Tests",
+    "similarPackages":"Similar Packages"
   },
   "diagnosticCategoryTitle": {
     "category": "category",
