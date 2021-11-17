@@ -1367,6 +1367,7 @@ export interface FilterDoctorInput {
   radius?: number | null;
   isCare?: boolean | null;
   isSearchableOnHiddenDoctor?: boolean | null;
+  slugName?: string | null;
 }
 
 export interface Geolocation {

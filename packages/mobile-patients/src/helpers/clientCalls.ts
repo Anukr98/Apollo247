@@ -1470,7 +1470,6 @@ export const saveJusPaySDKresponse = (client: ApolloClient<object>, payload: any
   });
 };
 
-
 export const getDiagnosticCartRecommendations = (
   client: ApolloClient<object>,
   itemIds: any,
@@ -1531,6 +1530,26 @@ export const getReportTAT = (
       pincode: pincode,
       itemIds: itemIds,
       source: source
+    },
+    fetchPolicy: 'no-cache',
+  });
+};
+
+export const getDiagnosticSearchResults = (
+  client: ApolloClient<object>,
+  keyword: string,
+  cityId: number,
+  results: number
+) => {
+  return client.query<searchDiagnosticItem, searchDiagnosticItemVariables>({
+    query: GET_DIAGNOSTIC_SEARCH_RESULTS,
+    context: {
+      sourceHeaders,
+    },
+    variables: {
+      keyword: keyword,
+      cityId: cityId,
+      size: results,
     },
     fetchPolicy: 'no-cache',
   });

@@ -65,6 +65,7 @@ export enum CleverTapEventName {
   CONSULT_PAST_SEARCHES_CLICKED = 'Consult past searches clicked',
   CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED = 'Consult Homescreen Book doctor appointment clicked',
   CONSULT_SPECIALITY_CLICKED = 'Consult Speciality Clicked',
+  CONSULT_SELECT_SPECIALITY_CLICKED = 'Consult select speciality clicked',
   CONSULT_PAY_BUTTON_CLICKED = 'Consult Pay Button Clicked',
   CONSULT_SORT = 'Consult Sort',
   CONSULT_BOOK_TESTS_IN_CHATROOM = 'Consult Book tests in Chatroom',
@@ -238,6 +239,10 @@ export enum CleverTapEventName {
   // Network Test
   PRE_CALL_TEST = 'Pre Call Test Completed',
 
+  // Ask Apollo
+  CLICKED_ON_APOLLO_NUMBER = 'Clicked on Apollo Number',
+  SUBMITTED_QUICK_BOOK_LEAD = 'Submitted Quick Book Lead',
+
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
   MEDICAL_RECORDS = 'PHR Medical Records',
@@ -390,6 +395,10 @@ export enum CleverTapEventName {
   RETURN_REQUEST_START = 'Return Request Start',
   RETURN_REQUEST_SUBMITTED = 'Return Request Submitted',
   MOVED_AWAY_FROM_HOME = 'User moved away from Homepage',
+  DOCTOR_CARD_CONSULT_CLICK = 'Doctor card Consult in x minutes clicked',
+  CONSULT_MODE_TOGGLE = 'Consult mode clicked',
+  CONSULT_SELECT_LOCATION = 'Consult location select clicked',
+  CONSULT_HOSPITAL_CLICKED = 'Consult Hospital Visit clicked',
 
   PHARMACY_CART_ADDRESS_SELECTED_FAILURE = 'Pharmacy Cart Address Selected Failure',
   PHARMACY_CART_SELECT_DELIVERY_ADDRESS_CLICKED = 'Pharmacy Cart - Select Delivery Address Clicked',
@@ -1041,6 +1050,8 @@ export interface CleverTapEvents {
     'Nav src': string;
     'Circle Member': string;
     'Circle Plan type': string;
+    'Mode of consult'?: 'Hospital Visit' | 'Video Consult';
+    CTA?: 'Primary' | 'Secondary';
   };
   [CleverTapEventName.TABBAR_APPOINTMENTS_CLICKED]: PatientInfoWithSource;
   [CleverTapEventName.CONSULT_PAST_SEARCHES_CLICKED]: {
@@ -1128,6 +1139,34 @@ export interface CleverTapEvents {
     'Consult Display ID': string | number;
     'Doctor Type': string;
     'Doctor Speciality': string;
+  };
+
+  // ********** Ask Apollo  ********** \\
+  [CleverTapEventName.CLICKED_ON_APOLLO_NUMBER]: {
+    'Screen type': string;
+    'Speciality ID'?: string;
+    'Speciality Name'?: string;
+    'Doctor ID'?: string;
+    'Doctor Name'?: string;
+    'Doctor Type'?: string;
+    'Doctor Hospital Id'?: string;
+    'Doctor Hospital Name'?: string;
+    'Patient Number': string;
+  };
+
+  [CleverTapEventName.SUBMITTED_QUICK_BOOK_LEAD]: {
+    'Screen type': string;
+    'Speciality ID'?: string;
+    'Speciality Name'?: string;
+    'Doctor ID'?: string;
+    'Doctor Name'?: string;
+    'Doctor Type'?: string;
+    'Doctor Hospital Id'?: string;
+    'Doctor Hospital Name'?: string;
+    'Patient Number'?: string;
+    'Entered Name'?: string;
+    'Entered Email'?: string;
+    'Entered Mobile Number'?: string;
   };
 
   // *********** Delayed Reminder Event ******* \\
@@ -1499,13 +1538,13 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.DIAGNOSTIC_TEST_DESCRIPTION]: {
     Source:
-    | 'Full Search'
-    | 'Home Page'
-    | 'Cart Page'
-    | 'Partial Search'
-    | 'Deeplink'
-    | 'Popular search'
-    | 'Category page';
+      | 'Full Search'
+      | 'Home Page'
+      | 'Cart Page'
+      | 'Partial Search'
+      | 'Deeplink'
+      | 'Popular search'
+      | 'Category page';
     'Item Name': string;
     'Item Type'?: string;
     'Item Code': string;
@@ -1562,10 +1601,10 @@ export interface CleverTapEvents {
     Source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary';
     'Report generated': 'Yes' | 'No';
     'Action taken':
-    | 'View Report'
-    | 'Download Report PDF'
-    | 'Share on Whatsapp'
-    | 'Copy Link to PDF';
+      | 'View Report'
+      | 'Download Report PDF'
+      | 'Share on Whatsapp'
+      | 'Copy Link to PDF';
     'Circle user'?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_FEEDBACK_GIVEN]: {
@@ -1577,14 +1616,14 @@ export interface CleverTapEvents {
     'Item Name': string;
     'Item ID': string; // (SKUID)
     Source:
-    | 'Home page'
-    | 'Full search'
-    | 'Details page'
-    | 'Partial search'
-    | 'Listing page'
-    | 'Popular search'
-    | 'Category page'
-    | 'Prescription';
+      | 'Home page'
+      | 'Full search'
+      | 'Details page'
+      | 'Partial search'
+      | 'Listing page'
+      | 'Popular search'
+      | 'Category page'
+      | 'Prescription';
     Section?: string;
     'Circle user'?: string;
   };
@@ -1706,7 +1745,7 @@ export interface CleverTapEvents {
     'No. of patients': number;
     'Patient UHID': string;
     'Patient name': string;
-},
+  };
 
   // ********** ConsultEvents ********** \\
   [CleverTapEventName.CONSULT_REPORT_UPLOAD_IN_CHATROOM]: ConsultRoomDoctorPatientInfo;
@@ -1741,6 +1780,14 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.CONSULT_FILTER_APPLIED]: DoctorFilterClick;
   [CleverTapEventName.CONSULT_SPECIALITY_CLICKED]: SpecialityClickedEvent;
+  [CleverTapEventName.CONSULT_SELECT_SPECIALITY_CLICKED]: {
+    'Patient name': string | '';
+    'Patient UHID': string | '';
+    'Patient age': number;
+    'Mobile number': string | '';
+    'Location details': string | '';
+    'Consult mode': 'Hospital Visit' | 'Video Consult';
+  };
   [CleverTapEventName.BOOK_APPOINTMENT]: {
     'Doctor Name': string;
     'Doctor City': string;
@@ -2009,6 +2056,33 @@ export interface CleverTapEvents {
     'Booking value': number;
     User_Type: string;
   };
+  [CleverTapEventName.CONSULT_MODE_TOGGLE]: {
+    'Patient name': string;
+    'Patient UHID': string;
+    'Patient age': number;
+    'Mobile number': number;
+    'Location details': string;
+    'Initial consult mode': 'Hospital Visit' | 'Video consult' | 'Direct' | 'Unknown';
+    CTA: 'Primary' | 'Secondary' | 'NA';
+    'Speciality name': string;
+    'Speciality ID': string;
+  };
+  [CleverTapEventName.CONSULT_SELECT_LOCATION]: {
+    'Patient name': string;
+    'Patient UHID': string;
+    'Patient age': number;
+    'Mobile number': number;
+    'Speciality name': string;
+    'Location details': string;
+    'Consult mode': 'Video Consult' | 'Hospital Visit';
+    'Speciality ID': string;
+  };
+  [CleverTapEventName.CONSULT_HOSPITAL_CLICKED]: {
+    'Patient name': string;
+    'Patient UHID': string;
+    'Patient age': number;
+    'Mobile number': number;
+  };
   [CleverTapEventName.CONSULTATION_BOOKED]: {
     'Consult ID': string;
     'Display ID'?: string;
@@ -2186,12 +2260,12 @@ export interface CleverTapEvents {
 
   [CleverTapEventName.ADD_RECORD]: {
     Source:
-    | 'Doctor Consultation'
-    | 'Test Report'
-    | 'Hospitalization'
-    | 'Health Condition'
-    | 'Bill'
-    | 'Insurance'; // List/Profile
+      | 'Doctor Consultation'
+      | 'Test Report'
+      | 'Hospitalization'
+      | 'Health Condition'
+      | 'Bill'
+      | 'Insurance'; // List/Profile
   };
 
   [CleverTapEventName.UPLOAD_PRESCRIPTION]: PatientInfo;
@@ -3038,7 +3112,17 @@ export interface CleverTapEvents {
     'Customer ID': string;
     'CTA Clicked': string;
   };
-  [CleverTapEventName.CONSULT_USER_LOCATION]: consultLocation;
+  [CleverTapEventName.CONSULT_USER_LOCATION]:
+    | consultLocation
+    | {
+        'Patient name': string;
+        'Patient UHID': string;
+        'Patient age': number;
+        'Mobile number': number;
+        'Speciality name': string;
+        Screen: 'Speciality Screen' | 'Doctor list';
+        'Location details': string;
+      };
   [CleverTapEventName.USER_CHANGED_LOCATION]: consultLocation;
   [CleverTapEventName.USER_LOGGED_IN_WITH_TRUECALLER]: PatientInfo;
   [CleverTapEventName.TRUECALLER_EVENT_ERRORS]: {
@@ -3102,6 +3186,26 @@ export interface CleverTapEvents {
     Source: 'Gallery' | 'Camera' | 'My Prescription' | 'Consult Room' | 'Health Records';
   };
 
+  [CleverTapEventName.DOCTOR_CARD_CONSULT_CLICK]: {
+    'Patient Name': string;
+    'Doctor ID': string;
+    'Speciality ID': string;
+    'Doctor Speciality': string;
+    'Doctor Experience': number;
+    'Language Known'?: string;
+    'Hospital Name': string;
+    'Hospital City': string | null;
+    'Availability Minutes': number;
+    Source: 'List' | 'Profile';
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+    Rank?: number;
+    User_Type: string;
+    'Mode of consult'?: 'Hospital Visit' | 'Video Consult';
+  };
   [CleverTapEventName.PAYMENT_SCREEN_LOADED]: {
     'Phone Number': string;
     vertical: string;
