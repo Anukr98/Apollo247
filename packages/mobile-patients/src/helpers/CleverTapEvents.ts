@@ -209,6 +209,7 @@ export enum CleverTapEventName {
   DIAGNOSTIC_MY_ORDERS = 'Diagnostics - My Orders Viewed',
   DIAGNOSTIC_ORDER_SUMMARY_VIEWED = 'Diagnostic order summary viewed',
   DIAGNOSTIC_VIEW_REPORT_CLICKED = 'Diagnostic view reports',
+  DIAGNOSTIC_CALL_TO_ORDER_CLICKED = 'Diagnostic Call to Order clicked',
 
   DIAGNOSTIC_PATIENT_SELECTED = 'Diagnostic patient selected',
   DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE = 'Diagnostic address selected',
@@ -1566,6 +1567,15 @@ export interface CleverTapEvents {
     | 'Download Report PDF'
     | 'Share on Whatsapp'
     | 'Copy Link to PDF';
+    'Circle user'?: string;
+  };
+  [CleverTapEventName.DIAGNOSTIC_CALL_TO_ORDER_CLICKED]: {
+    'Mobile Number'?: string;
+    'Page'?: 'Home Page'| 'Listing Page' | 'Test Detail Page' | 'Cart Page';
+    'Section Name'?: string;
+    'ItemId'?: string;
+    'ItemName'?: string;
+    'Patient City'?: string;
     'Circle user'?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_FEEDBACK_GIVEN]: {
