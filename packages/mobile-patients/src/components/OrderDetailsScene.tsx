@@ -193,6 +193,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     billNumber: billNumber || '',
   };
 
+  console.log('order details scene...............', vars, billNumber, orderAutoId);
+
   const { data, loading, refetch } = useQuery<
     getMedicineOrderOMSDetailsWithAddress,
     getMedicineOrderOMSDetailsWithAddressVariables
@@ -224,6 +226,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     );
   }, [data, refetch]);
   const order = g(data, 'getMedicineOrderOMSDetailsWithAddress', 'medicineOrderDetails');
+  console.log('order from api is---', order);
   const shipmentInfo = g(order, 'medicineOrderShipments');
   const shipmentTrackingNumber = shipmentInfo?.[0]?.trackingNo;
   const shipmentTrackingProvider = shipmentInfo?.[0]?.trackingProvider;
@@ -2337,7 +2340,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               selectedTab={selectedTab}
             />
             {selectedTab == string.orders.trackOrder && renderOrderTrackTopView()}
-            {!!Number(orderAutoId) && orderType !== 'Store Pickup' && (
+            {!!Number(orderAutoId) && orderType === MEDICINE_DELIVERY_TYPE.HOME_DELIVERY && (
               <OrderDelayNoticeView
                 orderId={Number(orderAutoId)}
                 containerStyle={selectedTab === string.orders.viewBill && styles.hidden}

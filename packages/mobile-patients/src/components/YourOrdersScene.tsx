@@ -136,7 +136,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     );
 
     const orderType = getDeliverTypeOrDescription(order);
-
+    console.log('orderType ------', orderType);
     const latestOrdersOnHold = ordersOnHold?.sort((a: any, b: any) => {
       (new Date(b?.statusDate) as any) - (new Date(a?.statusDate) as any);
     });
@@ -325,6 +325,8 @@ export const getDeliverTypeOrDescription = (order: MedOrder) => {
   if (order?.billNumber) {
     return getStore();
   }
+
+  console.log('orderType in fn------', order?.billNumber, order?.deliveryType);
 
   const type = order?.deliveryType;
 

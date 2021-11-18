@@ -24,7 +24,9 @@ const _OrderDelayNoticeView: React.FC<Props> = ({ orderId, containerStyle }) => 
   const fetch = async () => {
     try {
       setLoading(true);
+      console.log('calling getPharmaOrderMessage............... ', orderId);
       const response = await getPharmaOrderMessage(client, { orderId });
+      console.log('responsegetPharmaOrderMessage......---------');
       setResponse(response);
       setLoading(false);
     } catch (error) {
