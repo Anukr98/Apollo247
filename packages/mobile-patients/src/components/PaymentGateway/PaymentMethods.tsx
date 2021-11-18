@@ -167,7 +167,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [offer, setoffer] = useState<any>(null);
   const [linkedWallets, setLinkedWallets] = useState<any>([]);
   const [createdWallet, setcreatedWallet] = useState<any>({});
-  const [walletLinking, setWalletLinking] = useState<any>(null);
+  const [walletLinking, setWalletLinking] = useState<any>('AMAZONPAY');
   const requestId = currentPatient?.id || customerId || 'apollo247';
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const defaultClevertapEventParams = {
@@ -330,6 +330,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         payload?.payload?.linked && setcreatedWallet(payload?.payload);
         break;
       case 'refreshWalletBalances':
+        setWalletLinking(null);
         setLinkedWallets(payload?.payload?.list);
         break;
       default:

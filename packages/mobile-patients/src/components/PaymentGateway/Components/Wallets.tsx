@@ -95,7 +95,7 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
   };
 
   const renderLoader = () => {
-    return <ActivityIndicator size="small" color="#00b38e" style={{ marginRight: 16 }} />;
+    return <ActivityIndicator size="small" color="#FC9916" style={{ marginRight: 16 }} />;
   };
 
   const renderWallet = (item: any) => {
