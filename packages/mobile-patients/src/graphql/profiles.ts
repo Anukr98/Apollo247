@@ -1752,7 +1752,8 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         visitNo
         invoiceURL
         labReportURL
-        attributesObj {
+        passportNo
+        attributesObj{
           initialCollectionCharges
           distanceCharges
           homeCollectionCharges
@@ -2114,6 +2115,7 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         diagnosticDate
         visitNo
         labReportURL
+        passportNo
         slotTimings
         slotId
         slotDateTimeInUTC
