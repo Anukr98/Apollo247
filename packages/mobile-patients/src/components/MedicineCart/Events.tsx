@@ -180,14 +180,14 @@ export function PharmacyCartViewedEvent(
 
   const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CART_VIEWED] = {
     'Total items in cart': shoppingCart?.serverCartItems?.length,
-    'Sub total': shoppingCart?.serverCartAmount?.cartTotal,
+    'Sub total': shoppingCart?.serverCartAmount?.cartTotal || 0,
     'Shipping charges': shoppingCart.serverCartAmount?.isDeliveryFree ? 0 : shoppingCart.serverCartAmount?.deliveryCharges,
-    'Total discount': NumberNumber(
+    'Total discount': Number(
       (
-        shoppingCart?.serverCartAmount?.couponSavings || 0 + 
-        shoppingCart?.serverCartAmount?.cartSavings || 0).toFixed(2)
+        (shoppingCart?.serverCartAmount?.couponSavings || 0) + 
+        (shoppingCart?.serverCartAmount?.cartSavings || 0)).toFixed(2)
     ),
-    'Order value': shoppingCart?.serverCartAmount?.estimatedAmount,
+    'Order value': shoppingCart?.serverCartAmount?.estimatedAmount || 0,
     'Prescription required': shoppingCart?.isCartPrescriptionRequired?'Yes':'No',
     'Cart items': shoppingCart?.serverCartItems?.map(
       (item) =>

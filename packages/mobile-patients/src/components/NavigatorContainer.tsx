@@ -68,7 +68,6 @@ import { ConsultDetails } from '@aph/mobile-patients/src/components/HealthRecord
 import { HealthRecordDetails } from '@aph/mobile-patients/src/components/HealthRecords/HealthRecordDetails';
 import { SearchAppointmentScreen } from '@aph/mobile-patients/src/components/ConsultRoom/SearchAppointmentScreen';
 import { AppointmentFilterScene } from '@aph/mobile-patients/src/components/ConsultRoom/AppointmentFilterScene';
-import { PaymentScene } from '@aph/mobile-patients/src/components/PaymentScene';
 import { MedicineConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/MedicineConsultDetails';
 import { NeedHelp } from '@aph/mobile-patients/src/components/NeedHelp';
 import { NeedHelpPharmacyOrder } from '@aph/mobile-patients/src/components/NeedHelpPharmacyOrder';
@@ -201,7 +200,6 @@ export enum AppRoutes {
   OrderModifiedScreen = 'OrderModifiedScreen',
   PharmacyPaymentStatus = 'PharmacyPaymentStatus',
   TestsCheckoutScene = 'TestsCheckoutScene',
-  PaymentScene = 'PaymentScene',
   AddAddress = 'AddAddress',
   AddAddressNew = 'AddAddressNew',
   LocationSearch = 'LocationSearch',
@@ -450,9 +448,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.YourOrdersScene]: {
     screen: YourOrdersScene,
-  },
-  [AppRoutes.PaymentScene]: {
-    screen: PaymentScene,
   },
   [AppRoutes.OrderDetailsScene]: {
     screen: OrderDetailsScene,

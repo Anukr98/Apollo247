@@ -163,6 +163,12 @@ export interface ShipmentArray {
   estimatedAmount: number;
 }
 
+export interface CartLocationDetails {
+  pincode?: string;
+  latitude?: any;
+  longitude?: any;
+}
+
 export interface ShoppingCartContextProps {
   // server cart values start
   serverCartItems: saveCart_saveCart_data_medicineOrderCartLineItems[];
@@ -200,6 +206,8 @@ export interface ShoppingCartContextProps {
   setServerCartLoading: ((loading: boolean) => void) | null;
   cartSuggestedProducts: any[];
   setCartSuggestedProducts: ((products: any[]) => void) | null;
+  cartLocationDetails: CartLocationDetails;
+  setCartLocationDetails: ((products: CartLocationDetails) => void) | null;
   // server cart values stop
   cartItems: ShoppingCartItem[];
   setCartItems: ((items: ShoppingCartItem[]) => void) | null;
@@ -368,6 +376,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setServerCartLoading: null,
   cartSuggestedProducts: [],
   setCartSuggestedProducts: null,
+  cartLocationDetails: {},
+  setCartLocationDetails: null,
 
   cartItems: [],
   setCartItems: null,
@@ -546,6 +556,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [cartSuggestedProducts, setCartSuggestedProducts] = useState<
     ShoppingCartContextProps['cartSuggestedProducts']
   >([]);
+  const [cartLocationDetails, setCartLocationDetails] = useState<
+    ShoppingCartContextProps['cartLocationDetails']
+  >({});
 
   const [cartItems, _setCartItems] = useState<ShoppingCartContextProps['cartItems']>([]);
   const [couponDiscount, setCouponDiscount] = useState<ShoppingCartContextProps['couponDiscount']>(
@@ -1361,6 +1374,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setServerCartLoading,
         cartSuggestedProducts,
         setCartSuggestedProducts,
+        cartLocationDetails,
+        setCartLocationDetails,
 
         cartItems,
         setCartItems,
