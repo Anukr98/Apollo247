@@ -446,9 +446,13 @@ export const diagnosticsDisplayPrice = (item: DiagnosticsCartItem , isCircleMemb
     }
   }
 
-  const slashedPrice = !!itemPackageMrp
-  ? itemPackageMrp > priceToShow
-    ? itemPackageMrp
+  const calSlashedPrice = !!itemPackageMrp && itemPackageMrp > price
+  ? itemPackageMrp
+  : price;
+
+  const slashedPrice = calSlashedPrice //replaced calSlashedPrice with itemPackageMrp 
+  ? calSlashedPrice > priceToShow
+    ? calSlashedPrice
     : null
   : price > priceToShow
   ? price

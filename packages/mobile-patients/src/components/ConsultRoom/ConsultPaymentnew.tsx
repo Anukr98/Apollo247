@@ -25,6 +25,7 @@ import {
   isPhysicalConsultation,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { getAsyncStorageValues } from '../../helpers/helperFunctions';
 
 export interface ConsultPaymentnewProps extends NavigationScreenProps {}
 
@@ -52,6 +53,9 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
   const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState<string | null>('');
+  const [userMobileNumber, setUserMobileNumber] = useState<string | null>('');
+
   const displayID = props.navigation.getParam('displayID');
   let WebViewRef: any;
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
@@ -72,6 +76,14 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const { circleSubscriptionId } = useShoppingCart();
 
   useEffect(() => {
+    const saveSessionValues = async () => {
+      const [loginToken, phoneNumber] = await getAsyncStorageValues();
+      setToken(JSON.parse(loginToken));
+      setUserMobileNumber(
+        JSON.parse(phoneNumber)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber
+      );
+    };
+    saveSessionValues();
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -130,7 +142,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
     const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
     let url = `${baseUrl}/consultpayment?appointmentId=${appointmentId}&patientId=${currentPatiendId}&price=${price}&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
       bankCode ? '&bankCode=' + bankCode : ''
-    }`;
+    }&utm_token=${token}&utm_mobile_number=${userMobileNumber}`;
     if (planSelected && isCircleDoctorOnSelectedConsultMode && circleSubscriptionId == '') {
       url = `${url}&planId=${planId}&subPlanId=${planSelected?.subPlanId}&storeCode=${storeCode}`;
     }

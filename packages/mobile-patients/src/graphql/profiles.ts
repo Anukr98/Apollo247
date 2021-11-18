@@ -1936,6 +1936,13 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
       billNumber: $billNumber
     ) {
       tatBreached
+      orderCancellationAllowedDetails{
+        cancellationTime
+        cancellationAllowed
+        message
+        cancellationRequestRaised
+        cancellationRequestRejected
+      }
       medicineOrderDetails {
         id
         appointmentId
@@ -1999,6 +2006,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
           }
           paymentMode
           refundAmount
+          paymentMethod
         }
         medicineOrderRefunds {
           refundAmount
@@ -2355,6 +2363,7 @@ export const GET_HELP_SECTION_QUERIES = gql`
       needHelpQueries {
         id
         title
+        message
         nonOrderQueries
         queriesByOrderStatus
         content {
@@ -3298,7 +3307,7 @@ export const GET_MEDICAL_PRISM_RECORD_V3 = gql`
             result
             range
             outOfRange
-            # resultDate
+            resultDate
           }
           fileUrl
           testResultFiles {
@@ -4587,6 +4596,7 @@ export const GET_PHARMA_TRANSACTION_STATUS_V2 = gql`
       paymentStatus
       paymentDateTime
       paymentMode
+      paymentMethod
       isSubstitution
       substitutionTime
       substitutionMessage
@@ -5384,6 +5394,18 @@ export const GET_ORDER_LEVEL_DIAGNOSTIC_STATUS = gql`
         reportTATMessage
         expectedReportGenerationTime
       }
+      groupedPendingReportInclusions {
+        inclusions {
+          itemId
+          itemName
+          packageId
+          packageName
+          orderStatus
+        }
+        isReportPending
+        reportTATMessage
+        expectedReportGenerationTime
+      }
       statusInclusions {
         statusDate
         orderStatus
@@ -6023,6 +6045,7 @@ export const FETCH_SAVED_CARDS = gql`
         name_on_card
         expired
         card_token
+        card_fingerprint
       }
     }
   }
@@ -6427,6 +6450,34 @@ export const GET_JUSPAY_CLIENTAUTH_TOKEN = gql`
   }
 `;
 
+export const GET_DIAGNOSTIC_SEARCH_RESULTS = gql`
+  query searchDiagnosticItem($keyword: String!, $cityId: Int!, $size: Int) {
+    searchDiagnosticItem(keyword: $keyword, cityId: $cityId, size: $size) {
+      data {
+        diagnostic_item_id
+        diagnostic_item_name
+        diagnostic_inclusions
+        diagnostic_item_alias
+        diagnostic_item_price {
+          status
+          startDate
+          endDate
+          price
+          mrp
+          couponCode
+          groupPlan
+        }
+        diagnostic_item_packageCalculatedMrp
+        diagnostic_item_itemType
+        diagnostic_item_alias_names
+        diagnostic_inclusions_test_parameter_data {
+          mandatoryValue
+          observationName
+        }
+      }
+    }
+  }`;
+
 export const GET_PHARMACY_PRESCRIPTION_OPTION = gql`
   query pharmaPrescriptionOption($pharmaPrescriptionOptionInput: PharmaPrescriptionOptionInput) {
     pharmaPrescriptionOption(pharmaPrescriptionOptionInput: $pharmaPrescriptionOptionInput) {
@@ -6434,6 +6485,60 @@ export const GET_PHARMACY_PRESCRIPTION_OPTION = gql`
         id
         title
         visible
+      }
+    }
+  }
+`;
+
+export const CHANGE_DIAGNOSTIC_ORDER_PATIENT_ID = gql`
+  mutation switchDiagnosticOrderPatientID($diagnosticOrdersId: String!, $newPatientId: String!) {
+    switchDiagnosticOrderPatientID(
+      diagnosticOrdersId: $diagnosticOrdersId
+      newPatientId: $newPatientId
+    ) {
+      status
+      message
+    }
+  }
+`;
+
+export const GET_OFFERS_LIST = gql`
+  query getOffersList($listOffersInput: OffersRequest!, $is_juspay_pharma: Boolean) {
+    getOffersList(listOffersInput: $listOffersInput, is_juspay_pharma: $is_juspay_pharma) {
+      offers {
+        offer_id
+        offer_description {
+          title
+          description
+          tnc
+          sponsored_by
+        }
+        status
+        order_breakup {
+          final_order_amount
+          discount_amount
+          cashback_amount
+        }
+        offer_rules {
+          amount {
+            min_quantity
+            max_quantity
+          }
+          platform
+          payment_instrument {
+            payment_method
+            payment_method_type
+            type
+            variant
+          }
+        }
+      }
+      best_offer_combinations {
+        payment_method_reference
+        offers {
+          offer_id
+          cashback_amount
+        }
       }
     }
   }

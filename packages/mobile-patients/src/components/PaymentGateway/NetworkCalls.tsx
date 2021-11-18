@@ -108,7 +108,8 @@ export const InitiateWalletTxn = (
   requestId: string,
   clientAuthToken: string,
   paymentOrderId: string,
-  wallet: string
+  wallet: string,
+  offerId?: any
 ) => {
   const walletPayload = {
     requestId: requestId,
@@ -119,6 +120,7 @@ export const InitiateWalletTxn = (
       paymentMethod: wallet,
       endUrls: [AppConfig.Configuration.baseUrl],
       clientAuthToken: clientAuthToken,
+      offers: !!offerId ? [offerId] : null,
     },
   };
   HyperSdkReact.process(JSON.stringify(walletPayload));
@@ -134,7 +136,8 @@ export const InitiateUPISDKTxn = (
   clientAuthToken: string,
   paymentOrderId: string,
   paymentMethod: string,
-  sdkPresent: string
+  sdkPresent: string,
+  offerId?: any
 ) => {
   const IntentPayload: any = {
     requestId: requestId,
@@ -146,6 +149,7 @@ export const InitiateUPISDKTxn = (
       sdkPresent: sdkPresent,
       endUrls: [AppConfig.Configuration.baseUrl],
       clientAuthToken: clientAuthToken,
+      offers: !!offerId ? [offerId] : null,
     },
   };
   if (paymentMethod == 'GOOGLEPAY') {
@@ -195,6 +199,18 @@ export const isPhonePeReady = () => {
     payload: {
       action: 'isDeviceReady',
       sdkPresent: 'ANDROID_PHONEPE',
+    },
+  };
+  HyperSdkReact.process(JSON.stringify(payload));
+};
+
+export const isPayTmReady = () => {
+  const payload = {
+    requestId: 'payTm',
+    service: AppConfig.Configuration.jusPayService,
+    payload: {
+      action: 'isDeviceReady',
+      sdkPresent: 'ANDROID_PAYTM',
     },
   };
   HyperSdkReact.process(JSON.stringify(payload));
@@ -266,7 +282,8 @@ export const InitiateSavedCardTxn = (
   clientAuthToken: string,
   paymentOrderId: string,
   cardInfo: any,
-  cvv: string
+  cvv: string,
+  offerId?: string
 ) => {
   const payload = {
     requestId: requestId,
@@ -279,8 +296,11 @@ export const InitiateSavedCardTxn = (
       cardToken: cardInfo?.card_token,
       cardSecurityCode: cvv,
       clientAuthToken: clientAuthToken,
+      offers: !!offerId ? [offerId] : null,
     },
   };
+  console.log('cardPayload >>>>', payload);
+
   HyperSdkReact.process(JSON.stringify(payload));
 };
 

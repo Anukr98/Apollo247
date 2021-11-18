@@ -67,7 +67,13 @@ export const MedicineBuyAgain: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderHeader = () => {
-    return <MedicineListingHeader navigation={navigation} movedFrom={'home'} />;
+    return (
+      <MedicineListingHeader
+        navigation={navigation}
+        movedFrom={'home'}
+        navSrcForSearchSuccess={'Medicine Buy Again'}
+      />
+    );
   };
 
   const renderProducts = () => {

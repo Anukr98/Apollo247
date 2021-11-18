@@ -175,16 +175,17 @@ export function PharmacyCartViewedEvent(
     ...pharmacyCircleEvent,
   };
   
+
   const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CART_VIEWED] = {
     'Total items in cart': shoppingCart?.cartItems?.length,
-    'Sub Total': shoppingCart?.cartTotal,
-    'Shipping Charges': shoppingCart?.deliveryCharges,
-    'Total Discount': Number(
+    'Sub total': shoppingCart?.cartTotal,
+    'Shipping charges': shoppingCart?.deliveryCharges,
+    'Total discount': Number(
       (shoppingCart?.couponDiscount + shoppingCart?.productDiscount)?.toFixed(2)
     ),
-    'Order Value': shoppingCart?.grandTotal,
-    'Prescription Required': shoppingCart?.uploadPrescriptionRequired?'Yes':'No',
-    'Cart Items': shoppingCart?.cartItems?.map(
+    'Order value': shoppingCart?.grandTotal,
+    'Prescription required': shoppingCart?.uploadPrescriptionRequired?'Yes':'No',
+    'Cart items': shoppingCart?.cartItems?.map(
       (item) =>
         ({
           id: item?.id,
@@ -194,11 +195,11 @@ export function PharmacyCartViewedEvent(
           specialPrice: item?.specialPrice,
         } as ShoppingCartItem)
     ) || undefined,
-    'Service Area': 'Pharmacy',
+    'Service area': 'Pharmacy',
     'Customer ID': id,
-    'User Type':pharmacyUserTypeAttribute?.User_Type||undefined,
-    'Circle Member': getCleverTapCircleMemberValues(pharmacyCircleEvent?.['Circle Membership Added']!)||undefined,
-    'Circle Membership Value':pharmacyCircleEvent?.['Circle Membership Value']||undefined
+    'User type':pharmacyUserTypeAttribute?.User_Type||undefined,
+    'Circle member': getCleverTapCircleMemberValues(pharmacyCircleEvent?.['Circle Membership Added']!)||undefined,
+    'Circle membership value':pharmacyCircleEvent?.['Circle Membership Value']||undefined
   };
   if (shoppingCart.coupon) {
     eventAttributes['Coupon code used'] = shoppingCart.coupon.coupon;
@@ -236,14 +237,14 @@ export function PharmacyCartViewedEvent(
   postFirebaseEvent(FirebaseEventName.PHARMACY_CART_VIEWED, firebaseAttributes);
 }
 
-export function PricemismatchEvent(cartItem: ShoppingCartItem, id: string, storeItemPrice: number) {
+export function PricemismatchEvent(cartItem: ShoppingCartItem, id: string, storeItemPrice: number, previousCartPrice: number) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.SKU_PRICE_MISMATCH]|CleverTapEvents[CleverTapEventName.PHARMACY_CART_SKU_PRICE_MISMATCH] = {
-    'Mobile Number': id,
-    'Sku Id': cartItem.id,
-    'Magento MRP': cartItem.price,
-    'Magento Pack Size': Number(cartItem.mou),
+    'Mobile number': id,
+    'SKU ID': cartItem.id,
+    'Magento MRP': previousCartPrice,
+    'Magento pack size': Number(cartItem.mou),
     'Store API MRP': storeItemPrice,
-    'Price Change In Cart': 'Yes',
+    'Price change in cart': 'Yes',
   };
   postCleverTapEvent(CleverTapEventName.PHARMACY_CART_SKU_PRICE_MISMATCH,eventAttributes);
   postWebEngageEvent(WebEngageEventName.SKU_PRICE_MISMATCH, eventAttributes);
@@ -267,9 +268,9 @@ export function postTatResponseFailureEvent(
 export function postwebEngageProductRemovedEvent(cartItem: ShoppingCartItem, id: string) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.ITEMS_REMOVED_FROM_CART]|CleverTapEvents[CleverTapEventName.PHARMACY_ITEMS_REMOVED_FROM_CART] = {
     'Customer ID': id,
-    'No. of items': cartItem.quantity,
+    'No of items': cartItem.quantity,
     'Product ID': cartItem.id,
-    'Product Name': cartItem.name,
+    'Product name': cartItem.name,
   };
   const appsFlyerEvents = {
     af_customer_user_id: id,
@@ -298,12 +299,9 @@ export function applyCouponClickedEvent(id: string, itemsInCart?: string) {
     'Customer ID': id,
     'Cart Items': itemsInCart || '',
   };
-  const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_COUPON_ACTION] = {
-    'Customer ID': id,
-    'Cart Items': itemsInCart || undefined,
-  };
-  // postCleverTapEvent(CleverTapEventName.PHARMACY_COUPON_ACTION,cleverTapEventAttributes);
   postWebEngageEvent(WebEngageEventName.CART_APPLY_COUPON_CLCIKED, eventAttributes);
+  const cleverTapAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_APPLY_COUPON_CLICKED] = {};
+  postCleverTapEvent(CleverTapEventName.PHARMACY_APPLY_COUPON_CLICKED,cleverTapAttributes);
 }
 
 export function selectDeliveryAddressClickedEvent(id: string, itemsInCart:? string) {
@@ -375,9 +373,9 @@ export const fireCleverTapCirclePlanRemovedEvent = (
     navigation_source: circleEventSource,
     circle_end_date: getCircleNoSubscriptionText(),
     circle_start_date: getCircleNoSubscriptionText(),
-    circle_planid: circleData?.subPlanId,
+    plan_id: circleData?.subPlanId,
     customer_id: currentPatient?.id,
-    duration_in_month: circleData?.durationInMonth,
+    duration_in_months: circleData?.durationInMonth,
     user_type: getUserType(allCurrentPatients),
     price: circleData?.currentSellingPrice,
   };
