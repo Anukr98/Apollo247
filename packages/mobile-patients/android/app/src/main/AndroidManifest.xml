@@ -185,6 +185,11 @@
         <service android:name=".RingtonePlayingService" />
 
         <receiver
+            android:name="com.clevertap.pushtemplates.PTPushNotificationReceiver"
+            android:exported="false"
+            android:enabled="true">
+        </receiver>
+        <receiver
             android:name="com.clevertap.android.sdk.pushnotification.CTPushNotificationReceiver"
             android:exported="false"
             android:enabled="true">

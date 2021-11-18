@@ -37,6 +37,7 @@ export enum ProductPageViewedSource {
   MULTI_VARIANT = 'multivariant',
   PDP_ALL_SUSBTITUTES = 'PDP All Substitutes',
 
+  BRAND_PAGES = 'brandPages',
 }
 
 export enum WebEngageEventName {
@@ -181,7 +182,7 @@ export enum WebEngageEventName {
   COVID_VACCINATION_SECTION_CLICKED = 'Covid Vaccination Section Clicked',
   USER_LOCATION_CONSULT = 'User Location consult',
   USER_CHANGED_LOCATION = 'Change location',
-  
+
   // Diagnostics Events
   DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
   DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'Diagnostic pincode entered',
@@ -1277,16 +1278,18 @@ export interface WebEngageEvents {
   };
 
   [WebEngageEventName.DIAGNOSTIC_CART_VIEWED]: {
-    //this is already done
+    'Page source': string;
     'Total items in cart': number;
-    'Prescription Needed?': 'Yes' | 'No';
+    'Cart Items': object[];
+    'Circle user': 'Yes' | 'No';
+    Pincode: string | number;
+    city: string;
+    UHID: string;
+    'Prescription Needed'?: 'Yes' | 'No';
+    'Net after discount'?: number; //item total
     'Delivery charge'?: number;
     'Coupon code used'?: string;
-    'Total Discount': number;
-    'Net after discount': number; //item total
-    'Cart Items': object[];
-    Pincode: string | number;
-    UHID: string;
+    'Coupon Discount'?: number;
   };
   [WebEngageEventName.DIAGNOSTIC_SLOT_TIME_SELECTED]: {
     'Slot time': string;
@@ -1320,7 +1323,7 @@ export interface WebEngageEvents {
     'Latest Order Status': string;
     'Order id': string;
     Source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary';
-    'Circle user' ?: string; 
+    'Circle user' ?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED]: {
     'Order id'?: string;
@@ -1340,7 +1343,7 @@ export interface WebEngageEvents {
     'Item Name': string;
     'Item ID': string; // (SKUID)
     Source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
-    Section?: string;
+    'Section name'?: string;
     'Circle user': string;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
@@ -1384,7 +1387,7 @@ export interface WebEngageEvents {
     'Item name': string;
     Pincode: string | number;
     Mode: 'Customer' | 'Automated';
-    'Circle user'?: string; 
+    'Circle user'?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE]: {
     'Item ID'?: string | number;
