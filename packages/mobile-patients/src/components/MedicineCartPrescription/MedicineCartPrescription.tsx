@@ -12,7 +12,6 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useRef } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -31,8 +30,11 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
     serverCartItems,
     cartPrescriptions,
   } = useShoppingCart();
-  const { setUserActionPayload, uploadPhysicalPrescriptionsToServerCart } = useServerCart();
-  const { currentPatient } = useAllCurrentPatients();
+  const {
+    setUserActionPayload,
+    uploadPhysicalPrescriptionsToServerCart,
+    uploadEPrescriptionsToServerCart,
+  } = useServerCart();
   const { showAphAlert } = useUIElements();
 
   const renderHeader = () => {
@@ -88,41 +90,13 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
               }, 100);
             }
             if (option === PrescriptionType.UPLOADED) {
-              saveEPrescriptionsToServerCart(ePres);
+              uploadEPrescriptionsToServerCart(ePres);
               uploadPhysicalPrescriptionsToServerCart(physPres);
             }
           }}
         />
       </View>
     );
-  };
-
-  const saveEPrescriptionsToServerCart = (ePrescriptions: EPrescription[]) => {
-    try {
-      ePrescriptions?.forEach((prescription: EPrescription) => {
-        if (prescription?.prismPrescriptionFileId || prescription?.appointmentId) {
-          setUserActionPayload?.({
-            prescriptionDetails: {
-              prescriptionImageUrl: prescription?.uploadedUrl,
-              prismPrescriptionFileId: prescription?.prismPrescriptionFileId,
-              uhid: currentPatient?.uhid,
-              appointmentId: prescription?.appointmentId,
-              meta: {
-                doctorName: prescription?.doctorName,
-                forPatient: prescription?.forPatient,
-                medicines: prescription?.medicines,
-                date: prescription?.date,
-              },
-            },
-          });
-        }
-      });
-    } catch (error) {
-      showAphAlert?.({
-        title: 'Uh oh.. :(',
-        description: 'Error occurred while uploading prescriptions.',
-      });
-    }
   };
 
   const onPressContinue = async () => {

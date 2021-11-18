@@ -68,7 +68,7 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
     grandTotal,
     circleMembershipCharges,
   } = useShoppingCart();
-  const { setUserActionPayload } = useServerCart();
+  const { uploadPhysicalPrescriptionsToServerCart } = useServerCart();
   const client = useApolloClient();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
@@ -185,32 +185,7 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
     if (unUploadedPres.length > 0) {
       try {
         setloading!(true);
-        const data = await multiplePhysicalPrescriptionUpload(unUploadedPres);
-        const uploadUrls = data.map((item) =>
-          item.data!.uploadDocument.status
-            ? {
-                fileId: item.data!.uploadDocument.fileId!,
-                url: item.data!.uploadDocument.filePath!,
-              }
-            : null
-        );
-        const newuploadedPrescriptions = unUploadedPres.map(
-          (item, index) =>
-            ({
-              ...item,
-              uploadedUrl: uploadUrls![index]!.url,
-              prismPrescriptionFileId: uploadUrls![index]!.fileId,
-            } as PhysicalPrescription)
-        );
-        newuploadedPrescriptions.forEach((item) => {
-          setUserActionPayload?.({
-            prescriptionDetails: {
-              prescriptionImageUrl: item?.uploadedUrl,
-              prismPrescriptionFileId: item?.prismPrescriptionFileId,
-              uhid: currentPatient?.id,
-            },
-          });
-        });
+        uploadPhysicalPrescriptionsToServerCart(unUploadedPres);
         setisPhysicalUploadComplete(true);
       } catch (error) {
         CommonBugFender('PickUpCartSummary_physicalPrescriptionUpload', error);

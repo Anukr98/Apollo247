@@ -227,7 +227,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   }> | null>(null);
   const { setLoading: setGlobalLoading } = useUIElements();
   const { circleSubscriptionId } = useShoppingCart();
-  const { setUserActionPayload } = useServerCart();
+  const { setUserActionPayload, uploadEPrescriptionsToServerCart } = useServerCart();
   const { locationDetails, setLocationDetails, phrSession, setPhrSession } = useAppCommonData();
   const {
     addMultipleCartItems: addMultipleTestCartItems,
@@ -742,20 +742,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
                 : medicines.filter((item: any) => item?.prescriptionRequired).length;
 
             if (rxMedicinesCount) {
-              setUserActionPayload?.({
-                prescriptionDetails: {
-                  prescriptionImageUrl: presToAdd.uploadedUrl,
-                  prismPrescriptionFileId: presToAdd.prismPrescriptionFileId,
-                  uhid: currentPatient?.id,
-                  appointmentId: presToAdd.appointmentId,
-                  meta: {
-                    doctorName: presToAdd?.doctorName,
-                    forPatient: presToAdd?.forPatient,
-                    medicines: presToAdd?.medicines,
-                    date: presToAdd?.date,
-                  },
-                },
-              });
+              uploadEPrescriptionsToServerCart([presToAdd]);
             }
             // Adding tests to DiagnosticsCart
             if (!locationDetails) {

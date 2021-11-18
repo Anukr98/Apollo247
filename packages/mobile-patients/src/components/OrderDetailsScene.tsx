@@ -167,7 +167,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
   const { currentPatient } = useAllCurrentPatients();
   const { addresses, onHoldOptionOrder } = useShoppingCart();
-  const { setUserActionPayload } = useServerCart();
+  const {
+    setUserActionPayload,
+    uploadEPrescriptionsToServerCart,
+    uploadPhysicalPrescriptionsToServerCart,
+  } = useServerCart();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [isCancelVisible, setCancelVisible] = useState(false);
   const [showPrescriptionPopup, setPrescriptionPopUp] = useState(false);
@@ -499,22 +503,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           ],
         });
       });
-      prescriptions?.forEach((item) => {
-        setUserActionPayload?.({
-          prescriptionDetails: {
-            prescriptionImageUrl: item.uploadedUrl,
-            prismPrescriptionFileId: item.prismPrescriptionFileId,
-            uhid: currentPatient?.id,
-            appointmentId: item.appointmentId,
-            meta: {
-              doctorName: item?.doctorName,
-              forPatient: item?.forPatient,
-              medicines: item?.medicines,
-              date: item?.date,
-            },
-          },
-        });
-      });
+      uploadEPrescriptionsToServerCart(prescriptions);
       setLoading!(false);
       if (unavailableItems.length) {
         setReOrderDetails({ total: totalItemsCount, unavailable: unavailableItems });
@@ -1612,15 +1601,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           setPrescriptionPopUp(false);
           if (selectedType == 'CAMERA_AND_GALLERY') {
             if (response.length == 0) return;
-            response.forEach((item) => {
-              setUserActionPayload?.({
-                prescriptionDetails: {
-                  prescriptionImageUrl: item?.uploadedUrl,
-                  prismPrescriptionFileId: item?.prismPrescriptionFileId,
-                  uhid: currentPatient?.id,
-                },
-              });
-            });
+            uploadPhysicalPrescriptionsToServerCart(response);
             props.navigation.navigate(AppRoutes.UploadPrescription, {
               phyPrescriptionsProp: response,
               type,
@@ -1645,22 +1626,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           if (selectedEPres.length == 0) {
             return;
           }
-          selectedEPres.forEach((item) => {
-            setUserActionPayload?.({
-              prescriptionDetails: {
-                prescriptionImageUrl: item.uploadedUrl,
-                prismPrescriptionFileId: item.prismPrescriptionFileId,
-                uhid: currentPatient?.id,
-                appointmentId: item.appointmentId,
-                meta: {
-                  doctorName: item?.doctorName,
-                  forPatient: item?.forPatient,
-                  medicines: item?.medicines,
-                  date: item?.date,
-                },
-              },
-            });
-          });
+          uploadEPrescriptionsToServerCart(selectedEPres);
           props.navigation.navigate(AppRoutes.UploadPrescription, {
             ePrescriptionsProp: selectedEPres,
             type: 'E-Prescription',

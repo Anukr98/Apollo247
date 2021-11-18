@@ -51,7 +51,7 @@ export const CartPrescriptions: React.FC<CartPrescriptionsProps> = (props) => {
     (prescription) => prescription?.appointmentId || prescription?.meta
   );
   // console.log('appointmentPrescriptions >>>>> ', appointmentPrescriptions);
-  const { setUserActionPayload } = useServerCart();
+  const { removePrescriptionFromCart } = useServerCart();
   const {
     onPressUploadMore,
     // ePresProps,
@@ -93,12 +93,7 @@ export const CartPrescriptions: React.FC<CartPrescriptionsProps> = (props) => {
         i={i}
         arrayLength={arrayLength}
         onRemove={() => {
-          setUserActionPayload?.({
-            prescriptionDetails: {
-              prismPrescriptionFileId: item?.prismPrescriptionFileId,
-              prescriptionImageUrl: '',
-            },
-          });
+          removePrescriptionFromCart(item?.prismPrescriptionFileId);
         }}
         {...myPresProps}
       />
@@ -135,12 +130,7 @@ export const CartPrescriptions: React.FC<CartPrescriptionsProps> = (props) => {
         doctorName={item?.meta?.doctorName}
         forPatient={item?.meta?.forPatient}
         onRemove={() => {
-          setUserActionPayload({
-            prescriptionDetails: {
-              prismPrescriptionFileId: item?.prismPrescriptionFileId,
-              prescriptionImageUrl: '',
-            },
-          });
+          removePrescriptionFromCart(item?.prismPrescriptionFileId);
         }}
         isSelected={true}
         isDisabled={!!isPrescriptionChangeDisabled}

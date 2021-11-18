@@ -223,17 +223,18 @@ export const useServerCart = () => {
         currentPatient?.id,
         physicalPrescriptions
       );
-      updatedPrescriptions?.forEach((prescription: PhysicalPrescription) => {
-        if (prescription?.prismPrescriptionFileId && prescription?.uploadedUrl) {
-          setUserActionPayload({
-            prescriptionType: PrescriptionType.UPLOADED,
-            prescriptionDetails: {
-              prescriptionImageUrl: prescription?.uploadedUrl,
-              prismPrescriptionFileId: prescription?.prismPrescriptionFileId,
-              uhid: currentPatient?.uhid,
-            },
-          });
+      const prescriptionsToUpload = updatedPrescriptions.map(
+        (prescription: PhysicalPrescription) => {
+          return {
+            prescriptionImageUrl: prescription?.uploadedUrl,
+            prismPrescriptionFileId: prescription?.prismPrescriptionFileId,
+            uhid: currentPatient?.uhid,
+          };
         }
+      );
+      setUserActionPayload({
+        prescriptionType: PrescriptionType.UPLOADED,
+        prescriptionDetails: prescriptionsToUpload,
       });
       setServerCartLoading?.(false);
     } catch (error) {
@@ -243,22 +244,32 @@ export const useServerCart = () => {
   };
 
   const uploadEPrescriptionsToServerCart = (ePrescriptionsToBeUploaded: EPrescription[]) => {
-    ePrescriptionsToBeUploaded?.forEach((presToAdd) => {
-      setUserActionPayload?.({
-        prescriptionType: PrescriptionType.UPLOADED,
-        prescriptionDetails: {
-          prescriptionImageUrl: presToAdd?.uploadedUrl,
-          prismPrescriptionFileId: presToAdd?.prismPrescriptionFileId,
-          uhid: currentPatient?.id,
-          appointmentId: presToAdd?.appointmentId,
-          meta: {
-            doctorName: presToAdd?.doctorName,
-            forPatient: presToAdd?.forPatient,
-            medicines: presToAdd?.medicines,
-            date: presToAdd?.date,
-          },
+    const prescriptionsToUpload = ePrescriptionsToBeUploaded.map((presToAdd: EPrescription) => {
+      return {
+        prescriptionImageUrl: presToAdd?.uploadedUrl,
+        prismPrescriptionFileId: presToAdd?.prismPrescriptionFileId,
+        uhid: currentPatient?.id,
+        appointmentId: presToAdd?.appointmentId,
+        meta: {
+          doctorName: presToAdd?.doctorName,
+          forPatient: presToAdd?.forPatient,
+          medicines: presToAdd?.medicines,
+          date: presToAdd?.date,
         },
-      });
+      };
+    });
+    setUserActionPayload({
+      prescriptionType: PrescriptionType.UPLOADED,
+      prescriptionDetails: prescriptionsToUpload,
+    });
+  };
+
+  const removePrescriptionFromCart = (id: string) => {
+    setUserActionPayload?.({
+      prescriptionDetails: {
+        prismPrescriptionFileId: id,
+        prescriptionImageUrl: '',
+      },
     });
   };
 
@@ -270,5 +281,6 @@ export const useServerCart = () => {
     fetchProductSuggestions,
     uploadPhysicalPrescriptionsToServerCart,
     uploadEPrescriptionsToServerCart,
+    removePrescriptionFromCart,
   };
 };

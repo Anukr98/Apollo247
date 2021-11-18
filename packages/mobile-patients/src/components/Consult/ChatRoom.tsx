@@ -948,7 +948,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
   const { circleSubPlanId, circleSubscriptionId } = useShoppingCart();
-  const { setUserActionPayload } = useServerCart();
+  const { setUserActionPayload, uploadEPrescriptionsToServerCart } = useServerCart();
   const [name, setname] = useState<string>('');
   const [showRescheduleCancel, setShowRescheduleCancel] = useState<boolean>(false);
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
@@ -4502,20 +4502,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             ],
           });
         });
-        setUserActionPayload?.({
-          prescriptionDetails: {
-            prescriptionImageUrl: presToAdd.uploadedUrl,
-            prismPrescriptionFileId: presToAdd.prismPrescriptionFileId,
-            uhid: currentPatient?.id,
-            appointmentId: presToAdd.appointmentId,
-            meta: {
-              doctorName: presToAdd?.doctorName,
-              forPatient: presToAdd?.forPatient,
-              medicines: presToAdd?.medicines,
-              date: presToAdd?.date,
-            },
-          },
-        });
+        uploadEPrescriptionsToServerCart([presToAdd]);
         setLoading(false);
         postCleverTapUploadPrescriptionEvents('Consult Room', 'Cart');
         props.navigation.push(AppRoutes.ServerCart);
@@ -4529,20 +4516,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
       return;
     }
-    setUserActionPayload?.({
-      prescriptionDetails: {
-        prescriptionImageUrl: presToAdd.uploadedUrl,
-        prismPrescriptionFileId: presToAdd.prismPrescriptionFileId,
-        uhid: currentPatient?.id,
-        appointmentId: presToAdd.appointmentId,
-        meta: {
-          doctorName: presToAdd?.doctorName,
-          forPatient: presToAdd?.forPatient,
-          medicines: presToAdd?.medicines,
-          date: presToAdd?.date,
-        },
-      },
-    });
+    uploadEPrescriptionsToServerCart([presToAdd]);
     postCleverTapUploadPrescriptionEvents('Consult Room', 'Non-Cart');
     props.navigation.navigate(AppRoutes.UploadPrescription, {
       ePrescriptionsProp: [presToAdd],
