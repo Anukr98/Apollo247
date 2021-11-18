@@ -152,18 +152,20 @@ import { AddVaccinationRecord } from '@aph/mobile-patients/src/components/Health
 import { CowinCertificateOTPScreen } from '@aph/mobile-patients/src/components/HealthRecords/CowinCertificateOTPScreen';
 import { CowinCertificateGetOTP } from '@aph/mobile-patients/src/components/HealthRecords/CowinCertificateGetOTP';
 import { CowinProfileSelection } from '@aph/mobile-patients/src/components/HealthRecords/CowinProfileSelection';
-import { CowinCertificateViewer } from '@aph/mobile-patients/src/components/HealthRecords/CowinCertificateViewer';
 import { PostShareAppointmentSelectorScreen } from '@aph/mobile-patients/src/components/ConsultRoom/PostShareAppointmentSelectorScreen';
 import { PrescriptionCamera } from '@aph/mobile-patients/src/components/Tests/PrescriptionCamera';
 import { SubmittedPrescription } from '@aph/mobile-patients/src/components/Tests/SubmittedPrescription';
 import { SpecialOffersScreen } from '@aph/mobile-patients/src/components/SpecialOffers/SpecialOffers';
 import { PaymentConfirmation } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentConfirmaiton';
 import { ConsultPaymentScreen } from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/ConsultPaymentScreen';
+import { AskApolloQuickBook } from '@aph/mobile-patients/src/components/Consult/AskApolloQuickBook';
+import { SelectLocation } from '@aph/mobile-patients/src/components/ui/SelectLocation';
 import { ShareReferLink } from '@aph/mobile-patients/src/components//ReferAndEarn/ShareReferLink';
 import { YourRewardsScreen } from '@aph/mobile-patients/src/components//ReferAndEarn/YourRewardsScreen';
 import { EarnedPoints } from '@aph/mobile-patients/src/components/ReferAndEarn/EarnedPoint';
 import { RefererTermsAndCondition } from '@aph/mobile-patients/src/components/ReferAndEarn/RefererTermsAndCondition';
 import { RefererFAQ } from '@aph/mobile-patients/src/components/ReferAndEarn/ReferrerFAQ';
+import { BrandPages } from '@aph/mobile-patients/src/components/BrandPages/BrandPages';
 
 export enum AppRoutes {
   Login = 'Login',
@@ -310,11 +312,14 @@ export enum AppRoutes {
   SpecialOffersScreen = 'SpecialOffersScreen',
   PaymentConfirmation = 'PaymentConfirmation',
   ConsultPaymentScreen = 'ConsultPaymentScreen',
+  AskApolloQuickBook = 'AskApolloQuickBook',
+  SelectLocation = 'SelectLocation',
   ShareReferLink = 'ShareReferLink',
   YourRewardsScreen = 'YourRewardsScreen',
   EarnedPoints = 'EarnedPoints',
   RefererTermsAndCondition = 'RefererTermsAndCondition',
   RefererFAQ = 'RefererFAQ',
+  BrandPages = 'BrandPages',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -326,6 +331,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
       header: null,
       gesturesEnabled: false,
     },
+  },
+  [AppRoutes.SelectLocation]: {
+    screen: SelectLocation,
   },
   [AppRoutes.Login]: {
     screen: Login,
@@ -787,6 +795,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.ConsultPaymentScreen]: {
     screen: ConsultPaymentScreen,
   },
+  [AppRoutes.AskApolloQuickBook]: {
+    screen: AskApolloQuickBook,
+  },
   [AppRoutes.ShareReferLink]: {
     screen: ShareReferLink,
   },
@@ -801,6 +812,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.RefererFAQ]: {
     screen: RefererFAQ,
+  },
+  [AppRoutes.BrandPages]: {
+    screen: BrandPages,
   },
 };
 

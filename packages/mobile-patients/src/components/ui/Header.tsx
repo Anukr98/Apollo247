@@ -68,7 +68,7 @@ export interface HeaderProps {
   title?: string;
   titleStyle?: StyleProp<TextStyle>;
   titleComponent?: React.ReactNode;
-  leftIcon?: 'backArrow' | 'close' | 'backArrowWhite' | 'logo' | 'homeIcon';
+  leftIcon?: 'backArrow' | 'close' | 'backArrowWhite' | 'logo' | 'homeIcon' | null;
   rightIcon?: string;
   rightComponent?: React.ReactNode;
   container?: StyleProp<ViewStyle>;

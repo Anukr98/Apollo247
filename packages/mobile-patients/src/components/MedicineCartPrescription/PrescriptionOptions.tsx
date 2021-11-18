@@ -19,6 +19,7 @@ import {
   RxPrescriptionCallIc,
   RxPrescriptionIc,
   RxPrescriptionLaterIc,
+  DoctorConsultIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -37,6 +38,7 @@ import {
   pharmaPrescriptionOptionVariables,
 } from '@aph/mobile-patients/src/graphql/types/pharmaPrescriptionOption';
 import { pharmaPrescriptionShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export interface Props {
   selectedOption: PrescriptionType | null;
@@ -62,6 +64,7 @@ export const PrescriptionOptions: React.FC<Props> = ({
     ePrescriptions,
     physicalPrescriptions,
     tatDetailsForPrescriptionOptions,
+    consultProfile,
   } = useShoppingCart();
   const client = useApolloClient();
   const prescriptionPopupRef = useRef<UploadPrescriprionPopupRefProps | null>(null);
@@ -69,6 +72,7 @@ export const PrescriptionOptions: React.FC<Props> = ({
   const configPrescriptionOptions = AppConfig.Configuration.CART_PRESCRIPTION_OPTIONS;
   const [prescriptionsLoading, setPrescriptionsLoading] = useState<boolean>(false);
   const [cartPrescriptionOptions, setCartPrescriptionOptions] = useState<any[]>([]);
+  const { setSelectedPrescriptionType } = useAppCommonData();
 
   useEffect(() => {
     getPrescriptionOptions();
@@ -87,7 +91,7 @@ export const PrescriptionOptions: React.FC<Props> = ({
         pharmaPrescriptionOptionVariables
       >({
         query: GET_PHARMACY_PRESCRIPTION_OPTION,
-        variables: tatDetailsForPrescriptionOptions,
+        variables: { pharmaPrescriptionOptionInput: tatDetailsForPrescriptionOptions },
         fetchPolicy: 'no-cache',
       });
       const { data } = response;
@@ -113,7 +117,7 @@ export const PrescriptionOptions: React.FC<Props> = ({
           onSelectOption(PrescriptionType.UPLOADED, ePrescriptions, physicalPrescriptions);
         }}
         checked={selectedOption === PrescriptionType.UPLOADED}
-        leftIcon={<RxPrescriptionIc resizeMode={'contain'} />}
+        leftIcon={<RxPrescriptionIc resizeMode={'contain'} style={{ height: 38, width: 27 }} />}
       />
     );
   };
@@ -187,11 +191,14 @@ export const PrescriptionOptions: React.FC<Props> = ({
   const renderNoPrescription = (title: string) => {
     return (
       <PrescriptionOption
-        title={title}
+        title={AppConfig.Configuration.FREE_CONSULT_MESSAGE.prescriptionOptionHeader || title}
         subtitle={renderNoPrescriptionDetails()}
-        onPress={() => onSelectOption(PrescriptionType.CONSULT)}
+        onPress={() => {
+          onSelectOption(PrescriptionType.CONSULT);
+          setSelectedPrescriptionType && setSelectedPrescriptionType('CONSULT');
+        }}
         checked={selectedOption === PrescriptionType.CONSULT}
-        leftIcon={<RxPrescriptionCallIc resizeMode={'contain'} />}
+        leftIcon={<DoctorConsultIcon resizeMode={'contain'} style={{ height: 40, width: 30 }} />}
       />
     );
   };
@@ -201,9 +208,7 @@ export const PrescriptionOptions: React.FC<Props> = ({
       <>
         <View style={{ flexDirection: 'row' }}>
           <Text style={styles.lightWeightBlueConsultation}>
-            {
-              'Get a consultation by our expert doctor within the next 30 minutes\n(Working hours: 8am to 8pm)'
-            }
+            {AppConfig.Configuration.FREE_CONSULT_MESSAGE.prescriptionMessage}
           </Text>
           <View style={styles.amountAndFreeText}>
             <Text style={styles.lightWeightBlueLineThrough}>{'₹399'}</Text>
@@ -211,15 +216,17 @@ export const PrescriptionOptions: React.FC<Props> = ({
           </View>
         </View>
         {selectedOption === PrescriptionType.CONSULT && [
-          <Text style={styles.consultationFor}>{'This consultation is for:'}</Text>,
+          <Text style={styles.consultationFor}>{'You are buying medicines for:'}</Text>,
           <Divider />,
           renderProfiles(),
           <View style={styles.consultAttentionView}>
             <FreeShippingIcon style={styles.freeShippingIcon} />
             <Text style={styles.lightWeightBlue}>
-              {
-                'Please make sure the consult is for the right person else consult can get cancelled.'
-              }
+              Please make sure the medicine ordered is for{' '}
+              <Text style={styles.lightWeightBlueBold}>
+                {consultProfile?.firstName || currentPatient?.firstName}
+              </Text>{' '}
+              only, else order will not be delivered.
             </Text>
           </View>,
         ]}
@@ -245,7 +252,7 @@ export const PrescriptionOptions: React.FC<Props> = ({
       };
       return {
         onPress,
-        title: isAddNewMember ? '+Add Member' : patient?.firstName!,
+        title: isAddNewMember ? '+Add Patient Name' : patient?.firstName!,
         containerStyle: styles.profileBtnContainer,
         buttonStyle: isSelectedProfile ? styles.profileBtnSelected : styles.profileBtn,
         titleStyle: isSelectedProfile ? styles.profileBtnTitleSelected : styles.profileBtnTitle,
@@ -357,6 +364,10 @@ const styles = StyleSheet.create({
   lightWeightBlue: {
     ...text('R', 13, '#02475B'),
   },
+  lightWeightBlueBold: {
+    ...text('R', 13, '#02475B'),
+    fontWeight: '500',
+  },
   lightWeightBlueLineThrough: {
     ...text('R', 13, '#02475B'),
     textDecorationLine: 'line-through',
@@ -402,8 +413,9 @@ const styles = StyleSheet.create({
     marginTop: 18,
   },
   rxPrescriptionLaterIc: {
-    height: 20,
-    width: 20,
+    height: 25,
+    width: 25,
+    marginRight: 3,
   },
   profileWrapper: { marginVertical: 10, flexDirection: 'row', flexWrap: 'wrap' },
   profileBtnContainer: { margin: 5, marginLeft: 0, marginRight: 10 },

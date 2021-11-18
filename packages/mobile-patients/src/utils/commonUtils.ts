@@ -378,11 +378,11 @@ export const createPatientAddressObject = (addressObject : any, serviceabilityOb
 
 export enum DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE {
   HOME = 'Home page',
-  FULL_SEARCH = 'Full search',
+  FULL_SEARCH = 'Full Search',
   DETAILS = 'Details page',
-  PARTIAL_SEARCH = 'Partial search',
+  PARTIAL_SEARCH = 'Partial Search',
   LISTING = 'Listing page',
-  POPULAR_SEARCH = 'Popular search',
+  POPULAR_SEARCH = 'Popular Search',
   CATEGORY = 'Category page',
   PRESCRIPTION = 'Prescription',
   CART_PAGE = 'Cart page',
@@ -446,9 +446,13 @@ export const diagnosticsDisplayPrice = (item: DiagnosticsCartItem , isCircleMemb
     }
   }
 
-  const slashedPrice = !!itemPackageMrp
-  ? itemPackageMrp > priceToShow
-    ? itemPackageMrp
+  const calSlashedPrice = !!itemPackageMrp && itemPackageMrp > price
+  ? itemPackageMrp
+  : price;
+
+  const slashedPrice = calSlashedPrice //replaced calSlashedPrice with itemPackageMrp 
+  ? calSlashedPrice > priceToShow
+    ? calSlashedPrice
     : null
   : price > priceToShow
   ? price
