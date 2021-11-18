@@ -4261,121 +4261,122 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         )}
       </View>
     );
-  const renderReferralBanner = () => {
-    return (
-      <ReferralBanner
-        {...props}
-        redirectOnShareReferrer={() => {
-          beforeRedirectGetRewardIdAndCampaignId();
-        }}
-      />
-    );
-  };
+    const renderReferralBanner = () => {
+      return (
+        <ReferralBanner
+          {...props}
+          redirectOnShareReferrer={() => {
+            beforeRedirectGetRewardIdAndCampaignId();
+          }}
+        />
+      );
+    };
 
-  return (
-    <View style={{ flex: 1, backgroundColor: 'white' }}>
-      <SafeAreaView style={{ ...theme.viewStyles.container }}>
-        <ScrollView style={{ flex: 1 }} bounces={false}>
-          <View style={{ width: '100%' }}>
-            <View style={styles.viewName}>
-              {renderTopIcons()}
-              <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
-              <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text>
-              {renderMenuOptions()}
-              {(displayQuickBookAskApollo || displayAskApolloNumber) && renderAskApolloView()}
-              {renderReferralBanner()}
-              {circleDataLoading && renderCircleShimmer()}
-              <View style={{ backgroundColor: '#f0f1ec' }}>
-                {isCircleMember === 'yes' && !circleDataLoading && renderCircle()}
-              </View>
-              {showCirclePlans && renderCircleSubscriptionPlans()}
-              {showCircleActivationcr && renderCircleActivation()}
-              {!covidVaccineCtaV2?.data && renderCovidVaccinationShimmer()}
-              <View style={{ backgroundColor: '#f0f1ec' }}>
-                {covidVaccineCtaV2?.data?.length > 0 && renderCovidContainer()}
-              </View>
-              <View style={{ paddingHorizontal: 20 }}>{renderSecondaryConsultationCta()}</View>
-              {bannerLoading && renderBannerShimmer()}
-              <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
-              {/**added prohealth banner */}
-              {proActiveAppointments?.length == 0 && (
-                <View style={{ backgroundColor: '#f0f1ec' }}>{renderProhealthBanner()}</View>
-              )}
-              {proActiveAppointments?.length > 0 && (
+    return (
+      <View style={{ flex: 1, backgroundColor: 'white' }}>
+        <SafeAreaView style={{ ...theme.viewStyles.container }}>
+          <ScrollView style={{ flex: 1 }} bounces={false}>
+            <View style={{ width: '100%' }}>
+              <View style={styles.viewName}>
+                {renderTopIcons()}
+                <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
+                <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text>
+                {renderMenuOptions()}
+                {(displayQuickBookAskApollo || displayAskApolloNumber) && renderAskApolloView()}
+                {renderReferralBanner()}
+                {circleDataLoading && renderCircleShimmer()}
                 <View style={{ backgroundColor: '#f0f1ec' }}>
-                  {renderListView(
-                    proActiveAppointments?.length == 1
-                      ? 'ProHealth Appointment'
-                      : 'ProHealth Appointments',
-                    'prohealth'
-                  )}
+                  {isCircleMember === 'yes' && !circleDataLoading && renderCircle()}
                 </View>
-              )}
-              <View style={{ backgroundColor: '#f0f1ec' }}>
-                {renderListView('Active Appointments', 'normal')}
+                {showCirclePlans && renderCircleSubscriptionPlans()}
+                {showCircleActivationcr && renderCircleActivation()}
+                {!covidVaccineCtaV2?.data && renderCovidVaccinationShimmer()}
+                <View style={{ backgroundColor: '#f0f1ec' }}>
+                  {covidVaccineCtaV2?.data?.length > 0 && renderCovidContainer()}
+                </View>
+                <View style={{ paddingHorizontal: 20 }}>{renderSecondaryConsultationCta()}</View>
+                {bannerLoading && renderBannerShimmer()}
+                <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
+                {/**added prohealth banner */}
+                {proActiveAppointments?.length == 0 && (
+                  <View style={{ backgroundColor: '#f0f1ec' }}>{renderProhealthBanner()}</View>
+                )}
+                {proActiveAppointments?.length > 0 && (
+                  <View style={{ backgroundColor: '#f0f1ec' }}>
+                    {renderListView(
+                      proActiveAppointments?.length == 1
+                        ? 'ProHealth Appointment'
+                        : 'ProHealth Appointments',
+                      'prohealth'
+                    )}
+                  </View>
+                )}
+                <View style={{ backgroundColor: '#f0f1ec' }}>
+                  {renderListView('Active Appointments', 'normal')}
+                </View>
+                <View style={{ backgroundColor: '#f0f1ec' }}>{renderAllConsultedDoctors()}</View>
+                {renderCovidMainView()}
               </View>
-              <View style={{ backgroundColor: '#f0f1ec' }}>{renderAllConsultedDoctors()}</View>
-              {renderCovidMainView()}
             </View>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-      {showWebView?.action && openWebView(showWebView?.url)}
-      {renderBottomTabBar()}
-      {showPopUp && (
-        <>
-          <BottomPopUp
-            title={`Hi ${(currentPatient && currentPatient.firstName) || ''}`}
-            description={string.home.welcome_popup.description}
-          >
-            <View style={{ height: 20, alignItems: 'flex-end' }} />
-          </BottomPopUp>
-          <TouchableOpacity
-            onPress={() => {
-              CommonLogEvent(AppRoutes.ConsultRoom, 'ConsultRoom_BottomPopUp clicked');
-              AsyncStorage.setItem('gotIt', 'true');
-              setshowPopUp(false);
+          </ScrollView>
+        </SafeAreaView>
+        {showWebView?.action && openWebView(showWebView?.url)}
+        {renderBottomTabBar()}
+        {showPopUp && (
+          <>
+            <BottomPopUp
+              title={`Hi ${(currentPatient && currentPatient.firstName) || ''}`}
+              description={string.home.welcome_popup.description}
+            >
+              <View style={{ height: 20, alignItems: 'flex-end' }} />
+            </BottomPopUp>
+            <TouchableOpacity
+              onPress={() => {
+                CommonLogEvent(AppRoutes.ConsultRoom, 'ConsultRoom_BottomPopUp clicked');
+                AsyncStorage.setItem('gotIt', 'true');
+                setshowPopUp(false);
+              }}
+              style={{
+                backgroundColor: 'transparent',
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                top: 0,
+                bottom: 0,
+              }}
+            />
+          </>
+        )}
+        {isLocationSearchVisible && (
+          <LocationSearchPopup
+            onPressLocationSearchItem={() => {
+              setCurrentLocationFetched!(true);
+              setLocationSearchVisible(false);
             }}
-            style={{
-              backgroundColor: 'transparent',
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              top: 0,
-              bottom: 0,
+            location={g(locationDetails, 'displayName')}
+            onClose={() => {
+              setLocationSearchVisible(false);
+              !g(locationDetails, 'displayName') && askLocationPermission();
             }}
           />
-        </>
-      )}
-      {isLocationSearchVisible && (
-        <LocationSearchPopup
-          onPressLocationSearchItem={() => {
-            setCurrentLocationFetched!(true);
-            setLocationSearchVisible(false);
-          }}
-          location={g(locationDetails, 'displayName')}
-          onClose={() => {
-            setLocationSearchVisible(false);
-            !g(locationDetails, 'displayName') && askLocationPermission();
-          }}
-        />
-      )}
-      <NotificationListener navigation={props.navigation} />
-      <Overlay
-        isVisible={showHdfcConnectPopup}
-        windowBackgroundColor={'rgba(0, 0, 0, 0.31)'}
-        overlayStyle={styles.overlayStyle}
-        onRequestClose={() => setShowHdfcConnectPopup(false)}
-      >
-        <HdfcConnectPopup
-          helplineNumber={'040-482-12515'}
-          onClose={() => setShowHdfcConnectPopup(false)}
-          isVaccineDocOnCall={true}
-          postWEGEvent={() =>
-            postHomeWEGEvent(WebEngageEventName.VACCINATION_PROCEED_TO_CONNECT_A_DOCTOR_CLICKED)
-          }
-        />
-      </Overlay>
-    </View>
-  );
+        )}
+        <NotificationListener navigation={props.navigation} />
+        <Overlay
+          isVisible={showHdfcConnectPopup}
+          windowBackgroundColor={'rgba(0, 0, 0, 0.31)'}
+          overlayStyle={styles.overlayStyle}
+          onRequestClose={() => setShowHdfcConnectPopup(false)}
+        >
+          <HdfcConnectPopup
+            helplineNumber={'040-482-12515'}
+            onClose={() => setShowHdfcConnectPopup(false)}
+            isVaccineDocOnCall={true}
+            postWEGEvent={() =>
+              postHomeWEGEvent(WebEngageEventName.VACCINATION_PROCEED_TO_CONNECT_A_DOCTOR_CLICKED)
+            }
+          />
+        </Overlay>
+      </View>
+    );
+  };
 };
