@@ -18,13 +18,20 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     justifyContent: 'center',
     textTransform: 'uppercase',
+    width: '90%',
   },
 
   container: {},
 
+  containerView: {
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+
   arrowview: {
-    alignSelf: 'flex-end',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
+    flexDirection: 'row',
     marginRight: 16,
   },
   labelView: {
@@ -49,16 +56,14 @@ export const CollapseCard: React.FC<CollapseCardProps> = (props) => {
   return (
     <View style={[styles.container, props.containerStyle]}>
       <View style={[styles.labelView, props.labelViewStyle]}>
-        <View>
-          <Text style={[styles.headingText, props.headingStyle]}>{props.heading}</Text>
-        </View>
-        <View>
+        <View style={styles.containerView}>
           <TouchableOpacity
             activeOpacity={1}
             style={styles.arrowview}
             onPress={() => props.onPress(!props.collapse)}
           >
-            {props.collapse ? <Up /> : <Down />}
+            <Text style={[styles.headingText, props.headingStyle]}>{props.heading}</Text>
+            {props.collapse ? <Up style={{ left: 20 }} /> : <Down style={{ left: 20 }} />}
           </TouchableOpacity>
         </View>
       </View>

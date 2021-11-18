@@ -19,7 +19,7 @@ interface SearchResultProps {
   data: any;
   showAllData: boolean;
   componentName: 'speciality' | 'doctor' | 'procedures' | 'symptoms';
-  onPressCallback: (item: any, index: number) => void;
+  onPressCallback: (item: any, index: number, name?: string) => void;
   navigation: NavigationScreenProp<NavigationRoute<{}>, {}>;
   postSymptomTrackEvent?: (() => void) | null;
   visibleDataCount?: number;
@@ -65,7 +65,7 @@ export const SearchResultCard: React.FC<SearchResultProps> = (props) => {
         <TouchableOpacity
           key={index}
           style={styles.card}
-          onPress={() => onPressCallback(item, index)}
+          onPress={() => onPressCallback(item, index, componentName)}
         >
           {!!imageUrl ? (
             <Image

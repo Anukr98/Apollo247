@@ -1800,6 +1800,14 @@ export const WhiteCallIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/whiteCall.webp')} resizeMode="contain" />
 );
 
+export const WhiteCall: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/vector3x.webp')} resizeMode="contain" />
+);
+
+export const BlueCross: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/blueCross3x.webp')} resizeMode="contain" />
+);
+
 export const UserThumbnailIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/callDoctorThumbnail.webp')} resizeMode="contain" />
 );
@@ -2237,6 +2245,22 @@ export const AlertTriangle: React.FC<IconProps> = (props) => (
   />
 );
 
+export const ArrowOrange: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/arrowOrange.webp')}
+  />
+);
+
+export const LightBulb: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/light_bulb.webp')}
+  />
+);
+
 export const TestTubes: React.FC<IconProps> = (props) => (
   <IconBase
     size="sm"
@@ -2422,6 +2446,52 @@ export const CoinSavingsIcon: React.FC<IconProps> = (props) => (
     {...props}
     source={require('@aph/mobile-patients/src/components/ui/icons/coinSavingsIcon.webp')}
   />
+);
+
+export const CallIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/call-apollo.webp')}
+  />
+);
+
+export const CallIconWhite: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/call-white.webp')}
+  />
+);
+
+export const LocationYellow: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_location_yellow.webp')} />
+);
+
+export const CrossGray: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_cross_gray.webp')} />
+);
+
+export const Sort: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/sort.webp')} />
+);
+
+export const Toggle: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/rightToggle.webp')} />
+);
+
+export const LeftToggle: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/leftToggle.webp')} />
+);
+
+export const LocationGrey: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/location_grey.webp')} />
+);
+
+export const HospitalVisit: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_hospital_visit.png')} />
+);
+
+export const VideoConsult: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_video_consult.png')} />
 );
 
 export const ReferralBannerIcon: React.FC<IconProps> = (props) => (

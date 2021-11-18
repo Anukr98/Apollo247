@@ -377,7 +377,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
           } else {
             if (source == 'Tests' || source == 'Diagnostics Cart') {
               setNewAddressAddedHomePage?.(String(address?.zipcode!) || '');
-              setNewAddressAddedCartPage?.('');
+              setNewAddressAddedCartPage?.(String(address?.zipcode!));
               setDiagnosticAreas?.([]);
               setAreaSelected?.({});
               setDiagnosticSlot?.(null);
