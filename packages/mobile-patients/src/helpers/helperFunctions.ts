@@ -29,7 +29,7 @@ import {
   TEST_COLLECTION_TYPE,
   APPOINTMENT_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { AppConfig, AppEnv } from '@aph/mobile-patients/src/strings/AppConfig';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from 'react-native-geolocation-service';
 import NetInfo from '@react-native-community/netinfo';
 import moment from 'moment';
@@ -65,10 +65,7 @@ import {
 import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import ApolloClient from 'apollo-client';
 import { saveSearch, saveSearchVariables } from '@aph/mobile-patients/src/graphql/types/saveSearch';
-import {
-  SAVE_SEARCH,
-  UPDATE_CALLKIT_NOTIFICATION_RECIEVED_STATUS,
-} from '@aph/mobile-patients/src/graphql/profiles';
+import { SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -118,6 +115,7 @@ import {
 import Share from 'react-native-share';
 import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientAddressObj } from '../graphql/types/getDiagnosticOrderDetails';
 import { handleOpenURL, pushTheView } from './deeplinkRedirection';
+import DeviceInfo from 'react-native-device-info';
 
 const width = Dimensions.get('window').width;
 
@@ -3779,7 +3777,6 @@ export const isCartPriceWithInSpecifiedRange = (
     return false;
   }
 };
-import DeviceInfo from 'react-native-device-info';
 
 export const updateCallKitNotificationReceivedStatus = (appointmentId: string) => {
   fetch(apiBaseUrl + '/graphql', {

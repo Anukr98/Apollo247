@@ -59,7 +59,6 @@ import {
   BannerDisplayType,
   BookingSource,
   BookingStatus,
-  // DEVICE_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { dateFormatter } from '@aph/mobile-patients/src/utils/dateUtil';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
@@ -901,9 +900,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   }
   const updateAppVersion = (currentPatient: any) => {
-    console.log(currentPatient)
     if (currentPatient?.id) {
-      console.log("====================")
       updatePatientAppVersion(client, currentPatient);
     }
   };
