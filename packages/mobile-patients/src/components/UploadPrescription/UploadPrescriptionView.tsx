@@ -62,6 +62,7 @@ import {
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { postCleverTapUploadPrescriptionEvents } from '@aph/mobile-patients/src/components/UploadPrescription/Events';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 const { width, height } = Dimensions.get('window');
 
@@ -223,6 +224,10 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
   const phyPrescriptionUploaded = props.navigation.getParam('phyPrescriptionUploaded') || [];
   const ePresscriptionUploaded = props.navigation.getParam('ePresscriptionUploaded') || [];
   const { ePrescriptions } = useShoppingCart();
+  const {
+    uploadPhysicalPrescriptionsToServerCart,
+    uploadEPrescriptionsToServerCart,
+  } = useServerCart();
   const [photoBase64, setPhotoBase64] = useState<string>('');
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [isFocused, setIsFocused] = useState<boolean>(false);
@@ -312,6 +317,11 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
             onPress={() => {
               removeClickedPhoto();
               postCleverTapUploadPrescriptionEvents('Camera', 'Non-Cart');
+              uploadPhysicalPrescriptionsToServerCart([
+                ...phyPrescriptionUploaded,
+                ...imageClickData,
+              ]);
+              uploadEPrescriptionsToServerCart(ePresscriptionUploaded);
               props.navigation.navigate(AppRoutes.UploadPrescription, {
                 type: 'Camera',
                 phyPrescriptionsProp: [...phyPrescriptionUploaded, ...imageClickData],

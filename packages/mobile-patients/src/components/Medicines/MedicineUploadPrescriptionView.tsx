@@ -33,8 +33,6 @@ import {
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
-import { Helpers } from '@aph/mobile-patients/src/components/MedicineCartPrescription';
-import { useApolloClient } from 'react-apollo-hooks';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -88,14 +86,10 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
   const [showPopup, setShowPopup] = useState(false);
   const { currentPatient } = useAllCurrentPatients();
   const { pharmacyUserType } = useAppCommonData();
-  const client = useApolloClient();
 
-  const {
-    uploadPrescriptionRequired,
-    physicalPrescriptions,
-    ePrescriptions,
-    removeEPrescription,
-  } = isTest ? useDiagnosticsCart() : useShoppingCart();
+  const { uploadPrescriptionRequired, physicalPrescriptions, ePrescriptions } = isTest
+    ? useDiagnosticsCart()
+    : useShoppingCart();
 
   const {
     showPrescriptionAtStore,
@@ -103,7 +97,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
     deliveryAddressId,
     setDeliveryAddressId,
   } = useShoppingCart();
-  const { setUserActionPayload } = useServerCart();
+  const { setUserActionPayload, uploadPhysicalPrescriptionsToServerCart } = useServerCart();
 
   const renderLabel = (label: string, rightText?: string) => {
     return (
@@ -118,21 +112,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
     const itemsToAdd = uplPhyPrescriptions.filter(
       (p) => !physicalPrescriptions.find((pToFind) => pToFind.base64 == p.base64)
     );
-    const updatedPrescriptions = await Helpers.updatePrescriptionUrls(client, currentPatient?.id, [
-      ...itemsToAdd,
-      ...physicalPrescriptions,
-    ]);
-    updatedPrescriptions?.forEach((prescription: PhysicalPrescription) => {
-      if (prescription?.prismPrescriptionFileId && prescription?.uploadedUrl) {
-        setUserActionPayload?.({
-          prescriptionDetails: {
-            prescriptionImageUrl: prescription?.uploadedUrl,
-            prismPrescriptionFileId: prescription?.prismPrescriptionFileId,
-            uhid: currentPatient?.uhid,
-          },
-        });
-      }
-    });
+    uploadPhysicalPrescriptionsToServerCart([...itemsToAdd, ...physicalPrescriptions]);
   };
 
   const uploadPrescriptionPopup = () => {
@@ -294,7 +274,6 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
         doctorName={item.doctorName}
         forPatient={item.forPatient}
         onRemove={() => {
-          removeEPrescription && removeEPrescription(item.id);
           if (!isTest) {
             setUserActionPayload({
               prescriptionDetails: {
