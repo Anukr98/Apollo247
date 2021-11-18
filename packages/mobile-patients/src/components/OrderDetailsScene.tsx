@@ -133,6 +133,7 @@ export interface OrderDetailsSceneProps
     refetchOrders?: () => void;
     reOrder?: boolean;
     status?: string;
+    orderType?: string | undefined;
   }> {}
 
 export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
@@ -144,6 +145,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
   const AutoreOrder = props.navigation.getParam('reOrder');
+  const orderType = props.navigation.getParam('orderType') || '';
   const [cancellationReasons, setCancellationReasons] = useState<
     GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons[]
   >([]);
@@ -1124,9 +1126,19 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       if (statusToConsiderTatBreach.includes(orderDetails.currentStatus!)) scrollToSlots();
     };
 
+    const orderJourneyRepitionAllowedStatuses: MEDICINE_ORDER_STATUS[] = [
+      MEDICINE_ORDER_STATUS.DELIVERY_ATTEMPTED,
+      MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
+    ];
+
+    const isRepitionAllowedForStatusInOrderJourney = (orderStatus: MEDICINE_ORDER_STATUS) =>
+      orderJourneyRepitionAllowedStatuses.includes(orderStatus);
+
     let statusList = orderStatusList
       .filter(
-        (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
+        (item, idx, array) =>
+          isRepitionAllowedForStatusInOrderJourney(item?.orderStatus!) ||
+          array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
       )
       .concat([]);
     order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
@@ -1140,7 +1152,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     ) {
       statusList = orderStatusList
         .filter(
-          (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
+          (item, idx, array) =>
+            isRepitionAllowedForStatusInOrderJourney(item?.orderStatus!) ||
+            array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
         )
         .concat([]);
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
@@ -1387,7 +1401,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY) {
       statusList = orderStatusList
         .filter(
-          (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
+          (item, idx, array) =>
+            isRepitionAllowedForStatusInOrderJourney(item?.orderStatus!) ||
+            array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
         )
         .concat([
           {
@@ -1405,7 +1421,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     ) {
       statusList = orderStatusList
         .filter(
-          (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
+          (item, idx, array) =>
+            isRepitionAllowedForStatusInOrderJourney(item?.orderStatus!) ||
+            array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
         )
         .concat([]);
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
@@ -2356,7 +2374,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               selectedTab={selectedTab}
             />
             {selectedTab == string.orders.trackOrder && renderOrderTrackTopView()}
-            {!!Number(orderAutoId) && (
+            {!!Number(orderAutoId) && orderType !== 'Store Pickup' && (
               <OrderDelayNoticeView
                 orderId={Number(orderAutoId)}
                 containerStyle={selectedTab === string.orders.viewBill && styles.hidden}
