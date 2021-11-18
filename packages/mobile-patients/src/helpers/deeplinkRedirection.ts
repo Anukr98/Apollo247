@@ -6,6 +6,7 @@ import {
 } from 'react-navigation';
 import { setBugFenderLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
+  postCleverTapEvent,
   postWebEngageEvent,
   navigateToScreenWithEmptyStack,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -19,6 +20,7 @@ import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
 import { MutableRefObject } from 'react';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { CleverTapEventName, CleverTapEvents } from './CleverTapEvents';
 
 export const handleOpenURL = (event: any) => {
   try {
@@ -462,7 +464,8 @@ export const pushTheView = (
   isCorporateSubscribed?: boolean,
   vaccinationCmsIdentifier?: string,
   vaccinationSubscriptionId?: string,
-  params?: any
+  params?: any,
+  movedFromBrandPages?: boolean
 ) => {
   setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
   switch (routeName) {
@@ -470,6 +473,13 @@ export const pushTheView = (
       navigation.navigate('APPOINTMENTS', { movedFrom: 'deeplink' });
       break;
     case 'Medicine':
+      const eventAttribute: CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
+        'Nav src': 'deeplink',
+      };
+      setTimeout(
+        () => postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED, eventAttribute),
+        500
+      );
       navigation.navigate('MEDICINES', { comingFrom: 'deeplink' });
       break;
     case 'UploadPrescription':
@@ -480,17 +490,25 @@ export const pushTheView = (
       break;
     case 'MedicineDetail':
       const isUrlKey = id.indexOf('-') !== -1;
-      navigateToView(navigation, AppRoutes.ProductDetailPage, {
-        sku: isUrlKey ? null : id,
-        urlKey: isUrlKey ? id : null,
-        movedFrom: ProductPageViewedSource.DEEP_LINK,
-      });
+      if (movedFromBrandPages && movedFromBrandPages === true) {
+        navigation.navigate(AppRoutes.ProductDetailPage, {
+          sku: isUrlKey ? null : id,
+          urlKey: isUrlKey ? id : null,
+          movedFrom: ProductPageViewedSource.BRAND_PAGES,
+        });
+      } else {
+        navigateToView(navigation, AppRoutes.ProductDetailPage, {
+          sku: isUrlKey ? null : id,
+          urlKey: isUrlKey ? id : null,
+          movedFrom: ProductPageViewedSource.DEEP_LINK,
+        });
+      }
       break;
     case 'Test':
       navigation.navigate('TESTS', { movedFrom: 'deeplink' });
       break;
     case 'ConsultRoom':
-      navigation.replace(AppRoutes.ConsultRoom);
+      movedFromBrandPages ? navigation.goBack() : navigation.replace(AppRoutes.ConsultRoom);
       break;
     case 'Speciality':
       setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', id);
@@ -524,10 +542,21 @@ export const pushTheView = (
       break;
 
     case 'MedicineSearchText':
-      navigateToView(navigation, AppRoutes.MedicineListing, { searchText: id });
+      if (movedFromBrandPages && movedFromBrandPages === true) {
+        navigation.navigate(AppRoutes.MedicineListing, { searchText: id, movedFrom: 'brandPages' });
+      } else {
+        navigateToView(navigation, AppRoutes.MedicineListing, { searchText: id });
+      }
       break;
     case 'MedicineCategory':
-      navigateToView(navigation, AppRoutes.MedicineListing, { categoryName: id });
+      if (movedFromBrandPages && movedFromBrandPages === true) {
+        navigation.navigate(AppRoutes.MedicineListing, {
+          categoryName: id,
+          movedFrom: 'brandPages',
+        });
+      } else {
+        navigateToView(navigation, AppRoutes.MedicineListing, { categoryName: id });
+      }
       break;
     case 'MedicineSearch':
       if (id && !id.includes('=')) {

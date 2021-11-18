@@ -32,6 +32,13 @@
         android:protectionLevel="signature" />
     <!--CallKit Permissions End-->
 
+    <!--added below query tag, react-native-image-crop-picker was unable to open camera, after tragetSDK update 30 -->
+    <queries>
+        <intent>
+            <action android:name="android.media.action.IMAGE_CAPTURE" />
+        </intent>
+    </queries>
+    
     <uses-feature
         android:name="android.hardware.camera"
         android:required="true" />
@@ -177,6 +184,11 @@
         </service>
         <service android:name=".RingtonePlayingService" />
 
+        <receiver
+            android:name="com.clevertap.pushtemplates.PTPushNotificationReceiver"
+            android:exported="false"
+            android:enabled="true">
+        </receiver>
         <receiver
             android:name="com.clevertap.android.sdk.pushnotification.CTPushNotificationReceiver"
             android:exported="false"

@@ -1,7 +1,8 @@
 import {
-  LocationData,
   AppCommonDataContextProps,
+  LocationData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import DeviceInfo from 'react-native-device-info';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   getPlaceInfoByLatLng,
@@ -65,7 +66,10 @@ import {
 import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import ApolloClient from 'apollo-client';
 import { saveSearch, saveSearchVariables } from '@aph/mobile-patients/src/graphql/types/saveSearch';
-import { SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
+  SAVE_SEARCH,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -1088,7 +1092,7 @@ export const findAddrComponents = (
 };
 
 /**
- * Calculates great-circle distances between the two points – that is, the shortest distance over the earth’s surface – using the ‘Haversine’ formula.
+ * Calculates great-circle distances between the two points â€“ that is, the shortest distance over the earthâ€™s surface â€“ using the â€˜Haversineâ€™ formula.
  */
 export const distanceBwTwoLatLng = (lat1: number, lon1: number, lat2: number, lon2: number) => {
   const deg2rad = (deg: number) => deg * (Math.PI / 180);
@@ -1650,9 +1654,9 @@ export const postwebEngageAddToCartEvent = (
     special_price,
     category_id,
   }: Pick<MedicineProduct, 'sku' | 'name' | 'price' | 'special_price' | 'category_id'>,
-  source: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Source'],
-  sectionName?: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Section Name'],
-  categoryName?: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Category Name'],
+  source: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Nav src'],
+  sectionName?: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Section name'],
+  categoryName?: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART]['Category name'],
   pharmacyCircleAttributes?: PharmacyCircleEvent
 ) => {
   const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART] = {
@@ -1673,19 +1677,19 @@ export const postwebEngageAddToCartEvent = (
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
   const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART] = {
-    'product name': name,
-    'product id (SKUID)': sku,
-    'Category Name': categoryName || undefined,
-    'Section Name': sectionName || undefined,
+    'Product name': name,
+    'SKU ID': sku,
+    'Category name': categoryName || undefined,
+    'Section name': sectionName || undefined,
     'Category ID': category_id || undefined,
     Price: price,
-    'Discounted Price': Number(special_price) || undefined,
+    'Discounted price': Number(special_price) || undefined,
     Quantity: 1,
-    Source: source,
-    'Circle Member':
+    'Nav src': source,
+    'Circle member':
       getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
       undefined,
-    'Circle Membership Value': pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
+    'Circle membership value': pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
   };
   postCleverTapEvent(CleverTapEventName.PHARMACY_ADD_TO_CART, cleverTapEventAttributes);
 };
@@ -2648,7 +2652,9 @@ export const addPharmaItemToCart = (
   itemsInCart?: string,
   onComplete?: () => void,
   pharmacyCircleAttributes?: PharmacyCircleEvent,
-  onAddedSuccessfully?: () => void
+  onAddedSuccessfully?: () => void,
+  comingFromSearch?: boolean,
+  cleverTapSearchSuccessEventAttributes?: object,
 ) => {
   const outOfStockMsg = 'Sorry, this item is out of stock in your area.';
 
@@ -2719,9 +2725,17 @@ export const addPharmaItemToCart = (
     .then((res) => {
       const availability = g(res, 'data', 'response', '0' as any, 'exist');
       if (availability) {
+        if (comingFromSearch === true) {
+          cleverTapSearchSuccessEventAttributes['Product availability'] = 'Is in stock';
+          postCleverTapEvent(CleverTapEventName.PHARMACY_SEARCH_SUCCESS, cleverTapSearchSuccessEventAttributes);
+        }
         addToCart();
         onAddedSuccessfully?.();
       } else {
+        if (comingFromSearch === true) {
+          cleverTapSearchSuccessEventAttributes['Product availability'] = 'Out of stock';
+          postCleverTapEvent(CleverTapEventName.PHARMACY_SEARCH_SUCCESS, cleverTapSearchSuccessEventAttributes);
+        }
         navigate();
       }
       try {
@@ -2944,7 +2958,8 @@ export const calculateCashbackForItem = (
 };
 
 export const readableParam = (param: string) => {
-  const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;';
+  const a =
+    'Ã Ã¡Ã¢Ã¤Ã¦Ã£Ã¥ÄÄƒÄ…Ã§Ä‡ÄÄ‘ÄÃ¨Ã©ÃªÃ«Ä“Ä—Ä™Ä›ÄŸÇµá¸§Ã®Ã¯Ã­Ä«Ä¯Ã¬Å‚á¸¿Ã±Å„Ç¹ÅˆÃ´Ã¶Ã²Ã³Å“Ã¸ÅÃµÅ‘á¹•Å•Å™ÃŸÅ›Å¡ÅŸÈ™Å¥È›Ã»Ã¼Ã¹ÃºÅ«Ç˜Å¯Å±Å³áºƒáºÃ¿Ã½Å¾ÅºÅ¼Â·/_,:;';
   const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz------';
   const p = new RegExp(a.split('').join('|'), 'g');
 
@@ -3602,42 +3617,42 @@ export const getCleverTapCheckoutCompletedEventAttributes = (
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
   const eventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED] = {
     'Transaction ID': paymentOrderId,
-    'Order Type': 'Cart',
-    'Prescription Added': !!(physicalPrescriptions.length || ePrescriptions.length),
+    'Order type': 'Cart',
+    'Prescription added': !!(physicalPrescriptions.length || ePrescriptions.length),
     'Shipping information': shippingInformation, // (Home/Store address)
     'Total items in cart': cartItems.length,
-    'Grand Total': cartTotal + deliveryCharges,
-    'Total Discount %': coupon
+    'Grand total': cartTotal + deliveryCharges,
+    'Total discount %': coupon
       ? getFormattedAmount(((couponDiscount + productDiscount) / cartTotal) * 100)
       : 0,
-    'Discount Amount': getFormattedAmount(couponDiscount + productDiscount),
-    'Shipping Charges': deliveryCharges,
+    'Discount amount': getFormattedAmount(couponDiscount + productDiscount),
+    'Shipping charges': deliveryCharges,
     'Net after discount': getFormattedAmount(grandTotal),
     'Payment status': 1,
-    'Service Area': 'Pharmacy',
-    'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
-    af_revenue: getFormattedAmount(grandTotal),
-    'Circle Cashback Amount':
+    'Service area': 'Pharmacy',
+    'Mode of delivery': deliveryAddressId ? 'Home' : 'Pickup',
+    'AF revenue': getFormattedAmount(grandTotal),
+    'Circle cashback amount':
       circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
-    'Split Cart': orders?.length > 1 ? 'Yes' : 'No',
-    'Prescription Option selected': uploadPrescriptionRequired
+    'Split cart': orders?.length > 1 ? 'Yes' : 'No',
+    'Prescription option selected': uploadPrescriptionRequired
       ? 'Prescription Upload'
       : 'Not Applicable',
-    'Circle Member':
+    'Circle member':
       getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
       undefined,
-    'Circle Membership Value': pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
-    'User Type': pharmacyUserTypeAttribute?.User_Type || undefined,
-    'Coupon Applied': coupon?.coupon || undefined,
+    'Circle membership value': pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
+    'User type': pharmacyUserTypeAttribute?.User_Type || undefined,
+    'Coupon applied': coupon?.coupon || undefined,
     Pincode: pinCode || undefined,
-    'Cart Items': JSON.stringify(cartItems),
-    'Order_ID(s)': ordersIds?.map((i) => i?.orderAutoId)?.join(','),
+    'Cart items': JSON.stringify(cartItems),
+    'Order ID(s)': ordersIds?.map((i) => i?.orderAutoId)?.join(','),
   };
   if (store) {
     eventAttributes['Store ID'] = store.storeid;
-    eventAttributes['Store Name'] = store.storename;
-    eventAttributes['Store Number'] = store.phone;
-    eventAttributes['Store Address'] = store.address;
+    eventAttributes['Store name'] = store.storename;
+    eventAttributes['Store number'] = store.phone;
+    eventAttributes['Store address'] = store.address;
   }
   return eventAttributes;
 };
@@ -3672,7 +3687,7 @@ export const setAsyncDiagnosticLocation = (address: any) => {
 
 export const checkPatientAge = (_selectedPatient: any, fromNewProfile: boolean = false) => {
   let age = !!_selectedPatient?.dateOfBirth ? getAge(_selectedPatient?.dateOfBirth) : null;
-  if (age != null && age != undefined && age <= 10) {
+  if (age != null && age != undefined && age < 10) {
     return true;
   }
   return false;
@@ -3805,4 +3820,140 @@ export const updateCallKitNotificationReceivedStatus = (appointmentId: string) =
     .then((res) => res.json())
     .then((result) => console.log(result))
     .catch((e) => console.log(e));
+};
+
+export const convertDateToEpochFormat = (value: Date) => {
+  const epochValue = value ? `$D_${Math.floor(value.getTime() / 1000.0)}` : '';
+  return epochValue;
+};
+
+export const getAvailabilityForSearchSuccess = (pincode: string, sku: string) => {
+  let availability = false;
+      availabilityApi247(pincode, sku)
+        .then((res) => {
+          availability = g(res, 'data', 'response', '0' as any, 'exist');
+        })
+        .catch((error) => {
+          availability = false;
+        });
+    return availability;
+};
+
+
+export const getPaymentMethodsInfo = (paymentMethods: any, paymentMode: string) => {
+  try {
+    const paymentMethodInfo = paymentMethods
+      ?.filter((item: any) => item?.name == paymentMode)?.[0]
+      ?.payment_methods?.map((item: any) => {
+        return {
+          payment_method_type: paymentMode,
+          payment_method: item?.payment_method_code,
+          payment_method_reference: item?.payment_method_code,
+        };
+      });
+    return !!paymentMethodInfo ? paymentMethodInfo : [];
+  } catch (error) {
+    return [];
+  }
+};
+
+export const getBestOffer = (offers: any, paymentCode: string) => {
+  try {
+    const bestOfferId = offers?.best_offer_combinations?.filter(
+      (item: any) => item?.payment_method_reference == paymentCode
+    )?.[0]?.offers[0]?.offer_id;
+    const offer = offers?.offers?.filter((item: any) => item?.offer_id == bestOfferId)?.[0];
+    return offer;
+  } catch (error) {
+    return null;
+  }
+};
+
+export const getErrorMsg = (errorCode: string) => {
+  switch (errorCode) {
+    case 'JP701':
+      return 'This offer is not valid for this transaction.';
+      break;
+    case 'JP702':
+      return 'Internal Error while applying the offer.';
+      break;
+    case 'JP703':
+      return 'This offer is not valid for this transaction.';
+      break;
+    case 'JP704':
+      return 'This offer is not valid for this transaction.';
+      break;
+    case 'JP705':
+    case 'JP706':
+      return 'Internal Error while applying the offer. ';
+      break;
+    case 'JP708':
+      return 'This offer is not valid for this transaction.';
+      break;
+  }
+};
+
+export const getAsyncStorageValues = async () => {
+  const token = await AsyncStorage.getItem('jwt');
+  const user = await AsyncStorage.getItem('currentPatient');
+  return [token, user];
+};
+
+export const getCirclePlanDetails = async (
+  mobile_number: string,
+  client: any
+): Promise<Array<any>> => {
+  let details = [];
+  await client
+    .query({
+      query: GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
+      variables: { mobile_number },
+      fetchPolicy: 'no-cache',
+    })
+    .then((data: any) => {
+      const res = data?.data?.GetAllUserSubscriptionsWithPlanBenefitsV2?.response;
+      if (res.hasOwnProperty('APOLLO')) {
+        details = res?.APOLLO?.[0]?.plan_summary;
+      } else details = [];
+    })
+    .catch((err: Error) => {});
+  return details;
+};
+
+export const formatUrl = (url: string, token: string, userMobileNumber: string): string => {
+  let uri = url;
+  const queryParamsDelimiterIndex = uri.indexOf('?');
+  if (queryParamsDelimiterIndex !== -1)
+    uri = uri.concat(`&utm_token=${token}&utm_mobile_number=${userMobileNumber}`);
+  else uri = uri.concat(`?utm_token=${token}&utm_mobile_number=${userMobileNumber}`);
+  return uri;
+};
+
+export const getFormattedDaySubscript = (day: number) => {
+  if (day > 3 && day < 21) return 'th';
+  switch (day % 10) {
+    case 1:
+      return 'st';
+    case 2:
+      return 'nd';
+    case 3:
+      return 'rd';
+    default:
+      return 'th';
+  }
+};
+
+export const getFormattedDateTimeWithBefore = (time: string) => {
+  const day = parseInt(moment(time).format('D'), 10);
+  const getDaySubscript = getFormattedDaySubscript(day);
+
+  const finalDateTime =
+    day +
+    getDaySubscript +
+    ' ' +
+    moment(time).format('MMMM') +
+    ' before ' +
+    moment(time).format('hh:mm A');
+
+  return finalDateTime;
 };

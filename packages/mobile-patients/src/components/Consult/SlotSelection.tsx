@@ -317,27 +317,6 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
         consultType === consultOnlineTab
           ? fetchOnlineTotalAvailableSlots(nextAvailableDate, callOnLaunch)
           : fetchPhysicalTotalAvailableSlots(nextAvailableDate, callOnLaunch);
-
-        if (!callOnLaunch) {
-          const checkAvailabilityDate = datesSlots?.filter(
-            (date: any) =>
-              moment(date?.date)
-                .toDate()
-                .toDateString() ===
-              moment(slot)
-                .toDate()
-                .toDateString()
-          );
-          const slotsIndex = datesSlots?.indexOf(checkAvailabilityDate?.[0]);
-          const dateIndex = date().isToday ? 0 : date().isTomorrow ? 1 : slotsIndex;
-          setTimeout(() => {
-            try {
-              dateScrollViewRef && dateScrollViewRef.current.scrollToIndex({ index: dateIndex });
-            } catch (e) {
-              CommonBugFender('SlotSelection_scrollToIndex', e);
-            }
-          }, 500);
-        }
       }
     } catch (error) {
       CommonBugFender('SlotSelection_fetchNextAvailabilitySlot', error);
@@ -455,15 +434,16 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           );
         }
       });
-      const dateIndex = dates
-        ?.map((date: SlotsType) => {
-          return date?.date;
-        })
-        ?.indexOf(nextSlotDate?.[0]?.date);
-      if (dateIndex > -1) {
+      const dateIndex = dates?.findIndex((date: SlotsType) => date?.count > 0);
+      if (dateIndex > -1 && !slotSelected.current) {
         setSelectedDateIndex(dateIndex);
+        setSelectedDateIndexHighlight(dateIndex);
         setTimeout(() => {
-          dateScrollViewRef && dateScrollViewRef.current.scrollToIndex({ index: dateIndex });
+          try {
+            dateScrollViewRef && dateScrollViewRef.current.scrollToIndex({ index: dateIndex });
+          } catch (e) {
+            CommonBugFender('SlotSelection_scroll', e);
+          }
         }, 500);
       }
       setDatesSlots(dates);
@@ -632,9 +612,6 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   };
 
   const renderSlotsDatesItems = (item: SlotsType, index: number) => {
-    if (item?.count === 0 && index === selectedDateIndexHiglight && !slotSelected.current) {
-      handleDateSelection(item, index + 1);
-    }
     const textColor =
       index === selectedDateIndexHiglight || item?.count === 0
         ? 'white'

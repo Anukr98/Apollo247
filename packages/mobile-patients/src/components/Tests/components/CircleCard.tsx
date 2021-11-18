@@ -10,6 +10,7 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 interface CircleCardProps {
   gradiantStyle?: StyleProp<ViewStyle>;
@@ -56,7 +57,7 @@ const CircleCard: React.FC<CircleCardProps> = (props) => {
         <CircleLogo style={styles.circleIcon} />
       </View>
       <View style={{ marginTop: -4 }}>
-        {!!circleSaving && circleSaving > 0 && (
+        {!!circleSaving && circleSaving > 0 ? (
           <Text style={styles.mediumText}>
             {upperLeftText}{' '}
             <Text style={styles.mediumGreenText}>
@@ -64,6 +65,10 @@ const CircleCard: React.FC<CircleCardProps> = (props) => {
               {circleSaving}
             </Text>{' '}
             {upperRightText}{' '}
+          </Text>
+        ) : (
+          <Text style={styles.mediumText}>
+            {AppConfig.Configuration.DIAGNOSTICS_NO_CIRCLE_SAVINGS_TEXT}
           </Text>
         )}
         {!!circleSaving && circleSaving > 0 && (

@@ -78,7 +78,10 @@ export const useGetOrderInfo = () => {
 
   const OrderInfo: saveMedicineOrderV2Variables = {
     medicineOrderInput: {
-      patientId: currentPatient?.id || '',
+      patientId:
+        prescriptionType === PrescriptionType.CONSULT && consultProfile?.id
+          ? consultProfile?.id
+          : currentPatient?.id,
       medicineDeliveryType: deliveryType!,
       estimatedAmount,
       bookingSource: BOOKINGSOURCE.MOBILE,
@@ -141,9 +144,9 @@ export const useGetOrderInfo = () => {
       productDiscount: getFormattedAmount(productDiscount) || 0,
       quoteId: null,
       patientId:
-        (prescriptionType === PrescriptionType.CONSULT && consultProfile?.id) ||
-        currentPatient?.id ||
-        '',
+        prescriptionType === PrescriptionType.CONSULT && consultProfile?.id
+          ? consultProfile?.id
+          : currentPatient?.id,
       shopId: storeId || null,
       shopAddress: selectedStore
         ? {
