@@ -6553,11 +6553,3 @@ export const CREATE_VONAGE_SESSION_TOKEN = gql`
   }
 `;
 
-export const UPDATE_CALLKIT_NOTIFICATION_RECIEVED_STATUS = gql`
-  mutation updateCallKitNotificationReceivedStatus($appointmentId: String!) {
-    updateCallKitNotificationReceivedStatus(appointmentId: $appointmentId) {
-      status
-      error
-    }
-  }
-`;
