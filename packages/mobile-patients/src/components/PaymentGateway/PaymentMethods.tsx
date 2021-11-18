@@ -645,11 +645,13 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     }
   }
 
-  async function onPressNewCardPayNow(cardInfo: any, saveCard: boolean) {
+  async function onPressNewCardPayNow(cardInfo: any, saveCard: boolean, bestOffer?: any) {
     triggerWebengege('Card', 'CARD', string.common.Card);
     firePaymentInitiatedEvent('CARD', cardInfo?.cardType, null, false, null, saveCard, false);
     const token = await getClientToken();
-    token ? InitiateCardTxn(requestId, token, paymentId, cardInfo, saveCard) : renderErrorPopup();
+    token
+      ? InitiateCardTxn(requestId, token, paymentId, cardInfo, saveCard, bestOffer?.offer_id)
+      : renderErrorPopup();
     token &&
       setSelectedPaymentOption({
         function: InitiateCardTxn,
