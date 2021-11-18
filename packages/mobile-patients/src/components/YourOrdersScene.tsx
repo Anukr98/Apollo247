@@ -135,8 +135,6 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
       (item) => item?.orderStatus === MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
     );
 
-    const orderType = getDeliverTypeOrDescription(order);
-    console.log('orderType ------', orderType);
     const latestOrdersOnHold = ordersOnHold?.sort((a: any, b: any) => {
       (new Date(b?.statusDate) as any) - (new Date(a?.statusDate) as any);
     });
@@ -164,7 +162,6 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
             orderAutoId: order?.orderAutoId,
             billNumber: order?.billNumber,
             refetchOrders: refetchOrders,
-            orderType: orderType,
           });
         }}
         title={getOrderTitle(order)}
@@ -203,7 +200,6 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
             billNumber: order?.billNumber,
             refetchOrders: refetchOrders,
             reOrder: true,
-            orderType: orderType,
           })
         }
       />
@@ -325,8 +321,6 @@ export const getDeliverTypeOrDescription = (order: MedOrder) => {
   if (order?.billNumber) {
     return getStore();
   }
-
-  console.log('orderType in fn------', order?.billNumber, order?.deliveryType);
 
   const type = order?.deliveryType;
 

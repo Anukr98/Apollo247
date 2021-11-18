@@ -133,7 +133,6 @@ export interface OrderDetailsSceneProps
     refetchOrders?: () => void;
     reOrder?: boolean;
     status?: string;
-    orderType?: string | undefined;
   }> {}
 
 export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
@@ -145,7 +144,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
   const AutoreOrder = props.navigation.getParam('reOrder');
-  const orderType = props.navigation.getParam('orderType') || '';
   const [cancellationReasons, setCancellationReasons] = useState<
     GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons[]
   >([]);
@@ -193,8 +191,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     billNumber: billNumber || '',
   };
 
-  console.log('order details scene...............', vars, billNumber, orderAutoId);
-
   const { data, loading, refetch } = useQuery<
     getMedicineOrderOMSDetailsWithAddress,
     getMedicineOrderOMSDetailsWithAddressVariables
@@ -226,7 +222,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     );
   }, [data, refetch]);
   const order = g(data, 'getMedicineOrderOMSDetailsWithAddress', 'medicineOrderDetails');
-  console.log('order from api is---', order);
   const shipmentInfo = g(order, 'medicineOrderShipments');
   const shipmentTrackingNumber = shipmentInfo?.[0]?.trackingNo;
   const shipmentTrackingProvider = shipmentInfo?.[0]?.trackingProvider;
@@ -2340,12 +2335,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               selectedTab={selectedTab}
             />
             {selectedTab == string.orders.trackOrder && renderOrderTrackTopView()}
-            {!!Number(orderAutoId) && orderType === MEDICINE_DELIVERY_TYPE.HOME_DELIVERY && (
-              <OrderDelayNoticeView
-                orderId={Number(orderAutoId)}
-                containerStyle={selectedTab === string.orders.viewBill && styles.hidden}
-              />
-            )}
+            {!!Number(orderAutoId) &&
+              order?.deliveryType === MEDICINE_DELIVERY_TYPE.HOME_DELIVERY && (
+                <OrderDelayNoticeView
+                  orderId={Number(orderAutoId)}
+                  containerStyle={selectedTab === string.orders.viewBill && styles.hidden}
+                />
+              )}
             {renderInconvenienceView()}
             <ScrollView bounces={false} ref={scrollViewRef}>
               {selectedTab == string.orders.trackOrder
