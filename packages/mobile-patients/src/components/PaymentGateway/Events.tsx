@@ -225,7 +225,8 @@ export function PaymentTxnInitiated(
   isSavedCard: boolean,
   txnType: string,
   isNewCardSaved: boolean,
-  isCOD: boolean
+  isCOD: boolean,
+  walletBalance: any
 ) {
   try {
     const {
@@ -253,6 +254,7 @@ export function PaymentTxnInitiated(
       TxnType: txnType,
       ifNewCardSaved: isNewCardSaved,
       isPaymentLinkTxn: vertical == 'paymentLink' ? true : false,
+      'Wallet Balance': walletBalance,
     };
     postCleverTapEvent(CleverTapEventName.PAYMENT_TXN_INITIATED, eventAttributes);
   } catch (error) {}
