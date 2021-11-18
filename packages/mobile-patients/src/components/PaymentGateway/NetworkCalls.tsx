@@ -83,7 +83,8 @@ export const InitiateCardTxn = (
   clientAuthToken: string,
   paymentOrderId: string,
   cardInfo: any,
-  saveCard: boolean
+  saveCard: boolean,
+  offerId?: string
 ) => {
   const cardPayload = {
     requestId: requestId,
@@ -99,6 +100,7 @@ export const InitiateCardTxn = (
       cardSecurityCode: cardInfo?.CVV,
       saveToLocker: saveCard ? true : false,
       clientAuthToken: clientAuthToken,
+      offers: !!offerId ? [offerId] : null,
     },
   };
   HyperSdkReact.process(JSON.stringify(cardPayload));
