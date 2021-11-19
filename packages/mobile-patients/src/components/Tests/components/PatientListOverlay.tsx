@@ -81,7 +81,7 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
       return null;
     }
 
-    const patientName = `${customStyle && patientSalutation} ${item?.firstName ||
+    const patientName = `${customStyle ? patientSalutation || '' : ''} ${item?.firstName ||
       ''} ${item?.lastName || ''}`;
     const genderAgeText = `${item?.gender || ''}, ${
       item?.dateOfBirth ? getAge(item?.dateOfBirth) || '' : ''
