@@ -1127,12 +1127,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   }, []);
 
   const handleCachedData = async () => {
-    const offersListStringBuffer = (await appGlobalCache.get('offersList')) || '[]';
+    const cacheDataStringBuffer = await appGlobalCache.getAll();
+    const offersListStringBuffer = cacheDataStringBuffer?.offersList.value || '[]';
     setOffersListCache(JSON.parse(offersListStringBuffer));
+
+    const count = cacheDataStringBuffer?.appointmentCount.value || '0';
+    setAppointmentCountCache(count);
+    console.log('csk', count);
+
     const isCircleMembers = (await AsyncStorage.getItem('isCircleMember')) || '';
     setIsCircleMember(isCircleMembers);
-    const count = (await appGlobalCache.get('appointmentCount')) || '0';
-    setAppointmentCountCache(count);
   };
 
   const fetchUserAgent = () => {
@@ -2642,7 +2646,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         const count = data?.data?.getPatientFutureAppointmentCount?.activeConsultsCount || 0;
         setCurrentAppointments(`${count}`);
         appGlobalCache.set('appointmentCount', JSON.stringify(count));
-        setAppointmentCountCache(count);
+        setAppointmentCountCache(JSON.stringify(count));
         setAppointmentLoading(false);
       })
       .catch((e) => {
@@ -3232,12 +3236,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const renderListCount = (count: string | number) => {
-    return appointmentLoading ? (
+    return appointmentLoading && appointmentCountCache === '0' ? (
       renderAppointmentCountShimmer()
     ) : (
       <View style={styles.countContainer}>
         <Text style={{ ...theme.viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 20, 0) }}>
-          {count}
+          {appointmentCountCache}
         </Text>
       </View>
     );

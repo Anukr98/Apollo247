@@ -29,7 +29,10 @@ import {
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { myConsultedDoctorsClickedWEBEngage } from '@aph/mobile-patients/src/helpers/CommonEvents';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  useAppCommonData,
+  appGlobalCache,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const { width } = Dimensions.get('window');
 export const cardWidth = width / 2 - 25;
