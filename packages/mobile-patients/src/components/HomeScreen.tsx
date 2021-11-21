@@ -1057,6 +1057,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const [serviceable, setserviceable] = useState<String>('');
   const [renewNow, setRenewNow] = useState<String>('');
   const [isCircleMember, setIsCircleMember] = useState<String>('');
+  const [isCircleMemberCache, setIsCircleMemberCache] = useState<String>('');
   const [circleSavings, setCircleSavings] = useState<number>(-1);
   const [showCircleActivationcr, setShowCircleActivationcr] = useState<boolean>(false);
   const [showWebView, setShowWebView] = useState<any>({ action: false });
@@ -1124,6 +1125,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const handleCachedData = async () => {
     const offersListStringBuffer = (await appGlobalCache.get('offersList')) || '[]';
     setOffersListCache(JSON.parse(offersListStringBuffer));
+    const isCircleMembers = (await AsyncStorage.getItem('isCircleMember')) || '';
+    setIsCircleMember(isCircleMembers);
   };
 
   const fetchUserAgent = () => {
@@ -5426,9 +5429,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                 <View>{renderAllConsultedDoctors()}</View>
 
                 {renderHeadings('Circle Membership and More')}
-                {circleDataLoading && renderCircleShimmer()}
+                {isCircleMember === '' && circleDataLoading && renderCircleShimmer()}
                 <View>{isCircleMember === 'yes' && !circleDataLoading && renderCircle()}</View>
-                {isCircleMember === 'no' && !circleDataLoading && renderCircleBuyNow()}
+                {isCircleMember === 'no' && renderCircleBuyNow()}
                 {showCirclePlans && renderCircleSubscriptionPlans()}
                 {showCircleActivationcr && renderCircleActivation()}
                 {bannerLoading && renderBannerShimmer()}
