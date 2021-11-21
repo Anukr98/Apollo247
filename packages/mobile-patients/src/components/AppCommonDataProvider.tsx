@@ -6,6 +6,7 @@ import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_a
 import { MedicinePageAPiResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import { getPatientAllAppointments_getPatientAllAppointments_appointments as Appointment } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { Cache } from 'react-native-cache';
 export interface LocationData {
   displayName: string;
   latitude?: number;
@@ -18,7 +19,6 @@ export interface LocationData {
   pincode: string;
   lastUpdated?: number; //timestamp
 }
-
 export interface SubscriptionData {
   _id: string | '';
   name: string | '';
@@ -39,6 +39,13 @@ export interface SubscriptionData {
   corporateIcon?: string;
 }
 
+export const appGlobalCache = new Cache({
+  namespace: 'appGlobalCache',
+  policy: {
+    maxEntries: 200,
+  },
+  backend: AsyncStorage,
+});
 export interface CorporateSubscriptionData extends SubscriptionData {
   corporateName?: string;
   corporateLogo?: string;
