@@ -3451,8 +3451,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               marginTop: 'auto',
             }}
           >
-            {item?.title?.text?.length > 28
-              ? item?.title?.text?.substring(0, 28)
+            {item?.title?.text?.length > 30
+              ? item?.title?.text?.substring(0, 30)
               : item?.title?.text}
           </Text>
 
