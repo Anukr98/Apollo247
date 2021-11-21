@@ -2639,6 +2639,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       .then((data) => {
         const count = data?.data?.getPatientFutureAppointmentCount?.activeConsultsCount || 0;
         setCurrentAppointments(`${count}`);
+        appGlobalCache.set('appointmentCount', JSON.stringify(count));
+        setAppointmentCountCache(count);
         setAppointmentLoading(false);
       })
       .catch((e) => {
