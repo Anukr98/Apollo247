@@ -28,7 +28,10 @@ import {
   isIos,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { saveTokenDevice } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  useAppCommonData,
+  appGlobalCache,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   doRequestAndAccessLocation,
   InitiateAppsFlyer,

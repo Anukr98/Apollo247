@@ -8,6 +8,7 @@ import {
   PlanBenefits,
   SubscriptionData,
   useAppCommonData,
+  appGlobalCache,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { WebView } from 'react-native-webview';
 import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
