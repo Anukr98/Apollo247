@@ -3374,7 +3374,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           <FlatList
             horizontal={true}
             showsHorizontalScrollIndicator={false}
-            data={offersListCache}
+            data={offerListToRender}
             renderItem={({ item, index }) => renderOffersCards(item, index)}
             keyExtractor={(item, index) => index.toString() + 'offersForYou'}
           />
