@@ -1112,11 +1112,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       'ShareMedia' // share url protocol (must be unique to your app, suggest using your apple bundle id)
     );
 
+    handleCachedData();
     getPatientApiCall();
     setVaccineLoacalStorageData();
     cleverTapEventForLoginDone();
     fetchUserAgent();
   }, []);
+
+  const handleCachedData = async () => {
+    const cachedDataStringBuffer = await appGlobalCache.getAll();
+    const cachedData = JSON.parse(JSON.stringify(cachedDataStringBuffer));
+  };
 
   const fetchUserAgent = () => {
     try {
