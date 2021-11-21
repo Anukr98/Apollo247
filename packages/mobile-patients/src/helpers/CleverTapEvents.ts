@@ -319,7 +319,7 @@ export enum CleverTapEventName {
   TRUECALLER_EVENT_ERRORS = 'Truecaller event errors',
   TRUECALLER_APOLLO247_LOGIN_ERRORS = 'Apollo247 truecaller login errors',
   LOGIN_WITH_TRUECALLER_CLICKED = 'Login with truecaller clicked',
-  OFFERS_CTA_CLICKED = 'Offers cta clicked',
+  OFFERS_CTA_CLICKED = 'Offers Card Clicked',
   RECENT_SEARCH_CLICKED_UNDER_SEARCH_BAR = 'Recent search clicked under search bar',
   SEARCH_SUGGESTION_CLICKED_UNDER_SEARCH_BAR = 'Search suggestion clicked under search bar',
   OPTION_FROM_MEDICINE_CLICKED_ON_SEARCH_BAR_PAGE = 'A option from medicine clicked on search bar page',
