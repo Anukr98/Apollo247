@@ -1226,11 +1226,21 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       const recent =
         res?.data?.getPersonalizedOffers?.response?.personalized_data?.global_search_text
           ?.search_text;
+
       if (offers && offers.length > 0) {
         setOffersList && setOffersList(offers);
+        appGlobalCache.set('offersList', JSON.stringify(offers));
+      } else if (offers && offers.length === 0) {
+        appGlobalCache.remove('offersList');
       }
-      if (recent && recent.length > 0)
+
+      if (recent && recent.length > 0) {
         setRecentGlobalSearchList && setRecentGlobalSearchList(recent.slice(0, 4));
+        appGlobalCache.set('recentList', JSON.stringify(recent));
+      } else if (recent && recent.length === 0) {
+        appGlobalCache.remove('recentList');
+      }
+
       setOffersListLoading && setOffersListLoading(false);
     } catch (error) {
       setOffersListLoading && setOffersListLoading(false);
