@@ -47,6 +47,9 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
   const [doctors, setDoctors] = useState<
     (getPatientPastConsultedDoctors_getPatientPastConsultedDoctors | null)[]
   >([]);
+  const [doctorsCache, setDoctorsCache] = useState<
+    getPatientPastConsultedDoctors_getPatientPastConsultedDoctors[] | null
+  >(null);
   const { myDoctorsCount, setMyDoctorsCount } = useAppCommonData();
 
   useEffect(() => {
@@ -54,6 +57,9 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
   }, []);
 
   const getPastConsultedDoctors = async () => {
+    const doc = (await appGlobalCache.get('pastDoctors')) || 'value:[]';
+    setDoctorsCache(JSON.parse(doc)?.value);
+    console.log('csk val', doc);
     try {
       const res = await client.query<
         getPatientPastConsultedDoctors,
@@ -67,6 +73,10 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
       });
       if (res) {
         setDoctors(res?.data?.getPatientPastConsultedDoctors);
+        appGlobalCache.set(
+          'pastDoctors',
+          JSON.stringify(res?.data?.getPatientPastConsultedDoctors) || 'value:[]'
+        );
       }
       setMyDoctorsCount && setMyDoctorsCount(res?.data?.getPatientPastConsultedDoctors.length);
       setLoading(false);
@@ -147,11 +157,11 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
 
   return (
     <View>
-      {loading ? (
+      {doctorsCache === null ? (
         renderConsultedDoctorsShimmer()
       ) : (
         <FlatList
-          data={doctors}
+          data={doctorsCache}
           keyExtractor={(_, index) => `${index}`}
           renderItem={({ item, index }) => renderDoctorsCard(item, index)}
           horizontal
