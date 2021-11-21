@@ -300,6 +300,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setMedicineHomeBannerData,
     setMedicineHotSellersData,
     cartAddressId,
+    serverCartLoading,
+    serverCartErrorMessage,
+    setServerCartErrorMessage,
   } = useShoppingCart();
   const {
     setUserActionPayload,
@@ -402,6 +405,29 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       };
     }
   }, []);
+
+  useEffect(() => {
+    if (serverCartErrorMessage) {
+      hideAphAlert?.();
+      showAphAlert!({
+        unDismissable: true,
+        title: 'Hey',
+        description: serverCartErrorMessage,
+        titleStyle: theme.viewStyles.text('SB', 18, '#890000'),
+        ctaContainerStyle: { justifyContent: 'flex-end' },
+        CTAs: [
+          {
+            text: 'OKAY',
+            type: 'orange-link',
+            onPress: () => {
+              setServerCartErrorMessage?.('');
+              hideAphAlert?.();
+            },
+          },
+        ],
+      });
+    }
+  }, [serverCartErrorMessage]);
 
   const populateCachedData = () => {
     if (!data) {
@@ -2350,6 +2376,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           {!!serverCartItems?.length && renderCircleCartDetails()}
           {renderCategoryTree()}
         </View>
+        {serverCartLoading && <Spinner />}
       </SafeAreaView>
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
       {showCirclePopup && renderCircleMembershipPopup()}

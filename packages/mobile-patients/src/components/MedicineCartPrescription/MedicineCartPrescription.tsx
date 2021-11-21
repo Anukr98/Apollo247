@@ -112,7 +112,6 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderContinueButton = () => {
-    console.log('prescriptionType >>>> ', cartPrescriptionType);
     const isDisabled = cartPrescriptionType
       ? (cartPrescriptionType === PrescriptionType.UPLOADED && cartPrescriptions.length === 0) ||
         (cartPrescriptionType === PrescriptionType.CONSULT && !consultProfile?.id)

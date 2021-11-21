@@ -45,15 +45,12 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
 
     cartPrescriptions,
   } = useShoppingCart();
-  console.log('cartPrescriptions >>>>> ', cartPrescriptions);
   const uploadedPrescriptions = cartPrescriptions?.filter(
     (prescription) => !prescription?.appointmentId
   );
-  console.log('uploadedPrescriptions >>>>> ', uploadedPrescriptions);
   const appointmentPrescriptions = cartPrescriptions?.filter(
     (prescription) => prescription?.appointmentId
   );
-  console.log('appointmentPrescriptions >>>>> ', appointmentPrescriptions);
   const { removePrescriptionFromCart } = useServerCart();
   const {
     onPressUploadMore,

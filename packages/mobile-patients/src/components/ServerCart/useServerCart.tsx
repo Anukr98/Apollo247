@@ -21,6 +21,8 @@ import { formatAddressToLocation } from '@aph/mobile-patients/src/helpers/helper
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { getProductsByCategoryApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { Helpers } from '@aph/mobile-patients/src/components/MedicineCartPrescription';
+import { USER_AGENT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export const useServerCart = () => {
   const client = useApolloClient();
@@ -48,10 +50,17 @@ export const useServerCart = () => {
   const { axdcCode } = useAppCommonData();
   const { setPharmacyLocation } = useAppCommonData();
   const [userActionPayload, setUserActionPayload] = useState<any>(null);
+  const [userAgent, setUserAgent] = useState<string>('');
   const genericErrorMessage = 'Oops! Something went wrong.';
 
   useEffect(() => {
-    if (userActionPayload && currentPatient?.id) {
+    AsyncStorage.getItem(USER_AGENT).then((userAgent) => {
+      setUserAgent(userAgent || '');
+    });
+  }, []);
+
+  useEffect(() => {
+    if (userActionPayload && currentPatient?.id && userAgent) {
       const cartInputData: CartInputData = {
         ...userActionPayload,
         patientId: currentPatient?.id,
@@ -62,16 +71,23 @@ export const useServerCart = () => {
 
   const saveServerCart = (cartInputData: CartInputData) => {
     setServerCartLoading?.(true);
+    console.log('saveServerCart cartInputData >>>>> ', JSON.stringify(cartInputData));
     client
       .mutate({
         mutation: SERVER_CART_SAVE_CART,
         variables: {
           cartInputData,
         },
+        context: {
+          headers: {
+            'User-Agent': userAgent,
+          },
+        },
         fetchPolicy: 'no-cache',
       })
       .then((result) => {
         const saveCartResponse = result?.data?.saveCart;
+        console.log('saveCartResponse >>>>> ', JSON.stringify(saveCartResponse));
         if (saveCartResponse?.errorMessage) {
           setServerCartErrorMessage?.(saveCartResponse?.errorMessage || genericErrorMessage);
           return;
@@ -91,17 +107,23 @@ export const useServerCart = () => {
   };
 
   const fetchServerCart = () => {
-    setServerCartLoading?.(true);
+    console.log('fetchServerCart inputData >>>>> ', currentPatient?.id);
     client
       .query({
         query: SERVER_CART_FETCH_CART,
         variables: {
           patientId: currentPatient?.id,
         },
+        context: {
+          headers: {
+            'User-Agent': userAgent,
+          },
+        },
         fetchPolicy: 'no-cache',
       })
       .then((result) => {
         const fetchCartResponse = result?.data?.fetchCart;
+        console.log('fetchCartResponse >>>>> ', JSON.stringify(fetchCartResponse));
         if (fetchCartResponse?.errorMessage) {
           setServerCartErrorMessage?.(fetchCartResponse?.errorMessage || genericErrorMessage);
           return;
@@ -116,22 +138,28 @@ export const useServerCart = () => {
       })
       .finally(() => {
         setUserActionPayload(null);
-        setServerCartLoading?.(false);
       });
   };
 
   const fetchReviewCart = () => {
     setServerCartLoading?.(true);
+    console.log('ReviewCart inputData >>>>> ', currentPatient?.id);
     client
       .query({
         query: SERVER_CART_REVIEW_CART,
         variables: {
           patientId: currentPatient?.id,
         },
+        context: {
+          headers: {
+            'User-Agent': userAgent,
+          },
+        },
         fetchPolicy: 'no-cache',
       })
       .then((result) => {
         const reviewCartResponse = result?.data?.reviewCartPage;
+        console.log('reviewCartResponse >>>>> ', JSON.stringify(reviewCartResponse));
         if (reviewCartResponse?.errorMessage) {
           setServerCartErrorMessage?.(reviewCartResponse?.errorMessage || genericErrorMessage);
           return;
@@ -216,27 +244,29 @@ export const useServerCart = () => {
     physicalPrescriptions: PhysicalPrescription[]
   ) => {
     try {
-      setServerCartLoading?.(true);
-      // upload physical prescriptions and get prism file id
-      const updatedPrescriptions = await Helpers.updatePrescriptionUrls(
-        client,
-        currentPatient?.id,
-        physicalPrescriptions
-      );
-      const prescriptionsToUpload = updatedPrescriptions.map(
-        (prescription: PhysicalPrescription) => {
-          return {
-            prescriptionImageUrl: prescription?.uploadedUrl,
-            prismPrescriptionFileId: prescription?.prismPrescriptionFileId,
-            uhid: currentPatient?.uhid,
-          };
-        }
-      );
-      setUserActionPayload({
-        prescriptionType: PrescriptionType.UPLOADED,
-        prescriptionDetails: prescriptionsToUpload,
-      });
-      setServerCartLoading?.(false);
+      if (physicalPrescriptions?.length) {
+        setServerCartLoading?.(true);
+        // upload physical prescriptions and get prism file id
+        const updatedPrescriptions = await Helpers.updatePrescriptionUrls(
+          client,
+          currentPatient?.id,
+          physicalPrescriptions
+        );
+        const prescriptionsToUpload = updatedPrescriptions.map(
+          (prescription: PhysicalPrescription) => {
+            return {
+              prescriptionImageUrl: prescription?.uploadedUrl,
+              prismPrescriptionFileId: prescription?.prismPrescriptionFileId,
+              uhid: currentPatient?.uhid,
+            };
+          }
+        );
+        setUserActionPayload({
+          prescriptionType: PrescriptionType.UPLOADED,
+          prescriptionDetails: prescriptionsToUpload,
+        });
+        setServerCartLoading?.(false);
+      }
     } catch (error) {
       setServerCartLoading?.(false);
       setServerCartErrorMessage?.('Error occurred while uploading prescriptions.');
@@ -244,24 +274,26 @@ export const useServerCart = () => {
   };
 
   const uploadEPrescriptionsToServerCart = (ePrescriptionsToBeUploaded: EPrescription[]) => {
-    const prescriptionsToUpload = ePrescriptionsToBeUploaded.map((presToAdd: EPrescription) => {
-      return {
-        prescriptionImageUrl: presToAdd?.uploadedUrl,
-        prismPrescriptionFileId: presToAdd?.prismPrescriptionFileId,
-        uhid: currentPatient?.id,
-        appointmentId: presToAdd?.appointmentId,
-        meta: {
-          doctorName: presToAdd?.doctorName,
-          forPatient: presToAdd?.forPatient,
-          medicines: presToAdd?.medicines,
-          date: presToAdd?.date,
-        },
-      };
-    });
-    setUserActionPayload({
-      prescriptionType: PrescriptionType.UPLOADED,
-      prescriptionDetails: prescriptionsToUpload,
-    });
+    if (ePrescriptionsToBeUploaded?.length) {
+      const prescriptionsToUpload = ePrescriptionsToBeUploaded.map((presToAdd: EPrescription) => {
+        return {
+          prescriptionImageUrl: presToAdd?.uploadedUrl,
+          prismPrescriptionFileId: presToAdd?.prismPrescriptionFileId,
+          uhid: currentPatient?.uhid,
+          appointmentId: presToAdd?.appointmentId,
+          meta: {
+            doctorName: presToAdd?.doctorName,
+            forPatient: presToAdd?.forPatient,
+            medicines: presToAdd?.medicines,
+            date: presToAdd?.date,
+          },
+        };
+      });
+      setUserActionPayload({
+        prescriptionType: PrescriptionType.UPLOADED,
+        prescriptionDetails: prescriptionsToUpload,
+      });
+    }
   };
 
   const removePrescriptionFromCart = (id: string) => {

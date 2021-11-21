@@ -51,6 +51,7 @@ import {
   SET_DEFAULT_ADDRESS,
   SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS,
   UPDATE_PATIENT_ADDRESS,
+  SAVE_MEDICINE_ORDER_V3,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { ReUploadPrescriptionVariables } from '@aph/mobile-patients/src/graphql/types/ReUploadPrescription';
 import {
@@ -60,6 +61,8 @@ import {
   BOOKING_SOURCE,
   DEVICE_TYPE,
   PrescriptionType,
+  SaveMedicineOrderV3Input,
+  MEDICINE_ORDER_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   uploadDocument,
@@ -99,6 +102,8 @@ import {
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import AsyncStorage from '@react-native-community/async-storage';
+import { USER_AGENT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
     paddingTop: 7,
@@ -181,6 +186,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     ePrescriptionsProp
   );
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
+  const [userAgent, setUserAgent] = useState<string>('');
   const { setLoading, loading, showAphAlert, hideAphAlert } = useUIElements();
   const {
     setOnHoldOptionOrder,
@@ -241,6 +247,9 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     fetchAddress();
     fetchServerCart();
     nonCartAvailabilityTat(selectedAddress?.zipcode);
+    AsyncStorage.getItem(USER_AGENT).then((userAgent) => {
+      setUserAgent(userAgent || '');
+    });
   }, []);
 
   useEffect(() => {
@@ -277,59 +286,69 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   };
 
   const placeOrder = async () => {
-    // setLoading!(true);
+    setLoading!(true);
     CommonLogEvent(
       AppRoutes.UploadPrescription,
       'Graph ql call for save prescription medicine order'
     );
     try {
-      const phyPrescription = PhysicalPrescriptionsProps;
-      const e_Prescription = EPrescriptionsProps;
-      // Physical Prescription Upload
-      const uploadedPhyPrescriptionsData = await uploadMultipleFiles(phyPrescription);
-
-      const uploadedPhyPrescriptions = uploadedPhyPrescriptionsData.length
-        ? uploadedPhyPrescriptionsData.map((item) => g(item, 'data', 'uploadDocument'))
-        : [];
-
-      // const phyPresUrls = uploadedPhyPrescriptions.map((item) => item!.filePath).filter((i) => i);
-      // const phyPresPrismIds = phyPrescription
-      //   .map((item) => item.prismPrescriptionFileId)
-      //   .filter((i) => i);
-
-      // const ePresUrls = e_Prescription?.map((item) => item?.uploadedUrl)?.filter((i) => i);
-      // const ePresPrismIds = e_Prescription
-      //   .map((item) => item?.prismPrescriptionFileId)
-      //   .filter((i) => i);
-      const days = durationDays ? parseInt(durationDays) : null;
-      const optionSelected =
-        selectedMedicineOption === CALL_ME && !!userComment
-          ? `${prescriptionOption}, ${userComment}`?.trim()
-          : prescriptionOption;
-
-      // const prescriptionMedicineInput: savePrescriptionMedicineOrderOMSVariables = {
-      //   prescriptionMedicineOMSInput: {
-      //     patientId: (currentPatient && currentPatient.id) || '',
-      //     medicineDeliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
-      //     ...(storeId ? { shopId: storeId } : {}),
-      //     appointmentId: appointmentIds?.length ? appointmentIds.join(',') : '',
-      //     patinetAddressId: deliveryAddressId || '',
-      //     prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),
-      //     prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
-      //     isEprescription: e_Prescription.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
-      //     // Values for chennai order
-      //     bookingSource: BOOKING_SOURCE.MOBILE,
-      //     deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
-      //     prescriptionOptionSelected: optionSelected,
-      //     durationDays: prescriptionOption === 'duration' ? days : null,
-      //     appVersion: DeviceInfo.getVersion(),
-      //   },
-      // };
-      // submitPrescriptionMedicineOrder(prescriptionMedicineInput);
+      const customerComments: string[] = [];
+      if (prescriptionOption) customerComments.push(prescriptionOption);
+      if (userComment) customerComments.push(userComment);
+      if (prescriptionOption === 'duration' && durationDays) customerComments.push(durationDays);
+      const customerComment = customerComments.join(' ');
+      initiateOrder(customerComment);
     } catch (error) {
       setLoading!(false);
       CommonBugFender('UploadPrescription_onPressSubmit_try', error);
       renderErrorAlert('Error occurred while uploading physical prescription(s).');
+    }
+  };
+
+  const initiateOrder = async (customerComment: string) => {
+    try {
+      const saveMedicineOrderV3Variables: SaveMedicineOrderV3Input = {
+        patientId: currentPatient?.id,
+        cartType: MEDICINE_ORDER_TYPE.CART_ORDER,
+        medicineDeliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
+        bookingSource: BOOKING_SOURCE.MOBILE,
+        deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,
+        appVersion: DeviceInfo.getVersion(),
+        customerComment,
+        showPrescriptionAtStore: false,
+      };
+      client
+        .mutate({
+          mutation: SAVE_MEDICINE_ORDER_V3,
+          variables: { medicineOrderInput: saveMedicineOrderV3Variables },
+          fetchPolicy: 'no-cache',
+          context: {
+            headers: {
+              'User-Agent': userAgent,
+            },
+          },
+        })
+        .then((result) => {
+          const orderResponse = result?.data?.saveMedicineOrderV3;
+          if (orderResponse?.errorMessage) {
+            throw orderResponse?.errorMessage;
+          }
+          if (orderResponse?.data) {
+            const orderData = orderResponse?.data;
+            const { orders } = orderData;
+            postwebEngageSubmitPrescriptionEvent(orders?.orderAutoId);
+            renderSuccessPopup(orders?.orderAutoId);
+          }
+        })
+        .catch((error) => {
+          renderAlert(error);
+        })
+        .finally(() => {
+          setLoading?.(false);
+        });
+    } catch (error) {
+      setLoading?.(false);
+      renderAlert('Something went wrong. Please try again after some time');
     }
   };
 

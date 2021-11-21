@@ -48,6 +48,7 @@ import MedicineBottomFilters from './MedicineBottomFilters';
 import { productsThumbnailUrl } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import LinearGradient from 'react-native-linear-gradient';
 import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 export type SortByOption = {
   id: string;
@@ -88,7 +89,12 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const breadCrumb = navigation.getParam('breadCrumb') || [];
   const categoryName = navigation.getParam('categoryName') || '';
 
-  const { pinCode } = useShoppingCart();
+  const {
+    pinCode,
+    serverCartLoading,
+    serverCartErrorMessage,
+    setServerCartErrorMessage,
+  } = useShoppingCart();
 
   // states
   const [isLoading, setLoading] = useState(false);
@@ -138,7 +144,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
 
   // global contexts
   const { currentPatient } = useAllCurrentPatients();
-  const { showAphAlert } = useUIElements();
+  const { showAphAlert, hideAphAlert } = useUIElements();
   const { axdcCode } = useAppCommonData();
 
   //styles
@@ -184,6 +190,29 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
     };
   }, []);
+
+  useEffect(() => {
+    if (serverCartErrorMessage) {
+      hideAphAlert?.();
+      showAphAlert!({
+        unDismissable: true,
+        title: 'Hey',
+        description: serverCartErrorMessage,
+        titleStyle: theme.viewStyles.text('SB', 18, '#890000'),
+        ctaContainerStyle: { justifyContent: 'flex-end' },
+        CTAs: [
+          {
+            text: 'OKAY',
+            type: 'orange-link',
+            onPress: () => {
+              setServerCartErrorMessage?.('');
+              hideAphAlert?.();
+            },
+          },
+        ],
+      });
+    }
+  }, [serverCartErrorMessage]);
 
   const onBottomCategoryChange = (categoryId: string) => {
     if (categoryId?.length > 0) {
@@ -648,6 +677,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
             />
           )}
         </Animated.View>
+        {serverCartLoading && <Spinner />}
       </View>
     </SafeAreaView>
   );

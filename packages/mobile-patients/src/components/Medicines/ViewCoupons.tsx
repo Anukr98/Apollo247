@@ -173,9 +173,6 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [couponTextApplied, setCouponTextApplied] = useState<boolean>(false);
   const {
-    pinCode,
-    addresses,
-    deliveryAddressId,
     circleSubscriptionId,
     hdfcSubscriptionId,
     circlePlanSelected,
@@ -189,8 +186,6 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
   const [shimmerLoading, setShimmerLoading] = useState<boolean>(true);
   const isEnableApplyBtn = couponText.length >= 4;
   const {
-    locationDetails,
-    pharmacyLocation,
     hdfcPlanId,
     circlePlanId,
     hdfcStatus,
@@ -198,9 +193,6 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     activeUserSubscriptions,
   } = useAppCommonData();
   const { setUserActionPayload } = useServerCart();
-  const selectedAddress = addresses?.find((item) => item.id == deliveryAddressId);
-  const pharmacyPincode =
-    selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
 
   let packageId: string[] = [];
   if (hdfcSubscriptionId && hdfcStatus === 'active') {
@@ -247,9 +239,9 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
       if (cartCoupon?.valid) {
         fireCouponAppliedEvents(cartCoupon?.coupon || '', cartCoupon?.valid);
         props.navigation.goBack();
-      } else if (cartCoupon?.valid == false && cartCoupon?.couponMessage) {
+      } else if (cartCoupon?.valid == false && cartCoupon?.reason) {
         fireCouponAppliedEvents(cartCoupon?.coupon || '', cartCoupon?.valid);
-        const error = cartCoupon?.couponMessage || 'Coupon not applicable';
+        const error = cartCoupon?.reason || 'Coupon not applicable';
         const couponName = cartCoupon?.coupon || '';
         if (couponTextApplied) {
           setCouponError(error);

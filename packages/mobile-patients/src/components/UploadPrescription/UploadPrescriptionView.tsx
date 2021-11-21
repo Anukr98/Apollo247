@@ -223,7 +223,7 @@ const MAX_FILE_SIZE = 25000000; // ~25MB
 export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (props) => {
   const phyPrescriptionUploaded = props.navigation.getParam('phyPrescriptionUploaded') || [];
   const ePresscriptionUploaded = props.navigation.getParam('ePresscriptionUploaded') || [];
-  const { ePrescriptions } = useShoppingCart();
+  const { ePrescriptions, serverCartLoading } = useShoppingCart();
   const {
     uploadPhysicalPrescriptionsToServerCart,
     uploadEPrescriptionsToServerCart,
@@ -701,7 +701,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
             }}
           />
         </ScrollView>
-        {showSpinner && <Spinner />}
+        {(showSpinner || serverCartLoading) && <Spinner />}
       </SafeAreaView>
     </View>
   );
