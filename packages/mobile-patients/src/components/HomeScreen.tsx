@@ -1008,18 +1008,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   >([]);
   const medSearchResults = useRef<MedicineProduct[]>([]);
   const consultSearchResults = useRef<any[]>([]);
-  const [recentSearches, setRecentSearches] = useState<string[]>([
-    'Some recent search',
-    'cbc',
-    'covid',
-  ]);
-  const [suggestSearches, setSuggestSearches] = useState<string[]>([
-    'Some suggest search',
-    'covid',
-    'cipla',
-  ]);
-
-  const [offersListCache, setOffersListCache] = useState<any[]>([]);
 
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
@@ -1057,7 +1045,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const [serviceable, setserviceable] = useState<String>('');
   const [renewNow, setRenewNow] = useState<String>('');
   const [isCircleMember, setIsCircleMember] = useState<String>('');
-  const [isCircleMemberCache, setIsCircleMemberCache] = useState<String>('');
   const [circleSavings, setCircleSavings] = useState<number>(-1);
   const [showCircleActivationcr, setShowCircleActivationcr] = useState<boolean>(false);
   const [showWebView, setShowWebView] = useState<any>({ action: false });
@@ -1080,6 +1067,23 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const webengage = new WebEngage();
   const client = useApolloClient();
   const hdfc_values = string.Hdfc_values;
+
+  //cache and storage
+
+  const [recentSearches, setRecentSearches] = useState<string[]>([
+    'Some recent search',
+    'cbc',
+    'covid',
+  ]);
+  const [suggestSearches, setSuggestSearches] = useState<string[]>([
+    'Some suggest search',
+    'covid',
+    'cipla',
+  ]);
+
+  const [offersListCache, setOffersListCache] = useState<any[]>([]);
+  const [appointmentCountCache, setAppointmentCountCache] = useState<number>(0);
+  const [isCircleMemberCache, setIsCircleMemberCache] = useState<String>('');
 
   const saveDeviceNotificationToken = async (id: string) => {
     try {
