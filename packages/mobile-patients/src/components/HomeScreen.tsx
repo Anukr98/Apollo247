@@ -1019,6 +1019,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     'cipla',
   ]);
 
+  const [offersListCache, setOffersListCache] = useState<any[]>([]);
+
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
   const {
@@ -1120,8 +1122,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   }, []);
 
   const handleCachedData = async () => {
-    const cachedDataStringBuffer = await appGlobalCache.getAll();
-    const cachedData = JSON.parse(JSON.stringify(cachedDataStringBuffer));
+    const offersListStringBuffer = (await appGlobalCache.get('offersList')) || '[]';
+    setOffersListCache(JSON.parse(offersListStringBuffer));
   };
 
   const fetchUserAgent = () => {
@@ -3360,17 +3362,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const renderOffersForYou = () => {
-    if (offersList?.length === 0) return null;
-    else if (offersList?.length === 1 && offersList?.[0]?.template_name === 'CIRCLE')
+    const offerListToRender = offersListCache.length > 0 ? offersListCache : offersList;
+    if (offerListToRender?.length === 0) return null;
+    else if (offerListToRender?.length === 1 && offerListToRender?.[0]?.template_name === 'CIRCLE')
       return circleCashbackOffersComponent();
-    else if (offersList?.length === 1) return medCashbackOffersComponent(offersList?.[0]);
-    else if (offersList?.length > 1)
+    else if (offerListToRender?.length === 1)
+      return medCashbackOffersComponent(offerListToRender?.[0]);
+    else if (offerListToRender?.length > 1)
       return (
         <View style={styles.menuOptionsContainer}>
           <FlatList
             horizontal={true}
             showsHorizontalScrollIndicator={false}
-            data={offersList}
+            data={offersListCache}
             renderItem={({ item, index }) => renderOffersCards(item, index)}
             keyExtractor={(item, index) => index.toString() + 'offersForYou'}
           />
@@ -5411,8 +5415,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                 {!offersListLoading && offersList.length === 0 && myDoctorsCount === 0
                   ? null
                   : renderHeadings('Offers For You')}
-                {offersListLoading && renderOffersForYouShimmer()}
-                {!offersListLoading && renderOffersForYou()}
+                {offersListCache.length === 0 && offersListLoading && renderOffersForYouShimmer()}
+                {(offersListCache.length > 0 || !offersListLoading) && renderOffersForYou()}
                 {!appointmentLoading && currentAppointments === '0'
                   ? null
                   : renderHeadings('My Doctors')}
