@@ -1082,7 +1082,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   ]);
 
   const [offersListCache, setOffersListCache] = useState<any[]>([]);
-  const [appointmentCountCache, setAppointmentCountCache] = useState<number>(0);
+  const [appointmentCountCache, setAppointmentCountCache] = useState<string>('0');
   const [isCircleMemberCache, setIsCircleMemberCache] = useState<String>('');
 
   const saveDeviceNotificationToken = async (id: string) => {
@@ -1131,6 +1131,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     setOffersListCache(JSON.parse(offersListStringBuffer));
     const isCircleMembers = (await AsyncStorage.getItem('isCircleMember')) || '';
     setIsCircleMember(isCircleMembers);
+    const count = (await appGlobalCache.get('appointmentCount')) || '0';
+    setAppointmentCountCache(count);
   };
 
   const fetchUserAgent = () => {
