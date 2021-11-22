@@ -4237,6 +4237,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
+  /***
+   * For now this method invoke has been removed. But in future release it would be need
+   * ***/
   const renderReferralBanner = () => {
     return <ReferralBanner {...props} />;
   };
@@ -4252,7 +4255,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text>
               {renderMenuOptions()}
               {(displayQuickBookAskApollo || displayAskApolloNumber) && renderAskApolloView()}
-              {renderReferralBanner()}
               {circleDataLoading && renderCircleShimmer()}
               <View style={{ backgroundColor: '#f0f1ec' }}>
                 {isCircleMember === 'yes' && !circleDataLoading && renderCircle()}
