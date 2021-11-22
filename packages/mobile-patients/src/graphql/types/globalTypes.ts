@@ -2231,6 +2231,10 @@ export enum SPECIALTY_STATUS {
   TRUE = "TRUE",
 }
 
+export interface GetMedicineOrderCancelReasonsV2Input {
+  orderId?: number | null;
+}
+
 //==============================================================
 // END Enums and Input Objects
 //==============================================================
