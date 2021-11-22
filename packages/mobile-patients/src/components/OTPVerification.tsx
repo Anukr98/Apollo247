@@ -925,7 +925,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   };
 
   const openWebViewTandC = () => {
-    CommonLogEvent(AppRoutes.Login, 'Terms  Conditions clicked');
+    CommonLogEvent(AppRoutes.OTPVerification, 'Terms  Conditions clicked');
     Keyboard.dismiss();
     props.navigation.navigate(AppRoutes.CommonWebView, {
       url: AppConfig.Configuration.APOLLO_TERMS_CONDITIONS,
@@ -934,7 +934,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   };
 
   const openWebViewPrivacyPolicy = () => {
-    CommonLogEvent(AppRoutes.Login, 'Privacy Policy clicked');
+    CommonLogEvent(AppRoutes.OTPVerification, 'Privacy Policy clicked');
     Keyboard.dismiss();
     props.navigation.navigate(AppRoutes.CommonWebView, {
       url: AppConfig.Configuration.APOLLO_PRIVACY_POLICY,
