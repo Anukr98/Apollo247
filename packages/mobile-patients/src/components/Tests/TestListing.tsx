@@ -417,55 +417,6 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             }}
             scrollEventThrottle={16}
           >
-            {/* <Text style={styles.headingText}>
-              {deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle}{' '}
-              {actualItemsToShow?.length > 0 && (
-                <Text style={styles.itemCountText}>({actualItemsToShow?.length})</Text>
-              )}
-            </Text> */}
-            {/* {widgetsData?.diagnosticWidgetType == 'Package' ? (
-              <PackageCard
-                data={widgetsData}
-                diagnosticWidgetData={widgetsData?.diagnosticWidgetData?.slice(
-                  0,
-                  widgetsData?.diagnosticWidgetData < limit
-                    ? widgetsData?.diagnosticWidgetData
-                    : testLength
-                )}
-                isPriceAvailable={isPriceAvailable}
-                onEndReached={
-                  testLength == widgetsData?.diagnosticWidgetData?.length ? null : onEndReached
-                }
-                isCircleSubscribed={isDiagnosticCircleSubscription}
-                isServiceable={isDiagnosticLocationServiceable}
-                isVertical={true}
-                columns={1}
-                navigation={props.navigation}
-                source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.LISTING}
-                sourceScreen={AppRoutes.TestListing}
-              />
-            ) : (
-              <ItemCard
-                data={widgetsData}
-                diagnosticWidgetData={widgetsData?.diagnosticWidgetData?.slice(
-                  0,
-                  widgetsData?.diagnosticWidgetData < limit
-                    ? widgetsData?.diagnosticWidgetData
-                    : testLength
-                )}
-                isCircleSubscribed={isDiagnosticCircleSubscription}
-                isServiceable={isDiagnosticLocationServiceable}
-                isVertical={true}
-                columns={2}
-                isPriceAvailable={isPriceAvailable}
-                onEndReached={
-                  testLength == widgetsData?.diagnosticWidgetData?.length ? null : onEndReached
-                }
-                navigation={props.navigation}
-                source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.LISTING}
-                sourceScreen={AppRoutes.TestListing}
-              />
-            )} */}
             {itemPackages?.length && (
               <>
                 <Text style={styles.headingText}>
