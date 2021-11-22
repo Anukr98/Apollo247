@@ -585,7 +585,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     });
     const skus = cartItems?.map((item) => item?.id);
     const firebaseCheckoutEventAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED] = {
-      order_id: orderAutoId,
+      order_id: `${orderAutoId}`,
       transaction_id: transId,
       currency: 'INR',
       coupon: coupon?.coupon,
