@@ -2617,7 +2617,9 @@ export const addPharmaItemToCart = (
   itemsInCart?: string,
   onComplete?: () => void,
   pharmacyCircleAttributes?: PharmacyCircleEvent,
-  onAddedSuccessfully?: () => void
+  onAddedSuccessfully?: () => void,
+  comingFromSearch?: boolean,
+  cleverTapSearchSuccessEventAttributes?: object
 ) => {
   const outOfStockMsg = 'Sorry, this item is out of stock in your area.';
 

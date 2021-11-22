@@ -17,7 +17,10 @@ import { ProductCard } from '@aph/mobile-patients/src/components/Medicines/Produ
 import { ProductList } from '@aph/mobile-patients/src/components/Medicines/ProductList';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import {
+  ShoppingCartItem,
+  useShoppingCart,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import {
   Badge,
   SectionHeader,
@@ -107,6 +110,7 @@ import {
   getIsMedicine,
   getUserType,
   getCleverTapCircleMemberValues,
+  addPharmaItemToCart,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { USER_AGENT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
@@ -2074,10 +2078,86 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     });
   };
 
+  const addItemToServerCart = (item: ShoppingCartItem) => {
+    setUserActionPayload?.({
+      medicineOrderCartLineItems: [
+        {
+          medicineSKU: item?.id,
+          quantity: 1,
+        },
+      ],
+    });
+  };
+
+  // const onAddCartItem = (
+  //   item: MedicineProduct,
+  //   isComingFromSearch: boolean,
+  //   cleverTapSearchSuccessEventAttributes: object
+  // ) => {
+  //   const {
+  //     sku,
+  //     mou,
+  //     name,
+  //     price,
+  //     special_price,
+  //     is_prescription_required,
+  //     type_id,
+  //     thumbnail,
+  //     MaxOrderQty,
+  //     category_id,
+  //     url_key,
+  //     subcategory,
+  //   } = item;
+  //   setItemsLoading({ ...itemsLoading, [sku]: true });
+  //   addPharmaItemToCart(
+  //     {
+  //       id: sku,
+  //       mou,
+  //       name,
+  //       price: price,
+  //       specialPrice: special_price
+  //         ? typeof special_price == 'string'
+  //           ? Number(special_price)
+  //           : special_price
+  //         : undefined,
+  //       prescriptionRequired: is_prescription_required == '1',
+  //       isMedicine: getIsMedicine(type_id?.toLowerCase()) || '0',
+  //       quantity: Number(1),
+  //       thumbnail: thumbnail,
+  //       isInStock: true,
+  //       maxOrderQty: MaxOrderQty,
+  //       productType: type_id,
+  //       circleCashbackAmt: 0,
+  //       url_key,
+  //       subcategory,
+  //     },
+  //     asyncPincode?.pincode || pharmacyPincode!,
+  //     addItemToServerCart,
+  //     null,
+  //     props.navigation,
+  //     currentPatient,
+  //     !!isPharmacyLocationServiceable,
+  //     { source: 'Pharmacy Partial Search', categoryId: category_id },
+  //     JSON.stringify(cartItems),
+  //     () => setItemsLoading({ ...itemsLoading, [sku]: false }),
+  //     pharmacyCircleAttributes!,
+  //     () => {},
+  //     isComingFromSearch,
+  //     cleverTapSearchSuccessEventAttributes
+  //   );
+  // };
+
   const renderSearchSuggestionItemView = (
     data: ListRenderItemInfo<MedicineProduct | SearchSuggestion>
   ) => {
     const { item, index } = data;
+    const key = 'queryName';
+    const keywordArr = [];
+    medicineList.map((obj) => {
+      if (Object.keys(obj).includes(key)) {
+        keywordArr.push(obj?.queryName);
+      }
+    });
     return (
       <MedicineSearchSuggestionItem
         onPress={() => {
@@ -2097,14 +2177,25 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           }
         }}
         onPressAddToCart={() => {
-          setUserActionPayload?.({
-            medicineOrderCartLineItems: [
-              {
-                medicineSKU: item?.sku,
-                quantity: 1,
-              },
-            ],
-          });
+          // const comingFromSearch = true;
+          // const discount = getDiscountPercentage(item?.price, item?.special_price);
+          // const discountPercentage = discount ? discount + '%' : '0%';
+          // const cleverTapSearchSuccessEventAttributes = {
+          //   'Nav src': 'Pharmacy Home',
+          //   Status: 'Success',
+          //   Keyword: searchText,
+          //   Position: index + 1,
+          //   Source: 'Partial search',
+          //   Action: 'Add to cart',
+          //   'Product availability': 'Available',
+          //   'Product position': index + 1 - keywordArr?.length,
+          //   'Results shown': medicineList?.length,
+          //   'SKU ID': item?.sku,
+          //   'Product name': item?.name,
+          //   Discount: discountPercentage,
+          // };
+          addItemToServerCart(item);
+          // onAddCartItem(item, comingFromSearch, cleverTapSearchSuccessEventAttributes);
         }}
         onPressNotify={() => {
           onNotifyMeClick(item.name);
