@@ -87,7 +87,7 @@ export function PharmaOrderPlaced(
   burnHc: number,
   isCOD: boolean,
   currentPatient: GetCurrentPatients_getCurrentPatients_patients,
-  orderId: any,
+  orderId: string,
   pharmacyUserType: string
 ) {
   try {
