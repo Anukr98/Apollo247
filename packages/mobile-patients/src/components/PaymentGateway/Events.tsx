@@ -138,13 +138,14 @@ export function PharmaOrderPlaced(
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, firebaseEventAttributes);
 
+    const skus = cartItems?.map((item) => item?.id);
     const firebaseCheckoutEventAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED] = {
       order_id: orderId,
       transaction_id: paymentOrderId,
       currency: 'INR',
       coupon: coupon?.coupon,
       shipping: deliveryCharges,
-      items: JSON.stringify(cartItems),
+      items: JSON.stringify(skus),
       value: grandTotal,
       circle_membership_added: circleMembershipCharges
         ? 'Yes'
