@@ -329,7 +329,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
       setloading={setLoading}
       onPressProduct={(item) => {
         props.navigation.navigate(AppRoutes.ProductDetailPage, {
-          urlKey: item?.url_key,
+          urlKey: item?.urlKey,
           sku: item.id,
           movedFrom: ProductPageViewedSource.CART,
         });
