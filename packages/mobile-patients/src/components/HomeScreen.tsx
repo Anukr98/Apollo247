@@ -3703,14 +3703,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const onOfferCtaPressed = (item: any, index: number) => {
+    console.log('csk ', JSON.stringify(item));
     let attributes = {
       'Tile in the sequence': index,
       'Coupon Code': item?.coupon_code,
       'Offer Title': item?.title?.text,
       'Offer Subtitle': item?.subtitle?.text,
-      'Offer Notch Test': item?.notch_text?.text,
+      'Offer Notch Test': getNotchText(item?.expired_at, item?.notch_text?.text),
       'Offer CTA Text': item?.cta?.text,
       'Offer Expiry': item?.expired_at,
+      'Offer ID': item?.offer_id,
     };
     postHomeCleverTapEvent(CleverTapEventName.OFFERS_CTA_CLICKED, 'Home Screen', attributes);
     let action = getRedirectActionForOffers(item?.cta?.path?.vertical?.toLowerCase());

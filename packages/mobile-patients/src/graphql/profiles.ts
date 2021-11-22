@@ -6418,6 +6418,7 @@ export const GET_PERSONALIZED_OFFERS = gql`
       response {
         personalized_data {
           offers_for_you {
+            offer_id
             template_name
             coupon_code
             notch_text {
