@@ -47,7 +47,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
   const client = useApolloClient();
   const [linkCopied, setLinkCopied] = useState(false);
   const [refreeReward, setRefreeReward] = useState({
-    isRefree: false,
+    isReferee: false,
     rewardValue: 0,
     rewardRegisteration: '',
     expirationData: '',
@@ -82,7 +82,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
         );
         refreeRegisterationDate.setDate(refreeRegisterationDate.getDate() + hcExpirationTime);
         setRefreeReward({
-          isRefree: true,
+          isReferee: true,
           rewardValue: data?.getReferralRewardDetails?.referee?.rewardValue,
           rewardRegisteration: data?.getReferralRewardDetails?.referee?.registrationDate,
           expirationData: getRequiredDateFormat(refreeRegisterationDate),
@@ -432,12 +432,13 @@ const styles = StyleSheet.create({
   },
   checkRewardbtn: {
     backgroundColor: theme.colors.HEX_WHITE,
-    marginTop: 10,
+    marginTop: 5,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 18,
     paddingVertical: 15,
+    marginBottom: 15,
   },
   howWorklinkText: {
     fontSize: 14,

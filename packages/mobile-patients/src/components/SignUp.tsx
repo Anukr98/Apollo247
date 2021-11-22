@@ -293,7 +293,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
 
   const postAppsFlyerEventAppInstallViaReferral = async (data: any) => {
     const referralData: any = await AsyncStorage.getItem('app_referral_data');
-    onCleverTapUserLogin({ ...data?.updatePatient?.patient, isRefree: referralData !== null });
+    onCleverTapUserLogin({ ...data?.updatePatient?.patient, isReferee: referralData !== null });
     if (referralData !== null) {
       const { af_referrer_customer_id, campaign, rewardId, shortlink } = JSON.parse(referralData);
       const eventAttribute = {
