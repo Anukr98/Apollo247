@@ -139,8 +139,8 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
                 <View style={{ minHeight: isSmallDevice ? 90 : 95 }}>
                   <Text style={styles.inclusionsText}>
                     {getMandatoryParameterCount > 0
-                      ? `TOTAL TESTS : ${getMandatoryParameterCount}`
-                      : `TOTAL TESTS : ${inclusions?.length}`}{' '}
+                      ? `TOTAL INCLUSIONS : ${getMandatoryParameterCount}`
+                      : `TOTAL INCLUSIONS : ${inclusions?.length}`}{' '}
                   </Text>
 
                   {dataToShow?.map((item: any, index: number) =>
@@ -558,7 +558,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
 
   return (
     <>
-      <View style={props.isVertical ? { alignSelf: 'center', marginLeft: '1.5%' } : {}}>
+      <View style={props.isVertical ? { flex: 1, alignSelf: 'center', marginLeft: '1.5%' } : {}}>
         {actualItemsToShow?.length > 0 ? (
           <FlatList
             numColumns={props.isVertical ? props.columns : undefined}
