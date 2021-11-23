@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Text, Image, Dimensions } from 'react-native';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { NavigationScreenProps } from 'react-navigation';
+import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -13,12 +13,29 @@ const styles = StyleSheet.create({
   },
   subPlanOne: {
     flex: 0.2,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    paddingVertical: 6,
   },
   subPlanTwo: {
-    flex: 0.2,
+    flex: 0.7,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
   },
   subPlanThree: {
     flex: 0.3,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  subPlanTwoThreeDevider: {
+    flex: 0.8,
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderRadius: 6,
+    borderColor: '#4D9CB3',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
   },
   subPlanFour: {
     flex: 0.3,
