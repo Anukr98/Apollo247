@@ -9,6 +9,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginVertical: 2,
+    paddingRight: 12,
   },
 
   subPlanOne: {
@@ -18,14 +19,14 @@ const styles = StyleSheet.create({
   },
 
   subPlanTwo: {
-    flex: 0.4,
+    flex: 0.6,
     alignItems: 'flex-start',
     justifyContent: 'center',
   },
 
   subPlanThree: {
-    flex: 0.4,
-    alignItems: 'center',
+    flex: 0.2,
+    alignItems: 'flex-end',
     justifyContent: 'center',
   },
 

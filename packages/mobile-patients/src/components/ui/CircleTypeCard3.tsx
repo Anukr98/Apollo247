@@ -10,20 +10,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flex: 1,
     marginVertical: 2,
-    justifyContent: 'space-between',
+    marginRight: 12,
+    alignItems: 'center',
   },
 
   subPlanOne: {
     flex: 0.2,
+    justifyContent: 'center',
   },
 
   subPlanTwo: {
-    flex: 0.4,
+    flex: 0.6,
+    justifyContent: 'flex-start',
   },
 
   subPlanThree: {
-    flex: 0.4,
-    alignItems: 'center',
+    flex: 0.2,
+    justifyContent: 'flex-end',
   },
 
   circleLogo: {
