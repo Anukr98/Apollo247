@@ -4153,28 +4153,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         {/* {renderCircleBannerCards} */}
 
         <View style={styles.circleRowsContainer}>
-          {expiry > 0 && circleSavings <= 0 ? (
-            <Text>
-              <Text
-                style={{ ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 0.7, 16) }}
-              >
-                Circle Member{' '}
-              </Text>
-              <Text style={{ ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 1, 16) }}>
-                saves ₹848 per month.
-              </Text>
-              <Text
-                style={{ ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 0.7, 16) }}
-              >
-                {' '}
-                You can too{renew ? ' - Renew now!' : '.'}
-              </Text>
-            </Text>
-          ) : circleStatus === 'disabled' ? (
-            <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 0.6, 16) }}>
-              You’re missing out on benefits - Renew your membership now!!!{' '}
-            </Text>
-          ) : null}
+          {/* dont delete this containes, text rows and bottom text and elements can go here when added */}
         </View>
       </LinearGradientComponent>
     );
