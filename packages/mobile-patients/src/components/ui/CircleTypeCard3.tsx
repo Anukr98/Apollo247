@@ -9,25 +9,28 @@ const styles = StyleSheet.create({
   planContainer: {
     flexDirection: 'row',
     flex: 1,
-    marginVertical: 2,
-    marginRight: 12,
+    marginVertical: 4,
     paddingVertical: 6,
+    paddingRight: 6,
     alignItems: 'center',
   },
 
   subPlanOne: {
     flex: 0.2,
+    alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 4,
   },
 
   subPlanTwo: {
-    flex: 0.6,
+    flex: 0.55,
     justifyContent: 'flex-start',
   },
 
   subPlanThree: {
-    flex: 0.2,
-    justifyContent: 'flex-end',
+    flex: 0.25,
+    justifyContent: 'center',
+    alignItems: 'flex-end',
   },
 
   circleLogo: {
@@ -68,7 +71,7 @@ export const CircleTypeCard3: React.FC<CircleTypeCard3Props> = (props) => {
 
         <View style={styles.subPlanThree}>
           <Text
-            style={{ width: 155, height: 32, ...theme.viewStyles.text('B', 15, '#FC9916', 1, 18) }}
+            style={{ ...theme.viewStyles.text('B', 15, '#FC9916', 1, 20) }}
             onPress={onButtonPress}
           >
             EXPLORE
