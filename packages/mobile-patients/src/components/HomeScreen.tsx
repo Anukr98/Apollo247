@@ -655,13 +655,13 @@ const styles = StyleSheet.create({
   },
   circleContainer: {
     backgroundColor: theme.colors.WHITE,
-    marginTop: 12,
+    marginTop: 6,
     marginHorizontal: 16,
     paddingHorizontal: 6,
     alignSelf: 'center',
     paddingVertical: 6,
     borderRadius: 6,
-    width: '90%',
+    width: '93%',
   },
 
   circleCardsContainer: {
