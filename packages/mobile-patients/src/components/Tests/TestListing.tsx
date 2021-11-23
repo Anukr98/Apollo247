@@ -421,7 +421,10 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
               <>
                 <Text style={styles.headingText}>
                   {nameFormater(deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle, 'upper')}{' '}
-                  PACKAGES
+                  PACKAGES{' '}
+                  {itemPackages?.length > 0 && (
+                    <Text style={styles.itemCountText}>({itemPackages?.length})</Text>
+                  )}
                 </Text>
                 <PackageCard
                   data={{
@@ -449,7 +452,10 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
               <>
                 <Text style={styles.headingText}>
                   {nameFormater(deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle, 'upper')}{' '}
-                  TESTS
+                  TESTS{' '}
+                  {itemTests?.length > 0 && (
+                    <Text style={styles.itemCountText}>({itemTests?.length})</Text>
+                  )}
                 </Text>
                 <ItemCard
                   data={{

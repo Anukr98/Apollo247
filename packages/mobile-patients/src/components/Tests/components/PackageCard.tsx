@@ -139,8 +139,8 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
                 <View style={{ minHeight: isSmallDevice ? 90 : 95 }}>
                   <Text style={styles.inclusionsText}>
                     {getMandatoryParameterCount > 0
-                      ? `TOTAL INCLUSIONS : ${getMandatoryParameterCount}`
-                      : `TOTAL INCLUSIONS : ${inclusions?.length}`}{' '}
+                      ? `TOTAL TESTS : ${getMandatoryParameterCount}`
+                      : `TOTAL TESTS : ${inclusions?.length}`}{' '}
                   </Text>
 
                   {dataToShow?.map((item: any, index: number) =>
