@@ -87,7 +87,7 @@ export const CircleTypeCard6: React.FC<CircleTypeCard6Props> = (props) => {
         >
           <View style={styles.subPlanTwo}>
             <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.WHITE, 1, 20) }}>
-              Free Deliveries and Cashbacks
+              Save upto ₹800 monthly
             </Text>
             <Text
               style={{
