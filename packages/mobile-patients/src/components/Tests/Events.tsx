@@ -839,12 +839,12 @@ export function DiagnosticViewReportClicked(
 }
 
 export function DiagnosticCallToOrderClicked(
-  page: 'Home Page'| 'Listing Page' | 'Test Detail Page' | 'Cart Page',
+  page: string,
   currentPatient?: any,
-  sectionName?: any,
-  itemId?: any,
-  itemName?: any,
-  city?: any,
+  sectionName?: string,
+  itemId?: string,
+  itemName?: string,
+  city?: string,
   isDiagnosticCircleSubscription?: boolean | undefined
 ) {
   const getPatientAttributes = createPatientAttributes(currentPatient);
@@ -858,7 +858,6 @@ export function DiagnosticCallToOrderClicked(
     'ItemName': itemName,
     'Patient City': city,
     'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
-
   };
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_CALL_TO_ORDER_CLICKED, eventAttributes);
 }

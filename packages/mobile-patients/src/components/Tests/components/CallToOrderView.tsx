@@ -5,6 +5,9 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState,  } from 'react';
 import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { DiagnosticCallToOrderClicked } from '@aph/mobile-patients/src/components/Tests/Events';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { CALL_TO_ORDER_CTA_PAGE_ID } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 interface CallToOrderViewProps {
   delaySeconds?: any;
@@ -15,6 +18,10 @@ interface CallToOrderViewProps {
   cityId?: any;
   onPressSmallView?: () => void;
   onPressCross?: () => void;
+  pageId?: string;
+  sectionName?: string;
+  itemId?: string;
+  itemName?: string;
 }
 
 export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
@@ -26,10 +33,15 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
     onPressCross,
     customMargin,
     cityId,
+    pageId,
+    sectionName,
+    itemId,
+    itemName
   } = props;
   const {
     isDiagnosticLocationServiceable
   } = useAppCommonData();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
   const ctaDetailMatched = isDiagnosticLocationServiceable ? ctaDetailArray?.filter((item: any) => {
@@ -43,6 +55,7 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
     ? ctaDetailMatched?.[0]?.ctaPhoneNumber
     : callToOrderDetails?.ctaDetailsDefault?.ctaPhoneNumber;
   const onPressCallToOrderCta = () => {
+    postCleverTapEvent()
     Linking.openURL(`tel:${phoneNumber}`);
   };
   const [ctaDelaySeconds, setCtaDelaySeconds] = useState(ctaDetailMatched?.[0]?.ctaDelaySeconds)
@@ -51,6 +64,43 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
       setCtaDelaySeconds(0);
     }, ctaDetailMatched?.[0]?.ctaDelaySeconds * 1000);
   }, [ctaDelaySeconds]);
+
+  const postCleverTapEvent = () => {
+    let pageName = 'Home Page';
+    switch (pageId) {
+      case CALL_TO_ORDER_CTA_PAGE_ID.HOME:
+        pageName = 'Home Page';
+        break;
+      case CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING:
+        pageName = 'Listing Page';
+        break;
+      case CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS:
+        pageName = 'My Orders';
+        break;
+      case CALL_TO_ORDER_CTA_PAGE_ID.TESTCART:
+        pageName = 'Cart Page';
+        break;
+      case CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL:
+        pageName = 'Test Detail Page';
+        break;
+      case CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY:
+        pageName = 'Order Summary';
+        break;
+
+      default:
+        pageName = 'Home Page';
+        break;
+    }
+    DiagnosticCallToOrderClicked(
+      pageName,
+      currentPatient,
+      sectionName,
+      itemId,
+      itemName,
+      cityId,
+      isDiagnosticLocationServiceable
+    );
+  };
   return (ctaDelaySeconds == 0 ? 
     <>
       <View style={[styles.container, containerStyle]}>

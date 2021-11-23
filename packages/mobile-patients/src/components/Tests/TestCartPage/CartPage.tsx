@@ -1674,6 +1674,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         onPressCross={() => {
           setSlideCallToOrder(true);
         }}
+        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTCART}
       />
     ) : null;
   };

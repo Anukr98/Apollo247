@@ -1511,6 +1511,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         onPressCross={() => {
           setSlideCallToOrder(true);
         }}
+        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY}
       />
     ) : null;
   };
