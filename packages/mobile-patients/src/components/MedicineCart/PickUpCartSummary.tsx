@@ -67,8 +67,10 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
     circlePlanSelected,
     grandTotal,
     circleMembershipCharges,
+    serverCartItems,
+    cartPrescriptions,
   } = useShoppingCart();
-  const { uploadPhysicalPrescriptionsToServerCart } = useServerCart();
+  const { uploadPhysicalPrescriptionsToServerCart, setUserActionPayload } = useServerCart();
   const client = useApolloClient();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
@@ -221,6 +223,19 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
       const data = await createOrderInternal(orderAutoId, subscriptionId);
       const orders = [{ id: orderId, orderAutoId: orderAutoId, estimatedAmount: estimatedAmount }];
       if (data?.data?.createOrderInternal?.success) {
+        // empty server cart items and prescriptions
+        const itemsToRemoveFromCart = serverCartItems?.map((item) => ({
+          medicineSKU: item?.sku,
+          quantity: 0,
+        }));
+        const prescriptionsToRemove = cartPrescriptions?.map((item) => ({
+          prismPrescriptionFileId: item.prismPrescriptionFileId,
+          prescriptionImageUrl: '',
+        }));
+        setUserActionPayload({
+          medicineOrderCartLineItems: itemsToRemoveFromCart,
+          prescriptionDetails: prescriptionsToRemove,
+        });
         setauthToken?.('');
         const paymentId = data?.data?.createOrderInternal?.payment_order_id!;
         props.navigation.navigate(AppRoutes.PaymentMethods, {
