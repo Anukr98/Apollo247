@@ -294,8 +294,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setHdfcSubscriptionId,
     setHdfcPlanName,
     setIsFreeDelivery,
-    pinCode,
-    setPinCode,
     setCirclePlanValidity,
     pharmacyCircleAttributes,
     asyncPincode,
@@ -308,6 +306,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     serverCartErrorMessage,
     setServerCartErrorMessage,
     cartPrescriptions,
+    cartLocationDetails,
   } = useShoppingCart();
   const {
     setUserActionPayload,
@@ -341,8 +340,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [bannerLoading, setBannerLoading] = useState(false);
   const defaultAddress = addresses.find((item) => item.id == cartAddressId);
   const hasLocation = locationDetails || pharmacyLocation || defaultAddress;
-  const pharmacyPincode =
-    asyncPincode?.pincode || pharmacyLocation?.pincode || locationDetails?.pincode;
+  const pharmacyPincode = cartLocationDetails?.pincode || asyncPincode?.pincode;
   const [isFocused, setIsFocused] = useState<boolean>(false);
   type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
   const postwebEngageCategoryClickedEvent = (
@@ -687,10 +685,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   useEffect(() => {
     if (pharmacyPincode) {
       updateServiceability(pharmacyPincode);
-      setPinCode && setPinCode(pharmacyPincode);
       getUserSubscriptionsByStatus();
     }
-  }, []);
+  }, [pharmacyPincode]);
 
   useEffect(() => {
     if (isFocused) {
@@ -992,7 +989,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     try {
       setLoading(true);
 
-      const resonse = (await getMedicinePageProducts(axdcCode, pinCode)).data;
+      const resonse = (await getMedicinePageProducts(axdcCode, pharmacyPincode)).data;
       setData(resonse);
       if (setMedicineHomeBannerData) {
         setMedicineHomeBannerData(resonse?.mainbanners);
@@ -1916,8 +1913,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const onSearchMedicine = (_searchText: string) => {
     setMedicineSearchLoading(true);
-    const pincode = asyncPincode?.pincode || pinCode || pharmacyPincode;
-    getMedicineSearchSuggestionsApi(_searchText, axdcCode, pincode)
+    getMedicineSearchSuggestionsApi(_searchText, axdcCode, pharmacyPincode)
       .then(({ data }) => {
         const products = data.products || [];
         const queries = data.queries || [];
