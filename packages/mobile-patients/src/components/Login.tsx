@@ -806,7 +806,7 @@ export const Login: React.FC<LoginProps> = (props) => {
             )
           }
           onClickButton={onClickOkay}
-          disableButton={phoneNumberIsValid && phoneNumber.length === 10 ? false : true}
+          disableButton={phoneNumberIsValid && phoneNumber.length === 10  && isTandCSelected? false : true}
         >
           <View style={{ flexDirection: 'row', paddingHorizontal: 16 }}>
             <View

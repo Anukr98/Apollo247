@@ -302,6 +302,11 @@ export enum MEDICINE_FORM_TYPES {
   OTHERS = 'OTHERS',
 }
 
+export interface TestNameInputs {
+  testName: string;
+  parameterName: string;
+}
+
 export enum MEDICINE_FREQUENCY {
   ALTERNATE_DAY = 'ALTERNATE_DAY',
   AS_NEEDED = 'AS_NEEDED',

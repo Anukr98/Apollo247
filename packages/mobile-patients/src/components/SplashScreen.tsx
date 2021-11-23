@@ -534,32 +534,50 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         variables: { order_id: paymentId },
         fetchPolicy: 'no-cache',
       });
-      const paymentStatus = response?.data?.getOrderInternal?.payment_status;
-      const allowedStatuses = ['PAYMENT_NOT_INITIATED', 'TXN_FAILURE', 'COD_COMPLETE'];
-      if (allowedStatuses.includes(paymentStatus)) {
-        const currentPatientId: any = await AsyncStorage.getItem('selectUserId');
-        const isPharmaOrder = !!response?.data?.getOrderInternal?.PharmaOrderDetails
-          ?.medicineOrderDetails?.length
-          ? true
-          : false;
-        const merchantId = isPharmaOrder
-          ? AppConfig.Configuration.pharmaMerchantId
-          : AppConfig.Configuration.merchantId;
-        initiateHyperSDK(currentPatientId, merchantId);
-        const params = {
-          paymentId: response?.data?.getOrderInternal?.payment_order_id,
-          amount: response?.data?.getOrderInternal?.total_amount,
-          orderDetails: { orderId: response?.data?.getOrderInternal?.id },
-          businessLine: 'paymentLink',
-          customerId: response?.data?.getOrderInternal?.customer_id,
-        };
-        getData('PaymentMethods', undefined, undefined, undefined, undefined, params);
+      let allowPayment = true;
+      const diagOrder = response?.data?.getOrderInternal?.DiagnosticsPaymentDetails?.ordersList?.find(
+        (item: any) => item?.allowPayment
+      );
+      allowPayment = !!diagOrder ? diagOrder?.allowPayment : true;
+      if (allowPayment) {
+        const paymentStatus = response?.data?.getOrderInternal?.payment_status;
+        const allowedStatuses = ['PAYMENT_NOT_INITIATED', 'TXN_FAILURE', 'COD_COMPLETE'];
+        if (allowedStatuses.includes(paymentStatus)) {
+          const currentPatientId: any = await AsyncStorage.getItem('selectUserId');
+          const isPharmaOrder = !!response?.data?.getOrderInternal?.PharmaOrderDetails
+            ?.medicineOrderDetails?.length
+            ? true
+            : false;
+          const merchantId = isPharmaOrder
+            ? AppConfig.Configuration.pharmaMerchantId
+            : AppConfig.Configuration.merchantId;
+          initiateHyperSDK(currentPatientId, merchantId);
+          const params = {
+            paymentId: response?.data?.getOrderInternal?.payment_order_id,
+            amount: response?.data?.getOrderInternal?.total_amount,
+            orderDetails: { orderId: response?.data?.getOrderInternal?.id },
+            businessLine: 'paymentLink',
+            customerId: response?.data?.getOrderInternal?.customer_id,
+          };
+          getData('PaymentMethods', undefined, undefined, undefined, undefined, params);
+        } else {
+          navigateToHome(props.navigation);
+        }
       } else {
         navigateToHome(props.navigation);
+        showPaymentAlert();
       }
     } catch (error) {
       navigateToHome(props.navigation);
     }
+  };
+
+  const showPaymentAlert = () => {
+    showAphAlert!({
+      title: 'Uh oh! :(',
+      description:
+        'Payment can’t be made for this order. Please check my order section for more details.',
+    });
   };
 
   const callPhrNotificationApi = async (currentPatient: any) => {

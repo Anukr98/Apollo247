@@ -279,6 +279,20 @@ export const GET_AVAILABLE_SLOTS = gql`
   }
 `;
 
+export const GET_INFORMATIVE_CONTENT = gql`
+  query getInformativeContent($uhid: String!, $params: [TestNameInputs]) {
+    getInformativeContent(uhid: $uhid, params: $params) {
+      errorMsg
+      response {
+        testName
+        parameterName
+        loincCode
+        contentCode
+      }
+    }
+  }
+`;
+
 export const GET_PATIENT_FUTURE_APPOINTMENT_COUNT = gql`
   query getPatientFutureAppointmentCount($patientId: String) {
     getPatientFutureAppointmentCount(patientId: $patientId) {
@@ -1752,7 +1766,8 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         visitNo
         invoiceURL
         labReportURL
-        attributesObj {
+        passportNo
+        attributesObj{
           initialCollectionCharges
           distanceCharges
           homeCollectionCharges
@@ -2114,6 +2129,7 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         diagnosticDate
         visitNo
         labReportURL
+        passportNo
         slotTimings
         slotId
         slotDateTimeInUTC
@@ -5223,6 +5239,11 @@ export const GET_ORDER_INFO = gql`
       PharmaOrderDetails {
         medicineOrderDetails {
           orderAutoId
+        }
+      }
+      DiagnosticsPaymentDetails {
+        ordersList {
+          allowPayment
         }
       }
     }

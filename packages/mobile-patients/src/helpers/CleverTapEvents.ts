@@ -3237,6 +3237,7 @@ export interface CleverTapEvents {
     TxnType: string;
     ifNewCardSaved: boolean;
     isPaymentLinkTxn: boolean;
+    'Wallet Balance': any;
   };
   [CleverTapEventName.PAYMENT_TXN_RESPONSE]: {
     'Phone Number': string;
