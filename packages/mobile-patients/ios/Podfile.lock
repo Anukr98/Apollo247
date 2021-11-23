@@ -1,18 +1,18 @@
 PODS:
-  - AFNetworking (3.2.1):
-    - AFNetworking/NSURLSession (= 3.2.1)
-    - AFNetworking/Reachability (= 3.2.1)
-    - AFNetworking/Security (= 3.2.1)
-    - AFNetworking/Serialization (= 3.2.1)
-    - AFNetworking/UIKit (= 3.2.1)
-  - AFNetworking/NSURLSession (3.2.1):
+  - AFNetworking (4.0.1):
+    - AFNetworking/NSURLSession (= 4.0.1)
+    - AFNetworking/Reachability (= 4.0.1)
+    - AFNetworking/Security (= 4.0.1)
+    - AFNetworking/Serialization (= 4.0.1)
+    - AFNetworking/UIKit (= 4.0.1)
+  - AFNetworking/NSURLSession (4.0.1):
     - AFNetworking/Reachability
     - AFNetworking/Security
     - AFNetworking/Serialization
-  - AFNetworking/Reachability (3.2.1)
-  - AFNetworking/Security (3.2.1)
-  - AFNetworking/Serialization (3.2.1)
-  - AFNetworking/UIKit (3.2.1):
+  - AFNetworking/Reachability (4.0.1)
+  - AFNetworking/Security (4.0.1)
+  - AFNetworking/Serialization (4.0.1)
+  - AFNetworking/UIKit (4.0.1):
     - AFNetworking/NSURLSession
   - AppsFlyerFramework (6.2.6):
     - AppsFlyerFramework/Main (= 6.2.6)
@@ -170,7 +170,7 @@ PODS:
   - HyperSDK (2.0.76):
     - JuspaySafeBrowser (= 0.1.70)
     - Salvator (= 1.0.1)
-  - IQKeyboardManager (6.5.8)
+  - IQKeyboardManager (6.5.9)
   - JuspaySafeBrowser (0.1.70)
   - JWT (3.0.0-beta.14):
     - Base64 (~> 1.1.2)
@@ -193,7 +193,7 @@ PODS:
     - nanopb/encode (= 1.30906.0)
   - nanopb/decode (1.30906.0)
   - nanopb/encode (1.30906.0)
-  - OpenTok (2.21.1)
+  - OpenTok (2.21.2)
   - opentok-react-native (0.17.2):
     - OpenTok
     - React
@@ -533,7 +533,7 @@ PODS:
   - youtube-ios-player-helper (0.1.6)
 
 DEPENDENCIES:
-  - AFNetworking (~> 3.2.1)
+  - AFNetworking (~> 4.0.0)
   - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
   - Charts (~> 3.3.0)
   - clevertap-react-native (from `../node_modules/clevertap-react-native`)
@@ -828,7 +828,7 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  AFNetworking: b6f891fdfaed196b46c7a83cf209e09697b94057
+  AFNetworking: 7864c38297c79aaca1500c33288e429c3451fdce
   AppsFlyerFramework: 1ac92ce51999e77806b0ecf6ff7b72af8ee8bea4
   Base64: cecfb41a004124895a7bcee567a89bae5a89d49b
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
@@ -862,7 +862,7 @@ SPEC CHECKSUMS:
   GTMSessionFetcher: 43748f93435c2aa068b1cbe39655aaf600652e91
   hyper-sdk-react: c19d28ff181f28a3361d8c191b50bb793afb2d41
   HyperSDK: 81d39db5276b7901691e3e08dc0a377a51b06b36
-  IQKeyboardManager: 1943526a2fa1a6ea24f90c845c274b0e80dd1912
+  IQKeyboardManager: 241cc94ccabc9deb8f8bd7d12f00d73288d13ecc
   JuspaySafeBrowser: 72f60fcd42bb61f6a6ad9b733b84810b63cc8c1b
   JWT: ef71dfb03e1f842081e64dc42eef0e164f35d251
   JWTDecode: 33e5e26e5ddbd21b2065820894c08fef0cad9509
@@ -870,7 +870,7 @@ SPEC CHECKSUMS:
   lottie-ios: c058aeafa76daa4cf64d773554bccc8385d0150e
   lottie-react-native: 96361a9891cf651534ea35c4f85f33d4cf14ed13
   nanopb: 59317e09cf1f1a0af72f12af412d54edf52603fc
-  OpenTok: 05421a16b33bbc34c1f17c95493428bc255ba5a3
+  OpenTok: 0060779ca05fca24242a10c8b9ee4982bcf7d795
   opentok-react-native: 56e3213e14bcc5222bc2e3e244c3a3b6bb3758ac
   PromisesObjC: 3113f7f76903778cf4a0586bd1ab89329a0b7b97
   Protobuf: 3724efa50cb2846d7ccebc8691c574e85fd74471
@@ -951,6 +951,6 @@ SPEC CHECKSUMS:
   Yoga: 02036f6383c0008edb7ef0773a0e6beb6ce82bd1
   youtube-ios-player-helper: 21ab92db027c7ff86cb17a3843a3f6eafc8158d2
 
-PODFILE CHECKSUM: 928612f0397d64e2dc0f9fc7e0908cdbbe46c757
+PODFILE CHECKSUM: 87efab4164c5e50ec36bc7acad94300fbec013cc
 
-COCOAPODS: 1.11.2
+COCOAPODS: 1.10.1

@@ -14,6 +14,7 @@ import {
   availabilityApi247,
   validateConsultCoupon,
   getDiagnosticDoctorPrescriptionResults,
+  autoCompletePlaceSearch,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -1007,7 +1008,11 @@ export const getDiffInMinutes = (doctorAvailableSlots: string) => {
   }
 };
 
-export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult' = 'Available') => {
+export const nextAvailability = (
+  nextSlot: string,
+  type: 'Available' | 'Consult' = 'Available',
+  isPhysical: boolean = false
+) => {
   const isValidTime = moment(nextSlot).isValid();
   if (isValidTime) {
     const d = new Date();
@@ -1028,15 +1033,19 @@ export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult'
         })
     );
     if (differenceMinute < 60 && differenceMinute > 0) {
-      return `${type} in ${differenceMinute} min${differenceMinute !== 1 ? 's' : ''}`;
+      return isPhysical
+        ? 'Consult Today'
+        : `${type} in ${differenceMinute} min${differenceMinute !== 1 ? 's' : ''}`;
     } else if (differenceMinute <= 0) {
       return 'BOOK APPOINTMENT';
     } else if (differenceMinute >= 60 && !isTomorrow) {
-      return `${type} at ${moment(nextSlot).format('hh:mm A')}`;
+      return isPhysical ? 'Consult Today' : `${type} at ${moment(nextSlot).format('hh:mm A')}`;
     } else if (isTomorrow && differenceMinute < 2880 - minPassedToday) {
-      return `${type} Tomorrow${
-        type === 'Available' ? ` at ${moment(nextSlot).format('hh:mm A')}` : ''
-      }`;
+      return isPhysical
+        ? 'Consult Tomorrow'
+        : `${type} Tomorrow${
+            type === 'Available' ? ` at ${moment(nextSlot).format('hh:mm A')}` : ''
+          }`;
     } else if ((diffDays >= 2 && diffDays <= 30) || type == 'Consult') {
       return `${type} in ${diffDays} days`;
     } else {
@@ -1119,10 +1128,12 @@ export const getlocationDataFromLatLang = async (latitude: number, longitude: nu
 /**
  * Method to filter addresses to find postal_code type address
  */
- const filterPinCodeAddressFromList = (googleAPIResponse: any) => {
+const filterPinCodeAddressFromList = (googleAPIResponse: any) => {
   const suggestionList = googleAPIResponse?.data?.results;
   const [pinCodeAddress] = suggestionList?.filter((address: any) =>
-    address?.address_components?.some((components: any) => components?.types?.includes('postal_code'))
+    address?.address_components?.some((components: any) =>
+      components?.types?.includes('postal_code')
+    )
   );
   return pinCodeAddress?.address_components ? pinCodeAddress?.address_components : '';
 };
@@ -1616,7 +1627,7 @@ export const onCleverTapUserLogin = async (_currentPatient: any) => {
       ...(_currentPatient?.emailAddress && { Email: _currentPatient?.emailAddress }),
       ...(_currentPatient?.photoUrl && { Photo: _currentPatient?.photoUrl }),
       ...(_currentPatient?.createdDate && { CreatedDate: _currentPatient?.createdDate }),
-      isRefree: _currentPatient?.isRefree || false
+      isRefree: _currentPatient?.isRefree || false,
     };
     CleverTap.onUserLogin(_userProfile);
     AsyncStorage.setItem('createCleverTapProifle', 'true');
@@ -2211,10 +2222,10 @@ export const InitiateAppsFlyer = (
     (result) => {},
     (error) => {}
   );
-  let isFirstLaunch = false
+  let isFirstLaunch = false;
   onInstallConversionDataCanceller = appsFlyer.onInstallConversionData((res) => {
     if (JSON.parse(res.data.is_first_launch || 'null') == true) {
-      isFirstLaunch = true
+      isFirstLaunch = true;
       try {
         if (res.data.af_dp !== undefined) {
           AsyncStorage.setItem('deeplink', res.data.af_dp);
@@ -2224,14 +2235,14 @@ export const InitiateAppsFlyer = (
         }
 
         if (res.data.linkToUse !== null && res.data.linkToUse === 'ForReferrarInstall') {
-          const responseData = res.data
+          const responseData = res.data;
           setAppReferralData({
             af_channel: responseData.af_channel,
             af_referrer_customer_id: responseData.af_referrer_customer_id,
             campaign: responseData.campaign,
             rewardId: responseData.rewardId,
-            shortlink: responseData.shortlink
-          })
+            shortlink: responseData.shortlink,
+          });
         }
 
         setBugFenderLog('APPS_FLYER_DEEP_LINK', res.data.af_dp);
@@ -2270,9 +2281,9 @@ export const InitiateAppsFlyer = (
       } catch (error) {}
     }
   });
-  let isDeepLinked = false
-  onDeepLinkCanceller = appsFlyer.onDeepLink(res => {
-    isDeepLinked = true
+  let isDeepLinked = false;
+  onDeepLinkCanceller = appsFlyer.onDeepLink((res) => {
+    isDeepLinked = true;
     if (res.isDeferred) {
       getInstallResources();
       const url = handleOpenURL(res.data.deep_link_value);
@@ -2282,25 +2293,25 @@ export const InitiateAppsFlyer = (
       if (!res.isDeferred) {
         if (redirectUrl && checkUniversalURL(redirectUrl).universal) {
           if (Object.keys(res.data).length < 2) {
-            clevertapEventForAppsflyerDeeplink(removeNullFromObj({
-              source_url: checkUniversalURL(redirectUrl).source_url,
-              channel: 'Organic'
-            }))
-          }
-          else {
+            clevertapEventForAppsflyerDeeplink(
+              removeNullFromObj({
+                source_url: checkUniversalURL(redirectUrl).source_url,
+                channel: 'Organic',
+              })
+            );
+          } else {
             clevertapEventForAppsflyerDeeplink(
               filterAppLaunchSoruceAttributesByKey({
                 ...res.data,
-                source_url: checkUniversalURL(redirectUrl).source_url
-              }))
+                source_url: checkUniversalURL(redirectUrl).source_url,
+              })
+            );
           }
-
-        }
-        else {
-          clevertapEventForAppsflyerDeeplink(filterAppLaunchSoruceAttributesByKey(res.data))
+        } else {
+          clevertapEventForAppsflyerDeeplink(filterAppLaunchSoruceAttributesByKey(res.data));
           const url = handleOpenURL(res.data.deep_link_value);
-          AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url))
-          redirectWithOutDeferred(url)
+          AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
+          redirectWithOutDeferred(url);
         }
       }
       if (!res.isDeferred) {
@@ -2312,31 +2323,28 @@ export const InitiateAppsFlyer = (
       if (res.status == 'success') {
         clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data));
       }
-    } catch (e) { }
-
-  })
+    } catch (e) {}
+  });
   setTimeout(() => {
-    !isDeepLinked && launchSourceEvent(isFirstLaunch)
-  }, 5000)
+    !isDeepLinked && launchSourceEvent(isFirstLaunch);
+  }, 5000);
 };
 
-
 export const checkUniversalURL = (url: string) => {
-  if (url.indexOf(string.common.apollo247UniversalLink) != -1
-    || url.indexOf(string.common.apolloPharmacyUniversalLink) != -1
+  if (
+    url.indexOf(string.common.apollo247UniversalLink) != -1 ||
+    url.indexOf(string.common.apolloPharmacyUniversalLink) != -1
   ) {
     if (url.indexOf('?') != -1) {
       var splitedArray = url.split('?');
-      return { universal: true, source_url: splitedArray[0] }
+      return { universal: true, source_url: splitedArray[0] };
+    } else {
+      return { universal: true, source_url: url };
     }
-    else {
-      return { universal: true, source_url: url }
-    }
+  } else {
+    return { universal: false };
   }
-  else {
-    return { universal: false }
-  }
-}
+};
 
 export const removeNullFromObj = (obj: any) => {
   for (var propName in obj) {
@@ -2348,14 +2356,14 @@ export const removeNullFromObj = (obj: any) => {
 };
 
 const setAppReferralData = (data: {
-  af_channel: string,
-  af_referrer_customer_id: string,
-  campaign: number | string,
-  rewardId: string,
-  shortlink: string
+  af_channel: string;
+  af_referrer_customer_id: string;
+  campaign: number | string;
+  rewardId: string;
+  shortlink: string;
 }) => {
-  AsyncStorage.setItem('app_referral_data', JSON.stringify(data))
-}
+  AsyncStorage.setItem('app_referral_data', JSON.stringify(data));
+};
 
 const getInstallResources = () => {
   let installConversation = appsFlyer.onInstallConversionData((res) => {
@@ -2731,7 +2739,7 @@ export const addPharmaItemToCart = (
   pharmacyCircleAttributes?: PharmacyCircleEvent,
   onAddedSuccessfully?: () => void,
   comingFromSearch?: boolean,
-  cleverTapSearchSuccessEventAttributes?: object,
+  cleverTapSearchSuccessEventAttributes?: object
 ) => {
   const outOfStockMsg = 'Sorry, this item is out of stock in your area.';
 
@@ -2804,14 +2812,20 @@ export const addPharmaItemToCart = (
       if (availability) {
         if (comingFromSearch === true) {
           cleverTapSearchSuccessEventAttributes['Product availability'] = 'Is in stock';
-          postCleverTapEvent(CleverTapEventName.PHARMACY_SEARCH_SUCCESS, cleverTapSearchSuccessEventAttributes);
+          postCleverTapEvent(
+            CleverTapEventName.PHARMACY_SEARCH_SUCCESS,
+            cleverTapSearchSuccessEventAttributes
+          );
         }
         addToCart();
         onAddedSuccessfully?.();
       } else {
         if (comingFromSearch === true) {
           cleverTapSearchSuccessEventAttributes['Product availability'] = 'Out of stock';
-          postCleverTapEvent(CleverTapEventName.PHARMACY_SEARCH_SUCCESS, cleverTapSearchSuccessEventAttributes);
+          postCleverTapEvent(
+            CleverTapEventName.PHARMACY_SEARCH_SUCCESS,
+            cleverTapSearchSuccessEventAttributes
+          );
         }
         navigate();
       }
@@ -3013,25 +3027,19 @@ export const calculateCashbackForItem = (
   sku: any
 ) => {
   const { circleCashback } = useShoppingCart();
-  const getFirstLevelCashback = () => {
-    // categoty level cashback
-    const key = type_id?.toUpperCase();
-    return circleCashback?.[key] || 0;
-  };
-  const getSecondLevelCashback = () => {
-    // sub categoty level cashback
-    const key = `${type_id?.toUpperCase()}~${subcategory}`;
-    return circleCashback?.[key] || 0;
-  };
-  const getThirdLevelCashback = () => {
-    // sku level cashback
-    const key = `${type_id?.toUpperCase()}~${subcategory}~${sku}`;
-    return circleCashback?.[key] || 0;
-  };
-  const cashbackFactor =
-    getThirdLevelCashback() || getSecondLevelCashback() || getFirstLevelCashback();
+  const categoryLevelkey = type_id?.toUpperCase();
+  const subCategoryLevelkey = `${type_id?.toUpperCase()}~${subcategory}`;
+  const skuLevelkey = `${type_id?.toUpperCase()}~${subcategory}~${sku}`;
+  let cashbackFactor = 0;
+  if ( circleCashback?.[skuLevelkey] >= 0) {
+    cashbackFactor = circleCashback?.[skuLevelkey];
+  } else if ( circleCashback?.[subCategoryLevelkey] >= 0) {
+    cashbackFactor = circleCashback?.[subCategoryLevelkey];
+  } else {
+    cashbackFactor = circleCashback?.[categoryLevelkey];
+  }
   const cashback = cashbackFactor ? ((price * cashbackFactor) / 100).toFixed(2) : '0';
-  return cashback || 0;
+  return parseInt(cashback, 10) || 0;
 };
 
 export const readableParam = (param: string) => {
@@ -3805,6 +3813,43 @@ export const isDiagnosticSelectedCartEmpty = (patientCartItems: DiagnosticPatien
   });
   return finalPatientCartItems;
 };
+
+export const locationSearch = (searchText: string) => {
+  return new Promise((resolve, reject) => {
+    getNetStatus()
+      .then((status) => {
+        if (status) {
+          autoCompletePlaceSearch(searchText)
+            .then((obj) => {
+              try {
+                const address = obj?.data?.predictions.map(
+                  (item: {
+                    place_id: string;
+                    structured_formatting: {
+                      main_text: string;
+                    };
+                  }) => {
+                    return { name: item.structured_formatting.main_text, placeId: item.place_id };
+                  }
+                );
+                resolve(address);
+              } catch (e) {
+                reject(e);
+                CommonBugFender('DoctorSearchListing_autoSearch_try', e);
+              }
+            })
+            .catch((error) => {
+              reject(error);
+              CommonBugFender('DoctorSearchListing_autoSearch', error);
+            });
+        }
+      })
+      .catch((e) => {
+        reject(e);
+        CommonBugFender('DoctorSearchListing_getNetStatus_autoSearch', e);
+      });
+  });
+};
 export const downloadDocument = (
   fileUrl: string = '',
   type: string = 'application/pdf',
@@ -3873,40 +3918,86 @@ export const isCartPriceWithInSpecifiedRange = (
   }
 };
 
+export const validateEmail = (value: string) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value);
+
+export const validateName = (value: string) =>
+  /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value);
+
+export const validateNumber = (value: string) => /^\d{10}$/.test(value);
+
+export const checkIfValidUUID = (str: string) => {
+  // Regular expression to check if string is a valid UUID
+  const regexExp = /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
+  return regexExp.test(str);
+};
 export const convertDateToEpochFormat = (value: Date) => {
   const epochValue = value ? `$D_${Math.floor(value.getTime() / 1000.0)}` : '';
   return epochValue;
 };
 
-
 export const filterAppLaunchSoruceAttributesByKey = (raw: any) => {
-  let validObjKeys = ["CT Session Id", "channel", "CT Source", "CT App Version", "deep_link_value", "is_deferred", "campaign", "match_type", "media_source", "source", "utm_campaign", "utm_medium", "source_url", "utm_source", "install_time", "is_first_launch", "is_incentivized", "retargeting_conversion_type", "orig_cost", "cost_cents_USD", "iscache", "click_time", "is_retargeting", "adgroupid", "keyword", "adtype", "device", "utm_content", "is_mobile_data_terms_signed", "is_fb", "is_paid", "adgroup", "campaign_id"];
-  let filteredObj = removeNullFromObj(raw)
-  return Object.keys(filteredObj).filter(key => validObjKeys.includes(key)).reduce((obj: any, key) => {
-    obj[key] = filteredObj[key];
-    return obj;
-  }, {});
-}
-export const replaceVariableInString = (str: string, mapObj: { [propName: string]: string; }) => {
-  let newArrayWithUpdatedString = Object.keys(mapObj).map(item => '{' + item + '}')
-  let rgx = new RegExp(newArrayWithUpdatedString.join("|"), "gi")
-  str = str.replace(rgx, function (matched) {
+  let validObjKeys = [
+    'CT Session Id',
+    'channel',
+    'CT Source',
+    'CT App Version',
+    'deep_link_value',
+    'is_deferred',
+    'campaign',
+    'match_type',
+    'media_source',
+    'source',
+    'utm_campaign',
+    'utm_medium',
+    'source_url',
+    'utm_source',
+    'install_time',
+    'is_first_launch',
+    'is_incentivized',
+    'retargeting_conversion_type',
+    'orig_cost',
+    'cost_cents_USD',
+    'iscache',
+    'click_time',
+    'is_retargeting',
+    'adgroupid',
+    'keyword',
+    'adtype',
+    'device',
+    'utm_content',
+    'is_mobile_data_terms_signed',
+    'is_fb',
+    'is_paid',
+    'adgroup',
+    'campaign_id',
+  ];
+  let filteredObj = removeNullFromObj(raw);
+  return Object.keys(filteredObj)
+    .filter((key) => validObjKeys.includes(key))
+    .reduce((obj: any, key) => {
+      obj[key] = filteredObj[key];
+      return obj;
+    }, {});
+};
+export const replaceVariableInString = (str: string, mapObj: { [propName: string]: string }) => {
+  let newArrayWithUpdatedString = Object.keys(mapObj).map((item) => '{' + item + '}');
+  let rgx = new RegExp(newArrayWithUpdatedString.join('|'), 'gi');
+  str = str.replace(rgx, function(matched) {
     return mapObj[matched.replace(/{|}/gi, '')];
   });
-  return str
-}
+  return str;
+};
 export const getAvailabilityForSearchSuccess = (pincode: string, sku: string) => {
   let availability = false;
-      availabilityApi247(pincode, sku)
-        .then((res) => {
-          availability = g(res, 'data', 'response', '0' as any, 'exist');
-        })
-        .catch((error) => {
-          availability = false;
-        });
-    return availability;
+  availabilityApi247(pincode, sku)
+    .then((res) => {
+      availability = g(res, 'data', 'response', '0' as any, 'exist');
+    })
+    .catch((error) => {
+      availability = false;
+    });
+  return availability;
 };
-
 
 export const getPaymentMethodsInfo = (paymentMethods: any, paymentMode: string) => {
   try {
@@ -3961,9 +4052,24 @@ export const getErrorMsg = (errorCode: string) => {
   }
 };
 
+export const getIOSPackageName = (packageName: string) => {
+  switch (packageName) {
+    case 'com.google.android.apps.nbu.paisa.user':
+      return 'tez://upi/pay';
+      break;
+    case 'com.phonepe.app':
+      return 'phonepe://pay';
+      break;
+    case 'net.one97.paytm':
+      return 'paytmmp://upi/pay';
+      break;
+  }
+};
+
 export const getAsyncStorageValues = async () => {
   const token = await AsyncStorage.getItem('jwt');
-  const user = await AsyncStorage.getItem('currentPatient');
+  let user = await AsyncStorage.getItem('currentPatient');
+  user = JSON.parse(user)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber;
   return [token, user];
 };
 

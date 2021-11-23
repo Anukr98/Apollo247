@@ -11,7 +11,7 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import { PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Divider } from 'react-native-elements';
@@ -36,6 +36,10 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const { setLoading, showAphAlert } = useUIElements();
+
+  useEffect(() => {
+    setConsultProfile(null);
+  }, []);
 
   const renderHeader = () => {
     return (

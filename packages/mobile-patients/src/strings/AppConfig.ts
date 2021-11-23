@@ -22,7 +22,7 @@ export enum AppEnv {
   QA6 = 'QA6',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA5 as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA3 as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -291,26 +291,30 @@ const appStaticVariables = {
   DIAGNOSTICS_REPORT_TAT_BREACH_TEXT:
     'Reports are delayed by a few hours, but should be available any time soon.',
   TrueCaller_Login_Enabled: false,
-  DIAGNOSTICS_NO_CIRCLE_SAVINGS_TEXT : 'Extra 15% off on lab tests and cashback on medicine orders',
-  DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER : {
-    "ctaDetailsOnCityId": [
+  Ask_Apollo_Number: '18605001066',
+  LONG_CHAT_LAUNCH_DATE: '23/10/2021',
+  offerIconBaseUrl: 'https://newassets.apollo247.com/images/payment_offer_icons/',
+  DIAGNOSTICS_NO_CIRCLE_SAVINGS_TEXT: 'Extra 15% off on lab tests and cashback on medicine orders',
+  DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER: {
+    ctaDetailsOnCityId: [
       {
-        "ctaCityId": "9",
-        "ctaProductPageArray": ["HOME","TESTLISTING","TESTCART","TESTDETAIL"],
-        "ctaDelaySeconds": 0,
-        "ctaPhoneNumber": "040-4821-3009"
-      }
+        ctaCityId: '9',
+        ctaProductPageArray: ['HOME', 'TESTLISTING', 'TESTCART', 'TESTDETAIL'],
+        ctaDelaySeconds: 0,
+        ctaPhoneNumber: '040-4821-3009',
+      },
     ],
-    "ctaDetailsDefault": {
-      "ctaProductPageArray": ["HOME","TESTLISTING","TESTCART","TESTDETAIL"],
-      "ctaDelaySeconds": 3,
-      "ctaPhoneNumber": "040-4821-3322"
-    }
+    ctaDetailsDefault: {
+      ctaProductPageArray: ['HOME', 'TESTLISTING', 'TESTCART', 'TESTDETAIL'],
+      ctaDelaySeconds: 3,
+      ctaPhoneNumber: '040-4821-3322',
+    },
   },
-  DIAGNOSTICS_COVID_ITEM_IDS : [2446],
+  DIAGNOSTICS_COVID_ITEM_IDS: [2446],
   FREE_CONSULT_MESSAGE: {
     prescriptionMessage: 'Get a FREE Consultation by our expert doctor within the next 30 mins.',
-    reviewOrderMessage: 'Our Apollo doctor will call you for a free consultation. Order will be processed only after the consultation in completed successfully.',
+    reviewOrderMessage:
+      'Our Apollo doctor will call you for a free consultation. Order will be processed only after the consultation in completed successfully.',
     orderConfirmationMessage: 'An Apollo doctor will call you as soon are they are available.',
     orderSummaryMessage: 'Free Doctor Consult Booked. You will receive a call soon.',
     reviewOrderHeader: 'FREE Consult will be booked for you',
@@ -1517,7 +1521,7 @@ export const DIAGNOSTIC_SHOW_OTP_STATUS = [
 export const DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
-  DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
 ];
 export const DIAGNOSTIC_SUB_STATUS_TO_SHOW = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,

@@ -504,7 +504,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       <Button
         style={{ margin: 16, marginTop: 32, width: 'auto' }}
         onPress={onPressConfirmCancelOrder}
-        disabled={!!!selectedReason && showSpinner}
+        disabled={(!selectedReason && showSpinner) || selectedReason === ''}
         title={'SUBMIT REQUEST'}
       />
     );

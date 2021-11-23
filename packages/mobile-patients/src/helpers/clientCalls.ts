@@ -1470,7 +1470,6 @@ export const saveJusPaySDKresponse = (client: ApolloClient<object>, payload: any
   });
 };
 
-
 export const getDiagnosticCartRecommendations = (
   client: ApolloClient<object>,
   itemIds: any,

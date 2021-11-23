@@ -23,6 +23,7 @@ import {
   formatAddress,
   setAsyncPharmaLocation,
   postCleverTapEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
@@ -98,6 +99,7 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
     paddingTop: 7,
@@ -516,6 +518,15 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     };
     postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, cleverTapEventAttributes);
     postWebEngageEvent(WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION, eventAttributes);
+
+    const firebaseCheckoutEventAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED] = {
+      order_id: orderAutoId,
+      user_type: pharmacyUserType,
+    };
+    postFirebaseEvent(
+      FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED,
+      firebaseCheckoutEventAttributes
+    );
   };
 
   const uploadMultipleFiles = (physicalPrescription: PhysicalPrescription[]) => {
