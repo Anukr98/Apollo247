@@ -24,12 +24,11 @@ const styles = StyleSheet.create({
     flex: 0.7,
     alignItems: 'flex-start',
     justifyContent: 'center',
-    paddingLeft: 8,
   },
 
   subPlanThree: {
     flex: 0.3,
-    alignItems: 'center',
+    alignItems: 'flex-end',
     justifyContent: 'center',
   },
 
@@ -45,7 +44,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 6,
     borderColor: '#4D9CB3',
-    padding: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     alignItems: 'center',
   },
   alertText: {
