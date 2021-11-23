@@ -107,7 +107,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       const imageUrl = !!getItem?.itemImageUrl
         ? getItem?.itemImageUrl
         : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_ICON;
-      const name = getItem?.itemTitle;
+      const name = getItem?.itemTitle || getItem?.itemName;
       const inclusions = getItem?.inclusionData;
 
       const getMandatoryParamter =
@@ -159,8 +159,8 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
             <View style={{ minHeight: isSmallDevice ? 25 : 30 }}>
               {getMandatoryParameterCount > 0 ? (
                 <Text style={styles.parameterText}>
-                  {getMandatoryParameterCount}{' '}
-                  {getMandatoryParameterCount == 1 ? 'parameter' : 'parameters'} included
+                  {getMandatoryParameterCount} {getMandatoryParameterCount == 1 ? 'test' : 'tests'}{' '}
+                  included
                 </Text>
               ) : null}
             </View>
@@ -388,7 +388,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       !!item?.inclusionData && item.inclusionData.map((item: any) => Number(item?.incItemId));
 
     DiagnosticAddToCartEvent(
-      item?.itemTitle,
+      item?.itemTitle || item?.itemName,
       `${item?.itemId}`,
       mrpToDisplay,
       discountToDisplay,
@@ -404,7 +404,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     const addedItems = {
       id: `${item?.itemId}`,
       mou: 1,
-      name: item?.itemTitle!,
+      name: item?.itemTitle! || item?.itemName,
       price: price,
       specialPrice: specialPrice! | price,
       circlePrice: circlePrice,
@@ -462,9 +462,10 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     const mrpToDisplay = pricesForItem?.mrpToDisplay;
     const widgetTitle = data?.diagnosticWidgetTitle;
     const widgetType = data?.diagnosticWidgetType;
+    const inclusions =
+      !!item?.inclusionData && item?.inclusionData?.map((item: any) => Number(item?.incItemId));
 
-    postHomePageWidgetClicked(item?.itemTitle!, `${item?.itemId}`, widgetTitle);
-
+    postHomePageWidgetClicked(item?.itemTitle! || item?.itemName, `${item?.itemId}`, widgetTitle);
     if (sourceScreen == AppRoutes.TestDetails) {
       navigation.replace(AppRoutes.TestDetails, {
         itemId: item?.itemId,
@@ -477,7 +478,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
           discountPrice: discountPrice,
           discountSpecialPrice: discountSpecialPrice,
           ItemID: `${item?.itemId}`,
-          ItemName: item?.itemTitle!,
+          ItemName: item?.itemTitle! || item?.itemName,
           collectionType: TEST_COLLECTION_TYPE.HC,
           packageMrp: packageCalculatedMrp,
           mrpToDisplay: mrpToDisplay,
@@ -487,7 +488,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
               ? 'Category page'
               : source,
           type: data?.diagnosticWidgetType,
-          inclusions: [Number(item?.itemId)],
+          inclusions: item?.inclusionData == null ? [Number(item?.itemId)] : inclusions,
         } as TestPackageForDetails,
       });
     } else {
@@ -503,7 +504,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
           discountPrice: discountPrice,
           discountSpecialPrice: discountSpecialPrice,
           ItemID: `${item?.itemId}`,
-          ItemName: item?.itemTitle!,
+          ItemName: item?.itemTitle! || item?.itemName,
           collectionType: TEST_COLLECTION_TYPE.HC,
           packageMrp: packageCalculatedMrp,
           mrpToDisplay: mrpToDisplay,
@@ -513,7 +514,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
               ? 'Category page'
               : source,
           type: data?.diagnosticWidgetType,
-          inclusions: [Number(item?.itemId)],
+          inclusions: item?.inclusionData == null ? [Number(item?.itemId)] : inclusions,
         } as TestPackageForDetails,
       });
     }
@@ -610,6 +611,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
             ? {
                 alignSelf: actualItemsToShow?.length > 1 ? 'center' : 'flex-start',
                 marginLeft: '1.5%',
+                backgroundColor: 'red',
               }
             : {}
         }

@@ -57,6 +57,7 @@ import {
   GET_DIAGNOSTIC_SEARCH_RESULTS,
   CHANGE_DIAGNOSTIC_ORDER_PATIENT_ID,
   GET_OFFERS_LIST,
+  GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -281,6 +282,7 @@ import {
   switchDiagnosticOrderPatientID,
   switchDiagnosticOrderPatientIDVariables,
 } from '@aph/mobile-patients/src/graphql/types/switchDiagnosticOrderPatientID';
+import { getDiagnosticPackageRecommendations, getDiagnosticPackageRecommendationsVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticPackageRecommendations';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -1593,6 +1595,24 @@ export const getOffersList = (
   return client.query({
     query: GET_OFFERS_LIST,
     variables: variables,
+    fetchPolicy: 'no-cache',
+  });
+};
+
+export const getDiagnosticsPackageRecommendations = (
+  client: ApolloClient<object>,
+  itemId: number,
+  cityId: number,
+) => {
+  return client.query<getDiagnosticPackageRecommendations, getDiagnosticPackageRecommendationsVariables>({
+    query: GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS,
+    context: {
+      sourceHeaders,
+    },
+    variables: {
+      itemId: itemId,
+      cityId: cityId,
+    },
     fetchPolicy: 'no-cache',
   });
 };

@@ -5228,21 +5228,21 @@ export const GET_INTERNAL_ORDER = gql`
   }
 `;
 
-// export const GET_APPOINTMENT_INFO = gql`
-//   query getAppointmentInfo($order_id: String!) {
-//     getOrderInternal(order_id: $order_id) {
-//       payment_order_id
-//       payment_status
-//       AppointmentDetails {
-//         displayId
-//         amountBreakup {
-//           actual_price
-//           slashed_price
-//         }
-//       }
-//     }
-//   }
-// `;
+export const GET_APPOINTMENT_INFO = gql`
+  query getAppointmentInfo($order_id: String!) {
+    getOrderInternal(order_id: $order_id) {
+      payment_order_id
+      payment_status
+      AppointmentDetails {
+        displayId
+        amountBreakup {
+          actual_price
+          slashed_price
+        }
+      }
+    }
+  }
+`;
 
 export const GET_ORDER_INFO = gql`
   query getOrderInternal($order_id: String!) {
@@ -6682,3 +6682,24 @@ export const GET_CAMPAIGN_ID_FOR_REFERRER = gql`
     }
   }
 `;
+
+export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS = gql `
+query getDiagnosticPackageRecommendations($itemId:Int!, $cityId: Int!){
+  getDiagnosticPackageRecommendations(itemId:$itemId, cityId:$cityId){
+    packageRecommendations{
+      itemId
+      itemName
+      inclusions
+      packageCalculatedMrp
+      diagnosticPricing{
+        mrp
+        price
+        groupPlan
+        status
+        startDate
+        endDate
+      }
+    }
+  }
+}
+`

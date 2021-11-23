@@ -322,7 +322,13 @@ const appStaticVariables = {
     prescriptionOptionHeader: "I don't have a prescription",
   },
   DIAGNOSTICS_NUDGE_MESSAGE_CONDITION: [{"Circle": true, "NonCircle": true}],
-  DIAGNOSTICS_NUDGE_MESSAGE_TEXT:"Extra 15% off for circle customers. TnC Apply"
+  DIAGNOSTICS_NUDGE_MESSAGE_TEXT:"Extra 15% off for circle customers. TnC Apply",
+  DIAGNOSITCS_WIDGET_TITLES: 
+    {
+      "frequentlyBrought": string.diagnostics.frequentlyBrought,
+      "topBookedTests": string.diagnostics.topBookedTests,
+      "similarPackages": string.diagnostics.similarPackages
+    },
 };
 
 const DEV_top_specialties = [

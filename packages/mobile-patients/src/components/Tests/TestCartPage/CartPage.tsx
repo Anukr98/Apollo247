@@ -1447,6 +1447,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                   source: 'Cart page',
                   type: product?.itemType,
                   packageMrp: item?.itemPackageMrp,
+                  inclusions: item?.inclusions == null ? [Number(item?.itemId)] : item?.inclusions,
                 } as TestPackageForDetails,
               });
             },
