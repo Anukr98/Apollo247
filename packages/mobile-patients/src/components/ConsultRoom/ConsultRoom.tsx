@@ -21,7 +21,7 @@ import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/Carousel
 import CovidButton from '@aph/mobile-patients/src/components/ConsultRoom/Components/CovidStyles';
 import firebaseAuth from '@react-native-firebase/auth';
 import ReceiveSharingIntent from 'react-native-receive-sharing-intent';
-
+import remoteConfig from '@react-native-firebase/remote-config';
 import {
   CartIcon,
   ConsultationRoom,
@@ -89,6 +89,8 @@ import {
   GET_PLAN_DETAILS_BY_PLAN_ID,
   GET_CONFIGURATION_FOR_ASK_APOLLO_LEAD,
   GET_HC_REFREE_RECORD,
+  GET_CAMPAIGN_ID_FOR_REFERRER,
+  GET_REWARD_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
@@ -850,8 +852,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [proActiveAppointments, setProHealthActiveAppointment] = useState([] as any);
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
-  const { refreeReward, setRefreeReward } = useReferralProgram();
-
+  const { refreeReward, setRefreeReward, setRewardId, setCampaignId } = useReferralProgram();
+  const [isReferrerAvailable, setReferrerAvailable] = useState<boolean>(false);
   const {
     cartItems: shopCartItems,
     setHdfcPlanName,
@@ -1005,6 +1007,30 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         CommonBugFender('ConsultRoom_logHomePageMovedAwayError', error);
       }
     }
+  };
+
+  const beforeRedirectGetRewardIdAndCampaignId = async () => {
+    try {
+      const responseCampaign = await client.query({
+        query: GET_CAMPAIGN_ID_FOR_REFERRER,
+        variables: { camp: 'HC_CAMPAIGN' },
+        fetchPolicy: 'no-cache',
+      });
+      const responseReward = await client.query({
+        query: GET_REWARD_ID,
+        variables: { reward: 'HC' },
+        fetchPolicy: 'no-cache',
+      });
+      if (responseCampaign?.data?.getCampaignInfoByCampaignType?.id) {
+        const campaignId = responseCampaign?.data?.getCampaignInfoByCampaignType?.id;
+        setCampaignId?.(campaignId);
+      }
+      if (responseReward?.data?.getRewardInfoByRewardType?.id) {
+        const rewardId = responseReward?.data?.getRewardInfoByRewardType?.id;
+        setRewardId?.(rewardId);
+      }
+      props.navigation.navigate('ShareReferLink');
+    } catch (e) {}
   };
 
   useEffect(() => {
@@ -1787,6 +1813,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     checkCircleSelectedPlan();
     setBannerData && setBannerData([]);
     getAskApolloLeadConfig();
+    firebaseRemoteConfigForReferrer();
   }, []);
 
   const checkCircleSelectedPlan = async () => {
@@ -2493,6 +2520,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         CommonBugFender('ConsultRoom_getPatientFutureAppointmentCount', e);
       })
       .finally(() => setAppointmentLoading(false));
+  };
+
+  const firebaseRemoteConfigForReferrer = async () => {
+    try {
+      const bannerConfig = await remoteConfig().getValue('Referrer_Banner');
+      setReferrerAvailable(bannerConfig.asBoolean());
+    } catch (e) {}
   };
 
   useEffect(() => {
@@ -4236,9 +4270,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       </View>
     );
   };
-
   const renderReferralBanner = () => {
-    return <ReferralBanner {...props} />;
+    return (
+      <ReferralBanner
+        {...props}
+        redirectOnShareReferrer={() => {
+          beforeRedirectGetRewardIdAndCampaignId();
+        }}
+      />
+    );
   };
 
   return (
@@ -4252,7 +4292,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text>
               {renderMenuOptions()}
               {(displayQuickBookAskApollo || displayAskApolloNumber) && renderAskApolloView()}
-              {renderReferralBanner()}
+              {isReferrerAvailable && renderReferralBanner()}
               {circleDataLoading && renderCircleShimmer()}
               <View style={{ backgroundColor: '#f0f1ec' }}>
                 {isCircleMember === 'yes' && !circleDataLoading && renderCircle()}
