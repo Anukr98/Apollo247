@@ -838,6 +838,31 @@ export function DiagnosticViewReportClicked(
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED, eventAttributes);
 }
 
+export function DiagnosticCallToOrderClicked(
+  page: 'Home Page'| 'Listing Page' | 'Test Detail Page' | 'Cart Page',
+  currentPatient?: any,
+  sectionName?: any,
+  itemId?: any,
+  itemName?: any,
+  city?: any,
+  isDiagnosticCircleSubscription?: boolean | undefined
+) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
+  const eventAttributes:
+    | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_CALL_TO_ORDER_CLICKED] = {
+    ...getPatientAttributes,
+    'Mobile Number': currentPatient?.mobileNumber,
+    'Page': page,
+    'Section Name': sectionName,
+    'ItemId': itemId,
+    'ItemName': itemName,
+    'Patient City': city,
+    'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+
+  };
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_CALL_TO_ORDER_CLICKED, eventAttributes);
+}
+
 export function DiagnosticTrackPhleboClicked(
   orderId: string | number,
   source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary',
