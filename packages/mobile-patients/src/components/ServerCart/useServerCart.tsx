@@ -37,7 +37,7 @@ export const useServerCart = () => {
     setCartPrescriptions,
     setCartSubscriptionDetails,
     setAddresses,
-    deliveryAddressId,
+    cartAddressId,
     setDeliveryAddressId,
     setNoOfShipments,
     setServerCartErrorMessage,
@@ -212,7 +212,7 @@ export const useServerCart = () => {
           const addressList = data.getPatientAddressList.addressList || [];
           setAddresses?.(addressList);
           const deliveryAddress = addressList.find(({ defaultAddress }) => defaultAddress === true);
-          if (deliveryAddress && !deliveryAddressId) {
+          if (deliveryAddress && !cartAddressId) {
             setDeliveryAddressId && setDeliveryAddressId(deliveryAddress?.id);
           }
           setPharmacyLocation?.(formatAddressToLocation(deliveryAddress! || null));

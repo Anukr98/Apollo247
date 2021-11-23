@@ -101,9 +101,9 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
   const renderPhysicalPrescriptions = () => {
     return (
       <View style={{ flex: 1 }}>
-        {renderLabel(`Physical Prescription${uploadedPrescriptions.length == 1 ? '' : 's'}`, true)}
+        {renderLabel(`Physical Prescription${uploadedPrescriptions?.length == 1 ? '' : 's'}`, true)}
         <ScrollView>
-          {uploadedPrescriptions.map((item, index, array) => {
+          {uploadedPrescriptions?.map((item, index, array) => {
             return PhysicalPrescription(item, index, array.length);
           })}
         </ScrollView>
@@ -142,9 +142,9 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
   const renderEprescriptions = () => {
     return (
       <View style={{ flex: 1 }}>
-        {renderLabel(`My Prescription${appointmentPrescriptions.length == 1 ? '' : 's'}`, true)}
+        {renderLabel(`My Prescription${appointmentPrescriptions?.length == 1 ? '' : 's'}`, true)}
         <ScrollView>
-          {appointmentPrescriptions.map((item, index, array) => {
+          {appointmentPrescriptions?.map((item, index, array) => {
             return EPrescription(item, index, array.length);
           })}
         </ScrollView>
@@ -195,8 +195,8 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
     <View style={[styles.container, style]}>
       {renderHeader()}
       <View style={isPlainStyle ? null : styles.card}>
-        {uploadedPrescriptions.length > 0 && renderPhysicalPrescriptions()}
-        {appointmentPrescriptions.length > 0 && renderEprescriptions()}
+        {uploadedPrescriptions?.length > 0 && renderPhysicalPrescriptions()}
+        {appointmentPrescriptions?.length > 0 && renderEprescriptions()}
         {renderUploadMore()}
       </View>
     </View>
