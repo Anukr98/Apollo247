@@ -66,10 +66,10 @@ export const CircleTypeCard2: React.FC<CircleTypeCard2Props> = (props) => {
           colors={[theme.colors.LIGHT_BLUE, theme.colors.LIGHT_BLUE]}
         >
           <View style={styles.subPlanTwo}>
-            <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.WHITE, 1, 20) }}>
+            <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.WHITE, 1, 20) }}>
               Don’t Lose on Free Deliveries
             </Text>
-            <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.WHITE, 1, 20) }}>
+            <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.WHITE, 1, 20) }}>
               & Cashbacks
             </Text>
           </View>

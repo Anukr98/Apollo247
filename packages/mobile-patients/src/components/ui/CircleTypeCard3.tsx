@@ -54,21 +54,12 @@ export const CircleTypeCard3: React.FC<CircleTypeCard3Props> = (props) => {
         </View>
 
         <View style={styles.subPlanTwo}>
-          <Text style={{ ...theme.viewStyles.text('M', 12, '#02475B', 1, 16) }}>Your Savings:</Text>
-          <Text style={{ ...theme.viewStyles.text('M', 20, '#02475B', 1, 25) }}>₹{savings}</Text>
-          {credits ? (
-            <View style={[styles.planContainer, { width: width }]}>
-              <Text
-                style={{ ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 0.7, 16) }}
-              >
-                Available Health Credits:
-              </Text>
-              <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 1, 16) }}>
-                {' '}
-                {credits || 0}
-              </Text>
-            </View>
-          ) : null}
+          <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE, 1, 20) }}>
+            You saved ₹{savings || '--'} with
+          </Text>
+          <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE, 1, 20) }}>
+            Circle Membership
+          </Text>
         </View>
 
         <View style={styles.subPlanThree}>

@@ -72,7 +72,7 @@ export const CircleTypeCard1: React.FC<CircleTypeCard1Props> = (props) => {
         >
           <View style={styles.subPlanTwo}>
             <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.WHITE, 1, 20) }}>
-              You saved ₹{savings || 'Unable to Load'} with circle
+              You saved ₹{savings || '--'} with circle
             </Text>
             <Text
               style={{
