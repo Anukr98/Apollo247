@@ -10,7 +10,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginVertical: 2,
+    marginVertical: 4,
   },
 
   subPlanOne: {

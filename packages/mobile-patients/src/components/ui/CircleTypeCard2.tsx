@@ -1,37 +1,44 @@
 import React from 'react';
 import { View, StyleSheet, Text, Image } from 'react-native';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { NavigationScreenProps } from 'react-navigation';
+import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 
 const styles = StyleSheet.create({
   planContainer: {
     flexDirection: 'row',
-    flex: 1,
-    justifyContent: 'center',
-    marginVertical: 5,
+    alignItems: 'center',
+    marginVertical: 4,
   },
-
   subPlanOne: {
     flex: 0.2,
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    paddingVertical: 6,
   },
-
   subPlanTwo: {
-    flex: 0.4,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flex: 0.7,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
   },
-
   subPlanThree: {
-    flex: 0.4,
-    alignItems: 'center',
+    flex: 0.3,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
   },
-
   circleLogo: {
     alignSelf: 'center',
     width: 46,
     height: 29,
+  },
+  subPlanTwoThreeDevider: {
+    flex: 0.8,
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderRadius: 6,
+    borderColor: '#4D9CB3',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
   },
 });
 
@@ -59,16 +66,11 @@ export const CircleTypeCard2: React.FC<CircleTypeCard2Props> = (props) => {
           colors={[theme.colors.LIGHT_BLUE, theme.colors.LIGHT_BLUE]}
         >
           <View style={styles.subPlanTwo}>
-            <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.WHITE, 1, 20) }}>
-              Save upto ₹800 monthly
+            <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.WHITE, 1, 20) }}>
+              Don’t Lose on Free Deliveries
             </Text>
-            <Text
-              style={{
-                ...theme.viewStyles.text('M', 10, theme.colors.WHITE, 1, 20),
-                fontStyle: 'italic',
-              }}
-            >
-              Plan Expired on {expired}
+            <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.WHITE, 1, 20) }}>
+              & Cashbacks
             </Text>
           </View>
 
