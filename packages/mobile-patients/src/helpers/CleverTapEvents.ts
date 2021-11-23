@@ -1610,7 +1610,7 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.DIAGNOSTIC_CALL_TO_ORDER_CLICKED]: {
     'Mobile Number'?: string;
-    'Page'?: 'Home Page'| 'Listing Page' | 'Test Detail Page' | 'Cart Page';
+    'Page'?: string;
     'Section Name'?: string;
     'ItemId'?: string;
     'ItemName'?: string;

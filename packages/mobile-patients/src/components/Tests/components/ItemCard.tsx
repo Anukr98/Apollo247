@@ -611,7 +611,6 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
             ? {
                 alignSelf: actualItemsToShow?.length > 1 ? 'center' : 'flex-start',
                 marginLeft: '1.5%',
-                backgroundColor: 'red',
               }
             : {}
         }
