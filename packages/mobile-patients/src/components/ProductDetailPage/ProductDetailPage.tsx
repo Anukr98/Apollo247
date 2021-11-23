@@ -253,7 +253,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 
   useEffect(() => {
     setProductSubstitutes?.([]);
-    getMedicineDetails();
     BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
