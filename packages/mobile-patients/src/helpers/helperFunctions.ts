@@ -4250,7 +4250,7 @@ export const shareDocument = async (
   }
   return viewReportOrderId;
 };
-export const getPageId = (pageId: string) => {
+export const getPageId = (pageId: CALL_TO_ORDER_CTA_PAGE_ID) => {
   let pageName = PAGE_ID_TYPE.HOME_PAGE
   switch (pageId) {
     case CALL_TO_ORDER_CTA_PAGE_ID.HOME:
