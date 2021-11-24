@@ -12,6 +12,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { OrderDelayNoticeView } from '@aph/mobile-patients/src/components/MedicineOrderDetails';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
+import { OrderCancelComponent } from '@aph/mobile-patients/src/components/ui/OrderCancelComponent';
 import { ChatWithUs } from '@aph/mobile-patients/src/components/ui/ChatWithUs';
 import { DropDown, Option } from '@aph/mobile-patients/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -57,7 +58,6 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderCancelReasons';
 import {
   getMedicineOrderCancelReasonsV2,
-  getMedicineOrderCancelReasonsV2Variables,
   getMedicineOrderCancelReasonsV2_getMedicineOrderCancelReasonsV2_cancellationReasonBuckets,
 } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderCancelReasonsV2';
 import {
@@ -156,12 +156,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
   const AutoreOrder = props.navigation.getParam('reOrder');
-  const [cancellationReasons, setCancellationReasons] = useState<
-    GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons[]
-  >([]);
-  const [newCancellationReasonsBucket, setNewCancellationReasonsBucket] = useState<
-    getMedicineOrderCancelReasonsV2_getMedicineOrderCancelReasonsV2_cancellationReasonBuckets[]
-  >([]);
   const client = useApolloClient();
 
   const [showAlertStore, setShowAlertStore] = useState<boolean>(true);
@@ -201,16 +195,15 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   );
 
   const [selectedReason, setSelectedReason] = useState('');
+  const [selectedSubReason, setSelectedSubReason] = useState('');
+  const [comment, setComment] = useState('');
+  const [showReasons, setShowReasons] = useState<boolean>(false);
+  const [newCancellationReasonsBucket, setNewCancellationReasonsBucket] = useState<
+    getMedicineOrderCancelReasonsV2_getMedicineOrderCancelReasonsV2_cancellationReasonBuckets[]
+  >([]);
   const [selectedReasonBucket, setSelectedReasonBucket] = useState<
     getMedicineOrderCancelReasonsV2_getMedicineOrderCancelReasonsV2_cancellationReasonBuckets[]
   >([]);
-  // let selectedReasonBucket: getMedicineOrderCancelReasonsV2_getMedicineOrderCancelReasonsV2_cancellationReasonBuckets[] = [];
-  const [selectedSubReason, setSelectedSubReason] = useState('');
-  const [comment, setComment] = useState('');
-  const [isReasonSelected, setReasonSelected] = useState<boolean>(false);
-  const [isSubReasonSelected, setSubReasonSelected] = useState<boolean>(false);
-  const [showReasons, setShowReasons] = useState<boolean>(false);
-  const [showSubReasons, setShowSubReasons] = useState<boolean>(false);
 
   const vars: getMedicineOrderOMSDetailsWithAddressVariables = {
     patientId: currentPatient && currentPatient.id,
@@ -1870,522 +1863,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       ],
     });
 
-  // const [selectedReason, setSelectedReason] = useState('');
-  // const [comment, setComment] = useState('');
-  // const [overlayDropdown, setOverlayDropdown] = useState(false);
-  // const renderReturnOrderOverlay = () => {
-  //   const optionsDropdown = overlayDropdown && (
-  //     <Overlay
-  //       onBackdropPress={() => setOverlayDropdown(false)}
-  //       isVisible={overlayDropdown}
-  //       overlayStyle={styles.dropdownOverlayStyle}
-  //     >
-  //       <DropDown
-  //         cardContainer={{
-  //           margin: 0,
-  //         }}
-  //         options={cancellationReasons.map(
-  //           (cancellationReasons, i) =>
-  //             ({
-  //               onPress: () => {
-  //                 setSelectedReason(cancellationReasons.description!);
-  //                 setOverlayDropdown(false);
-  //               },
-  //               optionText: cancellationReasons.description,
-  //             } as Option)
-  //         )}
-  //       />
-  //     </Overlay>
-  //   );
-
-  //   const heading = (
-  //     <View
-  //       style={{
-  //         ...theme.viewStyles.cardContainer,
-  //         backgroundColor: theme.colors.WHITE,
-  //         padding: 18,
-  //         marginBottom: 24,
-  //         borderTopLeftRadius: 10,
-  //         borderTopRightRadius: 10,
-  //       }}
-  //     >
-  //       <Text
-  //         style={{
-  //           ...theme.fonts.IBMPlexSansMedium(16),
-  //           color: theme.colors.SHERPA_BLUE,
-  //           textAlign: 'center',
-  //         }}
-  //       >
-  //         Cancel Order
-  //       </Text>
-  //     </View>
-  //   );
-
-  //   const content = (
-  //     <View style={{ paddingHorizontal: 16 }}>
-  //       <Text
-  //         style={[
-  //           {
-  //             marginBottom: 12,
-  //             color: '#0087ba',
-  //             ...theme.fonts.IBMPlexSansMedium(17),
-  //             lineHeight: 24,
-  //           },
-  //         ]}
-  //       >
-  //         Why are you cancelling this order?
-  //       </Text>
-  //       <TouchableOpacity
-  //         activeOpacity={1}
-  //         onPress={() => {
-  //           setOverlayDropdown(true);
-  //         }}
-  //       >
-  //         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-  //           <Text
-  //             style={[
-  //               {
-  //                 flex: 0.9,
-  //                 ...theme.fonts.IBMPlexSansMedium(18),
-  //                 color: theme.colors.SHERPA_BLUE,
-  //               },
-  //               selectedReason ? {} : { opacity: 0.3 },
-  //             ]}
-  //             numberOfLines={1}
-  //           >
-  //             {selectedReason || 'Select reason for cancelling'}
-  //           </Text>
-  //           <View style={{ flex: 0.1 }}>
-  //             <DropdownGreen style={{ alignSelf: 'flex-end' }} />
-  //           </View>
-  //         </View>
-  //         <View
-  //           style={{
-  //             marginTop: 5,
-  //             backgroundColor: '#00b38e',
-  //             height: 2,
-  //           }}
-  //         />
-  //       </TouchableOpacity>
-  //       <TextInputComponent
-  //         value={comment}
-  //         onChangeText={(text) => {
-  //           setComment(text);
-  //         }}
-  //         label={'Add Comments (Optional)'}
-  //         placeholder={'Enter your comments here…'}
-  //       />
-  //     </View>
-  //   );
-
-  //   const bottomButton = (
-  //     <Button
-  //       style={{ margin: 16, marginTop: 32, width: 'auto' }}
-  //       onPress={onPressConfirmCancelOrder}
-  //       disabled={!!!selectedReason && showSpinner}
-  //       title={'SUBMIT REQUEST'}
-  //     />
-  //   );
-
-  //   return (
-  //     isCancelVisible && (
-  //       <View
-  //         style={{
-  //           backgroundColor: 'rgba(0,0,0,0.8)',
-  //           position: 'absolute',
-  //           width: '100%',
-  //           height: '100%',
-  //           justifyContent: 'flex-start',
-  //           flex: 1,
-  //           left: 0,
-  //           right: 0,
-  //           zIndex: 100,
-  //         }}
-  //       >
-  //         <View style={{ marginHorizontal: 20 }}>
-  //           <TouchableOpacity
-  //             style={{ marginTop: 38, alignSelf: 'flex-end' }}
-  //             onPress={() => {
-  //               setCancelVisible(!isCancelVisible);
-  //               setSelectedReason('');
-  //               setComment('');
-  //             }}
-  //           >
-  //             <CrossPopup />
-  //           </TouchableOpacity>
-  //           <View style={{ height: 16 }} />
-  //           <View
-  //             style={{
-  //               backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-  //               borderTopLeftRadius: 10,
-  //               borderTopRightRadius: 10,
-  //               borderBottomRightRadius: 10,
-  //               borderBottomLeftRadius: 10,
-  //             }}
-  //           >
-  //             {optionsDropdown}
-  //             {heading}
-  //             {content}
-  //             {bottomButton}
-  //           </View>
-  //         </View>
-  //       </View>
-  //     )
-  //   );
-  // };
-  // const [selectedReason, setSelectedReason] = useState('');
-  // const [selectedReasonBucket, setSelectedReasonBucket] = useState([]);
-  // let selectedReasonBucket: getMedicineOrderCancelReasonsV2_getMedicineOrderCancelReasonsV2_cancellationReasonBuckets[] = [];
-  // const [selectedSubReason, setSelectedSubReason] = useState('');
-  // const [comment, setComment] = useState('');
-  // const [isReasonSelected, setReasonSelected] = useState<boolean>(false);
-  // const [isSubReasonSelected, setSubReasonSelected] = useState<boolean>(false);
-  // const [showReasons, setShowReasons] = useState<boolean>(false);
-  // const [showSubReasons, setShowSubReasons] = useState<boolean>(false);
-  const renderReturnOrderOverlay = () => {
-    let minCommentLength = 0;
-    let maxCommentLength = Infinity;
-    if (selectedSubReason && !!selectedReasonBucket?.[0]?.reasons) {
-      selectedReasonBucket?.[0]?.reasons.filter((item) => {
-        if (!!item?.config && item?.config?.userCommentRequired) {
-          minCommentLength = item?.config?.commentMinLength || 0;
-          maxCommentLength = item?.config?.commentMaxLength || Infinity;
-        }
-      });
-    }
-    console.log(minCommentLength, maxCommentLength);
-    const content = (
-      <View
-        style={{
-          paddingVertical: 15,
-          paddingLeft: 15,
-          paddingRight: 25,
-          // backgroundColor: '#227799',
-        }}
-      >
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <View style={{ flex: 0.9, flexDirection: 'row' }}>
-            <Text style={styles.reasonHeadingStyle} numberOfLines={1}>
-              Please select your reason
-            </Text>
-            <Text style={styles.reasonHeadingStyle}>*</Text>
-          </View>
-          <View style={{ flex: 0.1, marginHorizontal: -5 }}>
-            {!showReasons ? (
-              <TouchableOpacity
-                onPress={() => {
-                  setShowReasons(true);
-                }}
-              >
-                <Up style={{ alignSelf: 'flex-end' }} />
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                onPress={() => {
-                  setShowReasons(false);
-                }}
-              >
-                <Down style={{ alignSelf: 'flex-end' }} />
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-
-        {showReasons && (
-          <View
-            style={{
-              paddingVertical: 12,
-              // backgroundColor: theme.colors.SKY_BLUE,
-            }}
-          >
-            {newCancellationReasonsBucket.map((item, i) => (
-              <TouchableOpacity
-                onPress={() => {
-                  // console.log('selectedReason', item?.bucketName);
-                  setSelectedReason(item?.bucketName!);
-                  setSelectedReasonBucket([item]);
-                  setReasonSelected(true);
-                  setShowReasons(false);
-                  setShowSubReasons(true);
-                  setSelectedSubReason('');
-                }}
-              >
-                <View
-                  key={i}
-                  style={{
-                    borderBottomWidth: 0.5,
-                    borderBottomColor: 'rgba(2, 71, 91, 0.2)',
-                    paddingVertical: 12,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    // backgroundColor: theme.colors.SKY_BLUE,
-                  }}
-                >
-                  <Text
-                    style={{
-                      flex: 0.9,
-                      ...theme.fonts.IBMPlexSansRegular(12),
-                      color: theme.colors.LIGHT_BLUE,
-                      lineHeight: 18,
-                      fontWeight: '500',
-                    }}
-                  >
-                    {item?.bucketName}
-                    {console.log('reasons----', item?.bucketName, item?.sortOrder)}
-                  </Text>
-                  <View style={{ flex: 0.1 }}>
-                    <Image
-                      style={{ width: 14, height: 14, alignSelf: 'flex-end', tintColor: '#ECECEC' }}
-                      source={require('@aph/mobile-patients/src/components/ui/icons/checked.webp')}
-                    />
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-        {isReasonSelected && !showReasons && (
-          <View style={{}}>
-            <View
-              style={{
-                paddingVertical: 12,
-                flexDirection: 'row',
-                alignItems: 'center',
-              }}
-            >
-              <Text
-                style={{
-                  flex: 0.9,
-                  ...theme.fonts.IBMPlexSansRegular(12),
-                  color: theme.colors.LIGHT_BLUE,
-                  lineHeight: 18,
-                  fontWeight: '500',
-                }}
-              >
-                {selectedReason}
-              </Text>
-              <View style={{ flex: 0.1 }}>
-                <Image
-                  style={{ width: 14, height: 14, alignSelf: 'flex-end' }}
-                  source={require('@aph/mobile-patients/src/components/ui/icons/checked.webp')}
-                />
-              </View>
-            </View>
-
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <View style={{ flex: 0.9, flexDirection: 'row' }}>
-                <Text style={styles.reasonHeadingStyle} numberOfLines={1}>
-                  Please select the sub-reason
-                </Text>
-                <Text style={styles.reasonHeadingStyle}>*</Text>
-              </View>
-              <View style={{ flex: 0.1, marginHorizontal: -5 }}>
-                {!showSubReasons ? (
-                  <TouchableOpacity
-                    onPress={() => {
-                      setShowSubReasons(true);
-                    }}
-                  >
-                    <Up style={{ alignSelf: 'flex-end' }} />
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity
-                    onPress={() => {
-                      setShowSubReasons(false);
-                    }}
-                  >
-                    <Down style={{ alignSelf: 'flex-end' }} />
-                  </TouchableOpacity>
-                )}
-              </View>
-            </View>
-            {console.log('selectedReasonBucket------', selectedReasonBucket)}
-            {showSubReasons && (
-              <View
-                style={{
-                  paddingVertical: 12,
-                  // padding: 5
-                }}
-              >
-                {selectedReasonBucket?.[0]?.reasons &&
-                  selectedReasonBucket?.[0]?.reasons.map((item, i) => (
-                    <TouchableOpacity
-                      onPress={() => {
-                        // console.log('selected', item?.description);
-                        setSelectedSubReason(item?.description);
-                        setSubReasonSelected(true);
-                        setShowSubReasons(false);
-                      }}
-                    >
-                      <View
-                        key={i}
-                        style={{
-                          borderBottomWidth: 0.5,
-                          borderBottomColor: 'rgba(2, 71, 91, 0.2)',
-                          paddingVertical: 7,
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                        }}
-                      >
-                        <Text
-                          style={{
-                            flex: 0.9,
-                            ...theme.fonts.IBMPlexSansRegular(12),
-                            color: theme.colors.LIGHT_BLUE,
-                            lineHeight: 18,
-                            fontWeight: '500',
-                          }}
-                        >
-                          {item?.description}
-                        </Text>
-                        <View style={{ flex: 0.1 }}>
-                          <Image
-                            style={{
-                              width: 14,
-                              height: 14,
-                              alignSelf: 'flex-end',
-                              tintColor: '#ECECEC',
-                            }}
-                            source={require('@aph/mobile-patients/src/components/ui/icons/checked.webp')}
-                          />
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                  ))}
-              </View>
-            )}
-            {isSubReasonSelected && !showSubReasons && (
-              <View style={{ paddingVertical: 12 }}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                  }}
-                >
-                  <Text
-                    style={{
-                      flex: 0.9,
-                      ...theme.fonts.IBMPlexSansRegular(12),
-                      color: theme.colors.LIGHT_BLUE,
-                      lineHeight: 18,
-                      fontWeight: '500',
-                    }}
-                    onPress={() => {
-                      setSelectedSubReason('');
-                      setSubReasonSelected(false);
-                    }}
-                  >
-                    {selectedSubReason}
-                  </Text>
-                  <View style={{ flex: 0.1 }}>
-                    <Image
-                      style={
-                        selectedSubReason
-                          ? { width: 14, height: 14, alignSelf: 'flex-end' }
-                          : { width: 14, height: 14, alignSelf: 'flex-end', tintColor: '#ECECEC' }
-                      }
-                      source={require('@aph/mobile-patients/src/components/ui/icons/checked.webp')}
-                    />
-                  </View>
-                </View>
-                {/* <View
-                  style={{
-                    marginTop: 15,
-                    justifyContent: 'center',
-                    backgroundColor: '#101010',
-                  }}
-                >
-                  <Text style={styles.nudgeText}>nudge enabled</Text>
-                </View> */}
-                {selectedSubReason === 'Others (please specify)' && (
-                  <View style={{ marginTop: 20 }}>
-                    <TextInputComponent
-                      inputStyle={{ ...theme.fonts.IBMPlexSansMedium(13) }}
-                      value={comment}
-                      onChangeText={(text) => {
-                        setComment(text);
-                      }}
-                      placeholder={'Enter your comments here'}
-                      // maxLength={5}
-                      maxLength={maxCommentLength}
-                    />
-                    {comment?.length < minCommentLength && (
-                      <Text style={{ ...theme.fonts.IBMPlexSansRegular(12), color: '#553344' }}>
-                        Minimum characters required are {minCommentLength}
-                      </Text>
-                    )}
-                  </View>
-                )}
-              </View>
-            )}
-          </View>
-        )}
-      </View>
-    );
-    console.log(selectedSubReason, selectedReason);
-
-    const bottomButton = (
-      <Button
-        style={{ margin: 16, width: 'auto' }}
-        onPress={onPressConfirmCancelOrder}
-        disabled={
-          (!!selectedReason && !!selectedSubReason && showSpinner) ||
-          selectedReason === '' ||
-          selectedSubReason === ''
-        }
-        title={'SUBMIT REQUEST'}
-      />
-    );
-
-    return (
-      isCancelVisible && (
-        <TouchableWithoutFeedback
-          style={{ backgroundColor: '#000000' }}
-          onPress={() => {
-            setCancelVisible(false);
-            setShowReasons(false);
-            setShowSubReasons(false);
-            setReasonSelected(false);
-            setSubReasonSelected(false);
-            setSelectedReasonBucket([]);
-            setSelectedReason('');
-            setSelectedSubReason('');
-            // selectedReasonBucket.pop();
-          }}
-        >
-          <View
-            style={{
-              backgroundColor: 'rgba(0,0,0,0.8)',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              zIndex: 100,
-            }}
-          >
-            <View style={{ backgroundColor: '#228888' }}>
-              <Text>hey ya</Text>
-            </View>
-            <View style={{ justifyContent: 'flex-end', flex: 1 }}>
-              <View style={{ backgroundColor: '#225599' }} />
-              <View
-                style={{
-                  backgroundColor: theme.colors.HEX_WHITE,
-                  borderTopLeftRadius: 10,
-                  borderTopRightRadius: 10,
-                }}
-              >
-                {content}
-                {bottomButton}
-              </View>
-            </View>
-          </View>
-        </TouchableWithoutFeedback>
-      )
-    );
-  };
-
   const getFormattedOrderPlacedDateTime = (
     orderDetails: getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails
   ) => {
@@ -2452,8 +1929,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       medicineOrderCancelOMSInput: {
         orderNo: typeof orderAutoId == 'string' ? parseInt(orderAutoId, 10) : orderAutoId,
         cancelReasonCode:
-          cancellationReasons &&
-          cancellationReasons.find((item) => item.description == selectedReason)!.reasonCode,
+          selectedReasonBucket &&
+          selectedReasonBucket?.[0]?.reasons?.find(
+            (item) => selectedSubReason === item?.description
+          )?.reasonCode,
         cancelReasonText: comment,
       },
     };
@@ -2472,6 +1951,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           setCancelVisible(false);
           setComment('');
           setSelectedReason('');
+          setSelectedSubReason('');
         };
         const requestStatus = g(data, 'cancelMedicineOrderOMS', 'orderStatus');
         if (
@@ -2508,89 +1988,43 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       });
   };
 
-  const getCancellationReasons = () => {
-    setShowSpinner(true);
-    client
-      .query<GetMedicineOrderCancelReasons>({
-        query: GET_MEDICINE_ORDER_CANCEL_REASONS,
-        variables: {},
-        fetchPolicy: 'no-cache',
-      })
-      .then((data) => {
-        if (
-          data.data.getMedicineOrderCancelReasons &&
-          data.data.getMedicineOrderCancelReasons.cancellationReasons &&
-          data.data.getMedicineOrderCancelReasons.cancellationReasons.length > 0
-        ) {
-          let cancellationArray: any = [];
-          data.data.getMedicineOrderCancelReasons.cancellationReasons.forEach(
-            (cancellationReasons, index) => {
-              if (cancellationReasons && cancellationReasons.isUserReason) {
-                cancellationArray.push(cancellationReasons);
-              }
-            }
-          );
-          setCancellationReasons(cancellationArray);
-          setCancelVisible(true);
-          setShowReasons(true);
-        }
-      })
-      .catch((error) => {
-        console.log('error in v1', error);
-        handleGraphQlError(error);
-      })
-      .finally(() => {
-        setShowSpinner(false);
-      });
-  };
-
   const getCancellationReasonsBuckets = () => {
     const vars: GetMedicineOrderCancelReasonsV2Input = {
       orderId: Number(orderAutoId),
     };
-    // console.log('i am being called-------');
     setShowSpinner(true);
     client
       .query<getMedicineOrderCancelReasonsV2>({
         query: GET_MEDICINE_ORDER_CANCEL_REASONS_V2,
         variables: {
-          getMedicineOrderCancelReasonsV2Input: {
-            orderId: Number(orderAutoId),
-          },
+          getMedicineOrderCancelReasonsV2Input: vars,
         },
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
-        // console.log('data----------', data);
         if (
           data?.data?.getMedicineOrderCancelReasonsV2 &&
           data?.data?.getMedicineOrderCancelReasonsV2?.cancellationReasonBuckets &&
           data?.data?.getMedicineOrderCancelReasonsV2?.cancellationReasonBuckets.length > 0
         ) {
           let cancellationArray: any = [];
-          // console.log(
-          //   'data----------',
-          //   data?.data?.getMedicineOrderCancelReasonsV2?.cancellationReasonBuckets
-          // );
           data?.data?.getMedicineOrderCancelReasonsV2?.cancellationReasonBuckets.forEach(
-            (cancellationReasons, index) => {
+            (cancellationReasons) => {
               if (
                 cancellationReasons &&
                 cancellationReasons?.reasons &&
                 cancellationReasons?.reasons?.length
               ) {
                 cancellationArray.push(cancellationReasons);
-                setNewCancellationReasonsBucket(cancellationArray);
-                // console.log('data----------', cancellationReasons?.reasons);
               }
             }
           );
+          setNewCancellationReasonsBucket(cancellationArray);
+          setCancelVisible(true);
+          setShowReasons(true);
         }
-        setCancelVisible(true);
-        setShowReasons(true);
       })
       .catch((error) => {
-        console.log(error);
         handleGraphQlError(error);
       })
       .finally(() => {
@@ -2620,7 +2054,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b') }}
         onPress={(item) => {
           if (item.value == 'Cancel Order') {
-            getCancellationReasons();
+            getCancellationReasonsBuckets();
           }
         }}
       >
@@ -2704,7 +2138,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             ))}
           <Button
             style={styles.cancelOrderButton}
-            onPress={getCancellationReasons}
+            onPress={getCancellationReasonsBuckets}
             title={'CANCEL ORDER'}
           />
         </View>
@@ -2727,6 +2161,28 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           }}
         />
       )
+    );
+  };
+
+  const renderReturnOrderOverlay = () => {
+    return (
+      <OrderCancelComponent
+        showReasons={showReasons}
+        setShowReasons={setShowReasons}
+        selectedReason={selectedReason}
+        setSelectedReason={setSelectedReason}
+        selectedSubReason={selectedSubReason}
+        setSelectedSubReason={setSelectedSubReason}
+        comment={comment}
+        setComment={setComment}
+        isCancelVisible={isCancelVisible}
+        setCancelVisible={setCancelVisible}
+        showSpinner={showSpinner}
+        onPressConfirmCancelOrder={onPressConfirmCancelOrder}
+        newCancellationReasonsBucket={newCancellationReasonsBucket}
+        selectedReasonBucket={selectedReasonBucket}
+        setSelectedReasonBucket={setSelectedReasonBucket}
+      />
     );
   };
 
