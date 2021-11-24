@@ -50,6 +50,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
+  CALL_TO_ORDER_CTA_PAGE_ID,
   DEVICETYPE,
   DiagnosticLineItem,
   DiagnosticsBookingSource,
@@ -89,6 +90,7 @@ import {
   processDiagnosticsCODOrderV2,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
+  DiagnosticCartViewed,
   DiagnosticModifyOrder,
   DiagnosticProceedToPay,
   DiagnosticRemoveFromCartClicked,
@@ -132,6 +134,7 @@ import {
 import CircleCard from '@aph/mobile-patients/src/components/Tests/components/CircleCard';
 import { CirclePlansListOverlay } from '@aph/mobile-patients/src/components/Tests/components/CirclePlansListOverlay';
 import { debounce } from 'lodash';
+import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import {
   CleverTapEventName,
   CleverTapEvents,
@@ -226,6 +229,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     circlePlanValidity,
   } = useShoppingCart();
 
+  const { diagnosticServiceabilityData } = useAppCommonData();
+
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { setauthToken } = useAppCommonData();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
@@ -240,6 +245,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const selectedTimeSlot = props.navigation.getParam('selectedTimeSlot');
   const showPaidPopUp = props.navigation.getParam('showPaidPopUp');
   const selectedAddr = props.navigation.getParam('selectedAddress');
+  const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
   const reportGenDetails = props.navigation.getParam('reportGenDetails');
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   var slotBookedArray = ['slot', 'already', 'booked', 'select a slot'];
@@ -308,7 +314,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const getAllItemIds = isCartEmpty
       ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
       ?.flat();
-    const uniqueItemIDS = [...new Set(getAllItemIds?.map((item) => Number(item?.id)))];
+    const uniqueItemIDS = [...new Set(getAllItemIds?.map((item: number) => Number(item?.id)))];
     const itemIds = isModifyFlow ? cartItemsWithId.concat(modifiedOrderItemIds) : uniqueItemIDS;
     populateCartMapping();
     fetchOverallReportTat(itemIds);
@@ -334,6 +340,29 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             : getConfigValues
         );
   }, []);
+
+  useEffect(() => {
+    triggerCartPageViewed();
+  }, [toPayPrice]);
+
+  function triggerCartPageViewed() {
+    const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
+    const pinCodeFromAddress = addressToUse?.zipcode!;
+    const cityFromAddress = addressToUse?.city;
+    DiagnosticCartViewed(
+      'review page',
+      currentPatient,
+      cartItems,
+      isDiagnosticCircleSubscription,
+      pinCodeFromAddress,
+      cityFromAddress,
+      false,
+      toPayPrice,
+      hcCharges,
+      circleSubscriptionId
+    );
+    //add coupon code + coupon discount
+  }
 
   async function populateCartMapping() {
     const listOfIds = cartItems?.map((item) => Number(item?.id));
@@ -442,7 +471,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
   }, [isfetchingId]);
 
-  async function fetchOverallReportTat(_cartItemId: string | number[]) {
+  async function fetchOverallReportTat(_cartItemId: string | number[] | any) {
     const removeSpaces =
       typeof _cartItemId == 'string' ? _cartItemId?.replace(/\s/g, '')?.split(',') : null;
     const listOfIds =

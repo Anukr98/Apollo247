@@ -29,6 +29,10 @@
 			<array>
 				<string>com.googleusercontent.apps.537093214409-ugo5mkevql98k75ebkvnmgi4jp4ugf7i</string>
 			</array>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>$(PRODUCT_BUNDLE_IDENTIFIER).cred</string>
+			</array>
 		</dict>
 		<dict>
 			<key>CFBundleTypeRole</key>
@@ -46,6 +50,15 @@
 				<string>vita-app-chron</string>
 			</array>
 		</dict>
+		<dict>
+            <key>CFBundleURLName</key>
+            <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>juspay-$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+                <string>amzn-$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+            </array>
+        </dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
@@ -61,10 +74,6 @@
 	<false/>
 	<key>ITunesAppleID</key>
 	<string>1496740273</string>
-	<key>LSApplicationQueriesSchemes</key>
-	<array>
-		<string>whatsapp</string>
-	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
@@ -141,6 +150,19 @@
 		<string>remote-notification</string>
 		<string>voip</string>
 	</array>
+	<key>LSApplicationQueriesSchemes</key> 
+    <array>
+        <string>upi</string>
+		<string>whatsapp</string>
+        <string>devtools</string>
+        <string>phonepe</string>
+        <string>paytmmp</string>
+        <string>tez</string>
+		<string>credpay</string>
+    </array>
+	<!-- Amazon Pay API Key-->
+	<key>APIKey</key>
+	<string>eyJhbGciOiJSU0EtU0hBMjU2IiwidmVyIjoiMSJ9.eyJ2ZXIiOiIzIiwiZW5kcG9pbnRzIjp7ImF1dGh6IjoiaHR0cHM6Ly93d3cuYW1hem9uLmNvbS9hcC9vYSIsInRva2VuRXhjaGFuZ2UiOiJodHRwczovL2FwaS5hbWF6b24uY29tL2F1dGgvbzIvdG9rZW4ifSwiY2xpZW50SWQiOiJhbXpuMS5hcHBsaWNhdGlvbi1vYTItY2xpZW50LmFjNzVhYjY5MjFhZTQzNDViOTg5ZjFjOGIyYWFjMThmIiwiYXBwRmFtaWx5SWQiOiJhbXpuMS5hcHBsaWNhdGlvbi43YzM4M2YxODlkODM0NTI3ODk2NGQwYmZmNTExY2EwYSIsImJ1bmRsZVNlZWRJZCI6ImNvbS5hcG9sbG8uYXBvbGxvMjQ3IiwiYnVuZGxlSWQiOiJjb20uYXBvbGxvLmFwb2xsbzI0NyIsImlzcyI6IkFtYXpvbiIsInR5cGUiOiJBUElLZXkiLCJhcHBWYXJpYW50SWQiOiJhbXpuMS5hcHBsaWNhdGlvbi1jbGllbnQuZmQ4ZDkwMjA1NGIwNGVmNjgxMWYxMDcwYTUwZDRhMDIiLCJ0cnVzdFBvb2wiOm51bGwsImFwcElkIjoiYW16bjEuYXBwbGljYXRpb24tY2xpZW50LmZkOGQ5MDIwNTRiMDRlZjY4MTFmMTA3MGE1MGQ0YTAyIiwiaWQiOiI4OThhMjcxZi0yZGYzLTRmZGEtODhiMy00ZjNkNjIxOWE1ZTAiLCJpYXQiOiIxNjM1NDI5MTAzMzI2In0=.CzQCN2agg47AVYhFxITkZw47Lwcu1wvGOTSGHus0pXXzjSIoJeMQGTZHF3PH/OQrU2G1SSCrdWfJ01Xnmr8EZzAuE2hs4MKdytjyKi99sMEZBvnyZKeJwFmwR5xFKWo3C7g0rgvL12nwsfnhxjCvmRskcavWZOvS7VkuZwCr5PsKq0pu3nEJR+R2n6NGmcR5XNQnWUi6YjjU9m+P6dxWp/BBIe6xVHLgVzL/Xr0MgD0zH66OPFgv3jidH4DxdPiQGcy8l9XWDOaUpLsjtyB7ONeaW8aR2bJgVMiql1wqlvHlQflwVd9pHof4v6d0wrEwDuvkcfXfLBhf5tx2gXzoxg==</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
