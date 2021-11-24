@@ -19,7 +19,7 @@ YellowBox.ignoreWarnings([
   'Module RNFetchBlob',
 ]);
 
-messaging().setBackgroundMessageHandler((notification) => {
+messaging().setBackgroundMessageHandler(async (notification) => {
   if (notification.data?.type === "call_start") {
     updateCallKitNotificationReceivedStatus(notification.data?.appointmentId);
   }
