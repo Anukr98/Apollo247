@@ -4165,7 +4165,7 @@ export const getPageId = (pageId: string) => {
       break;
 
     default:
-      pageName = 'Home Page';
+      pageName = PAGE_ID_TYPE.HOME_PAGE;
       break;
   }
   return pageName;
