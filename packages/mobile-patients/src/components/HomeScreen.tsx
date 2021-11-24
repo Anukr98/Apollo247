@@ -3701,7 +3701,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                     elevation: 0,
                   }}
                   titleTextStyle={{ color: offerDesignTemplate?.cta?.text_color }}
-                  onPress={() => onOfferCtaPressed(item, 1)}
+                  onPress={() => textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, 1)}
                   disabled={false}
                 />
               </View>
