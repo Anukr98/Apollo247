@@ -221,13 +221,6 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  function _navigateToRatingScreen(star: any, order: any) {
-    navigation.navigate(AppRoutes.TestRatingScreen, {
-      ratingStar: star,
-      orderDetails: order,
-      onPressBack: fetchOrders(),
-    });
-  }
 
   const keyExtractor = useCallback((item: any, index: number) => `${index}`, []);
   const renderOrder = (order: orderList, index: number) => {
@@ -324,7 +317,8 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
         }}
         onPressViewReport={() => {}}
         phelboObject={order?.phleboDetailsObj}
-        onPressRatingStar={(star) => {_navigateToRatingScreen(star,order)}}
+        onPressRatingStar={(star) => {}}
+        onPressEditPatient={()=>{}}
         onPressCallOption={(name, number) => {}}
         style={[
           { marginHorizontal: 20 },
