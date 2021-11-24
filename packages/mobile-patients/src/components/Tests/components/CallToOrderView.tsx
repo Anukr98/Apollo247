@@ -8,6 +8,7 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import { DiagnosticCallToOrderClicked } from '@aph/mobile-patients/src/components/Tests/Events';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { CALL_TO_ORDER_CTA_PAGE_ID } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { getPageId } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 interface CallToOrderViewProps {
   delaySeconds?: any;
@@ -66,33 +67,9 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
   }, [ctaDelaySeconds]);
 
   const postCleverTapEvent = () => {
-    let pageName = 'Home Page';
-    switch (pageId) {
-      case CALL_TO_ORDER_CTA_PAGE_ID.HOME:
-        pageName = 'Home Page';
-        break;
-      case CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING:
-        pageName = 'Listing Page';
-        break;
-      case CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS:
-        pageName = 'My Orders';
-        break;
-      case CALL_TO_ORDER_CTA_PAGE_ID.TESTCART:
-        pageName = 'Cart Page';
-        break;
-      case CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL:
-        pageName = 'Test Detail Page';
-        break;
-      case CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY:
-        pageName = 'Order Summary';
-        break;
-
-      default:
-        pageName = 'Home Page';
-        break;
-    }
+    const page = !!pageId ? pageId : CALL_TO_ORDER_CTA_PAGE_ID.HOME 
     DiagnosticCallToOrderClicked(
-      pageName,
+      getPageId(page),
       currentPatient,
       sectionName,
       itemId,
