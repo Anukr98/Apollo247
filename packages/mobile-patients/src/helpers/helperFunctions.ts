@@ -171,6 +171,15 @@ export enum EDIT_DELETE_TYPE {
   DELETE_VACCINATION = 'Delete Vaccination',
 }
 
+export enum PAGE_ID_TYPE {
+  HOME_PAGE = 'Home Page',
+  LISTING_PAGE = 'Listing Page',
+  MY_ORDERS = 'My Orders',
+  CART_PAGE = 'Cart Page',
+  TEST_DETAIL_PAGE = 'Test Detail Page',
+  ORDER_SUMMARY = 'Order Summary',
+}
+
 type EditDeleteArray = {
   key: EDIT_DELETE_TYPE;
   title: string;
@@ -4134,25 +4143,25 @@ export const getFormattedDateTimeWithBefore = (time: string) => {
 };
 
 export const getPageId = (pageId: string) => {
-  let pageName = 'Home Page'
+  let pageName = PAGE_ID_TYPE.HOME_PAGE
   switch (pageId) {
     case CALL_TO_ORDER_CTA_PAGE_ID.HOME:
-      pageName = 'Home Page';
+      pageName = PAGE_ID_TYPE.HOME_PAGE;
       break;
     case CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING:
-      pageName = 'Listing Page';
+      pageName = PAGE_ID_TYPE.LISTING_PAGE;
       break;
     case CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS:
-      pageName = 'My Orders';
+      pageName = PAGE_ID_TYPE.MY_ORDERS;
       break;
     case CALL_TO_ORDER_CTA_PAGE_ID.TESTCART:
-      pageName = 'Cart Page';
+      pageName = PAGE_ID_TYPE.CART_PAGE;
       break;
     case CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL:
-      pageName = 'Test Detail Page';
+      pageName = PAGE_ID_TYPE.TEST_DETAIL_PAGE;
       break;
     case CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY:
-      pageName = 'Order Summary';
+      pageName = PAGE_ID_TYPE.ORDER_SUMMARY;
       break;
 
     default:
