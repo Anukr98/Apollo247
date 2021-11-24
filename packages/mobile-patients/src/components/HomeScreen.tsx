@@ -3569,8 +3569,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       ms -= hh * 1000 * 60 * 60;
       const mm = Math.floor(ms / 1000 / 60);
       textForNotch =
-        diff > 0
+        diff > 0 && hh > 0
           ? notch_text?.replace('{time_till_expiry}', `${hh} Hrs ${mm} Min`)
+          : diff > 0 && hh === 0
+          ? notch_text?.replace('{time_till_expiry}', `${mm} Min`)
           : 'Offer Expired';
     } catch (e) {
       console.log('csk error', JSON.stringify(e));
