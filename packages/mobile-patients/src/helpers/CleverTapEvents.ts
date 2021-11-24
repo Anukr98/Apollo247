@@ -7,7 +7,7 @@ import {
   PharmaUserStatus,
   UploadPrescSource,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { CircleEventSource } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { CircleEventSource, PAGE_ID_TYPE } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { ShoppingCartItem } from '../components/ShoppingCartProvider';
 import { DIAGNOSTIC_SLOT_TYPE } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
@@ -1610,7 +1610,7 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.DIAGNOSTIC_CALL_TO_ORDER_CLICKED]: {
     'Mobile Number'?: string;
-    'Page'?: 'Home Page'| 'Listing Page' | 'Test Detail Page' | 'Cart Page';
+    'Page'?: PAGE_ID_TYPE;
     'Section Name'?: string;
     'ItemId'?: string;
     'ItemName'?: string;

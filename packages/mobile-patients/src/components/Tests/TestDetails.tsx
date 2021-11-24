@@ -1608,6 +1608,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         onPressCross={() => {
           setSlideCallToOrder(true);
         }}
+        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL}
+        itemId = {itemId}
+        itemName = {itemName}
       />
     ) : null;
   };
