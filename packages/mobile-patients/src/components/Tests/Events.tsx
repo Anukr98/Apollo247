@@ -1,6 +1,7 @@
 import moment from 'moment';
 import {
   g,
+  PAGE_ID_TYPE,
   postAppsFlyerEvent,
   postCleverTapEvent,
   postFirebaseEvent,
@@ -839,7 +840,7 @@ export function DiagnosticViewReportClicked(
 }
 
 export function DiagnosticCallToOrderClicked(
-  page: string,
+  page: PAGE_ID_TYPE,
   currentPatient?: any,
   sectionName?: string,
   itemId?: string,
