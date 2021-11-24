@@ -1222,7 +1222,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                     string.diagnostics.reasonForCancel_TestOrder.needModifyPatient ? (
                     <View style={{ marginTop: 10, marginBottom: 5 }}>
                       <Text style={styles.wantToReschedule}>
-                        Do you want to edit patient details?
+                        {string.diagnostics.needToAddPaitent}
                       </Text>
                       <TouchableOpacity
                         activeOpacity={1}
@@ -1241,7 +1241,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                     string.diagnostics.reasonForCancel_TestOrder.needModifyOrder ? (
                     <View style={{ marginTop: 10, marginBottom: 5 }}>
                       <Text style={styles.wantToReschedule}>
-                        Do you want to add tests to your order?
+                      {string.diagnostics.needToAddOrder}
                       </Text>
                       <TouchableOpacity
                         activeOpacity={1}
