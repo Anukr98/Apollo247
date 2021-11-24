@@ -196,6 +196,7 @@ import {
   fileToBase64,
   getAsyncStorageValues,
   formatUrl,
+  updateCallKitNotificationReceivedStatus,
 } from '../../helpers/helperFunctions';
 import { mimeType } from '../../helpers/mimeType';
 import { FeedbackPopup } from '../FeedbackPopup';
@@ -1861,6 +1862,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       // on receive voip push
       const payload = notification && notification.getData();
       if (payload && payload.appointmentId) {
+        updateCallKitNotificationReceivedStatus(payload.appointmentId);
         isAudio.current = notification.getData().isVideo ? false : true;
         callKitAppointmentId.current = payload.appointmentId;
       }
