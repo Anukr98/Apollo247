@@ -2,6 +2,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { PharmaStateCodeMapping } from '@aph/mobile-patients/src/strings/PharmaStateCodeMapping';
 import DeviceInfo from 'react-native-device-info';
 import {
+  CALL_TO_ORDER_CTA_PAGE_ID,
   DIAGNOSTIC_ORDER_STATUS,
   REFUND_STATUSES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -286,9 +287,40 @@ const appStaticVariables = {
   CIRCLE_FACTS:
     '<b>#CircleFact:</b> On an average Circle members <b>save upto ₹400 every month</b>',
   enableCredWebView: false,
+  offerIconBaseUrl: 'https://newassets.apollo247.com/images/payment_offer_icons/',
   DIAGNOSTICS_REPORT_TAT_BREACH_TEXT:
     'Reports are delayed by a few hours, but should be available any time soon.',
   TrueCaller_Login_Enabled: false,
+  Ask_Apollo_Number: '18605001066',
+  LONG_CHAT_LAUNCH_DATE: '23/10/2021',
+  offerIconBaseUrl: 'https://newassets.apollo247.com/images/payment_offer_icons/',
+  DIAGNOSTICS_NO_CIRCLE_SAVINGS_TEXT: 'Extra 15% off on lab tests and cashback on medicine orders',
+  DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER: {
+    ctaDetailsOnCityId: [
+      {
+        ctaCityId: '9',
+        ctaProductPageArray: ['HOME', 'TESTLISTING', 'TESTCART', 'TESTDETAIL'],
+        ctaDelaySeconds: 0,
+        ctaPhoneNumber: '040-4821-3009',
+      },
+    ],
+    ctaDetailsDefault: {
+      ctaProductPageArray: ['HOME', 'TESTLISTING', 'TESTCART', 'TESTDETAIL'],
+      ctaDelaySeconds: 3,
+      ctaPhoneNumber: '040-4821-3322',
+    },
+  },
+  DIAGNOSTICS_COVID_ITEM_IDS: [2446],
+  FREE_CONSULT_MESSAGE: {
+    prescriptionMessage: 'Get a FREE Consultation by our expert doctor within the next 30 mins.',
+    reviewOrderMessage:
+      'Our Apollo doctor will call you for a free consultation. Order will be processed only after the consultation in completed successfully.',
+    orderConfirmationMessage: 'An Apollo doctor will call you as soon are they are available.',
+    orderSummaryMessage: 'Free Doctor Consult Booked. You will receive a call soon.',
+    reviewOrderHeader: 'FREE Consult will be booked for you',
+    orderConfirmationHeader: 'FREE Consult booked for you',
+    prescriptionOptionHeader: "I don't have a prescription",
+  },
 };
 
 const DEV_top_specialties = [
@@ -503,6 +535,7 @@ const PharmaApiConfig = {
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
     PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/categoryproducts_api.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
+    BOUGHT_TOGETHER: [`${apolloUatBaseUrl}/popsrchboughttogether_api.php`, pharmaToken201],
     SPECIAL_OFFERS_PAGE_WIDGETS: [
       'https://uatcms.apollo247.com/api/special-offer/getwidget',
       specialOffersWidgetApiCredentials,
@@ -558,6 +591,7 @@ const PharmaApiConfig = {
     GET_SUBSTITUTES: [`${apolloProdBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
     PRODUCTS_BY_CATEGORY: [`${apolloProdBaseUrl}/categoryproducts_api.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloProdBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
+    BOUGHT_TOGETHER: [`${apolloProdBaseUrl}/popsrchboughttogether_api.php`, pharmaToken201],
     SPECIAL_OFFERS_PAGE_WIDGETS: [
       'https://cms.apollo247.com/api/special-offer/getwidget',
       specialOffersWidgetApiCredentials,
@@ -641,6 +675,8 @@ const ConfigurationDev = {
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
   CIRCLE_PLAN_PRESELECTED: false,
+  PROHEALTH_BANNER_IMAGE:
+    'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
 };
 
 // QA
@@ -699,6 +735,8 @@ const ConfigurationQA = {
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com/ordersuccess',
   CIRCLE_PLAN_PRESELECTED: false,
+  PROHEALTH_BANNER_IMAGE:
+    'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
 };
 
 // QA2
@@ -755,6 +793,8 @@ const ConfigurationQA2 = {
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
   CIRCLE_PLAN_PRESELECTED: false,
+  PROHEALTH_BANNER_IMAGE:
+    'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
 };
 
 // QA3
@@ -812,6 +852,8 @@ const ConfigurationQA3 = {
   CIRCLE_TEST_URL: 'https://qathreepatients.apollo247.com/test-landing?header=false',
   CIRCLE_LANDING_URL: 'https://qathreepatients.apollo247.com/circle?header=false',
   CIRCLE_PLAN_PRESELECTED: false,
+  PROHEALTH_BANNER_IMAGE:
+    'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
 };
 
 const ConfigurationQA5 = {
@@ -870,6 +912,8 @@ const ConfigurationQA5 = {
   CIRCLE_TEST_URL: 'https://aph-staging-web-patients.apollo247.com/test-landing?header=false',
   CIRCLE_LANDING_URL: 'https://aph-staging-web-patients.apollo247.com/circle?header=false',
   CIRCLE_PLAN_PRESELECTED: false,
+  PROHEALTH_BANNER_IMAGE:
+    'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
 };
 
 const ConfigurationQA6 = {
@@ -927,6 +971,8 @@ const ConfigurationQA6 = {
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com/ordersuccess',
   CIRCLE_PLAN_PRESELECTED: false,
+  PROHEALTH_BANNER_IMAGE:
+    'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
 };
 
 // VAPT
@@ -984,6 +1030,8 @@ const ConfigurationVAPT = {
   PROHEALTH_BOOKING_URL: 'https://stagingpatients.apollo247.com//apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
   CIRCLE_PLAN_PRESELECTED: false,
+  PROHEALTH_BANNER_IMAGE:
+    'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
 };
 //Production
 const ConfigurationProd = {
@@ -1040,6 +1088,7 @@ const ConfigurationProd = {
   PROHEALTH_BOOKING_URL: 'https://www.apollo247.com/apollo-prohealth',
   baseUrl: 'https://www.apollo247.com',
   CIRCLE_PLAN_PRESELECTED: false,
+  PROHEALTH_BANNER_IMAGE: 'https://newassets.apollo247.com/images/banners/ProHealthAppLanding.jpg',
 };
 
 //PERFORMANCE
@@ -1098,6 +1147,8 @@ const ConfigurationPERFORM = {
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
   CIRCLE_PLAN_PRESELECTED: false,
+  PROHEALTH_BANNER_IMAGE:
+    'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
 };
 
 //DevelopmentReplica
@@ -1156,6 +1207,8 @@ const ConfigurationDevReplica = {
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
   CIRCLE_PLAN_PRESELECTED: false,
+  PROHEALTH_BANNER_IMAGE:
+    'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
 };
 
 const Configuration =
@@ -1448,6 +1501,8 @@ export const DIAGNOSTIC_STATUS_BEFORE_SUBMITTED = [
   DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
   DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
   DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED_REQUEST,
 ];
 
 export const DIAGNOSITC_PHELBO_TRACKING_STATUS = [
@@ -1464,6 +1519,7 @@ export const DIAGNOSTIC_SHOW_OTP_STATUS = [
 export const DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
 ];
 export const DIAGNOSTIC_SUB_STATUS_TO_SHOW = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
@@ -1607,6 +1663,15 @@ export const DIAGNOSTIC_ONLINE_PAYMENT_STATUS = [
 export const DIAGNOSTIC_EDIT_PROFILE_ARRAY = [
   DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
   DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
+];
+
+export const DIAGNOSTIC_CALL_TO_ORDER_CTA = [
+  CALL_TO_ORDER_CTA_PAGE_ID.HOME,
+  CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS,
+  CALL_TO_ORDER_CTA_PAGE_ID.TESTCART,
+  CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL,
+  CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING,
+  CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY,
 ];
 
 type SpecialitiesType = {

@@ -318,8 +318,8 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
                 User_Type: pharmacyUserType,
               };
               const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED] = {
-                Source: 'Cart',
-                'User Type': pharmacyUserType,
+                'Nav src': 'Cart',
+                'User type': pharmacyUserType,
               };
               postCleverTapEvent(
                 CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED,

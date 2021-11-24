@@ -32,6 +32,10 @@ import {
   InitiateUPISDKTxn,
   InitiateCredTxn,
   CheckCredEligibility,
+  isPayTmReady,
+  fetchWalletBalance,
+  createAPayWallet,
+  directWalletDebit,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -45,6 +49,7 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { TxnFailed } from '@aph/mobile-patients/src/components/PaymentGateway/Components/TxnFailed';
+import { InvalidOffer } from '@aph/mobile-patients/src/components/PaymentGateway/Components/InvalidOffer';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   VerifyVPA,
@@ -64,16 +69,22 @@ import { useGetPaymentMethods } from '@aph/mobile-patients/src/components/Paymen
 import {
   diagnosticPaymentSettings,
   saveJusPaySDKresponse,
+  getOffersList,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   isEmptyObject,
   paymentModeVersionCheck,
   goToConsultRoom,
+  getPaymentMethodsInfo,
+  getIOSPackageName,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PaymentStatus,
   PaymentInitiated,
   PharmaOrderPlaced,
+  PaymentScreenLoaded,
+  PaymentTxnInitiated,
+  PaymentTxnResponse,
 } from '@aph/mobile-patients/src/components/PaymentGateway/Events';
 import { useFetchSavedCards } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useFetchSavedCards';
 import Decimal from 'decimal.js';
@@ -88,6 +99,9 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 
 import { useGetClientAuthToken } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useGetClientAuthtoken';
 import { CredPay } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CredPay';
+import { Offers } from '@aph/mobile-patients/src/components/PaymentGateway/Components/Offers';
+import { OfferInfo } from '@aph/mobile-patients/src/components/PaymentGateway/Components/OfferInfo';
+
 const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {
@@ -116,7 +130,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const isDiagnostic = businessLine === 'diagnostics';
   const disableCod = props.navigation.getParam('disableCOD');
   const paymentCodMessage = props.navigation.getParam('paymentCodMessage');
-  const orderResponse = props.navigation.getParam('orderResponse');
   const isCircleAddedToCart = props.navigation.getParam('isCircleAddedToCart');
   const { currentPatient } = useAllCurrentPatients();
   const [banks, setBanks] = useState<any>([]);
@@ -125,11 +138,13 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [isCardValid, setisCardValid] = useState<boolean>(true);
   const [phonePeReady, setphonePeReady] = useState<boolean>(false);
   const [googlePayReady, setGooglePayReady] = useState<boolean>(false);
-  const [availableUPIApps, setAvailableUPIapps] = useState([]);
+  const [payTmReady, setPayTmReady] = useState<boolean>(false);
+  const [availableUPIApps, setAvailableUPIapps] = useState<any>(null);
+  const [eligibleApps, setEligibleApps] = useState<any>(null);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
-  const { authToken, setauthToken } = useAppCommonData();
-  const { grandTotal, cartItems, nonCodSKus } = useShoppingCart();
+  const { authToken, setauthToken, pharmacyUserType } = useAppCommonData();
+  const { grandTotal } = useShoppingCart();
   const [HCSelected, setHCSelected] = useState<boolean>(false);
   const [burnHc, setburnHc] = useState<number>(0);
   const storeCode =
@@ -140,7 +155,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [showCOD, setShowCOD] = useState<boolean>(isDiagnostic ? false : true);
   const [showDiagnosticHCMsg, setShowDiagnosticHCMsg] = useState<string>('');
   const paymentType = useRef<string>('');
-  const [areNonCODSkus, setAreNonCODSkus] = useState(false);
   const { healthCredits } = useFetchHealthCredits(businessLine);
   const { paymentMethods, cardTypes, fetching } = useGetPaymentMethods(paymentId);
   const { savedCards } = useFetchSavedCards(customerId);
@@ -148,10 +162,22 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     ? useGetClientAuthToken(customerId, businessLine)
     : undefined;
   const [cred, setCred] = useState<any>(undefined);
+  const [offers, setOffers] = useState<any>([]);
+  const [selectedPayment, setSelectedPaymentOption] = useState<any>({});
+  const [offer, setoffer] = useState<any>(null);
+  const [linkedWallets, setLinkedWallets] = useState<any>([]);
+  const [createdWallet, setcreatedWallet] = useState<any>({});
+  const [walletLinking, setWalletLinking] = useState<any>('AMAZONPAY');
   const requestId = currentPatient?.id || customerId || 'apollo247';
-
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
-
+  const defaultClevertapEventParams = {
+    mobileNumber: currentPatient?.mobileNumber,
+    vertical: businessLine,
+    displayId: orderDetails?.displayId,
+    paymentId: paymentId,
+    amount: amount,
+    availableHc: healthCredits,
+  };
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
     const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
@@ -160,8 +186,13 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     fecthPaymentOptions();
     isPhonePeReady();
     isGooglePayReady();
+    isPayTmReady();
     return () => eventListener.remove();
   }, []);
+
+  useEffect(() => {
+    paymentMethods && availableUPIApps && eligibleApps && savedCards && fireScreenLoadedEvent();
+  }, [paymentMethods, availableUPIApps, eligibleApps, savedCards]);
 
   useEffect(() => {
     if (isDiagnostic) {
@@ -184,6 +215,11 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     healthCredits && updateAmount();
   }, [HCSelected]);
 
+  const fireScreenLoadedEvent = () => {
+    const intentApps = filterUPIApps()?.map((item: any) => item?.payment_method_name);
+    PaymentScreenLoaded(defaultClevertapEventParams, savedCards?.length, eligibleApps, intentApps);
+  };
+
   const updateAmount = () => {
     const redeemableAmount = grandTotal;
     HCSelected
@@ -197,13 +233,31 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   useEffect(() => {
-    !!clientAuthToken && checkCredEligibility();
+    !!clientAuthToken &&
+      (checkCredEligibility(), fetchWalletBalance(currentPatient?.id, clientAuthToken));
   }, [clientAuthToken]);
 
   const checkCredEligibility = () => {
     const mobileNo = currentPatient?.mobileNumber.substring(3);
     CheckCredEligibility(currentPatient?.id, mobileNo, String(amount), clientAuthToken);
   };
+
+  useEffect(() => {
+    !!paymentMethods && fetchOffers();
+  }, [paymentMethods, amount]);
+
+  async function fetchOffers(paymentInfo?: any) {
+    try {
+      const orderInfo = {
+        paymentId: paymentId,
+        amount: String(amount),
+      };
+      const walletInfo = getPaymentMethodsInfo(paymentMethods, 'WALLET');
+      const info = !!paymentInfo ? walletInfo.concat(paymentInfo) : walletInfo;
+      const res = await getOffersList(client, orderInfo, businessLine, info);
+      setOffers(res?.data?.getOffersList);
+    } catch (error) {}
+  }
 
   async function fetchDiagnosticPaymentMethods() {
     const DEFAULT_COD_CONFIGURATION = AppConfig.Configuration.Enable_Diagnostics_COD;
@@ -236,6 +290,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const handleResponsePayload = (payload: any) => {
     const status = payload?.payload?.status;
     const action = payload?.payload?.action;
+
     switch (action) {
       case 'getPaymentMethods':
         if (!payload?.error) {
@@ -252,17 +307,31 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         setisTxnProcessing(false);
         break;
       case 'upiTxn':
-        status
+        let activityRes = payload?.payload?.otherInfo?.response?.dropoutInfo?.activityResponse;
+        activityRes = !!activityRes && activityRes != {} && JSON.parse(activityRes);
+        activityRes?.Status == 'FAILURE' || activityRes?.Status == 'Failed'
+          ? showTxnFailurePopUP()
+          : status
           ? (handleTxnStatus(status, payload), setisTxnProcessing(false))
           : !payload?.error && setAvailableUPIapps(payload?.payload?.availableApps || []);
         break;
       case 'isDeviceReady':
         payload?.requestId == 'phonePe' && status && setphonePeReady(true);
         payload?.requestId == 'googlePay' && status && setGooglePayReady(true);
+        payload?.requestId == 'payTm' && status && setPayTmReady(true);
         break;
       case 'eligibility':
-        const eligibleApps = payload?.payload?.apps?.[0]?.paymentMethodsEligibility;
+        const eligibleApps = payload?.payload?.apps[0]?.paymentMethodsEligibility;
+        setEligibleApps(eligibleApps?.map((item: any) => item?.paymentMethod) || []);
         setCred(eligibleApps?.find((item: any) => item?.paymentMethod == 'CRED'));
+        break;
+      case 'createWallet':
+        setWalletLinking(null);
+        payload?.payload?.linked && setcreatedWallet(payload?.payload);
+        break;
+      case 'refreshWalletBalances':
+        setWalletLinking(null);
+        setLinkedWallets(payload?.payload?.list);
         break;
       default:
         payload?.error && handleError(payload?.errorMessage);
@@ -271,22 +340,40 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const handleTxnStatus = (status: string, payload: any) => {
     storeSDKresponse(payload);
+    const errCode = payload?.payload?.otherInfo?.offers?.[0]?.errorCode;
     switch (status) {
       case 'CHARGED':
-        navigatetoOrderStatus(false, 'success');
+        navigatetoOrderStatus(false, 'success', payload);
         break;
       case 'AUTHORIZING':
-        navigatetoOrderStatus(false, 'pending');
+        navigatetoOrderStatus(false, 'pending', payload);
         break;
       case 'PENDING_VBV':
-        handlePaymentPending(payload?.errorCode);
+        handlePaymentPending(payload?.errorCode, payload);
+        break;
+      case 'JUSPAY_DECLINED':
+        setoffer({ offerFailed: true, errCode: errCode });
         break;
       default:
         // includes cases AUTHENTICATION_FAILED, AUTHORIZATION_FAILED, JUSPAY_DECLINED
         showTxnFailurePopUP();
+        fireTxnResponseEvent(payload, 'PAYMENT_FAILED');
     }
   };
 
+  useEffect(() => {
+    offer?.offerFailed && showTxnFailurePopUP(true, offer?.errCode);
+  }, [offer]);
+
+  function fireTxnResponseEvent(payload: any, paymentStatus: string) {
+    PaymentTxnResponse(
+      defaultClevertapEventParams,
+      payload?.payload?.action,
+      payload?.errorCode,
+      payload?.payload?.status,
+      paymentStatus
+    );
+  }
   const storeSDKresponse = (payload: any) => {
     try {
       const sdkResponse = {
@@ -320,7 +407,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     }
   };
 
-  const handlePaymentPending = (errorCode: string) => {
+  const handlePaymentPending = (errorCode: string, payload: any) => {
     triggerUserPaymentAbortedEvent(errorCode);
     switch (errorCode) {
       case 'JP_002':
@@ -329,13 +416,15 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       case 'JP_012':
         // User aborted txn or no Internet or user had exceeded the limit of incorrect OTP submissions or txn failed at PG end
         showTxnFailurePopUP();
+        fireTxnResponseEvent(payload, 'PAYMENT_FAILED');
         break;
       case 'JP_006':
         // txn status is awaited
-        navigatetoOrderStatus(false, 'pending');
+        navigatetoOrderStatus(false, 'pending', payload);
         break;
       default:
         showTxnFailurePopUP();
+        fireTxnResponseEvent(payload, 'PAYMENT_FAILED');
     }
   };
 
@@ -412,6 +501,30 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     }
   };
 
+  function firePaymentInitiatedEvent(
+    paymentMethod: string,
+    paymentMode: string,
+    intentApp: any,
+    isSavedCard: boolean,
+    upitxnType: any,
+    newCardSaved: boolean,
+    isCOD: boolean,
+    walletBalance?: any
+  ) {
+    PaymentTxnInitiated(
+      defaultClevertapEventParams,
+      burnHc,
+      paymentMethod,
+      paymentMode,
+      intentApp,
+      isSavedCard,
+      upitxnType,
+      newCardSaved,
+      isCOD,
+      walletBalance
+    );
+  }
+
   function triggerWebengege(type: string, instrument: string, paymentModeName?: string) {
     paymentType.current = type;
     PaymentInitiated(amount, businessLine, type, paymentId, instrument, paymentModeName);
@@ -426,21 +539,61 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   async function onPressBank(bankCode: string) {
     triggerWebengege('NetBanking-' + bankCode, 'NB', string.common.netBanking);
+    firePaymentInitiatedEvent('NB', bankCode, null, false, null, false, false);
     const token = await getClientToken();
     token ? InitiateNetBankingTxn(requestId, token, paymentId, bankCode) : renderErrorPopup();
+    token &&
+      setSelectedPaymentOption({
+        function: InitiateNetBankingTxn,
+        paymentMode: bankCode,
+      });
   }
 
-  async function onPressWallet(wallet: string) {
+  async function onPressWallet(wallet: string, bestOffer?: any) {
     triggerWebengege('Wallet-' + wallet, 'WALLET', string.common.phonePeWallet);
+    firePaymentInitiatedEvent('WALLET', wallet, null, false, null, false, false);
+    const offerId = bestOffer?.offer_id;
     const token = await getClientToken();
     token
       ? wallet == 'PHONEPE' && phonePeReady
-        ? InitiateUPISDKTxn(requestId, token, paymentId, wallet, 'ANDROID_PHONEPE')
-        : InitiateWalletTxn(requestId, token, paymentId, wallet)
+        ? InitiateUPISDKTxn(requestId, token, paymentId, wallet, 'ANDROID_PHONEPE', offerId)
+        : wallet == 'PAYTM' && payTmReady
+        ? InitiateUPISDKTxn(requestId, token, paymentId, wallet, 'ANDROID_PAYTM', offerId)
+        : InitiateWalletTxn(requestId, token, paymentId, wallet, offerId)
+      : renderErrorPopup();
+    const param =
+      wallet == 'PHONEPE' && phonePeReady
+        ? 'ANDROID_PHONEPE'
+        : wallet == 'PAYTM' && payTmReady
+        ? 'ANDROID_PAYTM'
+        : null;
+    token &&
+      setSelectedPaymentOption({
+        function: param ? InitiateUPISDKTxn : InitiateWalletTxn,
+        paymentMode: wallet,
+        additionalParam: param,
+      });
+  }
+
+  async function onPressLinkWallet(wallet: string) {
+    setWalletLinking(wallet);
+    firePaymentInitiatedEvent('WALLET', wallet, null, false, 'LinkWallet', false, false, 0);
+    createAPayWallet(currentPatient?.id, clientAuthToken);
+  }
+
+  async function onPressWalletDirectDebit(wallet: string, walletToken: string, bestOffer?: any) {
+    firePaymentInitiatedEvent('WALLET', wallet, null, false, null, false, false);
+    const offerId = bestOffer?.offer_id;
+    const token = await getClientToken();
+    const sdkPresent =
+      Platform.OS == 'android' ? 'ANDROID_AMAZONPAY_TOKENIZED' : 'IOS_AMAZONPAY_TOKENIZED';
+    token
+      ? directWalletDebit(requestId, token, paymentId, wallet, sdkPresent, walletToken, offerId)
       : renderErrorPopup();
   }
 
   async function onPressCred() {
+    firePaymentInitiatedEvent('CRED', 'Cred Pay', null, false, null, false, false);
     const token = await getClientToken();
     const mobileNo = currentPatient?.mobileNumber.substring(3);
     token ? InitiateCredTxn(requestId, token, paymentId, mobileNo) : renderErrorPopup();
@@ -448,35 +601,41 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   async function onPressUPIApp(app: any) {
     triggerWebengege('UPIApp-' + app?.payment_method_name, 'UPI', app?.payment_method_name);
+    const appName = app?.payment_method_name;
+    firePaymentInitiatedEvent('UPI', appName, appName, false, 'Intent', false, false);
+
     const token = await getClientToken();
-    const paymentCode = app?.payment_method_code;
-    const sdkPresent =
-      paymentCode == 'com.phonepe.app' && phonePeReady
-        ? 'ANDROID_PHONEPE'
-        : // : paymentCode == 'com.google.android.apps.nbu.paisa.user' && googlePayReady
-          // ? 'ANDROID_GOOGLEPAY'
-          '';
-    const paymentMethod =
-      paymentCode == 'com.phonepe.app'
-        ? 'PHONEPE'
-        : // : paymentCode == 'com.google.android.apps.nbu.paisa.user'
-          // ? 'GOOGLEPAY'
-          '';
+    let paymentCode = app?.payment_method_code;
+    paymentCode = Platform.OS == 'android' ? paymentCode : getIOSPackageName(paymentCode);
+    const sdkPresent = paymentCode == 'com.phonepe.app' && phonePeReady ? 'ANDROID_PHONEPE' : '';
+    const paymentMethod = paymentCode == 'com.phonepe.app' ? 'PHONEPE' : '';
     token
       ? sdkPresent
         ? InitiateUPISDKTxn(requestId, token, paymentId, paymentMethod, sdkPresent)
         : InitiateUPIIntentTxn(requestId, token, paymentId, paymentCode)
       : renderErrorPopup();
+    token &&
+      setSelectedPaymentOption({
+        function: sdkPresent ? InitiateUPISDKTxn : InitiateUPIIntentTxn,
+        paymentMode: sdkPresent ? paymentMethod : paymentCode,
+        additionalParam: sdkPresent ? sdkPresent : null,
+      });
   }
 
   async function onPressVPAPay(VPA: string) {
     triggerWebengege('UPI Collect', 'UPI', string.common.VPA);
+    firePaymentInitiatedEvent('UPI', 'Upi Collect', null, false, 'Collect', false, false);
     try {
       setisTxnProcessing(true);
       const response = await verifyVPA(VPA);
       if (response?.data?.verifyVPA?.status == 'VALID') {
         const token = await getClientToken();
         token ? InitiateVPATxn(requestId, token, paymentId, VPA) : renderErrorPopup();
+        token &&
+          setSelectedPaymentOption({
+            function: InitiateVPATxn,
+            paymentMode: VPA,
+          });
       } else {
         setisTxnProcessing(false);
         setisVPAvalid(false);
@@ -486,20 +645,39 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     }
   }
 
-  async function onPressNewCardPayNow(cardInfo: any, saveCard: boolean) {
+  async function onPressNewCardPayNow(cardInfo: any, saveCard: boolean, bestOffer?: any) {
     triggerWebengege('Card', 'CARD', string.common.Card);
+    firePaymentInitiatedEvent('CARD', cardInfo?.cardType, null, false, null, saveCard, false);
     const token = await getClientToken();
-    token ? InitiateCardTxn(requestId, token, paymentId, cardInfo, saveCard) : renderErrorPopup();
+    token
+      ? InitiateCardTxn(requestId, token, paymentId, cardInfo, saveCard, bestOffer?.offer_id)
+      : renderErrorPopup();
+    token &&
+      setSelectedPaymentOption({
+        function: InitiateCardTxn,
+        paymentMode: cardInfo,
+        additionalParam: saveCard,
+      });
   }
 
-  async function onPressSavedCardPayNow(cardInfo: any, cvv: string) {
+  async function onPressSavedCardPayNow(cardInfo: any, cvv: string, bestOffer?: any) {
     triggerWebengege('Card', 'CARD', 'Card');
+    firePaymentInitiatedEvent('CARD', cardInfo?.cardType, null, true, null, false, false);
     const token = await getClientToken();
-    token ? InitiateSavedCardTxn(requestId, token, paymentId, cardInfo, cvv) : renderErrorPopup();
+    token
+      ? InitiateSavedCardTxn(requestId, token, paymentId, cardInfo, cvv, bestOffer?.offer_id)
+      : renderErrorPopup();
+    token &&
+      setSelectedPaymentOption({
+        function: InitiateSavedCardTxn,
+        paymentMode: cardInfo,
+        additionalParam: cvv,
+      });
   }
 
   async function onPressPayByCash() {
     triggerWebengege('Cash', 'COD', string.common.Cash);
+    firePaymentInitiatedEvent('COD', 'COD', null, false, null, false, true);
     setisTxnProcessing(true);
     try {
       businessLine == 'diagnostics' && initiateOrderPayment();
@@ -519,6 +697,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   async function onPressplaceHcOrder() {
     triggerWebengege('HealthCredits', 'HEALTH_CREDITS');
+    firePaymentInitiatedEvent('HEALTH_CREDITS', 'HC', null, false, null, false, false);
     try {
       setisTxnProcessing(true);
       const response = await createJusPayOrder(false);
@@ -545,8 +724,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       amount: amount,
       burnHc: burnHc,
       banks: otherBanks,
-      orderId: orderDetails?.orderId,
+      orderDetails: orderDetails,
       businessLine: businessLine,
+      healthCredits: healthCredits,
     });
   };
 
@@ -556,8 +736,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       const UPIApps = paymentMethods?.find((item: any) => item?.name == 'UPI')?.payment_methods;
       const apps = UPIApps?.map((app: any) => {
         if (
-          available.includes(app?.payment_method_code) &&
-          paymentModeVersionCheck(app?.minimum_supported_version)
+          available.includes(app?.payment_method_code) ||
+          (available.includes(getIOSPackageName(app?.payment_method_code)) &&
+            paymentModeVersionCheck(app?.minimum_supported_version))
         ) {
           return app;
         }
@@ -574,8 +755,28 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     businessLine == 'diagnostics' && props.navigation.goBack();
   };
 
-  const navigatetoOrderStatus = (isCOD: boolean, paymentStatus: string) => {
+  const onPressContinue = async () => {
+    try {
+      hideAphAlert?.();
+      if (selectedPayment) {
+        const token = await getClientToken();
+        const paymentCall = selectedPayment?.function;
+        const param = selectedPayment?.additionalParam;
+        param
+          ? paymentCall(requestId, token, paymentId, selectedPayment?.paymentMode, param)
+          : paymentCall(requestId, token, paymentId, selectedPayment?.paymentMode);
+      } else {
+        hideAphAlert?.();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const navigatetoOrderStatus = (isCOD: boolean, paymentStatus: string, payload?: any) => {
     PaymentStatus(paymentStatus, businessLine, paymentId);
+    const status = paymentStatus == 'success' ? 'PAYMENT_SUCCESS' : 'PAYMENT_PENDING';
+    fireTxnResponseEvent(payload, status);
     setauthToken?.('');
     switch (businessLine) {
       case 'diagnostics':
@@ -586,6 +787,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           eventAttributes,
           paymentStatus: paymentStatus,
           isModify: isDiagnosticModify ? modifiedOrder : null,
+          defaultClevertapEventParams: defaultClevertapEventParams,
+          payload: payload,
           isCircleAddedToCart: isCircleAddedToCart,
         });
         break;
@@ -594,6 +797,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           orderDetails: orderDetails,
           paymentStatus: paymentStatus,
           paymentId: paymentId,
+          defaultClevertapEventParams: defaultClevertapEventParams,
+          payload: payload,
         });
         break;
       case 'pharma':
@@ -606,7 +811,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
             paymentId,
             burnHc,
             isCOD,
-            currentPatient
+            currentPatient,
+            `${orderDetails?.displayId}`,
+            pharmacyUserType
           );
         props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
           paymentStatus: paymentStatus,
@@ -615,6 +822,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           orderDetails: orderDetails,
           checkoutEventAttributes: checkoutEventAttributes,
           cleverTapCheckoutEventAttributes,
+          defaultClevertapEventParams: defaultClevertapEventParams,
+          payload: payload,
         });
         break;
       case 'subscription':
@@ -627,6 +836,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           displayId: orderDetails?.displayId,
           paymentStatus: paymentStatus,
           paymentId: paymentId,
+          defaultClevertapEventParams: defaultClevertapEventParams,
+          payload: payload,
         });
         break;
       case 'paymentLink':
@@ -635,6 +846,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           paymentStatus: paymentStatus,
           paymentId: paymentId,
           amount: amount,
+          defaultClevertapEventParams: defaultClevertapEventParams,
+          payload: payload,
         });
     }
   };
@@ -666,6 +879,17 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         modifyOrderDetails={modifiedOrder}
       />
     );
+  };
+
+  const renderOffers = () => {
+    return <Offers offers={offers?.offers} onPressTnC={showOfferInfo} />;
+  };
+
+  const showOfferInfo = (offer: any) => {
+    showAphAlert!({
+      removeTopIcon: true,
+      children: <OfferInfo offer={offer} />,
+    });
   };
 
   const showPaymentOptions = () => {
@@ -709,7 +933,19 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderWallets = (wallets: any) => {
-    return <Wallets wallets={wallets} onPressPayNow={onPressWallet} />;
+    return (
+      <Wallets
+        wallets={wallets}
+        onPressPayNow={onPressWallet}
+        onPressLinkWallet={onPressLinkWallet}
+        onPressDirectDebit={onPressWalletDirectDebit}
+        offers={offers}
+        createdWallet={createdWallet}
+        walletLinking={walletLinking}
+        linked={linkedWallets}
+        amount={amount}
+      />
+    );
   };
 
   const renderCred = (info: any) => {
@@ -739,6 +975,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         cardTypes={cardTypes}
         isCardValid={isCardValid}
         setisCardValid={setisCardValid}
+        offers={offers}
+        fetchOffers={fetchOffers}
       />
     );
   };
@@ -767,13 +1005,18 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     ) : null;
   };
 
-  const showTxnFailurePopUP = () => {
+  const showTxnFailurePopUP = (invalidOffer?: boolean, errCode?: string) => {
+    setoffer(null);
     setisTxnProcessing(false);
     PaymentStatus('failure', businessLine, paymentId);
     showAphAlert?.({
       unDismissable: businessLine == 'diagnostics' ? true : false,
       removeTopIcon: true,
-      children: <TxnFailed onPressRetry={onPressRetryBooking} />,
+      children: invalidOffer ? (
+        <InvalidOffer onPressContinue={() => onPressContinue()} errCode={errCode} />
+      ) : (
+        <TxnFailed onPressRetry={onPressRetryBooking} />
+      ),
     });
   };
 
@@ -788,6 +1031,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         {!fetching ? (
           <ScrollView contentContainerStyle={styles.container}>
             {renderBookingInfo()}
+            {renderOffers()}
             {showPaymentOptions()}
             {renderSecureTag()}
           </ScrollView>
