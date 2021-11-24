@@ -13,7 +13,7 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
@@ -29,13 +29,18 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
     setConsultProfile,
     serverCartItems,
     cartPrescriptions,
+    serverCartLoading,
   } = useShoppingCart();
   const {
     setUserActionPayload,
     uploadPhysicalPrescriptionsToServerCart,
     uploadEPrescriptionsToServerCart,
   } = useServerCart();
-  const { showAphAlert } = useUIElements();
+  const { showAphAlert, setLoading } = useUIElements();
+
+  useEffect(() => {
+    setLoading?.(serverCartLoading);
+  }, [serverCartLoading]);
 
   const renderHeader = () => {
     return (
