@@ -158,6 +158,8 @@ import { SubmittedPrescription } from '@aph/mobile-patients/src/components/Tests
 import { SpecialOffersScreen } from '@aph/mobile-patients/src/components/SpecialOffers/SpecialOffers';
 import { PaymentConfirmation } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentConfirmaiton';
 import { ConsultPaymentScreen } from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/ConsultPaymentScreen';
+import { AskApolloQuickBook } from '@aph/mobile-patients/src/components/Consult/AskApolloQuickBook';
+import { SelectLocation } from '@aph/mobile-patients/src/components/ui/SelectLocation';
 import { ShareReferLink } from '@aph/mobile-patients/src/components//ReferAndEarn/ShareReferLink';
 import { YourRewardsScreen } from '@aph/mobile-patients/src/components//ReferAndEarn/YourRewardsScreen';
 import { EarnedPoints } from '@aph/mobile-patients/src/components/ReferAndEarn/EarnedPoint';
@@ -165,6 +167,7 @@ import { RefererTermsAndCondition } from '@aph/mobile-patients/src/components/Re
 import { RefererFAQ } from '@aph/mobile-patients/src/components/ReferAndEarn/ReferrerFAQ';
 import { BrandPages } from '@aph/mobile-patients/src/components/BrandPages/BrandPages';
 import { CouponScreen } from '@aph/mobile-patients/src/components/Tests/TestCartPage/CouponScreen';
+import { InformativeContent } from '@aph/mobile-patients/src/components/HealthRecords/InformationContent';
 
 export enum AppRoutes {
   Login = 'Login',
@@ -311,6 +314,8 @@ export enum AppRoutes {
   SpecialOffersScreen = 'SpecialOffersScreen',
   PaymentConfirmation = 'PaymentConfirmation',
   ConsultPaymentScreen = 'ConsultPaymentScreen',
+  AskApolloQuickBook = 'AskApolloQuickBook',
+  SelectLocation = 'SelectLocation',
   ShareReferLink = 'ShareReferLink',
   YourRewardsScreen = 'YourRewardsScreen',
   EarnedPoints = 'EarnedPoints',
@@ -318,6 +323,7 @@ export enum AppRoutes {
   RefererFAQ = 'RefererFAQ',
   BrandPages = 'BrandPages',
   CouponScreen = 'CouponScreen',
+  InformativeContent = 'InformativeContent',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -329,6 +335,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
       header: null,
       gesturesEnabled: false,
     },
+  },
+  [AppRoutes.SelectLocation]: {
+    screen: SelectLocation,
   },
   [AppRoutes.Login]: {
     screen: Login,
@@ -790,6 +799,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.ConsultPaymentScreen]: {
     screen: ConsultPaymentScreen,
   },
+  [AppRoutes.AskApolloQuickBook]: {
+    screen: AskApolloQuickBook,
+  },
   [AppRoutes.ShareReferLink]: {
     screen: ShareReferLink,
   },
@@ -810,6 +822,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.CouponScreen]: {
     screen: CouponScreen,
+  },
+  [AppRoutes.InformativeContent]: {
+    screen: InformativeContent,
   },
 };
 

@@ -22,6 +22,7 @@ import {
   Image as ImageNative,
   ActivityIndicator,
   ScrollView,
+  TouchableOpacity
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import {
@@ -47,6 +48,7 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { DiagnosticProductListingPageViewed } from './Events';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import { CALL_TO_ORDER_CTA_PAGE_ID } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { DownO } from '@aph/mobile-patients/src/components/ui/Icons';
 
 export interface TestListingProps
   extends NavigationScreenProps<{
@@ -74,6 +76,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const [showLoadMore, setShowLoadMore] = useState<boolean>(false);
   const limit = 10;
   const [currentOffset, setCurrentOffset] = useState<number>(1);
+  const [packageOffset, setPackageOffset] = useState<number>(2);
+  const [testsOffset, setTestsOffset] = useState<number>(4);
   const [testLength, setTestLength] = useState<number>(limit);
   const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
@@ -84,9 +88,16 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const [isPriceAvailable, setIsPriceAvailable] = useState<boolean>(false);
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
+  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING);
   const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
-    if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING)) {
-      return item;
+    if (item?.cityId == cityId) {
+      if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING)) {
+        return item;
+      } else {
+        return null;
+      }
+    } else if (isCtaDetailDefault) {
+      return callToOrderDetails?.ctaDetailsDefault;
     } else {
       return null;
     }
@@ -362,9 +373,47 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       </View>
     );
   };
+  const renderLoadAll = (source?: string, length?: number) => {
+    return (
+      <TouchableOpacity
+        style={styles.loadAllView}
+        onPress={() => {
+          if (source == 'packages' && length) {
+            setPackageOffset(length)
+          } else if (source == 'tests' && length) {
+            setTestsOffset(length)
+          }
+        }}
+      >
+        <Text style={styles.textLoadMore}>{nameFormater('load more', 'upper')}</Text>
+        <DownO size="sm_l" style={styles.downArrow} />
+      </TouchableOpacity>
+    );
+  };
 
   const renderList = () => {
     const actualItemsToShow = widgetsData?.diagnosticWidgetData;
+    let itemPackages: any[] = [];
+    let itemTests: any[] = [];
+    const newArray = widgetsData?.diagnosticWidgetData?.map((item:any)=>{
+      const inclusions = item?.inclusionData
+
+      const getMandatoryParamter =
+        !!inclusions &&
+        inclusions?.length > 0 &&
+        inclusions?.map((inclusion: any) =>
+          inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
+        );
+
+      const getMandatoryParameterCount =
+        !!getMandatoryParamter &&
+        getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
+      if (getMandatoryParameterCount == 1) {
+        itemTests.push(item);
+      } else {
+        itemPackages.push(item);
+      }
+    });
     return (
       <>
         {!!actualItemsToShow && actualItemsToShow?.length > 0 ? (
@@ -375,55 +424,68 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             }}
             scrollEventThrottle={16}
           >
-            <Text style={styles.headingText}>
-              {deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle}{' '}
-              {actualItemsToShow?.length > 0 && (
-                <Text style={styles.itemCountText}>({actualItemsToShow?.length})</Text>
-              )}
-            </Text>
-            {widgetsData?.diagnosticWidgetType == 'Package' ? (
-              <PackageCard
-                data={widgetsData}
-                diagnosticWidgetData={widgetsData?.diagnosticWidgetData?.slice(
-                  0,
-                  widgetsData?.diagnosticWidgetData < limit
-                    ? widgetsData?.diagnosticWidgetData
-                    : testLength
-                )}
-                isPriceAvailable={isPriceAvailable}
-                onEndReached={
-                  testLength == widgetsData?.diagnosticWidgetData?.length ? null : onEndReached
-                }
-                isCircleSubscribed={isDiagnosticCircleSubscription}
-                isServiceable={isDiagnosticLocationServiceable}
-                isVertical={true}
-                columns={1}
-                navigation={props.navigation}
-                source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.LISTING}
-                sourceScreen={AppRoutes.TestListing}
-              />
-            ) : (
-              <ItemCard
-                data={widgetsData}
-                diagnosticWidgetData={widgetsData?.diagnosticWidgetData?.slice(
-                  0,
-                  widgetsData?.diagnosticWidgetData < limit
-                    ? widgetsData?.diagnosticWidgetData
-                    : testLength
-                )}
-                isCircleSubscribed={isDiagnosticCircleSubscription}
-                isServiceable={isDiagnosticLocationServiceable}
-                isVertical={true}
-                columns={2}
-                isPriceAvailable={isPriceAvailable}
-                onEndReached={
-                  testLength == widgetsData?.diagnosticWidgetData?.length ? null : onEndReached
-                }
-                navigation={props.navigation}
-                source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.LISTING}
-                sourceScreen={AppRoutes.TestListing}
-              />
+            {itemPackages?.length && (
+              <>
+                <Text style={styles.headingText}>
+                  {nameFormater(deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle, 'upper')}{' '}
+                  PACKAGES{' '}
+                  {itemPackages?.length > 0 && (
+                    <Text style={styles.itemCountText}>({itemPackages?.length})</Text>
+                  )}
+                </Text>
+                <PackageCard
+                  data={{
+                    diagnosticWidgetTitle: widgetsData?.diagnosticWidgetTitle,
+                    diagnosticWidgetType: widgetsData?.diagnosticWidgetType,
+                    diagnosticwidgetsRankOrder: widgetsData?.diagnosticwidgetsRankOrder,
+                    diagnosticWidgetData: itemPackages,
+                  }}
+                  diagnosticWidgetData={itemPackages?.slice(0, packageOffset)}
+                  isPriceAvailable={isPriceAvailable}
+                  isCircleSubscribed={isDiagnosticCircleSubscription}
+                  isServiceable={isDiagnosticLocationServiceable}
+                  isVertical={true}
+                  columns={1}
+                  navigation={props.navigation}
+                  source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.LISTING}
+                  sourceScreen={AppRoutes.TestListing}
+                />
+              </>
             )}
+            {!error && !loading && itemPackages?.length && itemPackages?.length > packageOffset
+              ? renderLoadAll('packages', itemPackages?.length)
+              : null}
+            {itemTests?.length && (
+              <>
+                <Text style={styles.headingText}>
+                  {nameFormater(deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle, 'upper')}{' '}
+                  TESTS{' '}
+                  {itemTests?.length > 0 && (
+                    <Text style={styles.itemCountText}>({itemTests?.length})</Text>
+                  )}
+                </Text>
+                <ItemCard
+                  data={{
+                    diagnosticWidgetTitle: widgetsData?.diagnosticWidgetTitle,
+                    diagnosticWidgetType: widgetsData?.diagnosticWidgetType,
+                    diagnosticwidgetsRankOrder: widgetsData?.diagnosticwidgetsRankOrder,
+                    diagnosticWidgetData: itemTests,
+                  }}
+                  diagnosticWidgetData={itemTests?.slice(0, testsOffset)}
+                  isCircleSubscribed={isDiagnosticCircleSubscription}
+                  isServiceable={isDiagnosticLocationServiceable}
+                  isVertical={true}
+                  columns={2}
+                  isPriceAvailable={isPriceAvailable}
+                  navigation={props.navigation}
+                  source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.LISTING}
+                  sourceScreen={AppRoutes.TestListing}
+                />
+              </>
+            )}
+            {!error && !loading && itemTests?.length != 0 && itemTests?.length > testsOffset
+              ? renderLoadAll('tests', itemTests?.length)
+              : null}
           </ScrollView>
         ) : null}
       </>
@@ -492,6 +554,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: '100%',
     paddingBottom: 10,
+  },
+  loadAllView: {
+    flexDirection: 'row',
+    alignItems:'center',
+    justifyContent: 'center',
+    alignSelf:'center',
+    width: '40%',
+    padding: 10,
+    borderRadius: 10,
+    borderColor: theme.colors.APP_YELLOW,
+    borderWidth:1,
+    backgroundColor: theme.colors.WHITE,
+
   },
   textLoadMore: {
     ...theme.viewStyles.text('SB', 15, '#FC9916'),

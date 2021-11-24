@@ -54,9 +54,7 @@ export const SavedCard: React.FC<SavedCardProps> = (props) => {
   const renderSavedCard = () => {
     return (
       <View style={{ ...styles.container, paddingHorizontal: onAlert ? 0 : 20 }}>
-        <View style={{ ...styles.subContainer, borderBottomWidth: isLastCard ? 0 : 1 }}>
-          {renderCardInfo()}
-        </View>
+        <View style={{ ...styles.subContainer }}>{renderCardInfo()}</View>
       </View>
     );
   };

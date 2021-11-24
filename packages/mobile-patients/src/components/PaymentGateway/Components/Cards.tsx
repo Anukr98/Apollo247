@@ -5,7 +5,7 @@ import { NewCard } from '@aph/mobile-patients/src/components/PaymentGateway/Comp
 import { SavedCard } from '@aph/mobile-patients/src/components/PaymentGateway/Components/SavedCard';
 import { getBestOffer } from '@aph/mobile-patients/src/helpers/helperFunctions';
 export interface CardsProps {
-  onPressNewCardPayNow: (cardInfo: any, saveCard: boolean) => void;
+  onPressNewCardPayNow: (cardInfo: any, saveCard: boolean, bestOffer?: any) => void;
   onPressSavedCardPayNow: (cardInfo: any, cvv: string, bestOffer?: any) => void;
   cardTypes: any;
   isCardValid: boolean;

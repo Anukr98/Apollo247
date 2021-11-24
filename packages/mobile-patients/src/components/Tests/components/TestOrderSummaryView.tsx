@@ -88,7 +88,8 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const [showPassportModal, setShowPassportModal] = useState<boolean>(false);
   const [showCurrCard, setShowCurrCard] = useState<boolean>(true);
   const [passportNo, setPassportNo] = useState<string>('');
-  const [passportData, setPassportData] = useState<any>([]);
+  const [newPassValue, setNewPassValue] = useState<string>(passportNo);
+  const [passportData, setPassportData] = useState<any>([])
 
   useEffect(() => {
     DiagnosticOrderSummaryViewed(
@@ -336,6 +337,19 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       </View>
     );
   };
+  useEffect(() => {
+    setPassportNo(!!orderDetails?.passportNo ? orderDetails?.passportNo : '');
+    setNewPassValue(!!orderDetails?.passportNo ? orderDetails?.passportNo : '');
+    if (!!orderDetails?.passportNo) {
+      const passData = [
+        {
+          displayId: orderDetails?.displayId,
+          passportNo: orderDetails?.passportNo,
+        },
+      ];
+      setPassportData(passData);
+    }
+  }, []);
   const updatePassportDetails = async (data: any) => {
     try {
       setLoadingContext?.(true);
@@ -733,12 +747,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
             <Text style={styles.textlower}>{passportNo ? 'EDIT' : 'ADD'}</Text>
           </TouchableOpacity>
         </View>
-        <View>
-          <Text style={styles.textmedium}>
-            {string.diagnostics.passportNo}
-            {passportNo}
-          </Text>
-        </View>
+        {passportNo ? <View>
+          <Text style={styles.textmedium}>{string.diagnostics.passportNo}{passportNo}</Text>
+        </View> : null}
       </View>
     ) : null;
   };
@@ -754,9 +765,11 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           updatePassportDetails(response);
           setShowPassportModal(false);
         }}
-        onChange={(res) => {
-          setPassportData(res);
+        onChange={(res)=>{
+          setNewPassValue(res?.passportNo)
+          setPassportData(res)
         }}
+        value={newPassValue}
         disableButton={!passportData?.[0]?.passportNo}
       />
     );
