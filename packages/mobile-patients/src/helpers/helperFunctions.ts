@@ -30,6 +30,7 @@ import {
   MEDICINE_CONSUMPTION_DURATION,
   TEST_COLLECTION_TYPE,
   APPOINTMENT_TYPE,
+  CALL_TO_ORDER_CTA_PAGE_ID,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from 'react-native-geolocation-service';
@@ -4240,3 +4241,31 @@ export const shareDocument = async (
   }
   return viewReportOrderId;
 };
+export const getPageId = (pageId: string) => {
+  let pageName = 'Home Page'
+  switch (pageId) {
+    case CALL_TO_ORDER_CTA_PAGE_ID.HOME:
+      pageName = 'Home Page';
+      break;
+    case CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING:
+      pageName = 'Listing Page';
+      break;
+    case CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS:
+      pageName = 'My Orders';
+      break;
+    case CALL_TO_ORDER_CTA_PAGE_ID.TESTCART:
+      pageName = 'Cart Page';
+      break;
+    case CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL:
+      pageName = 'Test Detail Page';
+      break;
+    case CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY:
+      pageName = 'Order Summary';
+      break;
+
+    default:
+      pageName = 'Home Page';
+      break;
+  }
+  return pageName;
+}
