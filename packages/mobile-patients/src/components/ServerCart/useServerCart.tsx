@@ -44,6 +44,7 @@ export const useServerCart = () => {
     setServerCartLoading,
     setCartSuggestedProducts,
     setCartLocationDetails,
+    setCartPrescriptionType,
     cartLocationDetails,
     asyncPincode,
   } = useShoppingCart();
@@ -54,10 +55,12 @@ export const useServerCart = () => {
   const genericErrorMessage = 'Oops! Something went wrong.';
 
   useEffect(() => {
-    AsyncStorage.getItem(USER_AGENT).then((userAgent) => {
-      setUserAgent(userAgent || '');
-    });
-  }, []);
+    if (!userAgent) {
+      AsyncStorage.getItem(USER_AGENT).then((userAgent) => {
+        setUserAgent(userAgent || '');
+      });
+    }
+  }, [userAgent]);
 
   useEffect(() => {
     if (userActionPayload && currentPatient?.id && userAgent) {
@@ -186,6 +189,7 @@ export const useServerCart = () => {
       setServerCartAmount?.(cartResponse?.amount);
       setCartCoupon?.(cartResponse?.couponDetails);
       setCartPrescriptions?.(cartResponse?.prescriptionDetails);
+      setCartPrescriptionType?.(cartResponse?.prescriptionType);
       if (cartResponse?.patientAddressId) setCartAddressId?.(cartResponse?.patientAddressId);
       setCartLocationDetails?.({
         pincode: cartResponse?.zipcode,
@@ -244,6 +248,7 @@ export const useServerCart = () => {
     physicalPrescriptions: PhysicalPrescription[]
   ) => {
     try {
+      setUserActionPayload(null);
       if (physicalPrescriptions?.length) {
         setServerCartLoading?.(true);
         // upload physical prescriptions and get prism file id
@@ -261,10 +266,14 @@ export const useServerCart = () => {
             };
           }
         );
-        setUserActionPayload({
-          prescriptionType: PrescriptionType.UPLOADED,
-          prescriptionDetails: prescriptionsToUpload,
-        });
+        const cartInputData: CartInputData = {
+          ...{
+            prescriptionType: PrescriptionType.UPLOADED,
+            prescriptionDetails: prescriptionsToUpload,
+          },
+          patientId: currentPatient?.id,
+        };
+        saveServerCart(cartInputData);
         setServerCartLoading?.(false);
       }
     } catch (error) {
@@ -274,6 +283,7 @@ export const useServerCart = () => {
   };
 
   const uploadEPrescriptionsToServerCart = (ePrescriptionsToBeUploaded: EPrescription[]) => {
+    setUserActionPayload(null);
     if (ePrescriptionsToBeUploaded?.length) {
       const prescriptionsToUpload = ePrescriptionsToBeUploaded.map((presToAdd: EPrescription) => {
         return {
