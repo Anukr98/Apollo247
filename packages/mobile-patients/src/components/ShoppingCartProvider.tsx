@@ -14,7 +14,7 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import AsyncStorage from '@react-native-community/async-storage';
 import { validatePharmaCoupon_validatePharmaCoupon } from '@aph/mobile-patients/src/graphql/types/validatePharmaCoupon';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { checkIfPincodeIsServiceable, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { addToCartTagalysEvent } from '@aph/mobile-patients/src/helpers/Tagalys';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -290,6 +290,13 @@ export interface ShoppingCartContextProps {
   setMedicineHotSellersData: ((value: any) => void) | null;
   tatDetailsForPrescriptionOptions: PharmaPrescriptionOptionInput | null;
   setTatDetailsForPrescriptionOptions: ((value: PharmaPrescriptionOptionInput) => void) | null;
+
+  axdcCode: string;
+  setAxdcCode: ((value: string) => void) | null;
+  isPharmacyPincodeServiceable: boolean;
+  setIsPharmacyPincodeServiceable: ((value: boolean) => void) | null;
+  vdcType: string;
+  setVdcType: ((value: string) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -424,6 +431,13 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setMedicineHotSellersData: null,
   tatDetailsForPrescriptionOptions: null,
   setTatDetailsForPrescriptionOptions: null,
+
+  axdcCode: '',
+  setAxdcCode: null,
+  isPharmacyPincodeServiceable: true,
+  setIsPharmacyPincodeServiceable: null,
+  vdcType: '',
+  setVdcType: null,
 });
 
 const AsyncStorageKeys = {
@@ -626,6 +640,14 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [tatDetailsForPrescriptionOptions, setTatDetailsForPrescriptionOptions] = useState<
     ShoppingCartContextProps['tatDetailsForPrescriptionOptions']
   >(null);
+
+  const [axdcCode, setAxdcCode] = useState<ShoppingCartContextProps['axdcCode']>('');
+
+  const [isPharmacyPincodeServiceable, setIsPharmacyPincodeServiceable] = useState<
+    ShoppingCartContextProps['isPharmacyPincodeServiceable']
+  >(true);
+
+  const [vdcType, setVdcType] = useState<ShoppingCartContextProps['vdcType']>('');
 
   const setCartItems: ShoppingCartContextProps['setCartItems'] = (cartItems) => {
     if (cartItems.length) {
@@ -895,6 +917,15 @@ export const ShoppingCartProvider: React.FC = (props) => {
   useEffect(() => {
     orders?.length ? updateShipments() : setDefaultShipment();
   }, [orders, coupon, cartItems, deliveryCharges, grandTotal]);
+
+  useEffect(() => {
+    if (asyncPincode) {
+      const response = checkIfPincodeIsServiceable(asyncPincode);
+      setAxdcCode(response?.axdcCode);
+      setVdcType(response?.vdcType);
+      setIsPharmacyPincodeServiceable(!!response?.isServiceable);
+    }
+  }, [asyncPincode]);
 
   function updateShipments() {
     let shipmentsArray: (MedicineOrderShipmentInput | null)[] = [];
@@ -1376,6 +1407,13 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setMedicineHotSellersData,
         tatDetailsForPrescriptionOptions,
         setTatDetailsForPrescriptionOptions,
+
+        axdcCode,
+        setAxdcCode,
+        isPharmacyPincodeServiceable,
+        setIsPharmacyPincodeServiceable,
+        vdcType,
+        setVdcType,
       }}
     >
       {props.children}

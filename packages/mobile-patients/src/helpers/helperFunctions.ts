@@ -15,6 +15,7 @@ import {
   validateConsultCoupon,
   getDiagnosticDoctorPrescriptionResults,
   autoCompletePlaceSearch,
+  pinCodeServiceabilityApi247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -4132,3 +4133,18 @@ export const getFormattedDateTimeWithBefore = (time: string) => {
 
   return finalDateTime;
 };
+
+export const checkIfPincodeIsServiceable = async (pincode: string) => {
+  try {
+    const response = await pinCodeServiceabilityApi247(pincode);
+    const { data } = response;
+    const axdcCode = data?.response?.axdcCode;
+    const isServiceable = data?.response?.servicable;
+    const vdcType = data?.response?.vdcType || data?.response?.['VDC Type'];
+    return {
+      axdcCode,
+      isServiceable,
+      vdcType,
+    }
+  } catch (error) {}
+}

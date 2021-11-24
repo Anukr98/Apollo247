@@ -185,6 +185,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     pinCode,
     pharmacyCircleAttributes,
     asyncPincode,
+    axdcCode,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
@@ -193,7 +194,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     locationDetails,
     pharmacyLocation,
     isPharmacyLocationServiceable,
-    axdcCode,
     pharmacyUserType,
   } = useAppCommonData();
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');

@@ -85,7 +85,6 @@ import {
   MedicinePageSection,
   MedicineProduct,
   OfferBannerSection,
-  pinCodeServiceabilityApi247,
   SearchSuggestion,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
@@ -111,6 +110,7 @@ import {
   getUserType,
   getCleverTapCircleMemberValues,
   getAvailabilityForSearchSuccess,
+  checkIfPincodeIsServiceable,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { USER_AGENT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
@@ -282,8 +282,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     medicinePageAPiResponse,
     setMedicinePageAPiResponse,
     setLocationDetails,
-    setAxdcCode,
-    axdcCode,
     setBannerData,
     bannerData,
     pharmacyUserType,
@@ -325,6 +323,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     pharmaHomeNudgeMessage,
     setMedicineHomeBannerData,
     setMedicineHotSellersData,
+    setAxdcCode,
+    axdcCode,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
@@ -569,9 +569,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         });
     };
 
-    pinCodeServiceabilityApi247(pincode)
-      .then(({ data: { response } }) => {
-        const { servicable, axdcCode } = response;
+    checkIfPincodeIsServiceable(pincode)
+      .then((response) => {
+        const { isServiceable: servicable, axdcCode } = response;
         setAxdcCode && setAxdcCode(axdcCode);
         setServiceabilityMsg(servicable ? '' : 'Services unavailable. Change delivery location.');
         setPharmacyLocationServiceable!(!!servicable);
