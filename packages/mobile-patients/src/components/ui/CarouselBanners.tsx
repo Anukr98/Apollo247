@@ -49,7 +49,6 @@ import { HdfcConnectPopup } from '@aph/mobile-patients/src/components/Subscripti
 import { Overlay } from 'react-native-elements';
 import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
 import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
-import { DiagnosticHomePageSource } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 interface CarouselProps extends NavigationScreenProps {
   circleActivated?: boolean;
@@ -431,10 +430,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
         } else if (action == hdfc_values.DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED) {
           props.navigation.navigate(AppRoutes.DoctorSearch);
         } else if (action == hdfc_values.DIAGNOSTICS_LANDING) {
-          const homeScreenAttributes = {
-            Source: DiagnosticHomePageSource.BANNER,
-          };
-          props.navigation.navigate('TESTS', { homeScreenAttributes });
+          props.navigation.navigate('TESTS');
         } else if (action == hdfc_values.MEMBERSHIP_DETAIL) {
           if (hdfcUserSubscriptions != null && hdfcStatus == 'active') {
             props.navigation.navigate(AppRoutes.MembershipDetails, {

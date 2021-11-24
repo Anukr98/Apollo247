@@ -378,11 +378,11 @@ export const createPatientAddressObject = (addressObject : any, serviceabilityOb
 
 export enum DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE {
   HOME = 'Home page',
-  FULL_SEARCH = 'Full Search',
+  FULL_SEARCH = 'Full search',
   DETAILS = 'Details page',
-  PARTIAL_SEARCH = 'Partial Search',
+  PARTIAL_SEARCH = 'Partial search',
   LISTING = 'Listing page',
-  POPULAR_SEARCH = 'Popular Search',
+  POPULAR_SEARCH = 'Popular search',
   CATEGORY = 'Category page',
   PRESCRIPTION = 'Prescription',
   CART_PAGE = 'Cart page',

@@ -19,7 +19,6 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import { useApolloClient } from 'react-apollo-hooks';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
-  CALL_TO_ORDER_CTA_PAGE_ID,
   DiagnosticLineItem,
   patientObjWithLineItems,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -39,7 +38,6 @@ import {
   TimelineWizard,
 } from '@aph/mobile-patients/src/components/Tests/components/TimelineWizard';
 import { DIAGNOSTIC_SLOT_TYPE } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 
 export interface AddressSlotSelectionProps extends NavigationScreenProps {
   reportGenDetails: any;
@@ -71,7 +69,6 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
   const [todaySlotNotAvailable, setTodaySlotNotAvailable] = useState<boolean>(false);
   const [date, setDate] = useState<Date>(new Date());
   const [isFocus, setIsFocus] = useState<boolean>(false);
-  const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
 
   const [slotsInput, setSlotsInput] = useState({});
 
@@ -370,7 +367,6 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
       </View>
     );
   };
-  
 
   const renderWizard = () => {
     return (

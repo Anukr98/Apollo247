@@ -16,7 +16,6 @@ export interface getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_
   result: string | null;
   range: string | null;
   outOfRange: boolean | null;
-  resultDate: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_labResults_response_testResultFiles {

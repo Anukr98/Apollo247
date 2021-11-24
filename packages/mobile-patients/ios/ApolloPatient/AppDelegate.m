@@ -24,7 +24,6 @@
 #import <CleverTapReact/CleverTapReactManager.h>
 @import GoogleMaps;
 #import <AppTrackingTransparency/AppTrackingTransparency.h>
-#import <HyperSDK/HyperSDK.h>
 
 @implementation AppDelegate
 
@@ -242,11 +241,6 @@ API_AVAILABLE(ios(10.0)){
                            openURL:url
                  sourceApplication:options[UIApplicationOpenURLOptionsSourceApplicationKey]
                         annotation:options[UIApplicationOpenURLOptionsAnnotationKey]];
-    
-    NSRegularExpression *juspayRegex = [NSRegularExpression regularExpressionWithPattern:@"amzn-.*|juspay-.*" options:0 error:nil];
-    if ([juspayRegex numberOfMatchesInString:[url absoluteString] options:0 range:NSMakeRange(0, [[url absoluteString] length])] > 0) {
-        return [HyperServices handleRedirectURL:url sourceApplication:options[UIApplicationOpenURLOptionsSourceApplicationKey]];
-    }
   } @catch (NSException *exception) {
     NSLog(@"%@",exception );
   }

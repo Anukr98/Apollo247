@@ -64,10 +64,8 @@ export const MultiVariant: React.FC<MultiVariantProps> = (props) => {
 
   const getSkuStatus = (code, index) => {
     let skuStatus;
-    let unit;
     if (selectedOptions[index] === `${code}`) {
       skuStatus = 'selected';
-      unit = selectedSku?.[0]?.unitOfMeasurement || '';
     } else {
       const checkItem = (data) =>
         data.split('_').filter((data) => selectedOptions?.includes(data)).length;
@@ -81,14 +79,9 @@ export const MultiVariant: React.FC<MultiVariantProps> = (props) => {
         (index === 0 && multiVariantAttributes && multiVariantAttributes?.length > 1) ||
         '';
       skuStatus = status ? '' : 'outOfStock';
-      const unit1 =
-        filteredArray?.[0]?.unitOfMeasurement ||
-        (index === 0 && multiVariantAttributes && multiVariantAttributes?.length > 1) ||
-        '';
-      unit = unit1;
     }
 
-    return [skuStatus, unit];
+    return skuStatus;
   };
 
   const handleClick = (variant, code) => {
@@ -119,7 +112,6 @@ export const MultiVariant: React.FC<MultiVariantProps> = (props) => {
         return ele[0].toUpperCase() + ele.slice(1, ele.length);
       });
       const labelToBeDisplayed = label.join(' ');
-      const unitDisplayed = selectedSku?.[0]?.unitOfMeasurement || '';
       return (
         <View style={{ marginBottom: 7 }}>
           <View style={styles.flexRow}>
@@ -128,10 +120,9 @@ export const MultiVariant: React.FC<MultiVariantProps> = (props) => {
             </Text>
             <Text style={theme.viewStyles.text('SB', 14, '#02475B', 1, 27, 0.35)}>
               {selectedVariantLabel}
-              {labelToBeDisplayed === 'Pack Size' ? unitDisplayed : ''}
             </Text>
           </View>
-          <View style={[styles.flexRow, styles.textWrapping]}>
+          <View style={styles.flexRow}>
             {value?.values
               ?.filter((data) =>
                 Boolean(
@@ -144,42 +135,39 @@ export const MultiVariant: React.FC<MultiVariantProps> = (props) => {
                 )
               )
               .map((variant) => {
-                const [skuStatus, unit] = getSkuStatus(variant?.code, index);
+                const skuStatus = getSkuStatus(variant?.code, index);
                 const isSelected = skuStatus === 'selected';
                 const isOutOfStock = skuStatus === 'outOfStock';
                 return (
-                  <View style={{ paddingBottom: 5 }}>
-                    <TouchableOpacity
+                  <TouchableOpacity
+                    style={[
+                      styles.option,
+                      {
+                        backgroundColor: isSelected
+                          ? '#02475B'
+                          : isOutOfStock
+                          ? theme.colors.CARD_BG
+                          : 'white',
+                      },
+                    ]}
+                    onPress={() => {
+                      if (!isSelected) handleClick(index, variant?.code);
+                    }}
+                  >
+                    <Text
                       style={[
-                        styles.option,
-                        {
-                          backgroundColor: isSelected
-                            ? '#02475B'
-                            : isOutOfStock
-                            ? theme.colors.CARD_BG
-                            : 'white',
-                        },
+                        styles.labelText,
+                        isSelected ? { color: 'white' } : {},
+                        isOutOfStock
+                          ? {
+                              textDecorationLine: 'line-through',
+                            }
+                          : {},
                       ]}
-                      onPress={() => {
-                        if (!isSelected) handleClick(index, variant?.code);
-                      }}
                     >
-                      <Text
-                        style={[
-                          styles.labelText,
-                          isSelected ? { color: 'white' } : {},
-                          isOutOfStock
-                            ? {
-                                textDecorationLine: 'line-through',
-                              }
-                            : {},
-                        ]}
-                      >
-                        {variant?.label}
-                        {labelToBeDisplayed === 'Pack Size' ? unit : ''}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
+                      {variant?.label}
+                    </Text>
+                  </TouchableOpacity>
                 );
               })}
           </View>
@@ -204,10 +192,6 @@ const styles = StyleSheet.create({
   },
   flexRow: {
     flexDirection: 'row',
-  },
-  textWrapping: {
-    flexWrap: 'wrap',
-    paddingBottom: 5,
   },
   labelText: {
     ...theme.viewStyles.text('M', 14, '#02475B', 1, 20, 0.35),

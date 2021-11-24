@@ -171,7 +171,6 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     pharmacyUserTypeAttribute,
     selectedPrescriptionType,
     setSelectedPrescriptionType,
-    pharmacyUserType,
   } = useAppCommonData();
 
   const [showSubstituteMessage, setShowSubstituteMessage] = useState<boolean>(false);
@@ -583,27 +582,6 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       ...checkoutEventAttributes,
       'Cart Items': JSON.stringify(cartItems),
     });
-    const skus = cartItems?.map((item) => item?.id);
-    const firebaseCheckoutEventAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED] = {
-      order_id: `${orderAutoId}`,
-      transaction_id: transId,
-      currency: 'INR',
-      coupon: coupon?.coupon,
-      shipping: deliveryCharges,
-      items: JSON.stringify(skus),
-      value: grandTotal,
-      circle_membership_added: circleMembershipCharges
-        ? 'Yes'
-        : circleSubscriptionID
-        ? 'Existing'
-        : 'No',
-      payment_type: 'COD',
-      user_type: pharmacyUserType,
-    };
-    postFirebaseEvent(
-      FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED,
-      firebaseCheckoutEventAttributes
-    );
     firePurchaseEvent(orderAutoId);
   };
 

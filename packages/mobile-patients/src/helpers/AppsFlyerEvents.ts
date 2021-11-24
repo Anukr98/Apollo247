@@ -137,7 +137,6 @@ export enum AppsFlyerEventName {
   // Circle Events
   CIRCLE_ADD_TO_CART = 'Circle Plan Add to Cart',
   CIRCLE_REMOVE_FROM_CART = 'Circle Plan Remove from Cart',
-  REGISTRATION_REFERRER = 'Registration_Referrer'
 }
 
 export interface PatientInfo {

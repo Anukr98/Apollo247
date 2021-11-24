@@ -304,20 +304,18 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
             {!!bookedForDate ? <Text style={styles.slotText}>{bookedForDate}</Text> : null}
           </View>
         )}
-        {props.orderLevelStatus !== DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING ? (
-          <View>
-            <Text style={styles.headingText}>Payment</Text>
+        <View>
+          <Text style={styles.headingText}>Payment</Text>
+          <Text style={[styles.slotText, { textAlign: 'right' }]}>
+            {props.isPrepaid ? 'ONLINE' : 'COD'}
+          </Text>
+          {!!props?.price ? (
             <Text style={[styles.slotText, { textAlign: 'right' }]}>
-              {props.isPrepaid ? 'ONLINE' : 'COD'}
+              {string.common.Rs}
+              {convertNumberToDecimal(props?.price)}
             </Text>
-            {!!props?.price ? (
-              <Text style={[styles.slotText, { textAlign: 'right' }]}>
-                {string.common.Rs}
-                {convertNumberToDecimal(props?.price)}
-              </Text>
-            ) : null}
-          </View>
-        ) : null}
+          ) : null}
+        </View>
       </View>
     );
   };
@@ -673,7 +671,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', isSmallDevice ? 12 : 13, colors.SHERPA_BLUE, 1, 18),
     letterSpacing: 0.3,
   },
-  yellowText: { ...theme.viewStyles.yellowTextStyle, fontSize: screenWidth > 380 ? 12 : 11 },
+  yellowText: { ...theme.viewStyles.yellowTextStyle, fontSize: screenWidth > 380 ? 13 : 12 },
   listViewContainer: {
     backgroundColor: theme.colors.BGK_GRAY,
     borderRadius: 5,
@@ -837,7 +835,6 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 1, 16),
   },
   addTestTouch: {
-    marginHorizontal: -2,
     alignItems: 'center',
     justifyContent: 'center',
   },

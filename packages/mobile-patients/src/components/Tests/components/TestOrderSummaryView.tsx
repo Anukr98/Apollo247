@@ -25,22 +25,12 @@ import {
   DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
   DIAGNOSTIC_STATUS_BEFORE_SUBMITTED,
   DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY,
-  AppConfig,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DiagnosticOrderSummaryViewed } from '@aph/mobile-patients/src/components/Tests/Events';
 import { Down, Up, DownloadOrange } from '@aph/mobile-patients/src/components/ui/Icons';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
-import { PassportPaitentOverlay } from '@aph/mobile-patients/src/components/Tests/components/PassportPaitentOverlay';
-import { useApolloClient } from 'react-apollo-hooks';
-import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
-import { UPDATE_PASSPORT_DETAILS } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  updatePassportDetails,
-  updatePassportDetailsVariables,
-} from '@aph/mobile-patients/src/graphql/types/updatePassportDetails';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 
 export interface LineItemPricing {
   packageMrp: number;
@@ -64,8 +54,6 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const filterOrderLineItem =
     !!orderDetails &&
     orderDetails?.diagnosticOrderLineItems?.filter((item: any) => !item?.isRemoved);
-  const client = useApolloClient();
-  const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
 
   const isPrepaid = orderDetails?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
   const salutation = !!orderDetails?.patientObj?.gender
@@ -76,11 +64,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
   const [showPreviousCard, setShowPreviousCard] = useState<boolean>(true);
-  const [showPassportModal, setShowPassportModal] = useState<boolean>(false);
   const [showCurrCard, setShowCurrCard] = useState<boolean>(true);
-  const [passportNo, setPassportNo] = useState<string>('');
-  const [newPassValue, setNewPassValue] = useState<string>(passportNo);
-  const [passportData, setPassportData] = useState<any>([])
 
   useEffect(() => {
     DiagnosticOrderSummaryViewed(
@@ -287,20 +271,18 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
             {!!bookedForDate ? <Text style={styles.slotText}>{bookedForDate}</Text> : null}
           </View>
         )}
-        {orderDetails?.orderStatus !== DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING ? (
-          <View>
-            <Text style={styles.headingText}>Payment</Text>
+        <View>
+          <Text style={styles.headingText}>Payment</Text>
+          <Text style={[styles.slotText, { textAlign: 'right' }]}>
+            {isPrepaid ? 'ONLINE' : 'COD'}
+          </Text>
+          {!!orderDetails?.totalPrice ? (
             <Text style={[styles.slotText, { textAlign: 'right' }]}>
-              {isPrepaid ? 'ONLINE' : 'COD'}
+              {string.common.Rs}
+              {Number(orderDetails?.totalPrice).toFixed(2)}
             </Text>
-            {!!orderDetails?.totalPrice ? (
-              <Text style={[styles.slotText, { textAlign: 'right' }]}>
-                {string.common.Rs}
-                {Number(orderDetails?.totalPrice).toFixed(2)}
-              </Text>
-            ) : null}
-          </View>
-        ) : null}
+          ) : null}
+        </View>
       </View>
     );
   };
@@ -327,52 +309,6 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
         <Text style={styles.headingText}>{title}</Text>
       </View>
     );
-  };
-  useEffect(() => {
-    setPassportNo(!!orderDetails?.passportNo ? orderDetails?.passportNo : '');
-    setNewPassValue(!!orderDetails?.passportNo ? orderDetails?.passportNo : '');
-    if (!!orderDetails?.passportNo) {
-      const passData = [
-        {
-          displayId: orderDetails?.displayId,
-          passportNo: orderDetails?.passportNo,
-        },
-      ];
-      setPassportData(passData);
-    }
-  }, []);
-  const updatePassportDetails = async (data: any) => {
-    try {
-      setLoadingContext?.(true);
-      const res = await client.mutate<updatePassportDetails, updatePassportDetailsVariables>({
-        mutation: UPDATE_PASSPORT_DETAILS,
-        context: {
-          sourceHeaders,
-        },
-        variables: { passportDetailsInput: data },
-      });
-      setLoadingContext?.(false);
-      if (
-        !res?.data?.updatePassportDetails?.[0]?.status &&
-        res?.data?.updatePassportDetails?.[0]?.message
-      ) {
-        showAphAlert?.({
-          title: string.common.uhOh,
-          description: res?.data?.updatePassportDetails?.[0]?.message || 'Something went wrong',
-        });
-      }
-      if (res?.data?.updatePassportDetails?.[0]?.status) {
-        setPassportNo(data?.[0]?.passportNo);
-        setShowPassportModal(false);
-      }
-    } catch (error) {
-      setLoadingContext?.(false);
-      showAphAlert?.({
-        title: string.common.uhOh,
-        description: 'Something went wrong',
-      });
-      CommonBugFender('updatePassportDetails_TestOrderSummaryView', error);
-    }
   };
 
   const renderItemsCard = () => {
@@ -656,55 +592,6 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       </View>
     );
   };
-  const renderAddPassportView = () => {
-    const itemIdArray = orderDetails?.diagnosticOrderLineItems?.filter((item: any) => {
-      if (AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS.includes(item?.itemId)) {
-        return item?.itemId;
-      }
-    });
-    return itemIdArray?.length ? (
-      <View style={styles.passportContainer}>
-        <View style={styles.passportView}>
-          <Text style={styles.textupper}>
-            {passportNo
-              ? string.diagnostics.editpassportText
-              : string.diagnostics.addOrEditPassportText}
-          </Text>
-          <TouchableOpacity
-            onPress={() => {
-              setShowPassportModal(true);
-            }}
-          >
-            <Text style={styles.textlower}>{passportNo ? 'EDIT' : 'ADD'}</Text>
-          </TouchableOpacity>
-        </View>
-        {passportNo ? <View>
-          <Text style={styles.textmedium}>{string.diagnostics.passportNo}{passportNo}</Text>
-        </View> : null}
-      </View>
-    ) : null;
-  };
-
-  const renderPassportPaitentView = () => {
-    return (
-      <PassportPaitentOverlay
-        patientArray={[orderDetails]}
-        onPressClose={() => {
-          setShowPassportModal(false);
-        }}
-        onPressDone={(response: any) => {
-          updatePassportDetails(response);
-          setShowPassportModal(false);
-        }}
-        onChange={(res)=>{
-          setNewPassValue(res?.passportNo)
-          setPassportData(res)
-        }}
-        value={newPassValue}
-        disableButton={!passportData?.[0]?.passportNo}
-      />
-    );
-  };
 
   const renderNewTag = () => {
     return (
@@ -735,7 +622,6 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           : null}
         {renderOrderId()}
         {renderSlotView()}
-        {renderAddPassportView()}
         {renderAddress()}
         {renderHeading(
           `Tests for ${salutation != '' && salutation}${orderDetails?.patientObj?.firstName! ||
@@ -756,7 +642,6 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
         DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY.includes(orderDetails?.orderStatus)
           ? null
           : renderPaymentCard()}
-        {showPassportModal && renderPassportPaitentView()}
       </View>
     </ScrollView>
   );
@@ -794,21 +679,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     alignItems: 'center',
   },
-  passportView: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  passportContainer: {
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#D4D4D4',
-    backgroundColor: 'white',
-    padding: 10,
-    marginVertical: 10,
-  },
-  textupper: { ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1) },
-  textlower: { ...theme.viewStyles.text('SB', 14, theme.colors.APP_YELLOW_COLOR) },
-  textmedium: { ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1) },
   commonText: {
     ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 11 : 12),
     color: colors.SHERPA_BLUE,

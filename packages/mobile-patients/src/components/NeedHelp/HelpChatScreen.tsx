@@ -247,15 +247,6 @@ const BUSINESS = {
   DIAGNOSTICS: 'Diagnostics',
 };
 
-const ignoreStyles = [
-  'line-height',
-  'margin-bottom',
-  'color',
-  'text-align',
-  'font-size',
-  'font-family',
-];
-
 export interface HelpChatProps extends NavigationScreenProps {}
 
 export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
@@ -469,14 +460,7 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
     if (conversation.commenterType == 'END_USER') {
       return (
         <View style={styles.userMessageCard}>
-          <HTML
-            html={conversation.comment}
-            onLinkPress={(evt, href) => {
-              Linking.openURL(href);
-            }}
-            baseFontStyle={styles.userMessageText}
-            ignoredStyles={ignoreStyles}
-          />
+          <HTML html={conversation.comment} baseFontStyle={styles.userMessageText} />
           <Text style={styles.messageDateTime}>{getDate(conversation.createdTime)}</Text>
         </View>
       );
@@ -487,14 +471,7 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
             <Apollo247Icon style={styles.agentIcon} />
           </View>
           <View style={styles.fromHelpdeskMessageCard}>
-            <HTML
-              html={conversation.comment}
-              onLinkPress={(evt, href) => {
-                Linking.openURL(href);
-              }}
-              ignoredStyles={ignoreStyles}
-              baseFontStyle={styles.fromHelpdeskMessageText}
-            />
+            <HTML html={conversation.comment} baseFontStyle={styles.fromHelpdeskMessageText} />
             <Text style={styles.messageDateTime}>{getDate(conversation.createdTime)}</Text>
           </View>
         </View>

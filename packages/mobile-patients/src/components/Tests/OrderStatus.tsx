@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   Dimensions,
   Platform,
-  Modal
 } from 'react-native';
 import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
 import {
@@ -18,7 +17,6 @@ import {
   InfoIconRed,
   TimeIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
@@ -63,7 +61,6 @@ import {
 import {
   GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
   GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
-  UPDATE_PASSPORT_DETAILS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 
 const width = Dimensions.get('window').width;
@@ -73,8 +70,6 @@ import {
   GetSubscriptionsOfUserByStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 import AsyncStorage from '@react-native-community/async-storage';
-import { PassportPaitentOverlay } from '@aph/mobile-patients/src/components/Tests/components/PassportPaitentOverlay';
-import { updatePassportDetails, updatePassportDetailsVariables } from '../../graphql/types/updatePassportDetails';
 
 export interface OrderStatusProps extends NavigationScreenProps {}
 
@@ -89,7 +84,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   } = useDiagnosticsCart();
   const { circleSubscriptionId, circlePlanSelected, setCircleSubscriptionId } = useShoppingCart();
   const client = useApolloClient();
-  const { setLoading, showAphAlert } = useUIElements();
+  const { setLoading } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
 
   const modifiedOrderDetails = props.navigation.getParam('isModify');
@@ -136,9 +131,6 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const [apiOrderDetails, setApiOrderDetails] = useState([] as any);
   const [timeDate, setTimeDate] = useState<string>('');
   const [isSingleUhid, setIsSingleUhid] = useState<boolean>(false);
-  const [showPassportModal, setShowPassportModal] = useState<boolean>(false);
-  const [passportNo, setPassportNo] = useState<any>([]);
-  const [passportData, setPassportData] = useState<any>([])
   const [showMoreArray, setShowMoreArray] = useState([] as any);
   const [apiPrimaryOrderDetails, setApiPrimaryOrderDetails] = useState([] as any);
   const [primaryOrderId, setPrimaryOrderId] = useState<string>('');
@@ -458,40 +450,6 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     );
   };
 
-  const updatePassportDetails = async (data: any) => {
-    try {
-      setLoading?.(true);
-      const res = await client.mutate<updatePassportDetails, updatePassportDetailsVariables>({
-        mutation: UPDATE_PASSPORT_DETAILS,
-        context: {
-          sourceHeaders,
-        },
-        variables: { passportDetailsInput: data },
-      });
-      setLoading?.(false);
-      if (
-        !res?.data?.updatePassportDetails?.[0]?.status &&
-        res?.data?.updatePassportDetails?.[0]?.message
-      ) {
-        showAphAlert?.({
-          title: string.common.uhOh,
-          description: res?.data?.updatePassportDetails?.[0]?.message || 'Something went wrong',
-        });
-      }
-      if (res?.data?.updatePassportDetails?.[0]?.status) {
-        setPassportNo(data);
-        setShowPassportModal(false);
-      }
-    } catch (error) {
-      setLoading?.(false);
-      showAphAlert?.({
-        title: string.common.uhOh,
-        description: 'Something went wrong',
-      });
-      CommonBugFender('updatePassportDetails_OrderStatus', error);
-    }
-  };
-
   const renderCartSavings = () => {
     return (
       <View style={styles.totalSavingOuterView}>
@@ -594,40 +552,6 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
         <Text style={styles.cancel_text}>{string.diagnostics.invoiceTimelineText}</Text>
       </View>
     );
-  };
-
-  const renderAddPassportView = () => {
-    const itemArray = apiOrderDetails?.[0]?.ordersList?.map((obj: any) => {
-      const itemObjArr = obj?.diagnosticOrderLineItems?.filter((_item: any) => {
-        if (AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS.includes(_item?.itemId)) {
-          return _item;
-        }
-      });
-      return itemObjArr;
-    });
-    const itemIdArray = itemArray?.filter((item: any) => {
-      return item?.length != 0;
-    });
-    const paitentArrLen = apiOrderDetails?.[0]?.ordersList?.length;
-    return itemIdArray?.length && paitentArrLen && itemIdArray?.length == paitentArrLen ? (
-      <View style={styles.passportContainer}>
-        <View style={styles.passportView}>
-          <Text style={styles.textupper}>
-            {passportNo?.length
-              ? string.diagnostics.editpassportText
-              : string.diagnostics.addOrEditPassportText}
-          </Text>
-          <TouchableOpacity
-            onPress={() => {
-              setShowPassportModal(true);
-            }}
-          >
-            <Text style={styles.textlower}>{passportNo?.length ? 'EDIT' : 'ADD'}</Text>
-          </TouchableOpacity>
-        </View>
-        <View></View>
-      </View>
-    ) : null;
   };
 
   const renderTests = () => {
@@ -824,30 +748,6 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       </View>
     );
   };
-  const renderPassportPaitentView = () => {
-    return (
-      <PassportPaitentOverlay
-        patientArray={apiOrderDetails?.[0]?.ordersList}
-        onPressClose={() => {
-          setShowPassportModal(false);
-        }}
-        onPressDone={(response: any) => {
-          updatePassportDetails(response);
-          setShowPassportModal(false);
-        }}
-        onChange={(res) => {
-          const newData: any[] = [];
-          res.map((item: any) => {
-            if (item?.passportNo?.length) {
-              newData.push(item?.passportNo);
-            }
-          });
-          setPassportData(newData);
-        }}
-        disableButton={!passportData?.length}
-      />
-    );
-  };
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.DEFAULT_BACKGROUND_COLOR }}>
@@ -858,7 +758,6 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
             {renderOrderPlacedMsg()}
             {renderCartSavings()}
             {isCircleAddedToCart && !isEmptyObject(circlePlanDetails) && renderCirclePurchaseCard()}
-            {renderAddPassportView()}
             {renderPickUpTime()}
             {renderNoticeText()}
             {/* {enable_cancelellation_policy ? renderCancelationPolicy() : null} */}
@@ -869,9 +768,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
             {renderInvoiceTimeline()}
           </View>
         </ScrollView>
-        {showPassportModal && renderPassportPaitentView()}
       </SafeAreaView>
-       
       {backToHome()}
     </View>
   );
@@ -883,31 +780,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     // marginHorizontal: 20,
     marginTop: 40,
-  },
-  passportView: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  passportContainer: {
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#D4D4D4',
-    backgroundColor: 'white',
-    padding: 10,
-    marginVertical: 10,
-  },
-  textupper: { ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1) },
-  textlower: { ...theme.viewStyles.text('SB', 14, theme.colors.APP_YELLOW_COLOR) },
-  overlayStyle: {
-    padding: 0,
-    margin: 0,
-    width: '100%',
-    height: '100%',
-    backgroundColor: colors.CLEAR,
-    overflow: 'hidden',
-    elevation: 0,
-    bottom: 0,
-    position: 'absolute',
   },
   header: {
     flexDirection: 'row',

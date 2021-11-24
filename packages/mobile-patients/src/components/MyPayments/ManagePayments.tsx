@@ -1,5 +1,5 @@
 import React, { FC, useState, useEffect } from 'react';
-import { StyleSheet, View, SafeAreaView, NativeEventEmitter, NativeModules } from 'react-native';
+import { StyleSheet, View, SafeAreaView } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -7,16 +7,9 @@ import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
 import { FETCH_SAVED_CARDS, DELETE_SAVED_CARD } from '@aph/mobile-patients/src/graphql/profiles';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SavedCard } from '@aph/mobile-patients/src/components/MyPayments/components/SavedCard';
-import { LinkedWallet } from '@aph/mobile-patients/src/components/MyPayments/components/LinkedWallet';
 import { useGetPaymentMethods } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useGetPaymentMethods';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { DeleteCardAlert } from '@aph/mobile-patients/src/components/MyPayments/components/DeleteCardAlert';
-import {
-  fetchWalletBalance,
-  delinkWallet,
-} from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
-import { useGetClientAuthToken } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useGetClientAuthtoken';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 export interface ManagePaymentsProps extends NavigationScreenProps {}
 
@@ -28,57 +21,9 @@ export const ManagePayments: React.FC<ManagePaymentsProps> = (props) => {
   const [showDeletePopup, setshowDeletePopup] = useState<boolean>(false);
   const [cardInfo, setCardInfo] = useState<any>({});
   const [isLoading, setLoading] = useState<boolean>(true);
-  const customerId = props.navigation.getParam('customerId');
-  const clientAuthToken = !!customerId ? useGetClientAuthToken(customerId, 'pharma') : undefined;
-  const { currentPatient } = useAllCurrentPatients();
-  const [linkedWallets, setLinkedWallets] = useState<any>([]);
-  const { HyperSdkReact } = NativeModules;
-
-  useEffect(() => {
-    const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
-    const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
-      handleEventListener(resp);
-    });
-    return () => eventListener.remove();
-  }, []);
-
   useEffect(() => {
     !isfetchingId && fetchSavedCards();
   }, [isfetchingId]);
-
-  useEffect(() => {
-    !!clientAuthToken && fetchWalletBalance(currentPatient?.id, clientAuthToken);
-  }, [clientAuthToken]);
-
-  const handleEventListener = (resp: any) => {
-    var data = JSON.parse(resp);
-    var event: string = data.event || '';
-    switch (event) {
-      case 'process_result':
-        var payload = data.payload || {};
-        handleResponsePayload(payload);
-        break;
-      default:
-    }
-  };
-
-  const handleResponsePayload = (payload: any) => {
-    const action = payload?.payload?.action;
-    switch (action) {
-      case 'refreshWalletBalances':
-        setLinkedWallets(payload?.payload?.list);
-        break;
-      case 'delinkWallet':
-        setLoading(false);
-        if (!payload?.error) {
-          const wallets = linkedWallets?.filter(
-            (item: any) => item?.wallet != payload?.payload?.wallet
-          );
-          setLinkedWallets(wallets);
-        }
-        break;
-    }
-  };
 
   const fetchCards = () => {
     return client.query({
@@ -126,11 +71,6 @@ export const ManagePayments: React.FC<ManagePaymentsProps> = (props) => {
     }
   };
 
-  const onPressDelink = (walletId: string, walletName: string) => {
-    setLoading(true);
-    delinkWallet(currentPatient?.id, clientAuthToken, walletId, walletName);
-  };
-
   const showDeleteCartAlert = () => {
     return (
       <DeleteCardAlert
@@ -148,7 +88,7 @@ export const ManagePayments: React.FC<ManagePaymentsProps> = (props) => {
       <Header
         container={styles.headerContainerStyle}
         leftIcon={'backArrow'}
-        title={'MANAGE PAYMENTS'}
+        title={'SAVED CARDS'}
         onPressLeftIcon={() => props.navigation.goBack()}
       />
     );
@@ -176,22 +116,11 @@ export const ManagePayments: React.FC<ManagePaymentsProps> = (props) => {
     );
   };
 
-  const renderLinkedWallets = () => {
-    return (
-      <View style={{}}>
-        {linkedWallets?.map((item: any, index: number) => {
-          return item?.linked ? <LinkedWallet wallet={item} onPressDelink={onPressDelink} /> : null;
-        })}
-      </View>
-    );
-  };
-
   return (
     <View style={styles.mainContainer}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
         {renderSavedCards()}
-        {renderLinkedWallets()}
         {showDeleteCartAlert()}
         {(isLoading || isfetchingId) && <Spinner />}
       </SafeAreaView>

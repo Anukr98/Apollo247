@@ -7,8 +7,6 @@ import {
   ArrowDisabled,
   ArrowYellow,
   WhiteCallIcon,
-  CheckBox as CheckBoxEmpty,
-  CheckBoxFilled,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import LandingDataView from '@aph/mobile-patients/src/components/ui/LandingDataView';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
@@ -36,7 +34,6 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useCallback, useEffect, useState } from 'react';
-import { CheckBox } from 'react-native-elements';
 import {
   Alert,
   BackHandler,
@@ -195,17 +192,6 @@ const styles = StyleSheet.create({
     width: '45%',
     marginVertical: 10,
   },
-  checkBoxContainer: {
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    padding: 0,
-    margin: 0,
-  },
-  checkBoxStyle: {
-    resizeMode: 'contain',
-    width: 20,
-    height: 20,
-  },
 });
 
 let timer = 120;
@@ -224,7 +210,6 @@ export interface OTPVerificationProps
 
 export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
-  const [isTandCSelected, setTandC] = useState<boolean>(true);
   const [isValidOTP, setIsValidOTP] = useState<boolean>(false);
   const [invalidOtpCount, setInvalidOtpCount] = useState<number>(0);
   const [showErrorMsg, setShowErrorMsg] = useState<boolean>(false);
@@ -924,8 +909,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     postCleverTapEvent(CleverTapEventName.GET_OTP_ON_CALL, eventAttributes);
   };
 
-  const openWebViewTandC = () => {
+  const openWebView = () => {
     CommonLogEvent(AppRoutes.OTPVerification, 'Terms  Conditions clicked');
+    Keyboard.dismiss();
     Keyboard.dismiss();
     props.navigation.navigate(AppRoutes.CommonWebView, {
       url: AppConfig.Configuration.APOLLO_TERMS_CONDITIONS,
@@ -933,43 +919,25 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     });
   };
 
-  const openWebViewPrivacyPolicy = () => {
-    CommonLogEvent(AppRoutes.OTPVerification, 'Privacy Policy clicked');
-    Keyboard.dismiss();
-    props.navigation.navigate(AppRoutes.CommonWebView, {
-      url: AppConfig.Configuration.APOLLO_PRIVACY_POLICY,
-      isGoBack: true,
-    });
-  };
-
   const renderHyperLink = () => {
     return (
-      <View style={{ flexDirection: 'row', marginLeft: 5, marginTop: 12}}>
-      <CheckBox
-        checked={isTandCSelected}
-        onPress={() => setTandC(!isTandCSelected)}
-        checkedIcon={<CheckBoxFilled  style={styles.checkBoxStyle} />}
-        uncheckedIcon={<CheckBoxEmpty style={styles.checkBoxStyle} />}
-        containerStyle={styles.checkBoxContainer}
-      />
-      <Text
+      <TouchableOpacity
+        onPress={() => openWebView()}
         style={{
-          color: '#02475b',
-          marginEnd: 45,
-          ...fonts.IBMPlexSansMedium(10),
+          marginTop: 12,
+          marginHorizontal: 16,
         }}
       >
-        {string.login.bySigningUp}{' '}
-        <Text style={styles.hyperlink} onPress={() => openWebViewTandC()}>
-          {string.login.termsAndCondition}
-        </Text>{' '}
-        {string.login.and}{' '}
-        <Text style={styles.hyperlink} onPress={() => openWebViewPrivacyPolicy()}>
-          {string.login.privacyPolicy}
-        </Text>{' '}
-        {string.login.ofApollo247}
-      </Text>
-    </View>
+        <Text
+          style={{
+            color: '#02475b',
+            ...fonts.IBMPlexSansMedium(10),
+          }}
+        >
+          By signing up, I agree to the <Text style={styles.hyperlink}>Terms and Conditions</Text>{' '}
+          of Apollo247
+        </Text>
+      </TouchableOpacity>
     );
   };
 
@@ -1085,14 +1053,14 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             heading={string.login.great}
             description={isresent ? string.login.resend_otp_text : descriptionPhoneText}
             buttonIcon={
-              isValidOTP && otp.length === 6 && isTandCSelected ? (
+              isValidOTP && otp.length === 6 ? (
                 <ArrowYellow size="md_l" />
               ) : (
                 <ArrowDisabled size="md_l" />
               )
             }
             onClickButton={() => onClickOk()}
-            disableButton={isValidOTP && otp.length === 6 && isTandCSelected ? false : true}
+            disableButton={isValidOTP && otp.length === 6 ? false : true}
             descriptionTextStyle={{
               paddingBottom: Platform.OS === 'ios' ? 0 : 1,
             }}

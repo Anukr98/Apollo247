@@ -14,7 +14,6 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_
   firstName: string | null;
   lastName: string | null;
   gender: string | null;
-  dateOfBirth: string | null;
 }
 
 export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientAddressObj {
@@ -132,7 +131,6 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList 
   visitNo: string | null;
   invoiceURL: string | null;
   labReportURL: string | null;
-  passportNo: string | null;
   diagnosticOrderLineItems: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems | null)[] | null;
   diagnosticOrdersStatus: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrdersStatus | null)[] | null;
 }

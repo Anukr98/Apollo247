@@ -217,17 +217,13 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
   const rendergetCircleMembership = () => {
     const effectivePrice = finalPrice - Number(cashback);
     const circleDiscountPercent = ((finalPrice - effectivePrice) / finalPrice) * 100;
-    const cashbackText = `${circleDiscountPercent.toFixed(0)}% cashback and`;
-    // handling O cashback case
-    const noncircleText =
-      cashback !== 0 ? `and get ${cashbackText} Free Delivery` : `and get Free Delivery`;
     return (
       <View>
         <View style={styles.lineView} />
         <View style={{ paddingVertical: 10, flexDirection: 'row' }}>
           <Text style={[styles.nonCircleText, { paddingVertical: 6 }]}>Buy </Text>
           <CareCashbackBanner
-            bannerText={noncircleText}
+            bannerText={`and get ${circleDiscountPercent.toFixed(0)}% cashback and Free Delivery`}
             textStyle={styles.nonCircleText}
             logoStyle={styles.circleLogo}
           />
@@ -253,12 +249,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
   return (
     <View style={styles.container}>
       <View style={styles.cardStyle}>{renderProductPrice()}</View>
-      {/* handling 0 discount cashback case */}
-      {!!circleSubscriptionId
-        ? !!cashback
-          ? renderCareCashback()
-          : null
-        : rendergetCircleMembership()}
+      {!!circleSubscriptionId && !!cashback ? renderCareCashback() : rendergetCircleMembership()}
       {showMultiVariantOption && renderMultiVariantOptions()}
       {isSellOnline && renderDeliverTo()}
       {!isBanned &&

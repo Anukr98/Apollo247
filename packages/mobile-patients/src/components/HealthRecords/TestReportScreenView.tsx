@@ -1,19 +1,12 @@
 import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  ArrowOrange,
-  BarChar,
-  LabTestIcon,
-  LightBulb,
-  ShareBlueIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { BarChar, LabTestIcon, ShareBlueIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Share from 'react-native-share';
 import moment from 'moment';
 import React, { useEffect, useState, useCallback } from 'react';
-// import fetch from 'node-fetch';
 import {
   PermissionsAndroid,
   Platform,
@@ -29,7 +22,6 @@ import {
 import {
   GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID,
   GET_INDIVIDUAL_TEST_RESULT_PDF,
-  GET_INFORMATIVE_CONTENT,
   GET_LAB_RESULT_PDF,
   GET_VISUALIZATION_DATA,
   PHR_COVERT_TO_ZIP,
@@ -49,7 +41,10 @@ import { ProfileImageComponent } from '@aph/mobile-patients/src/components/Healt
 import {
   g,
   handleGraphQlError,
+  postWebEngagePHR,
   isSmallDevice,
+  removeObjectProperty,
+  postCleverTapEvent,
   postCleverTapPHR,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
@@ -89,13 +84,6 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
-import { getIonicCode } from '@aph/mobile-patients/src/helpers/apiCalls';
-import {
-  getInformativeContent,
-  getInformativeContentVariables,
-} from '@aph/mobile-patients/src/graphql/types/getInformativeContent';
-import { configure } from '@react-native-community/netinfo';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -137,7 +125,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     marginTop: 25,
     borderLeftWidth: 2,
-    paddingVertical: 10,
   },
   rangeViewContainer: {
     justifyContent: 'space-around',
@@ -168,10 +155,10 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
   },
   verticleLine: {
-    height: '85%',
+    height: '90%',
     width: 1,
-    top: 10,
     backgroundColor: '#909090',
+    top: 5,
   },
   rangeTextContainer: {
     color: theme.colors.ASTRONAUT_BLUE,
@@ -184,10 +171,27 @@ const styles = StyleSheet.create({
     marginTop: 10,
     left: 3,
   },
+  iconRender: {
+    flexDirection: 'row',
+    position: 'absolute',
+    right: 5,
+    top: 5,
+  },
   topView: {
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'column',
+  },
+  PDFRender: {
+    height: 425,
+    width: '100%',
+    backgroundColor: 'transparent',
+  },
+  imageRender: {
+    height: 425,
+    width: '100%',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
   },
   shareIconRender: {
     marginTop: 20,
@@ -259,56 +263,17 @@ const styles = StyleSheet.create({
   mainViewStyle: {
     flex: 1,
   },
-  contentCodeView: {
-    left: 15,
-    height: 50,
-    backgroundColor: '#ffe6cc',
-    borderRadius: 5,
-    width: '95%',
-    bottom: 3,
-    top: 4,
-  },
-  contentCodeBtn: {
-    justifyContent: 'flex-start',
-    flexDirection: 'row',
-    width: '90%',
-    top: 7,
-    left: 10,
-    right: 10,
-  },
-  contentCodeText: {
-    ...theme.fonts.IBMPlexSansSemiBold(13),
-    width: '80%',
-    left: 10,
-    color: '#FC9916',
-  },
-  arrowIcon: {
-    left: 20,
-    width: 30,
-    height: 30,
-    top: 2,
-  },
 });
-
-export interface ICONICCODE {
-  title: string;
-  FQA: [];
-}
 
 export interface TestReportViewScreenProps extends NavigationScreenProps {}
 
 export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props) => {
   const testReportsData = props.navigation?.getParam('testReport') || [];
-  const [testResultArray, setTestResultArray] = useState<any>(
-    props.navigation.state.params ? props.navigation.state.params.testResultArray : []
-  );
-  const [trueOR, setTrueOR] = useState<boolean>(false);
+  const testResultArray = props.navigation.getParam('testResultArray') || [];
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
   const [showAdditionalNotes, setShowAdditionalNotes] = useState<boolean>(false);
   const [showReadMore, setShowReadMore] = useState<boolean>(false);
   const [apiError, setApiError] = useState(false);
-  const [successMessage, setSuccessMessage] = useState(false);
-
   const [showReadMoreData, setShowReadMoreData] = useState('');
   const [showPopup, setShowPopup] = useState<boolean>(false);
   const [resonseData, showResponseData] = useState<[]>([]);
@@ -318,12 +283,8 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   const [fileNamePDF, setFileNamePDF] = useState<string>('');
   const [sendParamName, setSendParamName] = useState<string>('');
   const [sendTestReportName, setSendTestReportName] = useState<string>('');
-  const [lonicCode, setLonicCode] = useState<string>('');
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const config = AppConfig.Configuration;
-  let responseAPI: boolean = false;
-  let infoResponseAPI: boolean = false;
 
   //for deeplink
   const movedFrom = props.navigation.getParam('movedFrom');
@@ -348,102 +309,11 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
     ? props.navigation.state.params?.prescriptionSource
     : null;
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const propertyName = g(data, 'testResultFiles') ? 'testResultFiles' : '';
 
   useEffect(() => {
     Platform.OS === 'android' && requestReadSmsPermission();
-    setLoading && setLoading(true);
-    // This is for creating a new object after collecting the data from the api..
-    asyncFetchDailyData(data);
-  }, []);
-
-  const combineObjects = (arr: any) => {
-    return arr.reduce((acc: any, o: any) => {
-      return { ...o, ...acc };
-    }, {});
-  };
-
-  const asyncFetchDailyData = async (dataToFetch: any) => {
-    const apiArray: any[] = [];
-    dataToFetch?.labTestResults?.map((item: any) => {
-      apiArray.push({ parameterName: item?.parameterName, testName: dataToFetch?.labTestName });
-    });
-    const getResponse = await getClinicalCode(apiArray);
-    const mainData: any[] = [];
-    let mainSubData: any;
-    const result = getResponse?.data?.getInformativeContent?.response?.map(
-      (item: any, mainIndex: any) => {
-        const o = Object.assign({}, dataToFetch?.labTestResults[mainIndex]);
-        o.contentCode = Number(item?.contentCode);
-        o.loincCode = item?.loincCode;
-        return o;
-      }
-    );
-    mainData.push({ ...dataToFetch, labTestResults: result });
-    const mainObj = combineObjects(mainData);
-    const contentCodeData: [] = [];
-    const druplData: [] = [];
-    mainObj?.labTestResults?.map((item: any) => {
-      contentCodeData.push(item?.contentCode);
-    });
-    const duplicateContentCode = contentCodeData?.map((i) => Number(i));
-    try {
-      const drupalResponse = await getIonicCode(duplicateContentCode);
-      if (!!drupalResponse?.data?.success) {
-        setSuccessMessage(drupalResponse?.data?.success);
-        drupalResponse?.data?.data?.map((items: any) => {
-          duplicateContentCode?.map((mainItem: any) => {
-            if (mainItem === items?.identifier) {
-              druplData?.push({
-                content: items?.content,
-                identifier: items?.identifier,
-                desc: items?.desc,
-                title: items?.title,
-              });
-            }
-          });
-        });
-        mainSubData = mainObj.labTestResults?.map((iteee: any) => {
-          druplData?.map((item: any) => {
-            if (iteee.contentCode === item?.identifier) {
-              iteee['content'] = item?.content;
-              iteee['desc'] = item?.desc;
-              iteee['title'] = item?.title;
-            }
-          });
-        });
-      }
-    } catch (error) {
-      CommonBugFender('Fetch_info_content', error);
-      currentPatient && handleGraphQlError(error);
-      responseAPI = true;
-    }
-    if (!!infoResponseAPI || !!responseAPI) {
-      setData(dataToFetch);
-    } else {
-      setData(mainObj);
-    }
-    setLoading && setLoading(false);
-    setTrueOR(true);
-  };
-
-  const getClinicalCode = async (arrayParams: any) => {
-    const res = await client
-      .query<getInformativeContent, getInformativeContentVariables>({
-        query: GET_INFORMATIVE_CONTENT,
-        variables: {
-          uhid: currentPatient?.uhid,
-          params: arrayParams,
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .catch((error) => {
-        CommonBugFender('HealthRecordsHome_fetchTestData', error);
-        currentPatient && handleGraphQlError(error);
-        infoResponseAPI = true;
-      });
-    return res;
-  };
+  });
 
   const getOrderDetails = async (displayId: string) => {
     const res = await client.query<
@@ -535,7 +405,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
           'labResults',
           'response'
         );
-        const resultForVisitNo = labResultsData?.find((item: any) => item?.identifier == visitId);
+        let resultForVisitNo = labResultsData?.find((item: any) => item?.identifier == visitId);
         if (!!resultForVisitNo) {
           setData(resultForVisitNo);
           setLoading?.(false);
@@ -773,6 +643,8 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   };
 
   const renderDownloadButton = () => {
+    const buttonTitle = 'TEST REPORT';
+    const btnTitle = 'DOWNLOAD ';
     const _callDownloadDocumentApi = () => {
       if (testResultArray?.length === 1) {
         labResults ? downloadPDFTestReport() : downloadDocument();
@@ -793,7 +665,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
     };
     const renderTestReportDetails = () => {
       return (
-        <View>
+        <>
           <View style={{ flexDirection: 'row' }}>
             <LabTestIcon style={{ height: 20, width: 19, marginRight: 14 }} />
             <Text style={{ ...viewStyles.text('SB', 13, theme.colors.LIGHT_BLUE, 1, 21) }}>
@@ -802,25 +674,24 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
           </View>
           {data?.labTestResults?.map((item: any) => {
             const unit = item?.unit;
-            let minNum: number;
-            let maxNum: number;
-            let resultStr: boolean;
-            const validNumber = new RegExp(/^-?([0-9]*\.?[0-9]+|[0-9]+\.?[0-9]*)$/);
+            var minNum: number;
+            var maxNum: number;
+            let validNumber = new RegExp(/^-?([0-9]*\.?[0-9]+|[0-9]+\.?[0-9]*)$/);
             var checkNumber = validNumber.test(item?.result);
-            let resultColorChanger: boolean;
-            let stringColorChanger: boolean;
-            let rangeColorChanger: boolean;
-            let columnDecider: boolean;
-            let symbolSearch: boolean;
-            let numberOfLineBreaks: any;
+            var resultColorChanger: boolean;
+            var stringColorChanger: boolean;
+            var rangeColorChanger: boolean;
+            var columnDecider: boolean;
+            var symbolSearch: boolean;
+            var numberOfLineBreaks: any;
             if (!!item?.range) {
-              const regExp = /[a-zA-Z!<:;>@#%^~=`{};&*]/g;
-              const rangeBool = regExp.test(item?.range);
+              var regExp = /[a-zA-Z!<:;>@#%^~=`{};&*]/g;
+              var rangeBool = regExp.test(item?.range);
               var numCheck = hasNumber(item?.range);
               if (!rangeBool && !!numCheck) {
                 minNum = item?.range?.split(/[-_–]/)[0].trim();
                 maxNum = item?.range?.split(/[-_–]/)[1].trim();
-                const parseResult = Number(item?.result);
+                let parseResult = Number(item?.result);
                 if (!!minNum && !!maxNum) {
                   parseResult >= minNum && parseResult <= maxNum
                     ? (resultColorChanger = true)
@@ -842,8 +713,8 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
             }
 
             if (!!item?.result) {
-              const regex = /[a-zA-Z-!$%^&*()_+|~=`{}[:;<>?,@#\]]/g;
-              resultStr = regex.test(item?.result);
+              var regex = /[a-zA-Z-!$%^&*()_+|~=`{}[:;<>?,@#\]]/g;
+              var resultStr = regex.test(item?.result);
               if (resultStr) {
                 rangeColorChanger = true;
               } else {
@@ -893,24 +764,19 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                   ]}
                 >
                   <View style={styles.labelViewStyle}>
-                    <Text numberOfLines={1} style={styles.labelStyle}>
-                      {item?.parameterName}
-                    </Text>
-                    {data.labTestSource === 'Hospital' && !!item?.loincCode && !resultStr ? (
+                    <Text style={styles.labelStyle}>{item?.parameterName}</Text>
+                    {/* {data.labTestSource === 'Hospital' && !!checkNumber ? (
                       <TouchableOpacity
                         activeOpacity={1}
                         onPress={() => {
-                          handleOnClickForGraphPopUp(
-                            item?.parameterName,
-                            data?.labTestName,
-                            item?.loincCode
-                          );
+                          handleOnClickForGraphPopUp(item.parameterName, data?.labTestName);
                         }}
                       >
                         <BarChar size="sm" />
                       </TouchableOpacity>
-                    ) : null}
+                    ) : null} */}
                   </View>
+
                   <View
                     style={{
                       flexDirection: columnDecider ? 'column' : 'row',
@@ -1004,37 +870,15 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                       ? renderDataFromTestReports(item?.range, unit, columnDecider)
                       : null}
                   </View>
-                  {trueOR && successMessage && item?.content !== 0 && item?.content?.length > 0 ? (
-                    <View style={styles.contentCodeView}>
-                      <TouchableOpacity
-                        style={styles.contentCodeBtn}
-                        onPress={() => pushToInformaticPage(item?.content, item?.desc, item?.title)}
-                      >
-                        <LightBulb size="sm" />
-                        <Text numberOfLines={2} style={styles.contentCodeText}>
-                          {item.desc}
-                        </Text>
-                        <ArrowOrange style={styles.arrowIcon} />
-                      </TouchableOpacity>
-                    </View>
-                  ) : null}
                 </View>
               </>
             ) : null;
           })}
-        </View>
+        </>
       );
     };
 
-    const pushToInformaticPage = (content: any, desc: any, title: any) => {
-      props.navigation.navigate(AppRoutes.InformativeContent, {
-        relatedFAQ: content,
-        desc: desc,
-        title: title,
-      });
-    };
-
-    const handleOnClickForGraphPopUp = (paramName: any, labTestName: any, lonCode: any) => {
+    const handleOnClickForGraphPopUp = (paramName: any, labTestName: any) => {
       setLoading && setLoading(true);
       client
         .query<getVisualizationData, getVisualizationDataVariables>({
@@ -1050,7 +894,6 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
             showResponseData(data.getVisualizationData.response);
             setSendParamName(paramName);
             setSendTestReportName(labTestName);
-            setLonicCode(String(lonCode));
             setShowPopup(true);
           }
         })
@@ -1349,41 +1192,38 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   };
 
   const onPressAddParamterDetails = () => {
-    const arrDate: [] = [];
-    const arrRange: [] = [];
-    const arrResult: [] = [];
-    const modifiedResult: [] = [];
-    let unit: string;
-    const validNumber = new RegExp(/^[0-9]*([.,][0-9]+)?$/);
+    let arrDate: [] = [];
+    let arrRange: [] = [];
+    let arrResult: [] = [];
+    let modifiedResult: [] = [];
+    let validNumber = new RegExp(/^[0-9]*([.,][0-9]+)?$/);
     if (resonseData?.length > 0) {
       resonseData?.map((items: any) => {
-        const checkValidNumber = validNumber.test(items?.result);
+        let checkValidNumber = validNumber.test(items?.result);
         if (!!checkValidNumber) {
           arrDate?.push(items.resultDate);
           arrRange?.push(items.range);
           arrResult?.push(items.result);
-          unit = items.unit;
         }
         setLoading && setLoading(false);
       });
     } else {
-      const checkValidNumber = validNumber.test(resonseData?.result);
+      let checkValidNumber = validNumber.test(resonseData?.result);
       if (!!checkValidNumber) {
-        arrDate?.push(resonseData?.resultDate);
-        arrRange?.push(resonseData?.range);
-        arrResult?.push(resonseData?.result);
-        unit = items?.unit;
+        arrDate?.push(resonseData.resultDate);
+        arrRange?.push(resonseData.range);
+        arrResult?.push(resonseData.result);
       }
       setLoading && setLoading(false);
     }
     arrResult?.map((itm) => {
       modifiedResult.push({ y: Number(itm) });
     });
-    const regex = /[a-zA-Z!$%^&*()_+|~=`{}[:;<>?,@#\]]/g;
-    let rangeDecider;
-    let minNumber;
-    let maxNumber;
-    const resultStr = regex.test(arrRange[0]);
+    var regex = /[a-zA-Z!$%^&*()_+|~=`{}[:;<>?,@#\]]/g;
+    var rangeDecider;
+    var minNumber;
+    var maxNumber;
+    var resultStr = regex.test(arrRange[0]);
     if (!resultStr) {
       rangeDecider = arrRange[0].split('-');
       minNumber = Number(rangeDecider[0]);
@@ -1397,11 +1237,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
     );
     const lineData = arrResult?.map((i) => Number(i));
     const dateForRanges = arrDate?.map((i) => Number(i));
-    const imgArray: [] = [];
-    modifiedResult?.map((item: any) => {
-      imgArray?.push({ y: item.y, marker: String(item.y + ` ${unit}`) });
-    });
-    return arrDate.length > 0 ? (
+    return arrResult?.length > 0 ? (
       <CombinedBarChart
         title={sendParamName}
         onClickClose={() => setShowPopup(false)}
@@ -1409,34 +1245,23 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         date={data?.date || data?.startDateTime || data?.billDateTime}
         minLine={!!minNumber ? minNumber : 0}
         maxLine={!!maxNumber ? maxNumber : 5}
-        resultsData={imgArray}
+        resultsData={modifiedResult}
         lineData={lineData}
         rangeDate={dateForRanges}
         testReport={sendTestReportName}
         allTestReports={testReportsData}
-        onSendTestReport={(selectedItem, testImagesArray, callApi) =>
-          callBackTestReports(selectedItem, testImagesArray, callApi)
-        }
-        lonicCode={lonicCode}
+        onSendTestReport={(selectedItem) => callBackTestReports(selectedItem)}
         siteName={data?.siteDisplayName}
         serviceName={sendTestReportName}
-        unit={unit}
       />
-    ) : null;
+    ) : (
+      Alert.alert('OOPS!!', 'Result doesnt have a valid value')
+    );
   };
 
-  const callBackTestReports = (selectedItem: any, testImagesArray: any, callApi: any) => {
+  const callBackTestReports = (selectedItem: any) => {
     setShowPopup(false);
-    selectedItem?.labTestResults?.length > 0
-      ? loadParams(selectedItem, testImagesArray, callApi)
-      : null;
-  };
-
-  const loadParams = (selectedItem: any, testImagesArray: any, callApi: any) => {
-    setLoading && setLoading(true);
-    setData(selectedItem);
-    setTestResultArray(testImagesArray);
-    asyncFetchDailyData(selectedItem);
+    selectedItem?.labTestResults?.length > 0 ? setData(selectedItem) : null;
   };
 
   const renderReadMore = (resultString: string) => {

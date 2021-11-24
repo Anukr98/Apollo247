@@ -9,7 +9,6 @@ import { AppConfig, AppEnv } from '@aph/mobile-patients/src/strings/AppConfig';
 import React from 'react';
 import { Platform, Text, TextInput, TouchableOpacity } from 'react-native';
 import codePush, { CodePushOptions, DownloadProgress } from 'react-native-code-push';
-import { ReferralProgramProvider } from '@aph/mobile-patients/src/components/ReferralProgramProvider';
 
 let codePushOptions: CodePushOptions = {
   checkFrequency: codePush.CheckFrequency.ON_APP_RESUME,
@@ -72,10 +71,8 @@ class AppContainer extends React.Component<AppContainerProps, AppContainerState>
             <UIElementsProvider>
               <ShoppingCartProvider>
                 <DiagnosticsCartProvider>
-                  <ReferralProgramProvider>
-                    <NavigatorContainer />
-                    {this.renderCodePushUi()}
-                  </ReferralProgramProvider>
+                  <NavigatorContainer />
+                  {this.renderCodePushUi()}
                 </DiagnosticsCartProvider>
               </ShoppingCartProvider>
             </UIElementsProvider>

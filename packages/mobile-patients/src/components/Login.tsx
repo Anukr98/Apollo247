@@ -1,12 +1,7 @@
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { timeOutDataType } from '@aph/mobile-patients/src/components/OTPVerification';
-import {
-  ArrowDisabled,
-  ArrowYellow,
-  CheckBox as CheckBoxEmpty,
-  CheckBoxFilled,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { ArrowDisabled, ArrowYellow } from '@aph/mobile-patients/src/components/ui/Icons';
 import LandingDataView from '@aph/mobile-patients/src/components/ui/LandingDataView';
 import { LoginCard } from '@aph/mobile-patients/src/components/ui/LoginCard';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
@@ -32,7 +27,6 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { CheckBox } from 'react-native-elements';
 import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
@@ -162,17 +156,6 @@ const styles = StyleSheet.create({
     ...fonts.IBMPlexSansBold(10),
     textDecorationLine: 'underline',
   },
-  checkBoxContainer: {
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    padding: 0,
-    margin: 0,
-  },
-  checkBoxStyle: {
-    resizeMode: 'contain',
-    width: 20,
-    height: 20,
-  },
   leftSeperatorLine: {
     width: '40%',
     height: 0.5,
@@ -209,7 +192,6 @@ let otpString = '';
 let didBlurSubscription: NavigationEventSubscription;
 
 export const Login: React.FC<LoginProps> = (props) => {
-  const [isTandCSelected, setTandC] = useState<boolean>(true);
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const { signOut, getFirebaseToken, getPatientApiCall, getPatientByPrism, sendOtp } = useAuth();
@@ -707,20 +689,11 @@ export const Login: React.FC<LoginProps> = (props) => {
     } catch (error) {}
   };
 
-  const openWebViewTandC = () => {
+  const openWebView = () => {
     CommonLogEvent(AppRoutes.Login, 'Terms  Conditions clicked');
     Keyboard.dismiss();
     props.navigation.navigate(AppRoutes.CommonWebView, {
       url: AppConfig.Configuration.APOLLO_TERMS_CONDITIONS,
-      isGoBack: true,
-    });
-  };
-
-  const openWebViewPrivacyPolicy = () => {
-    CommonLogEvent(AppRoutes.Login, 'Privacy Policy clicked');
-    Keyboard.dismiss();
-    props.navigation.navigate(AppRoutes.CommonWebView, {
-      url: AppConfig.Configuration.APOLLO_PRIVACY_POLICY,
       isGoBack: true,
     });
   };
@@ -797,16 +770,14 @@ export const Login: React.FC<LoginProps> = (props) => {
           cardContainer={{ marginTop: 0, paddingBottom: 12 }}
           description={string.login.please_enter_no}
           buttonIcon={
-            phoneNumberIsValid &&
-            phoneNumber.replace(/^0+/, '').length === 10 &&
-            isTandCSelected ? (
+            phoneNumberIsValid && phoneNumber.replace(/^0+/, '').length === 10 ? (
               <ArrowYellow size="md_l" />
             ) : (
               <ArrowDisabled size="md_l" />
             )
           }
           onClickButton={onClickOkay}
-          disableButton={phoneNumberIsValid && phoneNumber.length === 10  && isTandCSelected? false : true}
+          disableButton={phoneNumberIsValid && phoneNumber.length === 10 ? false : true}
         >
           <View style={{ flexDirection: 'row', paddingHorizontal: 16 }}>
             <View
@@ -838,32 +809,23 @@ export const Login: React.FC<LoginProps> = (props) => {
               ? string.login.otp_sent_to
               : string.login.wrong_number}
           </Text>
-          <View style={{ flexDirection: 'row', marginLeft: 5 }}>
-            <CheckBox
-              checked={isTandCSelected}
-              onPress={() => setTandC(!isTandCSelected)}
-              checkedIcon={<CheckBoxFilled  style={styles.checkBoxStyle} />}
-              uncheckedIcon={<CheckBoxEmpty style={styles.checkBoxStyle} />}
-              containerStyle={styles.checkBoxContainer}
-            />
+
+          <TouchableOpacity
+            onPress={() => openWebView()}
+            style={{
+              marginHorizontal: 16,
+            }}
+          >
             <Text
               style={{
                 color: '#02475b',
-                marginEnd: 45,
                 ...fonts.IBMPlexSansMedium(10),
               }}
             >
-              {string.login.bySigningUp}{' '}
-              <Text style={styles.hyperlink} onPress={() => openWebViewTandC()}>
-                {string.login.termsAndCondition}
-              </Text>{' '}
-              {string.login.and}{' '}
-              <Text style={styles.hyperlink} onPress={() => openWebViewPrivacyPolicy()}>
-                {string.login.privacyPolicy}
-              </Text>{' '}
-              {string.login.ofApollo247}
+              By signing up, I agree to the{' '}
+              <Text style={styles.hyperlink}>Terms and Conditions</Text> of Apollo247
             </Text>
-          </View>
+          </TouchableOpacity>
         </LoginCard>
         <ScrollView>
           {enableTrueCaller && isAndroid && renderTruecallerButton()}

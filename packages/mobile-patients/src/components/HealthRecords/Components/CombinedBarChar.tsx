@@ -9,6 +9,7 @@ import {
   View,
   TouchableOpacity,
   Alert,
+  Platform,
 } from 'react-native';
 import { CombinedChart } from 'react-native-charts-wrapper';
 import { Overlay } from 'react-native-elements';
@@ -20,19 +21,11 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import moment from 'moment';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import {
-  getIndividualTestResultPdf,
-  getIndividualTestResultPdfVariables,
-} from '@aph/mobile-patients/src/graphql/types/getIndividualTestResultPdf';
-import { GET_INDIVIDUAL_TEST_RESULT_PDF } from '@aph/mobile-patients/src/graphql/profiles';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { useApolloClient } from 'react-apollo-hooks';
-import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import SwitchSelector from 'react-native-switch-selector';
 
 const styles = StyleSheet.create({
   container: {
-    height: '80%',
+    height: '75%',
     justifyContent: 'center',
     alignItems: 'stretch',
     backgroundColor: 'transparent',
@@ -54,11 +47,21 @@ const styles = StyleSheet.create({
     bottom: 0,
     position: 'absolute',
   },
+  stickyBottomComponentStyle: {
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+    marginHorizontal: 30,
+    marginTop: 120,
+  },
   overlayViewStyle: {
     width: '100%',
     backgroundColor: 'transparent',
     bottom: 0,
     position: 'absolute',
+  },
+  overlayViewStyle1: {
+    flexGrow: 1,
+    backgroundColor: 'transparent',
   },
   overlaySafeAreaViewStyle: {
     flex: 1,
@@ -75,17 +78,17 @@ const styles = StyleSheet.create({
     bottom: 10,
   },
   barChartMainContainer: {
+    marginTop: 15,
     borderRadius: 10,
-    marginBottom: 2,
+    marginBottom: 10,
     backgroundColor: '#FAFAFA',
   },
   paramNameTextContainer: {
     ...theme.viewStyles.text('SB', 16, '#1180BF', 1, 20.8),
     left: 15,
     marginTop: 10,
-    width: '100%',
-    height: 60,
-    textAlignVertical: 'auto',
+    backgroundColor: 'white',
+    width: '90%',
   },
   dateContainer: {
     ...theme.viewStyles.text('R', 12, 'grey', 1, 20.8),
@@ -120,9 +123,11 @@ const styles = StyleSheet.create({
     height: 2,
   },
   serviceNameTextContainer: {
+    flexDirection: 'row',
+    left: 10,
     justifyContent: 'flex-start',
-    alignItems: 'flex-start',
-    width: '95%',
+    alignItems: 'center',
+    width: '40%',
   },
   paramName: {
     ...theme.viewStyles.text('R', 13, 'grey', 1, 19, 0.35),
@@ -132,7 +137,7 @@ const styles = StyleSheet.create({
   axisValueContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    left: 15,
+    left: 10,
     top: 10,
   },
   axisValueTextContainer: {
@@ -168,10 +173,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   siteNameStyling: {
-    left: 15,
+    left: 10,
     top: 13,
     ...theme.viewStyles.text('R', 14, '#FCB716', 1, 19, 0.35),
-    width: '85%',
   },
   iconStyling: {
     left: 20,
@@ -182,6 +186,10 @@ const styles = StyleSheet.create({
     left: 4,
     fontSize: 14,
     color: '#1180BF',
+  },
+  serviceName: {
+    ...theme.viewStyles.text('R', 16, '#01475B', 1, 19, 0.35),
+    top: 5,
   },
   miscStyling: {
     marginTop: 20,
@@ -197,21 +205,19 @@ export interface CombinedBarChartProps {
   onClickClose?: () => void;
   title?: string;
   resultsData?: [];
-  resultString?: string | null;
-  rangeData?: [] | undefined;
+  resultString?: string;
+  rangeData?: [];
   rangeString?: string;
   rangeDate?: [];
   dateString?: string;
   minLine?: number;
   maxLine?: number;
-  lineData?: [] | undefined;
+  lineData?: [];
   testReport?: string;
   allTestReports?: [];
-  lonicCode?: String | null;
-  onSendTestReport?: (selectedItem: any, testImagesArray: any, callApi: any) => void;
+  onSendTestReport?: (selectedItem: any) => void;
   siteName?: string;
   serviceName?: string;
-  unit?: string;
 }
 
 interface SelectedTestReport {
@@ -234,27 +240,21 @@ interface SelectedTestReport {
   labTestRefferedBy: string;
   additionalNotes: any;
 }
-interface ImageArray {
-  fileName: string;
-  file_Url: string;
-}
 
 export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
   const [showLabel, setShowLabel] = useState<boolean>(false);
   const [yAxisValue, setyAxisValue] = useState<string>('');
   const [xAxisValue, setxAxisValue] = useState<number>();
   const [valueFormatter, setValueFormatter] = useState<[]>([]);
-  const { currentPatient } = useAllCurrentPatients();
-  const client = useApolloClient();
 
   useLayoutEffect(() => {
-    const rangeLog = props?.rangeDate?.map((x) => new Date(x));
-    const format = rangeLog?.map((x) => moment(x).format(`DD MMM YY`));
+    let rangeLog = props?.rangeDate?.map((x) => new Date(x));
+    let format = rangeLog?.map((x) => moment(x).format(`DD MMM 'YY`));
     setValueFormatter(format);
   }, []);
 
   const handleSelect = (event: any) => {
-    const entry = event.nativeEvent;
+    let entry = event.nativeEvent;
     if (entry.y === undefined) {
       setShowLabel(false);
     } else {
@@ -282,7 +282,6 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
     axisMaximum: props?.lineData?.length,
     textSize: 9,
     labelCount: 20,
-    // labelRotationAngle: 70,
   };
 
   const yAxis = {
@@ -296,14 +295,13 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
       granularityEnabled: true,
       drawGridLines: false,
       granularity: 1,
-      valueFormatter: '##.##',
       textColor: processColor('#01475B'),
       limitLines: [
         {
           limit: props.minLine,
           lineColor: processColor('#BF2600'),
           lineDashPhase: 1,
-          lineWidth: 1.2,
+          lineWidth: 1.5,
           valueFont: 9,
           lineDashLengths: [1, 5],
         },
@@ -311,7 +309,7 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
           limit: props.maxLine,
           lineColor: processColor('#BF2600'),
           lineDashPhase: 1,
-          lineWidth: 1.2,
+          lineWidth: 1.5,
           valueFont: 9,
           lineDashLengths: [1, 5],
         },
@@ -340,6 +338,7 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
     enabled: true,
     markerColor: processColor('white'),
     textColor: processColor('#01475B'),
+    markerFontSize: 15,
     textSize: 14,
     elevation: 2,
   };
@@ -372,7 +371,7 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
           config: {
             drawValues: false,
             drawCircles: false,
-            lineWidth: 0.5,
+            lineWidth: 2,
             axisDependency: 'LEFT',
             color: processColor('#1180BF'),
           },
@@ -392,39 +391,44 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
   };
 
   const renderServiceName = () => {
-    const reportObj = {} as SelectedTestReport;
+    let reportObj = {} as SelectedTestReport;
+    var goal = Number(yAxisValue);
+    goal = goal.toFixed(2);
+    var convertGoal = Number(goal);
+    var lineContainer = props?.lineData;
+    var num: any;
+    var checkMinus: any;
+    const lineData = lineContainer.map((i) => Number(i));
+    var index = lineData.indexOf(convertGoal);
     const mergeArray: [] = [];
     const mergeLabTestFiles: [] = [];
-    const num = props?.lineData[xAxisValue];
-    let extractValue = props?.lineData[xAxisValue] - props?.lineData[xAxisValue - 1];
-    extractValue = extractValue.toFixed(2);
-    const checkNumber = isNaN(extractValue);
-    let checkMinus;
-    const defaultValue = String(props?.lineData[props?.lineData?.length - 1]);
-
-    if (extractValue !== undefined && !checkNumber) {
-      const checkM = String(extractValue);
-      checkMinus = checkM?.includes('-');
+    if (index !== 0 && goal !== 0) {
+      num = goal - props?.lineData[index - 1];
+      num = num.toFixed(2);
     }
+    var checkNumber = isNaN(num);
+    if (num !== undefined && !checkNumber) {
+      checkMinus = num?.includes('-');
+    }
+
     return (
       <View style={styles.serviceNameSubContainer}>
         <TouchableOpacity
-          onPress={async () => {
+          onPress={() => {
             if (!!showLabel) {
               props.allTestReports?.map((item: any) => {
                 if (item?.data?.labTestName === props.testReport) {
-                  item.data.labTestResults.map((items: any, index: any) => {
+                  item.data.labTestResults.map((items: any) => {
                     const checktype = Number(items?.resultDate);
                     if (checktype === props?.rangeDate[xAxisValue]) {
-                      const dateAdjust = moment(props?.rangeDate[xAxisValue]).format('YYYY-MM-DD');
-                      mergeArray?.push(items);
+                      mergeArray.push(items);
                       if (item?.data?.testResultFiles?.length > 0) {
                         item?.data?.testResultFiles?.map((testFileItems: any) => {
-                          mergeLabTestFiles?.push(testFileItems);
+                          mergeLabTestFiles.push(testFileItems);
                         });
                       }
                       reportObj.billNo = item.data.billNo;
-                      reportObj.date = dateAdjust;
+                      reportObj.date = item.data.date;
                       reportObj.fileUrl = item.data.fileUrl;
                       reportObj.id = item.data.id;
                       reportObj.identifier = item.data.identifier;
@@ -442,31 +446,7 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
               });
               reportObj.labTestResults = mergeArray;
               reportObj.testResultFiles = mergeLabTestFiles;
-              const imageArrayObj = {} as ImageArray;
-              const imageArray: any[] = [];
-              if (reportObj.labTestSource === 'Hospital') {
-                imageArrayObj.fileName = 'webo-.png';
-                await client
-                  .query<getIndividualTestResultPdf, getIndividualTestResultPdfVariables>({
-                    query: GET_INDIVIDUAL_TEST_RESULT_PDF,
-                    variables: {
-                      patientId: currentPatient?.id,
-                      recordId: reportObj?.id,
-                      sequence: reportObj?.testSequence,
-                    },
-                  })
-                  .then(({ data }: any) => {
-                    if (data?.getIndividualTestResultPdf?.url) {
-                      imageArrayObj.file_Url = data?.getIndividualTestResultPdf?.url;
-                    }
-                  })
-                  .catch((e: any) => {
-                    currentPatient && handleGraphQlError(e, 'Report is yet not available');
-                    CommonBugFender('HealthRecordDetails_downloadPDFTestReport', e);
-                  });
-                imageArray.push(imageArrayObj);
-              }
-              props?.onSendTestReport(reportObj, imageArray, true);
+              props?.onSendTestReport(reportObj);
             } else {
               Alert.alert('OOPS!!', 'Please select any one of the bar charts');
             }
@@ -476,23 +456,25 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
             <ArrowRight />
           </View>
           <View style={styles.serviceNameTextContainer}>
+            <Text numberOfLines={1} style={styles.serviceName}>
+              {props?.serviceName}
+            </Text>
             <Text numberOfLines={1} style={styles.paramName}>
-              {props?.title}
+              {`${'\u25CF '}` + props?.title}
             </Text>
           </View>
           <View style={styles.axisValueContainer}>
-            <Text style={styles.axisValueTextContainer}>{!!num ? num : defaultValue}</Text>
-            <Text style={styles.mclStyling}>{props.unit}</Text>
-            {checkMinus === undefined ? null : !!checkMinus ? (
+            <Text style={styles.axisValueTextContainer}>{!!goal ? goal + '*10' : '' + '*10'}</Text>
+            <Text style={styles.powerTenTextContainer}>6</Text>
+            <Text style={styles.mclStyling}>mcl</Text>
+            {!!checkMinus || num === undefined ? (
               <RedDownArrow size="sm" style={styles.iconStyling} />
             ) : (
               <RedArrow size="sm" style={styles.iconStyling} />
             )}
-            <Text style={styles.redValueDecider}>{checkNumber ? '' : extractValue}</Text>
+            <Text style={styles.redValueDecider}>{checkNumber === false ? num : 'N/A'}</Text>
           </View>
-          <Text numberOfLines={1} style={styles.siteNameStyling}>
-            {props.siteName}
-          </Text>
+          <Text style={styles.siteNameStyling}>{props.siteName}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -500,6 +482,7 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
 
   // const onClickValueFormatterChange = (value: any) => {
   //   let exerciseLog = props?.rangeDate?.map((x) => new Date(x));
+  //   console.log(exerciseLog);
   //   switch (value) {
   //     case 'Year':
   //       let yearFormat = exerciseLog?.map((x) => moment(x).format(`MMM'YY`));
@@ -523,8 +506,8 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
   // };
 
   const renderBarChartView = () => {
-    const rangeLog = props?.rangeDate?.map((x) => new Date(x));
-    const compareFirstDate = moment(rangeLog[0]).format('YYYY-MM-DD');
+    let rangeLog = props?.rangeDate?.map((x) => new Date(x));
+    let compareFirstDate = moment(rangeLog[0]).format('YYYY-MM-DD');
     let compareLastDate;
     if (!!rangeLog && rangeLog?.length > 1) {
       compareLastDate = moment(rangeLog[rangeLog?.length - 1]).format('YYYY-MM-DD');
@@ -546,7 +529,9 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
           height={20}
           onPress={(value) => onClickValueFormatterChange(value)}
         /> */}
-        <Text style={styles.paramNameTextContainer}>{props.serviceName}</Text>
+        <Text numberOfLines={1} style={styles.paramNameTextContainer}>
+          {props.title}
+        </Text>
         <View style={styles.barChartMainContainer}>
           <View style={{ height: 290 }}>
             <Text style={styles.dateContainer}>
@@ -568,12 +553,14 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
               highlightFullBarEnabled={false}
               legend={{ enabled: true, xEntrySpace: 10, yEntrySpace: 10 }}
               zoom={
-                props?.lineData?.length < 6
-                  ? { scaleX: 1, scaleY: 1, xValue: -9999, yValue: 1, axisDependency: 'RIGHT' }
-                  : { scaleX: 4, scaleY: 1, xValue: -9999, yValue: 1, axisDependency: 'RIGHT' }
+                props?.lineData?.length > 5
+                  ? props?.lineData?.length >= 20
+                    ? { scaleX: 20, scaleY: 1, xValue: -9999, yValue: 1, axisDependency: 'RIGHT' }
+                    : { scaleX: 3, scaleY: 1, xValue: -9999, yValue: 1, axisDependency: 'RIGHT' }
+                  : null
               }
-              marker={marker}
               chartDescription={{ text: '' }}
+              marker={marker}
               style={styles.container}
               drawOrder={['BAR', 'LINE']}
               animation={{
@@ -588,7 +575,9 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
           {renderServiceName()}
           <View style={styles.miscStyling}>
             <Text style={styles.miscInfoContainer}>
-              {`Note: Loinc code for this is ${props?.lonicCode} . The parameter value and test combo plotted represent the same loinc code`}
+              {
+                'Note: Loinc code for this is ABP1234. The parameter value and test combo plotted represent the same loinc code'
+              }
             </Text>
           </View>
         </View>

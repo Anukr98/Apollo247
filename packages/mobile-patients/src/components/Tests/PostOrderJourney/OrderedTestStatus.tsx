@@ -18,6 +18,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { TestOrderCard } from '@aph/mobile-patients/src/components/ui/TestOrderCard';
 import {
+  downloadDocument,
   g,
   getTestOrderStatusText,
   handleGraphQlError,

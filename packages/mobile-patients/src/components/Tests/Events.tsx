@@ -160,7 +160,7 @@ export function DiagnosticAddToCartEvent(
     'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
   };
   if (section) {
-    eventAttributes['Section name'] = section;
+    eventAttributes['Section'] = section;
   }
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
@@ -355,28 +355,30 @@ export function DiagnosticBannerClick(
   postCleverTapEvent(CleverTapEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED, eventAttributes);
 }
 
-export async function DiagnosticCartViewed(
-  source: string,
+export function DiagnosticCartViewed(
   currentPatient: any,
   cartItems: DiagnosticsCartItem[],
+  couponDiscount: number | string,
+  gTotal: number,
+  prescReqd: boolean,
+  diagnosticSlot: any,
+  coupon: any,
+  collectionCharges: number,
+  validity: circleValidity | null,
+  circleSubId: string,
   isCircle: boolean,
-  pincode: string | number,
-  city: string,
-  prescReqd?: boolean,
-  gTotal?: number,
-  collectionCharges?: number,
-  circleSubId?: string,
-  couponCode?: string,
-  couponDiscount?: number,
-  validity?: circleValidity | null
+  pincode: string | number
 ) {
-  const getPatientAttributes = await createPatientAttributes(currentPatient);
+  const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CART_VIEWED]
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_CART_VIEWED] = {
     ...getPatientAttributes,
-    'Page source': source,
     'Total items in cart': cartItems?.length,
+    // 'Delivery charge': deliveryCharges,
+    'Total Discount': Number(couponDiscount),
+    'Net after discount': gTotal,
+    'Prescription Required?': prescReqd ? 'Yes' : 'No',
     'Cart Items': cartItems?.map(
       (item) =>
         (({
@@ -386,24 +388,17 @@ export async function DiagnosticCartViewed(
           specialPrice: item?.specialPrice || item.price,
         } as unknown) as DiagnosticsCartItem)
     ),
-    'Circle user': isCircle ? 'Yes' : 'No',
     Pincode: pincode,
     UHID: currentPatient?.uhid,
-    city: city,
-    'Prescription Needed': prescReqd ? 'Yes' : 'No',
+    'Circle user': isCircle ? 'Yes' : 'No',
   };
-
-  if (!!gTotal) {
-    eventAttributes['Net after discount'] = gTotal;
-  }
-  if (!!collectionCharges) {
+  if (diagnosticSlot) {
     eventAttributes['Delivery charge'] = collectionCharges;
   }
-  if (!!couponCode && !!couponDiscount) {
-    eventAttributes['Coupon code used'] = couponCode;
-    eventAttributes['Coupon Discount'] = couponDiscount;
+  if (coupon) {
+    eventAttributes['Coupon code used'] = coupon?.code;
   }
-  // fireCircleBenifitAppliedEvent(currentPatient, validity, circleSubId, isCircle);
+  fireCircleBenifitAppliedEvent(currentPatient, validity, circleSubId, isCircle);
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CART_VIEWED, eventAttributes);
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_CART_VIEWED, eventAttributes);
 }
@@ -529,7 +524,7 @@ export function PaymentInitiated(grandTotal: number, LOB: string, type: string) 
     postCleverTapEvent(CleverTapEventName.CONSULT_PAYMENT_INITIATED, consultEventAttributes);
 }
 
-export async function DiagnosticAddresssSelected(
+export function DiagnosticAddresssSelected(
   type: 'New' | 'Existing',
   serviceable: 'Yes' | 'No',
   pincode: string | number,
@@ -537,7 +532,7 @@ export async function DiagnosticAddresssSelected(
   currentPatient?: any,
   isDiagnosticCircleSubscription?: boolean | undefined
 ) {
-  const getPatientAttributes = await createPatientAttributes(currentPatient);
+  const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE]
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE] = {
@@ -882,11 +877,10 @@ export function DiagnosticPatientSelected(
     'Patient name': patientNames,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PATIENT_SELECTED, eventAttributes);
-  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PATIENT_SELECTED, eventAttributes);
 }
 
 export function DiagnosticProductListingPageViewed(
-  type: 'Category' | 'Widget',
+  type: any,
   source: any,
   categoryName: string,
   sectionName: string
@@ -894,7 +888,7 @@ export function DiagnosticProductListingPageViewed(
   const eventAttributes: CleverTapEvents[CleverTapEventName.DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED] = {
     Type: type,
     Source: source,
-    'Category Name': categoryName,
+    'Category name': categoryName,
     'Section name': sectionName,
   };
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED, eventAttributes);

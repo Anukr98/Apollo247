@@ -50,7 +50,6 @@ import {
   DiagnosticsRescheduleSource,
   DiagnosticLineItem,
   CancellationDiagnosticsInputv2,
-  CALL_TO_ORDER_CTA_PAGE_ID,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -99,7 +98,6 @@ import {
   getPatientPrismMedicalRecordsApi,
   switchDiagnosticOrderPatientId,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { TestPdfRender } from '@aph/mobile-patients/src/components/Tests/components/TestPdfRender';
 import { Overlay } from 'react-native-elements';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
@@ -118,7 +116,6 @@ import { PatientListOverlay } from '@aph/mobile-patients/src/components/Tests/co
 
 const { width, height } = Dimensions.get('window');
 import { getDiagnosticOrdersListByParentOrderID_getDiagnosticOrdersListByParentOrderID_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByParentOrderID';
-import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 
 type orderList = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList;
 
@@ -182,8 +179,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [selectRescheduleReason, setSelectRescheduleReason] = useState<string>('');
   const [showMultiUhidOption, setShowMultiUhidOption] = useState<boolean>(false);
   const [isMultiUhid, setIsMultiUhid] = useState<boolean>(false);
-  const [showViewReportModal, setShowViewReportModal] = useState<boolean>(false);
-  const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
   const [multipleOrdersList, setMultipleOrdersList] = useState<
     | (getDiagnosticOrdersListByParentOrderID_getDiagnosticOrdersListByParentOrderID_ordersList | null)[]
     | null
@@ -195,7 +190,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const client = useApolloClient();
   const [orders, setOrders] = useState<any>(props.navigation.getParam('orders'));
-  const cityId = props.navigation.getParam('cityId');
   const [showPatientsOverlay, setShowPatientsOverlay] = useState<boolean>(false);
   const [activeOrder, setActiveOrder] = useState<orderList>();
   const [selectedPatient, setSelectedPatient] = useState<string>(ALL);
@@ -211,22 +205,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [showPatientListOverlay, setShowPatientListOverlay] = useState<boolean>(false);
   const [patientListSelectedPatient, setPatientListSelectedPatient] = useState([]);
   const source = props.navigation.getParam('source');
-  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
-  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
-  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS);
-  const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
-    if (item?.cityId == cityId) {
-      if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS)) {
-        return item;
-      } else {
-        return null;
-      }
-    } else if (isCtaDetailDefault) {
-      return callToOrderDetails?.ctaDetailsDefault;
-    } else {
-      return null;
-    }
-  });
+
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
 
   var rescheduleDate: Date,
@@ -1143,21 +1122,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     );
   };
 
-  const renderCallToOrder = () => {
-    return ctaDetailMatched?.length ? (
-      <CallToOrderView
-        cityId={cityId}
-        slideCallToOrder={slideCallToOrder}
-        onPressSmallView={() => {
-          setSlideCallToOrder(false);
-        }}
-        onPressCross={() => {
-          setSlideCallToOrder(true);
-        }}
-      />
-    ) : null;
-  };
-
   const renderCancelReasons = () => {
     const selectedOrderRescheduleCount = selectedOrder?.rescheduleCount;
     let selectedOrderTime = selectedOrder?.slotDateTimeInUTC;
@@ -1737,26 +1701,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setDistanceCharges?.(0);
     setModifiedPatientCart?.([]);
   }
-  const renderViewReportModal = () => {
-    return (
-      <View>
-        <TestPdfRender
-          uri={activeOrder?.labReportURL || ''}
-          order={activeOrder}
-          isReport={true}
-          onPressClose={() => {
-            setActiveOrder(activeOrder);
-            setShowViewReportModal(false);
-          }}
-        />
-      </View>
-    );
-  };
 
   function _onPressViewReportAction(order: orderList) {
     if (!!order?.labReportURL && order?.labReportURL != '') {
       setActiveOrder(order);
-      setShowViewReportModal(true);
+      _onPressViewReport(order);
     } else if (!!order?.visitNo && order?.visitNo != '') {
       //directly open the phr section
       fetchTestReportResult(order);
@@ -1827,9 +1776,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         bounces={false}
         data={orders}
         extraData={orderListData}
-        onScroll={() => {
-          setSlideCallToOrder(true);
-        }}
         renderItem={({ item, index }) => renderOrder(item, index)}
         initialNumToRender={10}
         ListEmptyComponent={renderNoOrders()}
@@ -2088,11 +2034,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         {renderFilterArea()}
         {renderError()}
         {renderOrders()}
-        {renderCallToOrder()}
         {showBottomOverlay && renderBottomPopUp()}
         {showPatientsOverlay && renderPatientsOverlay()}
         {showPatientListOverlay && renderPatientsListOverlay()}
-        {showViewReportModal ? renderViewReportModal() : null}
       </SafeAreaView>
       {loading && !props?.showHeader ? null : loading && <Spinner />}
     </View>

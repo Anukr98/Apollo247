@@ -38,12 +38,7 @@
             <action android:name="android.media.action.IMAGE_CAPTURE" />
         </intent>
     </queries>
-    <queries>
-        <intent>
-            <action android:name=
-                "android.support.customtabs.action.CustomTabsService" />
-        </intent>
-    </queries>
+    
     <uses-feature
         android:name="android.hardware.camera"
         android:required="true" />

@@ -301,6 +301,8 @@ export const InitiateSavedCardTxn = (
       offers: !!offerId ? [offerId] : null,
     },
   };
+  console.log('cardPayload >>>>', payload);
+
   HyperSdkReact.process(JSON.stringify(payload));
 };
 
@@ -348,77 +350,6 @@ export const InitiateCredTxn = (
       clientAuthToken: clientAuthToken,
       application: 'CRED',
       walletMobileNumber: mobileNo, //required for collect and web-redirect flow
-    },
-  };
-  HyperSdkReact.process(JSON.stringify(payload));
-};
-
-export const fetchWalletBalance = (requestId: string, clientAuthToken: string) => {
-  const payload = {
-    requestId: requestId,
-    service: AppConfig.Configuration.jusPayService,
-    payload: {
-      action: 'refreshWalletBalances',
-      clientAuthToken: clientAuthToken,
-    },
-  };
-  HyperSdkReact.process(JSON.stringify(payload));
-};
-
-export const createAPayWallet = (requestId: string, clientAuthToken: string) => {
-  const payload = {
-    requestId: requestId,
-    service: AppConfig.Configuration.jusPayService,
-    payload: {
-      action: 'createWallet',
-      walletName: 'AMAZONPAY',
-      clientAuthToken: clientAuthToken,
-    },
-  };
-  HyperSdkReact.process(JSON.stringify(payload));
-};
-
-export const directWalletDebit = (
-  requestId: string,
-  clientAuthToken: string,
-  paymentOrderId: string,
-  paymentMethod: string,
-  sdkPresent: string,
-  directWalletToken: string,
-  offerId?: string
-) => {
-  const payload = {
-    requestId: requestId,
-    service: AppConfig.Configuration.jusPayService,
-    payload: {
-      action: 'walletTxn',
-      orderId: paymentOrderId,
-      paymentMethodType: 'Wallet',
-      paymentMethod: paymentMethod,
-      sdkPresent: sdkPresent,
-      endUrls: [AppConfig.Configuration.baseUrl],
-      clientAuthToken: clientAuthToken,
-      directWalletToken: directWalletToken,
-      offers: !!offerId ? [offerId] : null,
-    },
-  };
-  HyperSdkReact.process(JSON.stringify(payload));
-};
-
-export const delinkWallet = (
-  requestId: string,
-  clientAuthToken: string,
-  walletId: string,
-  walletName: string
-) => {
-  const payload = {
-    requestId: requestId,
-    service: AppConfig.Configuration.jusPayService,
-    payload: {
-      action: 'delinkWallet',
-      walletId: walletId,
-      walletName: walletName,
-      clientAuthToken: clientAuthToken,
     },
   };
   HyperSdkReact.process(JSON.stringify(payload));

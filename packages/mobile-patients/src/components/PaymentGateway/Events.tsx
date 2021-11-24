@@ -86,9 +86,7 @@ export function PharmaOrderPlaced(
   paymentOrderId: string,
   burnHc: number,
   isCOD: boolean,
-  currentPatient: GetCurrentPatients_getCurrentPatients_patients,
-  orderId: string,
-  pharmacyUserType: string
+  currentPatient: GetCurrentPatients_getCurrentPatients_patients
 ) {
   try {
     const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED] = checkoutEventAttributes;
@@ -110,8 +108,6 @@ export function PharmaOrderPlaced(
       isCircleSubscription,
       cartTotalCashback,
       pharmacyCircleAttributes,
-      deliveryCharges,
-      circleMembershipCharges,
     } = shoppingCart;
     let items: any = [];
     cartItems.forEach((item, index) => {
@@ -137,28 +133,6 @@ export function PharmaOrderPlaced(
       LOB: 'Pharma',
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, firebaseEventAttributes);
-
-    const skus = cartItems?.map((item) => item?.id);
-    const firebaseCheckoutEventAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED] = {
-      order_id: orderId,
-      transaction_id: paymentOrderId,
-      currency: 'INR',
-      coupon: coupon?.coupon,
-      shipping: deliveryCharges,
-      items: JSON.stringify(skus),
-      value: grandTotal,
-      circle_membership_added: circleMembershipCharges
-        ? 'Yes'
-        : circleSubscriptionId
-        ? 'Existing'
-        : 'No',
-      payment_type: 'COD',
-      user_type: pharmacyUserType,
-    };
-    postFirebaseEvent(
-      FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED,
-      firebaseCheckoutEventAttributes
-    );
 
     let revenue = 0;
     shoppingCart?.cartItems?.forEach((item) => {
@@ -226,8 +200,7 @@ export function PaymentTxnInitiated(
   isSavedCard: boolean,
   txnType: string,
   isNewCardSaved: boolean,
-  isCOD: boolean,
-  walletBalance: any
+  isCOD: boolean
 ) {
   try {
     const {
@@ -255,7 +228,6 @@ export function PaymentTxnInitiated(
       TxnType: txnType,
       ifNewCardSaved: isNewCardSaved,
       isPaymentLinkTxn: vertical == 'paymentLink' ? true : false,
-      'Wallet Balance': walletBalance,
     };
     postCleverTapEvent(CleverTapEventName.PAYMENT_TXN_INITIATED, eventAttributes);
   } catch (error) {}

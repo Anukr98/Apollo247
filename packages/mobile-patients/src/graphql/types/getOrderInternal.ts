@@ -20,7 +20,6 @@ export interface getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails_ord
   firstName: string | null;
   lastName: string | null;
   gender: string | null;
-  dateOfBirth: string | null;
 }
 
 export interface getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails_ordersList_diagnosticOrderLineItems {

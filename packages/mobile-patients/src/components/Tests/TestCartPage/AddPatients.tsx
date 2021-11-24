@@ -82,14 +82,13 @@ import { DiagnosticPatientSelected } from '@aph/mobile-patients/src/components/T
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { findDiagnosticSettings } from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
-import { CALL_TO_ORDER_CTA_PAGE_ID, Gender, TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { Gender, TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { PatientDetailsOverlay } from '@aph/mobile-patients/src/components/Tests/components/PatientDetailsOverlay';
 import {
   editProfile,
   editProfileVariables,
 } from '@aph/mobile-patients/src/graphql/types/editProfile';
 import moment from 'moment';
-import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 
 const screenHeight = Dimensions.get('window').height;
 const { SHERPA_BLUE, WHITE, APP_GREEN } = theme.colors;
@@ -146,12 +145,10 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   const [itemsSelected, setItemsSelected] = useState(patientCartItems);
   const [patientLimit, setPatientLimit] = useState<number>(0);
   const [limitMsg, setLimitMsg] = useState<string>('');
-  const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
   const [patientSelectionCount, setPatientSelectionCount] = useState<number>(0);
   const [showPatientDetailsOverlay, setShowPatientDetailsOverlay] = useState<boolean>(false);
   const [tempPatientSelected, setTempPatientSelected] = useState({} as any);
   const [tempIndex, setTempIndex] = useState<number>(0);
-  const [patientArray, setPatientArray] = useState([]) as any;
 
   const keyExtractor = useCallback((_, index: number) => `${index}`, []);
   const keyExtractor1 = useCallback((_, index: number) => `${index}`, []);
@@ -387,7 +384,6 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       cartItems?.filter((cItem) => !disabledCartItemIds?.find((dItem) => dItem == cItem?.id))
     );
   };
-  
 
   const removeDisabledPatientCartItems = (disabledCartItemIds: string[]) => {
     hideAphAlert?.();
@@ -748,28 +744,24 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   }
 
   function _setSelectedPatient(patientDetails: any, ind: number) {
-    const isPresent = patientArray?.find((item: string) => patientDetails?.id == item);
-    if (!!isPresent) {
-      const restOfArray = patientArray?.filter((item: string) => item != patientDetails?.id);
-      setPatientArray(restOfArray);
-      updatePatientItem(patientDetails, false);
-    } else {
-      const updatedArray = patientArray?.concat(patientDetails?.id);
-      setPatientArray(updatedArray);
-      updatePatientItem(patientDetails, true);
-    }
-  }
+    let arr = patientListToShow?.map((newItem: any, index: number) => {
+      if (ind == index && patientDetails != null) {
+        newItem['isPatientSelected'] = !newItem?.isPatientSelected;
+      }
+      return { ...newItem };
+    });
 
-  function updatePatientItem(selectedPatient: any, selectedValue: boolean) {
-    const updatedItems = JSON.parse(JSON.stringify(cartItems));
-    if (selectedValue) {
+    //find the selectedItem
+    const findSelectedItem = arr?.find((item: any) => item?.id == patientDetails?.id);
+    if (findSelectedItem?.isPatientSelected) {
+      const updatedItems = JSON.parse(JSON.stringify(cartItems));
       updatedItems?.map((item: any) => {
-        item['isSelected'] = selectedValue;
+        item['isSelected'] = true;
       });
       //check here, if item is already selected => unselect
-      addPatientCartItem?.(selectedPatient?.id, updatedItems);
+      addPatientCartItem?.(patientDetails?.id, updatedItems);
     } else {
-      removePatientCartItem?.(selectedPatient?.id);
+      removePatientCartItem?.(patientDetails?.id);
     }
   }
 
@@ -1074,7 +1066,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
 
   const renderMainView = () => {
     return (
-      <View style={{ margin: 16, flex: 1 }}>
+      <View style={{ margin: 16 }}>
         {renderHeading()}
         {renderSubHeading()}
         {renderPatientsList()}
@@ -1125,9 +1117,9 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 1, 18),
   },
   patientListView: {
-    flex: 1,
     flexGrow: 1,
-    marginBottom: 20, //16
+    marginBottom: 16,
+    height: screenHeight - 300, //240
   },
 
   mainViewStyle: {
