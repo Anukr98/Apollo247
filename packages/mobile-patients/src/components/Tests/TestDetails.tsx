@@ -243,7 +243,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   );
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
-  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL);
+  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
+    CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL
+  );
   const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
     if (item?.cityId == cityIdToUse) {
       if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL)) {
@@ -1722,7 +1724,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               ? renderWidgetsView()
               : null}
             {/** frequently brought together */}
-            {(frequentlyBroughtRecommendations?.length > 0 || topBookedTests?.length > 0) &&
+            {(frequentlyBroughtRecommendations?.length > 2 || topBookedTests?.length > 0) &&
               renderFrequentlyBrought()}
             {/**packages for single test */}
             {!!packageRecommendations &&
