@@ -1278,16 +1278,18 @@ export interface WebEngageEvents {
   };
 
   [WebEngageEventName.DIAGNOSTIC_CART_VIEWED]: {
-    //this is already done
+    'Page source': string;
     'Total items in cart': number;
-    'Prescription Needed?': 'Yes' | 'No';
+    'Cart Items': object[];
+    'Circle user': 'Yes' | 'No';
+    Pincode: string | number;
+    city: string;
+    UHID: string;
+    'Prescription Needed'?: 'Yes' | 'No';
+    'Net after discount'?: number; //item total
     'Delivery charge'?: number;
     'Coupon code used'?: string;
-    'Total Discount': number;
-    'Net after discount': number; //item total
-    'Cart Items': object[];
-    Pincode: string | number;
-    UHID: string;
+    'Coupon Discount'?: number;
   };
   [WebEngageEventName.DIAGNOSTIC_SLOT_TIME_SELECTED]: {
     'Slot time': string;
@@ -1341,7 +1343,7 @@ export interface WebEngageEvents {
     'Item Name': string;
     'Item ID': string; // (SKUID)
     Source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
-    Section?: string;
+    'Section name'?: string;
     'Circle user': string;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {

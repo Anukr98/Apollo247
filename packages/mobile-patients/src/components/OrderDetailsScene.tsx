@@ -438,6 +438,43 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     return finalDateTime;
   };
 
+  const getFormattedDaySubscript = (day: number) => {
+    if (day > 3 && day < 21) return 'th';
+    switch (day % 10) {
+      case 1:
+        return 'st';
+      case 2:
+        return 'nd';
+      case 3:
+        return 'rd';
+      default:
+        return 'th';
+    }
+  };
+
+  const getFormattedDateTimeWithBefore = (time: string) => {
+    let day = parseInt(moment(time).format('D'));
+    let getDaySubscript = getFormattedDaySubscript(day);
+    const isExpectedDateChanged =
+      orderDetails.oldOrderTat! && statusToShowNewItems.includes(orderDetails.currentStatus!);
+    const days = new Date().getDate() - parseInt(time.split('-')[0]);
+    if (isExpectedDateChanged && days == -1) {
+      let finalDateTime =
+        'Arriving Tomorrow' + ' before ' + moment(time).format(string.time.TwelveHourFormat);
+      return finalDateTime;
+    }
+
+    let finalDateTime =
+      day +
+      getDaySubscript +
+      ' ' +
+      moment(time).format('MMMM') +
+      ' before ' +
+      moment(time).format('hh:mm A');
+
+    return finalDateTime;
+  };
+
   const reOrder = async () => {
     try {
       setLoading!(true);
@@ -1087,9 +1124,19 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       if (statusToConsiderTatBreach.includes(orderDetails.currentStatus!)) scrollToSlots();
     };
 
+    const orderJourneyRepitionAllowedStatuses: MEDICINE_ORDER_STATUS[] = [
+      MEDICINE_ORDER_STATUS.DELIVERY_ATTEMPTED,
+      MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
+    ];
+
+    const isRepitionAllowedForStatusInOrderJourney = (orderStatus: MEDICINE_ORDER_STATUS) =>
+      orderJourneyRepitionAllowedStatuses.includes(orderStatus);
+
     let statusList = orderStatusList
       .filter(
-        (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
+        (item, idx, array) =>
+          isRepitionAllowedForStatusInOrderJourney(item?.orderStatus!) ||
+          array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
       )
       .concat([]);
     order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
@@ -1103,7 +1150,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     ) {
       statusList = orderStatusList
         .filter(
-          (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
+          (item, idx, array) =>
+            isRepitionAllowedForStatusInOrderJourney(item?.orderStatus!) ||
+            array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
         )
         .concat([]);
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
@@ -1350,7 +1399,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY) {
       statusList = orderStatusList
         .filter(
-          (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
+          (item, idx, array) =>
+            isRepitionAllowedForStatusInOrderJourney(item?.orderStatus!) ||
+            array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
         )
         .concat([
           {
@@ -1368,7 +1419,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     ) {
       statusList = orderStatusList
         .filter(
-          (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
+          (item, idx, array) =>
+            isRepitionAllowedForStatusInOrderJourney(item?.orderStatus!) ||
+            array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
         )
         .concat([]);
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
@@ -2319,12 +2372,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               selectedTab={selectedTab}
             />
             {selectedTab == string.orders.trackOrder && renderOrderTrackTopView()}
-            {!!Number(orderAutoId) && (
-              <OrderDelayNoticeView
-                orderId={Number(orderAutoId)}
-                containerStyle={selectedTab === string.orders.viewBill && styles.hidden}
-              />
-            )}
+            {!!Number(orderAutoId) &&
+              order?.deliveryType === MEDICINE_DELIVERY_TYPE.HOME_DELIVERY && (
+                <OrderDelayNoticeView
+                  orderId={Number(orderAutoId)}
+                  containerStyle={selectedTab === string.orders.viewBill && styles.hidden}
+                />
+              )}
             {renderInconvenienceView()}
             <ScrollView bounces={false} ref={scrollViewRef}>
               {selectedTab == string.orders.trackOrder
