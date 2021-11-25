@@ -107,7 +107,6 @@ import { Gender, Relation } from '@aph/mobile-patients/src/graphql/types/globalT
 import {
   GenerateTokenforCM,
   notifcationsApi,
-  pinCodeServiceabilityApi247,
   GenrateVitalsToken_CM,
   GetAllUHIDSForNumber_CM,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -800,7 +799,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     phrNotificationData,
     setCircleSubscription,
     setHdfcUpgradeUserSubscriptions,
-    setAxdcCode,
     setCirclePlanId,
     healthCredits,
     setHealthCredits,
@@ -872,6 +870,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     pharmacyCircleAttributes,
     setIsCircleExpired,
     circleSubPlanId,
+    isPharmacyPincodeServiceable,
   } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
@@ -885,7 +884,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [enableCM, setEnableCM] = useState<boolean>(true);
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [isWEGFired, setWEGFired] = useState(false);
-  const [serviceable, setserviceable] = useState<String>('');
   const [renewNow, setRenewNow] = useState<String>('');
   const [isCircleMember, setIsCircleMember] = useState<String>('');
   const [circleSavings, setCircleSavings] = useState<number>(-1);
@@ -1040,12 +1038,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, [currentPatient]);
   const phrNotificationCount = getPhrNotificationAllCount(phrNotificationData!);
 
-  useEffect(() => {
-    //TODO: if deeplinks is causing issue comment handleDeepLink here and uncomment in SplashScreen useEffect
-    // handleDeepLink(props.navigation);
-    isserviceable();
-  }, [locationDetails, currentPatient]);
-
   const askLocationPermission = () => {
     showAphAlert!({
       unDismissable: true,
@@ -1088,24 +1080,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       ],
     });
   };
-
-  async function isserviceable() {
-    if (locationDetails && locationDetails.pincode) {
-      await pinCodeServiceabilityApi247(locationDetails.pincode!)
-        .then(({ data: { response } }) => {
-          const { servicable, axdcCode } = response;
-          setAxdcCode && setAxdcCode(axdcCode);
-          if (servicable) {
-            setserviceable('Yes');
-          } else {
-            setserviceable('No');
-          }
-        })
-        .catch((e) => {
-          setserviceable('No');
-        });
-    }
-  }
 
   const setVaccineLoacalStorageData = () => {
     AsyncStorage.getItem('hasAgreedVaccineTnC').then((data) => {
@@ -1451,7 +1425,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       eventName == WebEngageEventName.BUY_MEDICINES
     ) {
       (eventAttributes as PatientInfoWithSource)['Pincode'] = locationDetails.pincode;
-      (eventAttributes as PatientInfoWithSource)['Serviceability'] = serviceable;
+      (eventAttributes as PatientInfoWithSource)['Serviceability'] = isPharmacyPincodeServiceable
+        ? 'Yes'
+        : 'No';
     }
     if (eventName == WebEngageEventName.BUY_MEDICINES) {
       eventAttributes = {
@@ -1529,7 +1505,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       eventName == CleverTapEventName.BUY_MEDICINES
     ) {
       (eventAttributes as HomeScreenAttributes)['Pincode'] = locationDetails?.pincode || undefined;
-      (eventAttributes as HomeScreenAttributes)['Serviceability'] = serviceable || undefined;
+      (eventAttributes as HomeScreenAttributes)['Serviceability'] = isPharmacyPincodeServiceable
+        ? 'Yes'
+        : 'No';
     }
     if (eventName == CleverTapEventName.BUY_MEDICINES) {
       eventAttributes = {
@@ -1639,7 +1617,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       eventName == FirebaseEventName.BUY_MEDICINES
     ) {
       (eventAttributes as PatientInfoWithSourceFirebase)['Pincode'] = locationDetails.pincode;
-      (eventAttributes as PatientInfoWithSourceFirebase)['Serviceability'] = serviceable;
+      (eventAttributes as PatientInfoWithSourceFirebase)[
+        'Serviceability'
+      ] = isPharmacyPincodeServiceable ? 'Yes' : 'No';
     }
     if (eventName == FirebaseEventName.BUY_MEDICINES) {
       eventAttributes = { ...eventAttributes, ...pharmacyCircleAttributes };
