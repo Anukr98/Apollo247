@@ -201,7 +201,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
   const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTCART);
   const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
-    if (item?.cityId == deliveryAddressCityId) {
+    if (item?.ctaCityId == deliveryAddressCityId) {
       if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTCART)) {
         return item;
       } else {

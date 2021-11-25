@@ -368,7 +368,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     CALL_TO_ORDER_CTA_PAGE_ID.HOME
   );
   const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
-    if (item?.cityId == cityId) {
+    if (item?.ctaCityId == cityId) {
       if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.HOME)) {
         return item;
       } else {
