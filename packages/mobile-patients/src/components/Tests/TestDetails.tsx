@@ -656,7 +656,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       );
       if (recommedationResponse?.data?.getDiagnosticItemRecommendations) {
         const getItems = recommedationResponse?.data?.getDiagnosticItemRecommendations?.itemsData;
-        if (getItems?.length > 2) {
+        if (getItems?.length > 0) {
           const _itemIds = getItems?.map((item: any) => Number(item?.itemId));
           const alreadyAddedItems = isModify
             ? cartItemsWithId.concat(modifiedOrderItemIds)
@@ -1610,9 +1610,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         onPressCross={() => {
           setSlideCallToOrder(true);
         }}
-        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL}
-        itemId = {itemId}
-        itemName = {itemName}
+        pageId={CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL}
+        itemId={itemId}
+        itemName={itemName}
       />
     ) : null;
   };
@@ -1626,7 +1626,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           <View style={{ marginTop: 10 }}>
             <SectionHeader
               leftText={
-                frequentlyBroughtRecommendations?.length > 2
+                frequentlyBroughtRecommendations?.length > 0
                   ? getWidgetTitle?.frequentlyBrought
                   : getWidgetTitle?.topBookedTests
               }
@@ -1635,13 +1635,13 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             />
             <ItemCard
               diagnosticWidgetData={
-                frequentlyBroughtRecommendations?.length > 2
+                frequentlyBroughtRecommendations?.length > 0
                   ? frequentlyBroughtRecommendations
                   : topBookedTests
               }
               onPressRemoveItemFromCart={(item) => {}}
               data={
-                frequentlyBroughtRecommendations?.length > 2
+                frequentlyBroughtRecommendations?.length > 0
                   ? frequentlyBroughtRecommendations
                   : topBookedTests
               }
