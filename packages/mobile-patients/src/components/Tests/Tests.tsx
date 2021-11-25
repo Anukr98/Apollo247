@@ -364,7 +364,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
-  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.HOME);
+  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
+    CALL_TO_ORDER_CTA_PAGE_ID.HOME
+  );
   const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
     if (item?.cityId == cityId) {
       if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.HOME)) {
@@ -1396,21 +1398,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
           <LocationOff />
         )}
         {!!serviceabilityMsg && <Text style={styles.serviceabilityMsg}>{serviceabilityMsg}</Text>}
-      </View>
-    );
-  };
-
-  const renderViewReportModal = () => {
-    return (
-      <View>
-        <TestPdfRender
-          uri={clickedItem?.labReportURL}
-          order={clickedItem}
-          isReport={true}
-          onPressClose={() => {
-            setShowViewReportModal(false);
-          }}
-        />
       </View>
     );
   };
