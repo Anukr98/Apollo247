@@ -1122,6 +1122,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'Vaccine_Type_QA',
       PROD: 'Vaccine_Type_Prod',
     },
+    Consult_Package_TnC: {
+      QA: 'Consult_Package_TnC_QA',
+      PROD: 'Consult_Package_TnC_PROD',
+    },
     Cancel_Threshold_Pre_Vaccination: {
       QA: 'Cancel_Threshold_Pre_Vaccination_QA',
       PROD: 'Cancel_Threshold_Pre_Vaccination_Prod',
@@ -1205,6 +1209,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     TrueCaller_Login_Enabled: {
       QA: 'TrueCaller_Login_Enabled_QA',
       PROD: 'TrueCaller_Login_Enabled_PROD',
+    },
+    Consult_Free_Book_Key: {
+      QA: 'Consult_Free_Book_Key_QA',
+      PROD: 'Consult_Free_Book_Key_PROD',
     },
     LongChat_Launch_Date: {
       QA: 'LONG_CHAT_LAUNCH_DATE_QA',
@@ -1424,6 +1432,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         return JSON.parse(config.getString(key)) || AppConfig.Configuration.Vaccination_Cities_List;
       });
 
+      setAppConfig('Consult_Package_TnC', 'Consult_Package_TnC', (key) => {
+        try {
+          return JSON.parse(config.getString(key));
+        } catch (error) {}
+
+        return AppConfig.Configuration.Consult_Package_TnC;
+      });
+
       setAppConfig('Vaccine_Type', 'Vaccine_Type', (key) => {
         return JSON.parse(config.getString(key)) || AppConfig.Configuration.Vaccine_Type;
       });
@@ -1490,6 +1506,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         config.getBoolean(key)
       );
 
+      setAppConfig('Consult_Free_Book_Key', 'Consult_Free_Book_Key', (key) =>
+        config.getString(key)
+      );
+
       const nudgeMessagePharmacyHome = getRemoteConfigValue(
         'Nudge_Message_Pharmacy_Home',
         (key) => JSON.parse(config.getString(key)) || null
@@ -1533,6 +1553,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) => config.getString(key)
       );
 
+      const disincentivizeCodMessage = getRemoteConfigValue(
+        'Disincentivize_COD_Message',
+        (key) => config.getString(key) || ''
+      );
+
+      disincentivizeCodMessage && setPaymentCodMessage?.(disincentivizeCodMessage);
       setAppConfig('Diagnostics_No_Saving_Text', 'DIAGNOSTICS_NO_CIRCLE_SAVINGS_TEXT', (key) =>
         config.getString(key)
       );

@@ -182,7 +182,6 @@ export enum WebEngageEventName {
   COVID_VACCINATION_SECTION_CLICKED = 'Covid Vaccination Section Clicked',
   USER_LOCATION_CONSULT = 'User Location consult',
   USER_CHANGED_LOCATION = 'Change location',
-
   // Diagnostics Events
   DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
   DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'Diagnostic pincode entered',

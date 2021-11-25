@@ -1393,6 +1393,21 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  const renderViewReportModal = () => {
+    return (
+      <View>
+        <TestPdfRender
+          uri={clickedItem?.labReportURL}
+          order={clickedItem}
+          isReport={true}
+          onPressClose={() => {
+            setShowViewReportModal(false);
+          }}
+        />
+      </View>
+    );
+  };
+
   const renderLocateMe = () => {
     return (
       <>
@@ -1412,21 +1427,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
           </View>
         </View>
       </>
-    );
-  };
-
-  const renderViewReportModal = () => {
-    return (
-      <View>
-        <TestPdfRender
-          uri={clickedItem?.labReportURL}
-          order={clickedItem}
-          isReport={true}
-          onPressClose={() => {
-            setShowViewReportModal(false);
-          }}
-        />
-      </View>
     );
   };
 

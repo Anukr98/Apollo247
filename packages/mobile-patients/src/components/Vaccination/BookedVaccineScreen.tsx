@@ -50,7 +50,6 @@ import { buildVaccineApolloClient } from '@aph/mobile-patients/src/components/Va
 import { GetAllAppointments } from '@aph/mobile-patients/src/graphql/types/GetAllAppointments';
 import {
   GET_ALL_VACCINATION_APPOINTMENTS,
-  GET_VACCINE_BOOKING_LIMIT,
   GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetBenefitAvailabilityInfoByCMSIdentifier } from '@aph/mobile-patients/src/graphql/types/GetBenefitAvailabilityInfoByCMSIdentifier';
@@ -100,6 +99,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 24,
   },
+
   noBookingTitle: {
     marginTop: 25,
     ...theme.viewStyles.text('M', 20, '#646464'),

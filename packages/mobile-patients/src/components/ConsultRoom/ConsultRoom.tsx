@@ -1682,7 +1682,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           isOnlineConsultMode: true,
           consultTypeCta: 'Primary',
         });
-        //props.navigation.navigate(AppRoutes.PostShareAppointmentSelectorScreen);
+
+        // props.navigation.navigate(AppRoutes.PackagePaymentStatus, {
+        //   //paymentId: '202111170922121894',
+        // });
       },
     },
     {
@@ -2074,6 +2077,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         mobile_number: g(currentPatient, 'mobileNumber'),
         status: ['active', 'deferred_active', 'deferred_inactive', 'disabled'],
       };
+
       const res = await client.query<GetSubscriptionsOfUserByStatus>({
         query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
         fetchPolicy: 'no-cache',
@@ -2081,6 +2085,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       });
 
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+
       if (data) {
         let activeSubscriptions = {};
         Object.keys(data).forEach((subscription) => {
@@ -3816,11 +3821,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       'CTA Clicked': item?.title,
     };
     postHomeWEGEvent(WebEngageEventName.COVID_VACCINATION_SECTION_CLICKED, undefined, attibutes);
-
-    console.log(
-      'check  ConsultRoom  handleCovidCTA vaccinationSubscriptionInclusionId ---',
-      vaccinationSubscriptionInclusionId
-    );
 
     try {
       if (item?.action === string.vaccineBooking.CORPORATE_VACCINATION) {

@@ -1351,6 +1351,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         'IP ID': item?.ip_id,
         'IP section name': item?.ip_section_name,
       };
+      
       postWebEngageEvent(WebEngageEventName.PHARMACY_BANNER_CLICK, eventAttributes);
       postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_BANNER, cleverTapEventAttributes);
       if (item.category_id) {

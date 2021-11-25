@@ -1767,7 +1767,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         invoiceURL
         labReportURL
         passportNo
-        attributesObj{
+        attributesObj {
           initialCollectionCharges
           distanceCharges
           homeCollectionCharges
@@ -3324,7 +3324,7 @@ export const GET_MEDICAL_PRISM_RECORD_V3 = gql`
             result
             range
             outOfRange
-            resultDate
+            # resultDate
           }
           fileUrl
           testResultFiles {
@@ -6662,6 +6662,67 @@ export const GET_CAMPAIGN_ID_FOR_REFERRER = gql`
   query campaignInfo($camp: CAMPAIGN_TYPES!) {
     getCampaignInfoByCampaignType(campaignType: $camp) {
       id
+    }
+  }
+`;
+
+export const CANCELL_SUBSCRIPTION = gql`
+  mutation CancelSubscription($CancelSubscriptionInput: CancelSubscriptionInput!) {
+    CancelSubscription(CancelSubscriptionInput: $CancelSubscriptionInput) {
+      code
+      success
+      message
+      response {
+        mobile_number
+        status
+        _id
+        start_date
+        end_date
+      }
+    }
+  }
+`;
+export const GET_PACKAGE_PURCHASE_INFO = gql`
+  query getPackagePurchaseInfo($order_id: String!) {
+    getOrderInternal(order_id: $order_id) {
+      id
+      customer_id
+      payment_order_id
+      payment_status
+      total_amount
+      SubscriptionOrderDetails {
+        end_date
+        payment_reference
+        group_plan {
+          meta {
+            description
+          }
+        }
+        group_sub_plan {
+          plan_id
+          name
+        }
+      }
+    }
+  }
+`;
+
+export const BOOK_PACKAGE_CONSULT = gql`
+  mutation bookFreeAppointmentForPharmacy(
+    $patientId: String!
+    $subscriptionDetailsInput: SubscriptionDetailsInput
+  ) {
+    bookFreeAppointmentForPharmacy(
+      patientId: $patientId
+      subscriptionOrderDetails: $subscriptionDetailsInput
+    ) {
+      appointmentDateTime
+      appointmentId
+      displayId
+      doctorName
+      doctorId
+      isError
+      error
     }
   }
 `;
