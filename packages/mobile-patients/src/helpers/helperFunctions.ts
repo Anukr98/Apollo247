@@ -1623,7 +1623,6 @@ export const onCleverTapUserLogin = async (_currentPatient: any) => {
       ...(_currentPatient?.emailAddress && { Email: _currentPatient?.emailAddress }),
       ...(_currentPatient?.photoUrl && { Photo: _currentPatient?.photoUrl }),
       ...(_currentPatient?.createdDate && { CreatedDate: _currentPatient?.createdDate }),
-      isReferee: _currentPatient?.isReferee || false,
     };
     CleverTap.onUserLogin(_userProfile);
     AsyncStorage.setItem('createCleverTapProifle', 'true');
@@ -1635,6 +1634,12 @@ export const onCleverTapUserLogin = async (_currentPatient: any) => {
 export const updateUserProfileWithReferrInformation = (totalReferredUser: Number | string) => {
   CleverTap.onUserLogin({
     TotalReferredUsers: totalReferredUser
+  });
+}
+
+export const setRefereeFlagForNewRegisterUser = (isReferee: boolean) => {
+  CleverTap.onUserLogin({
+    isReferee,
   });
 }
 
@@ -2235,7 +2240,6 @@ export const InitiateAppsFlyer = (
         if (res.data.af_sub1 !== null) {
           AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
         }
-
         if (res.data.linkToUse !== null && res.data.linkToUse === 'ForReferrarInstall') {
           const responseData = res.data;
           setAppReferralData({
@@ -3033,9 +3037,9 @@ export const calculateCashbackForItem = (
   const subCategoryLevelkey = `${type_id?.toUpperCase()}~${subcategory}`;
   const skuLevelkey = `${type_id?.toUpperCase()}~${subcategory}~${sku}`;
   let cashbackFactor = 0;
-  if ( circleCashback?.[skuLevelkey] >= 0) {
+  if (circleCashback?.[skuLevelkey] >= 0) {
     cashbackFactor = circleCashback?.[skuLevelkey];
-  } else if ( circleCashback?.[subCategoryLevelkey] >= 0) {
+  } else if (circleCashback?.[subCategoryLevelkey] >= 0) {
     cashbackFactor = circleCashback?.[subCategoryLevelkey];
   } else {
     cashbackFactor = circleCashback?.[categoryLevelkey];

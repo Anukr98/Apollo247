@@ -1446,7 +1446,7 @@
     "referAndEarnLine2": "Your friends get ₹100 on signup",
     "earnNow": "Earn Now",
     "willBeCreditSoon":"Will be credited in a few mins*",
-    "yourFriendGot": "Your friend got",
+    "yourFriendGot": "Your friend get ₹100 on signup & you get ₹100 on their first order.",
     "onSignUp": "on signup &",
     "youGet": "You get",
     "onTheirFirst": "on their first",
@@ -1461,15 +1461,15 @@
     "FAQs": "FAQs",
     "checkRewards": "Check Rewards",
     "ExpireON": "Expires on",
-    "reedemNow": "Reedem Now",
-    "claimed": "Claimed",
+    "reedemNow": "REEDEM NOW",
+    "claimed": "Earned",
     "pending": "Pending",
     "youEarnedRefreePoints": "You earned refree points on",
     "firstTimeLogin": " first time Login.",
     "refreeName": "Shriya Singh",
     "expireOn": "Expires on 12 Sep,21",
     "purchasedOn": "Purchased On 20th July",
-    "signedUp": "Signed up {signedUpDate},Purchase is Pending.",
+    "signedUp": "Signed up {signedUpDate}\nPurchase is Pending.",
     "purchaseIsPending": ", ",
     "noReferralReward": "No referral rewards",
     "youHaveNotInvited": "You have not invited your friends yet",
@@ -1483,7 +1483,7 @@
     "consultDoctorIn15Minutes": "Consult doctor in 15 mins",
     "labTestAtHome": "Lab test at home",
     "hc": "HC",
-    "shareLinkText": "Save on medical bills like me!\nSign up on Apollo 247 app and get Flat ₹100 health credits",
+    "shareLinkText": "Save on medical bills like me!\nSign up on Apollo 247 app and get Flat ₹100 worth of health credits",
     "referalLink": "Referrel Link",
     "refererTermsAndCondition": [
       {
@@ -1550,7 +1550,7 @@
       {
         "id": 4,
         "question": "Will these rewards have an expiry duration?",
-        "answer": "Yes. The reward will expire in 7 days. Apollo247 reserves the right to change the expiry date of upcoming rewards at any point in time at its discretion."
+        "answer": "Yes. The reward will expire in 30 days. Apollo247 reserves the right to change the expiry date of upcoming rewards at any point in time at its discretion."
       },
       {
         "id": 5,

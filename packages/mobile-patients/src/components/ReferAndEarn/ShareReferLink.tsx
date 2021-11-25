@@ -8,12 +8,19 @@ import {
   TouchableOpacity,
   Clipboard,
   Alert,
+  ImageBackground,
 } from 'react-native';
 import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import appsFlyer from 'react-native-appsflyer';
 import Share from 'react-native-share';
-import { g, replaceVariableInString } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  getCleverTapCircleMemberValues,
+  getUserType,
+  postCleverTapEvent,
+  replaceVariableInString,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -37,6 +44,9 @@ import {
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import moment from 'moment';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 export interface ShareReferLinkProps extends NavigationScreenProps {}
 
@@ -61,6 +71,9 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
     referrerLink,
     setReferrerLink,
   } = useReferralProgram();
+
+  const { pharmacyCircleAttributes } = useShoppingCart();
+
   const { navigation } = props;
 
   useEffect(() => {
@@ -122,12 +135,50 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
       showAppsToView: true,
       social: Share.Social.WHATSAPP,
     };
-    Share.shareSingle(shareOptions).catch((e) => console.log(e));
+    Share.shareSingle(shareOptions)
+      .then(() => {
+        const eventArributes = {
+          ...getReferEarnCommonAttributes(),
+          'Nav src': 'Whatsapp',
+        };
+        postCleverTapEvent(CleverTapEventName.REFER_EARN_CTA_CLICKED, {
+          ...eventArributes,
+        });
+      })
+      .catch((e) => {
+        console.log(e);
+      });
   };
 
   const copyLinkToShare = () => {
     Clipboard.setString(string.referAndEarn.shareLinkText + '\n' + referrerLink);
     setLinkCopied(true);
+    const eventArributes = {
+      ...getReferEarnCommonAttributes(),
+      'Nav src': 'Copy Link',
+    };
+    postCleverTapEvent(CleverTapEventName.REFER_EARN_CTA_CLICKED, {
+      ...eventArributes,
+    });
+  };
+
+  const getReferEarnCommonAttributes = () => {
+    return {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
+      'Circle Member':
+        getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+        undefined,
+      'Page name': 'Referral page',
+    };
   };
 
   const checkReferralExpirationDate = (registerationDate: String) => {
@@ -158,27 +209,32 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
   };
   const renderReferShare = () => {
     return (
-      <LinearGradientComponent
-        colors={[theme.colors.BLUE_GRADIENT_ONE, theme.colors.BLUE_GRADIENT_ONE]}
+      <ImageBackground
+        source={require('@aph/mobile-patients/src/images/referAndEarn/shareLinkBanner/gradientBackground.webp')}
         style={styles.referShareMainContainer}
       >
         <View>
           <View style={styles.referSharetextMainContainer}>
             <View style={styles.referSharetextContainer}>
               <Text style={styles.referSharetext}>{string.referAndEarn.referAndEarn}</Text>
-              <Text style={styles.referShareamount}>₹{referShareAmount && referShareAmount}</Text>
+              <Text style={styles.referShareamount}>
+                <Text style={styles.rupeesSymbolForBanner}>{string.referAndEarn.currency}</Text>
+                {referShareAmount && referShareAmount}
+              </Text>
               <View>
                 <Text style={styles.referShareotherDetails}>
-                  {string.referAndEarn.yourFriendGot} ₹{referShareAmount && referShareAmount}{' '}
-                  {string.referAndEarn.onSignUp}{' '}
-                </Text>
-                <Text style={styles.referShareotherDetails}>
-                  {string.referAndEarn.youGet} ₹{referShareAmount && referShareAmount}{' '}
-                  {string.referAndEarn.onTheirFirst}{' '}
+                  {string.referAndEarn.yourFriendGot}
                 </Text>
               </View>
             </View>
-            <ShareLinkBannerIcon />
+
+            <ImageBackground
+              source={require('@aph/mobile-patients/src/images/referAndEarn/shareLinkBanner/imageWaveBackground.webp')}
+              resizeMode="cover"
+              style={styles.bannerImageBackgroud}
+            >
+              <ShareLinkBannerIcon style={styles.bannerInnerImage} />
+            </ImageBackground>
           </View>
           <View style={styles.referSharebtnTextContainer}>
             <View style={styles.referSharereferViaContainer}>
@@ -200,7 +256,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
             </View>
           </View>
         </View>
-      </LinearGradientComponent>
+      </ImageBackground>
     );
   };
 
@@ -248,14 +304,32 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
         </View>
         <View style={styles.howWorklinkMainContainer}>
           <TouchableOpacity
-            onPress={() => navigation.navigate('RefererTermsAndCondition')}
+            onPress={() => {
+              const eventArributes = {
+                ...getReferEarnCommonAttributes(),
+                'Nav src': 'TnC',
+              };
+              postCleverTapEvent(CleverTapEventName.REFERRAL_TNC_FAQ_CLICKED, {
+                ...eventArributes,
+              });
+              navigation.navigate('RefererTermsAndCondition');
+            }}
             style={styles.howWorklinkBtnForTC}
           >
             <View style={styles.howWorklinkContainer} />
             <Text style={styles.howWorklinkText}>{string.referAndEarn.termsAndCondition}</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => navigation.navigate('RefererFAQ')}
+            onPress={() => {
+              const eventArributes = {
+                ...getReferEarnCommonAttributes(),
+                'Nav src': 'FAQ',
+              };
+              postCleverTapEvent(CleverTapEventName.REFERRAL_TNC_FAQ_CLICKED, {
+                ...eventArributes,
+              });
+              navigation.navigate('RefererFAQ');
+            }}
             style={styles.howWorklinkBtn}
           >
             <View style={styles.howWorklinkContainer} />
@@ -273,6 +347,13 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
     return (
       <TouchableOpacity
         onPress={() => {
+          const eventArributes = {
+            ...getReferEarnCommonAttributes(),
+            'Nav src': 'Referral Page',
+          };
+          postCleverTapEvent(CleverTapEventName.REFERRAL_CHECK_REWARDS_CLICKED, {
+            ...eventArributes,
+          });
           navigation.navigate('YourRewardsScreen');
         }}
         style={styles.checkRewardbtn}
@@ -357,35 +438,37 @@ const styles = StyleSheet.create({
   },
   initialHCreedemContainerText: {
     color: theme.colors.TANGERINE_YELLOW,
-    fontWeight: '800',
+    fontWeight: 'bold',
     fontSize: 14,
   },
   referShareMainContainer: {
     paddingHorizontal: 20,
     paddingVertical: 20,
-    shadowOffset: { width: 0, height: 5 },
+    shadowOffset: { width: 100, height: 0 },
     elevation: 15,
   },
   referSharetextContainer: {
-    width: '50%',
+    width: '60%',
   },
   referSharetextMainContainer: {
     flexDirection: 'row',
   },
   referSharetext: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '700',
-    color: theme.colors.WHITE,
+    color: theme.colors.LIGHT_BLUE,
+    marginBottom: -12,
   },
   referShareamount: {
     fontSize: 35,
     fontWeight: 'bold',
-    color: theme.colors.WHITE,
+    color: theme.colors.LIGHT_BLUE,
   },
   referShareotherDetails: {
     fontSize: 13,
-    color: theme.colors.WHITE,
+    color: theme.colors.LIGHT_BLUE,
     fontWeight: '600',
+    marginTop: 8,
   },
   referSharebtnTextContainer: {
     alignItems: 'center',
@@ -399,17 +482,17 @@ const styles = StyleSheet.create({
   },
   referSharereferViaHRLineLeft: {
     width: 50,
-    backgroundColor: theme.colors.WHITE,
+    backgroundColor: theme.colors.LIGHT_BLUE,
     height: 1,
     marginRight: 5,
   },
   referSharereferViaHRLineRight: {
     width: 50,
-    backgroundColor: theme.colors.WHITE,
+    backgroundColor: theme.colors.LIGHT_BLUE,
     height: 1,
     marginLeft: 5,
   },
-  referSharereferViaText: { color: theme.colors.WHITE },
+  referSharereferViaText: { color: theme.colors.LIGHT_BLUE },
   referSharebtnContainer: {
     width: 200,
     flexDirection: 'row',
@@ -510,5 +593,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginVertical: 25,
     alignItems: 'center',
+  },
+  rupeesSymbolForBanner: {
+    fontSize: 38,
+    fontWeight: '500',
+  },
+  bannerImageBackgroud: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 5,
+  },
+  bannerInnerImage: {
+    width: 155,
+    height: 115,
   },
 });
