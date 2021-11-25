@@ -22,11 +22,7 @@ import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelect
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { Prescriptions } from '@aph/mobile-patients/src/components/Medicines/Components/Prescriptions';
 import { UploadPrescription } from '@aph/mobile-patients/src/components/MedicineCart/Components/UploadPrescription';
-import {
-  pinCodeServiceabilityApi247,
-  getPlaceInfoByPincode,
-  nonCartTatApi247,
-} from '@aph/mobile-patients/src/helpers/apiCalls';
+import { getPlaceInfoByPincode, nonCartTatApi247 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   SET_DEFAULT_ADDRESS,
   UPLOAD_DOCUMENT,

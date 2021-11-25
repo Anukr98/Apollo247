@@ -919,11 +919,14 @@ export const ShoppingCartProvider: React.FC = (props) => {
   }, [orders, coupon, cartItems, deliveryCharges, grandTotal]);
 
   useEffect(() => {
-    if (asyncPincode) {
-      const response = checkIfPincodeIsServiceable(asyncPincode);
-      setAxdcCode(response?.axdcCode);
-      setVdcType(response?.vdcType);
-      setIsPharmacyPincodeServiceable(!!response?.isServiceable);
+    if (asyncPincode?.pincode) {
+      checkIfPincodeIsServiceable(asyncPincode?.pincode)
+        .then((response) => {
+          setAxdcCode(response?.axdcCode);
+          setVdcType(response?.vdcType);
+          setIsPharmacyPincodeServiceable(!!response?.isServiceable);
+        })
+        .catch((error) => {});
     }
   }, [asyncPincode]);
 

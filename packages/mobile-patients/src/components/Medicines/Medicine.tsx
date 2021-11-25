@@ -277,7 +277,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     locationDetails,
     pharmacyLocation,
     setPharmacyLocation,
-    isPharmacyLocationServiceable,
     setPharmacyLocationServiceable,
     medicinePageAPiResponse,
     setMedicinePageAPiResponse,
@@ -325,6 +324,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setMedicineHotSellersData,
     setAxdcCode,
     axdcCode,
+    isPharmacyPincodeServiceable,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
@@ -527,145 +527,142 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  useEffect(() => {
+    setServiceabilityMsg(
+      isPharmacyPincodeServiceable ? '' : 'Services unavailable. Change delivery location.'
+    );
+    setPharmacyLocationServiceable!(!!isPharmacyPincodeServiceable);
+    if (!isPharmacyPincodeServiceable && asyncPincode?.pincode) callNearbyStoreApi();
+  }, [isPharmacyPincodeServiceable]);
+
+  const callNearbyStoreApi = () => {
+    getNearByStoreDetailsApi(asyncPincode?.pincode)
+      .then((response: any) => {
+        showAphAlert!({
+          title: 'We’ve got you covered !!',
+          description: 'We are servicing your area through the nearest Pharmacy, Call to Order!',
+          titleStyle: theme.viewStyles.text('SB', 18, '#01475b'),
+          ctaContainerStyle: { flexDirection: 'column' },
+          unDismissable: true,
+          children: (
+            <View style={{ marginBottom: 15, marginTop: 12, marginHorizontal: 20 }}>
+              <TouchableOpacity
+                activeOpacity={1}
+                style={{
+                  backgroundColor: '#fc9916',
+                  borderRadius: 5,
+                  height: 38,
+                  marginBottom: 5,
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  flexDirection: 'row',
+                  shadowColor: 'rgba(0,0,0,0.2)',
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: 0,
+                  shadowRadius: 0,
+                  elevation: 0,
+                  paddingLeft: 12,
+                }}
+                onPress={() =>
+                  onPressCallNearestPharmacy(
+                    response.data && response.data.phoneNumber ? response.data.phoneNumber : ''
+                  )
+                }
+              >
+                <OrangeCallIcon style={{ width: 24, height: 24, marginRight: 8 }} />
+                <Text style={{ ...theme.viewStyles.text('B', 13, '#ffffff', 1, 24, 0) }}>
+                  {'CALL THE NEAREST PHARMACY'}
+                </Text>
+              </TouchableOpacity>
+              <Button
+                title={'CHANGE THE ADDRESS'}
+                style={{
+                  backgroundColor: '#fc9916',
+                  borderRadius: 5,
+                  height: 38,
+                  marginBottom: 5,
+                  justifyContent: 'flex-start',
+                  shadowColor: 'rgba(0,0,0,0.2)',
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: 0,
+                  shadowRadius: 0,
+                  elevation: 0,
+                  paddingLeft: 12,
+                }}
+                titleTextStyle={{ ...theme.viewStyles.text('B', 13, '#ffffff', 1, 24, 0) }}
+                onPress={() => showAccessAccessLocationPopup(addresses, false)}
+              />
+            </View>
+          ),
+        });
+      })
+      .catch((error) => {
+        showAphAlert!({
+          unDismissable: isunDismissable(),
+          title: 'We’re sorry!',
+          description:
+            'We are not serviceable in your area. Please change your location or call 1860 500 0101 for Pharmacy stores nearby.',
+          titleStyle: theme.viewStyles.text('SB', 18, '#890000'),
+          ctaContainerStyle: { justifyContent: 'flex-end' },
+          CTAs: [
+            {
+              text: 'CHANGE THE ADDRESS',
+              type: 'orange-link',
+              onPress: () => showAccessAccessLocationPopup(addresses),
+            },
+          ],
+        });
+      });
+  };
+
+  const onPressCallNearestPharmacy = (pharmacyPhoneNumber: string) => {
+    let from = currentPatient.mobileNumber;
+    let to = pharmacyPhoneNumber;
+    let caller_id = AppConfig.Configuration.EXOTEL_CALLER_ID;
+    const param = {
+      fromPhone: from,
+      toPhone: to,
+      callerId: caller_id,
+    };
+    CalltheNearestPharmacyEvent();
+    globalLoading!(true);
+    setPageLoading!(true);
+
+    callToExotelApi(param)
+      .then((response) => {
+        hideAphAlert!();
+        globalLoading!(false);
+        setPageLoading!(false);
+      })
+      .catch((error) => {
+        hideAphAlert!();
+        globalLoading!(false);
+        setPageLoading!(false);
+        showAphAlert!({
+          title: string.common.uhOh,
+          description: 'We could not connect to the pharmacy now. Please try later.',
+        });
+      });
+  };
+
+  const CalltheNearestPharmacyEvent = () => {
+    let eventAttributes: WebEngageEvents[WebEngageEventName.CALL_THE_NEAREST_PHARMACY] = {
+      pincode: asyncPincode?.pincode,
+      'Mobile Number': currentPatient.mobileNumber,
+    };
+    postWebEngageEvent(WebEngageEventName.CALL_THE_NEAREST_PHARMACY, eventAttributes);
+  };
+
   const updateServiceability = (
     pincode: string,
     type?: 'autoDetect' | 'pincode' | 'addressSelect'
   ) => {
-    const CalltheNearestPharmacyEvent = () => {
-      let eventAttributes: WebEngageEvents[WebEngageEventName.CALL_THE_NEAREST_PHARMACY] = {
-        pincode: pincode,
-        'Mobile Number': currentPatient.mobileNumber,
-      };
-      postWebEngageEvent(WebEngageEventName.CALL_THE_NEAREST_PHARMACY, eventAttributes);
-    };
-
-    const onPressCallNearestPharmacy = (pharmacyPhoneNumber: string) => {
-      let from = currentPatient.mobileNumber;
-      let to = pharmacyPhoneNumber;
-      let caller_id = AppConfig.Configuration.EXOTEL_CALLER_ID;
-      const param = {
-        fromPhone: from,
-        toPhone: to,
-        callerId: caller_id,
-      };
-      CalltheNearestPharmacyEvent();
-      globalLoading!(true);
-      setPageLoading!(true);
-
-      callToExotelApi(param)
-        .then((response) => {
-          hideAphAlert!();
-          globalLoading!(false);
-          setPageLoading!(false);
-        })
-        .catch((error) => {
-          hideAphAlert!();
-          globalLoading!(false);
-          setPageLoading!(false);
-          showAphAlert!({
-            title: string.common.uhOh,
-            description: 'We could not connect to the pharmacy now. Please try later.',
-          });
-        });
-    };
-
-    checkIfPincodeIsServiceable(pincode)
-      .then((response) => {
-        const { isServiceable: servicable, axdcCode } = response;
-        setAxdcCode && setAxdcCode(axdcCode);
-        setServiceabilityMsg(servicable ? '' : 'Services unavailable. Change delivery location.');
-        setPharmacyLocationServiceable!(!!servicable);
-        type == 'autoDetect' && WebEngageEventAutoDetectLocation(pincode, !!servicable);
-        type == 'autoDetect' && CleverTapEventAutoDetectLocation(pincode, !!servicable);
-        type == 'pincode' && webEngageDeliveryPincodeEntered(pincode, !!servicable);
-        type == 'pincode' && CleverTapDeliveryPincodeEntered(pincode, !!servicable);
-        globalLoading!(false);
-        if (!servicable) {
-          getNearByStoreDetailsApi(pincode)
-            .then((response: any) => {
-              showAphAlert!({
-                title: 'We’ve got you covered !!',
-                description:
-                  'We are servicing your area through the nearest Pharmacy, Call to Order!',
-                titleStyle: theme.viewStyles.text('SB', 18, '#01475b'),
-                ctaContainerStyle: { flexDirection: 'column' },
-                children: (
-                  <View style={{ marginBottom: 15, marginTop: 12, marginHorizontal: 20 }}>
-                    <TouchableOpacity
-                      activeOpacity={1}
-                      style={{
-                        backgroundColor: '#fc9916',
-                        borderRadius: 5,
-                        height: 38,
-                        marginBottom: 5,
-                        justifyContent: 'flex-start',
-                        alignItems: 'center',
-                        flexDirection: 'row',
-                        shadowColor: 'rgba(0,0,0,0.2)',
-                        shadowOffset: { width: 0, height: 0 },
-                        shadowOpacity: 0,
-                        shadowRadius: 0,
-                        elevation: 0,
-                        paddingLeft: 12,
-                      }}
-                      onPress={() =>
-                        onPressCallNearestPharmacy(
-                          response.data && response.data.phoneNumber
-                            ? response.data.phoneNumber
-                            : ''
-                        )
-                      }
-                    >
-                      <OrangeCallIcon style={{ width: 24, height: 24, marginRight: 8 }} />
-                      <Text style={{ ...theme.viewStyles.text('B', 13, '#ffffff', 1, 24, 0) }}>
-                        {'CALL THE NEAREST PHARMACY'}
-                      </Text>
-                    </TouchableOpacity>
-                    <Button
-                      title={'CHANGE THE ADDRESS'}
-                      style={{
-                        backgroundColor: '#fc9916',
-                        borderRadius: 5,
-                        height: 38,
-                        marginBottom: 5,
-                        justifyContent: 'flex-start',
-                        shadowColor: 'rgba(0,0,0,0.2)',
-                        shadowOffset: { width: 0, height: 0 },
-                        shadowOpacity: 0,
-                        shadowRadius: 0,
-                        elevation: 0,
-                        paddingLeft: 12,
-                      }}
-                      titleTextStyle={{ ...theme.viewStyles.text('B', 13, '#ffffff', 1, 24, 0) }}
-                      onPress={() => showAccessAccessLocationPopup(addresses, false)}
-                    />
-                  </View>
-                ),
-              });
-            })
-            .catch((error) => {
-              showAphAlert!({
-                unDismissable: isunDismissable(),
-                title: 'We’re sorry!',
-                description:
-                  'We are not serviceable in your area. Please change your location or call 1860 500 0101 for Pharmacy stores nearby.',
-                titleStyle: theme.viewStyles.text('SB', 18, '#890000'),
-                ctaContainerStyle: { justifyContent: 'flex-end' },
-                CTAs: [
-                  {
-                    text: 'CHANGE THE ADDRESS',
-                    type: 'orange-link',
-                    onPress: () => showAccessAccessLocationPopup(addresses),
-                  },
-                ],
-              });
-            });
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('Medicine_pinCodeServiceabilityApi', e);
-        setServiceabilityMsg('Sorry, unable to check serviceability.');
-      });
+    type == 'autoDetect' &&
+      WebEngageEventAutoDetectLocation(pincode, !!isPharmacyPincodeServiceable);
+    type == 'autoDetect' &&
+      CleverTapEventAutoDetectLocation(pincode, !!isPharmacyPincodeServiceable);
+    type == 'pincode' && webEngageDeliveryPincodeEntered(pincode, !!isPharmacyPincodeServiceable);
+    type == 'pincode' && CleverTapDeliveryPincodeEntered(pincode, !!isPharmacyPincodeServiceable);
   };
 
   const handleUpdatePlaceInfoByPincodeError = (e: Error) => {
@@ -2140,7 +2137,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       null,
       props.navigation,
       currentPatient,
-      !!isPharmacyLocationServiceable,
+      !!isPharmacyPincodeServiceable,
       { source: 'Pharmacy Partial Search', categoryId: category_id },
       JSON.stringify(cartItems),
       () => setItemsLoading({ ...itemsLoading, [sku]: false }),

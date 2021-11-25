@@ -330,12 +330,19 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, [newAddressAdded, selectedAddress, deliveryTime]);
 
   useEffect(() => {
+    if (asyncPincode?.pincode) fetchDeliveryTime(asyncPincode?.pincode);
+  }, [axdcCode, isPharmacyPincodeServiceable]);
+
+  useEffect(() => {
     if (!isPharmacyPincodeServiceable) {
       const unServiceableMsg =
         'Sorry! Your Pincode is not serviceable yet. Please try with an alternative pincode.';
       setIsInStock(false);
       setdeliveryTime('');
       setdeliveryError(unServiceableMsg);
+      setshowDeliverySpinner(false);
+    } else {
+      setdeliveryError('');
       setshowDeliverySpinner(false);
     }
   }, [isPharmacyPincodeServiceable]);
@@ -1016,7 +1023,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             setLocationValues(saveAddress);
             setDeliveryAddressId!('');
             setpincode(pinCode);
-            fetchDeliveryTime(pinCode, true);
             setLoading!(false);
           } else {
             setLoading!(false);

@@ -4141,10 +4141,13 @@ export const checkIfPincodeIsServiceable = async (pincode: string) => {
     const axdcCode = data?.response?.axdcCode;
     const isServiceable = data?.response?.servicable;
     const vdcType = data?.response?.vdcType || data?.response?.['VDC Type'];
-    return {
-      axdcCode,
-      isServiceable,
-      vdcType,
-    }
-  } catch (error) {}
+    const serviceabilityDetails = {
+      axdcCode: axdcCode,
+      isServiceable: isServiceable,
+      vdcType: vdcType,
+    };
+    return serviceabilityDetails;
+  } catch (error) {
+    return null;
+  }
 }
