@@ -139,6 +139,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
     string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
   ];
+  const CANCEL_REASON_OPTIONS = [
+    string.diagnostics.reasonForCancel_TestOrder.needModifyOrder,
+    string.diagnostics.reasonForCancel_TestOrder.needModifyPatient,
+  ];
   const ALL = 'All';
 
   const {
@@ -1182,7 +1186,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                       height:
                         selectCancelReason === item &&
                         selectedOrderRescheduleCount! < 3 &&
-                        CANCEL_RESCHEDULE_OPTION.includes(selectCancelReason)
+                        (CANCEL_RESCHEDULE_OPTION.includes(selectCancelReason) ||
+                        CANCEL_REASON_OPTIONS.includes(selectCancelReason))
                           ? 100
                           : 40,
                       paddingTop: 10,
@@ -1209,6 +1214,44 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                       </Text>
                       <TouchableOpacity activeOpacity={1} onPress={() => _onPressRescheduleNow()}>
                         <Text style={styles.yellowText}>RESCHEDULE NOW</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : null}
+                  {selectCancelReason === item &&
+                  selectedOrderRescheduleCount! < 3 &&
+                  selectCancelReason ==
+                    string.diagnostics.reasonForCancel_TestOrder.needModifyPatient ? (
+                    <View style={{ marginTop: 10, marginBottom: 5 }}>
+                      <Text style={styles.wantToReschedule}>
+                        {string.diagnostics.needToAddPaitent}
+                      </Text>
+                      <TouchableOpacity
+                        activeOpacity={1}
+                        onPress={() => {
+                          _onPressEditPatient(selectedOrder!);
+                        }}
+                      >
+                        <Text style={styles.yellowText}>EDIT PATIENT</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : null}
+
+                  {selectCancelReason === item &&
+                  selectedOrderRescheduleCount! < 3 &&
+                  selectCancelReason ==
+                    string.diagnostics.reasonForCancel_TestOrder.needModifyOrder ? (
+                    <View style={{ marginTop: 10, marginBottom: 5 }}>
+                      <Text style={styles.wantToReschedule}>
+                      {string.diagnostics.needToAddOrder}
+                      </Text>
+                      <TouchableOpacity
+                        activeOpacity={1}
+                        onPress={() => {
+                          setShowCancelReasons(false)
+                          _onPressAddTest(selectedOrder!);
+                        }}
+                      >
+                        <Text style={styles.yellowText}>ADD TESTS</Text>
                       </TouchableOpacity>
                     </View>
                   ) : null}
