@@ -44,7 +44,6 @@ import { NavigationScreenProps } from 'react-navigation';
 import HTML from 'react-native-render-html';
 import LinearGradient from 'react-native-linear-gradient';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import string, { Payment, NewPaymentStatuses } from '@aph/mobile-patients/src/strings/strings.json';
 import PaymentStatusConstants from '@aph/mobile-patients/src/components/MyPayments/constants';
 import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
@@ -54,7 +53,6 @@ import {
   GET_PACKAGE_PURCHASE_INFO,
   GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
   GET_APPOINTMENT_DATA,
-  CONSULT_ORDER_INVOICE,
 } from '@aph/mobile-patients/src/graphql/profiles';
 
 import { PAYMENT_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -65,7 +63,6 @@ import {
   LocationOn,
   RightArrowBlue,
   Copy,
-  TickIcon,
   PdfGray,
   EmailGray,
   Pdf,
@@ -105,7 +102,6 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
   const [showLocationPopup, setShowLocationPopup] = useState<boolean>(false);
   const { locationDetails } = useAppCommonData();
   const client = useApolloClient();
-  const { success, failure, pending } = NewPaymentStatuses;
 
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
 
@@ -116,10 +112,6 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
     props.navigation.getParam('paymentId') || ''
   );
   const oneTapPatient = props.navigation.getParam('oneTapPatient');
-  const [oneTapSpecialityName, setOneTapSpecialityName] = useState<string>('');
-  const [oneTapBenefitId, setOneTapBenefitId] = useState<string>('');
-  const [oneTapSubscriptionId, setOneTapSubscriptionId] = useState<string>('');
-
   const [orderId, setOrderId] = useState<any>('');
   const [planName, setPlanName] = useState<string>('');
   const [planDescription, setPlanDescription] = useState<string>('');
@@ -127,7 +119,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
   const [planId, setPlanId] = useState<string>('');
   const [paymentAmount, setPaymentAmount] = useState<number>(0);
 
-  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const { currentPatient } = useAllCurrentPatients();
 
   const [invoiceUrl, setInvoiceUrl] = useState<string>('');
   const [showEmailInput, setshowEmailInput] = useState<boolean>(false);
@@ -217,7 +209,6 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
             }}
           >
             <EmailGray style={styles.emailIcon} />
-            {/* <Text style={styles.invoiceBtn}>{string.consultPackages.emailInvoice}</Text> */}
             {textComponent(
               string.consultPackages.emailInvoice,
               undefined,
@@ -464,16 +455,6 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
               {locationDetails?.pincode ? `, ${locationDetails?.pincode}` : ''}
             </Text>
           </View>
-          <TouchableOpacity
-            onPress={() => {
-              fireLocationEvent.current = true;
-              userChangedLocation.current = true;
-              setlocationSearchList([]);
-              setShowLocationPopup(true);
-            }}
-          >
-            <Text style={styles.changeLocationBtnTxt}>CHANGE LOCATION</Text>
-          </TouchableOpacity>
         </View>
       </View>
     );
@@ -742,7 +723,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
                     title: 'Uh oh.. :(',
                     description: "Seems like the plan dosen't exists anymore.",
                     onPressOk: () => {
-                      // props.navigation.goBack();
+                      props.navigation.goBack();
                       hideAphAlert!();
                     },
                   });
@@ -762,7 +743,6 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
           });
         })
         .finally(() => {
-          //setLoading(false);
           setShowSpinner?.(false);
         });
   };
@@ -855,7 +835,6 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
 
   return (
     <SafeAreaView style={theme.viewStyles.container}>
-      {/* {renderHeader()} */}
       <View style={styles.container}>
         <ScrollView>
           {renderPaymentStatusHeader()}

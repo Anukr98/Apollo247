@@ -1682,10 +1682,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           isOnlineConsultMode: true,
           consultTypeCta: 'Primary',
         });
-
-        // props.navigation.navigate(AppRoutes.PackagePaymentStatus, {
-        //   //paymentId: '202111170922121894',
-        // });
       },
     },
     {

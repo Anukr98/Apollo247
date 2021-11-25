@@ -22,7 +22,7 @@ import {
   extractPatientDetails,
   navigateToHome,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -47,16 +47,6 @@ export const ConfirmPackageConsult: React.FC<ConfirmPackageConsultProp> = (props
   const subscriptionId = props.navigation.getParam('subscriptionId');
   const subscriptionDetails = props.navigation.getParam('subscriptionDetails');
   const { homeScreenParamsOnPop } = useAppCommonData();
-
-  console.log('check oneTapPatient --- ', oneTapPatient);
-
-  console.log('check patientId --- ', patient?.id);
-
-  console.log('check specialityName --- ', specialityName);
-  console.log('check benefitId --- ', benefitId);
-  console.log('check subscriptionId --- ', subscriptionId);
-
-  console.log('check subscriptionDetails --- ', subscriptionDetails);
 
   const renderHeader = () => {
     return (
@@ -110,8 +100,6 @@ export const ConfirmPackageConsult: React.FC<ConfirmPackageConsultProp> = (props
         context: { headers: { 'x-api-key': AppConfig.Configuration.Consult_Free_Book_Key } },
       });
 
-      console.log('check data  --- ', data);
-
       const { isError, doctorName, appointmentId, error } =
         data?.data?.bookFreeAppointmentForPharmacy || {};
       if (!isError) {
@@ -124,8 +112,6 @@ export const ConfirmPackageConsult: React.FC<ConfirmPackageConsultProp> = (props
         });
       }
     } catch (error) {
-      console.log('check error  --- ', error);
-
       setLoading?.(false);
       showAphAlert?.({
         title: 'Error',
