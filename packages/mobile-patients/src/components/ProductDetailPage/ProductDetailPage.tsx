@@ -99,7 +99,10 @@ import {
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import AsyncStorage from '@react-native-community/async-storage';
 import { NudgeMessage } from '@aph/mobile-patients/src/components/Medicines/Components/NudgeMessage';
-import { GET_PRODUCT_SUBSTITUTES } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_PATIENT_ADDRESS_LIST,
+  GET_PRODUCT_SUBSTITUTES,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   pharmaSubstitution,
   pharmaSubstitutionVariables,
@@ -110,6 +113,10 @@ import { FrequentlyBoughtTogether } from '@aph/mobile-patients/src/components/Pr
 import { postPharmacyAddNewAddressCompleted } from '../../helpers/webEngageEventHelpers';
 import { CouponSectionPDP } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/CouponSectionPDP';
 import { CircleBannerPDP } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/CircleBannerPDP';
+import {
+  getPatientAddressList,
+  getPatientAddressListVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 
 export type ProductPageViewedEventProps = Pick<
   WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED],
@@ -165,6 +172,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     setNewAddressAdded,
     axdcCode,
     isPharmacyPincodeServiceable,
+    setAddresses,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
@@ -267,6 +275,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       fetchDeliveryTime(pincode, false);
     }
   }, [sku]);
+
+  useEffect(() => {
+    if (movedFrom === ProductPageViewedSource.DEEP_LINK) {
+      getMedicineDetails();
+      fetchAddress();
+    }
+  }, [movedFrom]);
 
   useEffect(() => {
     if (medicineDetails?.price && sku) {
@@ -386,6 +401,29 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, [cartItems, currentProductQuantityInCart, currentProductIdInCart]);
 
   useEffect(() => {}, [setShowSuggestedQuantityNudge]);
+
+  const fetchAddress = async () => {
+    try {
+      if (addresses.length) {
+        return;
+      }
+      const response = await client.query<getPatientAddressList, getPatientAddressListVariables>({
+        query: GET_PATIENT_ADDRESS_LIST,
+        variables: { patientId: currentPatient?.id },
+        fetchPolicy: 'no-cache',
+      });
+      const { data } = response;
+      const addressList =
+        (data.getPatientAddressList
+          .addressList as savePatientAddress_savePatientAddress_patientAddress[]) || [];
+      setAddresses!(addressList);
+    } catch (error) {
+      showAphAlert!({
+        title: string.common.uhOh,
+        description: 'Something went wrong, unable to fetch addresses.',
+      });
+    }
+  };
 
   const getMedicineDetails = (zipcode?: string, pinAcdxCode?: string, selectedSku?: string) => {
     setLoading(true);
