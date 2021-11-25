@@ -199,7 +199,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   );
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
-  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTCART);
+  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
+    CALL_TO_ORDER_CTA_PAGE_ID.TESTCART
+  );
   const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
     if (item?.ctaCityId == deliveryAddressCityId) {
       if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTCART)) {
@@ -1553,7 +1555,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     );
   };
 
-  function _onPressAddItemToPatients(itemList: any) {
+  function _onPressAddItemToPatients(selectedPatientList: any) {
     /**
      * add items to rest of the patients as non-selected.
      */
@@ -1568,7 +1570,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         ]);
       } else {
         addCartItem?.(widgetSelectedItem!);
-        itemList?.map((item: any) => {
+        selectedPatientList?.map((item: any) => {
           const getCurrentPatient = patientCartItems?.find(
             (pCartItem) => pCartItem?.patientId === item?.id
           );
@@ -1577,15 +1579,16 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
             ? getCurrentPatientItem.concat(widgetSelectedItem)
             : [widgetSelectedItem];
           addPatientCartItem?.(item?.id, allItems!);
-          updateUnselectedPatientsCart(item);
         });
+        updateUnselectedPatientsCart(selectedPatientList);
       }
     }
   }
 
-  function updateUnselectedPatientsCart(item: any) {
+  function updateUnselectedPatientsCart(itemList: any) {
+    const getSelectedPatientIds = itemList?.map((val: any) => val?.id);
     const getAllUnselectedPatients = patientCartItems?.filter(
-      (pCartItem) => pCartItem?.patientId !== item?.id
+      (pCartItem) => !getSelectedPatientIds.includes(pCartItem?.patientId)
     );
     getAllUnselectedPatients?.length > 0 &&
       getAllUnselectedPatients?.map((patients) => {
