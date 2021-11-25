@@ -4,7 +4,7 @@ const clear = 'transparent';
 const semiDarkClear = 'rgba(0, 0, 0, 0.3)';
 const lightColor = 'rgb(216, 216, 216)';
 const darkColor = 'rgb(115, 118, 131)';
-const sherpa_blue_light = 'rgba(1, 71, 91, 0.4)'
+const sherpa_blue_light = 'rgba(1, 71, 91, 0.4)';
 
 const darkGray = '#bbbbbb';
 const hexWhite = '#ffffff';
@@ -134,9 +134,14 @@ const Common = {
   TEXT_LIGHT_YELLOW: text_light_yellow,
   PORCELAIN_GRAY: '#E2E8E9',
   CHAT_TILE_BG: '#0087BA',
-  DIM_BLACK:  'rgba(0, 0, 0, 0.07)',
+  DIM_BLACK: 'rgba(0, 0, 0, 0.07)',
   CHAT_BLUE_BORDER: '#B0D7E5',
   DEEP_RED: deepRed,
+  DIM_BLUE_BORDER: 'rgba(2,71,91,0.21)',
+  BOULD_GRAY: '#757575',
+  // DIM_BLACK: 'rgba(0, 0, 0, 0.6)',
+  PEACH_CREAM: '#FFDBB0',
+  SOAP_STONE: '#FFFCFA',
   SKY_LIGHT_BLUE: '#C6EAFE',
   GOLDEN: '#FECF62',
   ORANGE: "#FF774B",

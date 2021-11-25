@@ -739,7 +739,6 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     const hasEmptyValues = checkEmptyPatientValues(patient, index);
     if (isInvalidUser) {
       renderBelowAgePopUp();
-      _setSelectedPatient?.(null, index);
     } else if (hasEmptyValues) {
       setShowPatientDetailsOverlay(true);
       setTempPatientSelected(patient);

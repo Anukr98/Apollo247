@@ -35,7 +35,6 @@ import {
   TextInput,
 } from 'react-native';
 import { Badge, CheckBox, ListItem, Overlay, OverlayProps } from 'react-native-elements';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import RangeSlider from 'rn-range-slider';
 
@@ -53,7 +52,7 @@ export const MedicineListingFilter: React.FC<Props> = ({
   onClose,
   ...overlayProps
 }) => {
-  const { pinCode } = useShoppingCart();
+  const { pinCode, axdcCode } = useShoppingCart();
   const categoryFilterKeys = ['category', '__categories'];
   const brandFilterKeys = ['brand', 'product_brand'];
   const gteUpdatedFilters = (_filters: MedFilter[]) => {
@@ -78,7 +77,6 @@ export const MedicineListingFilter: React.FC<Props> = ({
   const [minDiscount, setMinDiscount] = useState<string>('0');
   const [maxDiscount, setMaxDiscount] = useState<string>('100');
   const isFiltersApplied = Object.keys(formatFilters(selectedFilters) || {}).length;
-  const { axdcCode } = useAppCommonData();
 
   const onRequestClose = () => {
     if (isEqual(_selectedFilters, selectedFilters)) {

@@ -217,9 +217,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const source = props.navigation.getParam('source');
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
-  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS);
+  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
+    CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS
+  );
   const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
-    if (item?.cityId == cityId) {
+    if (item?.ctaCityId == cityId) {
       if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS)) {
         return item;
       } else {
@@ -1158,7 +1160,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPressCross={() => {
           setSlideCallToOrder(true);
         }}
-        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS}
+        pageId={CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS}
       />
     ) : null;
   };
@@ -1187,7 +1189,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                         selectCancelReason === item &&
                         selectedOrderRescheduleCount! < 3 &&
                         (CANCEL_RESCHEDULE_OPTION.includes(selectCancelReason) ||
-                        CANCEL_REASON_OPTIONS.includes(selectCancelReason))
+                          CANCEL_REASON_OPTIONS.includes(selectCancelReason))
                           ? 100
                           : 40,
                       paddingTop: 10,
@@ -1242,12 +1244,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                     string.diagnostics.reasonForCancel_TestOrder.needModifyOrder ? (
                     <View style={{ marginTop: 10, marginBottom: 5 }}>
                       <Text style={styles.wantToReschedule}>
-                      {string.diagnostics.needToAddOrder}
+                        {string.diagnostics.needToAddOrder}
                       </Text>
                       <TouchableOpacity
                         activeOpacity={1}
                         onPress={() => {
-                          setShowCancelReasons(false)
+                          setShowCancelReasons(false);
                           _onPressAddTest(selectedOrder!);
                         }}
                       >

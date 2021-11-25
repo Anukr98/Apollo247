@@ -247,7 +247,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL
   );
   const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
-    if (item?.cityId == cityIdToUse) {
+    if (item?.ctaCityId == cityIdToUse) {
       if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL)) {
         return item;
       } else {

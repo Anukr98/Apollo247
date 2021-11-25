@@ -14,7 +14,11 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import Share from 'react-native-share';
 import appsFlyer from 'react-native-appsflyer';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { g, replaceVariableInString } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  replaceVariableInString,
+  updateUserProfileWithReferrInformation,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { ReferCheckIcon, ReferRefreshIcon } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -111,6 +115,12 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
         setTotalReward(data?.getReferralRewardDetails?.totalRewardValue);
         setRewardType(data?.getReferralRewardDetails?.rewardType);
         setClaimedRefreeList(data?.getReferralRewardDetails?.claimed);
+        try {
+          updateUserProfileWithReferrInformation(
+            data?.getReferralRewardDetails?.claimed.length +
+              data?.getReferralRewardDetails?.pending.length
+          );
+        } catch (e) {}
 
         setInitialRefreeData({
           name: data?.getReferralRewardDetails?.referee?.name,

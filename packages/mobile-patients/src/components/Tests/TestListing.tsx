@@ -22,7 +22,7 @@ import {
   Image as ImageNative,
   ActivityIndicator,
   ScrollView,
-  TouchableOpacity
+  TouchableOpacity,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import {
@@ -88,9 +88,11 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const [isPriceAvailable, setIsPriceAvailable] = useState<boolean>(false);
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
-  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING);
+  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
+    CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING
+  );
   const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
-    if (item?.cityId == cityId) {
+    if (item?.ctaCityId == cityId) {
       if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING)) {
         return item;
       } else {
@@ -379,9 +381,9 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         style={styles.loadAllView}
         onPress={() => {
           if (source == 'packages' && length) {
-            setPackageOffset(length)
+            setPackageOffset(length);
           } else if (source == 'tests' && length) {
-            setTestsOffset(length)
+            setTestsOffset(length);
           }
         }}
       >
@@ -395,8 +397,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     const actualItemsToShow = widgetsData?.diagnosticWidgetData;
     let itemPackages: any[] = [];
     let itemTests: any[] = [];
-    const newArray = widgetsData?.diagnosticWidgetData?.map((item:any)=>{
-      const inclusions = item?.inclusionData
+    const newArray = widgetsData?.diagnosticWidgetData?.map((item: any) => {
+      const inclusions = item?.inclusionData;
 
       const getMandatoryParamter =
         !!inclusions &&
@@ -503,8 +505,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         onPressCross={() => {
           setSlideCallToOrder(true);
         }}
-        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING}
-        sectionName= {deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle}
+        pageId={CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING}
+        sectionName={deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle}
       />
     ) : null;
   };
@@ -559,16 +561,15 @@ const styles = StyleSheet.create({
   },
   loadAllView: {
     flexDirection: 'row',
-    alignItems:'center',
+    alignItems: 'center',
     justifyContent: 'center',
-    alignSelf:'center',
+    alignSelf: 'center',
     width: '40%',
     padding: 10,
     borderRadius: 10,
     borderColor: theme.colors.APP_YELLOW,
-    borderWidth:1,
+    borderWidth: 1,
     backgroundColor: theme.colors.WHITE,
-
   },
   textLoadMore: {
     ...theme.viewStyles.text('SB', 15, '#FC9916'),

@@ -167,9 +167,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const scrollViewRef = React.useRef<ScrollView | null>(null);
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
-  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY);
+  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
+    CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY
+  );
   const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
-    if (item?.cityId == Number(diagnosticServiceabilityData?.cityId)) {
+    if (item?.ctaCityId == Number(diagnosticServiceabilityData?.cityId)) {
       if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY)) {
         return item;
       } else {
@@ -1537,7 +1539,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         onPressCross={() => {
           setSlideCallToOrder(true);
         }}
-        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY}
+        pageId={CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY}
       />
     ) : null;
   };

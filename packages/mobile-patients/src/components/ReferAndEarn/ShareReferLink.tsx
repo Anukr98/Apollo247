@@ -47,7 +47,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
   const client = useApolloClient();
   const [linkCopied, setLinkCopied] = useState(false);
   const [refreeReward, setRefreeReward] = useState({
-    isRefree: false,
+    isReferee: false,
     rewardValue: 0,
     rewardRegisteration: '',
     expirationData: '',
@@ -64,8 +64,6 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
   const { navigation } = props;
 
   useEffect(() => {
-    getRewardId();
-    getCampaignId();
     generateReferrerLink();
     checkRefreeRewardData();
   }, []);
@@ -84,7 +82,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
         );
         refreeRegisterationDate.setDate(refreeRegisterationDate.getDate() + hcExpirationTime);
         setRefreeReward({
-          isRefree: true,
+          isReferee: true,
           rewardValue: data?.getReferralRewardDetails?.referee?.rewardValue,
           rewardRegisteration: data?.getReferralRewardDetails?.referee?.registrationDate,
           expirationData: getRequiredDateFormat(refreeRegisterationDate),
@@ -106,45 +104,12 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
     }
   }, [linkCopied]);
 
-  const getRewardId = async () => {
-    try {
-      const response = await client.query({
-        query: GET_REWARD_ID,
-        variables: { reward: 'HC' },
-        fetchPolicy: 'no-cache',
-      });
-      const { data } = response;
-      if (data?.getRewardInfoByRewardType?.id) {
-        const rewardId = data?.getRewardInfoByRewardType?.id;
-        setRewardId?.(rewardId);
-      }
-    } catch (error) {
-      CommonBugFender('ShareReferralLink_generatingRewardId', error);
-    }
-  };
   const getRequiredDateFormat = (date: any) => {
     if (date != null) {
       let d = new Date(date);
       return `${d.getDate()} ${LocalStrings.monthsName[d.getMonth()]}, ${d.getFullYear()}`;
     } else {
       return '';
-    }
-  };
-
-  const getCampaignId = async () => {
-    try {
-      const response = await client.query({
-        query: GET_CAMPAIGN_ID_FOR_REFERRER,
-        variables: { camp: 'HC_CAMPAIGN' },
-        fetchPolicy: 'no-cache',
-      });
-      const { data } = response;
-      if (data?.getCampaignInfoByCampaignType?.id) {
-        const campaignId = data?.getCampaignInfoByCampaignType?.id;
-        setCampaignId?.(campaignId);
-      }
-    } catch (error) {
-      CommonBugFender('ShareReferralLink_generatingCampaignId', error);
     }
   };
 
@@ -194,7 +159,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
   const renderReferShare = () => {
     return (
       <LinearGradientComponent
-        colors={[theme.colors.BLUE_GRADIENT_ONE, theme.colors.GREEN_GRADIENT_TWO]}
+        colors={[theme.colors.BLUE_GRADIENT_ONE, theme.colors.BLUE_GRADIENT_ONE]}
         style={styles.referShareMainContainer}
       >
         <View>
@@ -342,7 +307,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
       <SafeAreaView style={styles.container}>
         <Header
           leftIcon="backArrow"
-          title="Refer And Earn"
+          title="Refer & Earn"
           onPressLeftIcon={() => navigation.goBack()}
           container={{
             borderColor: 'transparent',
@@ -467,12 +432,13 @@ const styles = StyleSheet.create({
   },
   checkRewardbtn: {
     backgroundColor: theme.colors.HEX_WHITE,
-    marginTop: 10,
+    marginTop: 5,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 18,
     paddingVertical: 15,
+    marginBottom: 15,
   },
   howWorklinkText: {
     fontSize: 14,

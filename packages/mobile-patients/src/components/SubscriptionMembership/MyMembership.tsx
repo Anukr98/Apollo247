@@ -36,6 +36,7 @@ import {
   CicleSubscriptionData,
   GroupPlan,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+
 import {
   g,
   postWebEngageEvent,
@@ -215,6 +216,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
+    backgroundColor: '#f0f1ec',
   },
   corporateCtaText: {
     fontSize: 13,
@@ -277,6 +279,8 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   const [showCircleActivation, setShowCircleActivation] = useState<boolean>(false);
   const [showCorporateActivation, setShowCorporateActivation] = useState<boolean>(false);
   const [corporatePlan, setCorporatePlan] = useState<any[]>([]);
+
+  const [consultPlan, setConsultPlan] = useState<any[]>([]);
 
   useEffect(() => {
     if (showHdfcSubscriptions) {
@@ -429,12 +433,13 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             let corporatePlan: SubscriptionData[] = [];
             Object.keys(groupPlans).forEach((plan_name) => {
               if (plan_name !== 'APOLLO' && plan_name !== 'HDFC') {
-                groupPlans[plan_name]?.forEach((subscription) => {
+                groupPlans[plan_name]?.forEach((subscription: any) => {
                   const plan = setSubscriptionData(subscription, false, true);
                   corporatePlan.push(plan);
                 });
               }
             });
+
             if (corporatePlan.length) {
               AsyncStorage.setItem('isCorporateSubscribed', 'yes');
             } else {
@@ -461,16 +466,27 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             }
 
             if (circlePlan) {
-              const circleSubscription = setCircleSubscriptionData(circlePlan?.[0]);
-              if (!!circlePlan?.[0]?._id) {
-                if (circlePlan?.[0]?.status === 'disabled') {
-                  setIsCircleSubscription && setIsCircleSubscription(false);
-                } else {
-                  setIsCircleSubscription && setIsCircleSubscription(true);
+              if (circlePlan?.[0]?.plan_id === 'CIRCLEPlan') {
+                const circleSubscription = setCircleSubscriptionData(circlePlan?.[0]);
+
+                if (!!circlePlan?.[0]?._id) {
+                  if (circlePlan?.[0]?.status === 'disabled') {
+                    setIsCircleSubscription && setIsCircleSubscription(false);
+                  } else {
+                    setIsCircleSubscription && setIsCircleSubscription(true);
+                  }
                 }
+
+                setCircleSubscription && setCircleSubscription(circleSubscription);
               }
-              setCircleSubscription && setCircleSubscription(circleSubscription);
+
+              let consultSubscriptionPlans = circlePlan?.filter((plan) => {
+                return plan.plan_vertical === 'Consult' && plan.status === 'active';
+              });
+
+              setConsultPlan(consultSubscriptionPlans);
             }
+
             if (corprPlan) {
               setShowCorporateActivation(true);
               setCorporatePlan(corprPlan);
@@ -791,6 +807,54 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     );
   };
 
+  const renderConsultPackageCards = () => {
+    return (
+      <View>
+        {consultPlan?.map((pkg: any) => {
+          return renderConsultPackageCard(pkg);
+        })}
+      </View>
+    );
+  };
+
+  const renderConsultPackageCard = (pkg: any) => {
+    return (
+      <View style={styles.cardStyle}>
+        <View style={styles.membershipCardContainer}>
+          <Text style={[styles.planName, theme.viewStyles.text('B', 14, '#02475B', 1, 20, 0.35)]}>
+            {pkg?.name}
+          </Text>
+        </View>
+        {pkg?.benefits && pkg?.benefits?.length > 0 ? (
+          <View style={styles.subTextContainer}>
+            <Text
+              style={[theme.viewStyles.text('R', 12, '#000000', 1, 20, 0.35), { marginBottom: 5 }]}
+            >
+              Key Benefits you get...
+            </Text>
+            {pkg?.benefits?.map((benefit: any, i: number) => {
+              return getEllipseBulletPoint(benefit?.header_content, i, false);
+            })}
+          </View>
+        ) : null}
+
+        <TouchableOpacity
+          style={[styles.membershipButtons, { padding: 10, marginBottom: -1 }]}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.ConsultPackagePostPurchase, {
+              planId: pkg?.sub_plan_id,
+              onSubscriptionCancelled: () => {
+                props.navigation.goBack();
+              },
+            });
+          }}
+        >
+          <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>VIEW DETAILS</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   const renderCorporateMembershipCards = () => {
     return (
       <View>
@@ -997,24 +1061,27 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
 
         {showCircleActivation && renderCircleMembershipActivated()}
         {showCirclePlans && renderCircleSubscriptionPlans()}
-        <ScrollView bounces={false}>
+        <ScrollView bounces={false} style={{ marginBottom: 100 }}>
           <View>
             <View>
-              {!!circleSubscriptionId ||
-              !!hdfcUserSubscriptions?._id ||
+              {!!hdfcUserSubscriptions?._id ||
               !!corporateSubscriptions?.length ||
+              !!consultPlan?.length ||
               isCircleExpired ? (
                 <Text style={styles.currentBenefits}>CURRENT BENEFITS</Text>
               ) : (
                 renderNoMembershipText()
               )}
-              {!!circleSubscriptionId || isCircleExpired
+              {(!!circleSubscriptionId || isCircleExpired) &&
+              circleSubscription?.planId === 'CIRCLEPlan'
                 ? renderMembershipCard(circleSubscription, false)
                 : null}
               {hdfcUserSubscriptions?._id
                 ? renderMembershipCard(hdfcUserSubscriptions, false)
                 : null}
               {!!corporateSubscriptions?.length && renderCorporateMembershipCards()}
+
+              {!!consultPlan?.length ? renderConsultPackageCards() : null}
             </View>
             {canUpgrade && (
               <View>
