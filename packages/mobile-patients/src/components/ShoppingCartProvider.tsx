@@ -886,7 +886,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setHdfcPlanName('');
     setdeliveryTime('');
     setPrescriptionType(null);
-    setConsultProfile(null);
     setSubscriptionCoupon(null);
     setMedicineHomeBannerData(null);
     setMedicineHotSellersData(null);

@@ -95,7 +95,8 @@
     "jsc-android": "^250230.2.1",
     "jwt-decode": "^2.2.0",
     "lodash": "^4.17.15",
-    "lottie-react-native": "^4.0.3",
+    "lottie-ios": "3.2.3",
+    "lottie-react-native": "4.0.3",
     "moment": "^2.24.0",
     "opentok-react-native": "0.17.2",
     "promise.allsettled": "^1.0.2",
@@ -165,6 +166,7 @@
     "react-native-webview": "^8.0.3",
     "react-navigation": "^3.11.0",
     "rn-fetch-blob": "^0.12.0",
+    "rn-range-slider": "^2.1.1",
     "semver": "^7.3.2",
     "string-strip-html": "^4.3.5",
     "uuid": "^3.3.3"

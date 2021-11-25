@@ -159,26 +159,28 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     },
   ];
 
-  const isOnline = doctorDetails?.availableModes?.filter(
-    (consultMode: ConsultMode) => consultMode === ConsultMode.ONLINE
-  );
-  const isPhysical = doctorDetails?.availableModes?.filter(
-    (consultMode: ConsultMode) => consultMode === ConsultMode.PHYSICAL
-  );
-  const isBoth = doctorDetails?.availableModes?.filter(
-    (consultMode: ConsultMode) => consultMode === ConsultMode.BOTH
-  );
+  const isOnline =
+    doctorDetails?.availableModes?.filter(
+      (consultMode: ConsultMode) => consultMode === ConsultMode.ONLINE
+    ) || [];
+  const isPhysical =
+    doctorDetails?.availableModes?.filter(
+      (consultMode: ConsultMode) => consultMode === ConsultMode.PHYSICAL
+    ) || [];
+  const isBoth =
+    doctorDetails?.availableModes?.filter(
+      (consultMode: ConsultMode) => consultMode === ConsultMode.BOTH
+    ) || [];
 
-  const consultTabs =
-    doctorDetails?.doctorType !== DoctorType.PAYROLL
-      ? isBoth?.length > 0
-        ? bothConsultTabs
-        : isOnline?.length > 0
-        ? onlineConsultTab
-        : isPhysical
-        ? physicalConsultTab
-        : onlineConsultTab
-      : onlineConsultTab;
+  const consultTabs = doctorDetails?.doctorType
+    ? isBoth?.length > 0
+      ? bothConsultTabs
+      : isOnline?.length > 0
+      ? onlineConsultTab
+      : isPhysical
+      ? physicalConsultTab
+      : onlineConsultTab
+    : onlineConsultTab;
 
   const defaultTimeData = [
     { label: '12 AM - 6 AM', time: [] },
@@ -187,11 +189,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     { label: '6 PM - 12 AM', time: [] },
   ];
 
-  const [selectedTab, setSelectedTab] = useState<string>(
-    props.navigation.getParam('consultModeSelected') === consultPhysicalTab
-      ? consultPhysicalTab
-      : consultOnlineTab
-  );
+  const [selectedTab, setSelectedTab] = useState<string>('');
   const [datesSlots, setDatesSlots] = useState<SlotsType[]>();
   const [totalSlots, setTotalSlots] = useState<number>(-1);
   const [timeArray, setTimeArray] = useState<TimeArray>(defaultTimeData);
@@ -252,6 +250,14 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
 
   useEffect(() => {
     if (doctorDetails) {
+      const selectedTab =
+        props.navigation.getParam('consultModeSelected') === consultPhysicalTab &&
+        isOnline.length <= 0 &&
+        doctorDetails?.availableModes?.length &&
+        doctorDetails?.availableModes?.length > 0
+          ? consultPhysicalTab
+          : consultOnlineTab;
+
       fetchNextAvailabilitySlot(selectedTab, true);
     }
   }, [doctorDetails]);
@@ -279,7 +285,6 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
       }
     }
   }, [nextAvailableDate, timeArray, isSlotDateSelected]);
-
   const fetchDoctorDetails = async () => {
     try {
       const res = await client.query<getDoctorDetailsById, getDoctorDetailsByIdVariables>({
@@ -289,7 +294,21 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
       });
       const data = res?.data?.getDoctorDetailsById;
       if (data) {
+        const isPhysical =
+          data?.availableModes?.filter(
+            (consultMode: ConsultMode) => consultMode === ConsultMode.PHYSICAL
+          ) || [];
+        const isBoth =
+          data?.availableModes?.filter(
+            (consultMode: ConsultMode) => consultMode === ConsultMode.BOTH
+          ) || [];
         setDoctorDetails(data);
+        setSelectedTab(
+          props.navigation.getParam('consultModeSelected') === consultPhysicalTab &&
+            (isPhysical?.length > 0 || isBoth?.length > 0)
+            ? consultPhysicalTab
+            : consultOnlineTab
+        );
       } else {
         showErrorPopup();
       }
@@ -317,27 +336,6 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
         consultType === consultOnlineTab
           ? fetchOnlineTotalAvailableSlots(nextAvailableDate, callOnLaunch)
           : fetchPhysicalTotalAvailableSlots(nextAvailableDate, callOnLaunch);
-
-        if (!callOnLaunch) {
-          const checkAvailabilityDate = datesSlots?.filter(
-            (date: any) =>
-              moment(date?.date)
-                .toDate()
-                .toDateString() ===
-              moment(slot)
-                .toDate()
-                .toDateString()
-          );
-          const slotsIndex = datesSlots?.indexOf(checkAvailabilityDate?.[0]);
-          const dateIndex = date().isToday ? 0 : date().isTomorrow ? 1 : slotsIndex;
-          setTimeout(() => {
-            try {
-              dateScrollViewRef && dateScrollViewRef.current.scrollToIndex({ index: dateIndex });
-            } catch (e) {
-              CommonBugFender('SlotSelection_scrollToIndex', e);
-            }
-          }, 500);
-        }
       }
     } catch (error) {
       CommonBugFender('SlotSelection_fetchNextAvailabilitySlot', error);
@@ -455,15 +453,16 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           );
         }
       });
-      const dateIndex = dates
-        ?.map((date: SlotsType) => {
-          return date?.date;
-        })
-        ?.indexOf(nextSlotDate?.[0]?.date);
-      if (dateIndex > -1) {
+      const dateIndex = dates?.findIndex((date: SlotsType) => date?.count > 0);
+      if (dateIndex > -1 && !slotSelected.current) {
         setSelectedDateIndex(dateIndex);
+        setSelectedDateIndexHighlight(dateIndex);
         setTimeout(() => {
-          dateScrollViewRef && dateScrollViewRef.current.scrollToIndex({ index: dateIndex });
+          try {
+            dateScrollViewRef && dateScrollViewRef.current.scrollToIndex({ index: dateIndex });
+          } catch (e) {
+            CommonBugFender('SlotSelection_scroll', e);
+          }
         }, 500);
       }
       setDatesSlots(dates);
@@ -632,9 +631,6 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   };
 
   const renderSlotsDatesItems = (item: SlotsType, index: number) => {
-    if (item?.count === 0 && index === selectedDateIndexHiglight && !slotSelected.current) {
-      handleDateSelection(item, index + 1);
-    }
     const textColor =
       index === selectedDateIndexHiglight || item?.count === 0
         ? 'white'

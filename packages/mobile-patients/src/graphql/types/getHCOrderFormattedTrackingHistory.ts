@@ -65,6 +65,23 @@ export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingH
   expectedReportGenerationTime: any | null;
 }
 
+export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_groupedPendingReportInclusions_inclusions {
+  __typename: "PendingReportInclusion";
+  itemId: number | null;
+  itemName: string | null;
+  packageId: number | null;
+  packageName: string | null;
+  orderStatus: DIAGNOSTIC_ORDER_STATUS | null;
+}
+
+export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_groupedPendingReportInclusions {
+  __typename: "GroupedPendingReportInclusion";
+  inclusions: (getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_groupedPendingReportInclusions_inclusions | null)[] | null;
+  isReportPending: boolean | null;
+  reportTATMessage: string | null;
+  expectedReportGenerationTime: any | null;
+}
+
 export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusInclusions {
   __typename: "DiagnosticOrdersStatus";
   statusDate: any | null;

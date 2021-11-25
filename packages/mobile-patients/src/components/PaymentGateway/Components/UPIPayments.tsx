@@ -181,8 +181,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   payNow: {
-    ...theme.fonts.IBMPlexSansBold(14),
-    lineHeight: 15,
+    ...theme.fonts.IBMPlexSansBold(13),
+    lineHeight: 17,
     color: '#FC9916',
   },
   inputCont: {
