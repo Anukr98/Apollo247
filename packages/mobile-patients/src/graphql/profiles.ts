@@ -4219,6 +4219,35 @@ export const GET_MEDICINE_ORDER_CANCEL_REASONS = gql`
   }
 `;
 
+export const GET_MEDICINE_ORDER_CANCEL_REASONS_V2 = gql`
+query getMedicineOrderCancelReasonsV2($getMedicineOrderCancelReasonsV2Input: GetMedicineOrderCancelReasonsV2Input!) {
+  getMedicineOrderCancelReasonsV2(
+  getMedicineOrderCancelReasonsV2Input: $getMedicineOrderCancelReasonsV2Input) {
+      cancellationReasonBuckets {
+        id
+        reasons {
+          isUserReason
+          description
+          sortOrder
+          reasonCode
+          displayMessage
+          config {
+            userCommentRequired
+            commentMinLength
+            commentMaxLength
+          }
+          nudgeConfig {
+            enabled
+            message
+          }
+        }
+        sortOrder
+        bucketName
+      }
+    }
+  }
+`;
+
 export const GET_CALL_DETAILS = gql`
   query getCallDetails($appointmentCallId: String) {
     getCallDetails(appointmentCallId: $appointmentCallId) {
