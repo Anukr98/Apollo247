@@ -81,6 +81,26 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const renderCartItems = () => {
     const priceToShow = diagnosticsDisplayPrice(cartItem, isCircleSubscribed)?.priceToShow;
     const slashedPrice = diagnosticsDisplayPrice(cartItem, isCircleSubscribed)?.slashedPrice;
+    const discount = calculatePackageDiscounts(
+      cartItem?.packageMrp,
+      cartItem?.price,
+      cartItem?.specialPrice
+    );
+    const circleDiscount = calculatePackageDiscounts(
+      0, //itemPackageMrp is removed
+      cartItem?.circlePrice,
+      cartItem?.circleSpecialPrice
+    );
+    const specialDiscount = calculatePackageDiscounts(
+      cartItem?.packageMrp,
+      cartItem?.discountPrice,
+      cartItem?.discountSpecialPrice
+    );
+    const promoteCircle = cartItem?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE; //if circle discount is more
+    const promoteDiscount = promoteCircle ? false : discount < specialDiscount;
+    const hasOtherDiscount = discount > 0 ? discount : 0;
+    const discountPrice =
+      specialDiscount > 0 ? specialDiscount : hasOtherDiscount > 0 ? hasOtherDiscount : 0;
     return (
       <TouchableOpacity style={{}} onPress={() => _onPressCard(cartItem)}>
         <View
@@ -94,22 +114,34 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
         >
           <View style={{ flexDirection: 'row' }}>
             <View style={styles.itemNameView}>
-              <Text style={styles.cartItemText}>{nameFormater(cartItem?.name, 'default')}</Text>
+              <Text style={styles.cartItemText}>{nameFormater(cartItem?.name, 'default')} </Text>
             </View>
             <View style={styles.rightView}>
-              <View style={styles.priceView}>
-                <Text style={styles.mainPriceText}>
-                  {!!slashedPrice && (
-                    <Text style={styles.packageSlashedPrice}>
-                      {string.common.Rs}
-                      <Text style={{ textDecorationLine: 'line-through' }}>{slashedPrice}</Text>
-                    </Text>
-                  )}{' '}
-                  {string.common.Rs}
-                  {priceToShow}
-                </Text>
+              <View style={styles.topRightView}>
+                <View style={styles.priceView}>
+                  <Text style={styles.mainPriceText}>
+                    {!!slashedPrice && (
+                      <Text style={styles.packageSlashedPrice}>
+                        {string.common.Rs}
+                        <Text style={{ textDecorationLine: 'line-through' }}>{slashedPrice}</Text>
+                      </Text>
+                    )}{' '}
+                    {string.common.Rs}
+                    {priceToShow}
+                  </Text>
+                </View>
+                <View style={styles.removeIconView}>{renderRemoveIcon(cartItem)}</View>
               </View>
-              <View style={styles.removeIconView}>{renderRemoveIcon(cartItem)}</View>
+              {renderPercentageDiscount(
+                promoteCircle && isCircleSubscribed
+                  ? circleDiscount
+                  : promoteDiscount
+                  ? specialDiscount
+                  : discount,
+                promoteCircle && isCircleSubscribed ? true : false,
+                promoteDiscount && specialDiscount > 0 ? specialDiscount : 0,
+                discount > 0 ? discount : 0
+              )}
             </View>
           </View>
         </View>
@@ -131,18 +163,12 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
       cartItem?.price,
       cartItem?.specialPrice
     );
-    const circleDiscount = calculatePackageDiscounts(
-      0, //itemPackageMrp is removed
-      cartItem?.circlePrice,
-      cartItem?.circleSpecialPrice
-    );
     const specialDiscount = calculatePackageDiscounts(
       cartItem?.packageMrp,
       cartItem?.discountPrice,
       cartItem?.discountSpecialPrice
     );
     const promoteCircle = cartItem?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE; //if circle discount is more
-    const promoteDiscount = promoteCircle ? false : discount < specialDiscount;
     return (
       <View
         style={[
@@ -162,16 +188,6 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
         ) : null}
         {/* {showSavingsView && renderDisountPercentage(true)}
         {!showSavingsView && showDiscountSavingsView && renderSavingView(false)} */}
-        {renderPercentageDiscount(
-          promoteCircle && isCircleSubscribed
-            ? circleDiscount
-            : promoteDiscount
-            ? specialDiscount
-            : discount,
-          promoteCircle && isCircleSubscribed ? true : false,
-          promoteDiscount && specialDiscount > 0 ? specialDiscount : 0,
-          discount > 0 ? discount : 0
-        )}
       </View>
     );
   };
@@ -275,11 +291,12 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     const discountPrice =
       specialDiscount > 0 ? specialDiscount : hasOtherDiscount > 0 ? hasOtherDiscount : 0;
     return (
-      <View style={{ alignItems: 'flex-end' }}>
+      <View style={styles.discountPercentageView}>
         <DiscountPercentage
           discount={discount}
           isOnlyCircle={isOnlyCircle}
           discountPrice={discountPrice}
+          discountViewStyle={styles.discountView}
         />
       </View>
     );
@@ -317,8 +334,11 @@ const styles = StyleSheet.create({
   rightView: {
     flex: 1,
     marginLeft: 6,
-    flexDirection: 'row',
     width: '70%',
+  },
+  topRightView: {
+    flexDirection: 'row',
+    alignSelf: 'flex-end',
   },
   itemNameView: { width: '60%', justifyContent: 'flex-start' },
   cartItemView: {
@@ -410,4 +430,12 @@ const styles = StyleSheet.create({
     paddingLeft: 3,
     marginLeft: 0,
   },
+  discountView: {
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    flexDirection: 'row',
+    marginHorizontal: 0,
+    marginTop: 2,
+  },
+  discountPercentageView: { alignItems: 'flex-end', marginRight: 12, marginTop: -8 },
 });

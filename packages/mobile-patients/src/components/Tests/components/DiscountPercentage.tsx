@@ -1,18 +1,19 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
-import { CircleLogo } from '../../ui/Icons';
+import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export interface DiscountPercentageProps {
   discount: any;
   isOnlyCircle: boolean;
   discountPrice: number;
+  discountViewStyle?: StyleProp<ViewStyle>;
 }
 
 const DiscountPercentage: React.FC<DiscountPercentageProps> = (props) => {
-  const { discount, isOnlyCircle, discountPrice } = props;
+  const { discount, isOnlyCircle, discountPrice, discountViewStyle } = props;
   return (
     <>
       {!!discount && discount > 0 ? (
@@ -22,6 +23,7 @@ const DiscountPercentage: React.FC<DiscountPercentageProps> = (props) => {
             {
               marginHorizontal: isOnlyCircle ? 12 : 4,
             },
+            discountViewStyle,
           ]}
         >
           {discountPrice > 0 && (

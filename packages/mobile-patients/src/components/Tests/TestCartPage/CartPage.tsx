@@ -199,7 +199,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   );
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
-  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTCART);
+  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
+    CALL_TO_ORDER_CTA_PAGE_ID.TESTCART
+  );
   const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
     if (item?.cityId == deliveryAddressCityId) {
       if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTCART)) {
@@ -340,12 +342,33 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     }
   }, [addresses, isFocused]);
 
+  function getUpdatedCartItems() {
+    const getExistingItems = patientCartItems
+      ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
+      ?.flat();
+    const selectedUniqueItems = getExistingItems?.filter((i) => i?.isSelected);
+    const selectedUnqiueItemIds = [
+      ...new Set(selectedUniqueItems?.map((item) => Number(item?.id))),
+    ];
+
+    const findPackageSKU = selectedUniqueItems?.find((_item) => _item?.inclusions?.length > 1);
+    const hasPackageSKU = !!findPackageSKU;
+    return {
+      selectedUniqueItems,
+      selectedUnqiueItemIds,
+      hasPackageSKU,
+    };
+  }
+
+  /**consider only selected one + for package need to pass one argument + isPackage + if is package and recommendations are not there, then fallback should not come + 2 limit needs to be removed */
   useEffect(() => {
-    if (cartItems?.length > 0 && cartItemsWithId?.length > 0) {
-      const itemIds = isModifyFlow ? cartItemsWithId.concat(modifiedOrderItemIds) : cartItemsWithId;
+    if (cartItems?.length > 0 && getUpdatedCartItems()?.selectedUnqiueItemIds?.length > 0) {
+      const itemIds = isModifyFlow
+        ? getUpdatedCartItems()?.selectedUnqiueItemIds?.concat(modifiedOrderItemIds)
+        : getUpdatedCartItems()?.selectedUnqiueItemIds;
       fetchReportTat(itemIds);
       fetchTestReportGenDetails(itemIds);
-      fetchCartPageRecommendations(itemIds);
+      fetchCartPageRecommendations(itemIds, getUpdatedCartItems()?.selectedUniqueItems);
     }
   }, [cartItems?.length, addressCityId]);
 
@@ -384,7 +407,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       createWidgetItemParameterObject(selectedItem, addedItem);
       setShowPatientOverlay(true);
     }
-
+    //check added to find if cartItems has any package included.
+    //if not -> show recommendations , no recommendation -> top booked , if < 2 then append
+    //if yes -> show only recommendations
     try {
       const removeSpaces =
         typeof _cartItemId == 'string' ? _cartItemId?.replace(/\s/g, '')?.split(',') : null;
@@ -398,7 +423,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       );
       if (recommedationResponse?.data?.getDiagnosticItemRecommendations) {
         const getItems = recommedationResponse?.data?.getDiagnosticItemRecommendations?.itemsData;
-        if (getItems?.length > 2) {
+        if (getItems?.length > 0) {
           const _itemIds = getItems?.map((item: any) => Number(item?.itemId));
           const _filterItemIds = _itemIds?.filter(
             (val: any) =>
@@ -406,7 +431,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           );
           fetchPricesForItems(_filterItemIds, getItems, listOfIds, 'fetchCartPageRecommendations');
         } else {
-          //in case no results are there, or less than 2 -> show top booked test as result
+          //in case no results are there, or less than 2 -> show top booked test as result in case of test
           setRecommendationsData([]);
         }
       } else {
@@ -534,7 +559,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
-          const diagnosticItems = g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
+          const diagnosticItems = data?.findDiagnosticsByItemIDsAndCityID?.diagnostics || [];
           let _diagnosticWidgetData: any = [];
           widgetsData?.forEach((_widget: any) => {
             diagnosticItems?.forEach((_diagItems) => {
@@ -549,6 +574,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                 } else {
                   _diagnosticWidgetData?.push({
                     ..._widget,
+                    itemTitle: _diagItems?.itemName,
                     diagnosticPricing: _diagItems?.diagnosticPricing,
                     packageCalculatedMrp: _diagItems?.packageCalculatedMrp,
                   });
@@ -1466,37 +1492,49 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   };
 
   const renderCartWidgets = () => {
+    const hasPackageSKU = getUpdatedCartItems()?.hasPackageSKU;
+    var newArray: string | any[] = [];
+    const dataToShow =
+      recommedationData?.length > 2
+        ? recommedationData
+        : !hasPackageSKU
+        ? newArray.concat(recommedationData).concat(alsoAddListData)
+        : recommedationData;
     return (
-      <ScrollView
-        style={styles.widgetContainer}
-        bounces={false}
-        horizontal={true}
-        nestedScrollEnabled={true}
-      >
-        <View style={styles.widgetRow}>
-          <View style={styles.widgetInnerContainer}>
-            <TestTubes style={styles.testTubeIconStyle} />
-            <Text style={styles.widgetHeading}>You can also add</Text>
-            <LongRightArrow style={styles.rightArrowIconStyle} />
-          </View>
-          <ItemCard
-            onPressAddToCartFromCart={(item, addedItem) => {
-              setWidgetSelectedItem(addedItem);
-              fetchCartPageRecommendations([item?.itemId], item, SOURCE.ADD, addedItem);
-              fetchTestReportGenDetails(item?.itemId, item, SOURCE.ADD, addedItem);
-            }}
-            onPressRemoveItemFromCart={(item) => {}}
-            data={recommedationData?.length > 2 ? recommedationData : alsoAddListData}
-            isCircleSubscribed={isDiagnosticCircleSubscription}
-            isServiceable={isServiceable}
-            isVertical={false}
-            navigation={props.navigation}
-            source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.CART_PAGE}
-            sourceScreen={AppRoutes.CartPage}
-            changeCTA={true}
-          />
-        </View>
-      </ScrollView>
+      <>
+        {dataToShow?.length > 0 ? (
+          <ScrollView
+            style={styles.widgetContainer}
+            bounces={false}
+            horizontal={true}
+            nestedScrollEnabled={true}
+          >
+            <View style={styles.widgetRow}>
+              <View style={styles.widgetInnerContainer}>
+                <TestTubes style={styles.testTubeIconStyle} />
+                <Text style={styles.widgetHeading}>You can also add</Text>
+                <LongRightArrow style={styles.rightArrowIconStyle} />
+              </View>
+              <ItemCard
+                onPressAddToCartFromCart={(item, addedItem) => {
+                  setWidgetSelectedItem(addedItem);
+                  fetchCartPageRecommendations([item?.itemId], item, SOURCE.ADD, addedItem);
+                  fetchTestReportGenDetails(item?.itemId, item, SOURCE.ADD, addedItem);
+                }}
+                onPressRemoveItemFromCart={(item) => {}}
+                data={dataToShow}
+                isCircleSubscribed={isDiagnosticCircleSubscription}
+                isServiceable={isServiceable}
+                isVertical={false}
+                navigation={props.navigation}
+                source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.CART_PAGE}
+                sourceScreen={AppRoutes.CartPage}
+                changeCTA={true}
+              />
+            </View>
+          </ScrollView>
+        ) : null}
+      </>
     );
   };
 
@@ -1507,6 +1545,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     const isCartEmpty = isModifyFlow
       ? !(modifiedPatientCart?.length == 0 || modifiedPatientCart?.[0]?.cartItems?.length == 0)
       : !!isCartPresent && !isCartPresent;
+    const hasPackageSKU = getUpdatedCartItems()?.hasPackageSKU;
     return (
       <View style={{ margin: 16 }}>
         {renderAddTestOption()}
@@ -1514,7 +1553,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         {!shouldShowRecommendations
           ? !!recommedationData && recommedationData?.length > 0
             ? renderCartWidgets()
-            : !!alsoAddListData && alsoAddListData?.length > 0
+            : !!alsoAddListData && alsoAddListData?.length > 0 && !hasPackageSKU
             ? renderCartWidgets()
             : null
           : null}
