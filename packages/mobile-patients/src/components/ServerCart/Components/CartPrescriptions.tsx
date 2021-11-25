@@ -39,7 +39,7 @@ export interface CartPrescriptionsProps {
 
 export const CartPrescriptions: React.FC<CartPrescriptionsProps> = (props) => {
   const {
-    prescriptionType,
+    cartPrescriptionType,
     consultProfile,
 
     cartPrescriptions,
@@ -51,7 +51,6 @@ export const CartPrescriptions: React.FC<CartPrescriptionsProps> = (props) => {
   const { removePrescriptionFromCart } = useServerCart();
   const {
     onPressUploadMore,
-    // ePresProps,
     myPresProps,
     style,
     hideHeader,
@@ -161,7 +160,7 @@ export const CartPrescriptions: React.FC<CartPrescriptionsProps> = (props) => {
   };
 
   const renderPrescriptionInfo = () => {
-    const isPrescriptionLater = prescriptionType === PrescriptionType.LATER;
+    const isPrescriptionLater = cartPrescriptionType === PrescriptionType.LATER;
     const name = consultProfile?.firstName || currentPatient?.firstName;
     const title = isPrescriptionLater
       ? 'Share Prescription Later Selected'
@@ -173,7 +172,7 @@ export const CartPrescriptions: React.FC<CartPrescriptionsProps> = (props) => {
       ? 'Delivery TAT will be on hold till the prescription is submitted.'
       : 'Delivery TAT will be on hold till the consult is completed.';
 
-    return prescriptionType && showSelectedOption ? (
+    return !!cartPrescriptionType && !!showSelectedOption ? (
       <PrescriptionInfoView
         onPressUpload={() => {
           onPressUploadMore?.();
@@ -186,7 +185,7 @@ export const CartPrescriptions: React.FC<CartPrescriptionsProps> = (props) => {
   };
 
   function showPresritionCard() {
-    return uploadedPrescriptions?.length > 0 || appointmentPrescriptions?.length > 0;
+    return cartPrescriptions?.length > 0;
   }
 
   return showPresritionCard() ? (

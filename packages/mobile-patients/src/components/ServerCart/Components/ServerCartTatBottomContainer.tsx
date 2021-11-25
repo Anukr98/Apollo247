@@ -94,7 +94,7 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
   }
 
   function onPressButton() {
-    return !cartAddressId
+    return !cartAddressId || !selectedAddress
       ? addresses?.length
         ? onPressSelectDeliveryAddress()
         : onPressAddDeliveryAddress()

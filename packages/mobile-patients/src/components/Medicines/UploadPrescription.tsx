@@ -243,7 +243,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     const addressLength = addresses.length;
     if (!!addressLength && !!newAddressAdded) {
       const newAddress = addresses?.filter((value) => value?.id === newAddressAdded);
-      setUserActionPayload({
+      setUserActionPayload?.({
         patientAddressId: newAddressAdded,
         zipcode: newAddress?.[0]?.zipcode,
         latitude: newAddress?.[0]?.latitude,
@@ -869,7 +869,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
             hideAphAlert!();
           }}
           onPressSelectAddress={(address) => {
-            setUserActionPayload({
+            setUserActionPayload?.({
               patientAddressId: address?.id,
               zipcode: address?.zipcode,
               latitude: address?.latitude,

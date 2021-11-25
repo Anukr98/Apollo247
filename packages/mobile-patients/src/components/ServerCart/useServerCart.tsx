@@ -91,6 +91,7 @@ export const useServerCart = () => {
       .then((result) => {
         const saveCartResponse = result?.data?.saveCart;
         console.log('saveCartResponse >>>>> ', JSON.stringify(saveCartResponse));
+        // handle cartMessage
         if (saveCartResponse?.errorMessage) {
           setServerCartErrorMessage?.(saveCartResponse?.errorMessage || genericErrorMessage);
           return;
@@ -104,7 +105,7 @@ export const useServerCart = () => {
         setServerCartErrorMessage?.(error);
       })
       .finally(() => {
-        setUserActionPayload(null);
+        setUserActionPayload?.(null);
         setServerCartLoading?.(false);
       });
   };
@@ -140,7 +141,7 @@ export const useServerCart = () => {
         setServerCartErrorMessage?.(error);
       })
       .finally(() => {
-        setUserActionPayload(null);
+        setUserActionPayload?.(null);
       });
   };
 
@@ -162,6 +163,7 @@ export const useServerCart = () => {
       })
       .then((result) => {
         const reviewCartResponse = result?.data?.reviewCartPage;
+        // handle cartMessage
         console.log('reviewCartResponse >>>>> ', JSON.stringify(reviewCartResponse));
         if (reviewCartResponse?.errorMessage) {
           setServerCartErrorMessage?.(reviewCartResponse?.errorMessage || genericErrorMessage);
@@ -176,7 +178,7 @@ export const useServerCart = () => {
         setServerCartErrorMessage?.(error);
       })
       .finally(() => {
-        setUserActionPayload(null);
+        setUserActionPayload?.(null);
         setServerCartLoading?.(false);
       });
   };
@@ -248,7 +250,7 @@ export const useServerCart = () => {
     physicalPrescriptions: PhysicalPrescription[]
   ) => {
     try {
-      setUserActionPayload(null);
+      setUserActionPayload?.(null);
       if (physicalPrescriptions?.length) {
         setServerCartLoading?.(true);
         // upload physical prescriptions and get prism file id
@@ -275,6 +277,10 @@ export const useServerCart = () => {
         };
         saveServerCart(cartInputData);
         setServerCartLoading?.(false);
+      } else {
+        setUserActionPayload?.({
+          prescriptionType: PrescriptionType.UPLOADED,
+        });
       }
     } catch (error) {
       setServerCartLoading?.(false);
@@ -283,7 +289,7 @@ export const useServerCart = () => {
   };
 
   const uploadEPrescriptionsToServerCart = (ePrescriptionsToBeUploaded: EPrescription[]) => {
-    setUserActionPayload(null);
+    setUserActionPayload?.(null);
     if (ePrescriptionsToBeUploaded?.length) {
       const prescriptionsToUpload = ePrescriptionsToBeUploaded.map((presToAdd: EPrescription) => {
         return {
@@ -299,9 +305,13 @@ export const useServerCart = () => {
           },
         };
       });
-      setUserActionPayload({
+      setUserActionPayload?.({
         prescriptionType: PrescriptionType.UPLOADED,
         prescriptionDetails: prescriptionsToUpload,
+      });
+    } else {
+      setUserActionPayload?.({
+        prescriptionType: PrescriptionType.UPLOADED,
       });
     }
   };

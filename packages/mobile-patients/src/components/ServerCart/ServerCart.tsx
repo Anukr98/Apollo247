@@ -95,6 +95,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     !!cartSubscriptionDetails?.currentSellingPrice &&
     !cartCircleSubscriptionId &&
     cartSubscriptionDetails?.subscriptionApplied;
+  const selectedAddress = addresses.find((item) => item.id == cartAddressId);
 
   useEffect(() => {
     fetchServerCart();
@@ -297,12 +298,24 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
         navigation={props.navigation}
         screen={'MedicineCart'}
         onPressTatCard={() => {
-          isCartPrescriptionRequired
+          !cartAddressId || !selectedAddress
+            ? addresses?.length
+              ? showAddressPopup()
+              : onPressAddDeliveryAddress()
+            : isCartPrescriptionRequired
             ? onPressUploadPrescription()
             : props.navigation.navigate(AppRoutes.ReviewCart);
         }}
       />
     );
+  };
+
+  const onPressAddDeliveryAddress = () => {
+    props.navigation.navigate(AppRoutes.AddAddressNew, {
+      source: 'Cart' as AddressSource,
+      addOnly: true,
+    });
+    postPharmacyAddNewAddressClick('Cart');
   };
 
   const renderPrescriptions = () => {
