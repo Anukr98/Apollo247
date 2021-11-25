@@ -333,6 +333,19 @@ export const handleOpenURL = (event: any) => {
         };
         break;
 
+      case 'consultpackagelist':
+        return {
+          routeName: 'consultpackagelist',
+        };
+        break;
+
+      case 'consultpackage':
+        return {
+          routeName: 'consultpackage',
+          id: linkId ? linkId : undefined,
+        };
+        break;
+
       case 'testlisting':
         return {
           routeName: 'TestListing',
@@ -517,6 +530,7 @@ export const pushTheView = (
     case 'Speciality':
       setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', id);
       let filtersData = id ? getParamData(id) : '';
+
       navigateToView(navigation, AppRoutes.DoctorSearchListing, {
         specialityId: filtersData[0] ? filtersData[0] : '',
         typeOfConsult: filtersData.length > 1 ? filtersData[1] : '',
@@ -675,6 +689,22 @@ export const pushTheView = (
         comingFrom: 'deeplink',
       });
       break;
+
+    case 'consultpackagelist':
+      navigateToView(navigation, AppRoutes.ConsultPackageList, {
+        comingFrom: 'deeplink',
+      });
+      break;
+
+    case 'consultpackage':
+      let paramsObtained = id ? getParamData(id) : '';
+
+      navigateToView(navigation, AppRoutes.ConsultPackageDetail, {
+        comingFrom: 'deeplink',
+        planId: paramsObtained?.[0],
+      });
+      break;
+
     case 'TestListing':
       navigateToView(navigation, AppRoutes.TestListing, {
         movedFrom: 'deeplink',

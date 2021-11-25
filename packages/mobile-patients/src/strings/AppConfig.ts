@@ -54,7 +54,7 @@ const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
 const tatTokenDev = 'GWjKtviqHa4r4kiQmcVH';
 const tatTokenProd = '8nBs8ucvbqlCGShwDr7oHv0mePqwhE';
 const apolloProdBaseUrl = 'https://magento.apollo247.com';
-const apolloUatBaseUrl = 'https://uat.apollopharmacy.in';
+const apolloUatBaseUrl = 'https://m226api.apollopharmacy.in';
 const tagalysBaseUrl = 'https://api-r1.tagalys.com/v1';
 const drupalAuthTokenDev = 'Basic Y29udGVudDp3YWxtYXJ0TlVUdG9reW9IZWlzdA==';
 const drupalAuthTokenProd = 'Basic Y29udGVudDp3YWxtYXJ0TlVUdG9reW9IZWlzdA==';
@@ -240,6 +240,11 @@ const appStaticVariables = {
   Used_Up_Alotted_Slot_Msg:
     'Sorry! You have used up all your allotted booking slots under corporate vaccination. You can still continue to book payable slots under pay by self option.',
   Vaccination_Cities_List: ['Delhi', 'Mumbai'],
+  Consult_Package_TnC: [
+    'Select the patient’s profile for consultation and complete your booking.',
+    'An Apollo doctor will be assigned to you in the next 15 minutes.',
+    'View your booked appointment in the ‘My Appointment’ section on your app.',
+  ],
   Vaccine_Type: ['Covaxin', 'Covishield'],
   Cancel_Threshold_Pre_Vaccination: 12, //hrs
   Enable_Diagnostics_COD: true,
@@ -466,10 +471,13 @@ const Apollo247Config = {
   dev: {
     UATTAT_CONFIG: ['https://uattat.apollo247.com', tatTokenDev],
     DRUPAL_CONFIG: ['https://uatcms.apollo247.com/api', drupalAuthTokenDev],
+    SUBSCRIPTION_SERVICE_EMAIL:
+      'https://apollo-subscription-service-qa3.azurewebsites.net/api/TriggerSubscriptionInvoiceEmail?code=MGZZDQic3lztc3eK01C/vqAMuJ4dpU2NtEJAylFXiT93Hpd4Z1S9Lw==',
   },
   prod: {
     UATTAT_CONFIG: ['https://tat.apollo247.com', tatTokenProd],
     DRUPAL_CONFIG: ['https://cms.apollo247.com/api', drupalAuthTokenProd],
+    SUBSCRIPTION_SERVICE_EMAIL: '',
   },
 };
 

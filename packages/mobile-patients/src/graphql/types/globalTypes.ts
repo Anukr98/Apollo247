@@ -2242,6 +2242,16 @@ export enum SPECIALTY_STATUS {
   TRUE = "TRUE",
 }
 
+export enum CancellationRequestedBy {
+  CUSTOMER = "CUSTOMER",
+}
+export interface CancelSubscriptionInput {
+  subscription_id: string;
+  cancellation_reuqested_by?: CancellationRequestedBy | null;
+  system_override?: boolean | null;
+  skip_refund?: boolean | null;
+}
+
 export enum CALL_TO_ORDER_CTA_PAGE_ID {
   HOME = 'HOME',
   TESTDETAIL = 'TESTDETAIL',
@@ -2250,6 +2260,17 @@ export enum CALL_TO_ORDER_CTA_PAGE_ID {
   TESTORDERSUMMARY = 'TESTORDERSUMMARY',
   TESTLISTING = 'TESTLISTING',
 }
+
+export interface SubscriptionDetailsInput {
+  specialtyName?: string | null;
+  benefitId?: string | null;
+  userSubscriptionId?: string | null;
+  planId?: string | null;
+  subPlanId?: string | null;
+  paymentOrderId?: string | null;
+  subscriptionSubPlanId?: string | null;
+}
+
 
 //==============================================================
 // END Enums and Input Objects

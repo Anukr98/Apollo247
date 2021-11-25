@@ -236,6 +236,12 @@ export enum CleverTapEventName {
   DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED = 'Diagnostic product listing page viewed',
   DIAGNOSTIC_PRESCRIPTION_SUBMITTED = 'Diagnostic prescription submitted',
 
+  //Conult Package Purchase Attribite
+  CONSULT_PACKAGE_CLICKED = 'Consult Package Clicked',
+  CONSULT_PACKAGE_PROCEED_TO_PAY_CLICKED = 'Consult package proceed to pay clicked',
+  CONSULT_PACKAGE_PAY_BUTTON_CLICKED = 'Consult package pay button clicked',
+  CONSULT_PACKAGE_BOOK_CONSULT_CLICKED = 'Consult package book consult clicked',
+
   // Network Test
   PRE_CALL_TEST = 'Pre Call Test Completed',
 

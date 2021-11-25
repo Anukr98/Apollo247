@@ -598,13 +598,14 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       ...checkoutEventAttributes,
       'Cart Items': JSON.stringify(cartItems),
     });
+    const skus = cartItems?.map((item) => item?.id);
     const firebaseCheckoutEventAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED] = {
-      order_id: orderAutoId,
+      order_id: `${orderAutoId}`,
       transaction_id: transId,
       currency: 'INR',
       coupon: coupon?.coupon,
       shipping: deliveryCharges,
-      items: JSON.stringify(cartItems),
+      items: JSON.stringify(skus),
       value: grandTotal,
       circle_membership_added: circleMembershipCharges
         ? 'Yes'

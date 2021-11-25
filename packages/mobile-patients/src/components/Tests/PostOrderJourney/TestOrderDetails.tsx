@@ -163,12 +163,19 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const scrollViewRef = React.useRef<ScrollView | null>(null);
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
+  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY);
   const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
+    if (item?.ctaCityId == Number(diagnosticServiceabilityData?.cityId)) {
       if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY)) {
         return item;
       } else {
-        return null
+        return null;
       }
+    } else if (isCtaDetailDefault) {
+      return callToOrderDetails?.ctaDetailsDefault;
+    } else {
+      return null;
+    }
   });
   const [orderDetails, setOrderDetails] = useState([] as any);
   const scrollToSlots = (yValue?: number) => {

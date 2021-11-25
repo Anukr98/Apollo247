@@ -60,7 +60,6 @@ import {
   postCleverTapEvent,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
-  pinCodeServiceabilityApi247,
   availabilityApi247,
   GetTatResponse247,
   getMedicineDetailsApi,
@@ -160,6 +159,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     cartPriceNotUpdateRange,
     uploadPrescriptionRequired,
     setTatDetailsForPrescriptionOptions,
+    axdcCode,
+    isPharmacyPincodeServiceable,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -167,8 +168,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     locationDetails,
     pharmacyLocation,
     setPharmacyLocation,
-    axdcCode,
-    setAxdcCode,
     pharmacyUserTypeAttribute,
     activeUserSubscriptions,
     setSelectedPrescriptionType,
@@ -186,6 +185,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
   const [showCareSelectPlans, setShowCareSelectPlans] = useState<boolean>(true);
   const [tatResponse, setTatResponse] = useState<string>('');
+  const [
+    cartSelectedAddress,
+    setCartSelectedAddress,
+  ] = useState<savePatientAddress_savePatientAddress_patientAddress | null>(null);
 
   type PharmacyCartTatApiCalled = CleverTapEvents[CleverTapEventName.PHARMACY_CART_TAT_API_CALLED];
 
@@ -236,6 +239,24 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    if (cartSelectedAddress?.zipcode) {
+      if (isPharmacyPincodeServiceable) {
+        setDeliveryAddressId && setDeliveryAddressId(cartSelectedAddress?.id);
+        setDefaultAddress(cartSelectedAddress);
+        fetchPickupStores(cartSelectedAddress?.zipcode || '');
+      } else {
+        setDeliveryAddressId && setDeliveryAddressId('');
+        postPhamracyCartAddressSelectedFailure(
+          cartSelectedAddress?.zipcode,
+          formatAddress(cartSelectedAddress),
+          'No'
+        );
+        renderAlert(string.medicine_cart.pharmaAddressUnServiceableAlert);
+      }
+    }
+  }, [isPharmacyPincodeServiceable, cartSelectedAddress]);
+
+  useEffect(() => {
     if (!deliveryAddressId && cartItems.length > 0) {
       setCartItems!(cartItems.map((item) => ({ ...item, unserviceable: false })));
     } else if (deliveryAddressId && cartItems.length > 0) {
@@ -248,7 +269,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     const addressLength = addresses.length;
     if (!!addressLength && !!newAddressAdded && !!tatResponse) {
       const newAddress = addresses.filter((value) => value.id === newAddressAdded);
-      checkServicability(newAddress[0]);
+      setCartSelectedAddress(newAddress[0]);
       postPharmacyAddNewAddressCompleted(
         'Cart',
         g(selectedAddress, 'zipcode')!,
@@ -380,31 +401,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         CommonBugFender('fetchingUserSpecificCoupon', error);
       });
   };
-
-  async function checkServicability(address: savePatientAddress_savePatientAddress_patientAddress) {
-    if (deliveryAddressId && deliveryAddressId == address.id && !newAddressAdded) {
-      return;
-    }
-    try {
-      setloading(true);
-      const response = await pinCodeServiceabilityApi247(address.zipcode!);
-      const { data } = response;
-      setAxdcCode && setAxdcCode(data?.response?.axdcCode);
-      if (data?.response?.servicable) {
-        setDeliveryAddressId && setDeliveryAddressId(address.id);
-        setDefaultAddress(address);
-        fetchPickupStores(address?.zipcode || '');
-        setloading(false);
-      } else {
-        setDeliveryAddressId && setDeliveryAddressId('');
-        setloading(false);
-        postPhamracyCartAddressSelectedFailure(address.zipcode!, formatAddress(address), 'No');
-        renderAlert(string.medicine_cart.pharmaAddressUnServiceableAlert);
-      }
-    } catch (error) {
-      setloading(false);
-    }
-  }
 
   async function availabilityTat(forceCheck: boolean, addressChange?: boolean) {
     const newCartItems =
@@ -892,8 +888,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             hideAphAlert!();
           }}
           onPressSelectAddress={(address) => {
-            checkServicability(address);
             setAsyncPharmaLocation(address);
+            setCartSelectedAddress(address);
             hideAphAlert!();
           }}
         />

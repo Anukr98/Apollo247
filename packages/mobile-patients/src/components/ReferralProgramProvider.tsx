@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext } from 'react';
 
 export type InitiateRefreeType = {
-  isReferee: null | boolean;
+  isRefree: null | boolean;
   rewardValue: null | number;
   rewardExpirationDate: string | null;
 };
@@ -23,7 +23,7 @@ export const ReferralProgramContext = createContext<ReferralProgramContextProps>
   referrerLink: '',
   setReferrerLink: null,
   refreeReward: {
-    isReferee: false,
+    isRefree: false,
     rewardValue: 0,
     rewardExpirationDate: '',
   },
@@ -35,7 +35,7 @@ export const ReferralProgramProvider: React.FC = (props) => {
   const [campaignId, setCampaignId] = useState('');
   const [referrerLink, setReferrerLink] = useState('');
   const [refreeReward, setRefreeReward] = useState<InitiateRefreeType>({
-    isReferee: false,
+    isRefree: false,
     rewardValue: 0,
     rewardExpirationDate: '',
   });
