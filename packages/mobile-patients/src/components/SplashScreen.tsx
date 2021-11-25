@@ -1553,12 +1553,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) => config.getString(key)
       );
 
-      const disincentivizeCodMessage = getRemoteConfigValue(
-        'Disincentivize_COD_Message',
-        (key) => config.getString(key) || ''
-      );
-
-      disincentivizeCodMessage && setPaymentCodMessage?.(disincentivizeCodMessage);
       setAppConfig('Diagnostics_No_Saving_Text', 'DIAGNOSTICS_NO_CIRCLE_SAVINGS_TEXT', (key) =>
         config.getString(key)
       );
