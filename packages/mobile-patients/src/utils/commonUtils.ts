@@ -516,7 +516,6 @@ export const createPatientObjLineItems = (patientCartItems: DiagnosticPatientCar
 
   filterPatientItems?.map((item) => {
     const getPricesForItem = createLineItemPrices(item, isDiagnosticCircleSubscription, reportGenDetails, couponResponse)?.pricesForItemArray;
-    console.log({getPricesForItem})
     const totalPrice = getPricesForItem
       ?.map((item: any) => Number(item?.price))
       ?.reduce((prev: number, curr: number) => prev + curr, 0);
