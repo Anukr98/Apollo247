@@ -70,11 +70,6 @@ const testApiCredentialsProd = {
   InterfaceClient: 'MCKINSEY',
 };
 
-const specialOffersWidgetApiCredentials = {
-  Username: 'content',
-  Password: 'walmartNUTtokyoHeist',
-};
-
 const loginSection = {
   bannerUrl: 'https://newassets.apollo247.com/images/banners/FirstTransactionOffer.png',
   mainTitle: 'Why choose Apollo 247?',
@@ -536,10 +531,7 @@ const PharmaApiConfig = {
     PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/categoryproducts_api.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
     BOUGHT_TOGETHER: [`${apolloUatBaseUrl}/popsrchboughttogether_api.php`, pharmaToken201],
-    SPECIAL_OFFERS_PAGE_WIDGETS: [
-      'https://uatcms.apollo247.com/api/special-offer/getwidget',
-      specialOffersWidgetApiCredentials,
-    ],
+    SPECIAL_OFFERS_PAGE_WIDGETS: ['https://uatcms.apollo247.com/api/special-offer/getwidget'],
     SPECIAL_OFFERS_PAGE_COUPONS: ['https://uatvalidcoupon.apollo247.com/offers'],
     SPECIAL_OFFERS_CATEGORY: [`${apolloUatBaseUrl}/specialoffercategory_api.php`, pharmaToken201],
     SPECIAL_OFFERS_BRANDS: [`${apolloUatBaseUrl}/specialofferbrand_api.php`, pharmaToken201],
@@ -592,10 +584,7 @@ const PharmaApiConfig = {
     PRODUCTS_BY_CATEGORY: [`${apolloProdBaseUrl}/categoryproducts_api.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloProdBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
     BOUGHT_TOGETHER: [`${apolloProdBaseUrl}/popsrchboughttogether_api.php`, pharmaToken201],
-    SPECIAL_OFFERS_PAGE_WIDGETS: [
-      'https://cms.apollo247.com/api/special-offer/getwidget',
-      specialOffersWidgetApiCredentials,
-    ],
+    SPECIAL_OFFERS_PAGE_WIDGETS: ['https://cms.apollo247.com/api/special-offer/getwidget'],
     SPECIAL_OFFERS_PAGE_COUPONS: ['https://validcoupon.apollo247.com/offers'],
     SPECIAL_OFFERS_CATEGORY: [`${apolloProdBaseUrl}/specialoffercategory_api.php`, pharmaToken201],
     SPECIAL_OFFERS_BRANDS: [`${apolloProdBaseUrl}/specialofferbrand_api.php`, pharmaToken201],
@@ -677,6 +666,9 @@ const ConfigurationDev = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
+
 };
 
 // QA
@@ -737,6 +729,8 @@ const ConfigurationQA = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
 };
 
 // QA2
@@ -795,6 +789,8 @@ const ConfigurationQA2 = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
 };
 
 // QA3
@@ -854,6 +850,8 @@ const ConfigurationQA3 = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
 };
 
 const ConfigurationQA5 = {
@@ -914,6 +912,8 @@ const ConfigurationQA5 = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
 };
 
 const ConfigurationQA6 = {
@@ -973,6 +973,8 @@ const ConfigurationQA6 = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
 };
 
 // VAPT
@@ -1032,6 +1034,8 @@ const ConfigurationVAPT = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
 };
 //Production
 const ConfigurationProd = {
@@ -1089,6 +1093,8 @@ const ConfigurationProd = {
   baseUrl: 'https://www.apollo247.com',
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE: 'https://newassets.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
 };
 
 //PERFORMANCE
@@ -1149,6 +1155,8 @@ const ConfigurationPERFORM = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
 };
 
 //DevelopmentReplica
@@ -1209,6 +1217,8 @@ const ConfigurationDevReplica = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
 };
 
 const Configuration =

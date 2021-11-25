@@ -37,7 +37,7 @@ export interface DealsByBrandsProps extends NavigationScreenProps<{}> {
 
 export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
   const brandsData = props.brandsData;
-  const brandsResult = brandsData.sort((a, b) => a.position.localeCompare(b.position));
+  const brandsResult = brandsData.sort((a, b) => a?.position?.localeCompare(b.position));
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedBrandID, setSelectedBrandID] = useState<Number>(brandsResult[0].id);
   const [productData, setProductData] = useState<MedicineProduct[]>();
@@ -76,7 +76,7 @@ export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
         discountPercentage
       );
       if (productsResponse?.data?.products) {
-        setProductData(productsResponse.data.products);
+        setProductData(productsResponse?.data?.products);
       } else {
         setProductData([]);
       }
@@ -183,8 +183,10 @@ export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
                 <Text style={styles.priceCancelStyle}>{`${'\u20B9'}${item?.price}`}</Text>
               )}
               {specialPrice && (
-                <Text style={styles.discountStyle}>{`${(getDiscountPercentage,
-                (item?.price, item?.special_price))}%off`}</Text>
+                <Text style={styles.discountStyle}>{`${getDiscountPercentage(
+                  item?.price,
+                  item?.special_price
+                )}%off`}</Text>
               )}
             </View>
           </TouchableOpacity>
