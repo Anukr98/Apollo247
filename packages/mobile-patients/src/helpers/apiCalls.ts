@@ -2,6 +2,7 @@ import Axios, { AxiosResponse, Canceler } from 'axios';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { getTagalysConfig, Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { string } from '../strings/string';
+import { Buffer } from 'buffer';
 
 export interface MedicineProduct {
   category_id?: string;
@@ -921,10 +922,11 @@ export const getMedicinePageProducts = (
 
 export const getSpecialOffersPageWidgets = (): Promise<AxiosResponse<SpecialOffersWidgetsApiResponse>> => {
   const url = `${config.SPECIAL_OFFERS_PAGE_WIDGETS[0]}`;
+  const token = Buffer.from(`${config.SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME}:${config.SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD}`, 'utf8').toString('base64');
   return Axios.get(url, {
     headers: {
-      Authorization: config.SPECIAL_OFFERS_PAGE_WIDGETS[1],
-    },
+      'Authorization': `Basic ${token}`
+    }
   });
 };
 

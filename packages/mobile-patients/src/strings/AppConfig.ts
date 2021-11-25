@@ -53,7 +53,7 @@ const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
 const tatTokenDev = 'GWjKtviqHa4r4kiQmcVH';
 const tatTokenProd = '8nBs8ucvbqlCGShwDr7oHv0mePqwhE';
 const apolloProdBaseUrl = 'https://magento.apollo247.com';
-const apolloUatBaseUrl = 'https://uat.apollopharmacy.in';
+const apolloUatBaseUrl = 'https://m226.apollopharmacy.in';
 const tagalysBaseUrl = 'https://api-r1.tagalys.com/v1';
 const drupalAuthTokenDev = 'Basic Y29udGVudDp3YWxtYXJ0TlVUdG9reW9IZWlzdA==';
 const drupalAuthTokenProd = 'Basic Y29udGVudDp3YWxtYXJ0TlVUdG9reW9IZWlzdA==';
@@ -67,11 +67,6 @@ const testApiCredentialsProd = {
   Username: 'MCKINSEY',
   Password: 'ERVEYCWTALAOHELEEBRY',
   InterfaceClient: 'MCKINSEY',
-};
-
-const specialOffersWidgetApiCredentials = {
-  Username: 'content',
-  Password: 'walmartNUTtokyoHeist',
 };
 
 const loginSection = {
@@ -503,10 +498,7 @@ const PharmaApiConfig = {
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
     PRODUCTS_BY_CATEGORY: [`${apolloProdBaseUrl}/categoryproducts_api.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
-    SPECIAL_OFFERS_PAGE_WIDGETS: [
-      'https://uatcms.apollo247.com/api/special-offer/getwidget',
-      specialOffersWidgetApiCredentials,
-    ],
+    SPECIAL_OFFERS_PAGE_WIDGETS: ['https://uatcms.apollo247.com/api/special-offer/getwidget'],
     SPECIAL_OFFERS_PAGE_COUPONS: ['https://uatvalidcoupon.apollo247.com/offers'],
     SPECIAL_OFFERS_CATEGORY: [`${apolloUatBaseUrl}/specialoffercategory_api.php`, pharmaToken201],
     SPECIAL_OFFERS_BRANDS: [`${apolloUatBaseUrl}/specialofferbrand_api.php`, pharmaToken201],
@@ -558,10 +550,7 @@ const PharmaApiConfig = {
     GET_SUBSTITUTES: [`${apolloProdBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
     PRODUCTS_BY_CATEGORY: [`${apolloProdBaseUrl}/categoryproducts_api.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloProdBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
-    SPECIAL_OFFERS_PAGE_WIDGETS: [
-      'https://cms.apollo247.com/api/special-offer/getwidget',
-      specialOffersWidgetApiCredentials,
-    ],
+    SPECIAL_OFFERS_PAGE_WIDGETS: ['https://cms.apollo247.com/api/special-offer/getwidget'],
     SPECIAL_OFFERS_PAGE_COUPONS: ['https://validcoupon.apollo247.com/offers'],
     SPECIAL_OFFERS_CATEGORY: [`${apolloProdBaseUrl}/specialoffercategory_api.php`, pharmaToken201],
     SPECIAL_OFFERS_BRANDS: [`${apolloProdBaseUrl}/specialofferbrand_api.php`, pharmaToken201],
@@ -641,6 +630,9 @@ const ConfigurationDev = {
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
   CIRCLE_PLAN_PRESELECTED: false,
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
+
 };
 
 // QA
@@ -699,6 +691,8 @@ const ConfigurationQA = {
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com/ordersuccess',
   CIRCLE_PLAN_PRESELECTED: false,
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
 };
 
 // QA2
@@ -755,6 +749,8 @@ const ConfigurationQA2 = {
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
   CIRCLE_PLAN_PRESELECTED: false,
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
 };
 
 // QA3
@@ -812,6 +808,8 @@ const ConfigurationQA3 = {
   CIRCLE_TEST_URL: 'https://qathreepatients.apollo247.com/test-landing?header=false',
   CIRCLE_LANDING_URL: 'https://qathreepatients.apollo247.com/circle?header=false',
   CIRCLE_PLAN_PRESELECTED: false,
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
 };
 
 const ConfigurationQA5 = {
@@ -870,6 +868,8 @@ const ConfigurationQA5 = {
   CIRCLE_TEST_URL: 'https://aph-staging-web-patients.apollo247.com/test-landing?header=false',
   CIRCLE_LANDING_URL: 'https://aph-staging-web-patients.apollo247.com/circle?header=false',
   CIRCLE_PLAN_PRESELECTED: false,
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
 };
 
 const ConfigurationQA6 = {
@@ -927,6 +927,8 @@ const ConfigurationQA6 = {
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com/ordersuccess',
   CIRCLE_PLAN_PRESELECTED: false,
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
 };
 
 // VAPT
@@ -984,6 +986,8 @@ const ConfigurationVAPT = {
   PROHEALTH_BOOKING_URL: 'https://stagingpatients.apollo247.com//apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
   CIRCLE_PLAN_PRESELECTED: false,
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
 };
 //Production
 const ConfigurationProd = {
@@ -1040,6 +1044,8 @@ const ConfigurationProd = {
   PROHEALTH_BOOKING_URL: 'https://www.apollo247.com/apollo-prohealth',
   baseUrl: 'https://www.apollo247.com',
   CIRCLE_PLAN_PRESELECTED: false,
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
 };
 
 //PERFORMANCE
@@ -1098,6 +1104,8 @@ const ConfigurationPERFORM = {
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
   CIRCLE_PLAN_PRESELECTED: false,
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
 };
 
 //DevelopmentReplica
@@ -1156,6 +1164,8 @@ const ConfigurationDevReplica = {
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
   CIRCLE_PLAN_PRESELECTED: false,
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
+  SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
 };
 
 const Configuration =
