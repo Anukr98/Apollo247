@@ -727,7 +727,9 @@
     "test247Text": "Limited period offer",
     "frequentlyBrought": "Frequently Brought",
     "topBookedTests": "Top Booked Tests",
-    "similarPackages":"Similar Packages"
+    "similarPackages":"Similar Packages",
+    "needToAddPaitent":"• Do you want to edit patient details?",
+    "needToAddOrder":"• Do you want to add tests to your order?",
   },
   "diagnosticCategoryTitle": {
     "category": "category",
