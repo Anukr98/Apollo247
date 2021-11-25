@@ -45,8 +45,8 @@ export const OrderCancelComponent: React.FC<OrderCancelComponentProps> = (props)
     setSelectedReasonBucket,
   } = props;
 
-  const [isReasonSelected, setReasonSelected] = useState<boolean>(false);
-  const [isSubReasonSelected, setSubReasonSelected] = useState<boolean>(false);
+  const [isReasonSelected, setIsReasonSelected] = useState<boolean>(false);
+  const [isSubReasonSelected, setIsSubReasonSelected] = useState<boolean>(false);
   const [showSubReasons, setShowSubReasons] = useState<boolean>(false);
   const [isUserCommentRequired, setUserCommentRequired] = useState<boolean>(false);
 
@@ -60,7 +60,6 @@ export const OrderCancelComponent: React.FC<OrderCancelComponentProps> = (props)
       }
     });
   }
-
   const content = () => {
     return (
       <View style={styles.contentContainerStyle}>
@@ -95,7 +94,7 @@ export const OrderCancelComponent: React.FC<OrderCancelComponentProps> = (props)
                   onPress={() => {
                     setSelectedReason(item?.bucketName!);
                     setSelectedReasonBucket([item]);
-                    setReasonSelected(true);
+                    setIsReasonSelected(true);
                     setShowReasons(false);
                     setShowSubReasons(true);
                     setSelectedSubReason('');
@@ -162,7 +161,7 @@ export const OrderCancelComponent: React.FC<OrderCancelComponentProps> = (props)
                     <TouchableOpacity
                       onPress={() => {
                         setSelectedSubReason(item?.description);
-                        setSubReasonSelected(true);
+                        setIsSubReasonSelected(true);
                         setShowSubReasons(false);
                         item?.description === 'Others (please specify)'
                           ? setUserCommentRequired(true)
@@ -223,6 +222,23 @@ export const OrderCancelComponent: React.FC<OrderCancelComponentProps> = (props)
             )}
           </View>
         )}
+        {isReasonSelected &&
+        !showReasons &&
+        isSubReasonSelected &&
+        !showSubReasons &&
+        selectedReasonBucket &&
+        selectedReasonBucket?.[0]?.reasons?.find((item) => selectedSubReason === item?.description)
+          ?.nudgeConfig?.enabled === true ? (
+          <View>
+            <View style={styles.nudgeTopBorderStyle}></View>
+            <Text style={styles.nudgeText}>
+              {selectedReasonBucket &&
+                selectedReasonBucket?.[0]?.reasons?.find(
+                  (item) => selectedSubReason === item?.description
+                )?.nudgeConfig?.message}
+            </Text>
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -250,8 +266,8 @@ export const OrderCancelComponent: React.FC<OrderCancelComponentProps> = (props)
           setCancelVisible(false);
           setShowReasons(false);
           setShowSubReasons(false);
-          setReasonSelected(false);
-          setSubReasonSelected(false);
+          setIsReasonSelected(false);
+          setIsSubReasonSelected(false);
           setSelectedReasonBucket([]);
           setSelectedReason('');
           setSelectedSubReason('');
@@ -324,5 +340,17 @@ const styles = StyleSheet.create({
     width: 14,
     height: 14,
     alignSelf: 'flex-end',
+  },
+  nudgeTopBorderStyle: {
+    borderTopWidth: 1,
+    borderTopColor: '#000000',
+    opacity: 0.1,
+    paddingTop: 20,
+  },
+  nudgeText: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    color: theme.colors.SKY_BLUE,
+    lineHeight: 16,
+    fontWeight: '600',
   },
 });
