@@ -1767,7 +1767,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         invoiceURL
         labReportURL
         passportNo
-        attributesObj {
+        attributesObj{
           initialCollectionCharges
           distanceCharges
           homeCollectionCharges
