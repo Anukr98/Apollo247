@@ -514,7 +514,6 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
   const { cusId, isfetchingId } = useGetJuspayId();
 
   useEffect(() => {
-    //check for corporate
     if (isCorporateSubscription) {
       //check for number of remainingVaccineSlots
       if (Number.parseInt(remainingVaccineSlots) > 0) {

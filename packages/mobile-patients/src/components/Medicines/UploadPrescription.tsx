@@ -23,6 +23,7 @@ import {
   formatAddress,
   setAsyncPharmaLocation,
   postCleverTapEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
@@ -98,6 +99,7 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
     paddingTop: 7,
@@ -505,17 +507,26 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       User_Type: pharmacyUserType,
     };
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED] = {
-      'Order_ID(s)': `${orderAutoId}`,
-      'Order Type': 'Non Cart',
-      'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
+      'Order ID(s)': `${orderAutoId}`,
+      'Order type': 'Non Cart',
+      'Mode of delivery': deliveryAddressId ? 'Home' : 'Pickup',
       'Store ID': storeId || undefined, // incase of store delivery
       'Shipping information': deliveryAddressId ? deliveryAddressLine : storeAddressLine,
       Pincode: pinCode || undefined,
-      'User Type': pharmacyUserType || undefined,
-      'Service Area': 'Pharmacy',
+      'User type': pharmacyUserType || undefined,
+      'Service area': 'Pharmacy',
     };
     postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, cleverTapEventAttributes);
     postWebEngageEvent(WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION, eventAttributes);
+
+    const firebaseCheckoutEventAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED] = {
+      order_id: orderAutoId,
+      user_type: pharmacyUserType,
+    };
+    postFirebaseEvent(
+      FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED,
+      firebaseCheckoutEventAttributes
+    );
   };
 
   const uploadMultipleFiles = (physicalPrescription: PhysicalPrescription[]) => {
@@ -816,6 +827,13 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                   postWebEngageEvent(
                     WebEngageEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED,
                     eventAttribute
+                  );
+                  const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_PRESCRIPTION_OPTION_CLICKED] = {
+                    Option: optionSelected,
+                  };
+                  postCleverTapEvent(
+                    CleverTapEventName.PHARMACY_PRESCRIPTION_OPTION_CLICKED,
+                    cleverTapEventAttributes
                   );
                 }}
                 containerStyle={{

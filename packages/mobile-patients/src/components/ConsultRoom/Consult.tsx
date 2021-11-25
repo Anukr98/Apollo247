@@ -1400,7 +1400,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             item.status == STATUS.NO_SHOW ||
             item.status == STATUS.CALL_ABANDON ? (
               <View>
-                {item.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
+                {(item?.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
+                  && item?.status == STATUS.PENDING) ||
                 item.status == STATUS.NO_SHOW ||
                 item.status == STATUS.CALL_ABANDON
                   ? renderPickAnotherButton()

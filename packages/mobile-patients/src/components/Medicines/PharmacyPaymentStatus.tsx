@@ -101,6 +101,9 @@ import {
 import { SubstituteItemsCard } from '@aph/mobile-patients/src/components/Medicines/Components/SubstituteItemsCard';
 import InAppReview from 'react-native-in-app-review';
 import DeviceInfo from 'react-native-device-info';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { PrescriptionInfoView } from '@aph/mobile-patients/src/components/MedicineCart/Components/PrescriptionInfoView';
 
 enum SUBSTITUTION_RESPONSE {
   OK = 'OK',
@@ -125,6 +128,8 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     cartTotalCashback,
     pharmacyCircleAttributes,
     deliveryCharges,
+    prescriptionType,
+    consultProfile,
   } = useShoppingCart();
   const [loading, setLoading] = useState<boolean>(true);
   const { success, failure, aborted, pending } = Payment;
@@ -138,6 +143,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const [paymentRefId, setpaymentRefId] = useState<string>('');
   const [orderDateTime, setorderDateTime] = useState('');
   const [paymentMode, setPaymentMode] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
   const cleverTapCheckoutEventAttributes = props.navigation.getParam(
     'cleverTapCheckoutEventAttributes'
@@ -160,7 +166,13 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const [circlePlanDetails, setCirclePlanDetails] = useState({});
   const [codOrderProcessing, setcodOrderProcessing] = useState<boolean>(false);
-  const { apisToCall, pharmacyUserTypeAttribute } = useAppCommonData();
+  const {
+    apisToCall,
+    pharmacyUserTypeAttribute,
+    selectedPrescriptionType,
+    setSelectedPrescriptionType,
+    pharmacyUserType,
+  } = useAppCommonData();
 
   const [showSubstituteMessage, setShowSubstituteMessage] = useState<boolean>(false);
   const [substituteMessage, setSubstituteMessage] = useState<string>('');
@@ -213,6 +225,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         setpaymentRefId(pharmaPaymentStatus?.paymentRefId);
         status == pending && setStatus(pharmaPaymentStatus?.paymentStatus);
         setPaymentMode(pharmaPaymentStatus?.paymentMode);
+        setPaymentMethod(pharmaPaymentStatus?.paymentMethod);
         setTransactionId(pharmaPaymentStatus?.bankTxnId);
         setIsCircleBought(!!pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
         setTotalCashBack(pharmaPaymentStatus?.planPurchaseDetails?.totalCashBack);
@@ -339,6 +352,8 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       apiCallEnums.plansCashback,
     ];
     navigateToHome(props.navigation);
+    // clearing free consult option selected
+    setSelectedPrescriptionType && setSelectedPrescriptionType('');
   };
 
   const firePaymentOrderStatusEvent = (backEndStatus: string) => {
@@ -391,8 +406,13 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       'Substitution Option Shown': showSubstituteMessage ? 'Yes' : 'No',
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_POST_CART_PAGE_VIEWED, eventAttributes);
-    if(status !== failure && status !== aborted && status !== pending && status !== "PAYMENT_PENDING")
-      clearCartInfo?.()
+    if (
+      status !== failure &&
+      status !== aborted &&
+      status !== pending &&
+      status !== 'PAYMENT_PENDING'
+    )
+      clearCartInfo?.();
   };
 
   const fireSubstituteResponseEvent = (action: string) => {
@@ -445,12 +465,12 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       'cart size': cartItems?.length,
       af_revenue: getFormattedAmount(grandTotal),
       af_currency: 'INR',
-      af_order_id: orderId ? orderId : "0",
-      orderAutoId: orderAutoId ? orderAutoId : "0",
+      af_order_id: orderId ? orderId : '0',
+      orderAutoId: orderAutoId ? orderAutoId : '0',
       'coupon applied': coupon ? true : false,
-      "af_content_id": cartItems?.map(item => item?.id),
-      "af_quantity": cartItems?.map(item => item?.quantity),
-      "af_price": cartItems?.map(item => item?.specialPrice ? item?.specialPrice : item?.price),
+      af_content_id: cartItems?.map((item) => item?.id),
+      af_quantity: cartItems?.map((item) => item?.quantity),
+      af_price: cartItems?.map((item) => (item?.specialPrice ? item?.specialPrice : item?.price)),
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
       ...pharmacyCircleAttributes!,
@@ -563,13 +583,34 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       ...checkoutEventAttributes,
       'Cart Items': JSON.stringify(cartItems),
     });
+    const skus = cartItems?.map((item) => item?.id);
+    const firebaseCheckoutEventAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED] = {
+      order_id: `${orderAutoId}`,
+      transaction_id: transId,
+      currency: 'INR',
+      coupon: coupon?.coupon,
+      shipping: deliveryCharges,
+      items: JSON.stringify(skus),
+      value: grandTotal,
+      circle_membership_added: circleMembershipCharges
+        ? 'Yes'
+        : circleSubscriptionID
+        ? 'Existing'
+        : 'No',
+      payment_type: 'COD',
+      user_type: pharmacyUserType,
+    };
+    postFirebaseEvent(
+      FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED,
+      firebaseCheckoutEventAttributes
+    );
     firePurchaseEvent(orderAutoId);
   };
 
   const fireCleverTapOrderSuccessEvent = () => {
     postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, {
       ...cleverTapCheckoutEventAttributes,
-      'Cart Items': cartItems?.length,
+      'Cart items': cartItems?.length,
     });
   };
 
@@ -800,7 +841,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
                 {textComponent('Mode of Payment', undefined, theme.colors.ASTRONAUT_BLUE, false)}
               </View>
               <View style={{ justifyContent: 'flex-start', marginTop: 5 }}>
-                {textComponent(paymentMode, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
+                {textComponent(paymentMethod, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
               </View>
             </View>
           )}
@@ -864,7 +905,10 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       noteText =
         'Note : In case your account has been debited, you should get the refund in 10-14 business days.';
     } else if (paymentMode === 'COD') {
-      noteText = 'Note - Your order is confirmed and has been placed successfully.';
+      noteText =
+        selectedPrescriptionType === 'CONSULT'
+          ? 'Note - Your order will be confirmed once the consultation is completed with a valid prescription'
+          : 'Note - Your order is confirmed and has been placed successfully.';
     } else if (status != success && status != failure && status != aborted) {
       noteText =
         'Note : Your payment is in progress and this may take a couple of minutes to confirm your booking. We’ll intimate you once your bank confirms the payment.';
@@ -915,6 +959,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       setIsCircleSubscription && setIsCircleSubscription(false);
       setCirclePlanSelected?.(null);
       props.navigation.navigate(AppRoutes.MedicineCart);
+      setSelectedPrescriptionType && setSelectedPrescriptionType('');
     } else {
       clearCircleSubscriptionData();
       moveToHome();
@@ -987,6 +1032,32 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     );
   };
 
+  const renderPrescriptionInfo = () => {
+    const isPrescriptionLater = prescriptionType === PrescriptionType.LATER;
+    const name = consultProfile?.firstName || currentPatient?.firstName;
+    const title = isPrescriptionLater
+      ? 'Share Prescription Later Selected'
+      : AppConfig.Configuration.FREE_CONSULT_MESSAGE.orderConfirmationHeader.replace(
+          '{Patient Name}',
+          name
+        );
+    const description = isPrescriptionLater
+      ? 'You have to share prescription later for order to be verified successfully.'
+      : AppConfig.Configuration.FREE_CONSULT_MESSAGE.orderConfirmationMessage;
+    const note = isPrescriptionLater
+      ? 'Delivery TAT will be on hold till the prescription is submitted.'
+      : 'Delivery TAT will be on hold till the consult is completed.';
+    return (
+      <PrescriptionInfoView
+        title={title}
+        description={description}
+        note={note}
+        style={{ marginHorizontal: 20 }}
+        uploadNowToBeShown={false}
+      />
+    );
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
@@ -1005,6 +1076,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
               !isCircleBought
                 ? renderCircleSavingsOnPurchase()
                 : null}
+              {selectedPrescriptionType === 'CONSULT' && renderPrescriptionInfo()}
               {renderCODNote()}
               {status != failure && status != aborted && appointmentHeader()}
               {status != failure && status != aborted && appointmentCard()}
