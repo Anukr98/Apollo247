@@ -78,7 +78,6 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     locationDetails,
     pharmacyLocation,
     isPharmacyLocationServiceable,
-    axdcCode,
     pharmacyUserType,
   } = useAppCommonData();
   const { showAphAlert } = useUIElements();
@@ -91,6 +90,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     pharmacyCircleAttributes,
     cartItems,
     asyncPincode,
+    axdcCode,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
 
