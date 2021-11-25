@@ -536,6 +536,36 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, [isPharmacyPincodeServiceable]);
 
   const callNearbyStoreApi = () => {
+    const styles = StyleSheet.create({
+      callCta: {
+        backgroundColor: '#fc9916',
+        borderRadius: 5,
+        height: 38,
+        marginBottom: 5,
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        flexDirection: 'row',
+        shadowColor: 'rgba(0,0,0,0.2)',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0,
+        shadowRadius: 0,
+        elevation: 0,
+        paddingLeft: 12,
+      },
+      addressCta: {
+        backgroundColor: '#fc9916',
+        borderRadius: 5,
+        height: 38,
+        marginBottom: 5,
+        justifyContent: 'flex-start',
+        shadowColor: 'rgba(0,0,0,0.2)',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0,
+        shadowRadius: 0,
+        elevation: 0,
+        paddingLeft: 12,
+      },
+    });
     getNearByStoreDetailsApi(asyncPincode?.pincode)
       .then((response: any) => {
         showAphAlert!({
@@ -548,21 +578,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             <View style={{ marginBottom: 15, marginTop: 12, marginHorizontal: 20 }}>
               <TouchableOpacity
                 activeOpacity={1}
-                style={{
-                  backgroundColor: '#fc9916',
-                  borderRadius: 5,
-                  height: 38,
-                  marginBottom: 5,
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                  flexDirection: 'row',
-                  shadowColor: 'rgba(0,0,0,0.2)',
-                  shadowOffset: { width: 0, height: 0 },
-                  shadowOpacity: 0,
-                  shadowRadius: 0,
-                  elevation: 0,
-                  paddingLeft: 12,
-                }}
+                style={styles.callCta}
                 onPress={() =>
                   onPressCallNearestPharmacy(
                     response.data && response.data.phoneNumber ? response.data.phoneNumber : ''
@@ -576,19 +592,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               </TouchableOpacity>
               <Button
                 title={'CHANGE THE ADDRESS'}
-                style={{
-                  backgroundColor: '#fc9916',
-                  borderRadius: 5,
-                  height: 38,
-                  marginBottom: 5,
-                  justifyContent: 'flex-start',
-                  shadowColor: 'rgba(0,0,0,0.2)',
-                  shadowOffset: { width: 0, height: 0 },
-                  shadowOpacity: 0,
-                  shadowRadius: 0,
-                  elevation: 0,
-                  paddingLeft: 12,
-                }}
+                style={styles.addressCta}
                 titleTextStyle={{ ...theme.viewStyles.text('B', 13, '#ffffff', 1, 24, 0) }}
                 onPress={() => showAccessAccessLocationPopup(addresses, false)}
               />
@@ -629,19 +633,17 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setPageLoading!(true);
 
     callToExotelApi(param)
-      .then((response) => {
-        hideAphAlert!();
-        globalLoading!(false);
-        setPageLoading!(false);
-      })
+      .then((response) => {})
       .catch((error) => {
-        hideAphAlert!();
-        globalLoading!(false);
-        setPageLoading!(false);
         showAphAlert!({
           title: string.common.uhOh,
           description: 'We could not connect to the pharmacy now. Please try later.',
         });
+      })
+      .finally(() => {
+        hideAphAlert!();
+        globalLoading!(false);
+        setPageLoading!(false);
       });
   };
 
