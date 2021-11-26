@@ -1627,7 +1627,6 @@ export const onCleverTapUserLogin = async (_currentPatient: any) => {
       ...(_currentPatient?.emailAddress && { Email: _currentPatient?.emailAddress }),
       ...(_currentPatient?.photoUrl && { Photo: _currentPatient?.photoUrl }),
       ...(_currentPatient?.createdDate && { CreatedDate: _currentPatient?.createdDate }),
-      isReferee: _currentPatient?.isReferee || false,
     };
     CleverTap.onUserLogin(_userProfile);
     AsyncStorage.setItem('createCleverTapProifle', 'true');
@@ -1641,6 +1640,12 @@ export const updateUserProfileWithReferrInformation = (totalReferredUser: Number
     TotalReferredUsers: totalReferredUser,
   });
 };
+
+export const setRefereeFlagForNewRegisterUser = (isReferee: boolean) => {
+  CleverTap.onUserLogin({
+    isReferee,
+  });
+}
 
 export type CircleEventSource =
   | 'Circle Popup Plan only'
@@ -2239,7 +2244,6 @@ export const InitiateAppsFlyer = (
         if (res.data.af_sub1 !== null) {
           AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
         }
-
         if (res.data.linkToUse !== null && res.data.linkToUse === 'ForReferrarInstall') {
           const responseData = res.data;
           setAppReferralData({
