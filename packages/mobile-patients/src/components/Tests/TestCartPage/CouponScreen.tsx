@@ -41,29 +41,18 @@ export interface CouponScreenProps
 
 export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
   const {
-    cartItems,
     modifiedOrder,
-    modifiedPatientCart,
-    totalPriceExcludingAnyDiscounts,
     isDiagnosticCircleSubscription,
     isCircleAddedToCart,
     setCoupon,
-    coupon,
     couponDiscount,
     setCouponDiscount,
-    couponCircleBenefits,
     setCouponCircleBenefits,
     circleSaving,
     setCouponOnMrp,
   } = useDiagnosticsCart();
   const { circleSubscriptionId, hdfcSubscriptionId } = useShoppingCart();
-  const {
-    hdfcPlanId,
-    circlePlanId,
-    hdfcStatus,
-    circleStatus,
-    activeUserSubscriptions,
-  } = useAppCommonData();
+  const { hdfcPlanId, circlePlanId, hdfcStatus, circleStatus } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const { showAphAlert, setLoading, loading } = useUIElements();
   const getPincode = props.navigation.getParam('pincode');
@@ -106,7 +95,6 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
     } catch (error) {
       setCouponsList([]);
       renderErrorInFetching();
-      console.log({ error });
       CommonBugFender('getDiagnosticCoupons_CouponScreen', error);
     }
   }
@@ -138,8 +126,6 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
   }
 
   const saveDisableCoupons = (couponName: string) => {
-    console.log('in save disable flow..');
-    console.log({ couponName });
     if (couponName) {
       setAppliedCouponName(couponName);
       if (disableCouponsList?.indexOf(couponName) > -1) {
@@ -152,16 +138,6 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
       }
     }
   };
-
-  function recalculateBillAmount() {
-    /**
-     * remove the circle subscription charges
-     */
-    const withOutCircleSavings =
-      toPayPrice + (isDiagnosticCircleSubscription ? circleSaving : 0) - couponDiscount;
-    console.log({ withOutCircleSavings });
-    return withOutCircleSavings;
-  }
 
   //this will differ in modify flow.
   const validateAppliedCoupon = (
@@ -185,25 +161,18 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
     const totalBillAmt = createLineItemsForPayload?.pricesForItemArray?.map(
       (item: any) => item?.specialPrice * item?.quantity
     );
-    const tt = totalBillAmt?.reduce((curr: number, prev: number) => curr + prev, 0);
+    const totalAmountToPass = totalBillAmt?.reduce((curr: number, prev: number) => curr + prev, 0);
     let data = {
       mobile: currentPatient?.mobileNumber,
-      billAmount: tt,
-      // billAmount:
-      //   setSubscription == undefined
-      //     ? Number(toPayPrice - couponDiscount)
-      //     : recalculateBillAmount(), //this is basically the price that user will actually pay
+      billAmount: totalAmountToPass,
       coupon: coupon,
       pinCode: String(getPincode),
       diagnostics: createLineItemsForPayload?.pricesForItemArray?.map((item: any) => item), //define type
       packageIds: setSubscription != undefined ? [] : packageId, //array of all subscriptions of user
     };
-
-    console.log('payload for validate api ');
     console.log({ data });
     validateConsultCoupon(data)
       .then((resp: any) => {
-        console.log('getting response from validate coupon');
         if (resp?.data?.errorCode == 0) {
           if (resp?.data?.response?.valid) {
             const responseData = resp?.data?.response;
@@ -219,7 +188,6 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
                 setSubscription == undefined) ||
               (hasOnMrpTrue?.length > 0 && setSubscription == undefined)
             ) {
-              console.log('recall the appi');
               validateAppliedCoupon(
                 coupon,
                 cartItemsWithQuan,
@@ -250,8 +218,6 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
               props.navigation.goBack();
             }
           } else {
-            console.log('in else');
-            console.log({ resp });
             const getErrorResponseReason = resp?.data?.response?.reason;
             !applyingFromList && setCouponError(getErrorResponseReason);
             applyingFromList && setCouponListError(getErrorResponseReason);
@@ -264,8 +230,6 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
           }
           //add event here
         } else {
-          console.log('error in validatetion');
-          console.log(resp);
           const getCouponErrorMsg = resp?.data?.errorMsg;
           CommonBugFender('validateAppliedCoupon_CouponScreen', getCouponErrorMsg);
           !applyingFromList && setCouponError(getCouponErrorMsg);
@@ -278,8 +242,6 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
         }
       })
       .catch((error) => {
-        console.log('in catch fo validate');
-        console.log({ error });
         CommonBugFender('validateAppliedCoupon_CouponScreen', error);
         !applyingFromList && setCouponError(string.diagnosticsCoupons.unableToValidate);
         applyingFromList && setCouponListError(string.diagnosticsCoupons.unableToValidate);
@@ -354,7 +316,7 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
             onChangeText={(text) => {
               if (/^\S*$/.test(text)) {
                 couponError && setCouponError('');
-                setCouponText(text);
+                setCouponText(text?.toUpperCase());
               }
             }}
             textInputprops={{

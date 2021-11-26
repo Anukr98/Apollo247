@@ -792,8 +792,6 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     (isDiagnosticCircleSubscription || isCircleAddedToCart) && !!coupon && !coupon?.circleBenefits
       ? item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.CIRCLE ||
         item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
-      : isDiagnosticCircleSubscription || isCircleAddedToCart
-      ? item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.ALL
       : item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.CIRCLE ||
         item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
   );
@@ -808,7 +806,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
 
   function getDiscountSavingPrice(currentItem: DiagnosticsCartItem) {
     const getItem =
-      !!coupon && couponOnMrp?.find((item: any) => Number(item?.testId) == Number(currentItem?.id));
+      !!coupon &&
+      !!couponOnMrp &&
+      couponOnMrp?.find((item: any) => Number(item?.testId) == Number(currentItem?.id));
     const isMrpTrue = !!getItem && getItem?.onMrp;
     return {
       isMrpTrue,
@@ -905,15 +905,14 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const temporaryCartSaving: DiagnosticsCartContextProps['temporaryCartSaving'] =
     discountSaving + temporaryNormalSaving;
 
+  //removed packageMrp code
   const circleSaving: DiagnosticsCartContextProps['circleSaving'] = parseFloat(
     allCartItems
       ?.reduce(
         (currTotal: number, currItem: DiagnosticsCartItem) =>
           currTotal +
-          (currItem?.groupPlan == 'CIRCLE'
-            ? (currItem?.packageMrp! > currItem?.circlePrice!
-                ? currItem?.packageMrp!
-                : currItem?.circlePrice!) - currItem?.circleSpecialPrice!
+          (currItem?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+            ? currItem?.circlePrice! - currItem?.circleSpecialPrice!
             : 0 || 0),
         0
       )
