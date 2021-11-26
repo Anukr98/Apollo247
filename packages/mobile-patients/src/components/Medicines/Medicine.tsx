@@ -2063,6 +2063,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 comingFromSearch: true,
                 navSrcForSearchSuccess: 'Pharmacy Home',
               });
+              setSearchText('');
+              setMedicineList([]);
+              setSearchFocused(false);
             }
           }}
           value={searchText}
@@ -2070,11 +2073,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setSearchFocused(true);
             setCategoryTreeVisible(false);
           }}
-          onBlur={() => {
-            setSearchFocused(false);
-            setMedicineList([]);
-            setSearchText('');
-          }}
+          // onBlur={() => {
+          //   setSearchFocused(false);
+          //   setMedicineList([]);
+          //   setSearchText('');
+          // }}
           onChangeText={(value) => {
             if (isValidSearch(value) && value.length >= 3) {
               setMedicineSearchLoading(true);
