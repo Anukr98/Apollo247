@@ -22,7 +22,6 @@ export const CouponSectionPDP = (props: { offersData: SpecialOffersCouponsData[]
     array[position].knowMoreOption = !array[position].knowMoreOption;
     setCouponData(array);
   };
-  console.log('cashback');
 
   const renderIndividualCoupon = (item: SpecialOffersCouponsData, index: number) => {
     return (
