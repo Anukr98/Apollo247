@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   Dimensions,
   Platform,
-  Modal
+  Modal,
 } from 'react-native';
 import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
 import {
@@ -74,7 +74,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 import AsyncStorage from '@react-native-community/async-storage';
 import { PassportPaitentOverlay } from '@aph/mobile-patients/src/components/Tests/components/PassportPaitentOverlay';
-import { updatePassportDetails, updatePassportDetailsVariables } from '../../graphql/types/updatePassportDetails';
+import {
+  updatePassportDetails,
+  updatePassportDetailsVariables,
+} from '@aph/mobile-patients/src/graphql/types/updatePassportDetails';
 
 export interface OrderStatusProps extends NavigationScreenProps {}
 
@@ -138,7 +141,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const [isSingleUhid, setIsSingleUhid] = useState<boolean>(false);
   const [showPassportModal, setShowPassportModal] = useState<boolean>(false);
   const [passportNo, setPassportNo] = useState<any>([]);
-  const [passportData, setPassportData] = useState<any>([])
+  const [passportData, setPassportData] = useState<any>([]);
   const [showMoreArray, setShowMoreArray] = useState([] as any);
   const [apiPrimaryOrderDetails, setApiPrimaryOrderDetails] = useState([] as any);
   const [primaryOrderId, setPrimaryOrderId] = useState<string>('');
@@ -870,7 +873,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
         </ScrollView>
         {showPassportModal && renderPassportPaitentView()}
       </SafeAreaView>
-       
+
       {backToHome()}
     </View>
   );

@@ -301,8 +301,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   let localCircleSubId = '';
   const circlePlanPurchasePrice = !!selectedCirclePlan
     ? selectedCirclePlan?.currentSellingPrice
-    : !!defaultCirclePlan && defaultCirclePlan?.currentSellingPrice;
-
+    : !!defaultCirclePlan
+    ? defaultCirclePlan?.currentSellingPrice
+    : 0;
   const couponCal =
     !!coupon && (isCircleAddedToCart || isDiagnosticCircleSubscription) && !couponCircleBenefits
       ? grandTotal + circleSaving
@@ -561,13 +562,16 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           if (resp?.data?.response?.valid) {
             const responseData = resp?.data?.response;
             const getCircleBenefits = responseData?.circleBenefits;
+            const hasOnMrpTrue = responseData?.diagnostics?.filter((item: any) => item?.onMrp);
+            console.log({ responseData });
             /**
              * case for if user is claiming circle benefits, but coupon => circleBenefits as false
              */
             if (
-              (isDiagnosticCircleSubscription || isCircleAddedToCart) &&
-              !responseData?.circleBenefits &&
-              setSubscription == undefined
+              ((isDiagnosticCircleSubscription || isCircleAddedToCart) &&
+                !responseData?.circleBenefits &&
+                setSubscription == undefined) ||
+              (hasOnMrpTrue?.length > 0 && setSubscription == undefined)
             ) {
               revalidateAppliedCoupon(
                 coupon,
@@ -1100,13 +1104,15 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       !!coupon &&
       coupon?.diagnostics?.find((test: any) => Number(test?.testId) == Number(item?.id));
     const isCouponApplicable = !!getCouponDiscountItem && getCouponDiscountItem?.applicable;
+    /**used for showing the applied coupon price of line items */
     const couponPriceToShow =
       isCouponApplicable &&
       (getCouponDiscountItem?.onMrp
         ? Math.abs(getCouponDiscountItem?.mrp - getCouponDiscountItem?.discountAmt)
         : Math.abs(getCouponDiscountItem?.specialPrice - getCouponDiscountItem?.discountAmt));
     const itemCouponSaving =
-      isCouponApplicable && getCouponDiscountItem?.discountAmt * getCouponDiscountItem?.quantity;
+      isCouponApplicable &&
+      (Math.round(getCouponDiscountItem?.discountAmt * 10) / 10) * getCouponDiscountItem?.quantity;
 
     return (
       <View>
@@ -1117,21 +1123,24 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             }}
           >
             <Text style={styles.addressTextStyle}>{nameFormater(item?.name, 'default')}</Text>
-            {isCircleAddedToCart && totalIndiviualSavingAmount > 0 && isGroupPlanCircle && (
-              <View style={styles.savingsView}>
-                <CircleLogo style={styles.savingCircleIcon} />
-                <Text style={styles.savingTextStyle}>
-                  Savings {string.common.Rs}
-                  {totalIndiviualSavingAmount}
-                </Text>
-              </View>
-            )}
+            {isCircleAddedToCart &&
+              totalIndiviualSavingAmount > 0 &&
+              isGroupPlanCircle &&
+              (!!coupon ? couponCircleBenefits : true) && (
+                <View style={styles.savingsView}>
+                  <CircleLogo style={styles.savingCircleIcon} />
+                  <Text style={styles.savingTextStyle}>
+                    Savings {string.common.Rs}
+                    {totalIndiviualSavingAmount}
+                  </Text>
+                </View>
+              )}
             {/**for showing the coupon discounts - circle users  */}
             {isCouponApplicable && (
               <View style={[styles.savingsView, { marginLeft: -3 }]}>
                 <Text style={styles.savingTextStyle}>
                   Coupon Savings {string.common.Rs}
-                  {roundOff(itemCouponSaving)}
+                  {itemCouponSaving?.toFixed(2)}
                 </Text>
               </View>
             )}
@@ -1149,20 +1158,16 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
               {isCircleAddedToCart && !!slashedPrice && slashedPrice > 0 && (
                 <Text style={styles.slashedPriceText}>
                   {string.common.Rs}
-                  {slashedPrice}{' '}
+                  {slashedPrice * item?.mou}{' '}
                 </Text>
               )}
               {string.common.Rs}
-              {!!coupon && isCouponApplicable
-                ? roundOff(couponPriceToShow) * item?.mou
-                : roundOff(calTotal)}
+              {calTotal}
             </Text>
             <View style={styles.quantityViewStyle}>
               <Text style={[styles.addressTextStyle, styles.quantityTextStyle]}>
                 {item?.mou} X {string.common.Rs}
-                {!!coupon && isCouponApplicable
-                  ? roundOff(couponPriceToShow)
-                  : roundOff(priceToShow)}
+                {priceToShow}
               </Text>
             </View>
           </View>
@@ -1524,7 +1529,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         circleSaving > 0
       : isCircleAddedToCart && circleSaving > 0 && !!coupon && !couponCircleBenefits
       ? false
-      : true;
+      : isCircleAddedToCart && circleSaving > 0; //true => otherwise showing circle savings as well for a non-circle member
+    const showCirclePurchaseAmount = isDiagnosticCircleSubscription || isCircleAddedToCart;
+    const showCircleRelatedSavings =
+      showCirclePurchaseAmount && circleSaving > 0 && (!!coupon ? couponCircleBenefits : true);
+
     return (
       <>
         <View
@@ -1546,34 +1555,37 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             string.diagnosticsCoupons.totalMrp,
             totalPriceExcludingAnyDiscounts.toFixed(2)
           )}
-
-          {isModifyFlow && Number(hcChargesToShow) == 0 ? null : (
-            <View style={styles.rowSpaceBetweenStyle}>
-              <Text style={[styles.pricesNormalText, { width: '60%' }]}>
-                {string.diagnosticsCartPage.homeCollectionText}
-              </Text>
-              <View style={{ flexDirection: 'row' }}>
-                <Text
-                  style={[
-                    styles.blueTextStyle,
-                    {
-                      //commented for future refrence
-                      // textDecorationLine:
-                      //   isModifyFlow &&
-                      //   modifiedOrder?.collectionCharges > 0 &&
-                      //   hcCharges === 0 &&
-                      //   cartItems?.length > 0
-                      //     ? 'line-through'
-                      //     : 'none',
-                    },
-                  ]}
-                >
-                  {string.common.Rs}
-                  {isModifyFlow ? Number(0)?.toFixed(2) : Number(hcChargesToShow)?.toFixed(2)}{' '}
-                  {/** added check since we don't want any striked through price */}
+          {/**normal saving and limited period offer combined together as discount on mrp*/}
+          {(discountSaving > 0 || normalSaving > 0) &&
+            renderPrices(
+              string.diagnosticsCoupons.discountOnMrp,
+              cartSaving?.toFixed(2),
+              false,
+              true
+            )}
+          {/**
+           * if is already a circle member, or circle added to cart
+           * + circle savings + circleBenefitsApplied via coupon is true
+           */}
+          {showCircleRelatedSavings && (
+            <View style={[styles.rowSpaceBetweenStyle]}>
+              <View style={{ flexDirection: 'row', flex: 0.8 }}>
+                <CircleLogo style={styles.circleLogoIcon} />
+                <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
+                  Discount
                 </Text>
               </View>
+              <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
+                - {string.common.Rs} {circleSaving.toFixed(2)}
+              </Text>
             </View>
+          )}
+          {renderPrices(
+            string.diagnosticsCoupons.couponDiscount,
+            couponDiscount?.toFixed(2),
+            false,
+            true,
+            true
           )}
           {distanceCharges > 0 &&
             renderPrices(
@@ -1582,54 +1594,28 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
               false,
               false
             )}
+          {isModifyFlow && Number(hcChargesToShow) == 0 ? null : (
+            <View style={styles.rowSpaceBetweenStyle}>
+              <Text style={[styles.pricesNormalText, { width: '60%' }]}>
+                {string.diagnosticsCartPage.homeCollectionText}
+              </Text>
+              <View style={{ flexDirection: 'row' }}>
+                <Text style={[styles.blueTextStyle]}>
+                  {string.common.Rs}
+                  {isModifyFlow ? Number(0)?.toFixed(2) : Number(hcChargesToShow)?.toFixed(2)}{' '}
+                  {/** added check since we don't want any striked through price */}
+                </Text>
+              </View>
+            </View>
+          )}
           {isCircleAddedToCart &&
-            !!circlePlanPurchasePrice &&
+            circlePlanPurchasePrice > 0 &&
             renderPrices(
-              string.diagnosticsCoupons.circleDiscount,
+              string.diagnosticsCircle.circleMembership,
               circlePlanPurchasePrice?.toFixed(2),
               false,
               false
             )}
-          {normalSaving > 0 &&
-            renderPrices(
-              string.diagnosticsCoupons.discountOnMrp,
-              normalSaving?.toFixed(2),
-              false,
-              true
-            )}
-          {/**
-           * if is already a circle member, or circle added to cart
-           * + circle savings + circleBenefitsApplied via coupon is true
-           */}
-          {(isDiagnosticCircleSubscription || isCircleAddedToCart) &&
-            circleSaving > 0 &&
-            (!!coupon ? couponCircleBenefits : true) && (
-              <View style={[styles.rowSpaceBetweenStyle]}>
-                <View style={{ flexDirection: 'row', flex: 0.8 }}>
-                  <CircleLogo style={styles.circleLogoIcon} />
-                  <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
-                    Membership discount (-)
-                  </Text>
-                </View>
-                <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
-                  - {string.common.Rs} {circleSaving.toFixed(2)}
-                </Text>
-              </View>
-            )}
-          {discountSaving > 0 &&
-            renderPrices(
-              string.diagnostics.specialDiscountText,
-              discountSaving?.toFixed(2),
-              false,
-              true
-            )}
-          {renderPrices(
-            string.diagnosticsCoupons.couponDiscount,
-            couponDiscount?.toFixed(2),
-            false,
-            true,
-            true
-          )}
           <Spearator style={{ marginBottom: 6, marginTop: 6 }} />
           {renderPrices(string.common.toPay, toPayPrice?.toFixed(2), true)}
           {isCircleAddedToCart && renderCODDisableText()}
@@ -1666,13 +1652,13 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const renderCartSavingBanner = () => {
     return dashedBanner(
       'You ',
-      `saved ${string.common.Rs}${convertNumberToDecimal(
+      `saved ${string.common.Rs}${Number(
         isDiagnosticCircleSubscription || isCircleAddedToCart
           ? !!coupon && !couponCircleBenefits
             ? cartSaving + couponDiscount
             : cartSaving + circleSaving + couponDiscount
           : cartSaving + couponDiscount
-      )}`,
+      )?.toFixed(2)}`,
       'on this order',
       'left',
       'saving'
@@ -1695,7 +1681,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             with Circle! Your effective price is{' '}
             <Text style={styles.circleSavingBoldText}>
               {string.common.Rs}
-              {effectivePrice}
+              {effectivePrice?.toFixed(2)}
             </Text>
           </Text>
         </View>
@@ -1914,7 +1900,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       array.push({
         patientID: item?.patientId,
         lineItems: getPricesForItem111,
-        totalPrice: roundOff(totalPrice),
+        totalPrice: Math.round(totalPrice * 10) / 10,
       });
     });
     return array;
@@ -1934,6 +1920,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         (x: any) => Number(x?.testId) === Number(item?.id)
       );
       const isOnMrp = getSelectedItem?.onMrp;
+      const couponDiscount = Math.round(getSelectedItem?.discountAmt * 10) / 10;
+
       const getPriceValueForItem =
         (isDiagnosticCircleSubscription || isCircleAddedToCart) &&
         item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
@@ -1956,20 +1944,20 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
              isMrp = false => discountAmount will be cal on special price (price) -> price = specialPrice - discountAmount
              isMrp = true => discountAmount will be on mrp -> mrp =  mrp - discountAmount
             **/
+
       const couponPrice =
         !!couponResponse && !couponResponse?.isMrp
-          ? getPriceValueForItem - getSelectedItem?.discountAmt
+          ? getPriceValueForItem - couponDiscount
           : getPriceValueForItem;
       const couponMrp =
         !!couponResponse && couponResponse?.isMrp
-          ? getMrpValueForItem - getSelectedItem?.discountAmt
+          ? getMrpValueForItem - couponDiscount
           : getMrpValueForItem;
-      const couponDiscount = getSelectedItem?.discountAmt;
       arr = {
         itemId: Number(item?.id),
-        couponDiscAmount: roundOff(Number(couponDiscount)),
-        price: roundOff(Number(couponPrice)),
-        mrp: roundOff(Number(couponMrp)),
+        couponDiscAmount: Number(couponDiscount),
+        price: Number(couponPrice),
+        mrp: Number(couponMrp),
         groupPlan:
           isDiagnosticCircleSubscription || isCircleAddedToCart
             ? item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.CIRCLE &&
@@ -2408,10 +2396,17 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           }
         );
       }
-
+      const totalPriceSummation = getOrderDetails
+        ?.map(
+          (item: saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWithOrderIDs) =>
+            item?.amount
+        )
+        ?.reduce((curr: number, prev: number) => curr + prev, 0);
       const circlePlanPurchasePrice = !!selectedCirclePlan
         ? selectedCirclePlan?.currentSellingPrice
-        : !!defaultCirclePlan && defaultCirclePlan?.currentSellingPrice;
+        : !!defaultCirclePlan
+        ? defaultCirclePlan?.currentSellingPrice
+        : 0;
 
       let orders: OrderVerticals;
       //trying to purchase circle
@@ -2434,7 +2429,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
       const orderInput: OrderCreate = {
         orders: orders,
-        total_amount: toPayPrice,
+        total_amount: !!coupon
+          ? totalPriceSummation + (isCircleAddedToCart ? circlePlanPurchasePrice : 0)
+          : toPayPrice,
         customer_id: currentPatient?.primaryPatientId || getPatientId,
       };
       const response = await createInternalOrder(client, orderInput);
@@ -3031,7 +3028,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   slashedPriceText: {
-    ...theme.viewStyles.text('SB', 10, theme.colors.SHERPA_BLUE, 0.6, 14),
+    ...theme.viewStyles.text('SB', 10.5, theme.colors.SHERPA_BLUE, 0.6, 14),
     textDecorationLine: 'line-through',
   },
   savingsView: { flexDirection: 'row', marginTop: 3 },

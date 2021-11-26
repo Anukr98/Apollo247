@@ -1302,6 +1302,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         </View>
         <View style={styles.promoButtonContainer}>
           <TouchableOpacity
+            style={styles.proceedToCancelTouch}
             onPress={() => {
               _onPressProceedToCancel();
             }}
@@ -2402,4 +2403,10 @@ const styles = StyleSheet.create({
   alertIconStyle: { height: 27, width: 27, resizeMode: 'contain' },
   muhidSubheading: { ...theme.viewStyles.text('R', 12, colors.SHERPA_BLUE, 1, 18) },
   patientNameText: { ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18) },
+  proceedToCancelTouch: {
+    height: 40,
+    width: '37%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
