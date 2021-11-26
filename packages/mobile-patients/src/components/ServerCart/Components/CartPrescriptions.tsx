@@ -161,6 +161,7 @@ export const CartPrescriptions: React.FC<CartPrescriptionsProps> = (props) => {
 
   const renderPrescriptionInfo = () => {
     const isPrescriptionLater = cartPrescriptionType === PrescriptionType.LATER;
+    const isPrescriptionConsult = cartPrescriptionType === PrescriptionType.CONSULT;
     const name = consultProfile?.firstName || currentPatient?.firstName;
     const title = isPrescriptionLater
       ? 'Share Prescription Later Selected'
@@ -172,7 +173,7 @@ export const CartPrescriptions: React.FC<CartPrescriptionsProps> = (props) => {
       ? 'Delivery TAT will be on hold till the prescription is submitted.'
       : 'Delivery TAT will be on hold till the consult is completed.';
 
-    return !!cartPrescriptionType && !!showSelectedOption ? (
+    return (isPrescriptionLater || isPrescriptionConsult) && !!showSelectedOption ? (
       <PrescriptionInfoView
         onPressUpload={() => {
           onPressUploadMore?.();
