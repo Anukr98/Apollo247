@@ -1192,7 +1192,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, [upgradePlans]);
 
   const checkApisToCall = () => {
-    isserviceable();
     currentPatient && saveDeviceNotificationToken(currentPatient.id);
     const params = homeScreenParamsOnPop.current;
     if (!params?.isFreeConsult && !params?.isReset && currentPatient) {
