@@ -11,10 +11,11 @@ export const CouponSectionPDP = (props: { offersData: SpecialOffersCouponsData[]
     knowMoreOption: false,
   }));
   const [couponData, setCouponData] = useState(newOffersData);
-  const [visibleCoupons, setVisibleCoupons] = useState<number>(2);
+  const [visibleCoupons, setVisibleCoupons] = useState<number>(
+    couponData?.length === 1 ? couponData?.length : 2
+  );
   const totalCoupons = couponData.length;
   const remainingCoupons = totalCoupons - visibleCoupons;
-  const cashbackText = 'Cashback: ';
 
   const updateKnowMore = (position: number) => {
     const array = [...couponData];
@@ -29,12 +30,14 @@ export const CouponSectionPDP = (props: { offersData: SpecialOffersCouponsData[]
           <View style={styles.textContainer}>
             {item?.knowMoreOption ? (
               <Text style={styles.highlightedStyle}>
-                {cashbackText}
+                {item?.couponCode}
+                {': '}
                 <Text style={styles.textStyle}>{item?.header}</Text>
               </Text>
             ) : (
               <Text numberOfLines={2} ellipsizeMode={'tail'} style={styles.highlightedStyle}>
-                {cashbackText}
+                {item?.couponCode}
+                {': '}
                 <Text style={styles.textStyle}>{item?.header}</Text>
               </Text>
             )}
@@ -65,7 +68,9 @@ export const CouponSectionPDP = (props: { offersData: SpecialOffersCouponsData[]
       <View style={styles.offersHeadingContainer}>
         <TouchableOpacity
           onPress={() => {
-            visibleCoupons < totalCoupons ? setVisibleCoupons(totalCoupons) : setVisibleCoupons(2);
+            visibleCoupons < totalCoupons
+              ? setVisibleCoupons(totalCoupons)
+              : setVisibleCoupons(totalCoupons === 1 ? totalCoupons : 2);
           }}
         >
           {visibleCoupons < totalCoupons ? (
@@ -74,6 +79,9 @@ export const CouponSectionPDP = (props: { offersData: SpecialOffersCouponsData[]
             ) : (
               <Text style={styles.textStyle}>See {remainingCoupons} more offers </Text>
             )
+          ) : (visibleCoupons === 2 && totalCoupons === 2) ||
+            (visibleCoupons === 1 && totalCoupons === 1) ? (
+            <Text style={styles.textStyle}>See {remainingCoupons} more offers </Text>
           ) : (
             <Text style={styles.textStyle}>See less offers </Text>
           )}
@@ -87,7 +95,11 @@ export const CouponSectionPDP = (props: { offersData: SpecialOffersCouponsData[]
       <View style={styles.offersHeadingContainer}>
         <SpecialOffers style={styles.iconStyle} />
         <Text style={[styles.highlightedStyle, { paddingLeft: 9 }]}>Save extra </Text>
-        <Text style={styles.textStyle}>with {totalCoupons} offers</Text>
+        {totalCoupons === 1 ? (
+          <Text style={styles.textStyle}>with {totalCoupons} offer</Text>
+        ) : (
+          <Text style={styles.textStyle}>with {totalCoupons} offers</Text>
+        )}
       </View>
       <FlatList
         bounces={false}
