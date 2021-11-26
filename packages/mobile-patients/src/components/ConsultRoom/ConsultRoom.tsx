@@ -1829,7 +1829,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
             let corporatePlan: SubscriptionData[] = [];
             Object.keys(groupPlans).forEach((plan_name) => {
-              if (plan_name !== 'APOLLO' && plan_name !== 'HDFC') {
+              if (
+                plan_name !== 'APOLLO' &&
+                plan_name !== 'HDFC' &&
+                plan_name !== 'APOLLO_CONSULT'
+              ) {
                 groupPlans[plan_name]?.forEach((subscription) => {
                   const plan = setSubscriptionData(subscription, false, true);
                   corporatePlan.push(plan);

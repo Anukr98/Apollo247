@@ -701,7 +701,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
 
           if (groupPlans) {
             Object.keys(groupPlans).forEach((plan_name) => {
-              if (plan_name === 'APOLLO') {
+              if (plan_name === 'APOLLO_CONSULT') {
                 let desiredPlan = groupPlans[plan_name]?.find(
                   (plan: any) =>
                     plan.plan_vertical === 'Consult' &&

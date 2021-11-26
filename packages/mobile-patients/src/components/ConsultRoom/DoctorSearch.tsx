@@ -1033,9 +1033,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         .then((data) => {
           const groupPlans = data?.data?.GetAllUserSubscriptionsWithPlanBenefitsV2?.response;
 
-          if (!!groupPlans['APOLLO']) {
+          if (!!groupPlans['APOLLO_CONSULT']) {
             let packages: any[] = [];
-            groupPlans['APOLLO']?.forEach((pkg: any) => {
+            groupPlans['APOLLO_CONSULT']?.forEach((pkg: any) => {
               if (
                 //normal package
                 (pkg?.plan_vertical === 'Consult' && pkg?.status === 'active') ||
