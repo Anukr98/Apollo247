@@ -1645,7 +1645,7 @@ export const setRefereeFlagForNewRegisterUser = (isReferee: boolean) => {
   CleverTap.onUserLogin({
     isReferee,
   });
-}
+};
 
 export type CircleEventSource =
   | 'Circle Popup Plan only'
@@ -4191,4 +4191,4 @@ export const checkIfPincodeIsServiceable = async (pincode: string) => {
   } catch (error) {
     return null;
   }
-}
+};
