@@ -411,7 +411,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     if (!!coupon) {
       revalidateAppliedCoupon(coupon?.coupon, lineItemWithQuantity, false);
     }
-  }, [patientCartItems]);
+  }, [patientCartItems, addresses]);
 
   useEffect(() => {
     isDiagnosticCircleSubscription
