@@ -62,7 +62,7 @@ export const CouponSectionPDP = (props: { offersData: SpecialOffersCouponsData[]
       </View>
     );
   };
-  console.log(visibleCoupons, totalCoupons);
+
   const renderViewAllOffersButton = () => {
     return (
       <View style={styles.offersHeadingContainer}>
