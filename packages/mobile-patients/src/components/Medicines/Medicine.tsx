@@ -2073,11 +2073,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setSearchFocused(true);
             setCategoryTreeVisible(false);
           }}
-          // onBlur={() => {
-          //   setSearchFocused(false);
-          //   setMedicineList([]);
-          //   setSearchText('');
-          // }}
           onChangeText={(value) => {
             if (isValidSearch(value) && value.length >= 3) {
               setMedicineSearchLoading(true);
