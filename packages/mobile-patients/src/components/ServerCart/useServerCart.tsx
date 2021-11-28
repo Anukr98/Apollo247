@@ -197,6 +197,8 @@ export const useServerCart = () => {
         pincode: cartResponse?.zipcode,
         latitude: cartResponse?.latitude,
         longitude: cartResponse?.longitude,
+        city: cartResponse?.city,
+        state: cartResponse?.state,
       });
       setCartSubscriptionDetails?.(cartResponse?.subscriptionDetails);
       setNoOfShipments?.(cartResponse?.noOfShipments);
