@@ -97,6 +97,8 @@ export interface fetchCart_fetchCart_data {
   longitude: number | null;
   latitude: number | null;
   zipcode: string | null;
+  city: string | null;
+  state: string | null;
   patientAddressId: string | null;
   couponDetails: fetchCart_fetchCart_data_couponDetails | null;
   prescriptionDetails: (fetchCart_fetchCart_data_prescriptionDetails | null)[] | null;

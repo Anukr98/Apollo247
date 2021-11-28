@@ -6488,6 +6488,8 @@ export const SERVER_CART_SAVE_CART = gql`
         longitude
         latitude
         zipcode
+        city
+        state
         patientAddressId
         couponDetails {
           coupon
@@ -6574,6 +6576,8 @@ export const SERVER_CART_FETCH_CART = gql`
         longitude
         latitude
         zipcode
+        city
+        state
         patientAddressId
         couponDetails {
           coupon
@@ -6660,6 +6664,8 @@ export const SERVER_CART_REVIEW_CART = gql`
         longitude
         latitude
         zipcode
+        city
+        state
         patientAddressId
         couponDetails {
           coupon
@@ -6716,6 +6722,14 @@ export const SERVER_CART_REVIEW_CART = gql`
           shipmentNo
         }
       }
+    }
+  }
+`;
+
+export const DELETE_SERVER_CART = gql`
+  mutation deletecart($patientId: String!, $paymentSuccess: Boolean!, $paymentOrderId: String!) {
+    deletecart(patientId: $patientId, paymentSuccess: $paymentSuccess, paymentOrderId: $paymentOrderId) {
+      success
     }
   }
 `;
