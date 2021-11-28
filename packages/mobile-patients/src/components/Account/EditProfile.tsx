@@ -727,6 +727,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           if (screenName === string.consult) {
             const { navigation } = props;
             navigation.goBack();
+            return;
           }
         });
         if (screenName === string.symptomChecker.symptomTracker) {

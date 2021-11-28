@@ -171,7 +171,7 @@ PODS:
   - HyperSDK (2.0.76):
     - JuspaySafeBrowser (= 0.1.70)
     - Salvator (= 1.0.1)
-  - IQKeyboardManager (6.5.6)
+  - IQKeyboardManager (6.5.9)
   - JuspaySafeBrowser (0.1.70)
   - JWT (3.0.0-beta.14):
     - Base64 (~> 1.1.2)
@@ -194,7 +194,7 @@ PODS:
     - nanopb/encode (= 1.30906.0)
   - nanopb/decode (1.30906.0)
   - nanopb/encode (1.30906.0)
-  - OpenTok (2.20.1)
+  - OpenTok (2.21.2)
   - opentok-react-native (0.17.2):
     - OpenTok
     - React
@@ -863,7 +863,7 @@ SPEC CHECKSUMS:
   GTMSessionFetcher: 43748f93435c2aa068b1cbe39655aaf600652e91
   hyper-sdk-react: c19d28ff181f28a3361d8c191b50bb793afb2d41
   HyperSDK: 81d39db5276b7901691e3e08dc0a377a51b06b36
-  IQKeyboardManager: 2a6e97afdafc7becf0cb17a9a8d795e3a980717f
+  IQKeyboardManager: 241cc94ccabc9deb8f8bd7d12f00d73288d13ecc
   JuspaySafeBrowser: 72f60fcd42bb61f6a6ad9b733b84810b63cc8c1b
   JWT: ef71dfb03e1f842081e64dc42eef0e164f35d251
   JWTDecode: 2cc56f950540c95fd11b14ff6388f7c6cb9760ab
@@ -871,7 +871,7 @@ SPEC CHECKSUMS:
   lottie-ios: c058aeafa76daa4cf64d773554bccc8385d0150e
   lottie-react-native: 96361a9891cf651534ea35c4f85f33d4cf14ed13
   nanopb: 59317e09cf1f1a0af72f12af412d54edf52603fc
-  OpenTok: 62dd91a1297816f61a5e5c91e6ff4ecdffa77364
+  OpenTok: 0060779ca05fca24242a10c8b9ee4982bcf7d795
   opentok-react-native: 56e3213e14bcc5222bc2e3e244c3a3b6bb3758ac
   PromisesObjC: 3113f7f76903778cf4a0586bd1ab89329a0b7b97
   Protobuf: 1a37ebea1338949e9ac35a3f06e80b3f536eec8d
@@ -951,6 +951,6 @@ SPEC CHECKSUMS:
   Yoga: 02036f6383c0008edb7ef0773a0e6beb6ce82bd1
   youtube-ios-player-helper: 21ab92db027c7ff86cb17a3843a3f6eafc8158d2
 
-PODFILE CHECKSUM: 1a54a963abaaff2ae0cee6a6f711e837b1ace652
+PODFILE CHECKSUM: 87efab4164c5e50ec36bc7acad94300fbec013cc
 
-COCOAPODS: 1.11.2
+COCOAPODS: 1.10.1

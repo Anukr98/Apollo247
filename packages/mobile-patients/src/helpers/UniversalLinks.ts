@@ -131,6 +131,18 @@ export const handleUniversalLinks = (
       case 'VaccineBookingDetail':
         pushTheView('VaccineBookingDetail', navigation, data.length === 2 ? linkId : undefined);
 
+      case 'ConsultPackageList':
+        pushTheView('ConsultPackageList', navigation);
+        break;
+
+      case 'ConsultPackage':
+        pushTheView('ConsultPackage', navigation);
+        break;
+
+      case 'ConsultPackagePurchased':
+        pushTheView('ConsultPackagePurchased', navigation);
+        break;
+
       default:
         pushTheView('ConsultRoom', navigation, undefined);
         break;
@@ -279,6 +291,24 @@ const pushTheView = (
     case 'VaccineBookingDetail':
       navigation.navigate(AppRoutes.VaccineBookingConfirmationScreen, {
         bookingId: id,
+        comingFrom: 'deeplink',
+      });
+      break;
+
+    case 'ConsultPackageList':
+      navigation.navigate(AppRoutes.ConsultPackageList, {
+        comingFrom: 'deeplink',
+      });
+      break;
+
+    case 'ConsultPackage':
+      navigation.navigate(AppRoutes.ConsultPackageDetail, {
+        comingFrom: 'deeplink',
+      });
+      break;
+
+    case 'ConsultPackagePurchased':
+      navigation.navigate(AppRoutes.ConsultPackagePostPurchase, {
         comingFrom: 'deeplink',
       });
       break;

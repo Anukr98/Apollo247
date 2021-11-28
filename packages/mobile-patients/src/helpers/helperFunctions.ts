@@ -1,8 +1,7 @@
 import {
-  AppCommonDataContextProps,
   LocationData,
+  AppCommonDataContextProps,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import DeviceInfo from 'react-native-device-info';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   getPlaceInfoByLatLng,
@@ -15,6 +14,7 @@ import {
   validateConsultCoupon,
   getDiagnosticDoctorPrescriptionResults,
   autoCompletePlaceSearch,
+  pinCodeServiceabilityApi247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -1627,13 +1627,24 @@ export const onCleverTapUserLogin = async (_currentPatient: any) => {
       ...(_currentPatient?.emailAddress && { Email: _currentPatient?.emailAddress }),
       ...(_currentPatient?.photoUrl && { Photo: _currentPatient?.photoUrl }),
       ...(_currentPatient?.createdDate && { CreatedDate: _currentPatient?.createdDate }),
-      isRefree: _currentPatient?.isRefree || false,
     };
     CleverTap.onUserLogin(_userProfile);
     AsyncStorage.setItem('createCleverTapProifle', 'true');
   } catch (error) {
     CommonBugFender('setCleverTapUserLogin', error);
   }
+};
+
+export const updateUserProfileWithReferrInformation = (totalReferredUser: Number | string) => {
+  CleverTap.onUserLogin({
+    TotalReferredUsers: totalReferredUser,
+  });
+};
+
+export const setRefereeFlagForNewRegisterUser = (isReferee: boolean) => {
+  CleverTap.onUserLogin({
+    isReferee,
+  });
 };
 
 export type CircleEventSource =
@@ -2233,7 +2244,6 @@ export const InitiateAppsFlyer = (
         if (res.data.af_sub1 !== null) {
           AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
         }
-
         if (res.data.linkToUse !== null && res.data.linkToUse === 'ForReferrarInstall') {
           const responseData = res.data;
           setAppReferralData({
@@ -3031,9 +3041,9 @@ export const calculateCashbackForItem = (
   const subCategoryLevelkey = `${type_id?.toUpperCase()}~${subcategory}`;
   const skuLevelkey = `${type_id?.toUpperCase()}~${subcategory}~${sku}`;
   let cashbackFactor = 0;
-  if ( circleCashback?.[skuLevelkey] >= 0) {
+  if (circleCashback?.[skuLevelkey] >= 0) {
     cashbackFactor = circleCashback?.[skuLevelkey];
-  } else if ( circleCashback?.[subCategoryLevelkey] >= 0) {
+  } else if (circleCashback?.[subCategoryLevelkey] >= 0) {
     cashbackFactor = circleCashback?.[subCategoryLevelkey];
   } else {
     cashbackFactor = circleCashback?.[categoryLevelkey];
@@ -3140,6 +3150,39 @@ export const goToConsultRoom = (
       actions: [
         NavigationActions.navigate({
           routeName: AppRoutes.ConsultRoom,
+          params,
+        }),
+      ],
+    })
+  );
+};
+
+export const navigateToSpecialtyPage = (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  params?: any,
+  forceRedirect?: boolean
+) => {
+  if (forceRedirect) {
+    goToSpecialtyPage(navigation, params);
+  } else {
+    const navigate = navigation.popToTop();
+    if (!navigate) {
+      goToSpecialtyPage(navigation, params);
+    }
+  }
+};
+
+export const goToSpecialtyPage = (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  params?: any
+) => {
+  navigation.dispatch(
+    StackActions.reset({
+      index: 0,
+      key: null,
+      actions: [
+        NavigationActions.navigate({
+          routeName: AppRoutes.DoctorSearch,
           params,
         }),
       ],
@@ -4130,4 +4173,22 @@ export const getFormattedDateTimeWithBefore = (time: string) => {
     moment(time).format('hh:mm A');
 
   return finalDateTime;
+};
+
+export const checkIfPincodeIsServiceable = async (pincode: string) => {
+  try {
+    const response = await pinCodeServiceabilityApi247(pincode);
+    const { data } = response;
+    const axdcCode = data?.response?.axdcCode;
+    const isServiceable = data?.response?.servicable;
+    const vdcType = data?.response?.vdcType || data?.response?.['VDC Type'];
+    const serviceabilityDetails = {
+      axdcCode: axdcCode,
+      isServiceable: isServiceable,
+      vdcType: vdcType,
+    };
+    return serviceabilityDetails;
+  } catch (error) {
+    return null;
+  }
 };

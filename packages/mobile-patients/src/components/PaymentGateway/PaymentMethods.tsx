@@ -112,7 +112,8 @@ export interface PaymentMethodsProps extends NavigationScreenProps {
     | 'pharma'
     | 'subscription'
     | 'vaccination'
-    | 'paymentLink';
+    | 'paymentLink'
+    | 'doctorPackage';
 }
 
 export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
@@ -131,6 +132,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const disableCod = props.navigation.getParam('disableCOD');
   const paymentCodMessage = props.navigation.getParam('paymentCodMessage');
   const isCircleAddedToCart = props.navigation.getParam('isCircleAddedToCart');
+  const oneTapPatient = props.navigation.getParam('oneTapPatient');
   const { currentPatient } = useAllCurrentPatients();
   const [banks, setBanks] = useState<any>([]);
   const [isTxnProcessing, setisTxnProcessing] = useState<boolean>(false);
@@ -155,6 +157,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [showCOD, setShowCOD] = useState<boolean>(isDiagnostic ? false : true);
   const [showDiagnosticHCMsg, setShowDiagnosticHCMsg] = useState<string>('');
   const paymentType = useRef<string>('');
+  const [areNonCODSkus, setAreNonCODSkus] = useState(false);
   const { healthCredits } = useFetchHealthCredits(businessLine);
   const { paymentMethods, cardTypes, fetching } = useGetPaymentMethods(paymentId);
   const { savedCards } = useFetchSavedCards(customerId);
@@ -849,6 +852,15 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           defaultClevertapEventParams: defaultClevertapEventParams,
           payload: payload,
         });
+        break;
+      case 'doctorPackage':
+        props.navigation.navigate(AppRoutes.PackagePaymentStatus, {
+          paymentStatus: paymentStatus,
+          paymentId: paymentId,
+          orderDetails: orderDetails,
+          oneTapPatient: oneTapPatient,
+        });
+        break;
     }
   };
 

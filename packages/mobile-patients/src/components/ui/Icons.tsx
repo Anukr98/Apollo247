@@ -2218,6 +2218,23 @@ export const MinusPatientCircleIcon: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/circle-minus.webp')}
   />
 );
+
+export const TestTubes: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/testTubes.webp')}
+  />
+);
+
+export const LongRightArrow: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/LongRightArrow.webp')}
+  />
+);
+
 export const Tick: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('@aph/mobile-patients/src/components/ui/icons/tick.webp')} />
 );
@@ -2258,22 +2275,6 @@ export const LightBulb: React.FC<IconProps> = (props) => (
     size="sm"
     {...props}
     source={require('@aph/mobile-patients/src/components/ui/icons/light_bulb.webp')}
-  />
-);
-
-export const TestTubes: React.FC<IconProps> = (props) => (
-  <IconBase
-    size="sm"
-    {...props}
-    source={require('@aph/mobile-patients/src/components/ui/icons/testTubes.webp')}
-  />
-);
-
-export const LongRightArrow: React.FC<IconProps> = (props) => (
-  <IconBase
-    size="sm"
-    {...props}
-    source={require('@aph/mobile-patients/src/components/ui/icons/LongRightArrow.webp')}
   />
 );
 
@@ -2446,6 +2447,54 @@ export const CoinSavingsIcon: React.FC<IconProps> = (props) => (
     {...props}
     source={require('@aph/mobile-patients/src/components/ui/icons/coinSavingsIcon.webp')}
   />
+);
+
+export const FamilyPackageIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="lg"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/family_package.webp')}
+  />
+);
+
+export const SingleUserPackageIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/single_user_package.webp')}
+  />
+);
+
+export const HowDoesItWorkIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/consult_package_work.webp')}
+  />
+);
+
+export const Specialist: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/specialist.webp')}
+  />
+);
+
+export const UserPackage: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/user-package.webp')}
+  />
+);
+
+export const OneTapConsult: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/one-tap.webp')}
+  />
+);
+
+export const PastIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('@aph/mobile-patients/src/components/ui/icons/past.webp')} />
 );
 
 export const CallIcon: React.FC<IconProps> = (props) => (
