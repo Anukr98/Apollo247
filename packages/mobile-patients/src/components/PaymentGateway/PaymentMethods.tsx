@@ -92,6 +92,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 
 import { useGetClientAuthToken } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useGetClientAuthtoken';
 import { CredPay } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CredPay';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {
@@ -164,6 +165,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     amount: amount,
     availableHc: healthCredits,
   };
+  const { deleteServerCart } = useServerCart();
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
     const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
@@ -192,6 +194,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', () => {
+      goBackToCart();
       return !HyperSdkReact.isNull() && HyperSdkReact.onBackPressed();
     });
     return () => BackHandler.removeEventListener('hardwareBackPress', () => null);
@@ -725,13 +728,20 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     });
   };
 
+  const goBackToCart = () => {
+    if (businessLine != 'diagnostics') {
+      deleteServerCart(false, paymentId);
+    }
+    props.navigation.goBack();
+  };
+
   const renderHeader = () => {
     return (
       <Header
         container={styles.header}
         leftIcon={'backArrow'}
         title={`AMOUNT TO PAY : ₹ ${amount}`}
-        onPressLeftIcon={() => props.navigation.goBack()}
+        onPressLeftIcon={goBackToCart}
       />
     );
   };
