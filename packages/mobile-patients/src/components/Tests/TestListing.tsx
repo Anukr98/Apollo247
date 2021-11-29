@@ -84,7 +84,9 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const [isPriceAvailable, setIsPriceAvailable] = useState<boolean>(false);
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
-  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING);
+  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
+    CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING
+  );
   const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
     if (item?.ctaCityId == cityId) {
       if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING)) {
