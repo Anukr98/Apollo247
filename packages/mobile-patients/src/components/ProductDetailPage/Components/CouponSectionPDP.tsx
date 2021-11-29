@@ -68,9 +68,7 @@ export const CouponSectionPDP = (props: { offersData: SpecialOffersCouponsData[]
       <View style={styles.offersHeadingContainer}>
         <TouchableOpacity
           onPress={() => {
-            visibleCoupons < totalCoupons
-              ? setVisibleCoupons(totalCoupons)
-              : setVisibleCoupons(totalCoupons === 1 ? totalCoupons : 2);
+            visibleCoupons < totalCoupons ? setVisibleCoupons(totalCoupons) : setVisibleCoupons(2);
           }}
         >
           {visibleCoupons < totalCoupons ? (
@@ -79,9 +77,6 @@ export const CouponSectionPDP = (props: { offersData: SpecialOffersCouponsData[]
             ) : (
               <Text style={styles.textStyle}>See {remainingCoupons} more offers </Text>
             )
-          ) : (visibleCoupons === 2 && totalCoupons === 2) ||
-            (visibleCoupons === 1 && totalCoupons === 1) ? (
-            <Text style={styles.textStyle}>See {remainingCoupons} more offers </Text>
           ) : (
             <Text style={styles.textStyle}>See less offers </Text>
           )}
@@ -110,7 +105,7 @@ export const CouponSectionPDP = (props: { offersData: SpecialOffersCouponsData[]
           return renderIndividualCoupon(item, index);
         }}
       />
-      {renderViewAllOffersButton()}
+      {totalCoupons > 2 && renderViewAllOffersButton()}
     </View>
   );
 };
