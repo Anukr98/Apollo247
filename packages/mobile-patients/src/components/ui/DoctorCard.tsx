@@ -400,6 +400,7 @@ export interface DoctorCardProps extends NavigationScreenProps {
       | any
   ) => void;
   onPressRequest?: (arg: boolean) => void;
+  isPlatinumDoctor?: boolean;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
@@ -425,7 +426,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     physicalConsultSlashedPrice,
     physicalConsultDiscountedPrice,
   } = circleDoctorDetails;
-  const { availableModes } = props;
+  const { availableModes, isPlatinumDoctor } = props;
   const { showCircleSubscribed, circleSubPlanId, circleSubscriptionId } = useShoppingCart();
   const [fetchedSlot, setfetchedSlot] = useState<string>('');
   const isPhysical = availableModes
@@ -597,7 +598,10 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const renderSpecialities = () => {
     return (
       <View>
-        <Text style={[styles.doctorSpecializationStyles, { textTransform: 'uppercase' }]}>
+        <Text
+          style={[styles.doctorSpecializationStyles, { textTransform: 'uppercase' }]}
+          numberOfLines={2}
+        >
           {rowData?.specialtydisplayName || ''}
         </Text>
         <Text style={[styles.doctorSpecializationStyles, { ...theme.fonts.IBMPlexSansBold(12) }]}>
@@ -657,8 +661,12 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     setfetchedSlot(response?.data?.[0]?.availableSlot);
   }
 
-  const renderBrandName = () => {
-    return (
+  const renderBrandName = (type: string) => {
+    return type === 'PAYROLL' || isPlatinumDoctor ? (
+      <View style={{ marginLeft: -8, marginTop: -12 }}>
+        <ApolloDoctorIcon style={{ width: 60, height: 24 }} />
+      </View>
+    ) : (
       <View style={styles.brandContainer}>
         <Image
           resizeMode="contain"
@@ -692,7 +700,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         {!!clinicAddress && (
           <View style={styles.row}>
             <LocationGrey style={{ width: 12, height: 15 }} />
-            <Text style={styles.doctorLocation} numberOfLines={props.numberOfLines}>
+            <Text style={styles.doctorLocation} numberOfLines={props.numberOfLines || 1}>
               {clinicAddress}
             </Text>
           </View>
@@ -738,7 +746,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   const renderQualifications = () => {
     return (
-      <Text style={styles.educationTextStyles} numberOfLines={props.numberOfLines}>
+      <Text style={styles.educationTextStyles} numberOfLines={props.numberOfLines || 1}>
         {rowData.qualification}
       </Text>
     );
@@ -1070,7 +1078,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         onPress={() => onPressDoctorCard()}
       >
         <View style={{ borderRadius: 10, flex: 1, zIndex: 1 }}>
-          {!isDoctorPartner && renderBrandName()}
+          {!isDoctorPartner && renderBrandName(rowData?.doctorType)}
           <View style={{ flexDirection: 'row' }}>
             {isDoctorPartner && renderDoctorPartnerBadges()}
             <View>
@@ -1095,7 +1103,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   },
                 ]}
               >
-                <Text style={styles.doctorNameStyles}>{rowData.displayName}</Text>
+                <Text style={styles.doctorNameStyles} numberOfLines={2}>
+                  {rowData.displayName}
+                </Text>
                 {/* {isDoctorPartner && renderShareProfile()} */}
               </View>
               {renderSpecialities()}
@@ -1128,7 +1138,10 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             </View>
           )}
           {renderClinicAddress()}
-          {!isDoctorPartner && renderAvailability()}
+          {!isDoctorPartner &&
+            !props?.rowData?.allowBookingRequest &&
+            !isPlatinumDoctor &&
+            renderAvailability()}
           {isDoctorPartner ? renderDoctorPartnerTabBottomBtn() : renderBottomButtons()}
         </View>
       </TouchableOpacity>
