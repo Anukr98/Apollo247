@@ -250,10 +250,6 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    console.log('check  isOnlineConsult-- ', isOnlineConsult);
-  }, [isOnlineConsult]);
-
-  useEffect(() => {
     if (doctorDetails) {
       const selectedTab =
         props.navigation.getParam('consultModeSelected') === consultPhysicalTab &&
@@ -604,13 +600,6 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
         onChange={(tab: string) => {
           setSelectedTab(tab);
 
-          console.log('check  tab --- ', tab);
-
-          console.log(
-            'check setIsOnlineSelected tab === consultOnlineTab --- ',
-            tab === consultOnlineTab
-          );
-
           setIsOnlineSelected(tab === consultOnlineTab);
 
           if (tab !== selectedTab) {
@@ -694,10 +683,6 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     const todayDate = moment(new Date());
     const tomorrowDate = moment(new Date()).add('1', 'day');
     const date = index === 0 ? todayDate : index === 1 ? tomorrowDate : item?.date;
-
-    console.log('check handleDateSelection ---- ');
-
-    console.log('check handleDateSelection  isOnlineSelected ---- ', isOnlineSelected);
 
     if (slotSelected.current) {
       setLoadTotalSlots(true);
