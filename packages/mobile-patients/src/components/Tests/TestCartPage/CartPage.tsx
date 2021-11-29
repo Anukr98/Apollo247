@@ -1579,6 +1579,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
             ? getCurrentPatientItem.concat(widgetSelectedItem)
             : [widgetSelectedItem];
           addPatientCartItem?.(item?.id, allItems!);
+          updateUnselectedPatientsCart(item);
         });
         updateUnselectedPatientsCart(selectedPatientList);
       }
