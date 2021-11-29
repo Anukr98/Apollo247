@@ -8,13 +8,11 @@ import { statusBarHeight } from '@aph/mobile-patients/src/helpers/helperFunction
 interface RescheduleCancelProps {
   onPressCancelAppointment: () => void;
   onPressRescheduleAppointment: () => void;
-  onPressNetworkConnectivity?: () => void;
   closeModal: () => void;
   appointmentDiffMin: number;
   appointmentDateTime: string;
   isAppointmentExceedsTenMin: boolean;
   isAppointmentStartsInFifteenMin: boolean;
-  showNetworkTestCTA?: boolean;
 }
 export const RescheduleCancelPopup: React.FC<RescheduleCancelProps> = (props) => {
   const {
@@ -49,19 +47,6 @@ export const RescheduleCancelPopup: React.FC<RescheduleCancelProps> = (props) =>
       >
         <View style={styles.cancelMainView}>
           <View style={styles.cancelPopupView}>
-            {props.showNetworkTestCTA ? (
-              <TouchableOpacity
-                disabled={btnDisable}
-                onPress={() => props.onPressNetworkConnectivity?.()}
-              >
-                <View style={styles.networkConnectivityTestView}>
-                  <Text style={[styles.cancelText, { color: btnTextColor }]}>
-                    Network Connectivity Test
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            ) : null}
-
             <TouchableOpacity disabled={btnDisable} onPress={() => onPressRescheduleAppointment()}>
               <View style={styles.reschdeuleView}>
                 <Text style={[styles.cancelText, { color: btnTextColor }]}>

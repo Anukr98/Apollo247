@@ -29,7 +29,9 @@ export const LocationOnHeader: React.FC<LocationOnHeaderProps> = (props) => {
   const [currentLocation, setcurrentLocation] = useState<string>('');
   const { isOnlineConsultMode, isAvailabilityMode, goBack, isSpecialityScreen } = props;
   useEffect(() => {
-    setcurrentLocation(locationDetails?.displayName || '');
+    setcurrentLocation(
+      locationDetails?.displayName || locationDetails?.city || locationDetails?.state || ''
+    );
   }, [locationDetails]);
   const { currentPatient } = useAllCurrentPatients();
 

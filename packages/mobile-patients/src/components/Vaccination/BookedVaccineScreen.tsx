@@ -336,7 +336,11 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
 
           if (groupPlans) {
             Object.keys(groupPlans).forEach((plan_name) => {
-              if (plan_name !== 'APOLLO' && plan_name !== 'HDFC') {
+              if (
+                plan_name !== 'APOLLO' &&
+                plan_name !== 'HDFC' &&
+                plan_name !== 'APOLLO_CONSULT'
+              ) {
                 groupPlans[plan_name]?.forEach((plan: any) => {
                   const benefits = plan.benefits;
                   if (benefits && benefits.length) {

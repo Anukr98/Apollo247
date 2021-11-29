@@ -424,15 +424,21 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             let hdfcPlan = null;
             let circlePlan = null;
             let corprPlan = null;
+            let consultPlans = null;
             for (let [key, value] of Object.entries(groupPlans)) {
               if (key === 'HDFC') hdfcPlan = value;
               else if (key === 'APOLLO') circlePlan = value;
+              else if (key == 'APOLLO_CONSULT') consultPlans = value;
               else corprPlan = value;
             }
 
             let corporatePlan: SubscriptionData[] = [];
             Object.keys(groupPlans).forEach((plan_name) => {
-              if (plan_name !== 'APOLLO' && plan_name !== 'HDFC') {
+              if (
+                plan_name !== 'APOLLO' &&
+                plan_name !== 'HDFC' &&
+                plan_name !== 'APOLLO_CONSULT'
+              ) {
                 groupPlans[plan_name]?.forEach((subscription: any) => {
                   const plan = setSubscriptionData(subscription, false, true);
                   corporatePlan.push(plan);
@@ -479,11 +485,12 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
 
                 setCircleSubscription && setCircleSubscription(circleSubscription);
               }
+            }
 
-              let consultSubscriptionPlans = circlePlan?.filter((plan) => {
+            if (consultPlans) {
+              let consultSubscriptionPlans = consultPlans?.filter((plan) => {
                 return plan.plan_vertical === 'Consult' && plan.status === 'active';
               });
-
               setConsultPlan(consultSubscriptionPlans);
             }
 
