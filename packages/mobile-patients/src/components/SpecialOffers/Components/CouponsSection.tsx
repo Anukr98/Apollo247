@@ -178,7 +178,7 @@ export const CouponsSection = (props: { offersdata: SpecialOffersCouponsData[] }
           onPress={() => {
             visibleOffers < couponOffersData?.length
               ? setVisibleOffers(couponOffersData?.length)
-              : setVisibleOffers(couponOffersData?.length === 1 ? couponOffersData?.length : 2);
+              : setVisibleOffers(2);
             setShowViewMoreButton(!showViewMoreButton);
           }}
           style={{ flexDirection: 'row', justifyContent: 'center' }}
@@ -239,7 +239,7 @@ export const CouponsSection = (props: { offersdata: SpecialOffersCouponsData[] }
           return renderItem(imgUrl, item, index);
         }}
       />
-      {renderViewAllOffersButton()}
+      {couponOffersData?.length > 2 && renderViewAllOffersButton()}
 
       {showPopup && renderTermsPopup()}
     </View>
