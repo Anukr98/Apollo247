@@ -1197,16 +1197,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
               {locationDetails?.pincode ? `, ${locationDetails?.pincode}` : ''}
             </Text>
           </View>
-          <TouchableOpacity
-            onPress={() => {
-              fireLocationEvent.current = true;
-              userChangedLocation.current = true;
-              setlocationSearchList([]);
-              setShowLocationPopup(true);
-            }}
-          >
-            <Text style={styles.changeLocationBtnTxt}>CHANGE LOCATION</Text>
-          </TouchableOpacity>
+          
         </View>
       </View>
     );

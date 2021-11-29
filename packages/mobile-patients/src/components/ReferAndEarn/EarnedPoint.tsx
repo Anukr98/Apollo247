@@ -30,6 +30,9 @@ export const EarnedPoints: React.FC<EarnedPointsProps> = (props) => {
           <Text style={styles.earnPointtotalGifted}>
             {string.referAndEarn.referrHC} {string.referAndEarn.hc}
           </Text>
+          <Text style={styles.earnPointtotalWillGetInSomeMinute}>
+            {string.referAndEarn.willBeCreditSoon}
+          </Text>
           <TouchableOpacity
             style={styles.earnPointreedemBtn}
             onPress={() => {
@@ -160,6 +163,10 @@ const styles = StyleSheet.create({
     color: theme.colors.LIGHT_BLUE,
     fontWeight: '700',
   },
+  earnPointtotalWillGetInSomeMinute: {
+    marginTop: 5,
+    fontSize: 13,
+  },
   earnPointgiftedHeading: {
     marginTop: 20,
     fontSize: 20,
@@ -186,6 +193,6 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     alignItems: 'center',
     paddingVertical: 25,
-    flex: 1.5,
+    flex: 1.9,
   },
 });

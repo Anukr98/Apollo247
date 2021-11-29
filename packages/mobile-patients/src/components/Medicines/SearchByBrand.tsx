@@ -151,6 +151,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     pinCode,
     pharmacyCircleAttributes,
     asyncPincode,
+    axdcCode,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { getPatientApiCall } = useAuth();
@@ -159,7 +160,6 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     locationDetails,
     pharmacyLocation,
     isPharmacyLocationServiceable,
-    axdcCode,
     pharmacyUserType,
   } = useAppCommonData();
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');

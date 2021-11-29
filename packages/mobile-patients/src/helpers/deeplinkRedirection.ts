@@ -5,7 +5,7 @@ import {
   NavigationActions,
 } from 'react-navigation';
 import { setBugFenderLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { postCleverTapEvent, postWebEngageEvent,  navigateToScreenWithEmptyStack, } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { postCleverTapEvent, postWebEngageEvent, navigateToScreenWithEmptyStack, } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -60,7 +60,7 @@ export const handleOpenURL = (event: any) => {
           setBugFenderLog('DEEP_LINK_SPECIALITY_ID', linkId);
         }
       }
-    } catch (error) {}
+    } catch (error) { }
     const routeNameParam = route?.split('?');
 
     route = routeNameParam ? routeNameParam?.[0]?.toLowerCase() : '';
@@ -333,6 +333,19 @@ export const handleOpenURL = (event: any) => {
         };
         break;
 
+      case 'consultpackagelist':
+        return {
+          routeName: 'consultpackagelist',
+        };
+        break;
+
+      case 'consultpackage':
+        return {
+          routeName: 'consultpackage',
+          id: linkId ? linkId : undefined,
+        };
+        break;
+
       case 'testlisting':
         return {
           routeName: 'TestListing',
@@ -392,7 +405,7 @@ export const handleOpenURL = (event: any) => {
           routeName: 'TestOrderSummary',
           id: linkId ? linkId : undefined
         }
-      break;
+        break;
 
       case 'testordersummary':
       case 'test-order-summary':
@@ -422,6 +435,13 @@ export const handleOpenURL = (event: any) => {
           routeName: 'PaymentMethods',
           id: linkId ? linkId : undefined,
         };
+        break;
+      case 'refernearn':
+        return {
+          routeName: 'ShareReferLink',
+        };
+        break;
+
       default:
         if (b === 0) {
           return {
@@ -505,11 +525,12 @@ export const pushTheView = (
       break;
     case 'ConsultRoom':
       movedFromBrandPages ? navigation.goBack() :
-      navigation.replace(AppRoutes.ConsultRoom);
+        navigation.replace(AppRoutes.ConsultRoom);
       break;
     case 'Speciality':
       setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', id);
       let filtersData = id ? getParamData(id) : '';
+
       navigateToView(navigation, AppRoutes.DoctorSearchListing, {
         specialityId: filtersData[0] ? filtersData[0] : '',
         typeOfConsult: filtersData.length > 1 ? filtersData[1] : '',
@@ -540,14 +561,14 @@ export const pushTheView = (
 
     case 'MedicineSearchText':
       if (movedFromBrandPages && movedFromBrandPages === true) {
-        navigation.navigate( AppRoutes.MedicineListing, { searchText: id, movedFrom: 'brandPages' });
+        navigation.navigate(AppRoutes.MedicineListing, { searchText: id, movedFrom: 'brandPages' });
       } else {
-      navigateToView(navigation, AppRoutes.MedicineListing, { searchText: id }); 
+        navigateToView(navigation, AppRoutes.MedicineListing, { searchText: id });
       }
       break;
     case 'MedicineCategory':
       if (movedFromBrandPages && movedFromBrandPages === true) {
-        navigation.navigate( AppRoutes.MedicineListing, { categoryName: id, movedFrom: 'brandPages' });
+        navigation.navigate(AppRoutes.MedicineListing, { categoryName: id, movedFrom: 'brandPages' });
       } else {
         navigateToView(navigation, AppRoutes.MedicineListing, { categoryName: id });
       }
@@ -668,6 +689,22 @@ export const pushTheView = (
         comingFrom: 'deeplink',
       });
       break;
+
+    case 'consultpackagelist':
+      navigateToView(navigation, AppRoutes.ConsultPackageList, {
+        comingFrom: 'deeplink',
+      });
+      break;
+
+    case 'consultpackage':
+      let paramsObtained = id ? getParamData(id) : '';
+
+      navigateToView(navigation, AppRoutes.ConsultPackageDetail, {
+        comingFrom: 'deeplink',
+        planId: paramsObtained?.[0],
+      });
+      break;
+
     case 'TestListing':
       navigateToView(navigation, AppRoutes.TestListing, {
         movedFrom: 'deeplink',
@@ -712,18 +749,18 @@ export const pushTheView = (
       navigateToScreenWithEmptyStack(navigation, AppRoutes.PaymentMethods, params);
       break;
     case 'TestOrderSummary':
-        navigateToView(navigation, AppRoutes.TestOrderDetails, {
-          orderId: id,
-          goToHomeOnBack: true,
-          setOrders: null,
-          selectedOrder: null,
-          refundStatusArr: [],
-          comingFrom:'deeplink',
-          showOrderSummaryTab: true,
-          disableTrackOrder: true,
+      navigateToView(navigation, AppRoutes.TestOrderDetails, {
+        orderId: id,
+        goToHomeOnBack: true,
+        setOrders: null,
+        selectedOrder: null,
+        refundStatusArr: [],
+        comingFrom: 'deeplink',
+        showOrderSummaryTab: true,
+        disableTrackOrder: true,
 
-        })
-        break;
+      })
+      break;
     default:
       const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
         source: 'deeplink',
@@ -753,16 +790,16 @@ const navigateToView = (
   routeName: AppRoutes,
   routeParams?: any
 ) => {
-    navigation.dispatch(
-      StackActions.reset({
-        index: 1,
-        key: null,
-        actions: [
-          NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom }),
-          NavigationActions.navigate({ routeName: routeName, params: routeParams || {} }),
-        ],
-      })
-    );
+  navigation.dispatch(
+    StackActions.reset({
+      index: 1,
+      key: null,
+      actions: [
+        NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom }),
+        NavigationActions.navigate({ routeName: routeName, params: routeParams || {} }),
+      ],
+    })
+  );
 };
 
 const handleEncodedURI = (encodedString: string) => {

@@ -5017,7 +5017,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             )}
           </View>
           <Text style={styles.timeStamp}>{convertChatTime(rowData)}</Text>
-
         </View>
       </>
     );
