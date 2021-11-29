@@ -193,7 +193,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     | null
   >([]);
   const [selectedTestArray, setSelectedTestArray] = useState([] as any);
-
+  const [rescheduleSource, setRescheduleSource] = useState<string>('');
   const [selectedOrder, setSelectedOrder] = useState<orderList>();
   const [error, setError] = useState(false);
   const { getPatientApiCall } = useAuth();
@@ -528,12 +528,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         'Diagnostics'
       )
         .then((data: any) => {
-          const labResultsData = g(
-            data,
-            'getPatientPrismMedicalRecords_V3',
-            'labResults',
-            'response'
-          );
+          const labResultsData = data?.getPatientPrismMedicalRecords_V3?.labResults?.response;
           let resultForVisitNo = labResultsData?.find(
             (item: any) => item?.identifier == getVisitId
           );
@@ -856,6 +851,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         setSelectCancelReason('');
         setCancelReasonComment('');
         setSelectRescheduleReason('');
+        setRescheduleSource('');
       })
       .catch((error) => {
         console.log({ error });
@@ -863,6 +859,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         setSelectCancelReason('');
         setCancelReasonComment('');
         setSelectRescheduleReason('');
+        setRescheduleSource('');
         CommonBugFender('YourOrdersTests_callApiAndRefetchOrderDetails', error);
         setLoading?.(false);
         if (
@@ -1010,7 +1007,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         />
         <View style={{ marginTop: 16, marginBottom: 16 }}>
           <Button
-            title={'CONTINUE'}
+            title={string.common.continue}
             style={styles.buttonStyle}
             disabled={false}
             onPress={() => _onPressMultiUhidContinue()}
@@ -1408,15 +1405,22 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setSelectCancelReason(item);
   }
 
-  function _onPressRescheduleNow() {
+  function _proceedWithReschedule() {
     setLoading?.(true);
     setShowBottomOverlay(false);
     setShowRescheduleOptions(false);
     setShowRescheduleReasons(false);
     setSelectCancelReason('');
     setShowCancelReasons(false);
-    // checkSlotSelection();
     getSlots();
+  }
+
+  function _onPressRescheduleNow() {
+    if (isMultiUhid) {
+      callMultiUhidApi(string.diagnosticsOrders.cancel);
+    } else {
+      _proceedWithReschedule();
+    }
   }
 
   function _onPressCancelNow() {
@@ -1443,6 +1447,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setSelectCancelReason('');
     setCancelReasonComment('');
     setSelectedTestArray([]);
+    setRescheduleSource('');
   }
 
   function _onPressProceedToReschedule(count: number) {
@@ -1452,7 +1457,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
     setShowRescheduleOptions(false); //hide the options view
     if (isMultiUhid) {
-      callMultiUhidApi();
+      callMultiUhidApi(string.diagnosticsOrders.reschedule);
     } else {
       setShowRescheduleReasons(true);
       setSelectRescheduleOption(true);
@@ -1471,11 +1476,25 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   }
   function _onPressMultiUhidContinue() {
     setShowMultiUhidOption(false);
-    setShowRescheduleReasons(true);
-    setSelectRescheduleOption(true);
+    if (rescheduleSource == string.diagnosticsOrders.cancel) {
+      _proceedWithReschedule();
+    } else {
+      setShowRescheduleReasons(true);
+      setSelectRescheduleOption(true);
+    }
   }
 
-  async function callMultiUhidApi() {
+  function _onProceedWithSingleUhidRescheduleFlow(source?: string) {
+    if (source == string.diagnosticsOrders.cancel) {
+      _proceedWithReschedule();
+    } else {
+      setShowRescheduleReasons(true);
+      setSelectRescheduleOption(true);
+    }
+  }
+
+  async function callMultiUhidApi(source: string) {
+    setRescheduleSource(source);
     setLoading?.(true);
     const parentOrderId = selectedOrder?.parentOrderId || selectedOrder?.id;
     try {
@@ -1486,26 +1505,28 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           //in that case when res is [] => cancelled all muhid order except one, try to reschedule
           setIsMultiUhid(false);
           setShowMultiUhidOption(false);
-          setShowRescheduleReasons(true);
-          setSelectRescheduleOption(true);
+          _onProceedWithSingleUhidRescheduleFlow(source);
         } else {
           setMultipleOrdersList(getOrders);
+          if (string.diagnosticsOrders.cancel) {
+            setShowRescheduleOptions(false);
+            setShowRescheduleReasons(false);
+            setSelectCancelReason('');
+            setShowCancelReasons(false);
+          }
           setShowMultiUhidOption(true);
         }
       } else {
         setMultipleOrdersList([]);
         setShowMultiUhidOption(false);
-        setShowRescheduleReasons(true);
-        setSelectRescheduleOption(true);
+        _onProceedWithSingleUhidRescheduleFlow(source);
       }
       setLoading?.(false);
     } catch (error) {
       setMultipleOrdersList([]);
       setIsMultiUhid(false);
-      setShowRescheduleReasons(true);
-      setSelectRescheduleOption(true);
       setShowMultiUhidOption(false);
-
+      _onProceedWithSingleUhidRescheduleFlow(source);
       setLoading?.(false);
       CommonBugFender('YourOrdersTest_callMultiUhidApi', error);
     }

@@ -216,6 +216,13 @@
     "onThisOrder": "on this order.",
     "congratsText": "Congrats! You have successfully purchased the {{duration}} {{months}} (Trial) Circle Plan for {{symbol}}{planPrice}"
   },
+  "diagnosticsOrders":{
+    "proceedToCancel": "PROCEED TO CANCEL",
+    "proceedToReschedule": "PROCEED TO RESCHEDULE",
+    "cancel":"Cancel",
+    "reschedule":"Reschedule"
+
+  },
   "components": {
     "medicineDetails": {
       "helpers": {
