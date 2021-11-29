@@ -165,7 +165,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
   const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY);
   const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
-    if (item?.cityId == Number(diagnosticServiceabilityData?.cityId)) {
+    if (item?.ctaCityId == Number(diagnosticServiceabilityData?.cityId)) {
       if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY)) {
         return item;
       } else {
