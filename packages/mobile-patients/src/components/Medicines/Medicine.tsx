@@ -817,8 +817,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             zipcode: formattedLocation?.pincode,
             latitude: formattedLocation?.latitude,
             longitude: formattedLocation?.longitude,
-            city: formattedLocation?.city,
-            state: formattedLocation?.state,
           });
           return;
         }
@@ -842,8 +840,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           zipcode: formattedLocation?.pincode,
           latitude: formattedLocation?.latitude,
           longitude: formattedLocation?.longitude,
-          city: formattedLocation?.city,
-          state: formattedLocation?.state,
         });
       } else {
         checkLocation(addressList);
@@ -880,8 +876,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         zipcode: deliveryAddress?.zipcode,
         latitude: deliveryAddress?.latitude,
         longitude: deliveryAddress?.longitude,
-        city: deliveryAddress?.city,
-        state: deliveryAddress?.state,
       });
       const formattedLocation = formatAddressToLocation(deliveryAddress! || null);
       setLocationValues(formattedLocation);
@@ -931,8 +925,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               zipcode: address?.zipcode,
               latitude: address?.latitude,
               longitude: address?.longitude,
-              city: address?.city,
-              state: address?.state,
             });
           }}
           isAddressLoading={fetchAddressLoading}
@@ -1140,8 +1132,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             zipcode: response?.pincode,
             latitude: response?.latitude,
             longitude: response?.longitude,
-            city: response?.city,
-            state: response?.state,
           });
         }
         setDeliveryAddressId!('');
@@ -1181,8 +1171,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               zipcode: pincode,
               latitude: latLang?.lat,
               longitude: latLang?.lng,
-              city: response?.city,
-              state: response?.state,
             });
             setDeliveryAddressId!('');
             updateServiceability(pincode, 'pincode');
