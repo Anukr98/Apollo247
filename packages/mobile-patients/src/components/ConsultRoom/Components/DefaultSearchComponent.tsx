@@ -22,6 +22,7 @@ interface defaultSearchProps extends NavigationScreenProps {
   postSymptomTrackEvent: (() => void) | null;
   postSpecialityEvent: ((speciality: string, specialityId: string, source?: string) => void) | null;
   isOnlineConsultMode?: boolean;
+  locationFlagOnlineConsultation?: boolean;
   postEventClickSelectLocation?: (
     specialityName?: string | '',
     specialityId?: string | '',
@@ -38,6 +39,7 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
     postSymptomTrackEvent,
     postSpecialityEvent,
     isOnlineConsultMode,
+    locationFlagOnlineConsultation,
   } = props;
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { locationDetails } = useAppCommonData();
@@ -134,7 +136,7 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
                           item?.typeId,
                           item?.name,
                           '',
-                          isOnlineConsultMode
+                          isOnlineConsultMode && !locationFlagOnlineConsultation
                             ? string.doctor_search_listing.avaliablity
                             : string.doctor_search_listing.location
                         );
@@ -212,7 +214,7 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
                       item?.id,
                       item?.name,
                       item?.specialistPluralTerm || '',
-                      isOnlineConsultMode
+                      isOnlineConsultMode && !locationFlagOnlineConsultation
                         ? string.doctor_search_listing.avaliablity
                         : string.doctor_search_listing.location
                     );
@@ -266,6 +268,7 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
       specialistPluralTerm,
       sortBy: sortBy,
       city: locationDetails?.city,
+      isOnlineConsultMode,
     });
   };
 
