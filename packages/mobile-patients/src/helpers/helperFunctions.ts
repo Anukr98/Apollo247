@@ -1645,7 +1645,7 @@ export const setRefereeFlagForNewRegisterUser = (isReferee: boolean) => {
   CleverTap.onUserLogin({
     isReferee,
   });
-}
+};
 
 export type CircleEventSource =
   | 'Circle Popup Plan only'

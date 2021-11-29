@@ -1076,6 +1076,22 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             planId: oneTapPackage?.PackageIdentifier,
             isOneTap: true,
           });
+
+          let eventAttributes = {
+            'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+            'Patient UHID': g(currentPatient, 'uhid'),
+            Relation: g(currentPatient, 'relation'),
+            'Patient age': Math.round(
+              moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+            ),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Mobile Number': g(currentPatient, 'mobileNumber'),
+            'New user': !currentPatient?.isConsulted,
+            'Selling Source': 'onetap_header',
+            'Package Name': 'OneTap',
+          };
+
+          postCleverTapEvent(CleverTapEventName.CONSULT_PACKAGE_CLICKED, eventAttributes);
         }}
       >
         <LinearGradientComponent

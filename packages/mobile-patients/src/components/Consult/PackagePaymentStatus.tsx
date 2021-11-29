@@ -864,13 +864,13 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
                   },
                 });
               }
+              logBookConsultCleverTapEvent();
             } else {
               showAphAlert?.({
                 title: 'Oops!',
                 description: string.consultPackages.paymentPendingBooking,
               });
             }
-            logBookConsultCleverTapEvent();
           }}
           title={
             oneTapPatient ? string.consultPackages.consultNow : string.consultPackages.viewPackage
