@@ -195,8 +195,9 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   const [timeArray, setTimeArray] = useState<TimeArray>(defaultTimeData);
   const [loadTotalSlots, setLoadTotalSlots] = useState<boolean>(true);
   const [isOnlineSelected, setIsOnlineSelected] = useState<boolean>(
-    selectedTab === consultPhysicalTab ? false : true
+    props.navigation.getParam('consultModeSelected') === consultPhysicalTab ? false : true
   );
+
   const [nextAvailableDate, setNextAvailableDate] = useState<string>('');
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
   const [firstSelectedSlot, setFirstSelectedSlot] = useState<string>('');
@@ -247,6 +248,10 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     setWebEngageScreenNames('Doctor Profile');
     fetchDoctorDetails();
   }, []);
+
+  useEffect(() => {
+    console.log('check  isOnlineConsult-- ', isOnlineConsult);
+  }, [isOnlineConsult]);
 
   useEffect(() => {
     if (doctorDetails) {
@@ -598,7 +603,16 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
         data={consultTabs}
         onChange={(tab: string) => {
           setSelectedTab(tab);
+
+          console.log('check  tab --- ', tab);
+
+          console.log(
+            'check setIsOnlineSelected tab === consultOnlineTab --- ',
+            tab === consultOnlineTab
+          );
+
           setIsOnlineSelected(tab === consultOnlineTab);
+
           if (tab !== selectedTab) {
             setTotalSlots(-1);
 
@@ -680,6 +694,10 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     const todayDate = moment(new Date());
     const tomorrowDate = moment(new Date()).add('1', 'day');
     const date = index === 0 ? todayDate : index === 1 ? tomorrowDate : item?.date;
+
+    console.log('check handleDateSelection ---- ');
+
+    console.log('check handleDateSelection  isOnlineSelected ---- ', isOnlineSelected);
 
     if (slotSelected.current) {
       setLoadTotalSlots(true);
