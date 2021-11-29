@@ -17,6 +17,7 @@ import { MutableRefObject } from 'react';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CleverTapEventName, CleverTapEvents } from './CleverTapEvents';
+import remoteConfig from '@react-native-firebase/remote-config';
 
 export const handleOpenURL = (event: any) => {
   try {
@@ -761,6 +762,20 @@ export const pushTheView = (
 
       })
       break;
+    case 'ShareReferLink':
+      firebaseRemoteConfigForReferrer().then((res) => {
+        if (res) {
+          navigateToView(navigation, AppRoutes.ShareReferLink)
+        }
+        else {
+          const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
+            source: 'deeplink',
+          };
+          postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
+          navigation.replace(AppRoutes.ConsultRoom);
+        }
+      })
+      break;
     default:
       const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
         source: 'deeplink',
@@ -769,6 +784,14 @@ export const pushTheView = (
       navigation.replace(AppRoutes.ConsultRoom);
       break;
   }
+};
+
+
+const firebaseRemoteConfigForReferrer = async () => {
+  try {
+    const bannerConfig = await remoteConfig().getValue('Referrer_Banner');
+    return bannerConfig.asBoolean();
+  } catch (e) { }
 };
 
 const webViewGoBack = (navigation: NavigationScreenProp<NavigationRoute<object>, object>) => {
