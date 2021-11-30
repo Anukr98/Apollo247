@@ -8,6 +8,7 @@ import {
   SavingsIcon,
   Up,
   OffersIconGreen,
+  CartIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   createDiagnosticValidateCouponLineItems,
@@ -1617,8 +1618,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           {renderPrices(string.common.toPay, toPayPrice?.toFixed(2), true)}
           {isCircleAddedToCart && renderCODDisableText()}
         </View>
-        {anyCartSaving > 0 && renderCartSavingBanner()}
-        {showEffectiveView && renderAddtionalCircleSavingBanner(toPayPrice)}
+
+        {/* {anyCartSaving > 0 && renderCartSavingBanner()}
+        {showEffectiveView && renderAddtionalCircleSavingBanner(toPayPrice)} */}
+        {anyCartSaving > 0 &&
+          renderCartSavingBanner(toPayPrice, showEffectiveView, showCircleRelatedSavings)}
       </>
     );
   };
@@ -1643,45 +1647,73 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     }
   };
 
-  /**
-   * calculation for the savings
-   */
-  const renderCartSavingBanner = () => {
-    return dashedBanner(
-      'You ',
-      `saved ${string.common.Rs}${Number(
-        isDiagnosticCircleSubscription || isCircleAddedToCart
-          ? !!coupon && !couponCircleBenefits
-            ? cartSaving + couponDiscount
-            : cartSaving + circleSaving + couponDiscount
-          : cartSaving + couponDiscount
-      )?.toFixed(2)}`,
-      'on this order',
-      'left',
-      'saving'
+  const renderCartSavingBanner = (
+    effectivePrice: number,
+    showEffectiveView: boolean,
+    showCircleSavings: boolean
+  ) => {
+    const totalSavings = Number(
+      isDiagnosticCircleSubscription || isCircleAddedToCart
+        ? !!coupon && !couponCircleBenefits
+          ? cartSaving + couponDiscount
+          : cartSaving + circleSaving + couponDiscount
+        : cartSaving + couponDiscount
+    )?.toFixed(2);
+    return (
+      <View style={[styles.dashedBannerViewStyle, styles.savingsOuterView]}>
+        <View style={{ flexDirection: 'row' }}>
+          <SavingsIcon style={styles.savingIconStyle} />
+          <Text style={styles.savingsMainText}>
+            You{' '}
+            <Text style={{ color: theme.colors.APP_GREEN }}>
+              saved {string.common.Rs}
+              {totalSavings}
+            </Text>{' '}
+            on this order.{' '}
+            {showEffectiveView
+              ? `Your effective price is ${string.common.Rs}${effectivePrice?.toFixed(2)}`
+              : null}
+          </Text>
+        </View>
+        <Spearator style={styles.separatorStyle} />
+        <>
+          {couponDiscount > 0
+            ? renderHorizontalSavingsView(
+                <OffersIconGreen style={styles.savingsIcons} />,
+                string.diagnosticsCartPage.couponSavings,
+                couponDiscount
+              )
+            : null}
+          {showCircleSavings && circleSaving > 0
+            ? renderHorizontalSavingsView(
+                <CircleLogo style={styles.savingsIcons} />,
+                string.diagnosticsCartPage.circleMembershipSavings,
+                circleSaving
+              )
+            : null}
+          {cartSaving > 0
+            ? renderHorizontalSavingsView(
+                <CartIcon style={[styles.savingsIcons, { tintColor: colors.APP_GREEN }]} />,
+                string.diagnosticsCartPage.cartSavings,
+                cartSaving
+              )
+            : null}
+        </>
+      </View>
     );
   };
 
-  const renderAddtionalCircleSavingBanner = (effectivePrice: number) => {
+  const renderHorizontalSavingsView = (Icon: any, title: string, amount: number) => {
     return (
-      <View style={[styles.dashedBannerViewStyle, styles.circleSavingOuterView]}>
-        <SavingsIcon style={styles.savingIconStyle} />
-        <View style={styles.circleSavingView}>
-          <Text style={styles.circleSavingNormalText}>
-            You
-            <Text style={styles.circleSavingGreenText}>
-              {' '}
-              saved {string.common.Rs}
-              {circleSaving}
-            </Text>{' '}
-            <Text style={styles.circleSavingBoldText}>on this order </Text>
-            with Circle! Your effective price is{' '}
-            <Text style={styles.circleSavingBoldText}>
-              {string.common.Rs}
-              {effectivePrice?.toFixed(2)}
-            </Text>
-          </Text>
+      <View style={styles.breakDownSavingsOuterView}>
+        <View style={{ flexDirection: 'row' }}>
+          {Icon}
+          <Text style={[styles.savingsTitleText, { marginLeft: 10 }]}>{title}</Text>
         </View>
+        <Text style={styles.savingsTitleText}>
+          {string.common.Rs}
+          {amount?.toFixed(2)}
+        </Text>
       </View>
     );
   };
@@ -1707,7 +1739,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             borderWidth: imageType == 'saving' ? 1 : 2,
             marginTop: imageType == 'circle' ? 16 : 10,
           },
-          imageType === 'saving' && { backgroundColor: '#F3FFFF' },
+          imageType === 'saving' && { backgroundColor: colors.GREEN_BG },
         ]}
       >
         {imagePosition == 'left' && (
@@ -1762,11 +1794,22 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
         {renderLabel(
           nameFormater(
-            isModifyFlow ? 'Additional amount that needs to be paid' : 'Total charges',
+            isModifyFlow
+              ? string.diagnosticsCartPage.additionalAmount
+              : string.diagnosticsCartPage.totalCharges,
             'title'
           )
         )}
         {renderTotalCharges()}
+        {renderPolicyDisclaimer()}
+      </View>
+    );
+  };
+
+  const renderPolicyDisclaimer = () => {
+    return (
+      <View style={{ margin: 16 }}>
+        <Text style={styles.disclaimerText}>{string.diagnosticsCartPage.reviewPagePolicyText}</Text>
       </View>
     );
   };
@@ -2439,6 +2482,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         customer_id: currentPatient?.primaryPatientId || getPatientId,
       };
       const response = await createInternalOrder(client, orderInput);
+      console.log({ response });
       if (response?.data?.createOrderInternal?.success) {
         //check for webenage
         const orderInfo = {
@@ -2815,7 +2859,7 @@ const styles = StyleSheet.create({
     color: theme.colors.SKY_BLUE,
   },
   quantityViewStyle: {
-    backgroundColor: '#F3FFFF',
+    backgroundColor: colors.GREEN_BG,
     width: 80,
     padding: 2,
     justifyContent: 'center',
@@ -2824,7 +2868,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderWidth: 1,
     marginTop: 2,
-    borderColor: '#F3FFFF',
+    borderColor: colors.GREEN_BG,
   },
   totalChargesContainer: {
     backgroundColor: theme.colors.WHITE,
@@ -2946,11 +2990,6 @@ const styles = StyleSheet.create({
     marginLeft: 3,
   },
   savingCircleIcon: { height: 20, width: isSmallDevice ? 23 : 25, resizeMode: 'contain' },
-  circleSavingBoldText: { ...theme.viewStyles.text('SB', 12, theme.colors.SHERPA_BLUE, 1, 18) },
-  circleSavingGreenText: { ...theme.viewStyles.text('R', 12, theme.colors.APP_GREEN, 1, 18) },
-  circleSavingNormalText: { ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 1, 18) },
-  circleSavingView: { width: '89%', marginHorizontal: 6 },
-  circleSavingOuterView: { borderStyle: 'solid', backgroundColor: '#F3FFFF', borderWidth: 1 },
   circleCardView: {
     margin: 6,
     marginBottom: 16,
@@ -3036,4 +3075,30 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
   },
   savingsView: { flexDirection: 'row', marginTop: 3 },
+  savingsIcons: { width: 24, height: 24, resizeMode: 'contain' },
+  savingsOuterView: {
+    justifyContent: 'flex-start',
+    borderStyle: 'solid',
+    borderWidth: 1,
+    marginTop: 10,
+    backgroundColor: colors.GREEN_BG,
+    paddingRight: 16,
+    flexDirection: 'column',
+  },
+  savingsMainText: {
+    color: theme.colors.LIGHT_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(14),
+    lineHeight: 16,
+    alignSelf: 'center',
+    marginLeft: 10,
+  },
+  separatorStyle: { marginTop: 12, marginBottom: 12 },
+  breakDownSavingsOuterView: {
+    flexDirection: 'row',
+    marginBottom: 6,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  savingsTitleText: { ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1, 20) },
+  disclaimerText: { ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 0.7, 14) },
 });

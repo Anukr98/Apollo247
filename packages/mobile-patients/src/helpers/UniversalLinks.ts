@@ -136,11 +136,7 @@ export const handleUniversalLinks = (
         break;
 
       case 'ConsultPackage':
-        pushTheView('ConsultPackage', navigation);
-        break;
-
-      case 'ConsultPackagePurchased':
-        pushTheView('ConsultPackagePurchased', navigation);
+        pushTheView('ConsultPackage', navigation, data.length === 2 ? linkId : undefined);
         break;
 
       default:
@@ -304,12 +300,7 @@ const pushTheView = (
     case 'ConsultPackage':
       navigation.navigate(AppRoutes.ConsultPackageDetail, {
         comingFrom: 'deeplink',
-      });
-      break;
-
-    case 'ConsultPackagePurchased':
-      navigation.navigate(AppRoutes.ConsultPackagePostPurchase, {
-        comingFrom: 'deeplink',
+        planId: id,
       });
       break;
 
