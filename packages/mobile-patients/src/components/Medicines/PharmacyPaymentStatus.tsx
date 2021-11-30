@@ -1103,6 +1103,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
           redirectOnShareReferrer={() => {
             beforeRedirectGetRewardIdAndCampaignId();
           }}
+          screenName={'Pharma order screen'}
         />
       </View>
     );
