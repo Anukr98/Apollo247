@@ -2373,13 +2373,15 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     slotStartTime: string,
     source: string
   ) {
+    var totalPriceSummation = 0;
+    var array = [] as any;
     try {
       setLoading?.(true);
       const getPatientId =
         source === BOOKING_TYPE.MODIFY && isModifyFlow
           ? modifiedOrder?.patientId
           : currentPatient?.id;
-      var array = [] as any; //define type
+
       if (source === BOOKING_TYPE.MODIFY) {
         //will for single order
         array = [{ order_id: getOrderDetails, amount: grandTotal, patient_id: getPatientId }];
@@ -2396,12 +2398,16 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           }
         );
       }
-      const totalPriceSummation = getOrderDetails
-        ?.map(
-          (item: saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWithOrderIDs) =>
-            item?.amount
-        )
-        ?.reduce((curr: number, prev: number) => curr + prev, 0);
+      if (source == BOOKING_TYPE.SAVE) {
+        totalPriceSummation = getOrderDetails
+          ?.map(
+            (
+              item: saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWithOrderIDs
+            ) => item?.amount
+          )
+          ?.reduce((curr: number, prev: number) => curr + prev, 0);
+      }
+
       const circlePlanPurchasePrice = !!selectedCirclePlan
         ? selectedCirclePlan?.currentSellingPrice
         : !!defaultCirclePlan
@@ -2429,12 +2435,14 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
       const orderInput: OrderCreate = {
         orders: orders,
-        total_amount: !!coupon
-          ? totalPriceSummation + (isCircleAddedToCart ? circlePlanPurchasePrice : 0)
-          : toPayPrice,
+        total_amount:
+          !isModifyFlow && !!coupon
+            ? totalPriceSummation + (isCircleAddedToCart ? circlePlanPurchasePrice : 0)
+            : toPayPrice,
         customer_id: currentPatient?.primaryPatientId || getPatientId,
       };
       const response = await createInternalOrder(client, orderInput);
+      console.log({ response });
       if (response?.data?.createOrderInternal?.success) {
         //check for webenage
         const orderInfo = {
