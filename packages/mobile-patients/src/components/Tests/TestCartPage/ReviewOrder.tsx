@@ -136,7 +136,6 @@ import { saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWith
 import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
-import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import {
   CreateUserSubscription,
   CreateUserSubscriptionVariables,
@@ -145,8 +144,6 @@ import CircleCard from '@aph/mobile-patients/src/components/Tests/components/Cir
 import { CirclePlansListOverlay } from '@aph/mobile-patients/src/components/Tests/components/CirclePlansListOverlay';
 import { debounce } from 'lodash';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { Decimal } from 'decimal.js';
-import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import {
   CleverTapEventName,
   CleverTapEvents,
@@ -2373,13 +2370,15 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     slotStartTime: string,
     source: string
   ) {
+    var totalPriceSummation = 0;
+    var array = [] as any;
     try {
       setLoading?.(true);
       const getPatientId =
         source === BOOKING_TYPE.MODIFY && isModifyFlow
           ? modifiedOrder?.patientId
           : currentPatient?.id;
-      var array = [] as any; //define type
+
       if (source === BOOKING_TYPE.MODIFY) {
         //will for single order
         array = [{ order_id: getOrderDetails, amount: grandTotal, patient_id: getPatientId }];
@@ -2396,12 +2395,16 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           }
         );
       }
-      const totalPriceSummation = getOrderDetails
-        ?.map(
-          (item: saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWithOrderIDs) =>
-            item?.amount
-        )
-        ?.reduce((curr: number, prev: number) => curr + prev, 0);
+      if (source == BOOKING_TYPE.SAVE) {
+        totalPriceSummation = getOrderDetails
+          ?.map(
+            (
+              item: saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWithOrderIDs
+            ) => item?.amount
+          )
+          ?.reduce((curr: number, prev: number) => curr + prev, 0);
+      }
+
       const circlePlanPurchasePrice = !!selectedCirclePlan
         ? selectedCirclePlan?.currentSellingPrice
         : !!defaultCirclePlan
@@ -2429,9 +2432,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
       const orderInput: OrderCreate = {
         orders: orders,
-        total_amount: !!coupon
-          ? totalPriceSummation + (isCircleAddedToCart ? circlePlanPurchasePrice : 0)
-          : toPayPrice,
+        total_amount:
+          !isModifyFlow && !!coupon
+            ? totalPriceSummation + (isCircleAddedToCart ? circlePlanPurchasePrice : 0)
+            : toPayPrice,
         customer_id: currentPatient?.primaryPatientId || getPatientId,
       };
       const response = await createInternalOrder(client, orderInput);
