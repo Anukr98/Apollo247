@@ -4256,6 +4256,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         redirectOnShareReferrer={() => {
           beforeRedirectGetRewardIdAndCampaignId();
         }}
+        screenName={'Homepage'}
       />
     );
   };

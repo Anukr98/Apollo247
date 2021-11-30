@@ -306,6 +306,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
+    paddingRight: 18,
     paddingBottom: 7,
   },
   doctorLanguage: {

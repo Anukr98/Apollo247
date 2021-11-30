@@ -1179,7 +1179,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               onLocationChange={
                 isOnlineConsultMode
                   ? () => {
-                      setLocationFlagOnlineConsultation(!locationFlagOnlineConsultation);
+                      if (!locationFlagOnlineConsultation) setLocationFlagOnlineConsultation(true);
                     }
                   : () => {}
               }
