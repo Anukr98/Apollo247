@@ -320,7 +320,12 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
         onLoadEnd={() => setLoading!(false)}
         bounces={false}
         useWebKit={true}
-        source={{ uri: url }}
+        source={{
+          uri: url,
+          headers: {
+            AccessFrom: 'app',
+          },
+        }}
         onNavigationStateChange={(data) => onWebViewStateChange(data, WebViewRef)}
       />
     );

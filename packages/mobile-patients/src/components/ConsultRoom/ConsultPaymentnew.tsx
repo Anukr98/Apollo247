@@ -154,6 +154,9 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
         bounces={false}
         source={{
           uri: url,
+          headers: {
+            AccessFrom: 'app',
+          },
         }}
         onNavigationStateChange={(data) => onWebViewStateChange(data)}
       />

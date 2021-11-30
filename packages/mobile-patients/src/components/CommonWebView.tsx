@@ -159,7 +159,12 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
       <WebView
         ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
         onLoadEnd={() => setLoading!(false)}
-        source={{ uri }}
+        source={{
+          uri,
+          headers: {
+            AccessFrom: 'app',
+          },
+        }}
         renderError={(errorCode) => renderError(WebViewRef)}
         onNavigationStateChange={(data) => handleResponse(data)}
         onMessage={(event) => {
