@@ -48,6 +48,7 @@ export const useServerCart = () => {
     setCartPrescriptionType,
     cartLocationDetails,
     asyncPincode,
+    setAsyncPincode,
   } = useShoppingCart();
   const { axdcCode } = useAppCommonData();
   const { setPharmacyLocation } = useAppCommonData();
@@ -194,10 +195,18 @@ export const useServerCart = () => {
       setCartPrescriptions?.(cartResponse?.prescriptionDetails);
       setCartPrescriptionType?.(cartResponse?.prescriptionType);
       if (cartResponse?.patientAddressId) setCartAddressId?.(cartResponse?.patientAddressId);
+      console.log('PINCODE >>>>>> ', cartResponse?.zipcode);
+      console.log('CITY >>>>>> ', cartResponse?.city);
+      console.log('STATE >>>>>> ', cartResponse?.state);
       setCartLocationDetails?.({
         pincode: cartResponse?.zipcode,
         latitude: cartResponse?.latitude,
         longitude: cartResponse?.longitude,
+        city: cartResponse?.city,
+        state: cartResponse?.state,
+      });
+      setAsyncPincode?.({
+        pincode: cartResponse?.zipcode,
         city: cartResponse?.city,
         state: cartResponse?.state,
       });
