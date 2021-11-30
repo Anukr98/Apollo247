@@ -729,7 +729,7 @@
     "topBookedTests": "Top Booked Tests",
     "similarPackages":"Similar Packages",
     "needToAddPaitent":"• Do you want to edit patient details?",
-    "needToAddOrder":"• Do you want to add tests to your order?",
+    "needToAddOrder":"• Do you want to add tests to your order?"
   },
   "diagnosticCategoryTitle": {
     "category": "category",
@@ -751,7 +751,13 @@
     "paidSlotText": "Paid slot charges",
     "patientSelectionLimit" : "You can add only {{count}} patients. Please remove extra patients",
     "multiPatientMsg": "You can now book tests for your family and friends in a single order",
-    "nonCircleMsg": "Extra 15% off for circle customers. TnC Apply"
+    "nonCircleMsg": "Extra 15% off for circle customers. TnC Apply",
+    "couponSavings":"Coupon Savings",
+    "circleMembershipSavings": "Circle Membership Savings",
+    "cartSavings": "Cart Savings",
+    "additionalAmount": "Additional amount that needs to be paid",
+    "totalCharges": "Total charges",
+    "reviewPagePolicyText":"By confirming the order, you agree to receive recommendations for relevant tests/packages from our lab personnel."
   },
   "orders": {
     "urOrders": "MY ORDERS",
