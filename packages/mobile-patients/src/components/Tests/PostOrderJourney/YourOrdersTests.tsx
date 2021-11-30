@@ -205,7 +205,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [selectedPatient, setSelectedPatient] = useState<string>(ALL);
   const [selectedPatientId, setSelectedPatientId] = useState<string>('');
   const [orderListData, setOrderListData] = useState<(orderListByMobile | null)[] | null>([]);
-
+  const [diagnosticSlotDuration, setDiagnosticSlotDuration] = useState<number>(0);
   const [slotInput, setSlotInput] = useState({});
   const [profileArray, setProfileArray] = useState<
     GetCurrentPatients_getCurrentPatients_patients[] | null
@@ -660,6 +660,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       if (slotsResponse?.data?.getCustomizedSlotsv2) {
         const getSlotResponse = slotsResponse?.data?.getCustomizedSlotsv2;
         const getDistanceCharges = getSlotResponse?.distanceCharges;
+        const getIndividualSlotDuration = getSlotResponse?.slotDurationInMinutes;
         //get the slots array
         const diagnosticSlots = getSlotResponse?.available_slots || [];
         const updatedDiagnosticSlots =
@@ -689,6 +690,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           setDisplaySchedule(true);
           todaySlotNotAvailable && setTodaySlotNotAvailable(false);
         }
+        setDiagnosticSlotDuration(getIndividualSlotDuration! || 0);
         setSlots(slotsArray);
         const slotDetails = slotsArray?.[0];
         slotsArray?.length && setselectedTimeSlot(slotDetails);
@@ -918,7 +920,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           isReschdedule={true}
           itemId={orderItemId}
           slotBooked={selectedOrder?.slotDateTimeInUTC}
-          onSchedule={(date1: Date, slotInfo: TestSlot, currentDate: Date | undefined) => {
+          slotDuration={diagnosticSlotDuration}
+          onSchedule={(
+            date1: Date,
+            slotInfo: TestSlot,
+            getSlotDuration: number,
+            currentDate: Date | undefined
+          ) => {
             rescheduleDate = date1; //whatever date has been selected
             let rescheduleObject = {
               internalSlots: slotInfo?.slotInfo?.internalSlots! as any,
@@ -933,7 +941,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               isPaidSlot: !!slotInfo?.slotInfo?.isPaidSlot ? slotInfo?.slotInfo?.isPaidSlot : false,
             };
             rescheduleSlotObject = rescheduleObject;
-
             setDate(currentDate!);
             setselectedTimeSlot(slotInfo);
             setDiagnosticSlot?.(rescheduleObject);

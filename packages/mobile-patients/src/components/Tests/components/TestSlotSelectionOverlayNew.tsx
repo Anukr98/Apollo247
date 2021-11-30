@@ -10,8 +10,11 @@ import {
   PremiumIcon,
   NightSelected,
   Night,
+  MinusPatientCircleIcon,
+  AddPatientCircleIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
+  addSlotDuration,
   g,
   getTestSlotDetailsByTime,
   getUniqueTestSlots,
@@ -62,7 +65,7 @@ export interface TestSlotSelectionOverlayNewProps extends AphOverlayProps {
   isReschdedule?: boolean;
   slotBooked?: string;
   isTodaySlotUnavailable?: boolean;
-  onSchedule: (date1: Date, slotInfo: TestSlot, date?: Date) => void;
+  onSchedule: (date1: Date, slotInfo: TestSlot, slotDuration: number, date?: Date) => void;
   itemId?: any[];
   source?: string;
   isVisible: boolean;
@@ -70,20 +73,14 @@ export interface TestSlotSelectionOverlayNewProps extends AphOverlayProps {
   heading: string;
   slotInput?: any; //define type
   isFocus?: boolean;
+  slotDuration: number;
 }
 const { width, height } = Dimensions.get('window');
 
 const localFormatTestSlot = (slotTime: string) => moment(slotTime, 'hh:mm A')?.format('HH:mm');
 
 export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewProps> = (props) => {
-  const {
-    isTodaySlotUnavailable,
-    maxDate,
-    showInOverlay,
-    slotInput,
-    isPremium,
-    isReschdedule,
-  } = props;
+  const { maxDate, showInOverlay, slotInput, isPremium, isReschdedule, slotDuration } = props;
   const { setLoading } = useUIElements();
   const { cartItems } = useDiagnosticsCart();
   const [selectedDayTab, setSelectedDayTab] = useState(0);
@@ -116,6 +113,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   const [morningSlots, setMorningSlots] = useState([] as any);
   const [afternoonSlots, setAfternoonSlots] = useState([] as any);
   const [eveningSlots, setEveningSlots] = useState([] as any);
+  const [diagnosticSlotDuration, setDiagnosticSlotDuration] = useState<number>(slotDuration);
 
   type UniqueSlotType = typeof uniqueSlots[0];
 
@@ -203,6 +201,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
       if (slotsResponse?.data?.getCustomizedSlotsv2) {
         const getSlotResponse = slotsResponse?.data?.getCustomizedSlotsv2;
         const getDistanceCharges = getSlotResponse?.distanceCharges;
+        const getSlotDuration = getSlotResponse?.slotDurationInMinutes;
         //get the slots array
         const diagnosticSlots = getSlotResponse?.available_slots || [];
 
@@ -238,6 +237,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           setSlots(slotsArray);
           setOverallDistanceCharge(getDistanceCharges!);
           setChangedDate(moment(dateToCheck)?.toDate());
+          setDiagnosticSlotDuration(getSlotDuration! || 0);
           populateSlots(slotsArray);
           //this needs to be added, if need to select the first slot by default
           // slotsArray?.length && setSlotInfo(slotsArray?.[0]);
@@ -357,7 +357,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   };
   const renderSlotSelectionView = () => {
     return (
-      <View style={{ marginBottom: 30 }}>
+      <View style={styles.slotsView}>
         <View style={styles.dayPhaseContainer}>
           {dayPhaseArray?.map((item, index) => (
             <TouchableOpacity
@@ -386,67 +386,87 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
             </TouchableOpacity>
           ))}
         </View>
-        <View>
+        <View style={styles.slotsList}>
           {!!overallSlotsArray && overallSlotsArray?.length != 0 ? (
             <FlatList
+              bounces={false}
+              nestedScrollEnabled={true}
               keyExtractor={(_, index) => index.toString()}
               data={overallSlotsArray}
               extraData={newSelectedSlot}
               contentContainerStyle={styles.timeContainer}
-              numColumns={4}
-              renderItem={(item: any, index: number) => (
-                <TouchableOpacity
-                  onPress={() => {
-                    const selectedSlot = getTestSlotDetailsByTime(
-                      slots,
-                      (item?.item?.slotInfo as UniqueSlotType)?.startTime,
-                      (item?.item?.slotInfo as UniqueSlotType)?.endTime
-                    );
-                    setSlotInfo(selectedSlot);
-                    setPrepaidSlot(item?.item?.slotInfo?.isPaidSlot);
-                    setNewSelectedSlot(item?.item?.value);
-                    props.isReschdedule && setNewChangedDate(changedDate);
-                    props.isReschdedule ? null : onSchedule(changedDate!, item?.item, props.date);
-                    // onSchedule(date!, slotInfo!); //if first needs to be selected
-                  }}
-                  style={[
-                    styles.dateContentStyle,
-                    {
-                      backgroundColor:
-                        newSelectedSlot == item?.item?.value
-                          ? theme.colors.APP_GREEN
-                          : theme.colors.DEFAULT_BACKGROUND_COLOR,
-                    },
-                  ]}
-                >
-                  <>
-                    {item?.item?.slotInfo?.isPaidSlot ? (
-                      isReschdedule ? null : (
-                        <PremiumIcon style={styles.premiumIconAbsolute} />
-                      )
-                    ) : null}
-                    <Text
-                      style={[
-                        styles.dateTextStyle,
-                        {
-                          color:
-                            newSelectedSlot == item?.item?.value
-                              ? 'white'
-                              : theme.colors.SHERPA_BLUE,
-                        },
-                      ]}
-                    >
-                      {moment(item?.item?.value, 'hh:mm A').format('hh:mm a')}
-                    </Text>
-                  </>
-                </TouchableOpacity>
-              )}
+              renderItem={(item: any, index: number) => renderTimeSlots(item, index)}
             />
           ) : (
             renderNoSlots()
           )}
         </View>
       </View>
+    );
+  };
+
+  function _onPressSlot(slotDetails: any, slotValue: any) {
+    const selectedSlot = getTestSlotDetailsByTime(
+      slots,
+      (slotDetails?.item?.slotInfo as UniqueSlotType)?.startTime,
+      (slotDetails?.item?.slotInfo as UniqueSlotType)?.endTime
+    );
+    setSlotInfo(selectedSlot);
+    setPrepaidSlot(slotDetails?.item?.slotInfo?.isPaidSlot);
+    setNewSelectedSlot(slotValue);
+    props.isReschdedule && setNewChangedDate(changedDate);
+    props.isReschdedule
+      ? null
+      : onSchedule(changedDate!, slotDetails?.item, diagnosticSlotDuration, props.date);
+    // onSchedule(date!, slotInfo!); //if first needs to be selected
+  }
+
+  const renderTimeSlots = (item: any, index: number) => {
+    const slotValue = item?.item?.value;
+    const startSlotValue = moment(slotValue, 'hh:mm A')?.format('hh:mm a');
+    const endSlotValue = addSlotDuration(slotValue, diagnosticSlotDuration);
+    const isSelected = newSelectedSlot == slotValue;
+
+    return (
+      <TouchableOpacity
+        key={index?.toString()}
+        onPress={() => _onPressSlot(item, slotValue)}
+        style={[
+          styles.dateContentStyle,
+          {
+            backgroundColor: isSelected
+              ? theme.colors.APP_GREEN
+              : theme.colors.DEFAULT_BACKGROUND_COLOR,
+          },
+        ]}
+      >
+        <>
+          {item?.item?.slotInfo?.isPaidSlot ? (
+            isReschdedule ? null : (
+              <PremiumIcon style={styles.premiumIconAbsolute} />
+            )
+          ) : null}
+          <View style={styles.outerSlotView}>
+            <Text
+              style={[
+                styles.dateTextStyle,
+                {
+                  color: isSelected ? colors.WHITE : colors.SHERPA_BLUE,
+                },
+              ]}
+            >
+              {diagnosticSlotDuration == 0 ? startSlotValue : `${startSlotValue} - ${endSlotValue}`}
+            </Text>
+            <View style={styles.arrowIconView}>
+              {!isSelected ? (
+                <MinusPatientCircleIcon style={styles.arrowStyle} />
+              ) : (
+                <AddPatientCircleIcon style={styles.arrowStyle} />
+              )}
+            </View>
+          </View>
+        </>
+      </TouchableOpacity>
     );
   };
 
@@ -531,7 +551,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     return (
       <View style={styles.noSlotsContainer}>
         <EmptySlot />
-        <Text style={styles.noSlotsText}>Sorry! No Slots are Available</Text>
+        <Text style={styles.noSlotsText}>{string.diagnosticsOrders.noSlot}</Text>
       </View>
     );
   };
@@ -543,7 +563,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
       style={{ margin: 16, marginTop: 5, width: 'auto' }}
       onPress={() => {
         if (!isDoneBtnDisabled) {
-          onSchedule(newChangedDate!, slotInfo!, new Date()); //date
+          onSchedule(newChangedDate!, slotInfo!, diagnosticSlotDuration, new Date()); //date
         }
       }}
       disabled={isDoneBtnDisabled}
@@ -589,11 +609,9 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
               {props.heading}
             </Text>
           ) : null}
-          <ScrollView style={styles.containerContentStyle} bounces={false}>
-            {renderCalendarView()}
-            {props.isReschdedule ? null : renderPremiumTag()}
-            {renderSlotSelectionView()}
-          </ScrollView>
+          {renderCalendarView()}
+          {props.isReschdedule ? null : renderPremiumTag()}
+          {renderSlotSelectionView()}
           {showInOverlay && props.isReschdedule && overallSlotsArray?.length ? (
             renderBottomButton
           ) : (
@@ -704,34 +722,30 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 12, 'white'),
   },
   timeContainer: {
-    width: '94%',
-    alignSelf: 'center',
-    // backgroundColor: '#c8c8c8',
-    alignContent: 'center',
-    alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 20,
   },
   noSlotsContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    // width: '94%',
     marginTop: 60, //40
-    // backgroundColor: '#c8c8c8',
   },
   noSlotsText: {
     ...theme.viewStyles.text('SB', 17, theme.colors.SHERPA_BLUE),
   },
   dateContentStyle: {
-    width: width > 400 ? 68 : 64,
     height: 42,
-    margin: width > 400 ? 12 : 8,
+    margin: 8,
+    marginLeft: 16,
+    marginRight: 16,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    paddingLeft: 16,
     justifyContent: 'center',
-    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
   },
   dateTextStyle: {
     ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE),
+    textAlign: 'center',
   },
   optionsView: {
     flexDirection: 'row',
@@ -745,10 +759,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     paddingTop: 6,
     paddingBottom: 3,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
+    borderColor: colors.INPUT_BORDER_SUCCESS,
   },
   placeholderStyle: {
-    color: theme.colors.placeholderTextColor,
+    color: colors.placeholderTextColor,
   },
   placeholderTextStyle: {
     ...theme.viewStyles.text('M', 16, '#01475b'),
@@ -774,6 +788,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     width: '100%',
   },
+  arrowIconView: {
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  arrowStyle: {
+    height: 18,
+    width: 20,
+    resizeMode: 'contain',
+  },
+  outerSlotView: {
+    flexDirection: 'row',
+    width: '95%',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  slotsList: { marginBottom: 20, marginTop: 10 },
+  slotsView: { marginBottom: 30, flex: 1 },
 });
 
 TestSlotSelectionOverlayNew.defaultProps = {

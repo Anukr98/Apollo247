@@ -1727,7 +1727,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               ? renderWidgetsView()
               : null}
             {/** frequently brought together */}
-            {(frequentlyBroughtRecommendations?.length > 2 || topBookedTests?.length > 0) &&
+            {(frequentlyBroughtRecommendations?.length > 0 || topBookedTests?.length > 0) &&
               renderFrequentlyBrought()}
             {/**packages for single test */}
             {!!packageRecommendations &&

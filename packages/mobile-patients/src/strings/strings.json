@@ -753,6 +753,9 @@
     "multiPatientMsg": "You can now book tests for your family and friends in a single order",
     "nonCircleMsg": "Extra 15% off for circle customers. TnC Apply"
   },
+  "diagnosticsOrders":{
+    "noSlot":"Sorry! No Slots are Available"
+  },
   "orders": {
     "urOrders": "MY ORDERS",
     "ratingHeader": "FEEDBACK",
