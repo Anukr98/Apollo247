@@ -2887,6 +2887,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         onPressCross={() => {
           setSlideCallToOrder(true);
         }}
+        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.HOME}
       />
     ) : null;
   };

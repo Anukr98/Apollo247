@@ -30,6 +30,7 @@ import {
   MEDICINE_CONSUMPTION_DURATION,
   TEST_COLLECTION_TYPE,
   APPOINTMENT_TYPE,
+  CALL_TO_ORDER_CTA_PAGE_ID,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from 'react-native-geolocation-service';
@@ -168,6 +169,15 @@ export enum EDIT_DELETE_TYPE {
   DELETE_BILL = 'Delete Bill',
   DELETE_INSURANCE = 'Delete Insurance',
   DELETE_VACCINATION = 'Delete Vaccination',
+}
+
+export enum PAGE_ID_TYPE {
+  HOME_PAGE = 'Home Page',
+  LISTING_PAGE = 'Listing Page',
+  MY_ORDERS = 'My Orders',
+  CART_PAGE = 'Cart Page',
+  TEST_DETAIL_PAGE = 'Test Detail Page',
+  ORDER_SUMMARY = 'Order Summary',
 }
 
 type EditDeleteArray = {
@@ -4240,3 +4250,31 @@ export const shareDocument = async (
   }
   return viewReportOrderId;
 };
+export const getPageId = (pageId: CALL_TO_ORDER_CTA_PAGE_ID) => {
+  let pageName = PAGE_ID_TYPE.HOME_PAGE
+  switch (pageId) {
+    case CALL_TO_ORDER_CTA_PAGE_ID.HOME:
+      pageName = PAGE_ID_TYPE.HOME_PAGE;
+      break;
+    case CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING:
+      pageName = PAGE_ID_TYPE.LISTING_PAGE;
+      break;
+    case CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS:
+      pageName = PAGE_ID_TYPE.MY_ORDERS;
+      break;
+    case CALL_TO_ORDER_CTA_PAGE_ID.TESTCART:
+      pageName = PAGE_ID_TYPE.CART_PAGE;
+      break;
+    case CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL:
+      pageName = PAGE_ID_TYPE.TEST_DETAIL_PAGE;
+      break;
+    case CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY:
+      pageName = PAGE_ID_TYPE.ORDER_SUMMARY;
+      break;
+
+    default:
+      pageName = PAGE_ID_TYPE.HOME_PAGE;
+      break;
+  }
+  return pageName;
+}
