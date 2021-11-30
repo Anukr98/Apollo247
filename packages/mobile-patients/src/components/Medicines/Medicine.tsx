@@ -285,7 +285,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     serverCartItems,
     addresses,
     setAddresses,
-    deliveryAddressId,
     setDeliveryAddressId,
     setCircleMembershipCharges,
     setCircleSubPlanId,
@@ -1265,7 +1264,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       text.length > count ? `${text.slice(0, count)}...` : text;
 
     const renderDeliverToLocationCTA = () => {
-      let deliveryAddress = addresses.find((item) => item.id == deliveryAddressId);
+      let deliveryAddress = addresses.find((item) => item.id == cartAddressId);
       const location = asyncPincode?.pincode
         ? `${formatText(asyncPincode?.city || asyncPincode?.state || '', 18)} ${
             asyncPincode?.pincode
