@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StatusBar, StyleSheet, TouchableOpacity } from 'react-native';
-import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
+import { NavigationScreenProps, SafeAreaView, ScrollView } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -87,7 +87,7 @@ export const EarnedPoints: React.FC<EarnedPointsProps> = (props) => {
       <SafeAreaView style={styles.container}>
         <Header
           leftIcon="backArrow"
-          title="Refer And Earn"
+          title="Refer & Earn"
           onPressLeftIcon={() => navigation.replace('ConsultRoom')}
           container={{
             borderColor: 'transparent',
@@ -96,8 +96,10 @@ export const EarnedPoints: React.FC<EarnedPointsProps> = (props) => {
             fontSize: 18,
           }}
         />
-        {renderYourGifterReward()}
-        {renderWhyChooseUsSection()}
+        <ScrollView>
+          {renderYourGifterReward()}
+          {renderWhyChooseUsSection()}
+        </ScrollView>
       </SafeAreaView>
     </View>
   );
@@ -105,13 +107,13 @@ export const EarnedPoints: React.FC<EarnedPointsProps> = (props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+    backgroundColor: theme.colors.LIGHT_GREEN_ONE,
   },
   earnPointWhyChooseUsimgTitle: {
     textAlign: 'center',
     marginTop: 15,
     color: theme.colors.LIGHT_BLUE,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     width: 90,
   },
@@ -130,7 +132,7 @@ const styles = StyleSheet.create({
   },
   earnPointWhyChooseUsimageTextContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginTop: 30,
   },
   earnPointWhyChooseUstitle: {
@@ -141,8 +143,8 @@ const styles = StyleSheet.create({
   },
   earnPointwhyChooseApolloContainer: {
     backgroundColor: theme.colors.LIGHT_GREEN_ONE,
-    flex: 1,
     alignItems: 'center',
+    paddingVertical: 10,
   },
   earnPointreedemBtnText: {
     color: theme.colors.HEX_WHITE,
@@ -190,7 +192,7 @@ const styles = StyleSheet.create({
   },
   earnPointsMainContainer: {
     backgroundColor: theme.colors.HEX_WHITE,
-    marginVertical: 5,
+    marginVertical: 2,
     alignItems: 'center',
     paddingVertical: 25,
     flex: 1.9,
