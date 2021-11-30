@@ -4987,7 +4987,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               onChangeText={(value) => onSearchTextChange(value)}
             />
             {isSearchFocus && searchText?.length >= 1 ? (
-              <TouchableOpacity onPress={onCancelTextClick}>
+              <TouchableOpacity onPress={() => setSearchText('')}>
                 <RemoveIconGrey style={{ width: 20, height: 20 }} />
               </TouchableOpacity>
             ) : null}
