@@ -6764,3 +6764,14 @@ export const BOOK_PACKAGE_CONSULT = gql`
     }
   }
 `;
+
+export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
+  query getDiagnosticItemRecommendationsByPastOrders ($patientId: String!){
+    getDiagnosticItemRecommendationsByPastOrders(patientId: $patientId){
+      itemsData{
+        itemId
+        itemName
+      }
+    }
+  }
+`

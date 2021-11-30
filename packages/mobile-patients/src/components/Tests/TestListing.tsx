@@ -9,7 +9,11 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { GET_WIDGETS_PRICING_BY_ITEMID_CITYID } from '@aph/mobile-patients/src/graphql/profiles';
 
-import { g, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  nameFormater,
+  showDiagnosticCTA,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import React, { useEffect, useState } from 'react';
@@ -86,24 +90,6 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const [widgetsData, setWidgetsData] = useState([] as any);
   const [loading, setLoading] = useState<boolean>(true);
   const [isPriceAvailable, setIsPriceAvailable] = useState<boolean>(false);
-  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
-  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
-  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
-    CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING
-  );
-  const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
-    if (item?.ctaCityId == cityId) {
-      if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING)) {
-        return item;
-      } else {
-        return null;
-      }
-    } else if (isCtaDetailDefault) {
-      return callToOrderDetails?.ctaDetailsDefault;
-    } else {
-      return null;
-    }
-  });
   const errorStates = !loading && widgetsData?.length == 0;
   let deepLinkWidgetName: string;
 
@@ -494,7 +480,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     );
   };
   const renderCallToOrder = () => {
-    return ctaDetailMatched?.length ? (
+    const getCTADetails = showDiagnosticCTA(CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING, cityId!);
+    return getCTADetails?.length ? (
       <CallToOrderView
         cityId={cityId}
         customMargin={80}

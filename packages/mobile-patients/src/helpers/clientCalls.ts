@@ -58,6 +58,8 @@ import {
   CHANGE_DIAGNOSTIC_ORDER_PATIENT_ID,
   GET_OFFERS_LIST,
   GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS,
+  GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
+  DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -283,6 +285,8 @@ import {
   switchDiagnosticOrderPatientIDVariables,
 } from '@aph/mobile-patients/src/graphql/types/switchDiagnosticOrderPatientID';
 import { getDiagnosticPackageRecommendations, getDiagnosticPackageRecommendationsVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticPackageRecommendations';
+import { getDiagnosticOrdersListByMobile, getDiagnosticOrdersListByMobileVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
+import { getDiagnosticItemRecommendationsByPastOrders, getDiagnosticItemRecommendationsByPastOrdersVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticItemRecommendationsByPastOrders';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -1612,6 +1616,45 @@ export const getDiagnosticsPackageRecommendations = (
     variables: {
       itemId: itemId,
       cityId: cityId,
+    },
+    fetchPolicy: 'no-cache',
+  });
+};
+
+export const getDiagnosticsOrder = (
+  client: ApolloClient<object>,
+  mobileNumber: string,
+  limit: number,
+  offset: number,
+) => {
+  return client.query<getDiagnosticOrdersListByMobile, getDiagnosticOrdersListByMobileVariables>({
+    query: GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
+    context: {
+      sourceHeaders,
+    },
+    variables: {
+      mobileNumber: mobileNumber,
+      paginated: true,
+      limit: limit,
+      offset: offset,
+    },
+    fetchPolicy: 'no-cache',
+  });
+};
+
+export const getDiagnosticsPastOrderRecommendations = (
+  client: ApolloClient<object>,
+  currentPatient?: any,
+  mobileNumber?: string,
+ 
+) => {
+  return client.query<getDiagnosticItemRecommendationsByPastOrders, getDiagnosticItemRecommendationsByPastOrdersVariables>({
+    query: DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS,
+    context: {
+      sourceHeaders,
+    },
+    variables: {
+     patientId: currentPatient?.id
     },
     fetchPolicy: 'no-cache',
   });

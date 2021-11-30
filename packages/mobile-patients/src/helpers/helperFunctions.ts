@@ -4286,3 +4286,24 @@ export const addSlotDuration = (slotValue: string, slotDuration: number) =>{
   ?.add(slotDuration, 'minutes')
   ?.format('hh:mm a');
 } 
+
+export const showDiagnosticCTA = (pageName:CALL_TO_ORDER_CTA_PAGE_ID, cityId: string | number ) =>{
+  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
+  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
+  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
+    pageName
+  );
+  return ctaDetailArray?.filter((item: any) => {
+    if (Number(item?.ctaCityId) == Number(cityId)) {
+      if (item?.ctaProductPageArray?.includes(pageName)) {
+        return item;
+      } else {
+        return null;
+      }
+    } else if (isCtaDetailDefault) {
+      return callToOrderDetails?.ctaDetailsDefault;
+    } else {
+      return null;
+    }
+  });
+}
