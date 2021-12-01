@@ -114,7 +114,6 @@ import {
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   searchPHRApiWithAuthToken,
-  getDiagnosticsSearchResults,
   MedFilter,
   MedicineProduct,
   searchMedicineApi,
@@ -145,6 +144,7 @@ import {
   getAllProHealthAppointments,
   getUserBannersList,
   saveTokenDevice,
+  getDiagnosticSearchResults,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   FirebaseEventName,
@@ -5170,11 +5170,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     setSearchLoading(true);
     testSearchResults.current = [];
     try {
-      const res = await getDiagnosticsSearchResults('diagnostic', _searchText, Number(cityId));
+      const res = await getDiagnosticSearchResults(client, _searchText, Number(cityId), 5);
+      console.log('csk--', JSON.stringify(res));
       let finalProducts = [];
 
-      if (res?.data?.success) {
-        const products = res?.data?.data || [];
+      if (res?.data?.searchDiagnosticItem) {
+        const products = res?.data?.searchDiagnosticItem?.data || [];
 
         finalProducts = products.slice(0, 3);
 
