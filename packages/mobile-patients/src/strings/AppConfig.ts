@@ -316,6 +316,13 @@ const appStaticVariables = {
     orderConfirmationHeader: 'FREE Consult booked for you',
     prescriptionOptionHeader: "I don't have a prescription",
   },
+  WHATSAPP_TO_ORDER: {
+    bannerMessage: 'You can get 25% Discount + FREE Delivery on your first three orders.',
+    whatsappMessage: "I'm interested in placing a medicine order",
+    bannerVisibility: true,
+    iconVisibility: true,
+    whatsappNumber: '4048218743',
+    }
 };
 
 const DEV_top_specialties = [
