@@ -298,6 +298,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setServerCartErrorMessage,
     cartPrescriptions,
     cartLocationDetails,
+    newAddressAdded,
+    setNewAddressAdded,
   } = useShoppingCart();
   const {
     setUserActionPayload,
@@ -422,6 +424,17 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       });
     }
   }, [serverCartErrorMessage]);
+
+  useEffect(() => {
+    const addressLength = addresses?.length;
+    if (addressLength && !!newAddressAdded) {
+      setUserActionPayload?.({
+        patientAddressId: newAddressAdded,
+      });
+      fetchAddress();
+      setNewAddressAdded && setNewAddressAdded('');
+    }
+  }, [newAddressAdded]);
 
   const populateCachedData = () => {
     if (!data) {
