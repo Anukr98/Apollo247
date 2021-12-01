@@ -5144,9 +5144,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
       let finalProducts: any[] = [];
 
-      if (res?.data?.products) {
-        const products = res?.data?.products || [];
-        finalProducts = products.slice(0, 3);
+      if (res?.data?.products.length > 1) {
+        finalProducts = [{ name: searchText }];
 
         medSearchResults.current = finalProducts;
       } else {
