@@ -5229,8 +5229,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           'Search bar'
         );
         pdp
-          ? props.navigation.navigate(AppRoutes.DoctorSearchListing, nav_props)
-          : props.navigation.navigate(AppRoutes.DoctorSearch, { searchText: searchText });
+          ? props.navigation.navigate(AppRoutes.DoctorDetails, nav_props)
+          : props.navigation.navigate(AppRoutes.DoctorSearchListing, nav_props);
         break;
     }
   };
