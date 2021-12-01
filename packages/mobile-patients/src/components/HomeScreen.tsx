@@ -5313,7 +5313,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             urlKey: item?.url_key,
           }
         : key === MedicalRecordType.CONSULTATION
-        ? { specialities: [item?.specialtydisplayName], MoveDoctor: 'MoveDoctor' }
+        ? {
+            specialities: [item?.specialtydisplayName],
+            MoveDoctor: 'MoveDoctor',
+            doctorId: item?.id,
+          }
         : {};
     return (
       <TouchableOpacity onPress={() => onClickSearchItem(key, true, nav_props)}>
