@@ -44,6 +44,7 @@ import {
   createOrderInternal,
   createOrderInternalVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
+import { ConsultPackageHowItWorks } from '@aph/mobile-patients/src/components/Consult/ConsultPackageHowItWorks';
 interface PackageCheckoutProps extends NavigationScreenProps {
   packageDetailData: any;
   selectedPlanIndex: number;
@@ -260,29 +261,6 @@ export const PackageCheckout: React.FC<PackageCheckoutProps> = (props) => {
     );
   };
 
-  const renderPackageInfo = () => {
-    return (
-      <View>
-        <View style={styles.infoView}>
-          <Specialist style={styles.logo} />
-          <Text style={styles.infoTitle}>{string.consultPackages.infoTitle}</Text>
-        </View>
-        <View style={styles.infoSubView}>
-          <UserPackage style={styles.userLogo} />
-          <Text style={styles.infoText}>{string.consultPackages.infoOne}</Text>
-        </View>
-        <View style={styles.infoSubView}>
-          <VideoActiveIcon style={styles.videoLogo} />
-          <Text style={styles.infoText}>{string.consultPackages.infoTwo}</Text>
-        </View>
-        <View style={styles.infoSubView}>
-          <UserPackage style={styles.userLogo} />
-          <Text style={styles.infoText}>{string.consultPackages.infoThree}</Text>
-        </View>
-      </View>
-    );
-  };
-
   return (
     <SafeAreaView style={theme.viewStyles.container}>
       <View style={styles.container}>
@@ -298,7 +276,11 @@ export const PackageCheckout: React.FC<PackageCheckoutProps> = (props) => {
           <View style={styles.priceSeparator} />
           {renderTotalPrice()}
         </View>
-        {renderPackageInfo()}
+
+        <View style={{ marginHorizontal: 16 }}>
+          {/* How does it work ?  */}
+          <ConsultPackageHowItWorks />
+        </View>
       </View>
       {renderProceedButton()}
       {!hyperSdkInitialized && <Spinner />}
