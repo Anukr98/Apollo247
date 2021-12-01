@@ -6,7 +6,6 @@ import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFu
 import { Location, ExpressDeliveryLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import moment from 'moment';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
@@ -55,13 +54,20 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     onSelectVariant,
   } = props;
   const { currentPatient } = useAllCurrentPatients();
-  const { addresses, deliveryAddressId, circleSubscriptionId, asyncPincode } = useShoppingCart();
-  const { pharmacyLocation, locationDetails } = useAppCommonData();
+  const {
+    addresses,
+    cartAddressId,
+    cartLocationDetails,
+    cartCircleSubscriptionId,
+  } = useShoppingCart();
   const momentDiff = moment(deliveryTime).diff(moment());
   const hoursMoment = moment.duration(momentDiff);
   const hours = hoursMoment.asHours().toFixed();
   const showExpress = Number(hours) <= AppConfig.Configuration.EXPRESS_MAXIMUM_HOURS;
   const showMultiVariantOption = !!multiVariantAttributes?.length && !!skusInformation?.length;
+
+  let deliveryAddress = addresses.find((item) => item.id == cartAddressId);
+  const pincode = cartLocationDetails?.pincode || deliveryAddress?.zipcode;
 
   const renderProductPrice = () => {
     const discountPercent = getDiscountPercentage(price, specialPrice);
@@ -126,14 +132,13 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
   };
 
   const renderDeliverTo = () => {
-    let deliveryAddress = addresses.find((item) => item.id == deliveryAddressId);
-    const location = asyncPincode?.pincode
-      ? `${asyncPincode?.city || asyncPincode?.state || ''} ${asyncPincode?.pincode}`
-      : !deliveryAddress
-      ? pharmacyLocation
-        ? `${pharmacyLocation?.city || pharmacyLocation?.state || ''} ${pharmacyLocation?.pincode}`
-        : `${locationDetails?.city || pharmacyLocation?.state || ''} ${locationDetails?.pincode}`
-      : `${deliveryAddress?.city || deliveryAddress?.state || ''} ${deliveryAddress?.zipcode}`;
+    const location = cartLocationDetails?.pincode
+      ? `${cartLocationDetails?.city || cartLocationDetails?.state || ''} ${
+          cartLocationDetails?.pincode
+        }`
+      : deliveryAddress
+      ? `${deliveryAddress?.city || deliveryAddress?.state || ''} ${deliveryAddress?.zipcode}`
+      : ``;
     return (
       <TouchableOpacity
         onPress={() => {
@@ -210,7 +215,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
         skusInformation={skusInformation}
         currentSku={sku}
         onSelectVariant={onSelectVariant}
-        pincode={asyncPincode?.pincode || pharmacyLocation?.pincode}
+        pincode={pincode}
       />
     );
   };
@@ -221,7 +226,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
         {renderProductPrice()}
         {renderIsInStock()}
       </View>
-      {!!circleSubscriptionId && !!cashback && renderCareCashback()}
+      {!!cartCircleSubscriptionId && !!cashback && renderCareCashback()}
       {showMultiVariantOption && renderMultiVariantOptions()}
       {isSellOnline && renderDeliverTo()}
       {!isBanned &&

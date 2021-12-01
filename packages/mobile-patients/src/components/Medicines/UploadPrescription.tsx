@@ -945,6 +945,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         }
         disableButton={disableSubmitButton()}
         deliveryTime={cartTat}
+        screen={'prescription'}
       />
     );
   };

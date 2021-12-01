@@ -73,7 +73,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
       selectedAddress &&
       screen != 'summary' &&
       selectedMedicineOption != 'search' &&
-      deliveryTime != undefined
+      (deliveryTime != undefined || screen == 'prescription')
     ) {
       return (
         <TatCard
