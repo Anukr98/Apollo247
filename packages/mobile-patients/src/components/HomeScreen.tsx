@@ -5585,15 +5585,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     //   CleverTapEventName.VIEW_ALL_SEARCH_RESULT_CLICKED,
     //   'Search bar'
     // );
+
+    //pdp disabled for now ->props.navigation.navigate(AppRoutes.ProductDetailPage, nav_props)
     switch (key) {
       case MedicalRecordType.MEDICATION:
         postHomeCleverTapEvent(
           CleverTapEventName.OPTION_FROM_MEDICINE_CLICKED_ON_SEARCH_BAR_PAGE,
           'Search bar'
         );
-        pdp
-          ? props.navigation.navigate(AppRoutes.ProductDetailPage, nav_props)
-          : props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
+        props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
         break;
       case MedicalRecordType.TEST_REPORT:
         postHomeCleverTapEvent(
