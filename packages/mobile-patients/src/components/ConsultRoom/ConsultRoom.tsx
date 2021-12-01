@@ -4254,7 +4254,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       <View
         style={{
           backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-          marginTop: 10,
+          paddingTop: 7,
           paddingHorizontal: 5,
         }}
       >
