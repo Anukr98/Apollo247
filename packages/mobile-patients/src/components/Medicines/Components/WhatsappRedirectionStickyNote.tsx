@@ -3,11 +3,13 @@ import { View, Text, TouchableOpacity, Dimensions, StyleSheet, Linking } from 'r
 import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 import { WhatsappIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export const WhatsappRedirectionStickyNote = () => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const windowHeight = Dimensions.get('window').height;
-  const message = "I'm interested in placing a medicine order";
+  const message = AppConfig.Configuration.WHATSAPP_TO_ORDER.whatsappMessage;
+  const phoneNumber = AppConfig.Configuration.WHATSAPP_TO_ORDER.whatsappNumber;
 
   return (
     <View style={[styles.container, { top: 0.3 * windowHeight }]}>
@@ -20,7 +22,7 @@ export const WhatsappRedirectionStickyNote = () => {
             <TouchableOpacity
               onPress={() => {
                 Linking.openURL(
-                  `https://api.whatsapp.com/send/?text=${message}&phone=91${'4048218743'}`
+                  `https://api.whatsapp.com/send/?text=${message}&phone=91${phoneNumber}`
                 );
               }}
             >
@@ -30,7 +32,7 @@ export const WhatsappRedirectionStickyNote = () => {
                     <WhatsappIcon style={styles.iconStyle} />
                     <View style={{ marginTop: 5, marginHorizontal: 7 }}>
                       <Text style={styles.textStyle}>Whatsapp to Order at</Text>
-                      <Text style={styles.phoneNumberStyle}>+91-9810098100</Text>
+                      <Text style={styles.phoneNumberStyle}>+91-{phoneNumber}</Text>
                     </View>
                   </View>
                   <TouchableOpacity

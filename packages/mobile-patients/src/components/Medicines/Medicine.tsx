@@ -2345,15 +2345,17 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderWhatsappBanner = () => {
     return (
-      <View
-        ref={bannerScrollRef}
-        onLayout={(event) => {
-          const layout = event.nativeEvent.layout;
-          setShowWhatsappRedirectionIcon(layout.y > 0);
-        }}
-      >
-        <WhatsappRedirectionBanner />
-      </View>
+      AppConfig.Configuration.WHATSAPP_TO_ORDER.bannerVisibility && (
+        <View
+          ref={bannerScrollRef}
+          onLayout={(event) => {
+            const layout = event.nativeEvent.layout;
+            setShowWhatsappRedirectionIcon(layout.y > 0);
+          }}
+        >
+          <WhatsappRedirectionBanner />
+        </View>
+      )
     );
   };
 
@@ -2758,17 +2760,18 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
           {pageLoading ? renderMedicinesShimmer() : null}
 
-        <View
-          style={{
-            paddingBottom: !!cartItems?.length ? 80 : 0,
-            marginBottom: !!cartItems?.length ? 117 : 65,
-          }}
-        >
-          {renderSections()}
-          {renderOverlay()}
-          {!!cartItems?.length && renderCircleCartDetails()}
-          {renderCategoryTree()}
-        </View>
+          <View
+            style={{
+              paddingBottom: !!cartItems?.length ? 80 : 0,
+              marginBottom: !!cartItems?.length ? 117 : 65,
+            }}
+          >
+            {renderSections()}
+            {renderOverlay()}
+            {!!cartItems?.length && renderCircleCartDetails()}
+            {renderCategoryTree()}
+          </View>
+        </KeyboardAwareScrollView>
       </SafeAreaView>
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
       {showCirclePopup && renderCircleMembershipPopup()}
@@ -2788,7 +2791,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setCurrentProductQuantityInCart={setCurrentProductQuantityInCart}
           />
         )}
-      {showWhatsappRedirectionIcon && <WhatsappRedirectionStickyNote />}
+      {AppConfig.Configuration.WHATSAPP_TO_ORDER.iconVisibility && showWhatsappRedirectionIcon && (
+        <WhatsappRedirectionStickyNote />
+      )}
     </View>
   );
 };

@@ -7,14 +7,16 @@ import {
   ApolloPharmacyIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export const WhatsappRedirectionBanner = () => {
-  const message = "I'm interested in placing a medicine order";
+  const message = AppConfig.Configuration.WHATSAPP_TO_ORDER.whatsappMessage;
+  const phoneNumber = AppConfig.Configuration.WHATSAPP_TO_ORDER.whatsappNumber;
   return (
     <View style={styles.container}>
       <TouchableOpacity
         onPress={() => {
-          Linking.openURL(`https://api.whatsapp.com/send/?text=${message}&phone=91${'4048218743'}`);
+          Linking.openURL(`https://api.whatsapp.com/send/?text=${message}&phone=91${phoneNumber}`);
         }}
       >
         <LinearGradientComponent style={{ height: 137 }} colors={['#FFF6DE', '#FFDDD6']}>
@@ -35,12 +37,12 @@ export const WhatsappRedirectionBanner = () => {
               <View style={styles.whatsappContainer}>
                 <View style={{ width: '80%', paddingBottom: 10 }}>
                   <Text style={styles.subTextStyle}>
-                    You can get 20% CASHBACK on your first order + FREE DELIVERY.
+                    {AppConfig.Configuration.WHATSAPP_TO_ORDER.bannerMessage}
                   </Text>
                 </View>
 
                 <View style={styles.buttonStyle}>
-                  <Text style={styles.buttonTextStyle}>Whatsapp @ +91 -9810098100 </Text>
+                  <Text style={styles.buttonTextStyle}>Whatsapp @ +91 -{phoneNumber} </Text>
                   <WhatsappIcon style={{ height: 18, width: 18 }} />
                 </View>
               </View>

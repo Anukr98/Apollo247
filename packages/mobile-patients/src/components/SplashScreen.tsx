@@ -100,7 +100,7 @@ import { CleverTapEventName } from '../helpers/CleverTapEvents';
 import analytics from '@react-native-firebase/analytics';
 import appsFlyer from 'react-native-appsflyer';
 
-(function () {
+(function() {
   /**
    * Praktice.ai
    * Polyfill for Promise.prototype.finally
@@ -113,16 +113,16 @@ import appsFlyer from 'react-native-appsflyer';
   if (typeof Promise.prototype['finally'] === 'function') {
     return;
   }
-  globalObject.Promise.prototype['finally'] = function (callback: any) {
+  globalObject.Promise.prototype['finally'] = function(callback: any) {
     const constructor = this.constructor;
     return this.then(
-      function (value: any) {
-        return constructor.resolve(callback()).then(function () {
+      function(value: any) {
+        return constructor.resolve(callback()).then(function() {
           return value;
         });
       },
-      function (reason: any) {
-        return constructor.resolve(callback()).then(function () {
+      function(reason: any) {
+        return constructor.resolve(callback()).then(function() {
           throw reason;
         });
       }
@@ -164,8 +164,12 @@ export interface SplashScreenProps extends NavigationScreenProps {}
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { APP_ENV } = AppConfig;
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
-  const { setAllPatients, setMobileAPICalled, validateAndReturnAuthToken, buildApolloClient } =
-    useAuth();
+  const {
+    setAllPatients,
+    setMobileAPICalled,
+    validateAndReturnAuthToken,
+    buildApolloClient,
+  } = useAuth();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [appState, setAppState] = useState(AppState.currentState);
   const [takeToConsultRoom, settakeToConsultRoom] = useState<boolean>(false);
@@ -1226,6 +1230,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Free_Consult_Message',
       PROD: 'Free_Consult_Message',
     },
+    WhatsApp_To_Order: {
+      QA: 'QA_WhatsApp_To_Order',
+      PROD: 'WhatsApp_To_Order',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1541,6 +1549,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'Free_Consult_Message',
         'FREE_CONSULT_MESSAGE',
         (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.FREE_CONSULT_MESSAGE
+      );
+
+      setAppConfig(
+        'WhatsApp_To_Order',
+        'WHATSAPP_TO_ORDER',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.WHATSAPP_TO_ORDER
       );
 
       setAppConfig(
