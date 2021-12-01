@@ -2760,19 +2760,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
           {pageLoading ? renderMedicinesShimmer() : null}
 
-          <View
-            style={{
-              paddingBottom: !!cartItems?.length ? 80 : 0,
-              marginBottom: !!cartItems?.length ? 117 : 65,
-            }}
-          >
+          <View style={{ flex: 1, paddingBottom: !!cartItems?.length ? 80 : 0 }}>
             {renderSections()}
             {renderOverlay()}
-            {!!cartItems?.length && renderCircleCartDetails()}
             {renderCategoryTree()}
           </View>
         </KeyboardAwareScrollView>
       </SafeAreaView>
+      {!!cartItems?.length && renderCircleCartDetails()}
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
       {showCirclePopup && renderCircleMembershipPopup()}
       {showSuggestedQuantityNudge &&
