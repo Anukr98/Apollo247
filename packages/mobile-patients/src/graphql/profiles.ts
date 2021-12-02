@@ -6766,8 +6766,8 @@ export const BOOK_PACKAGE_CONSULT = gql`
 `;
 
 export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
-  query getDiagnosticItemRecommendationsByPastOrders ($patientId: String!){
-    getDiagnosticItemRecommendationsByPastOrders(patientId: $patientId){
+  query getDiagnosticItemRecommendationsByPastOrders ($mobileNumber: String!){
+    getDiagnosticItemRecommendationsByPastOrders(mobileNumber: $mobileNumber){
       itemsData{
         itemId
         itemName

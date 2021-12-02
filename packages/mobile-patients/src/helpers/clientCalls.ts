@@ -60,6 +60,7 @@ import {
   GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS,
   GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
   DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS,
+  GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -287,6 +288,7 @@ import {
 import { getDiagnosticPackageRecommendations, getDiagnosticPackageRecommendationsVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticPackageRecommendations';
 import { getDiagnosticOrdersListByMobile, getDiagnosticOrdersListByMobileVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { getDiagnosticItemRecommendationsByPastOrders, getDiagnosticItemRecommendationsByPastOrdersVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticItemRecommendationsByPastOrders';
+import { findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsByItemIDsAndCityID';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -1644,8 +1646,7 @@ export const getDiagnosticsOrder = (
 
 export const getDiagnosticsPastOrderRecommendations = (
   client: ApolloClient<object>,
-  currentPatient?: any,
-  mobileNumber?: string,
+  mobileNumber: string,
  
 ) => {
   return client.query<getDiagnosticItemRecommendationsByPastOrders, getDiagnosticItemRecommendationsByPastOrdersVariables>({
@@ -1654,7 +1655,29 @@ export const getDiagnosticsPastOrderRecommendations = (
       sourceHeaders,
     },
     variables: {
-     patientId: currentPatient?.id
+      mobileNumber: mobileNumber
+    },
+    fetchPolicy: 'no-cache',
+  });
+};
+
+export const getDiagnosticsByItemIdCityId = (
+  client: ApolloClient<object>,
+  cityId: number,
+  itemIds: any,
+  pincode?: number
+ 
+) => {
+  return client.query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
+    query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+    context: {
+      sourceHeaders,
+    },
+    variables: {
+      //if address is not selected then from pincode bar otherwise from address
+      cityID: cityId,
+      itemIDs: itemIds!,
+      pincode: pincode,
     },
     fetchPolicy: 'no-cache',
   });

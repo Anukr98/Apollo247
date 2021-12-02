@@ -25,5 +25,5 @@ export interface getDiagnosticItemRecommendationsByPastOrders {
 }
 
 export interface getDiagnosticItemRecommendationsByPastOrdersVariables {
-  patientId: string;
+  mobileNumber: string;
 }

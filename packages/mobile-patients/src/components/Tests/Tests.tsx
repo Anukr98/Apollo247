@@ -119,6 +119,7 @@ import {
   getDiagnosticOpenOrders,
   getDiagnosticPatientPrescription,
   getDiagnosticPhelboDetails,
+  getDiagnosticsByItemIdCityId,
   getDiagnosticsOrder,
   getDiagnosticsPastOrderRecommendations,
   getUserBannersList,
@@ -313,6 +314,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const [isUploaded, setIsUploaded] = useState(false);
   const [widgetsData, setWidgetsData] = useState([] as any);
+  const [drupalWidgetData, setDrupalWidgetData] = useState([] as any);
   const [reloadWidget, setReloadWidget] = useState<boolean>(false);
   const [latestPrescription, setLatestPrescription] = useState([] as any);
   const [patientOpenOrders, setPatientOpenOrders] = useState([] as any);
@@ -463,13 +465,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   }, [loading, banners]);
 
+  useEffect(() => {
+    fetchPastOrderRecommendations();
+  }, [drupalWidgetData]);
+
   function fetchNumberSpecificOrderDetails() {
     if (currentPatient) {
       fetchUserType();
       fetchPatientOpenOrders();
       fetchPatientClosedOrders();
       fetchPatientPrescriptions();
-      fetchPastOrderRecommendations();
       getUserBanners();
       getDataFromCache();
     }
@@ -641,41 +646,50 @@ export const Tests: React.FC<TestsProps> = (props) => {
     try {
       const getPastOrderRecommendation = await getDiagnosticsPastOrderRecommendations(
         client,
-        currentPatient
+        currentPatient?.mobileNumber
       );
       const pastOrders =
         getPastOrderRecommendation?.data?.getDiagnosticItemRecommendationsByPastOrders?.itemsData;
       //show top 10 , res > 10
       // res < 10 -> append rest from the drupal (post filtering common items)
       //res + append (post filtering common items) < 6  -> don't show the widget
-      console.log({ pastOrders });
       if (!!pastOrders) {
         if (pastOrders?.length >= 10) {
           //fetchPrices
-          fetchWidgetsPrices(
+          getWidgetPricesWithInclusions(
             pastOrders,
             cityId,
             string.diagnostics.homepagePastOrderRecommendations
           );
         } else {
-          //get drupal//
-          fetchWidgetsPrices(
-            pastOrders,
+          const getRecommendationsFromDrupal = getRanking('0')?.[0]?.diagnosticWidgetData;
+          const appenedRecommendations = [
+            ...new Set(pastOrders?.concat(getRecommendationsFromDrupal)),
+          ];
+          getWidgetPricesWithInclusions(
+            appenedRecommendations,
             cityId,
             string.diagnostics.homepagePastOrderRecommendations
           );
         }
       } else {
-        //fetch from drupal
-        //if that too is less than 6 then don't show
+        setDrupalRecommendationsAsPastRecommendations();
       }
     } catch (error) {
-      console.log({ error });
-      //show from drupal
-      //if less than 6, then don't show
+      setDrupalRecommendationsAsPastRecommendations();
       CommonBugFender('fetchPastOrderRecommendations_Tests', error);
     }
   };
+
+  function setDrupalRecommendationsAsPastRecommendations() {
+    const getRecommendationsFromDrupal = getRanking('0')?.[0]?.diagnosticWidgetData;
+    //here inclusions will be there from drupal
+    fetchWidgetsPrices(
+      getRecommendationsFromDrupal,
+      cityId,
+      string.diagnostics.homepagePastOrderRecommendations
+    );
+  }
 
   const getDiagnosticBanner = async (cityId: number) => {
     try {
@@ -708,13 +722,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
         );
         setCityId(cityId);
         //call here the prices.
+        setDrupalWidgetData(sortWidgets);
         setWidgetsData(sortWidgets);
         setIsPriceAvailable(false);
-        // setSectionLoading(false);
         setShowItemCard(true);
         fetchWidgetsPrices(sortWidgets, cityId);
       } else {
-        // setSectionLoading(false);
+        setDrupalWidgetData([]);
         setWidgetsData([]);
         setLoading?.(false);
         setBannerLoading(false);
@@ -722,6 +736,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       }
     } catch (error) {
       CommonBugFender('getHomePageWidgets_Tests', error);
+      setDrupalWidgetData([]);
       setWidgetsData([]);
       setLoading?.(false);
       setReloadWidget(true);
@@ -785,7 +800,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   }
 
-  const fetchWidgetsPrices = async (widgetsData: any, cityId: string, source?: string) => {
+  function getFilteredWidgets(widgetsData: any, source?: string) {
     var filterWidgets, itemIds;
     if (source == string.diagnostics.homepagePastOrderRecommendations) {
       filterWidgets = widgetsData;
@@ -799,7 +814,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
       );
     }
     const allItemIds = itemIds?.flat();
-    //restriction less than 12.
+    return {
+      filterWidgets,
+      allItemIds,
+    };
+  }
+
+  const fetchWidgetsPrices = async (widgetsData: any, cityId: string, source?: string) => {
+    const { filterWidgets, allItemIds } = getFilteredWidgets(widgetsData, source);
     try {
       const res = await fetchPricesForCityId(
         Number(cityId!) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
@@ -831,6 +853,39 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   };
 
+  async function getWidgetPricesWithInclusions(widgetsData: any, cityId: string, source?: string) {
+    const { filterWidgets, allItemIds } = getFilteredWidgets(widgetsData, source);
+    try {
+      const res = await getDiagnosticsByItemIdCityId(
+        client,
+        Number(cityId!) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
+        allItemIds
+      );
+      let newWidgetsData = [...filterWidgets];
+      const priceResult = res?.data?.findDiagnosticsByItemIDsAndCityID;
+      if (!!priceResult && !!priceResult?.diagnostics && priceResult?.diagnostics?.length > 0) {
+        const widgetPricingArr = priceResult?.diagnostics;
+        if (source === string.diagnostics.homepagePastOrderRecommendations) {
+          setPastOrderRecommendationPrices(filterWidgets, widgetPricingArr);
+        } else {
+          setWidgetPrices(filterWidgets, widgetPricingArr, newWidgetsData);
+        }
+      }
+      setLoading?.(false);
+    } catch (error) {
+      CommonBugFender('getWidgetPricesWithInclusions api__Tests', error);
+      setSectionLoading(false);
+      setLoading?.(false);
+      setReloadWidget(true);
+      setBannerLoading(false);
+      setPastOrderRecommendationShimmer(false);
+      showAphAlert?.({
+        title: string.common.uhOh,
+        description: string.common.tryAgainLater,
+      });
+    }
+  }
+
   function setWidgetPrices(filterWidgets: any, widgetPricingArr: any, newWidgetsData: any) {
     for (let i = 0; i < filterWidgets?.length; i++) {
       for (let j = 0; j < filterWidgets?.[i]?.diagnosticWidgetData?.length; j++) {
@@ -859,16 +914,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
         if (_widget?.itemId == _diagItems?.itemId) {
           _recommendedBookings?.push({
             ..._widget,
-            itemTitle: _widget?.itemName,
+            itemTitle: !!_widget?.itemName ? _widget?.itemName : _widget?.itemTitle,
             diagnosticPricing: _diagItems?.diagnosticPricing,
             packageCalculatedMrp: _diagItems?.packageCalculatedMrp,
+            inclusions: _diagItems?.inclusions,
           });
         }
       });
     });
-    console.log({ _recommendedBookings });
-
-    setPastOrderRecommendations(_recommendedBookings);
+    _recommendedBookings?.length >= 6
+      ? setPastOrderRecommendations(_recommendedBookings)
+      : setPastOrderRecommendations([]);
     setIsPriceAvailable(true);
     setPastOrderRecommendationShimmer(false);
   }
@@ -2418,6 +2474,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderSections = () => {
     const widget1 = getRanking('1');
+    const recommendationWidget = getRanking('0'); //this position will always be 0th.
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -2438,11 +2495,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
           : null}
         {renderUploadPrescriptionCard()}
         {patientOrdersShimmer ? renderDiagnosticCardShimmer() : renderOrderStatusCard()}
-        {pastOrderRecommendationShimmer
-          ? renderDiagnosticCardShimmer()
-          : pastOrderRecommendations?.length >= 6
-          ? renderPastOrderRecommendations()
-          : null}
+        {/** keep 0th position for recommendations, should come before first widget */}
+        {recommendationWidget &&
+          (pastOrderRecommendationShimmer
+            ? renderDiagnosticCardShimmer()
+            : pastOrderRecommendations?.length > 0
+            ? renderPastOrderRecommendations(recommendationWidget)
+            : null)}
         {renderBottomViews()}
       </TouchableOpacity>
     );
@@ -2505,12 +2564,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   };
 
-  const renderPastOrderRecommendations = () => {
+  const renderPastOrderRecommendations = (drupalRecommendations: any) => {
     const isPricesAvailable =
       pastOrderRecommendations?.length > 0 &&
       pastOrderRecommendations.find((item: any) => item?.diagnosticPricing);
     const showViewAll = true;
-    const lengthOfTitle = string.diagnostics.homepagePastOrderRecommendations?.length;
+    const lengthOfTitle = drupalRecommendations?.[0]?.diagnosticWidgetTitle?.length;
 
     return (
       <View style={styles.widgetSpacing}>
@@ -2520,10 +2579,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               renderDiagnosticWidgetHeadingShimmer() //load heading
             ) : !!isPricesAvailable ? (
               <SectionHeader
-                leftText={nameFormater(
-                  string.diagnostics.homepagePastOrderRecommendations,
-                  'upper'
-                )}
+                leftText={nameFormater(drupalRecommendations?.[0]?.diagnosticWidgetTitle, 'upper')}
                 leftTextStyle={[
                   styles.widgetHeading,
                   {
@@ -2543,9 +2599,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     ? () => {
                         props.navigation.navigate(AppRoutes.TestListing, {
                           movedFrom: AppRoutes.Tests,
-                          data: pastOrderRecommendations,
+                          data: drupalRecommendations?.[0], //for passing title
                           cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
-                          widgetType: 'tests',
+                          widgetType: string.diagnosticCategoryTitle.item,
                         });
                       }
                     : undefined
