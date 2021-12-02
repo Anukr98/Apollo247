@@ -195,9 +195,6 @@ export const useServerCart = () => {
       setCartPrescriptions?.(cartResponse?.prescriptionDetails);
       setCartPrescriptionType?.(cartResponse?.prescriptionType);
       setCartAddressId?.(cartResponse?.patientAddressId);
-      console.log('PINCODE >>>>>> ', cartResponse?.zipcode);
-      console.log('CITY >>>>>> ', cartResponse?.city);
-      console.log('STATE >>>>>> ', cartResponse?.state);
       setCartLocationDetails?.({
         pincode: cartResponse?.zipcode,
         latitude: cartResponse?.latitude,

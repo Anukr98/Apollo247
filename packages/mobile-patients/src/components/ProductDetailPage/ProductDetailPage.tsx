@@ -157,8 +157,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     serverCartAmount,
     cartLocationDetails,
     cartAddressId,
+    serverCartLoading,
   } = useShoppingCart();
-  const { setUserActionPayload } = useServerCart();
+  const { setUserActionPayload, fetchAddress } = useServerCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
@@ -319,9 +320,16 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         moment(deliveryTime).diff(new Date(), 'd'),
         'Yes'
       );
+      fetchAddress();
       setNewAddressAdded && setNewAddressAdded('');
     }
   }, [newAddressAdded, selectedAddress, deliveryTime]);
+
+  useEffect(() => {
+    if (!addresses?.length) {
+      fetchAddress();
+    }
+  }, [addresses]);
 
   useEffect(() => {
     try {
@@ -1184,10 +1192,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       <SafeAreaView style={styles.mainContainer}>
         <MedicineListingHeader navigation={props.navigation} movedFrom={'productdetail'} />
         <View>
-          {loading ? (
+          {loading || serverCartLoading ? (
             <ActivityIndicator
               style={{ flex: 1, alignItems: 'center', marginTop: 50 }}
-              animating={loading}
+              animating={loading || serverCartLoading}
               size="large"
               color="green"
             />

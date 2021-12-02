@@ -46,7 +46,7 @@ export const CartPrescriptions: React.FC<CartPrescriptionsProps> = (props) => {
   } = useShoppingCart();
   const uploadedPrescriptions = cartPrescriptions?.filter((prescription) => !prescription?.meta);
   const appointmentPrescriptions = cartPrescriptions?.filter(
-    (prescription) => prescription?.appointmentId || prescription?.meta
+    (prescription) => prescription?.meta?.doctorName
   );
   const { removePrescriptionFromCart } = useServerCart();
   const {

@@ -2769,6 +2769,7 @@ export const GET_PRESCRIPTIONS_BY_MOBILE_NUMBER = gql`
             id
             fileName
             mimeType
+            file_Url
           }
         }
         errorCode
@@ -2790,6 +2791,7 @@ export const GET_PRESCRIPTIONS_BY_MOBILE_NUMBER = gql`
             id
             fileName
             mimeType
+            file_Url
           }
           hospital_name
           hospitalId
