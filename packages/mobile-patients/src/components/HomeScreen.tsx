@@ -201,6 +201,7 @@ import {
   ViewStyle,
   Keyboard,
   TextInput,
+  BackHandler,
 } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ScrollView, Switch } from 'react-native-gesture-handler';
@@ -1125,6 +1126,18 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     cleverTapEventForLoginDone();
     fetchUserAgent();
   }, []);
+
+  const handleSearchClose = () => {
+    if (isSearchFocus || searchText?.length > 0) {
+      onCancelTextClick();
+      return true;
+    } else return false;
+  };
+
+  useEffect(() => {
+    const handler = BackHandler.addEventListener('hardwareBackPress', handleSearchClose);
+    return () => handler.remove();
+  }, [isSearchFocus, searchText]);
 
   const handleCachedData = async () => {
     const cacheDataStringBuffer = await appGlobalCache.getAll();
