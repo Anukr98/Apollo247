@@ -515,6 +515,16 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       case 'Patient_Cancel_Appointment':
         {
           const userId = await dataSavedUserID('selectedProfileId');
+
+          const { plansPurchasedWith } = data;
+          if (
+            plansPurchasedWith &&
+            (plansPurchasedWith === 'DOCTOR_PACKAGE' || plansPurchasedWith === 'ONE_TAP')
+          ) {
+            //We need not to show payment status for package related consults
+            break;
+          }
+
           const { appointmentId } = data;
           {
             showAphAlert!({

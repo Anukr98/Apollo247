@@ -1,7 +1,7 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
+import { ArrowRight, OneTapConsult, PastIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -16,7 +16,10 @@ import {
   SAVE_SEARCH,
   GET_DOCTOR_LIST,
   GET_PATIENT_ALL_CONSULTED_DOCTORS,
+  GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { LocationOnHeader } from '../LocationOnHeader';
 import {
   getAllSpecialties,
   getAllSpecialtiesVariables,
@@ -72,6 +75,7 @@ import {
   TouchableOpacity,
   View,
   Platform,
+  ImageBackground,
 } from 'react-native';
 import { NavigationParams, NavigationScreenProps, ScrollView } from 'react-navigation';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -86,17 +90,22 @@ import {
   searchProceduresAndSymptoms,
   ProceduresAndSymptomsParams,
   ProceduresAndSymptomsResult,
+  getConsultWidgetPackages,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 var allSettled = require('promise.allsettled');
 import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
-import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { LocationOnHeader } from '@aph/mobile-patients/src/components/LocationOnHeader';
+import { calculateCircleDoctorPricing } from '../../utils/commonUtils';
+import { useShoppingCart } from '../ShoppingCartProvider';
+import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import {
+  GetAllUserSubscriptionsWithPlanBenefitsV2,
+  GetAllUserSubscriptionsWithPlanBenefitsV2Variables,
+} from '@aph/mobile-patients/src/graphql/types/GetAllUserSubscriptionsWithPlanBenefitsV2';
+import HTML from 'react-native-render-html';
 
 const styles = StyleSheet.create({
   searchContainer: {
@@ -114,6 +123,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 10,
     elevation: 5,
+    justifyContent: 'center',
   },
   searchValueStyle: {
     ...theme.fonts.IBMPlexSansMedium(18),
@@ -170,15 +180,15 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   listView: {
-    ...theme.viewStyles.cardViewStyle,
-    marginVertical: 16,
+    marginVertical: 4,
     width: 'auto',
     backgroundColor: 'white',
-    marginHorizontal: 8,
+    marginEnd: 16,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   rowTextStyles: {
     color: theme.colors.SEARCH_TITLE_COLOR,
-    paddingHorizontal: 12,
     ...theme.fonts.IBMPlexSansSemiBold(14),
   },
   listSpecialistView: {
@@ -352,6 +362,117 @@ const styles = StyleSheet.create({
     marginVertical: 16,
     marginLeft: 16,
   },
+  oneTapContainer: {
+    margin: 16,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#FC9916',
+  },
+  oneTapView: {
+    paddingStart: 12,
+    paddingVertical: 10,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 4,
+  },
+  oneTapLogo: {
+    width: 18,
+    height: 27,
+    marginEnd: 12,
+  },
+  oneTapText: {
+    ...theme.viewStyles.text('B', 13, theme.colors.LIGHT_BLUE, 1, 24),
+  },
+  oneTapInfo: {
+    marginVertical: -7,
+    marginHorizontal: 14,
+    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE),
+  },
+  oneTapArrow: {
+    tintColor: theme.colors.APP_YELLOW,
+    position: 'absolute',
+    end: 12,
+    top: 12,
+  },
+  oneTapInfoView: {
+    borderBottomLeftRadius: 4,
+    borderBottomEndRadius: 4,
+    backgroundColor: theme.colors.WHITE,
+  },
+  packageBanner: {
+    height: 75,
+    width: 250,
+    borderRadius: 6,
+    marginEnd: 10,
+    backgroundColor: theme.colors.LIGHT_GRAY,
+  },
+  packageList: {
+    margin: 16,
+    marginTop: 10,
+  },
+  viewAllBtn: {
+    width: 102,
+    alignSelf: 'center',
+  },
+  pastLogo: {
+    height: 13,
+    width: 13,
+    marginStart: 20,
+    marginEnd: 8,
+  },
+  mySpecialtyPackageContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    marginHorizontal: 20,
+    marginBottom: 20,
+  },
+  bannerBackground: {
+    width: '100%',
+    height: 100,
+    borderRadius: 5,
+    flex: 1,
+    justifyContent: 'center',
+  },
+
+  packageTitle: {
+    ...theme.viewStyles.text('M', 16, theme.colors.WHITE),
+    marginLeft: 25,
+  },
+  packageInfoContainer: {
+    flex: 1,
+    marginHorizontal: 15,
+    marginVertical: 16,
+  },
+  consultationBookedTitle: { ...theme.viewStyles.text('R', 12, theme.colors.PLATINUM_GREY) },
+  consultationBooked: { ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE), marginTop: 5 },
+  validTillTitle: { ...theme.viewStyles.text('R', 12, theme.colors.PLATINUM_GREY) },
+  validTill: { ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE), marginTop: 5 },
+  vericalSeparator: {
+    width: 0.5,
+    height: 40,
+    marginLeft: -10,
+    backgroundColor: theme.colors.SHERPA_BLUE,
+    opacity: 0.2,
+    marginVertical: 16,
+  },
+  pkgSectionHeader: {
+    marginBottom: 20,
+    marginTop: 28,
+    paddingBottom: 5,
+    borderBottomWidth: 0.4,
+    borderBottomColor: theme.colors.LIGHT_BLUE,
+  },
+  morePackageForYourHeader: {
+    marginBottom: 10,
+    marginTop: 10,
+    paddingBottom: 5,
+    borderBottomWidth: 0.4,
+    borderBottomColor: theme.colors.LIGHT_BLUE,
+  },
+  myPkgView: {
+    margin: 5,
+    flexDirection: 'row',
+  },
   changeModeCtaContainer: {
     backgroundColor: '#fff',
     marginVertical: 8,
@@ -419,8 +540,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [symptoms, setSymptoms] = useState<ProceduresAndSymptomsResult[]>([]);
   const [savedSearchedSuggestions, setSearchSuggestions] = useState<string>('');
   const [searchedBucket, setSearchedBucket] = useState<string>('');
+  const [packages, setPackages] = useState<any>([]);
+  const [oneTapPackage, setOneTapPackage] = useState<any | null>(null);
+  const [purchasedPackage, setPurchasedPackage] = useState<any[]>([]);
   const clickedBucket = useRef<string>('');
   const { circlePlanSelected, circleSubscriptionId, circleSubPlanId } = useShoppingCart();
+  const [oneTapPlanTitle, setOneTapPlanTitle] = useState<string>();
   const consultTypeCta = props.navigation?.getParam('consultTypeCta') || '';
 
   useEffect(() => {
@@ -830,6 +955,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           fetchPastSearches();
           callSpecialityAPI();
           fetchConsultedDoctors();
+          getUserSubscriptionsWithBenefits();
+          getPackages();
         } else {
           setshowSpinner(false);
           setshowOfflinePopup(true);
@@ -854,6 +981,136 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     Keyboard.dismiss();
     props.navigation.goBack();
   };
+
+  const getPackages = () => {
+    getConsultWidgetPackages()
+      .then((response) => {
+        const { data: packages } = response?.data || {};
+        if (packages?.length) {
+          const oneTapPackageIndex = packages?.findIndex((pkg: any) =>
+            pkg?.PackagePlanDetails?.some((plan: any) => !!plan?.PackagePlanIsOneTap)
+          );
+
+          if (oneTapPackageIndex > -1) {
+            let oneTapPackage = packages[oneTapPackageIndex];
+
+            setOneTapPlanTitle(
+              oneTapPackage?.PackagePlanDetails.find((plan) => plan.PackagePlanIsOneTap == true)
+                ?.PackagePlanIsOneTapDescription || 'ONE TAP CONSULTATION'
+            );
+
+            setOneTapPackage(oneTapPackage);
+            packages?.splice(oneTapPackageIndex, 1);
+          }
+          setPackages(packages?.slice(0, 3));
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('GetConsultWidget_CmsError', error);
+      });
+  };
+
+  const getUserSubscriptionsWithBenefits = () => {
+    const mobile_number = currentPatient?.mobileNumber;
+    client.query<
+      GetAllUserSubscriptionsWithPlanBenefitsV2,
+      GetAllUserSubscriptionsWithPlanBenefitsV2Variables
+    >({
+      query: GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
+      variables: { mobile_number },
+      fetchPolicy: 'no-cache',
+    });
+    if (mobile_number) {
+      client
+        .query<
+          GetAllUserSubscriptionsWithPlanBenefitsV2,
+          GetAllUserSubscriptionsWithPlanBenefitsV2Variables
+        >({
+          query: GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
+          variables: { mobile_number },
+          fetchPolicy: 'no-cache',
+        })
+        .then((data) => {
+          const groupPlans = data?.data?.GetAllUserSubscriptionsWithPlanBenefitsV2?.response;
+
+          if (!!groupPlans['APOLLO_CONSULT']) {
+            let packages: any[] = [];
+            groupPlans['APOLLO_CONSULT']?.forEach((pkg: any) => {
+              if (
+                //normal package
+                (pkg?.plan_vertical === 'Consult' && pkg?.status === 'active') ||
+                //onetap package
+                (pkg?.plan_vertical === 'Consult' &&
+                  (pkg?.status === 'deferred_active' || pkg?.status === 'active') &&
+                  pkg?.is_one_tap_consultation_plan == true)
+              ) {
+                packages.push({
+                  packageId: pkg?.sub_plan_id,
+                  name: pkg?.name,
+                  booked:
+                    pkg?.benefits?.length > 1
+                      ? pkg?.benefits?.reduce(
+                          (prevBenefit: any, currBenefit: any) =>
+                            prevBenefit?.attribute_type?.used ||
+                            0 + currBenefit?.attribute_type?.used
+                        )
+                      : pkg?.benefits?.[0]?.attribute_type?.used,
+                  validTill: pkg.subscriptionEndDate,
+                  banner: pkg?.post_purchase_background_image_url,
+                });
+              }
+            });
+            setPurchasedPackage(packages);
+          }
+        })
+        .catch((error) => {});
+    }
+  };
+
+  const renderOneTapPackage = () => {
+    return (
+      <TouchableOpacity
+        style={styles.oneTapContainer}
+        onPress={() => {
+          props.navigation.navigate(AppRoutes.ConsultPackageDetail, {
+            planId: oneTapPackage?.PackageIdentifier,
+            isOneTap: true,
+          });
+
+          let eventAttributes = {
+            'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+            'Patient UHID': g(currentPatient, 'uhid'),
+            Relation: g(currentPatient, 'relation'),
+            'Patient age': Math.round(
+              moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+            ),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Mobile Number': g(currentPatient, 'mobileNumber'),
+            'New user': !currentPatient?.isConsulted,
+            'Selling Source': 'onetap_header',
+            'Package Name': 'OneTap',
+          };
+
+          postCleverTapEvent(CleverTapEventName.CONSULT_PACKAGE_CLICKED, eventAttributes);
+        }}
+      >
+        <LinearGradientComponent
+          colors={[theme.colors.PEACH_CREAM, theme.colors.SOAP_STONE]}
+          style={styles.oneTapView}
+        >
+          <OneTapConsult style={styles.oneTapLogo} />
+          <Text style={styles.oneTapText}>
+            {oneTapPlanTitle || string.consultPackages.oneTapConsultation}
+          </Text>
+        </LinearGradientComponent>
+        <View style={styles.oneTapInfoView}>
+          <HTML html={oneTapPackage?.PackageDescription || ''} containerStyle={styles.oneTapInfo} />
+        </View>
+        <ArrowRight style={styles.oneTapArrow} />
+      </TouchableOpacity>
+    );
+  };
+
   const [isOnlineConsultMode, setIsOnlineConsultMode] = useState(
     typeof props.navigation.getParam('isOnlineConsultMode') === 'boolean'
       ? props.navigation.getParam('isOnlineConsultMode')
@@ -895,7 +1152,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       postCleverTapEvent(CleverTapEventName.CONSULT_SELECT_LOCATION, attributes);
     }
   };
-
+  const [locationFlagOnlineConsultation, setLocationFlagOnlineConsultation] = useState<boolean>(
+    isOnlineConsultMode ? false : true
+  );
   const renderSearch = () => {
     const hasError =
       searchText.length > 2 &&
@@ -916,7 +1175,14 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             <LocationOnHeader
               navigation={props.navigation}
               isOnlineConsultMode={isOnlineConsultMode}
-              isSpecialityScreen={isOnlineConsultMode}
+              isSpecialityScreen={isOnlineConsultMode && !locationFlagOnlineConsultation}
+              onLocationChange={
+                isOnlineConsultMode
+                  ? () => {
+                      if (!locationFlagOnlineConsultation) setLocationFlagOnlineConsultation(true);
+                    }
+                  : () => {}
+              }
               goBack={true}
               postSelectLocation={() => postEventClickSelectLocation('', '', 'Speciality Screen')}
               postEventClickSelectLocation={(city) =>
@@ -1033,15 +1299,13 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     } else if (pastSearch && PastSearches.length > 0) {
       return (
         <View style={styles.pastSearches}>
-          <SectionHeaderComponent
-            sectionTitle={'Past Searches'}
-            style={{ marginBottom: 0, marginTop: 10 }}
-          />
           <FlatList
             horizontal={true}
             bounces={false}
+            contentContainerStyle={{ alignItems: 'center' }}
             data={PastSearches}
             onEndReachedThreshold={0.5}
+            ListHeaderComponent={() => <PastIcon style={styles.pastLogo} />}
             renderItem={({ item, index }) => renderRow(item, index)}
             keyExtractor={(_, index) => index.toString()}
             showsHorizontalScrollIndicator={false}
@@ -1060,8 +1324,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           title={(rowData && rowData.name && rowData.name.toUpperCase()) || ''}
           style={[
             styles.listView,
-            rowID === 0 ? { marginLeft: 20 } : null,
-            rowID + 1 === PastSearches.length ? { marginRight: 20 } : null,
+            rowID === 0 ? { marginLeft: 8 } : null,
+            rowID + 1 === PastSearches.length ? { marginRight: 8 } : null,
           ]}
           titleTextStyle={styles.rowTextStyles}
           onPress={() => {
@@ -1097,7 +1361,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                     rowData?.name,
                     'true',
                     '',
-                    isOnlineConsultMode
+                    isOnlineConsultMode && !locationFlagOnlineConsultation
                       ? string.doctor_search_listing.avaliablity
                       : string.doctor_search_listing.location
                   );
@@ -1157,6 +1421,111 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     }
   };
 
+  const renderSpecialityCard = (item: any, index: number) => {
+    let itemSymptom = item!.symptoms || '';
+    itemSymptom = itemSymptom.charAt(0).toUpperCase() + itemSymptom.slice(1); // capitalize first character
+    const symptom = itemSymptom.replace(/,\s*([a-z])/g, (d, e) => ', ' + e.toUpperCase()); // capitalize first character after comma (,)
+
+    return (
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={() => {
+          CommonLogEvent(AppRoutes.DoctorSearch, item.name);
+          if (isOnlineConsultMode || locationDetails) {
+            postSpecialityEvent(item.name, item.id);
+            onClickSearch(
+              item.id,
+              item.name,
+              searchText.length > 2 ? 'true' : 'false',
+              item.specialistPluralTerm || '',
+              isOnlineConsultMode && !locationFlagOnlineConsultation
+                ? string.doctor_search_listing.avaliablity
+                : string.doctor_search_listing.location
+            );
+            const searchInput = {
+              type: SEARCH_TYPE.SPECIALTY,
+              typeId: item.id,
+              patient: currentPatient && currentPatient.id ? currentPatient.id : '',
+            };
+            if (searchText.length > 2) {
+              mutate({
+                variables: {
+                  saveSearchInput: searchInput,
+                },
+              });
+            }
+          } else {
+            props.navigation.navigate(AppRoutes.SelectLocation, {
+              isOnlineConsultMode: isOnlineConsultMode,
+              patientId: g(currentPatient, 'id') || '',
+              patientMobileNumber: g(currentPatient, 'mobileNumber') || '',
+              goBackCallback: (loc: any) => {
+                postSpecialityEvent(item.name, item.id);
+                onClickSearch(
+                  item.id,
+                  item.name,
+                  searchText.length > 2 ? 'true' : 'false',
+                  item.specialistPluralTerm || '',
+                  isOnlineConsultMode
+                    ? string.doctor_search_listing.avaliablity
+                    : string.doctor_search_listing.location
+                );
+                const searchInput = {
+                  type: SEARCH_TYPE.SPECIALTY,
+                  typeId: item.id,
+                  patient: currentPatient && currentPatient.id ? currentPatient.id : '',
+                };
+                if (searchText.length > 2) {
+                  mutate({
+                    variables: {
+                      saveSearchInput: searchInput,
+                    },
+                  });
+                }
+              },
+              postEventClickSelectLocation: (city: string | '') =>
+                postEventClickSelectLocation(item.name, item.id, '', city),
+            });
+          }
+        }}
+        style={styles.topSpecilityCard}
+        key={index}
+      >
+        <View
+          style={{
+            alignItems: 'center',
+            borderBottomWidth: 0.4,
+            borderBottomColor: theme.colors.BORDER_BOTTOM_COLOR,
+            height: 50,
+            justifyContent: 'center',
+          }}
+        >
+          <Text
+            numberOfLines={2}
+            style={Platform.OS === 'ios' ? styles.topSpecialityNameiOS : styles.topSpecialityName}
+          >
+            {item.name}
+          </Text>
+        </View>
+        <View style={{ alignItems: 'center' }}>
+          <Image
+            source={{ uri: item.image }}
+            resizeMode={'contain'}
+            style={{ height: 40, width: 40, marginVertical: 14 }}
+          />
+        </View>
+        <View style={{ alignItems: 'center', height: 30, justifyContent: 'center' }}>
+          <Text numberOfLines={2} style={styles.topSpecialityDescription}>
+            {item.shortDescription}
+          </Text>
+        </View>
+        <View style={{ alignItems: 'center', marginVertical: 12 }}>
+          <Text style={styles.topSpecialityFriendlyname}>{symptom}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   const onSelectSpecialityClicked = () => {
     const attributes: CleverTapEvents[CleverTapEventName.CONSULT_SELECT_SPECIALITY_CLICKED] = {
       'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
@@ -1191,123 +1560,17 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               borderBottomColor: theme.colors.LIGHT_BLUE,
             }}
           />
-          <View
-            style={{ flexDirection: 'row', marginLeft: 20, flexWrap: 'wrap', marginBottom: 20 }}
-          >
-            {TopSpecialities.map((item, index) => {
-              let itemSymptom = item!.symptoms || '';
-              itemSymptom = itemSymptom.charAt(0).toUpperCase() + itemSymptom.slice(1); // capitalize first character
-              const symptom = itemSymptom.replace(/,\s*([a-z])/g, (d, e) => ', ' + e.toUpperCase()); // capitalize first character after comma (,)
+          <View style={{ flexDirection: 'row', marginLeft: 20, flexWrap: 'wrap' }}>
+            {TopSpecialities.slice(0, 4).map((item, index) => {
               return (
                 <Mutation<saveSearch> mutation={SAVE_SEARCH}>
-                  {(mutate, { loading, data, error }) => (
-                    <TouchableOpacity
-                      activeOpacity={1}
-                      onPress={() => {
-                        CommonLogEvent(AppRoutes.DoctorSearch, item.name);
-                        if (isOnlineConsultMode || locationDetails) {
-                          postSpecialityEvent(item.name, item.id);
-                          onClickSearch(
-                            item.id,
-                            item.name,
-                            searchText.length > 2 ? 'true' : 'false',
-                            item.specialistPluralTerm || '',
-                            isOnlineConsultMode
-                              ? string.doctor_search_listing.avaliablity
-                              : string.doctor_search_listing.location
-                          );
-                          const searchInput = {
-                            type: SEARCH_TYPE.SPECIALTY,
-                            typeId: item.id,
-                            patient: currentPatient && currentPatient.id ? currentPatient.id : '',
-                          };
-                          if (searchText.length > 2) {
-                            mutate({
-                              variables: {
-                                saveSearchInput: searchInput,
-                              },
-                            });
-                          }
-                        } else {
-                          props.navigation.navigate(AppRoutes.SelectLocation, {
-                            isOnlineConsultMode: isOnlineConsultMode,
-                            patientId: g(currentPatient, 'id') || '',
-                            patientMobileNumber: g(currentPatient, 'mobileNumber') || '',
-                            goBackCallback: (loc: any) => {
-                              postSpecialityEvent(item.name, item.id);
-                              onClickSearch(
-                                item.id,
-                                item.name,
-                                searchText.length > 2 ? 'true' : 'false',
-                                item.specialistPluralTerm || '',
-                                isOnlineConsultMode
-                                  ? string.doctor_search_listing.avaliablity
-                                  : string.doctor_search_listing.location
-                              );
-                              const searchInput = {
-                                type: SEARCH_TYPE.SPECIALTY,
-                                typeId: item.id,
-                                patient:
-                                  currentPatient && currentPatient.id ? currentPatient.id : '',
-                              };
-                              if (searchText.length > 2) {
-                                mutate({
-                                  variables: {
-                                    saveSearchInput: searchInput,
-                                  },
-                                });
-                              }
-                            },
-                            postEventClickSelectLocation: (city: string | '') =>
-                              postEventClickSelectLocation(item.name, item.id, '', city),
-                          });
-                        }
-                      }}
-                      style={styles.topSpecilityCard}
-                      key={index}
-                    >
-                      <View
-                        style={{
-                          alignItems: 'center',
-                          borderBottomWidth: 0.4,
-                          borderBottomColor: theme.colors.BORDER_BOTTOM_COLOR,
-                          height: 50,
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <Text
-                          numberOfLines={2}
-                          style={
-                            Platform.OS === 'ios'
-                              ? styles.topSpecialityNameiOS
-                              : styles.topSpecialityName
-                          }
-                        >
-                          {item.name}
-                        </Text>
-                      </View>
-                      <View style={{ alignItems: 'center' }}>
-                        <Image
-                          source={{ uri: item.image }}
-                          resizeMode={'contain'}
-                          style={{ height: 40, width: 40, marginVertical: 14 }}
-                        />
-                      </View>
-                      <View style={{ alignItems: 'center', height: 30, justifyContent: 'center' }}>
-                        <Text numberOfLines={2} style={styles.topSpecialityDescription}>
-                          {item.shortDescription}
-                        </Text>
-                      </View>
-                      <View style={{ alignItems: 'center', marginVertical: 12 }}>
-                        <Text style={styles.topSpecialityFriendlyname}>{symptom}</Text>
-                      </View>
-                    </TouchableOpacity>
-                  )}
+                  {(mutate, { loading, data, error }) => renderSpecialityCard(item, index)}
                 </Mutation>
               );
             })}
           </View>
-          <View style={styles.changeModeCtaContainer}>
+          {/* Commenting on temporary basis for the release of 6.1.0 */}
+          {/* <View style={styles.changeModeCtaContainer}>
             <View style={styles.changeModeCtaInnerContainer}>
               <Text style={styles.changeModeText}>
                 {!isOnlineConsultMode
@@ -1321,7 +1584,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 titleTextStyle={{ color: theme.colors.APP_YELLOW }}
               />
             </View>
-          </View>
+          </View> */}
         </View>
       );
     }
@@ -1385,7 +1648,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                     item?.name,
                     searchText.length > 2 ? 'true' : 'false',
                     item?.specialistPluralTerm || '',
-                    isOnlineConsultMode
+                    isOnlineConsultMode && !locationFlagOnlineConsultation
                       ? string.doctor_search_listing.avaliablity
                       : string.doctor_search_listing.location
                   );
@@ -1478,7 +1741,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                     rowData?.name,
                     isSearchResult ? 'true' : 'false',
                     rowData?.specialistPluralTerm || '',
-                    isOnlineConsultMode
+                    isOnlineConsultMode && !locationFlagOnlineConsultation
                       ? string.doctor_search_listing.avaliablity
                       : string.doctor_search_listing.location
                   );
@@ -1988,8 +2251,142 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         postSpecialityEvent={postSpecialityEvent}
         isOnlineConsultMode={isOnlineConsultMode}
         postEventClickSelectLocation={postEventClickSelectLocation}
+        locationFlagOnlineConsultation={locationFlagOnlineConsultation}
       />
     );
+  };
+
+  const renderPackages = () => {
+    return (
+      <View>
+        <SectionHeaderComponent
+          sectionTitle={
+            purchasedPackage.length > 0
+              ? string.consultPackages.morePackagesForYour
+              : string.consultPackages.packagesAndPlans
+          }
+          style={styles.morePackageForYourHeader}
+        />
+        <ScrollView
+          horizontal
+          bounces={false}
+          style={styles.packageList}
+          showsHorizontalScrollIndicator={false}
+        >
+          {packages?.map((pkg: any) => (
+            <TouchableOpacity
+              onPress={() => {
+                props.navigation.navigate(AppRoutes.ConsultPackageDetail, {
+                  planId: pkg?.PackageIdentifier,
+                  isOneTap:
+                    pkg?.PackagePlanDetails?.length > 0 &&
+                    pkg?.PackagePlanDetails[0]?.PackagePlanIsOneTap,
+                });
+
+                let eventAttributes = {
+                  'Patient name': `${g(currentPatient, 'firstName')} ${g(
+                    currentPatient,
+                    'lastName'
+                  )}`,
+                  'Patient UHID': g(currentPatient, 'uhid'),
+                  Relation: g(currentPatient, 'relation'),
+                  'Patient age': Math.round(
+                    moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+                  ),
+                  'Patient gender': g(currentPatient, 'gender'),
+                  'Mobile Number': g(currentPatient, 'mobileNumber'),
+                  'New user': !currentPatient?.isConsulted,
+                  'Selling Source': 'banner',
+                  'Package Name': pkg?.PackageIdentifier,
+                };
+
+                postCleverTapEvent(CleverTapEventName.CONSULT_PACKAGE_CLICKED, eventAttributes);
+              }}
+            >
+              <Image
+                resizeMode={'stretch'}
+                style={styles.packageBanner}
+                source={{ uri: pkg?.PackageSpecialityBanner }}
+              />
+            </TouchableOpacity>
+          ))}
+          <Button
+            title={string.consultPackages.viewALL}
+            style={styles.viewAllBtn}
+            onPress={() => {
+              props.navigation.navigate(AppRoutes.ConsultPackageList);
+            }}
+          />
+        </ScrollView>
+      </View>
+    );
+  };
+
+  const renderMySpecialtyPackage = (pkg: any) => {
+    return (
+      <TouchableOpacity
+        style={styles.mySpecialtyPackageContainer}
+        onPress={() => {
+          props.navigation.navigate(AppRoutes.ConsultPackagePostPurchase, {
+            planId: pkg?.packageId,
+            onSubscriptionCancelled: () => {
+              props.navigation.goBack();
+            },
+          });
+        }}
+      >
+        {/* bg image  */}
+        <ImageBackground source={{ uri: pkg?.banner }} style={styles.bannerBackground}>
+          <Text style={styles.packageTitle}>{pkg?.name} </Text>
+        </ImageBackground>
+        <View style={styles.myPkgView}>
+          <View style={styles.packageInfoContainer}>
+            <Text style={styles.consultationBookedTitle}>
+              {string.consultPackages.bookedConsult}
+            </Text>
+            <Text style={styles.consultationBooked}>{pkg?.booked || 0}</Text>
+          </View>
+          <View style={styles.vericalSeparator} />
+          <View style={styles.packageInfoContainer}>
+            <Text style={styles.validTillTitle}>{string.consultPackages.validTill}</Text>
+            <Text style={styles.validTill}>{moment(pkg?.validTill).format('D MMM YYYY')} </Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderPurchasedPackage = () => {
+    return (
+      <View>
+        <SectionHeaderComponent
+          sectionTitle={string.consultPackages.myPackages}
+          style={styles.pkgSectionHeader}
+        />
+        {purchasedPackage?.map((pkg) => renderMySpecialtyPackage(pkg))}
+      </View>
+    );
+  };
+
+  const renderRemainingSpecialities = () => {
+    if (
+      TopSpecialities &&
+      TopSpecialities.length > 0 &&
+      displaySpeialist &&
+      searchText.length < 3
+    ) {
+      return (
+        <View style={{ flexDirection: 'row', marginLeft: 20, flexWrap: 'wrap', marginBottom: 20 }}>
+          {TopSpecialities.slice(4).map((item, index) => {
+            return (
+              <Mutation<saveSearch> mutation={SAVE_SEARCH}>
+                {(mutate, { loading, data, error }) => renderSpecialityCard(item, index)}
+              </Mutation>
+            );
+          })}
+        </View>
+      );
+    }
   };
 
   return (
@@ -2018,8 +2415,20 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 ) : (
                   <View>
                     {renderPastSearch()}
-                    {renderSpecialityText()}
+                    {searchText?.length < 3 && oneTapPackage && renderOneTapPackage()}
+                    {searchText?.length < 3 &&
+                      !!packages?.length &&
+                      !purchasedPackage?.length &&
+                      renderPackages()}
                     {renderTopSpecialities()}
+                    {searchText?.length < 3 &&
+                      !!purchasedPackage?.length &&
+                      renderPurchasedPackage()}
+                    {searchText?.length < 3 &&
+                      !!packages?.length &&
+                      !!purchasedPackage?.length &&
+                      renderPackages()}
+                    {renderRemainingSpecialities()}
                     {renderSpecialist()}
                     {renderDoctorSearches()}
                     {renderProcedures()}

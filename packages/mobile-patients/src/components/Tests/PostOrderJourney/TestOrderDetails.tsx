@@ -163,7 +163,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const scrollViewRef = React.useRef<ScrollView | null>(null);
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
-  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY);
+  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
+    CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY
+  );
   const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
     if (item?.ctaCityId == Number(diagnosticServiceabilityData?.cityId)) {
       if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY)) {
@@ -183,9 +185,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: setY, animated: true });
   };
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
-  const {
-    diagnosticServiceabilityData,
-  } = useAppCommonData();
+  const { diagnosticServiceabilityData } = useAppCommonData();
   //for showing the order level status.
   const fetchOrderLevelStatus = (orderId: string) =>
     client.query<getHCOrderFormattedTrackingHistory, getHCOrderFormattedTrackingHistoryVariables>({
@@ -1310,8 +1310,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           uri={selectedOrder?.labReportURL ? selectedOrder?.labReportURL : ''}
           order={selectedOrder}
           isReport={true}
-          onPressClose={()=>{
-            setShowViewReportModal(false)
+          onPressClose={() => {
+            setShowViewReportModal(false);
           }}
         />
       </View>
@@ -1511,6 +1511,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         onPressCross={() => {
           setSlideCallToOrder(true);
         }}
+        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY}
       />
     ) : null;
   };

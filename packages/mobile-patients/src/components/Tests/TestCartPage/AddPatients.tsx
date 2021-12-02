@@ -391,7 +391,6 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       cartItems?.filter((cItem) => !disabledCartItemIds?.find((dItem) => dItem == cItem?.id))
     );
   };
-  
 
   const removeDisabledPatientCartItems = (disabledCartItemIds: string[]) => {
     hideAphAlert?.();

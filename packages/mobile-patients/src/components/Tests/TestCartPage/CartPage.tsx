@@ -1579,7 +1579,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
             ? getCurrentPatientItem.concat(widgetSelectedItem)
             : [widgetSelectedItem];
           addPatientCartItem?.(item?.id, allItems!);
-          updateUnselectedPatientsCart(item);
         });
         updateUnselectedPatientsCart(selectedPatientList);
       }
@@ -1675,6 +1674,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         onPressCross={() => {
           setSlideCallToOrder(true);
         }}
+        pageId = {CALL_TO_ORDER_CTA_PAGE_ID.TESTCART}
       />
     ) : null;
   };

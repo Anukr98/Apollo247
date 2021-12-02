@@ -1,6 +1,7 @@
 import moment from 'moment';
 import {
   g,
+  PAGE_ID_TYPE,
   postAppsFlyerEvent,
   postCleverTapEvent,
   postFirebaseEvent,
@@ -836,6 +837,30 @@ export function DiagnosticViewReportClicked(
   }
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED, eventAttributes);
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED, eventAttributes);
+}
+
+export function DiagnosticCallToOrderClicked(
+  page: PAGE_ID_TYPE,
+  currentPatient?: any,
+  sectionName?: string,
+  itemId?: string,
+  itemName?: string,
+  city?: string,
+  isDiagnosticCircleSubscription?: boolean | undefined
+) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
+  const eventAttributes:
+    | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_CALL_TO_ORDER_CLICKED] = {
+    ...getPatientAttributes,
+    'Mobile Number': currentPatient?.mobileNumber,
+    'Page': page,
+    'Section Name': sectionName,
+    'ItemId': itemId,
+    'ItemName': itemName,
+    'Patient City': city,
+    'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+  };
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_CALL_TO_ORDER_CLICKED, eventAttributes);
 }
 
 export function DiagnosticTrackPhleboClicked(

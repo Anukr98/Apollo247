@@ -158,6 +158,13 @@ import { SubmittedPrescription } from '@aph/mobile-patients/src/components/Tests
 import { SpecialOffersScreen } from '@aph/mobile-patients/src/components/SpecialOffers/SpecialOffers';
 import { PaymentConfirmation } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentConfirmaiton';
 import { ConsultPaymentScreen } from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/ConsultPaymentScreen';
+import { ConsultPackageList } from '@aph/mobile-patients/src/components/Consult/ConsultPackageList';
+import { ConsultPackageDetail } from '@aph/mobile-patients/src/components/Consult/ConsultPackageDetail';
+import { ConsultPackagePostPurchase } from '@aph/mobile-patients/src/components/Consult/ConsultPackagePostPurchase';
+import { ConsultPackageCancellation } from '@aph/mobile-patients/src/components/Consult/ConsultPackageCancellation';
+import { PackageCheckout } from '@aph/mobile-patients/src/components/Consult/PackageCheckout';
+import { PackagePaymentStatus } from '@aph/mobile-patients/src/components/Consult/PackagePaymentStatus';
+import { ConfirmPackageConsult } from '@aph/mobile-patients/src/components/ConsultRoom/ConfirmPackageConsult';
 import { AskApolloQuickBook } from '@aph/mobile-patients/src/components/Consult/AskApolloQuickBook';
 import { SelectLocation } from '@aph/mobile-patients/src/components/ui/SelectLocation';
 import { ShareReferLink } from '@aph/mobile-patients/src/components//ReferAndEarn/ShareReferLink';
@@ -313,6 +320,13 @@ export enum AppRoutes {
   SpecialOffersScreen = 'SpecialOffersScreen',
   PaymentConfirmation = 'PaymentConfirmation',
   ConsultPaymentScreen = 'ConsultPaymentScreen',
+  ConsultPackageList = 'ConsultPackageList',
+  ConsultPackageDetail = 'ConsultPackageDetail',
+  ConsultPackagePostPurchase = 'ConsultPackagePostPurchase',
+  ConsultPackageCancellation = 'ConsultPackageCancellation',
+  PackageCheckout = 'PackageCheckout',
+  PackagePaymentStatus = 'PackagePaymentStatus',
+  ConfirmPackageConsult = 'ConfirmPackageConsult',
   AskApolloQuickBook = 'AskApolloQuickBook',
   SelectLocation = 'SelectLocation',
   ShareReferLink = 'ShareReferLink',
@@ -796,6 +810,27 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ConsultPaymentScreen]: {
     screen: ConsultPaymentScreen,
+  },
+  [AppRoutes.ConsultPackageList]: {
+    screen: ConsultPackageList,
+  },
+  [AppRoutes.ConsultPackageDetail]: {
+    screen: ConsultPackageDetail,
+  },
+  [AppRoutes.ConsultPackagePostPurchase]: {
+    screen: ConsultPackagePostPurchase,
+  },
+  [AppRoutes.ConsultPackageCancellation]: {
+    screen: ConsultPackageCancellation,
+  },
+  [AppRoutes.PackageCheckout]: {
+    screen: PackageCheckout,
+  },
+  [AppRoutes.PackagePaymentStatus]: {
+    screen: PackagePaymentStatus,
+  },
+  [AppRoutes.ConfirmPackageConsult]: {
+    screen: ConfirmPackageConsult,
   },
   [AppRoutes.AskApolloQuickBook]: {
     screen: AskApolloQuickBook,

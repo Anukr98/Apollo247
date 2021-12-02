@@ -66,7 +66,7 @@ export const RefererFAQ: React.FC<RefererFAQProps> = (props) => {
       <SafeAreaView style={styles.container}>
         <Header
           leftIcon="backArrow"
-          title="FAQ's"
+          title="FAQs"
           onPressLeftIcon={() => navigation.goBack()}
           container={{
             borderColor: 'transparent',
