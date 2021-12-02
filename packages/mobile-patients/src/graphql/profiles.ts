@@ -2823,6 +2823,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS_BY_MOBILE = gql`
         displayId
         bookingDate
         caseSheet {
+          prismFileId
           notes
           blobName
           consultType
