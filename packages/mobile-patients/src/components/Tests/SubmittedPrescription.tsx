@@ -18,7 +18,7 @@ import {
 import { NavigationScreenProps } from 'react-navigation';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import _ from 'lodash';
+import _, { isArray } from 'lodash';
 import {
   useShoppingCart,
   PhysicalPrescription,
@@ -350,7 +350,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
 
     const concatendatedUrl = allUrls?.map((item: any, index: number) => `${index + 1} - ${item}`);
     const urlToUse = EPrescriptionsProps?.length > 0 ? concatendatedUrl : url;
-    const newUrl = urlToUse?.join(' ');
+    const newUrl = isArray(urlToUse) ? urlToUse?.join(' ') : url;
 
     DiagnosticPrescriptionSubmitted(
       currentPatient,
