@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
     width: 65,
     height: 60,
     position: 'absolute',
-    zIndex: 900,
+    zIndex: 3,
     left: 5,
     bottom: 20,
     alignItems: 'center',
