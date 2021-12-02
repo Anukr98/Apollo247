@@ -323,8 +323,8 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           if (orderResponse?.data) {
             const orderData = orderResponse?.data;
             const { orders } = orderData;
-            postwebEngageSubmitPrescriptionEvent(orders?.orderAutoId);
-            renderSuccessPopup(orders?.orderAutoId);
+            postwebEngageSubmitPrescriptionEvent(orders?.[0]?.orderAutoId);
+            renderSuccessPopup(orders?.[0]?.orderAutoId);
           }
         })
         .catch((error) => {
