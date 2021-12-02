@@ -3,7 +3,7 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { DiagnosticCallToOrderClicked } from '@aph/mobile-patients/src/components/Tests/Events';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -24,7 +24,7 @@ interface CallToOrderViewProps {
   itemId?: string;
   itemName?: string;
 }
-
+const { width, height } = Dimensions.get('window');
 export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
   const {
     cartItems,
@@ -43,6 +43,7 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
+  let ctaText = string.CallToOrder.callToOrderText;
   const ctaDetailMatched = isDiagnosticLocationServiceable
     ? ctaDetailArray?.filter((item: any) => {
         if (item?.ctaCityId == cityId) {
@@ -55,6 +56,9 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
   const phoneNumber = ctaDetailMatched?.[0]?.ctaPhoneNumber
     ? ctaDetailMatched?.[0]?.ctaPhoneNumber
     : callToOrderDetails?.ctaDetailsDefault?.ctaPhoneNumber;
+  ctaText = ctaDetailMatched?.[0]?.ctaText
+    ? ctaDetailMatched?.[0]?.ctaText
+    : callToOrderDetails?.ctaDetailsDefault?.ctaText;
   const onPressCallToOrderCta = () => {
     postCleverTapEvent();
     Linking.openURL(`tel:${phoneNumber}`);
@@ -78,6 +82,7 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
       isDiagnosticLocationServiceable
     );
   };
+
   return ctaDelaySeconds == 0 ? (
     <>
       <View style={[styles.container, containerStyle]}>
@@ -97,8 +102,16 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
               onPressCallToOrderCta();
             }}
           >
-            <WhiteCall style={styles.whiteCallIcon} />
-            <Text style={styles.callToOrderText}>{string.CallToOrder.callToOrderText}</Text>
+            <View style={styles.whiteCallView}>
+              <WhiteCall style={styles.whiteCallIcon} />
+            </View>
+            <Text
+              style={[styles.callToOrderText, { paddingLeft: ctaText?.length < 15 ? 20 : 10 }]}
+              ellipsizeMode={'tail'}
+              numberOfLines={1}
+            >
+              {ctaText}
+            </Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
@@ -139,6 +152,8 @@ const styles = StyleSheet.create({
   callToOrderText: {
     ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1),
     paddingHorizontal: 10,
+    width: 'auto',
+    maxWidth: '90%',
   },
   fullView: {
     flexDirection: 'row',
@@ -146,7 +161,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: theme.colors.DARK_BLUE,
     height: 50,
-    width: 150,
+    width: 'auto',
+    maxWidth: width - 100,
     borderBottomRightRadius: 10,
     borderTopRightRadius: 10,
   },
@@ -164,6 +180,10 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     paddingHorizontal: 10,
+  },
+  whiteCallView: {
+    width: '10%',
+    padding: 10,
   },
   blueCrossView: { marginLeft: -10, marginTop: -10 },
   blueCrossIcon: { width: 20, height: 20 },
