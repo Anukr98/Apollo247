@@ -2294,7 +2294,7 @@ export interface CartInputData {
   longitude?: number | null;
   patientAddressId?: string | null;
   coupon?: string | null;
-  prescriptionDetails?: CartPrescriptionDetails | null;
+  prescriptionDetails?: (CartPrescriptionDetails | null)[] | null;
   prescriptionType?: PrescriptionType | null;
   subscription?: CartSubscription | null;
 }

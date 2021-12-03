@@ -305,7 +305,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     addCartItem,
     cartAddressId,
   } = useShoppingCart();
-  const { setUserActionPayload, fetchServerCart } = useServerCart();
+  const {
+    setUserActionPayload,
+    fetchServerCart,
+    uploadEPrescriptionsToServerCart,
+  } = useServerCart();
   const {
     cartItems: diagnosticCartItems,
     setIsDiagnosticCircleSubscription,
@@ -1316,22 +1320,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           if (selectedEPres?.length == 0) {
             return;
           }
-          selectedEPres.forEach((presToAdd) => {
-            setUserActionPayload?.({
-              prescriptionDetails: {
-                prescriptionImageUrl: presToAdd.uploadedUrl,
-                prismPrescriptionFileId: presToAdd.prismPrescriptionFileId,
-                uhid: currentPatient?.id,
-                appointmentId: presToAdd.appointmentId,
-                meta: {
-                  doctorName: presToAdd?.doctorName,
-                  forPatient: presToAdd?.forPatient,
-                  medicines: presToAdd?.medicines,
-                  date: presToAdd?.date,
-                },
-              },
-            });
-          });
+          uploadEPrescriptionsToServerCart(selectedEPres);
           props.navigation.navigate(AppRoutes.UploadPrescription, {
             ePrescriptionsProp: selectedEPres,
             type: 'E-Prescription',

@@ -309,24 +309,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           ? `${prescriptionOption}, ${userComment}`?.trim()
           : prescriptionOption;
 
-      // [...uploadedPhyPrescriptions, ...e_Prescription].forEach((presToAdd) => {
-      //   setUserActionPayload?.({
-      //     prescriptionType: PrescriptionType.UPLOADED,
-      //     prescriptionDetails: {
-      //       prescriptionImageUrl: presToAdd?.uploadedUrl || presToAdd?.filePath,
-      //       prismPrescriptionFileId: presToAdd?.prismPrescriptionFileId || presToAdd?.fileId,
-      //       uhid: currentPatient?.id,
-      //       appointmentId: presToAdd?.appointmentId,
-      //       meta: {
-      //         doctorName: presToAdd?.doctorName,
-      //         forPatient: presToAdd?.forPatient,
-      //         medicines: presToAdd?.medicines,
-      //         date: presToAdd?.date,
-      //       },
-      //     },
-      //   });
-      // });
-
       // const prescriptionMedicineInput: savePrescriptionMedicineOrderOMSVariables = {
       //   prescriptionMedicineOMSInput: {
       //     patientId: (currentPatient && currentPatient.id) || '',
@@ -981,23 +963,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     ) : null;
 
   const onPressProceed = () => {
-    [...PhysicalPrescriptionsProps, ...EPrescriptionsProps].forEach((presToAdd) => {
-      setUserActionPayload?.({
-        prescriptionType: PrescriptionType.UPLOADED,
-        prescriptionDetails: {
-          prescriptionImageUrl: presToAdd?.uploadedUrl,
-          prismPrescriptionFileId: presToAdd?.prismPrescriptionFileId,
-          uhid: currentPatient?.id,
-          appointmentId: presToAdd?.appointmentId,
-          meta: {
-            doctorName: presToAdd?.doctorName,
-            forPatient: presToAdd?.forPatient,
-            medicines: presToAdd?.medicines,
-            date: presToAdd?.date,
-          },
-        },
-      });
-    });
     props.navigation.navigate(AppRoutes.MedicineSearch, {
       showButton: true,
       isReUpload: isComingFromReUpload,

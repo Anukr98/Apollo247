@@ -370,7 +370,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
 
   const { pharmacyUserTypeAttribute } = useAppCommonData();
   const { pharmacyCircleAttributes, circleSubscriptionId } = useShoppingCart();
-  const { setUserActionPayload } = useServerCart();
+  const { setUserActionPayload, uploadEPrescriptionsToServerCart } = useServerCart();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -1018,20 +1018,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             ],
           });
         });
-        setUserActionPayload?.({
-          prescriptionDetails: {
-            prescriptionImageUrl: presToAdd.uploadedUrl,
-            prismPrescriptionFileId: presToAdd.prismPrescriptionFileId,
-            uhid: currentPatient?.id,
-            appointmentId: presToAdd.appointmentId,
-            meta: {
-              doctorName: presToAdd?.doctorName,
-              forPatient: presToAdd?.forPatient,
-              medicines: presToAdd?.medicines,
-              date: presToAdd?.date,
-            },
-          },
-        });
+        uploadEPrescriptionsToServerCart([presToAdd]);
         setLoading?.(false);
         postCleverTapUploadPrescriptionEvents('Health Records', 'Cart');
         props.navigation.push(AppRoutes.ServerCart);
@@ -1045,20 +1032,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       }
       return;
     }
-    setUserActionPayload?.({
-      prescriptionDetails: {
-        prescriptionImageUrl: presToAdd.uploadedUrl,
-        prismPrescriptionFileId: presToAdd.prismPrescriptionFileId,
-        uhid: currentPatient?.id,
-        appointmentId: presToAdd.appointmentId,
-        meta: {
-          doctorName: presToAdd?.doctorName,
-          forPatient: presToAdd?.forPatient,
-          medicines: presToAdd?.medicines,
-          date: presToAdd?.date,
-        },
-      },
-    });
+    uploadEPrescriptionsToServerCart([presToAdd]);
     postCleverTapUploadPrescriptionEvents('Health Records', 'Non-Cart');
     props.navigation.navigate(AppRoutes.UploadPrescription, {
       ePrescriptionsProp: [presToAdd],

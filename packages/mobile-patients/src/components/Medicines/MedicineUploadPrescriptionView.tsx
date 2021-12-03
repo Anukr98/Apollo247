@@ -97,7 +97,11 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
     deliveryAddressId,
     setDeliveryAddressId,
   } = useShoppingCart();
-  const { setUserActionPayload, uploadPhysicalPrescriptionsToServerCart } = useServerCart();
+  const {
+    uploadPhysicalPrescriptionsToServerCart,
+    removePrescriptionFromCart,
+    uploadEPrescriptionsToServerCart,
+  } = useServerCart();
 
   const renderLabel = (label: string, rightText?: string) => {
     return (
@@ -212,12 +216,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
               }}
               onPress={() => {
                 CommonLogEvent('MEDICINE_UPLOAD_PRESCRIPTION', `removePhysicalPrescription`);
-                setUserActionPayload?.({
-                  prescriptionDetails: {
-                    prismPrescriptionFileId: item?.prismPrescriptionFileId,
-                    prescriptionImageUrl: '',
-                  },
-                });
+                removePrescriptionFromCart(item?.prismPrescriptionFileId);
               }}
             >
               <CrossYellow />
@@ -238,22 +237,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
           if (selectedEPres.length == 0) {
             return;
           }
-          selectedEPres.forEach((presToAdd) => {
-            setUserActionPayload?.({
-              prescriptionDetails: {
-                prescriptionImageUrl: presToAdd.uploadedUrl,
-                prismPrescriptionFileId: presToAdd.prismPrescriptionFileId,
-                uhid: currentPatient?.id,
-                appointmentId: presToAdd.appointmentId,
-                meta: {
-                  doctorName: presToAdd?.doctorName,
-                  forPatient: presToAdd?.forPatient,
-                  medicines: presToAdd?.medicines,
-                  date: presToAdd?.date,
-                },
-              },
-            });
-          });
+          uploadEPrescriptionsToServerCart(selectedEPres);
         }}
         selectedEprescriptionIds={ePrescriptions.map((item) => item.id)}
         isVisible={isSelectPrescriptionVisible}
@@ -275,12 +259,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
         forPatient={item.forPatient}
         onRemove={() => {
           if (!isTest) {
-            setUserActionPayload({
-              prescriptionDetails: {
-                prismPrescriptionFileId: item?.prismPrescriptionFileId,
-                prescriptionImageUrl: '',
-              },
-            });
+            removePrescriptionFromCart(item?.prismPrescriptionFileId);
           }
         }}
       />

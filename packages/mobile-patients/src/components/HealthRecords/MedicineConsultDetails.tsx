@@ -15,7 +15,10 @@ import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import RNFetchBlob from 'rn-fetch-blob';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import {
+  EPrescription,
+  useShoppingCart,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import moment from 'moment';
@@ -63,7 +66,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   const prismFile = props.navigation.state.params
     ? props.navigation.state.params.prismPrescriptionFileId
     : '';
-  const { setUserActionPayload } = useServerCart();
+  const { setUserActionPayload, uploadEPrescriptionsToServerCart } = useServerCart();
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const [pdfUri, setPDFUri] = useState<string>('');
@@ -125,21 +128,17 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           ],
         });
         if (medicineDetails.is_prescription_required == '1') {
-          setUserActionPayload?.({
-            prescriptionType: PrescriptionType.UPLOADED,
-            prescriptionDetails: {
-              prescriptionImageUrl: arr?.[0],
-              prismPrescriptionFileId: prismFile,
-              uhid: currentPatient?.id,
-              meta: {
-                doctorName: `Meds Rx ${(data?.id && data?.id.substring(0, data?.id.indexOf('-'))) ||
-                  ''}`,
-                forPatient: currentPatient?.firstName,
-                medicines: data?.medicineName,
-                date: moment(me).format('DD MMMM YYYY'),
-              },
-            },
-          });
+          const presToAdd: EPrescription = {
+            uploadedUrl: arr?.[0],
+            id: prismFile,
+            prismPrescriptionFileId: prismFile,
+            doctorName: `Meds Rx ${(data?.id && data?.id.substring(0, data?.id.indexOf('-'))) ||
+              ''}`,
+            forPatient: currentPatient?.firstName,
+            medicines: data?.medicineName,
+            date: moment(me).format('DD MMMM YYYY'),
+          };
+          uploadEPrescriptionsToServerCart([presToAdd]);
         }
 
         const eventAttributes: WebEngageEvents[WebEngageEventName.RE_ORDER_MEDICINE] = {

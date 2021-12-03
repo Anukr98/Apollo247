@@ -16,7 +16,10 @@ export interface UploadPrescriptionProps extends NavigationScreenProps {
 
 export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => {
   const { ePrescriptions } = useShoppingCart();
-  const { setUserActionPayload, uploadPhysicalPrescriptionsToServerCart } = useServerCart();
+  const {
+    uploadEPrescriptionsToServerCart,
+    uploadPhysicalPrescriptionsToServerCart,
+  } = useServerCart();
   const { currentPatient } = useAllCurrentPatients();
   const { showPopUp, onClickClose, type, onUpload } = props;
   const [showEprescriptionUpload, setshowEprescriptionUpload] = useState<boolean>(false);
@@ -64,22 +67,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           if (selectedEPres.length == 0) {
             return;
           }
-          selectedEPres.forEach((presToAdd) => {
-            setUserActionPayload?.({
-              prescriptionDetails: {
-                prescriptionImageUrl: presToAdd.uploadedUrl,
-                prismPrescriptionFileId: presToAdd.prismPrescriptionFileId,
-                uhid: currentPatient?.id,
-                appointmentId: presToAdd.appointmentId,
-                meta: {
-                  doctorName: presToAdd?.doctorName,
-                  forPatient: presToAdd?.forPatient,
-                  medicines: presToAdd?.medicines,
-                  date: presToAdd?.date,
-                },
-              },
-            });
-          });
+          uploadEPrescriptionsToServerCart(selectedEPres);
         }}
         selectedEprescriptionIds={ePrescriptions.map((item) => item.id)}
         isVisible={showEprescriptionUpload}

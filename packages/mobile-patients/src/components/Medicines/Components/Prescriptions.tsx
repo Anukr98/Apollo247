@@ -25,7 +25,7 @@ export interface PrescriptionsProps {
 }
 
 export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
-  const { setUserActionPayload } = useServerCart();
+  const { removePrescriptionFromCart } = useServerCart();
   const { onPressUploadMore, screen, style, physicalPrescriptions, ePrescriptions } = props;
 
   const renderHeader = () => {
@@ -60,12 +60,7 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
         i={i}
         arrayLength={arrayLength}
         onRemove={() => {
-          setUserActionPayload?.({
-            prescriptionDetails: {
-              prismPrescriptionFileId: item?.prismPrescriptionFileId,
-              prescriptionImageUrl: '',
-            },
-          });
+          removePrescriptionFromCart(item?.prismPrescriptionFileId);
         }}
         showTick={true}
       />
@@ -98,12 +93,7 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
         doctorName={item.doctorName}
         forPatient={item.forPatient}
         onRemove={() => {
-          setUserActionPayload({
-            prescriptionDetails: {
-              prismPrescriptionFileId: item?.prismPrescriptionFileId,
-              prescriptionImageUrl: '',
-            },
-          });
+          removePrescriptionFromCart(item?.prismPrescriptionFileId);
         }}
         showTick={true}
       />

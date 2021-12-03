@@ -19,11 +19,9 @@ export const updatePrescriptionUrls = async (
   patientId: string,
   prescriptions: PhysicalPrescription[]
 ) => {
-  const presWithUrl = prescriptions.filter((item) => !item.uploadedUrl);
-  const presWithoutUrl = prescriptions.filter((item) => item.uploadedUrl);
-  if (presWithUrl.length) {
+  if (prescriptions.length) {
     const uploadedPresResult = await uploadDocuments(client, patientId, prescriptions);
-    const newUploadedPres = presWithUrl.map(
+    const newUploadedPres = prescriptions.map(
       (item, index) =>
         ({
           ...item,
@@ -31,7 +29,7 @@ export const updatePrescriptionUrls = async (
           prismPrescriptionFileId: uploadedPresResult[index].data?.uploadDocument?.fileId,
         } as PhysicalPrescription)
     );
-    return Promise.resolve([...newUploadedPres, ...presWithoutUrl]);
+    return Promise.resolve([...newUploadedPres]);
   } else {
     return Promise.resolve(prescriptions);
   }
