@@ -58,7 +58,6 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
-  CALL_TO_ORDER_CTA_PAGE_ID,
   DEVICETYPE,
   diagnosticLineItem,
   DiagnosticLineItem,

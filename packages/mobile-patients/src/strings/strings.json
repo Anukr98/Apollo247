@@ -220,8 +220,8 @@
     "proceedToCancel": "PROCEED TO CANCEL",
     "proceedToReschedule": "PROCEED TO RESCHEDULE",
     "cancel":"Cancel",
-    "reschedule":"Reschedule"
-
+    "reschedule":"Reschedule",
+    "noSlot":"Sorry! No Slots are Available"
   },
   "components": {
     "medicineDetails": {
@@ -737,7 +737,9 @@
     "similarPackages":"Similar Packages",
     "needToAddPaitent":"• Do you want to edit patient details?",
     "needToAddOrder":"• Do you want to add tests to your order?",
-    "radiology": "radiology"
+    "radiology": "radiology",
+    "prescriptionUploaded": "Prescription Uploaded",
+    "homepagePastOrderRecommendations":"Recommended for You"
   },
   "diagnosticCategoryTitle": {
     "category": "category",
@@ -766,9 +768,6 @@
     "additionalAmount": "Additional amount that needs to be paid",
     "totalCharges": "Total charges",
     "reviewPagePolicyText":"By confirming the order, you agree to receive recommendations for relevant tests/packages from our lab personnel."
-  },
-  "diagnosticsOrders":{
-    "noSlot":"Sorry! No Slots are Available"
   },
   "orders": {
     "urOrders": "MY ORDERS",
