@@ -28,6 +28,7 @@ export const useServerCart = () => {
     setAddresses,
     deliveryAddressId,
     setDeliveryAddressId,
+    setNoOfShipments,
   } = useShoppingCart();
   const { setPharmacyLocation } = useAppCommonData();
   const [userActionPayload, setUserActionPayload] = useState<any>(null);
@@ -59,10 +60,7 @@ export const useServerCart = () => {
         }
         if (saveCartResponse?.data?.patientId) {
           const cartResponse = saveCartResponse?.data;
-          console.log(
-            '======= saveServerCart result: ',
-            JSON.stringify(cartResponse?.couponDetails)
-          );
+          console.log('======= saveServerCart result: ', JSON.stringify(cartResponse));
           setCartValues(cartResponse);
         }
       })
@@ -143,6 +141,7 @@ export const useServerCart = () => {
       setCartPrescriptions?.(cartResponse?.prescriptionDetails);
       setCartAddressId?.('83e7f3b8-ba4e-44c1-8a5d-d211def51941');
       setCartSubscriptionDetails?.(cartResponse?.subscriptionDetails);
+      setNoOfShipments?.(cartResponse?.noOfShipments);
     } catch (error) {}
   };
 

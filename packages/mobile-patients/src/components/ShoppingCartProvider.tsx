@@ -181,6 +181,8 @@ export interface ShoppingCartContextProps {
   setIsSplitCart: ((value: boolean) => void) | null;
   cartSubscriptionDetails: saveCart_saveCart_data_subscriptionDetails | null;
   setCartSubscriptionDetails: ((value: saveCart_saveCart_data_subscriptionDetails) => void) | null;
+  noOfShipments: number;
+  setNoOfShipments: ((shipments: number) => void) | null;
   // server cart values stop
   cartItems: ShoppingCartItem[];
   setCartItems: ((items: ShoppingCartItem[]) => void) | null;
@@ -353,6 +355,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setIsSplitCart: null,
   cartSubscriptionDetails: null,
   setCartSubscriptionDetails: null,
+  noOfShipments: 0,
+  setNoOfShipments: null,
 
   cartItems: [],
   setCartItems: null,
@@ -530,6 +534,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [cartSubscriptionDetails, setCartSubscriptionDetails] = useState<
     ShoppingCartContextProps['cartSubscriptionDetails']
   >(null);
+  const [noOfShipments, setNoOfShipments] = useState<ShoppingCartContextProps['noOfShipments']>(0);
 
   const [cartItems, _setCartItems] = useState<ShoppingCartContextProps['cartItems']>([]);
   const [couponDiscount, setCouponDiscount] = useState<ShoppingCartContextProps['couponDiscount']>(
@@ -1404,6 +1409,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setIsSplitCart,
         cartSubscriptionDetails,
         setCartSubscriptionDetails,
+        noOfShipments,
+        setNoOfShipments,
 
         cartItems,
         setCartItems,
