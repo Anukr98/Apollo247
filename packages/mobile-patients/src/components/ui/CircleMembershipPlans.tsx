@@ -296,11 +296,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     }
   };
   const onPressMembershipPlans = (index: number) => {
-    fireMembershipPlanSelected();
-
     const membershipPlan = membershipPlans?.[index];
-    setCirclePlanSelected && setCirclePlanSelected(membershipPlan);
-    AsyncStorage.setItem('circlePlanSelected', JSON.stringify(membershipPlan));
     if (source === 'Pharma Cart') {
       postAppsFlyerCircleAddRemoveCartEvent(
         membershipPlan,
@@ -308,8 +304,15 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         'add',
         currentPatient
       );
-    }
-    if (isConsultJourney) {
+      setUserActionPayload?.({
+        subscription: {
+          planId: PLAN_ID.CIRCLEPlan,
+          subPlanId: membershipPlan?.subPlanId,
+          TYPE: PLAN.CARE_PLAN,
+          subscriptionApplied: true,
+        },
+      });
+    } else if (isConsultJourney) {
       !isModal &&
         circleWebEngageEventForAddToCart(
           WebEngageEventName.VC_NON_CIRCLE_ADDS_CART,
@@ -322,17 +325,21 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
       !isModal && fireCirclePlanToCartEvent(membershipPlan);
       setCircleMembershipCharges && setCircleMembershipCharges(membershipPlan?.currentSellingPrice);
-      setUserActionPayload?.({
-        subscription: {
-          planId: PLAN_ID.CIRCLEPlan,
-          subPlanId: membershipPlan?.subPlanId,
-          TYPE: PLAN.CARE_PLAN,
-        },
-      });
+      // setUserActionPayload?.({
+      //   subscription: {
+      //     planId: PLAN_ID.CIRCLEPlan,
+      //     subPlanId: membershipPlan?.subPlanId,
+      //     TYPE: PLAN.CARE_PLAN,
+      //     subscriptionApplied: true,
+      //   },
+      // });
       onSelectMembershipPlan && onSelectMembershipPlan(membershipPlan);
     }
-    setDefaultCirclePlan && setDefaultCirclePlan(null);
-    setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+    // setDefaultCirclePlan && setDefaultCirclePlan(null);
+    // setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+    // fireMembershipPlanSelected();
+    // setCirclePlanSelected && setCirclePlanSelected(membershipPlan);
+    // AsyncStorage.setItem('circlePlanSelected', JSON.stringify(membershipPlan));
   };
 
   const fireCircleKnowMoreEvent = () => {
@@ -591,6 +598,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
                 planId: null,
                 subPlanId: null,
                 TYPE: null,
+                subscriptionApplied: false,
               },
             });
           } else {
@@ -604,6 +612,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
               planId: null,
               subPlanId: null,
               TYPE: null,
+              subscriptionApplied: false,
             },
           });
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
@@ -849,6 +858,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         planId: null,
         subPlanId: null,
         TYPE: null,
+        subscriptionApplied: false,
       },
     });
   };
@@ -956,6 +966,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
                     planId: PLAN_ID.CIRCLEPlan,
                     subPlanId: circlePlanSelected?.subPlanId,
                     TYPE: PLAN.CARE_PLAN,
+                    subscriptionApplied: true,
                   },
                 });
                 setCircleSubPlanId && setCircleSubPlanId(circlePlanSelected?.subPlanId);
@@ -982,6 +993,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
                   planId: PLAN_ID.CIRCLEPlan,
                   subPlanId: circlePlanSelected?.subPlanId,
                   TYPE: PLAN.CARE_PLAN,
+                  subscriptionApplied: true,
                 },
               });
               setCircleSubPlanId && setCircleSubPlanId(circlePlanSelected?.subPlanId);
@@ -1011,6 +1023,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
             planId: PLAN_ID.CIRCLEPlan,
             subPlanId: defaultPlan?.[0]?.subPlanId,
             TYPE: PLAN.CARE_PLAN,
+            subscriptionApplied: true,
           },
         });
       }
@@ -1082,6 +1095,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
                 planId: null,
                 subPlanId: null,
                 TYPE: null,
+                subscriptionApplied: false,
               },
             });
             AsyncStorage.removeItem('circlePlanSelected');

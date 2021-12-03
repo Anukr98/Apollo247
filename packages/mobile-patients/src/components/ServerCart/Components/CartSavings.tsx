@@ -9,12 +9,7 @@ import { ListItem } from 'react-native-elements';
 export interface CartSavingsProps {}
 
 export const CartSavings: React.FC<CartSavingsProps> = (props) => {
-  const {
-    cartTotalCashback,
-    serverCartAmount,
-    cartCircleSubscriptionId,
-    cartSubscriptionDetails,
-  } = useShoppingCart();
+  const { serverCartAmount, isCircleCart } = useShoppingCart();
   const [savingDetailsVisible, setSavingDetailsVisible] = useState(true);
 
   const cartSavings = serverCartAmount?.cartSavings || 0;
@@ -22,13 +17,20 @@ export const CartSavings: React.FC<CartSavingsProps> = (props) => {
   const deliveryCharges = serverCartAmount?.deliveryCharges || 0;
   const isDeliveryFree = serverCartAmount?.isDeliveryFree || 0;
   const totalCashBack = serverCartAmount?.totalCashBack || 0;
-  const circleMembershipCashback = serverCartAmount?.circleSavings?.membershipCashBack || 0;
-  const circleDeliverySavings = serverCartAmount?.circleSavings?.circleDelivery || 0;
+  const circleMembershipCashback = isCircleCart
+    ? serverCartAmount?.circleSavings?.membershipCashBack || 0
+    : 0;
+  const circleDeliverySavings = isCircleCart
+    ? serverCartAmount?.circleSavings?.circleDelivery || 0
+    : 0;
   const deliverySavings = isDeliveryFree || circleDeliverySavings > 0 ? deliveryCharges : 0;
   const totalSavings =
-    cartSavings + couponSavings + deliverySavings + totalCashBack + circleMembershipCashback;
-  const deliveryFeeSavings = deliveryCharges ? 0 : AppConfig.Configuration.DELIVERY_CHARGES;
-  const totalCouldSaveByCircle = deliveryFeeSavings + cartTotalCashback + cartSavings;
+    cartSavings +
+    couponSavings +
+    deliverySavings +
+    (isCircleCart ? totalCashBack : 0) +
+    circleMembershipCashback;
+  const totalCouldSaveByCircle = deliveryCharges + totalCashBack + cartSavings;
 
   const renderYouSavedCard = () => {
     return (
@@ -123,7 +125,7 @@ export const CartSavings: React.FC<CartSavingsProps> = (props) => {
   };
 
   const renderYouCouldSaveCard = () => {
-    if (!cartCircleSubscriptionId && !cartSubscriptionDetails?.currentSellingPrice) {
+    if (!isCircleCart) {
       return (
         totalCouldSaveByCircle > totalSavings && (
           <View style={styles.youCouldSaveCard}>

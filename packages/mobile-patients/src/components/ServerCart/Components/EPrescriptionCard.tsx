@@ -22,10 +22,10 @@ const styles = StyleSheet.create({
 
 export interface EPrescriptionCardProps {
   style?: StyleProp<ViewStyle>;
-  // doctorName?: string;
-  // date?: string;
-  // forPatient?: string;
-  // medicines?: string;
+  doctorName?: string;
+  date?: string;
+  forPatient?: string;
+  medicines?: string;
   actionType: 'selection' | 'removal';
   isSelected?: boolean;
   isDisabled?: boolean;
@@ -36,10 +36,10 @@ export interface EPrescriptionCardProps {
 
 export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
   const {
-    // doctorName,
-    // date,
-    // forPatient,
-    // medicines,
+    doctorName,
+    date,
+    forPatient,
+    medicines,
     onRemove,
     onSelect,
     actionType,
@@ -47,6 +47,62 @@ export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
     isDisabled,
     showTick,
   } = props;
+
+  const renderDateAndName = () => {
+    if (date || forPatient) {
+      return (
+        <View
+          style={{
+            flexDirection: 'row',
+            paddingTop: 5,
+            paddingBottom: 3.5,
+          }}
+        >
+          {!!date && (
+            <Text
+              style={{
+                flex: 1,
+                color: theme.colors.TEXT_LIGHT_BLUE,
+                textAlign: 'left',
+                ...theme.fonts.IBMPlexSansMedium(14),
+                lineHeight: 20,
+                letterSpacing: 0.04,
+              }}
+              numberOfLines={1}
+            >
+              {date}
+            </Text>
+          )}
+          {!!date && (
+            <View
+              style={{
+                borderRightWidth: 0.5,
+                borderBottomColor: '#02475b',
+                opacity: 0.2,
+                marginHorizontal: 12,
+              }}
+            />
+          )}
+          {!!forPatient && (
+            <Text
+              style={{
+                flex: 1,
+                paddingLeft: date ? 19 : 7,
+                color: theme.colors.TEXT_LIGHT_BLUE,
+                textAlign: 'left',
+                ...theme.fonts.IBMPlexSansMedium(14),
+                lineHeight: 20,
+                letterSpacing: 0.04,
+              }}
+            >
+              {forPatient}
+            </Text>
+          )}
+        </View>
+      );
+    }
+  };
+
   return (
     <View>
       <View
@@ -76,8 +132,7 @@ export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
                 ...theme.fonts.IBMPlexSansMedium(16),
               }}
             >
-              {/* {doctorName} */}
-              Prescription Uploaded by Patient
+              {doctorName || 'Prescription Uploaded by Patient'}
             </Text>
             <View style={{ flex: 0.15 }}>
               {showTick && (
@@ -107,49 +162,8 @@ export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
             </View>
           </View>
         </View>
-        {/* <View style={{ marginLeft: 43 }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              paddingTop: 5,
-              paddingBottom: 3.5,
-            }}
-          >
-            <Text
-              style={{
-                flex: 1,
-                color: theme.colors.TEXT_LIGHT_BLUE,
-                textAlign: 'left',
-                ...theme.fonts.IBMPlexSansMedium(14),
-                lineHeight: 20,
-                letterSpacing: 0.04,
-              }}
-              numberOfLines={1}
-            >
-              {date}
-            </Text>
-            <View
-              style={{
-                borderRightWidth: 0.5,
-                borderBottomColor: '#02475b',
-                opacity: 0.2,
-                marginHorizontal: 12,
-              }}
-            />
-            <Text
-              style={{
-                flex: 1,
-                paddingLeft: 19,
-                color: theme.colors.TEXT_LIGHT_BLUE,
-                textAlign: 'left',
-                ...theme.fonts.IBMPlexSansMedium(14),
-                lineHeight: 20,
-                letterSpacing: 0.04,
-              }}
-            >
-              {forPatient}
-            </Text>
-          </View>
+        <View style={{ marginLeft: 43 }}>
+          {renderDateAndName()}
 
           {!!medicines && (
             <>
@@ -171,7 +185,7 @@ export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
               </Text>
             </>
           )}
-        </View> */}
+        </View>
       </View>
     </View>
   );
