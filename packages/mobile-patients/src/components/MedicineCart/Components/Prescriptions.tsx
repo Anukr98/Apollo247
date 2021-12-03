@@ -3,17 +3,16 @@ import {
   PhysicalPrescriptionCardProps,
 } from '@aph/mobile-patients/src/components/MedicineCart/Components/PhysicalPrescriptionCard';
 import { PrescriptionInfoView } from '@aph/mobile-patients/src/components/MedicineCart/Components/PrescriptionInfoView';
+import { EPrescriptionCard } from '@aph/mobile-patients/src/components/ServerCart/Components/EPrescriptionCard';
+import { UploadedPrescriptionCard } from '@aph/mobile-patients/src/components/ServerCart/Components/UploadedPrescriptionCard';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 import {
   EPrescription,
   PhysicalPrescription,
   useShoppingCart,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import {
-  EPrescriptionCard,
-  EPrescriptionCardProps,
-} from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
 import { PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { saveCart_saveCart_data_prescriptionDetails } from '@aph/mobile-patients/src/graphql/types/saveCart';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -30,7 +29,7 @@ import {
 
 export interface PrescriptionsProps {
   onPressUploadMore?: () => void;
-  ePresProps?: Partial<EPrescriptionCardProps>;
+  // ePresProps?: Partial<EPrescriptionCardProps>;
   myPresProps?: Partial<PhysicalPrescriptionCardProps>;
   hideHeader?: boolean;
   showSelectedOption?: boolean;
@@ -49,10 +48,19 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
 
     cartPrescriptions,
   } = useShoppingCart();
+  console.log('cartPrescriptions >>>>> ', cartPrescriptions);
+  const uploadedPrescriptions = cartPrescriptions?.filter(
+    (prescription) => !prescription?.appointmentId
+  );
+  console.log('uploadedPrescriptions >>>>> ', uploadedPrescriptions);
+  const appointmentPrescriptions = cartPrescriptions?.filter(
+    (prescription) => prescription?.appointmentId
+  );
+  console.log('appointmentPrescriptions >>>>> ', appointmentPrescriptions);
   const { setUserActionPayload } = useServerCart();
   const {
     onPressUploadMore,
-    ePresProps,
+    // ePresProps,
     myPresProps,
     style,
     hideHeader,
@@ -78,9 +86,13 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
     );
   };
 
-  const PhysicalPrescription = (item: PhysicalPrescription, i: number, arrayLength: number) => {
+  const PhysicalPrescription = (
+    item: saveCart_saveCart_data_prescriptionDetails,
+    i: number,
+    arrayLength: number
+  ) => {
     return (
-      <PhysicalPrescriptionCard
+      <UploadedPrescriptionCard
         item={item}
         i={i}
         arrayLength={arrayLength}
@@ -101,9 +113,9 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
   const renderPhysicalPrescriptions = () => {
     return (
       <View style={{ flex: 1 }}>
-        {renderLabel(`Physical Prescription${physicalPrescriptions.length == 1 ? '' : 's'}`, true)}
+        {renderLabel(`Physical Prescription${uploadedPrescriptions.length == 1 ? '' : 's'}`, true)}
         <ScrollView>
-          {physicalPrescriptions.map((item, index, array) => {
+          {uploadedPrescriptions.map((item, index, array) => {
             return PhysicalPrescription(item, index, array.length);
           })}
         </ScrollView>
@@ -111,20 +123,24 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
     );
   };
 
-  const EPrescription = (item: EPrescription, i: number, arrayLength: number) => {
+  const EPrescription = (
+    item: saveCart_saveCart_data_prescriptionDetails,
+    i: number,
+    arrayLength: number
+  ) => {
     return (
       <EPrescriptionCard
         style={{
           marginTop: i === 0 ? 15 : 4,
           marginBottom: arrayLength === i + 1 ? 16 : 4,
         }}
-        medicines={item.medicines}
+        // medicines={item?.medicines}
         actionType="removal"
-        date={item.date}
-        doctorName={item.doctorName}
-        forPatient={item.forPatient}
+        // date={item?.date}
+        // doctorName={item?.doctorName}
+        // forPatient={item?.forPatient}
         onRemove={() => {
-          removeEPrescription && removeEPrescription(item.id);
+          removeEPrescription && removeEPrescription(item?.id);
           setUserActionPayload({
             prescriptionDetails: {
               prismPrescriptionFileId: item?.prismPrescriptionFileId,
@@ -132,7 +148,11 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
             },
           });
         }}
-        {...ePresProps}
+        isSelected={true}
+        isDisabled={false}
+        onSelect={() => {}}
+        showTick={false}
+        // {...ePresProps}
       />
     );
   };
@@ -140,9 +160,9 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
   const renderEprescriptions = () => {
     return (
       <View style={{ flex: 1 }}>
-        {renderLabel(`My Prescription${ePrescriptions.length == 1 ? '' : 's'}`, true)}
+        {renderLabel(`My Prescription${appointmentPrescriptions.length == 1 ? '' : 's'}`, true)}
         <ScrollView>
-          {ePrescriptions.map((item, index, array) => {
+          {appointmentPrescriptions.map((item, index, array) => {
             return EPrescription(item, index, array.length);
           })}
         </ScrollView>
@@ -196,8 +216,8 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
     <View style={[styles.container, style]}>
       {renderHeader()}
       <View style={isPlainStyle ? null : styles.card}>
-        {physicalPrescriptions.length > 0 && renderPhysicalPrescriptions()}
-        {ePrescriptions.length > 0 && renderEprescriptions()}
+        {uploadedPrescriptions.length > 0 && renderPhysicalPrescriptions()}
+        {appointmentPrescriptions.length > 0 && renderEprescriptions()}
         {renderUploadMore()}
       </View>
     </View>
