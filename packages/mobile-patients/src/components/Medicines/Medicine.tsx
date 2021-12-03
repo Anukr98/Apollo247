@@ -2193,7 +2193,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setUserActionPayload?.({
       medicineOrderCartLineItems: [
         {
-          medicineSKU: item?.id,
+          medicineSKU: `${item?.sku}`,
           quantity: 1,
         },
       ],
