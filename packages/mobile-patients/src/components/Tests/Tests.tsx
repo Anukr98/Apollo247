@@ -177,7 +177,7 @@ import { DiagnosticHomePageSource } from '@aph/mobile-patients/src/helpers/Cleve
 import DocumentPicker, { DocumentPickerResponse } from 'react-native-document-picker';
 import ImageResizer from 'react-native-image-resizer';
 import RNFetchBlob from 'rn-fetch-blob';
-export const MAX_FILE_SIZE = 25000000; // ~25MB
+const MAX_FILE_SIZE = 25000000; // ~25MB
 import { DiagnosticLocation } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticLocation';
 import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 import {
@@ -193,6 +193,9 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import { TestPdfRender } from '@aph/mobile-patients/src/components/Tests/components/TestPdfRender';
+import { apiBaseUrl, apiRoutes } from '../../helpers/apiRoutes';
+import firebaseAuth from '@react-native-firebase/auth';
+import { AuthContextProps } from '../AuthProvider';
 const rankArr = ['1', '2', '3', '4', '5', '6'];
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
@@ -1516,13 +1519,27 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   function _handleNavigationFromBanner(item: any, url: string) {
     //for rtpcr - drive through - open webview
+    //for radiology
     if (item?.redirectUrlText === 'WebView') {
       DiagnosticBannerClick(slideIndex + 1, Number(item?.itemId || item?.id), item?.bannerTitle);
       try {
+        const getBannerTitle = item?.bannerTitle;
         const openUrl = url || AppConfig.Configuration.RTPCR_Google_Form;
-        props.navigation.navigate(AppRoutes.CovidScan, {
-          covidUrl: openUrl,
-        });
+        if (!!getBannerTitle && getBannerTitle?.toLowerCase().includes('radiology')) {
+          //https://qa5patients.apollo247.com/radiology?source=Homepage%20Banner
+          const getRemoteUrl = `${AppConfig.Configuration.WEB_URL_PREFIX}${AppConfig.Configuration.RADIOLOGY_URL}`;
+          console.log({ getRemoteUrl });
+          props.navigation.navigate(AppRoutes.ProHealthWebView, {
+            covidUrl: getRemoteUrl,
+            source: 'radiology',
+            currentPatient: currentPatient,
+            // goBackCallback: webViewGoBack,
+          });
+        } else {
+          props.navigation.navigate(AppRoutes.CovidScan, {
+            covidUrl: openUrl,
+          });
+        }
       } catch (e) {
         aphConsole.log(e);
         CommonBugFender(`renderSliderItem__handleNavigationFromBanner_${AppRoutes.Tests}`, e);

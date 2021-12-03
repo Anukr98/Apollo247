@@ -18,14 +18,19 @@ import {
 import { WebView } from 'react-native-webview';
 import { NavigationRoute, NavigationScreenProp, NavigationScreenProps } from 'react-navigation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { RadiologyLandingPage } from './Tests/Events';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 export interface ProHealthWebViewProps
   extends NavigationScreenProps<{
     requestMicroPhonePermission: boolean;
     goBackCallback?: (navigation: NavigationScreenProp<NavigationRoute<object>, object>) => void;
+    source?: string;
+    currentPatient?: any;
   }> {}
 
 export const ProHealthWebView: React.FC<ProHealthWebViewProps> = (props) => {
+  const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const { navigation } = props;
   let WebViewRef: any;
   const microPhonePermission = props.navigation.getParam('requestMicroPhonePermission');
@@ -33,6 +38,8 @@ export const ProHealthWebView: React.FC<ProHealthWebViewProps> = (props) => {
   const [canGoBack, setCanGoBack] = useState<boolean>(false);
   const [token, setToken] = useState<string | null>('');
   const [userMobileNumber, setUserMobileNumber] = useState<string | null>('');
+  const source = props.navigation.getParam('source');
+  const getCurrentPatients = props.navigation.getParam('currentPatient');
 
   useEffect(() => {
     const saveSessionValues = async () => {
@@ -83,7 +90,6 @@ export const ProHealthWebView: React.FC<ProHealthWebViewProps> = (props) => {
 
   const renderWebView = () => {
     let uri = formatUrl(`${props.navigation.getParam('covidUrl')}`, token, userMobileNumber);
-
     return (
       <WebView
         ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}

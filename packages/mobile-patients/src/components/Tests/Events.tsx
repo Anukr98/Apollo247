@@ -849,14 +849,13 @@ export function DiagnosticCallToOrderClicked(
   isDiagnosticCircleSubscription?: boolean | undefined
 ) {
   const getPatientAttributes = createPatientAttributes(currentPatient);
-  const eventAttributes:
-    | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_CALL_TO_ORDER_CLICKED] = {
+  const eventAttributes: CleverTapEvents[CleverTapEventName.DIAGNOSTIC_CALL_TO_ORDER_CLICKED] = {
     ...getPatientAttributes,
     'Mobile Number': currentPatient?.mobileNumber,
-    'Page': page,
+    Page: page,
     'Section Name': sectionName,
-    'ItemId': itemId,
-    'ItemName': itemName,
+    ItemId: itemId,
+    ItemName: itemName,
     'Patient City': city,
     'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
   };
@@ -966,4 +965,58 @@ export function DiagnosticHomePageClicked(
     'Device Id': deviceId,
   };
   postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);
+}
+
+export async function RadiologyLandingPage(
+  currentPatient: any,
+  isDiagnosticCircleSubscription: boolean,
+  source: string,
+  url: string
+) {
+  const getPatientAttributes = await createPatientAttributes(currentPatient);
+
+  const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.DIAGNOSTIC_RADIOLOGY_HOME_PAGE] = {
+    ...getPatientAttributes,
+    'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+    Source: source,
+    URL: url,
+  };
+  console.log({ cleverTapEventAttributes });
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_RADIOLOGY_HOME_PAGE, cleverTapEventAttributes);
+}
+
+export async function RadiologyBookingCompleted(
+  currentPatient: any,
+  isDiagnosticCircleSubscription: boolean,
+  source: string,
+  url: string,
+  name: string,
+  phoneNumber: string,
+  city: string,
+  success: boolean,
+  appointmentDate: string,
+  test: string,
+  subtest: string
+) {
+  const getPatientAttributes = await createPatientAttributes(currentPatient);
+
+  const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.DIAGNOSTIC_RADIOLOGY_BOOKING_COMPLETE] = {
+    ...getPatientAttributes,
+    'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+    Source: source,
+    URL: url,
+    Name: name,
+    'Mobile No entered': phoneNumber,
+    City: city,
+    'Appointment date': appointmentDate,
+    Test: test,
+    Subtest: subtest,
+    isSuccessful: success,
+  };
+
+  console.log({ cleverTapEventAttributes });
+  postCleverTapEvent(
+    CleverTapEventName.DIAGNOSTIC_RADIOLOGY_BOOKING_COMPLETE,
+    cleverTapEventAttributes
+  );
 }
