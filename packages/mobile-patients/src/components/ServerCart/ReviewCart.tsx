@@ -57,6 +57,8 @@ import { ServerCartTatBottomContainer } from '@aph/mobile-patients/src/component
 import DeviceInfo from 'react-native-device-info';
 import { CartPrescriptions } from '@aph/mobile-patients/src/components/ServerCart/Components/CartPrescriptions';
 import { postwebEngageProceedToPayEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
+import { USER_AGENT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export interface ReviewCartProps extends NavigationScreenProps {}
 
@@ -71,6 +73,9 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
     serverCartAmount,
     shipmentArray,
     pharmacyCircleAttributes,
+    serverCartLoading,
+    serverCartErrorMessage,
+    setServerCartErrorMessage,
   } = useShoppingCart();
   const client = useApolloClient();
   const { setauthToken, pharmacyUserTypeAttribute } = useAppCommonData();
@@ -82,12 +87,16 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
   const { cusId, isfetchingId } = useGetJuspayId();
   const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
+  const [userAgent, setUserAgent] = useState<string>('');
 
   const { fetchReviewCart } = useServerCart();
 
   useEffect(() => {
     hasUnserviceableproduct();
     fetchReviewCart();
+    AsyncStorage.getItem(USER_AGENT).then((userAgent) => {
+      setUserAgent(userAgent || '');
+    });
     AppState.addEventListener('change', handleAppStateChange);
     return () => {
       AppState.removeEventListener('change', handleAppStateChange);
@@ -101,6 +110,29 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
   useEffect(() => {
     !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
   }, [isfetchingId]);
+
+  useEffect(() => {
+    if (serverCartErrorMessage) {
+      hideAphAlert?.();
+      showAphAlert!({
+        unDismissable: true,
+        title: 'Hey',
+        description: serverCartErrorMessage,
+        titleStyle: theme.viewStyles.text('SB', 18, '#890000'),
+        ctaContainerStyle: { justifyContent: 'flex-end' },
+        CTAs: [
+          {
+            text: 'OKAY',
+            type: 'orange-link',
+            onPress: () => {
+              setServerCartErrorMessage?.('');
+              hideAphAlert?.();
+            },
+          },
+        ],
+      });
+    }
+  }, [serverCartErrorMessage]);
 
   const initiateHyperSDK = async (cusId: any) => {
     try {
@@ -168,43 +200,29 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
         customerComment: '',
         showPrescriptionAtStore: false,
       };
-      console.log(
-        'calling saveMedicineOrderV3 ======= ',
-        JSON.stringify(saveMedicineOrderV3Variables)
-      );
       client
         .mutate({
           mutation: SAVE_MEDICINE_ORDER_V3,
           variables: { medicineOrderInput: saveMedicineOrderV3Variables },
           fetchPolicy: 'no-cache',
+          context: {
+            headers: {
+              'User-Agent': userAgent,
+            },
+          },
         })
         .then((result) => {
-          console.log('V3 ==== ', JSON.stringify(result));
           const orderResponse = result?.data?.saveMedicineOrderV3;
           if (orderResponse?.errorMessage) {
             throw orderResponse?.errorMessage;
           }
           if (orderResponse?.data) {
             const orderData = orderResponse?.data;
-            console.log('orderResponse?.data >>>>>>>>> ', JSON.stringify(orderData));
-            console.log(
-              'serverCartAmount?.estimatedAmount >>>>>> ',
-              serverCartAmount?.estimatedAmount
-            );
-            const {
-              transactionId,
-              orders,
-              isSubstitution,
-              substitutionTime,
-              substitutionMessage,
-              isCodEligible,
-              codMessage,
-              paymentOrderId,
-            } = orderData;
+            const { transactionId, orders, isCodEligible, codMessage, paymentOrderId } = orderData;
             if (transactionId) {
               props.navigation.navigate(AppRoutes.PaymentMethods, {
                 paymentId: paymentOrderId,
-                amount: serverCartAmount?.estimatedAmount, // change this?
+                amount: serverCartAmount?.estimatedAmount,
                 orderDetails: getOrderDetails(orders, transactionId, saveMedicineOrderV3Variables),
                 businessLine: 'pharma',
                 customerId: cusId,
@@ -227,8 +245,7 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
           }
         })
         .catch((error) => {
-          console.log('V# ERROR ===== ', error);
-          // return error;
+          renderAlert(error);
         })
         .finally(() => {
           setloading(false);
@@ -341,7 +358,7 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
           {renderWhatsAppUpdates()}
         </ScrollView>
         {renderButton()}
-        {loading && <Spinner />}
+        {(loading || serverCartLoading) && <Spinner />}
       </SafeAreaView>
     </View>
   );

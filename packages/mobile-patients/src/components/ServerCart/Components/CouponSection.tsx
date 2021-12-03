@@ -30,10 +30,10 @@ export const CouponSection: React.FC<CouponSectionProps> = (props) => {
   };
 
   const renderCouponMsg = () => {
-    if (cartCoupon?.couponMessage) {
+    if (cartCoupon?.couponMessage || cartCoupon?.reason) {
       return (
         <Text style={theme.viewStyles.text('M', 13, '#01475B', 1, 27)}>
-          {cartCoupon?.couponMessage}
+          {cartCoupon?.couponMessage || cartCoupon?.reason}
         </Text>
       );
     } else if (serverCartAmount?.couponSavings) {
@@ -69,7 +69,7 @@ export const CouponSection: React.FC<CouponSectionProps> = (props) => {
 
   return (
     <View style={[styles.couponCard, isFromSubscription ? { marginHorizontal: 20 } : {}]}>
-      {!cartCoupon?.coupon && !cartCoupon?.valid ? renderApplyCoupon() : renderCouponApplied()}
+      {!cartCoupon?.valid ? renderApplyCoupon() : renderCouponApplied()}
     </View>
   );
 };

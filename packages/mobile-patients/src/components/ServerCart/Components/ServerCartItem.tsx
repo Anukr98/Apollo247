@@ -32,17 +32,12 @@ export interface ServerCartItemProps {
 const { width } = Dimensions.get('window');
 
 export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
-  const {
-    isCircleCart,
-    circleMembershipCharges,
-
-    cartCoupon,
-  } = useShoppingCart();
+  const { isCircleCart, cartCoupon } = useShoppingCart();
   const couponApplied = cartCoupon?.coupon && cartCoupon?.valid;
   const { item, onUpdateQuantity, onPressDelete, onPressProduct } = props;
   const [discountedPrice, setDiscountedPrice] = useState<any>(undefined);
   const [mrp, setmrp] = useState<number>(item?.price || 0);
-  const itemAvailable = item?.isShippable && item?.sellOnline; // use this
+  const itemAvailable = item?.isShippable && item?.sellOnline;
 
   useEffect(() => {
     setmrp(item?.price);

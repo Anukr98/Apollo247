@@ -57,6 +57,7 @@ import { KerbSidePickup } from '@aph/mobile-patients/src/components/ServerCart/C
 import { ChooseAddress } from '@aph/mobile-patients/src/components/ServerCart/Components/ChooseAddress';
 import { EmptyCart } from '@aph/mobile-patients/src/components/ServerCart/Components/EmptyCart';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { saveCart_saveCart_data_medicineOrderCartLineItems } from '@aph/mobile-patients/src/graphql/types/saveCart';
 
 export interface ServerCartProps extends NavigationScreenProps {}
 
@@ -74,8 +75,10 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     setCartCoupon,
     isCartPrescriptionRequired,
     cartSuggestedProducts,
-
+    serverCartLoading,
     pharmacyCircleAttributes,
+    serverCartErrorMessage,
+    setServerCartErrorMessage,
   } = useShoppingCart();
   const shoppingCart = useShoppingCart();
   const { pharmacyUserTypeAttribute } = useAppCommonData();
@@ -121,6 +124,76 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
       setNewAddressAdded && setNewAddressAdded('');
     }
   }, [newAddressAdded, cartTat]);
+
+  useEffect(() => {
+    if (serverCartErrorMessage) {
+      hideAphAlert?.();
+      showAphAlert!({
+        unDismissable: true,
+        title: 'Hey',
+        description: serverCartErrorMessage,
+        titleStyle: theme.viewStyles.text('SB', 18, '#890000'),
+        ctaContainerStyle: { justifyContent: 'flex-end' },
+        CTAs: [
+          {
+            text: 'OKAY',
+            type: 'orange-link',
+            onPress: () => {
+              setServerCartErrorMessage?.('');
+              hideAphAlert?.();
+            },
+          },
+        ],
+      });
+    }
+  }, [serverCartErrorMessage]);
+
+  useEffect(() => {
+    if (!serverCartLoading) {
+      const unserviceableItems = serverCartItems?.filter(
+        (item) => !item?.isShippable || !item?.sellOnline
+      );
+      if (unserviceableItems?.length) {
+        showUnServiceableItemsAlert(unserviceableItems);
+      }
+    }
+  }, [serverCartItems]);
+
+  const showUnServiceableItemsAlert = (
+    unserviceableCartItems: saveCart_saveCart_data_medicineOrderCartLineItems[]
+  ) => {
+    showAphAlert?.({
+      title: string.medicine_cart.tatUnServiceableAlertTitle,
+      description: string.medicine_cart.tatUnServiceableAlertDesc,
+      titleStyle: theme.viewStyles.text('SB', 18, '#890000'),
+      CTAs: [
+        {
+          text: string.medicine_cart.tatUnServiceableAlertChangeCTA,
+          type: 'orange-link',
+          onPress: showAddressPopup,
+        },
+        {
+          text: string.medicine_cart.tatUnServiceableAlertRemoveCTA,
+          type: 'orange-link',
+          onPress: () => removeUnServiceableItems(unserviceableCartItems),
+        },
+      ],
+    });
+  };
+
+  const removeUnServiceableItems = (
+    unserviceableCartItems: saveCart_saveCart_data_medicineOrderCartLineItems[]
+  ) => {
+    hideAphAlert?.();
+    unserviceableCartItems?.forEach((item) => {
+      setUserActionPayload?.({
+        medicineOrderCartLineItems: {
+          medicineSKU: item.sku,
+          quantity: 0,
+        },
+      });
+    });
+  };
 
   const firePharmacyCartViewedEvent = () => {
     serverCartItems.length &&
@@ -297,6 +370,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
           }}
         >
           {!!serverCartItems?.length ? renderScreen() : renderEmptyCart()}
+          {serverCartLoading && <Spinner />}
         </ScrollView>
         {!!serverCartItems?.length && renderProceedBar()}
       </SafeAreaView>

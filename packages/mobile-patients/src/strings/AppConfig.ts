@@ -22,7 +22,7 @@ export enum AppEnv {
   QA6 = 'QA6',
 }
 
-const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA5 as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -520,16 +520,16 @@ const PharmaApiConfig = {
   dev: {
     TRACK_EVENT: [`${tagalysBaseUrl}/analytics/events/track`],
     MED_SEARCH: [`${apolloProdBaseUrl}/popcsrchprd_api.php`, pharmaToken201],
-    GET_SKU: [`${apolloUatBaseUrl}/popcsrchsku_api.php`, pharmaToken201],
+    GET_SKU: [`${apolloProdBaseUrl}/popcsrchsku_api.php`, pharmaToken201],
     MED_DETAIL: [apolloProdBaseUrl, pharmaToken201],
     MED_SEARCH_SUGGESTION: [`${apolloProdBaseUrl}/popcsrchss_api.php`, pharmaToken201],
-    STORES_LIST: [apolloUatBaseUrl, pharmaToken201],
+    STORES_LIST: [apolloProdBaseUrl, pharmaToken201],
     GET_STORE_INVENTORY: [
       `https://online.apollopharmacy.org/TAT/Apollo/GetStoreInventory`,
       pharmaTokenYXV,
     ],
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
-    MED_CART_ITEMS_DETAILS: [`${apolloUatBaseUrl}/popcscrchcart_api.php`, pharmaToken201],
+    MED_CART_ITEMS_DETAILS: [`${apolloProdBaseUrl}/popcscrchcart_api.php`, pharmaToken201],
     IMAGES_BASE_URL: [`https://newassets.apollo247.com/pub/media`],
     SPECIAL_OFFERS_IMAGES_BASE_URL: [`https://newassets.apollo247.com/pub/media`],
     COUPON_IMAGES_BASE_URL: [`https://newassets.apollo247.com`],
@@ -541,22 +541,22 @@ const PharmaApiConfig = {
       'https://online.apollopharmacy.org/UATTAT/Apollo/GetHeaderTat',
       pharmaTokenYXV,
     ],
-    GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
-    PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/categoryproducts_api.php`, pharmaToken201],
-    MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
-    BOUGHT_TOGETHER: [`${apolloUatBaseUrl}/popsrchboughttogether_api.php`, pharmaToken201],
+    GET_SUBSTITUTES: [`${apolloProdBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
+    PRODUCTS_BY_CATEGORY: [`${apolloProdBaseUrl}/categoryproducts_api.php`, pharmaToken201],
+    MEDICINE_PAGE: [`${apolloProdBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
+    BOUGHT_TOGETHER: [`${apolloProdBaseUrl}/popsrchboughttogether_api.php`, pharmaToken201],
     SPECIAL_OFFERS_PAGE_WIDGETS: [
       'https://uatcms.apollo247.com/api/special-offer/getwidget',
       specialOffersWidgetApiCredentials,
     ],
     SPECIAL_OFFERS_PAGE_COUPONS: ['https://uatvalidcoupon.apollo247.com/offers'],
-    SPECIAL_OFFERS_CATEGORY: [`${apolloUatBaseUrl}/specialoffercategory_api.php`, pharmaToken201],
-    SPECIAL_OFFERS_BRANDS: [`${apolloUatBaseUrl}/specialofferbrand_api.php`, pharmaToken201],
+    SPECIAL_OFFERS_CATEGORY: [`${apolloProdBaseUrl}/specialoffercategory_api.php`, pharmaToken201],
+    SPECIAL_OFFERS_BRANDS: [`${apolloProdBaseUrl}/specialofferbrand_api.php`, pharmaToken201],
     SPECIAL_OFFERS_BRANDS_PRODUCTS: [
-      `${apolloUatBaseUrl}/popcsrchspecialoffer_api.php`,
+      `${apolloProdBaseUrl}/popcsrchspecialoffer_api.php`,
       pharmaToken201,
     ],
-    ALL_BRANDS: [`${apolloUatBaseUrl}/allbrands_api.php`, pharmaToken201],
+    ALL_BRANDS: [`${apolloProdBaseUrl}/allbrands_api.php`, pharmaToken201],
     GET_TEST_PACKAGES: [
       `http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedata`,
       testApiCredentialsDev,
