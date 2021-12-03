@@ -97,6 +97,8 @@ export interface saveCart_saveCart_data {
   longitude: number | null;
   latitude: number | null;
   zipcode: string | null;
+  city: string | null;
+  state: string | null;
   patientAddressId: string | null;
   couponDetails: saveCart_saveCart_data_couponDetails | null;
   prescriptionDetails: (saveCart_saveCart_data_prescriptionDetails | null)[] | null;

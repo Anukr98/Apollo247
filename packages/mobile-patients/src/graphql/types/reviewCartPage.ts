@@ -97,6 +97,8 @@ export interface reviewCartPage_reviewCartPage_data {
   longitude: number | null;
   latitude: number | null;
   zipcode: string | null;
+  city: string | null;
+  state: string | null;
   patientAddressId: string | null;
   couponDetails: reviewCartPage_reviewCartPage_data_couponDetails | null;
   prescriptionDetails: (reviewCartPage_reviewCartPage_data_prescriptionDetails | null)[] | null;
