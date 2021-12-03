@@ -902,8 +902,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       <TouchableOpacity
         activeOpacity={0.5}
         onPress={() => {
-          setCoupon!(null);
-          navigateToScreenWithEmptyStack(props.navigation, AppRoutes.Medicine);
+          props.navigation.navigate(AppRoutes.ServerCart);
+          // setCoupon!(null);
+          // navigateToScreenWithEmptyStack(props.navigation, AppRoutes.Medicine);
         }}
       >
         <Text style={{ ...theme.fonts.IBMPlexSansSemiBold(13), color: theme.colors.APP_YELLOW }}>

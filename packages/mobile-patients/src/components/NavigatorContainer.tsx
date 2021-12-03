@@ -174,6 +174,7 @@ import { RefererTermsAndCondition } from '@aph/mobile-patients/src/components/Re
 import { RefererFAQ } from '@aph/mobile-patients/src/components/ReferAndEarn/ReferrerFAQ';
 import { BrandPages } from '@aph/mobile-patients/src/components/BrandPages/BrandPages';
 import { InformativeContent } from '@aph/mobile-patients/src/components/HealthRecords/InformationContent';
+import { ServerCart } from '@aph/mobile-patients/src/components/ServerCart/ServerCart';
 
 export enum AppRoutes {
   Login = 'Login',
@@ -336,6 +337,7 @@ export enum AppRoutes {
   RefererFAQ = 'RefererFAQ',
   BrandPages = 'BrandPages',
   InformativeContent = 'InformativeContent',
+  ServerCart = 'ServerCart',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -855,6 +857,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.InformativeContent]: {
     screen: InformativeContent,
+  },
+  [AppRoutes.ServerCart]: {
+    screen: ServerCart,
   },
 };
 
