@@ -27,6 +27,7 @@ import {
   saveCart_saveCart_data_couponDetails,
   saveCart_saveCart_data_medicineOrderCartLineItems,
   saveCart_saveCart_data_prescriptionDetails,
+  saveCart_saveCart_data_subscriptionDetails,
 } from '@aph/mobile-patients/src/graphql/types/saveCart';
 export interface ShoppingCartItem {
   id: string;
@@ -178,6 +179,8 @@ export interface ShoppingCartContextProps {
   setIsCartPrescriptionRequired: ((value: boolean) => void) | null;
   isSplitCart: boolean;
   setIsSplitCart: ((value: boolean) => void) | null;
+  cartSubscriptionDetails: saveCart_saveCart_data_subscriptionDetails | null;
+  setCartSubscriptionDetails: ((value: saveCart_saveCart_data_subscriptionDetails) => void) | null;
   // server cart values stop
   cartItems: ShoppingCartItem[];
   setCartItems: ((items: ShoppingCartItem[]) => void) | null;
@@ -348,6 +351,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setIsCartPrescriptionRequired: null,
   isSplitCart: false,
   setIsSplitCart: null,
+  cartSubscriptionDetails: null,
+  setCartSubscriptionDetails: null,
 
   cartItems: [],
   setCartItems: null,
@@ -522,6 +527,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
     ShoppingCartContextProps['isCartPrescriptionRequired']
   >(false);
   const [isSplitCart, setIsSplitCart] = useState<ShoppingCartContextProps['isSplitCart']>(false);
+  const [cartSubscriptionDetails, setCartSubscriptionDetails] = useState<
+    ShoppingCartContextProps['cartSubscriptionDetails']
+  >(null);
 
   const [cartItems, _setCartItems] = useState<ShoppingCartContextProps['cartItems']>([]);
   const [couponDiscount, setCouponDiscount] = useState<ShoppingCartContextProps['couponDiscount']>(
@@ -1394,6 +1402,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setIsCartPrescriptionRequired,
         isSplitCart,
         setIsSplitCart,
+        cartSubscriptionDetails,
+        setCartSubscriptionDetails,
 
         cartItems,
         setCartItems,

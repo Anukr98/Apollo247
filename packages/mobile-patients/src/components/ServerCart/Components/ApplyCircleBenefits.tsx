@@ -11,8 +11,8 @@ import { NavigationScreenProps } from 'react-navigation';
 export interface ApplyCircleBenefitsProps extends NavigationScreenProps {}
 
 export const ApplyCircleBenefits: React.FC<ApplyCircleBenefitsProps> = (props) => {
-  const { cartCircleSubscriptionId } = useShoppingCart();
-  // console.log('cartCircleSubscriptionId >>>>>> ', cartCircleSubscriptionId);
+  const { cartCircleSubscriptionId, cartSubscriptionDetails } = useShoppingCart();
+  const isCircleCart = !!cartSubscriptionDetails?.currentSellingPrice;
 
   const renderSelectCirclePlans = () => {
     return (
@@ -52,7 +52,7 @@ export const ApplyCircleBenefits: React.FC<ApplyCircleBenefitsProps> = (props) =
   };
   return (
     <TouchableOpacity activeOpacity={0.7} style={styles.applyBenefits} onPress={() => {}}>
-      {!!cartCircleSubscriptionId ? renderBenefitsApplied() : renderSelectCirclePlans()}
+      {isCircleCart ? renderBenefitsApplied() : renderSelectCirclePlans()}
     </TouchableOpacity>
   );
 };

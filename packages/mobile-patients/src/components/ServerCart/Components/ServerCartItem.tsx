@@ -47,7 +47,7 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
     setmrp(item?.price);
     item?.isCouponApplicable == CouponApplicable.APPLIED && item?.couponDiscountPrice
       ? setDiscountedPrice(item?.couponDiscountPrice)
-      : item?.sellingPrice
+      : item?.sellingPrice !== item?.price
       ? setDiscountedPrice(item?.sellingPrice)
       : setDiscountedPrice(undefined);
   }, [item]);

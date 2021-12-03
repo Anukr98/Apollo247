@@ -116,6 +116,7 @@ import { CouponSection } from '@aph/mobile-patients/src/components/ServerCart/Co
 import { ServerCartTatBottomContainer } from '@aph/mobile-patients/src/components/ServerCart/Components/ServerCartTatBottomContainer';
 import { CartSavings } from '@aph/mobile-patients/src/components/ServerCart/Components/CartSavings';
 import { UnServiceableMessage } from '@aph/mobile-patients/src/components/ServerCart/Components/UnServiceableMessag';
+import { CartCircleItem } from '@aph/mobile-patients/src/components/ServerCart/Components/CartCircleItem';
 
 export interface ServerCartProps extends NavigationScreenProps {}
 
@@ -129,10 +130,14 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     newAddressAdded,
     setNewAddressAdded,
     cartTat,
+    cartSubscriptionDetails,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { fetchServerCart, setUserActionPayload } = useServerCart();
   const [loading, setLoading] = useState<boolean>(false);
+
+  const circlePlanAddedToCart =
+    !!cartSubscriptionDetails?.currentSellingPrice && !cartCircleSubscriptionId;
 
   useEffect(() => {
     fetchServerCart();
@@ -256,6 +261,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
           });
         }}
       />
+      {circlePlanAddedToCart && <CartCircleItem />}
       {renderAmountSection()}
     </>
   );
