@@ -871,8 +871,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setIsCircleExpired,
     circleSubPlanId,
     isPharmacyPincodeServiceable,
+    serverCartItems,
   } = useShoppingCart();
-  const cartItemsCount = cartItems.length + shopCartItems.length;
+  const cartItemsCount = cartItems.length + serverCartItems.length;
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [previousPatient, setPreviousPatient] = useState<any>([]);

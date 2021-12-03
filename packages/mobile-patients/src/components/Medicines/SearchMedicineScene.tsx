@@ -186,6 +186,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     pharmacyCircleAttributes,
     asyncPincode,
     axdcCode,
+    serverCartItems,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
@@ -473,7 +474,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   };
 
   const renderHeader = () => {
-    const cartItemsCount = cartItems.length + diagnosticCartItems.length;
+    const cartItemsCount = serverCartItems.length + diagnosticCartItems.length;
     return (
       <Header
         container={{ borderBottomWidth: 0 }}

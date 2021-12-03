@@ -152,6 +152,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     pharmacyCircleAttributes,
     asyncPincode,
     axdcCode,
+    serverCartItems,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { getPatientApiCall } = useAuth();
@@ -298,7 +299,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   };
 
   const renderHeader = () => {
-    const cartItemsCount = cartItems.length + diagnosticCartItems.length;
+    const cartItemsCount = serverCartItems.length + diagnosticCartItems.length;
     return (
       <Header
         container={{

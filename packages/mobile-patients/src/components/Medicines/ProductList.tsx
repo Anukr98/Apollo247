@@ -35,6 +35,7 @@ import {
   ProductPageViewedSource,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { SuggestedQuantityNudge } from '@aph/mobile-patients/src/components/SuggestedQuantityNudge/SuggestedQuantityNudge';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 type ListProps = FlatListProps<MedicineProduct>;
 
@@ -93,6 +94,7 @@ export const ProductList: React.FC<Props> = ({
     cartItems,
     asyncPincode,
   } = useShoppingCart();
+  const { setUserActionPayload } = useServerCart();
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
   const [showSuggestedQuantityNudge, setShowSuggestedQuantityNudge] = useState<boolean>(false);
   const [shownNudgeOnce, setShownNudgeOnce] = useState<boolean>(false);
@@ -189,6 +191,14 @@ export const ProductList: React.FC<Props> = ({
       'Product name': item?.name,
       Discount: discountPercentage,
     };
+    setUserActionPayload?.({
+      medicineOrderCartLineItems: [
+        {
+          medicineSKU: item.sku,
+          quantity: 1,
+        },
+      ],
+    });
     addPharmaItemToCart(
       formatToCartItem(item),
       asyncPincode?.pincode || pharmacyPincode!,
@@ -237,11 +247,27 @@ export const ProductList: React.FC<Props> = ({
         if (qty < item.MaxOrderQty) {
           updateCartItem!({ id, quantity: qty + 1 });
           setCurrentProductQuantityInCart(qty + 1);
+          setUserActionPayload?.({
+            medicineOrderCartLineItems: [
+              {
+                medicineSKU: item.sku,
+                quantity: qty + 1,
+              },
+            ],
+          });
         }
       };
       const onPressSubtractQty = () => {
         qty == 1 ? removeCartItem!(id) : updateCartItem!({ id, quantity: qty - 1 });
         setCurrentProductQuantityInCart(qty - 1);
+        setUserActionPayload?.({
+          medicineOrderCartLineItems: [
+            {
+              medicineSKU: item.sku,
+              quantity: qty - 1,
+            },
+          ],
+        });
       };
 
       const props: ProductCardProps = {

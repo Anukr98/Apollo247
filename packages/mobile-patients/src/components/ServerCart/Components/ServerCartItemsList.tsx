@@ -10,6 +10,8 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { SpecialOffers } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { NudgeMessage } from '@aph/mobile-patients/src/components/Medicines/Components/NudgeMessage';
+import { ServerCartItem } from '@aph/mobile-patients/src/components/ServerCart/Components/ServerCartItem';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 export interface ServerCartItemsListProps {
   screen: 'summary' | 'serverCart';
@@ -19,6 +21,7 @@ export interface ServerCartItemsListProps {
 
 export const ServerCartItemsList: React.FC<ServerCartItemsListProps> = (props) => {
   const { pharmaCartNudgeMessage, serverCartItems } = useShoppingCart();
+  const { setUserActionPayload } = useServerCart();
   const { screen, onPressProduct, setloading } = props;
   const { currentPatient } = useAllCurrentPatients();
   const { cartBankOffer } = useAppCommonData();
@@ -42,13 +45,27 @@ export const ServerCartItemsList: React.FC<ServerCartItemsListProps> = (props) =
     );
   };
 
-  const onUpdateQuantity = ({ id }: ShoppingCartItem, unit: number) => {
-    // updateCartItem && updateCartItem({ id, quantity: unit });
+  const onUpdateQuantity = ({ sku }: ShoppingCartItem, unit: number) => {
+    setUserActionPayload?.({
+      medicineOrderCartLineItems: [
+        {
+          medicineSKU: sku,
+          quantity: unit,
+        },
+      ],
+    });
   };
 
   const onPressDelete = (item: ShoppingCartItem) => {
-    // removeCartItem && removeCartItem(item.id);
-    // postwebEngageProductRemovedEvent(item, currentPatient && currentPatient!.id);
+    setUserActionPayload?.({
+      medicineOrderCartLineItems: [
+        {
+          medicineSKU: item?.sku,
+          quantity: 0,
+        },
+      ],
+    });
+    postwebEngageProductRemovedEvent(item, currentPatient && currentPatient!.id);
   };
 
   const renderCartItems = () => {
@@ -59,7 +76,7 @@ export const ServerCartItemsList: React.FC<ServerCartItemsListProps> = (props) =
           data={serverCartItems}
           renderItem={({ item, index }) => {
             return isFromCart ? (
-              <CartItemCard
+              <ServerCartItem
                 item={item}
                 onUpdateQuantity={(quantity) => onUpdateQuantity(item, quantity)}
                 onPressDelete={() => onPressDelete(item)}

@@ -6715,9 +6715,30 @@ export const SERVER_CART_SAVE_CART = gql`
       cartMessage
       data {
         patientId
+        amount {
+          estimatedAmount
+          deliveryCharges
+          isDeliveryFree
+          cartSavings
+          couponSavings
+          totalCashBack
+          cartTotal
+          packagingCharges
+          circleSavings {
+            membershipCashBack
+            circleDelivery
+          }
+        }
+        noOfShipments
         longitude
         latitude
         zipcode
+        patientAddressId
+        couponDetails {
+          coupon
+          couponMessage
+          valid
+        }
         prescriptionDetails {
           prescriptionImageUrl
           prismPrescriptionFileId
@@ -6732,17 +6753,18 @@ export const SERVER_CART_SAVE_CART = gql`
           planAmount
           currentSellingPrice
           validDuration
-          durationInDays
+          durationInMonth
         }
         medicineOrderCartLineItems {
           sku
+          magentoId
+          magentoStatus
           name
           quantity
           price
           sellingPrice
           mou
           couponDiscountPrice
-          specialPrice
           thumbnail
           isExpress
           isPrescriptionRequired
@@ -6752,12 +6774,13 @@ export const SERVER_CART_SAVE_CART = gql`
           isInStock
           maxOrderQty
           sellOnline
-          isCouponApplicable
           tat
           tatDuration
-          isShippable
+          isCouponApplicable
           cashback
+          isShippable
           freeProduct
+          shipmentNo
         }
       }
     }
