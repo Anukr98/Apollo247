@@ -192,6 +192,10 @@ export interface ShoppingCartContextProps {
   isCircleCart: boolean;
   shipmentArray: ShipmentArray[];
   setShipmentArray: ((shipments: ShipmentArray[]) => void) | null;
+  serverCartErrorMessage: string;
+  setServerCartErrorMessage: ((message: string) => void) | null;
+  serverCartLoading: boolean;
+  setServerCartLoading: ((loading: boolean) => void) | null;
   // server cart values stop
   cartItems: ShoppingCartItem[];
   setCartItems: ((items: ShoppingCartItem[]) => void) | null;
@@ -369,6 +373,10 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   isCircleCart: false,
   shipmentArray: [],
   setShipmentArray: null,
+  serverCartErrorMessage: '',
+  setServerCartErrorMessage: null,
+  serverCartLoading: false,
+  setServerCartLoading: null,
 
   cartItems: [],
   setCartItems: null,
@@ -548,6 +556,12 @@ export const ShoppingCartProvider: React.FC = (props) => {
   >(null);
   const [noOfShipments, setNoOfShipments] = useState<ShoppingCartContextProps['noOfShipments']>(0);
   const [shipmentArray, setShipmentArray] = useState<ShoppingCartContextProps['shipmentArray']>([]);
+  const [serverCartErrorMessage, setServerCartErrorMessage] = useState<
+    ShoppingCartContextProps['serverCartErrorMessage']
+  >('');
+  const [serverCartLoading, setServerCartLoading] = useState<
+    ShoppingCartContextProps['serverCartLoading']
+  >(false);
 
   const [cartItems, _setCartItems] = useState<ShoppingCartContextProps['cartItems']>([]);
   const [couponDiscount, setCouponDiscount] = useState<ShoppingCartContextProps['couponDiscount']>(
@@ -1431,6 +1445,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
         isCircleCart,
         shipmentArray,
         setShipmentArray,
+        serverCartErrorMessage,
+        setServerCartErrorMessage,
+        serverCartLoading,
+        setServerCartLoading,
 
         cartItems,
         setCartItems,

@@ -1,5 +1,6 @@
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { SectionHeader } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -8,7 +9,7 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   BackHandler,
   SafeAreaView,
@@ -43,11 +44,18 @@ export interface MedAndTestCartProps
 export const MedAndTestCart: React.FC<MedAndTestCartProps> = (props) => {
   const { serverCartItems } = useShoppingCart();
   const { cartItems: testCartItems } = useDiagnosticsCart();
+  const { fetchServerCart } = useServerCart();
   const backDataFunctionality = async () => {
     BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
     props.navigation.goBack();
     return false;
   };
+
+  useEffect(() => {
+    if (!serverCartItems?.length) {
+      fetchServerCart();
+    }
+  }, []);
 
   const arrayTest: ArrayTest[] = [
     {

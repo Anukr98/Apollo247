@@ -3,7 +3,6 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   GET_PATIENT_ADDRESS_LIST,
-  GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS,
   SERVER_CART_FETCH_CART,
   SERVER_CART_REVIEW_CART,
   SERVER_CART_SAVE_CART,
@@ -17,7 +16,6 @@ export const useServerCart = () => {
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const {
-    serverCartItems,
     setServerCartItems,
     setCartCircleSubscriptionId,
     setServerCartAmount,
@@ -30,9 +28,12 @@ export const useServerCart = () => {
     deliveryAddressId,
     setDeliveryAddressId,
     setNoOfShipments,
+    setServerCartErrorMessage,
+    setServerCartLoading,
   } = useShoppingCart();
   const { setPharmacyLocation } = useAppCommonData();
   const [userActionPayload, setUserActionPayload] = useState<any>(null);
+  const genericErrorMessage = 'Oops! Something went wrong.';
 
   useEffect(() => {
     if (userActionPayload && currentPatient?.id) {
@@ -45,7 +46,7 @@ export const useServerCart = () => {
   }, [userActionPayload]);
 
   const saveServerCart = (cartInputData: CartInputData) => {
-    console.log('saveServerCart cartInputData >>>> ', cartInputData);
+    setServerCartLoading?.(true);
     client
       .mutate({
         mutation: SERVER_CART_SAVE_CART,
@@ -56,9 +57,9 @@ export const useServerCart = () => {
       })
       .then((result) => {
         const saveCartResponse = result?.data?.saveCart;
-        console.log('======= saveServerCart result: ', JSON.stringify(saveCartResponse));
         if (saveCartResponse?.errorMessage) {
-          throw saveCartResponse?.errorMessage;
+          setServerCartErrorMessage?.(saveCartResponse?.errorMessage || genericErrorMessage);
+          return;
         }
         if (saveCartResponse?.data?.patientId) {
           const cartResponse = saveCartResponse?.data;
@@ -66,15 +67,16 @@ export const useServerCart = () => {
         }
       })
       .catch((error) => {
-        console.log('======= saveServerCart error: ', error);
+        setServerCartErrorMessage?.(error);
       })
       .finally(() => {
         setUserActionPayload(null);
+        setServerCartLoading?.(false);
       });
   };
 
   const fetchServerCart = () => {
-    console.log('fetchServerCart cartInputData >>>> ', { patientId: currentPatient?.id });
+    setServerCartLoading?.(true);
     client
       .query({
         query: SERVER_CART_FETCH_CART,
@@ -85,9 +87,9 @@ export const useServerCart = () => {
       })
       .then((result) => {
         const fetchCartResponse = result?.data?.fetchCart;
-        console.log('======= fetchServerCart result: ', JSON.stringify(fetchCartResponse));
         if (fetchCartResponse?.errorMessage) {
-          throw fetchCartResponse?.errorMessage;
+          setServerCartErrorMessage?.(fetchCartResponse?.errorMessage || genericErrorMessage);
+          return;
         }
         if (fetchCartResponse?.data?.patientId) {
           const cartResponse = fetchCartResponse?.data;
@@ -95,15 +97,16 @@ export const useServerCart = () => {
         }
       })
       .catch((error) => {
-        console.log('======= fetchServerCart error: ', error);
+        setServerCartErrorMessage?.(error);
       })
       .finally(() => {
         setUserActionPayload(null);
+        setServerCartLoading?.(false);
       });
   };
 
   const fetchReviewCart = () => {
-    console.log('ReviewCart cartInputData >>>> ', { patientId: currentPatient?.id });
+    setServerCartLoading?.(true);
     client
       .query({
         query: SERVER_CART_REVIEW_CART,
@@ -114,9 +117,9 @@ export const useServerCart = () => {
       })
       .then((result) => {
         const reviewCartResponse = result?.data?.reviewCartPage;
-        console.log('======= ReviewCart result: ', JSON.stringify(reviewCartResponse));
         if (reviewCartResponse?.errorMessage) {
-          throw reviewCartResponse?.errorMessage;
+          setServerCartErrorMessage?.(reviewCartResponse?.errorMessage || genericErrorMessage);
+          return;
         }
         if (reviewCartResponse?.data?.patientId) {
           const cartResponse = reviewCartResponse?.data;
@@ -124,10 +127,11 @@ export const useServerCart = () => {
         }
       })
       .catch((error) => {
-        console.log('======= ReviewCart error: ', error);
+        setServerCartErrorMessage?.(error);
       })
       .finally(() => {
         setUserActionPayload(null);
+        setServerCartLoading?.(false);
       });
   };
 
@@ -171,36 +175,10 @@ export const useServerCart = () => {
     }
   };
 
-  const fetchPrescriptionDetails = (appointmentId: string) => {
-    client
-      .query({
-        query: GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS,
-        fetchPolicy: 'no-cache',
-        variables: {
-          appointmentId,
-        },
-      })
-      .then((_data) => {
-        console.log(
-          '_data.data.getSDLatestCompletedCaseSheet ================ ',
-          JSON.stringify(_data.data.getSDLatestCompletedCaseSheet)
-        );
-      })
-      .catch((error) => {});
-  };
-
-  // const renderAlert = (message: string) => {
-  //   showAphAlert!({
-  //     title: string.common.uhOh,
-  //     description: message,
-  //   });
-  // };
-
   return {
     setUserActionPayload,
     fetchServerCart,
     fetchReviewCart,
     fetchAddress,
-    fetchPrescriptionDetails,
   };
 };
