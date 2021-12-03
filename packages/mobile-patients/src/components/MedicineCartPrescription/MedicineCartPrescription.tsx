@@ -5,7 +5,11 @@ import {
 } from '@aph/mobile-patients/src/components/MedicineCartPrescription';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import {
+  EPrescription,
+  PhysicalPrescription,
+  useShoppingCart,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -88,12 +92,17 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
           }}
           onSelectOption={(option, ePres, physPres) => {
             setPrescriptionType(option);
+            setUserActionPayload({
+              prescriptionType: option,
+            });
             if (option === PrescriptionType.CONSULT) {
               setTimeout(() => {
                 scrollViewRef.current?.scrollToEnd?.();
               }, 100);
             }
             if (option === PrescriptionType.UPLOADED) {
+              saveEPrescriptionsToServerCart(ePres);
+              savePhysicalPrescriptionsToServerCart(physPres);
               setEPrescriptions?.(ePres || []);
               setPhysicalPrescriptions?.(physPres || []);
             } else {
@@ -106,51 +115,61 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
     );
   };
 
+  const saveEPrescriptionsToServerCart = (ePrescriptions: EPrescription[]) => {
+    try {
+      ePrescriptions?.forEach((prescription: EPrescription) => {
+        if (prescription?.prismPrescriptionFileId) {
+          setUserActionPayload?.({
+            prescriptionDetails: {
+              prescriptionImageUrl: prescription?.uploadedUrl,
+              prismPrescriptionFileId: 'prescription?.prismPrescriptionFileId',
+              uhid: currentPatient?.uhid,
+            },
+          });
+        }
+      });
+    } catch (error) {
+      showAphAlert?.({
+        title: 'Uh oh.. :(',
+        description: 'Error occurred while uploading prescriptions.',
+      });
+    }
+  };
+
+  const savePhysicalPrescriptionsToServerCart = async (
+    physicalPrescriptions: PhysicalPrescription[]
+  ) => {
+    try {
+      // upload physical prescriptions and get prism file id
+      const updatedPrescriptions = await Helpers.updatePrescriptionUrls(
+        client,
+        currentPatient?.id,
+        physicalPrescriptions
+      );
+      updatedPrescriptions?.forEach((prescription: PhysicalPrescription) => {
+        if (prescription?.prismPrescriptionFileId && prescription?.uploadedUrl) {
+          setUserActionPayload?.({
+            prescriptionDetails: {
+              prescriptionImageUrl: prescription?.uploadedUrl,
+              prismPrescriptionFileId: prescription?.prismPrescriptionFileId,
+              uhid: currentPatient?.uhid,
+            },
+          });
+        }
+      });
+    } catch (error) {
+      showAphAlert?.({
+        title: 'Uh oh.. :(',
+        description: 'Error occurred while uploading prescriptions.',
+      });
+    }
+  };
+
   const onPressContinue = async () => {
     try {
-      setLoading?.(true);
-      let saveEprescription: any[] = [];
-      if (prescriptionType === PrescriptionType.UPLOADED) {
-        const updatedPrescriptions = await Helpers.updatePrescriptionUrls(
-          client,
-          currentPatient?.id,
-          physicalPrescriptions
-        );
-        setPhysicalPrescriptions!(updatedPrescriptions);
-        // saveEprescription = [...updatedPrescriptions, ...ePrescriptions]?.map((pres) => ({
-        //   prescriptionImageUrl: pres.uploadedUrl,
-        //   prismPrescriptionFileId: pres.prismPrescriptionFileId,
-        //   uhid: currentPatient?.uhid,
-        // }));
-
-        [...updatedPrescriptions, ...ePrescriptions]?.map((pres) => {
-          const prescriptionData = {
-            prescriptionImageUrl: pres.uploadedUrl,
-            prismPrescriptionFileId: pres.prismPrescriptionFileId,
-            uhid: currentPatient?.uhid,
-          };
-          setUserActionPayload?.({
-            prescriptionDetails: prescriptionData,
-            prescriptionType: prescriptionType,
-          });
-        });
-      } else {
-        setUserActionPayload?.({
-          prescriptionDetails: {},
-          prescriptionType: prescriptionType,
-        });
-        setEPrescriptions!([]);
-        setPhysicalPrescriptions!([]);
-      }
-      // setUserActionPayload?.({
-      //   prescriptionDetails: saveEprescription,
-      //   prescriptionType: prescriptionType,
-      // });
       navigation.navigate(AppRoutes.ReviewCart);
-      setLoading?.(false);
       postEvent(prescriptionType);
     } catch (error) {
-      setLoading?.(false);
       showAphAlert?.({
         title: 'Uh oh.. :(',
         description: 'Error occurred while uploading prescriptions.',
