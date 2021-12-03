@@ -981,7 +981,6 @@ export async function RadiologyLandingPage(
     Source: source,
     URL: url,
   };
-  console.log({ cleverTapEventAttributes });
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_RADIOLOGY_HOME_PAGE, cleverTapEventAttributes);
 }
 
@@ -990,13 +989,7 @@ export async function RadiologyBookingCompleted(
   isDiagnosticCircleSubscription: boolean,
   source: string,
   url: string,
-  name: string,
-  phoneNumber: string,
-  city: string,
-  success: boolean,
-  appointmentDate: string,
-  test: string,
-  subtest: string
+  formDetails: any
 ) {
   const getPatientAttributes = await createPatientAttributes(currentPatient);
 
@@ -1005,16 +998,15 @@ export async function RadiologyBookingCompleted(
     'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
     Source: source,
     URL: url,
-    Name: name,
-    'Mobile No entered': phoneNumber,
-    City: city,
-    'Appointment date': appointmentDate,
-    Test: test,
-    Subtest: subtest,
-    isSuccessful: success,
+    Name: formDetails?.['Name'],
+    'Mobile No entered': formDetails?.['Mobile No entered'],
+    City: formDetails?.City,
+    'Appointment date': formDetails?.['Appointment date'],
+    Test: formDetails?.['Test'],
+    Subtest: formDetails?.['Subtest'],
+    isSuccessful: formDetails?.['isSuccessful'],
   };
 
-  console.log({ cleverTapEventAttributes });
   postCleverTapEvent(
     CleverTapEventName.DIAGNOSTIC_RADIOLOGY_BOOKING_COMPLETE,
     cleverTapEventAttributes

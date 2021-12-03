@@ -1525,15 +1525,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
       try {
         const getBannerTitle = item?.bannerTitle;
         const openUrl = url || AppConfig.Configuration.RTPCR_Google_Form;
-        if (!!getBannerTitle && getBannerTitle?.toLowerCase().includes('radiology')) {
-          //https://qa5patients.apollo247.com/radiology?source=Homepage%20Banner
+        if (
+          !!getBannerTitle &&
+          getBannerTitle?.toLowerCase().includes(string.diagnostics.radiology)
+        ) {
           const getRemoteUrl = `${AppConfig.Configuration.WEB_URL_PREFIX}${AppConfig.Configuration.RADIOLOGY_URL}`;
-          console.log({ getRemoteUrl });
           props.navigation.navigate(AppRoutes.ProHealthWebView, {
             covidUrl: getRemoteUrl,
-            source: 'radiology',
+            source: string.diagnostics.radiology,
             currentPatient: currentPatient,
-            // goBackCallback: webViewGoBack,
           });
         } else {
           props.navigation.navigate(AppRoutes.CovidScan, {

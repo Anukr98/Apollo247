@@ -736,7 +736,8 @@
     "topBookedTests": "Top Booked Tests",
     "similarPackages":"Similar Packages",
     "needToAddPaitent":"• Do you want to edit patient details?",
-    "needToAddOrder":"• Do you want to add tests to your order?"
+    "needToAddOrder":"• Do you want to add tests to your order?",
+    "radiology": "radiology"
   },
   "diagnosticCategoryTitle": {
     "category": "category",
