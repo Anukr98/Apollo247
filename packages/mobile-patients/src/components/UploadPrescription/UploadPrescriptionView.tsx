@@ -658,7 +658,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           title={'UPLOAD PRESCRIPTION'}
           leftIcon="backArrow"
           container={{ ...theme.viewStyles.shadowStyle, zIndex: 1 }}
-          onPressLeftIcon={() => props.navigation.goBack()}
+          onPressLeftIcon={() => props.navigation.navigate('MEDICINES')}
         />
         {!!photoBase64 && renderInstructions()}
         <ScrollView bounces={false} contentContainerStyle={{ paddingBottom: 20 }}>

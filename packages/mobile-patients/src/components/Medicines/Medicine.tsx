@@ -1491,12 +1491,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 cleverTapEventAttributes
               );
               postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED, eventAttributes);
-              props.navigation.navigate(AppRoutes.UploadPrescriptionView);
-              // if (cartPrescriptions?.length) {
-              //   props.navigation.navigate(AppRoutes.UploadPrescription);
-              // } else {
-              //   props.navigation.navigate(AppRoutes.UploadPrescriptionView);
-              // }
+              if (cartPrescriptions?.length) {
+                props.navigation.navigate(AppRoutes.UploadPrescription);
+              } else {
+                props.navigation.navigate(AppRoutes.UploadPrescriptionView);
+              }
             }}
             style={{ width: Platform.OS == 'android' ? '85%' : '90%' }}
             titleTextStyle={{

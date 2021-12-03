@@ -25,8 +25,8 @@ export const updatePrescriptionUrls = async (
       (item, index) =>
         ({
           ...item,
-          uploadedUrl: uploadedPresResult[index].data?.uploadDocument?.filePath,
-          prismPrescriptionFileId: uploadedPresResult[index].data?.uploadDocument?.fileId,
+          uploadedUrl: uploadedPresResult?.[index]?.data?.uploadDocument?.filePath,
+          prismPrescriptionFileId: uploadedPresResult?.[index]?.data?.uploadDocument?.fileId,
         } as PhysicalPrescription)
     );
     return Promise.resolve([...newUploadedPres]);
