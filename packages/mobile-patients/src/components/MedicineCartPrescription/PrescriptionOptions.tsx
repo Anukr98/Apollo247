@@ -74,6 +74,17 @@ export const PrescriptionOptions: React.FC<Props> = ({
   const [prescriptionsLoading, setPrescriptionsLoading] = useState<boolean>(false);
   const [cartPrescriptionOptions, setCartPrescriptionOptions] = useState<any[]>([]);
   const { setSelectedPrescriptionType } = useAppCommonData();
+  const [isAddNewMember, setIsAddNewMember] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (allCurrentPatients?.length) {
+      const isNewMember = allCurrentPatients.find(
+        (patient: GetCurrentPatients_getCurrentPatients_patients) =>
+          patient?.firstName?.toLowerCase() === '+add member'
+      );
+      setIsAddNewMember(!isNewMember);
+    }
+  }, [allCurrentPatients]);
 
   useEffect(() => {
     getPrescriptionOptions();
@@ -220,6 +231,7 @@ export const PrescriptionOptions: React.FC<Props> = ({
           <Text style={styles.consultationFor}>{'You are buying medicines for:'}</Text>,
           <Divider />,
           renderProfiles(),
+          renderAddNewProfile(),
           <View style={styles.consultAttentionView}>
             <FreeShippingIcon style={styles.freeShippingIcon} />
             <Text style={styles.lightWeightBlue}>
@@ -267,6 +279,30 @@ export const PrescriptionOptions: React.FC<Props> = ({
           <Button {...props} />
         ))}
       </View>
+    );
+  };
+
+  const renderAddNewProfile = () => {
+    const onPress = () => {
+      navigation.navigate(AppRoutes.EditProfile, {
+        isEdit: false,
+        mobileNumber: currentPatient?.mobileNumber,
+      });
+    };
+
+    return (
+      isAddNewMember && (
+        <View style={styles.profileWrapper}>
+          <Button
+            onPress={onPress}
+            title={'+Add Member'}
+            containerStyle={styles.profileBtnContainer}
+            buttonStyle={styles.profileBtn}
+            titleStyle={styles.profileBtnTitle}
+            type={'outline'}
+          />
+        </View>
+      )
     );
   };
 
