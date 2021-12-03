@@ -106,8 +106,8 @@ export const useServerCart = () => {
       });
   };
 
-  const fetchServerCart = () => {
-    console.log('fetchServerCart inputData >>>>> ', currentPatient?.id);
+  const fetchServerCart = (userAgentInput?: string) => {
+    console.log('fetchServerCart inputData userAgent >>>>> ', userAgent);
     client
       .query({
         query: SERVER_CART_FETCH_CART,
@@ -116,7 +116,7 @@ export const useServerCart = () => {
         },
         context: {
           headers: {
-            'User-Agent': userAgent,
+            'User-Agent': userAgentInput || userAgent,
           },
         },
         fetchPolicy: 'no-cache',
@@ -125,7 +125,7 @@ export const useServerCart = () => {
         const fetchCartResponse = result?.data?.fetchCart;
         console.log('fetchCartResponse >>>>> ', JSON.stringify(fetchCartResponse));
         if (fetchCartResponse?.errorMessage) {
-          setServerCartErrorMessage?.(fetchCartResponse?.errorMessage || genericErrorMessage);
+          // setServerCartErrorMessage?.(fetchCartResponse?.errorMessage);
           return;
         }
         if (fetchCartResponse?.data?.patientId) {

@@ -2,8 +2,6 @@ import React from 'react';
 import { StyleSheet, Text, FlatList, View } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { CartItemCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/CartItemCard';
-import { CartItemCard2 } from '@aph/mobile-patients/src/components/MedicineCart/Components/CartItemCard2';
 import { ShoppingCartItem } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { postwebEngageProductRemovedEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';

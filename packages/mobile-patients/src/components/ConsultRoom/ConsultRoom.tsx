@@ -956,6 +956,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const fetchUserAgent = () => {
     try {
       let userAgent = UserAgent?.getUserAgent();
+      if (userAgent) {
+        fetchServerCart(userAgent);
+      }
       AsyncStorage.setItem(USER_AGENT, userAgent);
     } catch {}
   };
@@ -1109,7 +1112,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       setVaccineLoacalStorageData();
       checkApisToCall();
       getUserBanners();
-      fetchServerCart();
+      // fetchServerCart();
 
       AsyncStorage.getItem('verifyCorporateEmailOtpAndSubscribe').then((data) => {
         if (JSON.parse(data || 'false') === true) {
@@ -2552,7 +2555,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
     getProductCashbackDetails();
     getUserProfileType();
-    fetchServerCart();
+    // fetchServerCart();
   }, []);
 
   const initializeVoip = () => {
