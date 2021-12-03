@@ -5437,7 +5437,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               <View style={styles.viewName}>
                 {renderMenuOptions()}
 
-                {!offersListLoading && offersListCache.length === 0 && myDoctorsCount === 0
+                {!offersListLoading && offersList.length === 0 && myDoctorsCount === 0
                   ? null
                   : renderHeadings('Offers For You')}
                 {offersListCache.length === 0 && offersListLoading && renderOffersForYouShimmer()}
