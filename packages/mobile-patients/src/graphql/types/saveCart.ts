@@ -33,12 +33,17 @@ export interface saveCart_saveCart_data_couponDetails {
   coupon: string | null;
   couponMessage: string | null;
   valid: boolean | null;
+  textOffer: string | null;
+  reason: string | null;
+  circleBenefits: boolean | null;
 }
 
 export interface saveCart_saveCart_data_prescriptionDetails {
   __typename: "PrescriptionDetailsResponse";
   prescriptionImageUrl: string | null;
   prismPrescriptionFileId: string | null;
+  uhid: string | null;
+  appointmentId: string | null;
 }
 
 export interface saveCart_saveCart_data_subscriptionDetails {
@@ -51,6 +56,7 @@ export interface saveCart_saveCart_data_subscriptionDetails {
   currentSellingPrice: number | null;
   validDuration: number | null;
   durationInMonth: number | null;
+  subscriptionApplied: boolean | null;
 }
 
 export interface saveCart_saveCart_data_medicineOrderCartLineItems {
@@ -73,7 +79,7 @@ export interface saveCart_saveCart_data_medicineOrderCartLineItems {
   isInStock: number | null;
   maxOrderQty: number | null;
   sellOnline: number | null;
-  tat: any | null;
+  tat: string | null;
   tatDuration: string | null;
   isCouponApplicable: CouponApplicable | null;
   cashback: number | null;
@@ -94,7 +100,6 @@ export interface saveCart_saveCart_data {
   couponDetails: saveCart_saveCart_data_couponDetails | null;
   prescriptionDetails: (saveCart_saveCart_data_prescriptionDetails | null)[] | null;
   prescriptionType: PrescriptionType | null;
-  appointmentId: string | null;
   subscriptionDetails: saveCart_saveCart_data_subscriptionDetails | null;
   medicineOrderCartLineItems: saveCart_saveCart_data_medicineOrderCartLineItems[] | null;
 }
