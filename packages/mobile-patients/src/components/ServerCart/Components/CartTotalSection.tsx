@@ -8,7 +8,7 @@ export interface CartTotalSectionProps {}
 
 export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
   const { circleMembershipCharges, serverCartAmount, cartCircleSubscriptionId } = useShoppingCart();
-  console.log('serverCartAmount >>>> ', serverCartAmount);
+  // console.log('serverCartAmount >>>> ', serverCartAmount);
   const {
     cartTotal,
     cartSavings,

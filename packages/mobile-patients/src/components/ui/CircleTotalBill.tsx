@@ -19,6 +19,9 @@ export const CircleTotalBill: React.FC<CircleTotalBillProps> = (props) => {
     subscriptionCoupon,
     subscriptionHCUsed,
   } = useShoppingCart();
+  console.log('selectedPlan >>>> ', selectedPlan);
+  console.log('defaultCirclePlan >>>> ', defaultCirclePlan);
+  console.log('circlePlanSelected >>>> ', circlePlanSelected);
   const planSellingPrice = selectedPlan
     ? selectedPlan?.currentSellingPrice
     : defaultCirclePlan

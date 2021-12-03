@@ -3,12 +3,43 @@ import { TouchableOpacity, View, StyleSheet } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CheckedIcon } from '../../ui/Icons';
 import { CareCashbackBanner } from '../../ui/CareCashbackBanner';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
+import { NavigationScreenProps } from 'react-navigation';
 
-export interface ApplyCircleBenefitsProps {}
+export interface ApplyCircleBenefitsProps extends NavigationScreenProps {}
 
 export const ApplyCircleBenefits: React.FC<ApplyCircleBenefitsProps> = (props) => {
-  return (
-    <TouchableOpacity activeOpacity={0.7} style={styles.applyBenefits} onPress={() => {}}>
+  const { cartCircleSubscriptionId } = useShoppingCart();
+  // console.log('cartCircleSubscriptionId >>>>>> ', cartCircleSubscriptionId);
+
+  const renderSelectCirclePlans = () => {
+    return (
+      <CircleMembershipPlans
+        navigation={props.navigation}
+        isConsultJourney={false}
+        onSelectMembershipPlan={(plan) => {
+          // if (plan && !coupon) {
+          //   // if plan is selected
+          //   fireCircleBuyNowEvent(currentPatient);
+          //   setCircleMembershipCharges && setCircleMembershipCharges(plan?.currentSellingPrice);
+          //   setCircleSubPlanId && setCircleSubPlanId(plan?.subPlanId);
+          // } else {
+          //   // if plan is removed
+          //   setShowCareSelectPlans(false);
+          //   setCircleMembershipCharges && setCircleMembershipCharges(0);
+          // }
+        }}
+        source={'Pharma Cart'}
+        from={string.banner_context.PHARMA_CART}
+        circleEventSource={'Cart(Pharma)'}
+      />
+    );
+  };
+
+  const renderBenefitsApplied = () => {
+    return (
       <View style={{ flexDirection: 'row' }}>
         <CheckedIcon style={{ marginTop: 8, marginRight: 4 }} />
         <CareCashbackBanner
@@ -17,6 +48,11 @@ export const ApplyCircleBenefits: React.FC<ApplyCircleBenefitsProps> = (props) =
           logoStyle={styles.circleLogo}
         />
       </View>
+    );
+  };
+  return (
+    <TouchableOpacity activeOpacity={0.7} style={styles.applyBenefits} onPress={() => {}}>
+      {!!cartCircleSubscriptionId ? renderBenefitsApplied() : renderSelectCirclePlans()}
     </TouchableOpacity>
   );
 };

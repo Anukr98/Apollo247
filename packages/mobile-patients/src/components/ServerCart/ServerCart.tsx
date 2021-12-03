@@ -112,6 +112,8 @@ import { useServerCart } from './useServerCart';
 import { ApplyCircleBenefits } from './Components/ApplyCircleBenefits';
 import { CartTotalSection } from './Components/CartTotalSection';
 import { ServerCartItemsList } from './Components/ServerCartItemsList';
+import { CouponSection } from '@aph/mobile-patients/src/components/ServerCart/Components/CouponSection';
+import { ServerCartTatBottomContainer } from '@aph/mobile-patients/src/components/ServerCart/Components/ServerCartTatBottomContainer';
 
 export interface ServerCartProps extends NavigationScreenProps {}
 
@@ -132,7 +134,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     />
   );
 
-  const renderHeader = () => <CartHeader />;
+  const renderHeader = () => <CartHeader navigation={props.navigation} />;
 
   // message to user about unserviceable items in cart
   const renderUnServiceable = () => <UnServiceable style={{ marginTop: 24 }} />;
@@ -152,7 +154,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
   );
 
   const renderCouponSection = () => (
-    <Coupon
+    <CouponSection
       onPressApplyCoupon={() => props.navigation.navigate(AppRoutes.ViewCoupons)}
       onPressRemove={() => {}}
     />
@@ -163,31 +165,66 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
       <View style={styles.amountHeader}>
         <Text style={styles.amountHeaderText}>TOTAL CHARGES</Text>
       </View>
-      {!!cartCircleSubscriptionId && <ApplyCircleBenefits />}
+      <ApplyCircleBenefits navigation={props.navigation} />
       {renderCouponSection()}
       {!!serverCartAmount && <CartTotalSection />}
     </View>
   );
 
+  const renderProceedBar = () => {
+    return (
+      <ServerCartTatBottomContainer
+        navigation={props.navigation}
+        // onPressAddDeliveryAddress={() => {
+        //   // props.navigation.navigate(AppRoutes.AddAddressNew, {
+        //   //   source: 'Cart' as AddressSource,
+        //   //   addOnly: true,
+        //   // });
+        //   // postPharmacyAddNewAddressClick('Cart');
+        // }}
+        // onPressSelectDeliveryAddress={() => {
+        //   // selectDeliveryAddressClickedEvent(currentPatient?.id, JSON.stringify(cartItems));
+        //   // showAddressPopup();
+        // }}
+        // onPressUploadPrescription={() => {}}
+        // deliveryTime={'sadsd'}
+        // onPressChangeAddress={() => {}}
+        screen={'MedicineCart'}
+        // onPressReviewOrder={() => {}}
+        // onPressAddMoreMedicines={() => {
+        //   props.navigation.navigate('MEDICINES');
+        // }}
+        onPressTatCard={() => {
+          // uploadPrescriptionRequired
+          //   ? redirectToUploadPrescription()
+          //   : physicalPrescriptions?.length > 0
+          //   ? uploadPhysicalPrescriptons()
+          //   : onPressReviewOrder();
+        }}
+      />
+    );
+  };
+
   const renderScreen = () => (
-    <ScrollView
-      contentContainerStyle={
-        {
-          /*paddingBottom: 200*/
-        }
-      }
-    >
+    <>
       {renderUnServiceable()}
       {renderCartItems()}
-    </ScrollView>
+    </>
   );
 
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-        {serverCartItems?.length ? renderScreen() : renderEmptyCart()}
-        {renderAmountSection()}
+        <ScrollView
+          contentContainerStyle={{
+            paddingBottom: 200,
+          }}
+        >
+          {serverCartItems?.length ? renderScreen() : renderEmptyCart()}
+          {renderAmountSection()}
+        </ScrollView>
+        {renderProceedBar()}
       </SafeAreaView>
     </View>
   );

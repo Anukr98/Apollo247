@@ -32,14 +32,16 @@ type ServerCartDataResponse = {
   amount: ServerCartAmount;
   medicineOrderCartLineItems: ServerCartLineItemsResponse[];
   zipcode: string;
-  latitude: number;
-  longitude: number;
-  patientAddressId: string;
-  coupon: string;
-  prescriptionDetails: ServerPrescriptionDetails[];
-  prescriptionType: PrescriptionType;
-  appointmentId: string;
+  latitude?: number;
+  longitude?: number;
+  patientAddressId?: string;
+  coupon?: string;
+  couponMessage?: string;
+  prescriptionDetails?: ServerPrescriptionDetails[];
+  prescriptionType?: PrescriptionType;
+  appointmentId?: string;
   subscriptionDetails?: ServerCartSubscriptionResponse;
+  tat?: string;
 };
 
 type ServerCartAmount = {
@@ -95,6 +97,11 @@ type ServerCartSubscriptionResponse = {
   currentSellingPrice?: number;
   durationInMonths?: number;
   validDuration?: number;
+};
+
+type ServerCartCouponDetails = {
+  coupon?: string;
+  couponMessage?: string;
 };
 
 export interface ShoppingCartItem {
@@ -248,10 +255,20 @@ export interface ShoppingCartContextProps {
   // server cart values start
   serverCartItems: ServerCartLineItemsResponse[];
   setServerCartItems: ((items: ServerCartLineItemsResponse[]) => void) | null;
-  serverCartAmount: ServerCartAmount;
+  serverCartAmount: ServerCartAmount | null;
   setServerCartAmount: ((items: ServerCartAmount) => void) | null;
   cartCircleSubscriptionId: string;
   setCartCircleSubscriptionId: ((id: string) => void) | null;
+  cartCoupon: ServerCartCouponDetails | null;
+  setCartCoupon: ((coupon: ServerCartCouponDetails) => void) | null;
+  cartTat: string;
+  setCartTat: ((tat: string) => void) | null;
+  cartAddressId: string;
+  setCartAddressId: ((address: string) => void) | null;
+  cartPrescriptions: ServerPrescriptionDetails[];
+  setCartPrescriptions: ((prescriptions: ServerPrescriptionDetails[]) => void) | null;
+  isCartPrescriptionRequired: boolean;
+  setIsCartPrescriptionRequired: ((value: boolean) => void) | null;
   // server cart values stop
   cartItems: ShoppingCartItem[];
   setCartItems: ((items: ShoppingCartItem[]) => void) | null;
@@ -410,6 +427,16 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setCartCircleSubscriptionId: null,
   serverCartAmount: null,
   setServerCartAmount: null,
+  cartCoupon: null,
+  setCartCoupon: null,
+  cartTat: '',
+  setCartTat: null,
+  cartAddressId: '',
+  setCartAddressId: null,
+  cartPrescriptions: [],
+  setCartPrescriptions: null,
+  isCartPrescriptionRequired: false,
+  setIsCartPrescriptionRequired: null,
 
   cartItems: [],
   setCartItems: null,
@@ -574,6 +601,15 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [serverCartAmount, setServerCartAmount] = useState<
     ShoppingCartContextProps['serverCartAmount']
   >(null);
+  const [cartCoupon, setCartCoupon] = useState<ShoppingCartContextProps['cartCoupon']>(null);
+  const [cartTat, setCartTat] = useState<ShoppingCartContextProps['cartTat']>('');
+  const [cartAddressId, setCartAddressId] = useState<ShoppingCartContextProps['cartAddressId']>('');
+  const [cartPrescriptions, setCartPrescriptions] = useState<
+    ShoppingCartContextProps['cartPrescriptions']
+  >([]);
+  const [isCartPrescriptionRequired, setIsCartPrescriptionRequired] = useState<
+    ShoppingCartContextProps['isCartPrescriptionRequired']
+  >(false);
 
   const [cartItems, _setCartItems] = useState<ShoppingCartContextProps['cartItems']>([]);
   const [couponDiscount, setCouponDiscount] = useState<ShoppingCartContextProps['couponDiscount']>(
@@ -1037,6 +1073,24 @@ export const ShoppingCartProvider: React.FC = (props) => {
   };
 
   useEffect(() => {
+    // check if prescription is required
+    if (serverCartItems?.length) {
+      const isPrescriptionCartItem = serverCartItems.findIndex(
+        (item) => item.isPrescriptionRequired == '1'
+      );
+      if (isPrescriptionCartItem >= 0) {
+        if (cartPrescriptions?.length > 0) {
+          setIsCartPrescriptionRequired(false);
+        } else {
+          setIsCartPrescriptionRequired(true);
+        }
+      } else {
+        setIsCartPrescriptionRequired(false);
+      }
+    }
+  }, [cartPrescriptions, serverCartItems]);
+
+  useEffect(() => {
     orders?.length ? updateShipments() : setDefaultShipment();
   }, [orders, coupon, cartItems, deliveryCharges, grandTotal]);
 
@@ -1405,6 +1459,16 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setCartCircleSubscriptionId,
         serverCartAmount,
         setServerCartAmount,
+        cartCoupon,
+        setCartCoupon,
+        cartTat,
+        setCartTat,
+        cartAddressId,
+        setCartAddressId,
+        cartPrescriptions,
+        setCartPrescriptions,
+        isCartPrescriptionRequired,
+        setIsCartPrescriptionRequired,
 
         cartItems,
         setCartItems,
