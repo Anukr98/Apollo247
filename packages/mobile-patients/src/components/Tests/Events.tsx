@@ -871,14 +871,13 @@ export function DiagnosticCallToOrderClicked(
   isDiagnosticCircleSubscription?: boolean | undefined
 ) {
   const getPatientAttributes = createPatientAttributes(currentPatient);
-  const eventAttributes:
-    | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_CALL_TO_ORDER_CLICKED] = {
+  const eventAttributes: CleverTapEvents[CleverTapEventName.DIAGNOSTIC_CALL_TO_ORDER_CLICKED] = {
     ...getPatientAttributes,
     'Mobile Number': currentPatient?.mobileNumber,
-    'Page': page,
+    Page: page,
     'Section Name': sectionName,
-    'ItemId': itemId,
-    'ItemName': itemName,
+    ItemId: itemId,
+    ItemName: itemName,
     'Patient City': city,
     'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
   };

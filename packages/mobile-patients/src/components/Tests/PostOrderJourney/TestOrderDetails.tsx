@@ -47,6 +47,7 @@ import {
   nameFormater,
   navigateToScreenWithEmptyStack,
   removeWhiteSpaces,
+  showDiagnosticCTA,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -165,24 +166,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [dropDownItemListIndex, setDropDownItemListIndex] = useState([] as any);
   const [showViewReportModal, setShowViewReportModal] = useState<boolean>(false);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
-  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
-  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
-  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
-    CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY
-  );
-  const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
-    if (item?.ctaCityId == Number(diagnosticServiceabilityData?.cityId)) {
-      if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY)) {
-        return item;
-      } else {
-        return null;
-      }
-    } else if (isCtaDetailDefault) {
-      return callToOrderDetails?.ctaDetailsDefault;
-    } else {
-      return null;
-    }
-  });
   const [orderDetails, setOrderDetails] = useState([] as any);
   const [orderSubscriptionDetails, setOrderSubscriptionDetails] = useState(null);
   const scrollToSlots = (yValue?: number) => {
@@ -192,6 +175,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const { diagnosticServiceabilityData } = useAppCommonData();
   const isPrepaid = selectedOrder?.paymentType === DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
+  const getCTADetails = showDiagnosticCTA(
+    CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY,
+    diagnosticServiceabilityData?.cityId!
+  );
+
   //for showing the order level status.
   const fetchOrderLevelStatus = (orderId: string) =>
     client.query<getHCOrderFormattedTrackingHistory, getHCOrderFormattedTrackingHistoryVariables>({
@@ -1528,7 +1516,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const renderCallToOrder = () => {
-    return ctaDetailMatched?.length ? (
+    return getCTADetails?.length ? (
       <CallToOrderView
         cityId={Number(diagnosticServiceabilityData?.cityId)}
         customMargin={80}

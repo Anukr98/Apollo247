@@ -298,7 +298,6 @@ const appStaticVariables = {
   TrueCaller_Login_Enabled: false,
   Ask_Apollo_Number: '18605001066',
   LONG_CHAT_LAUNCH_DATE: '23/10/2021',
-  offerIconBaseUrl: 'https://newassets.apollo247.com/images/payment_offer_icons/',
   DIAGNOSTICS_NO_CIRCLE_SAVINGS_TEXT: 'Extra 15% off on lab tests and cashback on medicine orders',
   DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER: {
     ctaDetailsOnCityId: [
@@ -334,7 +333,19 @@ const appStaticVariables = {
       "topBookedTests": string.diagnostics.topBookedTests,
       "similarPackages": string.diagnostics.similarPackages
     },
-};
+  DIAGNOSTICS_CERTIFICATE_IMAGE_ARRAY : [
+    require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
+    require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_2.webp'),
+    require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_3.webp'),
+    require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_4.webp'),
+  ],  
+  DIAGNOSTICS_WHY_BOOK_US_IMAGE_ARRAY :[
+    { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_0.webp') },
+    { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_1.webp') },
+    { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_2.webp') },
+    { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_3.webp') },
+  ]
+}
 
 const DEV_top_specialties = [
   {

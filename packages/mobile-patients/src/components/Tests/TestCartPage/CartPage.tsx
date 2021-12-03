@@ -25,6 +25,7 @@ import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   setAsyncPharmaLocation,
+  showDiagnosticCTA,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   DiagnosticPatientCartItem,
@@ -113,7 +114,7 @@ import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/compo
 type Address = savePatientAddress_savePatientAddress_patientAddress;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
 
-export enum SOURCE {
+enum SOURCE {
   ADD = 'add',
   REMOVE = 'remove',
 }
@@ -197,24 +198,11 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const isCartPresent = isDiagnosticSelectedCartEmpty(
     isModifyFlow ? modifiedPatientCart : patientCartItems
   );
-  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
-  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
-  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
-    CALL_TO_ORDER_CTA_PAGE_ID.TESTCART
+
+  const getCTADetails = showDiagnosticCTA(
+    CALL_TO_ORDER_CTA_PAGE_ID.TESTCART,
+    deliveryAddressCityId
   );
-  const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
-    if (item?.ctaCityId == deliveryAddressCityId) {
-      if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTCART)) {
-        return item;
-      } else {
-        return null;
-      }
-    } else if (isCtaDetailDefault) {
-      return callToOrderDetails?.ctaDetailsDefault;
-    } else {
-      return null;
-    }
-  });
 
   const patientsOnCartPage = !!isCartPresent && isCartPresent?.map((item) => item?.patientId);
   const patientListForOverlay =
@@ -1725,7 +1713,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   };
 
   const renderCallToOrder = () => {
-    return ctaDetailMatched?.length ? (
+    return getCTADetails?.length ? (
       <CallToOrderView
         cityId={deliveryAddressCityId}
         customMargin={showNonServiceableText ? 240 : 180}
