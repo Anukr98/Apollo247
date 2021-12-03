@@ -29,6 +29,10 @@ import {
   saveCart_saveCart_data_prescriptionDetails,
   saveCart_saveCart_data_subscriptionDetails,
 } from '@aph/mobile-patients/src/graphql/types/saveCart';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 export interface ShoppingCartItem {
   id: string;
   name: string;
@@ -171,6 +175,13 @@ export interface CartLocationDetails {
   state?: string;
 }
 
+export interface AddToCartSource {
+  source: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source'];
+  section?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Section'];
+  categoryId?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category ID'];
+  categoryName?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category name'];
+}
+
 export interface ShoppingCartContextProps {
   // server cart values start
   serverCartItems: saveCart_saveCart_data_medicineOrderCartLineItems[];
@@ -210,6 +221,8 @@ export interface ShoppingCartContextProps {
   setCartSuggestedProducts: ((products: any[]) => void) | null;
   cartLocationDetails: CartLocationDetails;
   setCartLocationDetails: ((products: CartLocationDetails) => void) | null;
+  addToCartSource: AddToCartSource | null; // for add to cart events
+  setAddToCartSource: ((source: AddToCartSource) => void) | null;
   // server cart values stop
   cartItems: ShoppingCartItem[];
   setCartItems: ((items: ShoppingCartItem[]) => void) | null;
@@ -380,6 +393,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setCartSuggestedProducts: null,
   cartLocationDetails: {},
   setCartLocationDetails: null,
+  addToCartSource: null,
+  setAddToCartSource: null,
 
   cartItems: [],
   setCartItems: null,
@@ -561,6 +576,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [cartLocationDetails, setCartLocationDetails] = useState<
     ShoppingCartContextProps['cartLocationDetails']
   >({});
+  const [addToCartSource, setAddToCartSource] = useState<
+    ShoppingCartContextProps['addToCartSource']
+  >(null);
 
   const [cartItems, _setCartItems] = useState<ShoppingCartContextProps['cartItems']>([]);
   const [couponDiscount, setCouponDiscount] = useState<ShoppingCartContextProps['couponDiscount']>(
@@ -1378,6 +1396,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setCartSuggestedProducts,
         cartLocationDetails,
         setCartLocationDetails,
+        addToCartSource,
+        setAddToCartSource,
 
         cartItems,
         setCartItems,

@@ -77,6 +77,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     cartItems,
     asyncPincode,
     serverCartItems,
+    setAddToCartSource,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
 
@@ -329,6 +330,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     };
 
     const onPressAddToCart = (item: MedicineProduct) => {
+      setAddToCartSource?.({ source: 'Pharmacy Full Search', categoryId: item?.category_id });
       setUserActionPayload?.({
         medicineOrderCartLineItems: [
           {

@@ -49,7 +49,12 @@ export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
   const defaultMaxDiscount = '100';
   const [itemsLoading, setItemsLoading] = useState<{ [key: string]: boolean }>({});
   const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
-  const { serverCartItems, pharmacyCircleAttributes, asyncPincode } = useShoppingCart();
+  const {
+    serverCartItems,
+    pharmacyCircleAttributes,
+    asyncPincode,
+    setAddToCartSource,
+  } = useShoppingCart();
   const { setUserActionPayload } = useServerCart();
   const pharmacyPincode =
     asyncPincode?.pincode || pharmacyLocation?.pincode || locationDetails?.pincode;
@@ -260,6 +265,7 @@ export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
   const onAddCartItem = (item: MedicineProduct) => {
     const { sku } = item;
     setItemsLoading({ ...itemsLoading, [sku]: true });
+    setAddToCartSource?.({ source: 'Brands', categoryId: item?.category_id });
     setUserActionPayload?.({
       medicineOrderCartLineItems: [
         {

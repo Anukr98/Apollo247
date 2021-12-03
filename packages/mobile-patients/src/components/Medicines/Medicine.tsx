@@ -107,7 +107,6 @@ import {
   postCleverTapEvent,
   getUserType,
   getCleverTapCircleMemberValues,
-  addPharmaItemToCart,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { USER_AGENT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
@@ -300,6 +299,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     cartLocationDetails,
     newAddressAdded,
     setNewAddressAdded,
+    setAddToCartSource,
   } = useShoppingCart();
   const {
     setUserActionPayload,
@@ -2152,25 +2152,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           }
         }}
         onPressAddToCart={() => {
-          // const comingFromSearch = true;
-          // const discount = getDiscountPercentage(item?.price, item?.special_price);
-          // const discountPercentage = discount ? discount + '%' : '0%';
-          // const cleverTapSearchSuccessEventAttributes = {
-          //   'Nav src': 'Pharmacy Home',
-          //   Status: 'Success',
-          //   Keyword: searchText,
-          //   Position: index + 1,
-          //   Source: 'Partial search',
-          //   Action: 'Add to cart',
-          //   'Product availability': 'Available',
-          //   'Product position': index + 1 - keywordArr?.length,
-          //   'Results shown': medicineList?.length,
-          //   'SKU ID': item?.sku,
-          //   'Product name': item?.name,
-          //   Discount: discountPercentage,
-          // };
+          setAddToCartSource?.({
+            source: 'Pharmacy Partial Search',
+            categoryId: item?.category_id,
+          });
           addItemToServerCart(item);
-          // onAddCartItem(item, comingFromSearch, cleverTapSearchSuccessEventAttributes);
         }}
         onPressNotify={() => {
           onNotifyMeClick(item.name);

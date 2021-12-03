@@ -24,6 +24,7 @@ import { getProductsByCategoryApi } from '@aph/mobile-patients/src/helpers/apiCa
 import { Helpers } from '@aph/mobile-patients/src/components/MedicineCartPrescription';
 import { USER_AGENT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
 import AsyncStorage from '@react-native-community/async-storage';
+import { addPharmaItemToCart } from '@aph/mobile-patients/src/components/ServerCart/ServerCartHelperFunctions';
 
 export const useServerCart = () => {
   const client = useApolloClient();
@@ -49,8 +50,11 @@ export const useServerCart = () => {
     setCartPrescriptionType,
     cartLocationDetails,
     asyncPincode,
+    addToCartSource,
+    setAddToCartSource,
+    pharmacyCircleAttributes,
   } = useShoppingCart();
-  const { axdcCode } = useAppCommonData();
+  const { axdcCode, isPharmacyLocationServiceable } = useAppCommonData();
   const { setPharmacyLocation } = useAppCommonData();
   const [userActionPayload, setUserActionPayload] = useState<any>(null);
   const [userAgent, setUserAgent] = useState<string>('');
@@ -100,6 +104,9 @@ export const useServerCart = () => {
         }
         if (saveCartResponse?.data?.patientId) {
           const cartResponse = saveCartResponse?.data;
+          if (addToCartSource?.source) {
+            fireAddToCartEvent(cartResponse);
+          }
           setCartValues(cartResponse);
         }
       })
@@ -205,6 +212,24 @@ export const useServerCart = () => {
       setCartSubscriptionDetails?.(cartResponse?.subscriptionDetails);
       setNoOfShipments?.(cartResponse?.noOfShipments);
     } catch (error) {}
+  };
+
+  const fireAddToCartEvent = (cartResponse: any) => {
+    const cartItem = cartResponse?.medicineOrderCartLineItems?.filter(
+      (item) => item?.sku == userActionPayload?.medicineOrderCartLineItems?.[0]?.medicineSKU
+    );
+    if (cartItem?.length) {
+      addPharmaItemToCart(
+        cartItem[0],
+        cartResponse?.zipcode,
+        currentPatient,
+        !!isPharmacyLocationServiceable,
+        addToCartSource,
+        cartResponse?.cartItems?.length,
+        pharmacyCircleAttributes,
+        setAddToCartSource
+      );
+    }
   };
 
   const deleteServerCart = (paymentSuccess: boolean, paymentOrderId: string) => {

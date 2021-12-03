@@ -35,6 +35,7 @@ export const HotSellersSection: React.FC<HotSellersProps> = (props) => {
     pharmacyCircleAttributes,
     asyncPincode,
     medicineHotSellersData,
+    setAddToCartSource,
   } = useShoppingCart();
   const { setUserActionPayload } = useServerCart();
   const pharmacyPincode =
@@ -171,6 +172,7 @@ export const HotSellersSection: React.FC<HotSellersProps> = (props) => {
   const onAddCartItem = (item: MedicineProduct) => {
     const { sku } = item;
     setItemsLoading({ ...itemsLoading, [sku]: true });
+    setAddToCartSource?.({ source: 'Hot Seller', categoryId: item?.category_id });
     setUserActionPayload?.({
       medicineOrderCartLineItems: [
         {
