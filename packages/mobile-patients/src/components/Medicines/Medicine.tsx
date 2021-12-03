@@ -896,7 +896,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }
   const showAccessAccessLocationPopup = (addressList: addressListType, pincodeInput?: boolean) => {
     return showAphAlert!({
-      unDismissable: isunDismissable(),
+      unDismissable: false,
       removeTopIcon: true,
       children: !pincodeInput ? (
         <AccessLocation
@@ -1275,7 +1275,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               </View>
             </TouchableOpacity>
           ) : (
-            <LocationOff />
+            <TouchableOpacity
+              onPress={() => {
+                showAccessAccessLocationPopup(addresses, false);
+              }}
+            >
+              <LocationOff />
+            </TouchableOpacity>
           )}
           {!!serviceabilityMsg && (
             <Text style={localStyles.serviceabilityMsg}>{serviceabilityMsg}</Text>
