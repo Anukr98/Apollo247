@@ -75,14 +75,24 @@ export const ShipmentItem: React.FC<ShipmentItemProps> = (props) => {
           </View>
           {renderQuantity()}
         </View>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          {discountedPrice || discountedPrice == 0
-            ? renderPrice(discountedPrice)
-            : renderPrice(mrp)}
-        </View>
+        {!item?.freeProduct ? (
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            {discountedPrice || discountedPrice == 0
+              ? renderPrice(discountedPrice)
+              : renderPrice(mrp)}
+          </View>
+        ) : (
+          renderFree()
+        )}
       </View>
     );
   };
+
+  const renderFree = () => (
+    <Text style={{ ...theme.fonts.IBMPlexSansMedium(14), lineHeight: 20, color: '#00B38E' }}>
+      FREE
+    </Text>
+  );
 
   const renderQuantity = () => (
     <View style={styles.quantityContainer}>
