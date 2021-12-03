@@ -8,6 +8,9 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import { NavigationScreenProps } from 'react-navigation';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import { fireCircleBuyNowEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { PLAN, PLAN_ID } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 export interface ApplyCircleBenefitsProps extends NavigationScreenProps {}
 
@@ -17,8 +20,10 @@ export const ApplyCircleBenefits: React.FC<ApplyCircleBenefitsProps> = (props) =
     cartSubscriptionDetails,
     serverCartAmount,
     cartCircleSubscriptionId,
+    cartCoupon,
   } = useShoppingCart();
   const { setUserActionPayload } = useServerCart();
+  const { currentPatient } = useAllCurrentPatients();
 
   const renderSelectCirclePlans = () => {
     return (
@@ -26,16 +31,28 @@ export const ApplyCircleBenefits: React.FC<ApplyCircleBenefitsProps> = (props) =
         navigation={props.navigation}
         isConsultJourney={false}
         onSelectMembershipPlan={(plan) => {
-          // if (plan && !coupon) {
-          //   // if plan is selected
-          //   fireCircleBuyNowEvent(currentPatient);
-          //   setCircleMembershipCharges && setCircleMembershipCharges(plan?.currentSellingPrice);
-          //   setCircleSubPlanId && setCircleSubPlanId(plan?.subPlanId);
-          // } else {
-          //   // if plan is removed
-          //   setShowCareSelectPlans(false);
-          //   setCircleMembershipCharges && setCircleMembershipCharges(0);
-          // }
+          if (plan && !cartCoupon?.coupon) {
+            // if plan is selected
+            fireCircleBuyNowEvent(currentPatient);
+            setUserActionPayload?.({
+              subscription: {
+                planId: PLAN_ID.CIRCLEPlan,
+                subPlanId: plan?.subPlanId,
+                TYPE: PLAN.CARE_PLAN,
+                subscriptionApplied: true,
+              },
+            });
+          } else {
+            // if plan is removed
+            setUserActionPayload?.({
+              subscription: {
+                planId: null,
+                subPlanId: null,
+                TYPE: null,
+                subscriptionApplied: false,
+              },
+            });
+          }
         }}
         source={'Pharma Cart'}
         from={string.banner_context.PHARMA_CART}

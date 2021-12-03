@@ -33,7 +33,8 @@ export const useServerCart = () => {
     setServerCartErrorMessage,
     setServerCartLoading,
     setCartSuggestedProducts,
-
+    setCartLocationDetails,
+    cartLocationDetails,
     pinCode,
   } = useShoppingCart();
   const { axdcCode } = useAppCommonData();
@@ -150,6 +151,11 @@ export const useServerCart = () => {
       setCartCoupon?.(cartResponse?.couponDetails);
       setCartPrescriptions?.(cartResponse?.prescriptionDetails);
       if (cartResponse?.patientAddressId) setCartAddressId?.(cartResponse?.patientAddressId);
+      setCartLocationDetails?.({
+        pincode: cartResponse?.zipcode,
+        latitude: cartResponse?.latitude,
+        longitude: cartResponse?.longitude,
+      });
       setCartSubscriptionDetails?.(cartResponse?.subscriptionDetails);
       setNoOfShipments?.(cartResponse?.noOfShipments);
     } catch (error) {}
@@ -191,7 +197,7 @@ export const useServerCart = () => {
         null,
         null,
         axdcCode,
-        pinCode
+        cartLocationDetails?.pincode || pinCode
       );
       const products = response?.data?.products.slice(0, 15) || [];
       setCartSuggestedProducts?.(products);

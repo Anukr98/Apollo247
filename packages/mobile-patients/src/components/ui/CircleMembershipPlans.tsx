@@ -304,14 +304,6 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         'add',
         currentPatient
       );
-      setUserActionPayload?.({
-        subscription: {
-          planId: PLAN_ID.CIRCLEPlan,
-          subPlanId: membershipPlan?.subPlanId,
-          TYPE: PLAN.CARE_PLAN,
-          subscriptionApplied: true,
-        },
-      });
     } else if (isConsultJourney) {
       !isModal &&
         circleWebEngageEventForAddToCart(
@@ -325,21 +317,16 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
       !isModal && fireCirclePlanToCartEvent(membershipPlan);
       setCircleMembershipCharges && setCircleMembershipCharges(membershipPlan?.currentSellingPrice);
-      // setUserActionPayload?.({
-      //   subscription: {
-      //     planId: PLAN_ID.CIRCLEPlan,
-      //     subPlanId: membershipPlan?.subPlanId,
-      //     TYPE: PLAN.CARE_PLAN,
-      //     subscriptionApplied: true,
-      //   },
-      // });
       onSelectMembershipPlan && onSelectMembershipPlan(membershipPlan);
     }
-    // setDefaultCirclePlan && setDefaultCirclePlan(null);
-    // setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
-    // fireMembershipPlanSelected();
-    // setCirclePlanSelected && setCirclePlanSelected(membershipPlan);
-    // AsyncStorage.setItem('circlePlanSelected', JSON.stringify(membershipPlan));
+    setUserActionPayload?.({
+      subscription: {
+        planId: PLAN_ID.CIRCLEPlan,
+        subPlanId: membershipPlan?.subPlanId,
+        TYPE: PLAN.CARE_PLAN,
+        subscriptionApplied: true,
+      },
+    });
   };
 
   const fireCircleKnowMoreEvent = () => {

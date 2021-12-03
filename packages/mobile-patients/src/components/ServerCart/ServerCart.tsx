@@ -3,7 +3,6 @@ import { NavigationScreenProps } from 'react-navigation';
 import {
   View,
   SafeAreaView,
-  TouchableOpacity,
   Text,
   StyleSheet,
   ScrollView,
@@ -12,77 +11,22 @@ import {
   BackHandler,
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  CommonBugFender,
-  CommonLogEvent,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import {
-  useShoppingCart,
-  ShoppingCartItem,
-  PhysicalPrescription,
-} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { FreeDelivery } from '@aph/mobile-patients/src/components/MedicineCart/Components/FreeDelivery';
-import { Coupon } from '@aph/mobile-patients/src/components/MedicineCart/Components/Coupon';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { Savings } from '@aph/mobile-patients/src/components/MedicineCart/Components/Savings';
-import { KerbSidePickup } from '@aph/mobile-patients/src/components/MedicineCart/Components/KerbSidePickup';
-import { ProceedBar } from '@aph/mobile-patients/src/components/MedicineCart/Components/ProceedBar';
-import { ChooseAddress } from '@aph/mobile-patients/src/components/MedicineCart/Components/ChooseAddress';
-import { useApolloClient } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
-  getPatientAddressList,
-  getPatientAddressListVariables,
-} from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
-import {
-  GET_PATIENT_ADDRESS_LIST,
-  UPLOAD_DOCUMENT,
-  SET_DEFAULT_ADDRESS,
-  GET_ONEAPOLLO_USER,
-} from '@aph/mobile-patients/src/graphql/profiles';
-import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
-import {
-  g,
   formatAddress,
-  formatAddressToLocation,
-  getShipmentPrice,
-  validateCoupon,
   setAsyncPharmaLocation,
-  getPackageIds,
-  getIsMedicine,
-  getNetStatus,
-  isCartPriceWithInSpecifiedRange,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
-import {
-  pinCodeServiceabilityApi247,
-  availabilityApi247,
-  GetTatResponse247,
-  getMedicineDetailsApi,
-  TatApiInput247,
-  getDeliveryTAT247,
-  userSpecificCoupon,
-  searchPickupStoresApi,
-  getProductsByCategoryApi,
-} from '@aph/mobile-patients/src/helpers/apiCalls';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { UnServiceable } from '@aph/mobile-patients/src/components/MedicineCart/Components/UnServiceable';
-import { SuggestProducts } from '@aph/mobile-patients/src/components/MedicineCart/Components/SuggestProducts';
-import { EmptyCart } from '@aph/mobile-patients/src/components/MedicineCart/Components/EmptyCart';
 import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
-  postwebEngageProceedToPayEvent,
   PharmacyCartViewedEvent,
-  PricemismatchEvent,
-  postTatResponseFailureEvent,
   applyCouponClickedEvent,
-  selectDeliveryAddressClickedEvent,
   uploadPrescriptionClickedEvent,
-  fireCircleBuyNowEvent,
 } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import {
   postPhamracyCartAddressSelectedFailure,
@@ -90,27 +34,17 @@ import {
   postPharmacyAddNewAddressClick,
   postPharmacyAddNewAddressCompleted,
 } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
-import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 import moment from 'moment';
 import {
   makeAdressAsDefaultVariables,
   makeAdressAsDefault,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
-import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
-import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
-import { CheckedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
-import { CircleCartItem } from '@aph/mobile-patients/src/components/MedicineCart/Components/CircleCartItem';
-import { OneApolloCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/OneApolloCard';
-import AsyncStorage from '@react-native-community/async-storage';
-import { MedicineOrderShipmentInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { useFetchHealthCredits } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useFetchHealthCredits';
-import { CartHeader } from './Components/CartHeader';
-import { useServerCart } from './useServerCart';
-import { ApplyCircleBenefits } from './Components/ApplyCircleBenefits';
-import { CartTotalSection } from './Components/CartTotalSection';
-import { ServerCartItemsList } from './Components/ServerCartItemsList';
+import { CartHeader } from '@aph/mobile-patients/src/components/ServerCart/Components/CartHeader';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import { ApplyCircleBenefits } from '@aph/mobile-patients/src/components/ServerCart/Components/ApplyCircleBenefits';
+import { CartTotalSection } from '@aph/mobile-patients/src/components/ServerCart/Components/CartTotalSection';
+import { ServerCartItemsList } from '@aph/mobile-patients/src/components/ServerCart/Components/ServerCartItemsList';
 import { CouponSection } from '@aph/mobile-patients/src/components/ServerCart/Components/CouponSection';
 import { ServerCartTatBottomContainer } from '@aph/mobile-patients/src/components/ServerCart/Components/ServerCartTatBottomContainer';
 import { CartSavings } from '@aph/mobile-patients/src/components/ServerCart/Components/CartSavings';
@@ -118,6 +52,11 @@ import { UnServiceableMessage } from '@aph/mobile-patients/src/components/Server
 import { CartCircleItem } from '@aph/mobile-patients/src/components/ServerCart/Components/CartCircleItem';
 import { CartPrescriptions } from '@aph/mobile-patients/src/components/ServerCart/Components/CartPrescriptions';
 import { CartSuggestProducts } from '@aph/mobile-patients/src/components/ServerCart/Components/CartSuggestedProducts';
+import { HealthCreditsCard } from '@aph/mobile-patients/src/components/ServerCart/Components/HealthCreditsCard';
+import { KerbSidePickup } from '@aph/mobile-patients/src/components/ServerCart/Components/KerbSidePickup';
+import { ChooseAddress } from '@aph/mobile-patients/src/components/ServerCart/Components/ChooseAddress';
+import { EmptyCart } from '@aph/mobile-patients/src/components/ServerCart/Components/EmptyCart';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export interface ServerCartProps extends NavigationScreenProps {}
 
@@ -135,7 +74,11 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     setCartCoupon,
     isCartPrescriptionRequired,
     cartSuggestedProducts,
+
+    pharmacyCircleAttributes,
   } = useShoppingCart();
+  const shoppingCart = useShoppingCart();
+  const { pharmacyUserTypeAttribute } = useAppCommonData();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const {
     fetchServerCart,
@@ -155,6 +98,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     fetchServerCart();
     if (!addresses?.length) fetchAddress();
     if (!cartSuggestedProducts?.length) fetchProductSuggestions();
+    firePharmacyCartViewedEvent();
   }, []);
 
   useEffect(() => {
@@ -178,44 +122,15 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     }
   }, [newAddressAdded, cartTat]);
 
-  const renderEmptyCart = () => (
-    <EmptyCart
-      onPressAddMedicines={() => {
-        props.navigation.navigate('MEDICINES');
-      }}
-    />
-  );
-
-  const renderAmountSection = () => (
-    <View>
-      <View style={styles.amountHeader}>
-        <Text style={styles.amountHeaderText}>TOTAL CHARGES</Text>
-      </View>
-      <ApplyCircleBenefits navigation={props.navigation} />
-      <CouponSection
-        onPressApplyCoupon={() => {
-          setCartCoupon?.(null);
-          setUserActionPayload?.({
-            coupon: '',
-            subscription: {
-              subscriptionApplied: cartCircleSubscriptionId ? true : false,
-            },
-          });
-          props.navigation.navigate(AppRoutes.ViewCoupons);
-        }}
-        onPressRemove={() => {
-          setUserActionPayload?.({
-            coupon: '',
-            subscription: {
-              subscriptionApplied: cartCircleSubscriptionId ? true : false,
-            },
-          });
-        }}
-      />
-      {!!serverCartAmount && <CartTotalSection />}
-      <CartSavings />
-    </View>
-  );
+  const firePharmacyCartViewedEvent = () => {
+    serverCartItems.length &&
+      PharmacyCartViewedEvent(
+        shoppingCart,
+        currentPatient?.id,
+        pharmacyCircleAttributes!,
+        pharmacyUserTypeAttribute!
+      );
+  };
 
   function showAddressPopup() {
     showAphAlert!({
@@ -261,6 +176,47 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     props.navigation.navigate(AppRoutes.MedicineCartPrescription);
   };
 
+  const onPressApplyCoupon = () => {
+    setCartCoupon?.(null);
+    setUserActionPayload?.({
+      coupon: '',
+      subscription: {
+        subscriptionApplied: cartCircleSubscriptionId ? true : false,
+      },
+    });
+    applyCouponClickedEvent(currentPatient?.id, JSON.stringify(serverCartItems));
+    props.navigation.navigate(AppRoutes.ViewCoupons);
+  };
+
+  const onPressRemoveCoupon = () => {
+    setUserActionPayload?.({
+      coupon: '',
+      subscription: {
+        subscriptionApplied: cartCircleSubscriptionId ? true : false,
+      },
+    });
+  };
+
+  const renderEmptyCart = () => (
+    <EmptyCart
+      onPressAddMedicines={() => {
+        props.navigation.navigate('MEDICINES');
+      }}
+    />
+  );
+
+  const renderAmountSection = () => (
+    <View>
+      <View style={styles.amountHeader}>
+        <Text style={styles.amountHeaderText}>TOTAL CHARGES</Text>
+      </View>
+      <ApplyCircleBenefits navigation={props.navigation} />
+      <CouponSection onPressApplyCoupon={onPressApplyCoupon} onPressRemove={onPressRemoveCoupon} />
+      {!!serverCartAmount && <CartTotalSection />}
+      <CartSavings />
+    </View>
+  );
+
   const renderProceedBar = () => {
     return (
       <ServerCartTatBottomContainer
@@ -288,28 +244,46 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     );
   };
 
-  const renderSuggestProducts = () => {
-    return <CartSuggestProducts navigation={props.navigation} />;
-  };
+  const renderSuggestProducts = () => <CartSuggestProducts navigation={props.navigation} />;
+
+  const renderOneApolloHealthCredits = () => <HealthCreditsCard />;
+
+  const renderUnserviceableMessage = () => <UnServiceableMessage style={{ marginTop: 24 }} />;
+
+  const renderServerCartItemsList = () => (
+    <ServerCartItemsList
+      screen={'serverCart'}
+      setloading={setLoading}
+      onPressProduct={(item) => {
+        props.navigation.navigate(AppRoutes.ProductDetailPage, {
+          urlKey: item?.url_key,
+          sku: item.id,
+          movedFrom: ProductPageViewedSource.CART,
+        });
+      }}
+    />
+  );
+
+  const renderCircleCartItem = () => <CartCircleItem />;
+
+  const renderKerbSidePickup = () => (
+    <KerbSidePickup
+      onPressProceed={() => {
+        props.navigation.navigate(AppRoutes.StorePickup);
+      }}
+    />
+  );
 
   const renderScreen = () => (
     <>
-      <UnServiceableMessage style={{ marginTop: 24 }} />
-      <ServerCartItemsList
-        screen={'serverCart'}
-        setloading={setLoading}
-        onPressProduct={(item) => {
-          props.navigation.navigate(AppRoutes.ProductDetailPage, {
-            urlKey: item?.url_key,
-            sku: item.id,
-            movedFrom: ProductPageViewedSource.CART,
-          });
-        }}
-      />
-      {circlePlanAddedToCart && <CartCircleItem />}
+      {renderUnserviceableMessage()}
+      {renderServerCartItemsList()}
+      {circlePlanAddedToCart && renderCircleCartItem()}
       {renderAmountSection()}
+      {renderOneApolloHealthCredits()}
       {renderPrescriptions()}
       {renderSuggestProducts()}
+      {renderKerbSidePickup()}
     </>
   );
 
