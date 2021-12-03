@@ -331,6 +331,9 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
                   setCouponTextApplied(true);
                   setUserActionPayload?.({
                     coupon: couponText || '',
+                    subscription: {
+                      subscriptionApplied: isCircleCart ? true : false,
+                    },
                   });
                 }
               }}
@@ -417,7 +420,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
           key={i}
           disabled={disableList}
           onPress={() => {
-            couponApply(coupon?.coupon);
+            couponApply(coupon?.coupon, isCircleCoupon(coupon));
           }}
         >
           <View
@@ -448,7 +451,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     });
   };
 
-  const couponApply = (couponText: string) => {
+  const couponApply = (couponText: string, isCircleCoupon?: boolean) => {
     CommonLogEvent(AppRoutes.ViewCoupons, 'Apply Coupon');
     if (isFromConsult) {
       applyConsultCoupon(couponText, true);
@@ -457,7 +460,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
       setUserActionPayload?.({
         coupon: couponText || '',
         subscription: {
-          subscriptionApplied: cartCircleSubscriptionId && isCircleCart ? true : false,
+          subscriptionApplied: isCircleCoupon && isCircleCart ? true : false,
         },
       });
     }
@@ -522,7 +525,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
       setUserActionPayload?.({
         coupon: '',
         subscription: {
-          subscriptionApplied: cartCircleSubscriptionId ? true : false,
+          subscriptionApplied: isCircleCart ? true : false,
         },
       });
     }
