@@ -40,6 +40,7 @@ import {
 } from '../../helpers/helperFunctions';
 import { CleverTapEventName, CleverTapEvents } from '../../helpers/CleverTapEvents';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import { PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 export interface RecordDetailsProps
   extends NavigationScreenProps<{
@@ -62,7 +63,6 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   const prismFile = props.navigation.state.params
     ? props.navigation.state.params.prismPrescriptionFileId
     : '';
-  const { addEPrescription } = useShoppingCart();
   const { setUserActionPayload } = useServerCart();
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
@@ -125,14 +125,20 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           ],
         });
         if (medicineDetails.is_prescription_required == '1') {
-          addEPrescription!({
-            id: data!.id,
-            date: moment(me).format('DD MMMM YYYY'),
-            doctorName: `Meds Rx ${(data.id && data.id.substring(0, data.id.indexOf('-'))) || ''}`,
-            forPatient: (currentPatient && currentPatient.firstName) || '',
-            medicines: `${data.medicineName}`,
-            uploadedUrl: arr[0],
-            prismPrescriptionFileId: prismFile,
+          setUserActionPayload?.({
+            prescriptionType: PrescriptionType.UPLOADED,
+            prescriptionDetails: {
+              prescriptionImageUrl: arr?.[0],
+              prismPrescriptionFileId: prismFile,
+              uhid: currentPatient?.id,
+              meta: {
+                doctorName: `Meds Rx ${(data?.id && data?.id.substring(0, data?.id.indexOf('-'))) ||
+                  ''}`,
+                forPatient: currentPatient?.firstName,
+                medicines: data?.medicineName,
+                date: moment(me).format('DD MMMM YYYY'),
+              },
+            },
           });
         }
 

@@ -226,7 +226,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     data: any[];
   }> | null>(null);
   const { setLoading: setGlobalLoading } = useUIElements();
-  const { setEPrescriptions, ePrescriptions, circleSubscriptionId } = useShoppingCart();
+  const { circleSubscriptionId } = useShoppingCart();
   const { setUserActionPayload } = useServerCart();
   const { locationDetails, setLocationDetails, phrSession, setPhrSession } = useAppCommonData();
   const {
@@ -756,13 +756,6 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
                   },
                 },
               });
-              setEPrescriptions!([
-                ...ePrescriptions.filter((item) => item?.id != presToAdd.id),
-                {
-                  ...presToAdd,
-                  medicines: medicines.map((item: any) => item?.name).join(', '),
-                },
-              ]);
             }
             // Adding tests to DiagnosticsCart
             if (!locationDetails) {

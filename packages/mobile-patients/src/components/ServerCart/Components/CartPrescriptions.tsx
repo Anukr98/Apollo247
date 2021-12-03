@@ -93,7 +93,6 @@ export const CartPrescriptions: React.FC<CartPrescriptionsProps> = (props) => {
         i={i}
         arrayLength={arrayLength}
         onRemove={() => {
-          // removePhysicalPrescription && removePhysicalPrescription(item.title);
           setUserActionPayload?.({
             prescriptionDetails: {
               prismPrescriptionFileId: item?.prismPrescriptionFileId,

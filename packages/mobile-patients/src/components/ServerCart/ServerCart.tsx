@@ -117,6 +117,7 @@ import { CartSavings } from '@aph/mobile-patients/src/components/ServerCart/Comp
 import { UnServiceableMessage } from '@aph/mobile-patients/src/components/ServerCart/Components/UnServiceableMessag';
 import { CartCircleItem } from '@aph/mobile-patients/src/components/ServerCart/Components/CartCircleItem';
 import { CartPrescriptions } from '@aph/mobile-patients/src/components/ServerCart/Components/CartPrescriptions';
+import { CartSuggestProducts } from '@aph/mobile-patients/src/components/ServerCart/Components/CartSuggestedProducts';
 
 export interface ServerCartProps extends NavigationScreenProps {}
 
@@ -133,10 +134,15 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     cartSubscriptionDetails,
     setCartCoupon,
     isCartPrescriptionRequired,
-    cartPrescriptions,
+    cartSuggestedProducts,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
-  const { fetchServerCart, setUserActionPayload, fetchAddress } = useServerCart();
+  const {
+    fetchServerCart,
+    setUserActionPayload,
+    fetchAddress,
+    fetchProductSuggestions,
+  } = useServerCart();
   const [loading, setLoading] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
 
@@ -147,9 +153,8 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
 
   useEffect(() => {
     fetchServerCart();
-    if (!addresses?.length) {
-      fetchAddress();
-    }
+    if (!addresses?.length) fetchAddress();
+    if (!cartSuggestedProducts?.length) fetchProductSuggestions();
   }, []);
 
   useEffect(() => {
@@ -283,6 +288,10 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     );
   };
 
+  const renderSuggestProducts = () => {
+    return <CartSuggestProducts navigation={props.navigation} />;
+  };
+
   const renderScreen = () => (
     <>
       <UnServiceableMessage style={{ marginTop: 24 }} />
@@ -300,6 +309,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
       {circlePlanAddedToCart && <CartCircleItem />}
       {renderAmountSection()}
       {renderPrescriptions()}
+      {renderSuggestProducts()}
     </>
   );
 

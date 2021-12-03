@@ -103,7 +103,6 @@ import { CovidScan } from '@aph/mobile-patients/src/components/CovidScan';
 import { ConsultCheckout } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultCheckout';
 import { ConsultPaymentnew } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPaymentnew';
 import { ConsultPaymentStatus } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPaymentStatus';
-import { CheckoutSceneNew } from '@aph/mobile-patients/src/components/CheckoutScenenew';
 import { PaymentStatus } from '@aph/mobile-patients/src/components/PaymentStatus';
 import { OneApolloMembership } from '@aph/mobile-patients/src/components/OneApollo/OneApolloMembership';
 import { Tests } from './Tests/Tests';
@@ -113,9 +112,7 @@ import MyPaymentsScreen from '@aph/mobile-patients/src/components/MyPayments/MyP
 import PaymentStatusScreen from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/PaymentStatusScreen';
 import { CommonWebView } from '@aph/mobile-patients/src/components/CommonWebView';
 import { RefundStatus } from '@aph/mobile-patients/src/components/RefundStatus';
-import { MedicineCart } from '@aph/mobile-patients/src/components/MedicineCart/MedicineCart';
 import { MedicineCartPrescription } from '@aph/mobile-patients/src/components/MedicineCartPrescription';
-import { CartSummary } from '@aph/mobile-patients/src/components/MedicineCart/CartSummary';
 import { StorePickup } from '@aph/mobile-patients/src/components/MedicineCart/StorePickup';
 import { PickUpCartSummary } from '@aph/mobile-patients/src/components/MedicineCart/PickUpCartSummary';
 import { SymptomTracker } from '@aph/mobile-patients/src/components/SymptomTracker';
@@ -266,7 +263,6 @@ export enum AppRoutes {
   ConsultCheckout = 'ConsultCheckout',
   ConsultPaymentnew = 'ConsultPaymentnew',
   ConsultPaymentStatus = 'ConsultPaymentStatus',
-  CheckoutSceneNew = 'CheckoutSceneNew',
   PaymentStatus = 'PaymentStatus',
   NotificationScreen = 'NotificationScreen',
   MyPaymentsScreen = 'MyPaymentsScreen',
@@ -274,9 +270,7 @@ export enum AppRoutes {
   OneApolloMembership = 'OneApolloMembership',
   CommonWebView = 'CommonWebView',
   RefundStatus = 'RefundStatus',
-  MedicineCart = 'MedicineCart',
   MedicineCartPrescription = 'MedicineCartPrescription',
-  CartSummary = 'CartSummary',
   StorePickup = 'StorePickup',
   PickUpCartSummary = 'PickUpCartSummary',
   SymptomTracker = 'SymptomTracker',
@@ -646,9 +640,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.ConsultPaymentStatus]: {
     screen: ConsultPaymentStatus,
   },
-  [AppRoutes.CheckoutSceneNew]: {
-    screen: CheckoutSceneNew,
-  },
   [AppRoutes.PaymentStatus]: {
     screen: PaymentStatus,
   },
@@ -671,14 +662,8 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.RefundStatus]: {
     screen: RefundStatus,
   },
-  [AppRoutes.MedicineCart]: {
-    screen: MedicineCart,
-  },
   [AppRoutes.MedicineCartPrescription]: {
     screen: MedicineCartPrescription,
-  },
-  [AppRoutes.CartSummary]: {
-    screen: CartSummary,
   },
   [AppRoutes.StorePickup]: {
     screen: StorePickup,

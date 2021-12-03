@@ -100,6 +100,7 @@ import {
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
     paddingTop: 7,
@@ -195,12 +196,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     pinCode,
     deliveryTime,
     setdeliveryTime,
-    setEPrescriptions,
-    setPrescriptionType,
-    setPhysicalPrescriptions,
     newAddressAdded,
     setNewAddressAdded,
   } = useShoppingCart();
+  const { setUserActionPayload } = useServerCart();
   const SPECIFIED_DURATION = 'Duration as specified in prescription';
   const CALL_ME = 'Call me for details';
   const NEED_ALL_MEDICINES = 'Need all medicine and for duration as per prescription';
@@ -1065,9 +1064,23 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     ) : null;
 
   const onPressProceed = () => {
-    setPhysicalPrescriptions?.([...PhysicalPrescriptionsProps]);
-    setEPrescriptions?.([...EPrescriptionsProps]);
-    setPrescriptionType?.(PrescriptionType.UPLOADED);
+    [...PhysicalPrescriptionsProps, ...EPrescriptionsProps].forEach((presToAdd) => {
+      setUserActionPayload?.({
+        prescriptionType: PrescriptionType.UPLOADED,
+        prescriptionDetails: {
+          prescriptionImageUrl: presToAdd?.uploadedUrl,
+          prismPrescriptionFileId: presToAdd?.prismPrescriptionFileId,
+          uhid: currentPatient?.id,
+          appointmentId: presToAdd?.appointmentId,
+          meta: {
+            doctorName: presToAdd?.doctorName,
+            forPatient: presToAdd?.forPatient,
+            medicines: presToAdd?.medicines,
+            date: presToAdd?.date,
+          },
+        },
+      });
+    });
     props.navigation.navigate(AppRoutes.MedicineSearch, {
       showButton: true,
       isReUpload: isComingFromReUpload,

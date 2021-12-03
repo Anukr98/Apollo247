@@ -41,8 +41,6 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
   const {
     physicalPrescriptions,
     ePrescriptions,
-    removeEPrescription,
-    removePhysicalPrescription,
     prescriptionType,
     consultProfile,
 
@@ -97,7 +95,6 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
         i={i}
         arrayLength={arrayLength}
         onRemove={() => {
-          removePhysicalPrescription && removePhysicalPrescription(item.title);
           setUserActionPayload?.({
             prescriptionDetails: {
               prismPrescriptionFileId: item?.prismPrescriptionFileId,
@@ -140,7 +137,6 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
         // doctorName={item?.doctorName}
         // forPatient={item?.forPatient}
         onRemove={() => {
-          removeEPrescription && removeEPrescription(item?.id);
           setUserActionPayload({
             prescriptionDetails: {
               prismPrescriptionFileId: item?.prismPrescriptionFileId,

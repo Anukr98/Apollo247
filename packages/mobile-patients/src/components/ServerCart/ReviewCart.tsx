@@ -289,7 +289,6 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
     return (
       <CartPrescriptions
         onPressUploadMore={() => {
-          shoppingCart.setPrescriptionType(null);
           props.navigation.navigate(AppRoutes.MedicineCartPrescription);
         }}
         showSelectedOption
@@ -324,6 +323,8 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
     );
   };
 
+  console.log('uploadPrescriptionRequired >>> ', uploadPrescriptionRequired);
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -331,14 +332,12 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
         <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
           {renderAddress()}
           {renderAmountSection()}
-          {uploadPrescriptionRequired &&
+          {/* {uploadPrescriptionRequired &&
             prescriptionType !== PrescriptionType.UPLOADED &&
-            renderPrescriptions()}
+            renderPrescriptions()} */}
           {renderTatCard()}
           {renderCartItems()}
-          {uploadPrescriptionRequired &&
-            prescriptionType === PrescriptionType.UPLOADED &&
-            renderPrescriptions()}
+          {renderPrescriptions()}
           {renderWhatsAppUpdates()}
         </ScrollView>
         {renderButton()}

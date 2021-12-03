@@ -181,6 +181,8 @@ export interface ShoppingCartContextProps {
   setCartPrescriptions:
     | ((prescriptions: saveCart_saveCart_data_prescriptionDetails[]) => void)
     | null;
+  cartPrescriptionType: string;
+  setCartPrescriptionType: ((type: string) => void) | null;
   isCartPrescriptionRequired: boolean;
   setIsCartPrescriptionRequired: ((value: boolean) => void) | null;
   isSplitCart: boolean;
@@ -196,6 +198,8 @@ export interface ShoppingCartContextProps {
   setServerCartErrorMessage: ((message: string) => void) | null;
   serverCartLoading: boolean;
   setServerCartLoading: ((loading: boolean) => void) | null;
+  cartSuggestedProducts: any[];
+  setCartSuggestedProducts: ((products: any[]) => void) | null;
   // server cart values stop
   cartItems: ShoppingCartItem[];
   setCartItems: ((items: ShoppingCartItem[]) => void) | null;
@@ -209,7 +213,6 @@ export interface ShoppingCartContextProps {
   cartTotal: number;
   cartTotalCashback: number;
   cartDiscountTotal: number; //consider the special price or price
-  cartTotalOfRxProducts: number;
   couponDiscount: number;
   couponProducts: CouponProducts[];
   setCouponProducts: ((items: CouponProducts[]) => void) | null;
@@ -238,18 +241,9 @@ export interface ShoppingCartContextProps {
   storesInventory: GetStoreInventoryResponse[];
   setStoresInventory: ((store: GetStoreInventoryResponse[]) => void) | null;
   ePrescriptions: EPrescription[];
-  addEPrescription: ((item: EPrescription) => void) | null;
   addMultipleEPrescriptions: ((items: EPrescription[]) => void) | null;
   setEPrescriptions: ((items: EPrescription[]) => void) | null;
-  removeEPrescription: ((id: EPrescription['id']) => void) | null;
-  addPhysicalPrescription: ((item: PhysicalPrescription) => void) | null;
   setPhysicalPrescriptions: ((items: PhysicalPrescription[]) => void) | null;
-  updatePhysicalPrescription:
-    | ((
-        itemUpdates: Partial<PhysicalPrescription> & { base64: PhysicalPrescription['base64'] }
-      ) => void)
-    | null;
-  removePhysicalPrescription: ((base64: string) => void) | null;
   physicalPrescriptions: PhysicalPrescription[];
   consultProfile: GetCurrentPatients_getCurrentPatients_patients | null;
   setConsultProfile: (profile: GetCurrentPatients_getCurrentPatients_patients | null) => void;
@@ -362,6 +356,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setCartAddressId: null,
   cartPrescriptions: [],
   setCartPrescriptions: null,
+  cartPrescriptionType: '',
+  setCartPrescriptionType: null,
   isCartPrescriptionRequired: false,
   setIsCartPrescriptionRequired: null,
   isSplitCart: false,
@@ -377,6 +373,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setServerCartErrorMessage: null,
   serverCartLoading: false,
   setServerCartLoading: null,
+  cartSuggestedProducts: [],
+  setCartSuggestedProducts: null,
 
   cartItems: [],
   setCartItems: null,
@@ -388,7 +386,6 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   cartTotal: 0,
   cartTotalCashback: 0,
   cartDiscountTotal: 0,
-  cartTotalOfRxProducts: 0,
   couponDiscount: 0,
   productDiscount: 0,
   deliveryCharges: 0,
@@ -401,14 +398,9 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   couponProducts: [],
   setCouponProducts: null,
   ePrescriptions: [],
-  addEPrescription: null,
   addMultipleEPrescriptions: null,
   setEPrescriptions: null,
-  removeEPrescription: null,
   setPhysicalPrescriptions: null,
-  addPhysicalPrescription: null,
-  updatePhysicalPrescription: null,
-  removePhysicalPrescription: null,
   physicalPrescriptions: [],
   consultProfile: null,
   setConsultProfile: () => {},
@@ -547,6 +539,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [cartPrescriptions, setCartPrescriptions] = useState<
     ShoppingCartContextProps['cartPrescriptions']
   >([]);
+  const [cartPrescriptionType, setCartPrescriptionType] = useState<
+    ShoppingCartContextProps['cartPrescriptionType']
+  >('');
   const [isCartPrescriptionRequired, setIsCartPrescriptionRequired] = useState<
     ShoppingCartContextProps['isCartPrescriptionRequired']
   >(false);
@@ -562,6 +557,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [serverCartLoading, setServerCartLoading] = useState<
     ShoppingCartContextProps['serverCartLoading']
   >(false);
+  const [cartSuggestedProducts, setCartSuggestedProducts] = useState<
+    ShoppingCartContextProps['cartSuggestedProducts']
+  >([]);
 
   const [cartItems, _setCartItems] = useState<ShoppingCartContextProps['cartItems']>([]);
   const [couponDiscount, setCouponDiscount] = useState<ShoppingCartContextProps['couponDiscount']>(
@@ -729,14 +727,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
     _setPhysicalPrescriptions(items);
   };
 
-  const addEPrescription: ShoppingCartContextProps['addEPrescription'] = (itemToAdd) => {
-    if (ePrescriptions.find((item) => item.id == itemToAdd.id)) {
-      return;
-    }
-    const newItems = [...ePrescriptions, itemToAdd];
-    setEPrescriptions(newItems);
-  };
-
   const addMultipleEPrescriptions: ShoppingCartContextProps['addMultipleEPrescriptions'] = (
     itemsToAdd
   ) => {
@@ -892,13 +882,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
     cartItems?.reduce((cbTotal, currItem) => cbTotal + currItem?.circleCashbackAmt!, 0)?.toFixed(2)
   );
 
-  const cartTotalOfRxProducts: ShoppingCartContextProps['cartTotalOfRxProducts'] = parseFloat(
-    cartItems
-      .filter((currItem) => currItem.prescriptionRequired == true)
-      .reduce((currTotal, currItem) => currTotal + currItem.quantity * currItem.price, 0)
-      .toFixed(2)
-  );
-
   const deliveryCharges =
     isFreeDelivery ||
     deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP ||
@@ -980,36 +963,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     _setNewAddedAddress(id);
   };
 
-  const addPhysicalPrescription: ShoppingCartContextProps['addPhysicalPrescription'] = (item) => {
-    setPhysicalPrescriptions([item, ...physicalPrescriptions]);
-  };
-
-  const updatePhysicalPrescription: ShoppingCartContextProps['updatePhysicalPrescription'] = (
-    itemUpdates
-  ) => {
-    const foundIndex = physicalPrescriptions.findIndex((item) => item.title == itemUpdates.title);
-    if (foundIndex !== -1) {
-      physicalPrescriptions[foundIndex] = { ...physicalPrescriptions[foundIndex], ...itemUpdates };
-      setPhysicalPrescriptions([...physicalPrescriptions]);
-    }
-  };
-
-  const removePhysicalPrescription: ShoppingCartContextProps['removePhysicalPrescription'] = (
-    title
-  ) => {
-    const newItems = physicalPrescriptions.filter((item) => item.title !== title);
-    setPhysicalPrescriptions([...newItems]);
-  };
-
-  const removeEPrescription: ShoppingCartContextProps['removeEPrescription'] = (id) => {
-    const newItems = ePrescriptions.filter((item) => item.id !== id);
-    setEPrescriptions([...newItems]);
-  };
-
   const clearCartInfo = () => {
-    setPhysicalPrescriptions([]);
-    setEPrescriptions([]);
-    setCartItems([]);
     setDeliveryAddressId('');
     setNewAddressAdded('');
     setStoreId('');
@@ -1373,13 +1327,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
     const foundItem = lineItems.find((item) => item.couponFree == 1);
     foundItem ? setisProuctFreeCouponApplied(true) : setisProuctFreeCouponApplied(false);
   }
-  useEffect(() => {
-    // updating prescription here on update in cart items
-    if (cartTotalOfRxProducts == 0) {
-      physicalPrescriptions.length > 0 && setPhysicalPrescriptions([]);
-      ePrescriptions.length > 0 && setEPrescriptions([]);
-    }
-  }, [cartTotalOfRxProducts]);
 
   useEffect(() => {
     // updating I will show the prescription at the store option on change in address
@@ -1387,12 +1334,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
       setShowPrescriptionAtStore(false);
     }
   }, [deliveryAddressId]);
-
-  useEffect(() => {
-    if (physicalPrescriptions?.length || ePrescriptions?.length) {
-      setPrescriptionType(PrescriptionType.UPLOADED);
-    }
-  }, [physicalPrescriptions, ePrescriptions]);
 
   const selectDefaultPlan = (plan: any) => {
     const defaultPlan = plan?.filter((item: any) => item.defaultPack === true);
@@ -1434,6 +1375,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setCartAddressId,
         cartPrescriptions,
         setCartPrescriptions,
+        cartPrescriptionType,
+        setCartPrescriptionType,
         isCartPrescriptionRequired,
         setIsCartPrescriptionRequired,
         isSplitCart,
@@ -1449,6 +1392,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setServerCartErrorMessage,
         serverCartLoading,
         setServerCartLoading,
+        cartSuggestedProducts,
+        setCartSuggestedProducts,
 
         cartItems,
         setCartItems,
@@ -1459,7 +1404,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
         getCartItemQty,
         cartTotal, // MRP Total
         cartTotalCashback,
-        cartTotalOfRxProducts,
         cartDiscountTotal, //discounted or price total
         grandTotal,
         isValidCartValue,
@@ -1474,18 +1418,13 @@ export const ShoppingCartProvider: React.FC = (props) => {
         couponProducts,
         setCouponProducts,
         ePrescriptions,
-        addEPrescription,
         addMultipleEPrescriptions,
-        removeEPrescription,
         setEPrescriptions,
         consultProfile,
         setConsultProfile,
 
         physicalPrescriptions,
         setPhysicalPrescriptions,
-        addPhysicalPrescription,
-        updatePhysicalPrescription,
-        removePhysicalPrescription,
         addresses,
         setAddresses,
         addAddress,
