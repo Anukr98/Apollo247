@@ -232,7 +232,7 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
           prismPrescriptionFileId: item.prismPrescriptionFileId,
           prescriptionImageUrl: '',
         }));
-        setUserActionPayload({
+        setUserActionPayload?.({
           medicineOrderCartLineItems: itemsToRemoveFromCart,
           prescriptionDetails: prescriptionsToRemove,
         });

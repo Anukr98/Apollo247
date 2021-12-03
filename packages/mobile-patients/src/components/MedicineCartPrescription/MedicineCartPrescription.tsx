@@ -91,17 +91,24 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
             setConsultProfile(patient || null);
           }}
           onSelectOption={(option, ePres, physPres) => {
-            setUserActionPayload({
-              prescriptionType: option,
-            });
-            if (option === PrescriptionType.CONSULT) {
-              setTimeout(() => {
-                scrollViewRef.current?.scrollToEnd?.();
-              }, 100);
-            }
             if (option === PrescriptionType.UPLOADED) {
-              uploadEPrescriptionsToServerCart(ePres);
-              uploadPhysicalPrescriptionsToServerCart(physPres);
+              uploadEPrescriptionsToServerCart(ePres || []);
+              uploadPhysicalPrescriptionsToServerCart(physPres || []);
+            } else {
+              // clear prescription
+              const prescriptionsToDelete = cartPrescriptions?.map((prescription) => ({
+                prismPrescriptionFileId: prescription.prismPrescriptionFileId,
+                prescriptionImageUrl: '',
+              }));
+              setUserActionPayload?.({
+                prescriptionType: option,
+                prescriptionDetails: prescriptionsToDelete,
+              });
+              if (option === PrescriptionType.CONSULT) {
+                setTimeout(() => {
+                  scrollViewRef.current?.scrollToEnd?.();
+                }, 100);
+              }
             }
           }}
         />

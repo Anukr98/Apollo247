@@ -115,7 +115,7 @@ export const PrescriptionOptions: React.FC<Props> = ({
         subtitle={renderHavePrescriptionDetails()}
         onPress={() => {
           onSelectPatient(null);
-          onSelectOption(PrescriptionType.UPLOADED, ePrescriptions, physicalPrescriptions);
+          onSelectOption(PrescriptionType.UPLOADED);
         }}
         checked={selectedOption === PrescriptionType.UPLOADED}
         leftIcon={<RxPrescriptionIc resizeMode={'contain'} style={{ height: 38, width: 27 }} />}

@@ -305,9 +305,12 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
   const renderPrescriptions = () => {
     return (
       <CartPrescriptions
-        showSelectedOption
+        showSelectedOption={true}
         isPrescriptionChangeDisabled={true}
         actionType={'selection'}
+        onPressUploadMore={() => {
+          props.navigation.navigate(AppRoutes.MedicineCartPrescription);
+        }}
       />
     );
   };

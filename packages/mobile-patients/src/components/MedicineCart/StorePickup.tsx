@@ -169,7 +169,7 @@ export const StorePickup: React.FC<StorePickupProps> = (props) => {
       // }
       Items.push(cartItemToAdd);
     });
-    setUserActionPayload({
+    setUserActionPayload?.({
       medicineOrderCartLineItems: {
         Items,
       },
