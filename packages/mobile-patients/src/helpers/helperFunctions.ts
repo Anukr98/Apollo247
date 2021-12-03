@@ -4280,7 +4280,6 @@ export const shareDocument = async (
   return viewReportOrderId;
 };
 
-
 export const addSlotDuration = (slotValue: string, slotDuration: number) =>{
   return moment(slotValue, 'hh:mm A')
   ?.add(slotDuration, 'minutes')

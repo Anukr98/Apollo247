@@ -624,7 +624,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         setReportTat('');
       }
     } catch (error) {
-      console.log({ error });
       CommonBugFender('fetchReportTat_TestDetails', error);
       setReportTat('');
     }

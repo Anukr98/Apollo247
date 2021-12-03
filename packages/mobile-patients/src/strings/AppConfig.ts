@@ -497,7 +497,8 @@ const Apollo247Config = {
   prod: {
     UATTAT_CONFIG: ['https://tat.apollo247.com', tatTokenProd],
     DRUPAL_CONFIG: ['https://cms.apollo247.com/api', drupalAuthTokenProd],
-    SUBSCRIPTION_SERVICE_EMAIL: '',
+    SUBSCRIPTION_SERVICE_EMAIL:
+      'https://apollo-subscription-service.azurewebsites.net/api/TriggerSubscriptionInvoiceEmail?code=0jEf6bZpGJn5laCwqz4S24jePathD1ZDdP70c0kRavCbG79TF4rthQ==',
   },
 };
 
