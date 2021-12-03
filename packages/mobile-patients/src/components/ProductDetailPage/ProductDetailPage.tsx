@@ -167,8 +167,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     serverCartAmount,
     cartLocationDetails,
     cartAddressId,
+    serverCartLoading,
   } = useShoppingCart();
-  const { setUserActionPayload } = useServerCart();
+  const { setUserActionPayload, fetchAddress } = useServerCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
@@ -329,6 +330,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         moment(deliveryTime).diff(new Date(), 'd'),
         'Yes'
       );
+      fetchAddress();
       setNewAddressAdded && setNewAddressAdded('');
     }
   }, [newAddressAdded, selectedAddress, deliveryTime]);
@@ -346,6 +348,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       setshowDeliverySpinner(false);
     }
   }, [isPharmacyPincodeServiceable]);
+
+  useEffect(() => {
+    if (!addresses?.length) {
+      fetchAddress();
+    }
+  }, [addresses]);
 
   useEffect(() => {
     try {
@@ -386,29 +394,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, [serverCartItems, currentProductQuantityInCart, currentProductIdInCart]);
 
   useEffect(() => {}, [setShowSuggestedQuantityNudge]);
-
-  const fetchAddress = async () => {
-    try {
-      if (addresses.length) {
-        return;
-      }
-      const response = await client.query<getPatientAddressList, getPatientAddressListVariables>({
-        query: GET_PATIENT_ADDRESS_LIST,
-        variables: { patientId: currentPatient?.id },
-        fetchPolicy: 'no-cache',
-      });
-      const { data } = response;
-      const addressList =
-        (data.getPatientAddressList
-          .addressList as savePatientAddress_savePatientAddress_patientAddress[]) || [];
-      setAddresses!(addressList);
-    } catch (error) {
-      showAphAlert!({
-        title: string.common.uhOh,
-        description: 'Something went wrong, unable to fetch addresses.',
-      });
-    }
-  };
 
   const getMedicineDetails = (zipcode?: string, pinAcdxCode?: string, selectedSku?: string) => {
     setLoading(true);
@@ -1275,10 +1260,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           navSrcForSearchSuccess={'PDP'}
         />
         <View>
-          {loading ? (
+          {loading || serverCartLoading ? (
             <ActivityIndicator
               style={{ flex: 1, alignItems: 'center', marginTop: 50 }}
-              animating={loading}
+              animating={loading || serverCartLoading}
               size="large"
               color="green"
             />

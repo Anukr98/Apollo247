@@ -177,11 +177,13 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     fetchServerCart,
     setUserActionPayload,
   } = useServerCart();
-  const physicalPrescriptionsUploaded = cartPrescriptions?.filter((pres) => !pres?.appointmentId);
+  const physicalPrescriptionsUploaded = cartPrescriptions?.filter(
+    (pres) => !pres?.meta?.doctorName
+  );
   const [PhysicalPrescriptionsProps, setPhysicalPrescriptionsProps] = useState<
     saveCart_saveCart_data_prescriptionDetails[]
   >(physicalPrescriptionsUploaded);
-  const ePrescriptionsUploaded = cartPrescriptions?.filter((pres) => pres?.appointmentId);
+  const ePrescriptionsUploaded = cartPrescriptions?.filter((pres) => pres?.meta?.doctorName);
   const [EPrescriptionsProps, setEPrescriptionsProps] = useState<
     saveCart_saveCart_data_prescriptionDetails[]
   >(ePrescriptionsUploaded);
@@ -225,8 +227,8 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const [userComment, setUserComment] = useState<string>('');
 
   useEffect(() => {
-    setPhysicalPrescriptionsProps(cartPrescriptions?.filter((pres) => !pres?.appointmentId));
-    setEPrescriptionsProps(cartPrescriptions?.filter((pres) => pres?.appointmentId));
+    setPhysicalPrescriptionsProps(cartPrescriptions?.filter((pres) => !pres?.meta?.doctorName));
+    setEPrescriptionsProps(cartPrescriptions?.filter((pres) => pres?.meta?.doctorName));
   }, [cartPrescriptions]);
 
   useEffect(() => {
