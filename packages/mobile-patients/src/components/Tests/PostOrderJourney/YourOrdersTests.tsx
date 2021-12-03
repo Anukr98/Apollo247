@@ -7,7 +7,7 @@ import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
-  GET_PHLOBE_DETAILS,
+  GET_PHLEBO_DETAILS,
   GET_RESCHEDULE_AND_CANCELLATION_REASONS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -159,7 +159,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     patientCartItems,
     setDistanceCharges,
     setModifiedPatientCart,
-    setCartItems,
   } = useDiagnosticsCart();
   const { width, height } = Dimensions.get('window');
 
@@ -300,7 +299,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           variables: {
             mobileNumber: currentPatient && currentPatient.mobileNumber,
             paginated: true,
-            limit: 10,
+            limit: 400,
             offset: currentOffset,
           },
           fetchPolicy: 'no-cache',
@@ -371,7 +370,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       setLoading?.(true);
       client
         .query<getOrderPhleboDetailsBulk, getOrderPhleboDetailsBulkVariables>({
-          query: GET_PHLOBE_DETAILS,
+          query: GET_PHLEBO_DETAILS,
           context: {
             sourceHeaders,
           },
@@ -397,7 +396,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                     phleboOTP: null,
                     checkinDateTime: null,
                     phleboTrackLink: null,
-                    allowCalling: null, //added
+                    allowCalling: null,
+                    showPhleboDetails: null,
                     diagnosticPhlebotomists: {
                       id: null,
                       name: null,
@@ -421,6 +421,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                 order.diagnosticOrderPhlebotomists.phleboRating =
                   findOrder?.orderPhleboDetails?.phleboRating;
                 order.diagnosticOrderPhlebotomists.allowCalling = findOrder?.allowCalling;
+                order.diagnosticOrderPhlebotomists.showPhleboDetails = findOrder?.showPhleboDetails;
               }
             });
             //ordersList => contains all results.

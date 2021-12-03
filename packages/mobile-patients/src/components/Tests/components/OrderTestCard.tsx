@@ -362,6 +362,22 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       phleboEta = moment(phlObj?.checkinDateTime).format('hh:mm A');
     }
     const slotime = !!props.slotTime ? moment(props?.slotTime) || null : null;
+    /**
+     * PICKUP_REQUESTED or PHLEBO_CHECKIN
+     * -> we show phelbo details
+     * -> 1 hr before or PHLEBO_CHECKIN
+     * ~ otp
+     */
+
+    /**
+     * PICKUP_REQUESTED
+     * -> showPhleboDetails :: show phelbo 
+     * 
+     * PHLEBO_CHECKIN
+     * -> showPhleboDetails -> true
+     * -> makedCalling -> true
+     */
+
     const showDetailedInfo = !!slotime
       ? slotime.diff(moment(), 'minutes') < 60 && slotime.diff(moment(), 'minutes') > 0
       : false;
@@ -369,6 +385,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     const showVaccinationStatus = !!phlObj?.diagnosticPhlebotomists?.vaccinationStatus;
     const isPhleboETAElapsed = !!phlObj && phlObj?.isPhleboETAElapsed;
     const phleboETAElapsedMessage = phlObj?.phleboETAElapsedMessage;
+    const showPhleboDetails = !!phlObj ? phlObj?.showPhleboDetails : false;
 
     return (
       <>

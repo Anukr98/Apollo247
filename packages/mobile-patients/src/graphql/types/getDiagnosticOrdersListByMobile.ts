@@ -137,6 +137,8 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
 
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderPhlebotomists {
   __typename: "DiagnosticOrderPhlebotomists";
+  showPhleboDetails: boolean | null;
+  isPhleboChanged: boolean | null;
   phleboRating: number | null;
   phleboOTP: string | null;
   checkinDateTime: any | null;

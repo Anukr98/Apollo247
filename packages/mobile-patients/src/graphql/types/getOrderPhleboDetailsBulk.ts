@@ -32,6 +32,7 @@ export interface getOrderPhleboDetailsBulk_getOrderPhleboDetailsBulk_orderPhlebo
 export interface getOrderPhleboDetailsBulk_getOrderPhleboDetailsBulk_orderPhleboDetailsBulk {
   __typename: "DiagnosticOrderPhleboResult";
   allowCalling: boolean | null;
+  showPhleboDetails: boolean | null;
   orderPhleboDetails: getOrderPhleboDetailsBulk_getOrderPhleboDetailsBulk_orderPhleboDetailsBulk_orderPhleboDetails | null;
   phleboEta: getOrderPhleboDetailsBulk_getOrderPhleboDetailsBulk_orderPhleboDetailsBulk_phleboEta | null;
 }

@@ -3,11 +3,9 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-
 // ====================================================
 // GraphQL query operation: getDiagnosticItemRecommendationsByPastOrders
 // ====================================================
-
 
 export interface getDiagnosticItemRecommendationsByPastOrders_getDiagnosticItemRecommendationsByPastOrders_itemsData {
   __typename: "AffinityData";
