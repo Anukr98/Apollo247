@@ -58,7 +58,7 @@ export const KerbSidePickup: React.FC<KerbSidePickupProps> = (props) => {
   };
 
   function isdisabled() {
-    if (serverCartItems && serverCartItems.length) {
+    if (serverCartItems && serverCartItems?.length) {
       return false;
     } else {
       return true;

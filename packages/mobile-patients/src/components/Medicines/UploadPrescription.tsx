@@ -145,8 +145,6 @@ export interface UploadPrescriptionProps
   }> {}
 
 export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => {
-  const phyPrescriptionsProp = props.navigation.getParam('phyPrescriptionsProp') || [];
-  const ePrescriptionsProp = props.navigation.getParam('ePrescriptionsProp') || [];
   const isComingFromReUpload = props.navigation.getParam('isReUpload') || false;
   const [ShowPopop, setShowPopop] = useState<boolean>(false);
   const orderId = props.navigation.getParam('orderAutoId');
@@ -171,6 +169,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     setNewAddressAdded,
     cartPrescriptions,
     cartAddressId,
+    serverCartLoading,
   } = useShoppingCart();
   const {
     removePrescriptionFromCart,
@@ -229,6 +228,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     setPhysicalPrescriptionsProps(cartPrescriptions?.filter((pres) => !pres?.appointmentId));
     setEPrescriptionsProps(cartPrescriptions?.filter((pres) => pres?.appointmentId));
   }, [cartPrescriptions]);
+
+  useEffect(() => {
+    setLoading?.(serverCartLoading);
+  }, [serverCartLoading]);
 
   useEffect(() => {
     fetchAddress();
