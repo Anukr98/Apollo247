@@ -58,6 +58,7 @@ import { ChooseAddress } from '@aph/mobile-patients/src/components/ServerCart/Co
 import { EmptyCart } from '@aph/mobile-patients/src/components/ServerCart/Components/EmptyCart';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { saveCart_saveCart_data_medicineOrderCartLineItems } from '@aph/mobile-patients/src/graphql/types/saveCart';
+import { FreeDelivery } from '@aph/mobile-patients/src/components/ServerCart/Components/FreeDelivery';
 
 export interface ServerCartProps extends NavigationScreenProps {}
 
@@ -352,6 +353,8 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
 
   const renderCircleCartItem = () => <CartCircleItem />;
 
+  const renderAvailFreeDelivery = () => <FreeDelivery />;
+
   const renderKerbSidePickup = () => (
     <KerbSidePickup
       onPressProceed={() => {
@@ -365,6 +368,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
       {renderUnserviceableMessage()}
       {renderServerCartItemsList()}
       {circlePlanAddedToCart && renderCircleCartItem()}
+      {/* {renderAvailFreeDelivery()} */}
       {renderAmountSection()}
       {renderOneApolloHealthCredits()}
       {renderPrescriptions()}
