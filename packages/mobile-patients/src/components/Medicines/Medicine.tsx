@@ -111,6 +111,8 @@ import {
   getAvailabilityForSearchSuccess,
   checkIfPincodeIsServiceable,
   addPharmaItemToCart,
+  getDiscountPercentage,
+  getIsMedicine,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { USER_AGENT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
@@ -2139,14 +2141,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         url_key,
         subcategory,
       },
-      asyncPincode?.pincode || pharmacyPincode!,
+      pharmacyPincode,
       addCartItem,
       null,
       props.navigation,
       currentPatient,
       !!isPharmacyPincodeServiceable,
       { source: 'Pharmacy Partial Search', categoryId: category_id },
-      JSON.stringify(cartItems),
+      JSON.stringify(serverCartItems),
       () => setItemsLoading({ ...itemsLoading, [sku]: false }),
       pharmacyCircleAttributes!,
       () => {},

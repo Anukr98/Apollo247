@@ -403,22 +403,22 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     ) => {
       setItemsAddingToCart({ ...itemsAddingToCart, [item.sku]: true });
       setAddToCartSource?.({ source: 'Pharmacy Full Search', categoryId: item?.category_id });
-      addPharmaItemToCart(
-        formatToCartItem(item),
-        asyncPincode?.pincode || pharmacyPincode!,
-        addCartItem,
-        null,
-        navigation,
-        currentPatient,
-        !!isPharmacyLocationServiceable,
-        { source: 'Pharmacy Partial Search', categoryId: item.category_id },
-        JSON.stringify(cartItems),
-        () => setItemsAddingToCart({ ...itemsAddingToCart, [item.sku]: false }),
-        pharmacyCircleAttributes!,
-        () => {},
-        comingFromSearch,
-        cleverTapSearchSuccessEventAttributes
-      );
+      // addPharmaItemToCart(
+      //   formatToCartItem(item),
+      //   asyncPincode?.pincode || pharmacyPincode!,
+      //   addCartItem,
+      //   null,
+      //   navigation,
+      //   currentPatient,
+      //   !!isPharmacyLocationServiceable,
+      //   { source: 'Pharmacy Partial Search', categoryId: item.category_id },
+      //   JSON.stringify(cartItems),
+      //   () => setItemsAddingToCart({ ...itemsAddingToCart, [item.sku]: false }),
+      //   pharmacyCircleAttributes!,
+      //   () => {},
+      //   comingFromSearch,
+      //   cleverTapSearchSuccessEventAttributes
+      // );
       setUserActionPayload?.({
         medicineOrderCartLineItems: [
           {
