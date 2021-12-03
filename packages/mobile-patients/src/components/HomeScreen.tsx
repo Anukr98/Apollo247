@@ -3392,7 +3392,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const renderOffersForYou = () => {
-    const offerListToRender = offersListCache.length > 0 ? offersListCache : offersList;
+    const offerListToRender = offersListLoading ? offersListCache : offersList;
     if (offerListToRender?.length === 0) return null;
     else if (offerListToRender?.length === 1 && offerListToRender?.[0]?.template_name === 'CIRCLE')
       return circleCashbackOffersComponent();
