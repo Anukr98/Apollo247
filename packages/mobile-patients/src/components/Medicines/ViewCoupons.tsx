@@ -182,6 +182,8 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     cartCoupon,
     serverCartItems,
     serverCartAmount,
+    isCircleCart,
+    cartCircleSubscriptionId,
   } = useShoppingCart();
   const { showAphAlert, setLoading } = useUIElements();
   const [shimmerLoading, setShimmerLoading] = useState<boolean>(true);
@@ -423,7 +425,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
           key={i}
           disabled={disableList}
           onPress={() => {
-            couponApply(coupon?.coupon, i);
+            couponApply(coupon?.coupon);
           }}
         >
           <View
@@ -454,7 +456,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     });
   };
 
-  const couponApply = (couponText: string, index: number) => {
+  const couponApply = (couponText: string) => {
     CommonLogEvent(AppRoutes.ViewCoupons, 'Apply Coupon');
     if (isFromConsult) {
       applyConsultCoupon(couponText, true);
@@ -462,6 +464,9 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
       setCouponTextApplied(false);
       setUserActionPayload?.({
         coupon: couponText || '',
+        subscription: {
+          subscriptionApplied: cartCircleSubscriptionId && isCircleCart ? true : false,
+        },
       });
     }
   };
@@ -524,6 +529,9 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     if (!isFromConsult) {
       setUserActionPayload?.({
         coupon: '',
+        subscription: {
+          subscriptionApplied: cartCircleSubscriptionId ? true : false,
+        },
       });
     }
     props.navigation.goBack();

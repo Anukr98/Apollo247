@@ -52,11 +52,11 @@ export function postwebEngageProceedToPayEvent(
   } = shoppingCart;
   const selectedStore =
     (storeId && storesFromContext.find((item) => item.storeid == storeId)) || undefined;
-  const numberOfOutOfStockItems = serverCartItems.filter((medicine) => medicine.isInStock === false)
+  const numberOfOutOfStockItems = serverCartItems?.filter((medicine) => medicine.isInStock === false)
     .length;
 
   const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PROCEED_TO_PAY_CLICKED] = {
-    'Total items in cart': serverCartItems.length,
+    'Total items in cart': serverCartItems?.length,
     'Sub Total': serverCartAmount?.cartTotal,
     'Delivery charge': serverCartAmount?.isDeliveryFree ? 0 : serverCartAmount?.deliveryCharges,
     'Net after discount': serverCartAmount?.estimatedAmount,
@@ -76,7 +76,7 @@ export function postwebEngageProceedToPayEvent(
     ...splitCartDetails,
   };
   const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_PROCEED_TO_PAY_CLICKED] = {
-    'Total items in cart': serverCartItems.length,
+    'Total items in cart': serverCartItems?.length,
     'Sub Total': serverCartAmount?.cartTotal,
     'Shipping Charges': serverCartAmount?.isDeliveryFree ? 0 : serverCartAmount?.deliveryCharges,
     'Net after discount': serverCartAmount?.estimatedAmount,
@@ -114,7 +114,7 @@ export function PharmacyCartViewedEvent(
   pharmacyUserTypeAttribute: PharmacyUserTypeEvent
 ) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CART_VIEWED] = {
-    'Total items in cart': shoppingCart.serverCartItems.length,
+    'Total items in cart': shoppingCart.serverCartItems?.length,
     'Sub Total': shoppingCart.serverCartAmount?.cartTotal,
     'Delivery charge': shoppingCart.serverCartAmount?.isDeliveryFree ? 0 : shoppingCart.serverCartAmount?.deliveryCharges,
     'Total Discount': Number(
@@ -124,7 +124,7 @@ export function PharmacyCartViewedEvent(
     ),
     'Net after discount': shoppingCart.serverCartAmount?.estimatedAmount,
     'Prescription Needed?': shoppingCart.isCartPrescriptionRequired,
-    'Cart Items': shoppingCart.serverCartItems.map(
+    'Cart Items': shoppingCart.serverCartItems?.map(
       (item) =>
         ({
           id: item.id,
@@ -214,7 +214,7 @@ export function PharmacyCartViewedEvent(
   postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CART_VIEWED, appsFlyerEvents);
 
   const firebaseAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_CART_VIEWED] = {
-    TotalItemsInCart: shoppingCart.serverCartItems.length,
+    TotalItemsInCart: shoppingCart.serverCartItems?.length,
     SubTotal: shoppingCart.serverCartAmount?.cartTotal,
     Deliverycharge: shoppingCart.serverCartAmount?.isDeliveryFree ? 0 : shoppingCart.serverCartAmount?.deliveryCharges,
     TotalDiscount: Number(
@@ -224,7 +224,7 @@ export function PharmacyCartViewedEvent(
     ),
     NetAfterDiscount: shoppingCart.serverCartAmount?.estimatedAmount,
     PrescriptionNeeded: shoppingCart.isCartPrescriptionRequired,
-    CartItems: shoppingCart.serverCartItems.map(
+    CartItems: shoppingCart.serverCartItems?.map(
       (item) =>
         ({
           id: item.id,
@@ -263,7 +263,7 @@ export function postTatResponseFailureEvent(
   pincode: string,
   error: object
 ) {
-  const lookUp = serverCartItems.map((item) => ({ sku: item.id, qty: item.quantity }));
+  const lookUp = serverCartItems?.map((item) => ({ sku: item.id, qty: item.quantity }));
   const eventAttributes: WebEngageEvents[WebEngageEventName.TAT_API_FAILURE] = {
     pincode,
     lookUp,

@@ -875,7 +875,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     isPharmacyPincodeServiceable,
     serverCartItems,
   } = useShoppingCart();
-  const cartItemsCount = cartItems.length + serverCartItems.length;
+  const cartItemsCount = cartItems.length + serverCartItems?.length;
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [previousPatient, setPreviousPatient] = useState<any>([]);
@@ -1109,6 +1109,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       setVaccineLoacalStorageData();
       checkApisToCall();
       getUserBanners();
+      fetchServerCart();
 
       AsyncStorage.getItem('verifyCorporateEmailOtpAndSubscribe').then((data) => {
         if (JSON.parse(data || 'false') === true) {

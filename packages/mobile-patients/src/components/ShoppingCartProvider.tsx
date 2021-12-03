@@ -836,7 +836,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
   };
 
   const getCartItemQty: ShoppingCartContextProps['getCartItemQty'] = (id) =>
-    serverCartItems.find(({ sku: cId }) => cId == id)?.quantity || 0;
+    serverCartItems?.find(({ sku: cId }) => cId == id)?.quantity || 0;
 
   const setCouponProducts: ShoppingCartContextProps['setCouponProducts'] = (items) => {
     _setCouponProducts(items);
@@ -1016,7 +1016,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
   useEffect(() => {
     // check if prescription is required
     if (serverCartItems?.length) {
-      const isPrescriptionCartItem = serverCartItems.findIndex(
+      const isPrescriptionCartItem = serverCartItems?.findIndex(
         (item) => item.isPrescriptionRequired == '1'
       );
       if (isPrescriptionCartItem >= 0) {
@@ -1029,10 +1029,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setIsCartPrescriptionRequired(false);
       }
     }
-    if (serverCartItems.length > 1) {
-      var tatArr = serverCartItems.map((item) => item?.tat);
+    if (serverCartItems?.length > 1) {
+      var tatArr = serverCartItems?.map((item) => item?.tat);
       var isSameTat = tatArr.every((tat) => tat === tatArr[0]);
-      var tatDurationArr = serverCartItems.map((item) => item?.tatDuration);
+      var tatDurationArr = serverCartItems?.map((item) => item?.tatDuration);
       var isSameTatDuration = tatDurationArr.every(
         (tatDuration) => tatDuration === tatDurationArr[0]
       );

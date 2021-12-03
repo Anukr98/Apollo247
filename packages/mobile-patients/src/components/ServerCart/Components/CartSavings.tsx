@@ -25,11 +25,7 @@ export const CartSavings: React.FC<CartSavingsProps> = (props) => {
     : 0;
   const deliverySavings = isDeliveryFree || circleDeliverySavings > 0 ? deliveryCharges : 0;
   const totalSavings =
-    cartSavings +
-    couponSavings +
-    deliverySavings +
-    (isCircleCart ? totalCashBack : 0) +
-    circleMembershipCashback;
+    cartSavings + couponSavings + deliverySavings + (isCircleCart ? totalCashBack : 0);
   const totalCouldSaveByCircle = deliveryCharges + totalCashBack + cartSavings;
 
   const renderYouSavedCard = () => {

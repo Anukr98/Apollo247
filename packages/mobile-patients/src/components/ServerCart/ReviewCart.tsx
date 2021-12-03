@@ -115,7 +115,7 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
   };
 
   function hasUnserviceableproduct() {
-    const unserviceableItems = serverCartItems.filter((item) => !item?.isShippable) || [];
+    const unserviceableItems = serverCartItems?.filter((item) => !item?.isShippable) || [];
     unserviceableItems?.length && props.navigation.goBack();
   }
 
@@ -223,6 +223,7 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
                 paymentCodMessage: codMessage,
               });
             }
+            setauthToken?.('');
           }
         })
         .catch((error) => {
@@ -231,7 +232,6 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
         })
         .finally(() => {
           setloading(false);
-          setauthToken?.('');
         });
     } catch (error) {
       setloading(false);

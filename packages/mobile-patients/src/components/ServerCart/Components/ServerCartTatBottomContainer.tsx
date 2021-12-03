@@ -42,7 +42,7 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
   const { onPressProceedtoPay, screen, showAddressPopup } = props;
   const { currentPatient } = useAllCurrentPatients();
   const selectedAddress = addresses.find((item) => item.id == cartAddressId);
-  const unServiceable = !serverCartItems.find(
+  const unServiceable = !serverCartItems?.find(
     ({ isShippable, sellOnline }) => isShippable || sellOnline
   );
   const isFromCart = screen === 'MedicineCart';
@@ -108,7 +108,7 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
   const renderTotal = () => {
     return (
       <View>
-        <Text style={styles.total}>₹{serverCartAmount?.estimatedAmount}</Text>
+        <Text style={styles.total}>₹{serverCartAmount?.estimatedAmount?.toFixed(2)}</Text>
         <Text style={styles.text}>{screen == 'summary' ? 'Total Amount' : 'Home Delivery'}</Text>
       </View>
     );

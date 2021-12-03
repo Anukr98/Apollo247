@@ -147,10 +147,10 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
                   onPress={() => {
                     onPressCloseBottomSheet();
                     if (
-                      serverCartItems.find(({ id }) => id?.toUpperCase() === sku?.toUpperCase())
+                      serverCartItems?.find(({ sku }) => sku?.toUpperCase() === sku?.toUpperCase())
                     ) {
-                      const itemAddedFromNudge = serverCartItems.find(
-                        ({ id }) => id?.toUpperCase() === sku?.toUpperCase()
+                      const itemAddedFromNudge = serverCartItems?.find(
+                        ({ sku }) => sku?.toUpperCase() === sku?.toUpperCase()
                       );
                       setUserActionPayload?.({
                         medicineOrderCartLineItems: [

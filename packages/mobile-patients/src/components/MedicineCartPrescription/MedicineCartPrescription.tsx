@@ -59,7 +59,7 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderItemsNeedPrescription = () => {
-    const reqItems = serverCartItems.filter(
+    const reqItems = serverCartItems?.filter(
       ({ isPrescriptionRequired }) => isPrescriptionRequired == '1'
     );
     const count = reqItems.length;

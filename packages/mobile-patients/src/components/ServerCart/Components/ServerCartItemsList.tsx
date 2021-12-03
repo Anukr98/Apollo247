@@ -34,9 +34,9 @@ export const ServerCartItemsList: React.FC<ServerCartItemsListProps> = (props) =
 
   const renderCartItemsHeader = () => {
     const itemsCount =
-      serverCartItems.length == 0 || serverCartItems.length > 10
-        ? serverCartItems.length
-        : `0${serverCartItems.length}`;
+      serverCartItems?.length == 0 || serverCartItems?.length > 10
+        ? serverCartItems?.length
+        : `0${serverCartItems?.length}`;
     return (
       <View style={styles.cartItemsHeader}>
         <Text style={styles.cartItemsHeaderText}>ITEMS IN YOUR CART</Text>

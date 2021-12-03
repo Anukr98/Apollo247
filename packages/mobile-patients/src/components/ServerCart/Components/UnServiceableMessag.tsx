@@ -11,7 +11,7 @@ export interface UnServiceableMessageProps {
 export const UnServiceableMessage: React.FC<UnServiceableMessageProps> = (props) => {
   const { serverCartItems } = useShoppingCart();
   const { style } = props;
-  const unServiceableItems = serverCartItems.filter(
+  const unServiceableItems = serverCartItems?.filter(
     ({ isShippable, sellOnline }) => !isShippable || !sellOnline
   );
 
