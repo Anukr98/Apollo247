@@ -6886,3 +6886,83 @@ export const SERVER_CART_FETCH_CART = gql`
     }
   }
 `;
+
+export const SERVER_CART_REVIEW_CART = gql`
+  query reviewCartPage($patientId: String!) {
+    reviewCartPage(patientId: $patientId) {
+      statusCode
+      errorMessage
+      cartMessage
+      data {
+        patientId
+        amount {
+          estimatedAmount
+          deliveryCharges
+          isDeliveryFree
+          cartSavings
+          couponSavings
+          totalCashBack
+          cartTotal
+          packagingCharges
+          circleSavings {
+            membershipCashBack
+            circleDelivery
+          }
+        }
+        noOfShipments
+        longitude
+        latitude
+        zipcode
+        patientAddressId
+        couponDetails {
+          coupon
+          couponMessage
+          valid
+        }
+        prescriptionDetails {
+          prescriptionImageUrl
+          prismPrescriptionFileId
+        }
+        prescriptionType
+        appointmentId
+        subscriptionDetails {
+          userSubscriptionId
+          planId
+          subPlanId
+          type
+          planAmount
+          currentSellingPrice
+          validDuration
+          durationInMonth
+        }
+        medicineOrderCartLineItems {
+          sku
+          magentoId
+          magentoStatus
+          name
+          quantity
+          price
+          sellingPrice
+          mou
+          couponDiscountPrice
+          thumbnail
+          isExpress
+          isPrescriptionRequired
+          subcategory
+          typeId
+          urlKey
+          isInStock
+          maxOrderQty
+          sellOnline
+          tat
+          tatDuration
+          isCouponApplicable
+          cashback
+          isShippable
+          freeProduct
+          shipmentNo
+        }
+      }
+    }
+  }
+`;
