@@ -42,6 +42,7 @@ export const useServerCart = () => {
     setDeliveryAddressId,
     setNoOfShipments,
     setServerCartErrorMessage,
+    serverCartLoading,
     setServerCartLoading,
     setCartSuggestedProducts,
     setCartLocationDetails,
@@ -70,7 +71,7 @@ export const useServerCart = () => {
         ...userActionPayload,
         patientId: currentPatient?.id,
       };
-      saveServerCart(cartInputData);
+      serverCartLoading === false ? saveServerCart(cartInputData) : {};
     }
   }, [userActionPayload]);
 
