@@ -2304,6 +2304,7 @@ export interface CartPrescriptionDetails {
   prismPrescriptionFileId?: string | null;
   uhid?: string | null;
   appointmentId?: string | null;
+  meta?: any | null;
 }
 
 export interface CartSubscription {

@@ -44,6 +44,7 @@ export interface saveCart_saveCart_data_prescriptionDetails {
   prismPrescriptionFileId: string | null;
   uhid: string | null;
   appointmentId: string | null;
+  meta: any | null;
 }
 
 export interface saveCart_saveCart_data_subscriptionDetails {

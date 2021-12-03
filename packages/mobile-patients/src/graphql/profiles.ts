@@ -6747,6 +6747,7 @@ export const SERVER_CART_SAVE_CART = gql`
           prismPrescriptionFileId
           uhid
           appointmentId
+          meta
         }
         prescriptionType
         subscriptionDetails {
@@ -6852,6 +6853,7 @@ export const SERVER_CART_FETCH_CART = gql`
           prismPrescriptionFileId
           uhid
           appointmentId
+          meta
         }
         prescriptionType
         subscriptionDetails {
@@ -6937,6 +6939,7 @@ export const SERVER_CART_REVIEW_CART = gql`
           prismPrescriptionFileId
           uhid
           appointmentId
+          meta
         }
         prescriptionType
         subscriptionDetails {
