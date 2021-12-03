@@ -214,16 +214,14 @@ const styles = StyleSheet.create({
 });
 
 export interface UploadPrescriptionViewProps extends NavigationScreenProps {
-  phyPrescriptionUploaded: PhysicalPrescription[];
-  ePresscriptionUploaded: EPrescription[];
+  phyPrescriptionUploaded?: PhysicalPrescription[];
+  ePresscriptionUploaded?: EPrescription[];
 }
 
 const MAX_FILE_SIZE = 25000000; // ~25MB
 
 export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (props) => {
-  const phyPrescriptionUploaded = props.navigation.getParam('phyPrescriptionUploaded') || [];
-  const ePresscriptionUploaded = props.navigation.getParam('ePresscriptionUploaded') || [];
-  const { ePrescriptions, serverCartLoading } = useShoppingCart();
+  const { cartPrescriptions, serverCartLoading } = useShoppingCart();
   const {
     uploadPhysicalPrescriptionsToServerCart,
     uploadEPrescriptionsToServerCart,
@@ -317,15 +315,9 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
             onPress={() => {
               removeClickedPhoto();
               postCleverTapUploadPrescriptionEvents('Camera', 'Non-Cart');
-              uploadPhysicalPrescriptionsToServerCart([
-                ...phyPrescriptionUploaded,
-                ...imageClickData,
-              ]);
-              uploadEPrescriptionsToServerCart(ePresscriptionUploaded);
+              uploadPhysicalPrescriptionsToServerCart(imageClickData);
               props.navigation.navigate(AppRoutes.UploadPrescription, {
                 type: 'Camera',
-                phyPrescriptionsProp: [...phyPrescriptionUploaded, ...imageClickData],
-                ePrescriptionsProp: ePresscriptionUploaded,
                 source: 'UploadPrescription',
               });
             }}
@@ -563,10 +555,9 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
       );
       setShowSpinner(false);
       postCleverTapUploadPrescriptionEvents('Gallery', 'Non-Cart');
+      uploadPhysicalPrescriptionsToServerCart(documentData);
       props.navigation.navigate(AppRoutes.UploadPrescription, {
         type: 'Gallery',
-        phyPrescriptionsProp: [...phyPrescriptionUploaded, ...documentData],
-        ePrescriptionsProp: ePresscriptionUploaded,
         source: 'UploadPrescription',
       });
     } catch (e) {
@@ -608,10 +599,9 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
         }
         const uploadedImages = formatResponse(images);
         postCleverTapUploadPrescriptionEvents('Gallery', 'Non-Cart');
+        uploadPhysicalPrescriptionsToServerCart(uploadedImages);
         props.navigation.navigate(AppRoutes.UploadPrescription, {
           type: 'Gallery',
-          phyPrescriptionsProp: [...phyPrescriptionUploaded, ...uploadedImages],
-          ePrescriptionsProp: ePresscriptionUploaded,
           source: 'UploadPrescription',
         });
       })
@@ -648,15 +638,14 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           if (selectedEPres.length == 0) {
             return;
           }
+          uploadEPrescriptionsToServerCart(selectedEPres);
           postCleverTapUploadPrescriptionEvents('My Prescription', 'Non-Cart');
           props.navigation.navigate(AppRoutes.UploadPrescription, {
             type: 'E-Prescription',
-            ePrescriptionsProp: [...ePresscriptionUploaded, ...selectedEPres],
-            phyPrescriptionsProp: phyPrescriptionUploaded,
             source: 'UploadPrescription',
           });
         }}
-        selectedEprescriptionIds={ePrescriptions.map((item) => item.id)}
+        selectedEprescriptionIds={cartPrescriptions?.map((item) => item?.prismPrescriptionFileId)}
         isVisible={isSelectPrescriptionVisible}
       />
     );

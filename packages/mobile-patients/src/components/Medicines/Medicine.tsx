@@ -311,6 +311,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     serverCartLoading,
     serverCartErrorMessage,
     setServerCartErrorMessage,
+    cartPrescriptions,
   } = useShoppingCart();
   const {
     setUserActionPayload,
@@ -1493,10 +1494,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 cleverTapEventAttributes
               );
               postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED, eventAttributes);
-              setUserActionPayload?.({
-                prescriptionDetails: null,
-              });
               props.navigation.navigate(AppRoutes.UploadPrescriptionView);
+              // if (cartPrescriptions?.length) {
+              //   props.navigation.navigate(AppRoutes.UploadPrescription);
+              // } else {
+              //   props.navigation.navigate(AppRoutes.UploadPrescriptionView);
+              // }
             }}
             style={{ width: Platform.OS == 'android' ? '85%' : '90%' }}
             titleTextStyle={{
