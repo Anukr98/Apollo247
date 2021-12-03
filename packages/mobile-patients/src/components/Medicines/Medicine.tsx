@@ -305,6 +305,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     cartLocationDetails,
     newAddressAdded,
     setNewAddressAdded,
+    setAddToCartSource,
   } = useShoppingCart();
   const {
     setUserActionPayload,
@@ -2330,6 +2331,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             ? setMaxOrderQty(+item.suggested_qty)
             : setMaxOrderQty(0);
           setCurrentProductQuantityInCart(1);
+          setAddToCartSource?.({
+            source: 'Pharmacy Partial Search',
+            categoryId: item?.category_id,
+          });
           addItemToServerCart(item);
         }}
         onPressNotify={() => {

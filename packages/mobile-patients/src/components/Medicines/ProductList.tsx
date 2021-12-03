@@ -83,7 +83,7 @@ export const ProductList: React.FC<Props> = ({
   const [lastIndex, setLastIndex] = useState<number>(data?.length > 4 ? step : 0);
   const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
   const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
-  const { getCartItemQty, serverCartItems } = useShoppingCart();
+  const { getCartItemQty, serverCartItems, setAddToCartSource } = useShoppingCart();
   const { setUserActionPayload } = useServerCart();
   const [showSuggestedQuantityNudge, setShowSuggestedQuantityNudge] = useState<boolean>(false);
   const [shownNudgeOnce, setShownNudgeOnce] = useState<boolean>(false);
@@ -180,6 +180,7 @@ export const ProductList: React.FC<Props> = ({
       'Product name': item?.name,
       Discount: discountPercentage,
     };
+    setAddToCartSource?.({ source: addToCartSource, categoryId: item.category_id });
     setUserActionPayload?.({
       medicineOrderCartLineItems: [
         {

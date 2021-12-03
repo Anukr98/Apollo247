@@ -92,6 +92,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     asyncPincode,
     axdcCode,
     serverCartItems,
+    setAddToCartSource,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
 
@@ -401,6 +402,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       cleverTapSearchSuccessEventAttributes: object
     ) => {
       setItemsAddingToCart({ ...itemsAddingToCart, [item.sku]: true });
+      setAddToCartSource?.({ source: 'Pharmacy Full Search', categoryId: item?.category_id });
       addPharmaItemToCart(
         formatToCartItem(item),
         asyncPincode?.pincode || pharmacyPincode!,
