@@ -595,7 +595,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         leftIcon={'backArrow'}
         title={'REVIEW ORDER'}
         onPressLeftIcon={() => {
-          CommonLogEvent(AppRoutes.MedicineCart, 'Go back to add items');
+          CommonLogEvent(AppRoutes.ServerCart, 'Go back to add items');
           props.navigation.goBack();
         }}
       />

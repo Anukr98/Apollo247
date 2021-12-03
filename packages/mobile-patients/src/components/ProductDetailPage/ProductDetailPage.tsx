@@ -643,7 +643,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         breadcrumb.push({
           title: 'Cart',
           onPress: () => {
-            navigateToScreenWithEmptyStack(props.navigation, AppRoutes.MedicineCart);
+            navigateToScreenWithEmptyStack(props.navigation, AppRoutes.ServerCart);
           },
         });
       }
@@ -1189,7 +1189,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         {showNudgeMessage && <NudgeMessage nudgeMessage={pharmaPDPNudgeMessage} />}
         <TouchableOpacity
           onPress={() => {
-            props.navigation.navigate(AppRoutes.MedicineCart);
+            props.navigation.navigate(AppRoutes.ServerCart);
           }}
           activeOpacity={0.7}
           style={[styles.bottomCta, showNudgeMessage ? { alignSelf: 'center' } : {}]}

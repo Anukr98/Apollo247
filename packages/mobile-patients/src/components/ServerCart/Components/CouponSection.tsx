@@ -2,12 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import {
-  ArrowRight,
-  CouponIcon,
-  Cross,
-  PendingIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { ArrowRight, CouponIcon, Cross } from '@aph/mobile-patients/src/components/ui/Icons';
 
 export interface CouponSectionProps {
   onPressApplyCoupon: () => void;
@@ -16,14 +11,7 @@ export interface CouponSectionProps {
 }
 
 export const CouponSection: React.FC<CouponSectionProps> = (props) => {
-  const {
-    // coupon,
-    // couponDiscount,
-    // isProuctFreeCouponApplied,
-    // subscriptionCoupon,
-    cartCoupon,
-    serverCartAmount,
-  } = useShoppingCart();
+  const { cartCoupon, serverCartAmount } = useShoppingCart();
   const { onPressApplyCoupon, onPressRemove, movedFrom } = props;
   const isFromSubscription = movedFrom == 'subscription';
 
@@ -42,23 +30,6 @@ export const CouponSection: React.FC<CouponSectionProps> = (props) => {
   };
 
   const renderCouponMsg = () => {
-    // const currentCoupon = isFromSubscription ? subscriptionCoupon : coupon;
-    // const discountAmount = isFromSubscription
-    //   ? subscriptionCoupon?.discount
-    //   : Number(couponDiscount).toFixed(2);
-    // return !isProuctFreeCouponApplied ? (
-    //   <Text style={styles.applicable}>
-    //     {couponDiscount > 0 || isFromSubscription
-    //       ? currentCoupon?.message
-    //         ? `(${currentCoupon?.message})`
-    //         : `(Savings of ₹ ${discountAmount})`
-    //       : '(Coupon not applicable on your cart item(s) or item(s) with already higher discounts)'}
-    //   </Text>
-    // ) : currentCoupon?.message || isFromSubscription ? (
-    //   <Text style={styles.applicable}>
-    //     {isFromSubscription ? `(${subscriptionCoupon?.message})` : `(${currentCoupon?.message})`}
-    //   </Text>
-    // ) : null;
     if (cartCoupon?.couponMessage) {
       return (
         <Text style={theme.viewStyles.text('M', 13, '#01475B', 1, 27)}>
@@ -75,7 +46,6 @@ export const CouponSection: React.FC<CouponSectionProps> = (props) => {
   };
 
   const renderCouponApplied = () => {
-    // const currentCoupon = isFromSubscription ? subscriptionCoupon : coupon;
     const couponDiscount = serverCartAmount?.couponSavings || 0;
     return (
       <TouchableOpacity style={styles.couponApplied} onPress={onPressApplyCoupon}>
@@ -88,13 +58,6 @@ export const CouponSection: React.FC<CouponSectionProps> = (props) => {
                 : `Coupon : ${cartCoupon?.coupon}`}
             </Text>
             {renderCouponMsg()}
-            {/* {!!currentCoupon?.successMessage && (
-              <View style={styles.couponSuccessMessageContainer}>
-                <Text
-                  style={theme.viewStyles.text('M', 13, '#01475B', 1, 27)}
-                >{`(${currentCoupon?.successMessage})`}</Text>
-              </View>
-            )} */}
           </View>
         </View>
         <TouchableOpacity style={{ marginTop: 10 }} onPress={onPressRemove}>
@@ -107,7 +70,6 @@ export const CouponSection: React.FC<CouponSectionProps> = (props) => {
   return (
     <View style={[styles.couponCard, isFromSubscription ? { marginHorizontal: 20 } : {}]}>
       {!cartCoupon?.coupon ? renderApplyCoupon() : renderCouponApplied()}
-      {/* {!coupon && !subscriptionCoupon ? renderApplyCoupon() : renderCouponApplied()} */}
     </View>
   );
 };

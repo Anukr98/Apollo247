@@ -131,9 +131,10 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     setNewAddressAdded,
     cartTat,
     cartSubscriptionDetails,
+    setCartCoupon,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
-  const { fetchServerCart, setUserActionPayload } = useServerCart();
+  const { fetchServerCart, setUserActionPayload, fetchAddress } = useServerCart();
   const [loading, setLoading] = useState<boolean>(false);
 
   const circlePlanAddedToCart =
@@ -141,6 +142,9 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
 
   useEffect(() => {
     fetchServerCart();
+    if (!addresses?.length) {
+      fetchAddress();
+    }
   }, []);
 
   useEffect(() => {
@@ -179,7 +183,13 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
       </View>
       <ApplyCircleBenefits navigation={props.navigation} />
       <CouponSection
-        onPressApplyCoupon={() => props.navigation.navigate(AppRoutes.ViewCoupons)}
+        onPressApplyCoupon={() => {
+          setCartCoupon?.(null);
+          setUserActionPayload?.({
+            coupon: '',
+          });
+          props.navigation.navigate(AppRoutes.ViewCoupons);
+        }}
         onPressRemove={() => {
           setUserActionPayload?.({
             coupon: '',
@@ -211,7 +221,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
             props.navigation.push(AppRoutes.AddAddressNew, {
               KeyName: 'Update',
               addressDetails: address,
-              ComingFrom: AppRoutes.MedicineCart,
+              ComingFrom: AppRoutes.ServerCart,
             });
             hideAphAlert!();
           }}
@@ -247,6 +257,17 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     );
   };
 
+  const renderPrescriptions = () => {
+    return (
+      <Prescriptions
+        onPressUploadMore={() => {
+          props.navigation.navigate(AppRoutes.MedicineCartPrescription);
+        }}
+        style={{ marginTop: 20 }}
+      />
+    );
+  };
+
   const renderScreen = () => (
     <>
       <UnServiceableMessage style={{ marginTop: 24 }} />
@@ -263,6 +284,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
       />
       {circlePlanAddedToCart && <CartCircleItem />}
       {renderAmountSection()}
+      {renderPrescriptions()}
     </>
   );
 

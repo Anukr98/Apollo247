@@ -226,6 +226,7 @@ import {
   useReferralProgram,
 } from '@aph/mobile-patients/src/components/ReferralProgramProvider';
 import { setItem, getItem } from '@aph/mobile-patients/src/helpers/TimedAsyncStorage';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 const { Vitals } = NativeModules;
 
@@ -821,6 +822,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     displayAskApolloNumber,
     setDisplayAskApolloNumber,
   } = useAppCommonData();
+  const { fetchServerCart } = useServerCart();
 
   // const startDoctor = string.home.startDoctor;
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
@@ -2549,6 +2551,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
     getProductCashbackDetails();
     getUserProfileType();
+    fetchServerCart();
   }, []);
 
   const initializeVoip = () => {
@@ -3979,7 +3982,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         (shopCartItems.length && cartItems.length) || (!shopCartItems.length && !cartItems.length)
           ? AppRoutes.MedAndTestCart
           : shopCartItems.length
-          ? AppRoutes.MedicineCart
+          ? AppRoutes.ServerCart
           : AppRoutes.AddPatients;
       props.navigation.navigate(route);
     };

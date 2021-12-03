@@ -185,7 +185,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
         activeOpacity={1}
         onPress={() =>
           navigation.navigate(
-            diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.MedicineCart
+            diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.ServerCart
           )
         }
       >

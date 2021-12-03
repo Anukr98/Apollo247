@@ -4667,7 +4667,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setEPrescriptions?.([presToAdd]);
         setLoading(false);
         postCleverTapUploadPrescriptionEvents('Consult Room', 'Cart');
-        props.navigation.push(AppRoutes.MedicineCart);
+        props.navigation.push(AppRoutes.ServerCart);
       } catch (error) {
         setLoading(false);
         showAphAlert?.({

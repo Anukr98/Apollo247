@@ -318,7 +318,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
               activeOpacity={1}
               onPress={() => {
                 props.navigation.navigate(
-                  diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.MedicineCart
+                  diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.ServerCart
                 );
               }}
             >

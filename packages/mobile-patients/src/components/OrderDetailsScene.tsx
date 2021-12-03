@@ -528,7 +528,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           index: 1,
           actions: [
             NavigationActions.navigate({ routeName: AppRoutes.MyOrdersScreen }),
-            NavigationActions.navigate({ routeName: AppRoutes.MedicineCart }),
+            NavigationActions.navigate({ routeName: AppRoutes.ServerCart }),
           ],
         });
         props.navigation.dispatch(resetAction);
@@ -2285,7 +2285,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           itemDetails={{ total, unavailable }}
           onContinue={() => {
             setReOrderDetails({ total: 0, unavailable: [] });
-            props.navigation.navigate(AppRoutes.MedicineCart);
+            props.navigation.navigate(AppRoutes.ServerCart);
           }}
           onClose={() => {
             setReOrderDetails({ total: 0, unavailable: [] });
