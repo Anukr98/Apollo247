@@ -92,6 +92,7 @@ export const CartPrescriptions: React.FC<CartPrescriptionsProps> = (props) => {
         onRemove={() => {
           removePrescriptionFromCart(item?.prismPrescriptionFileId);
         }}
+        showTick={actionType == 'selection'}
         {...myPresProps}
       />
     );

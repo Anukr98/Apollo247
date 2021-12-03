@@ -30,13 +30,18 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
     setConsultProfile,
     serverCartItems,
     cartPrescriptions,
+    serverCartLoading,
   } = useShoppingCart();
   const {
     setUserActionPayload,
     uploadPhysicalPrescriptionsToServerCart,
     uploadEPrescriptionsToServerCart,
   } = useServerCart();
-  const { showAphAlert } = useUIElements();
+  const { showAphAlert, setLoading } = useUIElements();
+
+  useEffect(() => {
+    setLoading?.(serverCartLoading);
+  }, [serverCartLoading]);
 
   useEffect(() => {
     setConsultProfile(null);
