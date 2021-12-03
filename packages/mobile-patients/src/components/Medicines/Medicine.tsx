@@ -11,7 +11,7 @@ import {
   MedicineCategoryTree,
   Props as MedicineCategoryTreeProps,
 } from '@aph/mobile-patients/src/components/Medicines/MedicineCategoryTree';
-import { ProductPageViewedEventProps } from '@aph/mobile-patients/src/components/Medicines/MedicineDetailsScene';
+import { ProductPageViewedEventProps } from '@aph/mobile-patients/src/components/ProductDetailPage/ProductDetailPage';
 import { MedicineSearchSuggestionItem } from '@aph/mobile-patients/src/components/Medicines/MedicineSearchSuggestionItem';
 import { ProductCard } from '@aph/mobile-patients/src/components/Medicines/ProductCard';
 import { ProductList } from '@aph/mobile-patients/src/components/Medicines/ProductList';
@@ -396,11 +396,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const [showSuggestedQuantityNudge, setShowSuggestedQuantityNudge] = useState<boolean>(false);
   const [shownNudgeOnce, setShownNudgeOnce] = useState<boolean>(false);
-  const [currentProductIdInCart, setCurrentProductIdInCart] = useState<string>(null);
+  const [currentProductIdInCart, setCurrentProductIdInCart] = useState<string>('');
   const [currentProductQuantityInCart, setCurrentProductQuantityInCart] = useState<number>(0);
   const [itemPackForm, setItemPackForm] = useState<string>('');
   const [maxOrderQty, setMaxOrderQty] = useState<number>(0);
-  const [suggestedQuantity, setSuggestedQuantity] = useState<string>(null);
+  const [suggestedQuantity, setSuggestedQuantity] = useState<string>('');
 
   useEffect(() => {
     populateCachedData();
@@ -816,6 +816,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           updateServiceability(deliveryAddress?.zipcode!);
           const formattedLocation = formatAddressToLocation(deliveryAddress);
           setLocationValues(formattedLocation);
+          setUserActionPayload?.({
+            zipcode: formattedLocation?.pincode,
+            latitude: formattedLocation?.latitude,
+            longitude: formattedLocation?.longitude,
+            city: formattedLocation?.city,
+            state: formattedLocation?.state,
+          });
           return;
         }
       }
@@ -834,6 +841,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         updateServiceability(deliveryAddress?.zipcode!);
         const formattedLocation = formatAddressToLocation(deliveryAddress);
         setLocationValues(formattedLocation);
+        setUserActionPayload?.({
+          zipcode: formattedLocation?.pincode,
+          latitude: formattedLocation?.latitude,
+          longitude: formattedLocation?.longitude,
+          city: formattedLocation?.city,
+          state: formattedLocation?.state,
+        });
       } else {
         checkLocation(addressList);
       }
@@ -869,6 +883,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         zipcode: deliveryAddress?.zipcode,
         latitude: deliveryAddress?.latitude,
         longitude: deliveryAddress?.longitude,
+        city: deliveryAddress?.city,
+        state: deliveryAddress?.state,
       });
       const formattedLocation = formatAddressToLocation(deliveryAddress! || null);
       setLocationValues(formattedLocation);
@@ -918,6 +934,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               zipcode: address?.zipcode,
               latitude: address?.latitude,
               longitude: address?.longitude,
+              city: address?.city,
+              state: address?.state,
             });
           }}
           isAddressLoading={fetchAddressLoading}
@@ -1125,6 +1143,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             zipcode: response?.pincode,
             latitude: response?.latitude,
             longitude: response?.longitude,
+            city: response?.city,
+            state: response?.state,
           });
         }
         setDeliveryAddressId!('');
@@ -1164,6 +1184,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               zipcode: pincode,
               latitude: latLang?.lat,
               longitude: latLang?.lng,
+              city: response?.city,
+              state: response?.state,
             });
             setDeliveryAddressId!('');
             updateServiceability(pincode, 'pincode');

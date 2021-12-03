@@ -167,6 +167,8 @@ export interface CartLocationDetails {
   pincode?: string;
   latitude?: any;
   longitude?: any;
+  city?: string;
+  state?: string;
 }
 
 export interface ShoppingCartContextProps {
