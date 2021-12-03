@@ -737,6 +737,7 @@
     "similarPackages":"Similar Packages",
     "needToAddPaitent":"• Do you want to edit patient details?",
     "needToAddOrder":"• Do you want to add tests to your order?",
+    "radiology": "radiology",
     "prescriptionUploaded": "Prescription Uploaded",
     "homepagePastOrderRecommendations":"Recommended for You"
   },
