@@ -194,7 +194,7 @@ export const useServerCart = () => {
       setCartCoupon?.(cartResponse?.couponDetails);
       setCartPrescriptions?.(cartResponse?.prescriptionDetails);
       setCartPrescriptionType?.(cartResponse?.prescriptionType);
-      if (cartResponse?.patientAddressId) setCartAddressId?.(cartResponse?.patientAddressId);
+      setCartAddressId?.(cartResponse?.patientAddressId);
       console.log('PINCODE >>>>>> ', cartResponse?.zipcode);
       console.log('CITY >>>>>> ', cartResponse?.city);
       console.log('STATE >>>>>> ', cartResponse?.state);
