@@ -127,6 +127,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 10,
     marginHorizontal: 10,
+    marginTop: 10,
     borderWidth: 1,
     borderColor: theme.colors.REFERRAL_BORDER_GRAY,
     borderRadius: 5,
