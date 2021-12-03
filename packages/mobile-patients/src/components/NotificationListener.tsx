@@ -669,12 +669,10 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                           prescriptionImageUrl: url,
                           prismPrescriptionFileId: prismPrescriptionFileIds?.[index],
                           uhid: currentPatient?.uhid,
+                          appointmentId: orderDetails?.appointmentId,
                         },
                         prescriptionType: PrescriptionType.UPLOADED,
                       });
-                    });
-                    setUserActionPayload?.({
-                      appointmentId: orderDetails?.appointmentId,
                     });
                   }
 

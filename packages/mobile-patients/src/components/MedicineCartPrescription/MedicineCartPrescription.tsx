@@ -1,13 +1,11 @@
 import {
   Events,
-  Helpers,
   PrescriptionOptions,
 } from '@aph/mobile-patients/src/components/MedicineCartPrescription';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 import {
   EPrescription,
-  PhysicalPrescription,
   useShoppingCart,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -34,10 +32,9 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
     serverCartItems,
     cartPrescriptions,
   } = useShoppingCart();
-  const { setUserActionPayload } = useServerCart();
-  const client = useApolloClient();
+  const { setUserActionPayload, uploadPhysicalPrescriptionsToServerCart } = useServerCart();
   const { currentPatient } = useAllCurrentPatients();
-  const { setLoading, showAphAlert } = useUIElements();
+  const { showAphAlert } = useUIElements();
 
   useEffect(() => {
     setConsultProfile(null);
@@ -97,7 +94,7 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
             }
             if (option === PrescriptionType.UPLOADED) {
               saveEPrescriptionsToServerCart(ePres);
-              savePhysicalPrescriptionsToServerCart(physPres);
+              uploadPhysicalPrescriptionsToServerCart(physPres);
             }
           }}
         />
@@ -121,35 +118,6 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
                 medicines: prescription?.medicines,
                 date: prescription?.date,
               },
-            },
-          });
-        }
-      });
-    } catch (error) {
-      showAphAlert?.({
-        title: 'Uh oh.. :(',
-        description: 'Error occurred while uploading prescriptions.',
-      });
-    }
-  };
-
-  const savePhysicalPrescriptionsToServerCart = async (
-    physicalPrescriptions: PhysicalPrescription[]
-  ) => {
-    try {
-      // upload physical prescriptions and get prism file id
-      const updatedPrescriptions = await Helpers.updatePrescriptionUrls(
-        client,
-        currentPatient?.id,
-        physicalPrescriptions
-      );
-      updatedPrescriptions?.forEach((prescription: PhysicalPrescription) => {
-        if (prescription?.prismPrescriptionFileId && prescription?.uploadedUrl) {
-          setUserActionPayload?.({
-            prescriptionDetails: {
-              prescriptionImageUrl: prescription?.uploadedUrl,
-              prismPrescriptionFileId: prescription?.prismPrescriptionFileId,
-              uhid: currentPatient?.uhid,
             },
           });
         }

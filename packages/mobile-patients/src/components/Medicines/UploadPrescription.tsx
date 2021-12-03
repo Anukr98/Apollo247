@@ -199,7 +199,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     newAddressAdded,
     setNewAddressAdded,
   } = useShoppingCart();
-  const { setUserActionPayload } = useServerCart();
+  const { setUserActionPayload, fetchAddress, fetchServerCart } = useServerCart();
   const SPECIFIED_DURATION = 'Duration as specified in prescription';
   const CALL_ME = 'Call me for details';
   const NEED_ALL_MEDICINES = 'Need all medicine and for duration as per prescription';
@@ -241,12 +241,11 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
 
   useEffect(() => {
     fetchAddress();
-    checkServicability(selectedAddress!, true);
+    fetchServerCart();
     nonCartAvailabilityTat(selectedAddress?.zipcode);
   }, []);
 
   useEffect(() => {
-    checkServicability(selectedAddress!, false);
     nonCartAvailabilityTat(selectedAddress?.zipcode);
   }, [selectedAddress]);
 
@@ -255,80 +254,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     const addressLength = addresses.length;
     if (!!addressLength && !!newAddressAdded) {
       const newAddress = addresses?.filter((value) => value?.id === newAddressAdded);
-      checkServicability(newAddress?.[0]?.zipcode, false);
       nonCartAvailabilityTat(newAddress?.[0]?.zipcode);
       setNewAddressAdded && setNewAddressAdded('');
     }
   }, [newAddressAdded]);
-
-  async function fetchAddress() {
-    try {
-      if (addresses.length) {
-        return;
-      }
-      const userId = g(currentPatient, 'id');
-      const response = await client.query<getPatientAddressList, getPatientAddressListVariables>({
-        query: GET_PATIENT_ADDRESS_LIST,
-        variables: { patientId: userId },
-        fetchPolicy: 'no-cache',
-      });
-      const { data } = response;
-      const addressList =
-        (data.getPatientAddressList
-          .addressList as savePatientAddress_savePatientAddress_patientAddress[]) || [];
-      setAddresses!(addressList);
-      const deliveryAddress = addressList.find(({ defaultAddress }) => defaultAddress === true);
-      if (deliveryAddress && !deliveryAddressId) {
-        setDeliveryAddressId && setDeliveryAddressId(deliveryAddress?.id);
-      }
-    } catch (error) {}
-  }
-
-  async function checkServicability(
-    address: savePatientAddress_savePatientAddress_patientAddress,
-    forceCheck?: boolean
-  ) {
-    if (deliveryAddressId && deliveryAddressId == address.id && !forceCheck) {
-      return;
-    }
-    try {
-      setLoading?.(true);
-      const response = await pinCodeServiceabilityApi247(address.zipcode!);
-      const { data } = response;
-      if (data?.response?.servicable) {
-        setDeliveryAddressId && setDeliveryAddressId(address.id);
-        setDefaultAddress(address);
-        setvdcType(data?.response?.vdcType);
-        setLoading?.(false);
-      } else {
-        setDeliveryAddressId && setDeliveryAddressId('');
-        setLoading?.(false);
-        renderAlert(string.medicine_cart.pharmaAddressUnServiceableAlert);
-      }
-    } catch (error) {
-      setLoading?.(false);
-    }
-  }
-
-  async function setDefaultAddress(address: savePatientAddress_savePatientAddress_patientAddress) {
-    try {
-      const response = await client.query<makeAdressAsDefault, makeAdressAsDefaultVariables>({
-        query: SET_DEFAULT_ADDRESS,
-        variables: { patientAddressId: address?.id },
-        fetchPolicy: 'no-cache',
-      });
-      const { data } = response;
-      const patientAddress = data?.makeAdressAsDefault?.patientAddress;
-      const updatedAddresses = addresses.map((item) => ({
-        ...item,
-        defaultAddress: patientAddress?.id == item.id ? patientAddress?.defaultAddress : false,
-      }));
-      setAddresses!(updatedAddresses);
-      patientAddress?.defaultAddress && setDeliveryAddressId!(patientAddress?.id);
-    } catch (error) {
-      CommonBugFender('set_default_Address_on_Cart_Page', error);
-    }
-  }
 
   const renderAlert = (message: string) => {
     showAphAlert!({
@@ -350,7 +279,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   };
 
   const placeOrder = async () => {
-    setLoading!(true);
+    // setLoading!(true);
     CommonLogEvent(
       AppRoutes.UploadPrescription,
       'Graph ql call for save prescription medicine order'
@@ -365,43 +294,58 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         ? uploadedPhyPrescriptionsData.map((item) => g(item, 'data', 'uploadDocument'))
         : [];
 
-      const phyPresUrls = uploadedPhyPrescriptions.map((item) => item!.filePath).filter((i) => i);
-      const phyPresPrismIds = phyPrescription
-        .map((item) => item.prismPrescriptionFileId)
-        .filter((i) => i);
+      // const phyPresUrls = uploadedPhyPrescriptions.map((item) => item!.filePath).filter((i) => i);
+      // const phyPresPrismIds = phyPrescription
+      //   .map((item) => item.prismPrescriptionFileId)
+      //   .filter((i) => i);
 
-      const ePresUrls = e_Prescription?.map((item) => item?.uploadedUrl)?.filter((i) => i);
-      const ePresPrismIds = e_Prescription
-        .map((item) => item?.prismPrescriptionFileId)
-        .filter((i) => i);
+      // const ePresUrls = e_Prescription?.map((item) => item?.uploadedUrl)?.filter((i) => i);
+      // const ePresPrismIds = e_Prescription
+      //   .map((item) => item?.prismPrescriptionFileId)
+      //   .filter((i) => i);
       const days = durationDays ? parseInt(durationDays) : null;
       const optionSelected =
         selectedMedicineOption === CALL_ME && !!userComment
           ? `${prescriptionOption}, ${userComment}`?.trim()
           : prescriptionOption;
-      const appointmentIds = e_Prescription.length
-        ? e_Prescription?.filter((item) => item?.appointmentId)?.map((item) => item?.appointmentId)
-        : [];
 
-      const prescriptionMedicineInput: savePrescriptionMedicineOrderOMSVariables = {
-        prescriptionMedicineOMSInput: {
-          patientId: (currentPatient && currentPatient.id) || '',
-          medicineDeliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
-          ...(storeId ? { shopId: storeId } : {}),
-          appointmentId: appointmentIds?.length ? appointmentIds.join(',') : '',
-          patinetAddressId: deliveryAddressId || '',
-          prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),
-          prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
-          isEprescription: e_Prescription.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
-          // Values for chennai order
-          bookingSource: BOOKING_SOURCE.MOBILE,
-          deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
-          prescriptionOptionSelected: optionSelected,
-          durationDays: prescriptionOption === 'duration' ? days : null,
-          appVersion: DeviceInfo.getVersion(),
-        },
-      };
-      submitPrescriptionMedicineOrder(prescriptionMedicineInput);
+      // [...uploadedPhyPrescriptions, ...e_Prescription].forEach((presToAdd) => {
+      //   setUserActionPayload?.({
+      //     prescriptionType: PrescriptionType.UPLOADED,
+      //     prescriptionDetails: {
+      //       prescriptionImageUrl: presToAdd?.uploadedUrl || presToAdd?.filePath,
+      //       prismPrescriptionFileId: presToAdd?.prismPrescriptionFileId || presToAdd?.fileId,
+      //       uhid: currentPatient?.id,
+      //       appointmentId: presToAdd?.appointmentId,
+      //       meta: {
+      //         doctorName: presToAdd?.doctorName,
+      //         forPatient: presToAdd?.forPatient,
+      //         medicines: presToAdd?.medicines,
+      //         date: presToAdd?.date,
+      //       },
+      //     },
+      //   });
+      // });
+
+      // const prescriptionMedicineInput: savePrescriptionMedicineOrderOMSVariables = {
+      //   prescriptionMedicineOMSInput: {
+      //     patientId: (currentPatient && currentPatient.id) || '',
+      //     medicineDeliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
+      //     ...(storeId ? { shopId: storeId } : {}),
+      //     appointmentId: appointmentIds?.length ? appointmentIds.join(',') : '',
+      //     patinetAddressId: deliveryAddressId || '',
+      //     prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),
+      //     prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
+      //     isEprescription: e_Prescription.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
+      //     // Values for chennai order
+      //     bookingSource: BOOKING_SOURCE.MOBILE,
+      //     deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
+      //     prescriptionOptionSelected: optionSelected,
+      //     durationDays: prescriptionOption === 'duration' ? days : null,
+      //     appVersion: DeviceInfo.getVersion(),
+      //   },
+      // };
+      // submitPrescriptionMedicineOrder(prescriptionMedicineInput);
     } catch (error) {
       setLoading!(false);
       CommonBugFender('UploadPrescription_onPressSubmit_try', error);
@@ -464,32 +408,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       // Let the user order journey continue, even if no lat-lang.
       onComplete();
     }
-  };
-
-  const submitPrescriptionMedicineOrder = (
-    variables: savePrescriptionMedicineOrderOMSVariables
-  ) => {
-    client
-      .mutate({
-        mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS,
-        variables,
-      })
-      .then(({ data }) => {
-        const { errorCode, orderAutoId } = g(data, 'savePrescriptionMedicineOrderOMS') || {};
-        postwebEngageSubmitPrescriptionEvent(orderAutoId);
-        if (errorCode) {
-          renderErrorAlert(`Something went wrong, unable to place order.`);
-          return;
-        }
-        renderSuccessPopup(orderAutoId);
-      })
-      .catch((e) => {
-        CommonBugFender('UploadPrescription_submitPrescriptionMedicineOrder', e);
-        renderErrorAlert(`Something went wrong, please try later.`);
-      })
-      .finally(() => {
-        setLoading!(false);
-      });
   };
 
   const postwebEngageSubmitPrescriptionEvent = (orderAutoId: string) => {
@@ -1032,7 +950,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
             hideAphAlert!();
           }}
           onPressSelectAddress={(address) => {
-            checkServicability(address, false);
             nonCartAvailabilityTat(address?.zipcode);
             setAsyncPharmaLocation(address);
             hideAphAlert!();

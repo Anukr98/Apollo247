@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import {
+  EPrescription,
+  PhysicalPrescription,
+  useShoppingCart,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   GET_PATIENT_ADDRESS_LIST,
@@ -7,12 +11,16 @@ import {
   SERVER_CART_REVIEW_CART,
   SERVER_CART_SAVE_CART,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { CartInputData } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  CartInputData,
+  PrescriptionType,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { formatAddressToLocation } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { getProductsByCategoryApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { Helpers } from '@aph/mobile-patients/src/components/MedicineCartPrescription';
 
 export const useServerCart = () => {
   const client = useApolloClient();
@@ -204,11 +212,63 @@ export const useServerCart = () => {
     } catch (error) {}
   };
 
+  const uploadPhysicalPrescriptionsToServerCart = async (
+    physicalPrescriptions: PhysicalPrescription[]
+  ) => {
+    try {
+      setServerCartLoading?.(true);
+      // upload physical prescriptions and get prism file id
+      const updatedPrescriptions = await Helpers.updatePrescriptionUrls(
+        client,
+        currentPatient?.id,
+        physicalPrescriptions
+      );
+      updatedPrescriptions?.forEach((prescription: PhysicalPrescription) => {
+        if (prescription?.prismPrescriptionFileId && prescription?.uploadedUrl) {
+          setUserActionPayload({
+            prescriptionType: PrescriptionType.UPLOADED,
+            prescriptionDetails: {
+              prescriptionImageUrl: prescription?.uploadedUrl,
+              prismPrescriptionFileId: prescription?.prismPrescriptionFileId,
+              uhid: currentPatient?.uhid,
+            },
+          });
+        }
+      });
+      setServerCartLoading?.(false);
+    } catch (error) {
+      setServerCartLoading?.(false);
+      setServerCartErrorMessage?.('Error occurred while uploading prescriptions.');
+    }
+  };
+
+  const uploadEPrescriptionsToServerCart = (ePrescriptionsToBeUploaded: EPrescription[]) => {
+    ePrescriptionsToBeUploaded?.forEach((presToAdd) => {
+      setUserActionPayload?.({
+        prescriptionType: PrescriptionType.UPLOADED,
+        prescriptionDetails: {
+          prescriptionImageUrl: presToAdd?.uploadedUrl,
+          prismPrescriptionFileId: presToAdd?.prismPrescriptionFileId,
+          uhid: currentPatient?.id,
+          appointmentId: presToAdd?.appointmentId,
+          meta: {
+            doctorName: presToAdd?.doctorName,
+            forPatient: presToAdd?.forPatient,
+            medicines: presToAdd?.medicines,
+            date: presToAdd?.date,
+          },
+        },
+      });
+    });
+  };
+
   return {
     setUserActionPayload,
     fetchServerCart,
     fetchReviewCart,
     fetchAddress,
     fetchProductSuggestions,
+    uploadPhysicalPrescriptionsToServerCart,
+    uploadEPrescriptionsToServerCart,
   };
 };
