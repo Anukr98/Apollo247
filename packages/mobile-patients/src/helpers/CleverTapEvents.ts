@@ -1578,6 +1578,11 @@ export interface CleverTapEvents {
     'Delivery charge'?: number;
     'Coupon code used'?: string;
     'Coupon Discount'?: number;
+    'Total Discount'?: number;
+    'Item ids'?: object[];
+    'Item names'?: object[];
+    'Recommendation Shown'?: string,
+    'Recommendation Item ids'?: object[]
   };
   [CleverTapEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED]: {
     'Slot time': string;
@@ -1646,6 +1651,7 @@ export interface CleverTapEvents {
     | 'Prescription';
     Section?: string;
     'Circle user'?: string;
+    'Original Item ids'?: any;
   };
   [CleverTapEventName.DIAGNOSTIC_ORDER_PLACED]: {
     'Order id': string | number;

@@ -1344,6 +1344,7 @@ export interface WebEngageEvents {
     Source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
     'Section name'?: string;
     'Circle user': string;
+    'Original Item ids'?: any;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order id': any;
