@@ -340,8 +340,6 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
     );
   };
 
-  console.log('uploadPrescriptionRequired >>> ', uploadPrescriptionRequired);
-
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>

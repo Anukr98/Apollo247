@@ -173,6 +173,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     cartCircleSubscriptionId,
     serverCartItems,
     serverCartAmount,
+    cartLocationDetails,
   } = useShoppingCart();
   const { setUserActionPayload } = useServerCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
@@ -212,8 +213,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const [multiVariantProducts, setMultiVariantProducts] = useState([]);
   const [multiVariantSkuInformation, setMultiVariantSkuInformation] = useState<any[]>([]);
 
-  const pharmacyPincode =
-    g(asyncPincode, 'pincode') || g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
+  const pharmacyPincode = cartLocationDetails?.pincode || asyncPincode?.pincode;
   const [pincode, setpincode] = useState<string>(pharmacyPincode || '');
   const [deliveryTime, setdeliveryTime] = useState<string>('');
   const [tatEventData, setTatEventData] = useState<PharmacyTatApiCalled>();
@@ -326,9 +326,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 
   useEffect(() => {
     if (axdcCode && medicineDetails?.sku) {
-      getMedicineDetails(pincode, axdcCode);
+      getMedicineDetails(cartLocationDetails?.pincode, axdcCode);
     }
-  }, [pincode]);
+  }, [cartLocationDetails?.pincode]);
 
   useEffect(() => {
     const addressLength = addresses.length;
@@ -1059,6 +1059,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               city: response?.city,
               state: response?.state,
             };
+            setUserActionPayload?.({
+              zipcode: pinCode,
+              latitude: response?.latitude,
+              longitude: response?.longitude,
+            });
             setLocationValues(saveAddress);
             setDeliveryAddressId!('');
             setpincode(pinCode);
@@ -1088,23 +1093,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       })
       .finally(() => setLoading!(false));
   };
+
   const onAddCartItem = (
     item?: pharmaSubstitution_pharmaSubstitution_substitutes,
     isFromFastSubstitutes?: boolean
   ) => {
     const medicine_details = item ? item : medicineDetails;
-    const {
-      sku,
-      mou,
-      name,
-      price,
-      special_price,
-      is_prescription_required,
-      type_id,
-      thumbnail,
-      MaxOrderQty,
-      url_key,
-    } = medicine_details;
+    const { sku } = medicine_details;
     if (serverCartItems?.find(({ sku }) => sku?.toUpperCase() === sku?.toUpperCase())) {
       setCurrentProductQuantityInCart(productQuantity);
       setUserActionPayload?.({

@@ -72,7 +72,6 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     setNewAddressAdded,
     cartTat,
     cartSubscriptionDetails,
-    setCartCoupon,
     isCartPrescriptionRequired,
     cartSuggestedProducts,
     serverCartLoading,
@@ -250,15 +249,16 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
   };
 
   const onPressApplyCoupon = () => {
-    setCartCoupon?.(null);
-    setUserActionPayload?.({
-      coupon: '',
-      subscription: {
-        subscriptionApplied: cartCircleSubscriptionId ? true : false,
-      },
-    });
-    applyCouponClickedEvent(currentPatient?.id, JSON.stringify(serverCartItems));
-    props.navigation.navigate(AppRoutes.ViewCoupons);
+    if (cartAddressId) {
+      setUserActionPayload?.({
+        coupon: '',
+        subscription: {
+          subscriptionApplied: cartCircleSubscriptionId ? true : false,
+        },
+      });
+      applyCouponClickedEvent(currentPatient?.id, JSON.stringify(serverCartItems));
+      props.navigation.navigate(AppRoutes.ViewCoupons);
+    }
   };
 
   const onPressRemoveCoupon = () => {

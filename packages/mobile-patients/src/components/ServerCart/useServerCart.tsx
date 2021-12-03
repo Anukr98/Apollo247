@@ -45,7 +45,7 @@ export const useServerCart = () => {
     setCartSuggestedProducts,
     setCartLocationDetails,
     cartLocationDetails,
-    pinCode,
+    asyncPincode,
   } = useShoppingCart();
   const { axdcCode } = useAppCommonData();
   const { setPharmacyLocation } = useAppCommonData();
@@ -233,7 +233,7 @@ export const useServerCart = () => {
         null,
         null,
         axdcCode,
-        cartLocationDetails?.pincode || pinCode
+        cartLocationDetails?.pincode || asyncPincode?.pincode
       );
       const products = response?.data?.products.slice(0, 15) || [];
       setCartSuggestedProducts?.(products);
