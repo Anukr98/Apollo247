@@ -6,6 +6,7 @@ import {
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
+  DELETE_SERVER_CART,
   GET_PATIENT_ADDRESS_LIST,
   SERVER_CART_FETCH_CART,
   SERVER_CART_REVIEW_CART,
@@ -205,6 +206,35 @@ export const useServerCart = () => {
     } catch (error) {}
   };
 
+  const deleteServerCart = (paymentSuccess: boolean, paymentOrderId: string) => {
+    setServerCartLoading?.(true);
+    client
+      .mutate({
+        mutation: DELETE_SERVER_CART,
+        variables: {
+          patientId: currentPatient?.id,
+          paymentSuccess,
+          paymentOrderId,
+        },
+        context: {
+          headers: {
+            'User-Agent': userAgent,
+          },
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((result) => {
+        const deleteCartResponse = result?.data?.deletecart;
+        if (deleteCartResponse?.success) fetchReviewCart();
+      })
+      .catch((error) => {
+        setServerCartErrorMessage?.(error);
+      })
+      .finally(() => {
+        setServerCartLoading?.(false);
+      });
+  };
+
   const fetchAddress = () => {
     try {
       client
@@ -331,6 +361,7 @@ export const useServerCart = () => {
     setUserActionPayload,
     fetchServerCart,
     fetchReviewCart,
+    deleteServerCart,
     fetchAddress,
     fetchProductSuggestions,
     uploadPhysicalPrescriptionsToServerCart,
