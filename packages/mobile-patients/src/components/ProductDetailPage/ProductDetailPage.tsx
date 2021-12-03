@@ -149,13 +149,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const [composition, setComposition] = useState<string>('');
 
   const {
-    cartItems,
-    cartTotal,
     pharmacyCircleAttributes,
     deliveryAddressId,
     setDeliveryAddressId,
-    addCartItem,
-    updateCartItem,
     pdpBreadCrumbs,
     setPdpBreadCrumbs,
     addresses,
@@ -165,7 +161,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     circleMembershipCharges,
     pdpDisclaimerMessage,
     pharmaPDPNudgeMessage,
-    circleSubscriptionId,
     isCircleExpired,
     productSubstitutes,
     setProductSubstitutes,
@@ -174,6 +169,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     axdcCode,
     isPharmacyPincodeServiceable,
     setAddresses,
+
+    cartCircleSubscriptionId,
+    serverCartItems,
+    serverCartAmount,
   } = useShoppingCart();
   const { setUserActionPayload } = useServerCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
@@ -189,7 +188,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     activeUserSubscriptions,
   } = useAppCommonData();
 
-  const cartItemsCount = cartItems.length + diagnosticCartItems.length;
+  const cartItemsCount = serverCartItems.length + diagnosticCartItems.length;
   const scrollViewRef = React.useRef<KeyboardAwareScrollView>(null);
 
   //use states
@@ -235,7 +234,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
 
   const getItemQuantity = (id: string) => {
-    const foundItem = cartItems.find((item) => item.id == id);
+    const foundItem = serverCartItems.find((item) => item.sku == id);
     return foundItem ? foundItem.quantity : 0;
   };
 
@@ -395,12 +394,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, [sku, isPharma, pincode, props.navigation, medicineDetails]);
 
   useEffect(() => {
-    if (cartItems.find(({ id }) => id?.toUpperCase() === currentProductIdInCart)) {
+    if (serverCartItems.find(({ sku }) => sku?.toUpperCase() === currentProductIdInCart)) {
       if (shownNudgeOnce === false) {
         setShowSuggestedQuantityNudge(true);
       }
     }
-  }, [cartItems, currentProductQuantityInCart, currentProductIdInCart]);
+  }, [serverCartItems, currentProductQuantityInCart, currentProductIdInCart]);
 
   useEffect(() => {}, [setShowSuggestedQuantityNudge]);
 
@@ -1106,11 +1105,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       MaxOrderQty,
       url_key,
     } = medicine_details;
-    if (cartItems.find(({ id }) => id?.toUpperCase() === sku?.toUpperCase())) {
-      updateCartItem?.({
-        id: sku,
-        quantity: productQuantity,
-      });
+    if (serverCartItems.find(({ sku }) => sku?.toUpperCase() === sku?.toUpperCase())) {
       setCurrentProductQuantityInCart(productQuantity);
       setUserActionPayload?.({
         medicineOrderCartLineItems: [
@@ -1121,28 +1116,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         ],
       });
     } else {
-      addCartItem!({
-        id: sku,
-        mou,
-        name,
-        price: price,
-        specialPrice: special_price
-          ? typeof special_price == 'string'
-            ? Number(special_price)
-            : special_price
-          : undefined,
-        prescriptionRequired: is_prescription_required == '1',
-        isMedicine: getIsMedicine(type_id?.toLowerCase()) || '0',
-        quantity: productQuantity,
-        thumbnail: thumbnail,
-        isInStock: true,
-        maxOrderQty: MaxOrderQty,
-        productType: type_id,
-        url_key,
-        subcategory,
-      });
-      setCurrentProductIdInCart(sku);
-      setCurrentProductQuantityInCart(productQuantity);
       setUserActionPayload?.({
         medicineOrderCartLineItems: [
           {
@@ -1151,6 +1124,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           },
         ],
       });
+      setCurrentProductIdInCart(sku);
+      setCurrentProductQuantityInCart(productQuantity);
     }
     postwebEngageAddToCartEvent(
       medicine_details,
@@ -1171,15 +1146,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   };
 
   const renderBottomButton = () => {
-    const total = cartItems
-      .reduce((currTotal, currItem) => currTotal + currItem.quantity * currItem.price, 0)
-      .toFixed(2);
-    const circleMember = circleSubscriptionId && !isCircleExpired;
-    const nonCircleMember = !circleSubscriptionId || isCircleExpired;
+    const circleMember = !!cartCircleSubscriptionId;
     const showNudgeMessage =
       pharmaPDPNudgeMessage?.show === 'yes' &&
       ((circleMember && !!pharmaPDPNudgeMessage?.nudgeMessage) ||
-        (nonCircleMember && !!pharmaPDPNudgeMessage?.nudgeMessageNonCircle));
+        (!circleMember && !!pharmaPDPNudgeMessage?.nudgeMessageNonCircle));
     return (
       <StickyBottomComponent
         style={
@@ -1195,9 +1166,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           style={[styles.bottomCta, showNudgeMessage ? { alignSelf: 'center' } : {}]}
         >
           <Text style={styles.bottomCtaText}>
-            {`Proceed to Checkout (${cartItems?.length} items) ${
+            {`Proceed to Checkout (${serverCartItems?.length} items) ${
               string.common.Rs
-            }${convertNumberToDecimal(cartTotal - productDiscount)}`}
+            }${convertNumberToDecimal(serverCartAmount?.cartTotal || 0)}`}
           </Text>
         </TouchableOpacity>
       </StickyBottomComponent>
@@ -1319,7 +1290,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     });
 
   const showProceedButton = medicineDetails?.sku
-    ? !!cartItems.find(({ id }) => id === medicineDetails?.sku)
+    ? !!serverCartItems.find(({ sku }) => sku === medicineDetails?.sku)
     : false;
 
   const renderDisclaimerMessage = () => {

@@ -17,7 +17,6 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import React, { useCallback, useState, useEffect } from 'react';
 import {
   FlatList,
@@ -82,20 +81,10 @@ export const ProductList: React.FC<Props> = ({
     : '';
   const [dataToShow, setDataToShow] = useState(initData);
   const [lastIndex, setLastIndex] = useState<number>(data?.length > 4 ? step : 0);
-  const { currentPatient } = useAllCurrentPatients();
   const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
   const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
-  const {
-    getCartItemQty,
-    addCartItem,
-    updateCartItem,
-    removeCartItem,
-    pharmacyCircleAttributes,
-    cartItems,
-    asyncPincode,
-  } = useShoppingCart();
+  const { getCartItemQty, serverCartItems } = useShoppingCart();
   const { setUserActionPayload } = useServerCart();
-  const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
   const [showSuggestedQuantityNudge, setShowSuggestedQuantityNudge] = useState<boolean>(false);
   const [shownNudgeOnce, setShownNudgeOnce] = useState<boolean>(false);
   const [currentProductIdInCart, setCurrentProductIdInCart] = useState<string>(null);
@@ -105,12 +94,12 @@ export const ProductList: React.FC<Props> = ({
   const [suggestedQuantity, setSuggestedQuantity] = useState<string>(null);
 
   useEffect(() => {
-    if (cartItems.find(({ id }) => id?.toUpperCase() === currentProductIdInCart)) {
+    if (serverCartItems.find(({ id }) => id?.toUpperCase() === currentProductIdInCart)) {
       if (shownNudgeOnce === false) {
         setShowSuggestedQuantityNudge(true);
       }
     }
-  }, [cartItems, currentProductQuantityInCart, currentProductIdInCart]);
+  }, [serverCartItems, currentProductQuantityInCart, currentProductIdInCart]);
 
   useEffect(() => {
     if (showSuggestedQuantityNudge === false) {
@@ -199,27 +188,27 @@ export const ProductList: React.FC<Props> = ({
         },
       ],
     });
-    addPharmaItemToCart(
-      formatToCartItem(item),
-      asyncPincode?.pincode || pharmacyPincode!,
-      addCartItem,
-      setGlobalLoading,
-      navigation,
-      currentPatient,
-      !!isPharmacyLocationServiceable,
-      {
-        source: addToCartSource,
-        categoryId: productPageViewedEventProps?.CategoryID,
-        categoryName: productPageViewedEventProps?.CategoryName,
-        section: productPageViewedEventProps?.SectionName,
-      },
-      JSON.stringify(cartItems),
-      () => {},
-      pharmacyCircleAttributes!,
-      onAddedSuccessfully ? onAddedSuccessfully : () => {},
-      comingFromSearch,
-      cleverTapSearchSuccessEventAttributes
-    );
+    // addPharmaItemToCart(
+    //   formatToCartItem(item),
+    //   asyncPincode?.pincode || pharmacyPincode!,
+    //   addCartItem,
+    //   setGlobalLoading,
+    //   navigation,
+    //   currentPatient,
+    //   !!isPharmacyLocationServiceable,
+    //   {
+    //     source: addToCartSource,
+    //     categoryId: productPageViewedEventProps?.CategoryID,
+    //     categoryName: productPageViewedEventProps?.CategoryName,
+    //     section: productPageViewedEventProps?.SectionName,
+    //   },
+    //   JSON.stringify(cartItems),
+    //   () => {},
+    //   pharmacyCircleAttributes!,
+    //   onAddedSuccessfully ? onAddedSuccessfully : () => {},
+    //   comingFromSearch,
+    //   cleverTapSearchSuccessEventAttributes
+    // );
     setCurrentProductIdInCart(item.sku);
     item.pack_form ? setItemPackForm(item.pack_form) : setItemPackForm('');
     item.suggested_qty ? setSuggestedQuantity(item.suggested_qty) : setSuggestedQuantity(null);
@@ -245,7 +234,6 @@ export const ProductList: React.FC<Props> = ({
       const qty = getCartItemQty(id);
       const onPressAddQty = () => {
         if (qty < item.MaxOrderQty) {
-          updateCartItem!({ id, quantity: qty + 1 });
           setCurrentProductQuantityInCart(qty + 1);
           setUserActionPayload?.({
             medicineOrderCartLineItems: [
@@ -258,7 +246,6 @@ export const ProductList: React.FC<Props> = ({
         }
       };
       const onPressSubtractQty = () => {
-        qty == 1 ? removeCartItem!(id) : updateCartItem!({ id, quantity: qty - 1 });
         setCurrentProductQuantityInCart(qty - 1);
         setUserActionPayload?.({
           medicineOrderCartLineItems: [
@@ -293,7 +280,7 @@ export const ProductList: React.FC<Props> = ({
         <Component {...props} />
       ) : null;
     },
-    [cartItems]
+    [serverCartItems]
   );
 
   const keyExtractor = useCallback(({ sku }) => `${sku}`, []);

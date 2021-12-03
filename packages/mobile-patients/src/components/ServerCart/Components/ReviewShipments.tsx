@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, Text, FlatList, View } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
@@ -10,8 +10,13 @@ export interface ReviewShipmentsProps {
 }
 
 export const ReviewShipments: React.FC<ReviewShipmentsProps> = (props) => {
-  const { serverCartItems, noOfShipments, orders } = useShoppingCart();
+  const { serverCartItems, noOfShipments, setShipmentArray, shipmentArray } = useShoppingCart();
   const isSplitCart: boolean = noOfShipments > 1;
+
+  useEffect(() => {
+    const shipmentArray = getShipmentsArray();
+    setShipmentArray?.(shipmentArray || []);
+  }, []);
 
   const renderCartItemsHeader = (index: any, items: any) => {
     const itemsCount = items.length == 0 || items.length > 10 ? items.length : `0${items.length}`;
@@ -43,18 +48,18 @@ export const ReviewShipments: React.FC<ReviewShipmentsProps> = (props) => {
 
   const getShipmentsArray = () => {
     const shipments: any[] = [];
-    for (var i = 1; i <= noOfShipments; i++) {
-      const shipment = serverCartItems.filter((item) => item?.shipmentNo == i);
+    for (var shipmentNumber = 1; shipmentNumber <= noOfShipments; shipmentNumber++) {
+      const shipment = serverCartItems.filter((item) => item?.shipmentNo == shipmentNumber);
       shipments.push({
         items: shipment,
         tat: shipment?.[0]?.tat,
+        estimatedAmount: shipment.reduce((acc, curr) => acc + curr?.sellingPrice, 0),
       });
     }
     return shipments;
   };
 
   const renderOrders = () => {
-    const shipmentArray = getShipmentsArray();
     if (noOfShipments) {
       return shipmentArray?.map((shipment: any, index: any) => {
         return (

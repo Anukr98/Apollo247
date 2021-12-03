@@ -118,6 +118,7 @@ import {
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { NavigationActions, StackActions } from 'react-navigation';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -168,13 +169,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
   const { currentPatient } = useAllCurrentPatients();
   const {
-    addMultipleCartItems,
     addMultipleEPrescriptions,
     addresses,
     onHoldOptionOrder,
     setEPrescriptions,
     setPhysicalPrescriptions,
   } = useShoppingCart();
+  const { setUserActionPayload } = useServerCart();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [isCancelVisible, setCancelVisible] = useState(false);
   const [showPrescriptionPopup, setPrescriptionPopUp] = useState(false);
@@ -518,8 +519,32 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       };
       postCleverTapEvent(CleverTapEventName.PHARMACY_RE_ORDER_MEDICINE, cleverTapEventAttributes);
       postWebEngageEvent(WebEngageEventName.RE_ORDER_MEDICINE, eventAttributes);
-      items.length && addMultipleCartItems!(items);
-      items.length && prescriptions.length && addMultipleEPrescriptions!(prescriptions);
+      items?.forEach((item) => {
+        setUserActionPayload?.({
+          medicineOrderCartLineItems: [
+            {
+              medicineSKU: item.id,
+              quantity: item.quantity,
+            },
+          ],
+        });
+      });
+      prescriptions?.forEach((item) => {
+        setUserActionPayload?.({
+          prescriptionDetails: {
+            prescriptionImageUrl: item.uploadedUrl,
+            prismPrescriptionFileId: item.prismPrescriptionFileId,
+            uhid: currentPatient?.id,
+            appointmentId: item.appointmentId,
+            meta: {
+              doctorName: item?.doctorName,
+              forPatient: item?.forPatient,
+              medicines: item?.medicines,
+              date: item?.date,
+            },
+          },
+        });
+      });
       setLoading!(false);
       if (unavailableItems.length) {
         setReOrderDetails({ total: totalItemsCount, unavailable: unavailableItems });
@@ -1670,6 +1695,22 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           if (selectedEPres.length == 0) {
             return;
           }
+          selectedEPres.forEach((item) => {
+            setUserActionPayload?.({
+              prescriptionDetails: {
+                prescriptionImageUrl: item.uploadedUrl,
+                prismPrescriptionFileId: item.prismPrescriptionFileId,
+                uhid: currentPatient?.id,
+                appointmentId: item.appointmentId,
+                meta: {
+                  doctorName: item?.doctorName,
+                  forPatient: item?.forPatient,
+                  medicines: item?.medicines,
+                  date: item?.date,
+                },
+              },
+            });
+          });
           setEPrescriptions && setEPrescriptions(selectedEPres);
           props.navigation.navigate(AppRoutes.UploadPrescription, {
             ePrescriptionsProp: selectedEPres,

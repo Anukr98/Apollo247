@@ -8,6 +8,8 @@ import {
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 import { NavigationScreenProps } from 'react-navigation';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 export interface UploadPrescriptionProps extends NavigationScreenProps {
   showPopUp: boolean;
@@ -23,6 +25,8 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     setEPrescriptions,
     ePrescriptions,
   } = useShoppingCart();
+  const { setUserActionPayload } = useServerCart();
+  const { currentPatient } = useAllCurrentPatients();
   const { showPopUp, onClickClose, type, onUpload } = props;
   const [showEprescriptionUpload, setshowEprescriptionUpload] = useState<boolean>(false);
 
@@ -76,6 +80,22 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           if (selectedEPres.length == 0) {
             return;
           }
+          selectedEPres.forEach((presToAdd) => {
+            setUserActionPayload?.({
+              prescriptionDetails: {
+                prescriptionImageUrl: presToAdd.uploadedUrl,
+                prismPrescriptionFileId: presToAdd.prismPrescriptionFileId,
+                uhid: currentPatient?.id,
+                appointmentId: presToAdd.appointmentId,
+                meta: {
+                  doctorName: presToAdd?.doctorName,
+                  forPatient: presToAdd?.forPatient,
+                  medicines: presToAdd?.medicines,
+                  date: presToAdd?.date,
+                },
+              },
+            });
+          });
           setEPrescriptions && setEPrescriptions([...selectedEPres]);
         }}
         selectedEprescriptionIds={ePrescriptions.map((item) => item.id)}

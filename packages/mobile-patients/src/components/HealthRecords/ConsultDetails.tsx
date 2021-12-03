@@ -132,6 +132,7 @@ import {
 } from '../../graphql/types/getDiagnosticSlotsCustomized';
 import DeviceInfo from 'react-native-device-info';
 import { postCleverTapUploadPrescriptionEvents } from '@aph/mobile-patients/src/components/UploadPrescription/Events';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -369,6 +370,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
 
   const { pharmacyUserTypeAttribute } = useAppCommonData();
   const { pharmacyCircleAttributes, circleSubscriptionId } = useShoppingCart();
+  const { setUserActionPayload } = useServerCart();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -847,7 +849,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       </>
     );
   };
-  const { setEPrescriptions, addMultipleCartItems } = useShoppingCart();
+  const { setEPrescriptions } = useShoppingCart();
   const {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
@@ -1007,25 +1009,30 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     if (isCartOrder) {
       try {
         setLoading?.(true);
-        const response: AxiosResponse<MedicineProductDetailsResponse>[] = await Promise.all(
-          medPrescription.map((item) => getMedicineDetailsApi(item?.id!))
-        );
-        const cartItems = response
-          .filter(({ data }) => data?.productdp?.[0]?.id && data?.productdp?.[0]?.sku)
-          .map(({ data }, index) => ({
-            ...formatToCartItem({ ...data?.productdp?.[0]!, image: '' }),
-            quantity: getPrescriptionItemQuantity(
-              medPrescription?.[index]?.medicineUnit!,
-              medPrescription?.[index]?.medicineTimings!,
-              medPrescription?.[index]?.medicineDosage!,
-              medPrescription?.[index]?.medicineCustomDosage!,
-              medPrescription?.[index]?.medicineConsumptionDurationInDays!,
-              medPrescription?.[index]?.medicineConsumptionDurationUnit!,
-              parseInt(data?.productdp?.[0]?.mou || '1', 10)
-            ),
-          }));
-
-        addMultipleCartItems?.(cartItems);
+        medPrescription?.forEach((value) => {
+          setUserActionPayload?.({
+            medicineOrderCartLineItems: [
+              {
+                medicineSKU: value?.id,
+                quantity: 1,
+              },
+            ],
+          });
+        });
+        setUserActionPayload?.({
+          prescriptionDetails: {
+            prescriptionImageUrl: presToAdd.uploadedUrl,
+            prismPrescriptionFileId: presToAdd.prismPrescriptionFileId,
+            uhid: currentPatient?.id,
+            appointmentId: presToAdd.appointmentId,
+            meta: {
+              doctorName: presToAdd?.doctorName,
+              forPatient: presToAdd?.forPatient,
+              medicines: presToAdd?.medicines,
+              date: presToAdd?.date,
+            },
+          },
+        });
         setEPrescriptions?.([presToAdd]);
         setLoading?.(false);
         postCleverTapUploadPrescriptionEvents('Health Records', 'Cart');

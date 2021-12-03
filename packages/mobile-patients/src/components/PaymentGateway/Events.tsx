@@ -103,22 +103,20 @@ export function PharmaOrderPlaced(
     postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, cleverTapEventAttributes);
 
     const {
-      cartItems,
-      coupon,
-      grandTotal,
-      circleSubscriptionId,
-      isCircleSubscription,
-      cartTotalCashback,
+      serverCartItems,
+      cartCoupon,
+      serverCartAmount,
+      isCircleCart,
       pharmacyCircleAttributes,
       deliveryCharges,
       circleMembershipCharges,
     } = shoppingCart;
     let items: any = [];
-    cartItems.forEach((item, index) => {
+    serverCartItems.forEach((item, index) => {
       let itemObj: any = {};
       itemObj.item_name = item.name; // Product Name or Doctor Name
-      itemObj.item_id = item.id; // Product SKU or Doctor ID
-      itemObj.price = item.specialPrice ? item.specialPrice : item.price; // Product Price After discount or Doctor VC price (create another item in array for PC price)
+      itemObj.item_id = item.sku; // Product SKU or Doctor ID
+      itemObj.price = item.sellingPrice ? item.sellingPrice : item.price; // Product Price After discount or Doctor VC price (create another item in array for PC price)
       itemObj.item_brand = ''; // Product brand or Apollo (for Apollo doctors) or Partner Doctors (for 3P doctors)
       itemObj.item_category = 'Pharmacy'; // 'Pharmacy' or 'Consultations'
       itemObj.item_category2 = item.isMedicine ? 'Drug' : 'FMCG'; // FMCG or Drugs (for Pharmacy) or Specialty Name (for Consultations)
@@ -129,11 +127,11 @@ export function PharmaOrderPlaced(
     });
     const getFormattedAmount = (num: number) => Number(num.toFixed(2));
     const firebaseEventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
-      coupon: coupon?.coupon,
+      coupon: cartCoupon?.valid ? cartCoupon?.coupon : '',
       currency: 'INR',
       items: items,
       transaction_id: paymentOrderId,
-      value: getFormattedAmount(grandTotal - burnHc),
+      value: getFormattedAmount(serverCartAmount?.estimatedAmount || 0 - burnHc),
       LOB: 'Pharma',
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, firebaseEventAttributes);
@@ -161,23 +159,22 @@ export function PharmaOrderPlaced(
     );
 
     let revenue = 0;
-    shoppingCart?.cartItems?.forEach((item) => {
-      revenue += item?.quantity * (item?.specialPrice ? item?.specialPrice : item?.price);
+    shoppingCart?.serverCartItems?.forEach((item) => {
+      revenue += item?.quantity * (item?.sellingPrice ? item?.sellingPrice : item?.price);
     });
     const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED] = {
       af_customer_user_id: currentPatient ? currentPatient.id : '',
-      'cart size': cartItems.length,
-      af_revenue: getFormattedAmount(grandTotal),
+      'cart size': serverCartItems.length,
+      af_revenue: getFormattedAmount(serverCartAmount?.estimatedAmount || 0),
       af_currency: 'INR',
       af_order_id: paymentOrderId ? paymentOrderId : '0',
-      af_content_id: shoppingCart?.cartItems?.map((item) => item?.id),
-      af_quantity: shoppingCart?.cartItems?.map((item) => item?.quantity),
-      af_price: shoppingCart?.cartItems?.map((item) =>
-        item?.specialPrice ? item?.specialPrice : item?.price
+      af_content_id: shoppingCart?.serverCartItems?.map((item) => item?.sku),
+      af_quantity: shoppingCart?.serverCartItems?.map((item) => item?.quantity),
+      af_price: shoppingCart?.serverCartItems?.map((item) =>
+        item?.sellingPrice ? item?.sellingPrice : item?.price
       ),
-      'coupon applied': coupon ? true : false,
-      'Circle Cashback amount':
-        circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
+      'coupon applied': cartCoupon?.valid ? true : false,
+      'Circle Cashback amount': isCircleCart ? Number(serverCartAmount?.circleSavings) : 0,
       ...pharmacyCircleAttributes!,
     };
     postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, appsflyerEventAttributes);

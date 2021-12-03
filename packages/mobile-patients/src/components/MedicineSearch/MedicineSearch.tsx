@@ -86,8 +86,6 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
   const {
     getCartItemQty,
     addCartItem,
-    updateCartItem,
-    removeCartItem,
     pinCode,
     pharmacyCircleAttributes,
     cartItems,
@@ -419,6 +417,14 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
         comingFromSearch,
         cleverTapSearchSuccessEventAttributes
       );
+      setUserActionPayload?.({
+        medicineOrderCartLineItems: [
+          {
+            medicineSKU: item?.sku,
+            quantity: 1,
+          },
+        ],
+      });
       setCurrentProductIdInCart(item.sku);
       item.pack_form ? setItemPackForm(item.pack_form) : setItemPackForm('');
       item.suggested_qty ? setSuggestedQuantity(item.suggested_qty) : setSuggestedQuantity(null);
@@ -428,14 +434,6 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
         ? setMaxOrderQty(+item.suggested_qty)
         : setMaxOrderQty(0);
       setCurrentProductQuantityInCart(1);
-      setUserActionPayload?.({
-        medicineOrderCartLineItems: [
-          {
-            medicineSKU: item?.sku,
-            quantity: 1,
-          },
-        ],
-      });
     };
 
     const products: MedicineSearchSuggestionItemProps[] = searchResults.map((item, index) => {
@@ -443,7 +441,6 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       const qty = getCartItemQty(id);
       const onPressAdd = () => {
         if (qty < item.MaxOrderQty) {
-          updateCartItem!({ id, quantity: qty + 1 });
           setCurrentProductQuantityInCart(qty + 1);
           setUserActionPayload?.({
             medicineOrderCartLineItems: [
@@ -456,7 +453,6 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
         }
       };
       const onPressSubstract = () => {
-        qty == 1 ? removeCartItem!(id) : updateCartItem!({ id, quantity: qty - 1 });
         setCurrentProductQuantityInCart(qty - 1);
         setUserActionPayload?.({
           medicineOrderCartLineItems: [

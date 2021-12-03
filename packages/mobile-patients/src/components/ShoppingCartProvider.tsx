@@ -157,6 +157,12 @@ export interface NudgeMessageCart {
   cashbackPer: number;
 }
 
+export interface ShipmentArray {
+  items: saveCart_saveCart_data_medicineOrderCartLineItems[];
+  tat: string;
+  estimatedAmount: number;
+}
+
 export interface ShoppingCartContextProps {
   // server cart values start
   serverCartItems: saveCart_saveCart_data_medicineOrderCartLineItems[];
@@ -184,6 +190,8 @@ export interface ShoppingCartContextProps {
   noOfShipments: number;
   setNoOfShipments: ((shipments: number) => void) | null;
   isCircleCart: boolean;
+  shipmentArray: ShipmentArray[];
+  setShipmentArray: ((shipments: ShipmentArray[]) => void) | null;
   // server cart values stop
   cartItems: ShoppingCartItem[];
   setCartItems: ((items: ShoppingCartItem[]) => void) | null;
@@ -359,6 +367,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   noOfShipments: 0,
   setNoOfShipments: null,
   isCircleCart: false,
+  shipmentArray: [],
+  setShipmentArray: null,
 
   cartItems: [],
   setCartItems: null,
@@ -537,6 +547,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     ShoppingCartContextProps['cartSubscriptionDetails']
   >(null);
   const [noOfShipments, setNoOfShipments] = useState<ShoppingCartContextProps['noOfShipments']>(0);
+  const [shipmentArray, setShipmentArray] = useState<ShoppingCartContextProps['shipmentArray']>([]);
 
   const [cartItems, _setCartItems] = useState<ShoppingCartContextProps['cartItems']>([]);
   const [couponDiscount, setCouponDiscount] = useState<ShoppingCartContextProps['couponDiscount']>(
@@ -1377,16 +1388,17 @@ export const ShoppingCartProvider: React.FC = (props) => {
   };
 
   const pharmacyCircleAttributes: PharmacyCircleEvent = {
-    'Circle Membership Added': circleSubscriptionId
+    'Circle Membership Added': cartCircleSubscriptionId
       ? 'Existing'
-      : !!circleMembershipCharges
+      : !!cartSubscriptionDetails?.currentSellingPrice &&
+        !!cartSubscriptionDetails.subscriptionApplied
       ? 'Yes'
       : 'No',
-    'Circle Membership Value': circleSubscriptionId
+    'Circle Membership Value': cartCircleSubscriptionId
       ? circlePaymentReference?.purchase_via_HC
         ? circlePaymentReference?.HC_used
         : circlePaymentReference?.amount_paid
-      : !!circleMembershipCharges
+      : !!cartSubscriptionDetails?.currentSellingPrice
       ? circlePlanSelected?.currentSellingPrice
       : null,
   };
@@ -1417,6 +1429,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         noOfShipments,
         setNoOfShipments,
         isCircleCart,
+        shipmentArray,
+        setShipmentArray,
 
         cartItems,
         setCartItems,
