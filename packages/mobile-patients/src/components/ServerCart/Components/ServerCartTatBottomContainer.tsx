@@ -27,7 +27,7 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
   props
 ) => {
   const {
-    prescriptionType,
+    cartPrescriptionType,
     addresses,
     minimumCartValue,
     isValidCartValue,
@@ -87,7 +87,7 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
 
   function isPrescriptionRequired() {
     if (isCartPrescriptionRequired) {
-      return isFromCart ? true : !prescriptionType;
+      return isFromCart ? true : !cartPrescriptionType;
     } else {
       return false;
     }

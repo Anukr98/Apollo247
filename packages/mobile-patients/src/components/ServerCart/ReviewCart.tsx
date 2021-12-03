@@ -270,7 +270,7 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
         leftIcon={'backArrow'}
         title={'REVIEW ORDER'}
         onPressLeftIcon={() => {
-          CommonLogEvent(AppRoutes.ServerCart, 'Go back to add items');
+          CommonLogEvent(AppRoutes.ReviewCart, 'Go back to add items');
           props.navigation.goBack();
         }}
       />
@@ -347,9 +347,6 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
         <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
           {renderAddress()}
           {renderAmountSection()}
-          {/* {uploadPrescriptionRequired &&
-            prescriptionType !== PrescriptionType.UPLOADED &&
-            renderPrescriptions()} */}
           {renderTatCard()}
           {renderCartItems()}
           {renderPrescriptions()}

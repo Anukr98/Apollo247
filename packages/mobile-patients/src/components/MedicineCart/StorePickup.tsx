@@ -79,7 +79,7 @@ export const StorePickup: React.FC<StorePickupProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (storeId && storesInventory.length && serverCartItems.length) {
+    if (storeId && storesInventory.length && serverCartItems?.length) {
       SyncwithStorePrices();
     }
   }, [storeId]);
@@ -149,7 +149,7 @@ export const StorePickup: React.FC<StorePickupProps> = (props) => {
 
   const SyncwithStorePrices = () => {
     let Items: InputCartLineItems[] = [];
-    serverCartItems.forEach((item) => {
+    serverCartItems?.forEach((item) => {
       // let object = item;
       let inventoryData = storesInventory.filter((item) => item.shopId == storeId);
       let cartItem = inventoryData?.[0]?.['itemDetails']?.filter(

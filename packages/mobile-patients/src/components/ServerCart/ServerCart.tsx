@@ -196,7 +196,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
   };
 
   const firePharmacyCartViewedEvent = () => {
-    serverCartItems.length &&
+    serverCartItems?.length &&
       PharmacyCartViewedEvent(
         shoppingCart,
         currentPatient?.id,
