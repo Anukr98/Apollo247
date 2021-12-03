@@ -96,7 +96,6 @@ import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/help
 import {
   doRequestAndAccessLocationModified,
   g,
-  getDiscountPercentage,
   getFormattedLocation,
   getMaxQtyForMedicineItem,
   isProductInStock,
@@ -106,9 +105,7 @@ import {
   postWebEngageEvent,
   productsThumbnailUrl,
   setWebEngageScreenNames,
-  setAsyncPharmaLocation,
   postCleverTapEvent,
-  getIsMedicine,
   getUserType,
   getCleverTapCircleMemberValues,
   getAvailabilityForSearchSuccess,
@@ -271,11 +268,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const {
     locationDetails,
     pharmacyLocation,
-    setPharmacyLocation,
+    isPharmacyLocationServiceable,
     setPharmacyLocationServiceable,
     medicinePageAPiResponse,
     setMedicinePageAPiResponse,
-    setLocationDetails,
+    setAxdcCode,
+    axdcCode,
     setBannerData,
     bannerData,
     pharmacyUserType,
@@ -285,7 +283,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     serverCartItems,
     addresses,
     setAddresses,
-    setDeliveryAddressId,
     setCircleMembershipCharges,
     setCircleSubPlanId,
     setCircleSubscriptionId,
@@ -295,13 +292,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setIsFreeDelivery,
     setCirclePlanValidity,
     pharmacyCircleAttributes,
-    asyncPincode,
-    setAsyncPincode,
     setIsCircleExpired,
     setMedicineHomeBannerData,
     setMedicineHotSellersData,
-    setAxdcCode,
-    axdcCode,
     isPharmacyPincodeServiceable,
     addCartItem,
     cartAddressId,
@@ -342,8 +335,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [imgHeight, setImgHeight] = useState(IMG_HEIGHT_DEFAULT);
   const [bannerLoading, setBannerLoading] = useState(false);
   const defaultAddress = addresses.find((item) => item.id == cartAddressId);
-  const hasLocation = locationDetails || pharmacyLocation || defaultAddress;
-  const pharmacyPincode = cartLocationDetails?.pincode || asyncPincode?.pincode;
+  const hasLocation = !!cartLocationDetails?.pincode || !!defaultAddress;
+  const pharmacyPincode = cartLocationDetails?.pincode || defaultAddress?.zipcode;
   const [isFocused, setIsFocused] = useState<boolean>(false);
   type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
   const postwebEngageCategoryClickedEvent = (
@@ -693,13 +686,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   useEffect(() => {
     if (isFocused) {
-      const getAsyncLocationPincode = async () => {
-        const asyncLocationPincode: any = await AsyncStorage.getItem('PharmacyLocationPincode');
-        if (asyncLocationPincode) {
-          setAsyncPincode?.(JSON.parse(asyncLocationPincode));
-        }
-      };
-      getAsyncLocationPincode();
+      fetchServerCart();
     }
   }, [isFocused]);
 
@@ -750,7 +737,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   useEffect(() => {
     setBannerData && setBannerData([]); // default banners to be empty
     fetchAddress();
-    fetchServerCart();
   }, []);
 
   const getUserBanners = async () => {
@@ -799,23 +785,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     lastUpdated: new Date().getTime(),
   });
 
-  const setLocationValues = (values: any) => {
-    setPharmacyLocation?.(values);
-    setAsyncPincode?.(values);
-    setLocationDetails?.(values);
-    setAsyncPharmaLocation?.(values);
-  };
-
   async function fetchAddress() {
     try {
       if (addresses?.length) {
         const deliveryAddress = addresses.find((item) => item.id == cartAddressId);
         if (deliveryAddress) {
-          setDeliveryAddressId!(deliveryAddress?.id);
           updateServiceability(deliveryAddress?.zipcode!);
           const formattedLocation = formatAddressToLocation(deliveryAddress);
-          setLocationValues(formattedLocation);
           setUserActionPayload?.({
+            patientAddressId: deliveryAddress?.id,
             zipcode: formattedLocation?.pincode,
             latitude: formattedLocation?.latitude,
             longitude: formattedLocation?.longitude,
@@ -834,11 +812,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       setAddresses!(addressList);
       const deliveryAddress = addressList.find((item) => item.id == cartAddressId);
       if (deliveryAddress) {
-        setDeliveryAddressId!(deliveryAddress?.id);
         updateServiceability(deliveryAddress?.zipcode!);
         const formattedLocation = formatAddressToLocation(deliveryAddress);
-        setLocationValues(formattedLocation);
         setUserActionPayload?.({
+          patientAddressId: deliveryAddress?.id,
           zipcode: formattedLocation?.pincode,
           latitude: formattedLocation?.latitude,
           longitude: formattedLocation?.longitude,
@@ -871,7 +848,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         defaultAddress: patientAddress?.id == item.id ? patientAddress?.defaultAddress : false,
       }));
       setAddresses!(updatedAddresses);
-      patientAddress?.defaultAddress && setDeliveryAddressId!(patientAddress?.id);
       const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
       setUserActionPayload?.({
         patientAddressId: deliveryAddress?.id,
@@ -880,7 +856,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         longitude: deliveryAddress?.longitude,
       });
       const formattedLocation = formatAddressToLocation(deliveryAddress! || null);
-      setLocationValues(formattedLocation);
 
       globalLoading!(false);
     } catch (error) {
@@ -914,13 +889,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <AccessLocation
           addresses={addressList}
           onPressSelectAddress={(address) => {
-            const saveAddress = {
-              pincode: address?.zipcode,
-              id: address?.id,
-              city: address?.city,
-              state: address?.state,
-            };
-            setLocationValues(saveAddress);
             setDefaultAddress(address);
             setUserActionPayload?.({
               patientAddressId: address?.id,
@@ -1129,14 +1097,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       .then((response) => {
         globalLoading!(false);
         if (response) {
-          setLocationValues(response);
           setUserActionPayload?.({
             zipcode: response?.pincode,
             latitude: response?.latitude,
             longitude: response?.longitude,
           });
         }
-        setDeliveryAddressId!('');
         updateServiceability(response.pincode, 'autoDetect');
       })
       .catch((e) => {
@@ -1162,19 +1128,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             const addrComponents = data.results[0].address_components || [];
             const latLang = data.results[0].geometry.location || {};
             const response = getFormattedLocation(addrComponents, latLang, pincode);
-            const saveAddress = {
-              pincode: pincode,
-              id: '',
-              city: response?.city,
-              state: response?.state,
-            };
-            setLocationValues(saveAddress);
             setUserActionPayload?.({
               zipcode: pincode,
               latitude: latLang?.lat,
               longitude: latLang?.lng,
             });
-            setDeliveryAddressId!('');
             updateServiceability(pincode, 'pincode');
             globalLoading!(false);
           } else {
@@ -1267,24 +1225,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       text.length > count ? `${text.slice(0, count)}...` : text;
 
     const renderDeliverToLocationCTA = () => {
-      let deliveryAddress = addresses.find((item) => item.id == cartAddressId);
-      const location = asyncPincode?.pincode
-        ? `${formatText(asyncPincode?.city || asyncPincode?.state || '', 18)} ${
-            asyncPincode?.pincode
+      const deliveryAddress = addresses.find((item) => item.id == cartAddressId);
+      const location = cartLocationDetails?.pincode
+        ? `${formatText(cartLocationDetails?.city || cartLocationDetails?.state || '', 18)} ${
+            cartLocationDetails?.pincode
           }`
-        : !deliveryAddress
-        ? pharmacyLocation?.pincode
-          ? `${formatText(
-              g(pharmacyLocation, 'city') || g(pharmacyLocation, 'state') || '',
-              18
-            )} ${g(pharmacyLocation, 'pincode')}`
-          : `${formatText(g(locationDetails, 'city') || g(locationDetails, 'state') || '', 18)} ${g(
-              locationDetails,
-              'pincode'
-            )}`
-        : `${formatText(deliveryAddress?.city || deliveryAddress?.state || '', 18)} ${
+        : deliveryAddress
+        ? `${formatText(deliveryAddress?.city || deliveryAddress?.state || '', 18)} ${
             deliveryAddress?.zipcode
-          }`;
+          }`
+        : '';
       return (
         <View style={{ paddingLeft: 15, marginTop: 3.5 }}>
           {hasLocation ? (
