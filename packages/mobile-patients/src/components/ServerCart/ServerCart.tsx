@@ -69,7 +69,6 @@ import {
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { Prescriptions } from '@aph/mobile-patients/src/components/MedicineCart/Components/Prescriptions';
 import { UnServiceable } from '@aph/mobile-patients/src/components/MedicineCart/Components/UnServiceable';
 import { SuggestProducts } from '@aph/mobile-patients/src/components/MedicineCart/Components/SuggestProducts';
 import { EmptyCart } from '@aph/mobile-patients/src/components/MedicineCart/Components/EmptyCart';
@@ -117,6 +116,7 @@ import { ServerCartTatBottomContainer } from '@aph/mobile-patients/src/component
 import { CartSavings } from '@aph/mobile-patients/src/components/ServerCart/Components/CartSavings';
 import { UnServiceableMessage } from '@aph/mobile-patients/src/components/ServerCart/Components/UnServiceableMessag';
 import { CartCircleItem } from '@aph/mobile-patients/src/components/ServerCart/Components/CartCircleItem';
+import { CartPrescriptions } from '@aph/mobile-patients/src/components/ServerCart/Components/CartPrescriptions';
 
 export interface ServerCartProps extends NavigationScreenProps {}
 
@@ -264,7 +264,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
 
   const renderPrescriptions = () => {
     return (
-      <Prescriptions
+      <CartPrescriptions
         onPressUploadMore={() => {
           props.navigation.navigate(AppRoutes.MedicineCartPrescription);
         }}
