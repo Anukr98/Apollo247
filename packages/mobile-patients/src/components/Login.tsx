@@ -51,6 +51,7 @@ import {
   View,
   ScrollView,
   TouchableOpacity,
+  NativeModules,
 } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
 import WebEngage from 'react-native-webengage';
@@ -71,7 +72,11 @@ import {
   verifyTrueCallerProfileVariables,
 } from '@aph/mobile-patients/src/graphql/types/verifyTrueCallerProfile';
 import { FetchingDetails } from '@aph/mobile-patients/src/components/ui/FetchingDetails';
-import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  Relation,
+  TruecallerFailure,
+  TRUECALLER_FAILURE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { LOGIN_PROFILE } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
 import {
   saveTokenDevice,
@@ -84,12 +89,10 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import DeviceInfo from 'react-native-device-info';
+import Share from 'react-native-share';
 
-let TRUECALLER: any;
-
-if (Platform.OS === 'android') {
-  TRUECALLER = require('react-native-truecaller-sdk').default;
-}
+const { TruecallerAuthModule } = NativeModules;
 
 const { height, width } = Dimensions.get('window');
 
@@ -228,8 +231,6 @@ export const Login: React.FC<LoginProps> = (props) => {
   const oneTimeApiCall = useRef<boolean>(true);
 
   useEffect(() => {
-    isAndroid && initializeTruecaller();
-    isAndroid && truecallerEventListeners();
     const eventAttributes: WebEngageEvents[WebEngageEventName.MOBILE_ENTRY] = {};
     postWebEngageEvent(WebEngageEventName.MOBILE_ENTRY, eventAttributes);
     postFirebaseEvent(FirebaseEventName.MOBILE_ENTRY, eventAttributes);
@@ -250,132 +251,19 @@ export const Login: React.FC<LoginProps> = (props) => {
     }
   }, []);
 
-  const initializeTruecaller = () => {
-    TRUECALLER.initializeClient(
-      'CONSENT_MODE_POPUP',
-      'SDK_CONSENT_TITLE_LOG_IN',
-      'FOOTER_TYPE_SKIP'
-    );
-  };
-
-  const truecallerEventListeners = () => {
-    // For handling the success event
-    TRUECALLER.on('profileSuccessReponse', (profile: any) => {
-      setLoading?.(false);
-      cleverTapEventForUserContinueThroughTrueCallerLogin();
-      // add other logic here related to login/sign-up as per your use-case.
-      oneTimeApiCall.current && verifyTrueCallerProfile(profile);
-    });
-
-    // For handling the reject event
-    TRUECALLER.on('profileErrorReponse', (error: any) => {
-      setLoading?.(false);
-      if (error && error.errorCode) {
-        let errorAttributes: any = {
-          'Error Code': error?.errorCode,
-        };
-
-        oneTimeApiCall.current = true;
-        switch (error.errorCode) {
-          case 1: {
-            showAphAlert!({
-              title: string.truecaller.errorTitle,
-              description: string.truecaller.networkProblem,
-            });
-            errorAttributes = {
-              ...errorAttributes,
-              'Error Message': 'Network Failure',
-            };
-            truecallerWEBEngage(null, 'sdk error', errorAttributes);
-            break;
-          }
-          case 2: {
-            errorAttributes = {
-              ...errorAttributes,
-              'Error Message': 'User pressed back button',
-            };
-            truecallerWEBEngage(null, 'sdk error', errorAttributes);
-            break;
-          }
-          case 3: {
-            errorAttributes = {
-              ...errorAttributes,
-              'Error Message': 'Incorrect Partner Key',
-            };
-            truecallerWEBEngage(null, 'sdk error', errorAttributes);
-            break;
-          }
-          case 4:
-          case 10: {
-            showAphAlert!({
-              title: string.truecaller.errorTitle,
-              description: string.truecaller.userNotVerified,
-            });
-            errorAttributes = {
-              ...errorAttributes,
-              'Error Message': string.truecaller.userNotVerified,
-            };
-            truecallerWEBEngage(null, 'sdk error', errorAttributes);
-            break;
-          }
-          case 5: {
-            errorAttributes = {
-              ...errorAttributes,
-              'Error Message': 'Truecaller App Internal Error',
-            };
-            truecallerWEBEngage(null, 'sdk error', errorAttributes);
-            break;
-          }
-          case 11: {
-            showAphAlert!({
-              title: string.truecaller.errorTitle,
-              description: string.truecaller.appNotInstalledOrUserNotLoggedIn,
-            });
-            errorAttributes = {
-              ...errorAttributes,
-              'Error Message': string.truecaller.appNotInstalledOrUserNotLoggedIn,
-            };
-            truecallerWEBEngage(null, 'sdk error', errorAttributes);
-            break;
-          }
-          case 13: {
-            errorAttributes = {
-              ...errorAttributes,
-              'Error Message': 'User pressed back while verification in process',
-            };
-            truecallerWEBEngage(null, 'sdk error', errorAttributes);
-            break;
-          }
-          case 14: {
-            errorAttributes = {
-              ...errorAttributes,
-              'Error Message': 'User pressed SKIP or USE ANOTHER NUMBER',
-            };
-            cleverTapEventForUserSkippedFromTrueCallerLogin();
-            truecallerWEBEngage(null, 'sdk error', errorAttributes);
-            break;
-          }
-          default:
-            errorAttributes = {
-              ...errorAttributes,
-              'Error Message': 'Unknown Error',
-            };
-            truecallerWEBEngage(null, 'sdk error', errorAttributes);
-            break;
-        }
-      }
-    });
-  };
-
   const verifyTrueCallerProfile = async (profile: any) => {
+    let temp = { ...profile };
+    delete temp.isVerified;
+    delete temp.isBusiness;
+    delete temp.successful;
     oneTimeApiCall.current = false;
     AsyncStorage.setItem('phoneNumber', profile?.phoneNumber?.substring(3)); // to ignore +91
     setOpenFillerView(true);
     try {
-      const res = await client.mutate<verifyTrueCallerProfile, verifyTrueCallerProfileVariables>({
+      const res = await client.mutate({
         mutation: VERIFY_TRUECALLER_PROFILE,
         variables: {
-          profile,
+          profile: temp,
         },
         fetchPolicy: 'no-cache',
       });
@@ -740,26 +628,127 @@ export const Login: React.FC<LoginProps> = (props) => {
     );
   };
 
-  const loginWithTruecaller = () => {
-    setLoading?.(true);
+  const loginWithTruecaller = async () => {
+    Share.isPackageInstalled('com.truecaller').then(async (res: any) => {
+      if (res?.isInstalled) {
+        setLoading?.(true);
+        await TruecallerAuthModule.authenticate()
+          .then(async (res: any) => {
+            console.log(res);
+            setLoading?.(false);
+            if (res?.successful) {
+              cleverTapEventForUserContinueThroughTrueCallerLogin();
+              oneTimeApiCall.current && verifyTrueCallerProfile(res);
+              AsyncStorage.setItem('APP_OPENED', 'true');
+            } else handleTruecallerFailure(res);
+          })
+          .catch((err: any) => {
+            console.log(err, 'error');
+            showAphAlert!({
+              title: string.truecaller.errorTitle,
+              description: 'Something went wrong while processing your request',
+            });
+          })
+          .finally(() => setLoading?.(false));
+      } else
+        showAphAlert!({
+          title: string.truecaller.errorTitle,
+          description: 'Truecaller is not installed on your device',
+        });
+    });
     cleverTapEventForLoginViaTrueCaller();
     /**
      * If you are checking in local, then you need to change truecaller_appkey(debug key) from strings.xml file
      */
     postWebEngageEvent(WebEngageEventName.LOGIN_WITH_TRUECALLER_CLICKED, {});
     postCleverTapEvent(CleverTapEventName.LOGIN_WITH_TRUECALLER_CLICKED, {});
-    TRUECALLER.isUsable((result: boolean) => {
-      if (result) {
-        // Authenticate via truecaller flow can be used
-        TRUECALLER.requestTrueProfile();
-      } else {
-        setLoading?.(false);
+  };
+
+  const handleTruecallerFailure = (reason: TruecallerFailure) => {
+    let errorAttributes: any = {};
+    switch (reason.error) {
+      case TRUECALLER_FAILURE.ERROR_TYPE_INTERNAL:
+        showAphAlert!({
+          title: string.truecaller.errorTitle,
+          description: string.truecaller.internalError,
+        });
+        errorAttributes = {
+          ...errorAttributes,
+          'Error Message': 'Truecaller App Internal Error',
+        };
+        truecallerWEBEngage(null, 'sdk error', errorAttributes);
+        break;
+
+      case TRUECALLER_FAILURE.ERROR_TYPE_NETWORK:
+        showAphAlert!({
+          title: string.truecaller.errorTitle,
+          description: string.truecaller.networkProblem,
+        });
+        errorAttributes = {
+          ...errorAttributes,
+          'Error Message': 'Network Failure',
+        };
+        truecallerWEBEngage(null, 'sdk error', errorAttributes);
+        break;
+
+      case TRUECALLER_FAILURE.ERROR_TYPE_USER_DENIED:
+        showAphAlert!({
+          title: string.truecaller.errorTitle,
+          description: string.truecaller.userDenied,
+        });
+        errorAttributes = {
+          ...errorAttributes,
+          'Error Message': 'User pressed back while verification in process',
+        };
+        truecallerWEBEngage(null, 'sdk error', errorAttributes);
+        break;
+
+      case TRUECALLER_FAILURE.ERROR_TYPE_UNAUTHORIZED_PARTNER:
+        showAphAlert!({
+          title: string.truecaller.errorTitle,
+          description: string.truecaller.unauthorizedPartner,
+        });
+        break;
+
+      case TRUECALLER_FAILURE.ERROR_TYPE_UNAUTHORIZED_USER:
+        showAphAlert!({
+          title: string.truecaller.errorTitle,
+          description: string.truecaller.unauthorizedUser,
+        });
+        break;
+
+      case TRUECALLER_FAILURE.ERROR_TYPE_TRUECALLER_CLOSED_UNEXPECTEDLY:
+        showAphAlert!({
+          title: string.truecaller.errorTitle,
+          description: string.truecaller.closedUnexpectedly,
+        });
+        break;
+
+      case TRUECALLER_FAILURE.ERROR_TYPE_TRUESDK_TOO_OLD:
+        showAphAlert!({
+          title: string.truecaller.errorTitle,
+          description: string.truecaller.oldSdk,
+        });
+        break;
+
+      case TRUECALLER_FAILURE.ERROR_TYPE_TC_NOT_INSTALLED:
         showAphAlert!({
           title: string.truecaller.errorTitle,
           description: string.truecaller.appNotInstalledOrUserNotLoggedIn,
         });
-      }
-    });
+        errorAttributes = {
+          ...errorAttributes,
+          'Error Message': string.truecaller.appNotInstalledOrUserNotLoggedIn,
+        };
+        truecallerWEBEngage(null, 'sdk error', errorAttributes);
+        break;
+
+      case TRUECALLER_FAILURE.ERROR_TYPE_INVALID_ACCOUNT_STATE:
+        showAphAlert!({
+          title: string.truecaller.errorTitle,
+          description: 'Please log in to truecaller',
+        });
+    }
   };
 
   const cleverTapEventForLoginViaTrueCaller = () => {
@@ -806,7 +795,7 @@ export const Login: React.FC<LoginProps> = (props) => {
             )
           }
           onClickButton={onClickOkay}
-          disableButton={phoneNumberIsValid && phoneNumber.length === 10  && isTandCSelected? false : true}
+          disableButton={phoneNumberIsValid && phoneNumber.length === 10 ? false : true}
         >
           <View style={{ flexDirection: 'row', paddingHorizontal: 16 }}>
             <View
@@ -842,7 +831,7 @@ export const Login: React.FC<LoginProps> = (props) => {
             <CheckBox
               checked={isTandCSelected}
               onPress={() => setTandC(!isTandCSelected)}
-              checkedIcon={<CheckBoxFilled  style={styles.checkBoxStyle} />}
+              checkedIcon={<CheckBoxFilled style={styles.checkBoxStyle} />}
               uncheckedIcon={<CheckBoxEmpty style={styles.checkBoxStyle} />}
               containerStyle={styles.checkBoxContainer}
             />
@@ -866,7 +855,7 @@ export const Login: React.FC<LoginProps> = (props) => {
           </View>
         </LoginCard>
         <ScrollView>
-          {enableTrueCaller && isAndroid && renderTruecallerButton()}
+          {isAndroid && parseInt(DeviceInfo.getSystemVersion()) <= 10 && renderTruecallerButton()}
           <LandingDataView />
         </ScrollView>
       </SafeAreaView>

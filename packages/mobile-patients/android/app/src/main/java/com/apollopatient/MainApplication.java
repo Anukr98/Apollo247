@@ -58,6 +58,7 @@ public class MainApplication extends Application implements ReactApplication {
                     packages.add(new RNAppSignatureHelperPackage());
                     packages.add(new LinearGradientPackage());
                     packages.add(new GetReferrerPackage());
+                    packages.add(new TruecallerAuthPackage());
 
                     return packages;
                 }
