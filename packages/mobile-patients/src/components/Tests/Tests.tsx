@@ -191,6 +191,9 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Cache } from 'react-native-cache';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import { TestPdfRender } from '@aph/mobile-patients/src/components/Tests/components/TestPdfRender';
+import { apiBaseUrl, apiRoutes } from '../../helpers/apiRoutes';
+import firebaseAuth from '@react-native-firebase/auth';
+import { AuthContextProps } from '../AuthProvider';
 const rankArr = ['1', '2', '3', '4', '5', '6'];
 const { width: winWidth, height: winHeight } = Dimensions.get('window');
 const AUTO_SCROLL_INTERVAL = 3000;
@@ -1583,13 +1586,27 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   function _handleNavigationFromBanner(item: any, url: string) {
     //for rtpcr - drive through - open webview
+    //for radiology
     if (item?.redirectUrlText === 'WebView') {
       DiagnosticBannerClick(slideIndex + 1, Number(item?.itemId || item?.id), item?.bannerTitle);
       try {
+        const getBannerTitle = item?.bannerTitle;
         const openUrl = url || AppConfig.Configuration.RTPCR_Google_Form;
-        props.navigation.navigate(AppRoutes.CovidScan, {
-          covidUrl: openUrl,
-        });
+        if (
+          !!getBannerTitle &&
+          getBannerTitle?.toLowerCase().includes(string.diagnostics.radiology)
+        ) {
+          const getRemoteUrl = `${AppConfig.Configuration.WEB_URL_PREFIX}${AppConfig.Configuration.RADIOLOGY_URL}`;
+          props.navigation.navigate(AppRoutes.ProHealthWebView, {
+            covidUrl: getRemoteUrl,
+            source: string.diagnostics.radiology,
+            currentPatient: currentPatient,
+          });
+        } else {
+          props.navigation.navigate(AppRoutes.CovidScan, {
+            covidUrl: openUrl,
+          });
+        }
       } catch (e) {
         aphConsole.log(e);
         CommonBugFender(`renderSliderItem__handleNavigationFromBanner_${AppRoutes.Tests}`, e);

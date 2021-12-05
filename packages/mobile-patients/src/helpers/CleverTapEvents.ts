@@ -236,6 +236,8 @@ export enum CleverTapEventName {
   DIAGNOSTIC_MODIFY_ORDER = 'Diagnostic modify order',
   DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED = 'Diagnostic product listing page viewed',
   DIAGNOSTIC_PRESCRIPTION_SUBMITTED = 'Diagnostic prescription submitted',
+  DIAGNOSTIC_RADIOLOGY_HOME_PAGE = 'Diagnostic Radiology lead gen page viewed',
+  DIAGNOSTIC_RADIOLOGY_BOOKING_COMPLETE = 'Diagnostic Radiology Booking completed',
 
   //Conult Package Purchase Attribite
   CONSULT_PACKAGE_CLICKED = 'Consult Package Clicked',
@@ -3287,4 +3289,21 @@ export interface CleverTapEvents {
     Response: string;
     Status: string;
   };
+  [CleverTapEventName.DIAGNOSTIC_RADIOLOGY_HOME_PAGE]:{
+    'Source': string;
+    'URL': string;
+    'Circle user': 'Yes'| 'No'
+  }
+  [CleverTapEventName.DIAGNOSTIC_RADIOLOGY_BOOKING_COMPLETE]:{
+    'Name': string;
+    'Mobile No entered': string;
+    'City': string;
+    'Appointment date': string;
+    'Test': string;
+    'Subtest': string;
+    'isSuccessful': boolean;
+    'Source': string;
+    'URL': string;
+    'Circle user': 'Yes'| 'No'
+  }
 }

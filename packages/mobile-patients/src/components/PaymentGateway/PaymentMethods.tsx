@@ -685,7 +685,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     try {
       businessLine == 'diagnostics' && initiateOrderPayment();
       const response = await createJusPayOrder(true);
-      console.log({ response });
       const { data } = response;
       const status =
         data?.createOrderV2?.payment_status || data?.updateOrderDetails?.payment_status;
@@ -695,7 +694,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         showTxnFailurePopUP();
       }
     } catch (e) {
-      console.log({ e });
       showTxnFailurePopUP();
     }
   }

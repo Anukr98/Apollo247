@@ -565,14 +565,18 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
           response?.data?.getOrderInternal?.SubscriptionOrderDetails?.payment_reference?.invoice_url
         );
       } else {
-        renderErrorPopup(string.common.tryAgainLater);
+        renderErrorPopup(
+          "We could not confirm your payment at this moment. We apologize for the inconvenience caused. Please refresh this page or check your plan in the 'My Memberships' tab in the 'My Account' section."
+        );
       }
 
       setShowSpinner?.(false);
     } catch (error) {
       setShowSpinner?.(false);
       CommonBugFender('fetchingTxnStutus', error);
-      renderErrorPopup(string.common.tryAgainLater);
+      renderErrorPopup(
+        "We could not confirm your payment at this moment. We apologize for the inconvenience caused. Please refresh this page or check your plan in the 'My Memberships' tab in the 'My Account' section."
+      );
     }
   };
 
@@ -582,7 +586,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
       description: `${desc || ''}`.trim(),
       onPressOk: () => {
         hideAphAlert!();
-        props.navigation.goBack();
+        fetchOrderStatus();
       },
     });
 
