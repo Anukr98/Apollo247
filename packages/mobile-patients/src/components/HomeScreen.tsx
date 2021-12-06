@@ -1081,9 +1081,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const [token, setToken] = useState<string | null>('');
   const [userMobileNumber, setUserMobileNumber] = useState<string | null>('');
 
-  const [proHealthActiveAppointmentCount, setProHealthActiveAppointmentCount] = useState<
-    string | number
-  >('' | 0);
+  const [proHealthActiveAppointmentCount, setProHealthActiveAppointmentCount] = useState<any>(
+    '' | 0
+  );
   const [proActiveAppointments, setProHealthActiveAppointment] = useState([] as any);
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
@@ -5073,7 +5073,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     return (
       <View
         style={{
-          backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
           paddingTop: 7,
           paddingHorizontal: 5,
         }}
@@ -5741,6 +5740,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                 {isCircleMember === 'no' && renderCircleBuyNow()}
                 {showCirclePlans && renderCircleSubscriptionPlans()}
                 {showCircleActivationcr && renderCircleActivation()}
+                {isReferrerAvailable && renderReferralBanner()}
                 {bannerLoading && renderBannerShimmer()}
 
                 <View>{renderBannersCarousel()}</View>
