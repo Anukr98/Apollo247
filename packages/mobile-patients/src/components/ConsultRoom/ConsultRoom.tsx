@@ -4249,18 +4249,23 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       </View>
     );
   };
-
-  /***
-   * For now this method invoke has been removed. But in future release it would be need
-   * ***/
   const renderReferralBanner = () => {
     return (
-      <ReferralBanner
-        {...props}
-        redirectOnShareReferrer={() => {
-          beforeRedirectGetRewardIdAndCampaignId();
+      <View
+        style={{
+          backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+          paddingTop: 7,
+          paddingHorizontal: 5,
         }}
-      />
+      >
+        <ReferralBanner
+          {...props}
+          redirectOnShareReferrer={() => {
+            beforeRedirectGetRewardIdAndCampaignId();
+          }}
+          screenName={'Homepage'}
+        />
+      </View>
     );
   };
 

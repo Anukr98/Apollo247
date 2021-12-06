@@ -8,6 +8,7 @@ import {
   SavingsIcon,
   Up,
   OffersIconGreen,
+  CartIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   createDiagnosticValidateCouponLineItems,
@@ -57,7 +58,6 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
-  CALL_TO_ORDER_CTA_PAGE_ID,
   DEVICETYPE,
   diagnosticLineItem,
   DiagnosticLineItem,
@@ -136,7 +136,6 @@ import { saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWith
 import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
-import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import {
   CreateUserSubscription,
   CreateUserSubscriptionVariables,
@@ -145,8 +144,6 @@ import CircleCard from '@aph/mobile-patients/src/components/Tests/components/Cir
 import { CirclePlansListOverlay } from '@aph/mobile-patients/src/components/Tests/components/CirclePlansListOverlay';
 import { debounce } from 'lodash';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { Decimal } from 'decimal.js';
-import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import {
   CleverTapEventName,
   CleverTapEvents,
@@ -509,16 +506,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     return Math.round(Number(value));
   }
 
-  function recalculateBillAmount() {
-    /**
-     * remove the circle subscription charges
-     */
-    const withOutCircleSavings =
-      toPayPrice + (isDiagnosticCircleSubscription ? circleSaving : 0) - couponDiscount;
-    console.log({ withOutCircleSavings });
-    return withOutCircleSavings;
-  }
-
   const revalidateAppliedCoupon = (
     coupon: string,
     cartItemsWithQuan: DiagnosticsCartItem[], //with quantity
@@ -540,30 +527,25 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const totalBillAmt = createLineItemsForPayload?.pricesForItemArray?.map(
       (item: any) => item?.specialPrice * item?.quantity
     );
-    const tt = totalBillAmt?.reduce((curr: number, prev: number) => curr + prev, 0);
+    const calculatedBillAmount = totalBillAmt?.reduce(
+      (curr: number, prev: number) => curr + prev,
+      0
+    );
     let data = {
       mobile: currentPatient?.mobileNumber,
-      billAmount: tt,
-      // billAmount:
-      //   setSubscription == undefined
-      //     ? Number(toPayPrice - couponDiscount)
-      //     : recalculateBillAmount(), //this is basically the price that user will actually pay
+      billAmount: calculatedBillAmount,
       coupon: coupon,
       pinCode: String(pinCode),
       diagnostics: createLineItemsForPayload?.pricesForItemArray?.map((item: any) => item), //define type
       packageIds: setSubscription != undefined ? [] : packageId, //array of all subscriptions of user
     };
-    console.log({ data });
     validateConsultCoupon(data)
       .then((resp: any) => {
-        console.log('getting response from revalidate coupon');
-        console.log({ resp });
         if (resp?.data?.errorCode == 0) {
           if (resp?.data?.response?.valid) {
             const responseData = resp?.data?.response;
             const getCircleBenefits = responseData?.circleBenefits;
             const hasOnMrpTrue = responseData?.diagnostics?.filter((item: any) => item?.onMrp);
-            console.log({ responseData });
             /**
              * case for if user is claiming circle benefits, but coupon => circleBenefits as false
              */
@@ -602,8 +584,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
               setLoading?.(false);
             }
           } else {
-            console.log('in else');
-            console.log({ resp });
             const getErrorResponseReason = resp?.data?.response?.reason;
             renderCouponInvalidPrompt(getErrorResponseReason);
             setLoading?.(false);
@@ -614,8 +594,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           }
           //add event here
         } else {
-          console.log('error in validatetion');
-          console.log(resp);
           const getCouponErrorMsg = resp?.data?.errorMsg;
           CommonBugFender('revalidateAppliedCoupon_ReviewOrder', getCouponErrorMsg);
           renderCouponInvalidPrompt(getCouponErrorMsg);
@@ -627,8 +605,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         }
       })
       .catch((error) => {
-        console.log('in catch fo validate');
-        console.log({ error });
         CommonBugFender('revalidateAppliedCoupon_ReviewOrder', error);
         renderCouponInvalidPrompt(string.common.somethingWentWrong);
         setLoading?.(false);
@@ -1620,8 +1596,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           {renderPrices(string.common.toPay, toPayPrice?.toFixed(2), true)}
           {isCircleAddedToCart && renderCODDisableText()}
         </View>
-        {anyCartSaving > 0 && renderCartSavingBanner()}
-        {showEffectiveView && renderAddtionalCircleSavingBanner(toPayPrice)}
+
+        {/* {anyCartSaving > 0 && renderCartSavingBanner()}
+        {showEffectiveView && renderAddtionalCircleSavingBanner(toPayPrice)} */}
+        {anyCartSaving > 0 &&
+          renderCartSavingBanner(toPayPrice, showEffectiveView, showCircleRelatedSavings)}
       </>
     );
   };
@@ -1646,45 +1625,73 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     }
   };
 
-  /**
-   * calculation for the savings
-   */
-  const renderCartSavingBanner = () => {
-    return dashedBanner(
-      'You ',
-      `saved ${string.common.Rs}${Number(
-        isDiagnosticCircleSubscription || isCircleAddedToCart
-          ? !!coupon && !couponCircleBenefits
-            ? cartSaving + couponDiscount
-            : cartSaving + circleSaving + couponDiscount
-          : cartSaving + couponDiscount
-      )?.toFixed(2)}`,
-      'on this order',
-      'left',
-      'saving'
+  const renderCartSavingBanner = (
+    effectivePrice: number,
+    showEffectiveView: boolean,
+    showCircleSavings: boolean
+  ) => {
+    const totalSavings = Number(
+      isDiagnosticCircleSubscription || isCircleAddedToCart
+        ? !!coupon && !couponCircleBenefits
+          ? cartSaving + couponDiscount
+          : cartSaving + circleSaving + couponDiscount
+        : cartSaving + couponDiscount
+    )?.toFixed(2);
+    return (
+      <View style={[styles.dashedBannerViewStyle, styles.savingsOuterView]}>
+        <View style={{ flexDirection: 'row' }}>
+          <SavingsIcon style={styles.savingIconStyle} />
+          <Text style={styles.savingsMainText}>
+            You{' '}
+            <Text style={{ color: theme.colors.APP_GREEN }}>
+              saved {string.common.Rs}
+              {totalSavings}
+            </Text>{' '}
+            on this order.{' '}
+            {showEffectiveView
+              ? `Your effective price is ${string.common.Rs}${effectivePrice?.toFixed(2)}`
+              : null}
+          </Text>
+        </View>
+        <Spearator style={styles.separatorStyle} />
+        <>
+          {couponDiscount > 0
+            ? renderHorizontalSavingsView(
+                <OffersIconGreen style={styles.savingsIcons} />,
+                string.diagnosticsCartPage.couponSavings,
+                couponDiscount
+              )
+            : null}
+          {showCircleSavings && circleSaving > 0
+            ? renderHorizontalSavingsView(
+                <CircleLogo style={styles.savingsIcons} />,
+                string.diagnosticsCartPage.circleMembershipSavings,
+                circleSaving
+              )
+            : null}
+          {cartSaving > 0
+            ? renderHorizontalSavingsView(
+                <CartIcon style={[styles.savingsIcons, { tintColor: colors.APP_GREEN }]} />,
+                string.diagnosticsCartPage.cartSavings,
+                cartSaving
+              )
+            : null}
+        </>
+      </View>
     );
   };
 
-  const renderAddtionalCircleSavingBanner = (effectivePrice: number) => {
+  const renderHorizontalSavingsView = (Icon: any, title: string, amount: number) => {
     return (
-      <View style={[styles.dashedBannerViewStyle, styles.circleSavingOuterView]}>
-        <SavingsIcon style={styles.savingIconStyle} />
-        <View style={styles.circleSavingView}>
-          <Text style={styles.circleSavingNormalText}>
-            You
-            <Text style={styles.circleSavingGreenText}>
-              {' '}
-              saved {string.common.Rs}
-              {circleSaving}
-            </Text>{' '}
-            <Text style={styles.circleSavingBoldText}>on this order </Text>
-            with Circle! Your effective price is{' '}
-            <Text style={styles.circleSavingBoldText}>
-              {string.common.Rs}
-              {effectivePrice?.toFixed(2)}
-            </Text>
-          </Text>
+      <View style={styles.breakDownSavingsOuterView}>
+        <View style={{ flexDirection: 'row' }}>
+          {Icon}
+          <Text style={[styles.savingsTitleText, { marginLeft: 10 }]}>{title}</Text>
         </View>
+        <Text style={styles.savingsTitleText}>
+          {string.common.Rs}
+          {amount?.toFixed(2)}
+        </Text>
       </View>
     );
   };
@@ -1710,7 +1717,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             borderWidth: imageType == 'saving' ? 1 : 2,
             marginTop: imageType == 'circle' ? 16 : 10,
           },
-          imageType === 'saving' && { backgroundColor: '#F3FFFF' },
+          imageType === 'saving' && { backgroundColor: colors.GREEN_BG },
         ]}
       >
         {imagePosition == 'left' && (
@@ -1765,11 +1772,22 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
         {renderLabel(
           nameFormater(
-            isModifyFlow ? 'Additional amount that needs to be paid' : 'Total charges',
+            isModifyFlow
+              ? string.diagnosticsCartPage.additionalAmount
+              : string.diagnosticsCartPage.totalCharges,
             'title'
           )
         )}
         {renderTotalCharges()}
+        {renderPolicyDisclaimer()}
+      </View>
+    );
+  };
+
+  const renderPolicyDisclaimer = () => {
+    return (
+      <View style={{ margin: 16 }}>
+        <Text style={styles.disclaimerText}>{string.diagnosticsCartPage.reviewPagePolicyText}</Text>
       </View>
     );
   };
@@ -1914,7 +1932,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   ) => {
     var pricesForItemArray = selectedItem?.cartItems?.map((item: any, index: number) => {
       var arr;
-      console.log({ couponResponse });
       //!coupon?.circleBenefits ? item?.specialPrice
       const getSelectedItem = couponResponse?.diagnostics?.find(
         (x: any) => Number(x?.testId) === Number(item?.id)
@@ -2044,10 +2061,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       if (!!coupon) {
         bookingOrderInfo.couponCode = coupon?.coupon;
       }
-      console.log({ bookingOrderInfo });
       diagnosticSaveBookHcCollectionV2(client, bookingOrderInfo)
         .then(async ({ data }) => {
-          console.log({ data });
           const getSaveHomeCollectionResponse =
             data?.saveDiagnosticBookHCOrderv2?.patientsObjWithOrderIDs;
           const checkIsFalse = getSaveHomeCollectionResponse?.find(
@@ -2373,13 +2388,15 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     slotStartTime: string,
     source: string
   ) {
+    var totalPriceSummation = 0;
+    var array = [] as any;
     try {
       setLoading?.(true);
       const getPatientId =
         source === BOOKING_TYPE.MODIFY && isModifyFlow
           ? modifiedOrder?.patientId
           : currentPatient?.id;
-      var array = [] as any; //define type
+
       if (source === BOOKING_TYPE.MODIFY) {
         //will for single order
         array = [{ order_id: getOrderDetails, amount: grandTotal, patient_id: getPatientId }];
@@ -2396,12 +2413,16 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           }
         );
       }
-      const totalPriceSummation = getOrderDetails
-        ?.map(
-          (item: saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWithOrderIDs) =>
-            item?.amount
-        )
-        ?.reduce((curr: number, prev: number) => curr + prev, 0);
+      if (source == BOOKING_TYPE.SAVE) {
+        totalPriceSummation = getOrderDetails
+          ?.map(
+            (
+              item: saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWithOrderIDs
+            ) => item?.amount
+          )
+          ?.reduce((curr: number, prev: number) => curr + prev, 0);
+      }
+
       const circlePlanPurchasePrice = !!selectedCirclePlan
         ? selectedCirclePlan?.currentSellingPrice
         : !!defaultCirclePlan
@@ -2429,9 +2450,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
       const orderInput: OrderCreate = {
         orders: orders,
-        total_amount: !!coupon
-          ? totalPriceSummation + (isCircleAddedToCart ? circlePlanPurchasePrice : 0)
-          : toPayPrice,
+        total_amount:
+          !isModifyFlow && !!coupon
+            ? totalPriceSummation + (isCircleAddedToCart ? circlePlanPurchasePrice : 0)
+            : toPayPrice,
         customer_id: currentPatient?.primaryPatientId || getPatientId,
       };
       const response = await createInternalOrder(client, orderInput);
@@ -2811,7 +2833,7 @@ const styles = StyleSheet.create({
     color: theme.colors.SKY_BLUE,
   },
   quantityViewStyle: {
-    backgroundColor: '#F3FFFF',
+    backgroundColor: colors.GREEN_BG,
     width: 80,
     padding: 2,
     justifyContent: 'center',
@@ -2820,7 +2842,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderWidth: 1,
     marginTop: 2,
-    borderColor: '#F3FFFF',
+    borderColor: colors.GREEN_BG,
   },
   totalChargesContainer: {
     backgroundColor: theme.colors.WHITE,
@@ -2942,11 +2964,6 @@ const styles = StyleSheet.create({
     marginLeft: 3,
   },
   savingCircleIcon: { height: 20, width: isSmallDevice ? 23 : 25, resizeMode: 'contain' },
-  circleSavingBoldText: { ...theme.viewStyles.text('SB', 12, theme.colors.SHERPA_BLUE, 1, 18) },
-  circleSavingGreenText: { ...theme.viewStyles.text('R', 12, theme.colors.APP_GREEN, 1, 18) },
-  circleSavingNormalText: { ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 1, 18) },
-  circleSavingView: { width: '89%', marginHorizontal: 6 },
-  circleSavingOuterView: { borderStyle: 'solid', backgroundColor: '#F3FFFF', borderWidth: 1 },
   circleCardView: {
     margin: 6,
     marginBottom: 16,
@@ -3032,4 +3049,30 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
   },
   savingsView: { flexDirection: 'row', marginTop: 3 },
+  savingsIcons: { width: 24, height: 24, resizeMode: 'contain' },
+  savingsOuterView: {
+    justifyContent: 'flex-start',
+    borderStyle: 'solid',
+    borderWidth: 1,
+    marginTop: 10,
+    backgroundColor: colors.GREEN_BG,
+    paddingRight: 16,
+    flexDirection: 'column',
+  },
+  savingsMainText: {
+    color: theme.colors.LIGHT_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(14),
+    lineHeight: 16,
+    alignSelf: 'center',
+    marginLeft: 10,
+  },
+  separatorStyle: { marginTop: 12, marginBottom: 12 },
+  breakDownSavingsOuterView: {
+    flexDirection: 'row',
+    marginBottom: 6,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  savingsTitleText: { ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1, 20) },
+  disclaimerText: { ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 0.7, 14) },
 });

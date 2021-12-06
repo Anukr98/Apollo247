@@ -100,7 +100,7 @@ import { CleverTapEventName } from '../helpers/CleverTapEvents';
 import analytics from '@react-native-firebase/analytics';
 import appsFlyer from 'react-native-appsflyer';
 
-(function () {
+(function() {
   /**
    * Praktice.ai
    * Polyfill for Promise.prototype.finally
@@ -113,16 +113,16 @@ import appsFlyer from 'react-native-appsflyer';
   if (typeof Promise.prototype['finally'] === 'function') {
     return;
   }
-  globalObject.Promise.prototype['finally'] = function (callback: any) {
+  globalObject.Promise.prototype['finally'] = function(callback: any) {
     const constructor = this.constructor;
     return this.then(
-      function (value: any) {
-        return constructor.resolve(callback()).then(function () {
+      function(value: any) {
+        return constructor.resolve(callback()).then(function() {
           return value;
         });
       },
-      function (reason: any) {
-        return constructor.resolve(callback()).then(function () {
+      function(reason: any) {
+        return constructor.resolve(callback()).then(function() {
           throw reason;
         });
       }
@@ -164,8 +164,12 @@ export interface SplashScreenProps extends NavigationScreenProps {}
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { APP_ENV } = AppConfig;
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
-  const { setAllPatients, setMobileAPICalled, validateAndReturnAuthToken, buildApolloClient } =
-    useAuth();
+  const {
+    setAllPatients,
+    setMobileAPICalled,
+    validateAndReturnAuthToken,
+    buildApolloClient,
+  } = useAuth();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [appState, setAppState] = useState(AppState.currentState);
   const [takeToConsultRoom, settakeToConsultRoom] = useState<boolean>(false);
@@ -1246,6 +1250,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Diagnostics_Widget_Title',
       PROD: 'Diagnostics_Widget_Title',
     },
+    Radiology_Url: {
+      QA: 'QA_Radiology_Url',
+      PROD: 'Radiology_Url',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1607,6 +1615,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           JSON.parse(config.getString(key) || 'null') ||
           AppConfig.Configuration.DIAGNOSITCS_WIDGET_TITLES
       );
+
+      setAppConfig('Radiology_Url', 'RADIOLOGY_URL', (key) => config.getString(key));
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';

@@ -2,6 +2,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { BackHandler, StyleSheet, Text, View, ScrollView } from 'react-native';
 import {
+  addSlotDuration,
   g,
   isDiagnosticSelectedCartEmpty,
   isEmptyObject,
@@ -18,11 +19,7 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import {
-  CALL_TO_ORDER_CTA_PAGE_ID,
-  DiagnosticLineItem,
-  patientObjWithLineItems,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { patientObjWithLineItems } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { DiagnosticAppointmentTimeSlot } from '@aph/mobile-patients/src/components/Tests/Events';
 import { TestSlotSelectionOverlayNew } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlayNew';
@@ -33,13 +30,12 @@ import {
   createPatientAddressObject,
   createPatientObjLineItems,
 } from '@aph/mobile-patients/src/utils/commonUtils';
-import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   SCREEN_NAMES,
   TimelineWizard,
 } from '@aph/mobile-patients/src/components/Tests/components/TimelineWizard';
 import { DIAGNOSTIC_SLOT_TYPE } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
+import { screenHeight } from 'react-native-calendars/src/expandableCalendar/commons';
 
 export interface AddressSlotSelectionProps extends NavigationScreenProps {
   reportGenDetails: any;
@@ -71,6 +67,7 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
   const [todaySlotNotAvailable, setTodaySlotNotAvailable] = useState<boolean>(false);
   const [date, setDate] = useState<Date>(new Date());
   const [isFocus, setIsFocus] = useState<boolean>(false);
+  const [diagnosticSlotDuration, setDiagnosticSlotDuration] = useState<number>(0);
 
   const [slotsInput, setSlotsInput] = useState({});
 
@@ -160,6 +157,7 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
       if (slotsResponse?.data?.getCustomizedSlotsv2) {
         const getSlotResponse = slotsResponse?.data?.getCustomizedSlotsv2;
         const getDistanceCharges = getSlotResponse?.distanceCharges;
+        const getIndividualSlotDuration = getSlotResponse?.slotDurationInMinutes;
         //get the slots array
         const diagnosticSlots = getSlotResponse?.available_slots || [];
 
@@ -193,7 +191,7 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
           todaySlotNotAvailable && setTodaySlotNotAvailable(false);
           const slotDetails = slotsArray?.[0];
           // slotsArray?.length && setselectedTimeSlot(slotDetails); //to explicitly select the slot
-
+          setDiagnosticSlotDuration(getIndividualSlotDuration! || 0);
           setDiagnosticSlot?.({
             isPaidSlot: slotDetails?.isPaidSlot,
             internalSlots: slotDetails?.internalSlot!,
@@ -279,9 +277,15 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
         isPremium={selectedTimeSlot?.slotInfo?.isPaidSlot}
         slotInfo={selectedTimeSlot}
         slotInput={slotsInput}
-        //add a type here
-        onSchedule={(date: Date, slotInfo: TestSlot, currentDate: Date | undefined) => {
+        slotDuration={diagnosticSlotDuration}
+        onSchedule={(
+          date: Date,
+          slotInfo: TestSlot,
+          getSlotDuration: number,
+          currentDate: Date | undefined
+        ) => {
           setDate(date);
+          setDiagnosticSlotDuration(getSlotDuration);
           setselectedTimeSlot(slotInfo);
           setDiagnosticSlot?.({
             internalSlots: slotInfo?.slotInfo?.internalSlots!,
@@ -302,12 +306,10 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
 
   const renderMainView = () => {
     return (
-      <View style={{ marginTop: 4, marginBottom: 0 }}>
-        <ScrollView bounces={false} showsVerticalScrollIndicator={true}>
-          <View style={{ marginLeft: 16 }}>{renderScheduleHeading()}</View>
-          {renderSlotSelection()}
-        </ScrollView>
-      </View>
+      <>
+        <View style={{ marginLeft: 16 }}>{renderScheduleHeading()}</View>
+        <View style={{ height: screenHeight }}>{renderSlotSelection()}</View>
+      </>
     );
   };
 
@@ -353,19 +355,25 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
           title={'CHECKOUT'}
           onPress={() => _navigateToReview()}
           disabled={disableCTA}
-          style={{ width: !!selectedTimeSlot?.slotInfo?.startTime ? '70%' : '100%' }}
+          style={{ width: !!selectedTimeSlot?.slotInfo?.startTime ? '60%' : '100%' }}
         />
       </StickyBottomComponent>
     );
   };
 
   const renderDateTime = () => {
+    const slotStartTime = moment(selectedTimeSlot?.slotInfo?.startTime, 'hh:mm A')?.format(
+      'hh:mm a'
+    );
+    const getEndSlot = addSlotDuration(slotStartTime, diagnosticSlotDuration);
     return (
       <View style={styles.leftViewContainer}>
         <Text style={styles.leftTopText}>
           {moment(diagnosticSlot?.selectedDate)?.format('DD MMM')}
         </Text>
-        <Text style={styles.leftBottomText}>{selectedTimeSlot?.slotInfo?.startTime}</Text>
+        <Text style={styles.leftBottomText}>
+          {diagnosticSlotDuration == 0 ? slotStartTime : `${slotStartTime} - ${getEndSlot}`}
+        </Text>
       </View>
     );
   };
@@ -401,6 +409,8 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
     padding: 8,
+    paddingLeft: 3,
+    paddingTop: 3,
   },
   leftTopText: { ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20) },
   leftBottomText: {

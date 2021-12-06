@@ -22,7 +22,7 @@ export enum AppEnv {
   QA6 = 'QA6',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA3 as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA5 as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -337,7 +337,20 @@ const appStaticVariables = {
       "topBookedTests": string.diagnostics.topBookedTests,
       "similarPackages": string.diagnostics.similarPackages
     },
-};
+  RADIOLOGY_URL : "/radiology?source=Homepage%20Banner",
+  DIAGNOSTICS_CERTIFICATE_IMAGE_ARRAY : [
+    require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
+    require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_2.webp'),
+    require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_3.webp'),
+    require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_4.webp'),
+  ],  
+  DIAGNOSTICS_WHY_BOOK_US_IMAGE_ARRAY :[
+    { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_0.webp') },
+    { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_1.webp') },
+    { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_2.webp') },
+    { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_3.webp') },
+  ]
+}
 
 const DEV_top_specialties = [
   {
@@ -488,7 +501,8 @@ const Apollo247Config = {
   prod: {
     UATTAT_CONFIG: ['https://tat.apollo247.com', tatTokenProd],
     DRUPAL_CONFIG: ['https://cms.apollo247.com/api', drupalAuthTokenProd],
-    SUBSCRIPTION_SERVICE_EMAIL: '',
+    SUBSCRIPTION_SERVICE_EMAIL:
+      'https://apollo-subscription-service.azurewebsites.net/api/TriggerSubscriptionInvoiceEmail?code=0jEf6bZpGJn5laCwqz4S24jePathD1ZDdP70c0kRavCbG79TF4rthQ==',
   },
 };
 
@@ -696,6 +710,7 @@ const ConfigurationDev = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  WEB_URL_PREFIX : "https://aph-staging-web-patients.apollo247.com"
 };
 
 // QA
@@ -756,6 +771,7 @@ const ConfigurationQA = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  WEB_URL_PREFIX : "https://aph-staging-web-patients.apollo247.com"
 };
 
 // QA2
@@ -814,6 +830,7 @@ const ConfigurationQA2 = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  WEB_URL_PREFIX : "https://qaapi.apollo247.com"
 };
 
 // QA3
@@ -873,6 +890,7 @@ const ConfigurationQA3 = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  WEB_URL_PREFIX : "https://qathreepatients.apollo247.com"
 };
 
 const ConfigurationQA5 = {
@@ -933,6 +951,7 @@ const ConfigurationQA5 = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  WEB_URL_PREFIX : "https://qa5patients.apollo247.com"
 };
 
 const ConfigurationQA6 = {
@@ -992,6 +1011,7 @@ const ConfigurationQA6 = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  WEB_URL_PREFIX : "https://qa6patients.apollo247.com"
 };
 
 // VAPT
@@ -1051,6 +1071,7 @@ const ConfigurationVAPT = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  WEB_URL_PREFIX : "https://stagingpatients.apollo247.com"
 };
 //Production
 const ConfigurationProd = {
@@ -1108,6 +1129,7 @@ const ConfigurationProd = {
   baseUrl: 'https://www.apollo247.com',
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE: 'https://newassets.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  WEB_URL_PREFIX : "https://apollo247.com"
 };
 
 //PERFORMANCE
@@ -1168,6 +1190,7 @@ const ConfigurationPERFORM = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  WEB_URL_PREFIX : "https://perfpatients.apollo247.com"
 };
 
 //DevelopmentReplica
@@ -1228,6 +1251,7 @@ const ConfigurationDevReplica = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  WEB_URL_PREFIX : "https://devpatients.apollo247.com"
 };
 
 const Configuration =

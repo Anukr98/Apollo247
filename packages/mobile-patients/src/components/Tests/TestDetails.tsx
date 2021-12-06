@@ -29,6 +29,7 @@ import {
   nameFormater,
   isSmallDevice,
   isEmptyObject,
+  showDiagnosticCTA,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -241,46 +242,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [packageRecommendationsShimmer, setPackageRecommendationsShimmer] = useState<boolean>(
     false
   );
-  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
-  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
-  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
-    CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL
-  );
-  const checkForCtaCityAvailabilty = () => {
-    for (let index = 0; index < ctaDetailArray.length; index++) {
-      const element = ctaDetailArray[index];
-      if (Number(element?.ctaCityId) == cityIdToUse) {
-        return element;
-      } else {
-        return null;
-      }
-    }
-  };
-  const checkItemIdForCta = () => {
-    let newArray = [];
-    for (let index = 0; index < ctaDetailArray.length; index++) {
-      const element = ctaDetailArray[index];
-      if (
-        Number(element?.ctaCityId) == cityIdToUse &&
-        element?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL) &&
-        element?.ctaItemIds?.length > 0 &&
-        element?.ctaItemIds?.includes(Number(itemId))
-      ) {
-        newArray.push(element);
-        return newArray;
-      } else {
-        return null;
-      }
-    }
-  };
-
-  const ctaDetailMatched = checkForCtaCityAvailabilty()
-    ? checkItemIdForCta()
-    : isCtaDetailDefault &&
-      callToOrderDetails?.ctaDetailsDefault?.ctaItemIds?.length > 0 &&
-      callToOrderDetails?.ctaDetailsDefault?.ctaItemIds?.includes(Number(itemId))
-    ? [callToOrderDetails?.ctaDetailsDefault]
-    : [];
+  const getCTADetails = showDiagnosticCTA(CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL, cityIdToUse);
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   const itemName =
@@ -662,7 +624,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         setReportTat('');
       }
     } catch (error) {
-      console.log({ error });
       CommonBugFender('fetchReportTat_TestDetails', error);
       setReportTat('');
     }
@@ -1621,7 +1582,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     );
   };
   const renderCallToOrder = () => {
-    return ctaDetailMatched?.length ? (
+    return getCTADetails?.length ? (
       <CallToOrderView
         cityId={cityIdToUse}
         customMargin={90}
@@ -1749,7 +1710,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               ? renderWidgetsView()
               : null}
             {/** frequently brought together */}
-            {(frequentlyBroughtRecommendations?.length > 2 || topBookedTests?.length > 0) &&
+            {(frequentlyBroughtRecommendations?.length > 0 || topBookedTests?.length > 0) &&
               renderFrequentlyBrought()}
             {/**packages for single test */}
             {!!packageRecommendations &&

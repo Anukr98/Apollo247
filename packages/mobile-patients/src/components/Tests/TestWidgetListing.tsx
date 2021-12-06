@@ -2,7 +2,7 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
-import { nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { nameFormater, showDiagnosticCTA } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import React, { useState } from 'react';
@@ -20,7 +20,6 @@ import { NavigationScreenProps } from 'react-navigation';
 import { TestListingHeader } from '@aph/mobile-patients/src/components/Tests/components/TestListingHeader';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import { CALL_TO_ORDER_CTA_PAGE_ID } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 export interface TestWidgetListingProps
   extends NavigationScreenProps<{
     movedFrom?: string;
@@ -46,27 +45,10 @@ export const TestWidgetListing: React.FC<TestWidgetListingProps> = (props) => {
       <TestListingHeader navigation={props.navigation} headerText={nameFormater(title, 'upper')} />
     );
   };
-  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
-  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
-  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
-    CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING
-  );
-  const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
-    if (item?.ctaCityId == cityId) {
-      if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING)) {
-        return item;
-      } else {
-        return null;
-      }
-    } else if (isCtaDetailDefault) {
-      return callToOrderDetails?.ctaDetailsDefault;
-    } else {
-      return null;
-    }
-  });
+  const getCTADetails = showDiagnosticCTA(CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING, cityId!);
 
   const renderCallToOrder = () => {
-    return ctaDetailMatched?.length ? (
+    return getCTADetails?.length ? (
       <CallToOrderView
         cityId={cityId}
         slideCallToOrder={slideCallToOrder}

@@ -170,7 +170,6 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
       diagnostics: createLineItemsForPayload?.pricesForItemArray?.map((item: any) => item), //define type
       packageIds: setSubscription != undefined ? [] : packageId, //array of all subscriptions of user
     };
-    console.log({ data });
     validateConsultCoupon(data)
       .then((resp: any) => {
         if (resp?.data?.errorCode == 0) {
@@ -178,7 +177,6 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
             const responseData = resp?.data?.response;
             const getCircleBenefits = responseData?.circleBenefits;
             const hasOnMrpTrue = responseData?.diagnostics?.filter((item: any) => item?.onMrp);
-            console.log({ responseData });
             /**
              * case for if user is claiming circle benefits, but coupon => circleBenefits as false
              */

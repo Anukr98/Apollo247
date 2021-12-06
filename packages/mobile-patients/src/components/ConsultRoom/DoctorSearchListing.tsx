@@ -362,9 +362,7 @@ export type locationType = { lat: number | string; lng: number | string };
 export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) => {
   const typeOfConsult = props.navigation.getParam('typeOfConsult');
   const doctorTypeFilter = props.navigation.getParam('doctorType');
-  const [cityFilter, setCityFilter] = useState<[string] | undefined | []>(
-    props.navigation.getParam('city') || undefined || [locationDetails?.city]
-  );
+  const cityFilter = props.navigation.getParam('city');
   const brandFilter = props.navigation.getParam('brand');
   const scrollViewRef = React.useRef<ScrollView | null>(null);
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
@@ -737,8 +735,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         lng: locationDetails.longitude || '',
       };
       latlng = coordinates;
-      if (locationDetails?.city) {
-        setCityFilter([locationDetails?.city]);
+      if (sortValue?.toLowerCase() === string.doctor_search_listing.avaliablity.toLowerCase()) {
+        sortValue = string.doctor_search_listing.location.toLowerCase();
+        setSelectedSortInput(string.doctor_search_listing.location);
+        setSortValue(string.doctor_search_listing.location.toLowerCase());
       }
       fetchSpecialityFilterData(
         filterMode,
@@ -941,14 +941,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         brandFilter === undefined || brandFilter === null
           ? SearchData[1].selectedOptions
           : brandFilter,
-      city: city
-        ? sort?.toLowerCase() !== 'distance' &&
-          sort?.toLowerCase() !== string.doctor_search_listing.avaliablity.toLowerCase()
-          ? (city && [city]) || cityFilter
-          : []
-        : SearchData[0]?.selectedOptions?.length
-        ? SearchData[0]?.selectedOptions
-        : [],
+      city:
+        cityFilter === undefined || cityFilter === null
+          ? SearchData[0]?.selectedOptions
+          : cityFilter,
       experience: experienceArray,
       availability: availabilityArray,
       fees: feesArray,
@@ -1389,7 +1385,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         </>
       ) : (
         <>
-          {index === 2 && (
+          {/* Commenting on temporary basis for the release of 6.1.0 */}
+          {/* {index === 2 && (
             <View style={provideLocationStyles.provideLocationOuterContainer}>
               <View style={provideLocationStyles.provideLocationInnerContainer}>
                 <Text style={provideLocationStyles.provideLocationHeadingData}>
@@ -1427,7 +1424,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 />
               </View>
             </View>
-          )}
+          )} */}
           {renderDoctorCard(rowData, index, styles, filter)}
         </>
       );
@@ -1741,7 +1738,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
     return (
       <LinearGradientComponent
-        style={[styles.linearGradient, setHeight && { minHeight: 310, flex: undefined }]}
+        style={[
+          styles.linearGradient,
+          setHeight && { minHeight: 310, flex: Platform.OS === 'ios' ? 0.05 : 0.09 },
+        ]}
       >
         <View style={{ flexDirection: 'row', alignSelf: 'center', marginBottom: 15 }}>
           <FamilyDoctorIcon style={{ width: 16.58, height: 24 }} />
@@ -1753,6 +1753,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           navigation={props.navigation}
           availableModes={platinumDoctor?.consultMode}
           callSaveSearch={callSaveSearch}
+          isPlatinumDoctor={true}
           style={doctorCardStyle}
           buttonViewStyle={{ overflow: 'hidden' }}
           buttonStyle={buttonStyle}
@@ -1952,7 +1953,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               lng: loc?.longitude || '',
             };
             latlng = coordinates;
-            if (loc?.city) setCityFilter([loc?.city]);
             setSortValue(sort);
             setSelectedSortInput(string.doctor_search_listing.near);
             fetchSpecialityFilterData(
@@ -2018,7 +2018,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 lng: loc?.longitude || '',
               };
               latlng = coordinates;
-              if (loc?.city) setCityFilter([loc?.city]);
               setSelectedSortInput(value);
               onApplyingSortFilters('location');
             },
@@ -2101,7 +2100,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               lng: loc?.longitude || '',
             };
             latlng = coordinates;
-            if (loc?.city) setCityFilter([loc?.city]);
             setPhysicalCheckbox(!physicalCheckBox);
             setOnlineCheckbox(false);
             setSelectedSortInput(string.doctor_search_listing.location);

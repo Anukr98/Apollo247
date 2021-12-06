@@ -1131,7 +1131,7 @@ const styles = StyleSheet.create({
   },
   pickupView: {
     flexDirection: 'row',
-    backgroundColor: '#F3FFFF',
+    backgroundColor: colors.GREEN_BG,
     marginHorizontal: -20,
     padding: 16,
     paddingLeft: 20,

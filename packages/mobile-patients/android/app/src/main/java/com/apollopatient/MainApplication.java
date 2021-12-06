@@ -4,7 +4,6 @@ import android.app.Application;
 
 import com.BV.LinearGradient.LinearGradientPackage;
 import com.apollopatient.appsignature.RNAppSignatureHelperPackage;
-import com.apollopatient.opentoknetworktest.OpentokNetworkTestPackage;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
 import com.ajithab.RNReceiveSharingIntent.ReceiveSharingIntentPackage;
@@ -59,7 +58,6 @@ public class MainApplication extends Application implements ReactApplication {
                     packages.add(new RNAppSignatureHelperPackage());
                     packages.add(new LinearGradientPackage());
                     packages.add(new GetReferrerPackage());
-                    packages.add(new OpentokNetworkTestPackage());
 
                     return packages;
                 }

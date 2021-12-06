@@ -6192,6 +6192,7 @@ export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS_V2 = gql`
         isPaidSlot
       }
       distanceCharges
+      slotDurationInMinutes
     }
   }
 `;
@@ -6763,3 +6764,14 @@ export const BOOK_PACKAGE_CONSULT = gql`
     }
   }
 `;
+
+export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
+  query getDiagnosticItemRecommendationsByPastOrders ($mobileNumber: String!){
+    getDiagnosticItemRecommendationsByPastOrders(mobileNumber: $mobileNumber){
+      itemsData{
+        itemId
+        itemName
+      }
+    }
+  }
+`

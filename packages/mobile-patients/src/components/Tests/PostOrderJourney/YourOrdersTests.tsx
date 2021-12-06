@@ -66,6 +66,7 @@ import {
   isSmallDevice,
   getAge,
   extractPatientDetails,
+  showDiagnosticCTA,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   DisabledTickIcon,
@@ -193,7 +194,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     | null
   >([]);
   const [selectedTestArray, setSelectedTestArray] = useState([] as any);
-
+  const [rescheduleSource, setRescheduleSource] = useState<string>('');
   const [selectedOrder, setSelectedOrder] = useState<orderList>();
   const [error, setError] = useState(false);
   const { getPatientApiCall } = useAuth();
@@ -205,7 +206,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [selectedPatient, setSelectedPatient] = useState<string>(ALL);
   const [selectedPatientId, setSelectedPatientId] = useState<string>('');
   const [orderListData, setOrderListData] = useState<(orderListByMobile | null)[] | null>([]);
-
+  const [diagnosticSlotDuration, setDiagnosticSlotDuration] = useState<number>(0);
   const [slotInput, setSlotInput] = useState({});
   const [profileArray, setProfileArray] = useState<
     GetCurrentPatients_getCurrentPatients_patients[] | null
@@ -215,24 +216,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [showPatientListOverlay, setShowPatientListOverlay] = useState<boolean>(false);
   const [patientListSelectedPatient, setPatientListSelectedPatient] = useState([]);
   const source = props.navigation.getParam('source');
-  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
-  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
-  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
-    CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS
-  );
-  const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
-    if (item?.ctaCityId == cityId) {
-      if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS)) {
-        return item;
-      } else {
-        return null;
-      }
-    } else if (isCtaDetailDefault) {
-      return callToOrderDetails?.ctaDetailsDefault;
-    } else {
-      return null;
-    }
-  });
+  const getCTADetails = showDiagnosticCTA(CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS, cityId);
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
 
   var rescheduleDate: Date,
@@ -528,12 +512,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         'Diagnostics'
       )
         .then((data: any) => {
-          const labResultsData = g(
-            data,
-            'getPatientPrismMedicalRecords_V3',
-            'labResults',
-            'response'
-          );
+          const labResultsData = data?.getPatientPrismMedicalRecords_V3?.labResults?.response;
           let resultForVisitNo = labResultsData?.find(
             (item: any) => item?.identifier == getVisitId
           );
@@ -660,6 +639,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       if (slotsResponse?.data?.getCustomizedSlotsv2) {
         const getSlotResponse = slotsResponse?.data?.getCustomizedSlotsv2;
         const getDistanceCharges = getSlotResponse?.distanceCharges;
+        const getIndividualSlotDuration = getSlotResponse?.slotDurationInMinutes;
         //get the slots array
         const diagnosticSlots = getSlotResponse?.available_slots || [];
         const updatedDiagnosticSlots =
@@ -689,6 +669,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           setDisplaySchedule(true);
           todaySlotNotAvailable && setTodaySlotNotAvailable(false);
         }
+        setDiagnosticSlotDuration(getIndividualSlotDuration! || 0);
         setSlots(slotsArray);
         const slotDetails = slotsArray?.[0];
         slotsArray?.length && setselectedTimeSlot(slotDetails);
@@ -856,6 +837,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         setSelectCancelReason('');
         setCancelReasonComment('');
         setSelectRescheduleReason('');
+        setRescheduleSource('');
       })
       .catch((error) => {
         console.log({ error });
@@ -863,6 +845,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         setSelectCancelReason('');
         setCancelReasonComment('');
         setSelectRescheduleReason('');
+        setRescheduleSource('');
         CommonBugFender('YourOrdersTests_callApiAndRefetchOrderDetails', error);
         setLoading?.(false);
         if (
@@ -918,7 +901,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           isReschdedule={true}
           itemId={orderItemId}
           slotBooked={selectedOrder?.slotDateTimeInUTC}
-          onSchedule={(date1: Date, slotInfo: TestSlot, currentDate: Date | undefined) => {
+          slotDuration={diagnosticSlotDuration}
+          onSchedule={(
+            date1: Date,
+            slotInfo: TestSlot,
+            getSlotDuration: number,
+            currentDate: Date | undefined
+          ) => {
             rescheduleDate = date1; //whatever date has been selected
             let rescheduleObject = {
               internalSlots: slotInfo?.slotInfo?.internalSlots! as any,
@@ -933,7 +922,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               isPaidSlot: !!slotInfo?.slotInfo?.isPaidSlot ? slotInfo?.slotInfo?.isPaidSlot : false,
             };
             rescheduleSlotObject = rescheduleObject;
-
             setDate(currentDate!);
             setselectedTimeSlot(slotInfo);
             setDiagnosticSlot?.(rescheduleObject);
@@ -1010,7 +998,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         />
         <View style={{ marginTop: 16, marginBottom: 16 }}>
           <Button
-            title={'CONTINUE'}
+            title={string.common.continue}
             style={styles.buttonStyle}
             disabled={false}
             onPress={() => _onPressMultiUhidContinue()}
@@ -1150,7 +1138,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const renderCallToOrder = () => {
-    return ctaDetailMatched?.length ? (
+    return getCTADetails?.length ? (
       <CallToOrderView
         cityId={cityId}
         slideCallToOrder={slideCallToOrder}
@@ -1408,15 +1396,22 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setSelectCancelReason(item);
   }
 
-  function _onPressRescheduleNow() {
+  function _proceedWithReschedule() {
     setLoading?.(true);
     setShowBottomOverlay(false);
     setShowRescheduleOptions(false);
     setShowRescheduleReasons(false);
     setSelectCancelReason('');
     setShowCancelReasons(false);
-    // checkSlotSelection();
     getSlots();
+  }
+
+  function _onPressRescheduleNow() {
+    if (isMultiUhid) {
+      callMultiUhidApi(string.diagnosticsOrders.cancel);
+    } else {
+      _proceedWithReschedule();
+    }
   }
 
   function _onPressCancelNow() {
@@ -1443,6 +1438,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setSelectCancelReason('');
     setCancelReasonComment('');
     setSelectedTestArray([]);
+    setRescheduleSource('');
   }
 
   function _onPressProceedToReschedule(count: number) {
@@ -1452,7 +1448,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
     setShowRescheduleOptions(false); //hide the options view
     if (isMultiUhid) {
-      callMultiUhidApi();
+      callMultiUhidApi(string.diagnosticsOrders.reschedule);
     } else {
       setShowRescheduleReasons(true);
       setSelectRescheduleOption(true);
@@ -1471,11 +1467,25 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   }
   function _onPressMultiUhidContinue() {
     setShowMultiUhidOption(false);
-    setShowRescheduleReasons(true);
-    setSelectRescheduleOption(true);
+    if (rescheduleSource == string.diagnosticsOrders.cancel) {
+      _proceedWithReschedule();
+    } else {
+      setShowRescheduleReasons(true);
+      setSelectRescheduleOption(true);
+    }
   }
 
-  async function callMultiUhidApi() {
+  function _onProceedWithSingleUhidRescheduleFlow(source?: string) {
+    if (source == string.diagnosticsOrders.cancel) {
+      _proceedWithReschedule();
+    } else {
+      setShowRescheduleReasons(true);
+      setSelectRescheduleOption(true);
+    }
+  }
+
+  async function callMultiUhidApi(source: string) {
+    setRescheduleSource(source);
     setLoading?.(true);
     const parentOrderId = selectedOrder?.parentOrderId || selectedOrder?.id;
     try {
@@ -1486,26 +1496,28 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           //in that case when res is [] => cancelled all muhid order except one, try to reschedule
           setIsMultiUhid(false);
           setShowMultiUhidOption(false);
-          setShowRescheduleReasons(true);
-          setSelectRescheduleOption(true);
+          _onProceedWithSingleUhidRescheduleFlow(source);
         } else {
           setMultipleOrdersList(getOrders);
+          if (string.diagnosticsOrders.cancel) {
+            setShowRescheduleOptions(false);
+            setShowRescheduleReasons(false);
+            setSelectCancelReason('');
+            setShowCancelReasons(false);
+          }
           setShowMultiUhidOption(true);
         }
       } else {
         setMultipleOrdersList([]);
         setShowMultiUhidOption(false);
-        setShowRescheduleReasons(true);
-        setSelectRescheduleOption(true);
+        _onProceedWithSingleUhidRescheduleFlow(source);
       }
       setLoading?.(false);
     } catch (error) {
       setMultipleOrdersList([]);
       setIsMultiUhid(false);
-      setShowRescheduleReasons(true);
-      setSelectRescheduleOption(true);
       setShowMultiUhidOption(false);
-
+      _onProceedWithSingleUhidRescheduleFlow(source);
       setLoading?.(false);
       CommonBugFender('YourOrdersTest_callMultiUhidApi', error);
     }
