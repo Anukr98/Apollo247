@@ -395,19 +395,6 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     const allowCallingETAText = !!phlObj && phlObj?.allowCallingETAText;
     const isNewPhleboAssigned = !!phlObj && phlObj?.isPhleboChanged;
 
-    /**
-     * -> if phleboDetails -> true :: phleboRelocated -> then change name -> figma 3.1 (D)
-     * PICKUP_REQUESTED
-     * -> showPhleboDetails :: show phelbo details and otp (normal view) -> figma 1.1 (D)
-     * -> phleboDetails -> false, masking -> false :: show apollo agent receive msg -> figma 1.2
-     * -> phleboDetails -> true , masking -> false :: you can call agent msg -> figma 1.3
-     * -> phleboDetails -> true , masking -> true :: call apollo agent using this msg  -> below normal design
-     * PHLEBO_CHECKIN
-     * -> showPhleboDetails -> true (BE)
-     * -> makedCalling -> true (BE)
-     * -> phleboDetails -> true , masking -> true :: no msg -> figma 2.1 (D)
-     */
-
     return (
       <>
         <View style={styles.otpCallContainer}>

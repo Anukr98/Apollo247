@@ -42,7 +42,6 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
     }
   }
 
-  console.log({ phleboMin });
   function onPressButton() {
     onPressProceedtoPay?.();
   }
