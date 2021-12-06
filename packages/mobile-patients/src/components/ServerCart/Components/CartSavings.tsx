@@ -113,6 +113,7 @@ export const CartSavings: React.FC<CartSavingsProps> = (props) => {
         <ListItem
           topDivider
           containerStyle={styles.listItemTotal}
+          title={<Text />}
           rightTitle={`₹${totalSavings.toFixed(2)}`}
           rightTitleStyle={styles.sherpaBlueBoldText}
         />
