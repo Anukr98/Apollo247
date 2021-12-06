@@ -2235,6 +2235,7 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         diagnosticOrderPhlebotomists {
           showPhleboDetails
           isPhleboChanged
+          phleboDetailsETAText
           phleboRating
           phleboOTP
           checkinDateTime
@@ -5524,6 +5525,8 @@ export const GET_PHLEBO_DETAILS = gql`
       orderPhleboDetailsBulk {
         allowCalling
         showPhleboDetails
+        phleboDetailsETAText
+        allowCallingETAText
         orderPhleboDetails {
           diagnosticOrdersId
           diagnosticPhlebotomists {
