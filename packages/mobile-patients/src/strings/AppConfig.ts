@@ -298,7 +298,6 @@ const appStaticVariables = {
   TrueCaller_Login_Enabled: false,
   Ask_Apollo_Number: '18605001066',
   LONG_CHAT_LAUNCH_DATE: '23/10/2021',
-  offerIconBaseUrl: 'https://newassets.apollo247.com/images/payment_offer_icons/',
   DIAGNOSTICS_NO_CIRCLE_SAVINGS_TEXT: 'Extra 15% off on lab tests and cashback on medicine orders',
   DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER: {
     ctaDetailsOnCityId: [
@@ -307,12 +306,16 @@ const appStaticVariables = {
         ctaProductPageArray: ['HOME', 'TESTLISTING', 'TESTCART', 'TESTDETAIL'],
         ctaDelaySeconds: 0,
         ctaPhoneNumber: '040-4821-3009',
+        ctaText: 'Call to Order',
+        ctaItemIds: [2446],
       },
     ],
     ctaDetailsDefault: {
       ctaProductPageArray: ['HOME', 'TESTLISTING', 'TESTCART', 'TESTDETAIL'],
       ctaDelaySeconds: 3,
       ctaPhoneNumber: '040-4821-3322',
+      ctaText: 'Call to Order',
+      ctaItemIds: [2446],
     },
   },
   DIAGNOSTICS_COVID_ITEM_IDS: [2446],
