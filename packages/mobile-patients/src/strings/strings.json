@@ -221,7 +221,8 @@
     "proceedToReschedule": "PROCEED TO RESCHEDULE",
     "cancel":"Cancel",
     "reschedule":"Reschedule",
-    "noSlot":"Sorry! No Slots are Available"
+    "noSlot":"Sorry! No Slots are Available",
+    "callPhleboText": "You can call the apollo agent now using the call button"
   },
   "components": {
     "medicineDetails": {

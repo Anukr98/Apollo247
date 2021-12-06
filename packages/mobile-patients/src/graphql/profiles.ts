@@ -5529,6 +5529,7 @@ export const GET_PHLEBO_DETAILS = gql`
         allowCallingETAText
         orderPhleboDetails {
           diagnosticOrdersId
+          isPhleboChanged
           diagnosticPhlebotomists {
             name
             mobile

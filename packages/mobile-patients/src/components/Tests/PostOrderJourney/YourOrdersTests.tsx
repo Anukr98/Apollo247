@@ -324,7 +324,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               }
             });
           const orderIdsArr = filteredOrderList?.map((item: any) => item?.id);
-          getPhlobeOTP(orderIdsArr, filteredOrderList, isRefetch);
+          getPhleboOTP(orderIdsArr, filteredOrderList, isRefetch);
         })
         .catch((error) => {
           setLoading?.(false);
@@ -365,7 +365,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   };
 
-  const getPhlobeOTP = (orderIdsArr: any, ordersList: any, isRefetch: boolean) => {
+  const getPhleboOTP = (orderIdsArr: any, ordersList: any, isRefetch: boolean) => {
     try {
       setLoading?.(true);
       client
@@ -400,6 +400,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                     showPhleboDetails: null,
                     phleboDetailsETAText: null,
                     allowCallingETAText: null,
+                    isPhleboChanged: null,
                     diagnosticPhlebotomists: {
                       id: null,
                       name: null,
@@ -424,10 +425,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   findOrder?.orderPhleboDetails?.phleboRating;
                 order.diagnosticOrderPhlebotomists.allowCalling = findOrder?.allowCalling;
                 order.diagnosticOrderPhlebotomists.showPhleboDetails = findOrder?.showPhleboDetails;
-                (order.diagnosticOrderPhlebotomists.phleboDetailsETAText =
-                  findOrder?.phleboDetailsETAText),
-                  (order.diagnosticOrderPhlebotomists.allowCallingETAText =
-                    findOrder?.allowCallingETAText);
+                order.diagnosticOrderPhlebotomists.phleboDetailsETAText =
+                  findOrder?.phleboDetailsETAText;
+                order.diagnosticOrderPhlebotomists.allowCallingETAText =
+                  findOrder?.allowCallingETAText;
+                order.diagnosticOrderPhlebotomists.isPhleboChanged =
+                  findOrder?.orderPhleboDetails?.isPhleboChanged;
               }
             });
             //ordersList => contains all results.
