@@ -1141,7 +1141,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
   const handleCachedData = async () => {
     const cacheDataStringBuffer = await appGlobalCache.getAll();
-    const offersListStringBuffer = cacheDataStringBuffer?.offersList.value || '[]';
+    const offersListStringBuffer = cacheDataStringBuffer?.offersList?.value || '[]';
     setOffersListCache(JSON.parse(offersListStringBuffer));
 
     const count = cacheDataStringBuffer?.appointmentCount.value || '0';
@@ -3307,7 +3307,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                       <View style={styles.bottom2TextView}>
                         <Text style={[theme.viewStyles.text('M', 11, item.subtitleColor!, 1, 18)]}>
                           {healthCredits && healthCredits >= 30
-                            ? '₹ ' + healthCredits + item.subtitle
+                            ? '₹' + healthCredits + ' ' + item.subtitle
                             : 'Get 100% Genuine Medicines'}
                         </Text>
                       </View>
