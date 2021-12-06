@@ -90,9 +90,6 @@ export const CovidScan: React.FC<CovidScanProps> = (props) => {
         onLoadEnd={() => setLoading?.(false)}
         source={{
           uri,
-          headers: {
-            AccessFrom: 'app',
-          },
         }}
         onNavigationStateChange={(data) => handleResponse(data, WebViewRef)}
         renderError={() => renderError(WebViewRef)}

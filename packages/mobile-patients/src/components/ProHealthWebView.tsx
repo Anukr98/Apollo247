@@ -90,9 +90,6 @@ export const ProHealthWebView: React.FC<ProHealthWebViewProps> = (props) => {
         onLoadEnd={() => setLoading?.(false)}
         source={{
           uri,
-          headers: {
-            AccessFrom: 'app',
-          },
         }}
         onNavigationStateChange={(data) => handleResponse(data, WebViewRef)}
         renderError={() => renderError(WebViewRef)}

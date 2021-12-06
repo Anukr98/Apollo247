@@ -322,9 +322,6 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
         useWebKit={true}
         source={{
           uri: url,
-          headers: {
-            AccessFrom: 'app',
-          },
         }}
         onNavigationStateChange={(data) => onWebViewStateChange(data, WebViewRef)}
       />
