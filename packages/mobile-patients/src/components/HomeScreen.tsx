@@ -1081,9 +1081,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const [token, setToken] = useState<string | null>('');
   const [userMobileNumber, setUserMobileNumber] = useState<string | null>('');
 
-  const [proHealthActiveAppointmentCount, setProHealthActiveAppointmentCount] = useState<any>(
-    '' | 0
-  );
+  const [proHealthActiveAppointmentCount, setProHealthActiveAppointmentCount] = useState<
+    string | number
+  >('' | 0);
   const [proActiveAppointments, setProHealthActiveAppointment] = useState([] as any);
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
