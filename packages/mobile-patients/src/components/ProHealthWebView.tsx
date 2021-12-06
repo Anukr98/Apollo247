@@ -18,14 +18,24 @@ import {
 import { WebView } from 'react-native-webview';
 import { NavigationRoute, NavigationScreenProp, NavigationScreenProps } from 'react-navigation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import {
+  RadiologyBookingCompleted,
+  RadiologyLandingPage,
+} from '@aph/mobile-patients/src/components/Tests/Events';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface ProHealthWebViewProps
   extends NavigationScreenProps<{
     requestMicroPhonePermission: boolean;
     goBackCallback?: (navigation: NavigationScreenProp<NavigationRoute<object>, object>) => void;
+    source?: string;
+    currentPatient?: any;
   }> {}
 
 export const ProHealthWebView: React.FC<ProHealthWebViewProps> = (props) => {
+  const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const { navigation } = props;
   let WebViewRef: any;
   const microPhonePermission = props.navigation.getParam('requestMicroPhonePermission');
@@ -33,6 +43,8 @@ export const ProHealthWebView: React.FC<ProHealthWebViewProps> = (props) => {
   const [canGoBack, setCanGoBack] = useState<boolean>(false);
   const [token, setToken] = useState<string | null>('');
   const [userMobileNumber, setUserMobileNumber] = useState<string | null>('');
+  const source = props.navigation.getParam('source');
+  const getCurrentPatients = props.navigation.getParam('currentPatient');
 
   useEffect(() => {
     const saveSessionValues = async () => {
@@ -81,9 +93,27 @@ export const ProHealthWebView: React.FC<ProHealthWebViewProps> = (props) => {
     }
   };
 
+  function triggerRadiologyHomePageCT() {
+    RadiologyLandingPage(
+      getCurrentPatients,
+      isDiagnosticCircleSubscription,
+      'Home Banner',
+      AppConfig.Configuration.RADIOLOGY_URL
+    );
+  }
+
+  function triggerRadiologySuccessCT(formDetails: any) {
+    RadiologyBookingCompleted(
+      getCurrentPatients,
+      isDiagnosticCircleSubscription,
+      'Home Banner',
+      AppConfig.Configuration.RADIOLOGY_URL,
+      formDetails
+    );
+  }
+
   const renderWebView = () => {
     let uri = formatUrl(`${props.navigation.getParam('covidUrl')}`, token, userMobileNumber);
-
     return (
       <WebView
         ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
@@ -96,6 +126,18 @@ export const ProHealthWebView: React.FC<ProHealthWebViewProps> = (props) => {
           const callBackData = data && JSON.parse(data);
           if (callBackData === 'back') {
             handleBack();
+          }
+          if (
+            source == string.diagnostics.radiology &&
+            callBackData?.event == CleverTapEventName.DIAGNOSTIC_RADIOLOGY_HOME_PAGE
+          ) {
+            triggerRadiologyHomePageCT();
+          }
+          if (
+            source == string.diagnostics.radiology &&
+            callBackData?.event == CleverTapEventName.DIAGNOSTIC_RADIOLOGY_BOOKING_COMPLETE
+          ) {
+            triggerRadiologySuccessCT(callBackData?.data);
           }
         }}
       />

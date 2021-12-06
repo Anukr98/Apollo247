@@ -350,7 +350,8 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
 
     const concatendatedUrl = allUrls?.map((item: any, index: number) => `${index + 1} - ${item}`);
     const urlToUse = EPrescriptionsProps?.length > 0 ? concatendatedUrl : url;
-    const newUrl = isArray(urlToUse) ? urlToUse?.join(' ') : url;
+
+    const newUrl = isArray(urlToUse) ? urlToUse?.map((item: any) => item)?.join(' ') : urlToUse;
 
     DiagnosticPrescriptionSubmitted(
       currentPatient,

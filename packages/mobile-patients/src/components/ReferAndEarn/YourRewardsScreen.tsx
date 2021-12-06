@@ -273,7 +273,7 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
       <View style={styles.noReferralReward_container}>
         <View style={styles.NoReferralinnerContainer}>
           <Text style={styles.NoReferralheading}>{string.referAndEarn.noReferralReward}</Text>
-          <Text style={styles.NoReferralsubHeading}>{string.referAndEarn.youHaveNotInvited}t</Text>
+          <Text style={styles.NoReferralsubHeading}>{string.referAndEarn.youHaveNotInvited}</Text>
           <TouchableOpacity
             onPress={() => {
               onWhatsAppShare();
