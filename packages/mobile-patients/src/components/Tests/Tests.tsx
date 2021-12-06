@@ -2821,9 +2821,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <View style={[styles.nudgeMsgHeight, { bottom: isCartAvailable ? GO_TO_CART_HEIGHT : 0 }]}>
         <CircleLogo style={styles.circleIcon} />
-        <Text style={styles.nudgeMsgText}>
-          {AppConfig.Configuration.DIAGNOSTICS_NUDGE_MESSAGE_TEXT}
-        </Text>
+        <View style={{ width: '80%' }}>
+          <Text style={styles.nudgeMsgText}>
+            {AppConfig.Configuration.DIAGNOSTICS_NUDGE_MESSAGE_TEXT}
+          </Text>
+        </View>
       </View>
     );
   };
@@ -3302,7 +3304,8 @@ const styles = StyleSheet.create({
     width: winWidth,
   },
   nudgeMsgHeight: {
-    height: NON_CIRCLE_NUDGE_HEIGHT,
+    // height: NON_CIRCLE_NUDGE_HEIGHT,
+    flex:1,
     backgroundColor: '#FFF6DE',
     flexDirection: 'row',
     width: '100%',
