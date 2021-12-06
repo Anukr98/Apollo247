@@ -22,6 +22,7 @@ import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   postCleverTapEvent,
+  getAsyncStorageValues,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { WebView } from 'react-native-webview';
 import {
@@ -99,6 +100,9 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isfocused, setisfocused] = useState<boolean>(false);
+  const [token, setToken] = useState<string | null>('');
+  const [userMobileNumber, setUserMobileNumber] = useState<string | null>('');
+
   const { pharmacyUserTypeAttribute } = useAppCommonData();
 
   const handleBack = async () => {
@@ -123,6 +127,14 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    const saveSessionValues = async () => {
+      const [loginToken, phoneNumber] = await getAsyncStorageValues();
+      setToken(JSON.parse(loginToken));
+      setUserMobileNumber(
+        JSON.parse(phoneNumber)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber
+      );
+    };
+    saveSessionValues();
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -167,7 +179,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       af_order_id: orderId ? orderId : 0,
       af_price: totalAmount,
       af_coupon_code: coupon ? coupon : 0,
-      af_payment_info_available: paymentTypeID
+      af_payment_info_available: paymentTypeID,
     };
     postAppsFlyerEvent(AppsFlyerEventName.ORDER_FAILED, eventAttributes);
     postFirebaseEvent(FirebaseEventName.ORDER_FAILED, eventAttributes);
@@ -187,15 +199,15 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       af_order_id: orderId,
       orderAutoId: orderAutoId,
       'coupon applied': coupon ? true : false,
-      "af_content_id": cartItems?.map(item => item?.id),
-      "af_price": cartItems?.map(item => item?.specialPrice ? item?.specialPrice : item?.price),
-      "af_quantity": cartItems?.map(item => item?.quantity),
+      af_content_id: cartItems?.map((item) => item?.id),
+      af_price: cartItems?.map((item) => (item?.specialPrice ? item?.specialPrice : item?.price)),
+      af_quantity: cartItems?.map((item) => item?.quantity),
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
       ...pharmacyCircleAttributes!,
       ...pharmacyUserTypeAttribute,
       TransactionId: isStorePickup ? '' : transactionId,
-    }
+    };
     return appsflyerEventAttributes;
   };
 
@@ -222,7 +234,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
         });
         postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, {
           ...cleverTapCheckoutEventAttributes,
-          'Cart Items': JSON.stringify(cartItems) || undefined,
+          'Cart items': JSON.stringify(cartItems) || undefined,
         });
       }
     }
@@ -290,7 +302,9 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       isStorePickup ? 'oid' : 'transId'
     }=${transactionId}&pid=${currentPatiendId}&source=mobile&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
       burnHC ? '&hc=' + burnHC : ''
-    }${bankCode ? '&bankCode=' + bankCode : ''}`;
+    }${
+      bankCode ? '&bankCode=' + bankCode : ''
+    }&utm_token=${token}&utm_mobile_number=${userMobileNumber}`;
 
     if (!circleSubscriptionId && isCircleSubscription) {
       url += `${planId ? '&planId=' + planId : ''}${

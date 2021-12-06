@@ -11,6 +11,7 @@
 		13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB11A68108700A75B9A /* LaunchScreen.xib */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
+		15D7C82FDEBCAC9CA8A71C8C /* Pods_NotificationService.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92C535D0114731001AF98E97 /* Pods_NotificationService.framework */; };
 		3989311398CD4273BCF8C3F2 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
 		4929325025C1959C000A9EBF /* join_sound.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4929324E25C1959C000A9EBF /* join_sound.mp3 */; };
 		492AFA5125C2A4A500330A9C /* left_sound.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 492AFA4F25C2A4A500330A9C /* left_sound.mp3 */; };
@@ -114,6 +115,7 @@
 		BBA1D02324F4D25800C77819 /* GMUStaticCluster.m in Sources */ = {isa = PBXBuildFile; fileRef = BBA1D00524F4D25800C77819 /* GMUStaticCluster.m */; };
 		BBA1D02424F4D25800C77819 /* GMSMarker+GMUClusteritem.m in Sources */ = {isa = PBXBuildFile; fileRef = BBA1D00824F4D25800C77819 /* GMSMarker+GMUClusteritem.m */; };
 		C38E9E715A0517993FE5D4F8 /* Pods_ApolloPatient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72F617656E6541D1F4092240 /* Pods_ApolloPatient.framework */; };
+		D4B8DD69B525F3701EDACA90 /* Pods_NotificationViewController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3883FE1FB0F84CFF85D99646 /* Pods_NotificationViewController.framework */; };
 		D7233BEF61ED4CC7ABE5D4E7 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
 		E0A12ADE12A2489881685B48 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
 		E892BC222670D8CC0018AA07 /* RNShare.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E892BC212670D8CC0018AA07 /* RNShare.framework */; };
@@ -190,6 +192,7 @@
 		1E298778D52A8CF8271AE6DD /* Pods-ApolloPatient-NotificationViewController.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloPatient-NotificationViewController.debug.xcconfig"; path = "Target Support Files/Pods-ApolloPatient-NotificationViewController/Pods-ApolloPatient-NotificationViewController.debug.xcconfig"; sourceTree = "<group>"; };
 		24E5689BA4364D2CB5684A43 /* Fontisto.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Fontisto.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Fontisto.ttf"; sourceTree = "<group>"; };
 		2D16E6891FA4F8E400B85C8A /* libReact.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libReact.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		3883FE1FB0F84CFF85D99646 /* Pods_NotificationViewController.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NotificationViewController.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4929324E25C1959C000A9EBF /* join_sound.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = join_sound.mp3; sourceTree = "<group>"; };
 		492AFA4F25C2A4A500330A9C /* left_sound.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = left_sound.mp3; sourceTree = "<group>"; };
 		534D05559BD207D7C46A5934 /* Pods-ApolloPatient-NotificationViewController.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloPatient-NotificationViewController.release.xcconfig"; path = "Target Support Files/Pods-ApolloPatient-NotificationViewController/Pods-ApolloPatient-NotificationViewController.release.xcconfig"; sourceTree = "<group>"; };
@@ -202,6 +205,7 @@
 		80EAA264D827BADB6794E6F4 /* Pods-ApolloPatient.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloPatient.debug.xcconfig"; path = "Target Support Files/Pods-ApolloPatient/Pods-ApolloPatient.debug.xcconfig"; sourceTree = "<group>"; };
 		836CC23D25E3A67B27683734 /* Pods-ApolloPatient-NotificationService.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloPatient-NotificationService.release.xcconfig"; path = "Target Support Files/Pods-ApolloPatient-NotificationService/Pods-ApolloPatient-NotificationService.release.xcconfig"; sourceTree = "<group>"; };
 		8D81C5135BEDE9E60C222C45 /* Pods-NotificationService.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NotificationService.debug.xcconfig"; path = "Target Support Files/Pods-NotificationService/Pods-NotificationService.debug.xcconfig"; sourceTree = "<group>"; };
+		92C535D0114731001AF98E97 /* Pods_NotificationService.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NotificationService.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		970ECE9023CB50030022FE84 /* VitalsBridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VitalsBridge.h; sourceTree = "<group>"; };
 		970ECE9123CB50030022FE84 /* VitalsBridge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VitalsBridge.m; sourceTree = "<group>"; };
 		970ECE9223CB50040022FE84 /* Vitals.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Vitals.swift; sourceTree = "<group>"; };
@@ -374,7 +378,6 @@
 		BBA1D00724F4D25800C77819 /* GMUClusterItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GMUClusterItem.h; sourceTree = "<group>"; };
 		BBA1D00824F4D25800C77819 /* GMSMarker+GMUClusteritem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GMSMarker+GMUClusteritem.m"; sourceTree = "<group>"; };
 		BC164DC10808B8284C771748 /* Pods-ApolloPatient.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloPatient.release.xcconfig"; path = "Target Support Files/Pods-ApolloPatient/Pods-ApolloPatient.release.xcconfig"; sourceTree = "<group>"; };
-		CE618CD968E4757FC908295C /* Pods_NotificationService.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NotificationService.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E892BC212670D8CC0018AA07 /* RNShare.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RNShare.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED2971642150620600B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.0.sdk/System/Library/Frameworks/JavaScriptCore.framework; sourceTree = DEVELOPER_DIR; };
@@ -402,7 +405,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F94A1E9ECE5676B212D3EA1B /* Pods_NotificationService.framework in Frameworks */,
+				15D7C82FDEBCAC9CA8A71C8C /* Pods_NotificationService.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -412,7 +415,7 @@
 			files = (
 				9797AC2A2420DFD500AD397F /* UserNotificationsUI.framework in Frameworks */,
 				9797AC292420DFD500AD397F /* UserNotifications.framework in Frameworks */,
-				4FCA30B36FFDE4AB0664C254 /* Pods_NotificationViewController.framework in Frameworks */,
+				D4B8DD69B525F3701EDACA90 /* Pods_NotificationViewController.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -460,8 +463,8 @@
 				72F617656E6541D1F4092240 /* Pods_ApolloPatient.framework */,
 				978157C32420C86800749029 /* UserNotifications.framework */,
 				978157C52420C86800749029 /* UserNotificationsUI.framework */,
-				CE618CD968E4757FC908295C /* Pods_NotificationService.framework */,
-				69C1EF06D6C0AF77D1C0281F /* Pods_NotificationViewController.framework */,
+				92C535D0114731001AF98E97 /* Pods_NotificationService.framework */,
+				3883FE1FB0F84CFF85D99646 /* Pods_NotificationViewController.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -1127,6 +1130,8 @@
 				"${BUILT_PRODUCTS_DIR}/clevertap-react-native/CleverTapReact.framework",
 				"${BUILT_PRODUCTS_DIR}/glog/glog.framework",
 				"${BUILT_PRODUCTS_DIR}/libwebp/libwebp.framework",
+				"${BUILT_PRODUCTS_DIR}/lottie-ios/Lottie.framework",
+				"${BUILT_PRODUCTS_DIR}/lottie-react-native/lottie_react_native.framework",
 				"${BUILT_PRODUCTS_DIR}/nanopb/nanopb.framework",
 				"${BUILT_PRODUCTS_DIR}/react-native-background-timer/react_native_background_timer.framework",
 				"${BUILT_PRODUCTS_DIR}/react-native-camera/react_native_camera.framework",
@@ -1218,6 +1223,8 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CleverTapReact.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/glog.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/libwebp.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Lottie.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/lottie_react_native.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/nanopb.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/react_native_background_timer.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/react_native_camera.framework",
@@ -1474,10 +1481,10 @@
 					"$(SRCROOT)/../node_modules/react-native-maps/lib/ios/AirMaps/**",
 				);
 				INFOPLIST_FILE = ApolloPatient/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MARKETING_VERSION = 6.6.6;
+				MARKETING_VERSION = 6.0.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lc++",
@@ -1526,10 +1533,10 @@
 					"$(SRCROOT)/../node_modules/react-native-maps/lib/ios/AirMaps/**",
 				);
 				INFOPLIST_FILE = ApolloPatient/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MARKETING_VERSION = 6.6.6;
+				MARKETING_VERSION = 6.0.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lc++",
@@ -1664,9 +1671,9 @@
 				ENABLE_BITCODE = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = NotificationService/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 6.6.6;
+				MARKETING_VERSION = 6.0.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247.NotificationService;
@@ -1697,9 +1704,9 @@
 				ENABLE_BITCODE = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = NotificationService/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 6.6.6;
+				MARKETING_VERSION = 6.0.0;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1728,9 +1735,9 @@
 				ENABLE_BITCODE = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = NotificationViewController/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 6.6.6;
+				MARKETING_VERSION = 6.0.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247.NotificationViewController;
@@ -1761,9 +1768,9 @@
 				ENABLE_BITCODE = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = NotificationViewController/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 6.6.6;
+				MARKETING_VERSION = 6.0.0;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247.NotificationViewController;
 				PRODUCT_NAME = "$(TARGET_NAME)";

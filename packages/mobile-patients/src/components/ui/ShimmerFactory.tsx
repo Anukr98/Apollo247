@@ -187,6 +187,12 @@ const styles = StyleSheet.create({
     width: '90%',
     margin: 10,
   },
+  diagnosticsCardBottom1: {
+    borderRadius: 10,
+    height: 190,
+    width: '40%',
+    margin: 10,
+  },
   homeBanner: {
     borderRadius: 6,
     borderColor: '#D3D3D3',
@@ -245,6 +251,43 @@ const styles = StyleSheet.create({
   },
   vaccineAppointmentBlock: {
     height: 210,
+    borderRadius: 10,
+    width: '100%',
+    marginVertical: 10,
+  },
+
+  consultPackageBlock: {
+    height: 170,
+    borderRadius: 10,
+    width: '100%',
+    marginVertical: 10,
+  },
+
+  consultPackageSpecialityBlock: {
+    height: 120,
+    borderRadius: 10,
+    width: '100%',
+    marginVertical: 10,
+  },
+
+  consultPackageDescriptionBlock: {
+    height: 10,
+    borderRadius: 10,
+    width: '50%',
+    alignSelf: 'center',
+    marginVertical: 10,
+  },
+
+  consultPackagePlanBlock: {
+    height: 30,
+    borderRadius: 10,
+    width: '100%',
+    alignSelf: 'center',
+    marginVertical: 10,
+  },
+
+  consultPackageFAQBlock: {
+    height: 50,
     borderRadius: 10,
     width: '100%',
     marginVertical: 10,
@@ -348,6 +391,31 @@ const styles = StyleSheet.create({
     height: 250,
     width: '95%',
     margin: 10,
+  },
+  specialOffersCouponContainer: {
+    marginTop: 20,
+    marginHorizontal: 18,
+  },
+  specialOffersCouponShimmer: {
+    borderRadius: 1,
+    height: 100,
+    width: '100%',
+    marginBottom: 16,
+  },
+  specialOffersCouponButtonShimmer: {
+    borderRadius: 5,
+    height: 45,
+    width: '100%',
+    marginBottom: 16,
+  },
+  specialOffersDealsContainer: {
+    marginTop: 25,
+    marginHorizontal: 18,
+  },
+  specialOffersDealsShimmer: {
+    borderRadius: 3,
+    height: 60,
+    width: '100%',
   },
 });
 
@@ -1124,6 +1192,151 @@ export const pharmaPrescriptionShimmer = () => {
         LinearGradient={LinearGradient}
         shimmerStyle={styles.prescriptionOption}
       />
+    </View>
+  );
+};
+
+export const renderConsultPackageListShimmer = () => {
+  return (
+    <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.consultPackageBlock}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.consultPackageBlock}
+      />
+
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.consultPackageBlock}
+      />
+    </View>
+  );
+};
+
+export const renderConsultPackagePostPurchaseShimmerTop = () => {
+  return (
+    <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.consultPackageBlock}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.consultPackageSpecialityBlock}
+      />
+    </View>
+  );
+};
+
+export const renderConsultPackageDeatilShimmerTop = () => {
+  return (
+    <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.consultPackageBlock}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.consultPackageDescriptionBlock}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.consultPackageDescriptionBlock}
+      />
+
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.consultPackagePlanBlock}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.consultPackagePlanBlock}
+      />
+    </View>
+  );
+};
+
+export const renderConsultPackagePostPurchaseShimmerBottom = () => {
+  return (
+    <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.consultPackageFAQBlock}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.consultPackageFAQBlock}
+      />
+    </View>
+  );
+};
+
+export const renderSpecialOffersPageShimmer = () => {
+  return (
+    <View>
+      <View>
+        <ShimmerPlaceHolder LinearGradient={LinearGradient} shimmerStyle={styles.banner1} />
+        <View style={[styles.sliderDotsContainer, { position: 'absolute', bottom: 20 }]}>
+          <View style={styles.sliderDots} />
+          <View style={styles.sliderDots} />
+          <View style={styles.sliderDots} />
+        </View>
+      </View>
+      <View style={styles.specialOffersCouponContainer}>
+        <ShimmerPlaceHolder
+          LinearGradient={LinearGradient}
+          shimmerStyle={styles.specialOffersCouponShimmer}
+        />
+        <ShimmerPlaceHolder
+          LinearGradient={LinearGradient}
+          shimmerStyle={styles.specialOffersCouponShimmer}
+        />
+        <ShimmerPlaceHolder
+          LinearGradient={LinearGradient}
+          shimmerStyle={styles.specialOffersCouponButtonShimmer}
+        />
+      </View>
+      <View style={styles.specialOffersDealsContainer}>
+        <ShimmerPlaceHolder
+          LinearGradient={LinearGradient}
+          shimmerStyle={styles.specialOffersDealsShimmer}
+        />
+      </View>
+    </View>
+  );
+};
+
+export const renderDiagnosticWidgetTestShimmer = (showHeading: boolean) => {
+  return (
+    <View style={{ marginLeft: 16 }}>
+      {showHeading && renderDiagnosticWidgetHeadingShimmer()}
+      <View style={styles.rowStyle}>
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={styles.diagnosticsCardBottom1}
+        />
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={styles.diagnosticsCardBottom1}
+        />
+      </View>
     </View>
   );
 };

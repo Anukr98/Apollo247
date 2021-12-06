@@ -21,12 +21,17 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPatientPastMedicineSearches';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
+  availabilityApi247,
   getMedicineSearchSuggestionsApi,
   MedicineProduct,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   addPharmaItemToCart,
   formatToCartItem,
+  g,
+  getAvailabilityForSearchSuccess,
+  getDiscountPercentage,
+  postCleverTapEvent,
   productsThumbnailUrl,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -41,10 +46,15 @@ import { CartIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { Badge } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { SuggestedQuantityNudge } from '@aph/mobile-patients/src/components/SuggestedQuantityNudge/SuggestedQuantityNudge';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 type RecentSearch = getPatientPastMedicineSearches_getPatientPastMedicineSearches;
 
-export interface Props extends NavigationScreenProps<{}> {}
+export interface Props
+  extends NavigationScreenProps<{
+    movedFrom?: string;
+    navSrcForSearchSuccess?: string;
+  }> {}
 
 export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
   const [searchText, setSearchText] = useState<string>('');
@@ -59,13 +69,15 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
   const [itemPackForm, setItemPackForm] = useState<string>('');
   const [maxOrderQty, setMaxOrderQty] = useState<number>(0);
   const [suggestedQuantity, setSuggestedQuantity] = useState<string>(null);
+  const navSrcForSearchSuccess = navigation.getParam('navSrcForSearchSuccess')
+    ? navigation.getParam('navSrcForSearchSuccess')
+    : '';
 
   const { currentPatient } = useAllCurrentPatients();
   const {
     locationDetails,
     pharmacyLocation,
     isPharmacyLocationServiceable,
-    axdcCode,
     pharmacyUserType,
   } = useAppCommonData();
   const { showAphAlert } = useUIElements();
@@ -78,6 +90,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     pharmacyCircleAttributes,
     cartItems,
     asyncPincode,
+    axdcCode,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
 
@@ -194,7 +207,11 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
 
   const renderSearchBar = () => {
     const onSearchSend = () => {
-      navigation.push(AppRoutes.MedicineListing, { searchText: searchText });
+      navigation.push(AppRoutes.MedicineListing, {
+        searchText: searchText,
+        comingFromSearch: true,
+        navSrcForSearchSuccess,
+      });
     };
     const errorMessage =
       !isLoading && searchText.length >= 3 && searchResults.length === 0
@@ -226,10 +243,11 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
 
   const renderRecentSearches = () => {
     if (!recentSearches.length) return null;
+    const recentlySearchedProducts = true;
     return (
       <MedSearchSection
         title={'Recent Searched Products'}
-        children={renderProducts(recentSearches.slice(0, 5))}
+        children={renderProducts(recentSearches.slice(0, 5), recentlySearchedProducts)}
         childrenContainerStyle={styles.childrenContainer}
       />
     );
@@ -246,12 +264,32 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     );
   };
 
-  const renderProducts = (array: RecentSearch[]) => {
-    const onPress = (sku: string) => {
+  const renderProducts = (array: RecentSearch[], ...param) => {
+    const recentlySearchedProducts = param;
+    console.log(recentlySearchedProducts);
+    const onPress = (sku: string, index: number, name: string) => {
       navigation.push(AppRoutes.ProductDetailPage, {
         sku,
         movedFrom: ProductPageViewedSource.RECENT_SEARCH,
       });
+      if (recentlySearchedProducts) {
+        const pincode = asyncPincode?.pincode || pharmacyPincode;
+        const availability = getAvailabilityForSearchSuccess(pincode, sku);
+        const cleverTapEventAttributes = {
+          'Nav src': navSrcForSearchSuccess,
+          Status: 'Success',
+          Keyword: searchText,
+          Position: index + 1,
+          Source: 'Recent Searched Products',
+          Action: 'Product detail page viewed',
+          'Product availability': availability ? 'Is in stock' : 'Out of stock',
+          'Product position': index + 1,
+          'Results shown': recentSearches?.length,
+          'SKU ID': sku,
+          'Product name': name,
+        };
+        postCleverTapEvent(CleverTapEventName.PHARMACY_SEARCH_SUCCESS, cleverTapEventAttributes);
+      }
     };
 
     return array.map(({ typeId, name, image }, index, array) => (
@@ -259,7 +297,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
         key={typeId!}
         title={name!}
         image={image ? productsThumbnailUrl(image) : undefined}
-        onPress={() => onPress(typeId!)}
+        onPress={() => onPress(typeId!, index, name)}
         containerStyle={
           index + 1 === array.length ? styles.productViewContainer2 : styles.productViewContainer
         }
@@ -314,12 +352,39 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
   const renderSearchResults = () => {
     if (!searchResults.length) return null;
 
-    const onPress = (sku: string, urlKey: string) => {
+    const key = 'queryName';
+    const keywordArr = [];
+    searchResults.map((obj) => {
+      if (Object.keys(obj).includes(key)) {
+        keywordArr.push(obj?.queryName);
+      }
+    });
+
+    const onPress = (sku: string, urlKey: string, index: number, item) => {
       navigation.push(AppRoutes.ProductDetailPage, {
         sku,
         urlKey,
         movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
       });
+      const pincode = asyncPincode?.pincode || pharmacyPincode;
+      const availability = getAvailabilityForSearchSuccess(pincode, item?.sku);
+      const discount = getDiscountPercentage(item?.price, item?.special_price);
+      const discountPercentage = discount ? discount + '%' : '0%';
+      const cleverTapEventAttributes = {
+        'Nav src': navSrcForSearchSuccess,
+        Status: 'Success',
+        Keyword: searchText,
+        Position: index + 1,
+        Source: 'Partial search',
+        Action: 'Product detail page viewed',
+        'Product availability': availability ? 'Is in stock' : 'Out of stock',
+        'Product position': index + 1 - keywordArr?.length,
+        'Results shown': searchResults?.length,
+        'SKU ID': item?.sku,
+        'Product name': item?.name,
+        Discount: discountPercentage,
+      };
+      postCleverTapEvent(CleverTapEventName.PHARMACY_SEARCH_SUCCESS, cleverTapEventAttributes);
     };
 
     const onPressNotify = (name: string) => {
@@ -329,7 +394,11 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       });
     };
 
-    const onPressAddToCart = (item: MedicineProduct) => {
+    const onPressAddToCart = (
+      item: MedicineProduct,
+      comingFromSearch: boolean,
+      cleverTapSearchSuccessEventAttributes: object
+    ) => {
       setItemsAddingToCart({ ...itemsAddingToCart, [item.sku]: true });
       addPharmaItemToCart(
         formatToCartItem(item),
@@ -342,7 +411,10 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
         { source: 'Pharmacy Partial Search', categoryId: item.category_id },
         JSON.stringify(cartItems),
         () => setItemsAddingToCart({ ...itemsAddingToCart, [item.sku]: false }),
-        pharmacyCircleAttributes!
+        pharmacyCircleAttributes!,
+        () => {},
+        comingFromSearch,
+        cleverTapSearchSuccessEventAttributes
       );
       setCurrentProductIdInCart(item.sku);
       item.pack_form ? setItemPackForm(item.pack_form) : setItemPackForm('');
@@ -355,7 +427,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       setCurrentProductQuantityInCart(1);
     };
 
-    const products: MedicineSearchSuggestionItemProps[] = searchResults.map((item) => {
+    const products: MedicineSearchSuggestionItemProps[] = searchResults.map((item, index) => {
       const id = item.sku;
       const qty = getCartItemQty(id);
       const onPressAdd = () => {
@@ -368,13 +440,33 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
         qty == 1 ? removeCartItem!(id) : updateCartItem!({ id, quantity: qty - 1 });
         setCurrentProductQuantityInCart(qty - 1);
       };
+      const comingFromSearch = true;
+
+      const discount = getDiscountPercentage(item?.price, item?.special_price);
+      const discountPercentage = discount ? discount + '%' : '0%';
+
+      const cleverTapSearchSuccessEventAttributes = {
+        'Nav src': navSrcForSearchSuccess,
+        Status: 'Success',
+        Keyword: searchText,
+        Position: index + 1,
+        Source: 'Partial search',
+        Action: 'Add to cart',
+        'Product availability': 'Available',
+        'Product position': index + 1 - keywordArr?.length,
+        'Results shown': searchResults?.length,
+        'SKU ID': item?.sku,
+        'Product name': item?.name,
+        Discount: discountPercentage,
+      };
 
       return {
         data: item,
         quantity: qty,
         maxOrderQty: item.MaxOrderQty,
-        onPress: () => onPress(id, item?.url_key),
-        onPressAddToCart: () => onPressAddToCart(item),
+        onPress: () => onPress(id, item?.url_key, index, item),
+        onPressAddToCart: () =>
+          onPressAddToCart(item, comingFromSearch, cleverTapSearchSuccessEventAttributes),
         onPressAdd: onPressAdd,
         onPressSubstract: onPressSubstract,
         onPressNotify: () => onPressNotify(item.name),

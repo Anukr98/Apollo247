@@ -302,6 +302,11 @@ export enum MEDICINE_FORM_TYPES {
   OTHERS = 'OTHERS',
 }
 
+export interface TestNameInputs {
+  testName: string;
+  parameterName: string;
+}
+
 export enum MEDICINE_FREQUENCY {
   ALTERNATE_DAY = 'ALTERNATE_DAY',
   AS_NEEDED = 'AS_NEEDED',
@@ -645,6 +650,11 @@ export enum REFUND_STATUSES {
   PENDING = 'PENDING',
   REFUND_REQUEST_NOT_SENT = 'REFUND_REQUEST_NOT_SENT',
   SUCCESS = 'SUCCESS',
+}
+
+export enum REPORT_TAT_SOURCE {
+  CART_PAGE = "CART_PAGE",
+  TEST_DETAILS_PAGE = "TEST_DETAILS_PAGE",
 }
 
 export enum REQUEST_ROLES {
@@ -1362,6 +1372,7 @@ export interface FilterDoctorInput {
   radius?: number | null;
   isCare?: boolean | null;
   isSearchableOnHiddenDoctor?: boolean | null;
+  slugName?: string | null;
 }
 
 export interface Geolocation {
@@ -2230,6 +2241,36 @@ export enum SPECIALTY_STATUS {
   ALL = "ALL",
   TRUE = "TRUE",
 }
+
+export enum CancellationRequestedBy {
+  CUSTOMER = "CUSTOMER",
+}
+export interface CancelSubscriptionInput {
+  subscription_id: string;
+  cancellation_reuqested_by?: CancellationRequestedBy | null;
+  system_override?: boolean | null;
+  skip_refund?: boolean | null;
+}
+
+export enum CALL_TO_ORDER_CTA_PAGE_ID {
+  HOME = 'HOME',
+  TESTDETAIL = 'TESTDETAIL',
+  MYORDERS = 'MYORDERS',
+  TESTCART = 'TESTCART',
+  TESTORDERSUMMARY = 'TESTORDERSUMMARY',
+  TESTLISTING = 'TESTLISTING',
+}
+
+export interface SubscriptionDetailsInput {
+  specialtyName?: string | null;
+  benefitId?: string | null;
+  userSubscriptionId?: string | null;
+  planId?: string | null;
+  subPlanId?: string | null;
+  paymentOrderId?: string | null;
+  subscriptionSubPlanId?: string | null;
+}
+
 
 //==============================================================
 // END Enums and Input Objects

@@ -30,9 +30,9 @@ export const CredPay: React.FC<CredPayProps> = (props) => {
 
   const renderOffer = () => {
     return (
-      <View style={{ flexDirection: 'row', paddingBottom: 15 }}>
+      <View style={{ flexDirection: 'row', paddingBottom: 15, alignItems: 'center' }}>
         <OffersIcon style={styles.offerIcon} />
-        <Text style={styles.offermsg}>{credInfo?.layout?.bannerText}</Text>
+        <Text style={styles.offermsg}>{credInfo?.layout?.subText}</Text>
       </View>
     );
   };
@@ -59,10 +59,10 @@ export const CredPay: React.FC<CredPayProps> = (props) => {
 
   return isWebView ? (
     enableCredWebView ? (
-      <CollapseView isDown={true} Heading={'CRED Pay'} ChildComponent={renderCred()} />
+      <CollapseView isDown={true} Heading={'CRED pay'} ChildComponent={renderCred()} />
     ) : null
   ) : (
-    <CollapseView isDown={true} Heading={'CRED Pay'} ChildComponent={renderCred()} />
+    <CollapseView isDown={true} Heading={'CRED pay'} ChildComponent={renderCred()} />
   );
 };
 

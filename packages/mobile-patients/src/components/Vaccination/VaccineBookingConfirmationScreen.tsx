@@ -3,6 +3,7 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   permissionHandler,
   storagePermissions,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -83,6 +84,10 @@ import {
 import RNHTMLtoPDF from 'react-native-html-to-pdf';
 import { Spinner } from '../ui/Spinner';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const styles = StyleSheet.create({
   detailTitle: {
@@ -381,11 +386,37 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
           response?.data?.GetAppointmentDetails?.response?.resource_session_details?.resource_detail
             ?.is_corporate_site || false
         );
+        firePaymentOrderStatusEvent(response?.data?.GetAppointmentDetails?.response?.status);
       })
       .catch((error) => {})
       .finally(() => {
         setLoading(false);
       });
+  };
+
+  const defaultClevertapEventParams: any = props.navigation.getParam('defaultClevertapEventParams');
+  const payload: any = props.navigation.getParam('payload');
+
+  const firePaymentOrderStatusEvent = (backEndStatus: any) => {
+    try {
+      const { mobileNumber, vertical, displayId, paymentId } = defaultClevertapEventParams;
+      const status =
+        props.navigation.getParam('paymentStatus') == 'success'
+          ? 'PAYMENT_SUCCESS'
+          : 'PAYMENT_PENDING';
+      const eventAttributes: CleverTapEvents[CleverTapEventName.PAYMENT_ORDER_STATUS] = {
+        'Phone Number': mobileNumber,
+        vertical: vertical,
+        'Vertical Internal Order Id': displayId,
+        'Payment Order Id': paymentId,
+        'Payment Method Type': payload?.payload?.action,
+        BackendPaymentStatus: backEndStatus,
+        JuspayResponseCode: payload?.errorCode,
+        Response: payload?.payload?.status,
+        Status: status,
+      };
+      postCleverTapEvent(CleverTapEventName.PAYMENT_ORDER_STATUS, eventAttributes);
+    } catch (error) {}
   };
 
   const cancelVaccination = () => {

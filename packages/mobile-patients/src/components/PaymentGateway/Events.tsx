@@ -25,7 +25,7 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 
 export function PaymentInitiated(
   grandTotal: number,
@@ -85,7 +85,10 @@ export function PharmaOrderPlaced(
   shoppingCart: ShoppingCartContextProps,
   paymentOrderId: string,
   burnHc: number,
-  isCOD: boolean
+  isCOD: boolean,
+  currentPatient: GetCurrentPatients_getCurrentPatients_patients,
+  orderId: string,
+  pharmacyUserType: string
 ) {
   try {
     const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED] = checkoutEventAttributes;
@@ -93,9 +96,9 @@ export function PharmaOrderPlaced(
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED] = {
       ...cleverTapCheckoutEventAttributes,
-      'Payment Type': isCOD ? 'COD' : 'Prepaid',
+      'Payment type': isCOD ? 'COD' : 'Prepaid',
       'Transaction ID': paymentOrderId,
-      'Payment Instrument': isCOD ? 'COD' : paymentType || undefined,
+      'Payment instrument': isCOD ? 'COD' : paymentType || undefined,
     };
     postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, cleverTapEventAttributes);
 
@@ -107,6 +110,8 @@ export function PharmaOrderPlaced(
       isCircleSubscription,
       cartTotalCashback,
       pharmacyCircleAttributes,
+      deliveryCharges,
+      circleMembershipCharges,
     } = shoppingCart;
     let items: any = [];
     cartItems.forEach((item, index) => {
@@ -132,21 +137,44 @@ export function PharmaOrderPlaced(
       LOB: 'Pharma',
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, firebaseEventAttributes);
-    const { currentPatient } = useAllCurrentPatients()
+
+    const skus = cartItems?.map((item) => item?.id);
+    const firebaseCheckoutEventAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED] = {
+      order_id: orderId,
+      transaction_id: paymentOrderId,
+      currency: 'INR',
+      coupon: coupon?.coupon,
+      shipping: deliveryCharges,
+      items: JSON.stringify(skus),
+      value: grandTotal,
+      circle_membership_added: circleMembershipCharges
+        ? 'Yes'
+        : circleSubscriptionId
+        ? 'Existing'
+        : 'No',
+      payment_type: 'COD',
+      user_type: pharmacyUserType,
+    };
+    postFirebaseEvent(
+      FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED,
+      firebaseCheckoutEventAttributes
+    );
 
     let revenue = 0;
-    shoppingCart?.cartItems?.forEach(item => {
-      revenue += item?.quantity * (item?.specialPrice ? item?.specialPrice : item?.price)
-    })
+    shoppingCart?.cartItems?.forEach((item) => {
+      revenue += item?.quantity * (item?.specialPrice ? item?.specialPrice : item?.price);
+    });
     const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED] = {
-      af_customer_user_id: currentPatient ? currentPatient.id : "",
+      af_customer_user_id: currentPatient ? currentPatient.id : '',
       'cart size': cartItems.length,
       af_revenue: getFormattedAmount(grandTotal),
       af_currency: 'INR',
-      af_order_id: paymentOrderId ? paymentOrderId : "0",
-      "af_content_id": shoppingCart?.cartItems?.map(item => item?.id),
-      "af_quantity": shoppingCart?.cartItems?.map(item => item?.quantity),
-      "af_price": shoppingCart?.cartItems?.map(item => item?.specialPrice ? item?.specialPrice : item?.price),
+      af_order_id: paymentOrderId ? paymentOrderId : '0',
+      af_content_id: shoppingCart?.cartItems?.map((item) => item?.id),
+      af_quantity: shoppingCart?.cartItems?.map((item) => item?.quantity),
+      af_price: shoppingCart?.cartItems?.map((item) =>
+        item?.specialPrice ? item?.specialPrice : item?.price
+      ),
       'coupon applied': coupon ? true : false,
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
@@ -198,7 +226,8 @@ export function PaymentTxnInitiated(
   isSavedCard: boolean,
   txnType: string,
   isNewCardSaved: boolean,
-  isCOD: boolean
+  isCOD: boolean,
+  walletBalance: any
 ) {
   try {
     const {
@@ -226,6 +255,7 @@ export function PaymentTxnInitiated(
       TxnType: txnType,
       ifNewCardSaved: isNewCardSaved,
       isPaymentLinkTxn: vertical == 'paymentLink' ? true : false,
+      'Wallet Balance': walletBalance,
     };
     postCleverTapEvent(CleverTapEventName.PAYMENT_TXN_INITIATED, eventAttributes);
   } catch (error) {}

@@ -1,18 +1,18 @@
 PODS:
-  - AFNetworking (3.2.1):
-    - AFNetworking/NSURLSession (= 3.2.1)
-    - AFNetworking/Reachability (= 3.2.1)
-    - AFNetworking/Security (= 3.2.1)
-    - AFNetworking/Serialization (= 3.2.1)
-    - AFNetworking/UIKit (= 3.2.1)
-  - AFNetworking/NSURLSession (3.2.1):
+  - AFNetworking (4.0.1):
+    - AFNetworking/NSURLSession (= 4.0.1)
+    - AFNetworking/Reachability (= 4.0.1)
+    - AFNetworking/Security (= 4.0.1)
+    - AFNetworking/Serialization (= 4.0.1)
+    - AFNetworking/UIKit (= 4.0.1)
+  - AFNetworking/NSURLSession (4.0.1):
     - AFNetworking/Reachability
     - AFNetworking/Security
     - AFNetworking/Serialization
-  - AFNetworking/Reachability (3.2.1)
-  - AFNetworking/Security (3.2.1)
-  - AFNetworking/Serialization (3.2.1)
-  - AFNetworking/UIKit (3.2.1):
+  - AFNetworking/Reachability (4.0.1)
+  - AFNetworking/Security (4.0.1)
+  - AFNetworking/Serialization (4.0.1)
+  - AFNetworking/UIKit (4.0.1):
     - AFNetworking/NSURLSession
   - AppsFlyerFramework (6.2.6):
     - AppsFlyerFramework/Main (= 6.2.6)
@@ -170,7 +170,7 @@ PODS:
   - HyperSDK (2.0.76):
     - JuspaySafeBrowser (= 0.1.70)
     - Salvator (= 1.0.1)
-  - IQKeyboardManager (6.5.6)
+  - IQKeyboardManager (6.5.9)
   - JuspaySafeBrowser (0.1.70)
   - JWT (3.0.0-beta.14):
     - Base64 (~> 1.1.2)
@@ -184,17 +184,21 @@ PODS:
   - libwebp/mux (1.2.1):
     - libwebp/demux
   - libwebp/webp (1.2.1)
+  - lottie-ios (3.2.3)
+  - lottie-react-native (4.0.3):
+    - lottie-ios (~> 3.2.3)
+    - React-Core
   - nanopb (1.30906.0):
     - nanopb/decode (= 1.30906.0)
     - nanopb/encode (= 1.30906.0)
   - nanopb/decode (1.30906.0)
   - nanopb/encode (1.30906.0)
-  - OpenTok (2.21.0)
-  - opentok-react-native (0.17.2):
+  - OpenTok (2.21.2)
+  - opentok-react-native (0.18.0):
     - OpenTok
     - React
   - PromisesObjC (1.2.12)
-  - Protobuf (3.19.0)
+  - Protobuf (3.19.1)
   - QBImagePickerController (3.4.0)
   - RCTRequired (0.61.3)
   - RCTSystemSetting (1.7.6):
@@ -501,8 +505,8 @@ PODS:
     - React-Core
   - RNSVG (12.1.1):
     - React
-  - RNVectorIcons (6.7.0):
-    - React
+  - RNVectorIcons (9.0.0):
+    - React-Core
   - RNVoipPushNotification (2.1.0):
     - React-Core
   - RSKImageCropper (3.0.2)
@@ -529,7 +533,7 @@ PODS:
   - youtube-ios-player-helper (0.1.6)
 
 DEPENDENCIES:
-  - AFNetworking (~> 3.2.1)
+  - AFNetworking (~> 4.0.0)
   - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
   - Charts (~> 3.3.0)
   - clevertap-react-native (from `../node_modules/clevertap-react-native`)
@@ -546,6 +550,8 @@ DEPENDENCIES:
   - hyper-sdk-react (from `../node_modules/hyper-sdk-react`)
   - IQKeyboardManager
   - JWTDecode (~> 2.4)
+  - lottie-ios (from `../node_modules/lottie-ios`)
+  - lottie-react-native (from `../node_modules/lottie-react-native`)
   - opentok-react-native (from `../node_modules/opentok-react-native`)
   - RCTRequired (from `../node_modules/react-native/Libraries/RCTRequired`)
   - RCTSystemSetting (from `../node_modules/react-native-system-setting`)
@@ -692,6 +698,10 @@ EXTERNAL SOURCES:
     :podspec: "../node_modules/react-native/third-party-podspecs/glog.podspec"
   hyper-sdk-react:
     :path: "../node_modules/hyper-sdk-react"
+  lottie-ios:
+    :path: "../node_modules/lottie-ios"
+  lottie-react-native:
+    :path: "../node_modules/lottie-react-native"
   opentok-react-native:
     :path: "../node_modules/opentok-react-native"
   RCTRequired:
@@ -818,7 +828,7 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  AFNetworking: b6f891fdfaed196b46c7a83cf209e09697b94057
+  AFNetworking: 7864c38297c79aaca1500c33288e429c3451fdce
   AppsFlyerFramework: 1ac92ce51999e77806b0ecf6ff7b72af8ee8bea4
   Base64: cecfb41a004124895a7bcee567a89bae5a89d49b
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
@@ -852,16 +862,18 @@ SPEC CHECKSUMS:
   GTMSessionFetcher: 43748f93435c2aa068b1cbe39655aaf600652e91
   hyper-sdk-react: c19d28ff181f28a3361d8c191b50bb793afb2d41
   HyperSDK: 81d39db5276b7901691e3e08dc0a377a51b06b36
-  IQKeyboardManager: 2a6e97afdafc7becf0cb17a9a8d795e3a980717f
+  IQKeyboardManager: 241cc94ccabc9deb8f8bd7d12f00d73288d13ecc
   JuspaySafeBrowser: 72f60fcd42bb61f6a6ad9b733b84810b63cc8c1b
   JWT: ef71dfb03e1f842081e64dc42eef0e164f35d251
   JWTDecode: 33e5e26e5ddbd21b2065820894c08fef0cad9509
   libwebp: 98a37e597e40bfdb4c911fc98f2c53d0b12d05fc
+  lottie-ios: c058aeafa76daa4cf64d773554bccc8385d0150e
+  lottie-react-native: 96361a9891cf651534ea35c4f85f33d4cf14ed13
   nanopb: 59317e09cf1f1a0af72f12af412d54edf52603fc
-  OpenTok: 3a11243cc21b56389f5dfd97355f111748192153
-  opentok-react-native: 56e3213e14bcc5222bc2e3e244c3a3b6bb3758ac
+  OpenTok: 0060779ca05fca24242a10c8b9ee4982bcf7d795
+  opentok-react-native: d6a3cf709141009fbf4679f370f273440de6964a
   PromisesObjC: 3113f7f76903778cf4a0586bd1ab89329a0b7b97
-  Protobuf: e9b99dd5da72f665ec503b19191f245a22188b4d
+  Protobuf: 3724efa50cb2846d7ccebc8691c574e85fd74471
   QBImagePickerController: d54cf93db6decf26baf6ed3472f336ef35cae022
   RCTRequired: a72523286ea3381f97b28d87529c265baad3ad7d
   RCTSystemSetting: 5107b7350d63b3f7b42a1277d07e4e5d9df879be
@@ -922,7 +934,7 @@ SPEC CHECKSUMS:
   RNShare: 047d42214f875d731bde73a2b67418638af85ad9
   RNSound: 9253013eeaa051eab63d354fd4654f7aa67c82f0
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
-  RNVectorIcons: 368d6d8b8301224e5ffb6254191f4f8876c2be0d
+  RNVectorIcons: 4143ba35feebab8fdbe6bc43d1e776b393d47ac8
   RNVoipPushNotification: be6f70cac9d1fd73e020063093f635f64d97c9c6
   RSKImageCropper: 1ac71e9a82e3f41eea3eedfff8eacb0d3821c9ec
   Salvator: e388abcd1c8a526aff3e952ed94219bb4e12c85f
@@ -939,6 +951,6 @@ SPEC CHECKSUMS:
   Yoga: 02036f6383c0008edb7ef0773a0e6beb6ce82bd1
   youtube-ios-player-helper: 21ab92db027c7ff86cb17a3843a3f6eafc8158d2
 
-PODFILE CHECKSUM: bb978693ffd2f127a81939e2532293df49b4f470
+PODFILE CHECKSUM: 87efab4164c5e50ec36bc7acad94300fbec013cc
 
 COCOAPODS: 1.11.2

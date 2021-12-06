@@ -65,34 +65,33 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
 
   const renderProductPrice = () => {
     const discountPercent = getDiscountPercentage(price, specialPrice);
-    return (
-      <View>
-        {!!specialPrice ? (
-          <View style={styles.flexRow}>
-            <Text style={styles.label}>{`Price: `}</Text>
-            <Text style={styles.value}>
-              {string.common.Rs}
-              {convertNumberToDecimal(specialPrice)}
-              {'  '}
-            </Text>
-            <Text style={styles.smallLabel}>{`MRP `}</Text>
-            <Text style={styles.smallValue}>
-              {string.common.Rs}
-              {convertNumberToDecimal(price)}
-            </Text>
-            <Text style={styles.discountPercent}>{`  ${discountPercent}%off`}</Text>
-          </View>
-        ) : (
-          <View style={styles.flexRow}>
-            <Text style={styles.label}>{`MRP: `}</Text>
-            <Text style={styles.value}>
-              {string.common.Rs}
-              {convertNumberToDecimal(price)}
-            </Text>
-          </View>
-        )}
-        <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 25, 0)}>
-          Inclusive of all Taxes
+    return !!specialPrice ? (
+      <View style={[styles.flexRow, { alignItems: 'center', paddingBottom: 9 }]}>
+        <Text style={styles.label}>{`Price: `}</Text>
+        <Text style={styles.value}>
+          {string.common.Rs}
+          {convertNumberToDecimal(price)}
+          {'  '}
+        </Text>
+        <Text style={styles.smallValue}>
+          {string.common.Rs}
+          {convertNumberToDecimal(specialPrice)} |
+        </Text>
+        <Text style={styles.discountPercent}>{`  ${discountPercent}%off`}</Text>
+        <Text style={theme.viewStyles.text('R', 10, '#02475B', 1, 13, 0)}>
+          {'  '}(Inclusive of all Taxes)
+        </Text>
+      </View>
+    ) : (
+      <View style={[styles.flexRow, { alignItems: 'center', paddingBottom: 9 }]}>
+        <Text style={styles.label}>{`Price: `}</Text>
+        <Text style={styles.smallValue}>
+          {string.common.Rs}
+          {convertNumberToDecimal(price)}
+        </Text>
+        <Text style={theme.viewStyles.text('R', 10, '#02475B', 1, 13, 0)}>
+          {' '}
+          (Inclusive of all Taxes)
         </Text>
       </View>
     );
@@ -101,25 +100,25 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
   const renderIsInStock = () => {
     return showDeliverySpinner ? (
       <ActivityIndicator
-        style={{ alignItems: 'flex-end', marginRight: 20 }}
+        style={styles.activityIndicatorStyle}
         animating={true}
         size="small"
         color="green"
       />
     ) : isBanned ? (
-      <View style={[styles.inStockContainer, { backgroundColor: '#890000' }]}>
+      <View style={styles.inStockContainer}>
         <Text style={styles.stockText}>Banned for Sale</Text>
       </View>
     ) : !isSellOnline ? (
-      <View style={[styles.inStockContainer, { backgroundColor: '#890000' }]}>
+      <View style={styles.inStockContainer}>
         <Text style={styles.stockText}>NOT AVAILABLE FOR ONLINE SALE</Text>
       </View>
     ) : isInStock ? (
       <View style={styles.inStockContainer}>
-        <Text style={styles.stockText}>In Stock</Text>
+        <Text style={styles.inStockText}>In Stock</Text>
       </View>
     ) : (
-      <View style={[styles.inStockContainer, { backgroundColor: '#890000' }]}>
+      <View style={styles.inStockContainer}>
         <Text style={styles.stockText}>Out Of Stock</Text>
       </View>
     );
@@ -183,22 +182,58 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
   };
 
   const renderCareCashback = () => {
+    const effectivePrice = finalPrice - Number(cashback);
+    const circleDiscountPercent = ((finalPrice - effectivePrice) / finalPrice) * 100;
     return (
-      <>
-        <CareCashbackBanner
-          bannerText={`extra cashback ${string.common.Rs}${cashback}`}
-          textStyle={styles.circleText}
-          logoStyle={styles.circleLogo}
-        />
-        <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 17)}>
-          Effective price for you
-          <Text style={{ fontWeight: 'bold' }}>
-            {' '}
-            {string.common.Rs}
-            {(finalPrice - Number(cashback)).toFixed(2)}
-          </Text>
-        </Text>
-      </>
+      <View>
+        <View style={styles.lineView} />
+        <View style={{ flexDirection: 'row', paddingBottom: 2 }}>
+          <View style={{ paddingVertical: 10, flexDirection: 'column' }}>
+            <CareCashbackBanner
+              bannerText={`cashback${'    '}`}
+              textStyle={styles.circleText}
+              logoStyle={styles.circleLogo}
+            />
+            <Text style={styles.effectivePriceText}>Effective price</Text>
+          </View>
+          <View style={{ padding: 10, flexDirection: 'column' }}>
+            <Text style={styles.circleText}>
+              {string.common.Rs}
+              {cashback}
+              {'   '}({circleDiscountPercent.toFixed(0)}%)
+            </Text>
+
+            <Text style={[theme.viewStyles.text('R', 16, '#02475B', 1, 21), { fontWeight: '600' }]}>
+              {string.common.Rs}
+              {effectivePrice.toFixed(2)}
+            </Text>
+          </View>
+        </View>
+        <View style={styles.lineView} />
+      </View>
+    );
+  };
+
+  const rendergetCircleMembership = () => {
+    const effectivePrice = finalPrice - Number(cashback);
+    const circleDiscountPercent = ((finalPrice - effectivePrice) / finalPrice) * 100;
+    const cashbackText = `${circleDiscountPercent.toFixed(0)}% cashback and`;
+    // handling O cashback case
+    const noncircleText =
+      cashback !== 0 ? `and get ${cashbackText} Free Delivery` : `and get Free Delivery`;
+    return (
+      <View>
+        <View style={styles.lineView} />
+        <View style={{ paddingVertical: 10, flexDirection: 'row' }}>
+          <Text style={[styles.nonCircleText, { paddingVertical: 6 }]}>Buy </Text>
+          <CareCashbackBanner
+            bannerText={noncircleText}
+            textStyle={styles.nonCircleText}
+            logoStyle={styles.circleLogo}
+          />
+        </View>
+        <View style={styles.lineView} />
+      </View>
     );
   };
 
@@ -217,16 +252,19 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
 
   return (
     <View style={styles.container}>
-      <View style={styles.cardStyle}>
-        {renderProductPrice()}
-        {renderIsInStock()}
-      </View>
-      {!!circleSubscriptionId && !!cashback && renderCareCashback()}
+      <View style={styles.cardStyle}>{renderProductPrice()}</View>
+      {/* handling 0 discount cashback case */}
+      {!!circleSubscriptionId
+        ? !!cashback
+          ? renderCareCashback()
+          : null
+        : rendergetCircleMembership()}
       {showMultiVariantOption && renderMultiVariantOptions()}
       {isSellOnline && renderDeliverTo()}
       {!isBanned &&
         isSellOnline &&
         (showExpress ? renderExpress() : showDeliverySpinner ? null : renderDeliveryDateTime())}
+      {renderIsInStock()}
     </View>
   );
 };
@@ -243,25 +281,21 @@ const styles = StyleSheet.create({
   flexRow: {
     flexDirection: 'row',
   },
-  label: theme.viewStyles.text('R', 15, '#02475B', 1, 25, 0.35),
-  value: theme.viewStyles.text('B', 15, '#02475B', 1, 25, 0.35),
-  smallLabel: {
-    ...theme.viewStyles.text('R', 14, '#02475B', 1, 27, 0.35),
+  label: {
+    ...theme.viewStyles.text('R', 12, '#02475B', 1, 14, 0.35),
+    fontWeight: '500',
+  },
+  value: {
+    ...theme.viewStyles.text('R', 12, '#02475B', 0.7, 16, 0.35),
     textDecorationLine: 'line-through',
   },
   smallValue: {
-    ...theme.viewStyles.text('B', 14, '#02475B', 1, 27, 0.35),
-    textDecorationLine: 'line-through',
+    ...theme.viewStyles.text('B', 14, '#02475B', 1, 18, 0.35),
   },
-  discountPercent: theme.viewStyles.text('R', 14, '#00B38E', 1, 27, 0.35),
-  inStockContainer: {
-    paddingHorizontal: 5,
-    paddingVertical: 3,
-    backgroundColor: '#00B38E',
-    borderRadius: 5,
-    marginBottom: 25,
+  discountPercent: {
+    ...theme.viewStyles.text('R', 16, '#00B38E', 1, 21, 0.35),
+    fontWeight: '600',
   },
-  stockText: theme.viewStyles.text('M', 13, '#FFFFFF', 1, 18),
   deliveryTo: {
     flexDirection: 'row',
     marginVertical: 10,
@@ -277,13 +311,44 @@ const styles = StyleSheet.create({
     width: 60,
     height: 30,
   },
+  lineView: {
+    borderWidth: 0.5,
+    borderColor: 'rgba(0, 0, 0, 0.2)',
+  },
   circleText: {
-    ...theme.viewStyles.text('M', 12, '#00A0E3', 1, 15),
+    ...theme.viewStyles.text('M', 12, '#02475B', 1, 14),
     paddingVertical: 8,
+    fontWeight: '500',
   },
   circleLogo: {
     resizeMode: 'contain',
     width: 38,
     height: 30,
+  },
+  nonCircleText: {
+    ...theme.viewStyles.text('M', 12, '#02475B', 1, 16),
+    fontWeight: '600',
+  },
+  effectivePriceText: {
+    ...theme.viewStyles.text('R', 12, '#02475B', 1, 22),
+    fontWeight: '500',
+  },
+  inStockContainer: {
+    marginTop: 8,
+    marginBottom: 5,
+  },
+  stockText: {
+    ...theme.viewStyles.text('M', 14, '#890000', 1, 18),
+    fontWeight: '500',
+  },
+  inStockText: {
+    ...theme.viewStyles.text('M', 14, '#00B38E', 1, 18),
+    fontWeight: '500',
+  },
+  activityIndicatorStyle: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    marginTop: 5,
+    marginLeft: 10,
   },
 });

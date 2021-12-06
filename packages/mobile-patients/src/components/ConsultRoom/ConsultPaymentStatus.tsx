@@ -86,10 +86,6 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AddedCirclePlanWithValidity } from '@aph/mobile-patients/src/components/ui/AddedCirclePlanWithValidity';
 import { paymentTransactionStatus_paymentTransactionStatus_appointment_amountBreakup } from '@aph/mobile-patients/src/graphql/types/paymentTransactionStatus';
-import {
-  updateAppointmentVariables,
-  updateAppointment,
-} from '@aph/mobile-patients/src/graphql/types/updateAppointment';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 import {
@@ -118,9 +114,11 @@ import {
 import { PAYMENT_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { saveConsultationLocation } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { RenderPdf } from '../ui/RenderPdf';
-
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
 export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props) => {
@@ -306,6 +304,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         fireOrderFailedEvent();
       }
       setStatus(txnStatus);
+      firePaymentOrderStatusEvent(txnStatus);
       setdisplayId(displayId);
       setShowSpinner?.(false);
     } catch (error) {
@@ -313,6 +312,31 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       CommonBugFender('fetchingTxnStutus', error);
       renderErrorPopup(string.common.tryAgainLater);
     }
+  };
+
+  const defaultClevertapEventParams = props.navigation.getParam('defaultClevertapEventParams');
+  const payload = props.navigation.getParam('payload');
+
+  const firePaymentOrderStatusEvent = (backEndStatus: string) => {
+    try {
+      const { mobileNumber, vertical, displayId, paymentId } = defaultClevertapEventParams;
+      const status =
+        props.navigation.getParam('paymentStatus') == 'success'
+          ? 'PAYMENT_SUCCESS'
+          : 'PAYMENT_PENDING';
+      const eventAttributes: CleverTapEvents[CleverTapEventName.PAYMENT_ORDER_STATUS] = {
+        'Phone Number': mobileNumber,
+        vertical: vertical,
+        'Vertical Internal Order Id': displayId,
+        'Payment Order Id': paymentId,
+        'Payment Method Type': payload?.payload?.action,
+        BackendPaymentStatus: backEndStatus,
+        JuspayResponseCode: payload?.errorCode,
+        Response: payload?.payload?.status,
+        Status: status,
+      };
+      postCleverTapEvent(CleverTapEventName.PAYMENT_ORDER_STATUS, eventAttributes);
+    } catch (error) {}
   };
 
   const PermissionsCheck = () => {
@@ -1173,16 +1197,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
               {locationDetails?.pincode ? `, ${locationDetails?.pincode}` : ''}
             </Text>
           </View>
-          <TouchableOpacity
-            onPress={() => {
-              fireLocationEvent.current = true;
-              userChangedLocation.current = true;
-              setlocationSearchList([]);
-              setShowLocationPopup(true);
-            }}
-          >
-            <Text style={styles.changeLocationBtnTxt}>CHANGE LOCATION</Text>
-          </TouchableOpacity>
+          
         </View>
       </View>
     );

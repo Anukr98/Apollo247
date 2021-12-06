@@ -25,7 +25,7 @@ import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEng
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { EventHandler, useEffect, useState } from 'react';
+import React, { EventHandler, useEffect, useState, useRef } from 'react';
 import {
   ActivityIndicator,
   SafeAreaView,
@@ -39,7 +39,6 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AddedToCartToast } from '@aph/mobile-patients/src/components/ui/AddedToCartToast';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -65,17 +64,24 @@ export interface Props
     title?: string; // mandatory if category_id passed
     sortBy?: SortByOption; // support for deep link
     filterBy?: SelectedFilters; // support for deep link
-    movedFrom?: 'registration' | 'deeplink' | 'home';
+    movedFrom?: 'registration' | 'deeplink' | 'home' | 'brandPages';
     breadCrumb?: Pick<Category, 'title' | 'category_id'>[];
     categoryName?: string;
-  }> {}
+    comingFromSearch?: boolean;
+    navSrcForSearchSuccess?: string;
+  }> {
+  comingFromBrandPage?: boolean | undefined;
+  currentBrandPageTab?: string;
+}
 
-export const MedicineListing: React.FC<Props> = ({ navigation }) => {
+// export const MedicineListing: React.FC<Props> = ({ navigation }) => {
+export const MedicineListing: React.FC<Props> = (props) => {
   interface bottomFilter {
     category_id: string;
     url_key: string;
     title: string;
   }
+  const navigation = props.navigation;
 
   // navigation props
   const searchText = navigation.getParam('searchText') || '';
@@ -87,8 +93,10 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const titleNavProp = navigation.getParam('title') || '';
   const breadCrumb = navigation.getParam('breadCrumb') || [];
   const categoryName = navigation.getParam('categoryName') || '';
+  const comingFromBrandPage = props?.comingFromBrandPage ? props?.comingFromBrandPage : false;
+  const currentBrandPageTab = props?.currentBrandPageTab || '';
 
-  const { pinCode } = useShoppingCart();
+  const { pinCode, axdcCode } = useShoppingCart();
 
   // states
   const [isLoading, setLoading] = useState(false);
@@ -112,42 +120,41 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const [bannerImage, setBannerImage] = React.useState<string>('');
   const onEndReachedCalledDuringMomentum = React.useRef(true);
 
-  const HEADER_MAX_HEIGHT = 140;
-  const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? 60 : 73;
-  const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
+  const scrollA = useRef(new Animated.Value(0)).current;
+  const bannerHeight = 140;
 
-  const scrollY = Animated.add(scroll, Platform.OS === 'ios' ? HEADER_MAX_HEIGHT : 0);
-
-  const headerTranslate = scrollY.interpolate({
-    inputRange: [0, HEADER_SCROLL_DISTANCE],
-    outputRange: [0, -HEADER_SCROLL_DISTANCE],
-    extrapolate: 'clamp',
-  });
-
-  const imageOpacity = scrollY.interpolate({
-    inputRange: [0, HEADER_SCROLL_DISTANCE / 2, HEADER_SCROLL_DISTANCE],
-    outputRange: [1, 1, 0],
-    extrapolate: 'clamp',
-  });
-
-  const imageTranslate = scrollY.interpolate({
-    inputRange: [0, HEADER_SCROLL_DISTANCE],
-    outputRange: [0, 100],
-    extrapolate: 'clamp',
-  });
+  // styles
+  const styles2 = {
+    bannerImageStyle: {
+      height: bannerImage?.length > 0 ? bannerHeight : 0,
+      transform: [
+        {
+          translateY: scrollA.interpolate({
+            inputRange: [-bannerHeight, 0, bannerHeight, bannerHeight + 1],
+            outputRange: [-bannerHeight / 2, 0, bannerHeight * 0.75, bannerHeight * 0.75],
+          }),
+        },
+        {
+          scale: scrollA.interpolate({
+            inputRange: [-bannerHeight, 0, bannerHeight, bannerHeight + 1],
+            outputRange: [2, 1, 0.5, 0.5],
+          }),
+        },
+      ],
+    },
+  };
 
   // global contexts
   const { currentPatient } = useAllCurrentPatients();
   const { showAphAlert } = useUIElements();
-  const { axdcCode } = useAppCommonData();
 
-  //styles
-  const styles2 = {
-    shimmer: { height: bannerImage?.length > 0 ? 140 : 0, width: '100%', objectFit: 'contain' },
-    animatedView: {
-      marginTop: bannerImage?.length > 0 ? 140 : 0,
-    },
-  };
+  useEffect(() => {
+    if (currentBrandPageTab) {
+      setCategoryId(navigation.getParam('category_id') || '');
+      setSortBy(null);
+      setFilterBy({});
+    }
+  }, [currentBrandPageTab]);
 
   useEffect(() => {
     if (categoryId && !searchText) {
@@ -164,7 +171,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     } else if (categoryName) {
       getCategoryIdByName(categoryName);
     }
-  }, [sortBy, filterBy]);
+  }, [sortBy, filterBy, categoryId, searchText, currentBrandPageTab]);
 
   useEffect(() => {
     const filterContent = filterOptions.filter(({ values }) => values?.length);
@@ -226,6 +233,23 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     }
   };
 
+  const formatSearchFilter = (selectedFilters: SelectedFilters) => {
+    const keys = Object.keys(selectedFilters);
+    const selectedFilter: any = {};
+    if (keys?.length) {
+      keys.forEach((key) => {
+        if (selectedFilters?.[key]?.length) {
+          if (key === 'price' || key === 'discount_percentage') {
+            selectedFilter[key] = { min: selectedFilters[key][0], max: selectedFilters[key][1] };
+          } else {
+            selectedFilter[key] = selectedFilters[key];
+          }
+        }
+      });
+    }
+    return selectedFilter;
+  };
+
   const searchProducts = async (
     searchText: string,
     pageId: number,
@@ -235,7 +259,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   ) => {
     try {
       updateLoading(pageId, true);
-      const _selectedFilters = formatFilters(selectedFilters, filters);
+      const _selectedFilters = formatSearchFilter(selectedFilters);
       const { data } = await searchMedicineApi(
         searchText,
         pageId,
@@ -284,8 +308,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     try {
       updateLoading(pageId, true);
       const _selectedFilters = formatFilters(selectedFilters, filters);
-      if (_selectedFilters.category != navigation.getParam('category_id'))
-        setBottomCategoryId(_selectedFilters?.category);
+      if (_selectedFilters.category != categoryId) setBottomCategoryId(_selectedFilters?.category);
       else {
         setFilterBy({});
       }
@@ -302,7 +325,9 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         data?.design[0]?.mobile_banner_image.endsWith('.png') ||
         data?.design[0]?.mobile_banner_image.endsWith('.jpeg')
       )
-        setBannerImage(data?.design[0]?.mobile_banner_image);
+        comingFromBrandPage
+          ? setBannerImage('')
+          : setBannerImage(data?.design[0]?.mobile_banner_image);
       updateProducts(pageId, existingProducts, data);
       setProductsTotal(data.count);
       updateLoading(pageId, false);
@@ -373,7 +398,19 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderHeader = () => {
-    return <MedicineListingHeader navigation={navigation} movedFrom={movedFrom} />;
+    let navSrcParamForSearchSuccess = '';
+    if ((categoryId || categoryName) && !searchText) {
+      navSrcParamForSearchSuccess = 'Category Listing';
+    } else if (searchText) {
+      navSrcParamForSearchSuccess = 'Search List';
+    }
+    return (
+      <MedicineListingHeader
+        navigation={navigation}
+        movedFrom={movedFrom}
+        navSrcForSearchSuccess={navSrcParamForSearchSuccess}
+      />
+    );
   };
 
   const renderSections = () => {
@@ -406,6 +443,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       setFilterVisible,
       setSortByVisible,
       showFilterOption,
+      comingFromBrandPage,
     };
     return <MedicineListingSections {...props} />;
   };
@@ -434,6 +472,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
           <>
             <MedicineListingProducts
               data={products}
+              totalProducts={productsTotal}
               ListFooterComponent={renderLoading()}
               ListEmptyComponent={renderProductsNotFound()}
               navigation={navigation}
@@ -500,13 +539,52 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       onClose();
       setFilterBy(appliedFilters);
     };
-    const filters = filterOptions.filter(({ values }) => values?.length);
+    const valuesToBeRemoved = [
+      'PHARMA',
+      'Non Dpco',
+      'PL',
+      'FMCG',
+      'SHOP BY BRAND',
+      'Banners',
+      'Apollo247',
+      'Apollo247v1',
+      'Special Offers',
+      'Banner 1',
+      'Banner 2',
+      'Banner 3',
+      'MOST VIEWED',
+    ];
+    const filters = filterOptions.filter(
+      ({ attribute }) => attribute !== 'color' && attribute !== '__categories'
+    );
+    const categoryFilter = filterOptions.filter(
+      ({ attribute, values }) =>
+        attribute === '__categories' &&
+        values?.length &&
+        values.map((ele) => valuesToBeRemoved.indexOf(ele.name) === -1)
+    );
+    let newFilters = [];
+    if (categoryFilter?.length) {
+      const categoryValues =
+        categoryFilter?.[0]?.values?.length &&
+        categoryFilter?.[0]?.values.filter(({ name }) => valuesToBeRemoved.indexOf(name) === -1);
+
+      const categoryObject = {
+        attribute: categoryFilter?.[0]?.attribute,
+        name: categoryFilter?.[0]?.name,
+        select_type: categoryFilter?.[0]?.select_type,
+        values: categoryValues,
+      };
+      newFilters = [...filters, categoryObject];
+    } else {
+      newFilters = [...filters];
+    }
 
     return (
       filterVisible && (
         <MedicineListingFilter
           isVisible={true}
-          filters={filters}
+          filters={newFilters}
           selectedFilters={filterBy}
           onClose={onClose}
           onApplyFilters={onApplyFilters}
@@ -584,22 +662,23 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   };
   return (
     <SafeAreaView style={container}>
-      {renderHeader()}
+      {comingFromBrandPage == false && renderHeader()}
       <View style={styles.fill}>
         <Animated.ScrollView
           style={{ ...styles.fill }}
-          scrollEventThrottle={1}
+          scrollEventThrottle={16}
           onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scroll } } }], {
             useNativeDriver: true,
           })}
-          contentInset={{
-            top: HEADER_MAX_HEIGHT,
-          }}
-          contentOffset={{
-            y: -HEADER_MAX_HEIGHT,
-          }}
         >
-          <View style={styles2.animatedView}>
+          <View>
+            <Animated.Image
+              style={styles2.bannerImageStyle}
+              source={{
+                uri: productsThumbnailUrl(bannerImage),
+              }}
+              resizeMode={'cover'}
+            />
             {renderSections()}
             {renderProducts()}
           </View>
@@ -609,32 +688,6 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         {renderFilterByOverlay()}
         {showAddedToCart && renderAddedToCart()}
         {renderFilterButtons()}
-        <Animated.View
-          pointerEvents="none"
-          style={[styles.header, { transform: [{ translateY: headerTranslate }] }]}
-        >
-          {isLoading ? (
-            <ShimmerPlaceholder
-              LinearGradient={LinearGradient}
-              shimmerStyle={styles2.shimmer}
-            ></ShimmerPlaceholder>
-          ) : (
-            <Animated.Image
-              style={[
-                styles.backgroundImage,
-                {
-                  opacity: imageOpacity,
-                  transform: [{ translateY: imageTranslate }],
-                  objectFit: 'cover',
-                },
-              ]}
-              source={{
-                uri: productsThumbnailUrl(bannerImage),
-              }}
-              resizeMode={'cover'}
-            />
-          )}
-        </Animated.View>
       </View>
     </SafeAreaView>
   );
