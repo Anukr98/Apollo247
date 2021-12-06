@@ -3319,7 +3319,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
     marginLeft: 20,
   },
-  nudgeMsgText: { ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 24) },
+  nudgeMsgText: { ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18 },
   goToCartView: { marginRight: 12, alignItems: 'flex-end' },
   certificateViewTitle: {
     color: colors.SHERPA_BLUE,
