@@ -15,16 +15,16 @@ export const WhatsappRedirectionStickyNote = () => {
     <View style={[styles.container, { top: 0.3 * windowHeight }]}>
       {isExpanded ? (
         <View>
-          <LinearGradientComponent
-            style={styles.linearGradientStyle}
-            colors={['#2782A1', '#0E6D88']}
+          <TouchableOpacity
+            onPress={() => {
+              Linking.openURL(
+                `https://api.whatsapp.com/send/?text=${message}&phone=91${phoneNumber}`
+              );
+            }}
           >
-            <TouchableOpacity
-              onPress={() => {
-                Linking.openURL(
-                  `https://api.whatsapp.com/send/?text=${message}&phone=91${phoneNumber}`
-                );
-              }}
+            <LinearGradientComponent
+              style={styles.linearGradientStyle}
+              colors={['#2782A1', '#0E6D88']}
             >
               <View style={styles.container}>
                 <View style={styles.whatsappContentContainer}>
@@ -46,8 +46,8 @@ export const WhatsappRedirectionStickyNote = () => {
                   </TouchableOpacity>
                 </View>
               </View>
-            </TouchableOpacity>
-          </LinearGradientComponent>
+            </LinearGradientComponent>
+          </TouchableOpacity>
         </View>
       ) : (
         <View style={[styles.closedViewStyle, { height: 46, width: 48 }]}>
