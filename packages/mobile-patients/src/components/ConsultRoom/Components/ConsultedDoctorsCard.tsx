@@ -48,8 +48,8 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
     (getPatientPastConsultedDoctors_getPatientPastConsultedDoctors | null)[]
   >([]);
   const [doctorsCache, setDoctorsCache] = useState<
-    getPatientPastConsultedDoctors_getPatientPastConsultedDoctors[] | null
-  >(null);
+    getPatientPastConsultedDoctors_getPatientPastConsultedDoctors[]
+  >([]);
   const { myDoctorsCount, setMyDoctorsCount } = useAppCommonData();
 
   useEffect(() => {
@@ -58,8 +58,7 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
 
   const getPastConsultedDoctors = async () => {
     const doc = (await appGlobalCache.get('pastDoctors')) || JSON.stringify({ value: [] });
-    setDoctorsCache(JSON.parse(doc)?.value);
-    console.log('csk val', doc);
+    setDoctorsCache(JSON.parse(doc));
     try {
       const res = await client.query<
         getPatientPastConsultedDoctors,
@@ -75,10 +74,10 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
         setDoctors(res?.data?.getPatientPastConsultedDoctors);
         appGlobalCache.set(
           'pastDoctors',
-          JSON.stringify(res?.data?.getPatientPastConsultedDoctors) || JSON.stringify({ value: [] })
+          JSON.stringify(res?.data?.getPatientPastConsultedDoctors) || JSON.stringify([])
         );
       }
-      setMyDoctorsCount && setMyDoctorsCount(res?.data?.getPatientPastConsultedDoctors.length);
+      setMyDoctorsCount && setMyDoctorsCount(res?.data?.getPatientPastConsultedDoctors?.length);
       setLoading(false);
     } catch (error) {
       CommonBugFender('getPastConsultedDoctors', error);
@@ -154,7 +153,6 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
           },
         });
   };
-
   return (
     <View>
       {doctorsCache === null ? (
