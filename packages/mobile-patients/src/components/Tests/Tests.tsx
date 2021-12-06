@@ -2993,9 +2993,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <View style={[styles.nudgeMsgHeight, { bottom: isCartAvailable ? GO_TO_CART_HEIGHT : 0 }]}>
         <CircleLogo style={styles.circleIcon} />
-        <Text style={styles.nudgeMsgText}>
-          {AppConfig.Configuration.DIAGNOSTICS_NUDGE_MESSAGE_TEXT}
-        </Text>
+        <View style={{ width: '80%' }}>
+          <Text style={styles.nudgeMsgText}>
+            {AppConfig.Configuration.DIAGNOSTICS_NUDGE_MESSAGE_TEXT}
+          </Text>
+        </View>
       </View>
     );
   };
@@ -3067,7 +3069,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           </View>
           <View style={{ flex: 1 }}>
             <ScrollView
-              scrollEventThrottle={16}
+              scrollEventThrottle={0}
               removeClippedSubviews={true}
               bounces={false}
               style={{
@@ -3466,7 +3468,8 @@ const styles = StyleSheet.create({
     width: winWidth,
   },
   nudgeMsgHeight: {
-    height: NON_CIRCLE_NUDGE_HEIGHT,
+    // height: NON_CIRCLE_NUDGE_HEIGHT,
+    flex: 1,
     backgroundColor: '#FFF6DE',
     flexDirection: 'row',
     width: '100%',
@@ -3480,7 +3483,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
     marginLeft: 20,
   },
-  nudgeMsgText: { ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 24) },
+  nudgeMsgText: { ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18) },
   goToCartView: { marginRight: 12, alignItems: 'flex-end' },
   certificateViewTitle: {
     color: colors.SHERPA_BLUE,

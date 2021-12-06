@@ -308,7 +308,7 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
     return (
       <>
         <View style={{ marginLeft: 16 }}>{renderScheduleHeading()}</View>
-        <View style={{ height: screenHeight + 20 }}>{renderSlotSelection()}</View>
+        <View style={{ height: screenHeight }}>{renderSlotSelection()}</View>
       </>
     );
   };
