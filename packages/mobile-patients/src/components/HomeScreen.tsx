@@ -1134,6 +1134,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   let circleActivated = props.navigation.getParam('circleActivated');
   const circleActivatedRef = useRef<boolean>(circleActivated);
   const [referAndEarnPrice, setReferAndEarnPrice] = useState('100');
+  const scrollCount = useRef<number>(0);
 
   //prohealth
   const [isProHealthActive, setProHealthActive] = useState<boolean>(false);
@@ -1929,7 +1930,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Home Screen');
         postHomeCleverTapEvent(CleverTapEventName.BUY_MEDICINES, 'Home Screen');
-        props.navigation.navigate('MEDICINES', { focusSearch: true });
+        props.navigation.navigate('MEDICINES', { focusSearch: true, comingFrom: '247 Home CTA' });
         const eventAttributes:
           | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
           | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
@@ -3202,7 +3203,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                       500
                     );
                     postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
-                    props.navigation.navigate('MEDICINES');
+                    props.navigation.navigate('MEDICINES', { comingFrom: '247 Home bottom bar' });
                   } else if (i == 3) {
                     const homeScreenAttributes = {
                       'Nav src': 'Bottom bar',
@@ -3603,7 +3604,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     return (
       <TouchableOpacity
         activeOpacity={1}
-        onPress={() => textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, index + 1)}
+        onPress={() => {
+          textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, index + 1);
+          postOfferCardClickEvent(item, String(index + 1), textForNotch == 'Offer Expired');
+        }}
       >
         <LinearGradientVerticalComponent
           colors={[
@@ -3735,6 +3739,32 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         </LinearGradientVerticalComponent>
       </TouchableOpacity>
     );
+  };
+
+  const postOfferCardClickEvent = (item: any, sequence: string, offerExpired: boolean) => {
+    const eventAttributes = {
+      User_Type: getUserType(allCurrentPatients),
+      'Patient Name': currentPatient?.firstName,
+      'Patient UHID': currentPatient?.uhid,
+      'Patient age': getAge(currentPatient?.dateOfBirth),
+      'Circle Member': circleSubscriptionId ? 'True' : 'False',
+      'Customer ID': currentPatient?.id,
+      'Patient gender': currentPatient?.gender,
+      'Mobile number': currentPatient?.mobileNumber,
+      'Page name': 'HomePage',
+      'Offer Content': item?.title?.text || '',
+      Timer: offerExpired ? 'No' : 'Yes',
+      'Coupon Code': item?.coupon_code,
+      'Offer tile sequence': sequence,
+      LOB: item?.cta?.path?.vertical || '',
+      'Offer Notch Test': getNotchText(item?.expired_at, item?.notch_text?.text),
+      'Offer CTA Text': item?.cta?.text,
+      'Offer Expiry': item?.expired_at,
+      'Offer ID': item?.offer_id,
+      'Offer Subtitle': item?.subtitle?.text,
+    };
+
+    postHomeCleverTapEvent(CleverTapEventName.OFFERS_CTA_CLICKED, 'Home Screen', eventAttributes);
   };
 
   const getNotchText = (expired_at: string, notch_text: string) => {
@@ -3894,18 +3924,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const onOfferCtaPressed = (item: any, index: number) => {
-    console.log('csk ', JSON.stringify(item));
-    let attributes = {
-      'Tile in the sequence': index,
-      'Coupon Code': item?.coupon_code,
-      'Offer Title': item?.title?.text,
-      'Offer Subtitle': item?.subtitle?.text,
-      'Offer Notch Test': getNotchText(item?.expired_at, item?.notch_text?.text),
-      'Offer CTA Text': item?.cta?.text,
-      'Offer Expiry': item?.expired_at,
-      'Offer ID': item?.offer_id,
-    };
-    postHomeCleverTapEvent(CleverTapEventName.OFFERS_CTA_CLICKED, 'Home Screen', attributes);
     let action = getRedirectActionForOffers(item?.cta?.path?.vertical?.toLowerCase());
     navigateCTAActions({ type: 'REDIRECT', cta_action: action }, '');
   };
@@ -5213,31 +5231,77 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     setSearchResults(newState);
   };
 
+  const postSearchInputEvent = (
+    status: 'Success' | 'Fail',
+    request: 'Pharma' | 'Diagnostic' | 'Consult',
+    input?: string
+  ) => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.HOMEPAGE_SEARCH_BAR_QUERY_INPUT] = {
+      User_Type: getUserType(allCurrentPatients),
+      'Patient Name': currentPatient?.firstName,
+      'Patient UHID': currentPatient?.uhid,
+      'Patient age': getAge(currentPatient?.dateOfBirth),
+      'Circle Member': circleSubscriptionId ? 'True' : 'False',
+      'Customer ID': currentPatient?.id,
+      'Mobile number': currentPatient?.mobileNumber,
+      'Page name': 'HomePage',
+      'Patient gender': currentPatient?.gender,
+      Keyword: input || '',
+      Status: status,
+      Vertical: request,
+    };
+    postCleverTapEvent(CleverTapEventName.HOMEPAGE_SEARCH_BAR_QUERY_INPUT, eventAttributes);
+  };
+
+  const postScrollScreenEvent = () => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.SCREEN_SCROLLED] = {
+      User_Type: getUserType(allCurrentPatients),
+      'Patient Name': currentPatient?.firstName,
+      'Patient UHID': currentPatient?.uhid,
+      'Patient age': getAge(currentPatient?.dateOfBirth),
+      'Circle Member': circleSubscriptionId ? 'True' : 'False',
+      'Customer ID': currentPatient?.id,
+      'Patient gender': currentPatient?.gender,
+      'Mobile number': currentPatient?.mobileNumber,
+      'Page name': 'HomePage',
+      'Nav src': '',
+      Scrolls: scrollCount.current,
+    };
+    postCleverTapEvent(CleverTapEventName.SCREEN_SCROLLED, eventAttributes);
+  };
+
   const onSearchExecute = async (_searchText: string) => {
     setSearchLoading(true);
     setSearchResults([]);
     onSearchTests(_searchText)
       .then(() => {
         Keyboard.dismiss();
+        postSearchInputEvent('Success', 'Diagnostic', _searchText);
       })
       .catch((e) => {
         Keyboard.dismiss();
+        postSearchInputEvent('Fail', 'Diagnostic', _searchText);
         CommonBugFender('HomeScreen_ConsultRoom_onSearchTests', e);
       });
 
     onSearchMedicines(_searchText, null, {}, [])
-      .then(() => {})
+      .then(() => {
+        postSearchInputEvent('Success', 'Pharma', _searchText);
+      })
       .catch((e) => {
         Keyboard.dismiss();
+        postSearchInputEvent('Fail', 'Pharma', _searchText);
         CommonBugFender('HomeScreen_ConsultRoom_onSearchMedicinesFunction', e);
       });
 
     onSearchConsults(_searchText)
       .then(() => {
         Keyboard.dismiss();
+        postSearchInputEvent('Success', 'Consult', _searchText);
       })
       .catch((e) => {
         Keyboard.dismiss();
+        postSearchInputEvent('Fail', 'Consult', _searchText);
         CommonBugFender('HomeScreen_ConsultRoom_onSearchConsultsFunction', e);
       });
 
@@ -5717,7 +5781,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         ) : isSearchFocus ? (
           renderSearchRecentandSuggest()
         ) : (
-          <ScrollView style={styles.scrollView} bounces={false}>
+          <ScrollView
+            style={styles.scrollView}
+            bounces={false}
+            scrollEventThrottle={0}
+            onScroll={() => {
+              scrollCount.current += 1;
+              postScrollScreenEvent();
+            }}
+          >
             <View style={{ width: '100%' }}>
               <View style={styles.viewName}>
                 {renderMenuOptions()}
