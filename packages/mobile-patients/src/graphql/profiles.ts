@@ -1766,6 +1766,9 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         visitNo
         invoiceURL
         labReportURL
+        couponDiscAmount
+        couponCode
+        paymentOrderId
         passportNo
         attributesObj{
           initialCollectionCharges
@@ -1785,6 +1788,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           groupPlan
           editOrderID
           isRemoved
+          couponDiscAmount
           itemObj {
             itemType
             testPreparationData
@@ -5198,6 +5202,19 @@ export const GET_INTERNAL_ORDER = gql`
           }
         }
       }
+      SubscriptionOrderDetails{
+        end_date
+        expires_in
+        order_id
+        sub_plan_id
+        payment_reference
+        group_plan{
+          name
+          price
+          valid_duration
+          plan_summary
+        }
+      }
       refunds {
         status
         unique_request_id
@@ -6666,6 +6683,26 @@ export const GET_CAMPAIGN_ID_FOR_REFERRER = gql`
   }
 `;
 
+export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS = gql `
+query getDiagnosticPackageRecommendations($itemId:Int!, $cityId: Int!){
+  getDiagnosticPackageRecommendations(itemId:$itemId, cityId:$cityId){
+    packageRecommendations{
+      itemId
+      itemName
+      inclusions
+      packageCalculatedMrp
+      diagnosticPricing{
+        mrp
+        price
+        groupPlan
+        status
+        startDate
+        endDate
+      }
+    }
+  }
+}
+`
 export const CANCELL_SUBSCRIPTION = gql`
   mutation CancelSubscription($CancelSubscriptionInput: CancelSubscriptionInput!) {
     CancelSubscription(CancelSubscriptionInput: $CancelSubscriptionInput) {

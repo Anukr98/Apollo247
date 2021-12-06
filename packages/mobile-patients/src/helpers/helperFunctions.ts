@@ -4174,6 +4174,35 @@ export const getFormattedDateTimeWithBefore = (time: string) => {
   return finalDateTime;
 };
 
+export const getPageId = (pageId: CALL_TO_ORDER_CTA_PAGE_ID) => {
+  let pageName = PAGE_ID_TYPE.HOME_PAGE
+  switch (pageId) {
+    case CALL_TO_ORDER_CTA_PAGE_ID.HOME:
+      pageName = PAGE_ID_TYPE.HOME_PAGE;
+      break;
+    case CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING:
+      pageName = PAGE_ID_TYPE.LISTING_PAGE;
+      break;
+    case CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS:
+      pageName = PAGE_ID_TYPE.MY_ORDERS;
+      break;
+    case CALL_TO_ORDER_CTA_PAGE_ID.TESTCART:
+      pageName = PAGE_ID_TYPE.CART_PAGE;
+      break;
+    case CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL:
+      pageName = PAGE_ID_TYPE.TEST_DETAIL_PAGE;
+      break;
+    case CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY:
+      pageName = PAGE_ID_TYPE.ORDER_SUMMARY;
+      break;
+
+    default:
+      pageName = PAGE_ID_TYPE.HOME_PAGE;
+      break;
+  }
+  return pageName;
+};
+
 export const checkIfPincodeIsServiceable = async (pincode: string) => {
   try {
     const response = await pinCodeServiceabilityApi247(pincode);

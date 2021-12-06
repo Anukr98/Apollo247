@@ -2669,3 +2669,18 @@ export const DoctorConsultIcon: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/doctorConsultIcon-1.webp')}
   />
 );
+export const OffersIconOrange: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/offersIcon.webp')}
+  />
+);
+
+export const OffersIconGreen: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/offersIconGreen.webp')}
+  />
+);

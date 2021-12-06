@@ -1234,6 +1234,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Free_Consult_Message',
       PROD: 'Free_Consult_Message',
     },
+    Diagnostics_Nudge_Message_Condition: {
+      QA: 'QA_Diagnostics_Show_Nudge_Message',
+      PROD: 'Diagnostics_Show_Nudge_Message',
+    },
+    Diagnostics_Nudge_Message_Text: {
+      QA: 'QA_Diagnostics_Nudge_Message_Text',
+      PROD: 'Diagnostics_Nudge_Message_Text',
+    },
+    Diagnostics_Widget_Title: {
+      QA: 'QA_Diagnostics_Widget_Title',
+      PROD: 'Diagnostics_Widget_Title',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1577,6 +1589,23 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) =>
           JSON.parse(config.getString(key) || 'null') ||
           AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS
+      );
+      setAppConfig(
+        'Diagnostics_Nudge_Message_Condition',
+        'DIAGNOSTICS_NUDGE_MESSAGE_CONDITION',
+        (key) =>
+          JSON.parse(config.getString(key) || 'null') ||
+          AppConfig.Configuration.DIAGNOSTICS_NUDGE_MESSAGE_CONDITION
+      );
+      setAppConfig('Diagnostics_Nudge_Message_Text', 'DIAGNOSTICS_NUDGE_MESSAGE_TEXT', (key) =>
+        config.getString(key)
+      );
+      setAppConfig(
+        'Diagnostics_Widget_Title',
+        'DIAGNOSITCS_WIDGET_TITLES',
+        (key) =>
+          JSON.parse(config.getString(key) || 'null') ||
+          AppConfig.Configuration.DIAGNOSITCS_WIDGET_TITLES
       );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
