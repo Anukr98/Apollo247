@@ -170,7 +170,8 @@
     "consult_via_visit": "Wish to consult with a doctor at hospital?",
     "selectSpeciality": "Select Speciality",
     "apollo247UniversalLink": "www.apollo247.com",
-    "apolloPharmacyUniversalLink": "www.apollopharmacy.in"
+    "apolloPharmacyUniversalLink": "www.apollopharmacy.in",
+    "stagingBlogUrl":"https://stagingpatients.apollo247.com/blog?user_from_device=true"
   },
   "diagnosticsLocation": {
     "savedAddressText": "Saved Addresses",
@@ -1291,27 +1292,53 @@
   "aboutApolloList": [
     {
       "title": "About Us",
-      "url": "https://www.apollo247.com/aboutUs?isMobile=true"
+      "url": "https://www.apollo247.com/aboutUs?isMobile=true&user_from_device=true"
     },
     {
       "title": "Contact Us",
-      "url": "https://www.apollo247.com/contact?isMobile=true"
+      "url": "https://www.apollo247.com/contact?isMobile=true&user_from_device=true"
     },
     {
       "title": "FAQs",
-      "url": "https://www.apollo247.com/faq?isMobile=true"
+      "url": "https://www.apollo247.com/faq?isMobile=true&user_from_device=true"
     },
     {
       "title": "Terms and Conditions",
-      "url": "https://www.apollo247.com/terms?isMobile=true"
+      "url": "https://www.apollo247.com/terms?isMobile=true&user_from_device=true"
     },
     {
       "title": "Returns Policy",
-      "url": "https://www.apollo247.com/returns?isMobile=true"
+      "url": "https://www.apollo247.com/returns?isMobile=true&user_from_device=true"
     },
     {
       "title": "Privacy Policy",
-      "url": "https://www.apollo247.com/privacy?isMobile=true"
+      "url": "https://www.apollo247.com/privacy?isMobile=true&user_from_device=true"
+    }
+  ],
+  "aboutApolloListForQA": [
+    {
+      "title": "About Us",
+      "url": "https://stagingpatients.apollo247.com/aboutUs?isMobile=true&user_from_device=true"
+    },
+    {
+      "title": "Contact Us",
+      "url": "https://stagingpatients.apollo247.com/contact?isMobile=true&user_from_device=true"
+    },
+    {
+      "title": "FAQs",
+      "url": "https://stagingpatients.apollo247.com/faq?isMobile=true&user_from_device=true"
+    },
+    {
+      "title": "Terms and Conditions",
+      "url": "https://stagingpatients.apollo247.com/terms?isMobile=true&user_from_device=true"
+    },
+    {
+      "title": "Returns Policy",
+      "url": "https://stagingpatients.apollo247.com/returns?isMobile=true&user_from_device=true"
+    },
+    {
+      "title": "Privacy Policy",
+      "url": "https://stagingpatients.apollo247.com/privacy?isMobile=true&user_from_device=true"
     }
   ],
   "truecaller": {

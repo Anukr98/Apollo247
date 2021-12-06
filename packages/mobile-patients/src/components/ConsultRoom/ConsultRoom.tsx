@@ -849,7 +849,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   >('' | 0);
   const [proActiveAppointments, setProHealthActiveAppointment] = useState([] as any);
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
-
+  const { APP_ENV } = AppConfig;
   const { refreeReward, setRefreeReward, setRewardId, setCampaignId } = useReferralProgram();
   const [isReferrerAvailable, setReferrerAvailable] = useState<boolean>(false);
   const {
@@ -3788,7 +3788,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     postVaccineWidgetEvents(CleverTapEventName.READ_BLOG_VIEWED, 'Blog Widget');
     postHomeWEGEvent(WebEngageEventName.READ_ARTICLES);
     try {
-      const openUrl = AppConfig.Configuration.BLOG_URL;
+      const openUrl =
+        APP_ENV === 'PROD' ? AppConfig.Configuration.BLOG_URL : string.common.stagingBlogUrl;
+
       props.navigation.navigate(AppRoutes.CovidScan, {
         covidUrl: openUrl,
       });

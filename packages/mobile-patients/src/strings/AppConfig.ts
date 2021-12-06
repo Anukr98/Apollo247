@@ -28,26 +28,26 @@ const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
     ? 'https://pmt.apollo247.com'
     : APP_ENV == AppEnv.QA
-    ? 'https://aph-staging-pmt.apollo247.com'
-    : APP_ENV == AppEnv.QA2
-    ? 'https://qapmt.apollo247.com'
-    : APP_ENV == AppEnv.QA3
-    ? 'https://qathreepmt.apollo247.com'
-    : APP_ENV == AppEnv.QA4
-    ? 'https://qa4pmt.apollo247.com'
-    : APP_ENV == AppEnv.QA5
-    ? 'https://qa5pmt.apollo247.com'
-    : APP_ENV == AppEnv.PERFORM
-    ? 'https://perfpmt.apollo247.com'
-    : APP_ENV == AppEnv.VAPT
-    ? 'https://stagingpmt.apollo247.com'
-    : APP_ENV == AppEnv.DEV
-    ? 'https://aph-dev-pmt.apollo247.com'
-    : APP_ENV == AppEnv.DEVReplica
-    ? 'https://devpmt.apollo247.com'
-    : APP_ENV == AppEnv.QA6
-    ? 'https://qa6pmt.apollo247.com '
-    : 'https://aph-staging-pmt.apollo247.com';
+      ? 'https://aph-staging-pmt.apollo247.com'
+      : APP_ENV == AppEnv.QA2
+        ? 'https://qapmt.apollo247.com'
+        : APP_ENV == AppEnv.QA3
+          ? 'https://qathreepmt.apollo247.com'
+          : APP_ENV == AppEnv.QA4
+            ? 'https://qa4pmt.apollo247.com'
+            : APP_ENV == AppEnv.QA5
+              ? 'https://qa5pmt.apollo247.com'
+              : APP_ENV == AppEnv.PERFORM
+                ? 'https://perfpmt.apollo247.com'
+                : APP_ENV == AppEnv.VAPT
+                  ? 'https://stagingpmt.apollo247.com'
+                  : APP_ENV == AppEnv.DEV
+                    ? 'https://aph-dev-pmt.apollo247.com'
+                    : APP_ENV == AppEnv.DEVReplica
+                      ? 'https://devpmt.apollo247.com'
+                      : APP_ENV == AppEnv.QA6
+                        ? 'https://qa6pmt.apollo247.com '
+                        : 'https://aph-staging-pmt.apollo247.com';
 
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
@@ -326,14 +326,14 @@ const appStaticVariables = {
     orderConfirmationHeader: 'FREE Consult booked for you',
     prescriptionOptionHeader: "I don't have a prescription",
   },
-  DIAGNOSTICS_NUDGE_MESSAGE_CONDITION: [{"Circle": true, "NonCircle": true}],
-  DIAGNOSTICS_NUDGE_MESSAGE_TEXT:"Extra 15% off for circle customers. TnC Apply",
-  DIAGNOSITCS_WIDGET_TITLES: 
-    {
-      "frequentlyBrought": string.diagnostics.frequentlyBrought,
-      "topBookedTests": string.diagnostics.topBookedTests,
-      "similarPackages": string.diagnostics.similarPackages
-    },
+  DIAGNOSTICS_NUDGE_MESSAGE_CONDITION: [{ "Circle": true, "NonCircle": true }],
+  DIAGNOSTICS_NUDGE_MESSAGE_TEXT: "Extra 15% off for circle customers. TnC Apply",
+  DIAGNOSITCS_WIDGET_TITLES:
+  {
+    "frequentlyBrought": string.diagnostics.frequentlyBrought,
+    "topBookedTests": string.diagnostics.topBookedTests,
+    "similarPackages": string.diagnostics.similarPackages
+  },
 };
 
 const DEV_top_specialties = [
@@ -1032,7 +1032,7 @@ const ConfigurationVAPT = {
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
   COVID_VACCINE_TRACKER_URL: 'https://www.apollo247.com/covid-vaccine-tracker',
-  BLOG_URL: 'https://www.apollo247.com/blog',
+  BLOG_URL: 'https://www.apollo247.com/blog?user_from_device=true',
   CIRCLE_CONSULT_URL: 'https://aph-staging-web-patients.apollo247.com/consult-landing?header=false',
   CIRLCE_PHARMA_URL: 'https://aph-staging-web-patients.apollo247.com/pharma-landing?header=false',
   CIRCLE_TEST_URL: 'https://aph-staging-web-patients.apollo247.com/test-landing?header=false',
@@ -1090,7 +1090,7 @@ const ConfigurationProd = {
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
   COVID_VACCINE_TRACKER_URL: 'https://www.apollo247.com/covid-vaccine-tracker',
-  BLOG_URL: 'https://www.apollo247.com/blog',
+  BLOG_URL: 'https://www.apollo247.com/blog?user_from_device=true',
   CIRCLE_CONSULT_URL: 'https://www.apollo247.com/consult-landing?header=false',
   CIRLCE_PHARMA_URL: 'https://www.apollo247.com/pharma-landing?header=false',
   CIRCLE_TEST_URL: 'https://www.apollo247.com/test-landing?header=false',
@@ -1232,22 +1232,22 @@ const Configuration =
   APP_ENV == AppEnv.PROD
     ? ConfigurationProd
     : APP_ENV == AppEnv.QA
-    ? ConfigurationQA
-    : APP_ENV == AppEnv.QA2
-    ? ConfigurationQA2
-    : APP_ENV == AppEnv.QA3
-    ? ConfigurationQA3
-    : APP_ENV == AppEnv.QA5
-    ? ConfigurationQA5
-    : APP_ENV == AppEnv.PERFORM
-    ? ConfigurationPERFORM
-    : APP_ENV == AppEnv.VAPT
-    ? ConfigurationVAPT
-    : APP_ENV == AppEnv.DEVReplica
-    ? ConfigurationDevReplica
-    : APP_ENV == AppEnv.QA6
-    ? ConfigurationQA6
-    : ConfigurationDev;
+      ? ConfigurationQA
+      : APP_ENV == AppEnv.QA2
+        ? ConfigurationQA2
+        : APP_ENV == AppEnv.QA3
+          ? ConfigurationQA3
+          : APP_ENV == AppEnv.QA5
+            ? ConfigurationQA5
+            : APP_ENV == AppEnv.PERFORM
+              ? ConfigurationPERFORM
+              : APP_ENV == AppEnv.VAPT
+                ? ConfigurationVAPT
+                : APP_ENV == AppEnv.DEVReplica
+                  ? ConfigurationDevReplica
+                  : APP_ENV == AppEnv.QA6
+                    ? ConfigurationQA6
+                    : ConfigurationDev;
 
 export const MedicineFeedBackData = {
   POOR: {
