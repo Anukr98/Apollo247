@@ -5438,12 +5438,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               <View style={styles.viewName}>
                 {renderMenuOptions()}
 
-                {!offersListLoading && offersList.length === 0 && myDoctorsCount === 0
+                {!offersListLoading && offersList.length === 0
                   ? null
                   : renderHeadings('Offers For You')}
                 {offersListCache.length === 0 && offersListLoading && renderOffersForYouShimmer()}
                 {(offersListCache.length > 0 || !offersListLoading) && renderOffersForYou()}
-                {!appointmentLoading && currentAppointments === '0'
+                {!appointmentLoading && currentAppointments === '0' && myDoctorsCount === 0
                   ? null
                   : renderHeadings('My Doctors')}
                 {!appointmentLoading && currentAppointments === '0'
