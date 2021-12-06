@@ -76,6 +76,8 @@ export const TestWidgetListing: React.FC<TestWidgetListingProps> = (props) => {
         onPressCross={() => {
           setSlideCallToOrder(true);
         }}
+        pageId={CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING}
+        sectionName={title}
       />
     ) : null;
   };
@@ -114,6 +116,7 @@ export const TestWidgetListing: React.FC<TestWidgetListingProps> = (props) => {
             onScroll={() => {
               setSlideCallToOrder(true);
             }}
+            scrollEventThrottle={16}
             keyExtractor={(_, index) => `${index}`}
             renderItem={({ item, index }) => renderItems(item, index)}
           />

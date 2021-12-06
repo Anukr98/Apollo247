@@ -22,7 +22,7 @@ export enum AppEnv {
   QA6 = 'QA6',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA3 as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -326,6 +326,14 @@ const appStaticVariables = {
     orderConfirmationHeader: 'FREE Consult booked for you',
     prescriptionOptionHeader: "I don't have a prescription",
   },
+  DIAGNOSTICS_NUDGE_MESSAGE_CONDITION: [{"Circle": true, "NonCircle": true}],
+  DIAGNOSTICS_NUDGE_MESSAGE_TEXT:"Extra 15% off for circle customers. TnC Apply",
+  DIAGNOSITCS_WIDGET_TITLES: 
+    {
+      "frequentlyBrought": string.diagnostics.frequentlyBrought,
+      "topBookedTests": string.diagnostics.topBookedTests,
+      "similarPackages": string.diagnostics.similarPackages
+    },
 };
 
 const DEV_top_specialties = [
@@ -477,7 +485,8 @@ const Apollo247Config = {
   prod: {
     UATTAT_CONFIG: ['https://tat.apollo247.com', tatTokenProd],
     DRUPAL_CONFIG: ['https://cms.apollo247.com/api', drupalAuthTokenProd],
-    SUBSCRIPTION_SERVICE_EMAIL: '',
+    SUBSCRIPTION_SERVICE_EMAIL:
+      'https://apollo-subscription-service.azurewebsites.net/api/TriggerSubscriptionInvoiceEmail?code=0jEf6bZpGJn5laCwqz4S24jePathD1ZDdP70c0kRavCbG79TF4rthQ==',
   },
 };
 

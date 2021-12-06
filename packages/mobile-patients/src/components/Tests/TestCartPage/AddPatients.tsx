@@ -150,7 +150,6 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   const [itemsSelected, setItemsSelected] = useState(patientCartItems);
   const [patientLimit, setPatientLimit] = useState<number>(0);
   const [limitMsg, setLimitMsg] = useState<string>('');
-  const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
   const [patientSelectionCount, setPatientSelectionCount] = useState<number>(0);
   const [showPatientDetailsOverlay, setShowPatientDetailsOverlay] = useState<boolean>(false);
   const [tempPatientSelected, setTempPatientSelected] = useState({} as any);
@@ -846,7 +845,8 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
         style={[
           styles.patientSelectTouch,
           {
-            backgroundColor: !!test?.isSelected && test?.isSelected ? '#F5FFFD' : colors.WHITE,
+            backgroundColor:
+              !!test?.isSelected && test?.isSelected ? colors.GREEN_BACKGROUND : colors.WHITE,
           },
         ]}
       >

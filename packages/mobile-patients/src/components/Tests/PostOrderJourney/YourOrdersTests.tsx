@@ -139,6 +139,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
     string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
   ];
+  const CANCEL_REASON_OPTIONS = [
+    string.diagnostics.reasonForCancel_TestOrder.needModifyOrder,
+    string.diagnostics.reasonForCancel_TestOrder.needModifyPatient,
+  ];
   const ALL = 'All';
 
   const {
@@ -504,7 +508,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       .catch((error) => {
         aphConsole.log({ error });
         // DIAGNOSTIC_CANCELLATION_ALLOWED_BEFORE_IN_HOURS
-        CommonBugFender('TestOrderDetails_callApiAndRefetchOrderDetails', error);
+        CommonBugFender('YourOrdersTests_callApiAndRefetchOrderDetails', error);
         handleGraphQlError(error);
         setLoading!(false);
         setSelectCancelReason('');
@@ -859,7 +863,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         setSelectCancelReason('');
         setCancelReasonComment('');
         setSelectRescheduleReason('');
-        CommonBugFender('TestOrderDetails_callApiAndRefetchOrderDetails', error);
+        CommonBugFender('YourOrdersTests_callApiAndRefetchOrderDetails', error);
         setLoading?.(false);
         if (
           error?.message?.indexOf('RESCHEDULE_COUNT_EXCEEDED') > 0 ||
@@ -1156,6 +1160,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPressCross={() => {
           setSlideCallToOrder(true);
         }}
+        pageId={CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS}
       />
     ) : null;
   };
@@ -1183,7 +1188,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                       height:
                         selectCancelReason === item &&
                         selectedOrderRescheduleCount! < 3 &&
-                        CANCEL_RESCHEDULE_OPTION.includes(selectCancelReason)
+                        (CANCEL_RESCHEDULE_OPTION.includes(selectCancelReason) ||
+                          CANCEL_REASON_OPTIONS.includes(selectCancelReason))
                           ? 100
                           : 40,
                       paddingTop: 10,
@@ -1210,6 +1216,44 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                       </Text>
                       <TouchableOpacity activeOpacity={1} onPress={() => _onPressRescheduleNow()}>
                         <Text style={styles.yellowText}>RESCHEDULE NOW</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : null}
+                  {selectCancelReason === item &&
+                  selectedOrderRescheduleCount! < 3 &&
+                  selectCancelReason ==
+                    string.diagnostics.reasonForCancel_TestOrder.needModifyPatient ? (
+                    <View style={{ marginTop: 10, marginBottom: 5 }}>
+                      <Text style={styles.wantToReschedule}>
+                        {string.diagnostics.needToAddPaitent}
+                      </Text>
+                      <TouchableOpacity
+                        activeOpacity={1}
+                        onPress={() => {
+                          _onPressEditPatient(selectedOrder!);
+                        }}
+                      >
+                        <Text style={styles.yellowText}>EDIT PATIENT</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : null}
+
+                  {selectCancelReason === item &&
+                  selectedOrderRescheduleCount! < 3 &&
+                  selectCancelReason ==
+                    string.diagnostics.reasonForCancel_TestOrder.needModifyOrder ? (
+                    <View style={{ marginTop: 10, marginBottom: 5 }}>
+                      <Text style={styles.wantToReschedule}>
+                        {string.diagnostics.needToAddOrder}
+                      </Text>
+                      <TouchableOpacity
+                        activeOpacity={1}
+                        onPress={() => {
+                          setShowCancelReasons(false);
+                          _onPressAddTest(selectedOrder!);
+                        }}
+                      >
+                        <Text style={styles.yellowText}>ADD TESTS</Text>
                       </TouchableOpacity>
                     </View>
                   ) : null}
@@ -1258,6 +1302,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         </View>
         <View style={styles.promoButtonContainer}>
           <TouchableOpacity
+            style={styles.proceedToCancelTouch}
             onPress={() => {
               _onPressProceedToCancel();
             }}
@@ -1829,6 +1874,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         bounces={false}
         data={orders}
         extraData={orderListData}
+        scrollEventThrottle={16}
         onScroll={() => {
           setSlideCallToOrder(true);
         }}
@@ -2357,4 +2403,10 @@ const styles = StyleSheet.create({
   alertIconStyle: { height: 27, width: 27, resizeMode: 'contain' },
   muhidSubheading: { ...theme.viewStyles.text('R', 12, colors.SHERPA_BLUE, 1, 18) },
   patientNameText: { ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18) },
+  proceedToCancelTouch: {
+    height: 40,
+    width: '37%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });

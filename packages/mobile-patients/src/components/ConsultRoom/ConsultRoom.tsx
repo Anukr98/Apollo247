@@ -4251,13 +4251,21 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
   const renderReferralBanner = () => {
     return (
-      <ReferralBanner
-        {...props}
-        redirectOnShareReferrer={() => {
-          beforeRedirectGetRewardIdAndCampaignId();
+      <View
+        style={{
+          backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+          paddingTop: 7,
+          paddingHorizontal: 5,
         }}
-        screenName={'Homepage'}
-      />
+      >
+        <ReferralBanner
+          {...props}
+          redirectOnShareReferrer={() => {
+            beforeRedirectGetRewardIdAndCampaignId();
+          }}
+          screenName={'Homepage'}
+        />
+      </View>
     );
   };
 

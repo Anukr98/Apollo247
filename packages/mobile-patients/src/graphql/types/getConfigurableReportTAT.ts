@@ -20,8 +20,8 @@ export interface getConfigurableReportTAT_getConfigurableReportTAT_itemLevelRepo
 export interface getConfigurableReportTAT_getConfigurableReportTAT {
   __typename: "getConfigurableReportTATResult";
   maxReportTAT: any;
-  preOrderReportTATMessage: string | null;
   reportTATMessage: string | null;
+  preOrderReportTATMessage: string | null;
   itemLevelReportTATs: (getConfigurableReportTAT_getConfigurableReportTAT_itemLevelReportTATs | null)[] | null;
 }
 

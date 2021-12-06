@@ -186,6 +186,12 @@ const styles = StyleSheet.create({
     width: '90%',
     margin: 10,
   },
+  diagnosticsCardBottom1: {
+    borderRadius: 10,
+    height: 190,
+    width: '40%',
+    margin: 10,
+  },
   homeBanner: {
     borderRadius: 5,
     borderColor: '#D3D3D3',
@@ -1121,6 +1127,26 @@ export const renderSpecialOffersPageShimmer = () => {
         <ShimmerPlaceHolder
           LinearGradient={LinearGradient}
           shimmerStyle={styles.specialOffersDealsShimmer}
+        />
+      </View>
+    </View>
+  );
+};
+
+export const renderDiagnosticWidgetTestShimmer = (showHeading: boolean) => {
+  return (
+    <View style={{ marginLeft: 16 }}>
+      {showHeading && renderDiagnosticWidgetHeadingShimmer()}
+      <View style={styles.rowStyle}>
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={styles.diagnosticsCardBottom1}
+        />
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={styles.diagnosticsCardBottom1}
         />
       </View>
     </View>

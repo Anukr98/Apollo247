@@ -1,6 +1,7 @@
 import moment from 'moment';
 import {
   g,
+  PAGE_ID_TYPE,
   postAppsFlyerEvent,
   postCleverTapEvent,
   postFirebaseEvent,
@@ -838,6 +839,30 @@ export function DiagnosticViewReportClicked(
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED, eventAttributes);
 }
 
+export function DiagnosticCallToOrderClicked(
+  page: PAGE_ID_TYPE,
+  currentPatient?: any,
+  sectionName?: string,
+  itemId?: string,
+  itemName?: string,
+  city?: string,
+  isDiagnosticCircleSubscription?: boolean | undefined
+) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
+  const eventAttributes:
+    | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_CALL_TO_ORDER_CLICKED] = {
+    ...getPatientAttributes,
+    'Mobile Number': currentPatient?.mobileNumber,
+    'Page': page,
+    'Section Name': sectionName,
+    'ItemId': itemId,
+    'ItemName': itemName,
+    'Patient City': city,
+    'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+  };
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_CALL_TO_ORDER_CLICKED, eventAttributes);
+}
+
 export function DiagnosticTrackPhleboClicked(
   orderId: string | number,
   source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary',
@@ -918,4 +943,27 @@ export function DiagnosticPrescriptionSubmitted(
     'Item Name': itemName,
   };
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PRESCRIPTION_SUBMITTED, eventAttributes);
+}
+
+export function DiagnosticHomePageClicked(
+  currentPatient: any,
+  userType: any,
+  navSrc: string,
+  circleMember: any,
+  deviceId: any
+) {
+  const eventAttributes = {
+    'Patient name': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+    'Patient UHID': currentPatient?.uhid,
+    Relation: currentPatient?.relation,
+    'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
+    'Patient gender': currentPatient?.gender,
+    'Mobile Number': currentPatient?.mobileNumber,
+    'Customer ID': currentPatient?.id,
+    User_Type: userType,
+    'Nav src': navSrc,
+    'Circle Member': circleMember,
+    'Device Id': deviceId,
+  };
+  postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);
 }

@@ -7,7 +7,7 @@ import {
   PharmaUserStatus,
   UploadPrescSource,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { CircleEventSource } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { CircleEventSource, PAGE_ID_TYPE } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { ShoppingCartItem } from '../components/ShoppingCartProvider';
 import { DIAGNOSTIC_SLOT_TYPE } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
@@ -210,6 +210,7 @@ export enum CleverTapEventName {
   DIAGNOSTIC_MY_ORDERS = 'Diagnostics - My Orders Viewed',
   DIAGNOSTIC_ORDER_SUMMARY_VIEWED = 'Diagnostic order summary viewed',
   DIAGNOSTIC_VIEW_REPORT_CLICKED = 'Diagnostic view reports',
+  DIAGNOSTIC_CALL_TO_ORDER_CLICKED = 'Diagnostic Call to Order clicked',
 
   DIAGNOSTIC_PATIENT_SELECTED = 'Diagnostic patient selected',
   DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE = 'Diagnostic address selected',
@@ -1615,6 +1616,15 @@ export interface CleverTapEvents {
     | 'Download Report PDF'
     | 'Share on Whatsapp'
     | 'Copy Link to PDF';
+    'Circle user'?: string;
+  };
+  [CleverTapEventName.DIAGNOSTIC_CALL_TO_ORDER_CLICKED]: {
+    'Mobile Number'?: string;
+    'Page'?: PAGE_ID_TYPE;
+    'Section Name'?: string;
+    'ItemId'?: string;
+    'ItemName'?: string;
+    'Patient City'?: string;
     'Circle user'?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_FEEDBACK_GIVEN]: {

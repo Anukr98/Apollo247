@@ -221,6 +221,7 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
     }
   };
 
+
   const keyExtractor = useCallback((item: any, index: number) => `${index}`, []);
   const renderOrder = (order: orderList, index: number) => {
     if (order?.diagnosticOrderLineItems?.length == 0) {
@@ -317,6 +318,7 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
         onPressViewReport={() => {}}
         phelboObject={order?.phleboDetailsObj}
         onPressRatingStar={(star) => {}}
+        onPressEditPatient={()=>{}}
         onPressCallOption={(name, number) => {}}
         style={[
           { marginHorizontal: 20 },
