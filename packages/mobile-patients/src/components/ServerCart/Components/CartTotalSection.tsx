@@ -19,6 +19,8 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
   const isDeliveryFree = serverCartAmount?.isDeliveryFree;
   const totalCashBack = serverCartAmount?.totalCashBack;
   const packagingCharges = serverCartAmount?.packagingCharges;
+  const isHealthCreditsAvailable = true;
+  // const isHealthCreditsAvailable = false;
 
   const renderCartTotal = () => {
     return cartTotal ? (
@@ -98,6 +100,33 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
       </View>
     ) : null;
 
+  const renderPayUsingHealthCredits = () => {
+    return isHealthCreditsAvailable ? (
+      <View style={styles.healthCreditsAvailableView}>
+        <Text style={styles.healthCreditsAvailableBoldTextStyle}>Now pay only ₹890</Text>
+        <Text style={styles.healthCreditsAvailableTextStyle}>
+          100 HC available in your account.{' '}
+          <Text style={styles.healthCreditsAvailableBoldTextStyle}>Avail at checkout!</Text>
+        </Text>
+      </View>
+    ) : null;
+  };
+
+  const renderTotalSavings = () => {
+    return estimatedAmount ? (
+      <View style={{ flexDirection: 'row' }}>
+        <View>
+          <Text style={styles.savingsText}>Total</Text>
+          <Text style={styles.savingsText}>Savings: </Text>
+        </View>
+        <View>
+          <Text style={styles.savingsAmount}>₹{estimatedAmount?.toFixed(2)}</Text>
+        </View>
+        <View style={styles.borderLine}></View>
+      </View>
+    ) : null;
+  };
+
   return (
     <View style={styles.card}>
       {renderCartTotal()}
@@ -108,6 +137,8 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
       {renderPackagingCharges()}
       {renderSeparator()}
       {renderToPay()}
+      {renderPayUsingHealthCredits()}
+      {renderTotalSavings()}
     </View>
   );
 };
@@ -153,4 +184,41 @@ const styles = StyleSheet.create({
   circleMessage: {
     ...theme.viewStyles.text('L', 12, '#02475B', 1, 17),
   },
+  healthCreditsAvailableView: {
+    backgroundColor: 'rgba(0, 135, 186, 0.1)',
+    paddingVertical: 10,
+    paddingHorizontal: 5,
+    marginVertical: 12,
+  },
+  healthCreditsAvailableTextStyle: {
+    ...theme.fonts.IBMPlexSansRegular(14),
+    // fontWeight: '600',
+    lineHeight: 18,
+    textAlign: 'center',
+    color: theme.colors.LIGHT_BLUE,
+  },
+  healthCreditsAvailableBoldTextStyle: {
+    ...theme.fonts.IBMPlexSansRegular(14),
+    fontWeight: '600',
+    lineHeight: 18,
+    textAlign: 'center',
+    color: theme.colors.LIGHT_BLUE,
+  },
+  savingsText: {
+    ...theme.fonts.IBMPlexSansRegular(11),
+    fontWeight: '500',
+    lineHeight: 16,
+    color: 'rgba(2, 71, 91, 0.5)',
+  },
+  savingsAmount: {
+    ...theme.fonts.IBMPlexSansRegular(16),
+    fontWeight: '600',
+    lineHeight: 21,
+    color: theme.colors.PACIFIC_BLUE,
+    textDecorationStyle: 'dashed',
+    textDecorationLine: 'underline',
+    textDecorationColor: theme.colors.PACIFIC_BLUE,
+    // textAlign: 'center',
+  },
+  borderLine: { borderRightWidth: 1, borderColor: theme.colors.LIGHT_BLUE, opacity: 0.5 },
 });
