@@ -111,6 +111,7 @@ import {
   getCleverTapCircleMemberValues,
   getAvailabilityForSearchSuccess,
   checkIfPincodeIsServiceable,
+  getAge,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { USER_AGENT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
@@ -356,6 +357,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const pharmacyPincode =
     asyncPincode?.pincode || pharmacyLocation?.pincode || locationDetails?.pincode;
   const [isFocused, setIsFocused] = useState<boolean>(false);
+  const scrollCount = useRef<number>(0);
+
   type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
   const postwebEngageCategoryClickedEvent = (
     categoryId: string,
@@ -1350,7 +1353,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         'IP ID': item?.ip_id,
         'IP section name': item?.ip_section_name,
       };
-      
+
       postWebEngageEvent(WebEngageEventName.PHARMACY_BANNER_CLICK, eventAttributes);
       postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_BANNER, cleverTapEventAttributes);
       if (item.category_id) {
@@ -2335,6 +2338,24 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const postScrollScreenEvent = () => {
+    const navSrc = props.navigation.getParam('comingFrom');
+    const eventAttributes: CleverTapEvents[CleverTapEventName.SCREEN_SCROLLED] = {
+      User_Type: getUserType(allCurrentPatients),
+      'Patient Name': currentPatient?.firstName,
+      'Patient UHID': currentPatient?.uhid,
+      'Patient age': getAge(currentPatient?.dateOfBirth),
+      'Circle Member': circleSubscriptionId ? 'True' : 'False',
+      'Customer ID': currentPatient?.id,
+      'Patient gender': currentPatient?.gender,
+      'Mobile number': currentPatient?.mobileNumber,
+      'Page name': 'medicine page',
+      'Nav src': navSrc || '',
+      Scrolls: scrollCount.current,
+    };
+    postCleverTapEvent(CleverTapEventName.SCREEN_SCROLLED, eventAttributes);
+  };
+
   const renderSections = () => {
     if (!data) {
       return null;
@@ -2392,7 +2413,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       });
 
     return (
-      <ScrollView removeClippedSubviews={true} bounces={false} style={styles.scrollViewStyle}>
+      <ScrollView
+        removeClippedSubviews={true}
+        bounces={false}
+        style={styles.scrollViewStyle}
+        scrollEventThrottle={0}
+        onScroll={() => {
+          scrollCount.current += 1;
+          postScrollScreenEvent();
+        }}
+      >
         <CategoryAndSpecialOffers
           containerStyle={styles.categoryAndSpecialOffers}
           onPressShopByCategory={() => setCategoryTreeVisible(true)}

@@ -61,12 +61,14 @@ import {
   storagePermissions,
   getUserType,
   getCleverTapCircleMemberValues,
+  getAge,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Dimensions,
@@ -172,7 +174,11 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { OrderCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/OrderCardCarousel';
 import { PrescriptionCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/PrescriptionCardCarousel';
 import { getUniqueId } from 'react-native-device-info';
-import { DiagnosticHomePageSource } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import {
+  DiagnosticHomePageSource,
+  CleverTapEvents,
+  CleverTapEventName,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 import DocumentPicker, { DocumentPickerResponse } from 'react-native-document-picker';
 import ImageResizer from 'react-native-image-resizer';
@@ -362,6 +368,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
     CALL_TO_ORDER_CTA_PAGE_ID.HOME
   );
+  const scrollCount = useRef<number>(0);
   const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
     if (item?.ctaCityId == cityId) {
       if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.HOME)) {
@@ -2823,6 +2830,24 @@ export const Tests: React.FC<TestsProps> = (props) => {
     ) : null;
   };
 
+  const postScrollScreenEvent = () => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.SCREEN_SCROLLED] = {
+      User_Type: getUserType(allCurrentPatients),
+      'Patient Name': currentPatient?.firstName,
+      'Patient UHID': currentPatient?.uhid,
+      'Patient age': getAge(currentPatient?.dateOfBirth),
+      'Circle Member': 'circleSubscriptionId' ? 'True' : 'False',
+      'Customer ID': currentPatient?.id,
+      'Patient gender': currentPatient?.gender,
+      'Mobile number': currentPatient?.mobileNumber,
+      'Page name': 'Diagnostic page',
+      'Nav src': homeScreenAttributes?.Source,
+      Scrolls: scrollCount.current,
+    };
+
+    postCleverTapEvent(CleverTapEventName.SCREEN_SCROLLED, eventAttributes);
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
@@ -2874,7 +2899,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             </View>
             <View style={{ flex: 1 }}>
               <ScrollView
-                scrollEventThrottle={16}
+                scrollEventThrottle={0}
                 removeClippedSubviews={true}
                 bounces={false}
                 style={{
@@ -2892,6 +2917,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 nestedScrollEnabled={true}
                 onScroll={() => {
                   setSlideCallToOrder(true);
+                  scrollCount.current += 1;
+                  postScrollScreenEvent();
                 }}
               >
                 {renderSections()}
@@ -3275,7 +3302,7 @@ const styles = StyleSheet.create({
   },
   nudgeMsgHeight: {
     // height: NON_CIRCLE_NUDGE_HEIGHT,
-    flex:1,
+    flex: 1,
     backgroundColor: '#FFF6DE',
     flexDirection: 'row',
     width: '100%',
