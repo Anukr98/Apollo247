@@ -398,6 +398,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                     phleboTrackLink: null,
                     allowCalling: null,
                     showPhleboDetails: null,
+                    phleboDetailsETAText: null,
+                    allowCallingETAText: null,
                     diagnosticPhlebotomists: {
                       id: null,
                       name: null,
@@ -422,6 +424,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   findOrder?.orderPhleboDetails?.phleboRating;
                 order.diagnosticOrderPhlebotomists.allowCalling = findOrder?.allowCalling;
                 order.diagnosticOrderPhlebotomists.showPhleboDetails = findOrder?.showPhleboDetails;
+                (order.diagnosticOrderPhlebotomists.phleboDetailsETAText =
+                  findOrder?.phleboDetailsETAText),
+                  (order.diagnosticOrderPhlebotomists.allowCallingETAText =
+                    findOrder?.allowCallingETAText);
               }
             });
             //ordersList => contains all results.

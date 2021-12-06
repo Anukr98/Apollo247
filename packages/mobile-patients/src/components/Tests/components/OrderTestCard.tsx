@@ -350,6 +350,9 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   };
 
   const showDetailOTPContainer = () => {
+    if (props.orderId == 7449 || props.orderId == '7449') {
+      console.log({ props });
+    }
     const phlObj = props?.phelboObject;
     const otpToShow = !!phlObj && phlObj?.phleboOTP;
     const phoneNumber = !!phlObj && phlObj?.diagnosticPhlebotomists?.mobile;
@@ -370,12 +373,16 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
      */
 
     /**
+     * -> if phleboDetails -> true :: phleboRelocated -> then change name -> figma 3.1
      * PICKUP_REQUESTED
-     * -> showPhleboDetails :: show phelbo 
-     * 
+     * -> showPhleboDetails :: show phelbo details and otp (normal view) -> figma 1.1
+     * -> phleboDetails -> false, masking -> false :: show apollo agent receive msg -> figma 1.2
+     * -> phleboDetails -> true , masking -> false :: you can call agent msg -> figma 1.3
+     * -> phleboDetails -> true , masking -> true :: call apollo agent using this msg  -> below normal design
      * PHLEBO_CHECKIN
-     * -> showPhleboDetails -> true
-     * -> makedCalling -> true
+     * -> showPhleboDetails -> true (BE)
+     * -> makedCalling -> true (BE)
+     * -> phleboDetails -> true , masking -> true :: no msg -> figma 2.1
      */
 
     const showDetailedInfo = !!slotime
@@ -386,6 +393,8 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     const isPhleboETAElapsed = !!phlObj && phlObj?.isPhleboETAElapsed;
     const phleboETAElapsedMessage = phlObj?.phleboETAElapsedMessage;
     const showPhleboDetails = !!phlObj ? phlObj?.showPhleboDetails : false;
+    const phleboDetailsETAText = !!phlObj && phlObj?.phleboDetailsETAText;
+    const allowCallingETAText = !!phlObj && phlObj?.allowCallingETAText;
 
     return (
       <>
