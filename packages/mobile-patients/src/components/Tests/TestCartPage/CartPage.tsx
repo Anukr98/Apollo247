@@ -360,6 +360,29 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     }
   }, [cartItems?.length, addressCityId]);
 
+  const recomData = recommedationData?.length > 2 ? recommedationData : alsoAddListData
+  useEffect(() => {
+    const isRecommendationShown = recommedationData?.length > 2;
+    if (cartItems?.length > 0 && recomData?.length > 0 && !loading) {
+      DiagnosticCartViewed(
+        currentPatient,
+        cartItems,
+        0,
+        0,
+        false,
+        '',
+        '',
+        0,
+        null,
+        '',
+        isDiagnosticCircleSubscription,
+        '',
+        isRecommendationShown,
+        recomData
+      );
+    }
+  }, [cartItems?.length, recomData?.length]);
+
   const getDiagnosticsAvailability = (
     cityIdForAddress: number,
     cartItems?: DiagnosticsCartItem[],
@@ -1511,6 +1534,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                 }}
                 onPressRemoveItemFromCart={(item) => {}}
                 data={dataToShow}
+                recommedationDataSource = {recommedationData?.length > 2 ? 'Recommendations' : 'You can also order'}
                 isCircleSubscribed={isDiagnosticCircleSubscription}
                 isServiceable={isServiceable}
                 isVertical={false}

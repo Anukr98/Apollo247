@@ -56,6 +56,7 @@ export interface ItemCardProps {
   isPriceAvailable?: boolean;
   onPressAddToCartFromCart?: (item: any, addedItems: any) => void;
   onPressRemoveItemFromCart?: (item: any) => void;
+  recommedationDataSource?: string
 }
 
 const ItemCard: React.FC<ItemCardProps> = (props) => {
@@ -79,6 +80,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     sourceScreen,
     onPressAddToCartFromCart,
     onPressRemoveItemFromCart,
+    recommedationDataSource
   } = props;
   const { currentPatient } = useAllCurrentPatients();
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
@@ -387,18 +389,28 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     const inclusions =
       !!item?.inclusionData && item.inclusionData.map((item: any) => Number(item?.incItemId));
 
+    const originalItemIds = data?.[0]?.diagnosticWidgetData
+      ? data?.[0]?.diagnosticWidgetData?.map((item: { itemId: any }) => {
+          return item?.itemId;
+        })
+      : Array.isArray(data)
+      ? data?.map((item) => {
+          return item.itemId;
+        })
+      : [];
     DiagnosticAddToCartEvent(
       item?.itemTitle || item?.itemName,
       `${item?.itemId}`,
       mrpToDisplay,
       discountToDisplay,
       source,
-      widgetType === string.diagnosticCategoryTitle.categoryGrid ||
+      recommedationDataSource ? recommedationDataSource : widgetType === string.diagnosticCategoryTitle.categoryGrid ||
         widgetType == string.diagnosticCategoryTitle.category
         ? 'Category page'
         : data?.diagnosticWidgetTitle,
       currentPatient,
-      isDiagnosticCircleSubscription
+      isDiagnosticCircleSubscription,
+      originalItemIds
     );
 
     const addedItems = {

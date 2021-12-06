@@ -1568,18 +1568,23 @@ export interface CleverTapEvents {
     'Circle user'?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_CART_VIEWED]: {
-    'Page source': string;
-    'Total items in cart': number;
-    'Cart Items': object[];
+    'Page source': string | undefined;
+    'Total items in cart': number | undefined;
+    'Cart Items': object[] | undefined;
     'Circle user': 'Yes' | 'No';
-    Pincode: string | number;
-    city: string;
+    Pincode: string | number | undefined;
+    city: string | undefined;
     UHID: string;
     'Prescription Needed'?: 'Yes' | 'No';
     'Net after discount'?: number; //item total
     'Delivery charge'?: number;
     'Coupon code used'?: string;
     'Coupon Discount'?: number;
+    'Total Discount'?: number;
+    'Item ids'?: object[];
+    'Item names'?: object[];
+    'Recommendation Shown'?: string,
+    'Recommendation Item ids'?: object[]
   };
   [CleverTapEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED]: {
     'Slot time': string;
@@ -1648,6 +1653,7 @@ export interface CleverTapEvents {
     | 'Prescription';
     Section?: string;
     'Circle user'?: string;
+    'Original Item ids'?: any;
   };
   [CleverTapEventName.DIAGNOSTIC_ORDER_PLACED]: {
     'Order id': string | number;
