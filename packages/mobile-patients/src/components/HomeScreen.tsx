@@ -5733,14 +5733,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                   ? null
                   : renderListView('Active Appointments', 'normal')}
                 <View>{renderAllConsultedDoctors()}</View>
-
+                {isReferrerAvailable && renderReferralBanner()}
                 {renderHeadings('Circle Membership and More')}
                 {isCircleMember === '' && circleDataLoading && renderCircleShimmer()}
                 <View>{isCircleMember === 'yes' && !circleDataLoading && renderCircle()}</View>
                 {isCircleMember === 'no' && renderCircleBuyNow()}
                 {showCirclePlans && renderCircleSubscriptionPlans()}
                 {showCircleActivationcr && renderCircleActivation()}
-                {isReferrerAvailable && renderReferralBanner()}
+
                 {bannerLoading && renderBannerShimmer()}
 
                 <View>{renderBannersCarousel()}</View>
