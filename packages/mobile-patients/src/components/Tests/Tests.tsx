@@ -610,36 +610,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     fetchUserType();
   }, []);
 
-  useEffect(() => {
-    // getting diagnosticUserType from asyncStorage
-    const fetchUserType = async () => {
-      try {
-        const diagnosticUserType = await AsyncStorage.getItem('diagnosticUserType');
-        if (diagnosticUserType == null) {
-          fetchOrders();
-        }
-      } catch (error) {
-        fetchOrders();
-      }
-    };
-    fetchUserType();
-  }, []);
-
-  useEffect(() => {
-    // getting diagnosticUserType from asyncStorage
-    const fetchUserType = async () => {
-      try {
-        const diagnosticUserType = await AsyncStorage.getItem('diagnosticUserType');
-        if (diagnosticUserType == null) {
-          fetchOrders();
-        }
-      } catch (error) {
-        fetchOrders();
-      }
-    };
-    fetchUserType();
-  }, []);
-
   const fetchOrders = async () => {
     //for checking whether user is new or repeat.
     try {
@@ -3319,7 +3289,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
     marginLeft: 20,
   },
-  nudgeMsgText: { ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18 },
+  nudgeMsgText: { ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18) },
   goToCartView: { marginRight: 12, alignItems: 'flex-end' },
   certificateViewTitle: {
     color: colors.SHERPA_BLUE,

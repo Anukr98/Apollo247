@@ -163,14 +163,6 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     fetchWidgetsPrices(widgetsData);
   }, [widgetsData?.diagnosticWidgetData?.[0]]);
 
-  useEffect(() => {
-    fetchWidgetsPrices(widgetsData);
-  }, [widgetsData?.diagnosticWidgetData?.[0]]);
-
-  useEffect(() => {
-    fetchWidgetsPrices(widgetsData);
-  }, [widgetsData?.diagnosticWidgetData?.[0]]);
-
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
       query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
