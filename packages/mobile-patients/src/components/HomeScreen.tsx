@@ -2306,6 +2306,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             source_identifier: circleData?.source_meta_data?.source_identifier,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
+          console.log('csk ren', circleData?.renewNow);
           setRenewNow(circleData?.renewNow ? 'yes' : 'no');
           setCirclePlanId && setCirclePlanId(circleData?.plan_id);
           setCircleStatus && setCircleStatus(circleData?.status);
@@ -4137,7 +4138,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             credits={healthCredits?.toString()}
             savings={circleSavings?.toString()}
           />
-        ) : expiry < 0 && circleStatus === 'active' && !renew ? (
+        ) : expiry > 0 && circleStatus === 'active' && !renew ? (
           <CircleTypeCard4
             onButtonPress={() => {
               onClickCircleBenefits('Not Expiring', string.Hdfc_values.MEMBERSHIP_DETAIL_CIRCLE);
