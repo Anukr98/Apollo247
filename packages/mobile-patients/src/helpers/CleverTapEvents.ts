@@ -1568,12 +1568,12 @@ export interface CleverTapEvents {
     'Circle user'?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_CART_VIEWED]: {
-    'Page source': string;
-    'Total items in cart': number;
-    'Cart Items': object[];
+    'Page source': string | undefined;
+    'Total items in cart': number | undefined;
+    'Cart Items': object[] | undefined;
     'Circle user': 'Yes' | 'No';
-    Pincode: string | number;
-    city: string;
+    Pincode: string | number | undefined;
+    city: string | undefined;
     UHID: string;
     'Prescription Needed'?: 'Yes' | 'No';
     'Net after discount'?: number; //item total

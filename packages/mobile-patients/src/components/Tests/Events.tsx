@@ -165,7 +165,6 @@ export function DiagnosticAddToCartEvent(
   if (section) {
     eventAttributes['Section name'] = section;
   }
-  console.log('eventAttributes :>> ', eventAttributes);
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
 
@@ -359,7 +358,7 @@ export function DiagnosticBannerClick(
   postCleverTapEvent(CleverTapEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED, eventAttributes);
 }
 
-export function DiagnosticCartViewed(
+export async function DiagnosticCartViewed(
   currentPatient?: any,
   cartItems?: DiagnosticsCartItem[],
   couponDiscount?: number | string,
@@ -392,7 +391,6 @@ export function DiagnosticCartViewed(
       return item?.itemId;
     }),
     'Net after discount': gTotal,
-    'Prescription Required?': prescReqd ? 'Yes' : 'No',
     'Cart Items': cartItems?.map(
       (item) =>
         (({
@@ -423,7 +421,7 @@ export function DiagnosticCartViewed(
   }
   if (!!couponCode && !!couponDiscount) {
     eventAttributes['Coupon code used'] = couponCode;
-    eventAttributes['Coupon Discount'] = couponDiscount;
+    eventAttributes['Coupon Discount'] = Number(couponDiscount);
   }
   // fireCircleBenifitAppliedEvent(currentPatient, validity, circleSubId, isCircle);
   fireCircleBenifitAppliedEvent(currentPatient, validity, circleSubId, isCircle);
