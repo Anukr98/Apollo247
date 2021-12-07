@@ -979,6 +979,30 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
+  topCardContentContainerSecondary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    marginTop: 'auto',
+  },
+  offersCardsContainer: {
+    width: width / 1.9,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    height: 165,
+    borderColor: '#D4D4D4',
+    borderWidth: 1,
+  },
+  offersCardNotch: {
+    marginBottom: 4,
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    top: 12,
+    left: 12,
+  },
 });
 
 type menuOptions = {
@@ -3504,14 +3528,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               return (
                 <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
                   <View style={styles.bottom2CardView}>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'flex-start',
-                        marginTop: 'auto',
-                      }}
-                    >
+                    <View style={styles.topCardContentContainerSecondary}>
                       {item.image}
                       <View style={styles.bottom2TextView}>
                         <Text
@@ -3633,31 +3650,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             offerDesignTemplate?.banner_bg_color?.primary_color,
             offerDesignTemplate?.banner_bg_color?.secondary_color,
           ]}
-          style={[
-            styles.bottom2CardView,
-            {
-              width: width / 1.9,
-              justifyContent: 'center',
-              alignItems: 'flex-start',
-              height: 165,
-              borderColor: '#D4D4D4',
-              borderWidth: 1,
-            },
-          ]}
+          style={[styles.bottom2CardView, styles.offersCardsContainer]}
         >
           {textForNotch.length > 1 ? (
             <View
-              style={{
-                marginBottom: 4,
-                borderRadius: 4,
-                backgroundColor: offerDesignTemplate?.left_notch?.bg_color,
-                paddingHorizontal: 8,
-                justifyContent: 'center',
-                alignItems: 'center',
-                position: 'absolute',
-                top: 12,
-                left: 12,
-              }}
+              style={[
+                styles.offersCardNotch,
+                {
+                  backgroundColor: offerDesignTemplate?.left_notch?.bg_color,
+                },
+              ]}
             >
               <Text
                 style={{
