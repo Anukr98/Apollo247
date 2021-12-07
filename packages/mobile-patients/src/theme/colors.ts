@@ -131,7 +131,8 @@ const Common = {
   DEEP_RED: deepRed,
   ORANGE: "#FF774B",
   LIGHT_ORANGE_YELLOW: "#FCA317",
-  PACIFIC_BLUE: '#00A0E3'
+  PACIFIC_BLUE: '#00A0E3',
+  SHADE_OF_GRAY: 'rgba(2, 71, 91, 0.5)',
 };
 
 const Header = {
