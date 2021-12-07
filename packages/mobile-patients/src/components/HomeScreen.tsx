@@ -951,6 +951,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FAFEFF',
   },
+  medCashbackContainer1: {
+    marginHorizontal: 12,
+    marginTop: 14,
+    borderRadius: 4,
+    paddingHorizontal: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  medCouponContainer: {
+    borderRadius: 4,
+    borderColor: '#A15D59',
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    backgroundColor: '#fff',
+    paddingVertical: 1,
+    paddingHorizontal: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  medBottomContainer: {
+    flexDirection: 'row',
+    marginVertical: 12,
+    marginLeft: 12,
+    marginRight: 9,
+    justifyContent: 'space-between',
+  },
 });
 
 type menuOptions = {
@@ -3825,15 +3851,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           >
             <View style={{ flexDirection: 'row', marginTop: -5, justifyContent: 'space-between' }}>
               <View
-                style={{
-                  marginHorizontal: 12,
-                  marginTop: 14,
-                  borderRadius: 4,
-                  backgroundColor: offerDesignTemplate?.left_notch?.bg_color,
-                  paddingHorizontal: 4,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
+                style={[
+                  styles.medCashbackContainer1,
+                  {
+                    backgroundColor: offerDesignTemplate?.left_notch?.bg_color,
+                  },
+                ]}
               >
                 <Text
                   style={{
@@ -3881,28 +3904,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                 : item?.subtitle?.text}
             </Text>
 
-            <View
-              style={{
-                flexDirection: 'row',
-                marginVertical: 12,
-                marginLeft: 12,
-                marginRight: 9,
-                justifyContent: 'space-between',
-              }}
-            >
-              <View
-                style={{
-                  borderRadius: 4,
-                  borderColor: '#A15D59',
-                  borderWidth: 1,
-                  borderStyle: 'dashed',
-                  backgroundColor: '#fff',
-                  paddingVertical: 1,
-                  paddingHorizontal: 8,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
+            <View style={styles.medBottomContainer}>
+              <View style={styles.medCouponContainer}>
                 <Text
                   style={{
                     ...theme.viewStyles.text('M', 12, offerDesignTemplate?.coupon_color, 1, 18),
