@@ -55,15 +55,17 @@ export const ServerCartItemsList: React.FC<ServerCartItemsListProps> = (props) =
   };
 
   const onPressDelete = (item: ShoppingCartItem) => {
-    setUserActionPayload?.({
-      medicineOrderCartLineItems: [
-        {
-          medicineSKU: item?.sku,
-          quantity: 0,
-        },
-      ],
-    });
-    postwebEngageProductRemovedEvent(item, currentPatient && currentPatient!.id);
+    if (!item?.freeProduct) {
+      setUserActionPayload?.({
+        medicineOrderCartLineItems: [
+          {
+            medicineSKU: item?.sku,
+            quantity: 0,
+          },
+        ],
+      });
+      postwebEngageProductRemovedEvent(item, currentPatient && currentPatient!.id);
+    }
   };
 
   const renderCartItems = () => {

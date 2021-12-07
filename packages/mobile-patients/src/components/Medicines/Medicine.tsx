@@ -2180,64 +2180,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     });
   };
 
-  // const onAddCartItem = (
-  //   item: MedicineProduct,
-  //   isComingFromSearch: boolean,
-  //   cleverTapSearchSuccessEventAttributes: object
-  // ) => {
-  //   const {
-  //     sku,
-  //     mou,
-  //     name,
-  //     price,
-  //     special_price,
-  //     is_prescription_required,
-  //     type_id,
-  //     thumbnail,
-  //     MaxOrderQty,
-  //     category_id,
-  //     url_key,
-  //     subcategory,
-  //   } = item;
-  //   setItemsLoading({ ...itemsLoading, [sku]: true });
-  //   addPharmaItemToCart(
-  //     {
-  //       id: sku,
-  //       mou,
-  //       name,
-  //       price: price,
-  //       specialPrice: special_price
-  //         ? typeof special_price == 'string'
-  //           ? Number(special_price)
-  //           : special_price
-  //         : undefined,
-  //       prescriptionRequired: is_prescription_required == '1',
-  //       isMedicine: getIsMedicine(type_id?.toLowerCase()) || '0',
-  //       quantity: Number(1),
-  //       thumbnail: thumbnail,
-  //       isInStock: true,
-  //       maxOrderQty: MaxOrderQty,
-  //       productType: type_id,
-  //       circleCashbackAmt: 0,
-  //       url_key,
-  //       subcategory,
-  //     },
-  //     asyncPincode?.pincode || pharmacyPincode!,
-  //     addItemToServerCart,
-  //     null,
-  //     props.navigation,
-  //     currentPatient,
-  //     !!isPharmacyLocationServiceable,
-  //     { source: 'Pharmacy Partial Search', categoryId: category_id },
-  //     JSON.stringify(cartItems),
-  //     () => setItemsLoading({ ...itemsLoading, [sku]: false }),
-  //     pharmacyCircleAttributes!,
-  //     () => {},
-  //     isComingFromSearch,
-  //     cleverTapSearchSuccessEventAttributes
-  //   );
-  // };
-
   const renderSearchSuggestionItemView = (
     data: ListRenderItemInfo<MedicineProduct | SearchSuggestion>
   ) => {
@@ -2322,15 +2264,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             Discount: discountPercentage,
           };
           onAddCartItem(item, comingFromSearch, cleverTapSearchSuccessEventAttributes);
-          setCurrentProductIdInCart(item.sku);
-          item.pack_form ? setItemPackForm(item.pack_form) : setItemPackForm('');
-          item.suggested_qty
-            ? setSuggestedQuantity(item.suggested_qty)
+          setCurrentProductIdInCart(item?.sku);
+          item?.pack_form ? setItemPackForm(item?.pack_form) : setItemPackForm('');
+          item?.suggested_qty
+            ? setSuggestedQuantity(item?.suggested_qty)
             : setSuggestedQuantity(null);
-          item.MaxOrderQty
-            ? setMaxOrderQty(item.MaxOrderQty)
-            : item.suggested_qty
-            ? setMaxOrderQty(+item.suggested_qty)
+          item?.MaxOrderQty
+            ? setMaxOrderQty(item?.MaxOrderQty)
+            : item?.suggested_qty
+            ? setMaxOrderQty(+item?.suggested_qty)
             : setMaxOrderQty(0);
           setCurrentProductQuantityInCart(1);
           setAddToCartSource?.({
@@ -2340,11 +2282,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           addItemToServerCart(item);
         }}
         onPressNotify={() => {
-          onNotifyMeClick(item.name);
+          onNotifyMeClick(item?.name);
         }}
         onPressAdd={() => {
-          const q = getItemQuantity(item.sku);
-          if (q == getMaxQtyForMedicineItem(item.MaxOrderQty)) return;
+          const q = getItemQuantity(item?.sku);
+          if (q == getMaxQtyForMedicineItem(item?.MaxOrderQty)) return;
           setCurrentProductQuantityInCart(q + 1);
           setUserActionPayload?.({
             medicineOrderCartLineItems: [
@@ -2356,7 +2298,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           });
         }}
         onPressSubstract={() => {
-          const q = getItemQuantity(item.sku);
+          const q = getItemQuantity(item?.sku);
           setCurrentProductQuantityInCart(q - 1);
           setUserActionPayload?.({
             medicineOrderCartLineItems: [
@@ -2367,9 +2309,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             ],
           });
         }}
-        quantity={getItemQuantity(item.sku)}
+        quantity={getItemQuantity(item?.sku)}
         data={item}
-        loading={itemsLoading[item.sku]}
+        loading={itemsLoading[item?.sku]}
         showSeparator={index !== medicineList?.length - 1}
         style={{
           marginHorizontal: 20,

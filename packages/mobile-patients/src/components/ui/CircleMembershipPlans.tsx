@@ -155,6 +155,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     defaultCirclePlan,
     selectDefaultPlan,
     cartTotalCashback,
+    serverCartAmount,
     setIsCircleSubscription,
     setCircleMembershipCharges,
     setAutoCirlcePlanAdded,
@@ -165,6 +166,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     cartItems,
     circlePlanValidity,
   } = useShoppingCart();
+  const totalCashBack = serverCartAmount?.totalCashBack?.toFixed(2) || cartTotalCashback || 0;
   const { setUserActionPayload } = useServerCart();
   const {
     setIsDiagnosticCircleSubscription,
@@ -770,15 +772,15 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
             {string.circlePharmacy.instantCashback}
           </Text>
           <Text
-            style={theme.viewStyles.text('R', 13, '#02475B')}
-          >{` of ₹${cartTotalCashback} on this order`}</Text>
+            style={theme.viewStyles.text('R', 13, '#02475B', 1, 20)}
+          >{` of ₹${totalCashBack} on this order`}</Text>
         </View>
         <View style={{ flexDirection: 'row' }}>
           <BlueTick style={styles.blueTickIcon} />
           <Text style={theme.viewStyles.text('SB', 13, '#02475B')}>
             {string.circlePharmacy.freeDelivery}
           </Text>
-          <Text style={theme.viewStyles.text('R', 13, '#02475B')}>{` on every order`}</Text>
+          <Text style={theme.viewStyles.text('R', 13, '#02475B', 1, 20)}>{` on every order`}</Text>
         </View>
       </View>
     );

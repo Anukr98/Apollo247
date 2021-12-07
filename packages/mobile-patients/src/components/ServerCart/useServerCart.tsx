@@ -104,9 +104,9 @@ export const useServerCart = () => {
         }
         if (saveCartResponse?.data?.patientId) {
           const cartResponse = saveCartResponse?.data;
-          if (addToCartSource?.source) {
-            fireAddToCartEvent(cartResponse);
-          }
+          // if (addToCartSource?.source) {
+          //   fireAddToCartEvent(cartResponse);
+          // }
           setCartValues(cartResponse);
         }
       })

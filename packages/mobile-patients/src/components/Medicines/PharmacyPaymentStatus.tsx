@@ -19,6 +19,7 @@ import {
   UPDATE_MEDICINE_ORDER_SUBSTITUTION,
   GET_CAMPAIGN_ID_FOR_REFERRER,
   GET_REWARD_ID,
+  CREATE_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   apiCallEnums,
@@ -73,6 +74,7 @@ import { OrderPlacedPopUp } from '@aph/mobile-patients/src/components/ui/OrderPl
 import {
   MEDICINE_ORDER_PAYMENT_TYPE,
   MEDICINE_ORDER_STATUS,
+  one_apollo_store_code,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   AppsFlyerEventName,
@@ -513,32 +515,41 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     });
   };
 
+  const createJusPayOrder = (transactionId: number) => {
+    const orderInput = {
+      payment_order_id: transactionId,
+      health_credits_used: 0,
+      cash_to_collect: price,
+      prepaid_amount: 0,
+      store_code:
+        Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS,
+      is_mobile_sdk: true,
+      return_url: AppConfig.Configuration.baseUrl,
+    };
+    return client.mutate({
+      mutation: CREATE_ORDER,
+      variables: { order_input: orderInput },
+      fetchPolicy: 'no-cache',
+    });
+  };
+
   const placeOrder = async (
     orders: (saveMedicineOrderV2_saveMedicineOrderV2_orders | null)[],
     transactionId: number
   ) => {
-    const paymentInfo: saveMedicineOrderPaymentMqV2Variables = {
-      medicinePaymentMqInput: {
-        transactionId: transactionId,
-        amountPaid: getFormattedAmount(price),
-        paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,
-        paymentStatus: 'success',
-        responseCode: '',
-        responseMessage: '',
-      },
-    };
     try {
-      const response = await savePaymentV2(paymentInfo);
+      const response = await createJusPayOrder(transactionId);
       const { data } = response;
-      const { errorCode, errorMessage } = data?.saveMedicineOrderPaymentMqV2 || {};
-      if (errorCode || errorMessage) {
-        errorPopUp();
-      } else {
+      const status =
+        data?.createOrderV2?.payment_status || data?.updateOrderDetails?.payment_status;
+      if (status === 'TXN_SUCCESS') {
         fireCleverTapOrderSuccessEvent();
         orders?.forEach((order) => {
           handleOrderSuccess(`${order?.orderAutoId}`, order?.id!);
         });
         clearCartInfo?.();
+      } else {
+        errorPopUp();
       }
     } catch (error) {
       CommonBugFender('PaymentStatusScreen_savePayment', error);
