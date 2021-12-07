@@ -2,7 +2,7 @@ import { BlueCross, WhiteCall } from '@aph/mobile-patients/src/components/ui/Ico
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,  } from 'react';
 import { Dimensions, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { DiagnosticCallToOrderClicked } from '@aph/mobile-patients/src/components/Tests/Events';
@@ -44,21 +44,19 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
   let ctaText = string.CallToOrder.callToOrderText;
-  const ctaDetailMatched = isDiagnosticLocationServiceable
-    ? ctaDetailArray?.filter((item: any) => {
-        if (item?.ctaCityId == cityId) {
-          return item;
-        } else {
-          [callToOrderDetails?.ctaDetailsDefault];
-        }
-      })
-    : [callToOrderDetails?.ctaDetailsDefault];
+  const ctaDetailMatched = isDiagnosticLocationServiceable ? ctaDetailArray?.filter((item: any) => {
+      if (item?.ctaCityId == cityId) {
+        return item;
+      } else {
+        [callToOrderDetails?.ctaDetailsDefault]
+      }
+  }) : [callToOrderDetails?.ctaDetailsDefault];
   const phoneNumber = ctaDetailMatched?.[0]?.ctaPhoneNumber
     ? ctaDetailMatched?.[0]?.ctaPhoneNumber
     : callToOrderDetails?.ctaDetailsDefault?.ctaPhoneNumber;
   ctaText = ctaDetailMatched?.[0]?.ctaText
-    ? ctaDetailMatched?.[0]?.ctaText
-    : callToOrderDetails?.ctaDetailsDefault?.ctaText;
+  ? ctaDetailMatched?.[0]?.ctaText
+  : callToOrderDetails?.ctaDetailsDefault?.ctaText;
   const onPressCallToOrderCta = () => {
     postCleverTapEvent();
     Linking.openURL(`tel:${phoneNumber}`);
@@ -183,7 +181,7 @@ const styles = StyleSheet.create({
   },
   whiteCallView: {
     width: '10%',
-    padding: 10,
+    padding: 10
   },
   blueCrossView: { marginLeft: -10, marginTop: -10 },
   blueCrossIcon: { width: 20, height: 20 },

@@ -242,7 +242,46 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [packageRecommendationsShimmer, setPackageRecommendationsShimmer] = useState<boolean>(
     false
   );
-  const getCTADetails = showDiagnosticCTA(CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL, cityIdToUse);
+  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
+  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
+  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
+    CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL
+  );
+  const checkForCtaCityAvailabilty = () => {
+    for (let index = 0; index < ctaDetailArray.length; index++) {
+      const element = ctaDetailArray[index];
+      if (Number(element?.ctaCityId) == cityIdToUse) {
+        return element;
+      } else {
+        return null;
+      }
+    }
+  };
+  const checkItemIdForCta = () => {
+    let newArray = [];
+    for (let index = 0; index < ctaDetailArray.length; index++) {
+      const element = ctaDetailArray[index];
+      if (
+        Number(element?.ctaCityId) == cityIdToUse &&
+        element?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL) &&
+        element?.ctaItemIds?.length > 0 &&
+        element?.ctaItemIds?.includes(Number(itemId))
+      ) {
+        newArray.push(element);
+        return newArray;
+      } else {
+        return null;
+      }
+    }
+  };
+
+  const ctaDetailMatched = checkForCtaCityAvailabilty()
+    ? checkItemIdForCta()
+    : isCtaDetailDefault &&
+      callToOrderDetails?.ctaDetailsDefault?.ctaItemIds?.length > 0 &&
+      callToOrderDetails?.ctaDetailsDefault?.ctaItemIds?.includes(Number(itemId))
+    ? [callToOrderDetails?.ctaDetailsDefault]
+    : [];
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   const itemName =
@@ -1582,7 +1621,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     );
   };
   const renderCallToOrder = () => {
-    return getCTADetails?.length ? (
+    return ctaDetailMatched?.length ? (
       <CallToOrderView
         cityId={cityIdToUse}
         customMargin={90}
