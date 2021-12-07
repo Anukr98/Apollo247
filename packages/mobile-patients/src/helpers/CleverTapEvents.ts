@@ -169,6 +169,7 @@ export enum CleverTapEventName {
   PHARMACY_SPECIAL_OFFERS_CLICKED = 'Special Offers Clicked',
   PHARMACY_CHRONIC_UPSELL_NUDGE = 'Chronic Upsell Nudge',
   PHARMACY_SEARCH_SUCCESS = 'Pharmacy Search Success',
+  PHARMACY_CART_REVIEW_ORDER_PAGE_VIEWED = 'Pharmacy Cart Review Order Page Viewed',
 
   // Help Section Events
   BACK_NAV_ON_NEED_HELP_CLICKED = 'Back Nav On Need Help Clicked',
@@ -1513,6 +1514,21 @@ export interface CleverTapEvents {
     'SKU ID'?: string;
     'Product name'?: string;
     Discount?: string;
+  };
+
+  [CleverTapEventName.PHARMACY_CART_REVIEW_ORDER_PAGE_VIEWED]: {
+    Pincode: string;
+    'TAT_1_Hour': string;
+    'TAT_1_Day': number;
+    'TAT_2_Hour'?: string;
+    'TAT_2_Day'?: number;
+    'Shipping_Charges': number;
+    'Amount_To_Pay': number;
+    'Prescription_Required': YesOrNo;
+    'Prescription_Option_Selected'?: string;
+    'Coupon_Applied': string;
+    'Circle_Member': YesOrNo;
+    'Circle_Membership_Value'?: number;
   };
 
   // ********** Diagnostic Events *******
