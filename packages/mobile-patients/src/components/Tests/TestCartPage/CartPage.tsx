@@ -158,9 +158,15 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     addCartItem,
     newAddressAddedCartPage,
     setNewAddressAddedCartPage,
+    couponDiscount,
+    grandTotal,
+    uploadPrescriptionRequired,
+    coupon,
+    hcCharges,
+    diagnosticSlot
   } = useDiagnosticsCart();
 
-  const { setAddresses: setMedAddresses, circleSubscriptionId } = useShoppingCart();
+  const { setAddresses: setMedAddresses,circlePlanValidity, circleSubscriptionId } = useShoppingCart();
 
   const {
     locationDetails,
@@ -252,7 +258,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     newAddressAddedCartPage != '' && setNewAddressAddedCartPage?.('');
   }
 
-  function triggerCartPageViewed() {
+  function triggerCartPageViewed(isRecommendationShown : boolean,recomData: any) {
     const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
     const pinCodeFromAddress = addressToUse?.zipcode!;
     const cityFromAddress = addressToUse?.city;
@@ -260,10 +266,19 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       'cart page',
       currentPatient,
       cartItems,
+      couponDiscount,
+      grandTotal,
+      uploadPrescriptionRequired,
+      diagnosticSlot,
+      coupon,
+      hcCharges,circlePlanValidity,
+      circleSubscriptionId,
       isDiagnosticCircleSubscription,
       pinCodeFromAddress,
       cityFromAddress,
-      false
+      '',
+      isRecommendationShown,
+      recomData
     );
   }
 
@@ -364,22 +379,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   useEffect(() => {
     const isRecommendationShown = recommedationData?.length > 2;
     if (cartItems?.length > 0 && recomData?.length > 0 && !loading) {
-      DiagnosticCartViewed(
-        currentPatient,
-        cartItems,
-        0,
-        0,
-        false,
-        '',
-        '',
-        0,
-        null,
-        '',
-        isDiagnosticCircleSubscription,
-        '',
-        isRecommendationShown,
-        recomData
-      );
+      triggerCartPageViewed(isRecommendationShown, recomData);
     }
   }, [cartItems?.length, recomData?.length]);
 

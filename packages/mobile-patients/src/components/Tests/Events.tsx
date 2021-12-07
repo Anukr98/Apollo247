@@ -359,6 +359,7 @@ export function DiagnosticBannerClick(
 }
 
 export async function DiagnosticCartViewed(
+  source?: string,
   currentPatient?: any,
   cartItems?: DiagnosticsCartItem[],
   couponDiscount?: number | string,
@@ -371,7 +372,6 @@ export async function DiagnosticCartViewed(
   circleSubId?: string,
   isCircle?: boolean,
   pincode?: string | number,
-  source?: string,
   city?: string,
   couponCode?: string,
   isRecommendationShown?: boolean,
