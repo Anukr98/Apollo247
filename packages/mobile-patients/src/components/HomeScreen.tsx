@@ -31,16 +31,9 @@ import {
   DashedLine,
   Diabetes,
   DoctorIcon,
-  DropdownGreen,
-  FemaleCircleIcon,
-  FemaleIcon,
   KavachIcon,
   HealthyLife,
   LatestArticle,
-  LinkedUhidIcon,
-  MaleCircleIcon,
-  MaleIcon,
-  MedicineCartIcon,
   MedicineIcon,
   MyHealth,
   NotificationIcon,
@@ -70,7 +63,6 @@ import {
   WalletHomeHC,
   DropDownProfile,
   CallIcon,
-  ArrowRight,
   HospitalVisit,
   VideoConsult,
 } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -117,8 +109,6 @@ import {
   MedFilter,
   MedicineProduct,
   searchMedicineApi,
-  searchProceduresAndSymptoms,
-  ProceduresAndSymptomsParams,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
@@ -237,10 +227,8 @@ import { Overlay } from 'react-native-elements';
 import { HdfcConnectPopup } from '@aph/mobile-patients/src/components/SubscriptionMembership/HdfcConnectPopup';
 import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 import {
-  renderCovidVaccinationShimmer,
   renderCircleShimmer,
   renderBannerShimmer,
-  CovidButtonShimmer,
   renderGlobalSearchShimmer,
   renderOffersForYouShimmer,
   renderAppointmentCountShimmer,
@@ -256,7 +244,6 @@ import {
   HomeScreenAttributes,
   PatientInfo as PatientInfoObj,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
-import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import { getUniqueId } from 'react-native-device-info';
 import _ from 'lodash';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -1191,11 +1178,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
   //cache and storage
 
-  const [recentSearches, setRecentSearches] = useState<string[]>([
-    'Some recent search',
-    'cbc',
-    'covid',
-  ]);
+  // will be used in phase 2
   const [suggestSearches, setSuggestSearches] = useState<string[]>([
     'Some suggest search',
     'covid',
@@ -1266,7 +1249,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
     const count = cacheDataStringBuffer?.appointmentCount.value || '0';
     setAppointmentCountCache(count);
-    console.log('csk', count);
 
     const isCircleMembers = (await AsyncStorage.getItem('isCircleMember')) || '';
     setIsCircleMember(isCircleMembers);
@@ -2473,7 +2455,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             source_identifier: circleData?.source_meta_data?.source_identifier,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
-          console.log('csk ren', circleData?.renewNow);
           setRenewNow(circleData?.renewNow ? 'yes' : 'no');
           setCirclePlanId && setCirclePlanId(circleData?.plan_id);
           setCircleStatus && setCircleStatus(circleData?.status);
@@ -5676,7 +5657,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const renderSearchItemDetails = (item: any, index: number, key: string) => {
-    if (index === 0) console.log('csk data', JSON.stringify(item));
     const nav_props =
       key === MedicalRecordType.TEST_REPORT
         ? {
