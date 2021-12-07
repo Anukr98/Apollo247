@@ -242,6 +242,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [packageRecommendationsShimmer, setPackageRecommendationsShimmer] = useState<boolean>(
     false
   );
+  const originalItemIds = !!packageRecommendations?.length || !!frequentlyBroughtRecommendations?.length ? [itemId!] : null;
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
   const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
@@ -827,7 +828,13 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         currentPatient,
         testInfo?.Rate || testDetails?.Rate,
         pharmacyCircleAttributes,
-        isDiagnosticCircleSubscription
+        isDiagnosticCircleSubscription,
+        originalItemIds,
+        originalItemIds
+        ? packageRecommendations > 2
+          ? 'Recommendations'
+          : 'You can also order'
+        : '',
       );
     }
   }, [testInfo]);
@@ -1544,15 +1551,20 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     const planToConsider = testInfo?.planToConsider;
     const discountToDisplay = testInfo?.discountToDisplay;
     const mrpToDisplay = testInfo?.mrpToDisplay;
-
     DiagnosticAddToCartEvent(
       cmsTestDetails?.diagnosticItemName || testInfo?.itemName,
       itemId!,
       mrpToDisplay,
       discountToDisplay,
       DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS,
+      originalItemIds
+        ? packageRecommendations > 2
+          ? 'Recommendations'
+          : 'You can also order'
+        : '',
       currentPatient,
-      isDiagnosticCircleSubscription
+      isDiagnosticCircleSubscription,
+      originalItemIds
     );
     const testInclusions =
       testInfo?.inclusions == null

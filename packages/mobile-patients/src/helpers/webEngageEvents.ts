@@ -1274,6 +1274,8 @@ export interface WebEngageEvents {
     'Item ID': string | number;
     'Item Price'?: number | string;
     'Circle user'?: string;
+    'Original Item ids'?: string[] | null;
+    'Section name'?: string;
   };
 
   [WebEngageEventName.DIAGNOSTIC_CART_VIEWED]: {

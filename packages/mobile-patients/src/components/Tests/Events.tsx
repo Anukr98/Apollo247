@@ -149,7 +149,7 @@ export function DiagnosticAddToCartEvent(
   section?: string,
   currentPatient?: any,
   isDiagnosticCircleSubscription?: boolean | undefined,
-  originalItemIds?: any | undefined
+  originalItemIds?: string[] | null,
 ) {
   const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes:
@@ -287,7 +287,9 @@ export function DiagnosticDetailsViewed(
   currentPatient: any,
   itemPrice: number,
   pharmacyCircleAttributes: any,
-  isDiagnosticCircleSubscription?: boolean | undefined
+  isDiagnosticCircleSubscription?: boolean | undefined,
+  originalItemIds?: string[] | null,
+  section?: string,
 ) {
   const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes:
@@ -302,9 +304,14 @@ export function DiagnosticDetailsViewed(
     'Patient UHID': currentPatient?.uhid,
     'Item Price': itemPrice,
     'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+    'Original Item ids': originalItemIds,
+
   };
   if (!!itemType) {
     eventAttributes['Item Type'] = itemType;
+  }
+  if (section) {
+    eventAttributes['Section name'] = section;
   }
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
