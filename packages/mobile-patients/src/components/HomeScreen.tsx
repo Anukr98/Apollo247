@@ -210,6 +210,7 @@ import {
   ViewStyle,
   Keyboard,
   TextInput,
+  BackHandler,
 } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ScrollView, Switch } from 'react-native-gesture-handler';
@@ -1207,9 +1208,21 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     fetchUserAgent();
   }, []);
 
+  const handleSearchClose = () => {
+    if (isSearchFocus || searchText?.length > 0) {
+      onCancelTextClick();
+      return true;
+    } else return false;
+  };
+
+  useEffect(() => {
+    const handler = BackHandler.addEventListener('hardwareBackPress', handleSearchClose);
+    return () => handler.remove();
+  }, [isSearchFocus, searchText]);
+
   const handleCachedData = async () => {
     const cacheDataStringBuffer = await appGlobalCache.getAll();
-    const offersListStringBuffer = cacheDataStringBuffer?.offersList.value || '[]';
+    const offersListStringBuffer = cacheDataStringBuffer?.offersList?.value || '[]';
     setOffersListCache(JSON.parse(offersListStringBuffer));
 
     const count = cacheDataStringBuffer?.appointmentCount.value || '0';
@@ -2421,6 +2434,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             source_identifier: circleData?.source_meta_data?.source_identifier,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
+          console.log('csk ren', circleData?.renewNow);
           setRenewNow(circleData?.renewNow ? 'yes' : 'no');
           setCirclePlanId && setCirclePlanId(circleData?.plan_id);
           setCircleStatus && setCircleStatus(circleData?.status);
@@ -3474,7 +3488,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                       <View style={styles.bottom2ImageView}>{item.image2}</View>
                       <View style={styles.bottom2TextView}>
                         <Text style={[theme.viewStyles.text('M', 11, item.subtitleColor!, 1, 18)]}>
-                          ₹ {healthCredits ? healthCredits : 0} {item.subtitle}
+                          {healthCredits && healthCredits >= 30
+                            ? '₹' + healthCredits + ' ' + item.subtitle
+                            : 'Get 100% Genuine Medicines'}
                         </Text>
                       </View>
                     </View>
@@ -3559,7 +3575,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const renderOffersForYou = () => {
-    const offerListToRender = offersListCache.length > 0 ? offersListCache : offersList;
+    const offerListToRender = offersListLoading ? offersListCache : offersList;
     if (offerListToRender?.length === 0) return null;
     else if (offerListToRender?.length === 1 && offerListToRender?.[0]?.template_name === 'CIRCLE')
       return circleCashbackOffersComponent();
@@ -4323,7 +4339,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             credits={healthCredits?.toString()}
             savings={circleSavings?.toString()}
           />
-        ) : expiry < 0 && circleStatus === 'active' && !renew ? (
+        ) : expiry > 0 && circleStatus === 'active' && !renew ? (
           <CircleTypeCard4
             onButtonPress={() => {
               onClickCircleBenefits('Not Expiring', string.Hdfc_values.MEMBERSHIP_DETAIL_CIRCLE);
@@ -5355,7 +5371,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               onChangeText={(value) => onSearchTextChange(value)}
             />
             {isSearchFocus && searchText?.length >= 1 ? (
-              <TouchableOpacity onPress={onCancelTextClick}>
+              <TouchableOpacity onPress={() => setSearchText('')}>
                 <RemoveIconGrey style={{ width: 20, height: 20 }} />
               </TouchableOpacity>
             ) : null}
@@ -5595,8 +5611,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           'Search bar'
         );
         pdp
-          ? props.navigation.navigate(AppRoutes.DoctorSearchListing, nav_props)
-          : props.navigation.navigate(AppRoutes.DoctorSearch, { searchText: searchText });
+          ? props.navigation.navigate(AppRoutes.DoctorDetails, nav_props)
+          : props.navigation.navigate(AppRoutes.DoctorSearchListing, nav_props);
         break;
     }
   };
@@ -5679,7 +5695,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             urlKey: item?.url_key,
           }
         : key === MedicalRecordType.CONSULTATION
-        ? { specialities: [item?.specialtydisplayName], MoveDoctor: 'MoveDoctor' }
+        ? {
+            specialities: [item?.specialtydisplayName],
+            MoveDoctor: 'MoveDoctor',
+            doctorId: item?.id,
+          }
         : {};
     return (
       <TouchableOpacity onPress={() => onClickSearchItem(key, true, nav_props)}>
@@ -5794,12 +5814,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               <View style={styles.viewName}>
                 {renderMenuOptions()}
 
-                {!offersListLoading && offersListCache.length === 0 && myDoctorsCount === 0
+                {!offersListLoading && offersList.length === 0
                   ? null
                   : renderHeadings('Offers For You')}
                 {offersListCache.length === 0 && offersListLoading && renderOffersForYouShimmer()}
                 {(offersListCache.length > 0 || !offersListLoading) && renderOffersForYou()}
-                {!appointmentLoading && currentAppointments === '0'
+                {!appointmentLoading && currentAppointments === '0' && myDoctorsCount === 0
                   ? null
                   : renderHeadings('My Doctors')}
                 {!appointmentLoading && currentAppointments === '0'
