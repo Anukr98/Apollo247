@@ -984,6 +984,14 @@ const styles = StyleSheet.create({
     borderRightColor: 'rgba(2, 71, 91, 0.2)',
     alignItems: 'flex-end',
   },
+  topCardContentContainer: {
+    flexDirection: 'row',
+    marginBottom: 2,
+    paddingVertical: 4,
+    marginLeft: 10,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
 });
 
 type menuOptions = {
@@ -1107,9 +1115,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const [searchText, setSearchText] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState({});
-  const testSearchResults = useRef<
-    searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
-  >([]);
+  const testSearchResults = useRef<any[]>([]);
   const medSearchResults = useRef<MedicineProduct[]>([]);
   const consultSearchResults = useRef<any[]>([]);
   const [token, setToken] = useState<string | null>('');
@@ -3485,16 +3491,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                       <DeliveryInIcon />
                     </View>
 
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        marginBottom: 2,
-                        paddingVertical: 4,
-                        marginLeft: 10,
-                        justifyContent: 'flex-start',
-                        alignItems: 'center',
-                      }}
-                    >
+                    <View style={styles.topCardContentContainer}>
                       {item.image}
                       <Text style={[styles.topTextStyle, { color: theme.colors.LIGHT_BLUE }]}>
                         {item.title}
@@ -5173,7 +5170,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     testSearchResults.current = [];
     try {
       const res = await getDiagnosticSearchResults(client, _searchText, Number(cityId), 5);
-      console.log('csk--', JSON.stringify(res));
       let finalProducts = [];
 
       if (res?.data?.searchDiagnosticItem) {
