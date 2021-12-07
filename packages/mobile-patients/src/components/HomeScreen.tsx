@@ -977,6 +977,13 @@ const styles = StyleSheet.create({
     marginRight: 9,
     justifyContent: 'space-between',
   },
+  profileListChildContainer: {
+    flexDirection: 'row',
+    paddingRight: 8,
+    marginLeft: 4,
+    borderRightColor: 'rgba(2, 71, 91, 0.2)',
+    alignItems: 'flex-end',
+  },
 });
 
 type menuOptions = {
@@ -3318,16 +3325,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
   const renderProfileIconAsChildView = () => {
     return (
-      <View
-        style={{
-          flexDirection: 'row',
-          paddingRight: 8,
-          marginLeft: 4,
-          borderRightColor: 'rgba(2, 71, 91, 0.2)',
-          alignItems: 'flex-end',
-        }}
-      >
-        <Text style={styles.hiTextStyle}>{'hi'}</Text>
+      <View style={styles.profileListChildContainer}>
+        <Text style={styles.hiTextStyle}>{'Hi'}</Text>
         <View style={styles.nameTextContainerStyle}>
           <View style={{ flexDirection: 'row', flex: 1 }}>
             <Text style={styles.nameTextStyle} numberOfLines={1}>
@@ -5845,6 +5844,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                   {covidVaccineCtaV2?.data?.length > 0 && renderCovidContainer()}
                 </View> */}
 
+                <View style={{ paddingHorizontal: 20 }}>{renderSecondaryConsultationCta()}</View>
+
                 {renderHeadings('Services For You')}
                 {renderServicesForYouView()}
 
@@ -5860,7 +5861,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                     )}
                   </View>
                 )}
-                <View style={{ paddingHorizontal: 20 }}>{renderSecondaryConsultationCta()}</View>
                 {renderOtherResourcesMainView()}
               </View>
             </View>
