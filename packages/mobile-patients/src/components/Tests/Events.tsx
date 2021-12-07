@@ -160,7 +160,7 @@ export function DiagnosticAddToCartEvent(
     'Item ID': id,
     Source: source,
     'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
-    'Original Item ids': originalItemIds
+    'Original Item ids': originalItemIds,
   };
   if (section) {
     eventAttributes['Section name'] = section;
@@ -359,23 +359,21 @@ export function DiagnosticBannerClick(
 }
 
 export async function DiagnosticCartViewed(
+  source?: string,
   currentPatient?: any,
   cartItems?: DiagnosticsCartItem[],
-  couponDiscount?: number | string,
-  gTotal?: number,
-  prescReqd?: boolean,
-  diagnosticSlot?: any,
-  coupon?: any,
-  collectionCharges?: number,
-  validity?: circleValidity | null,
-  circleSubId?: string,
   isCircle?: boolean,
   pincode?: string | number,
-  source?: string,
   city?: string,
+  prescReqd?: boolean,
+  gTotal?: number,
+  collectionCharges?: number,
+  circleSubId?: string,
   couponCode?: string,
+  couponDiscount?: number,
+  validity?: circleValidity | null,
   isRecommendationShown?: boolean,
-  recommendationData?: any,
+  recommendationData?: any
 ) {
   const getPatientAttributes = await createPatientAttributes(currentPatient);
   const eventAttributes:
@@ -383,7 +381,7 @@ export async function DiagnosticCartViewed(
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_CART_VIEWED] = {
     ...getPatientAttributes,
     'Page source': source,
-    'Total items in cart': cartItems?.length,
+    'Total items in cart': !!cartItems ? cartItems?.length : 0,
     // 'Delivery charge': deliveryCharges,
     'Total Discount': couponDiscount ? Number(couponDiscount) : 0,
     'Recommendation Shown': isRecommendationShown ? 'Yes' : 'No',
@@ -391,22 +389,28 @@ export async function DiagnosticCartViewed(
       return item?.itemId;
     }),
     'Net after discount': gTotal,
-    'Cart Items': cartItems?.map(
-      (item) =>
-        (({
-          id: item?.id,
-          name: item?.name,
-          price: item?.price,
-          specialPrice: item?.specialPrice || item.price,
-        } as unknown) as DiagnosticsCartItem)
-    ),
+    'Cart Items': !!cartItems
+      ? cartItems?.map(
+          (item) =>
+            (({
+              id: item?.id,
+              name: item?.name,
+              price: item?.price,
+              specialPrice: item?.specialPrice || item.price,
+            } as unknown) as DiagnosticsCartItem)
+        )
+      : [],
     'Circle user': isCircle ? 'Yes' : 'No',
-    'Item ids': cartItems?.map((item: any) => {
-      return item?.id;
-    }),
-    'Item names': cartItems?.map((item: any) => {
-      return item?.name;
-    }),
+    'Item ids': !!cartItems
+      ? cartItems?.map((item: any) => {
+          return item?.id;
+        })
+      : [],
+    'Item names': !!cartItems
+      ? cartItems?.map((item: any) => {
+          return item?.name;
+        })
+      : [],
     Pincode: pincode,
     UHID: currentPatient?.uhid,
     city: city,
@@ -424,7 +428,6 @@ export async function DiagnosticCartViewed(
     eventAttributes['Coupon Discount'] = Number(couponDiscount);
   }
   // fireCircleBenifitAppliedEvent(currentPatient, validity, circleSubId, isCircle);
-  fireCircleBenifitAppliedEvent(currentPatient, validity, circleSubId, isCircle);
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CART_VIEWED, eventAttributes);
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_CART_VIEWED, eventAttributes);
 }
