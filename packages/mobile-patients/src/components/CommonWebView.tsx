@@ -60,6 +60,9 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   const { circleSubscription } = useAppCommonData();
   const { setIsCircleAddedToCart, setSelectedCirclePlan } = useDiagnosticsCart();
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
+
+  const [webviewURl, setWebViewUrl] = useState('');
+
   const fireCirclePlanSelectedEvent = () => {
     const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED] = {
       'Patient UHID': currentPatient?.uhid,
@@ -79,6 +82,7 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
       );
     };
     saveSessionValues();
+    setWebViewUrl(formatUrl(props?.navigation?.getParam('url'), token, userMobileNumber));
     if (circleEventSource) fireCircleLandingPageViewedEvent();
   }, []);
 
@@ -149,19 +153,25 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   };
 
   const handleResponse = (data: NavState) => {
+    if (data.url?.indexOf('user_from_device') == -1) {
+      const appendURI =
+        data.url?.indexOf('?') == -1 ? '?user_from_device=true' : '&user_from_device=true';
+      setWebViewUrl(data.url + appendURI);
+    }
+
     setCanGoBack(data?.canGoBack || false);
   };
 
   const renderWebView = () => {
-    let uri = formatUrl(props?.navigation?.getParam('url'), token, userMobileNumber);
-
+    let uri =
+      webviewURl == ''
+        ? formatUrl(props?.navigation?.getParam('url'), token, userMobileNumber)
+        : webviewURl;
     return (
       <WebView
         ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
         onLoadEnd={() => setLoading!(false)}
-        source={{
-          uri,
-        }}
+        source={{ uri }}
         renderError={(errorCode) => renderError(WebViewRef)}
         onNavigationStateChange={(data) => handleResponse(data)}
         onMessage={(event) => {

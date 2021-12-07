@@ -1292,7 +1292,7 @@
   "aboutApolloList": [
     {
       "title": "About Us",
-      "url": "https://www.apollo247.com/aboutUs?isMobile=true&user_from_device=true"
+      "url": "https://www.apollo247.com/AboutUs?isMobile=true&user_from_device=true"
     },
     {
       "title": "Contact Us",
@@ -1318,7 +1318,7 @@
   "aboutApolloListForQA": [
     {
       "title": "About Us",
-      "url": "https://stagingpatients.apollo247.com/aboutUs?isMobile=true&user_from_device=true"
+      "url": "https://stagingpatients.apollo247.com/AboutUs?isMobile=true&user_from_device=true"
     },
     {
       "title": "Contact Us",
