@@ -2257,8 +2257,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               data={
                 offlineOrderBillNumber
                   ? [{ title: string.orders.viewBill }]
-                  : orderDetails.orderTat! === null &&
-                    orderDetails?.medicineOrderLineItems!.length === 0
+                  : orderDetails?.orderTat === null &&
+                    orderDetails?.medicineOrderLineItems?.length === 0
                   ? [{ title: string.orders.trackOrder }]
                   : [{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]
               }
