@@ -214,11 +214,11 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   };
 
   const handleBack = async () => {
-    isGoBack ? props.navigation.goBack() : props.navigation.navigate(AppRoutes.ConsultRoom);
+    isGoBack ? props.navigation.goBack() : props.navigation.navigate(AppRoutes.HomeScreen);
   };
 
   const renderError = (WebViewRef: any) => {
-    isGoBack ? props.navigation.goBack() : props.navigation.navigate(AppRoutes.ConsultRoom);
+    isGoBack ? props.navigation.goBack() : props.navigation.navigate(AppRoutes.HomeScreen);
     return <View style={{ flex: 1 }}></View>;
   };
 

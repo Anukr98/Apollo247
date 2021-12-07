@@ -9,20 +9,28 @@ const styles = StyleSheet.create({
   planContainer: {
     flexDirection: 'row',
     flex: 1,
-    marginVertical: 5,
+    marginVertical: 4,
+    paddingVertical: 6,
+    paddingRight: 6,
+    alignItems: 'center',
   },
 
   subPlanOne: {
     flex: 0.2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 4,
   },
 
   subPlanTwo: {
-    flex: 0.3,
+    flex: 0.55,
+    justifyContent: 'flex-start',
   },
 
   subPlanThree: {
-    flex: 0.5,
-    alignItems: 'center',
+    flex: 0.25,
+    justifyContent: 'center',
+    alignItems: 'flex-end',
   },
 
   circleLogo: {
@@ -32,7 +40,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface CircleTypeCard3Props extends NavigationScreenProps {
+export interface CircleTypeCard3Props {
   onButtonPress: () => void;
   savings?: string;
   expiry?: string;
@@ -53,28 +61,21 @@ export const CircleTypeCard3: React.FC<CircleTypeCard3Props> = (props) => {
         </View>
 
         <View style={styles.subPlanTwo}>
-          <Text style={{ ...theme.viewStyles.text('M', 12, '#02475B', 1, 16) }}>Your Savings:</Text>
-          <Text style={{ ...theme.viewStyles.text('M', 20, '#02475B', 1, 25) }}>₹{savings}</Text>
-          {credits ? (
-            <View style={[styles.planContainer, { width: width }]}>
-              <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
-                Available Health Credits:
-              </Text>
-              <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 1, 16) }}>
-                {' '}
-                {credits || 0}
-              </Text>
-            </View>
-          ) : null}
+          <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE, 1, 20) }}>
+            You saved ₹{savings || '--'} with
+          </Text>
+          <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE, 1, 20) }}>
+            Circle Membership
+          </Text>
         </View>
 
         <View style={styles.subPlanThree}>
-          <Button
-            title={`EXPLORE BENEFITS`}
-            style={{ width: 155, height: 32 }}
+          <Text
+            style={{ ...theme.viewStyles.text('B', 15, '#FC9916', 1, 20) }}
             onPress={onButtonPress}
-            disabled={false}
-          />
+          >
+            EXPLORE
+          </Text>
         </View>
       </View>
     </View>

@@ -6613,6 +6613,51 @@ export const CREATE_VONAGE_SESSION_TOKEN = gql`
   }
 `;
 
+export const GET_PERSONALIZED_OFFERS = gql`
+  query getPersonalizedOffers {
+    getPersonalizedOffers {
+      response {
+        personalized_data {
+          offers_for_you {
+            offer_id
+            template_name
+            coupon_code
+            notch_text {
+              text
+              values {
+                time_till_expired_at {
+                  value
+                }
+              }
+            }
+            is_active
+            expired_at
+            title {
+              text
+            }
+            subtitle{
+               text  
+            }
+            cta{
+              text
+              path{
+                vertical
+                param
+              }
+            }
+          }
+          global_search_text{
+            search_text{
+              text,
+              created_at
+            }
+          }
+        }
+      }
+    }
+  }
+  `;
+
 export const GET_CONFIGURATION_FOR_ASK_APOLLO_LEAD = gql`
   query getConfigurationForAskApolloLead {
     getConfigurationForAskApolloLead {
@@ -6743,6 +6788,16 @@ export const GET_PACKAGE_PURCHASE_INFO = gql`
     }
   }
 `;
+
+export const SAVE_RECENT_SEARCH=gql`
+mutation saveRecent($searchText: String!){
+  saveRecentSearchData(saveRecentSearchTextInput: {
+    searchText: $searchText
+  }){
+    success
+  }
+}
+`; 
 
 export const BOOK_PACKAGE_CONSULT = gql`
   mutation bookFreeAppointmentForPharmacy(

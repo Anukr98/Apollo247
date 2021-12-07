@@ -17,7 +17,10 @@ import {
   getPatientPastConsultedDoctors_getPatientPastConsultedDoctors,
 } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultedDoctors';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { DoctorPlaceholderImage } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  DoctorPlaceholderImage,
+  EllipseBulletPoint,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   renderConsultedDoctorsShimmer,
@@ -25,8 +28,11 @@ import {
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { ConsultMode } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { myConsultedDoctorsClickedWEBEngage } from '@aph/mobile-patients/src/helpers/CommonEvents';
+import {
+  useAppCommonData,
+  appGlobalCache,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const { width } = Dimensions.get('window');
 export const cardWidth = width / 2 - 25;
@@ -41,12 +47,18 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
   const [doctors, setDoctors] = useState<
     (getPatientPastConsultedDoctors_getPatientPastConsultedDoctors | null)[]
   >([]);
+  const [doctorsCache, setDoctorsCache] = useState<
+    getPatientPastConsultedDoctors_getPatientPastConsultedDoctors[]
+  >([]);
+  const { myDoctorsCount, setMyDoctorsCount } = useAppCommonData();
 
   useEffect(() => {
     currentPatient && getPastConsultedDoctors();
   }, []);
 
   const getPastConsultedDoctors = async () => {
+    const doc = (await appGlobalCache.get('pastDoctors')) || JSON.stringify({ value: [] });
+    setDoctorsCache(JSON.parse(doc));
     try {
       const res = await client.query<
         getPatientPastConsultedDoctors,
@@ -60,7 +72,12 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
       });
       if (res) {
         setDoctors(res?.data?.getPatientPastConsultedDoctors);
+        appGlobalCache.set(
+          'pastDoctors',
+          JSON.stringify(res?.data?.getPatientPastConsultedDoctors) || JSON.stringify([])
+        );
       }
+      setMyDoctorsCount && setMyDoctorsCount(res?.data?.getPatientPastConsultedDoctors?.length);
       setLoading(false);
     } catch (error) {
       CommonBugFender('getPastConsultedDoctors', error);
@@ -110,7 +127,7 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
             resizeMode={'cover'}
           />
         ) : (
-          <DoctorPlaceholderImage style={styles.doctorProfile} />
+          <EllipseBulletPoint style={styles.doctorProfile} />
         )}
       </View>
     );
@@ -119,8 +136,7 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
   const onClickDoctorCard = (
     item: getPatientPastConsultedDoctors_getPatientPastConsultedDoctors
   ) => {
-    myConsultedDoctorsClickedWEBEngage(currentPatient, item,
-      allCurrentPatients, 'Home Page');
+    myConsultedDoctorsClickedWEBEngage(currentPatient, item, allCurrentPatients, 'Home Page');
     item?.allowBookingRequest
       ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
           doctorId: item?.id,
@@ -137,19 +153,13 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
           },
         });
   };
-
   return (
     <View>
-      {loading ? (
-        renderConsultedDoctorsTitleShimmer()
-      ) : doctors?.length > 0 ? (
-        <Text style={styles.myDoctorsTitle}>My Doctors</Text>
-      ) : null}
-      {loading ? (
+      {doctorsCache === null ? (
         renderConsultedDoctorsShimmer()
       ) : (
         <FlatList
-          data={doctors}
+          data={doctorsCache}
           keyExtractor={(_, index) => `${index}`}
           renderItem={({ item, index }) => renderDoctorsCard(item, index)}
           horizontal
@@ -163,17 +173,18 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 10,
+    marginTop: 6,
     flex: 1,
-    ...theme.viewStyles.cardViewStyle,
     height: 58,
     width: cardWidth,
     marginBottom: 20,
     marginLeft: 20,
-    backgroundColor: theme.colors.ICE_BERG,
-    borderRadius: 10,
+    backgroundColor: theme.colors.ICE_BERG_FLAT,
     paddingHorizontal: 10,
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.D4_GRAY,
+    borderRadius: 6,
   },
   doctorProfile: {
     width: 40,

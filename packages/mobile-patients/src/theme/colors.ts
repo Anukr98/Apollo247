@@ -125,6 +125,9 @@ const Common = {
   COMPLETE_STATUS_BGK: '#E3FCEF',
   INTERMITTENT_STATUS_BGK: '#FFF0B3',
   ICE_BERG: '#DFF4F4',
+  ICE_BERG_FLAT:'#E7FFFD',
+  BLUE_FADED_FLAT : '#FAFEFF',
+  D4_GRAY:'#D4D4D4',
   GRAYED: '#CBCBCB',
   SLATE_GRAY: '#68919D',
   NILE_BLUE: '#1C4659',
@@ -202,6 +205,7 @@ const TextInput = {
   INPUT_FAILURE_TEXT: '#890000',
   INPUT_INFO: tangerine_yellow,
   placeholderTextColor: 'rgba(1,48,91, 0.3)',
+  HOME_SEARCH_PLACEHOLDER:'rgba(2,71,91,0.7)',
   searchAreaPlaceholderTextColor: 'rgba(1,71,91,0.6)',
   light_label: '#658f9b',
 };
