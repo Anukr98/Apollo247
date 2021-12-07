@@ -277,9 +277,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   const ctaDetailMatched = checkForCtaCityAvailabilty()
     ? checkItemIdForCta()
-    : isCtaDetailDefault &&
-      callToOrderDetails?.ctaDetailsDefault?.ctaItemIds?.length > 0 &&
-      callToOrderDetails?.ctaDetailsDefault?.ctaItemIds?.includes(Number(itemId))
+    : isCtaDetailDefault
     ? [callToOrderDetails?.ctaDetailsDefault]
     : [];
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);

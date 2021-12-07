@@ -315,7 +315,6 @@ const appStaticVariables = {
       ctaDelaySeconds: 3,
       ctaPhoneNumber: '040-4821-3322',
       ctaText: 'Call to Order',
-      ctaItemIds: [2446],
     },
   },
   DIAGNOSTICS_PHLEBO_CALL_NUMBER:'08046807674',
