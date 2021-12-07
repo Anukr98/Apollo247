@@ -318,6 +318,7 @@ const appStaticVariables = {
       ctaItemIds: [2446],
     },
   },
+  DIAGNOSTICS_PHLEBO_CALL_NUMBER:'08046807674',
   DIAGNOSTICS_COVID_ITEM_IDS: [2446],
   FREE_CONSULT_MESSAGE: {
     prescriptionMessage: 'Get a FREE Consultation by our expert doctor within the next 30 mins.',
