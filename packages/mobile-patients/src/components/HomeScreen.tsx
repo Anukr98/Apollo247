@@ -1225,7 +1225,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     const offersListStringBuffer = cacheDataStringBuffer?.offersList?.value || '[]';
     setOffersListCache(JSON.parse(offersListStringBuffer));
 
-    const count = cacheDataStringBuffer?.appointmentCount.value || '0';
+    const count = cacheDataStringBuffer?.appointmentCount?.value || '0';
     setAppointmentCountCache(count);
     console.log('csk', count);
 
