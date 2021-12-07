@@ -3846,8 +3846,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                     ),
                   }}
                 >
-                  {textForNotch.length > 30
-                    ? textForNotch?.substring(textForNotch.length - 30, textForNotch.length)
+                  {textForNotch.length > 36
+                    ? textForNotch?.substring(textForNotch.length - 36, textForNotch.length)
                     : textForNotch}
                 </Text>
               </View>
