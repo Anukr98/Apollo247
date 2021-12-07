@@ -32,7 +32,7 @@ import {
   GET_PATIENT_LATEST_PRESCRIPTION,
   GET_DIAGNOSTIC_OPEN_ORDERLIST,
   GET_DIAGNOSTIC_CLOSED_ORDERLIST,
-  GET_PHLOBE_DETAILS,
+  GET_PHLEBO_DETAILS,
   GET_INTERNAL_ORDER,
   UPDATE_APPOINTMENT,
   SAVE_PHLEBO_FEEDBACK,
@@ -1180,7 +1180,7 @@ export const getDiagnosticPhelboDetails = (client: ApolloClient<object>, orderId
   return new Promise((res, rej) => {
     client
       .query<getOrderPhleboDetailsBulk, getOrderPhleboDetailsBulkVariables>({
-        query: GET_PHLOBE_DETAILS,
+        query: GET_PHLEBO_DETAILS,
         context: {
           sourceHeaders,
         },

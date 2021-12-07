@@ -313,7 +313,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     : couponCal;
 
   const nonCircle_CircleEffectivePrice = Number(circleGrandTotal) + Number(circlePlanPurchasePrice);
-
+  const anyCartSaving = isDiagnosticCircleSubscription ? cartSaving + circleSaving : cartSaving;
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const addressText = isModifyFlow
     ? formatAddressWithLandmark(modifiedOrder?.patientAddressObj) || ''
@@ -656,7 +656,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   }
 
   useEffect(() => {
-    isModifyFlow && fetchFindDiagnosticSettings();
+    (isModifyFlow || phleboETA == 0) && fetchFindDiagnosticSettings();
   }, []);
 
   useEffect(() => {
@@ -1496,7 +1496,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
   //change circle purchase price to selected plan
   const renderTotalCharges = () => {
-    const anyCartSaving = isDiagnosticCircleSubscription ? cartSaving + circleSaving : cartSaving;
     const hcChargesToShow = getHcCharges()?.toFixed(2);
     const showEffectiveView = isModifyFlow
       ? !isDiagnosticCircleSubscription &&
@@ -1760,7 +1759,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
   const renderMainView = () => {
     return (
-      <View style={{ flex: 1, marginBottom: 250 }}>
+      <View style={{ flex: 1, marginBottom: 180 }}>
         {renderAddressHeading()}
         {renderCartItems()}
         {isModifyFlow ? renderPreviouslyAddedItems() : null}
@@ -1786,7 +1785,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
   const renderPolicyDisclaimer = () => {
     return (
-      <View style={{ margin: 16 }}>
+      <View style={{ margin: 16, marginTop: anyCartSaving > 0 ? 16 : 0 }}>
         <Text style={styles.disclaimerText}>{string.diagnosticsCartPage.reviewPagePolicyText}</Text>
       </View>
     );
@@ -2782,7 +2781,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       <SafeAreaView style={[{ ...theme.viewStyles.container }]}>
         {renderHeader()}
         {renderWizard()}
-        <ScrollView bounces={false} style={{ flexGrow: 1 }} showsVerticalScrollIndicator={true}>
+        <ScrollView
+          bounces={false}
+          style={{ flexGrow: 1, flex: 1 }}
+          showsVerticalScrollIndicator={true}
+        >
           {renderMainView()}
         </ScrollView>
         {renderTestProceedBar()}

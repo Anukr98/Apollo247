@@ -7,7 +7,7 @@ import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
-  GET_PHLOBE_DETAILS,
+  GET_PHLEBO_DETAILS,
   GET_RESCHEDULE_AND_CANCELLATION_REASONS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -159,7 +159,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     patientCartItems,
     setDistanceCharges,
     setModifiedPatientCart,
-    setCartItems,
   } = useDiagnosticsCart();
   const { width, height } = Dimensions.get('window');
 
@@ -325,7 +324,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               }
             });
           const orderIdsArr = filteredOrderList?.map((item: any) => item?.id);
-          getPhlobeOTP(orderIdsArr, filteredOrderList, isRefetch);
+          getPhleboOTP(orderIdsArr, filteredOrderList, isRefetch);
         })
         .catch((error) => {
           setLoading?.(false);
@@ -366,12 +365,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   };
 
-  const getPhlobeOTP = (orderIdsArr: any, ordersList: any, isRefetch: boolean) => {
+  const getPhleboOTP = (orderIdsArr: any, ordersList: any, isRefetch: boolean) => {
     try {
       setLoading?.(true);
       client
         .query<getOrderPhleboDetailsBulk, getOrderPhleboDetailsBulkVariables>({
-          query: GET_PHLOBE_DETAILS,
+          query: GET_PHLEBO_DETAILS,
           context: {
             sourceHeaders,
           },
@@ -397,7 +396,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                     phleboOTP: null,
                     checkinDateTime: null,
                     phleboTrackLink: null,
-                    allowCalling: null, //added
+                    allowCalling: null,
+                    showPhleboDetails: null,
+                    phleboDetailsETAText: null,
+                    allowCallingETAText: null,
+                    isPhleboChanged: null,
                     diagnosticPhlebotomists: {
                       id: null,
                       name: null,
@@ -421,6 +424,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                 order.diagnosticOrderPhlebotomists.phleboRating =
                   findOrder?.orderPhleboDetails?.phleboRating;
                 order.diagnosticOrderPhlebotomists.allowCalling = findOrder?.allowCalling;
+                order.diagnosticOrderPhlebotomists.showPhleboDetails = findOrder?.showPhleboDetails;
+                order.diagnosticOrderPhlebotomists.phleboDetailsETAText =
+                  findOrder?.phleboDetailsETAText;
+                order.diagnosticOrderPhlebotomists.allowCallingETAText =
+                  findOrder?.allowCallingETAText;
+                order.diagnosticOrderPhlebotomists.isPhleboChanged =
+                  findOrder?.orderPhleboDetails?.isPhleboChanged;
               }
             });
             //ordersList => contains all results.
