@@ -3407,7 +3407,7 @@ export const validateCoupon = async (
     billAmount: (cartTotal - productDiscount).toFixed(2),
     coupon: coupon,
     pinCode: pharmacyPincode,
-    products: cartItems.map((item) => ({
+    products: cartItems?.map((item) => ({
       sku: item.id,
       categoryId: item.productType,
       mrp: item.price,
