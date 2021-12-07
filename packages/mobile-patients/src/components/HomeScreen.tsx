@@ -1003,6 +1003,29 @@ const styles = StyleSheet.create({
     top: 12,
     left: 12,
   },
+  offersCardCoupon: {
+    marginHorizontal: 10,
+    borderRadius: 4,
+    borderColor: '#A15D59',
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    backgroundColor: '#fff',
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 4,
+  },
+  offersCardCTA: {
+    width: 22,
+    height: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 11,
+    backgroundColor: '#FC9916',
+    marginVertical: 4,
+    marginRight: 4,
+  },
 });
 
 type menuOptions = {
@@ -3710,21 +3733,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                 width: '100%',
               }}
             >
-              <View
-                style={{
-                  marginHorizontal: 10,
-                  borderRadius: 4,
-                  borderColor: '#A15D59',
-                  borderWidth: 1,
-                  borderStyle: 'dashed',
-                  backgroundColor: '#fff',
-                  paddingVertical: 2,
-                  paddingHorizontal: 8,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  marginVertical: 4,
-                }}
-              >
+              <View style={styles.offersCardCoupon}>
                 <Text
                   style={{
                     ...theme.viewStyles.text('M', 12, offerDesignTemplate?.coupon_color, 1, 18),
@@ -3739,16 +3748,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               </View>
 
               <TouchableOpacity
-                style={{
-                  width: 22,
-                  height: 22,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  borderRadius: 11,
-                  backgroundColor: '#FC9916',
-                  marginVertical: 4,
-                  marginRight: 4,
-                }}
+                style={styles.offersCardCTA}
                 onPress={() =>
                   textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, index + 1)
                 }
