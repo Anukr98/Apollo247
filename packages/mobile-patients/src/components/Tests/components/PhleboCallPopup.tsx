@@ -67,27 +67,27 @@ export const PhleboCallPopup: React.FC<PhleboCallPopupProps> = (props) => {
           <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
             <View style={styles.mainContainer}>
               <View style={{ paddingBottom: 20 }}>
-                <Text style={styles.upText}>Connect on a phone call with the Apollo Agent</Text>
-                <Text style={styles.midText}>Please follow the steps below to connect</Text>
+                <Text style={styles.upText}>{string.diagnostics.phleboConnectCall}</Text>
+                <Text style={styles.midText}>{string.diagnostics.phleboFollowSteps}</Text>
               </View>
               <View style={styles.boxStyle}>
                 <View style={styles.borderView}>
                   {NumericView('1')}
                   <Text style={styles.textGreen}>
-                    Answer the call from{' '}
+                    {string.diagnostics.phleboTextOne}{' '}
                     <Text style={styles.textGreenBold}>
                       {AppConfig.Configuration.DIAGNOSTICS_PHLEBO_CALL_NUMBER}
                     </Text>{' '}
-                    to connect
+                    {string.diagnostics.phleboTextTwo}
                   </Text>
                 </View>
                 <View style={styles.borderView}>
                   {NumericView('2')}
-                  <Text style={styles.textGreen}>Wait for Apollo Agent to Connect</Text>
+                  <Text style={styles.textGreen}>{string.diagnostics.phleboWaitText}</Text>
                 </View>
               </View>
               <Text style={styles.bottomText}>
-                Please Note: Your personal number would not be shared with the agent
+              {string.diagnostics.phleboPleaseNote}
               </Text>
               <View style={styles.buttomAreaStyle}>
                 <TouchableOpacity
