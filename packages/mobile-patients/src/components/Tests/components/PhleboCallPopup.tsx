@@ -70,30 +70,17 @@ export const PhleboCallPopup: React.FC<PhleboCallPopupProps> = (props) => {
         <TouchableOpacity style={{ flex: 1 }} onPress={() => onPressBack()} />
         <View style={styles.overlayViewStyle}>
           <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
-            <View
-              style={{
-                backgroundColor: 'white',
-                borderTopRightRadius: 10,
-                borderTopLeftRadius: 10,
-                padding: 15,
-              }}
-            >
+            <View style={styles.mainContainer}>
               <View style={{ paddingBottom: 20 }}>
-                <Text style={{ ...theme.viewStyles.text('SB', 16, colors.SHERPA_BLUE, 1) }}>
-                  Connect on a phone call with the Apollo Agent
-                </Text>
-                <Text style={{ ...theme.viewStyles.text('SB', 14, colors.SHERPA_BLUE, 1) }}>
-                  Please follow the steps below to connect
-                </Text>
+                <Text style={styles.upText}>Connect on a phone call with the Apollo Agent</Text>
+                <Text style={styles.midText}>Please follow the steps below to connect</Text>
               </View>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <View style={styles.boxStyle}>
                 <View style={styles.borderView}>
                   {NumericView('1')}
                   <Text style={styles.textGreen}>
                     Answer the call from{' '}
-                    <Text
-                      style={{ ...theme.viewStyles.text('SB', 14, colors.CONSULT_SUCCESS_TEXT) }}
-                    >
+                    <Text style={styles.textGreenBold}>
                       {AppConfig.Configuration.DIAGNOSTICS_PHLEBO_CALL_NUMBER}
                     </Text>{' '}
                     to connect
@@ -104,25 +91,20 @@ export const PhleboCallPopup: React.FC<PhleboCallPopupProps> = (props) => {
                   <Text style={styles.textGreen}>Wait for Apollo Agent to Connect</Text>
                 </View>
               </View>
-              <Text
-                style={{
-                  ...theme.viewStyles.text('SB', 14, colors.SHERPA_BLUE, 1),
-                  paddingVertical: 20,
-                }}
-              >
+              <Text style={styles.bottomText}>
                 Please Note: Your personal number would not be shared with the agent
               </Text>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <View style={styles.buttomAreaStyle}>
                 <TouchableOpacity
                   style={styles.proceedToCancelTouch}
                   onPress={() => {
                     onPressBack();
                   }}
                 >
-                  <Text style={styles.yellowText}>GO BACK</Text>
+                  <Text style={styles.yellowText}>{string.common.goBack}</Text>
                 </TouchableOpacity>
                 <Button
-                  title={'PROCEED TO CONNECT'}
+                  title={string.common.proceedCta}
                   style={{ width: '50%' }}
                   onPress={() => {
                     onPressProceed();
@@ -180,5 +162,20 @@ const styles = StyleSheet.create({
     width: '37%',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  upText: { ...theme.viewStyles.text('SB', 16, colors.SHERPA_BLUE, 1) },
+  midText: { ...theme.viewStyles.text('SB', 14, colors.SHERPA_BLUE, 1) },
+  boxStyle: { flexDirection: 'row', justifyContent: 'space-between' },
+  textGreenBold: { ...theme.viewStyles.text('SB', 14, colors.CONSULT_SUCCESS_TEXT) },
+  bottomText: {
+    ...theme.viewStyles.text('SB', 14, colors.SHERPA_BLUE, 1),
+    paddingVertical: 20,
+  },
+  buttomAreaStyle: { flexDirection: 'row', justifyContent: 'space-between' },
+  mainContainer: {
+    backgroundColor: 'white',
+    borderTopRightRadius: 10,
+    borderTopLeftRadius: 10,
+    padding: 15,
   },
 });
