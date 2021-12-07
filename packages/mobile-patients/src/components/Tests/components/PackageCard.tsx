@@ -137,7 +137,17 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
                 </View>
               </View>
               {!!inclusions && inclusions?.length > 0 ? (
-                <View style={{ minHeight: isSmallDevice ? 90 : 95 }}>
+                <View
+                  style={{
+                    minHeight: isSmallDevice
+                      ? isCircleSubscribed
+                        ? 90
+                        : 85
+                      : isCircleSubscribed
+                      ? 95
+                      : 90,
+                  }}
+                >
                   <Text style={styles.inclusionsText}>
                     {getMandatoryParameterCount > 0
                       ? `Total Tests : ${getMandatoryParameterCount}`
@@ -190,7 +200,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
   };
 
   const renderFallBackHeight = () => {
-    return <>{!isDiagnosticCircleSubscription ? <View style={{ height: 18 }} /> : null}</>;
+    return <>{!isCircleSubscribed ? <View style={{ height: 18 }} /> : null}</>;
   };
 
   const renderPricesView = (pricesForItem: any, packageMrpForItem: any, getItem: any) => {
@@ -235,7 +245,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     return pricesForItem || packageMrpForItem ? (
       <View>
         {/** show circle price for non-circle user */}
-        {!isDiagnosticCircleSubscription && hasCirclePrice ? (
+        {!isCircleSubscribed && hasCirclePrice ? (
           <View style={styles.centerRow}>
             <CircleLogo style={[styles.circleLogoIcon, { height: 18 }]} />
             <Text style={styles.circlePriceText}>
