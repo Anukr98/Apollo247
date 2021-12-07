@@ -3470,6 +3470,8 @@ const styles = StyleSheet.create({
   nudgeMsgHeight: {
     // height: NON_CIRCLE_NUDGE_HEIGHT,
     flex: 1,
+    paddingTop: 5,
+    paddingBottom: 5,
     backgroundColor: '#FFF6DE',
     flexDirection: 'row',
     width: '100%',
