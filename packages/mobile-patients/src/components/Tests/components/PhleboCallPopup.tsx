@@ -45,14 +45,9 @@ export const PhleboCallPopup: React.FC<PhleboCallPopupProps> = (props) => {
   const NumericView = (num: string) => {
     return (
       <View
-        style={{
-          backgroundColor: colors.CONSULT_SUCCESS_TEXT,
-          borderRadius: 4,
-          width: 30,
-          alignItems: 'center',
-        }}
+        style={styles.numView}
       >
-        <Text style={{ ...theme.viewStyles.text('B', 20, theme.colors.WHITE, 1) }}>{num}</Text>
+        <Text style={styles.numText}>{num}</Text>
       </View>
     );
   };
@@ -178,4 +173,11 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 10,
     padding: 15,
   },
+  numView: {
+    backgroundColor: colors.CONSULT_SUCCESS_TEXT,
+    borderRadius: 4,
+    width: 30,
+    alignItems: 'center',
+  },
+  numText: { ...theme.viewStyles.text('B', 20, theme.colors.WHITE, 1) }
 });
