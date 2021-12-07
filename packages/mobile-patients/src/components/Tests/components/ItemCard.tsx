@@ -389,15 +389,10 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     const inclusions =
       !!item?.inclusionData && item.inclusionData.map((item: any) => Number(item?.incItemId));
 
-    const originalItemIds = data?.[0]?.diagnosticWidgetData
-      ? data?.[0]?.diagnosticWidgetData?.map((item: { itemId: any }) => {
-          return item?.itemId;
-        })
-      : Array.isArray(data)
+    const originalItemIds = sourceScreen === AppRoutes.CartPage && Array.isArray(data)
       ? data?.map((item) => {
-          return item.itemId;
-        })
-      : [];
+          return item?.itemId;
+        }) : null;
     DiagnosticAddToCartEvent(
       item?.itemTitle || item?.itemName,
       `${item?.itemId}`,

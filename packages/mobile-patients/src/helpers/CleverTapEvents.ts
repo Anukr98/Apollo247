@@ -1566,6 +1566,8 @@ export interface CleverTapEvents {
     'Item ID': string | number;
     'Item Price'?: number | string;
     'Circle user'?: string;
+    'Original Item ids'?: string[] | null;
+    'Section name'?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_CART_VIEWED]: {
     'Page source': string | undefined;
@@ -1653,7 +1655,7 @@ export interface CleverTapEvents {
     | 'Prescription';
     Section?: string;
     'Circle user'?: string;
-    'Original Item ids'?: any;
+    'Original Item ids'?: string[] | null;
   };
   [CleverTapEventName.DIAGNOSTIC_ORDER_PLACED]: {
     'Order id': string | number;
