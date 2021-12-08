@@ -75,7 +75,7 @@ export const CashbackDetailsCard: React.FC<CashbackDetailsProps> = (props) => {
 
   const renderHealthCreditsText = () => {
     return (
-      <View style={{ height: 50 }}>
+      <View>
         <Text numberOfLines={1} ellipsizeMode={'clip'} style={styles.textUnderline}>
           ---------------------------------------------------------------------------------------------------------------------------------------
         </Text>
@@ -105,12 +105,7 @@ export const CashbackDetailsCard: React.FC<CashbackDetailsProps> = (props) => {
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        // savingsClicked ? { alignSelf: 'flex-start' } : { alignSelf: 'flex-end' },
-      ]}
-    >
+    <View style={styles.container}>
       <View style={{ paddingHorizontal: 16 }}>
         {savingsClicked && cartSavings
           ? renderDiscountCashbackValue('Product Discount', cartSavings)
@@ -128,8 +123,10 @@ export const CashbackDetailsCard: React.FC<CashbackDetailsProps> = (props) => {
           ? renderDiscountCashbackValue('Coupon Cashback (HC)', couponCashback)
           : null}
       </View>
-      {/* <View>{renderHealthCreditsText()}</View> */}
-      <View style={{ margin: 2, flexWrap: 'wrap', flex: 1, flexDirection: 'row' }}>
+      {renderHealthCreditsText()}
+      {/*show this below view if render health credits text is not supposed to be shown */}
+      {/* <View style={{ paddingBottom: 8 }}></View> */}
+      {/* <View style={{ margin: 2, flexWrap: 'wrap', flex: 1, flexDirection: 'row' }}>
         <Text numberOfLines={1} ellipsizeMode={'clip'} style={styles.textUnderline}>
           ---------------------------------------------------------------------------------------------------------------------------------------
         </Text>
@@ -137,8 +134,8 @@ export const CashbackDetailsCard: React.FC<CashbackDetailsProps> = (props) => {
           style={{
             paddingBottom: 8,
             paddingLeft: 16,
-            flexWrap: 'wrap',
-            flex: 1,
+            // flexWrap: 'wrap',
+            // flex: 1,
             backgroundColor: theme.colors.CLEAR,
             // height: 30,
             flexDirection: 'row',
@@ -149,7 +146,7 @@ export const CashbackDetailsCard: React.FC<CashbackDetailsProps> = (props) => {
             HCs will be credited after order delivery.{' '}
           </Text>
         </View>
-      </View>
+      </View> */}
       <View style={inStyles.triangle}></View>
       <View style={inStyles.triangle2}></View>
     </View>
@@ -164,7 +161,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderColor: theme.colors.SHADE_OF_GRAY,
     paddingTop: 14,
-    paddingBottom: 20,
     width: 250,
     marginBottom: 7,
     // backgroundColor: '#00ff33',

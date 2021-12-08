@@ -42,6 +42,12 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
   const [savingsSelected, setSavingsSelected] = useState<boolean>(false);
   const [HCSectionSelected, setHCSectionSelected] = useState<boolean>(false);
 
+  const savingsTextRef = useRef<Text>(null);
+  const hcTextRef = useRef<Text>(null);
+  const [savingsTextWidth, setSavingsTextWidth] = useState<number>(0);
+  const [hcTextWidth, setHCTextWidth] = useState<number>(0);
+  console.log(savingsTextWidth, hcTextWidth);
+
   const renderCartTotal = () => {
     return cartTotal ? (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -124,7 +130,7 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
     return isHealthCreditsAvailable ? (
       <View style={styles.healthCreditsAvailableView}>
         <Text style={styles.healthCreditsAvailableBoldTextStyle}>
-          Now pay only ₹{savingsAfterUsingHC}
+          Now pay only ₹{savingsAfterUsingHC.toFixed(2)}
         </Text>
         <Text style={styles.healthCreditsAvailableTextStyle}>
           {healthCredits} HC available in your account.{' '}
@@ -147,7 +153,12 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
               setSavingsSelected(!savingsSelected);
             }}
           >
-            <View style={{ alignSelf: 'center', flex: 0.7 }}>
+            <View
+              style={{
+                alignSelf: 'center',
+                flex: 0.7,
+              }}
+            >
               <Text style={[styles.savingsAmount, {}]}>₹{totalSavings?.toFixed(2)}</Text>
               <Text numberOfLines={1} ellipsizeMode={'clip'} style={styles.textUnderline}>
                 ---------------------------------------------
@@ -165,25 +176,17 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
   const renderTotalSavingsAndHealthCredits = () => {
     return estimatedAmount ? (
       <View style={{ flexDirection: 'row' }}>
-        {/* <View
-          style={{
-            // justifyContent: 'flex-end',
-            position: 'absolute',
-            flexDirection: 'row',
-            // flexWrap: 'wrap',
-            // flex: 1,
-            // backgroundColor: '#00ff33',
-            // width: '100%',
-          }}
-        > */}
-        {/* </View> */}
         <View style={{ flexDirection: 'row' }}>
           {savingsSelected && renderCashbackDetailsCard(-155)}
           <View style={{ paddingRight: 8, paddingTop: 7 }}>
             <Text style={styles.savingsText}>Total</Text>
             <Text style={styles.savingsText}>savings: </Text>
           </View>
-          <View style={{ backgroundColor: '#FFFFFF', width: 80, paddingTop: 12 }}>
+          <View
+            style={{
+              paddingTop: 12,
+            }}
+          >
             <TouchableOpacity
               onPress={() => {
                 if (savingsSelected === false) {
@@ -201,12 +204,27 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
                 }
               }}
             >
-              <Text style={styles.savingsAmount}>₹{totalSavings?.toFixed(2)}</Text>
-              <Text numberOfLines={1} ellipsizeMode={'clip'} style={styles.textUnderline}>
-                -------------------
+              <Text
+                style={styles.savingsAmount}
+                ref={savingsTextRef}
+                onLayout={(event) => {
+                  const layout = event.nativeEvent.layout;
+                  console.log('layout of savings', layout);
+                  setSavingsTextWidth(layout.width);
+                }}
+              >
+                ₹{totalSavings?.toFixed(2)}
+              </Text>
+              <Text
+                numberOfLines={1}
+                ellipsizeMode={'clip'}
+                style={[styles.textUnderline, { width: savingsTextWidth }]}
+              >
+                --------------------------------------------------------
               </Text>
             </TouchableOpacity>
           </View>
+          {console.log('savingsTextWidth', savingsTextWidth, hcTextWidth)}
           <View style={styles.borderLine}></View>
         </View>
         <View style={{ flexDirection: 'row' }}>
@@ -214,30 +232,49 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
           <View style={{ paddingLeft: 14, paddingRight: 10 }}>
             <OneApollo style={{ height: 43, width: 55 }} />
           </View>
-          <View style={{ backgroundColor: '#FFFFFF', paddingTop: 5 }}>
-            <TouchableOpacity
-              onPress={() => {
-                if (HCSectionSelected === false) {
-                  if (savingsSelected === false) {
-                    setShowCashbackCard(!showCashbackCard);
-                    setHCSectionSelected(true);
-                  } else {
-                    setShowCashbackCard(true);
-                    setHCSectionSelected(true);
-                    setSavingsSelected(false);
-                  }
-                } else {
-                  setShowCashbackCard(false);
-                  setHCSectionSelected(false);
-                }
-              }}
-            >
+          <View style={{ paddingTop: 5 }}>
+            <View style={{ marginBottom: 2 }}>
               <Text style={styles.savingsText}>Credits (HC) earned:</Text>
-              <Text style={styles.hcEarned}>79HC</Text>
-              <Text numberOfLines={1} ellipsizeMode={'clip'} style={styles.textUnderline}>
-                ---------
-              </Text>
-            </TouchableOpacity>
+            </View>
+            <View style={{ alignItems: 'baseline' }}>
+              <TouchableOpacity
+                onPress={() => {
+                  if (HCSectionSelected === false) {
+                    if (savingsSelected === false) {
+                      setShowCashbackCard(!showCashbackCard);
+                      setHCSectionSelected(true);
+                    } else {
+                      setShowCashbackCard(true);
+                      setHCSectionSelected(true);
+                      setSavingsSelected(false);
+                    }
+                  } else {
+                    setShowCashbackCard(false);
+                    setHCSectionSelected(false);
+                  }
+                }}
+                // style={{ alignItems: 'flex-start' }}
+              >
+                <Text
+                  style={styles.hcEarned}
+                  ref={hcTextRef}
+                  onLayout={(event) => {
+                    const layout = event.nativeEvent.layout;
+                    console.log('layout of HC', layout);
+                    setHCTextWidth(layout.width);
+                  }}
+                >
+                  79HC
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  ellipsizeMode={'clip'}
+                  style={[styles.textUnderline, { width: hcTextWidth }]}
+                >
+                  ----------------------------------
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </View>
