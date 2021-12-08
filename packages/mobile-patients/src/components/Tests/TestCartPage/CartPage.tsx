@@ -379,9 +379,29 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   useEffect(() => {
     const isRecommendationShown = recommedationData?.length > 2;
     if (cartItems?.length > 0 && recomData?.length > 0 && !loading) {
-      triggerCartPageViewed(isRecommendationShown, recomData);
+    const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
+    const pinCodeFromAddress = addressToUse?.zipcode!;
+    const cityFromAddress = addressToUse?.city;
+    DiagnosticCartViewed(
+      'cart page',
+      currentPatient,
+      cartItems,
+      couponDiscount,
+      grandTotal,
+      uploadPrescriptionRequired,
+      diagnosticSlot,
+      coupon,
+      hcCharges,circlePlanValidity,
+      circleSubscriptionId,
+      isDiagnosticCircleSubscription,
+      pinCodeFromAddress,
+      cityFromAddress,
+      '',
+      isRecommendationShown,
+      recomData
+    );
     }
-  }, [cartItems?.length, recomData?.length]);
+  }, [cartItems?.length, recomData?.length, loading]);
 
   const getDiagnosticsAvailability = (
     cityIdForAddress: number,

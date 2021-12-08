@@ -448,6 +448,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       isDiagnosticCircleSubscription,
       pinCodeFromAddress,
       cityFromAddress,
+      coupon,
+      false,
+      []
     );
     //add coupon code + coupon discount
   }
