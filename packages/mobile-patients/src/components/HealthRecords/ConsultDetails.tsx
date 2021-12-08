@@ -633,7 +633,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       | CleverTapEvents[CleverTapEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS]
       | CleverTapEvents[CleverTapEventName.DOWNLOAD_PRESCRIPTION] = {
       ...requireCasesheetDetails,
-      'Doctor Name': g(data, 'fullName')!,
+      'Doctor Name': g(data, 'displayName') || '',
       'Speciality ID': g(data, 'specialty', 'id')!,
       'Speciality Name': g(data, 'specialty', 'name')!,
       'Doctor Category': g(data, 'doctorType')!,

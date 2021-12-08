@@ -268,7 +268,7 @@ export const CheckReschedulePopup: React.FC<CheckRescheduleProps> = (props) => {
         setLoading!(false);
         const params = {
           Data: res?.data?.bookRescheduleAppointment?.appointmentDetails,
-          DoctorName: data?.doctorInfo?.fullName,
+          DoctorName: data?.doctorInfo?.displayName,
         };
         navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar, params);
       })

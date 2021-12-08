@@ -1976,7 +1976,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Hospital name': 'NA',
     };
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {
-      DoctorName: doctorDetails.fullName!,
+      DoctorName: doctorDetails?.displayName,
       Source: source,
       DoctorID: doctorDetails.id,
       SpecialityID: g(doctorDetails, 'specialty', 'id')!,

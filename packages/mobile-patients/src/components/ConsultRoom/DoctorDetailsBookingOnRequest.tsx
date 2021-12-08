@@ -583,7 +583,7 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
       'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Doctor ID': g(doctorDetails, 'id')!,
-      'Doctor Name': g(doctorDetails, 'fullName')!,
+      'Doctor Name': g(doctorDetails, 'displayName')!,
       'Speciality Name': g(doctorDetails, 'specialty', 'name')!,
       'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
       'Media Source': mediaSource,
@@ -594,7 +594,7 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
   const renderHowItWorks = (doctorDetails: getDoctorDetailsById_getDoctorDetailsById) => {
     return (
       <BookingRequestCard
-        doctorName={doctorDetails.fullName || ''}
+        doctorName={doctorDetails?.displayName || ''}
         onPress={() => null}
         navigation={props.navigation}
       />
@@ -624,7 +624,7 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
       'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Doctor ID': g(doctorDetails, 'id')!,
-      'Doctor Name': g(doctorDetails, 'fullName')!,
+      'Doctor Name': g(doctorDetails, 'displayName')!,
       'Speciality Name': g(doctorDetails, 'specialty', 'name')!,
       'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
     };
@@ -664,7 +664,7 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
           {doctorDetails && (
             <View style={styles.detailsViewStyle}>
               <View style={styles.doctorNameViewStyle}>
-                <Text style={styles.doctorNameStyles}>{doctorDetails.fullName}</Text>
+                <Text style={styles.doctorNameStyles}>{doctorDetails?.displayName}</Text>
                 <TouchableOpacity
                   activeOpacity={1}
                   onPress={() => onClickDoctorShare()}
@@ -741,7 +741,7 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
         return (
           <View style={styles.cardView}>
             <View style={styles.labelView}>
-              <Text style={styles.labelStyle}>{doctorDetails.fullName}’s Clinic</Text>
+              <Text style={styles.labelStyle}>{doctorDetails?.displayName}’s Clinic</Text>
             </View>
             <FlatList
               keyExtractor={(_, index) => index.toString()}
@@ -877,7 +877,7 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
       return (
         <View style={styles.cardView}>
           <View style={styles.labelView}>
-            <Text style={styles.labelStyle}>{doctorDetails.fullName}’s Team</Text>
+            <Text style={styles.labelStyle}>{doctorDetails?.displayName}’s Team</Text>
             <Text style={styles.labelStyle}>
               {doctorDetails.starTeam.length}
               {doctorDetails.starTeam.length == 1 ? ' Doctor' : ' Doctors'}
@@ -931,7 +931,7 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
     });
 
     const eventAttributes: WebEngageEvents[WebEngageEventName.BOOK_APPOINTMENT] = {
-      'Doctor Name': g(doctorDetails, 'fullName')!,
+      'Doctor Name': g(doctorDetails, 'displayName')!,
       'Doctor City': g(doctorDetails, 'city')!,
       'Type of Doctor': g(doctorDetails, 'doctorType')!,
       'Doctor Specialty': g(doctorDetails, 'specialty', 'name')!,
@@ -1050,7 +1050,7 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
         <BookingRequestSubmittedOverlay
           setdisplayoverlay={() => setSubmittedDisplayOverlay(false)}
           navigation={props.navigation}
-          doctor={doctorDetails?.fullName || ''}
+          doctor={doctorDetails?.displayName || ''}
           error={requestError}
           errorMessage={requestErrorMessage || 'Something went wrong! \nPlease try again'}
         />
