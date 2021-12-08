@@ -5089,7 +5089,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     return (
       <View
         style={{
-          backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
           paddingTop: 7,
           paddingHorizontal: 5,
         }}
@@ -5806,13 +5805,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                   ? null
                   : renderListView('Active Appointments', 'normal')}
                 <View>{renderAllConsultedDoctors()}</View>
-
+                {isReferrerAvailable && renderReferralBanner()}
                 {renderHeadings('Circle Membership and More')}
                 {isCircleMember === '' && circleDataLoading && renderCircleShimmer()}
                 <View>{isCircleMember === 'yes' && !circleDataLoading && renderCircle()}</View>
                 {isCircleMember === 'no' && renderCircleBuyNow()}
                 {showCirclePlans && renderCircleSubscriptionPlans()}
                 {showCircleActivationcr && renderCircleActivation()}
+
                 {bannerLoading && renderBannerShimmer()}
 
                 <View>{renderBannersCarousel()}</View>
