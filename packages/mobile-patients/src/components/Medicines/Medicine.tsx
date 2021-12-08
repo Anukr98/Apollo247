@@ -113,6 +113,7 @@ import {
   addPharmaItemToCart,
   getDiscountPercentage,
   getIsMedicine,
+  getAge,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { USER_AGENT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
@@ -174,6 +175,9 @@ import { setItem, getItem } from '@aph/mobile-patients/src/helpers/TimedAsyncSto
 import { SuggestedQuantityNudge } from '@aph/mobile-patients/src/components/SuggestedQuantityNudge/SuggestedQuantityNudge';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 import { CircleBottomContainer } from '@aph/mobile-patients/src/components/Medicines/Components/CircleBottomContainer';
+import { WhatsappRedirectionStickyNote } from '@aph/mobile-patients/src/components/Medicines/Components/WhatsappRedirectionStickyNote';
+import { WhatsappRedirectionBanner } from '@aph/mobile-patients/src/components/Medicines/Components/WhatsappRedirectionBanner';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const styles = StyleSheet.create({
   scrollViewStyle: {
@@ -343,6 +347,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const hasLocation = !!cartLocationDetails?.pincode || !!defaultAddress;
   const pharmacyPincode = cartLocationDetails?.pincode || defaultAddress?.zipcode;
   const [isFocused, setIsFocused] = useState<boolean>(false);
+  const [showWhatsappRedirectionIcon, setShowWhatsappRedirectionIcon] = useState<boolean>(true);
+  const scrollViewRef = React.useRef<KeyboardAwareScrollView>(null);
+  const windowHeight = Dimensions.get('window').height;
+  const scrollCount = useRef<number>(0);
+
   type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
   const postwebEngageCategoryClickedEvent = (
     categoryId: string,
@@ -2069,17 +2078,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 comingFromSearch: true,
                 navSrcForSearchSuccess: 'Pharmacy Home',
               });
+              setSearchText('');
+              setMedicineList([]);
+              setSearchFocused(false);
             }
           }}
           value={searchText}
           onFocus={() => {
             setSearchFocused(true);
             setCategoryTreeVisible(false);
-          }}
-          onBlur={() => {
-            setSearchFocused(false);
-            setMedicineList([]);
-            setSearchText('');
           }}
           onChangeText={(value) => {
             if (isValidSearch(value) && value.length >= 3) {
@@ -2362,6 +2369,42 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const bannerScrollRef = React.useRef<View>(null);
+
+  const renderWhatsappBanner = () => {
+    return (
+      AppConfig.Configuration.WHATSAPP_TO_ORDER.bannerVisibility && (
+        <View
+          ref={bannerScrollRef}
+          onLayout={(event) => {
+            const layout = event.nativeEvent.layout;
+            setShowWhatsappRedirectionIcon(layout.y > 0);
+          }}
+        >
+          <WhatsappRedirectionBanner />
+        </View>
+      )
+    );
+  };
+
+  const postScrollScreenEvent = () => {
+    const navSrc = props.navigation.getParam('comingFrom');
+    const eventAttributes: CleverTapEvents[CleverTapEventName.SCREEN_SCROLLED] = {
+      User_Type: getUserType(allCurrentPatients),
+      'Patient Name': currentPatient?.firstName,
+      'Patient UHID': currentPatient?.uhid,
+      'Patient age': getAge(currentPatient?.dateOfBirth),
+      'Circle Member': circleSubscriptionId ? 'True' : 'False',
+      'Customer ID': currentPatient?.id,
+      'Patient gender': currentPatient?.gender,
+      'Mobile number': currentPatient?.mobileNumber,
+      'Page name': 'medicine page',
+      'Nav src': navSrc || '',
+      Scrolls: scrollCount.current,
+    };
+    postCleverTapEvent(CleverTapEventName.SCREEN_SCROLLED, eventAttributes);
+  };
+
   const renderSections = () => {
     if (!data) {
       return null;
@@ -2370,6 +2413,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const metaData = [
       ...(data?.metadata || []),
       { section_key: 'circleBanners', section_name: '', section_position: 4, visible: true },
+      {
+        section_key: 'whatsappRedirectionBanner',
+        section_name: '',
+        section_position: 9,
+        visible: true,
+      },
     ];
 
     const staticSectionKeys = [
@@ -2379,6 +2428,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       'circleBanners',
       'recommended_products',
       'shop_by_brand',
+      'whatsappRedirectionBanner',
     ];
     const sectionsView = metaData
       .filter((item) => item.visible)
@@ -2396,6 +2446,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             ? renderCarouselBanners()
             : section_key === 'recommended_products'
             ? renderHotSellers(section_name, recommendedProducts, -1)
+            : section_key === 'whatsappRedirectionBanner'
+            ? renderWhatsappBanner()
             : section_key === 'shop_by_brand'
             ? renderShopByBrand(section_name, data[section_key] || [])
             : null;
@@ -2419,7 +2471,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       });
 
     return (
-      <ScrollView removeClippedSubviews={true} bounces={false} style={styles.scrollViewStyle}>
+      <ScrollView
+        removeClippedSubviews={true}
+        bounces={false}
+        style={styles.scrollViewStyle}
+        scrollEventThrottle={0}
+        onScroll={() => {
+          scrollCount.current += 1;
+          postScrollScreenEvent();
+        }}
+      >
         <CategoryAndSpecialOffers
           containerStyle={styles.categoryAndSpecialOffers}
           onPressShopByCategory={() => setCategoryTreeVisible(true)}
@@ -2563,22 +2624,37 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
-        <View style={{ backgroundColor: 'white' }}>
-          {renderTopView()}
-          {renderSearchInput()}
-          {renderSearchResults()}
-        </View>
+        <KeyboardAwareScrollView
+          ref={scrollViewRef}
+          bounces={false}
+          keyboardShouldPersistTaps="always"
+          onScroll={(event) => {
+            bannerScrollRef.current &&
+              bannerScrollRef.current.measure(
+                (x: any, y: any, width: any, height: any, pagex: any, pagey: any) => {
+                  if (Platform.OS === 'android') {
+                    setShowWhatsappRedirectionIcon(pagey < 0 || pagey > windowHeight);
+                  } else if (Platform.OS === 'ios') setShowWhatsappRedirectionIcon(pagey === 0);
+                }
+              );
+          }}
+        >
+          <View style={{ backgroundColor: 'white' }}>
+            {renderTopView()}
+            {renderSearchInput()}
+            {renderSearchResults()}
+          </View>
 
-        {pageLoading ? renderMedicinesShimmer() : null}
+          {pageLoading ? renderMedicinesShimmer() : null}
 
-        <View style={{ flex: 1, paddingBottom: !!serverCartItems?.length ? 80 : 0 }}>
-          {renderSections()}
-          {renderOverlay()}
-          {!!serverCartItems?.length && renderCircleCartDetails()}
-          {renderCategoryTree()}
-        </View>
-        {serverCartLoading && <Spinner />}
+          <View style={{ flex: 1, paddingBottom: !!serverCartItems?.length ? 80 : 0 }}>
+            {renderSections()}
+            {renderOverlay()}
+            {renderCategoryTree()}
+          </View>
+        </KeyboardAwareScrollView>
       </SafeAreaView>
+      {!!serverCartItems?.length && renderCircleCartDetails()}
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
       {showCirclePopup && renderCircleMembershipPopup()}
       {showSuggestedQuantityNudge &&
@@ -2597,6 +2673,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setCurrentProductQuantityInCart={setCurrentProductQuantityInCart}
           />
         )}
+      {AppConfig.Configuration.WHATSAPP_TO_ORDER.iconVisibility && showWhatsappRedirectionIcon && (
+        <WhatsappRedirectionStickyNote />
+      )}
     </View>
   );
 };

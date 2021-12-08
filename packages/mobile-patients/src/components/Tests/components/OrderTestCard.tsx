@@ -584,7 +584,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       style={[styles.containerStyle, props.style]}
       key={props?.orderId}
     >
-      {showRatingView()}
+      {!props.isHelp ? showRatingView() : null}
       <View key={props?.orderId} style={{ padding: 16, paddingBottom: 12 }}>
         {renderTopView()}
         {renderMidView()}

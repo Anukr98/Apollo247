@@ -2,6 +2,7 @@ import Axios, { AxiosResponse, Canceler } from 'axios';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { getTagalysConfig, Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { string } from '../strings/string';
+import { Buffer } from 'buffer';
 
 export interface MedicineProduct {
   category_id?: string;
@@ -948,10 +949,11 @@ export const getSpecialOffersPageWidgets = (): Promise<AxiosResponse<
   SpecialOffersWidgetsApiResponse
 >> => {
   const url = `${config.SPECIAL_OFFERS_PAGE_WIDGETS[0]}`;
+  const token = Buffer.from(`${config.SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME}:${config.SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD}`, 'utf8').toString('base64');
   return Axios.get(url, {
     headers: {
-      Authorization: config.SPECIAL_OFFERS_PAGE_WIDGETS[1],
-    },
+      'Authorization': `Basic ${token}`
+    }
   });
 };
 
@@ -997,16 +999,14 @@ export const getSpecialOffersPageBrands = (): Promise<AxiosResponse<
   });
 };
 
-export const getSpecialOffersPageBrandsProducts = (
-  activeBrand: string,
-  discount_percentage: object
-): Promise<AxiosResponse<SpecialOffersBrandsProductsApiResponse>> => {
+export const getSpecialOffersPageBrandsProducts = (activeBrand: string, discountPercentage: object)
+:Promise<AxiosResponse<SpecialOffersBrandsProductsApiResponse>> => {
   const url = `${config.SPECIAL_OFFERS_BRANDS_PRODUCTS[0]}`;
   return Axios.post(
     url,
     {
       params: activeBrand,
-      filter: { discount_percentage },
+      filters: {discount_percentage : discountPercentage}
     },
     {
       headers: {
@@ -1410,6 +1410,7 @@ export const getDiagnosticListingWidget = (
 ): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
   const getWidgets = `${baseurl}/${pageName}/${widgetName}`;
+  console.log({getWidgets})
   return Axios.get(getWidgets, {
     headers: {
       Authorization: config.DRUPAL_CONFIG[1],
@@ -1481,6 +1482,18 @@ export const getBrandPagesData = async (
     },
   });
   return response;
+};
+
+export const fetchDiagnosticCoupons = (
+  type: string,
+  packageId?: any,
+): Promise<AxiosResponse<any>> => {
+  const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
+  let url = `${baseUrl}/frontend?type=${type}`;
+  if (!!packageId) {
+    url += `&packageId=${packageId}`;
+  }
+  return Axios.get(url);
 };
 
 export const getConsultPackages = (): Promise<AxiosResponse<any>> => {

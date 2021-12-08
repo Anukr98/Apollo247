@@ -180,7 +180,7 @@ const pushTheView = (
       break;
 
     case 'ConsultRoom':
-      navigation.replace(AppRoutes.ConsultRoom);
+      navigation.replace(AppRoutes.HomeScreen);
       break;
 
     case 'Speciality':

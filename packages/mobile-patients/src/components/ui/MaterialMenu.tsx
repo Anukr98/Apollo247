@@ -30,6 +30,7 @@ const styles = StyleSheet.create({
     maxHeight: 200,
     alignItems: 'center',
     ...theme.viewStyles.shadowStyle,
+    backgroundColor: '#fff',
   },
   itemContainer1: {
     height: 38,

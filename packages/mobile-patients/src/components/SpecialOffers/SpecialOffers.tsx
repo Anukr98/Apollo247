@@ -3,7 +3,7 @@ import { SafeAreaView, StyleSheet } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { MedicineListingHeader } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingHeader';
 import {
-  SpecialOffersWidgetsApiResponse,
+  SpecialOfferWidgetsData,
   getSpecialOffersPageWidgets,
   SpecialOffersCouponsApiResponse,
   getSpecialOffersPageCoupons,
@@ -32,7 +32,7 @@ export const SpecialOffersScreen: React.FC<SpecialOffersScreenProps> = (props) =
   const { medicineHomeBannerData, medicineHotSellersData } = useShoppingCart();
   const [loading, setLoading] = useState<boolean>(true);
   const { showAphAlert } = useUIElements();
-  const [widgetOrderData, setWidgetOrderData] = useState<SpecialOffersWidgetsApiResponse>();
+  const [widgetOrderData, setWidgetOrderData] = useState<SpecialOfferWidgetsData[]>([]);
   const [categoryData, setCategoryData] = useState<SpecialOffersCategoryApiResponse>();
   const [offersData, setOffersData] = useState<SpecialOffersCouponsApiResponse>();
   const [brandsData, setBrandsData] = useState<SpecialOffersBrandsApiResponse>();
@@ -55,7 +55,7 @@ export const SpecialOffersScreen: React.FC<SpecialOffersScreenProps> = (props) =
   useEffect(() => {
     if (widgetOrderData) {
       const widget = [...widgetOrderData];
-      const newArr = widget.sort((a, b) => a.widgetRank.localeCompare(b.widgetRank));
+      const newArr = widget.sort((a, b) => a?.widgetRank?.localeCompare(b.widgetRank));
       const widgetArrayOrder = newArr.map((ele) => {
         if (+ele.widgetRank > 0) {
           return ele.widgetTitle;
@@ -119,8 +119,8 @@ export const SpecialOffersScreen: React.FC<SpecialOffersScreenProps> = (props) =
   const fetchWidgetOrderForSpecialOffersScreen = async () => {
     try {
       const widgetOrderResponse = await getSpecialOffersPageWidgets();
-      if (widgetOrderResponse && widgetOrderResponse.data) {
-        setWidgetOrderData(widgetOrderResponse.data);
+      if (widgetOrderResponse && widgetOrderResponse?.data && widgetOrderResponse?.data?.data) {
+        setWidgetOrderData(widgetOrderResponse?.data?.data);
       }
     } catch (e) {}
   };

@@ -7,10 +7,7 @@ import { ChatRoom } from '@aph/mobile-patients/src/components/Consult/ChatRoom';
 import { AppointmentDetails } from '@aph/mobile-patients/src/components/ConsultRoom/AppointmentDetails';
 import { AppointmentDetailsPhysical } from '@aph/mobile-patients/src/components/ConsultRoom/AppointmentDetailsPhysical';
 import { Consult } from '@aph/mobile-patients/src/components/ConsultRoom/Consult';
-import {
-  ConsultRoom,
-  tabBarOptions,
-} from '@aph/mobile-patients/src/components/ConsultRoom/ConsultRoom';
+import { HomeScreen, tabBarOptions } from '@aph/mobile-patients/src/components/HomeScreen';
 import { DoctorDetails } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorDetails';
 import { DoctorDetailsBookingOnRequest } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorDetailsBookingOnRequest';
 import { DoctorSearch } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearch';
@@ -169,13 +166,14 @@ import { EarnedPoints } from '@aph/mobile-patients/src/components/ReferAndEarn/E
 import { RefererTermsAndCondition } from '@aph/mobile-patients/src/components/ReferAndEarn/RefererTermsAndCondition';
 import { RefererFAQ } from '@aph/mobile-patients/src/components/ReferAndEarn/ReferrerFAQ';
 import { BrandPages } from '@aph/mobile-patients/src/components/BrandPages/BrandPages';
+import { CouponScreen } from '@aph/mobile-patients/src/components/Tests/TestCartPage/CouponScreen';
 import { InformativeContent } from '@aph/mobile-patients/src/components/HealthRecords/InformationContent';
 import { ServerCart } from '@aph/mobile-patients/src/components/ServerCart/ServerCart';
 import { ReviewCart } from '@aph/mobile-patients/src/components/ServerCart/ReviewCart';
 
 export enum AppRoutes {
   Login = 'Login',
-  ConsultRoom = 'ConsultRoom',
+  HomeScreen = 'HomeScreen',
   TabBar = 'TabBar',
   DoctorSearch = 'DoctorSearch',
   SignUp = 'SignUp',
@@ -329,6 +327,7 @@ export enum AppRoutes {
   RefererTermsAndCondition = 'RefererTermsAndCondition',
   RefererFAQ = 'RefererFAQ',
   BrandPages = 'BrandPages',
+  CouponScreen = 'CouponScreen',
   InformativeContent = 'InformativeContent',
   ServerCart = 'ServerCart',
   ReviewCart = 'ReviewCart',
@@ -375,9 +374,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
       gesturesEnabled: false,
     },
   },
-  [AppRoutes.ConsultRoom]: {
-    screen: ConsultRoom,
-    path: 'ConsultRoomPage',
+  [AppRoutes.HomeScreen]: {
+    screen: HomeScreen,
+    path: 'HomeScreen',
   },
   [AppRoutes.DoctorSearchListing]: {
     screen: DoctorSearchListing,
@@ -836,6 +835,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.BrandPages]: {
     screen: BrandPages,
+  },
+  [AppRoutes.CouponScreen]: {
+    screen: CouponScreen,
   },
   [AppRoutes.InformativeContent]: {
     screen: InformativeContent,

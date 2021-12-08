@@ -22,9 +22,9 @@ export const TestListingHeader: React.FC<Props> = ({ navigation, movedFrom, head
 
   const onBackPress = () => {
     if (movedFrom === 'registration') {
-      navigation.replace(AppRoutes.ConsultRoom);
+      navigation.replace(AppRoutes.HomeScreen);
     } else if (movedFrom == 'deeplink') {
-      navigation.replace(AppRoutes.ConsultRoom);
+      navigation.replace(AppRoutes.HomeScreen);
     } else {
       navigation.goBack();
     }

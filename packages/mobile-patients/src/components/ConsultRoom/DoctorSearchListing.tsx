@@ -1061,7 +1061,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               key: null,
               actions: [
                 NavigationActions.navigate({
-                  routeName: AppRoutes.ConsultRoom,
+                  routeName: AppRoutes.HomeScreen,
                 }),
               ],
             })

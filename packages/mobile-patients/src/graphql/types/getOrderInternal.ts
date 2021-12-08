@@ -48,6 +48,24 @@ export interface getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails {
   ordersList: (getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails_ordersList | null)[] | null;
 }
 
+export interface getOrderInternal_getOrderInternal_SubscriptionOrderDetails_group_plan {
+  __typename: "GroupPlanType";
+  name: string;
+  price: number;
+  valid_duration: number;
+  plan_summary: any | null;
+}
+
+export interface getOrderInternal_getOrderInternal_SubscriptionOrderDetails {
+  __typename: "UserSubscription";
+  end_date: any;
+  expires_in: number;
+  order_id: string | null;
+  sub_plan_id: any | null;
+  payment_reference: any;
+  group_plan: getOrderInternal_getOrderInternal_SubscriptionOrderDetails_group_plan;
+}
+
 export interface getOrderInternal_getOrderInternal_refunds {
   __typename: "Refund";
   status: REFUND_STATUSES | null;
@@ -67,11 +85,12 @@ export interface getOrderInternal_getOrderInternal {
   status_id: number | null;
   payment_order_id: string;
   DiagnosticsPaymentDetails: getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails | null;
+  SubscriptionOrderDetails: getOrderInternal_getOrderInternal_SubscriptionOrderDetails | null;
   refunds: (getOrderInternal_getOrderInternal_refunds | null)[] | null;
 }
 
 export interface getOrderInternal {
-  getOrderInternal: getOrderInternal_getOrderInternal;
+  getOrderInternal: getOrderInternal_getOrderInternal | null;
 }
 
 export interface getOrderInternalVariables {
