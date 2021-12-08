@@ -651,6 +651,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         client,
         currentPatient?.mobileNumber
       );
+
       const pastOrders =
         getPastOrderRecommendation?.data?.getDiagnosticItemRecommendationsByPastOrders?.itemsData;
       //show top 10 , res > 10
@@ -665,7 +666,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
             string.diagnostics.homepagePastOrderRecommendations
           );
         } else {
-          const getRecommendationsFromDrupal = getRanking('0')?.[0]?.diagnosticWidgetData;
+          const findRank =
+            !!drupalWidgetData &&
+            drupalWidgetData?.length > 0 &&
+            drupalWidgetData?.filter((item: any) => item?.diagnosticwidgetsRankOrder === '0');
+          const getRecommendationsFromDrupal = findRank?.[0]?.diagnosticWidgetData;
           const appenedRecommendations = [
             ...new Set(pastOrders?.concat(getRecommendationsFromDrupal)),
           ];
@@ -1759,7 +1764,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       data?.diagnosticWidgetData?.find((item: any) => item?.diagnosticPricing);
     const showViewAll = !!isPricesAvailable && data?.diagnosticWidgetData?.length > 2;
     const lengthOfTitle = data?.diagnosticWidgetTitle?.length;
-
     return (
       <View style={styles.widgetSpacing}>
         {
