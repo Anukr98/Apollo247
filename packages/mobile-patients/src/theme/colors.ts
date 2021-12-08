@@ -48,6 +48,7 @@ const Buttons = {
   BUTTON_BG: '#fcb716',
   BUTTON_TEXT: white,
   BUTTON_DISABLED_BG: '#fed984',
+  BUTTON_ORANGE: '#FC9916',
 };
 
 const Card = {
@@ -163,6 +164,7 @@ const Common = {
   LIGHT_GREEN_ONE: '#E8EDF0',
   LIGHT_BLUE_TWO: '#DCF0FF',
   BLUE_GRADIENT_ONE: '#1C9FC2',
+  LIGHT_GRAY_3: '#ECECEC',
   DISCOUNT_GREEN: "#34AA55",
   GREEN_BG: "#F3FFFF",
   LIGHT_REFERRER_AQUA_ONE: "#85e2dc",

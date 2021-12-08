@@ -1251,6 +1251,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Free_Consult_Message',
       PROD: 'Free_Consult_Message',
     },
+    WhatsApp_To_Order: {
+      QA: 'QA_WhatsApp_To_Order',
+      PROD: 'WhatsApp_To_Order',
+    },
     Diagnostics_Nudge_Message_Condition: {
       QA: 'QA_Diagnostics_Show_Nudge_Message',
       PROD: 'Diagnostics_Show_Nudge_Message',
@@ -1636,6 +1640,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'Free_Consult_Message',
         'FREE_CONSULT_MESSAGE',
         (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.FREE_CONSULT_MESSAGE
+      );
+
+      setAppConfig(
+        'WhatsApp_To_Order',
+        'WHATSAPP_TO_ORDER',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.WHATSAPP_TO_ORDER
       );
 
       setAppConfig(
