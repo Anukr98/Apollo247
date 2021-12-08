@@ -4282,11 +4282,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         style={[
           styles.circleContainer,
           {
-            borderWidth: circleStatus !== 'active' ? 1 : 0,
+            borderWidth: circleStatus !== 'active' ? 0 : 0,
             borderColor: circleStatus !== 'active' ? '#F9D5B4' : '',
           },
         ]}
-        colors={circleStatus === 'disabled' ? ['#FFEEDB', '#FFFCFA'] : ['#fff', '#fff']}
+        colors={circleStatus === 'disabled' ? ['#fff', '#fff'] : ['#fff', '#fff']}
       >
         {expiry > 0 && circleStatus === 'active' && renew && circleSavings > 0 ? (
           <CircleTypeCard1
@@ -4335,7 +4335,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             credits={healthCredits?.toString()}
             savings={circleSavings?.toString()}
           />
-        ) : circleStatus !== 'disabled' && circleSavings > 0 ? (
+        ) : circleStatus === 'disabled' && circleSavings > 0 ? (
           <CircleTypeCard5
             onButtonPress={() => {
               setShowCirclePlans(true);
@@ -4346,7 +4346,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             expired={expired}
             renew={renew}
           />
-        ) : circleStatus !== 'disabled' ? (
+        ) : circleStatus === 'disabled' ? (
           <CircleTypeCard6
             onButtonPress={() => {
               setShowCirclePlans(true);
