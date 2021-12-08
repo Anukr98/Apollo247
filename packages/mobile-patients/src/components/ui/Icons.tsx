@@ -2748,6 +2748,19 @@ export const DoctorConsultIcon: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/doctorConsultIcon-1.webp')}
   />
 );
+
+export const WhatsAppBannerDoctorIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/whatsappBannerDoctorIcon.webp')} />
+);
+
+export const ApolloPharmacyIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/apolloPharmacy.webp')} />
+);
+
+export const WhatsappIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/whatsappIcon.webp')} />
+);
+
 export const OffersIconOrange: React.FC<IconProps> = (props) => (
   <IconBase
     size="sm"

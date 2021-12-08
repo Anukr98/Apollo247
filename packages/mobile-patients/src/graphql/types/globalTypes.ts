@@ -2261,6 +2261,10 @@ export enum CALL_TO_ORDER_CTA_PAGE_ID {
   TESTLISTING = 'TESTLISTING',
 }
 
+export interface GetMedicineOrderCancelReasonsV2Input {
+  orderId?: number | null;
+}
+
 export interface SubscriptionDetailsInput {
   specialtyName?: string | null;
   benefitId?: string | null;

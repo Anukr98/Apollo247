@@ -37,9 +37,10 @@ export interface DealsByBrandsProps extends NavigationScreenProps<{}> {
 
 export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
   const brandsData = props.brandsData;
-  const brandsResult = brandsData.sort((a, b) => a.position.localeCompare(b.position));
+  const brandsResult = brandsData.sort((a, b) => a?.position?.localeCompare(b?.position));
   const [loading, setLoading] = useState<boolean>(false);
-  const [selectedBrandID, setSelectedBrandID] = useState<Number>(brandsResult[0].id);
+  const [selectedBrandID, setSelectedBrandID] = useState<Number>(brandsResult[0]?.id);
+  const [selectedBrandName, setSelectedBrandName] = useState<string>(brandsResult[0]?.url_key);
   const [productData, setProductData] = useState<MedicineProduct[]>();
   const [minDiscount, setMinDiscount] = useState<string>('10');
   const [maxDiscount, setMaxDiscount] = useState<string>('100');
@@ -72,11 +73,11 @@ export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
 
       const discountPercentage = { min: minDiscount, max: maxDiscount };
       const productsResponse = await getSpecialOffersPageBrandsProducts(
-        selectedBrandID.toString(),
+        selectedBrandName,
         discountPercentage
       );
       if (productsResponse?.data?.products) {
-        setProductData(productsResponse.data.products);
+        setProductData(productsResponse?.data?.products);
       } else {
         setProductData([]);
       }
@@ -90,15 +91,16 @@ export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
     }
   };
 
-  const onPressBrand = (id: number, minValue: string, maxValue: string) => {
+  const onPressBrand = (id: number, urlKey: string, minValue: string, maxValue: string) => {
     setSelectedBrandID(id);
+    setSelectedBrandName(urlKey);
     setMinDiscount(minValue);
     setMaxDiscount(maxValue);
   };
 
   const renderItem = (imgUrl: string, item: SpecialOffersBrandsApiResponse) => {
     const promotionalMessage = item?.promotional_message;
-    const { id } = item;
+    const { id, url_key } = item;
     const discountValueArray = item?.discount.split('-');
     const discountPresent = discountValueArray.length === 2;
 
@@ -108,8 +110,8 @@ export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
           style={id === selectedBrandID ? styles.selectedBrandStyles : {}}
           onPress={() =>
             discountPresent
-              ? onPressBrand(id, discountValueArray[0], discountValueArray[1])
-              : onPressBrand(id, defaultMinDiscount, defaultMaxDiscount)
+              ? onPressBrand(id, url_key, discountValueArray[0], discountValueArray[1])
+              : onPressBrand(id, url_key, defaultMinDiscount, defaultMaxDiscount)
           }
         >
           <View style={styles.categoryBoxStyles}>
@@ -183,8 +185,10 @@ export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
                 <Text style={styles.priceCancelStyle}>{`${'\u20B9'}${item?.price}`}</Text>
               )}
               {specialPrice && (
-                <Text style={styles.discountStyle}>{`${(getDiscountPercentage,
-                (item?.price, item?.special_price))}%off`}</Text>
+                <Text style={styles.discountStyle}>{`${getDiscountPercentage(
+                  item?.price,
+                  item?.special_price
+                )}%off`}</Text>
               )}
             </View>
           </TouchableOpacity>
