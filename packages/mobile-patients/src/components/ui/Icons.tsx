@@ -896,9 +896,7 @@ export const CashbackIcon: React.FC<IconProps> = (props) => (
   />
 );
 
-export const DeliveryInIcon: React.FC<IconProps> = (props) => (
-  <IconBase style={{ height: 26, width: 115 }} {...props} source={require('./icons/ribbon.webp')} />
-);
+
 
 export const ToggleOn: React.FC<IconProps> = (props) => (
   <IconBase
