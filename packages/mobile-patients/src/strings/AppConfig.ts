@@ -326,14 +326,14 @@ const appStaticVariables = {
     orderConfirmationHeader: 'FREE Consult booked for you',
     prescriptionOptionHeader: "I don't have a prescription",
   },
-  DIAGNOSTICS_NUDGE_MESSAGE_CONDITION: [{"Circle": true, "NonCircle": true}],
-  DIAGNOSTICS_NUDGE_MESSAGE_TEXT:"Extra 15% off for circle customers. TnC Apply",
-  DIAGNOSITCS_WIDGET_TITLES: 
-    {
-      "frequentlyBrought": string.diagnostics.frequentlyBrought,
-      "topBookedTests": string.diagnostics.topBookedTests,
-      "similarPackages": string.diagnostics.similarPackages
-    },
+  DIAGNOSTICS_NUDGE_MESSAGE_CONDITION: [{ Circle: true, NonCircle: true }],
+  DIAGNOSTICS_NUDGE_MESSAGE_TEXT: 'Extra 15% off for circle customers. TnC Apply',
+  DIAGNOSITCS_WIDGET_TITLES: {
+    frequentlyBrought: string.diagnostics.frequentlyBrought,
+    topBookedTests: string.diagnostics.topBookedTests,
+    similarPackages: string.diagnostics.similarPackages,
+  },
+  DeliveryIn_TAT_Text: 'Express Delivery',
 };
 
 const DEV_top_specialties = [
@@ -1613,90 +1613,90 @@ export const CancelConsultation = {
   ],
 };
 
-export const DEFAULT_OFFERS_TEMPLATE : any = {
+export const DEFAULT_OFFERS_TEMPLATE: any = {
   templates: {
-    default : {
-      "template_name": "default",
-      "banner_bg_color": {
-        "gradients": "linear-gradient",
-        "primary_color": "#FFE7AA",
-        "secondary_color": "#FCEFD0"
+    default: {
+      template_name: 'default',
+      banner_bg_color: {
+        gradients: 'linear-gradient',
+        primary_color: '#FFE7AA',
+        secondary_color: '#FCEFD0',
       },
-      "title_text_color": "#A15D59",
-      "subtitle_text_color": "#A15D59",
-      "coupon_color": "#A15D59",
-      "left_notch": {
-        "type": "text",
-        "text_color": "#FFFFFF",
-        "bg_color": "#0B92DE",
-        "img_src": ""
+      title_text_color: '#A15D59',
+      subtitle_text_color: '#A15D59',
+      coupon_color: '#A15D59',
+      left_notch: {
+        type: 'text',
+        text_color: '#FFFFFF',
+        bg_color: '#0B92DE',
+        img_src: '',
       },
-      "right_notch": {
-        "type": "image",
-        "text_color": "",
-        "bg_color": "",
-        "img_src": "percentage_icon"
+      right_notch: {
+        type: 'image',
+        text_color: '',
+        bg_color: '',
+        img_src: 'percentage_icon',
       },
-      "cta": {
-        "bg_color": "#FCB716",
-        "text_color": "#FFFFFF"
-      }
+      cta: {
+        bg_color: '#FCB716',
+        text_color: '#FFFFFF',
+      },
     },
-    pharmacy_first_transaction : {
-      "template_name": "pharmacy_first_transaction",
-      "banner_bg_color": {
-        "gradients": "linear-gradient",
-        "primary_color": "rgba(252, 239, 208, 0.6)",
-        "secondary_color": "#FFE7AA"
+    pharmacy_first_transaction: {
+      template_name: 'pharmacy_first_transaction',
+      banner_bg_color: {
+        gradients: 'linear-gradient',
+        primary_color: 'rgba(252, 239, 208, 0.6)',
+        secondary_color: '#FFE7AA',
       },
-      "title_text_color": "#A15D59",
-      "subtitle_text_color": "#A15D59",
-      "coupon_color": "#A15D59",
-      "left_notch": {
-        "type": "text",
-        "text_color": "#FFFFFF",
-        "bg_color": "#0B92DE",
-        "img_src": ""
+      title_text_color: '#A15D59',
+      subtitle_text_color: '#A15D59',
+      coupon_color: '#A15D59',
+      left_notch: {
+        type: 'text',
+        text_color: '#FFFFFF',
+        bg_color: '#0B92DE',
+        img_src: '',
       },
-      "right_notch": {
-        "type": "image",
-        "text_color": "",
-        "bg_color": "",
-        "img_src": "percentage_icon"
+      right_notch: {
+        type: 'image',
+        text_color: '',
+        bg_color: '',
+        img_src: 'percentage_icon',
       },
-      "cta": {
-        "bg_color": "#FCB716",
-        "text_color": "#FFFFFF"
-      }
+      cta: {
+        bg_color: '#FCB716',
+        text_color: '#FFFFFF',
+      },
     },
     consultation_first: {
-      "template_name": "consultation_first",
-      "banner_bg_color": {
-        "gradients": "linear-gradient",
-        "primary_color": "rgba(252, 220, 255, 0.6)",
-        "secondary_color": "#FBD0FF"
+      template_name: 'consultation_first',
+      banner_bg_color: {
+        gradients: 'linear-gradient',
+        primary_color: 'rgba(252, 220, 255, 0.6)',
+        secondary_color: '#FBD0FF',
       },
-      "title_text_color": "#81407C",
-      "subtitle_text_color": "#81407C",
-      "coupon_color": "#81407C",
-      "left_notch": {
-        "type": "text",
-        "text_color": "#FFFFFF",
-        "bg_color": "#3BCA9F",
-        "img_src": ""
+      title_text_color: '#81407C',
+      subtitle_text_color: '#81407C',
+      coupon_color: '#81407C',
+      left_notch: {
+        type: 'text',
+        text_color: '#FFFFFF',
+        bg_color: '#3BCA9F',
+        img_src: '',
       },
-      "right_notch": {
-        "type": "image",
-        "text_color": "",
-        "bg_color": "",
-        "img_src": "percentage_icon"
+      right_notch: {
+        type: 'image',
+        text_color: '',
+        bg_color: '',
+        img_src: 'percentage_icon',
       },
-      "cta": {
-        "bg_color": "#81407C",
-        "text_color": "#FFFFFF"
-      }
-    }
-  }
+      cta: {
+        bg_color: '#81407C',
+        text_color: '#FFFFFF',
+      },
+    },
+  },
 };
 
 export const stepsToBookArray = [

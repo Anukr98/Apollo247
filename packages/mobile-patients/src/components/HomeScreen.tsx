@@ -57,7 +57,6 @@ import {
   Card,
   CashbackIcon,
   WhiteArrowRight,
-  DeliveryInIcon,
   MedicineHomeIcon,
   TimeBlueIcon,
   WalletHomeHC,
@@ -275,6 +274,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: theme.colors.WHITE,
+  },
+  deliveryInTatText: {
+    ...theme.viewStyles.text('SB', 12, theme.colors.WHITE),
+    alignSelf: 'center',
+    marginTop: 1.5,
   },
   searchBarViewStyle: {
     backgroundColor: theme.colors.BLUE_FADED_FLAT,
@@ -3502,6 +3506,26 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     );
   };
 
+  const renderDeliveryRibbonTag = () => {
+    return (
+      <View
+        style={{
+          marginLeft: -11,
+        }}
+      >
+        <ImageBackground
+          style={{ height: 26, width: 120 }}
+          {...props}
+          source={require('@aph/mobile-patients/src/components/ui/icons/green_ribbon.webp')}
+        >
+          <Text style={styles.deliveryInTatText}>
+            {AppConfig.Configuration.DeliveryIn_TAT_Text}
+          </Text>
+        </ImageBackground>
+      </View>
+    );
+  };
+
   const renderMenuOptions = () => {
     let arrayList = isProHealthActive ? listValuesForProHealth : listValues;
     return (
@@ -3515,9 +3539,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               return (
                 <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
                   <View style={[styles.bottom2CardView, { width: width - 32 }]}>
-                    <View style={{ marginLeft: -11 }}>
-                      <DeliveryInIcon />
-                    </View>
+                    {renderDeliveryRibbonTag()}
 
                     <View style={styles.topCardContentContainer}>
                       {item.image}
