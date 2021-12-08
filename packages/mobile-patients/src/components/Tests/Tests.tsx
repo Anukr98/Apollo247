@@ -334,6 +334,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [clickedItem, setClickedItem] = useState<any>([]);
   const [expressSlotMsg, setExpressSlotMsg] = useState<string>('');
   const [isPriceAvailable, setIsPriceAvailable] = useState<boolean>(false);
+  const [priceAvailable, setPriceAvailable] = useState<boolean>(false);
   const [fetchAddressLoading, setFetchAddressLoading] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>('');
   const [diagnosticResults, setDiagnosticResults] = useState<
@@ -469,7 +470,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }, [loading, banners]);
 
   useEffect(() => {
-    fetchPastOrderRecommendations();
+    if (drupalWidgetData?.length > 0) {
+      fetchPastOrderRecommendations();
+    }
   }, [drupalWidgetData]);
 
   function fetchNumberSpecificOrderDetails() {
@@ -933,7 +936,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     _recommendedBookings?.length >= 6
       ? setPastOrderRecommendations(_recommendedBookings)
       : setPastOrderRecommendations([]);
-    setIsPriceAvailable(true);
+    setPriceAvailable(true);
     setPastOrderRecommendationShimmer(false);
   }
 
@@ -2640,7 +2643,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               <ItemCard
                 data={pastOrderRecommendations}
                 diagnosticWidgetData={pastOrderRecommendations}
-                isPriceAvailable={isPriceAvailable}
+                isPriceAvailable={priceAvailable}
                 isCircleSubscribed={isDiagnosticCircleSubscription}
                 isServiceable={isDiagnosticLocationServiceable}
                 isVertical={false}
