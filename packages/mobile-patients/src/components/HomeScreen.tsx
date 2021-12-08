@@ -31,16 +31,9 @@ import {
   DashedLine,
   Diabetes,
   DoctorIcon,
-  DropdownGreen,
-  FemaleCircleIcon,
-  FemaleIcon,
   KavachIcon,
   HealthyLife,
   LatestArticle,
-  LinkedUhidIcon,
-  MaleCircleIcon,
-  MaleIcon,
-  MedicineCartIcon,
   MedicineIcon,
   MyHealth,
   NotificationIcon,
@@ -70,7 +63,6 @@ import {
   WalletHomeHC,
   DropDownProfile,
   CallIcon,
-  ArrowRight,
   HospitalVisit,
   VideoConsult,
 } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -117,8 +109,6 @@ import {
   MedFilter,
   MedicineProduct,
   searchMedicineApi,
-  searchProceduresAndSymptoms,
-  ProceduresAndSymptomsParams,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
@@ -237,10 +227,8 @@ import { Overlay } from 'react-native-elements';
 import { HdfcConnectPopup } from '@aph/mobile-patients/src/components/SubscriptionMembership/HdfcConnectPopup';
 import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 import {
-  renderCovidVaccinationShimmer,
   renderCircleShimmer,
   renderBannerShimmer,
-  CovidButtonShimmer,
   renderGlobalSearchShimmer,
   renderOffersForYouShimmer,
   renderAppointmentCountShimmer,
@@ -256,7 +244,6 @@ import {
   HomeScreenAttributes,
   PatientInfo as PatientInfoObj,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
-import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import { getUniqueId } from 'react-native-device-info';
 import _ from 'lodash';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -951,6 +938,94 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FAFEFF',
   },
+  medCashbackContainer1: {
+    marginHorizontal: 12,
+    marginTop: 14,
+    borderRadius: 4,
+    paddingHorizontal: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  medCouponContainer: {
+    borderRadius: 4,
+    borderColor: '#A15D59',
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    backgroundColor: '#fff',
+    paddingVertical: 1,
+    paddingHorizontal: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  medBottomContainer: {
+    flexDirection: 'row',
+    marginVertical: 12,
+    marginLeft: 12,
+    marginRight: 9,
+    justifyContent: 'space-between',
+  },
+  profileListChildContainer: {
+    flexDirection: 'row',
+    paddingRight: 8,
+    marginLeft: 4,
+    borderRightColor: 'rgba(2, 71, 91, 0.2)',
+    alignItems: 'flex-end',
+  },
+  topCardContentContainer: {
+    flexDirection: 'row',
+    marginBottom: 2,
+    paddingVertical: 4,
+    marginLeft: 10,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
+  topCardContentContainerSecondary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    marginTop: 'auto',
+  },
+  offersCardsContainer: {
+    width: width / 1.9,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    height: 165,
+    borderColor: '#D4D4D4',
+    borderWidth: 1,
+  },
+  offersCardNotch: {
+    marginBottom: 4,
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    top: 12,
+    left: 12,
+  },
+  offersCardCoupon: {
+    marginHorizontal: 10,
+    borderRadius: 4,
+    borderColor: '#A15D59',
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    backgroundColor: '#fff',
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 4,
+  },
+  offersCardCTA: {
+    width: 22,
+    height: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 11,
+    backgroundColor: '#FC9916',
+    marginVertical: 4,
+    marginRight: 4,
+  },
 });
 
 type menuOptions = {
@@ -1074,9 +1149,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const [searchText, setSearchText] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState({});
-  const testSearchResults = useRef<
-    searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
-  >([]);
+  const testSearchResults = useRef<any[]>([]);
   const medSearchResults = useRef<MedicineProduct[]>([]);
   const consultSearchResults = useRef<any[]>([]);
   const [token, setToken] = useState<string | null>('');
@@ -1152,11 +1225,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
   //cache and storage
 
-  const [recentSearches, setRecentSearches] = useState<string[]>([
-    'Some recent search',
-    'cbc',
-    'covid',
-  ]);
+  // will be used in phase 2
   const [suggestSearches, setSuggestSearches] = useState<string[]>([
     'Some suggest search',
     'covid',
@@ -1227,7 +1296,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
     const count = cacheDataStringBuffer?.appointmentCount?.value || '0';
     setAppointmentCountCache(count);
-    console.log('csk', count);
 
     const isCircleMembers = (await AsyncStorage.getItem('isCircleMember')) || '';
     setIsCircleMember(isCircleMembers);
@@ -2434,7 +2502,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             source_identifier: circleData?.source_meta_data?.source_identifier,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
-          console.log('csk ren', circleData?.renewNow);
           setRenewNow(circleData?.renewNow ? 'yes' : 'no');
           setCirclePlanId && setCirclePlanId(circleData?.plan_id);
           setCircleStatus && setCircleStatus(circleData?.status);
@@ -3292,16 +3359,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
   const renderProfileIconAsChildView = () => {
     return (
-      <View
-        style={{
-          flexDirection: 'row',
-          paddingRight: 8,
-          marginLeft: 4,
-          borderRightColor: 'rgba(2, 71, 91, 0.2)',
-          alignItems: 'flex-end',
-        }}
-      >
-        <Text style={styles.hiTextStyle}>{'hi'}</Text>
+      <View style={styles.profileListChildContainer}>
+        <Text style={styles.hiTextStyle}>{'Hi'}</Text>
         <View style={styles.nameTextContainerStyle}>
           <View style={{ flexDirection: 'row', flex: 1 }}>
             <Text style={styles.nameTextStyle} numberOfLines={1}>
@@ -3460,16 +3519,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                       <DeliveryInIcon />
                     </View>
 
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        marginBottom: 2,
-                        paddingVertical: 4,
-                        marginLeft: 10,
-                        justifyContent: 'flex-start',
-                        alignItems: 'center',
-                      }}
-                    >
+                    <View style={styles.topCardContentContainer}>
                       {item.image}
                       <Text style={[styles.topTextStyle, { color: theme.colors.LIGHT_BLUE }]}>
                         {item.title}
@@ -3501,14 +3551,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               return (
                 <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
                   <View style={styles.bottom2CardView}>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'flex-start',
-                        marginTop: 'auto',
-                      }}
-                    >
+                    <View style={styles.topCardContentContainerSecondary}>
                       {item.image}
                       <View style={styles.bottom2TextView}>
                         <Text
@@ -3630,31 +3673,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             offerDesignTemplate?.banner_bg_color?.primary_color,
             offerDesignTemplate?.banner_bg_color?.secondary_color,
           ]}
-          style={[
-            styles.bottom2CardView,
-            {
-              width: width / 1.9,
-              justifyContent: 'center',
-              alignItems: 'flex-start',
-              height: 165,
-              borderColor: '#D4D4D4',
-              borderWidth: 1,
-            },
-          ]}
+          style={[styles.bottom2CardView, styles.offersCardsContainer]}
         >
           {textForNotch.length > 1 ? (
             <View
-              style={{
-                marginBottom: 4,
-                borderRadius: 4,
-                backgroundColor: offerDesignTemplate?.left_notch?.bg_color,
-                paddingHorizontal: 8,
-                justifyContent: 'center',
-                alignItems: 'center',
-                position: 'absolute',
-                top: 12,
-                left: 12,
-              }}
+              style={[
+                styles.offersCardNotch,
+                {
+                  backgroundColor: offerDesignTemplate?.left_notch?.bg_color,
+                },
+              ]}
             >
               <Text
                 style={{
@@ -3705,21 +3733,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                 width: '100%',
               }}
             >
-              <View
-                style={{
-                  marginHorizontal: 10,
-                  borderRadius: 4,
-                  borderColor: '#A15D59',
-                  borderWidth: 1,
-                  borderStyle: 'dashed',
-                  backgroundColor: '#fff',
-                  paddingVertical: 2,
-                  paddingHorizontal: 8,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  marginVertical: 4,
-                }}
-              >
+              <View style={styles.offersCardCoupon}>
                 <Text
                   style={{
                     ...theme.viewStyles.text('M', 12, offerDesignTemplate?.coupon_color, 1, 18),
@@ -3734,16 +3748,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               </View>
 
               <TouchableOpacity
-                style={{
-                  width: 22,
-                  height: 22,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  borderRadius: 11,
-                  backgroundColor: '#FC9916',
-                  marginVertical: 4,
-                  marginRight: 4,
-                }}
+                style={styles.offersCardCTA}
                 onPress={() =>
                   textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, index + 1)
                 }
@@ -3825,15 +3830,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           >
             <View style={{ flexDirection: 'row', marginTop: -5, justifyContent: 'space-between' }}>
               <View
-                style={{
-                  marginHorizontal: 12,
-                  marginTop: 14,
-                  borderRadius: 4,
-                  backgroundColor: offerDesignTemplate?.left_notch?.bg_color,
-                  paddingHorizontal: 4,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
+                style={[
+                  styles.medCashbackContainer1,
+                  {
+                    backgroundColor: offerDesignTemplate?.left_notch?.bg_color,
+                  },
+                ]}
               >
                 <Text
                   style={{
@@ -3846,8 +3848,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                     ),
                   }}
                 >
-                  {textForNotch.length > 30
-                    ? textForNotch?.substring(textForNotch.length - 30, textForNotch.length)
+                  {textForNotch.length > 36
+                    ? textForNotch?.substring(textForNotch.length - 36, textForNotch.length)
                     : textForNotch}
                 </Text>
               </View>
@@ -3881,28 +3883,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                 : item?.subtitle?.text}
             </Text>
 
-            <View
-              style={{
-                flexDirection: 'row',
-                marginVertical: 12,
-                marginLeft: 12,
-                marginRight: 9,
-                justifyContent: 'space-between',
-              }}
-            >
-              <View
-                style={{
-                  borderRadius: 4,
-                  borderColor: '#A15D59',
-                  borderWidth: 1,
-                  borderStyle: 'dashed',
-                  backgroundColor: '#fff',
-                  paddingVertical: 1,
-                  paddingHorizontal: 8,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
+            <View style={styles.medBottomContainer}>
+              <View style={styles.medCouponContainer}>
                 <Text
                   style={{
                     ...theme.viewStyles.text('M', 12, offerDesignTemplate?.coupon_color, 1, 18),
@@ -5109,7 +5091,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     return (
       <View
         style={{
-          backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
           paddingTop: 7,
           paddingHorizontal: 5,
         }}
@@ -5173,7 +5154,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     testSearchResults.current = [];
     try {
       const res = await getDiagnosticSearchResults(client, _searchText, Number(cityId), 5);
-      console.log('csk--', JSON.stringify(res));
       let finalProducts = [];
 
       if (res?.data?.searchDiagnosticItem) {
@@ -5680,7 +5660,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const renderSearchItemDetails = (item: any, index: number, key: string) => {
-    if (index === 0) console.log('csk data', JSON.stringify(item));
     const nav_props =
       key === MedicalRecordType.TEST_REPORT
         ? {
@@ -5828,13 +5807,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                   ? null
                   : renderListView('Active Appointments', 'normal')}
                 <View>{renderAllConsultedDoctors()}</View>
-
+                {isReferrerAvailable && renderReferralBanner()}
                 {renderHeadings('Circle Membership and More')}
                 {isCircleMember === '' && circleDataLoading && renderCircleShimmer()}
                 <View>{isCircleMember === 'yes' && !circleDataLoading && renderCircle()}</View>
                 {isCircleMember === 'no' && renderCircleBuyNow()}
                 {showCirclePlans && renderCircleSubscriptionPlans()}
                 {showCircleActivationcr && renderCircleActivation()}
+
                 {bannerLoading && renderBannerShimmer()}
 
                 <View>{renderBannersCarousel()}</View>
@@ -5843,6 +5823,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                 <View style={{ backgroundColor: '#f0f1ec' }}>
                   {covidVaccineCtaV2?.data?.length > 0 && renderCovidContainer()}
                 </View> */}
+
+                <View style={{ paddingHorizontal: 20 }}>{renderSecondaryConsultationCta()}</View>
 
                 {renderHeadings('Services For You')}
                 {renderServicesForYouView()}
@@ -5859,7 +5841,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                     )}
                   </View>
                 )}
-                <View style={{ paddingHorizontal: 20 }}>{renderSecondaryConsultationCta()}</View>
                 {renderOtherResourcesMainView()}
               </View>
             </View>
