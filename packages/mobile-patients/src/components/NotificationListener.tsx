@@ -21,6 +21,7 @@ import {
   postWebEngageEvent,
   overlyCallPermissions,
   getIsMedicine,
+  updateCallKitNotificationReceivedStatus,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -803,6 +804,10 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
      * */
     const notificationListener = messaging().onMessage((notification) => {
       aphConsole.log('notificationListener');
+
+      if (notification?.data?.type === 'call_start') {
+        updateCallKitNotificationReceivedStatus(notification.data?.appointmentId);
+      }
       if (notification.data?.type !== 'chat_room' && notification.data?.type !== 'call_started') {
         processNotification(notification, true); // when app in foreground
       }

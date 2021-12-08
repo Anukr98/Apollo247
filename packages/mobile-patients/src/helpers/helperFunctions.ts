@@ -53,7 +53,7 @@ import {
   DiagnosticsCartItem,
 } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription } from '../graphql/types/getCaseSheet';
-import { apiRoutes } from './apiRoutes';
+import { apiBaseUrl, apiRoutes } from './apiRoutes';
 import {
   CommonBugFender,
   setBugFenderLog,
@@ -121,6 +121,7 @@ import {
 import Share from 'react-native-share';
 import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientAddressObj } from '../graphql/types/getDiagnosticOrderDetails';
 import { handleOpenURL, pushTheView } from './deeplinkRedirection';
+import DeviceInfo from 'react-native-device-info';
 
 const width = Dimensions.get('window').width;
 
@@ -3958,6 +3959,35 @@ export const isCartPriceWithInSpecifiedRange = (
   } catch (error) {
     return false;
   }
+};
+
+export const updateCallKitNotificationReceivedStatus = (appointmentId: string) => {
+  fetch(apiBaseUrl + '/graphql', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer 3d1833da7020e0602165529446587434',
+      'x-app-OS': Platform.OS,
+      'x-app-version': DeviceInfo.getVersion(),
+    },
+    body: JSON.stringify({
+      query: `
+  mutation updateCallKitNotificationReceivedStatus($appointmentId: String!) {
+    updateCallKitNotificationReceivedStatus(appointmentId: $appointmentId) {
+      status
+      error
+    }
+  }
+`,
+      variables: {
+        appointmentId: appointmentId,
+      },
+      operationName: 'updateCallKitNotificationReceivedStatus',
+    }),
+  })
+    .then((res) => res.json())
+    .then((result) => {})
+    .catch((e) => CommonBugFender('UpdateCallKitNotificationReceivedStatus_fail',e));
 };
 
 export const validateEmail = (value: string) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value);
