@@ -440,9 +440,9 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     const inclusions =
       !!item?.inclusionData && item.inclusionData.map((item: any) => Number(item?.incItemId));
 
-    const originalItemIds = sourceScreen === AppRoutes.CartPage && Array.isArray(data)
-      ? data?.map((item) => {
-          return item?.itemId;
+    const originalItemIds = sourceScreen === AppRoutes.CartPage && Array.isArray(cartItems)
+      ? cartItems?.map((item) => {
+          return item?.id;
         }) : null;
     DiagnosticAddToCartEvent(
       item?.itemTitle || item?.itemName,
