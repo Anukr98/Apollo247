@@ -585,7 +585,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     showAphAlert!({
       title: 'Uh oh! :(',
       description:
-        'Payment can’t be made for this order. Please check my order section for more details.',
+        'Payment canâ€™t be made for this order. Please check my order section for more details.',
     });
   };
 
@@ -1267,6 +1267,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Diagnostics_Widget_Title',
       PROD: 'Diagnostics_Widget_Title',
     },
+    DeliveryIn_TAT_Text: {
+      QA: 'DeliveryIn_TAT_Text_QA',
+      PROD: 'DeliveryIn_TAT_Text_PROD',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1582,6 +1586,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       setAppConfig('Consult_Free_Book_Key', 'Consult_Free_Book_Key', (key) =>
         config.getString(key)
       );
+
+      setAppConfig('DeliveryIn_TAT_Text', 'DeliveryIn_TAT_Text', (key) => config.getString(key));
 
       const nudgeMessagePharmacyHome = getRemoteConfigValue(
         'Nudge_Message_Pharmacy_Home',

@@ -57,7 +57,6 @@ import {
   Card,
   CashbackIcon,
   WhiteArrowRight,
-  DeliveryInIcon,
   MedicineHomeIcon,
   TimeBlueIcon,
   WalletHomeHC,
@@ -275,6 +274,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: theme.colors.WHITE,
+  },
+  deliveryInTatText: {
+    ...theme.viewStyles.text('SB', 12, theme.colors.WHITE),
+    alignSelf: 'center',
+    marginTop: 1.5,
   },
   searchBarViewStyle: {
     backgroundColor: theme.colors.BLUE_FADED_FLAT,
@@ -1697,7 +1701,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           </Text>
           Please note that you will need to pay{' '}
           <Text style={{ color: '#02475B' }}>
-            ₹{doctorInfo.physicalConsultationFees} + One-time registration charges
+            â‚¹{doctorInfo.physicalConsultationFees} + One-time registration charges
           </Text>{' '}
           (For new users) at the hospital Reception.
         </Text>
@@ -3502,6 +3506,26 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     );
   };
 
+  const renderDeliveryRibbonTag = () => {
+    return (
+      <View
+        style={{
+          marginLeft: -11,
+        }}
+      >
+        <ImageBackground
+          style={{ height: 26, width: 120 }}
+          {...props}
+          source={require('@aph/mobile-patients/src/components/ui/icons/green_ribbon.webp')}
+        >
+          <Text style={styles.deliveryInTatText}>
+            {AppConfig.Configuration.DeliveryIn_TAT_Text}
+          </Text>
+        </ImageBackground>
+      </View>
+    );
+  };
+
   const renderMenuOptions = () => {
     let arrayList = isProHealthActive ? listValuesForProHealth : listValues;
     return (
@@ -3515,9 +3539,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               return (
                 <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
                   <View style={[styles.bottom2CardView, { width: width - 32 }]}>
-                    <View style={{ marginLeft: -11 }}>
-                      <DeliveryInIcon />
-                    </View>
+                    {renderDeliveryRibbonTag()}
 
                     <View style={styles.topCardContentContainer}>
                       {item.image}
@@ -3539,7 +3561,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                       <View style={styles.bottom2TextView}>
                         <Text style={[theme.viewStyles.text('M', 11, item.subtitleColor!, 1, 18)]}>
                           {healthCredits && healthCredits >= 30
-                            ? '₹' + healthCredits + ' ' + item.subtitle
+                            ? 'â‚¹' + healthCredits + ' ' + item.subtitle
                             : 'Get 100% Genuine Medicines'}
                         </Text>
                       </View>
@@ -3704,7 +3726,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
           <Text
             style={{
-              ...theme.viewStyles.text('B', 20, offerDesignTemplate?.title_text_color, 1, 30),
+              ...theme.viewStyles.text('B', 18, offerDesignTemplate?.title_text_color, 1, 30),
               marginHorizontal: 10,
               marginTop: 'auto',
             }}
@@ -3967,7 +3989,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                     marginHorizontal: 10,
                   }}
                 >
-                  Get ₹250 instant cashback
+                  Get â‚¹250 instant cashback
                 </Text>
 
                 <Text
@@ -4282,11 +4304,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         style={[
           styles.circleContainer,
           {
-            borderWidth: circleStatus !== 'active' ? 1 : 0,
+            borderWidth: circleStatus !== 'active' ? 0 : 0,
             borderColor: circleStatus !== 'active' ? '#F9D5B4' : '',
           },
         ]}
-        colors={circleStatus === 'disabled' ? ['#FFEEDB', '#FFFCFA'] : ['#fff', '#fff']}
+        colors={circleStatus === 'disabled' ? ['#fff', '#fff'] : ['#fff', '#fff']}
       >
         {expiry > 0 && circleStatus === 'active' && renew && circleSavings > 0 ? (
           <CircleTypeCard1
@@ -4335,7 +4357,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             credits={healthCredits?.toString()}
             savings={circleSavings?.toString()}
           />
-        ) : circleStatus !== 'disabled' && circleSavings > 0 ? (
+        ) : circleStatus === 'disabled' && circleSavings > 0 ? (
           <CircleTypeCard5
             onButtonPress={() => {
               setShowCirclePlans(true);
@@ -4346,7 +4368,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             expired={expired}
             renew={renew}
           />
-        ) : circleStatus !== 'disabled' ? (
+        ) : circleStatus === 'disabled' ? (
           <CircleTypeCard6
             onButtonPress={() => {
               setShowCirclePlans(true);
