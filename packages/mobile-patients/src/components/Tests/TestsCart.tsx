@@ -679,6 +679,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         (address) => address?.id == deliveryAddressId
       );
       const pinCodeFromAddress = addresses?.[selectedAddressIndex]?.zipcode!;
+      const cityFromAddress = addresses?.[selectedAddressIndex]?.city;
       DiagnosticCartViewed(
         sourceScreen,
         currentPatient,
@@ -692,7 +693,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         circlePlanValidity,
         circleSubscriptionId,
         isDiagnosticCircleSubscription,
-        pinCodeFromAddress
+        pinCodeFromAddress,
+        !!cityFromAddress ? cityFromAddress : '',
+        '',
+        false,
+        []
       );
     }
   }, [hcCharges, addresses]);
