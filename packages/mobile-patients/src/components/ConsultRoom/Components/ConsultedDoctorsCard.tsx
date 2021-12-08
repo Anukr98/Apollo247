@@ -57,7 +57,7 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
   }, []);
 
   const getPastConsultedDoctors = async () => {
-    const doc = (await appGlobalCache.get('pastDoctors')) || JSON.stringify({ value: [] });
+    const doc = (await appGlobalCache.get('pastDoctors')) || JSON.stringify([]);
     setDoctorsCache(JSON.parse(doc));
     try {
       const res = await client.query<
