@@ -196,7 +196,8 @@ export interface SelectEPrescriptionModalProps {
   displayPrismRecords?: boolean;
   displayMedicalRecords?: boolean;
   showLabResults?: boolean;
-  movedFrom?: string
+  movedFrom?: string;
+  navigation?: any;
 }
 
 export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> = (props) => {
@@ -229,7 +230,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
 
   useEffect(() => {
     if (props.movedFrom == AppRoutes.Tests) {
-      return
+      return;
     }
     const pIds = props.selectedEprescriptionIds;
     const selectedPrescr = {} as typeof selectedPrescription;
@@ -241,19 +242,17 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     }
   }, [props.selectedEprescriptionIds]);
 
-
-
   useEffect(() => {
     if (props.movedFrom == AppRoutes.Tests) {
-    const pIds = props.selectedEprescriptionIds;
-    const selectedPrescr = {} as typeof selectedPrescription;
-    if (pIds) {
-      pIds!.forEach((id) => {
-        selectedPrescr[id] = true;
-      });
-      setSelectedPrescription(selectedPrescr);
+      const pIds = props.selectedEprescriptionIds;
+      const selectedPrescr = {} as typeof selectedPrescription;
+      if (pIds) {
+        pIds!.forEach((id) => {
+          selectedPrescr[id] = true;
+        });
+        setSelectedPrescription(selectedPrescr);
+      }
     }
-  }
   }, []);
 
   const { data, loading, error } = useQuery<
@@ -321,7 +320,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
 
   useEffect(() => {
     if (props.movedFrom == AppRoutes.Tests) {
-      return
+      return;
     }
     if (medPrismerror) {
       CommonBugFender('SelectEPrescriptionModal_medPrismerror', medPrismerror);

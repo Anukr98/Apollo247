@@ -129,6 +129,10 @@
                 <data 
                     android:scheme="https"
                     android:host="www.apollo247.com"
+                    android:pathPrefix="/orderstest" />
+                <data 
+                    android:scheme="https"
+                    android:host="www.apollo247.com"
                     android:pathPrefix="/circle-membership" />
                 <data 
                     android:scheme="https"

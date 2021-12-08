@@ -944,3 +944,26 @@ export function DiagnosticPrescriptionSubmitted(
   };
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PRESCRIPTION_SUBMITTED, eventAttributes);
 }
+
+export function DiagnosticHomePageClicked(
+  currentPatient: any,
+  userType: any,
+  navSrc: string,
+  circleMember: any,
+  deviceId: any
+) {
+  const eventAttributes = {
+    'Patient name': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+    'Patient UHID': currentPatient?.uhid,
+    Relation: currentPatient?.relation,
+    'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
+    'Patient gender': currentPatient?.gender,
+    'Mobile Number': currentPatient?.mobileNumber,
+    'Customer ID': currentPatient?.id,
+    User_Type: userType,
+    'Nav src': navSrc,
+    'Circle Member': circleMember,
+    'Device Id': deviceId,
+  };
+  postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);
+}

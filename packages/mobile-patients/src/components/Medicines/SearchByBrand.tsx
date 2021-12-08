@@ -337,7 +337,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
                   key: null,
                   actions: [
                     NavigationActions.navigate({
-                      routeName: AppRoutes.ConsultRoom,
+                      routeName: AppRoutes.HomeScreen,
                     }),
                   ],
                 })

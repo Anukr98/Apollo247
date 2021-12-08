@@ -95,7 +95,7 @@ export const AvailNowPopup: React.FC<AvailNowPopupProps> = (props) => {
       <TouchableOpacity
         style={styles.bottomContainer}
         onPress={() => {
-          props.navigation.navigate(AppRoutes.ConsultRoom, {});
+          props.navigation.navigate(AppRoutes.HomeScreen, {});
         }}
       >
         <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0.35)}>AVAIL NOW</Text>

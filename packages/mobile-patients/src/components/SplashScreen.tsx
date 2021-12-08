@@ -28,7 +28,10 @@ import {
   isIos,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { saveTokenDevice } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  useAppCommonData,
+  appGlobalCache,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   doRequestAndAccessLocation,
   InitiateAppsFlyer,
@@ -60,6 +63,7 @@ import {
   GET_APPOINTMENT_DATA,
   GET_PROHEALTH_HOSPITAL_BY_SLUG,
   GET_ORDER_INFO,
+  GET_PERSONALIZED_OFFERS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
@@ -100,7 +104,7 @@ import { CleverTapEventName } from '../helpers/CleverTapEvents';
 import analytics from '@react-native-firebase/analytics';
 import appsFlyer from 'react-native-appsflyer';
 
-(function () {
+(function() {
   /**
    * Praktice.ai
    * Polyfill for Promise.prototype.finally
@@ -113,16 +117,16 @@ import appsFlyer from 'react-native-appsflyer';
   if (typeof Promise.prototype['finally'] === 'function') {
     return;
   }
-  globalObject.Promise.prototype['finally'] = function (callback: any) {
+  globalObject.Promise.prototype['finally'] = function(callback: any) {
     const constructor = this.constructor;
     return this.then(
-      function (value: any) {
-        return constructor.resolve(callback()).then(function () {
+      function(value: any) {
+        return constructor.resolve(callback()).then(function() {
           return value;
         });
       },
-      function (reason: any) {
-        return constructor.resolve(callback()).then(function () {
+      function(reason: any) {
+        return constructor.resolve(callback()).then(function() {
           throw reason;
         });
       }
@@ -164,8 +168,12 @@ export interface SplashScreenProps extends NavigationScreenProps {}
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { APP_ENV } = AppConfig;
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
-  const { setAllPatients, setMobileAPICalled, validateAndReturnAuthToken, buildApolloClient } =
-    useAuth();
+  const {
+    setAllPatients,
+    setMobileAPICalled,
+    validateAndReturnAuthToken,
+    buildApolloClient,
+  } = useAuth();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [appState, setAppState] = useState(AppState.currentState);
   const [takeToConsultRoom, settakeToConsultRoom] = useState<boolean>(false);
@@ -218,6 +226,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     });
     AppState.addEventListener('change', _handleAppStateChange);
     checkForVersionUpdate();
+    getOffers();
 
     try {
       PrefetchAPIReuqest({
@@ -825,7 +834,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             text: 'CANCEL',
             onPress: () => {
               hideAphAlert!();
-              props.navigation.navigate(AppRoutes.ConsultRoom);
+              props.navigation.navigate(AppRoutes.HomeScreen);
             },
             type: 'white-button',
           },
@@ -922,12 +931,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setSavePatientDetails,
     setCovidVaccineCta,
     setLoginSection,
+    setHomeBannerOfferSection,
     setCovidVaccineCtaV2,
     setCartBankOffer,
     setUploadPrescriptionOptions,
     setExpectCallText,
     setNonCartTatText,
     setNonCartDeliveryText,
+    setOffersList,
+    setOffersListLoading,
+    setRecentGlobalSearchList,
     setSelectedPrescriptionType,
   } = useAppCommonData();
   const {
@@ -1057,6 +1070,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Login_Section_Key: {
       QA: 'Login_Section_QA',
       PROD: 'Login_Section',
+    },
+    home_banner_offer_template: {
+      QA: 'home_banner_offer_template',
+      PROD: 'home_banner_offer_template',
     },
     Covid_Vaccine_Cta_Key_V2: {
       QA: 'Covid_Vaccine_CTA_V3_QA',
@@ -1234,6 +1251,22 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Free_Consult_Message',
       PROD: 'Free_Consult_Message',
     },
+    WhatsApp_To_Order: {
+      QA: 'QA_WhatsApp_To_Order',
+      PROD: 'WhatsApp_To_Order',
+    },
+    Diagnostics_Nudge_Message_Condition: {
+      QA: 'QA_Diagnostics_Show_Nudge_Message',
+      PROD: 'Diagnostics_Show_Nudge_Message',
+    },
+    Diagnostics_Nudge_Message_Text: {
+      QA: 'QA_Diagnostics_Nudge_Message_Text',
+      PROD: 'Diagnostics_Nudge_Message_Text',
+    },
+    Diagnostics_Widget_Title: {
+      QA: 'QA_Diagnostics_Widget_Title',
+      PROD: 'Diagnostics_Widget_Title',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1273,6 +1306,40 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     updateAppConfig(appConfigKey, value);
   };
 
+  const getOffers = async () => {
+    setOffersListLoading && setOffersListLoading(true);
+    const authToken: string = await validateAndReturnAuthToken();
+    const apolloClient = buildApolloClient(authToken);
+    try {
+      const res = await apolloClient.query({
+        query: GET_PERSONALIZED_OFFERS,
+        fetchPolicy: 'no-cache',
+      });
+      const offers = res?.data?.getPersonalizedOffers?.response?.personalized_data?.offers_for_you;
+      const recent =
+        res?.data?.getPersonalizedOffers?.response?.personalized_data?.global_search_text
+          ?.search_text;
+
+      if (offers && offers.length > 0) {
+        setOffersList && setOffersList(offers);
+        appGlobalCache.set('offersList', JSON.stringify(offers));
+      } else if (offers && offers.length === 0) {
+        appGlobalCache.remove('offersList');
+      }
+
+      if (recent && recent.length > 0) {
+        setRecentGlobalSearchList && setRecentGlobalSearchList(recent.slice(0, 4));
+        appGlobalCache.set('recentList', JSON.stringify(recent));
+      } else if (recent && recent.length === 0) {
+        appGlobalCache.remove('recentList');
+      }
+
+      setOffersListLoading && setOffersListLoading(false);
+    } catch (error) {
+      setOffersListLoading && setOffersListLoading(false);
+    }
+  };
+
   const checkForVersionUpdate = async () => {
     try {
       // Note: remote config values will be cached for the specified duration in development mode, update below value if necessary.
@@ -1308,6 +1375,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.LOGIN_SECTION
       );
       loginSection && setLoginSection!(loginSection);
+
+      const homeBannerOfferSection = getRemoteConfigValue(
+        'home_banner_offer_template',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.LOGIN_SECTION
+      );
+      homeBannerOfferSection && setHomeBannerOfferSection!(homeBannerOfferSection);
 
       const needHelpReturnPharmaOrderSuccessMessage = getRemoteConfigValue(
         'Need_Help_Return_Pharma_Order_Success_Message',
@@ -1564,6 +1637,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
 
       setAppConfig(
+        'WhatsApp_To_Order',
+        'WHATSAPP_TO_ORDER',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.WHATSAPP_TO_ORDER
+      );
+
+      setAppConfig(
         'Diagnostics_City_Level_Call_To_Order',
         'DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER',
         (key) =>
@@ -1577,6 +1656,23 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) =>
           JSON.parse(config.getString(key) || 'null') ||
           AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS
+      );
+      setAppConfig(
+        'Diagnostics_Nudge_Message_Condition',
+        'DIAGNOSTICS_NUDGE_MESSAGE_CONDITION',
+        (key) =>
+          JSON.parse(config.getString(key) || 'null') ||
+          AppConfig.Configuration.DIAGNOSTICS_NUDGE_MESSAGE_CONDITION
+      );
+      setAppConfig('Diagnostics_Nudge_Message_Text', 'DIAGNOSTICS_NUDGE_MESSAGE_TEXT', (key) =>
+        config.getString(key)
+      );
+      setAppConfig(
+        'Diagnostics_Widget_Title',
+        'DIAGNOSITCS_WIDGET_TITLES',
+        (key) =>
+          JSON.parse(config.getString(key) || 'null') ||
+          AppConfig.Configuration.DIAGNOSITCS_WIDGET_TITLES
       );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
