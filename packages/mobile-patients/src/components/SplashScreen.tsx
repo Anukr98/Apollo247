@@ -585,7 +585,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     showAphAlert!({
       title: 'Uh oh! :(',
       description:
-        'Payment canâ€™t be made for this order. Please check my order section for more details.',
+        "Payment can't be made for this order. Please check my order section for more details.",
     });
   };
 

@@ -1701,7 +1701,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           </Text>
           Please note that you will need to pay{' '}
           <Text style={{ color: '#02475B' }}>
-            â‚¹{doctorInfo.physicalConsultationFees} + One-time registration charges
+            ₹{doctorInfo.physicalConsultationFees} + One-time registration charges
           </Text>{' '}
           (For new users) at the hospital Reception.
         </Text>
@@ -3561,7 +3561,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                       <View style={styles.bottom2TextView}>
                         <Text style={[theme.viewStyles.text('M', 11, item.subtitleColor!, 1, 18)]}>
                           {healthCredits && healthCredits >= 30
-                            ? 'â‚¹' + healthCredits + ' ' + item.subtitle
+                            ? '₹' + healthCredits + ' ' + item.subtitle
                             : 'Get 100% Genuine Medicines'}
                         </Text>
                       </View>
@@ -3989,7 +3989,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                     marginHorizontal: 10,
                   }}
                 >
-                  Get â‚¹250 instant cashback
+                  Get ₹250 instant cashback
                 </Text>
 
                 <Text
