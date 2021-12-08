@@ -31,16 +31,9 @@ import {
   DashedLine,
   Diabetes,
   DoctorIcon,
-  DropdownGreen,
-  FemaleCircleIcon,
-  FemaleIcon,
   KavachIcon,
   HealthyLife,
   LatestArticle,
-  LinkedUhidIcon,
-  MaleCircleIcon,
-  MaleIcon,
-  MedicineCartIcon,
   MedicineIcon,
   MyHealth,
   NotificationIcon,
@@ -64,13 +57,11 @@ import {
   Card,
   CashbackIcon,
   WhiteArrowRight,
-  DeliveryInIcon,
   MedicineHomeIcon,
   TimeBlueIcon,
   WalletHomeHC,
   DropDownProfile,
   CallIcon,
-  ArrowRight,
   HospitalVisit,
   VideoConsult,
 } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -114,12 +105,9 @@ import {
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   searchPHRApiWithAuthToken,
-  getDiagnosticsSearchResults,
   MedFilter,
   MedicineProduct,
   searchMedicineApi,
-  searchProceduresAndSymptoms,
-  ProceduresAndSymptomsParams,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
@@ -145,6 +133,7 @@ import {
   getAllProHealthAppointments,
   getUserBannersList,
   saveTokenDevice,
+  getDiagnosticSearchResults,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   FirebaseEventName,
@@ -210,6 +199,7 @@ import {
   ViewStyle,
   Keyboard,
   TextInput,
+  BackHandler,
 } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ScrollView, Switch } from 'react-native-gesture-handler';
@@ -236,10 +226,8 @@ import { Overlay } from 'react-native-elements';
 import { HdfcConnectPopup } from '@aph/mobile-patients/src/components/SubscriptionMembership/HdfcConnectPopup';
 import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 import {
-  renderCovidVaccinationShimmer,
   renderCircleShimmer,
   renderBannerShimmer,
-  CovidButtonShimmer,
   renderGlobalSearchShimmer,
   renderOffersForYouShimmer,
   renderAppointmentCountShimmer,
@@ -255,7 +243,6 @@ import {
   HomeScreenAttributes,
   PatientInfo as PatientInfoObj,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
-import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import { getUniqueId } from 'react-native-device-info';
 import _ from 'lodash';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -287,6 +274,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: theme.colors.WHITE,
+  },
+  deliveryInTatText: {
+    ...theme.viewStyles.text('SB', 12, theme.colors.WHITE),
+    alignSelf: 'center',
+    marginTop: 1.5,
   },
   searchBarViewStyle: {
     backgroundColor: theme.colors.BLUE_FADED_FLAT,
@@ -950,6 +942,94 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FAFEFF',
   },
+  medCashbackContainer1: {
+    marginHorizontal: 12,
+    marginTop: 14,
+    borderRadius: 4,
+    paddingHorizontal: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  medCouponContainer: {
+    borderRadius: 4,
+    borderColor: '#A15D59',
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    backgroundColor: '#fff',
+    paddingVertical: 1,
+    paddingHorizontal: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  medBottomContainer: {
+    flexDirection: 'row',
+    marginVertical: 12,
+    marginLeft: 12,
+    marginRight: 9,
+    justifyContent: 'space-between',
+  },
+  profileListChildContainer: {
+    flexDirection: 'row',
+    paddingRight: 8,
+    marginLeft: 4,
+    borderRightColor: 'rgba(2, 71, 91, 0.2)',
+    alignItems: 'flex-end',
+  },
+  topCardContentContainer: {
+    flexDirection: 'row',
+    marginBottom: 2,
+    paddingVertical: 4,
+    marginLeft: 10,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
+  topCardContentContainerSecondary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    marginTop: 'auto',
+  },
+  offersCardsContainer: {
+    width: width / 1.9,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    height: 165,
+    borderColor: '#D4D4D4',
+    borderWidth: 1,
+  },
+  offersCardNotch: {
+    marginBottom: 4,
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    top: 12,
+    left: 12,
+  },
+  offersCardCoupon: {
+    marginHorizontal: 10,
+    borderRadius: 4,
+    borderColor: '#A15D59',
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    backgroundColor: '#fff',
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 4,
+  },
+  offersCardCTA: {
+    width: 22,
+    height: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 11,
+    backgroundColor: '#FC9916',
+    marginVertical: 4,
+    marginRight: 4,
+  },
 });
 
 type menuOptions = {
@@ -1073,9 +1153,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const [searchText, setSearchText] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState({});
-  const testSearchResults = useRef<
-    searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
-  >([]);
+  const testSearchResults = useRef<any[]>([]);
   const medSearchResults = useRef<MedicineProduct[]>([]);
   const consultSearchResults = useRef<any[]>([]);
   const [token, setToken] = useState<string | null>('');
@@ -1086,7 +1164,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   >('' | 0);
   const [proActiveAppointments, setProHealthActiveAppointment] = useState([] as any);
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
-
+  const { APP_ENV } = AppConfig;
   const { refreeReward, setRefreeReward, setRewardId, setCampaignId } = useReferralProgram();
   const [isReferrerAvailable, setReferrerAvailable] = useState<boolean>(false);
   const {
@@ -1134,6 +1212,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   let circleActivated = props.navigation.getParam('circleActivated');
   const circleActivatedRef = useRef<boolean>(circleActivated);
   const [referAndEarnPrice, setReferAndEarnPrice] = useState('100');
+  const scrollCount = useRef<number>(0);
 
   //prohealth
   const [isProHealthActive, setProHealthActive] = useState<boolean>(false);
@@ -1150,11 +1229,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
   //cache and storage
 
-  const [recentSearches, setRecentSearches] = useState<string[]>([
-    'Some recent search',
-    'cbc',
-    'covid',
-  ]);
+  // will be used in phase 2
   const [suggestSearches, setSuggestSearches] = useState<string[]>([
     'Some suggest search',
     'covid',
@@ -1206,14 +1281,25 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     fetchUserAgent();
   }, []);
 
+  const handleSearchClose = () => {
+    if (isSearchFocus || searchText?.length > 0) {
+      onCancelTextClick();
+      return true;
+    } else return false;
+  };
+
+  useEffect(() => {
+    const handler = BackHandler.addEventListener('hardwareBackPress', handleSearchClose);
+    return () => handler.remove();
+  }, [isSearchFocus, searchText]);
+
   const handleCachedData = async () => {
     const cacheDataStringBuffer = await appGlobalCache.getAll();
-    const offersListStringBuffer = cacheDataStringBuffer?.offersList.value || '[]';
+    const offersListStringBuffer = cacheDataStringBuffer?.offersList?.value || '[]';
     setOffersListCache(JSON.parse(offersListStringBuffer));
 
-    const count = cacheDataStringBuffer?.appointmentCount.value || '0';
+    const count = cacheDataStringBuffer?.appointmentCount?.value || '0';
     setAppointmentCountCache(count);
-    console.log('csk', count);
 
     const isCircleMembers = (await AsyncStorage.getItem('isCircleMember')) || '';
     setIsCircleMember(isCircleMembers);
@@ -1929,7 +2015,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Home Screen');
         postHomeCleverTapEvent(CleverTapEventName.BUY_MEDICINES, 'Home Screen');
-        props.navigation.navigate('MEDICINES', { focusSearch: true });
+        props.navigation.navigate('MEDICINES', { focusSearch: true, comingFrom: '247 Home CTA' });
         const eventAttributes:
           | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
           | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
@@ -3203,7 +3289,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                       500
                     );
                     postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
-                    props.navigation.navigate('MEDICINES');
+                    props.navigation.navigate('MEDICINES', { comingFrom: '247 Home bottom bar' });
                   } else if (i == 3) {
                     const homeScreenAttributes = {
                       'Nav src': 'Bottom bar',
@@ -3278,16 +3364,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
   const renderProfileIconAsChildView = () => {
     return (
-      <View
-        style={{
-          flexDirection: 'row',
-          paddingRight: 8,
-          marginLeft: 4,
-          borderRightColor: 'rgba(2, 71, 91, 0.2)',
-          alignItems: 'flex-end',
-        }}
-      >
-        <Text style={styles.hiTextStyle}>{'hi'}</Text>
+      <View style={styles.profileListChildContainer}>
+        <Text style={styles.hiTextStyle}>{'Hi'}</Text>
         <View style={styles.nameTextContainerStyle}>
           <View style={{ flexDirection: 'row', flex: 1 }}>
             <Text style={styles.nameTextStyle} numberOfLines={1}>
@@ -3429,6 +3507,26 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     );
   };
 
+  const renderDeliveryRibbonTag = () => {
+    return (
+      <View
+        style={{
+          marginLeft: -11,
+        }}
+      >
+        <ImageBackground
+          style={{ height: 26, width: 120 }}
+          {...props}
+          source={require('@aph/mobile-patients/src/components/ui/icons/green_ribbon.webp')}
+        >
+          <Text style={styles.deliveryInTatText}>
+            {AppConfig.Configuration.DeliveryIn_TAT_Text}
+          </Text>
+        </ImageBackground>
+      </View>
+    );
+  };
+
   const renderMenuOptions = () => {
     let arrayList = isProHealthActive ? listValuesForProHealth : listValues;
     return (
@@ -3442,20 +3540,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               return (
                 <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
                   <View style={[styles.bottom2CardView, { width: width - 32 }]}>
-                    <View style={{ marginLeft: -11 }}>
-                      <DeliveryInIcon />
-                    </View>
+                    {renderDeliveryRibbonTag()}
 
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        marginBottom: 2,
-                        paddingVertical: 4,
-                        marginLeft: 10,
-                        justifyContent: 'flex-start',
-                        alignItems: 'center',
-                      }}
-                    >
+                    <View style={styles.topCardContentContainer}>
                       {item.image}
                       <Text style={[styles.topTextStyle, { color: theme.colors.LIGHT_BLUE }]}>
                         {item.title}
@@ -3474,7 +3561,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                       <View style={styles.bottom2ImageView}>{item.image2}</View>
                       <View style={styles.bottom2TextView}>
                         <Text style={[theme.viewStyles.text('M', 11, item.subtitleColor!, 1, 18)]}>
-                          ₹ {healthCredits ? healthCredits : 0} {item.subtitle}
+                          {healthCredits && healthCredits >= 30
+                            ? '₹' + healthCredits + ' ' + item.subtitle
+                            : 'Get 100% Genuine Medicines'}
                         </Text>
                       </View>
                     </View>
@@ -3485,14 +3574,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               return (
                 <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
                   <View style={styles.bottom2CardView}>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'flex-start',
-                        marginTop: 'auto',
-                      }}
-                    >
+                    <View style={styles.topCardContentContainerSecondary}>
                       {item.image}
                       <View style={styles.bottom2TextView}>
                         <Text
@@ -3559,7 +3641,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const renderOffersForYou = () => {
-    const offerListToRender = offersListCache.length > 0 ? offersListCache : offersList;
+    const offerListToRender = offersListLoading ? offersListCache : offersList;
     if (offerListToRender?.length === 0) return null;
     else if (offerListToRender?.length === 1 && offerListToRender?.[0]?.template_name === 'CIRCLE')
       return circleCashbackOffersComponent();
@@ -3604,38 +3686,26 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     return (
       <TouchableOpacity
         activeOpacity={1}
-        onPress={() => textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, index + 1)}
+        onPress={() => {
+          textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, index + 1);
+          postOfferCardClickEvent(item, String(index + 1), textForNotch == 'Offer Expired');
+        }}
       >
         <LinearGradientVerticalComponent
           colors={[
             offerDesignTemplate?.banner_bg_color?.primary_color,
             offerDesignTemplate?.banner_bg_color?.secondary_color,
           ]}
-          style={[
-            styles.bottom2CardView,
-            {
-              width: width / 1.9,
-              justifyContent: 'center',
-              alignItems: 'flex-start',
-              height: 165,
-              borderColor: '#D4D4D4',
-              borderWidth: 1,
-            },
-          ]}
+          style={[styles.bottom2CardView, styles.offersCardsContainer]}
         >
           {textForNotch.length > 1 ? (
             <View
-              style={{
-                marginBottom: 4,
-                borderRadius: 4,
-                backgroundColor: offerDesignTemplate?.left_notch?.bg_color,
-                paddingHorizontal: 8,
-                justifyContent: 'center',
-                alignItems: 'center',
-                position: 'absolute',
-                top: 12,
-                left: 12,
-              }}
+              style={[
+                styles.offersCardNotch,
+                {
+                  backgroundColor: offerDesignTemplate?.left_notch?.bg_color,
+                },
+              ]}
             >
               <Text
                 style={{
@@ -3657,7 +3727,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
           <Text
             style={{
-              ...theme.viewStyles.text('B', 20, offerDesignTemplate?.title_text_color, 1, 30),
+              ...theme.viewStyles.text('B', 18, offerDesignTemplate?.title_text_color, 1, 30),
               marginHorizontal: 10,
               marginTop: 'auto',
             }}
@@ -3686,21 +3756,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                 width: '100%',
               }}
             >
-              <View
-                style={{
-                  marginHorizontal: 10,
-                  borderRadius: 4,
-                  borderColor: '#A15D59',
-                  borderWidth: 1,
-                  borderStyle: 'dashed',
-                  backgroundColor: '#fff',
-                  paddingVertical: 2,
-                  paddingHorizontal: 8,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  marginVertical: 4,
-                }}
-              >
+              <View style={styles.offersCardCoupon}>
                 <Text
                   style={{
                     ...theme.viewStyles.text('M', 12, offerDesignTemplate?.coupon_color, 1, 18),
@@ -3715,16 +3771,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               </View>
 
               <TouchableOpacity
-                style={{
-                  width: 22,
-                  height: 22,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  borderRadius: 11,
-                  backgroundColor: '#FC9916',
-                  marginVertical: 4,
-                  marginRight: 4,
-                }}
+                style={styles.offersCardCTA}
                 onPress={() =>
                   textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, index + 1)
                 }
@@ -3736,6 +3783,32 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         </LinearGradientVerticalComponent>
       </TouchableOpacity>
     );
+  };
+
+  const postOfferCardClickEvent = (item: any, sequence: string, offerExpired: boolean) => {
+    const eventAttributes = {
+      User_Type: getUserType(allCurrentPatients),
+      'Patient Name': currentPatient?.firstName,
+      'Patient UHID': currentPatient?.uhid,
+      'Patient age': getAge(currentPatient?.dateOfBirth),
+      'Circle Member': circleSubscriptionId ? 'True' : 'False',
+      'Customer ID': currentPatient?.id,
+      'Patient gender': currentPatient?.gender,
+      'Mobile number': currentPatient?.mobileNumber,
+      'Page name': 'HomePage',
+      'Offer Content': item?.title?.text || '',
+      Timer: offerExpired ? 'No' : 'Yes',
+      'Coupon Code': item?.coupon_code,
+      'Offer tile sequence': sequence,
+      LOB: item?.cta?.path?.vertical || '',
+      'Offer Notch Test': getNotchText(item?.expired_at, item?.notch_text?.text),
+      'Offer CTA Text': item?.cta?.text,
+      'Offer Expiry': item?.expired_at,
+      'Offer ID': item?.offer_id,
+      'Offer Subtitle': item?.subtitle?.text,
+    };
+
+    postHomeCleverTapEvent(CleverTapEventName.OFFERS_CTA_CLICKED, 'Home Screen', eventAttributes);
   };
 
   const getNotchText = (expired_at: string, notch_text: string) => {
@@ -3780,15 +3853,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           >
             <View style={{ flexDirection: 'row', marginTop: -5, justifyContent: 'space-between' }}>
               <View
-                style={{
-                  marginHorizontal: 12,
-                  marginTop: 14,
-                  borderRadius: 4,
-                  backgroundColor: offerDesignTemplate?.left_notch?.bg_color,
-                  paddingHorizontal: 4,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
+                style={[
+                  styles.medCashbackContainer1,
+                  {
+                    backgroundColor: offerDesignTemplate?.left_notch?.bg_color,
+                  },
+                ]}
               >
                 <Text
                   style={{
@@ -3801,8 +3871,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                     ),
                   }}
                 >
-                  {textForNotch.length > 30
-                    ? textForNotch?.substring(textForNotch.length - 30, textForNotch.length)
+                  {textForNotch.length > 36
+                    ? textForNotch?.substring(textForNotch.length - 36, textForNotch.length)
                     : textForNotch}
                 </Text>
               </View>
@@ -3836,28 +3906,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                 : item?.subtitle?.text}
             </Text>
 
-            <View
-              style={{
-                flexDirection: 'row',
-                marginVertical: 12,
-                marginLeft: 12,
-                marginRight: 9,
-                justifyContent: 'space-between',
-              }}
-            >
-              <View
-                style={{
-                  borderRadius: 4,
-                  borderColor: '#A15D59',
-                  borderWidth: 1,
-                  borderStyle: 'dashed',
-                  backgroundColor: '#fff',
-                  paddingVertical: 1,
-                  paddingHorizontal: 8,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
+            <View style={styles.medBottomContainer}>
+              <View style={styles.medCouponContainer}>
                 <Text
                   style={{
                     ...theme.viewStyles.text('M', 12, offerDesignTemplate?.coupon_color, 1, 18),
@@ -3895,18 +3945,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const onOfferCtaPressed = (item: any, index: number) => {
-    console.log('csk ', JSON.stringify(item));
-    let attributes = {
-      'Tile in the sequence': index,
-      'Coupon Code': item?.coupon_code,
-      'Offer Title': item?.title?.text,
-      'Offer Subtitle': item?.subtitle?.text,
-      'Offer Notch Test': getNotchText(item?.expired_at, item?.notch_text?.text),
-      'Offer CTA Text': item?.cta?.text,
-      'Offer Expiry': item?.expired_at,
-      'Offer ID': item?.offer_id,
-    };
-    postHomeCleverTapEvent(CleverTapEventName.OFFERS_CTA_CLICKED, 'Home Screen', attributes);
     let action = getRedirectActionForOffers(item?.cta?.path?.vertical?.toLowerCase());
     navigateCTAActions({ type: 'REDIRECT', cta_action: action }, '');
   };
@@ -4267,11 +4305,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         style={[
           styles.circleContainer,
           {
-            borderWidth: circleStatus !== 'active' ? 1 : 0,
+            borderWidth: circleStatus !== 'active' ? 0 : 0,
             borderColor: circleStatus !== 'active' ? '#F9D5B4' : '',
           },
         ]}
-        colors={circleStatus === 'disabled' ? ['#FFEEDB', '#FFFCFA'] : ['#fff', '#fff']}
+        colors={circleStatus === 'disabled' ? ['#fff', '#fff'] : ['#fff', '#fff']}
       >
         {expiry > 0 && circleStatus === 'active' && renew && circleSavings > 0 ? (
           <CircleTypeCard1
@@ -4306,7 +4344,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             credits={healthCredits?.toString()}
             savings={circleSavings?.toString()}
           />
-        ) : expiry < 0 && circleStatus === 'active' && !renew ? (
+        ) : expiry > 0 && circleStatus === 'active' && !renew ? (
           <CircleTypeCard4
             onButtonPress={() => {
               onClickCircleBenefits('Not Expiring', string.Hdfc_values.MEMBERSHIP_DETAIL_CIRCLE);
@@ -4320,7 +4358,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             credits={healthCredits?.toString()}
             savings={circleSavings?.toString()}
           />
-        ) : circleStatus !== 'disabled' && circleSavings > 0 ? (
+        ) : circleStatus === 'disabled' && circleSavings > 0 ? (
           <CircleTypeCard5
             onButtonPress={() => {
               setShowCirclePlans(true);
@@ -4331,7 +4369,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             expired={expired}
             renew={renew}
           />
-        ) : circleStatus !== 'disabled' ? (
+        ) : circleStatus === 'disabled' ? (
           <CircleTypeCard6
             onButtonPress={() => {
               setShowCirclePlans(true);
@@ -4606,7 +4644,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     postVaccineWidgetEvents(CleverTapEventName.READ_BLOG_VIEWED, 'Blog Widget');
     postHomeWEGEvent(WebEngageEventName.READ_ARTICLES);
     try {
-      const openUrl = AppConfig.Configuration.BLOG_URL;
+      const openUrl =
+        APP_ENV === 'PROD' ? AppConfig.Configuration.BLOG_URL : string.common.stagingBlogUrl;
+
       props.navigation.navigate(AppRoutes.CovidScan, {
         covidUrl: openUrl,
       });
@@ -5110,9 +5150,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
       let finalProducts: any[] = [];
 
-      if (res?.data?.products) {
-        const products = res?.data?.products || [];
-        finalProducts = products.slice(0, 3);
+      if (res?.data?.products.length > 1) {
+        finalProducts = [{ name: searchText }];
 
         medSearchResults.current = finalProducts;
       } else {
@@ -5137,11 +5176,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     setSearchLoading(true);
     testSearchResults.current = [];
     try {
-      const res = await getDiagnosticsSearchResults('diagnostic', _searchText, Number(cityId));
+      const res = await getDiagnosticSearchResults(client, _searchText, Number(cityId), 5);
       let finalProducts = [];
 
-      if (res?.data?.success) {
-        const products = res?.data?.data || [];
+      if (res?.data?.searchDiagnosticItem) {
+        const products = res?.data?.searchDiagnosticItem?.data || [];
 
         finalProducts = products.slice(0, 3);
 
@@ -5213,31 +5252,77 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     setSearchResults(newState);
   };
 
+  const postSearchInputEvent = (
+    status: 'Success' | 'Fail',
+    request: 'Pharma' | 'Diagnostic' | 'Consult',
+    input?: string
+  ) => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.HOMEPAGE_SEARCH_BAR_QUERY_INPUT] = {
+      User_Type: getUserType(allCurrentPatients),
+      'Patient Name': currentPatient?.firstName,
+      'Patient UHID': currentPatient?.uhid,
+      'Patient age': getAge(currentPatient?.dateOfBirth),
+      'Circle Member': circleSubscriptionId ? 'True' : 'False',
+      'Customer ID': currentPatient?.id,
+      'Mobile number': currentPatient?.mobileNumber,
+      'Page name': 'HomePage',
+      'Patient gender': currentPatient?.gender,
+      Keyword: input || '',
+      Status: status,
+      Vertical: request,
+    };
+    postCleverTapEvent(CleverTapEventName.HOMEPAGE_SEARCH_BAR_QUERY_INPUT, eventAttributes);
+  };
+
+  const postScrollScreenEvent = () => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.SCREEN_SCROLLED] = {
+      User_Type: getUserType(allCurrentPatients),
+      'Patient Name': currentPatient?.firstName,
+      'Patient UHID': currentPatient?.uhid,
+      'Patient age': getAge(currentPatient?.dateOfBirth),
+      'Circle Member': circleSubscriptionId ? 'True' : 'False',
+      'Customer ID': currentPatient?.id,
+      'Patient gender': currentPatient?.gender,
+      'Mobile number': currentPatient?.mobileNumber,
+      'Page name': 'HomePage',
+      'Nav src': '',
+      Scrolls: scrollCount.current,
+    };
+    postCleverTapEvent(CleverTapEventName.SCREEN_SCROLLED, eventAttributes);
+  };
+
   const onSearchExecute = async (_searchText: string) => {
     setSearchLoading(true);
     setSearchResults([]);
     onSearchTests(_searchText)
       .then(() => {
         Keyboard.dismiss();
+        postSearchInputEvent('Success', 'Diagnostic', _searchText);
       })
       .catch((e) => {
         Keyboard.dismiss();
+        postSearchInputEvent('Fail', 'Diagnostic', _searchText);
         CommonBugFender('HomeScreen_ConsultRoom_onSearchTests', e);
       });
 
     onSearchMedicines(_searchText, null, {}, [])
-      .then(() => {})
+      .then(() => {
+        postSearchInputEvent('Success', 'Pharma', _searchText);
+      })
       .catch((e) => {
         Keyboard.dismiss();
+        postSearchInputEvent('Fail', 'Pharma', _searchText);
         CommonBugFender('HomeScreen_ConsultRoom_onSearchMedicinesFunction', e);
       });
 
     onSearchConsults(_searchText)
       .then(() => {
         Keyboard.dismiss();
+        postSearchInputEvent('Success', 'Consult', _searchText);
       })
       .catch((e) => {
         Keyboard.dismiss();
+        postSearchInputEvent('Fail', 'Consult', _searchText);
         CommonBugFender('HomeScreen_ConsultRoom_onSearchConsultsFunction', e);
       });
 
@@ -5291,7 +5376,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               onChangeText={(value) => onSearchTextChange(value)}
             />
             {isSearchFocus && searchText?.length >= 1 ? (
-              <TouchableOpacity onPress={onCancelTextClick}>
+              <TouchableOpacity onPress={() => setSearchText('')}>
                 <RemoveIconGrey style={{ width: 20, height: 20 }} />
               </TouchableOpacity>
             ) : null}
@@ -5506,15 +5591,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     //   CleverTapEventName.VIEW_ALL_SEARCH_RESULT_CLICKED,
     //   'Search bar'
     // );
+
+    //pdp disabled for now ->props.navigation.navigate(AppRoutes.ProductDetailPage, nav_props)
     switch (key) {
       case MedicalRecordType.MEDICATION:
         postHomeCleverTapEvent(
           CleverTapEventName.OPTION_FROM_MEDICINE_CLICKED_ON_SEARCH_BAR_PAGE,
           'Search bar'
         );
-        pdp
-          ? props.navigation.navigate(AppRoutes.ProductDetailPage, nav_props)
-          : props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
+        props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
         break;
       case MedicalRecordType.TEST_REPORT:
         postHomeCleverTapEvent(
@@ -5531,8 +5616,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           'Search bar'
         );
         pdp
-          ? props.navigation.navigate(AppRoutes.DoctorSearchListing, nav_props)
-          : props.navigation.navigate(AppRoutes.DoctorSearch, { searchText: searchText });
+          ? props.navigation.navigate(AppRoutes.DoctorDetails, nav_props)
+          : props.navigation.navigate(AppRoutes.DoctorSearchListing, nav_props);
         break;
     }
   };
@@ -5598,7 +5683,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const renderSearchItemDetails = (item: any, index: number, key: string) => {
-    if (index === 0) console.log('csk data', JSON.stringify(item));
     const nav_props =
       key === MedicalRecordType.TEST_REPORT
         ? {
@@ -5615,7 +5699,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             urlKey: item?.url_key,
           }
         : key === MedicalRecordType.CONSULTATION
-        ? { specialities: [item?.specialtydisplayName], MoveDoctor: 'MoveDoctor' }
+        ? {
+            specialities: [item?.specialtydisplayName],
+            MoveDoctor: 'MoveDoctor',
+            doctorId: item?.id,
+          }
         : {};
     return (
       <TouchableOpacity onPress={() => onClickSearchItem(key, true, nav_props)}>
@@ -5717,12 +5805,20 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         ) : isSearchFocus ? (
           renderSearchRecentandSuggest()
         ) : (
-          <ScrollView style={styles.scrollView} bounces={false}>
+          <ScrollView
+            style={styles.scrollView}
+            bounces={false}
+            scrollEventThrottle={0}
+            onScroll={() => {
+              scrollCount.current += 1;
+              postScrollScreenEvent();
+            }}
+          >
             <View style={{ width: '100%' }}>
               <View style={styles.viewName}>
                 {renderMenuOptions()}
 
-                {!offersListLoading && offersListCache.length === 0 && myDoctorsCount === 0
+                {!offersListLoading && offersList.length === 0
                   ? null
                   : renderHeadings('Offers For You')}
                 {offersListCache.length === 0 && offersListLoading && renderOffersForYouShimmer()}
@@ -5752,6 +5848,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                   {covidVaccineCtaV2?.data?.length > 0 && renderCovidContainer()}
                 </View> */}
 
+                <View style={{ paddingHorizontal: 20 }}>{renderSecondaryConsultationCta()}</View>
+
                 {renderHeadings('Services For You')}
                 {renderServicesForYouView()}
 
@@ -5767,7 +5865,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                     )}
                   </View>
                 )}
-                <View style={{ paddingHorizontal: 20 }}>{renderSecondaryConsultationCta()}</View>
                 {renderOtherResourcesMainView()}
               </View>
             </View>
