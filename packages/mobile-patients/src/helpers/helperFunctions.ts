@@ -3986,8 +3986,8 @@ export const updateCallKitNotificationReceivedStatus = (appointmentId: string) =
     }),
   })
     .then((res) => res.json())
-    .then((result) => console.log(result))
-    .catch((e) => console.log(e));
+    .then((result) => {})
+    .catch((e) => CommonBugFender('UpdateCallKitNotificationReceivedStatus_fail',e));
 };
 
 export const validateEmail = (value: string) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value);
