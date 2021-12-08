@@ -235,6 +235,11 @@ export const getPricesForItem = (
   const discountSpecialPrice = itemWithSpecialDis?.price!;
   const planToConsider = getActiveItemsObject?.groupPlanToConsider;
 
+  //added to calculate the total discount (circle+ any applied)
+  const totalDiscount =  calculatePackageDiscounts(
+    itemPackageMrp,
+    circlePrice, 
+    circleSpecialPrice);
   //if change here then change in the testCart
   const discount = calculatePackageDiscounts(itemPackageMrp, price, specialPrice);
   const circleDiscount = calculatePackageDiscounts(
@@ -295,6 +300,7 @@ export const getPricesForItem = (
     discountDiffPrice,
     circleDiscountDiffPrice,
     specialDiscountDiffPrice,
+    totalDiscount
   };
 };
 
