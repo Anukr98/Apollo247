@@ -250,7 +250,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
             cta_action?.meta.message,
             cta_action?.url,
             cta_action?.meta,
-            banner_template_info
+            banner_template_info,
           )
         }
         style={[
@@ -287,7 +287,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
   };
 
   const renderUpgradeBtn = (item: bannerType) => {
-    const { cta_action } = item;
+    const { cta_action, banner_template_info } = item;
     const btnTxt = item?.banner_template_info?.Button;
     const btnSubTxt = item?.banner_template_info?.ButtonSubText;
     if (btnTxt || btnSubTxt) {
@@ -300,7 +300,8 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
               cta_action?.meta?.action,
               cta_action?.meta?.message,
               cta_action?.url,
-              cta_action?.meta
+              cta_action?.meta,
+              banner_template_info,
             )
           }
         >
@@ -397,7 +398,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     message: any,
     url: string,
     meta: any,
-    banner_template_info: any
+    bannerContent: any
   ) => {
     //if any only hdfc
     // if (from === string.banner_context.HOME && action != hdfc_values.UPGRADE_CIRCLE) {
@@ -527,14 +528,14 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     }
   };
 
-  const postCircleBannerEvent = (bannerContent?: any | null) => {
+  const postCircleBannerEvent = (bannerContent?: any) => {
     const eventAttributes: CleverTapEvents[CleverTapEventName.HOMEPAGE_CIRCLE_BANNER_CLICKED] = {
       User_Type: getUserType(allCurrentPatients),
       'Patient Name': currentPatient?.firstName,
       'Patient UHID': currentPatient?.uhid,
       'Patient age': getAge(currentPatient?.dateOfBirth),
       'Circle Member': circleSubscriptionId ? 'True' : 'False',
-      'Banner content': JSON.stringify(bannerContent),
+      'Banner content': JSON.stringify(bannerContent) || 'NA',
       'Customer ID': currentPatient?.id,
       'Mobile number': currentPatient?.mobileNumber,
       'Nav src': 'HomePage',
