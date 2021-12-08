@@ -21,7 +21,7 @@ import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/Carousel
 import CovidButton from '@aph/mobile-patients/src/components/ConsultRoom/Components/CovidStyles';
 import firebaseAuth from '@react-native-firebase/auth';
 import ReceiveSharingIntent from 'react-native-receive-sharing-intent';
-
+import remoteConfig from '@react-native-firebase/remote-config';
 import {
   CartIcon,
   ConsultationRoom,
@@ -51,6 +51,11 @@ import {
   WhiteArrowRightIcon,
   VaccineTracker,
   ProHealthIcon,
+  BackArrow,
+  CallIcon,
+  ArrowRight,
+  HospitalVisit,
+  VideoConsult,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   BannerDisplayType,
@@ -82,6 +87,10 @@ import {
   GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
   GET_ONEAPOLLO_USER,
   GET_PLAN_DETAILS_BY_PLAN_ID,
+  GET_CONFIGURATION_FOR_ASK_APOLLO_LEAD,
+  GET_HC_REFREE_RECORD,
+  GET_CAMPAIGN_ID_FOR_REFERRER,
+  GET_REWARD_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
@@ -98,7 +107,6 @@ import { Gender, Relation } from '@aph/mobile-patients/src/graphql/types/globalT
 import {
   GenerateTokenforCM,
   notifcationsApi,
-  pinCodeServiceabilityApi247,
   GenrateVitalsToken_CM,
   GetAllUHIDSForNumber_CM,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -211,6 +219,13 @@ import {
   PatientInfo as PatientInfoObj,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { getUniqueId } from 'react-native-device-info';
+import { Button } from '../ui/Button';
+import { getConfigurationForAskApolloLead } from '@aph/mobile-patients/src/graphql/types/getConfigurationForAskApolloLead';
+import { ReferralBanner } from '@aph/mobile-patients/src/components/ui/ReferralBanner';
+import {
+  InitiateRefreeType,
+  useReferralProgram,
+} from '@aph/mobile-patients/src/components/ReferralProgramProvider';
 import { setItem, getItem } from '@aph/mobile-patients/src/helpers/TimedAsyncStorage';
 
 const { Vitals } = NativeModules;
@@ -672,6 +687,57 @@ const styles = StyleSheet.create({
     height: 180,
     width: '100%',
   },
+  askApolloView: {
+    flexDirection: 'row',
+    marginHorizontal: 18,
+    marginBottom: 14,
+  },
+  quickBookBtn: {
+    width: 104,
+    height: 25,
+    padding: 4,
+    backgroundColor: theme.colors.APP_YELLOW,
+  },
+  quickBookText: {
+    ...theme.viewStyles.text('M', 14, theme.colors.WHITE, undefined, 17),
+  },
+  horizontalEnd: {
+    flex: 1,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  askApolloNumber: {
+    ...theme.viewStyles.text('M', 14, theme.colors.APP_YELLOW, undefined, 17),
+  },
+  callLogo: {
+    height: 15,
+    width: 15,
+    marginEnd: 6,
+  },
+  horizontalView: {
+    flexDirection: 'row',
+  },
+  secondaryConsultationCtaContainer: {
+    marginVertical: 16,
+  },
+  secondaryConsultationCtaHeading: { ...theme.viewStyles.text('SB', 16, '#02475B') },
+  secondaryCtaButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 6,
+  },
+  secondaryCtaButton: {
+    borderWidth: 1,
+    borderColor: '#D4D4D4',
+    borderRadius: 4,
+    flex: 0.45,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#FAFEFF',
+  },
 });
 
 type menuOptions = {
@@ -734,7 +800,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     phrNotificationData,
     setCircleSubscription,
     setHdfcUpgradeUserSubscriptions,
-    setAxdcCode,
     setCirclePlanId,
     healthCredits,
     setHealthCredits,
@@ -752,6 +817,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setActiveUserSubscriptions,
     corporateSubscriptions,
     setCorporateSubscriptions,
+    displayQuickBookAskApollo,
+    setDisplayQuickBookAskApollo,
+    displayAskApolloNumber,
+    setDisplayAskApolloNumber,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -782,6 +851,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [proActiveAppointments, setProHealthActiveAppointment] = useState([] as any);
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
+  const { refreeReward, setRefreeReward, setRewardId, setCampaignId } = useReferralProgram();
+  const [isReferrerAvailable, setReferrerAvailable] = useState<boolean>(false);
   const {
     cartItems: shopCartItems,
     setHdfcPlanName,
@@ -800,6 +871,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     pharmacyCircleAttributes,
     setIsCircleExpired,
     circleSubPlanId,
+    isPharmacyPincodeServiceable,
   } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
@@ -813,7 +885,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [enableCM, setEnableCM] = useState<boolean>(true);
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [isWEGFired, setWEGFired] = useState(false);
-  const [serviceable, setserviceable] = useState<String>('');
   const [renewNow, setRenewNow] = useState<String>('');
   const [isCircleMember, setIsCircleMember] = useState<String>('');
   const [circleSavings, setCircleSavings] = useState<number>(-1);
@@ -825,6 +896,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [bannerLoading, setBannerLoading] = useState<boolean>(false);
   let circleActivated = props.navigation.getParam('circleActivated');
   const circleActivatedRef = useRef<boolean>(circleActivated);
+  const [referAndEarnPrice, setReferAndEarnPrice] = useState('100');
 
   //prohealth
   const [isProHealthActive, setProHealthActive] = useState<boolean>(false);
@@ -942,18 +1014,36 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
+  const beforeRedirectGetRewardIdAndCampaignId = async () => {
+    try {
+      const responseCampaign = await client.query({
+        query: GET_CAMPAIGN_ID_FOR_REFERRER,
+        variables: { camp: 'HC_CAMPAIGN' },
+        fetchPolicy: 'no-cache',
+      });
+      const responseReward = await client.query({
+        query: GET_REWARD_ID,
+        variables: { reward: 'HC' },
+        fetchPolicy: 'no-cache',
+      });
+      if (responseCampaign?.data?.getCampaignInfoByCampaignType?.id) {
+        const campaignId = responseCampaign?.data?.getCampaignInfoByCampaignType?.id;
+        setCampaignId?.(campaignId);
+      }
+      if (responseReward?.data?.getRewardInfoByRewardType?.id) {
+        const rewardId = responseReward?.data?.getRewardInfoByRewardType?.id;
+        setRewardId?.(rewardId);
+      }
+      props.navigation.navigate('ShareReferLink');
+    } catch (e) {}
+  };
+
   useEffect(() => {
     if (currentPatient?.id) {
       saveDeviceNotificationToken(currentPatient.id);
     }
   }, [currentPatient]);
   const phrNotificationCount = getPhrNotificationAllCount(phrNotificationData!);
-
-  useEffect(() => {
-    //TODO: if deeplinks is causing issue comment handleDeepLink here and uncomment in SplashScreen useEffect
-    // handleDeepLink(props.navigation);
-    isserviceable();
-  }, [locationDetails, currentPatient]);
 
   const askLocationPermission = () => {
     showAphAlert!({
@@ -997,24 +1087,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       ],
     });
   };
-
-  async function isserviceable() {
-    if (locationDetails && locationDetails.pincode) {
-      await pinCodeServiceabilityApi247(locationDetails.pincode!)
-        .then(({ data: { response } }) => {
-          const { servicable, axdcCode } = response;
-          setAxdcCode && setAxdcCode(axdcCode);
-          if (servicable) {
-            setserviceable('Yes');
-          } else {
-            setserviceable('No');
-          }
-        })
-        .catch((e) => {
-          setserviceable('No');
-        });
-    }
-  }
 
   const setVaccineLoacalStorageData = () => {
     AsyncStorage.getItem('hasAgreedVaccineTnC').then((data) => {
@@ -1127,7 +1199,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, [upgradePlans]);
 
   const checkApisToCall = () => {
-    isserviceable();
     currentPatient && saveDeviceNotificationToken(currentPatient.id);
     const params = homeScreenParamsOnPop.current;
     if (!params?.isFreeConsult && !params?.isReset && currentPatient) {
@@ -1360,7 +1431,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       eventName == WebEngageEventName.BUY_MEDICINES
     ) {
       (eventAttributes as PatientInfoWithSource)['Pincode'] = locationDetails.pincode;
-      (eventAttributes as PatientInfoWithSource)['Serviceability'] = serviceable;
+      (eventAttributes as PatientInfoWithSource)['Serviceability'] = isPharmacyPincodeServiceable
+        ? 'Yes'
+        : 'No';
     }
     if (eventName == WebEngageEventName.BUY_MEDICINES) {
       eventAttributes = {
@@ -1390,10 +1463,24 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     postWebEngageEvent(eventName, eventAttributes);
   };
 
+  const postHospitalVisitClicked = () => {
+    const attributes: CleverTapEvents[CleverTapEventName.CONSULT_HOSPITAL_CLICKED] = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Mobile number': g(currentPatient, 'mobileNumber'),
+    };
+    postCleverTapEvent(CleverTapEventName.CONSULT_HOSPITAL_CLICKED, attributes);
+  };
+
   const postHomeCleverTapEvent = (
     eventName: CleverTapEventName,
     source?: HomeScreenAttributes['Source'],
-    attributes?: any
+    attributes?: any,
+    ctaType?: string
   ) => {
     let eventAttributes: HomeScreenAttributes = {
       'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
@@ -1424,7 +1511,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       eventName == CleverTapEventName.BUY_MEDICINES
     ) {
       (eventAttributes as HomeScreenAttributes)['Pincode'] = locationDetails?.pincode || undefined;
-      (eventAttributes as HomeScreenAttributes)['Serviceability'] = serviceable || undefined;
+      (eventAttributes as HomeScreenAttributes)['Serviceability'] = isPharmacyPincodeServiceable
+        ? 'Yes'
+        : 'No';
     }
     if (eventName == CleverTapEventName.BUY_MEDICINES) {
       eventAttributes = {
@@ -1443,6 +1532,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         isConsulted: getUserType(allCurrentPatients),
         'Circle Member': !!circleSubscriptionId,
         'Circle Plan type': circleSubPlanId || '',
+        CTA: ctaType,
       };
     }
     if (eventName == CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS) {
@@ -1533,7 +1623,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       eventName == FirebaseEventName.BUY_MEDICINES
     ) {
       (eventAttributes as PatientInfoWithSourceFirebase)['Pincode'] = locationDetails.pincode;
-      (eventAttributes as PatientInfoWithSourceFirebase)['Serviceability'] = serviceable;
+      (eventAttributes as PatientInfoWithSourceFirebase)[
+        'Serviceability'
+      ] = isPharmacyPincodeServiceable ? 'Yes' : 'No';
     }
     if (eventName == FirebaseEventName.BUY_MEDICINES) {
       eventAttributes = { ...eventAttributes, ...pharmacyCircleAttributes };
@@ -1568,10 +1660,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
         postHomeCleverTapEvent(
           CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED,
-          'Home Screen'
+          'Home Screen',
+          {},
+          'Primary'
         );
-        props.navigation.navigate(AppRoutes.DoctorSearch);
-        //props.navigation.navigate(AppRoutes.PostShareAppointmentSelectorScreen);
+        props.navigation.navigate(AppRoutes.DoctorSearch, {
+          isOnlineConsultMode: true,
+          consultTypeCta: 'Primary',
+        });
       },
     },
     {
@@ -1701,6 +1797,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     getUserSubscriptionsByStatus(true);
     checkCircleSelectedPlan();
     setBannerData && setBannerData([]);
+    getAskApolloLeadConfig();
+    firebaseRemoteConfigForReferrer();
   }, []);
 
   const checkCircleSelectedPlan = async () => {
@@ -1737,7 +1835,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
             let corporatePlan: SubscriptionData[] = [];
             Object.keys(groupPlans).forEach((plan_name) => {
-              if (plan_name !== 'APOLLO' && plan_name !== 'HDFC') {
+              if (
+                plan_name !== 'APOLLO' &&
+                plan_name !== 'HDFC' &&
+                plan_name !== 'APOLLO_CONSULT'
+              ) {
                 groupPlans[plan_name]?.forEach((subscription) => {
                   const plan = setSubscriptionData(subscription, false, true);
                   corporatePlan.push(plan);
@@ -1961,6 +2063,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         mobile_number: g(currentPatient, 'mobileNumber'),
         status: ['active', 'deferred_active', 'deferred_inactive', 'disabled'],
       };
+
       const res = await client.query<GetSubscriptionsOfUserByStatus>({
         query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
         fetchPolicy: 'no-cache',
@@ -1968,6 +2071,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       });
 
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+
       if (data) {
         let activeSubscriptions = {};
         Object.keys(data).forEach((subscription) => {
@@ -2109,6 +2213,23 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       }
     } catch (error) {
       CommonBugFender('CircleMembershipPlans_GetPlanDetailsByPlanId', error);
+    }
+  };
+
+  const getAskApolloLeadConfig = async () => {
+    try {
+      const res = await client.query<getConfigurationForAskApolloLead>({
+        query: GET_CONFIGURATION_FOR_ASK_APOLLO_LEAD,
+        fetchPolicy: 'no-cache',
+      });
+      const {
+        show_phonenumber_mobileapp: displayNumber,
+        show_quickbook_mobileapp: displayQuickbook,
+      } = res?.data?.getConfigurationForAskApolloLead || {};
+      setDisplayAskApolloNumber?.(!!displayNumber);
+      setDisplayQuickBookAskApollo?.(!!displayQuickbook);
+    } catch (error) {
+      CommonBugFender('GetLead_AskApolloConfig', error);
     }
   };
 
@@ -2392,6 +2513,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       .finally(() => setAppointmentLoading(false));
   };
 
+  const firebaseRemoteConfigForReferrer = async () => {
+    try {
+      const bannerConfig = await remoteConfig().getValue('Referrer_Banner');
+      setReferrerAvailable(bannerConfig.asBoolean());
+    } catch (e) {}
+  };
+
   useEffect(() => {
     async function fetchData() {
       const userLoggedIn = await AsyncStorage.getItem('gotIt');
@@ -2403,6 +2531,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           setshowPopUp(false);
           CommonLogEvent(AppRoutes.ConsultRoom, 'ConsultRoom_BottomPopUp clicked');
           AsyncStorage.setItem('gotIt', 'true');
+          checkUserRegisterThroughReferral();
         }, 5000);
       }
       const eneabled = AppConfig.Configuration.ENABLE_CONDITIONAL_MANAGEMENT;
@@ -2648,6 +2777,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       ? allPatients?.find((patient: any) => patient?.relation === Relation.ME) || allPatients?.[0]
       : null;
     const patientUHID = patientDetails ? (patientDetails?.uhid ? patientDetails?.uhid : '') : '';
+
     if (patientUHID) {
       setshowSpinner(true);
       try {
@@ -2912,6 +3042,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         'Device Id': getUniqueId(),
       };
       postCleverTapEvent(CleverTapEventName.LOGIN_DONE, eventAttributes);
+    }
+  };
+
+  const checkUserRegisterThroughReferral = async () => {
+    const referrerInstall = await AsyncStorage.getItem('referrerInstall');
+    if (referrerInstall === 'true') {
+      props.navigation.navigate('EarnedPoints');
+      AsyncStorage.removeItem('referrerInstall');
     }
   };
 
@@ -3670,11 +3808,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     };
     postHomeWEGEvent(WebEngageEventName.COVID_VACCINATION_SECTION_CLICKED, undefined, attibutes);
 
-    console.log(
-      'check  ConsultRoom  handleCovidCTA vaccinationSubscriptionInclusionId ---',
-      vaccinationSubscriptionInclusionId
-    );
-
     try {
       if (item?.action === string.vaccineBooking.CORPORATE_VACCINATION) {
         postVaccineWidgetEvents(CleverTapEventName.VACCINATION_BOOK_SLOT_CLICKED);
@@ -4021,6 +4154,127 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const renderAllConsultedDoctors = () => {
     return <ConsultedDoctorsCard navigation={props.navigation} />;
   };
+  const renderSecondaryConsultationCta = () => (
+    <View style={styles.secondaryConsultationCtaContainer}>
+      <Text style={styles.secondaryConsultationCtaHeading}>{'Book Doctor Consult'}</Text>
+      <View style={styles.secondaryCtaButtonsContainer}>
+        <TouchableOpacity
+          style={styles.secondaryCtaButton}
+          onPress={() => {
+            postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
+            postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
+            postHomeCleverTapEvent(
+              CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED,
+              'Home Screen',
+              {},
+              'Secondary'
+            );
+            postHospitalVisitClicked();
+            props.navigation.navigate(AppRoutes.DoctorSearch, {
+              isOnlineConsultMode: false,
+              consultTypeCta: 'Secondary',
+            });
+          }}
+        >
+          <HospitalVisit
+            style={{
+              height: 18,
+              width: 18,
+            }}
+          />
+          <Text style={{ ...theme.viewStyles.text('SB', 13, '#02475B') }}>Hospital Visit</Text>
+          <ArrowRight />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.secondaryCtaButton}
+          onPress={() => {
+            postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
+            postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
+            postHomeCleverTapEvent(
+              CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED,
+              'Home Screen',
+              {},
+              'Secondary'
+            );
+            props.navigation.navigate(AppRoutes.DoctorSearch, {
+              isOnlineConsultMode: true,
+              consultTypeCta: 'Secondary',
+            });
+          }}
+        >
+          <VideoConsult
+            style={{
+              height: 18,
+              width: 18,
+            }}
+          />
+          <Text style={{ ...theme.viewStyles.text('SB', 13, '#02475B') }}>Video Consult</Text>
+          <ArrowRight />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  const callAskApolloNumber = () => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CLICKED_ON_APOLLO_NUMBER] = {
+      'Screen type': 'Speciality page',
+      'Patient Number': currentPatient?.mobileNumber,
+    };
+    postCleverTapEvent(CleverTapEventName.CLICKED_ON_APOLLO_NUMBER, eventAttributes);
+    Linking.openURL(`tel:${AppConfig.Configuration.Ask_Apollo_Number}`);
+  };
+
+  const navigateToQuickBook = () => {
+    const ctAttributes = {
+      'Screen type': 'Speciality page',
+      'Patient Number': currentPatient?.mobileNumber,
+    };
+    props.navigation.navigate(AppRoutes.AskApolloQuickBook, { ctAttributes });
+  };
+
+  const renderAskApolloView = () => {
+    return (
+      <View style={styles.askApolloView}>
+        {displayQuickBookAskApollo && (
+          <Button
+            title="QUICK BOOK"
+            style={styles.quickBookBtn}
+            titleTextStyle={styles.quickBookText}
+            onPress={navigateToQuickBook}
+          />
+        )}
+        {displayAskApolloNumber && (
+          <View style={styles.horizontalEnd}>
+            <TouchableOpacity onPress={callAskApolloNumber} style={styles.horizontalView}>
+              <CallIcon style={styles.callLogo} />
+              <Text style={styles.askApolloNumber}>
+                {AppConfig.Configuration.Ask_Apollo_Number}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    );
+  };
+  const renderReferralBanner = () => {
+    return (
+      <View
+        style={{
+          backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+          paddingTop: 7,
+          paddingHorizontal: 5,
+        }}
+      >
+        <ReferralBanner
+          {...props}
+          redirectOnShareReferrer={() => {
+            beforeRedirectGetRewardIdAndCampaignId();
+          }}
+          screenName={'Homepage'}
+        />
+      </View>
+    );
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
@@ -4032,7 +4286,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
               <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text>
               {renderMenuOptions()}
-
+              {(displayQuickBookAskApollo || displayAskApolloNumber) && renderAskApolloView()}
+              {isReferrerAvailable && renderReferralBanner()}
               {circleDataLoading && renderCircleShimmer()}
               <View style={{ backgroundColor: '#f0f1ec' }}>
                 {isCircleMember === 'yes' && !circleDataLoading && renderCircle()}
@@ -4043,6 +4298,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <View style={{ backgroundColor: '#f0f1ec' }}>
                 {covidVaccineCtaV2?.data?.length > 0 && renderCovidContainer()}
               </View>
+              <View style={{ paddingHorizontal: 20 }}>{renderSecondaryConsultationCta()}</View>
               {bannerLoading && renderBannerShimmer()}
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
               {/**added prohealth banner */}

@@ -279,6 +279,20 @@ export const GET_AVAILABLE_SLOTS = gql`
   }
 `;
 
+export const GET_INFORMATIVE_CONTENT = gql`
+  query getInformativeContent($uhid: String!, $params: [TestNameInputs]) {
+    getInformativeContent(uhid: $uhid, params: $params) {
+      errorMsg
+      response {
+        testName
+        parameterName
+        loincCode
+        contentCode
+      }
+    }
+  }
+`;
+
 export const GET_PATIENT_FUTURE_APPOINTMENT_COUNT = gql`
   query getPatientFutureAppointmentCount($patientId: String) {
     getPatientFutureAppointmentCount(patientId: $patientId) {
@@ -1719,6 +1733,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           firstName
           lastName
           gender
+          dateOfBirth
         }
         patientAddressObj {
           addressLine1
@@ -1751,7 +1766,8 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         visitNo
         invoiceURL
         labReportURL
-        attributesObj {
+        passportNo
+        attributesObj{
           initialCollectionCharges
           distanceCharges
           homeCollectionCharges
@@ -1936,7 +1952,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
       billNumber: $billNumber
     ) {
       tatBreached
-      orderCancellationAllowedDetails{
+      orderCancellationAllowedDetails {
         cancellationTime
         cancellationAllowed
         message
@@ -2113,6 +2129,7 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         diagnosticDate
         visitNo
         labReportURL
+        passportNo
         slotTimings
         slotId
         slotDateTimeInUTC
@@ -3307,7 +3324,7 @@ export const GET_MEDICAL_PRISM_RECORD_V3 = gql`
             result
             range
             outOfRange
-            resultDate
+            # resultDate
           }
           fileUrl
           testResultFiles {
@@ -4981,6 +4998,21 @@ export const GET_DOCTOR_LIST = gql`
   }
 `;
 
+export const PATIENT_PAST_LOCATIONS = gql`
+  query getPatientPastLocations($patientId: String, $patientMobile: String) {
+    getPatientPastLocations(patientId: $patientId, patientMobile: $patientMobile) {
+      pastLocations {
+        city
+        pincode
+      }
+      popularCities {
+        city
+        pincode
+      }
+    }
+  }
+`;
+
 export const GET_DIAGNOSTIC_AREAS = gql`
   query getAreas($pincode: Int!, $itemIDs: [Int]!) {
     getAreas(pincode: $pincode, itemIDs: $itemIDs) {
@@ -5156,6 +5188,7 @@ export const GET_INTERNAL_ORDER = gql`
             firstName
             lastName
             gender
+            dateOfBirth
           }
           diagnosticOrderLineItems {
             itemId
@@ -5206,6 +5239,11 @@ export const GET_ORDER_INFO = gql`
       PharmaOrderDetails {
         medicineOrderDetails {
           orderAutoId
+        }
+      }
+      DiagnosticsPaymentDetails {
+        ordersList {
+          allowPayment
         }
       }
     }
@@ -6346,19 +6384,23 @@ export const GET_DIAGNOSTIC_REPORT_TAT = gql`
     $cityId: Int!
     $pincode: Int!
     $itemIds: [Int]!
+    $source: REPORT_TAT_SOURCE
   ) {
     getConfigurableReportTAT(
       slotDateTimeInUTC: $slotDateTimeInUTC
       cityId: $cityId
       pincode: $pincode
       itemIds: $itemIds
+      source: $source
     ) {
       maxReportTAT
       reportTATMessage
+      preOrderReportTATMessage
       itemLevelReportTATs {
         itemId
         reportTATMessage
         reportTATInUTC
+        preOrderReportTATMessage
       }
     }
   }
@@ -6476,7 +6518,8 @@ export const GET_DIAGNOSTIC_SEARCH_RESULTS = gql`
         }
       }
     }
-  }`;
+  }
+`;
 
 export const GET_PHARMACY_PRESCRIPTION_OPTION = gql`
   query pharmaPrescriptionOption($pharmaPrescriptionOptionInput: PharmaPrescriptionOptionInput) {
@@ -6553,3 +6596,133 @@ export const CREATE_VONAGE_SESSION_TOKEN = gql`
   }
 `;
 
+export const GET_CONFIGURATION_FOR_ASK_APOLLO_LEAD = gql`
+  query getConfigurationForAskApolloLead {
+    getConfigurationForAskApolloLead {
+      show_phonenumber_website
+      show_phonenumber_mobileapp
+      show_quickbook_website
+      show_quickbook_mobileapp
+    }
+  }
+`;
+export const UPDATE_PASSPORT_DETAILS = gql`
+  mutation updatePassportDetails($passportDetailsInput: [PassportDetailsInput]) {
+    updatePassportDetails(passportDetailsInput: $passportDetailsInput) {
+      status
+      message
+      displayId
+      data
+    }
+  }
+`;
+
+export const GENEREATE_ASK_APOLLO_LEAD = gql`
+  mutation askApolloLead($askApolloLeadInput: AskApolloLeadInput!) {
+    askApolloLead(askApolloLeadInput: $askApolloLeadInput) {
+      message
+    }
+  }
+`;
+export const GET_HC_REFREE_RECORD = gql`
+  query rewardDetail($id: String!) {
+    getReferralRewardDetails(id: $id) {
+      totalRewardValue
+      rewardType
+      claimed {
+        expiryDate
+        rewardType
+        name
+        rewardValue
+        txnDate
+      }
+      pending {
+        name
+        registrationDate
+      }
+      referee {
+        registrationDate
+        name
+        rewardValue
+        rewardType
+      }
+    }
+  }
+`;
+
+export const GET_REWARD_ID = gql`
+  query rewardInfo($reward: REWARD_TYPES!) {
+    getRewardInfoByRewardType(rewardType: $reward) {
+      id
+    }
+  }
+`;
+
+export const GET_CAMPAIGN_ID_FOR_REFERRER = gql`
+  query campaignInfo($camp: CAMPAIGN_TYPES!) {
+    getCampaignInfoByCampaignType(campaignType: $camp) {
+      id
+    }
+  }
+`;
+
+export const CANCELL_SUBSCRIPTION = gql`
+  mutation CancelSubscription($CancelSubscriptionInput: CancelSubscriptionInput!) {
+    CancelSubscription(CancelSubscriptionInput: $CancelSubscriptionInput) {
+      code
+      success
+      message
+      response {
+        mobile_number
+        status
+        _id
+        start_date
+        end_date
+      }
+    }
+  }
+`;
+export const GET_PACKAGE_PURCHASE_INFO = gql`
+  query getPackagePurchaseInfo($order_id: String!) {
+    getOrderInternal(order_id: $order_id) {
+      id
+      customer_id
+      payment_order_id
+      payment_status
+      total_amount
+      SubscriptionOrderDetails {
+        end_date
+        payment_reference
+        group_plan {
+          meta {
+            description
+          }
+        }
+        group_sub_plan {
+          plan_id
+          name
+        }
+      }
+    }
+  }
+`;
+
+export const BOOK_PACKAGE_CONSULT = gql`
+  mutation bookFreeAppointmentForPharmacy(
+    $patientId: String!
+    $subscriptionDetailsInput: SubscriptionDetailsInput
+  ) {
+    bookFreeAppointmentForPharmacy(
+      patientId: $patientId
+      subscriptionOrderDetails: $subscriptionDetailsInput
+    ) {
+      appointmentDateTime
+      appointmentId
+      displayId
+      doctorName
+      doctorId
+      isError
+      error
+    }
+  }
+`;

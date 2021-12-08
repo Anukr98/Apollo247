@@ -58,7 +58,6 @@ import {
   trackTagalysEvent,
   getSubstitutes,
   getPlaceInfoByPincode,
-  pinCodeServiceabilityApi247,
   availabilityApi247,
   getDeliveryTAT247,
   TatApiInput247,
@@ -100,7 +99,10 @@ import {
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import AsyncStorage from '@react-native-community/async-storage';
 import { NudgeMessage } from '@aph/mobile-patients/src/components/Medicines/Components/NudgeMessage';
-import { GET_PRODUCT_SUBSTITUTES } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_PATIENT_ADDRESS_LIST,
+  GET_PRODUCT_SUBSTITUTES,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   pharmaSubstitution,
   pharmaSubstitutionVariables,
@@ -111,6 +113,10 @@ import { FrequentlyBoughtTogether } from '@aph/mobile-patients/src/components/Pr
 import { postPharmacyAddNewAddressCompleted } from '../../helpers/webEngageEventHelpers';
 import { CouponSectionPDP } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/CouponSectionPDP';
 import { CircleBannerPDP } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/CircleBannerPDP';
+import {
+  getPatientAddressList,
+  getPatientAddressListVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 
 export type ProductPageViewedEventProps = Pick<
   WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED],
@@ -164,6 +170,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     setProductSubstitutes,
     newAddressAdded,
     setNewAddressAdded,
+    axdcCode,
+    isPharmacyPincodeServiceable,
+    setAddresses,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
@@ -174,9 +183,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     locationDetails,
     setLocationDetails,
     pharmacyLocation,
-    setAxdcCode,
     isPharmacyLocationServiceable,
-    axdcCode,
     activeUserSubscriptions,
   } = useAppCommonData();
 
@@ -207,7 +214,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const pharmacyPincode =
     g(asyncPincode, 'pincode') || g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
   const [pincode, setpincode] = useState<string>(pharmacyPincode || '');
-  const [notServiceable, setNotServiceable] = useState<boolean>(false);
   const [deliveryTime, setdeliveryTime] = useState<string>('');
   const [tatEventData, setTatEventData] = useState<PharmacyTatApiCalled>();
   const [isPharma, setIsPharma] = useState<boolean>(false);
@@ -253,7 +259,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 
   useEffect(() => {
     setProductSubstitutes?.([]);
-    getMedicineDetails();
     BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
@@ -272,7 +277,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, [sku]);
 
   useEffect(() => {
-    if (!!medicineDetails?.price && medicineDetails?.price && sku) {
+    if (movedFrom === ProductPageViewedSource.DEEP_LINK) {
+      getMedicineDetails();
+      fetchAddress();
+    }
+  }, [movedFrom]);
+
+  useEffect(() => {
+    if (medicineDetails?.price && sku) {
       fetchDeliveryTime(pincode, false);
     }
   }, [medicineDetails?.price]);
@@ -333,6 +345,24 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, [newAddressAdded, selectedAddress, deliveryTime]);
 
   useEffect(() => {
+    if (asyncPincode?.pincode) fetchDeliveryTime(asyncPincode?.pincode);
+  }, [axdcCode, isPharmacyPincodeServiceable]);
+
+  useEffect(() => {
+    if (!isPharmacyPincodeServiceable) {
+      const unServiceableMsg =
+        'Sorry! Your Pincode is not serviceable yet. Please try with an alternative pincode.';
+      setIsInStock(false);
+      setdeliveryTime('');
+      setdeliveryError(unServiceableMsg);
+      setshowDeliverySpinner(false);
+    } else {
+      setdeliveryError('');
+      setshowDeliverySpinner(false);
+    }
+  }, [isPharmacyPincodeServiceable]);
+
+  useEffect(() => {
     try {
       if (medicineDetails?.price && tatEventData) {
         const eventAttributes: PharmacyTatApiCalled = {
@@ -371,6 +401,29 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, [cartItems, currentProductQuantityInCart, currentProductIdInCart]);
 
   useEffect(() => {}, [setShowSuggestedQuantityNudge]);
+
+  const fetchAddress = async () => {
+    try {
+      if (addresses.length) {
+        return;
+      }
+      const response = await client.query<getPatientAddressList, getPatientAddressListVariables>({
+        query: GET_PATIENT_ADDRESS_LIST,
+        variables: { patientId: currentPatient?.id },
+        fetchPolicy: 'no-cache',
+      });
+      const { data } = response;
+      const addressList =
+        (data.getPatientAddressList
+          .addressList as savePatientAddress_savePatientAddress_patientAddress[]) || [];
+      setAddresses!(addressList);
+    } catch (error) {
+      showAphAlert!({
+        title: string.common.uhOh,
+        description: 'Something went wrong, unable to fetch addresses.',
+      });
+    }
+  };
 
   const getMedicineDetails = (zipcode?: string, pinAcdxCode?: string, selectedSku?: string) => {
     setLoading(true);
@@ -436,6 +489,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           code: data,
           sku: products[data].sku,
           available: products[data].is_in_stock,
+          unitOfMeasurement: products[data].unit_of_measurement || '',
         };
       });
       setMultiVariantSkuInformation(skusInformation);
@@ -662,7 +716,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         ...pharmacyCircleAttributes,
         User_Type: userType,
         Pincode: pincode,
-        serviceable: notServiceable ? 'No' : 'Yes',
+        serviceable: isPharmacyPincodeServiceable ? 'Yes' : 'No',
         TATDay: deliveryTime ? moment(deliveryTime).diff(moment(), 'days') : null,
         TatHour: deliveryTime ? moment(deliveryTime).diff(moment(), 'hours') : null,
         TatDateTime: deliveryTime,
@@ -692,7 +746,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
         'User type': userType || undefined,
         Pincode: pincode,
-        Serviceability: notServiceable ? 'No' : 'Yes',
+        Serviceability: isPharmacyPincodeServiceable ? 'Yes' : 'No',
         'TAT day': deliveryTime ? moment(deliveryTime).diff(moment(), 'days') : undefined,
         'TAT hour': deliveryTime ? moment(deliveryTime).diff(moment(), 'hours') : undefined,
         'TAT date time': deliveryTime || undefined,
@@ -714,7 +768,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         ...pharmacyCircleAttributes,
         User_Type: userType,
         Pincode: pincode,
-        serviceable: notServiceable ? 'No' : 'Yes',
+        serviceable: isPharmacyPincodeServiceable ? 'Yes' : 'No',
         TATDay: deliveryTime ? moment(deliveryTime).diff(moment(), 'days') : null,
         TatHour: deliveryTime ? moment(deliveryTime).diff(moment(), 'hours') : null,
         TatDateTime: deliveryTime,
@@ -759,9 +813,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   };
 
   const fetchDeliveryTime = async (currentPincode: string, checkButtonClicked?: boolean) => {
-    if (!currentPincode) return;
-    const unServiceableMsg =
-      'Sorry! Your Pincode is not serviceable yet. Please try with an alternative pincode.';
+    if (!currentPincode || !isPharmacyPincodeServiceable) return;
     const pincodeServiceableItemOutOfStockMsg = 'Sorry, this item is out of stock in your area.';
     Keyboard.dismiss();
     setshowDeliverySpinner(true);
@@ -769,22 +821,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     // To handle deeplink scenario and
     // If we performed pincode serviceability check already in Medicine Home Screen and the current pincode is same as Pharma pincode
     try {
-      const response = await pinCodeServiceabilityApi247(currentPincode);
-      const { data } = response;
-      setAxdcCode && setAxdcCode(data?.response?.axdcCode);
-      let pinCodeNotServiceable =
-        isPharmacyLocationServiceable == undefined || pharmacyPincode != currentPincode
-          ? !data?.response?.servicable
-          : pharmacyPincode == currentPincode && !isPharmacyLocationServiceable;
-      setNotServiceable(!data?.response?.servicable);
-      if (!data?.response?.servicable) {
-        setIsInStock(false);
-        setdeliveryTime('');
-        setdeliveryError(unServiceableMsg);
-        setshowDeliverySpinner(false);
-        return;
-      }
-
       let isInStock = true;
       availabilityApi247(currentPincode, sku?.toUpperCase())
         .then((availabilityResponse) => {
@@ -828,7 +864,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               latitude,
               longitude,
               checkButtonClicked,
-              pinCodeNotServiceable,
+              isPharmacyPincodeServiceable,
               pincodeServiceableItemOutOfStockMsg
             );
           } else {
@@ -1025,7 +1061,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             setLocationValues(saveAddress);
             setDeliveryAddressId!('');
             setpincode(pinCode);
-            fetchDeliveryTime(pinCode, true);
             setLoading!(false);
           } else {
             setLoading!(false);
@@ -1234,13 +1269,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   };
 
   const onNotifyMeClick = () => {
+    const serviceableYesNo = isPharmacyPincodeServiceable ? 'Yes' : 'No';
     const eventAttributes: WebEngageEvents[WebEngageEventName.NOTIFY_ME] = {
       'product name': medicineDetails?.name,
       'product id': medicineDetails?.sku,
       'category ID': medicineDetails?.category_id,
       price: medicineDetails?.price,
       pincode: pincode,
-      serviceable: notServiceable ? 'No' : 'Yes',
+      serviceable: serviceableYesNo,
     };
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_NOTIFY_ME] = {
       'Product name': medicineDetails?.name,
@@ -1248,7 +1284,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       'Category ID': medicineDetails?.category_id || '',
       Price: medicineDetails?.price,
       Pincode: pincode,
-      Serviceability: notServiceable ? 'No' : 'Yes',
+      Serviceability: serviceableYesNo,
     };
     postCleverTapEvent(CleverTapEventName.PHARMACY_NOTIFY_ME, cleverTapEventAttributes);
     postWebEngageEvent(WebEngageEventName.NOTIFY_ME, eventAttributes);
@@ -1373,6 +1409,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 />
               </View>
               <CircleBannerPDP navigation={props.navigation} />
+              {isInStock && !!boughtTogether && boughtTogether.length > 0 && (
+                <FrequentlyBoughtTogether
+                  boughtTogetherArray={boughtTogether}
+                  setShowAddedToCart={setShowAddedToCart}
+                />
+              )}
+              {!!couponData && couponData.length > 0 && (
+                <CouponSectionPDP offersData={couponData} />
+              )}
               <PharmaManufacturer
                 manufacturer={medicineDetails?.manufacturer}
                 composition={medicineDetails?.PharmaOverview?.[0]?.Composition || composition}
@@ -1387,15 +1432,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   navigation={props.navigation}
                   composition={medicineDetails?.PharmaOverview?.[0]?.Composition || composition}
                   setShowSubstituteInfo={setShowSubstituteInfo}
-                />
-              )}
-              {!!couponData && couponData.length > 0 && (
-                <CouponSectionPDP offersData={couponData} />
-              )}
-              {isInStock && !!boughtTogether && boughtTogether.length > 0 && (
-                <FrequentlyBoughtTogether
-                  boughtTogetherArray={boughtTogether}
-                  setShowAddedToCart={setShowAddedToCart}
                 />
               )}
               <ProductInfo

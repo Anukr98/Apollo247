@@ -24,11 +24,24 @@ export interface FrequentlyBoughtTogetherProps {
 
 export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> = (props) => {
   const { boughtTogetherArray, setShowAddedToCart } = props;
+  const defaultSelectedId: number[] = [];
 
-  const [selectedItemsCount, setSelectedItemsCount] = useState<number>(0);
-  const [selectedProductsId, setSelectedProductsId] = useState([]);
-  const [selectedProductsArray, setSelectedProductsArray] = useState<MedicineProduct[]>([]);
-  const [totalPrice, setTotalPrice] = useState<number>(0);
+  let defaultTotalPrice = 0;
+
+  boughtTogetherArray.map((item) => {
+    defaultSelectedId.push(item?.id);
+    const itemPrice = item?.special_price ? item?.special_price : item?.price;
+    defaultTotalPrice = defaultTotalPrice + parseInt(itemPrice);
+  });
+
+  const [selectedItemsCount, setSelectedItemsCount] = useState<number>(
+    defaultSelectedId?.length || 0
+  );
+  const [selectedProductsId, setSelectedProductsId] = useState(defaultSelectedId || []);
+  const [selectedProductsArray, setSelectedProductsArray] = useState<MedicineProduct[]>(
+    boughtTogetherArray || []
+  );
+  const [totalPrice, setTotalPrice] = useState<number>(defaultTotalPrice || 0);
 
   const { cartItems, updateCartItem, addMultipleCartItems } = useShoppingCart();
 
@@ -222,7 +235,7 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: 20,
+    marginTop: 10,
     marginHorizontal: 15,
   },
   headingStyle: {
@@ -242,7 +255,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   ItemContainer: {
-    height: 67,
+    height: 69,
     flexDirection: 'row',
   },
   imageContainer: {
@@ -264,8 +277,8 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   imageStyle: {
-    height: 53,
-    width: 53,
+    height: 51,
+    width: 51,
     alignSelf: 'center',
   },
   detailsContainer: {
@@ -345,7 +358,7 @@ const styles = StyleSheet.create({
   },
   plusContainer: {
     flexDirection: 'row',
-    marginVertical: -15,
+    marginVertical: -17,
   },
   plusLeftStyle: {
     width: '15%',

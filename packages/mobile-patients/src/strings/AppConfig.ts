@@ -2,6 +2,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { PharmaStateCodeMapping } from '@aph/mobile-patients/src/strings/PharmaStateCodeMapping';
 import DeviceInfo from 'react-native-device-info';
 import {
+  CALL_TO_ORDER_CTA_PAGE_ID,
   DIAGNOSTIC_ORDER_STATUS,
   REFUND_STATUSES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -53,7 +54,7 @@ const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
 const tatTokenDev = 'GWjKtviqHa4r4kiQmcVH';
 const tatTokenProd = '8nBs8ucvbqlCGShwDr7oHv0mePqwhE';
 const apolloProdBaseUrl = 'https://magento.apollo247.com';
-const apolloUatBaseUrl = 'https://uat.apollopharmacy.in';
+const apolloUatBaseUrl = 'https://m226api.apollopharmacy.in';
 const tagalysBaseUrl = 'https://api-r1.tagalys.com/v1';
 const drupalAuthTokenDev = 'Basic Y29udGVudDp3YWxtYXJ0TlVUdG9reW9IZWlzdA==';
 const drupalAuthTokenProd = 'Basic Y29udGVudDp3YWxtYXJ0TlVUdG9reW9IZWlzdA==';
@@ -239,6 +240,11 @@ const appStaticVariables = {
   Used_Up_Alotted_Slot_Msg:
     'Sorry! You have used up all your allotted booking slots under corporate vaccination. You can still continue to book payable slots under pay by self option.',
   Vaccination_Cities_List: ['Delhi', 'Mumbai'],
+  Consult_Package_TnC: [
+    'Select the patient’s profile for consultation and complete your booking.',
+    'An Apollo doctor will be assigned to you in the next 15 minutes.',
+    'View your booked appointment in the ‘My Appointment’ section on your app.',
+  ],
   Vaccine_Type: ['Covaxin', 'Covishield'],
   Cancel_Threshold_Pre_Vaccination: 12, //hrs
   Enable_Diagnostics_COD: true,
@@ -290,10 +296,30 @@ const appStaticVariables = {
   DIAGNOSTICS_REPORT_TAT_BREACH_TEXT:
     'Reports are delayed by a few hours, but should be available any time soon.',
   TrueCaller_Login_Enabled: false,
-  DIAGNOSTICS_NO_CIRCLE_SAVINGS_TEXT : 'Extra 15% off on lab tests and cashback on medicine orders',
+  Ask_Apollo_Number: '18605001066',
+  LONG_CHAT_LAUNCH_DATE: '23/10/2021',
+  offerIconBaseUrl: 'https://newassets.apollo247.com/images/payment_offer_icons/',
+  DIAGNOSTICS_NO_CIRCLE_SAVINGS_TEXT: 'Extra 15% off on lab tests and cashback on medicine orders',
+  DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER: {
+    ctaDetailsOnCityId: [
+      {
+        ctaCityId: '9',
+        ctaProductPageArray: ['HOME', 'TESTLISTING', 'TESTCART', 'TESTDETAIL'],
+        ctaDelaySeconds: 0,
+        ctaPhoneNumber: '040-4821-3009',
+      },
+    ],
+    ctaDetailsDefault: {
+      ctaProductPageArray: ['HOME', 'TESTLISTING', 'TESTCART', 'TESTDETAIL'],
+      ctaDelaySeconds: 3,
+      ctaPhoneNumber: '040-4821-3322',
+    },
+  },
+  DIAGNOSTICS_COVID_ITEM_IDS: [2446],
   FREE_CONSULT_MESSAGE: {
     prescriptionMessage: 'Get a FREE Consultation by our expert doctor within the next 30 mins.',
-    reviewOrderMessage: 'Our Apollo doctor will call you for a free consultation. Order will be processed only after the consultation in completed successfully.',
+    reviewOrderMessage:
+      'Our Apollo doctor will call you for a free consultation. Order will be processed only after the consultation in completed successfully.',
     orderConfirmationMessage: 'An Apollo doctor will call you as soon are they are available.',
     orderSummaryMessage: 'Free Doctor Consult Booked. You will receive a call soon.',
     reviewOrderHeader: 'FREE Consult will be booked for you',
@@ -445,10 +471,14 @@ const Apollo247Config = {
   dev: {
     UATTAT_CONFIG: ['https://uattat.apollo247.com', tatTokenDev],
     DRUPAL_CONFIG: ['https://uatcms.apollo247.com/api', drupalAuthTokenDev],
+    SUBSCRIPTION_SERVICE_EMAIL:
+      'https://apollo-subscription-service-qa3.azurewebsites.net/api/TriggerSubscriptionInvoiceEmail?code=MGZZDQic3lztc3eK01C/vqAMuJ4dpU2NtEJAylFXiT93Hpd4Z1S9Lw==',
   },
   prod: {
     UATTAT_CONFIG: ['https://tat.apollo247.com', tatTokenProd],
     DRUPAL_CONFIG: ['https://cms.apollo247.com/api', drupalAuthTokenProd],
+    SUBSCRIPTION_SERVICE_EMAIL:
+      'https://apollo-subscription-service.azurewebsites.net/api/TriggerSubscriptionInvoiceEmail?code=0jEf6bZpGJn5laCwqz4S24jePathD1ZDdP70c0kRavCbG79TF4rthQ==',
   },
 };
 
@@ -1498,6 +1528,7 @@ export const DIAGNOSTIC_SHOW_OTP_STATUS = [
 export const DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
 ];
 export const DIAGNOSTIC_SUB_STATUS_TO_SHOW = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
@@ -1641,6 +1672,15 @@ export const DIAGNOSTIC_ONLINE_PAYMENT_STATUS = [
 export const DIAGNOSTIC_EDIT_PROFILE_ARRAY = [
   DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
   DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
+];
+
+export const DIAGNOSTIC_CALL_TO_ORDER_CTA = [
+  CALL_TO_ORDER_CTA_PAGE_ID.HOME,
+  CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS,
+  CALL_TO_ORDER_CTA_PAGE_ID.TESTCART,
+  CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL,
+  CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING,
+  CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY,
 ];
 
 type SpecialitiesType = {

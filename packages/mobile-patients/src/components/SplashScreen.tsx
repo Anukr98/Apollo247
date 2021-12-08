@@ -46,6 +46,9 @@ import {
   setCleverTapAppsFlyerCustID,
   clevertapEventForAppsflyerDeeplink,
   updateCallKitNotificationReceivedStatus,
+  checkUniversalURL,
+  removeNullFromObj,
+  filterAppLaunchSoruceAttributesByKey,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -98,7 +101,7 @@ import { CleverTapEventName } from '../helpers/CleverTapEvents';
 import analytics from '@react-native-firebase/analytics';
 import appsFlyer from 'react-native-appsflyer';
 
-(function() {
+(function () {
   /**
    * Praktice.ai
    * Polyfill for Promise.prototype.finally
@@ -111,16 +114,16 @@ import appsFlyer from 'react-native-appsflyer';
   if (typeof Promise.prototype['finally'] === 'function') {
     return;
   }
-  globalObject.Promise.prototype['finally'] = function(callback: any) {
+  globalObject.Promise.prototype['finally'] = function (callback: any) {
     const constructor = this.constructor;
     return this.then(
-      function(value: any) {
-        return constructor.resolve(callback()).then(function() {
+      function (value: any) {
+        return constructor.resolve(callback()).then(function () {
           return value;
         });
       },
-      function(reason: any) {
-        return constructor.resolve(callback()).then(function() {
+      function (reason: any) {
+        return constructor.resolve(callback()).then(function () {
           throw reason;
         });
       }
@@ -162,12 +165,8 @@ export interface SplashScreenProps extends NavigationScreenProps {}
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { APP_ENV } = AppConfig;
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
-  const {
-    setAllPatients,
-    setMobileAPICalled,
-    validateAndReturnAuthToken,
-    buildApolloClient,
-  } = useAuth();
+  const { setAllPatients, setMobileAPICalled, validateAndReturnAuthToken, buildApolloClient } =
+    useAuth();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [appState, setAppState] = useState(AppState.currentState);
   const [takeToConsultRoom, settakeToConsultRoom] = useState<boolean>(false);
@@ -248,16 +247,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     getDeviceToken();
     initializeRealTimeUninstall();
     setCleverTapAppsFlyerCustID();
-    InitiateAppsFlyer(props.navigation, (resources) => {
-      redirectRoute(
-        resources?.routeName,
-        resources?.id,
-        resources?.isCall,
-        resources?.timeout,
-        resources?.mediaSource,
-        resources?.data
-      );
-    });
   }, []);
 
   useEffect(() => {
@@ -410,7 +399,23 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     try {
       Linking.getInitialURL()
         .then((url) => {
-          triggerUTMCustomEvent(url);
+          try {
+            InitiateAppsFlyer(
+              props.navigation,
+              (resources) => {
+                redirectRoute(
+                  resources?.routeName,
+                  resources?.id,
+                  resources?.isCall,
+                  resources?.timeout,
+                  resources?.mediaSource,
+                  resources?.data
+                );
+              },
+              url,
+              (isFirstLaunch) => triggerUTMCustomEvent(url, isFirstLaunch)
+            );
+          } catch (e) {}
           setBugFenderLog('DEEP_LINK_URL', url);
           if (url) {
             try {
@@ -438,7 +443,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         try {
           setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
           const data: any = handleOpenURL(event.url);
-          catchSourceUrlDataUsingAppsFlyer();
+          catchSourceUrlDataUsingAppsFlyer(event.url);
           redirectRoute(
             data?.routeName,
             data?.id,
@@ -531,32 +536,50 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         variables: { order_id: paymentId },
         fetchPolicy: 'no-cache',
       });
-      const paymentStatus = response?.data?.getOrderInternal?.payment_status;
-      const allowedStatuses = ['PAYMENT_NOT_INITIATED', 'TXN_FAILURE', 'COD_COMPLETE'];
-      if (allowedStatuses.includes(paymentStatus)) {
-        const currentPatientId: any = await AsyncStorage.getItem('selectUserId');
-        const isPharmaOrder = !!response?.data?.getOrderInternal?.PharmaOrderDetails
-          ?.medicineOrderDetails?.length
-          ? true
-          : false;
-        const merchantId = isPharmaOrder
-          ? AppConfig.Configuration.pharmaMerchantId
-          : AppConfig.Configuration.merchantId;
-        initiateHyperSDK(currentPatientId, merchantId);
-        const params = {
-          paymentId: response?.data?.getOrderInternal?.payment_order_id,
-          amount: response?.data?.getOrderInternal?.total_amount,
-          orderDetails: { orderId: response?.data?.getOrderInternal?.id },
-          businessLine: 'paymentLink',
-          customerId: response?.data?.getOrderInternal?.customer_id,
-        };
-        getData('PaymentMethods', undefined, undefined, undefined, undefined, params);
+      let allowPayment = true;
+      const diagOrder = response?.data?.getOrderInternal?.DiagnosticsPaymentDetails?.ordersList?.find(
+        (item: any) => item?.allowPayment
+      );
+      allowPayment = !!diagOrder ? diagOrder?.allowPayment : true;
+      if (allowPayment) {
+        const paymentStatus = response?.data?.getOrderInternal?.payment_status;
+        const allowedStatuses = ['PAYMENT_NOT_INITIATED', 'TXN_FAILURE', 'COD_COMPLETE'];
+        if (allowedStatuses.includes(paymentStatus)) {
+          const currentPatientId: any = await AsyncStorage.getItem('selectUserId');
+          const isPharmaOrder = !!response?.data?.getOrderInternal?.PharmaOrderDetails
+            ?.medicineOrderDetails?.length
+            ? true
+            : false;
+          const merchantId = isPharmaOrder
+            ? AppConfig.Configuration.pharmaMerchantId
+            : AppConfig.Configuration.merchantId;
+          initiateHyperSDK(currentPatientId, merchantId);
+          const params = {
+            paymentId: response?.data?.getOrderInternal?.payment_order_id,
+            amount: response?.data?.getOrderInternal?.total_amount,
+            orderDetails: { orderId: response?.data?.getOrderInternal?.id },
+            businessLine: 'paymentLink',
+            customerId: response?.data?.getOrderInternal?.customer_id,
+          };
+          getData('PaymentMethods', undefined, undefined, undefined, undefined, params);
+        } else {
+          navigateToHome(props.navigation);
+        }
       } else {
         navigateToHome(props.navigation);
+        showPaymentAlert();
       }
     } catch (error) {
       navigateToHome(props.navigation);
     }
+  };
+
+  const showPaymentAlert = () => {
+    showAphAlert!({
+      title: 'Uh oh! :(',
+      description:
+        'Payment can’t be made for this order. Please check my order section for more details.',
+    });
   };
 
   const callPhrNotificationApi = async (currentPatient: any) => {
@@ -733,21 +756,42 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     fetchData();
   };
 
-  const triggerUTMCustomEvent = async (url: string | null) => {
+  const triggerUTMCustomEvent = async (url: string | null, isFirstLaunch: boolean) => {
     try {
       if (url) {
       } else {
         postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
-          source: 'Organic',
+          channel: 'Organic',
+          is_first_launch: isFirstLaunch,
         });
       }
     } catch (error) {}
   };
 
-  const catchSourceUrlDataUsingAppsFlyer = async () => {
+  const catchSourceUrlDataUsingAppsFlyer = async (redirectUrl: string | null) => {
     onDeepLinkCanceller = await appsFlyer.onDeepLink(async (res) => {
-      clevertapEventForAppsflyerDeeplink(res.data);
-      onDeepLinkCanceller();
+      try {
+        if (redirectUrl && checkUniversalURL(redirectUrl).universal) {
+          if (Object.keys(res?.data).length < 2) {
+            clevertapEventForAppsflyerDeeplink(
+              removeNullFromObj({
+                source_url: checkUniversalURL(redirectUrl).source_url,
+                channel: 'Organic',
+              })
+            );
+          } else {
+            clevertapEventForAppsflyerDeeplink(
+              filterAppLaunchSoruceAttributesByKey({
+                ...res?.data,
+                source_url: checkUniversalURL(redirectUrl).source_url,
+              })
+            );
+          }
+        } else {
+          clevertapEventForAppsflyerDeeplink(filterAppLaunchSoruceAttributesByKey(res?.data));
+        }
+        onDeepLinkCanceller();
+      } catch (e) {}
     });
   };
 
@@ -1080,6 +1124,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'Vaccine_Type_QA',
       PROD: 'Vaccine_Type_Prod',
     },
+    Consult_Package_TnC: {
+      QA: 'Consult_Package_TnC_QA',
+      PROD: 'Consult_Package_TnC_PROD',
+    },
     Cancel_Threshold_Pre_Vaccination: {
       QA: 'Cancel_Threshold_Pre_Vaccination_QA',
       PROD: 'Cancel_Threshold_Pre_Vaccination_Prod',
@@ -1164,9 +1212,25 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'TrueCaller_Login_Enabled_QA',
       PROD: 'TrueCaller_Login_Enabled_PROD',
     },
+    Consult_Free_Book_Key: {
+      QA: 'Consult_Free_Book_Key_QA',
+      PROD: 'Consult_Free_Book_Key_PROD',
+    },
+    LongChat_Launch_Date: {
+      QA: 'LONG_CHAT_LAUNCH_DATE_QA',
+      PROD: 'LONG_CHAT_LAUNCH_DATE',
+    },
     Diagnostics_No_Saving_Text: {
       QA: 'QA_Diagnostics_No_Saving_Text',
       PROD: 'Diagnostics_No_Saving_Text',
+    },
+    Diagnostics_City_Level_Call_To_Order: {
+      QA: 'QA_Diagnostics_City_Level_Call_To_Order',
+      PROD: 'Diagnostics_City_Level_Call_To_Order',
+    },
+    Diagnostics_Covid_Item_Ids: {
+      QA: 'QA_Diagnostics_Covid_Item_Ids',
+      PROD: 'Diagnostics_Covid_Item_Ids',
     },
     Free_Consult_Message: {
       QA: 'QA_Free_Consult_Message',
@@ -1370,6 +1434,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         return JSON.parse(config.getString(key)) || AppConfig.Configuration.Vaccination_Cities_List;
       });
 
+      setAppConfig('Consult_Package_TnC', 'Consult_Package_TnC', (key) => {
+        try {
+          return JSON.parse(config.getString(key));
+        } catch (error) {}
+
+        return AppConfig.Configuration.Consult_Package_TnC;
+      });
+
       setAppConfig('Vaccine_Type', 'Vaccine_Type', (key) => {
         return JSON.parse(config.getString(key)) || AppConfig.Configuration.Vaccine_Type;
       });
@@ -1436,6 +1508,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         config.getBoolean(key)
       );
 
+      setAppConfig('Consult_Free_Book_Key', 'Consult_Free_Book_Key', (key) =>
+        config.getString(key)
+      );
+
       const nudgeMessagePharmacyHome = getRemoteConfigValue(
         'Nudge_Message_Pharmacy_Home',
         (key) => JSON.parse(config.getString(key)) || null
@@ -1463,6 +1539,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       setAppConfig('CircleFacts', 'CIRCLE_FACTS', (key) => config.getString(key));
 
+      setAppConfig('LongChat_Launch_Date', 'LONG_CHAT_LAUNCH_DATE', (key) => config.getString(key));
+
       setAppConfig(
         'Diagnostics_Default_Location',
         'DIAGNOSTIC_DEFAULT_LOCATION',
@@ -1487,12 +1565,21 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.FREE_CONSULT_MESSAGE
       );
 
-      const disincentivizeCodMessage = getRemoteConfigValue(
-        'Disincentivize_COD_Message',
-        (key) => config.getString(key) || ''
+      setAppConfig(
+        'Diagnostics_City_Level_Call_To_Order',
+        'DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER',
+        (key) =>
+          JSON.parse(config.getString(key) || 'null') ||
+          AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER
       );
 
-      disincentivizeCodMessage && setPaymentCodMessage?.(disincentivizeCodMessage);
+      setAppConfig(
+        'Diagnostics_Covid_Item_Ids',
+        'DIAGNOSTICS_COVID_ITEM_IDS',
+        (key) =>
+          JSON.parse(config.getString(key) || 'null') ||
+          AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS
+      );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';

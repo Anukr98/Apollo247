@@ -7,7 +7,8 @@ import {
   Gift,
   Mascot,
   WhiteTickIcon,
-  BackArrow, 
+  BackArrow,
+  WhatsAppIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -34,6 +35,7 @@ import {
   onCleverTapUserLogin,
   postCleverTapEvent,
   deferredDeepLinkRedirectionData,
+  setRefereeFlagForNewRegisterUser,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   ProductPageViewedSource,
@@ -83,6 +85,7 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { CheckBox } from 'react-native-elements';
 
 const styles = StyleSheet.create({
   container: {
@@ -139,6 +142,22 @@ const styles = StyleSheet.create({
     marginTop: 15,
     position: 'absolute',
   },
+  whatsAppOptinContainer: {
+    marginVertical: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: -15,
+  },
+  whatsAppOptinCheckboxContainer: {
+    width: '90%',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  whatsAppIcon: {
+    height: 22,
+    width: 22,
+    resizeMode: 'contain',
+  },
 });
 
 type genderOptions = {
@@ -176,6 +195,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
   const [deviceToken, setDeviceToken] = useState<string>('');
   const [showReferralCode, setShowReferralCode] = useState<boolean>(false);
   const [oneApolloRegistrationCalled, setoneApolloRegistrationCalled] = useState<boolean>(false);
+  const [whatsAppOptIn, setWhatsAppOptIn] = useState<boolean>(false);
   const isOneTimeUpdate = useRef<boolean>(false);
 
   useEffect(() => {
@@ -271,6 +291,27 @@ const SignUp: React.FC<SignUpProps> = (props) => {
       }
     }
   }
+
+  const postAppsFlyerEventAppInstallViaReferral = async (data: any) => {
+    const referralData: any = await AsyncStorage.getItem('app_referral_data');
+    setRefereeFlagForNewRegisterUser(referralData !== null);
+    onCleverTapUserLogin({ ...data?.updatePatient?.patient });
+    if (referralData !== null) {
+      const { af_referrer_customer_id, campaign, rewardId, shortlink } = JSON.parse(referralData);
+      const eventAttribute = {
+        referrer_id: af_referrer_customer_id,
+        referee_id: currentPatient ? currentPatient.id : '',
+        campaign_id: campaign,
+        reward_id: rewardId,
+        short_link: shortlink,
+        device_os: Platform.OS == 'ios' ? 'IOS' : 'ANDROID',
+      };
+      postAppsFlyerEvent(AppsFlyerEventName.REGISTRATION_REFERRER, eventAttribute);
+      AsyncStorage.removeItem('app_referral_data');
+      AsyncStorage.setItem('referrerInstall', 'true');
+    }
+    handleOpenURLs();
+  };
 
   const getDeviceCountAPICall = async () => {
     const uniqueId = await DeviceInfo.getUniqueId();
@@ -474,6 +515,21 @@ const SignUp: React.FC<SignUpProps> = (props) => {
             autoCapitalize="none"
             keyboardType="email-address"
           />
+          <View style={styles.whatsAppOptinContainer}>
+            <View style={styles.whatsAppOptinCheckboxContainer}>
+              <CheckBox
+                checked={whatsAppOptIn}
+                onPress={() => setWhatsAppOptIn(!whatsAppOptIn)}
+                size={15}
+              />
+              <Text style={{ marginLeft: -10 }}>
+                Send me personalised health tips and offers on
+              </Text>
+            </View>
+            <View style={{ width: '10%' }}>
+              <WhatsAppIcon style={styles.whatsAppIcon} />
+            </View>
+          </View>
           {showReferralCode && renderReferral()}
         </Card>
       </View>
@@ -649,6 +705,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
 
                       const patientsDetails: UpdatePatientInput = {
                         id: mePatient.id,
+                        // whatsAppOptIn: whatsAppOptIn,  It will use in future, but right now this is not working So I just commented it
                         mobileNumber: mePatient.mobileNumber,
                         firstName: firstName.trim(),
                         lastName: lastName.trim(),
@@ -679,9 +736,8 @@ const SignUp: React.FC<SignUpProps> = (props) => {
                       AsyncStorage.setItem('userLoggedIn', 'true'),
                       AsyncStorage.setItem('signUp', 'false'),
                       AsyncStorage.setItem('gotIt', patient ? 'true' : 'false'),
-                      onCleverTapUserLogin(data?.updatePatient?.patient),
                       createOneApolloUser(data?.updatePatient?.patient?.id!),
-                      handleOpenURLs())
+                      postAppsFlyerEventAppInstallViaReferral(data))
                     : null}
                   {error
                     ? (signOut(),

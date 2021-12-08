@@ -249,6 +249,43 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
 
+  consultPackageBlock: {
+    height: 170,
+    borderRadius: 10,
+    width: '100%',
+    marginVertical: 10,
+  },
+
+  consultPackageSpecialityBlock: {
+    height: 120,
+    borderRadius: 10,
+    width: '100%',
+    marginVertical: 10,
+  },
+
+  consultPackageDescriptionBlock: {
+    height: 10,
+    borderRadius: 10,
+    width: '50%',
+    alignSelf: 'center',
+    marginVertical: 10,
+  },
+
+  consultPackagePlanBlock: {
+    height: 30,
+    borderRadius: 10,
+    width: '100%',
+    alignSelf: 'center',
+    marginVertical: 10,
+  },
+
+  consultPackageFAQBlock: {
+    height: 50,
+    borderRadius: 10,
+    width: '100%',
+    marginVertical: 10,
+  },
+
   postShareAppointmentBlock: {
     height: 100,
     borderRadius: 10,
@@ -960,6 +997,96 @@ export const pharmaPrescriptionShimmer = () => {
       <ShimmerPlaceHolder
         LinearGradient={LinearGradient}
         shimmerStyle={styles.prescriptionOption}
+      />
+    </View>
+  );
+};
+
+export const renderConsultPackageListShimmer = () => {
+  return (
+    <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.consultPackageBlock}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.consultPackageBlock}
+      />
+
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.consultPackageBlock}
+      />
+    </View>
+  );
+};
+
+export const renderConsultPackagePostPurchaseShimmerTop = () => {
+  return (
+    <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.consultPackageBlock}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.consultPackageSpecialityBlock}
+      />
+    </View>
+  );
+};
+
+export const renderConsultPackageDeatilShimmerTop = () => {
+  return (
+    <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.consultPackageBlock}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.consultPackageDescriptionBlock}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.consultPackageDescriptionBlock}
+      />
+
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.consultPackagePlanBlock}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.consultPackagePlanBlock}
+      />
+    </View>
+  );
+};
+
+export const renderConsultPackagePostPurchaseShimmerBottom = () => {
+  return (
+    <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.consultPackageFAQBlock}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.consultPackageFAQBlock}
       />
     </View>
   );

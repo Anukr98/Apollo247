@@ -9,7 +9,11 @@ import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceH
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { SymptomTrackerCard } from '@aph/mobile-patients/src/components/ConsultRoom/Components/SymptomTrackerCard';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { postConsultPastSearchSpecialityClicked } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  postConsultPastSearchSpecialityClicked,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 interface defaultSearchProps extends NavigationScreenProps {
   consultedDoctors: any;
@@ -17,6 +21,14 @@ interface defaultSearchProps extends NavigationScreenProps {
   topSpecialities: getAllSpecialties_getAllSpecialties[];
   postSymptomTrackEvent: (() => void) | null;
   postSpecialityEvent: ((speciality: string, specialityId: string, source?: string) => void) | null;
+  isOnlineConsultMode?: boolean;
+  locationFlagOnlineConsultation?: boolean;
+  postEventClickSelectLocation?: (
+    specialityName?: string | '',
+    specialityId?: string | '',
+    screen?: string | '',
+    city?: string | ''
+  ) => void;
 }
 
 export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
@@ -26,8 +38,11 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
     topSpecialities,
     postSymptomTrackEvent,
     postSpecialityEvent,
+    isOnlineConsultMode,
+    locationFlagOnlineConsultation,
   } = props;
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const { locationDetails } = useAppCommonData();
 
   const renderTrackSymptoms = () => {
     return (
@@ -52,10 +67,13 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
               <TouchableOpacity
                 style={styles.doctorCard}
                 onPress={() => {
-                  props.navigation.navigate(AppRoutes.DoctorDetails, {
+                  props.navigation.navigate(AppRoutes.SlotSelection, {
                     doctorId: item?.id,
                     callSaveSearch: 'false',
-                    fromPastSearch: true,
+                    showBookAppointment: true,
+                    consultModeSelected: isOnlineConsultMode
+                      ? string.consultModeTab.VIDEO_CONSULT
+                      : string.consultModeTab.HOSPITAL_VISIT,
                   });
                 }}
               >
@@ -95,22 +113,61 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
                 onPress={() => {
                   if (isSearchTypeDoctor) {
                     CommonLogEvent(AppRoutes.DoctorSearch, 'Doctor Search Move clicked');
-                    props.navigation.navigate(AppRoutes.DoctorDetails, {
+                    props.navigation.navigate(AppRoutes.SlotSelection, {
                       doctorId: item?.typeId,
                       callSaveSearch: 'false',
-                      fromPastSearch: true,
+                      showBookAppointment: true,
+                      consultModeSelected: isOnlineConsultMode
+                        ? string.consultModeTab.VIDEO_CONSULT
+                        : string.consultModeTab.HOSPITAL_VISIT,
                     });
                   }
                   if (isSearchTypeSpeciality) {
                     CommonLogEvent(AppRoutes.DoctorSearch, 'Doctor Search Move  SPECIALTY clicked');
-                    postConsultPastSearchSpecialityClicked(
-                      currentPatient,
-                      allCurrentPatients,
-                      item
-                    );
-                    if (item?.typeId && item?.name){
-                      postSpecialityEvent?.(item?.name, item?.typeId, 'Past searches')
-                      onClickSearch(item?.typeId, item?.name);
+                    if (locationDetails || isOnlineConsultMode) {
+                      postConsultPastSearchSpecialityClicked(
+                        currentPatient,
+                        allCurrentPatients,
+                        item
+                      );
+                      if (item?.typeId && item?.name) {
+                        postSpecialityEvent?.(item?.name, item?.typeId, 'Past searches');
+                        onClickSearch(
+                          item?.typeId,
+                          item?.name,
+                          '',
+                          isOnlineConsultMode && !locationFlagOnlineConsultation
+                            ? string.doctor_search_listing.avaliablity
+                            : string.doctor_search_listing.location
+                        );
+                      }
+                    } else {
+                      props.navigation.navigate(AppRoutes.SelectLocation, {
+                        isOnlineConsultMode: isOnlineConsultMode,
+                        patientId: g(currentPatient, 'id') || '',
+                        patientMobileNumber: g(currentPatient, 'mobileNumber') || '',
+                        goBackCallback: (loc: any) => {
+                          postConsultPastSearchSpecialityClicked(
+                            currentPatient,
+                            allCurrentPatients,
+                            item
+                          );
+                          if (item?.typeId && item?.name) {
+                            postSpecialityEvent?.(item?.name, item?.typeId, 'Past searches');
+                            onClickSearch(
+                              item?.typeId,
+                              item?.name,
+                              '',
+                              isOnlineConsultMode
+                                ? string.doctor_search_listing.avaliablity
+                                : string.doctor_search_listing.location
+                            );
+                          }
+                        },
+                        postEventClickSelectLocation: (city: string | '') =>
+                          props.postEventClickSelectLocation &&
+                          props.postEventClickSelectLocation(item?.name, item?.typeId, '', city),
+                      });
                     }
                   }
                 }}
@@ -120,7 +177,7 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
                   source={{ uri: item?.image }}
                   style={styles.doctorProfileIcon}
                 />
-                
+
                 <View style={{ flex: 1 }}>
                   <Text style={styles.itemTxt}>{item?.name}</Text>
                   <Text style={isSearchTypeDoctor ? styles.itemSubTxt : styles.smallText}>
@@ -151,8 +208,34 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
               <TouchableOpacity
                 style={styles.doctorCard}
                 onPress={() => {
-                  postSpecialityEvent!(item?.name, item?.id);
-                  onClickSearch(item?.id, item?.name, item?.specialistPluralTerm || '');
+                  if (locationDetails || isOnlineConsultMode) {
+                    postSpecialityEvent!(item?.name, item?.id);
+                    onClickSearch(
+                      item?.id,
+                      item?.name,
+                      item?.specialistPluralTerm || '',
+                      isOnlineConsultMode && !locationFlagOnlineConsultation
+                        ? string.doctor_search_listing.avaliablity
+                        : string.doctor_search_listing.location
+                    );
+                  } else {
+                    props.navigation.navigate(AppRoutes.SelectLocation, {
+                      isOnlineConsultMode: isOnlineConsultMode,
+                      patientId: g(currentPatient, 'id') || '',
+                      patientMobileNumber: g(currentPatient, 'mobileNumber') || '',
+                      goBackCallback: (loc: any) => {
+                        postSpecialityEvent!(item?.name, item?.id);
+                        onClickSearch(
+                          item?.id,
+                          item?.name,
+                          item?.specialistPluralTerm || '',
+                          isOnlineConsultMode
+                            ? string.doctor_search_listing.avaliablity
+                            : string.doctor_search_listing.location
+                        );
+                      },
+                    });
+                  }
                 }}
               >
                 <Image
@@ -172,12 +255,20 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
     );
   };
 
-  const onClickSearch = (id: string, name: string, specialistPluralTerm?: string) => {
+  const onClickSearch = (
+    id: string,
+    name: string,
+    specialistPluralTerm?: string,
+    sortBy?: string
+  ) => {
     props.navigation.navigate('DoctorSearchListing', {
       specialityId: id,
       specialityName: name,
       callSaveSearch: 'false',
       specialistPluralTerm,
+      sortBy: sortBy,
+      city: locationDetails?.city,
+      isOnlineConsultMode,
     });
   };
 

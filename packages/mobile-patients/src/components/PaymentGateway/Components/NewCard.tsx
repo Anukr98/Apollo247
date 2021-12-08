@@ -18,7 +18,7 @@ import { OutagePrompt } from '@aph/mobile-patients/src/components/PaymentGateway
 import { getBestOffer } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { OffersIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 export interface NewCardProps {
-  onPressNewCardPayNow: (cardInfo: any, saveCard: any) => void;
+  onPressNewCardPayNow: (cardInfo: any, saveCard: any, bestOffer?: any) => void;
   cardTypes: any;
   isCardValid: boolean;
   setisCardValid: (value: boolean) => void;
@@ -61,7 +61,8 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
     isCardValid && cardNumber?.replace(/\-/g, '')?.length >= 6
       ? checkIsCardSupported()
       : setIsCardSupported(true);
-    cardNumber?.replace(/\-/g, '')?.length == 6 && getOffers();
+    (cardNumber?.replace(/\-/g, '')?.length == 6 || cardNumber?.replace(/\-/g, '')?.length == 12) &&
+      getOffers();
   }, [cardbin]);
 
   const getOffers = () => {
@@ -70,6 +71,10 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
         payment_method_type: 'CARD',
         payment_method: cardbin?.brand,
         payment_method_reference: cardbin?.id,
+        card_alias: cardbin?.id,
+        card_bin: cardbin?.id,
+        card_type: cardbin?.type,
+        bank_code: cardbin?.juspay_bank_code,
       },
     ];
     fetchOffers(paymentInfo);
@@ -333,7 +338,7 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
               : 'PAY NOW'
           }
           titleTextStyle={styles.payNow}
-          onPress={() => onPressNewCardPayNow(cardInfo, saveCard)}
+          onPress={() => onPressNewCardPayNow(cardInfo, saveCard, bestOffer)}
           style={styles.buttonStyle}
         />
       </View>
