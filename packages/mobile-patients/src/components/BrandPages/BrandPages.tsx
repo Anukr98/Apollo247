@@ -4,9 +4,10 @@ import {
   View,
   Text,
   FlatList,
-  Image as ImageNative,
+  Image,
   StyleSheet,
   TouchableOpacity,
+  Dimensions,
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { MedicineListingHeader } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingHeader';
@@ -21,7 +22,7 @@ import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/dee
 
 export interface BrandPagesProps
   extends NavigationScreenProps<{
-    movedFrom?: 'home';
+    movedFrom?: 'home' | 'deeplink';
     brandData?: BrandData[];
     category_id?: string;
     title?: string;
@@ -52,6 +53,8 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
   const [selectedMenuItemName, setSelectedMenuItemName] = useState<string>('Home');
   const [categoryID, setCategoryID] = useState(props.navigation.getParam('category_id'));
   const [title, setTitle] = useState(props.navigation.getParam('title'));
+  const [w, setW] = useState<number>(0);
+  const [h, setH] = useState<number>(0);
 
   AsyncStorage.getItem(USER_AGENT).then((userAgent) => {
     setUserAgent(userAgent || '');
@@ -70,7 +73,7 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
   const renderMainBanner = () => {
     return (
       <TouchableOpacity activeOpacity={1}>
-        <ImageNative
+        <Image
           resizeMode="stretch"
           style={{ width: '100%', minHeight: imgHeight }}
           source={{
@@ -122,25 +125,67 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
   };
 
   const renderOtherBanner = (imgUrl: string, item) => {
+    let width1 = 0;
+    let height1 = 0;
+    const imageSize = Image.getSize(
+      imgUrl,
+      (width, height) => {
+        width1 = width;
+        height1 = height;
+        setW(width);
+        setH(height);
+        // console.log('size is---', width, height, width1, height1, 4 / 3, 4 % 3);
+      },
+      () => {}
+    );
+    console.log('imageSize', imageSize);
     return (
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={() => {
-          handleOnPressBanner(item?.brandRedirectionUrl);
+      <View
+        style={{
+          borderWidth: 2,
+          marginBottom: 15,
+          flexDirection: 'row',
+          flex: 1,
+          backgroundColor: '#00ff33',
+          justifyContent: 'flex-start',
+          // alignItems: 'stretch',
+          width: '100%',
         }}
       >
-        <ImageNative
-          resizeMode="stretch"
-          style={{ width: '100%', minHeight: imgHeight }}
-          source={{
-            uri: imgUrl,
-            headers: {
-              'User-Agent': userAgent,
-            },
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => {
+            handleOnPressBanner(item?.brandRedirectionUrl);
           }}
-          progressiveRenderingEnabled={true}
-        />
-      </TouchableOpacity>
+          style={{
+            justifyContent: 'flex-start',
+            // alignItems: 'stretch',
+          }}
+        >
+          {console.log('hry ya', w, h)}
+          <Image
+            // resizeMode="cover"
+            style={{
+              // aspectRatio: w / h,
+              // width: '100%',
+              // height: height1,
+              // width: width1,
+              height: 150,
+              // height: Dimensions.get('window').height * 0.2,
+              flex: 1,
+              // display: 'flex',
+              resizeMode: 'contain',
+            }}
+            source={{
+              uri: imgUrl,
+              headers: {
+                'User-Agent': userAgent,
+              },
+            }}
+            // progressiveRenderingEnabled={true}
+          />
+        </TouchableOpacity>
+      </View>
     );
   };
 
