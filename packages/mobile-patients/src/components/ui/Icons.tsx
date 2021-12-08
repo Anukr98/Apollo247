@@ -896,6 +896,8 @@ export const CashbackIcon: React.FC<IconProps> = (props) => (
   />
 );
 
+
+
 export const ToggleOn: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 32, width: 32 }}
