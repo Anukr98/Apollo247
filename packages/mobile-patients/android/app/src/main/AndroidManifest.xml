@@ -17,6 +17,9 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission
+        android:name="android.permission.READ_PHONE_STATE"
+        tools:remove="android:maxSdkVersion"/>
     <uses-permission 
         android:name="android.permission.READ_SMS"
         tools:node="remove"   />
@@ -123,6 +126,10 @@
                     android:scheme="https"
                     android:host="www.apollo247.com"
                     android:pathPrefix="/tests-cart" />
+                <data 
+                    android:scheme="https"
+                    android:host="www.apollo247.com"
+                    android:pathPrefix="/orderstest" />
                 <data 
                     android:scheme="https"
                     android:host="www.apollo247.com"

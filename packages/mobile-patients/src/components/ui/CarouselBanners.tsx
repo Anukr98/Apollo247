@@ -26,6 +26,9 @@ import {
   getHealthCredits,
   persistHealthCredits,
   CircleEventSource,
+  getUserType,
+  getAge,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { NavigationScreenProps } from 'react-navigation';
@@ -49,7 +52,11 @@ import { HdfcConnectPopup } from '@aph/mobile-patients/src/components/Subscripti
 import { Overlay } from 'react-native-elements';
 import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
 import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
-import { DiagnosticHomePageSource } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import {
+  DiagnosticHomePageSource,
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 interface CarouselProps extends NavigationScreenProps {
   circleActivated?: boolean;
@@ -70,7 +77,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     circleEventSource,
   } = props;
   const [slideIndex, setSlideIndex] = useState(0);
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const hdfc_values = string.Hdfc_values;
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { bannerData, hdfcUserSubscriptions, circleSubscription, hdfcStatus } = useAppCommonData();
@@ -208,7 +215,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
   };
 
   const renderHdfcSliderItem = ({ item }) => {
-    const { cta_action } = item;
+    const { cta_action, banner_template_info } = item;
     const fineText = item?.banner_template_info?.fineText;
     const bannerUri = getMobileURL(item.banner);
     const isDynamicBanner = item?.banner_template_info?.headerText1;
@@ -242,7 +249,8 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
             cta_action?.meta.action,
             cta_action?.meta.message,
             cta_action?.url,
-            cta_action?.meta
+            cta_action?.meta,
+            banner_template_info
           )
         }
         style={[
@@ -260,7 +268,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
             uri: bannerUri,
           }}
           resizeMode={'cover'}
-          borderRadius={10}
+          borderRadius={6}
         >
           <View style={styles.bannerContainer}>
             {headerText1 ? renderBannerText(headerText1) : null}
@@ -383,7 +391,14 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     );
   };
 
-  const handleOnBannerClick = (type: any, action: any, message: any, url: string, meta: any) => {
+  const handleOnBannerClick = (
+    type: any,
+    action: any,
+    message: any,
+    url: string,
+    meta: any,
+    banner_template_info: any
+  ) => {
     //if any only hdfc
     // if (from === string.banner_context.HOME && action != hdfc_values.UPGRADE_CIRCLE) {
     if (
@@ -407,7 +422,10 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     }
     //for only circle
     if (action == hdfc_values.UPGRADE_CIRCLE) {
-      type == hdfc_values.ONE_TOUCH ? null : fireCircleEvent(type, action);
+      if (type != hdfc_values.ONE_TOUCH) {
+        fireCircleEvent(type, action);
+        postCircleBannerEvent(bannerContent);
+      }
       planPurchased.current = false;
       setCirclePlanSelected && setCirclePlanSelected(null);
       setShowCirclePlans(true);
@@ -470,7 +488,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
             title: meta?.category_name,
           });
         } else {
-          props.navigation.navigate(AppRoutes.ConsultRoom);
+          props.navigation.navigate(AppRoutes.HomeScreen);
         }
       } else if (type == hdfc_values.CALL_API) {
         if (action == hdfc_values.CALL_EXOTEL_API) {
@@ -504,9 +522,26 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           });
         }
       } else {
-        props.navigation.navigate(AppRoutes.ConsultRoom);
+        props.navigation.navigate(AppRoutes.HomeScreen);
       }
     }
+  };
+
+  const postCircleBannerEvent = (bannerContent?: any | null) => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.HOMEPAGE_CIRCLE_BANNER_CLICKED] = {
+      User_Type: getUserType(allCurrentPatients),
+      'Patient Name': currentPatient?.firstName,
+      'Patient UHID': currentPatient?.uhid,
+      'Patient age': getAge(currentPatient?.dateOfBirth),
+      'Circle Member': circleSubscriptionId ? 'True' : 'False',
+      'Banner content': JSON.stringify(bannerContent),
+      'Customer ID': currentPatient?.id,
+      'Mobile number': currentPatient?.mobileNumber,
+      'Nav src': 'HomePage',
+      'Page name': 'HomePage',
+      'Patient gender': currentPatient?.gender,
+    };
+    postCleverTapEvent(CleverTapEventName.HOMEPAGE_CIRCLE_BANNER_CLICKED, eventAttributes);
   };
 
   const renderAlert = (message: string) => {

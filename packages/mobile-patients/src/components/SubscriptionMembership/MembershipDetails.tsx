@@ -458,7 +458,11 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
 
             let corporatePlan: SubscriptionData[] = [];
             Object.keys(groupPlans).forEach((plan_name) => {
-              if (plan_name !== 'APOLLO' && plan_name !== 'HDFC') {
+              if (
+                plan_name !== 'APOLLO' &&
+                plan_name !== 'HDFC' &&
+                plan_name !== 'APOLLO_CONSULT'
+              ) {
                 groupPlans[plan_name]?.forEach((subscription: any) => {
                   const plan = setSubscriptionData(subscription, false, true);
                   corporatePlan.push(plan!);
@@ -1016,7 +1020,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       } else if (action == Hdfc_values.PRO_HEALTH) {
         onPressHealthPro();
       } else {
-        props.navigation.navigate(AppRoutes.ConsultRoom);
+        props.navigation.navigate(AppRoutes.HomeScreen);
       }
     } else if (type == Hdfc_values.CALL_API) {
       if (action == Hdfc_values.CALL_EXOTEL_API) {
@@ -1036,7 +1040,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     } else if (type == Hdfc_values.WHATSAPP_OPEN_CHAT) {
       Linking.openURL(`whatsapp://send?text=${message}&phone=91${action}`);
     } else {
-      props.navigation.navigate(AppRoutes.ConsultRoom);
+      props.navigation.navigate(AppRoutes.HomeScreen);
     }
   };
 
@@ -1078,7 +1082,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           if (isCanUpgradeTo) {
             setShowAvailPopup(true);
           } else {
-            props.navigation.navigate(AppRoutes.ConsultRoom, {});
+            props.navigation.navigate(AppRoutes.HomeScreen, {});
           }
         }}
       >
@@ -1495,7 +1499,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
             key: null,
             actions: [
               NavigationActions.navigate({
-                routeName: AppRoutes.ConsultRoom,
+                routeName: AppRoutes.HomeScreen,
                 params: {
                   skipAutoQuestions: true,
                 },

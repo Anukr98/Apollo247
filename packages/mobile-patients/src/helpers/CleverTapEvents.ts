@@ -7,7 +7,7 @@ import {
   PharmaUserStatus,
   UploadPrescSource,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { CircleEventSource } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { CircleEventSource, PAGE_ID_TYPE } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { ShoppingCartItem } from '../components/ShoppingCartProvider';
 import { DIAGNOSTIC_SLOT_TYPE } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
@@ -210,6 +210,7 @@ export enum CleverTapEventName {
   DIAGNOSTIC_MY_ORDERS = 'Diagnostics - My Orders Viewed',
   DIAGNOSTIC_ORDER_SUMMARY_VIEWED = 'Diagnostic order summary viewed',
   DIAGNOSTIC_VIEW_REPORT_CLICKED = 'Diagnostic view reports',
+  DIAGNOSTIC_CALL_TO_ORDER_CLICKED = 'Diagnostic Call to Order clicked',
 
   DIAGNOSTIC_PATIENT_SELECTED = 'Diagnostic patient selected',
   DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE = 'Diagnostic address selected',
@@ -235,6 +236,12 @@ export enum CleverTapEventName {
   DIAGNOSTIC_MODIFY_ORDER = 'Diagnostic modify order',
   DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED = 'Diagnostic product listing page viewed',
   DIAGNOSTIC_PRESCRIPTION_SUBMITTED = 'Diagnostic prescription submitted',
+
+  //Conult Package Purchase Attribite
+  CONSULT_PACKAGE_CLICKED = 'Consult Package Clicked',
+  CONSULT_PACKAGE_PROCEED_TO_PAY_CLICKED = 'Consult package proceed to pay clicked',
+  CONSULT_PACKAGE_PAY_BUTTON_CLICKED = 'Consult package pay button clicked',
+  CONSULT_PACKAGE_BOOK_CONSULT_CLICKED = 'Consult package book consult clicked',
 
   // Network Test
   PRE_CALL_TEST = 'Pre Call Test Completed',
@@ -337,6 +344,15 @@ export enum CleverTapEventName {
   TRUECALLER_EVENT_ERRORS = 'Truecaller event errors',
   TRUECALLER_APOLLO247_LOGIN_ERRORS = 'Apollo247 truecaller login errors',
   LOGIN_WITH_TRUECALLER_CLICKED = 'Login with truecaller clicked',
+  OFFERS_CTA_CLICKED = 'Homepage Offers For You Clicked',
+  RECENT_SEARCH_CLICKED_UNDER_SEARCH_BAR = 'Recent search clicked under search bar',
+  SEARCH_SUGGESTION_CLICKED_UNDER_SEARCH_BAR = 'Search suggestion clicked under search bar',
+  OPTION_FROM_MEDICINE_CLICKED_ON_SEARCH_BAR_PAGE = 'A option from medicine clicked on search bar page',
+  OPTION_FROM_DIAGNOSTIC_CLICKED_ON_SEARCH_BAR_PAGE = 'A option from diagnostic clicked on search bar page',
+  OPTION_FROM_CONSULT_CLICKED_ON_SEARCH_BAR_PAGE = 'A option from consult clicked on search bar page',
+  VIEW_ALL_SEARCH_RESULT_CLICKED = 'When someone clicks on veiw all search result',
+  HOMEPAGE_SEARCH_BAR_QUERY_INPUT = 'Homepage Search Bar Query Input',
+  SCREEN_SCROLLED = 'Screen Scrolled',
 
   FAQs_ARTICLES_CLICKED = 'Vaccination FAQs & Articles clicked',
   VACCINATION_CALL_A_DOCTOR_CLICKED = 'Vaccination Call a doctor clicked',
@@ -583,6 +599,7 @@ export enum CleverTapEventName {
   NON_CIRCLE_PAYMENT_MODE_SELECTED = 'App - Circle Subscription Landing Payment Mode Selected',
   NON_CIRCLE_PAYMENT_DONE = 'App - Circle Subscription Landing Payment done',
   HC_1CLICK_ACTIVATION = 'App - HC - 1ClickActivation',
+  HOMEPAGE_CIRCLE_BANNER_CLICKED = 'Homepage Circle Banner Clicked',
 
   //Vaccination Booking
   VACCINATION_BOOKING_CONFIRMATION = 'Vaccine_Booking confirmation',
@@ -611,6 +628,10 @@ export enum CleverTapEventName {
   PHARMACY_PRESCRIPTION_UPLOADED = 'Pharmacy Prescription Uploaded',
   // Custom UTM Events
   CUSTOM_UTM_VISITED = 'App launch source',
+  // Referrer Events
+  REFER_EARN_CTA_CLICKED = 'Refer & Earn CTA Clicked',
+  REFERRAL_CHECK_REWARDS_CLICKED = 'Referral Check Rewards Clicked',
+  REFERRAL_TNC_FAQ_CLICKED = 'Referral TnC & FAQ Clicked',
 }
 
 export interface PatientInfo {
@@ -718,7 +739,7 @@ export interface HomeScreenAttributes {
   'Customer ID': string;
   User_Type: string;
   isConsulted: string;
-  Source?: 'Home Screen' | 'Menu' | 'My Account Screen';
+  Source?: 'Home Screen' | 'Menu' | 'My Account Screen' | 'Search bar';
   'Page Name'?: string;
   'Nav src'?:
     | 'hero banner'
@@ -1071,6 +1092,33 @@ export interface CleverTapEvents {
     address?: string;
     isConsulted?: string;
   };
+  [CleverTapEventName.HOMEPAGE_SEARCH_BAR_QUERY_INPUT]: {
+    User_Type: string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    'Patient gender': string;
+    'Patient age': number;
+    'Mobile number': string;
+    'Customer ID': string;
+    'Circle Member': string;
+    'Page name': string;
+    Keyword: string;
+    Status: 'Success' | 'Fail';
+    Vertical: 'Pharma' | 'Diagnostic' | 'Consult';
+  };
+  [CleverTapEventName.SCREEN_SCROLLED]: {
+    User_Type: string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    'Patient gender': string;
+    'Patient age': number;
+    'Mobile number': string;
+    'Customer ID': string;
+    'Circle Member': string;
+    'Page name': string;
+    'Nav src': string;
+    Scrolls: number;
+  };
 
   // ********** PharmaCircleEvents ********** \\
   [CleverTapEventName.PHARMA_CIRCLE_BANNER_CLICKED]: CircleUserInfo;
@@ -1119,7 +1167,19 @@ export interface CleverTapEvents {
   [CleverTapEventName.NON_CIRCLE_PAYMENT_MODE_SELECTED]: CircleUserInfo;
   [CleverTapEventName.NON_CIRCLE_PAYMENT_DONE]: CircleUserInfo;
   [CleverTapEventName.HC_1CLICK_ACTIVATION]: CircleUserInfo;
-
+  [CleverTapEventName.HOMEPAGE_CIRCLE_BANNER_CLICKED]: {
+    User_Type: string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    'Patient gender': string;
+    'Patient age': number;
+    'Mobile number': string;
+    'Customer ID': string;
+    'Circle Member': string;
+    'Page name': string;
+    'Nav src': string;
+    'Banner content': string;
+  };
   // ********** PermissionEvents ********** \\
   [CleverTapEventName.CONSULT_PERMISSIONS]: {
     'Screen Name': 'Payment Confirmation Screen' | 'Home Screen' | 'Appointment Screen';
@@ -1605,6 +1665,15 @@ export interface CleverTapEvents {
       | 'Download Report PDF'
       | 'Share on Whatsapp'
       | 'Copy Link to PDF';
+    'Circle user'?: string;
+  };
+  [CleverTapEventName.DIAGNOSTIC_CALL_TO_ORDER_CLICKED]: {
+    'Mobile Number'?: string;
+    Page?: PAGE_ID_TYPE;
+    'Section Name'?: string;
+    ItemId?: string;
+    ItemName?: string;
+    'Patient City'?: string;
     'Circle user'?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_FEEDBACK_GIVEN]: {

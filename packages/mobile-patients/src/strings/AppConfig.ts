@@ -22,32 +22,32 @@ export enum AppEnv {
   QA6 = 'QA6',
 }
 
-const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA3 as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
-    ? 'https://pmt.apollo247.com'
-    : APP_ENV == AppEnv.QA
-    ? 'https://aph-staging-pmt.apollo247.com'
-    : APP_ENV == AppEnv.QA2
-    ? 'https://qapmt.apollo247.com'
-    : APP_ENV == AppEnv.QA3
-    ? 'https://qathreepmt.apollo247.com'
-    : APP_ENV == AppEnv.QA4
-    ? 'https://qa4pmt.apollo247.com'
-    : APP_ENV == AppEnv.QA5
-    ? 'https://qa5pmt.apollo247.com'
-    : APP_ENV == AppEnv.PERFORM
-    ? 'https://perfpmt.apollo247.com'
-    : APP_ENV == AppEnv.VAPT
-    ? 'https://stagingpmt.apollo247.com'
-    : APP_ENV == AppEnv.DEV
-    ? 'https://aph-dev-pmt.apollo247.com'
-    : APP_ENV == AppEnv.DEVReplica
-    ? 'https://devpmt.apollo247.com'
-    : APP_ENV == AppEnv.QA6
-    ? 'https://qa6pmt.apollo247.com '
-    : 'https://aph-staging-pmt.apollo247.com';
+  ? 'https://pmt.apollo247.com'
+  : APP_ENV == AppEnv.QA
+  ? 'https://aph-staging-pmt.apollo247.com'
+  : APP_ENV == AppEnv.QA2
+  ? 'https://qapmt.apollo247.com'
+  : APP_ENV == AppEnv.QA3
+  ? 'https://qathreepmt.apollo247.com'
+  : APP_ENV == AppEnv.QA4
+  ? 'https://qa4pmt.apollo247.com'
+  : APP_ENV == AppEnv.QA5
+  ? 'https://qa5pmt.apollo247.com'
+  : APP_ENV == AppEnv.PERFORM
+  ? 'https://perfpmt.apollo247.com'
+  : APP_ENV == AppEnv.VAPT
+  ? 'https://stagingpmt.apollo247.com'
+  : APP_ENV == AppEnv.DEV
+  ? 'https://aph-dev-pmt.apollo247.com'
+  : APP_ENV == AppEnv.DEVReplica
+  ? 'https://devpmt.apollo247.com'
+  : APP_ENV == AppEnv.QA6
+  ? 'https://qa6pmt.apollo247.com '
+  : 'https://aph-staging-pmt.apollo247.com';
 
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
@@ -235,6 +235,11 @@ const appStaticVariables = {
   Used_Up_Alotted_Slot_Msg:
     'Sorry! You have used up all your allotted booking slots under corporate vaccination. You can still continue to book payable slots under pay by self option.',
   Vaccination_Cities_List: ['Delhi', 'Mumbai'],
+  Consult_Package_TnC: [
+    'Select the patient’s profile for consultation and complete your booking.',
+    'An Apollo doctor will be assigned to you in the next 15 minutes.',
+    'View your booked appointment in the ‘My Appointment’ section on your app.',
+  ],
   Vaccine_Type: ['Covaxin', 'Covishield'],
   Cancel_Threshold_Pre_Vaccination: 12, //hrs
   Enable_Diagnostics_COD: true,
@@ -322,7 +327,15 @@ const appStaticVariables = {
     bannerVisibility: true,
     iconVisibility: true,
     whatsappNumber: '4048218743',
-    }
+  },
+  DIAGNOSTICS_NUDGE_MESSAGE_CONDITION: [{ "Circle": true, "NonCircle": true }],
+  DIAGNOSTICS_NUDGE_MESSAGE_TEXT: "Extra 15% off for circle customers. TnC Apply",
+  DIAGNOSITCS_WIDGET_TITLES:
+  {
+    "frequentlyBrought": string.diagnostics.frequentlyBrought,
+    "topBookedTests": string.diagnostics.topBookedTests,
+    "similarPackages": string.diagnostics.similarPackages
+  },
 };
 
 const DEV_top_specialties = [
@@ -468,10 +481,14 @@ const Apollo247Config = {
   dev: {
     UATTAT_CONFIG: ['https://uattat.apollo247.com', tatTokenDev],
     DRUPAL_CONFIG: ['https://uatcms.apollo247.com/api', drupalAuthTokenDev],
+    SUBSCRIPTION_SERVICE_EMAIL:
+      'https://apollo-subscription-service-qa3.azurewebsites.net/api/TriggerSubscriptionInvoiceEmail?code=MGZZDQic3lztc3eK01C/vqAMuJ4dpU2NtEJAylFXiT93Hpd4Z1S9Lw==',
   },
   prod: {
     UATTAT_CONFIG: ['https://tat.apollo247.com', tatTokenProd],
     DRUPAL_CONFIG: ['https://cms.apollo247.com/api', drupalAuthTokenProd],
+    SUBSCRIPTION_SERVICE_EMAIL:
+      'https://apollo-subscription-service.azurewebsites.net/api/TriggerSubscriptionInvoiceEmail?code=0jEf6bZpGJn5laCwqz4S24jePathD1ZDdP70c0kRavCbG79TF4rthQ==',
   },
 };
 
@@ -675,7 +692,6 @@ const ConfigurationDev = {
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
-
 };
 
 // QA
@@ -1024,7 +1040,7 @@ const ConfigurationVAPT = {
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
   COVID_VACCINE_TRACKER_URL: 'https://www.apollo247.com/covid-vaccine-tracker',
-  BLOG_URL: 'https://www.apollo247.com/blog',
+  BLOG_URL: 'https://www.apollo247.com/blog?user_from_device=true',
   CIRCLE_CONSULT_URL: 'https://aph-staging-web-patients.apollo247.com/consult-landing?header=false',
   CIRLCE_PHARMA_URL: 'https://aph-staging-web-patients.apollo247.com/pharma-landing?header=false',
   CIRCLE_TEST_URL: 'https://aph-staging-web-patients.apollo247.com/test-landing?header=false',
@@ -1084,7 +1100,7 @@ const ConfigurationProd = {
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
   COVID_VACCINE_TRACKER_URL: 'https://www.apollo247.com/covid-vaccine-tracker',
-  BLOG_URL: 'https://www.apollo247.com/blog',
+  BLOG_URL: 'https://www.apollo247.com/blog?user_from_device=true',
   CIRCLE_CONSULT_URL: 'https://www.apollo247.com/consult-landing?header=false',
   CIRLCE_PHARMA_URL: 'https://www.apollo247.com/pharma-landing?header=false',
   CIRCLE_TEST_URL: 'https://www.apollo247.com/test-landing?header=false',
@@ -1230,24 +1246,24 @@ const ConfigurationDevReplica = {
 
 const Configuration =
   APP_ENV == AppEnv.PROD
-    ? ConfigurationProd
-    : APP_ENV == AppEnv.QA
-    ? ConfigurationQA
-    : APP_ENV == AppEnv.QA2
-    ? ConfigurationQA2
-    : APP_ENV == AppEnv.QA3
-    ? ConfigurationQA3
-    : APP_ENV == AppEnv.QA5
-    ? ConfigurationQA5
-    : APP_ENV == AppEnv.PERFORM
-    ? ConfigurationPERFORM
-    : APP_ENV == AppEnv.VAPT
-    ? ConfigurationVAPT
-    : APP_ENV == AppEnv.DEVReplica
-    ? ConfigurationDevReplica
-    : APP_ENV == AppEnv.QA6
-    ? ConfigurationQA6
-    : ConfigurationDev;
+  ? ConfigurationProd
+  : APP_ENV == AppEnv.QA
+  ? ConfigurationQA
+  : APP_ENV == AppEnv.QA2
+  ? ConfigurationQA2
+  : APP_ENV == AppEnv.QA3
+  ? ConfigurationQA3
+  : APP_ENV == AppEnv.QA5
+  ? ConfigurationQA5
+  : APP_ENV == AppEnv.PERFORM
+  ? ConfigurationPERFORM
+  : APP_ENV == AppEnv.VAPT
+  ? ConfigurationVAPT
+  : APP_ENV == AppEnv.DEVReplica
+  ? ConfigurationDevReplica
+  : APP_ENV == AppEnv.QA6
+  ? ConfigurationQA6
+  : ConfigurationDev;
 
 export const MedicineFeedBackData = {
   POOR: {
@@ -1613,6 +1629,92 @@ export const CancelConsultation = {
   ],
 };
 
+export const DEFAULT_OFFERS_TEMPLATE : any = {
+  templates: {
+    default : {
+      "template_name": "default",
+      "banner_bg_color": {
+        "gradients": "linear-gradient",
+        "primary_color": "#FFE7AA",
+        "secondary_color": "#FCEFD0"
+      },
+      "title_text_color": "#A15D59",
+      "subtitle_text_color": "#A15D59",
+      "coupon_color": "#A15D59",
+      "left_notch": {
+        "type": "text",
+        "text_color": "#FFFFFF",
+        "bg_color": "#0B92DE",
+        "img_src": ""
+      },
+      "right_notch": {
+        "type": "image",
+        "text_color": "",
+        "bg_color": "",
+        "img_src": "percentage_icon"
+      },
+      "cta": {
+        "bg_color": "#FCB716",
+        "text_color": "#FFFFFF"
+      }
+    },
+    pharmacy_first_transaction : {
+      "template_name": "pharmacy_first_transaction",
+      "banner_bg_color": {
+        "gradients": "linear-gradient",
+        "primary_color": "rgba(252, 239, 208, 0.6)",
+        "secondary_color": "#FFE7AA"
+      },
+      "title_text_color": "#A15D59",
+      "subtitle_text_color": "#A15D59",
+      "coupon_color": "#A15D59",
+      "left_notch": {
+        "type": "text",
+        "text_color": "#FFFFFF",
+        "bg_color": "#0B92DE",
+        "img_src": ""
+      },
+      "right_notch": {
+        "type": "image",
+        "text_color": "",
+        "bg_color": "",
+        "img_src": "percentage_icon"
+      },
+      "cta": {
+        "bg_color": "#FCB716",
+        "text_color": "#FFFFFF"
+      }
+    },
+    consultation_first: {
+      "template_name": "consultation_first",
+      "banner_bg_color": {
+        "gradients": "linear-gradient",
+        "primary_color": "rgba(252, 220, 255, 0.6)",
+        "secondary_color": "#FBD0FF"
+      },
+      "title_text_color": "#81407C",
+      "subtitle_text_color": "#81407C",
+      "coupon_color": "#81407C",
+      "left_notch": {
+        "type": "text",
+        "text_color": "#FFFFFF",
+        "bg_color": "#3BCA9F",
+        "img_src": ""
+      },
+      "right_notch": {
+        "type": "image",
+        "text_color": "",
+        "bg_color": "",
+        "img_src": "percentage_icon"
+      },
+      "cta": {
+        "bg_color": "#81407C",
+        "text_color": "#FFFFFF"
+      }
+    }
+  }
+};
+
 export const stepsToBookArray = [
   {
     heading: string.diagnostics.bookOnline,
@@ -1724,4 +1826,5 @@ export const AppConfig = {
   APP_ENV,
   Configuration,
   Specialities,
+  DEFAULT_OFFERS_TEMPLATE,
 };

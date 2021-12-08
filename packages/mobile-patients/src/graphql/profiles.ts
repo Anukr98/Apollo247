@@ -1766,6 +1766,9 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         visitNo
         invoiceURL
         labReportURL
+        couponDiscAmount
+        couponCode
+        paymentOrderId
         passportNo
         attributesObj{
           initialCollectionCharges
@@ -1785,6 +1788,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           groupPlan
           editOrderID
           isRemoved
+          couponDiscAmount
           itemObj {
             itemType
             testPreparationData
@@ -3324,7 +3328,7 @@ export const GET_MEDICAL_PRISM_RECORD_V3 = gql`
             result
             range
             outOfRange
-            resultDate
+            # resultDate
           }
           fileUrl
           testResultFiles {
@@ -5227,6 +5231,19 @@ export const GET_INTERNAL_ORDER = gql`
           }
         }
       }
+      SubscriptionOrderDetails{
+        end_date
+        expires_in
+        order_id
+        sub_plan_id
+        payment_reference
+        group_plan{
+          name
+          price
+          valid_duration
+          plan_summary
+        }
+      }
       refunds {
         status
         unique_request_id
@@ -6625,6 +6642,51 @@ export const CREATE_VONAGE_SESSION_TOKEN = gql`
   }
 `;
 
+export const GET_PERSONALIZED_OFFERS = gql`
+  query getPersonalizedOffers {
+    getPersonalizedOffers {
+      response {
+        personalized_data {
+          offers_for_you {
+            offer_id
+            template_name
+            coupon_code
+            notch_text {
+              text
+              values {
+                time_till_expired_at {
+                  value
+                }
+              }
+            }
+            is_active
+            expired_at
+            title {
+              text
+            }
+            subtitle{
+               text  
+            }
+            cta{
+              text
+              path{
+                vertical
+                param
+              }
+            }
+          }
+          global_search_text{
+            search_text{
+              text,
+              created_at
+            }
+          }
+        }
+      }
+    }
+  }
+  `;
+
 export const GET_CONFIGURATION_FOR_ASK_APOLLO_LEAD = gql`
   query getConfigurationForAskApolloLead {
     getConfigurationForAskApolloLead {
@@ -6691,6 +6753,97 @@ export const GET_CAMPAIGN_ID_FOR_REFERRER = gql`
   query campaignInfo($camp: CAMPAIGN_TYPES!) {
     getCampaignInfoByCampaignType(campaignType: $camp) {
       id
+    }
+  }
+`;
+
+export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS = gql `
+query getDiagnosticPackageRecommendations($itemId:Int!, $cityId: Int!){
+  getDiagnosticPackageRecommendations(itemId:$itemId, cityId:$cityId){
+    packageRecommendations{
+      itemId
+      itemName
+      inclusions
+      packageCalculatedMrp
+      diagnosticPricing{
+        mrp
+        price
+        groupPlan
+        status
+        startDate
+        endDate
+      }
+    }
+  }
+}
+`
+export const CANCELL_SUBSCRIPTION = gql`
+  mutation CancelSubscription($CancelSubscriptionInput: CancelSubscriptionInput!) {
+    CancelSubscription(CancelSubscriptionInput: $CancelSubscriptionInput) {
+      code
+      success
+      message
+      response {
+        mobile_number
+        status
+        _id
+        start_date
+        end_date
+      }
+    }
+  }
+`;
+export const GET_PACKAGE_PURCHASE_INFO = gql`
+  query getPackagePurchaseInfo($order_id: String!) {
+    getOrderInternal(order_id: $order_id) {
+      id
+      customer_id
+      payment_order_id
+      payment_status
+      total_amount
+      SubscriptionOrderDetails {
+        end_date
+        payment_reference
+        group_plan {
+          meta {
+            description
+          }
+        }
+        group_sub_plan {
+          plan_id
+          name
+        }
+      }
+    }
+  }
+`;
+
+export const SAVE_RECENT_SEARCH=gql`
+mutation saveRecent($searchText: String!){
+  saveRecentSearchData(saveRecentSearchTextInput: {
+    searchText: $searchText
+  }){
+    success
+  }
+}
+`; 
+
+export const BOOK_PACKAGE_CONSULT = gql`
+  mutation bookFreeAppointmentForPharmacy(
+    $patientId: String!
+    $subscriptionDetailsInput: SubscriptionDetailsInput
+  ) {
+    bookFreeAppointmentForPharmacy(
+      patientId: $patientId
+      subscriptionOrderDetails: $subscriptionDetailsInput
+    ) {
+      appointmentDateTime
+      appointmentId
+      displayId
+      doctorName
+      doctorId
+      isError
+      error
     }
   }
 `;

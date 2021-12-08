@@ -4,7 +4,7 @@ const clear = 'transparent';
 const semiDarkClear = 'rgba(0, 0, 0, 0.3)';
 const lightColor = 'rgb(216, 216, 216)';
 const darkColor = 'rgb(115, 118, 131)';
-const sherpa_blue_light = 'rgba(1, 71, 91, 0.4)'
+const sherpa_blue_light = 'rgba(1, 71, 91, 0.4)';
 
 const darkGray = '#bbbbbb';
 const hexWhite = '#ffffff';
@@ -126,6 +126,9 @@ const Common = {
   COMPLETE_STATUS_BGK: '#E3FCEF',
   INTERMITTENT_STATUS_BGK: '#FFF0B3',
   ICE_BERG: '#DFF4F4',
+  ICE_BERG_FLAT:'#E7FFFD',
+  BLUE_FADED_FLAT : '#FAFEFF',
+  D4_GRAY:'#D4D4D4',
   GRAYED: '#CBCBCB',
   SLATE_GRAY: '#68919D',
   NILE_BLUE: '#1C4659',
@@ -135,13 +138,19 @@ const Common = {
   TEXT_LIGHT_YELLOW: text_light_yellow,
   PORCELAIN_GRAY: '#E2E8E9',
   CHAT_TILE_BG: '#0087BA',
-  DIM_BLACK:  'rgba(0, 0, 0, 0.07)',
+  DIM_BLACK: 'rgba(0, 0, 0, 0.07)',
   CHAT_BLUE_BORDER: '#B0D7E5',
   DEEP_RED: deepRed,
+  DIM_BLUE_BORDER: 'rgba(2,71,91,0.21)',
+  BOULD_GRAY: '#757575',
+  // DIM_BLACK: 'rgba(0, 0, 0, 0.6)',
+  PEACH_CREAM: '#FFDBB0',
+  SOAP_STONE: '#FFFCFA',
   SKY_LIGHT_BLUE: '#C6EAFE',
   GOLDEN: '#FECF62',
   ORANGE: "#FF774B",
   LIGHT_ORANGE_YELLOW: "#FCA317",
+  GREEN_BACKGROUND: "#F5FFFD",
   BGK_GRAY : '#f9f9f9',
   TEAL_BLUE: '#3F7281',
   SHERPA_BLUE_LIGHT: sherpa_blue_light,
@@ -156,6 +165,8 @@ const Common = {
   LIGHT_BLUE_TWO: '#DCF0FF',
   BLUE_GRADIENT_ONE: '#1C9FC2',
   LIGHT_GRAY_3: '#ECECEC',
+  DISCOUNT_GREEN: "#34AA55",
+  GREEN_BG: "#F3FFFF"
 };
 
 const Header = {
@@ -196,6 +207,7 @@ const TextInput = {
   INPUT_FAILURE_TEXT: '#890000',
   INPUT_INFO: tangerine_yellow,
   placeholderTextColor: 'rgba(1,48,91, 0.3)',
+  HOME_SEARCH_PLACEHOLDER:'rgba(2,71,91,0.7)',
   searchAreaPlaceholderTextColor: 'rgba(1,71,91,0.6)',
   light_label: '#658f9b',
 };

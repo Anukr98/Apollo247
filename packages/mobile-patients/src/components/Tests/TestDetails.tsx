@@ -5,7 +5,6 @@ import {
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
-  CircleLogo,
   ClockIcon,
   ExpressSlotClock,
   InfoIconRed,
@@ -19,6 +18,7 @@ import {
 
 import {
   DIAGNOSTIC_GROUP_PLAN,
+  getDiagnosticCartItemReportGenDetails,
   getDiagnosticTestDetails,
   TestPackage,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -87,12 +87,16 @@ import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
+  getDiagnosticCartRecommendations,
   getDiagnosticExpressSlots,
+  getDiagnosticsPackageRecommendations,
   getReportTAT,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import moment from 'moment';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
+import DiscountPercentage from '@aph/mobile-patients/src/components/Tests/components/DiscountPercentage';
+import { renderDiagnosticWidgetTestShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
@@ -215,6 +219,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         diagnosticServiceabilityData?.cityId! || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
       );
 
+  const getWidgetTitle = AppConfig.Configuration.DIAGNOSITCS_WIDGET_TITLES;
+
   const [cmsTestDetails, setCmsTestDetails] = useState((([] as unknown) as CMSTestDetails) || []);
   const [testInfo, setTestInfo] = useState(movedFrom == 'TestsCart' ? testDetails : ({} as any));
   const [moreInclusions, setMoreInclusions] = useState(false);
@@ -226,11 +232,22 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [showBottomBar, setShowBottomBar] = useState<boolean>(false);
   const [priceHeight, setPriceHeight] = useState<number>(0);
   const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
+  const [frequentlyBroughtRecommendations, setFrequentlyBroughtRecommendations] = useState(
+    [] as any
+  );
+  const [frequentlyBroughtShimmer, setFrequentlyBroughtShimmer] = useState<boolean>(false);
+  const [topBookedTests, setTopBookedTests] = useState([] as any);
+  const [packageRecommendations, setPackageRecommendations] = useState([] as any);
+  const [packageRecommendationsShimmer, setPackageRecommendationsShimmer] = useState<boolean>(
+    false
+  );
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
-  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL);
+  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
+    CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL
+  );
   const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
-    if (item?.cityId == cityIdToUse) {
+    if (item?.ctaCityId == cityIdToUse) {
       if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL)) {
         return item;
       } else {
@@ -243,7 +260,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     }
   });
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
-
+  const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   const itemName =
     (!!testDetails && testDetails?.ItemName) ||
     testName ||
@@ -283,12 +300,36 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       fetchTestDetails_CMS(itemId, null);
       loadTestDetails(itemId);
       fetchReportTat(itemId);
+      loadWidgets(itemId);
     } else if (testName) {
       fetchTestDetails_CMS(99999, testName);
     } else {
       setErrorState(true);
     }
   }, [itemId]);
+
+  useEffect(() => {
+    if (!!testInfo) {
+      if (testInfo?.inclusions == null || testInfo?.inclusions?.length == 1) {
+        if (frequentlyBroughtRecommendations?.length == 0 || topBookedTests?.length == 0) {
+          getFrequentlyBroughtRecommendations(testInfo?.ItemID);
+        }
+        if (packageRecommendations?.length == 0) {
+          getPackageRecommendationsForTest(testInfo?.ItemID);
+        }
+      }
+    }
+  }, [testInfo]);
+
+  function loadWidgets(itemId: number | string) {
+    /**to be shown only for single tests */
+    if (!!testDetails) {
+      if (testDetails?.inclusions == null || testDetails?.inclusions?.length == 1) {
+        getFrequentlyBroughtRecommendations(itemId);
+        getPackageRecommendationsForTest(itemId);
+      }
+    }
+  }
 
   const fetchTestDetails_CMS = async (itemId: string | number, itemName: string | null) => {
     setLoadingContext?.(true);
@@ -365,6 +406,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       const discountPrice = pricesForItem?.discountPrice!;
       const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
       const mrpToDisplay = pricesForItem?.mrpToDisplay;
+      const circleDiscount = pricesForItem?.circleDiscount;
+      const specialDiscount = pricesForItem?.specialDiscount;
+      const discount = pricesForItem?.discount;
 
       const partialTestDetails = {
         Rate: price,
@@ -391,6 +435,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         promoteCircle: pricesForItem?.promoteCircle,
         promoteDiscount: pricesForItem?.promoteDiscount,
         groupPlan: pricesForItem?.planToConsider,
+        circleDiscount: circleDiscount,
+        specialDiscount: specialDiscount,
+        discount: discount,
       };
 
       setTestInfo({ ...(partialTestDetails || []) });
@@ -401,43 +448,113 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     }
   };
 
-  const fetchWidgetPrices = async (widgetsData: any, cityId: string | number) => {
-    const itemIds = widgetsData?.map((item: any) =>
-      item?.diagnosticWidgetData?.map((data: any, index: number) => Number(data?.itemId))
-    );
-    //restriction less than 12.
+  const fetchWidgetPrices = async (
+    widgetsData: any,
+    cityId: string | number,
+    source?: string,
+    widgets?: any
+  ) => {
+    let itemIds;
+    if (source == getWidgetTitle?.frequentlyBrought || source == getWidgetTitle?.topBookedTests) {
+      itemIds = widgetsData; //this will have the item id to be shown
+    } else {
+      itemIds = widgetsData?.map((item: any) =>
+        item?.diagnosticWidgetData?.map((data: any, index: number) => Number(data?.itemId))
+      );
+    }
     try {
       const res = Promise.all(
         itemIds?.map((item: any) =>
           fetchPricesForCityId(Number(cityId!), item?.length > 12 ? item?.slice(0, 12) : item)
         )
       );
-
-      const response = (await res)?.map((item: any) =>
-        g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics')
-      );
-      let newWidgetsData = [...widgetsData];
-
-      for (let i = 0; i < widgetsData?.length; i++) {
-        for (let j = 0; j < widgetsData?.[i]?.diagnosticWidgetData?.length; j++) {
-          const findIndex = widgetsData?.[i]?.diagnosticWidgetData?.findIndex(
-            (item: any) => item?.itemId == Number(response?.[i]?.[j]?.itemId)
-          );
-          if (findIndex !== -1) {
-            (newWidgetsData[i].diagnosticWidgetData[findIndex].packageCalculatedMrp =
-              response?.[i]?.[j]?.packageCalculatedMrp),
-              (newWidgetsData[i].diagnosticWidgetData[findIndex].diagnosticPricing =
-                response?.[i]?.[j]?.diagnosticPricing);
+      const response = (await res)
+        ?.map((item: any) => item?.data?.findDiagnosticsWidgetsPricing?.diagnostics || [])
+        ?.flat();
+      if (source == getWidgetTitle?.frequentlyBrought || source == getWidgetTitle?.topBookedTests) {
+        let _frequentlyBrought: any = [];
+        widgets?.forEach((_widget: any) => {
+          response?.forEach((_diagItems) => {
+            if (_widget?.itemId == _diagItems?.itemId) {
+              if (source == getWidgetTitle?.frequentlyBrought) {
+                _frequentlyBrought?.push({
+                  ..._widget,
+                  itemTitle: _widget?.itemName,
+                  diagnosticPricing: _diagItems?.diagnosticPricing,
+                  packageCalculatedMrp: _diagItems?.packageCalculatedMrp,
+                });
+              } else {
+                _frequentlyBrought?.push({
+                  ..._widget,
+                  diagnosticPricing: _diagItems?.diagnosticPricing,
+                  packageCalculatedMrp: _diagItems?.packageCalculatedMrp,
+                });
+              }
+            }
+          });
+        });
+        if (source === getWidgetTitle?.frequentlyBrought) {
+          setFrequentlyBroughtRecommendations?.(_frequentlyBrought);
+        } else {
+          setTopBookedTests?.(_frequentlyBrought);
+        }
+        setFrequentlyBroughtShimmer(false);
+      } else {
+        let newWidgetsData = [...widgetsData];
+        for (let i = 0; i < widgetsData?.length; i++) {
+          for (let j = 0; j < widgetsData?.[i]?.diagnosticWidgetData?.length; j++) {
+            const findIndex = widgetsData?.[i]?.diagnosticWidgetData?.findIndex(
+              (item: any) => item?.itemId == Number(response?.[i]?.[j]?.itemId)
+            );
+            if (findIndex !== -1) {
+              (newWidgetsData[i].diagnosticWidgetData[findIndex].packageCalculatedMrp =
+                response?.[i]?.[j]?.packageCalculatedMrp),
+                (newWidgetsData[i].diagnosticWidgetData[findIndex].diagnosticPricing =
+                  response?.[i]?.[j]?.diagnosticPricing);
+            }
           }
         }
+        setWidgetsData(newWidgetsData);
       }
-      setWidgetsData(newWidgetsData);
       setLoadingContext?.(false);
     } catch (error) {
+      setFrequentlyBroughtShimmer(false);
       CommonBugFender('errorInFetchPricing api__TestDetails', error);
       setLoadingContext?.(false);
     }
   };
+
+  async function getPackageRecommendationsForTest(itemId: string | number) {
+    setPackageRecommendationsShimmer(true);
+    try {
+      const getPackageRecommendationsResponse = await getDiagnosticsPackageRecommendations(
+        client,
+        Number(itemId!),
+        Number(cityIdToUse)
+      );
+      if (getPackageRecommendationsResponse?.data?.getDiagnosticPackageRecommendations) {
+        const getResult =
+          getPackageRecommendationsResponse?.data?.getDiagnosticPackageRecommendations
+            ?.packageRecommendations;
+        let packageArray: any = [];
+        getResult?.map((item) => {
+          packageArray.push({
+            ...item,
+            itemTitle: item?.itemName,
+            inclusionData: item?.inclusions,
+          });
+        });
+        setPackageRecommendations(packageArray);
+      } else {
+        setPackageRecommendations([]);
+      }
+      setPackageRecommendationsShimmer(false);
+    } catch (error) {
+      setPackageRecommendations([]);
+      setPackageRecommendationsShimmer(false);
+      CommonBugFender('TestDetails_getPackageRecommendationsForTest', error);
+    }
+  }
 
   async function getExpressSlots(
     serviceabilityObject: DiagnosticData,
@@ -525,6 +642,77 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     } catch (error) {
       CommonBugFender('fetchReportTat_TestDetails', error);
       setReportTat('');
+    }
+  }
+
+  async function getFrequentlyBroughtRecommendations(itemId: number | string) {
+    setFrequentlyBroughtShimmer(true);
+    try {
+      const recommedationResponse: any = await getDiagnosticCartRecommendations(
+        client,
+        [Number(itemId)],
+        10
+      );
+      if (recommedationResponse?.data?.getDiagnosticItemRecommendations) {
+        const getItems = recommedationResponse?.data?.getDiagnosticItemRecommendations?.itemsData;
+        if (getItems?.length > 0) {
+          const _itemIds = getItems?.map((item: any) => Number(item?.itemId));
+          const alreadyAddedItems = isModify
+            ? cartItemsWithId.concat(modifiedOrderItemIds)
+            : cartItemsWithId;
+          //already added items needs to be hidden
+          const _filterItemIds = _itemIds?.filter((val: any) =>
+            !!alreadyAddedItems && alreadyAddedItems?.length
+              ? !alreadyAddedItems?.includes(val)
+              : val
+          );
+          fetchWidgetPrices(
+            _filterItemIds,
+            cityIdToUse,
+            getWidgetTitle?.frequentlyBrought,
+            getItems
+          );
+        } else {
+          fetchTopBookedTests(itemId);
+          setFrequentlyBroughtShimmer(false);
+          setFrequentlyBroughtRecommendations([]);
+        }
+      } else {
+        fetchTopBookedTests(itemId);
+        setFrequentlyBroughtShimmer(false);
+        setFrequentlyBroughtRecommendations([]);
+      }
+    } catch (error) {
+      fetchTopBookedTests(itemId);
+      setFrequentlyBroughtShimmer(false);
+      setFrequentlyBroughtRecommendations([]);
+      CommonBugFender('TestDetails_fetchRecommendations', error);
+    }
+  }
+
+  async function fetchTopBookedTests(itemId: number | string) {
+    try {
+      const res: any = await getDiagnosticCartItemReportGenDetails(
+        String(itemId),
+        Number(cityIdToUse)
+      );
+      if (res?.data?.success) {
+        const widgetsData = res?.data?.widget_data?.[0]?.diagnosticWidgetData;
+        const _itemIds = widgetsData?.map((item: any) => Number(item?.itemId));
+        const alreadyAddedItems = isModify
+          ? cartItemsWithId.concat(modifiedOrderItemIds)
+          : cartItemsWithId;
+        //already added items needs to be hidden
+        const _filterItemIds = _itemIds?.filter((val: any) =>
+          !!alreadyAddedItems && alreadyAddedItems?.length ? !alreadyAddedItems?.includes(val) : val
+        );
+        fetchWidgetPrices(_filterItemIds, cityIdToUse, getWidgetTitle?.topBookedTests, widgetsData);
+      } else {
+        setTopBookedTests([]);
+      }
+    } catch (error) {
+      setTopBookedTests([]);
+      CommonBugFender('TestDetails_fetchTopBookedTests', error);
     }
   }
 
@@ -790,7 +978,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       >
         {renderSeparator()}
         <View style={{ marginTop: '2%' }}>
-          {renderSlashedView(slashedPrice, priceToShow)}
+          {renderSlashedView(slashedPrice, priceToShow, true)}
           {!_.isEmpty(testInfo) && renderMainPriceView(priceToShow, true)}
         </View>
       </View>
@@ -800,30 +988,72 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const renderBottomPriceView = (slashedPrice: number, priceToShow: number) => {
     return (
       <View>
-        {renderSlashedView(slashedPrice, priceToShow)}
+        {renderSlashedView(slashedPrice, priceToShow, false)}
         {!_.isEmpty(testInfo) && renderMainPriceView(priceToShow, false)}
       </View>
     );
   };
 
-  const renderSlashedView = (slashedPrice: number, priceToShow: number) => {
+  const renderSlashedView = (
+    slashedPrice: number,
+    priceToShow: number,
+    showPercentage: boolean
+  ) => {
+    const promoteCircle = testInfo?.promoteCircle;
+    const promoteDiscount = testInfo?.promoteDiscount;
+    const circleDiscount = testInfo?.circleDiscount;
+    const specialDiscount = testInfo?.specialDiscount;
+    const discount = testInfo?.discount;
+
     return (
-      <View>
+      <View style={{ flexDirection: 'row' }}>
         {(!isDiagnosticCircleSubscription &&
           testInfo?.promoteCircle &&
           priceToShow == slashedPrice) ||
         priceToShow == slashedPrice ? null : (
           <Text style={styles.slashedPriceText}>
-            {string.common.Rs} {convertNumberToDecimal(slashedPrice)}
+            MRP {string.common.Rs}
+            <Text style={{ textDecorationLine: 'line-through' }}>
+              {convertNumberToDecimal(slashedPrice)}
+            </Text>
           </Text>
         )}
+        {/**percentage discount */}
+        {showPercentage &&
+          renderPercentageDiscount(
+            promoteCircle && isDiagnosticCircleSubscription
+              ? circleDiscount
+              : promoteDiscount
+              ? specialDiscount
+              : discount,
+            promoteCircle && isDiagnosticCircleSubscription ? true : false,
+            promoteDiscount && specialDiscount > 0 ? specialDiscount : 0,
+            discount > 0 ? discount : 0
+          )}
       </View>
+    );
+  };
+
+  const renderPercentageDiscount = (
+    discount: string | number,
+    isOnlyCircle: boolean,
+    specialDiscount: number,
+    hasOtherDiscount: number
+  ) => {
+    const discountPrice =
+      specialDiscount > 0 ? specialDiscount : hasOtherDiscount > 0 ? hasOtherDiscount : 0;
+    return (
+      <DiscountPercentage
+        discount={discount}
+        isOnlyCircle={isOnlyCircle}
+        discountPrice={discountPrice}
+      />
     );
   };
 
   const renderMainPriceView = (priceToShow: number, showSavings: boolean) => {
     return (
-      <View style={styles.flexRowView}>
+      <View style={styles.rowStyle}>
         {!!priceToShow && (
           <Text style={styles.mainPriceText}>
             {string.common.Rs} {convertNumberToDecimal(priceToShow)}
@@ -841,30 +1071,26 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     const groupPlan = testInfo?.groupPlan?.groupPlan;
 
     return (
-      <View>
+      <View style={styles.savingsOuterView}>
         {isDiagnosticCircleSubscription &&
         circleDiscountSaving > 0 &&
         !testInfo?.promoteDiscount &&
         groupPlan != DIAGNOSTIC_GROUP_PLAN.ALL ? (
           <View style={styles.rowStyle}>
-            <CircleLogo style={styles.circleLogoIcon} />
-            {renderSavingView(
-              'Savings',
-              circleDiscountSaving,
-              { marginHorizontal: '1%' },
-              styles.savingsText
-            )}
+            {renderSavingView('save', circleDiscountSaving, {}, styles.savingsText)}
           </View>
         ) : testInfo?.promoteDiscount &&
           specialDiscountSaving > 0 &&
           !testInfo?.promoteCircle &&
           groupPlan != DIAGNOSTIC_GROUP_PLAN.ALL ? (
           <View style={styles.rowStyle}>
-            <SpecialDiscountText isImage={true} text={'TEST 247'} />
+            <SpecialDiscountText isImage={false} text={string.diagnostics.test247Text} />
             {renderSavingView(
-              'Savings',
+              'save',
               specialDiscountSaving,
-              { marginHorizontal: '2%' },
+              {
+                marginHorizontal: '2%',
+              },
               styles.savingsText
             )}
           </View>
@@ -874,9 +1100,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             {renderSavingView(
               '',
               circleSpecialPrice,
-              {
-                marginHorizontal: '1%',
-              },
+              { marginHorizontal: '2%' },
               styles.savingsText
             )}
           </View>
@@ -894,7 +1118,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     return (
       <View style={mainViewStyle}>
         <Text style={textStyle}>
-          {text} {string.common.Rs} {convertNumberToDecimal(price)}
+          {text} {string.common.Rs}
+          {convertNumberToDecimal(price)}
         </Text>
       </View>
     );
@@ -992,6 +1217,24 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       (item: any) => !!item?.TestObservation && item?.TestObservation != ''
     );
 
+    const filterParamters_topFour = cmsTestDetails?.diagnosticInclusionName?.filter(
+      (item: any, index: number) =>
+        index < 4 && !!item?.TestObservation && item?.TestObservation != ''
+    );
+
+    const getDispalyedParameterCount =
+      !!filterParamters_topFour &&
+      filterParamters_topFour?.length > 0 &&
+      filterParamters_topFour?.map((inclusion: any, index: number) =>
+        !!inclusion?.TestObservation
+          ? inclusion?.TestObservation?.filter((item: any) => item?.mandatoryValue === '1')
+          : []
+      );
+
+    const getMandatoryParameterCount_topFour =
+      !!getDispalyedParameterCount &&
+      getDispalyedParameterCount?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
+
     const getMandatoryParamter =
       !!filterParamters &&
       filterParamters?.length > 0 &&
@@ -1040,10 +1283,21 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                       {index == 3 &&
                         inclusions?.length - 4 > 0 &&
                         item?.TestObservation?.length == 0 &&
-                        renderShowMore(inclusions, item?.inclusionName)}
+                        renderShowMore(
+                          getMandatoryParameterCount_topFour ||
+                            cmsTestDetails?.diagnosticInclusionName?.length,
+                          item?.inclusionName
+                        )}
                     </Text>
                   </View>
-                  {renderParamterData(item, inclusions, index, true)}
+                  {renderParamterData(
+                    item,
+                    inclusions,
+                    index,
+                    true,
+                    getMandatoryParameterCount_topFour,
+                    getMandatoryParameterCount
+                  )}
                 </>
               ) : null
             )}
@@ -1057,7 +1311,14 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                     {!!item?.inclusionName ? nameFormater(item?.inclusionName!, 'title') : ''}{' '}
                   </Text>
                 </View>
-                {renderParamterData(item, inclusions, index, false)}
+                {renderParamterData(
+                  item,
+                  inclusions,
+                  index,
+                  false,
+                  getMandatoryParameterCount_topFour,
+                  getMandatoryParameterCount
+                )}
               </>
             ))}
           {isInclusionPrsent && moreInclusions && (
@@ -1070,7 +1331,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     );
   };
 
-  const renderShowMore = (inclusions: any, name: string) => {
+  const renderShowMore = (getMandatoryParametersCount: any, name: string) => {
     return (
       <Text
         onPress={() => setMoreInclusions(!moreInclusions)}
@@ -1088,16 +1349,24 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         ]}
       >
         {'   '}
-        {!moreInclusions && `+${inclusions?.length - 4} MORE`}
+        {!moreInclusions && `+${getMandatoryParametersCount} MORE`}
       </Text>
     );
   };
 
-  const renderParamterData = (item: any, inclusions: any, index: number, showOption: boolean) => {
+  const renderParamterData = (
+    item: any,
+    inclusions: any,
+    index: number,
+    showOption: boolean,
+    count: number,
+    totalCount: number
+  ) => {
     const getMandatoryParameters =
       item?.TestObservation?.length > 0 &&
       item?.TestObservation != '' &&
       item?.TestObservation?.filter((obs: any) => obs?.mandatoryValue === '1');
+
     return (
       <>
         {!!getMandatoryParameters && getMandatoryParameters?.length > 0 ? (
@@ -1109,14 +1378,17 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                 {index == 3 &&
                   inclusions?.length - 4 > 0 &&
                   array?.length - 1 == pIndex &&
-                  renderShowMore(inclusions, para?.observationName)}
+                  renderShowMore(
+                    totalCount - count || inclusions?.length - 4,
+                    para?.observationName
+                  )}
               </Text>
             </View>
           ))
         ) : (
           <>
             {index == 3 && inclusions?.length - 4 > 0 && !moreInclusions
-              ? renderShowMore(inclusions, 'test')
+              ? renderShowMore(totalCount - count || inclusions?.length - 4, 'test')
               : null}
           </>
         )}
@@ -1337,8 +1609,83 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         onPressCross={() => {
           setSlideCallToOrder(true);
         }}
+        pageId={CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL}
+        itemId={itemId}
+        itemName={itemName}
       />
     ) : null;
+  };
+
+  const renderFrequentlyBrought = () => {
+    return (
+      <>
+        {frequentlyBroughtShimmer ? (
+          renderDiagnosticWidgetTestShimmer(true)
+        ) : (
+          <View style={{ marginTop: 10 }}>
+            <SectionHeader
+              leftText={
+                frequentlyBroughtRecommendations?.length > 0
+                  ? getWidgetTitle?.frequentlyBrought
+                  : getWidgetTitle?.topBookedTests
+              }
+              leftTextStyle={styles.widgetHeading}
+              style={{ borderBottomWidth: 0, borderColor: 'transparent' }}
+            />
+            <ItemCard
+              diagnosticWidgetData={
+                frequentlyBroughtRecommendations?.length > 0
+                  ? frequentlyBroughtRecommendations
+                  : topBookedTests
+              }
+              onPressRemoveItemFromCart={(item) => {}}
+              data={
+                frequentlyBroughtRecommendations?.length > 0
+                  ? frequentlyBroughtRecommendations
+                  : topBookedTests
+              }
+              isCircleSubscribed={isDiagnosticCircleSubscription}
+              isServiceable={true}
+              isVertical={false}
+              navigation={props.navigation}
+              source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS}
+              sourceScreen={AppRoutes.TestDetails}
+              changeCTA={true}
+            />
+          </View>
+        )}
+      </>
+    );
+  };
+
+  const renderPackageRecommendations = () => {
+    return (
+      <>
+        {packageRecommendationsShimmer ? (
+          renderDiagnosticWidgetTestShimmer(true)
+        ) : (
+          <View style={{ marginTop: 10 }}>
+            <SectionHeader
+              leftText={getWidgetTitle?.similarPackages}
+              leftTextStyle={styles.widgetHeading}
+              style={{ borderBottomWidth: 0, borderColor: 'transparent' }}
+            />
+            <ItemCard
+              diagnosticWidgetData={packageRecommendations}
+              onPressRemoveItemFromCart={(item) => {}}
+              data={packageRecommendations}
+              isCircleSubscribed={isDiagnosticCircleSubscription}
+              isServiceable={true}
+              isVertical={false}
+              navigation={props.navigation}
+              source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS}
+              sourceScreen={AppRoutes.TestDetails}
+              changeCTA={true}
+            />
+          </View>
+        )}
+      </>
+    );
   };
 
   return (
@@ -1378,6 +1725,13 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             cmsTestDetails?.diagnosticWidgetsData?.length > 0
               ? renderWidgetsView()
               : null}
+            {/** frequently brought together */}
+            {(frequentlyBroughtRecommendations?.length > 0 || topBookedTests?.length > 0) &&
+              renderFrequentlyBrought()}
+            {/**packages for single test */}
+            {!!packageRecommendations &&
+              packageRecommendations?.length > 0 &&
+              renderPackageRecommendations()}
           </ScrollView>
           {renderCallToOrder()}
           <StickyBottomComponent>
@@ -1490,7 +1844,6 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     textAlign: 'left',
     opacity: 0.5,
-    textDecorationLine: 'line-through',
   },
   mainPriceText: {
     ...theme.viewStyles.text('SB', isSmallDevice ? 15 : 16, theme.colors.SHERPA_BLUE),
@@ -1504,8 +1857,7 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   savingsText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 10.5 : 11, theme.colors.APP_GREEN),
-    lineHeight: 18,
+    ...theme.viewStyles.text('M', isSmallDevice ? 10.5 : 11, theme.colors.SHERPA_BLUE, 0.9, 18),
     textAlign: 'center',
     alignSelf: 'center',
   },
@@ -1609,14 +1961,16 @@ const styles = StyleSheet.create({
   outerExpressView: { backgroundColor: theme.colors.APP_GREEN, marginBottom: 2 },
   innerExpressView: {
     flexDirection: 'row',
-    padding: 8,
+    padding: 4,
+    paddingLeft: 8,
+    paddingRight: 8,
     alignItems: 'center',
     width: '97%',
   },
-  expressSlotIcon: { width: 37, height: 37, resizeMode: 'contain' },
+  expressSlotIcon: { width: 35, height: 35, resizeMode: 'contain' },
   expressSlotText: {
     ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 18),
-    marginLeft: 16,
+    marginLeft: 10,
   },
   italicStyle: {
     fontStyle: 'italic',
@@ -1624,4 +1978,5 @@ const styles = StyleSheet.create({
     lineHeight: 15.6,
     fontSize: 12,
   },
+  savingsOuterView: { marginLeft: '3%', justifyContent: 'center' },
 });

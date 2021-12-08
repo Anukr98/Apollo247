@@ -1,8 +1,7 @@
 import {
-  AppCommonDataContextProps,
   LocationData,
+  AppCommonDataContextProps,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import DeviceInfo from 'react-native-device-info';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   getPlaceInfoByLatLng,
@@ -15,6 +14,7 @@ import {
   validateConsultCoupon,
   getDiagnosticDoctorPrescriptionResults,
   autoCompletePlaceSearch,
+  pinCodeServiceabilityApi247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -30,6 +30,7 @@ import {
   MEDICINE_CONSUMPTION_DURATION,
   TEST_COLLECTION_TYPE,
   APPOINTMENT_TYPE,
+  CALL_TO_ORDER_CTA_PAGE_ID,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from 'react-native-geolocation-service';
@@ -170,6 +171,15 @@ export enum EDIT_DELETE_TYPE {
   DELETE_VACCINATION = 'Delete Vaccination',
 }
 
+export enum PAGE_ID_TYPE {
+  HOME_PAGE = 'Home Page',
+  LISTING_PAGE = 'Listing Page',
+  MY_ORDERS = 'My Orders',
+  CART_PAGE = 'Cart Page',
+  TEST_DETAIL_PAGE = 'Test Detail Page',
+  ORDER_SUMMARY = 'Order Summary',
+}
+
 type EditDeleteArray = {
   key: EDIT_DELETE_TYPE;
   title: string;
@@ -256,16 +266,13 @@ export const getDoctorShareMessage = (doctorData: any) => {
     ? g(doctorData, 'doctorHospital', '0', 'facility', 'name') + ', '
     : '';
   const hospitalCity = g(doctorData, 'doctorHospital', '0', 'facility', 'city') || '';
-  return `Recommending ${doctorData?.displayName} \n\n${
-    doctorData?.displayName
-  } from ${doctorData?.doctorfacility ||
+  return `Recommending ${doctorData?.displayName} \n\n${doctorData?.displayName
+    } from ${doctorData?.doctorfacility ||
     hospitalName + hospitalCity} is one of the top ${doctorData?.specialtydisplayName ||
     doctorData?.specialty?.name ||
-    ''} doctors in the country. \n\nI strongly recommend ${
-    doctorData?.gender ? (doctorData?.gender === Gender.FEMALE ? 'her' : 'him') : ''
-  } for any relevant health issues!\n\nYou can easily consult with ${
-    doctorData?.displayName
-  } online over Apollo 247 App and Website. Click ${doctorData?.profile_deeplink || ''} to book!`;
+    ''} doctors in the country. \n\nI strongly recommend ${doctorData?.gender ? (doctorData?.gender === Gender.FEMALE ? 'her' : 'him') : ''
+    } for any relevant health issues!\n\nYou can easily consult with ${doctorData?.displayName
+    } online over Apollo 247 App and Website. Click ${doctorData?.profile_deeplink || ''} to book!`;
 };
 
 export const formatAddressWithLandmark = (
@@ -1043,9 +1050,8 @@ export const nextAvailability = (
     } else if (isTomorrow && differenceMinute < 2880 - minPassedToday) {
       return isPhysical
         ? 'Consult Tomorrow'
-        : `${type} Tomorrow${
-            type === 'Available' ? ` at ${moment(nextSlot).format('hh:mm A')}` : ''
-          }`;
+        : `${type} Tomorrow${type === 'Available' ? ` at ${moment(nextSlot).format('hh:mm A')}` : ''
+        }`;
     } else if ((diffDays >= 2 && diffDays <= 30) || type == 'Consult') {
       return `${type} in ${diffDays} days`;
     } else {
@@ -1307,8 +1313,8 @@ export const isValidName = (value: string) =>
   value == ' '
     ? false
     : value == '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
-    ? true
-    : false;
+      ? true
+      : false;
 
 export const isValidPhoneNumber = (value: string) => {
   const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(value)
@@ -1364,26 +1370,26 @@ export const reOrderMedicines = async (
   const availableLineItemsSkus = lineItemsDetails.map((v) => v.sku);
   const cartItemsToAdd = lineItemsDetails.map(
     (item, index) =>
-      ({
-        ...formatToCartItem(item),
-        quantity: Math.ceil(
-          (billedLineItems
-            ? billedLineItems[index].issuedQty
-            : isOfflineOrder
+    ({
+      ...formatToCartItem(item),
+      quantity: Math.ceil(
+        (billedLineItems
+          ? billedLineItems[index].issuedQty
+          : isOfflineOrder
             ? Math.ceil(
-                lineItems[index].price! / lineItems[index].mrp! / lineItems[index].quantity!
-              )
+              lineItems[index].price! / lineItems[index].mrp! / lineItems[index].quantity!
+            )
             : lineItems[index].quantity) || 1
-        ),
-      } as ShoppingCartItem)
+      ),
+    } as ShoppingCartItem)
   );
   const unavailableItems = billedLineItems
     ? billedLineItems
-        .filter((item) => !availableLineItemsSkus.includes(item.itemId))
-        .map((item) => item.itemName)
+      .filter((item) => !availableLineItemsSkus.includes(item.itemId))
+      .map((item) => item.itemName)
     : lineItems
-        .filter((item) => !availableLineItemsSkus.includes(item.medicineSKU!))
-        .map((item) => item.medicineName!);
+      .filter((item) => !availableLineItemsSkus.includes(item.medicineSKU!))
+      .map((item) => item.medicineName!);
 
   const eventAttributes: WebEngageEvents[WebEngageEventName.RE_ORDER_MEDICINE] = {
     orderType: 'Cart',
@@ -1414,15 +1420,15 @@ export const reOrderMedicines = async (
   ).join(',');
   const prescriptionsToAdd = prescriptionUrls.map(
     (item, index) =>
-      ({
-        id: appointmentIds?.[index],
-        appointmentId: appointmentIds?.[index],
-        date: moment(g(order, 'createdDate')).format('DD MMM YYYY'),
-        doctorName: `Meds Rx ${(order.id && order.id.substring(0, order.id.indexOf('-'))) || ''}`,
-        forPatient: g(currentPatient, 'firstName') || '',
-        medicines: medicineNames,
-        uploadedUrl: item,
-      } as EPrescription)
+    ({
+      id: appointmentIds?.[index],
+      appointmentId: appointmentIds?.[index],
+      date: moment(g(order, 'createdDate')).format('DD MMM YYYY'),
+      doctorName: `Meds Rx ${(order.id && order.id.substring(0, order.id.indexOf('-'))) || ''}`,
+      forPatient: g(currentPatient, 'firstName') || '',
+      medicines: medicineNames,
+      uploadedUrl: item,
+    } as EPrescription)
   );
 
   return {
@@ -1493,8 +1499,8 @@ export const getDiscountPercentage = (price: number | string, specialPrice?: num
   const discountPercent = !specialPrice
     ? 0
     : Number(price) == Number(specialPrice)
-    ? 0
-    : ((Number(price) - Number(specialPrice)) / Number(price)) * 100;
+      ? 0
+      : ((Number(price) - Number(specialPrice)) / Number(price)) * 100;
   return discountPercent != 0 ? Number(Number(discountPercent).toFixed(1)) : 0;
 };
 
@@ -1584,13 +1590,13 @@ const webengage = new WebEngage();
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
     webengage.track(eventName, attributes);
-  } catch (error) {}
+  } catch (error) { }
 };
 
 export const postCleverTapEvent = (eventName: CleverTapEventName, attributes: Object) => {
   try {
     CleverTap.recordEvent(eventName, attributes);
-  } catch (error) {}
+  } catch (error) { }
 };
 
 /**
@@ -1621,19 +1627,30 @@ export const onCleverTapUserLogin = async (_currentPatient: any) => {
         _currentPatient?.gender == Gender.MALE
           ? 'M'
           : _currentPatient?.gender == Gender.FEMALE
-          ? 'F'
-          : '',
+            ? 'F'
+            : '',
       DOB: new Date(_currentPatient?.dateOfBirth),
       ...(_currentPatient?.emailAddress && { Email: _currentPatient?.emailAddress }),
       ...(_currentPatient?.photoUrl && { Photo: _currentPatient?.photoUrl }),
       ...(_currentPatient?.createdDate && { CreatedDate: _currentPatient?.createdDate }),
-      isRefree: _currentPatient?.isRefree || false,
     };
     CleverTap.onUserLogin(_userProfile);
     AsyncStorage.setItem('createCleverTapProifle', 'true');
   } catch (error) {
     CommonBugFender('setCleverTapUserLogin', error);
   }
+};
+
+export const updateUserProfileWithReferrInformation = (totalReferredUser: Number | string) => {
+  CleverTap.onUserLogin({
+    TotalReferredUsers: totalReferredUser,
+  });
+};
+
+export const setRefereeFlagForNewRegisterUser = (isReferee: boolean) => {
+  CleverTap.onUserLogin({
+    isReferee,
+  });
 };
 
 export type CircleEventSource =
@@ -1709,8 +1726,8 @@ export const getCleverTapCircleMemberValues = (
   return pharmacyCircleMemeber == 'Yes'
     ? 'Added'
     : pharmacyCircleMemeber == 'No'
-    ? 'Not Added'
-    : 'Existing';
+      ? 'Not Added'
+      : 'Existing';
 };
 
 export const postAppointmentCleverTapEvents = (
@@ -2116,7 +2133,7 @@ export const permissionHandler = (
         Alert.alert(permission.toUpperCase(), deniedMessage, [
           {
             text: 'Cancel',
-            onPress: () => {},
+            onPress: () => { },
           },
           {
             text: 'Ok',
@@ -2128,7 +2145,7 @@ export const permissionHandler = (
         ]);
       }
     })
-    .catch((e) => {});
+    .catch((e) => { });
 };
 
 const consultPermissionCleverTapEvents = (
@@ -2219,8 +2236,8 @@ export const InitiateAppsFlyer = (
       onInstallConversionDataListener: true, //Optional
       onDeepLinkListener: true, //Optional
     },
-    (result) => {},
-    (error) => {}
+    (result) => { },
+    (error) => { }
   );
   let isFirstLaunch = false;
   onInstallConversionDataCanceller = appsFlyer.onInstallConversionData((res) => {
@@ -2233,7 +2250,6 @@ export const InitiateAppsFlyer = (
         if (res.data.af_sub1 !== null) {
           AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
         }
-
         if (res.data.linkToUse !== null && res.data.linkToUse === 'ForReferrarInstall') {
           const responseData = res.data;
           setAppReferralData({
@@ -2249,7 +2265,7 @@ export const InitiateAppsFlyer = (
         setBugFenderLog('APPS_FLYER_DEEP_LINK_Referral_Code', res.data.af_sub1);
 
         setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
-      } catch (error) {}
+      } catch (error) { }
 
       if (res.data.af_status === 'Non-organic') {
         const media_source = res.data.media_source;
@@ -2278,7 +2294,7 @@ export const InitiateAppsFlyer = (
         );
 
         setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
-      } catch (error) {}
+      } catch (error) { }
     }
   });
   let isDeepLinked = false;
@@ -2314,16 +2330,10 @@ export const InitiateAppsFlyer = (
           redirectWithOutDeferred(url);
         }
       }
-      if (!res.isDeferred) {
-        clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data));
-        const url = handleOpenURL(res.data.deep_link_value);
-        AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
-        redirectWithOutDeferred(url);
-      }
       if (res.status == 'success') {
         clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data));
       }
-    } catch (e) {}
+    } catch (e) { }
   });
   setTimeout(() => {
     !isDeepLinked && launchSourceEvent(isFirstLaunch);
@@ -2403,7 +2413,7 @@ export const deferredDeepLinkRedirectionData = async (
 };
 
 export const UnInstallAppsFlyer = (newFirebaseToken: string) => {
-  appsFlyer.updateServerUninstallToken(newFirebaseToken, (success) => {});
+  appsFlyer.updateServerUninstallToken(newFirebaseToken, (success) => { });
 };
 
 export const APPStateActive = () => {
@@ -2427,10 +2437,10 @@ export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Ob
     appsFlyer.logEvent(
       eventName,
       attributes,
-      (res) => {},
-      (err) => {}
+      (res) => { },
+      (err) => { }
     );
-  } catch (error) {}
+  } catch (error) { }
 };
 
 export const setCleverTapAppsFlyerCustID = () => {
@@ -2439,13 +2449,13 @@ export const setCleverTapAppsFlyerCustID = () => {
       const userId = res;
       SetAppsFlyerCustID(userId?.toString());
     });
-  } catch (error) {}
+  } catch (error) { }
 };
 
 export const SetAppsFlyerCustID = (patientId: string) => {
   try {
-    appsFlyer.setCustomerUserId(patientId, (res) => {});
-  } catch (error) {}
+    appsFlyer.setCustomerUserId(patientId, (res) => { });
+  } catch (error) { }
 };
 
 export const postAppsFlyerAddToCartEvent = (
@@ -2474,7 +2484,7 @@ export const postAppsFlyerAddToCartEvent = (
 export const setFirebaseUserId = (userId: string) => {
   try {
     analytics().setUserId(userId);
-  } catch (error) {}
+  } catch (error) { }
 };
 
 export const setCrashlyticsAttributes = async (
@@ -2488,13 +2498,13 @@ export const setCrashlyticsAttributes = async (
         lastName: currentPatient?.lastName!,
       }),
     ]);
-  } catch (error) {}
+  } catch (error) { }
 };
 
 export const postFirebaseEvent = (eventName: FirebaseEventName, attributes: Object) => {
   try {
     analytics().logEvent(eventName, attributes);
-  } catch (error) {}
+  } catch (error) { }
 };
 
 export const postFirebaseAddToCartEvent = (
@@ -2529,7 +2539,7 @@ export const postFirebaseAddToCartEvent = (
       ...pharmacyCircleAttributes,
     };
     postFirebaseEvent(FirebaseEventName.PHARMACY_ADD_TO_CART, eventAttributes);
-  } catch (error) {}
+  } catch (error) { }
 };
 
 export const nameFormater = (
@@ -2585,10 +2595,10 @@ export const getFormattedLocation = (
   return {
     displayName: isModifyAddress
       ? findAddrComponents('locality', addrComponents) ||
-        findAddrComponents('administrative_area_level_2', addrComponents)
+      findAddrComponents('administrative_area_level_2', addrComponents)
       : (area || []).pop() ||
-        findAddrComponents('locality', addrComponents) ||
-        findAddrComponents('administrative_area_level_2', addrComponents),
+      findAddrComponents('locality', addrComponents) ||
+      findAddrComponents('administrative_area_level_2', addrComponents),
 
     latitude: lat,
     longitude: lng,
@@ -2618,8 +2628,8 @@ const getDaysCount = (type: MEDICINE_CONSUMPTION_DURATION | null) => {
   return type == MEDICINE_CONSUMPTION_DURATION.MONTHS
     ? 30
     : type == MEDICINE_CONSUMPTION_DURATION.WEEKS
-    ? 7
-    : 1;
+      ? 7
+      : 1;
 };
 
 export const getPrescriptionItemQuantity = (
@@ -2634,19 +2644,19 @@ export const getPrescriptionItemQuantity = (
   if (medicineUnit == MEDICINE_UNIT.TABLET || medicineUnit == MEDICINE_UNIT.CAPSULE) {
     const medicineDosageMapping = medicineCustomDosage
       ? medicineCustomDosage.split('-').map((item) => {
-          if (item.indexOf('/') > -1) {
-            const dosage = item.split('/').map((item) => Number(item));
-            return (dosage[0] || 1) / (dosage[1] || 1);
-          } else if (item.indexOf('\\') > -1) {
-            const dosage = item.split('\\').map((item) => Number(item));
-            return (dosage[0] || 1) / (dosage[1] || 1);
-          } else {
-            return Number(item);
-          }
-        })
+        if (item.indexOf('/') > -1) {
+          const dosage = item.split('/').map((item) => Number(item));
+          return (dosage[0] || 1) / (dosage[1] || 1);
+        } else if (item.indexOf('\\') > -1) {
+          const dosage = item.split('\\').map((item) => Number(item));
+          return (dosage[0] || 1) / (dosage[1] || 1);
+        } else {
+          return Number(item);
+        }
+      })
       : medicineDosage
-      ? Array.from({ length: 4 }).map(() => Number(medicineDosage))
-      : [1, 1, 1, 1];
+        ? Array.from({ length: 4 }).map(() => Number(medicineDosage))
+        : [1, 1, 1, 1];
 
     const medicineTimingsPerDayCount =
       (medicineTimings || []).reduce(
@@ -2655,12 +2665,12 @@ export const getPrescriptionItemQuantity = (
           (currItem == MEDICINE_TIMINGS.MORNING
             ? medicineDosageMapping[0]
             : currItem == MEDICINE_TIMINGS.NOON
-            ? medicineDosageMapping[1]
-            : currItem == MEDICINE_TIMINGS.EVENING
-            ? medicineDosageMapping[2]
-            : currItem == MEDICINE_TIMINGS.NIGHT
-            ? medicineDosageMapping[3]
-            : 1),
+              ? medicineDosageMapping[1]
+              : currItem == MEDICINE_TIMINGS.EVENING
+                ? medicineDosageMapping[2]
+                : currItem == MEDICINE_TIMINGS.NIGHT
+                  ? medicineDosageMapping[3]
+                  : 1),
         0
       ) || 1;
 
@@ -2717,7 +2727,7 @@ export const savePastSearch = (client: ApolloClient<object>, input: SaveSearchIn
       mutation: SAVE_SEARCH,
       variables: { saveSearchInput: input },
     });
-  } catch (error) {}
+  } catch (error) { }
 };
 
 export const addPharmaItemToCart = (
@@ -2843,7 +2853,7 @@ export const addPharmaItemToCart = (
           'Cart Items': JSON.stringify(itemsInCart) || '',
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
-      } catch (error) {}
+      } catch (error) { }
     })
     .catch(() => {
       addToCart();
@@ -2938,21 +2948,21 @@ export const overlyCallPermissions = (
 
           showPermissionPopUp(
             string.callRelatedPermissions.camAndMPPermission.replace('{0}', doctorName),
-            () => callPermissions(() => {}, screenName)
+            () => callPermissions(() => { }, screenName)
           );
         } else if (cameraYes && microphoneNo) {
           showPermissionPopUp(
             string.callRelatedPermissions.onlyMPPermission.replace('{0}', doctorName),
-            () => callPermissions(() => {}, screenName)
+            () => callPermissions(() => { }, screenName)
           );
         } else if (cameraNo && microphoneYes) {
           showPermissionPopUp(
             string.callRelatedPermissions.onlyCameraPermission.replace('{0}', doctorName),
-            () => callPermissions(() => {}, screenName)
+            () => callPermissions(() => { }, screenName)
           );
         }
       })
-      .catch((e) => {});
+      .catch((e) => { });
   } else {
     Permissions.checkMultiple(['camera', 'microphone'])
       .then((response) => {
@@ -2966,10 +2976,10 @@ export const overlyCallPermissions = (
           cameraNo && microphoneNo
             ? string.callRelatedPermissions.camAndMPPermission
             : cameraYes && microphoneNo
-            ? string.callRelatedPermissions.onlyMPPermission
-            : cameraNo && microphoneYes
-            ? string.callRelatedPermissions.onlyCameraPermission
-            : '';
+              ? string.callRelatedPermissions.onlyMPPermission
+              : cameraNo && microphoneYes
+                ? string.callRelatedPermissions.onlyCameraPermission
+                : '';
         if (description) {
           showAphAlert!({
             unDismissable: true,
@@ -2993,14 +3003,14 @@ export const overlyCallPermissions = (
                   hideAphAlert!();
                   onPressAllow();
                   callback?.();
-                  callPermissions(() => {}, screenName);
+                  callPermissions(() => { }, screenName);
                 },
               },
             ],
           });
         }
       })
-      .catch((e) => {});
+      .catch((e) => { });
   }
 };
 
@@ -3031,9 +3041,9 @@ export const calculateCashbackForItem = (
   const subCategoryLevelkey = `${type_id?.toUpperCase()}~${subcategory}`;
   const skuLevelkey = `${type_id?.toUpperCase()}~${subcategory}~${sku}`;
   let cashbackFactor = 0;
-  if ( circleCashback?.[skuLevelkey] >= 0) {
+  if (circleCashback?.[skuLevelkey] >= 0) {
     cashbackFactor = circleCashback?.[skuLevelkey];
-  } else if ( circleCashback?.[subCategoryLevelkey] >= 0) {
+  } else if (circleCashback?.[subCategoryLevelkey] >= 0) {
     cashbackFactor = circleCashback?.[subCategoryLevelkey];
   } else {
     cashbackFactor = circleCashback?.[categoryLevelkey];
@@ -3107,7 +3117,7 @@ export const takeToHomePage = (props: any) => {
       key: null,
       actions: [
         NavigationActions.navigate({
-          routeName: AppRoutes.ConsultRoom,
+          routeName: AppRoutes.HomeScreen,
         }),
       ],
     })
@@ -3139,7 +3149,40 @@ export const goToConsultRoom = (
       key: null,
       actions: [
         NavigationActions.navigate({
-          routeName: AppRoutes.ConsultRoom,
+          routeName: AppRoutes.HomeScreen,
+          params,
+        }),
+      ],
+    })
+  );
+};
+
+export const navigateToSpecialtyPage = (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  params?: any,
+  forceRedirect?: boolean
+) => {
+  if (forceRedirect) {
+    goToSpecialtyPage(navigation, params);
+  } else {
+    const navigate = navigation.popToTop();
+    if (!navigate) {
+      goToSpecialtyPage(navigation, params);
+    }
+  }
+};
+
+export const goToSpecialtyPage = (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  params?: any
+) => {
+  navigation.dispatch(
+    StackActions.reset({
+      index: 0,
+      key: null,
+      actions: [
+        NavigationActions.navigate({
+          routeName: AppRoutes.DoctorSearch,
           params,
         }),
       ],
@@ -3189,7 +3232,7 @@ export const navigateToScreenWithHomeScreeninStack = (
         index: 1,
         key: null,
         actions: [
-          NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom }),
+          NavigationActions.navigate({ routeName: AppRoutes.HomeScreen }),
           NavigationActions.navigate({ routeName: screenName, params }),
         ],
       })
@@ -3462,9 +3505,9 @@ export async function downloadDiagnosticReport(
       (result &&
         Platform.OS == 'android' &&
         result?.[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] ===
-          PermissionsAndroid.RESULTS.GRANTED &&
+        PermissionsAndroid.RESULTS.GRANTED &&
         result?.[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] ===
-          PermissionsAndroid.RESULTS.GRANTED) ||
+        PermissionsAndroid.RESULTS.GRANTED) ||
       Platform.OS == 'ios'
     ) {
       const dirs = RNFetchBlob.fs.dirs;
@@ -3514,9 +3557,9 @@ export async function downloadDiagnosticReport(
         result &&
         Platform.OS == 'android' &&
         result?.[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] !==
-          PermissionsAndroid.RESULTS.DENIED &&
+        PermissionsAndroid.RESULTS.DENIED &&
         result?.[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] !==
-          PermissionsAndroid.RESULTS.DENIED
+        PermissionsAndroid.RESULTS.DENIED
       ) {
         storagePermissionsToDownload(() => {
           downloadDiagnosticReport(
@@ -3780,15 +3823,14 @@ export const checkPatientAge = (_selectedPatient: any, fromNewProfile: boolean =
 
 export const extractPatientDetails = (patientDetails: any) => {
   const patientName = `${patientDetails?.firstName! || ''} ${patientDetails?.lastName! || ''}`;
-  const genderAgeText = `${nameFormater(patientDetails?.gender!, 'title') || ''}, ${
-    patientDetails?.dateOfBirth ? getAge(patientDetails?.dateOfBirth) || '0' : ''
-  }`;
+  const genderAgeText = `${nameFormater(patientDetails?.gender!, 'title') || ''}, ${patientDetails?.dateOfBirth ? getAge(patientDetails?.dateOfBirth) || '0' : ''
+    }`;
   const patientSalutation = !!patientDetails?.gender
     ? patientDetails?.gender === Gender.FEMALE
       ? 'Ms.'
       : patientDetails?.gender === Gender.MALE
-      ? 'Mr.'
-      : ''
+        ? 'Mr.'
+        : ''
     : '';
 
   return {
@@ -3982,7 +4024,7 @@ export const filterAppLaunchSoruceAttributesByKey = (raw: any) => {
 export const replaceVariableInString = (str: string, mapObj: { [propName: string]: string }) => {
   let newArrayWithUpdatedString = Object.keys(mapObj).map((item) => '{' + item + '}');
   let rgx = new RegExp(newArrayWithUpdatedString.join('|'), 'gi');
-  str = str.replace(rgx, function(matched) {
+  str = str.replace(rgx, function (matched) {
     return mapObj[matched.replace(/{|}/gi, '')];
   });
   return str;
@@ -4090,7 +4132,7 @@ export const getCirclePlanDetails = async (
         details = res?.APOLLO?.[0]?.plan_summary;
       } else details = [];
     })
-    .catch((err: Error) => {});
+    .catch((err: Error) => { });
   return details;
 };
 
@@ -4131,3 +4173,110 @@ export const getFormattedDateTimeWithBefore = (time: string) => {
 
   return finalDateTime;
 };
+
+export const getPageId = (pageId: CALL_TO_ORDER_CTA_PAGE_ID) => {
+  let pageName = PAGE_ID_TYPE.HOME_PAGE
+  switch (pageId) {
+    case CALL_TO_ORDER_CTA_PAGE_ID.HOME:
+      pageName = PAGE_ID_TYPE.HOME_PAGE;
+      break;
+    case CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING:
+      pageName = PAGE_ID_TYPE.LISTING_PAGE;
+      break;
+    case CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS:
+      pageName = PAGE_ID_TYPE.MY_ORDERS;
+      break;
+    case CALL_TO_ORDER_CTA_PAGE_ID.TESTCART:
+      pageName = PAGE_ID_TYPE.CART_PAGE;
+      break;
+    case CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL:
+      pageName = PAGE_ID_TYPE.TEST_DETAIL_PAGE;
+      break;
+    case CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY:
+      pageName = PAGE_ID_TYPE.ORDER_SUMMARY;
+      break;
+
+    default:
+      pageName = PAGE_ID_TYPE.HOME_PAGE;
+      break;
+  }
+  return pageName;
+};
+
+export const checkIfPincodeIsServiceable = async (pincode: string) => {
+  try {
+    const response = await pinCodeServiceabilityApi247(pincode);
+    const { data } = response;
+    const axdcCode = data?.response?.axdcCode;
+    const isServiceable = data?.response?.servicable;
+    const vdcType = data?.response?.vdcType || data?.response?.['VDC Type'];
+    const serviceabilityDetails = {
+      axdcCode: axdcCode,
+      isServiceable: isServiceable,
+      vdcType: vdcType,
+    };
+    return serviceabilityDetails;
+  } catch (error) {
+    return null;
+  }
+}
+
+export const shareDocument = async (
+  fileUrl: string = '',
+  type: string = 'application/pdf',
+  orderId: number,
+  isReport?: boolean
+) => {
+  let result = Platform.OS === 'android' && (await requestReadSmsPermission());
+  let filePath: string | null = null;
+  let file_url_length = fileUrl.length;
+  let viewReportOrderId = orderId;
+  const isReportApollo = isReport ? 'labreport' : 'labinvoice';
+  const dynamicFileName = `Apollo247_${orderId}_${isReportApollo}.pdf`;
+  const configOptions = { fileCache: true };
+
+  try {
+    if (
+      (result &&
+        Platform.OS == 'android' &&
+        result?.[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] ===
+        PermissionsAndroid.RESULTS.GRANTED &&
+        result?.[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] ===
+        PermissionsAndroid.RESULTS.GRANTED) ||
+      Platform.OS == 'ios'
+    ) {
+      RNFetchBlob.config(configOptions)
+        .fetch('GET', fileUrl.replace(/\s/g, ''))
+        .then((resp) => {
+          filePath = resp.path();
+          return resp.readFile('base64');
+        })
+        .then(async (base64Data) => {
+          base64Data = `data:${type};base64,` + base64Data;
+          await Share.open({ title: dynamicFileName, url: base64Data });
+          // remove the image or pdf from device's storage
+          // await RNFS.unlink(filePath);
+        })
+        .catch((err) => {
+          CommonBugFender('shareDocument_helper', err);
+        });
+    } else {
+      if (
+        result &&
+        Platform.OS == 'android' &&
+        result?.[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] !==
+        PermissionsAndroid.RESULTS.DENIED &&
+        result?.[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] !==
+        PermissionsAndroid.RESULTS.DENIED
+      ) {
+        storagePermissionsToDownload(() => {
+          shareDocument(fileUrl, type, orderId, isReport);
+        });
+      }
+    }
+  } catch (error) {
+    CommonBugFender('shareDocument_helperFunction', error);
+  }
+  return viewReportOrderId;
+};
+

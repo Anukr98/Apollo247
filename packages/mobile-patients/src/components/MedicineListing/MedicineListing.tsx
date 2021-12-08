@@ -39,7 +39,6 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AddedToCartToast } from '@aph/mobile-patients/src/components/ui/AddedToCartToast';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -97,7 +96,7 @@ export const MedicineListing: React.FC<Props> = (props) => {
   const comingFromBrandPage = props?.comingFromBrandPage ? props?.comingFromBrandPage : false;
   const currentBrandPageTab = props?.currentBrandPageTab || '';
 
-  const { pinCode } = useShoppingCart();
+  const { pinCode, axdcCode } = useShoppingCart();
 
   // states
   const [isLoading, setLoading] = useState(false);
@@ -148,7 +147,6 @@ export const MedicineListing: React.FC<Props> = (props) => {
   // global contexts
   const { currentPatient } = useAllCurrentPatients();
   const { showAphAlert } = useUIElements();
-  const { axdcCode } = useAppCommonData();
 
   useEffect(() => {
     if (currentBrandPageTab) {

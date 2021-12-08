@@ -560,7 +560,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         hideAphAlert?.();
         redirectToOrders
           ? props.navigation.navigate(AppRoutes.YourOrdersTest)
-          : props.navigation.navigate(AppRoutes.ConsultRoom);
+          : props.navigation.navigate(AppRoutes.HomeScreen);
       },
     });
   };

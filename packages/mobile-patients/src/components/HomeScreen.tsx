@@ -8,6 +8,7 @@ import {
   PlanBenefits,
   SubscriptionData,
   useAppCommonData,
+  appGlobalCache,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { WebView } from 'react-native-webview';
 import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
@@ -21,7 +22,7 @@ import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/Carousel
 import CovidButton from '@aph/mobile-patients/src/components/ConsultRoom/Components/CovidStyles';
 import firebaseAuth from '@react-native-firebase/auth';
 import ReceiveSharingIntent from 'react-native-receive-sharing-intent';
-
+import remoteConfig from '@react-native-firebase/remote-config';
 import {
   CartIcon,
   ConsultationRoom,
@@ -49,9 +50,25 @@ import {
   TestsCartIcon,
   TestsIcon,
   WhiteArrowRightIcon,
+  ArrowRight,
   VaccineTracker,
   ProHealthIcon,
   BackArrow,
+  SearchAreaIcon,
+  RemoveIconGrey,
+  SearchNoResultIcon,
+  BookVaccineIcon,
+  LabTestBrownIcon,
+  PercentOffBrownIcon,
+  TimeGreenIcon,
+  Card,
+  CashbackIcon,
+  WhiteArrowRight,
+  DeliveryInIcon,
+  MedicineHomeIcon,
+  TimeBlueIcon,
+  WalletHomeHC,
+  DropDownProfile,
   CallIcon,
   ArrowRight,
   HospitalVisit,
@@ -61,12 +78,13 @@ import {
   BannerDisplayType,
   BookingSource,
   BookingStatus,
+  MedicalRecordType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { getDoctorList } from '@aph/mobile-patients/src/graphql/types/getDoctorList';
 import { dateFormatter } from '@aph/mobile-patients/src/utils/dateUtil';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import { CircleMembershipActivation } from '@aph/mobile-patients/src/components/ui/CircleMembershipActivation';
@@ -87,9 +105,21 @@ import {
   GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
   GET_ONEAPOLLO_USER,
   GET_PLAN_DETAILS_BY_PLAN_ID,
+  GET_DOCTOR_LIST,
+  SAVE_RECENT_SEARCH,
   GET_CONFIGURATION_FOR_ASK_APOLLO_LEAD,
   GET_HC_REFREE_RECORD,
+  GET_CAMPAIGN_ID_FOR_REFERRER,
+  GET_REWARD_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  searchPHRApiWithAuthToken,
+  MedFilter,
+  MedicineProduct,
+  searchMedicineApi,
+  searchProceduresAndSymptoms,
+  ProceduresAndSymptomsParams,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
   GetAllUserSubscriptionsWithPlanBenefitsV2Variables,
@@ -105,7 +135,6 @@ import { Gender, Relation } from '@aph/mobile-patients/src/graphql/types/globalT
 import {
   GenerateTokenforCM,
   notifcationsApi,
-  pinCodeServiceabilityApi247,
   GenrateVitalsToken_CM,
   GetAllUHIDSForNumber_CM,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -115,6 +144,7 @@ import {
   getAllProHealthAppointments,
   getUserBannersList,
   saveTokenDevice,
+  getDiagnosticSearchResults,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   FirebaseEventName,
@@ -140,6 +170,7 @@ import {
   getCleverTapCircleMemberValues,
   getAge,
   removeObjectNullUndefinedProperties,
+  isValidSearch,
   fileToBase64,
   getAsyncStorageValues,
   formatUrl,
@@ -178,9 +209,11 @@ import {
   View,
   ViewStyle,
   Keyboard,
+  TextInput,
+  BackHandler,
 } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { ScrollView } from 'react-native-gesture-handler';
+import { ScrollView, Switch } from 'react-native-gesture-handler';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import WebEngage from 'react-native-webengage';
 import { NavigationScreenProps, FlatList } from 'react-navigation';
@@ -188,7 +221,10 @@ import {
   addVoipPushToken,
   addVoipPushTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/addVoipPushToken';
-import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
+import {
+  LinearGradientComponent,
+  LinearGradientVerticalComponent,
+} from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 
 import { CircleTypeCard1 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard1';
 import { CircleTypeCard2 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard2';
@@ -196,6 +232,7 @@ import { CircleTypeCard3 } from '@aph/mobile-patients/src/components/ui/CircleTy
 import { CircleTypeCard4 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard4';
 import { CircleTypeCard5 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard5';
 import { CircleTypeCard6 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard6';
+import { CircleTypeCard7 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard7';
 import { Overlay } from 'react-native-elements';
 import { HdfcConnectPopup } from '@aph/mobile-patients/src/components/SubscriptionMembership/HdfcConnectPopup';
 import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
@@ -204,6 +241,9 @@ import {
   renderCircleShimmer,
   renderBannerShimmer,
   CovidButtonShimmer,
+  renderGlobalSearchShimmer,
+  renderOffersForYouShimmer,
+  renderAppointmentCountShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { ConsultedDoctorsCard } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultedDoctorsCard';
 import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
@@ -216,8 +256,11 @@ import {
   HomeScreenAttributes,
   PatientInfo as PatientInfoObj,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import { getUniqueId } from 'react-native-device-info';
-import { Button } from '../ui/Button';
+import _ from 'lodash';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { saveRecentVariables } from '@aph/mobile-patients/src/graphql/types/saveRecent';
 import { getConfigurationForAskApolloLead } from '@aph/mobile-patients/src/graphql/types/getConfigurationForAskApolloLead';
 import { ReferralBanner } from '@aph/mobile-patients/src/components/ui/ReferralBanner';
 import {
@@ -231,21 +274,81 @@ const { Vitals } = NativeModules;
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
+  menuOptionsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginLeft: 16,
+    marginTop: 12,
+  },
+  searchBarMainViewStyle: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginTop: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.WHITE,
+  },
+  searchBarViewStyle: {
+    backgroundColor: theme.colors.BLUE_FADED_FLAT,
+    flexDirection: 'row',
+    padding: 10,
+    flex: 1,
+    alignItems: 'center',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderStyle: 'solid',
+    borderColor: theme.colors.D4_GRAY,
+  },
+  cancelTextStyle: {
+    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 20),
+    marginLeft: 18,
+  },
+  textInputStyle: {
+    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 20),
+    flex: 1,
+    paddingHorizontal: 10,
+    paddingTop: 0,
+    paddingBottom: 1,
+  },
+  loaderViewStyle: {
+    justifyContent: 'center',
+    flex: 1,
+    alignItems: 'center',
+  },
+  loaderStyle: {
+    height: 100,
+    backgroundColor: 'transparent',
+    alignSelf: 'center',
+  },
+  healthRecordTypeTextStyle: {
+    ...theme.viewStyles.text('R', 12, theme.colors.SILVER_LIGHT, 1, 21),
+    marginHorizontal: 13,
+  },
+  healthRecordTypeViewStyle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  searchListHeaderViewStyle: {
+    marginHorizontal: 16,
+    marginVertical: 12,
+  },
+  searchListHeaderTextStyle: {
+    ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 21),
+  },
   viewName: {
     backgroundColor: theme.colors.WHITE,
     width: '100%',
     marginBottom: 0,
   },
   covidCardContainer: {
-    borderRadius: 10,
+    borderRadius: 6,
     backgroundColor: theme.colors.WHITE,
-    shadowColor: '#4c808080',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.4,
-    shadowRadius: 5,
-    elevation: 5,
     overflow: 'hidden',
-    marginBottom: 16,
+    marginBottom: 18,
+    borderWidth: 1,
+    borderColor: theme.colors.D4_GRAY,
   },
   covidToucahble: {
     height: 0.06 * height,
@@ -275,23 +378,22 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   hiTextStyle: {
-    marginLeft: 10,
-    color: '#02475b',
-    ...theme.fonts.IBMPlexSansSemiBold(26),
+    marginLeft: 7,
+    ...theme.viewStyles.text('SB', 14, theme.colors.LIGHT_BLUE, 1, 20),
   },
   nameTextContainerStyle: {
     maxWidth: '70%',
   },
   nameTextStyle: {
-    marginLeft: 7,
-    color: '#02475b',
-    ...theme.fonts.IBMPlexSansSemiBold(26),
+    marginLeft: 4,
+    ...theme.viewStyles.text('SB', 14, theme.colors.LIGHT_BLUE, 1, 20),
   },
   seperatorStyle: {
     height: 2,
     backgroundColor: '#00b38e',
     marginHorizontal: 5,
     marginBottom: 6,
+    marginTop: 1,
   },
   descriptionTextStyle: {
     marginHorizontal: 16,
@@ -340,8 +442,18 @@ const styles = StyleSheet.create({
     color: theme.colors.WHITE,
   },
   menuOptionIconStyle: {
-    height: 40,
-    width: 40,
+    height: 32,
+    width: 32,
+    resizeMode: 'contain',
+  },
+  menuOption2IconStyle: {
+    height: 30,
+    width: 24,
+    resizeMode: 'contain',
+  },
+  menuOption2SubIconStyle: {
+    height: 24,
+    width: 24,
     resizeMode: 'contain',
   },
   hdfcConnectContainer: {
@@ -395,14 +507,9 @@ const styles = StyleSheet.create({
     color: theme.colors.WHITE,
   },
   tabBarMainViewStyle: {
-    backgroundColor: 'transparent',
+    backgroundColor: '#F8F8F8',
     flexDirection: 'row',
     width: width,
-    shadowColor: 'black',
-    shadowOffset: { width: 0, height: -10 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 10,
   },
   tabBarViewStyle: {
     width: width / 5,
@@ -443,32 +550,77 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   topTextStyle: {
-    ...theme.viewStyles.text('SB', 15, theme.colors.WHITE, 1, 18),
+    ...theme.viewStyles.text('SB', 15, theme.colors.LIGHT_BLUE, 1, 18),
     textAlign: 'center',
     alignSelf: 'center',
-    marginHorizontal: 10,
+    marginLeft: 10,
   },
   bottomCardView: {
-    ...theme.viewStyles.cardViewStyle,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 15,
     flexDirection: 'row',
-    minHeight: 59,
+    backgroundColor: '#FAFEFF',
+    borderWidth: 1,
+    borderColor: '#D4D4D4',
+    borderRadius: 6,
+    minHeight: 58,
+    width: width / 2 - 20,
+    marginRight: 12,
+    marginBottom: 12,
+    justifyContent: 'center',
+    flex: 1,
+  },
+  bottom2CardView: {
+    minHeight: 90,
     width: width / 2 - 22,
     marginRight: 12,
     marginBottom: 12,
+    borderWidth: 1,
+    borderStyle: 'solid',
+    borderColor: '#7EA2AD',
+    borderRadius: 6,
+    padding: 4,
+    justifyContent: 'center',
+    backgroundColor: theme.colors.BLUE_FADED_FLAT,
+  },
+  bottom2SubCardView: {
+    flexDirection: 'row',
+    marginTop: 'auto',
+    borderRadius: 4,
+    height: 28,
   },
   bottomImageView: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 10,
-    flex: 0.5,
+    marginHorizontal: 4,
+    flex: 0.2,
   },
   bottomTextView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    marginLeft: 2,
+    flex: 0.65,
+  },
+  bottomRightArrowView: {
+    flex: 0.15,
+    marginRight: 4,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+  },
+  bottom2TextView: {
     alignItems: 'flex-start',
     justifyContent: 'center',
-    marginRight: 6,
-    flex: 1,
+    marginLeft: 4,
+  },
+  bottom2ImageView: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 6,
+    marginRight: 2,
+  },
+  bottom2SubImage: {
+    height: 18,
+    width: 18,
+    resizeMode: 'contain',
   },
   covidSubContainer: {
     flexDirection: 'row',
@@ -520,12 +672,13 @@ const styles = StyleSheet.create({
   },
   circleContainer: {
     backgroundColor: theme.colors.WHITE,
-    marginTop: 15,
-    marginBottom: 10,
-    padding: 6,
-    width: '100%',
+    marginTop: 6,
+    marginHorizontal: 16,
+    paddingHorizontal: 6,
     alignSelf: 'center',
-    paddingTop: 15,
+    paddingVertical: 6,
+    borderRadius: 6,
+    width: '93%',
   },
 
   circleCardsContainer: {
@@ -548,7 +701,7 @@ const styles = StyleSheet.create({
     borderStyle: 'solid',
     borderColor: '#FC9916',
     padding: 8,
-    borderRadius: 12,
+    borderRadius: 6,
     alignItems: 'center',
   },
   circleCardsTexts: {
@@ -625,13 +778,16 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   activeAppointmentsContainer: {
-    marginTop: 20,
-    marginBottom: 20,
-    shadowColor: '#4c808080',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.4,
-    shadowRadius: 5,
-    elevation: 5,
+    shadowColor: theme.colors.SHADOW_GRAY,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
+    marginVertical: 10,
+    borderColor: '#D4D4D4',
+    borderWidth: 1,
+    borderRadius: 6,
+    backgroundColor: '#FAFEFF',
   },
   covidIconStyle: {
     marginLeft: 10,
@@ -672,18 +828,77 @@ const styles = StyleSheet.create({
   },
   proHealthBannerTouch: {
     backgroundColor: theme.colors.CLEAR,
-    borderRadius: 12,
-    marginTop: 10,
-    marginHorizontal: 28,
-    marginBottom: 15,
+    borderRadius: 6,
+    borderWidth: 0.5,
+    borderColor: '#D4D4D4',
+    marginTop: 8,
+    marginHorizontal: 26,
+    marginBottom: 12,
     padding: 0,
-    width: width - 40,
+    width: width - 36,
     alignSelf: 'center',
-    height: 180,
+    height: 150,
   },
   proHealthBannerImage: {
-    height: 180,
+    height: 150,
     width: '100%',
+  },
+  countContainer: {
+    height: 40,
+    width: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#EAF6FF',
+    borderRadius: 6,
+  },
+  recentOrSuggestContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 16,
+    paddingVertical: 8,
+  },
+  scrollView: {
+    flex: 1,
+    backgroundColor: theme.colors.WHITE,
+  },
+  searchResMainContainer: {
+    width: width - 32,
+    marginBottom: 2,
+    paddingVertical: 8,
+    marginRight: 8,
+    backgroundColor: '#fff',
+    justifyContent: 'flex-start',
+  },
+  searchRowHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 12,
+    paddingVertical: 8,
+    borderRadius: 4,
+  },
+  viewAllContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 'auto',
+    justifyContent: 'space-between',
+  },
+  searchItemIcon: {
+    paddingVertical: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderStyle: 'solid',
+    borderColor: '#E6E6E6',
+    width: 36,
+    height: 36,
+  },
+  searchItemText: {
+    padding: 4,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    flex: 0.8,
+    marginLeft: 4,
   },
   askApolloView: {
     flexDirection: 'row',
@@ -742,6 +957,10 @@ type menuOptions = {
   id: number;
   title: string;
   image: React.ReactNode;
+  subtitle?: string;
+  image2?: React.ReactNode;
+  subCardColor?: string;
+  subtitleColor?: string;
   onPress: () => void;
 };
 
@@ -779,8 +998,8 @@ export const tabBarOptions: TabBarOptions[] = [
   },
 ];
 
-export interface ConsultRoomProps extends NavigationScreenProps {}
-export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
+export interface HomeScreenProps extends NavigationScreenProps {}
+export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const { isIphoneX } = DeviceHelper();
   const {
     setLocationDetails,
@@ -798,7 +1017,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     phrNotificationData,
     setCircleSubscription,
     setHdfcUpgradeUserSubscriptions,
-    setAxdcCode,
     setCirclePlanId,
     healthCredits,
     setHealthCredits,
@@ -816,6 +1034,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setActiveUserSubscriptions,
     corporateSubscriptions,
     setCorporateSubscriptions,
+    locationForDiagnostics,
+    diagnosticServiceabilityData,
+    axdcCode,
+    homeBannerOfferSection,
+    offersList,
+    offersListLoading,
+    recentGlobalSearchList,
+    setRecentGlobalSearchList,
+    myDoctorsCount,
     displayQuickBookAskApollo,
     setDisplayQuickBookAskApollo,
     displayAskApolloNumber,
@@ -826,7 +1053,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [membershipPlans, setMembershipPlans] = useState<any>([]);
   const [circleDataLoading, setCircleDataLoading] = useState<boolean>(true);
-  const { getPatientApiCall } = useAuth();
+  const { getPatientApiCall, buildApolloClient, validateAndReturnAuthToken } = useAuth();
   const [selectedProfile, setSelectedProfile] = useState<string>('');
   const [isLocationSearchVisible, setLocationSearchVisible] = useState(false);
   const [showList, setShowList] = useState<boolean>(false);
@@ -841,6 +1068,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [vaccinationSubscriptionName, setVaccinationSubscriptionName] = useState<string>('');
   const [vaccinationSubscriptionPlanId, setVaccinationSubscriptionPlanId] = useState<string>('');
   const [agreedToVaccineTnc, setAgreedToVaccineTnc] = useState<string>('');
+  const [isSearchFocus, setIsSearchFocus] = useState(false);
+  const [searchLoading, setSearchLoading] = useState<boolean>(false);
+  const _searchInputRef = useRef(null);
+  const [searchText, setSearchText] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState({});
+  const testSearchResults = useRef<
+    searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
+  >([]);
+  const medSearchResults = useRef<MedicineProduct[]>([]);
+  const consultSearchResults = useRef<any[]>([]);
   const [token, setToken] = useState<string | null>('');
   const [userMobileNumber, setUserMobileNumber] = useState<string | null>('');
 
@@ -849,9 +1087,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   >('' | 0);
   const [proActiveAppointments, setProHealthActiveAppointment] = useState([] as any);
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
-
-  const { refreeReward, setRefreeReward } = useReferralProgram();
-
+  const { APP_ENV } = AppConfig;
+  const { refreeReward, setRefreeReward, setRewardId, setCampaignId } = useReferralProgram();
+  const [isReferrerAvailable, setReferrerAvailable] = useState<boolean>(false);
   const {
     cartItems: shopCartItems,
     setHdfcPlanName,
@@ -870,6 +1108,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     pharmacyCircleAttributes,
     setIsCircleExpired,
     circleSubPlanId,
+    pinCode,
+    isPharmacyPincodeServiceable,
   } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
@@ -883,7 +1123,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [enableCM, setEnableCM] = useState<boolean>(true);
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [isWEGFired, setWEGFired] = useState(false);
-  const [serviceable, setserviceable] = useState<String>('');
   const [renewNow, setRenewNow] = useState<String>('');
   const [isCircleMember, setIsCircleMember] = useState<String>('');
   const [circleSavings, setCircleSavings] = useState<number>(-1);
@@ -896,6 +1135,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   let circleActivated = props.navigation.getParam('circleActivated');
   const circleActivatedRef = useRef<boolean>(circleActivated);
   const [referAndEarnPrice, setReferAndEarnPrice] = useState('100');
+  const scrollCount = useRef<number>(0);
 
   //prohealth
   const [isProHealthActive, setProHealthActive] = useState<boolean>(false);
@@ -909,6 +1149,23 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const webengage = new WebEngage();
   const client = useApolloClient();
   const hdfc_values = string.Hdfc_values;
+
+  //cache and storage
+
+  const [recentSearches, setRecentSearches] = useState<string[]>([
+    'Some recent search',
+    'cbc',
+    'covid',
+  ]);
+  const [suggestSearches, setSuggestSearches] = useState<string[]>([
+    'Some suggest search',
+    'covid',
+    'cipla',
+  ]);
+
+  const [offersListCache, setOffersListCache] = useState<any[]>([]);
+  const [appointmentCountCache, setAppointmentCountCache] = useState<string>('0');
+  const [isCircleMemberCache, setIsCircleMemberCache] = useState<String>('');
 
   const saveDeviceNotificationToken = async (id: string) => {
     try {
@@ -944,11 +1201,37 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       'ShareMedia' // share url protocol (must be unique to your app, suggest using your apple bundle id)
     );
 
+    handleCachedData();
     getPatientApiCall();
     setVaccineLoacalStorageData();
     cleverTapEventForLoginDone();
     fetchUserAgent();
   }, []);
+
+  const handleSearchClose = () => {
+    if (isSearchFocus || searchText?.length > 0) {
+      onCancelTextClick();
+      return true;
+    } else return false;
+  };
+
+  useEffect(() => {
+    const handler = BackHandler.addEventListener('hardwareBackPress', handleSearchClose);
+    return () => handler.remove();
+  }, [isSearchFocus, searchText]);
+
+  const handleCachedData = async () => {
+    const cacheDataStringBuffer = await appGlobalCache.getAll();
+    const offersListStringBuffer = cacheDataStringBuffer?.offersList?.value || '[]';
+    setOffersListCache(JSON.parse(offersListStringBuffer));
+
+    const count = cacheDataStringBuffer?.appointmentCount?.value || '0';
+    setAppointmentCountCache(count);
+    console.log('csk', count);
+
+    const isCircleMembers = (await AsyncStorage.getItem('isCircleMember')) || '';
+    setIsCircleMember(isCircleMembers);
+  };
 
   const fetchUserAgent = () => {
     try {
@@ -1007,18 +1290,36 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
+  const beforeRedirectGetRewardIdAndCampaignId = async () => {
+    try {
+      const responseCampaign = await client.query({
+        query: GET_CAMPAIGN_ID_FOR_REFERRER,
+        variables: { camp: 'HC_CAMPAIGN' },
+        fetchPolicy: 'no-cache',
+      });
+      const responseReward = await client.query({
+        query: GET_REWARD_ID,
+        variables: { reward: 'HC' },
+        fetchPolicy: 'no-cache',
+      });
+      if (responseCampaign?.data?.getCampaignInfoByCampaignType?.id) {
+        const campaignId = responseCampaign?.data?.getCampaignInfoByCampaignType?.id;
+        setCampaignId?.(campaignId);
+      }
+      if (responseReward?.data?.getRewardInfoByRewardType?.id) {
+        const rewardId = responseReward?.data?.getRewardInfoByRewardType?.id;
+        setRewardId?.(rewardId);
+      }
+      props.navigation.navigate('ShareReferLink');
+    } catch (e) {}
+  };
+
   useEffect(() => {
     if (currentPatient?.id) {
       saveDeviceNotificationToken(currentPatient.id);
     }
   }, [currentPatient]);
   const phrNotificationCount = getPhrNotificationAllCount(phrNotificationData!);
-
-  useEffect(() => {
-    //TODO: if deeplinks is causing issue comment handleDeepLink here and uncomment in SplashScreen useEffect
-    // handleDeepLink(props.navigation);
-    isserviceable();
-  }, [locationDetails, currentPatient]);
 
   const askLocationPermission = () => {
     showAphAlert!({
@@ -1062,24 +1363,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       ],
     });
   };
-
-  async function isserviceable() {
-    if (locationDetails && locationDetails.pincode) {
-      await pinCodeServiceabilityApi247(locationDetails.pincode!)
-        .then(({ data: { response } }) => {
-          const { servicable, axdcCode } = response;
-          setAxdcCode && setAxdcCode(axdcCode);
-          if (servicable) {
-            setserviceable('Yes');
-          } else {
-            setserviceable('No');
-          }
-        })
-        .catch((e) => {
-          setserviceable('No');
-        });
-    }
-  }
 
   const setVaccineLoacalStorageData = () => {
     AsyncStorage.getItem('hasAgreedVaccineTnC').then((data) => {
@@ -1192,7 +1475,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, [upgradePlans]);
 
   const checkApisToCall = () => {
-    isserviceable();
     currentPatient && saveDeviceNotificationToken(currentPatient.id);
     const params = homeScreenParamsOnPop.current;
     if (!params?.isFreeConsult && !params?.isReset && currentPatient) {
@@ -1425,7 +1707,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       eventName == WebEngageEventName.BUY_MEDICINES
     ) {
       (eventAttributes as PatientInfoWithSource)['Pincode'] = locationDetails.pincode;
-      (eventAttributes as PatientInfoWithSource)['Serviceability'] = serviceable;
+      (eventAttributes as PatientInfoWithSource)['Serviceability'] = isPharmacyPincodeServiceable
+        ? 'Yes'
+        : 'No';
     }
     if (eventName == WebEngageEventName.BUY_MEDICINES) {
       eventAttributes = {
@@ -1493,7 +1777,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       (eventName == CleverTapEventName.BUY_MEDICINES ||
         eventName == CleverTapEventName.ORDER_TESTS ||
         eventName == CleverTapEventName.VIEW_HELATH_RECORDS ||
-        eventName == CleverTapEventName.NEED_HELP)
+        eventName == CleverTapEventName.NEED_HELP ||
+        eventName == CleverTapEventName.OFFERS_CTA_CLICKED)
     ) {
       (eventAttributes as HomeScreenAttributes)['Source'] = source;
     }
@@ -1503,7 +1788,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       eventName == CleverTapEventName.BUY_MEDICINES
     ) {
       (eventAttributes as HomeScreenAttributes)['Pincode'] = locationDetails?.pincode || undefined;
-      (eventAttributes as HomeScreenAttributes)['Serviceability'] = serviceable || undefined;
+      (eventAttributes as HomeScreenAttributes)['Serviceability'] = isPharmacyPincodeServiceable
+        ? 'Yes'
+        : 'No';
     }
     if (eventName == CleverTapEventName.BUY_MEDICINES) {
       eventAttributes = {
@@ -1547,7 +1834,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         'Nav src': 'app launch',
       };
     }
-    if (eventName == CleverTapEventName.COVID_VACCINATION_SECTION_CLICKED) {
+    if (
+      eventName == CleverTapEventName.COVID_VACCINATION_SECTION_CLICKED ||
+      CleverTapEventName.OFFERS_CTA_CLICKED
+    ) {
       eventAttributes = { ...eventAttributes, ...attributes };
     }
     postCleverTapEvent(eventName, eventAttributes);
@@ -1613,7 +1903,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       eventName == FirebaseEventName.BUY_MEDICINES
     ) {
       (eventAttributes as PatientInfoWithSourceFirebase)['Pincode'] = locationDetails.pincode;
-      (eventAttributes as PatientInfoWithSourceFirebase)['Serviceability'] = serviceable;
+      (eventAttributes as PatientInfoWithSourceFirebase)[
+        'Serviceability'
+      ] = isPharmacyPincodeServiceable ? 'Yes' : 'No';
     }
     if (eventName == FirebaseEventName.BUY_MEDICINES) {
       eventAttributes = { ...eventAttributes, ...pharmacyCircleAttributes };
@@ -1641,33 +1933,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const listOptions: menuOptions[] = [
     {
       id: 1,
-      title: 'Book Apollo Doctor Appointment',
-      image: <DoctorIcon style={[styles.menuOptionIconStyle]} />,
-      onPress: () => {
-        postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
-        postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
-        postHomeCleverTapEvent(
-          CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED,
-          'Home Screen',
-          {},
-          'Primary'
-        );
-        props.navigation.navigate(AppRoutes.DoctorSearch, {
-          isOnlineConsultMode: true,
-          consultTypeCta: 'Primary',
-        });
-        //props.navigation.navigate(AppRoutes.PostShareAppointmentSelectorScreen);
-      },
-    },
-    {
-      id: 2,
-      title: 'Buy Medicines & Essentials',
-      image: <MedicineCartIcon style={[styles.menuOptionIconStyle]} />,
+      title: 'Buy Medicines and Essentials',
+      image: <MedicineHomeIcon style={[styles.menuOptionIconStyle]} />,
+      subCardColor: '#EAF6FF',
+      subtitleColor: '#2D6E85',
+      subtitle: 'Health Credits Available',
+      image2: <WalletHomeHC style={styles.bottom2SubImage} />,
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Home Screen');
         postHomeCleverTapEvent(CleverTapEventName.BUY_MEDICINES, 'Home Screen');
-        props.navigation.navigate('MEDICINES', { focusSearch: true });
+        props.navigation.navigate('MEDICINES', { focusSearch: true, comingFrom: '247 Home CTA' });
         const eventAttributes:
           | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
           | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
@@ -1681,9 +1957,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       },
     },
     {
-      id: 3,
+      id: 2,
       title: 'Book Lab Tests',
-      image: <TestsCartIcon style={styles.menuOptionIconStyle} />,
+      image: <LabTestBrownIcon style={styles.menuOption2IconStyle} />,
+      image2: <PercentOffBrownIcon style={styles.bottom2SubImage} />,
+      subtitle: 'Upto 60% Off',
+      subCardColor: 'rgba(254, 231, 218, 0.6)',
+      subtitleColor: '#A05D1F',
       onPress: () => {
         const homeScreenAttributes = {
           'Nav src': 'hero banner',
@@ -1696,26 +1976,28 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       },
     },
     {
-      id: 4,
-      title: 'View Health Records',
-      image: (
-        <View>
-          <PrescriptionMenu style={styles.menuOptionIconStyle} />
-          {renderBadgeView()}
-        </View>
-      ),
+      id: 3,
+      title: 'Consult a Doctor',
+      image: <DoctorIcon style={[styles.menuOption2IconStyle]} />,
+      image2: <TimeGreenIcon style={styles.bottom2SubImage} />,
+      subtitle: 'Consult in 15 mins',
+      subCardColor: '#E6FFFD',
+      subtitleColor: '#1FA098',
       onPress: () => {
-        postHomeFireBaseEvent(FirebaseEventName.VIEW_HELATH_RECORDS, 'Home Screen');
-        postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Home Screen');
-        postHomeCleverTapEvent(CleverTapEventName.VIEW_HELATH_RECORDS, 'Home Screen');
-        props.navigation.navigate('HEALTH RECORDS');
+        postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
+        postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
+        postHomeCleverTapEvent(
+          CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED,
+          'Home Screen'
+        );
+        props.navigation.navigate(AppRoutes.DoctorSearch);
+        //props.navigation.navigate(AppRoutes.PostShareAppointmentSelectorScreen);
       },
     },
-
     {
-      id: 5,
+      id: 4,
       title: 'Book Doctor by Symptoms',
-      image: <Symptomtracker style={styles.menuOptionIconStyle} />,
+      image: <Symptomtracker style={styles.menuOption2SubIconStyle} />,
       onPress: () => {
         const eventAttributes:
           | WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_PAGE_CLICKED]
@@ -1735,14 +2017,21 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         props.navigation.navigate(AppRoutes.SymptomTracker);
       },
     },
-  ];
-
-  const listValues: menuOptions[] = [
-    ...listOptions,
+    {
+      id: 5,
+      title: 'Book Covid Vaccination',
+      image: <BookVaccineIcon style={styles.menuOption2SubIconStyle} />,
+      onPress: () => {
+        const itemTo = covidVaccineCtaV2?.data?.filter(
+          (item: any) => item?.title === 'Book Vaccination Slot'
+        );
+        handleCovidCTA(itemTo?.[0] || {});
+      },
+    },
     {
       id: 6,
       title: 'Manage Diabetes',
-      image: <Diabetes style={styles.menuOptionIconStyle} />,
+      image: <Diabetes style={styles.menuOption2SubIconStyle} />,
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.MANAGE_DIABETES, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.MANAGE_DIABETES);
@@ -1752,12 +2041,32 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     },
   ];
 
+  const listValues: menuOptions[] = [
+    ...listOptions,
+    {
+      id: 7,
+      title: 'View Health Records',
+      image: (
+        <View>
+          <PrescriptionMenu style={styles.menuOption2SubIconStyle} />
+          {renderBadgeView()}
+        </View>
+      ),
+      onPress: () => {
+        postHomeFireBaseEvent(FirebaseEventName.VIEW_HELATH_RECORDS, 'Home Screen');
+        postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Home Screen');
+        postHomeCleverTapEvent(CleverTapEventName.VIEW_HELATH_RECORDS, 'Home Screen');
+        props.navigation.navigate('HEALTH RECORDS');
+      },
+    },
+  ];
+
   const listValuesForProHealth: menuOptions[] = [
     ...listOptions,
     {
-      id: 6,
+      id: 7,
       title: 'ProHealth',
-      image: <ProHealthIcon style={styles.menuOptionIconStyle} />,
+      image: <ProHealthIcon style={styles.menuOption2SubIconStyle} />,
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.PROHEALTH, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.PROHEALTH);
@@ -1787,6 +2096,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     checkCircleSelectedPlan();
     setBannerData && setBannerData([]);
     getAskApolloLeadConfig();
+    firebaseRemoteConfigForReferrer();
   }, []);
 
   const checkCircleSelectedPlan = async () => {
@@ -1823,7 +2133,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
             let corporatePlan: SubscriptionData[] = [];
             Object.keys(groupPlans).forEach((plan_name) => {
-              if (plan_name !== 'APOLLO' && plan_name !== 'HDFC') {
+              if (
+                plan_name !== 'APOLLO' &&
+                plan_name !== 'HDFC' &&
+                plan_name !== 'APOLLO_CONSULT'
+              ) {
                 groupPlans[plan_name]?.forEach((subscription) => {
                   const plan = setSubscriptionData(subscription, false, true);
                   corporatePlan.push(plan);
@@ -2047,6 +2361,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         mobile_number: g(currentPatient, 'mobileNumber'),
         status: ['active', 'deferred_active', 'deferred_inactive', 'disabled'],
       };
+
       const res = await client.query<GetSubscriptionsOfUserByStatus>({
         query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
         fetchPolicy: 'no-cache',
@@ -2054,6 +2369,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       });
 
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+
       if (data) {
         let activeSubscriptions = {};
         Object.keys(data).forEach((subscription) => {
@@ -2118,6 +2434,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             source_identifier: circleData?.source_meta_data?.source_identifier,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
+          console.log('csk ren', circleData?.renewNow);
           setRenewNow(circleData?.renewNow ? 'yes' : 'no');
           setCirclePlanId && setCirclePlanId(circleData?.plan_id);
           setCircleStatus && setCircleStatus(circleData?.status);
@@ -2487,12 +2804,21 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       .then((data) => {
         const count = data?.data?.getPatientFutureAppointmentCount?.activeConsultsCount || 0;
         setCurrentAppointments(`${count}`);
+        appGlobalCache.set('appointmentCount', JSON.stringify(count));
+        setAppointmentCountCache(JSON.stringify(count));
         setAppointmentLoading(false);
       })
       .catch((e) => {
         CommonBugFender('ConsultRoom_getPatientFutureAppointmentCount', e);
       })
       .finally(() => setAppointmentLoading(false));
+  };
+
+  const firebaseRemoteConfigForReferrer = async () => {
+    try {
+      const bannerConfig = await remoteConfig().getValue('Referrer_Banner');
+      setReferrerAvailable(bannerConfig.asBoolean());
+    } catch (e) {}
   };
 
   useEffect(() => {
@@ -2504,7 +2830,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setshowPopUp(true);
         setTimeout(() => {
           setshowPopUp(false);
-          CommonLogEvent(AppRoutes.ConsultRoom, 'ConsultRoom_BottomPopUp clicked');
+          CommonLogEvent(AppRoutes.HomeScreen, 'ConsultRoom_BottomPopUp clicked');
           AsyncStorage.setItem('gotIt', 'true');
           checkUserRegisterThroughReferral();
         }, 5000);
@@ -2843,76 +3169,110 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderBottomTabBar = () => {
     return (
-      <View style={[styles.tabBarMainViewStyle, { height: showPopUp ? 0 : isIphoneX() ? 87 : 57 }]}>
-        {tabBarOptions.map((tabBarOptions, i) => (
-          <View key={i}>
-            <TouchableOpacity
-              activeOpacity={1}
-              key={i}
-              onPress={() => {
-                if (i === 0) {
-                  postHomeFireBaseEvent(FirebaseEventName.TABBAR_APPOINTMENTS_CLICKED, 'Menu');
-                  postHomeWEGEvent(WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED, 'Menu');
-                  postHomeCleverTapEvent(CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS, 'Menu');
-                  CommonLogEvent(AppRoutes.ConsultRoom, 'APPOINTMENTS clicked');
-                  props.navigation.navigate('APPOINTMENTS');
-                } else if (i == 1) {
-                  postHomeFireBaseEvent(FirebaseEventName.VIEW_HELATH_RECORDS, 'Menu');
-                  postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Menu');
-                  postHomeCleverTapEvent(CleverTapEventName.VIEW_HELATH_RECORDS, 'Menu');
-                  CommonLogEvent(AppRoutes.ConsultRoom, 'HEALTH_RECORDS clicked');
-                  props.navigation.navigate('HEALTH RECORDS');
-                } else if (i == 2) {
-                  postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Menu');
-                  postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Menu');
-                  postHomeCleverTapEvent(CleverTapEventName.BUY_MEDICINES, 'Menu');
-                  CommonLogEvent(AppRoutes.ConsultRoom, 'MEDICINES clicked');
-                  const eventAttributes:
-                    | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
-                    | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
-                    'Nav src': 'app home',
-                  };
-                  setTimeout(
-                    () =>
-                      postCleverTapEvent(
-                        CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED,
-                        eventAttributes
-                      ),
-                    500
-                  );
-                  postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
-                  props.navigation.navigate('MEDICINES');
-                } else if (i == 3) {
-                  const homeScreenAttributes = {
-                    'Nav src': 'Bottom bar',
-                    'Page Name': 'Home Screen',
-                    Source: DiagnosticHomePageSource.TAB_BAR,
-                  };
-                  postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Menu');
-                  postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Menu');
-                  CommonLogEvent(AppRoutes.ConsultRoom, 'TESTS clicked');
-                  props.navigation.navigate('TESTS', { homeScreenAttributes });
-                } else if (i == 4) {
-                  postHomeCleverTapEvent(CleverTapEventName.MY_ACCOUNT, 'Menu');
-                  postHomeFireBaseEvent(FirebaseEventName.MY_ACCOUNT, 'Menu');
-                  postHomeWEGEvent(WebEngageEventName.MY_ACCOUNT);
-                  CommonLogEvent(AppRoutes.ConsultRoom, 'MY_ACCOUNT clicked');
-                  props.navigation.navigate('MY ACCOUNT');
-                }
-              }}
-            >
-              <View style={styles.tabBarViewStyle} key={i}>
-                <View>
-                  {tabBarOptions.image}
-                  {i === 1 && renderBadgeView()}
+      <View>
+        <View
+          style={{
+            height: 0.5,
+            backgroundColor: '#D4D4D4',
+            marginHorizontal: -16,
+          }}
+        />
+        <View
+          style={[styles.tabBarMainViewStyle, { height: showPopUp ? 0 : isIphoneX() ? 87 : 57 }]}
+        >
+          {tabBarOptions.map((tabBarOptions, i) => (
+            <View key={i}>
+              <TouchableOpacity
+                activeOpacity={1}
+                key={i}
+                onPress={() => {
+                  if (i === 0) {
+                    postHomeFireBaseEvent(FirebaseEventName.TABBAR_APPOINTMENTS_CLICKED, 'Menu');
+                    postHomeWEGEvent(WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED, 'Menu');
+                    postHomeCleverTapEvent(CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS, 'Menu');
+                    CommonLogEvent(AppRoutes.HomeScreen, 'APPOINTMENTS clicked');
+                    props.navigation.navigate('APPOINTMENTS');
+                  } else if (i == 1) {
+                    postHomeFireBaseEvent(FirebaseEventName.VIEW_HELATH_RECORDS, 'Menu');
+                    postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Menu');
+                    postHomeCleverTapEvent(CleverTapEventName.VIEW_HELATH_RECORDS, 'Menu');
+                    CommonLogEvent(AppRoutes.HomeScreen, 'HEALTH_RECORDS clicked');
+                    props.navigation.navigate('HEALTH RECORDS');
+                  } else if (i == 2) {
+                    postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Menu');
+                    postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Menu');
+                    postHomeCleverTapEvent(CleverTapEventName.BUY_MEDICINES, 'Menu');
+                    CommonLogEvent(AppRoutes.HomeScreen, 'MEDICINES clicked');
+                    const eventAttributes:
+                      | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
+                      | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
+                      source: 'app home',
+                    };
+                    setTimeout(
+                      () =>
+                        postCleverTapEvent(
+                          CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED,
+                          eventAttributes
+                        ),
+                      500
+                    );
+                    postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
+                    props.navigation.navigate('MEDICINES', { comingFrom: '247 Home bottom bar' });
+                  } else if (i == 3) {
+                    const homeScreenAttributes = {
+                      'Nav src': 'Bottom bar',
+                      'Page Name': 'Home Screen',
+                      Source: DiagnosticHomePageSource.TAB_BAR,
+                    };
+                    postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Menu');
+                    postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Menu');
+                    CommonLogEvent(AppRoutes.HomeScreen, 'TESTS clicked');
+                    props.navigation.navigate('TESTS', { homeScreenAttributes });
+                  } else if (i == 4) {
+                    postHomeCleverTapEvent(CleverTapEventName.MY_ACCOUNT, 'Menu');
+                    postHomeFireBaseEvent(FirebaseEventName.MY_ACCOUNT, 'Menu');
+                    postHomeWEGEvent(WebEngageEventName.MY_ACCOUNT);
+                    CommonLogEvent(AppRoutes.HomeScreen, 'MY_ACCOUNT clicked');
+                    props.navigation.navigate('MY ACCOUNT');
+                  }
+                }}
+              >
+                <View style={styles.tabBarViewStyle} key={i}>
+                  <View>
+                    {tabBarOptions.image}
+                    {i === 1 && renderBadgeView()}
+                  </View>
+                  <Text style={styles.tabBarTitleStyle}>{tabBarOptions.title}</Text>
                 </View>
-                <Text style={styles.tabBarTitleStyle}>{tabBarOptions.title}</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        ))}
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
       </View>
     );
+  };
+
+  const saveRecentSearchTerm = async (search: string) => {
+    const authToken: string = await validateAndReturnAuthToken();
+    const apolloClient = buildApolloClient(authToken);
+    apolloClient
+      .mutate<saveRecentVariables>({
+        mutation: SAVE_RECENT_SEARCH,
+        variables: {
+          searchText: search,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((i) => {
+        const listToAdd: string[] =
+          recentGlobalSearchList.length > 3
+            ? recentGlobalSearchList.slice(0, 3)
+            : recentGlobalSearchList;
+        setRecentGlobalSearchList && setRecentGlobalSearchList([{ text: search }, ...listToAdd]);
+      })
+      .catch((e) => {
+        CommonBugFender('HomeScreen_SaveSearchAPIFailure', e);
+      });
   };
 
   const renderProfileDrop = () => {
@@ -2924,53 +3284,36 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         saveUserChange={true}
         cleverTapProfileClickEvent={() => cleverTapEventForProfileClick()}
         cleverTapEventForAddMemberClick={() => cleverTapEventForAddMemberClick()}
-        childView={
-          <View
-            style={{
-              flexDirection: 'row',
-              paddingRight: 8,
-              borderRightWidth: 0,
-              borderRightColor: 'rgba(2, 71, 91, 0.2)',
-            }}
-          >
-            {currentPatient?.gender === Gender.MALE ? (
-              !!circleSubscriptionId ? (
-                <MaleCircleIcon style={styles.profileIcon} />
-              ) : (
-                <MaleIcon style={styles.profileIcon} />
-              )
-            ) : !!circleSubscriptionId ? (
-              <FemaleCircleIcon style={styles.profileIcon} />
-            ) : (
-              <FemaleIcon style={styles.profileIcon} />
-            )}
-            <Text style={styles.hiTextStyle}>{'hi'}</Text>
-            <View style={styles.nameTextContainerStyle}>
-              <View style={{ flexDirection: 'row', flex: 1 }}>
-                <Text style={styles.nameTextStyle} numberOfLines={1}>
-                  {currentPatient?.firstName || ''}
-                </Text>
-                {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
-                  <LinkedUhidIcon
-                    style={{
-                      width: 22,
-                      height: 20,
-                      marginLeft: 5,
-                      marginTop: Platform.OS === 'ios' ? 16 : 20,
-                    }}
-                    resizeMode={'contain'}
-                  />
-                ) : null}
-                <View style={{ paddingTop: 12, marginLeft: 6 }}>
-                  <DropdownGreen />
-                </View>
-              </View>
-              {currentPatient && <View style={styles.seperatorStyle} />}
-            </View>
-          </View>
-        }
+        childView={renderProfileIconAsChildView()}
         unsetloaderDisplay={true}
       />
+    );
+  };
+
+  const renderProfileIconAsChildView = () => {
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          paddingRight: 8,
+          marginLeft: 4,
+          borderRightColor: 'rgba(2, 71, 91, 0.2)',
+          alignItems: 'flex-end',
+        }}
+      >
+        <Text style={styles.hiTextStyle}>{'hi'}</Text>
+        <View style={styles.nameTextContainerStyle}>
+          <View style={{ flexDirection: 'row', flex: 1 }}>
+            <Text style={styles.nameTextStyle} numberOfLines={1}>
+              {currentPatient?.firstName || ''}
+            </Text>
+
+            <View style={{ padding: 6, justifyContent: 'flex-end' }}>
+              <DropDownProfile />
+            </View>
+          </View>
+        </View>
+      </View>
     );
   };
 
@@ -3064,8 +3407,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           container={[
             styles.activeAppointmentsContainer,
             {
-              marginTop: source == 'prohealth' ? 3 : 20,
-              marginBottom: source == 'prohealth' ? 3 : 20,
+              marginTop: source == 'prohealth' ? 3 : 12,
+              marginBottom: source == 'prohealth' ? 3 : 8,
             },
           ]}
           title={text}
@@ -3089,24 +3432,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderListCount = (count: string | number) => {
-    return (
-      <View
-        style={{
-          height: 40,
-          width: 40,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: theme.colors.CARD_BG,
-          borderRadius: 5,
-        }}
-      >
-        {appointmentLoading ? (
-          <Spinner style={{ backgroundColor: 'transparent' }} spinnerProps={{ size: 'small' }} />
-        ) : (
-          <Text style={{ ...theme.viewStyles.text('M', 18, theme.colors.SKY_BLUE, 1, 24, 0) }}>
-            {count}
-          </Text>
-        )}
+    return appointmentLoading && appointmentCountCache === '0' ? (
+      renderAppointmentCountShimmer()
+    ) : (
+      <View style={styles.countContainer}>
+        <Text style={{ ...theme.viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 20, 0) }}>
+          {appointmentCountCache}
+        </Text>
       </View>
     );
   };
@@ -3114,47 +3446,94 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const renderMenuOptions = () => {
     let arrayList = isProHealthActive ? listValuesForProHealth : listValues;
     return (
-      <View
-        style={{
-          flexDirection: 'row',
-          flexWrap: 'wrap',
-          marginLeft: 16,
-          marginTop: 16,
-          marginBottom: 8,
-        }}
-      >
+      <View style={styles.menuOptionsContainer}>
         {arrayList.map((item) => {
-          if (menuViewOptions.findIndex((i) => i === item.id) >= 0) {
-            if (item?.id < 3) {
+          if (
+            menuViewOptions.findIndex((i) => i === item.id) >= 0 &&
+            menuViewOptions.findIndex((i) => i === item.id) <= 2
+          ) {
+            if (item?.id === 1) {
               return (
                 <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
-                  <LinearGradientComponent
-                    style={[
-                      styles.linearGradientView,
-                      { shadowOffset: { width: 0, height: 5 }, elevation: 15 },
-                    ]}
-                  >
-                    <View style={styles.topImageView}>
+                  <View style={[styles.bottom2CardView, { width: width - 32 }]}>
+                    <View style={{ marginLeft: -11 }}>
+                      <DeliveryInIcon />
+                    </View>
+
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        marginBottom: 2,
+                        paddingVertical: 4,
+                        marginLeft: 10,
+                        justifyContent: 'flex-start',
+                        alignItems: 'center',
+                      }}
+                    >
                       {item.image}
-                      <Text style={styles.topTextStyle}>{item.title}</Text>
+                      <Text style={[styles.topTextStyle, { color: theme.colors.LIGHT_BLUE }]}>
+                        {item.title}
+                      </Text>
+
+                      <ArrowRight style={{ marginRight: 'auto' }} />
                     </View>
-                    <View style={{ marginRight: 10 }}>
-                      <WhiteArrowRightIcon />
+                    <View
+                      style={[
+                        styles.bottom2SubCardView,
+                        {
+                          backgroundColor: item.subCardColor,
+                        },
+                      ]}
+                    >
+                      <View style={styles.bottom2ImageView}>{item.image2}</View>
+                      <View style={styles.bottom2TextView}>
+                        <Text style={[theme.viewStyles.text('M', 11, item.subtitleColor!, 1, 18)]}>
+                          {healthCredits && healthCredits >= 30
+                            ? '₹' + healthCredits + ' ' + item.subtitle
+                            : 'Get 100% Genuine Medicines'}
+                        </Text>
+                      </View>
                     </View>
-                  </LinearGradientComponent>
+                  </View>
                 </TouchableOpacity>
               );
             } else {
               return (
                 <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
-                  <View style={styles.bottomCardView}>
-                    <View style={styles.bottomImageView}>{item.image}</View>
-                    <View style={styles.bottomTextView}>
-                      <Text
-                        style={[theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 18)]}
-                      >
-                        {item.title}
-                      </Text>
+                  <View style={styles.bottom2CardView}>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'flex-start',
+                        marginTop: 'auto',
+                      }}
+                    >
+                      {item.image}
+                      <View style={styles.bottom2TextView}>
+                        <Text
+                          style={[theme.viewStyles.text('SB', 14, theme.colors.LIGHT_BLUE, 1, 18)]}
+                        >
+                          {item.title}
+                        </Text>
+                      </View>
+                      <ArrowRight style={{ marginRight: 'auto' }} />
+                    </View>
+
+                    <View
+                      style={[
+                        styles.bottom2SubCardView,
+                        {
+                          backgroundColor: item.subCardColor,
+                        },
+                      ]}
+                    >
+                      <View style={styles.bottom2ImageView}>{item.image2}</View>
+                      <View style={styles.bottom2TextView}>
+                        <Text style={[theme.viewStyles.text('M', 11, item.subtitleColor!, 1, 18)]}>
+                          {item.subtitle}
+                        </Text>
+                      </View>
                     </View>
                   </View>
                 </TouchableOpacity>
@@ -3162,6 +3541,474 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             }
           }
         })}
+      </View>
+    );
+  };
+
+  const renderServicesForYouView = () => {
+    let arrayList = isProHealthActive ? listValuesForProHealth : listValues;
+    return (
+      <View style={styles.menuOptionsContainer}>
+        {arrayList.map((item) => {
+          if (item.id > 3) {
+            return (
+              <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
+                <View style={styles.bottomCardView}>
+                  <View style={styles.bottomImageView}>{item.image}</View>
+                  <View style={styles.bottomTextView}>
+                    <Text
+                      style={[theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20)]}
+                    >
+                      {item.title}
+                    </Text>
+                  </View>
+                  <View style={styles.bottomRightArrowView}>
+                    <ArrowRight />
+                  </View>
+                </View>
+              </TouchableOpacity>
+            );
+          }
+        })}
+      </View>
+    );
+  };
+
+  const renderOffersForYou = () => {
+    const offerListToRender = offersListLoading ? offersListCache : offersList;
+    if (offerListToRender?.length === 0) return null;
+    else if (offerListToRender?.length === 1 && offerListToRender?.[0]?.template_name === 'CIRCLE')
+      return circleCashbackOffersComponent();
+    else if (offerListToRender?.length === 1)
+      return medCashbackOffersComponent(offerListToRender?.[0]);
+    else if (offerListToRender?.length > 1)
+      return (
+        <View style={styles.menuOptionsContainer}>
+          <FlatList
+            horizontal={true}
+            showsHorizontalScrollIndicator={false}
+            data={offerListToRender}
+            renderItem={({ item, index }) => renderOffersCards(item, index)}
+            keyExtractor={(item, index) => index.toString() + 'offersForYou'}
+          />
+        </View>
+      );
+  };
+
+  const getTemplateStyle = (templateName: string) => {
+    const template =
+      homeBannerOfferSection && homeBannerOfferSection?.templates?.[templateName]
+        ? homeBannerOfferSection?.templates?.[templateName]
+        : AppConfig.DEFAULT_OFFERS_TEMPLATE?.templates?.[templateName];
+    const styles = template || AppConfig.DEFAULT_OFFERS_TEMPLATE?.templates?.['default'];
+
+    return styles;
+  };
+
+  const getRedirectActionForOffers = (action: string) => {
+    const actionChooser: any = {
+      pharmacy: 'PHARMACY_LANDING',
+      consulation: 'SPECIALITY_LISTING',
+      diagnostics: 'DIAGNOSTICS_LANDING',
+    };
+    return actionChooser?.[action];
+  };
+
+  const renderOffersCards = (item: any, index: number) => {
+    const textForNotch = getNotchText(item?.expired_at, item?.notch_text?.text);
+    let offerDesignTemplate = getTemplateStyle(item?.template_name);
+    return (
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={() => {
+          textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, index + 1);
+          postOfferCardClickEvent(item, String(index + 1), textForNotch == 'Offer Expired');
+        }}
+      >
+        <LinearGradientVerticalComponent
+          colors={[
+            offerDesignTemplate?.banner_bg_color?.primary_color,
+            offerDesignTemplate?.banner_bg_color?.secondary_color,
+          ]}
+          style={[
+            styles.bottom2CardView,
+            {
+              width: width / 1.9,
+              justifyContent: 'center',
+              alignItems: 'flex-start',
+              height: 165,
+              borderColor: '#D4D4D4',
+              borderWidth: 1,
+            },
+          ]}
+        >
+          {textForNotch.length > 1 ? (
+            <View
+              style={{
+                marginBottom: 4,
+                borderRadius: 4,
+                backgroundColor: offerDesignTemplate?.left_notch?.bg_color,
+                paddingHorizontal: 8,
+                justifyContent: 'center',
+                alignItems: 'center',
+                position: 'absolute',
+                top: 12,
+                left: 12,
+              }}
+            >
+              <Text
+                style={{
+                  ...theme.viewStyles.text(
+                    'M',
+                    12,
+                    offerDesignTemplate?.left_notch?.text_color,
+                    1,
+                    18
+                  ),
+                }}
+              >
+                {textForNotch.length > 24
+                  ? textForNotch?.substring(textForNotch.length - 24, textForNotch.length)
+                  : textForNotch}
+              </Text>
+            </View>
+          ) : null}
+
+          <Text
+            style={{
+              ...theme.viewStyles.text('B', 20, offerDesignTemplate?.title_text_color, 1, 30),
+              marginHorizontal: 10,
+              marginTop: 'auto',
+            }}
+          >
+            {item?.title?.text?.length > 30
+              ? item?.title?.text?.substring(0, 30)
+              : item?.title?.text}
+          </Text>
+
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 14, offerDesignTemplate?.subtitle_text_color, 1, 18),
+              marginHorizontal: 10,
+            }}
+          >
+            {item?.subtitle?.text?.length > 24
+              ? item?.subtitle?.text?.substring(0, 24)
+              : item?.subtitle?.text}
+          </Text>
+          {item?.is_active ? (
+            <View
+              style={{
+                flexDirection: 'row',
+                marginVertical: 6,
+                justifyContent: 'space-between',
+                width: '100%',
+              }}
+            >
+              <View
+                style={{
+                  marginHorizontal: 10,
+                  borderRadius: 4,
+                  borderColor: '#A15D59',
+                  borderWidth: 1,
+                  borderStyle: 'dashed',
+                  backgroundColor: '#fff',
+                  paddingVertical: 2,
+                  paddingHorizontal: 8,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginVertical: 4,
+                }}
+              >
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('M', 12, offerDesignTemplate?.coupon_color, 1, 18),
+                  }}
+                >
+                  {`Coupon: ${
+                    item?.coupon_code?.length > 12
+                      ? item?.coupon_code?.substring(0, 12)
+                      : item?.coupon_code
+                  }`}
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                style={{
+                  width: 22,
+                  height: 22,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  borderRadius: 11,
+                  backgroundColor: '#FC9916',
+                  marginVertical: 4,
+                  marginRight: 4,
+                }}
+                onPress={() =>
+                  textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, index + 1)
+                }
+              >
+                <WhiteArrowRight />
+              </TouchableOpacity>
+            </View>
+          ) : null}
+        </LinearGradientVerticalComponent>
+      </TouchableOpacity>
+    );
+  };
+
+  const postOfferCardClickEvent = (item: any, sequence: string, offerExpired: boolean) => {
+    const eventAttributes = {
+      User_Type: getUserType(allCurrentPatients),
+      'Patient Name': currentPatient?.firstName,
+      'Patient UHID': currentPatient?.uhid,
+      'Patient age': getAge(currentPatient?.dateOfBirth),
+      'Circle Member': circleSubscriptionId ? 'True' : 'False',
+      'Customer ID': currentPatient?.id,
+      'Patient gender': currentPatient?.gender,
+      'Mobile number': currentPatient?.mobileNumber,
+      'Page name': 'HomePage',
+      'Offer Content': item?.title?.text || '',
+      Timer: offerExpired ? 'No' : 'Yes',
+      'Coupon Code': item?.coupon_code,
+      'Offer tile sequence': sequence,
+      LOB: item?.cta?.path?.vertical || '',
+      'Offer Notch Test': getNotchText(item?.expired_at, item?.notch_text?.text),
+      'Offer CTA Text': item?.cta?.text,
+      'Offer Expiry': item?.expired_at,
+      'Offer ID': item?.offer_id,
+      'Offer Subtitle': item?.subtitle?.text,
+    };
+
+    postHomeCleverTapEvent(CleverTapEventName.OFFERS_CTA_CLICKED, 'Home Screen', eventAttributes);
+  };
+
+  const getNotchText = (expired_at: string, notch_text: string) => {
+    let textForNotch = '';
+    try {
+      const expiryTime = new Date(expired_at).getTime();
+      const now = new Date().getTime();
+      const diff: number = expiryTime - now;
+      let ms = diff;
+      const dd = Math.floor(ms / 1000 / 3600 / 24);
+      ms -= dd * 1000 * 60 * 60 * 24;
+      const hh = Math.floor(ms / 1000 / 3600);
+      ms -= hh * 1000 * 60 * 60;
+      const mm = Math.floor(ms / 1000 / 60);
+      textForNotch =
+        diff > 0 && hh > 0
+          ? notch_text?.replace('{time_till_expiry}', `${hh} Hrs ${mm} Min`)
+          : diff > 0 && hh === 0
+          ? notch_text?.replace('{time_till_expiry}', `${mm} Min`)
+          : 'Offer Expired';
+    } catch (e) {
+      console.log('csk error', JSON.stringify(e));
+    }
+    return textForNotch;
+  };
+
+  const medCashbackOffersComponent = (item: any) => {
+    let offerDesignTemplate = getTemplateStyle(item?.template_name);
+    const textForNotch = getNotchText(item?.expired_at, item?.notch_text?.text);
+    return (
+      <View style={styles.menuOptionsContainer}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, 1)}
+        >
+          <LinearGradientVerticalComponent
+            colors={[
+              offerDesignTemplate?.banner_bg_color?.primary_color,
+              offerDesignTemplate?.banner_bg_color?.secondary_color,
+            ]}
+            style={[styles.bottom2CardView, { width: width - 32, borderColor: '#D4D4D4' }]}
+          >
+            <View style={{ flexDirection: 'row', marginTop: -5, justifyContent: 'space-between' }}>
+              <View
+                style={{
+                  marginHorizontal: 12,
+                  marginTop: 14,
+                  borderRadius: 4,
+                  backgroundColor: offerDesignTemplate?.left_notch?.bg_color,
+                  paddingHorizontal: 4,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                <Text
+                  style={{
+                    ...theme.viewStyles.text(
+                      'R',
+                      12,
+                      offerDesignTemplate?.left_notch?.text_color,
+                      1,
+                      18
+                    ),
+                  }}
+                >
+                  {textForNotch.length > 30
+                    ? textForNotch?.substring(textForNotch.length - 30, textForNotch.length)
+                    : textForNotch}
+                </Text>
+              </View>
+
+              <View style={{ marginTop: 0.5, marginRight: 16 }}>
+                <CashbackIcon style={{ width: 21.6, height: 30 }} />
+              </View>
+            </View>
+
+            <Text
+              style={{
+                ...theme.viewStyles.text('B', 20, offerDesignTemplate?.title_text_color, 1, 30),
+                marginHorizontal: 12,
+                marginTop: 6,
+              }}
+            >
+              {item?.title?.text?.length > 30
+                ? item?.title?.text?.substring(0, 30)
+                : item?.title?.text}
+            </Text>
+
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 14, offerDesignTemplate?.subtitle_text_color, 1, 18),
+                marginHorizontal: 12,
+                marginTop: 6,
+              }}
+            >
+              {item?.subtitle?.text?.length > 30
+                ? item?.subtitle?.text?.substring(0, 30)
+                : item?.subtitle?.text}
+            </Text>
+
+            <View
+              style={{
+                flexDirection: 'row',
+                marginVertical: 12,
+                marginLeft: 12,
+                marginRight: 9,
+                justifyContent: 'space-between',
+              }}
+            >
+              <View
+                style={{
+                  borderRadius: 4,
+                  borderColor: '#A15D59',
+                  borderWidth: 1,
+                  borderStyle: 'dashed',
+                  backgroundColor: '#fff',
+                  paddingVertical: 1,
+                  paddingHorizontal: 8,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('M', 12, offerDesignTemplate?.coupon_color, 1, 18),
+                  }}
+                >
+                  {`Coupon: ${
+                    item?.coupon_code?.length > 12
+                      ? item?.coupon_code?.substring(0, 12)
+                      : item?.coupon_code
+                  }`}
+                </Text>
+              </View>
+
+              <View style={[styles.bottomRightArrowView, { flex: 0.5 }]}>
+                <Button
+                  title={item?.cta?.text}
+                  style={{
+                    width: 106,
+                    height: 32,
+                    borderRadius: 4,
+                    backgroundColor: offerDesignTemplate?.cta?.bg_color,
+                    shadowOffset: { width: 0, height: 0 },
+                    elevation: 0,
+                  }}
+                  titleTextStyle={{ color: offerDesignTemplate?.cta?.text_color }}
+                  onPress={() => textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, 1)}
+                  disabled={false}
+                />
+              </View>
+            </View>
+          </LinearGradientVerticalComponent>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const onOfferCtaPressed = (item: any, index: number) => {
+    let action = getRedirectActionForOffers(item?.cta?.path?.vertical?.toLowerCase());
+    navigateCTAActions({ type: 'REDIRECT', cta_action: action }, '');
+  };
+
+  const circleCashbackOffersComponent = () => {
+    return (
+      <View style={styles.menuOptionsContainer}>
+        <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+          <LinearGradientComponent
+            colors={['#FDFBF7', '#F5D5CE']}
+            style={[styles.bottom2CardView, { width: width - 32 }]}
+          >
+            <View style={{ flexDirection: 'row', marginTop: -5, justifyContent: 'flex-start' }}>
+              <View style={{ marginTop: 11, marginLeft: 10 }}>
+                <Image
+                  style={{ width: 46, height: 29 }}
+                  source={require('@aph/mobile-patients/src/components/ui/icons/circleLogo.webp')}
+                />
+              </View>
+
+              <View
+                style={{
+                  marginHorizontal: 10,
+                  marginTop: 11,
+                  borderRadius: 4,
+                  backgroundColor: '#CA883B',
+                  paddingHorizontal: 8,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                <Text style={{ ...theme.viewStyles.text('R', 12, '#fff', 1, 18) }}>Offer</Text>
+              </View>
+            </View>
+
+            <View
+              style={{ flexDirection: 'row', marginVertical: 6, justifyContent: 'space-between' }}
+            >
+              <View>
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('M', 17, '#958060', 1, 20),
+                    marginHorizontal: 10,
+                  }}
+                >
+                  Get ₹250 instant cashback
+                </Text>
+
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('R', 14, '#B3A293', 1, 18),
+                    marginHorizontal: 10,
+                  }}
+                >
+                  on Medicine Order
+                </Text>
+              </View>
+
+              <View style={styles.bottomRightArrowView}>
+                <Button
+                  title={`SHOP NOW`}
+                  style={{ width: 106, height: 32 }}
+                  onPress={() => {}}
+                  disabled={false}
+                />
+              </View>
+            </View>
+          </LinearGradientComponent>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -3418,7 +4265,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const onClickCircleBenefits = (
-    membershipState: 'Expired' | 'About to Expire' | 'Not Expiring',
+    membershipState: 'Expired' | 'About to Expire' | 'Not Expiring' | 'New User',
     action: any
   ) => {
     postCircleWEGEvent(
@@ -3431,6 +4278,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderCircle = () => {
+    /**
+     * CircleTypeCard0                    -> never subscribed
+     * CircleTypeCard1 && CircleTypeCard2 -> expiring soon in x days
+     * CircleTypeCard3 && CircleTypeCard4 -> latest active plans
+     * CircleTypeCard5 && CircleTypeCard6 ->  the expired plans
+     */
     const expiry = circlePlanValidity ? timeDiffDaysFromNow(circlePlanValidity?.endDate) : '';
 
     const renew = renewNow !== '' && renewNow === 'yes' ? true : false;
@@ -3439,26 +4292,28 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const cardlist = dataBannerCards(darktheme);
 
     const expired = circlePlanValidity
-      ? dateFormatterDDMM(circlePlanValidity?.endDate, 'DD/MM')
+      ? dateFormatterDDMM(circlePlanValidity?.endDate, 'DD MMM YYYY')
       : '';
 
-    {
-      /**
-       * CircleTypeCard1 && CircleTypeCard2 -> expiring in x days
-       * CircleTypeCard3 && CircleTypeCard4 -> active plans
-       * CircleTypeCard5 && CircleTypeCard6 -> expired plans
-       */
-    }
     return (
-      <View style={styles.circleContainer}>
+      <LinearGradientComponent
+        style={[
+          styles.circleContainer,
+          {
+            borderWidth: circleStatus !== 'active' ? 1 : 0,
+            borderColor: circleStatus !== 'active' ? '#F9D5B4' : '',
+          },
+        ]}
+        colors={circleStatus === 'disabled' ? ['#FFEEDB', '#FFFCFA'] : ['#fff', '#fff']}
+      >
         {expiry > 0 && circleStatus === 'active' && renew && circleSavings > 0 ? (
           <CircleTypeCard1
             onButtonPress={() => {
               setShowCirclePlans(true);
               onClickCircleBenefits('About to Expire', 'renew');
             }}
-            savings={circleSavings}
-            credits={healthCredits}
+            savings={circleSavings?.toString()}
+            credits={healthCredits?.toString()}
             expiry={circlePlanValidity?.expiry}
           />
         ) : expiry > 0 && circleStatus === 'active' && renew ? (
@@ -3467,7 +4322,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               setShowCirclePlans(true);
               onClickCircleBenefits('About to Expire', 'renew');
             }}
-            credits={healthCredits}
+            credits={healthCredits?.toString()}
             expiry={circlePlanValidity?.expiry}
           />
         ) : expiry > 0 && circleStatus === 'active' && !renew && circleSavings > 0 ? (
@@ -3481,8 +4336,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 circleEventSource: 'Landing Home Page',
               });
             }}
-            credits={healthCredits}
-            savings={circleSavings}
+            credits={healthCredits?.toString()}
+            savings={circleSavings?.toString()}
           />
         ) : expiry > 0 && circleStatus === 'active' && !renew ? (
           <CircleTypeCard4
@@ -3495,93 +4350,108 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 circleEventSource: 'Landing Home Page',
               });
             }}
-            credits={healthCredits}
-            savings={circleSavings}
+            credits={healthCredits?.toString()}
+            savings={circleSavings?.toString()}
           />
-        ) : circleStatus === 'disabled' && circleSavings > 0 ? (
+        ) : circleStatus !== 'disabled' && circleSavings > 0 ? (
           <CircleTypeCard5
             onButtonPress={() => {
               setShowCirclePlans(true);
               onClickCircleBenefits('Expired', 'renew');
             }}
-            savings={circleSavings}
-            credits={healthCredits}
+            savings={circleSavings?.toString()}
+            credits={healthCredits?.toString()}
             expired={expired}
             renew={renew}
           />
-        ) : circleStatus === 'disabled' ? (
+        ) : circleStatus !== 'disabled' ? (
           <CircleTypeCard6
             onButtonPress={() => {
               setShowCirclePlans(true);
               onClickCircleBenefits('Expired', 'renew');
             }}
-            savings={circleSavings}
-            credits={healthCredits}
+            savings={circleSavings?.toString()}
+            credits={healthCredits?.toString()}
             expired={expired}
             renew={renew}
           />
         ) : null}
-
-        {cardlist?.length > 0 ? (
-          <View style={[styles.circleRowsContainer, { paddingRight: 10 }]}>
-            <View style={styles.circleButtonLeft}>
-              <ImageBackground
-                style={styles.circleButtonImage}
-                source={require('../ui/icons/PathLeft.webp')}
-              />
-            </View>
-
-            <FlatList
-              horizontal={true}
-              data={cardlist}
-              renderItem={({ item }) => renderCircleCards(item, darktheme, renew)}
-              keyExtractor={(item, index) => index.toString() + 'circle'}
-            />
-
-            <View style={styles.circleButtonRight}>
-              <ImageBackground
-                style={styles.circleButtonImage}
-                source={require('../ui/icons/PathRight.webp')}
-              />
-            </View>
-          </View>
-        ) : null}
+        {/* these banners might get added in new design */}
+        {/* {renderCircleBannerCards} */}
 
         <View style={styles.circleRowsContainer}>
-          {expiry > 0 && circleSavings <= 0 ? (
-            <Text>
-              <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
-                Circle Member{' '}
-              </Text>
-              <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 1, 16) }}>
-                saves ₹848 per month.
-              </Text>
-              <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
-                {' '}
-                You can too{renew ? ' - Renew now!' : '.'}
-              </Text>
-            </Text>
-          ) : circleStatus === 'disabled' ? (
-            <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
-              You’re missing out on benefits - Renew your membership now!!!{' '}
-            </Text>
-          ) : null}
+          {/* dont delete this containes, text rows and bottom text and elements can go here when added */}
+        </View>
+      </LinearGradientComponent>
+    );
+  };
+
+  const renderCircleBuyNow = () => {
+    return (
+      <View style={[styles.circleContainer, { borderWidth: 0 }]}>
+        <CircleTypeCard7
+          onButtonPress={() => {
+            setShowCirclePlans(true);
+            onClickCircleBenefits('New User', 'renew');
+          }}
+          price={'199'}
+          validity={'6'}
+        />
+      </View>
+    );
+  };
+
+  const renderOtherResourcesMainView = () => {
+    return (
+      <View
+        style={{
+          paddingHorizontal: 18,
+        }}
+      >
+        {renderHealthArticleAndResources()}
+      </View>
+    );
+  };
+
+  const renderCircleBannerCards = (cardlist: any) => {
+    if (cardlist?.length <= 0) return null;
+    return (
+      <View style={[styles.circleRowsContainer, { paddingRight: 10 }]}>
+        <View style={styles.circleButtonLeft}>
+          <ImageBackground
+            style={styles.circleButtonImage}
+            source={require('@aph/mobile-patients/src/components/ui/icons/PathLeft.webp')}
+          />
+        </View>
+
+        <FlatList
+          horizontal={true}
+          data={cardlist}
+          renderItem={({ item }) => renderCircleCards(item, darktheme, renew)}
+          keyExtractor={(item, index) => index.toString() + 'circle'}
+        />
+
+        <View style={styles.circleButtonRight}>
+          <ImageBackground
+            style={styles.circleButtonImage}
+            source={require('@aph/mobile-patients/src/components/ui/icons/PathRight.webp')}
+          />
         </View>
       </View>
     );
   };
 
-  const renderCovidMainView = () => {
+  const renderHeadings = (title: string) => {
     return (
       <View
         style={{
-          backgroundColor: '#f0f1ec',
-          padding: 20,
-          paddingBottom: 0,
-          paddingTop: 0,
+          paddingHorizontal: 20,
+          marginTop: 16,
         }}
       >
-        {renderCovidCardView()}
+        <Text style={{ ...theme.viewStyles.text('B', 16, theme.colors.LIGHT_BLUE, undefined, 20) }}>
+          {title}
+        </Text>
       </View>
     );
   };
@@ -3601,7 +4471,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const renderCovidCardView = () => {
+  const renderHealthArticleAndResources = () => {
     return (
       <View style={styles.covidCardContainer}>
         <ImageBackground
@@ -3623,7 +4493,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             </Text>
           </View>
         </ImageBackground>
-        {/* <Image style={{ position: 'absolute', top: 24, alignSelf: 'center', width: 80, height: 80 }} source={require('@aph/mobile-patients/src/images/home/coronavirus_image.png')} /> */}
         <View style={{ padding: 16, paddingTop: 24 }}>
           {renderContent(string.common.healthBlog, string.common.healthBlogDescription)}
           {renderCovidHelpButtons()}
@@ -3770,7 +4639,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     postVaccineWidgetEvents(CleverTapEventName.READ_BLOG_VIEWED, 'Blog Widget');
     postHomeWEGEvent(WebEngageEventName.READ_ARTICLES);
     try {
-      const openUrl = AppConfig.Configuration.BLOG_URL;
+      const openUrl =
+        APP_ENV === 'PROD' ? AppConfig.Configuration.BLOG_URL : string.common.stagingBlogUrl;
+
       props.navigation.navigate(AppRoutes.CovidScan, {
         covidUrl: openUrl,
       });
@@ -3782,11 +4653,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       'CTA Clicked': item?.title,
     };
     postHomeWEGEvent(WebEngageEventName.COVID_VACCINATION_SECTION_CLICKED, undefined, attibutes);
-
-    console.log(
-      'check  ConsultRoom  handleCovidCTA vaccinationSubscriptionInclusionId ---',
-      vaccinationSubscriptionInclusionId
-    );
 
     try {
       if (item?.action === string.vaccineBooking.CORPORATE_VACCINATION) {
@@ -3973,17 +4839,20 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return (
       <View
         style={{
-          justifyContent: 'space-between',
           flexDirection: 'row',
-          paddingTop: 16,
+          alignItems: 'center',
+          justifyContent: 'space-between',
           paddingHorizontal: 16,
-          backgroundColor: theme.colors.CLEAR,
-          paddingBottom: 15,
+          paddingVertical: 10,
+          backgroundColor: '#fff',
         }}
       >
-        <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-          <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+            <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
+          </TouchableOpacity>
+          {renderProfileDrop()}
+        </View>
         <View style={{ flexDirection: 'row' }}>
           <TouchableOpacity activeOpacity={1} onPress={onPressCart}>
             <CartIcon />
@@ -4015,7 +4884,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <ImageBackground
           style={styles.proHealthBannerImage}
           source={{ uri: AppConfig.Configuration.PROHEALTH_BANNER_IMAGE }}
-          resizeMode={'stretch'}
+          resizeMode={'contain'}
           borderRadius={8}
         ></ImageBackground>
       </TouchableOpacity>
@@ -4236,63 +5105,769 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       </View>
     );
   };
-
-  /***
-   * For now this method invoke has been removed. But in future release it would be need
-   * ***/
   const renderReferralBanner = () => {
-    return <ReferralBanner {...props} />;
+    return (
+      <View
+        style={{
+          backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+          paddingTop: 7,
+          paddingHorizontal: 5,
+        }}
+      >
+        <ReferralBanner
+          {...props}
+          redirectOnShareReferrer={() => {
+            beforeRedirectGetRewardIdAndCampaignId();
+          }}
+          screenName={'Homepage'}
+        />
+      </View>
+    );
+  };
+
+  const onSearchMedicines = async (
+    searchText: string,
+    sortBy: string | null,
+    selectedFilters: {},
+    filters: MedFilter[]
+  ) => {
+    try {
+      setSearchLoading(true);
+
+      medSearchResults.current = [];
+      const res = await searchMedicineApi(
+        searchText,
+        1,
+        sortBy,
+        selectedFilters,
+        axdcCode,
+        pinCode
+      );
+
+      let finalProducts: any[] = [];
+
+      if (res?.data?.products.length > 1) {
+        finalProducts = [{ name: searchText }];
+
+        medSearchResults.current = finalProducts;
+      } else {
+        medSearchResults.current = [];
+      }
+
+      updateSearchResultList(MedicalRecordType.MEDICATION, finalProducts);
+      setSearchLoading(false);
+    } catch (error) {
+      setSearchLoading(false);
+      updateSearchResultList(MedicalRecordType.MEDICATION, []);
+    }
+  };
+
+  const onSearchTests = async (_searchText: string) => {
+    const cityId =
+      locationForDiagnostics?.cityId != ''
+        ? locationForDiagnostics?.cityId
+        : !!diagnosticServiceabilityData && diagnosticServiceabilityData?.city != ''
+        ? diagnosticServiceabilityData?.cityId
+        : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID;
+    setSearchLoading(true);
+    testSearchResults.current = [];
+    try {
+      const res = await getDiagnosticSearchResults(client, _searchText, Number(cityId), 5);
+      console.log('csk--', JSON.stringify(res));
+      let finalProducts = [];
+
+      if (res?.data?.searchDiagnosticItem) {
+        const products = res?.data?.searchDiagnosticItem?.data || [];
+
+        finalProducts = products.slice(0, 3);
+
+        testSearchResults.current = finalProducts;
+      } else {
+        testSearchResults.current = [];
+      }
+
+      updateSearchResultList(MedicalRecordType.TEST_REPORT, testSearchResults.current);
+      setSearchLoading(false);
+    } catch (error) {
+      CommonBugFender('HomeScreen_ConsultRoom', error);
+      setSearchLoading(false);
+      updateSearchResultList(MedicalRecordType.TEST_REPORT, []);
+    }
+  };
+
+  const onSearchConsults = async (_searchText: string) => {
+    if (_searchText.length > 2) {
+      setSearchLoading(true);
+
+      try {
+        let finalProducts: any[] = [];
+        const res = await getDoctorList(_searchText);
+        const doctors = res?.data?.getDoctorList?.doctors || [];
+        const specialities = res?.data?.getDoctorList?.specialties || [];
+
+        if (doctors.length !== 0 || specialities.length !== 0) {
+          const finalDoctors = doctors.slice(0, 3);
+          const finalSpecialities = specialities.slice(0, 1);
+          finalProducts = [...finalDoctors, ...finalSpecialities];
+
+          consultSearchResults.current = finalProducts;
+        } else {
+          consultSearchResults.current = [];
+        }
+
+        updateSearchResultList(MedicalRecordType.CONSULTATION, consultSearchResults.current);
+        setSearchLoading(false);
+      } catch (e) {
+        CommonBugFender('HomeScreen_ConsultRoom', e);
+        setSearchLoading(false);
+        updateSearchResultList(MedicalRecordType.CONSULTATION, []);
+      }
+    }
+  };
+
+  const getDoctorList = (searchText: string) => {
+    return client.query<getDoctorList>({
+      query: GET_DOCTOR_LIST,
+      fetchPolicy: 'no-cache',
+      variables: {
+        filterInput: {
+          pageNo: 1,
+          pageSize: 3,
+          searchText,
+        },
+      },
+    });
+  };
+
+  const updateSearchResultList = (itemKey: string, itemData: any) => {
+    // [...searchResults, { key: itemKey, data: itemData }];
+    const newState = [
+      { key: MedicalRecordType.MEDICATION, data: medSearchResults.current },
+      { key: MedicalRecordType.TEST_REPORT, data: testSearchResults.current },
+      { key: MedicalRecordType.CONSULTATION, data: consultSearchResults.current },
+    ];
+    setSearchResults(newState);
+  };
+
+  const postSearchInputEvent = (
+    status: 'Success' | 'Fail',
+    request: 'Pharma' | 'Diagnostic' | 'Consult',
+    input?: string
+  ) => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.HOMEPAGE_SEARCH_BAR_QUERY_INPUT] = {
+      User_Type: getUserType(allCurrentPatients),
+      'Patient Name': currentPatient?.firstName,
+      'Patient UHID': currentPatient?.uhid,
+      'Patient age': getAge(currentPatient?.dateOfBirth),
+      'Circle Member': circleSubscriptionId ? 'True' : 'False',
+      'Customer ID': currentPatient?.id,
+      'Mobile number': currentPatient?.mobileNumber,
+      'Page name': 'HomePage',
+      'Patient gender': currentPatient?.gender,
+      Keyword: input || '',
+      Status: status,
+      Vertical: request,
+    };
+    postCleverTapEvent(CleverTapEventName.HOMEPAGE_SEARCH_BAR_QUERY_INPUT, eventAttributes);
+  };
+
+  const postScrollScreenEvent = () => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.SCREEN_SCROLLED] = {
+      User_Type: getUserType(allCurrentPatients),
+      'Patient Name': currentPatient?.firstName,
+      'Patient UHID': currentPatient?.uhid,
+      'Patient age': getAge(currentPatient?.dateOfBirth),
+      'Circle Member': circleSubscriptionId ? 'True' : 'False',
+      'Customer ID': currentPatient?.id,
+      'Patient gender': currentPatient?.gender,
+      'Mobile number': currentPatient?.mobileNumber,
+      'Page name': 'HomePage',
+      'Nav src': '',
+      Scrolls: scrollCount.current,
+    };
+    postCleverTapEvent(CleverTapEventName.SCREEN_SCROLLED, eventAttributes);
+  };
+
+  const onSearchExecute = async (_searchText: string) => {
+    setSearchLoading(true);
+    setSearchResults([]);
+    onSearchTests(_searchText)
+      .then(() => {
+        Keyboard.dismiss();
+        postSearchInputEvent('Success', 'Diagnostic', _searchText);
+      })
+      .catch((e) => {
+        Keyboard.dismiss();
+        postSearchInputEvent('Fail', 'Diagnostic', _searchText);
+        CommonBugFender('HomeScreen_ConsultRoom_onSearchTests', e);
+      });
+
+    onSearchMedicines(_searchText, null, {}, [])
+      .then(() => {
+        postSearchInputEvent('Success', 'Pharma', _searchText);
+      })
+      .catch((e) => {
+        Keyboard.dismiss();
+        postSearchInputEvent('Fail', 'Pharma', _searchText);
+        CommonBugFender('HomeScreen_ConsultRoom_onSearchMedicinesFunction', e);
+      });
+
+    onSearchConsults(_searchText)
+      .then(() => {
+        Keyboard.dismiss();
+        postSearchInputEvent('Success', 'Consult', _searchText);
+      })
+      .catch((e) => {
+        Keyboard.dismiss();
+        postSearchInputEvent('Fail', 'Consult', _searchText);
+        CommonBugFender('HomeScreen_ConsultRoom_onSearchConsultsFunction', e);
+      });
+
+    const save = _.debounce(saveRecentSearchTerm, 500);
+    try {
+      save(_searchText);
+    } catch (e) {}
+  };
+
+  interface searchHeaders {
+    [path: string]: any;
+  }
+
+  const searchResultsTabHeader: searchHeaders = {
+    MEDICATION: {
+      title: 'In Medicines',
+      icon: (s: any) => <MedicineHomeIcon style={{ width: 24, height: 24, ...s }} />,
+      backgroundColor: '#EAF6FF',
+    },
+    TEST_REPORT: {
+      title: 'In Lab Tests',
+      icon: (s: any) => <LabTestBrownIcon style={{ width: 18, height: 24, ...s }} />,
+      backgroundColor: '#FEE7DA',
+    },
+    CONSULTATION: {
+      title: 'In Consult',
+      icon: (s: any) => <DoctorIcon style={{ width: 18, height: 24, ...s }} />,
+      backgroundColor: '#E5FFFD',
+    },
+  };
+
+  const renderGlobalSearch = () => {
+    return (
+      <View style={{ backgroundColor: theme.colors.WHITE }}>
+        <View style={styles.searchBarMainViewStyle}>
+          <View style={styles.searchBarViewStyle}>
+            <SearchAreaIcon
+              style={{ width: 20, height: 20, tintColor: theme.colors.HOME_SEARCH_PLACEHOLDER }}
+            />
+            <TextInput
+              placeholder={'Search for Medicines, Doctors, Lab Tests'}
+              autoCapitalize={'none'}
+              style={styles.textInputStyle}
+              selectionColor={theme.colors.TURQUOISE_LIGHT_BLUE}
+              numberOfLines={1}
+              ref={_searchInputRef}
+              onFocus={() => setIsSearchFocus(true)}
+              value={searchText}
+              placeholderTextColor={theme.colors.HOME_SEARCH_PLACEHOLDER}
+              underlineColorAndroid={'transparent'}
+              onChangeText={(value) => onSearchTextChange(value)}
+            />
+            {isSearchFocus && searchText?.length >= 1 ? (
+              <TouchableOpacity onPress={() => setSearchText('')}>
+                <RemoveIconGrey style={{ width: 20, height: 20 }} />
+              </TouchableOpacity>
+            ) : null}
+          </View>
+          {isSearchFocus ? (
+            <Text style={styles.cancelTextStyle} onPress={onCancelTextClick}>
+              {'Cancel'}
+            </Text>
+          ) : null}
+        </View>
+
+        <View
+          style={{
+            height: 0.5,
+            backgroundColor: '#D4D4D4',
+            marginHorizontal: -16,
+          }}
+        />
+      </View>
+    );
+  };
+
+  const renderGlobalSearchNoResults = () => {
+    return (
+      <View style={{ width: width, marginBottom: 6, padding: 16, backgroundColor: '#fff' }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: '#EAF6FF',
+            marginVertical: 16,
+            paddingVertical: 8,
+          }}
+        >
+          {searchResultsTabHeader[MedicalRecordType.MEDICATION].icon()}
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
+              marginLeft: 14,
+            }}
+          >
+            {searchResultsTabHeader[MedicalRecordType.MEDICATION].title}
+          </Text>
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <SearchNoResultIcon style={{ width: 20, height: 20 }} />
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+              marginLeft: 14,
+            }}
+          >
+            {string.home.search_not_available}
+          </Text>
+        </View>
+
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: '#FEE7DA',
+            marginVertical: 16,
+            paddingVertical: 8,
+          }}
+        >
+          {searchResultsTabHeader[MedicalRecordType.TEST_REPORT].icon()}
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
+              marginLeft: 14,
+            }}
+          >
+            {searchResultsTabHeader[MedicalRecordType.TEST_REPORT].title}
+          </Text>
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <SearchNoResultIcon style={{ width: 20, height: 20 }} />
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+              marginLeft: 14,
+            }}
+          >
+            {string.home.search_not_available}
+          </Text>
+        </View>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: '#E5FFFD',
+            marginVertical: 16,
+            paddingVertical: 8,
+          }}
+        >
+          {searchResultsTabHeader[MedicalRecordType.CONSULTATION].icon()}
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
+              marginLeft: 14,
+            }}
+          >
+            {searchResultsTabHeader[MedicalRecordType.CONSULTATION].title}
+          </Text>
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <SearchNoResultIcon style={{ width: 20, height: 20 }} />
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+              marginLeft: 14,
+            }}
+          >
+            {string.home.search_not_available}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
+  const renderSearchRecentandSuggest = () => {
+    return (
+      <ScrollView style={[styles.scrollView, { marginTop: -1 }]} bounces={false}>
+        <View
+          style={{ width: width, marginBottom: 6, paddingHorizontal: 16, backgroundColor: '#fff' }}
+        >
+          {getRecentORSuggestList('RECENT')}
+        </View>
+      </ScrollView>
+    );
+  };
+
+  const getRecentORSuggestList = (listType: string) => {
+    const heading = listType === 'SUGGEST' ? 'SEARCH SUGGESTIONS' : 'RECENT SEARCHES';
+    const header = (
+      <View style={styles.recentOrSuggestContainer}>
+        <Text
+          style={{
+            ...theme.viewStyles.text('SB', 16, theme.colors.LIGHT_BLUE, 1, 24),
+            marginLeft: 14,
+          }}
+        >
+          {recentGlobalSearchList.length >= 1 ? heading : null}
+        </Text>
+      </View>
+    );
+    const listitems = recentGlobalSearchList.map((item: any) => {
+      return (
+        <TouchableOpacity
+          onPress={() => {
+            postHomeCleverTapEvent(
+              CleverTapEventName.RECENT_SEARCH_CLICKED_UNDER_SEARCH_BAR,
+              'Search bar'
+            );
+            onSearchTextChange(item.text);
+          }}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', padding: 4 }}>
+            <TimeBlueIcon style={{ width: 24, height: 24, marginHorizontal: 4 }} />
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+                marginLeft: 14,
+              }}
+            >
+              {item.text}
+            </Text>
+            <ArrowRight style={{ marginLeft: 'auto' }} />
+          </View>
+          <View
+            style={{
+              height: 1,
+              backgroundColor: '#D4D4D4',
+              marginVertical: 6,
+            }}
+          />
+        </TouchableOpacity>
+      );
+    });
+
+    return (
+      <View>
+        {header}
+        {listitems}
+      </View>
+    );
+  };
+
+  const renderSearchResults = () => {
+    return (
+      <ScrollView style={styles.scrollView} bounces={false}>
+        <View
+          style={{
+            width: width,
+            marginBottom: 6,
+            paddingHorizontal: 16,
+            paddingBottom: 16,
+            backgroundColor: '#fff',
+          }}
+        >
+          {searchResults?.length > 0
+            ? searchResults.map((item, index) => renderSearchItem(item, index))
+            : renderGlobalSearchNoResults()}
+        </View>
+      </ScrollView>
+    );
+  };
+
+  const onClickSearchItem = (key: string, pdp: boolean = false, nav_props: any = {}) => {
+    // todo: for view all results
+    // postHomeCleverTapEvent(
+    //   CleverTapEventName.VIEW_ALL_SEARCH_RESULT_CLICKED,
+    //   'Search bar'
+    // );
+
+    //pdp disabled for now ->props.navigation.navigate(AppRoutes.ProductDetailPage, nav_props)
+    switch (key) {
+      case MedicalRecordType.MEDICATION:
+        postHomeCleverTapEvent(
+          CleverTapEventName.OPTION_FROM_MEDICINE_CLICKED_ON_SEARCH_BAR_PAGE,
+          'Search bar'
+        );
+        props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
+        break;
+      case MedicalRecordType.TEST_REPORT:
+        postHomeCleverTapEvent(
+          CleverTapEventName.OPTION_FROM_DIAGNOSTIC_CLICKED_ON_SEARCH_BAR_PAGE,
+          'Search bar'
+        );
+        pdp
+          ? props.navigation.navigate(AppRoutes.TestDetails, nav_props)
+          : props.navigation.navigate(AppRoutes.SearchTestScene, { searchText: searchText });
+        break;
+      case MedicalRecordType.CONSULTATION:
+        postHomeCleverTapEvent(
+          CleverTapEventName.OPTION_FROM_CONSULT_CLICKED_ON_SEARCH_BAR_PAGE,
+          'Search bar'
+        );
+        pdp
+          ? props.navigation.navigate(AppRoutes.DoctorDetails, nav_props)
+          : props.navigation.navigate(AppRoutes.DoctorSearchListing, nav_props);
+        break;
+    }
+  };
+
+  const renderSearchItem = ({ key, data }: any, index: number) => {
+    return (
+      <View style={styles.searchResMainContainer}>
+        <View
+          style={[
+            styles.searchRowHeader,
+            { backgroundColor: searchResultsTabHeader[key].backgroundColor },
+          ]}
+        >
+          {/* icons can be added here */}
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
+              marginLeft: 14,
+            }}
+          >
+            {index == 0
+              ? 'Search ' + searchResultsTabHeader[key].title
+              : searchResultsTabHeader[key].title}
+          </Text>
+        </View>
+        <View>
+          <FlatList
+            keyExtractor={(_, index) => `${key},${index}`}
+            bounces={false}
+            data={data}
+            ListEmptyComponent={
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <SearchNoResultIcon style={{ width: 26, height: 26 }} />
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+                    marginLeft: 14,
+                  }}
+                >
+                  {string.home.search_not_available}
+                </Text>
+              </View>
+            }
+            renderItem={({ item, index }) => renderSearchItemDetails(item, index, key)}
+          />
+        </View>
+        {data.length === 0 ? null : (
+          <View style={styles.viewAllContainer}>
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 15, theme.colors.APP_YELLOW, 1, 24),
+              }}
+              onPress={() => onClickSearchItem(key)}
+            >
+              View All Results {searchResultsTabHeader[key].title}
+            </Text>
+
+            <ArrowRight style={{ marginLeft: 'auto', tintColor: theme.colors.APP_YELLOW }} />
+          </View>
+        )}
+      </View>
+    );
+  };
+
+  const renderSearchItemDetails = (item: any, index: number, key: string) => {
+    if (index === 0) console.log('csk data', JSON.stringify(item));
+    const nav_props =
+      key === MedicalRecordType.TEST_REPORT
+        ? {
+            itemId: item?.diagnostic_item_id,
+            source: 'Full search',
+            comingFrom: AppRoutes.HomeScreen,
+          }
+        : key === MedicalRecordType.MEDICATION
+        ? {
+            sku: item?.sku,
+            movedFrom: AppRoutes.HomeScreen,
+            sectionName: null,
+            productPageViewedEventProps: null,
+            urlKey: item?.url_key,
+          }
+        : key === MedicalRecordType.CONSULTATION
+        ? {
+            specialities: [item?.specialtydisplayName],
+            MoveDoctor: 'MoveDoctor',
+            doctorId: item?.id,
+          }
+        : {};
+    return (
+      <TouchableOpacity onPress={() => onClickSearchItem(key, true, nav_props)}>
+        <View style={{ marginBottom: 6 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+            <View style={styles.searchItemIcon}>
+              {searchResultsTabHeader[key].icon({ width: 26, height: 26 })}
+            </View>
+            <View style={styles.searchItemText}>
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+                }}
+              >
+                {key === MedicalRecordType.TEST_REPORT
+                  ? item?.diagnostic_item_name
+                  : key === MedicalRecordType.MEDICATION
+                  ? item?.name
+                  : key === MedicalRecordType.CONSULTATION
+                  ? item?.displayName || item?.name
+                  : string.home.search_not_available}
+              </Text>
+
+              {key === MedicalRecordType.TEST_REPORT ? (
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('R', 12, theme.colors.LIGHT_BLUE, 1, 14),
+                  }}
+                >
+                  Total Tests - {item?.diagnostic_inclusions.length}
+                </Text>
+              ) : key === MedicalRecordType.CONSULTATION ? (
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('R', 12, theme.colors.LIGHT_BLUE, 1, 14),
+                  }}
+                >
+                  {item?.symptoms || item?.specialtydisplayName}
+                </Text>
+              ) : null}
+            </View>
+            <View style={{ marginLeft: 'auto' }}>
+              <ArrowRight />
+            </View>
+          </View>
+
+          <View
+            style={{
+              height: 1,
+              backgroundColor: '#E6E6E6',
+              marginVertical: 6,
+              marginRight: 4,
+            }}
+          />
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const onCancelTextClick = () => {
+    if (_searchInputRef.current) {
+      setSearchText('');
+      setIsSearchFocus(false);
+      _searchInputRef?.current?.clear();
+      setSearchResults([]);
+      Keyboard.dismiss();
+    }
+  };
+
+  const onSearchTextChange = (value: string) => {
+    setIsSearchFocus(true);
+    if (isValidSearch(value)) {
+      setSearchText(value);
+      if (!(value && value.length > 2)) {
+        setSearchResults([]);
+        return;
+      }
+      setSearchLoading(true);
+      const search = _.debounce(onSearchExecute, 500);
+      setSearchQuery((prevSearch: any) => {
+        if (prevSearch.cancel) {
+          prevSearch.cancel();
+        }
+        return search;
+      });
+      search(value);
+    }
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: 'white' }}>
+    <View style={{ flex: 1, backgroundColor: theme.colors.WHITE }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
-        <ScrollView style={{ flex: 1 }} bounces={false}>
-          <View style={{ width: '100%' }}>
-            <View style={styles.viewName}>
-              {renderTopIcons()}
-              <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
-              <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text>
-              {renderMenuOptions()}
-              {(displayQuickBookAskApollo || displayAskApolloNumber) && renderAskApolloView()}
-              {circleDataLoading && renderCircleShimmer()}
-              <View style={{ backgroundColor: '#f0f1ec' }}>
-                {isCircleMember === 'yes' && !circleDataLoading && renderCircle()}
-              </View>
-              {showCirclePlans && renderCircleSubscriptionPlans()}
-              {showCircleActivationcr && renderCircleActivation()}
-              {!covidVaccineCtaV2?.data && renderCovidVaccinationShimmer()}
-              <View style={{ backgroundColor: '#f0f1ec' }}>
-                {covidVaccineCtaV2?.data?.length > 0 && renderCovidContainer()}
-              </View>
-              <View style={{ paddingHorizontal: 20 }}>{renderSecondaryConsultationCta()}</View>
-              {bannerLoading && renderBannerShimmer()}
-              <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
-              {/**added prohealth banner */}
-              {proActiveAppointments?.length == 0 && (
-                <View style={{ backgroundColor: '#f0f1ec' }}>{renderProhealthBanner()}</View>
-              )}
-              {proActiveAppointments?.length > 0 && (
+        {isSearchFocus ? null : renderTopIcons()}
+        {renderGlobalSearch()}
+        {searchLoading ? (
+          renderGlobalSearchShimmer()
+        ) : searchText?.length > 2 ? (
+          renderSearchResults()
+        ) : isSearchFocus ? (
+          renderSearchRecentandSuggest()
+        ) : (
+          <ScrollView
+            style={styles.scrollView}
+            bounces={false}
+            scrollEventThrottle={0}
+            onScroll={() => {
+              scrollCount.current += 1;
+              postScrollScreenEvent();
+            }}
+          >
+            <View style={{ width: '100%' }}>
+              <View style={styles.viewName}>
+                {renderMenuOptions()}
+
+                {!offersListLoading && offersList.length === 0
+                  ? null
+                  : renderHeadings('Offers For You')}
+                {offersListCache.length === 0 && offersListLoading && renderOffersForYouShimmer()}
+                {(offersListCache.length > 0 || !offersListLoading) && renderOffersForYou()}
+                {!appointmentLoading && currentAppointments === '0' && myDoctorsCount === 0
+                  ? null
+                  : renderHeadings('My Doctors')}
+                {!appointmentLoading && currentAppointments === '0'
+                  ? null
+                  : renderListView('Active Appointments', 'normal')}
+                <View>{renderAllConsultedDoctors()}</View>
+
+                {renderHeadings('Circle Membership and More')}
+                {isCircleMember === '' && circleDataLoading && renderCircleShimmer()}
+                <View>{isCircleMember === 'yes' && !circleDataLoading && renderCircle()}</View>
+                {isCircleMember === 'no' && renderCircleBuyNow()}
+                {showCirclePlans && renderCircleSubscriptionPlans()}
+                {showCircleActivationcr && renderCircleActivation()}
+                {bannerLoading && renderBannerShimmer()}
+
+                <View>{renderBannersCarousel()}</View>
+
+                {/* {!covidVaccineCtaV2?.data && renderCovidVaccinationShimmer()}
                 <View style={{ backgroundColor: '#f0f1ec' }}>
-                  {renderListView(
-                    proActiveAppointments?.length == 1
-                      ? 'ProHealth Appointment'
-                      : 'ProHealth Appointments',
-                    'prohealth'
-                  )}
-                </View>
-              )}
-              <View style={{ backgroundColor: '#f0f1ec' }}>
-                {renderListView('Active Appointments', 'normal')}
+                  {covidVaccineCtaV2?.data?.length > 0 && renderCovidContainer()}
+                </View> */}
+
+                {renderHeadings('Services For You')}
+                {renderServicesForYouView()}
+
+                {renderHeadings('Apollo Prohealth')}
+                {proActiveAppointments?.length == 0 && <View>{renderProhealthBanner()}</View>}
+                {proActiveAppointments?.length > 0 && (
+                  <View>
+                    {renderListView(
+                      proActiveAppointments?.length == 1
+                        ? 'ProHealth Appointment'
+                        : 'ProHealth Appointments',
+                      'prohealth'
+                    )}
+                  </View>
+                )}
+                <View style={{ paddingHorizontal: 20 }}>{renderSecondaryConsultationCta()}</View>
+                {renderOtherResourcesMainView()}
               </View>
-              <View style={{ backgroundColor: '#f0f1ec' }}>{renderAllConsultedDoctors()}</View>
-              {renderCovidMainView()}
             </View>
-          </View>
-        </ScrollView>
+          </ScrollView>
+        )}
       </SafeAreaView>
       {showWebView?.action && openWebView(showWebView?.url)}
-      {renderBottomTabBar()}
+      {isSearchFocus ? null : renderBottomTabBar()}
       {showPopUp && (
         <>
           <BottomPopUp
@@ -4303,7 +5878,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           </BottomPopUp>
           <TouchableOpacity
             onPress={() => {
-              CommonLogEvent(AppRoutes.ConsultRoom, 'ConsultRoom_BottomPopUp clicked');
+              CommonLogEvent(AppRoutes.HomeScreen, 'ConsultRoom_BottomPopUp clicked');
               AsyncStorage.setItem('gotIt', 'true');
               setshowPopUp(false);
             }}

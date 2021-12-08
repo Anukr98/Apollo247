@@ -1410,6 +1410,7 @@ export const getDiagnosticListingWidget = (
 ): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
   const getWidgets = `${baseurl}/${pageName}/${widgetName}`;
+  console.log({getWidgets})
   return Axios.get(getWidgets, {
     headers: {
       Authorization: config.DRUPAL_CONFIG[1],
@@ -1481,4 +1482,62 @@ export const getBrandPagesData = async (
     },
   });
   return response;
+};
+
+export const fetchDiagnosticCoupons = (
+  type: string,
+  packageId?: any,
+): Promise<AxiosResponse<any>> => {
+  const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
+  let url = `${baseUrl}/frontend?type=${type}`;
+  if (!!packageId) {
+    url += `&packageId=${packageId}`;
+  }
+  return Axios.get(url);
+};
+
+export const getConsultPackages = (): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const url = `${baseurl}/getpackages`;
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};
+
+export const getConsultPackageDetailPrePurchase = (planId: string): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const url = `${baseurl}/getplandetail/${planId}`;
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};
+
+export const getConsultWidgetPackages = (): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const url = `${baseurl}/getpackagestobuy`;
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};
+
+export const sendSubscriptionInvoiceEmail = (
+  mobileNumber: string,
+  email: string,
+  invoiceUrl: string
+): Promise<AxiosResponse<any>> => {
+  return Axios({
+    url: config.SUBSCRIPTION_SERVICE_EMAIL,
+    method: 'POST',
+    data: {
+      mobileNumber,
+      email,
+      invoiceUrl,
+    },
+  });
 };

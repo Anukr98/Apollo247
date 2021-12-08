@@ -82,7 +82,11 @@ import { DiagnosticPatientSelected } from '@aph/mobile-patients/src/components/T
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { findDiagnosticSettings } from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
-import { CALL_TO_ORDER_CTA_PAGE_ID, Gender, TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  CALL_TO_ORDER_CTA_PAGE_ID,
+  Gender,
+  TEST_COLLECTION_TYPE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { PatientDetailsOverlay } from '@aph/mobile-patients/src/components/Tests/components/PatientDetailsOverlay';
 import {
   editProfile,
@@ -146,7 +150,6 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   const [itemsSelected, setItemsSelected] = useState(patientCartItems);
   const [patientLimit, setPatientLimit] = useState<number>(0);
   const [limitMsg, setLimitMsg] = useState<string>('');
-  const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
   const [patientSelectionCount, setPatientSelectionCount] = useState<number>(0);
   const [showPatientDetailsOverlay, setShowPatientDetailsOverlay] = useState<boolean>(false);
   const [tempPatientSelected, setTempPatientSelected] = useState({} as any);
@@ -387,7 +390,6 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       cartItems?.filter((cItem) => !disabledCartItemIds?.find((dItem) => dItem == cItem?.id))
     );
   };
-  
 
   const removeDisabledPatientCartItems = (disabledCartItemIds: string[]) => {
     hideAphAlert?.();
@@ -737,7 +739,6 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     const hasEmptyValues = checkEmptyPatientValues(patient, index);
     if (isInvalidUser) {
       renderBelowAgePopUp();
-      _setSelectedPatient?.(null, index);
     } else if (hasEmptyValues) {
       setShowPatientDetailsOverlay(true);
       setTempPatientSelected(patient);
@@ -844,7 +845,8 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
         style={[
           styles.patientSelectTouch,
           {
-            backgroundColor: !!test?.isSelected && test?.isSelected ? '#F5FFFD' : colors.WHITE,
+            backgroundColor:
+              !!test?.isSelected && test?.isSelected ? colors.GREEN_BACKGROUND : colors.WHITE,
           },
         ]}
       >

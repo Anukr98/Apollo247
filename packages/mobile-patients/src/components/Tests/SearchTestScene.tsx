@@ -31,6 +31,7 @@ import {
   isEmptyObject,
   isSmallDevice,
   isValidSearch,
+  nameFormater,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -72,6 +73,7 @@ import {
   DiagnosticItemSearched,
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import DeviceInfo from 'react-native-device-info';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { getDiagnosticSearchResults } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { searchDiagnosticItem_searchDiagnosticItem_data } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticItem';
@@ -724,6 +726,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
                     keyExtractor={(_, index) => `${index}`}
                     scrollEnabled={false}
                     data={popularPackages}
+                    bounces={false}
                     renderItem={renderPopularDiagnostic}
                   />
                 </View>
@@ -737,6 +740,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
                     keyExtractor={(_, index) => `${index}`}
                     scrollEnabled={false}
                     data={popularTests}
+                    bounces={false}
                     renderItem={renderPopularDiagnostic}
                   />
                 </View>
@@ -798,7 +802,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           {cartCount} {cartItems?.length == 1 ? 'item' : 'items'} added
         </Text>
         <Button
-          title={'GO TO CART'}
+          title={nameFormater(string.diagnostics.goToCart, 'upper')}
           onPress={() => _navigateToCartPage()}
           style={{ width: '60%' }}
         />
@@ -921,6 +925,30 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     backgroundColor: 'white',
     marginBottom: GO_TO_CART_HEIGHT,
+  },
+  cartDetailView: {
+    position: 'absolute',
+    backgroundColor: theme.colors.APP_YELLOW_COLOR,
+    bottom: isIphoneX ? 10 : 0,
+    height: GO_TO_CART_HEIGHT,
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  itemAddedText: {
+    marginLeft: 20,
+    ...theme.viewStyles.text('SB', isSmallDevice ? 13 : 14, theme.colors.WHITE),
+    lineHeight: 16,
+    textAlign: 'left',
+    alignSelf: 'center',
+  },
+  goToCartText: {
+    marginRight: 20,
+    ...theme.viewStyles.text('SB', isSmallDevice ? 15 : 16, theme.colors.WHITE),
+    lineHeight: 20,
+    textAlign: 'right',
+    alignSelf: 'center',
   },
   cartDetailView: {
     position: 'absolute',

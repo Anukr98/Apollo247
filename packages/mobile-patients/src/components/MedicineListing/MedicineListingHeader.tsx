@@ -26,7 +26,7 @@ export const MedicineListingHeader: React.FC<Props> = ({
 
   const onBackPress = () => {
     if (movedFrom === 'registration') {
-      navigation.replace(AppRoutes.ConsultRoom);
+      navigation.replace(AppRoutes.HomeScreen);
     } else {
       navigation.goBack();
     }
@@ -43,7 +43,7 @@ export const MedicineListingHeader: React.FC<Props> = ({
   };
 
   const onPressApolloIcon = () => {
-    navigation.replace(AppRoutes.ConsultRoom);
+    navigation.replace(AppRoutes.HomeScreen);
   };
 
   const renderHeaderRightView = () => {

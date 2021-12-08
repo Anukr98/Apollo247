@@ -1,33 +1,33 @@
 import React from 'react';
 import { View, StyleSheet, Text, Image } from 'react-native';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   planContainer: {
     flexDirection: 'row',
     flex: 1,
+    marginVertical: 4,
+    paddingVertical: 6,
+    paddingRight: 6,
     alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 5,
   },
 
   subPlanOne: {
     flex: 0.2,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 4,
   },
 
   subPlanTwo: {
-    flex: 0.3,
+    flex: 0.55,
     alignItems: 'flex-start',
     justifyContent: 'center',
   },
 
   subPlanThree: {
-    flex: 0.5,
-    alignItems: 'center',
+    flex: 0.25,
+    alignItems: 'flex-end',
     justifyContent: 'center',
   },
 
@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface CircleTypeCard4Props extends NavigationScreenProps {
+export interface CircleTypeCard4Props {
   onButtonPress: () => void;
   savings?: string;
   expiry?: string;
@@ -59,22 +59,21 @@ export const CircleTypeCard4: React.FC<CircleTypeCard4Props> = (props) => {
         </View>
 
         <View style={styles.subPlanTwo}>
-          <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
-            Available Health{'\n'}Credits:
-            <Text style={{ ...theme.viewStyles.text('M', 15, '#000', 1, 18) }}>
-              {' '}
-              {credits || 0}
-            </Text>
+          <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE, 1, 20) }}>
+            Don’t Lose on Free
+          </Text>
+          <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE, 1, 20) }}>
+            Deliveries & Cashbacks
           </Text>
         </View>
 
         <View style={styles.subPlanThree}>
-          <Button
-            title={`EXPLORE BENEFITS`}
-            style={{ width: 155, height: 32 }}
+          <Text
+            style={{ ...theme.viewStyles.text('B', 15, '#FC9916', 1, 20) }}
             onPress={onButtonPress}
-            disabled={false}
-          />
+          >
+            EXPLORE
+          </Text>
         </View>
       </View>
     </View>
