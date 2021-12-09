@@ -15,6 +15,7 @@
 		3989311398CD4273BCF8C3F2 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
 		4929325025C1959C000A9EBF /* join_sound.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4929324E25C1959C000A9EBF /* join_sound.mp3 */; };
 		492AFA5125C2A4A500330A9C /* left_sound.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 492AFA4F25C2A4A500330A9C /* left_sound.mp3 */; };
+		4FCA30B36FFDE4AB0664C254 /* Pods_NotificationViewController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 69C1EF06D6C0AF77D1C0281F /* Pods_NotificationViewController.framework */; };
 		51DB4749A9874BD886B2F10B /* BuildFile in Resources */ = {isa = PBXBuildFile; };
 		6717258923016EF10088EE92 /* OTInstall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6717258823016EF10088EE92 /* OTInstall.swift */; };
 		6F01AA3CDEAB4200B6F4D225 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
@@ -126,6 +127,7 @@
 		F1B3D79522B8D37200521684 /* IBMPlexSans-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F1B3D75F22B8D37100521684 /* IBMPlexSans-Light.ttf */; };
 		F1B3D79722B8D37200521684 /* IBMPlexSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F1B3D76122B8D37100521684 /* IBMPlexSans-Regular.ttf */; };
 		F1B3D79922B8D37200521684 /* IBMPlexSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F1B3D76322B8D37100521684 /* IBMPlexSans-Bold.ttf */; };
+		F94A1E9ECE5676B212D3EA1B /* Pods_NotificationService.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE618CD968E4757FC908295C /* Pods_NotificationService.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -197,6 +199,7 @@
 		6717258723016EF00088EE92 /* ApolloPatient-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ApolloPatient-Bridging-Header.h"; sourceTree = "<group>"; };
 		6717258823016EF10088EE92 /* OTInstall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTInstall.swift; sourceTree = "<group>"; };
 		6790F2152317D9880037D908 /* RSKImageCropper.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RSKImageCropper.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		69C1EF06D6C0AF77D1C0281F /* Pods_NotificationViewController.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NotificationViewController.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		72F617656E6541D1F4092240 /* Pods_ApolloPatient.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ApolloPatient.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8097225873FF04AEF5DA2ED7 /* Pods-NotificationViewController.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NotificationViewController.release.xcconfig"; path = "Target Support Files/Pods-NotificationViewController/Pods-NotificationViewController.release.xcconfig"; sourceTree = "<group>"; };
 		80EAA264D827BADB6794E6F4 /* Pods-ApolloPatient.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloPatient.debug.xcconfig"; path = "Target Support Files/Pods-ApolloPatient/Pods-ApolloPatient.debug.xcconfig"; sourceTree = "<group>"; };
@@ -1149,7 +1152,7 @@
 				"${BUILT_PRODUCTS_DIR}/react-native-webview/react_native_webview.framework",
 				"${BUILT_PRODUCTS_DIR}/rn-fetch-blob/rn_fetch_blob.framework",
 				"${BUILT_PRODUCTS_DIR}/youtube-ios-player-helper/youtube_ios_player_helper.framework",
-				"${BUILT_PRODUCTS_DIR}/WebEngageBannerPush/WebEngageBannerPush.framework",
+				"${BUILT_PRODUCTS_DIR}/CTNotificationService/CTNotificationService.framework",
 				"${BUILT_PRODUCTS_DIR}/WebEngageAppEx/WebEngageAppEx.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
@@ -1242,7 +1245,7 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/react_native_webview.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/rn_fetch_blob.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/youtube_ios_player_helper.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/WebEngageBannerPush.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CTNotificationService.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/WebEngageAppEx.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1453,7 +1456,7 @@
 				CODE_SIGN_ENTITLEMENTS = ApolloPatient/ApolloPatient.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 27;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
@@ -1489,7 +1492,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247;
 				PRODUCT_NAME = "Apollo 247";
-				PROVISIONING_PROFILE_SPECIFIER = Apollo247_AppStore;
+				PROVISIONING_PROFILE_SPECIFIER = Apollo247_Adhoc;
 				SWIFT_OBJC_BRIDGING_HEADER = "ApolloPatient-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.0;
@@ -1506,7 +1509,7 @@
 				CODE_SIGN_ENTITLEMENTS = ApolloPatient/ApolloPatient.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 27;
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1541,7 +1544,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247;
 				PRODUCT_NAME = "Apollo 247";
-				PROVISIONING_PROFILE_SPECIFIER = Apollo247_AppStore;
+				PROVISIONING_PROFILE_SPECIFIER = Apollo247_Adhoc;
 				SWIFT_OBJC_BRIDGING_HEADER = "ApolloPatient-Bridging-Header.h";
 				SWIFT_VERSION = 4.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -1662,7 +1665,7 @@
 				CODE_SIGN_ENTITLEMENTS = NotificationService/NotificationService.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 27;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
@@ -1675,7 +1678,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = Apollo247NSE_AppStore;
+				PROVISIONING_PROFILE_SPECIFIER = Apollo247NSE_Adhoc;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -1695,7 +1698,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 27;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
@@ -1707,7 +1710,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = Apollo247NSE_AppStore;
+				PROVISIONING_PROFILE_SPECIFIER = Apollo247NSE_Adhoc;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -1726,7 +1729,7 @@
 				CODE_SIGN_ENTITLEMENTS = NotificationViewController/NotificationViewController.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 27;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
@@ -1739,7 +1742,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247.NotificationViewController;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = Apollo247NCE_AppStore;
+				PROVISIONING_PROFILE_SPECIFIER = Apollo247NCE_Adhoc;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -1759,7 +1762,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 27;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
@@ -1771,7 +1774,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247.NotificationViewController;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = Apollo247NCE_AppStore;
+				PROVISIONING_PROFILE_SPECIFIER = Apollo247NCE_Adhoc;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 1;
 			};

@@ -3117,7 +3117,7 @@ export const takeToHomePage = (props: any) => {
       key: null,
       actions: [
         NavigationActions.navigate({
-          routeName: AppRoutes.ConsultRoom,
+          routeName: AppRoutes.HomeScreen,
         }),
       ],
     })
@@ -3149,7 +3149,7 @@ export const goToConsultRoom = (
       key: null,
       actions: [
         NavigationActions.navigate({
-          routeName: AppRoutes.ConsultRoom,
+          routeName: AppRoutes.HomeScreen,
           params,
         }),
       ],
@@ -3232,7 +3232,7 @@ export const navigateToScreenWithHomeScreeninStack = (
         index: 1,
         key: null,
         actions: [
-          NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom }),
+          NavigationActions.navigate({ routeName: AppRoutes.HomeScreen }),
           NavigationActions.navigate({ routeName: screenName, params }),
         ],
       })

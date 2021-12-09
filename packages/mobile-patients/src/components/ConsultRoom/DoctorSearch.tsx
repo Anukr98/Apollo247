@@ -50,6 +50,7 @@ import {
   postCleverTapEvent,
   postConsultSearchCleverTapEvent,
   postConsultPastSearchSpecialityClicked,
+  getAge,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -547,6 +548,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const { circlePlanSelected, circleSubscriptionId, circleSubPlanId } = useShoppingCart();
   const [oneTapPlanTitle, setOneTapPlanTitle] = useState<string>();
   const consultTypeCta = props.navigation?.getParam('consultTypeCta') || '';
+  const scrollCount = useRef<number>(0);
 
   useEffect(() => {
     if (!currentPatient) {
@@ -2256,6 +2258,23 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     );
   };
 
+  const postScrollScreenEvent = () => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.SCREEN_SCROLLED] = {
+      User_Type: getUserType(allCurrentPatients),
+      'Patient Name': currentPatient?.firstName,
+      'Patient UHID': currentPatient?.uhid,
+      'Patient age': getAge(currentPatient?.dateOfBirth),
+      'Circle Member': circleSubscriptionId ? 'True' : 'False',
+      'Customer ID': currentPatient?.id,
+      'Patient gender': currentPatient?.gender,
+      'Mobile number': currentPatient?.mobileNumber,
+      'Page name': 'Consult page',
+      'Nav src': '',
+      Scrolls: scrollCount.current,
+    };
+
+    postCleverTapEvent(CleverTapEventName.SCREEN_SCROLLED, eventAttributes);
+  };
   const renderPackages = () => {
     return (
       <View>
@@ -2407,6 +2426,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             <>
               <ScrollView
                 style={{ flex: 1 }}
+                scrollEventThrottle={0}
+                onScroll={() => {
+                  scrollCount.current += 1;
+                  postScrollScreenEvent();
+                }}
                 keyboardDismissMode="on-drag"
                 onScrollBeginDrag={Keyboard.dismiss}
               >

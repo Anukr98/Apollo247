@@ -6,6 +6,7 @@ import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_a
 import { MedicinePageAPiResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import { getPatientAllAppointments_getPatientAllAppointments_appointments as Appointment } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { Cache } from 'react-native-cache';
 export interface LocationData {
   displayName: string;
   latitude?: number;
@@ -18,7 +19,6 @@ export interface LocationData {
   pincode: string;
   lastUpdated?: number; //timestamp
 }
-
 export interface SubscriptionData {
   _id: string | '';
   name: string | '';
@@ -39,6 +39,13 @@ export interface SubscriptionData {
   corporateIcon?: string;
 }
 
+export const appGlobalCache = new Cache({
+  namespace: 'appGlobalCache',
+  policy: {
+    maxEntries: 200,
+  },
+  backend: AsyncStorage,
+});
 export interface CorporateSubscriptionData extends SubscriptionData {
   corporateName?: string;
   corporateLogo?: string;
@@ -239,6 +246,16 @@ export interface AppCommonDataContextProps {
   setCovidVaccineCtaV2: ((value: any) => void) | null;
   loginSection: any;
   setLoginSection: ((value: any) => void) | null;
+  myDoctorsCount: number;
+  setMyDoctorsCount: ((value: number) => void) | null;
+  homeBannerOfferSection: any;
+  setHomeBannerOfferSection: ((value: any) => void) | null;
+  recentGlobalSearchList: any;
+  setRecentGlobalSearchList: ((value: any) => void) | null;
+  offersList: any;
+  setOffersList: ((value: any) => void) | null;
+  offersListLoading: boolean;
+  setOffersListLoading: ((value: boolean) => void) | null;
   phrSession: string;
   setPhrSession: ((value: string) => void) | null;
   isCurrentLocationFetched: boolean;
@@ -356,6 +373,16 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setCovidVaccineCtaV2: null,
   loginSection: null,
   setLoginSection: null,
+  homeBannerOfferSection: null,
+  setHomeBannerOfferSection: null,
+  myDoctorsCount: 0,
+  setMyDoctorsCount: null,
+  recentGlobalSearchList: [],
+  setRecentGlobalSearchList: null,
+  offersList: [],
+  setOffersList: null,
+  offersListLoading: false,
+  setOffersListLoading: null,
   phrSession: '',
   setPhrSession: null,
   isCurrentLocationFetched: false, // this variable is defined only to avoid asking location multiple times in Home Screen until the app is killed and re-opened again
@@ -516,6 +543,17 @@ export const AppCommonDataProvider: React.FC = (props) => {
     useState<AppCommonDataContextProps['covidVaccineCtaV2']>(null);
 
   const [loginSection, setLoginSection] = useState<AppCommonDataContextProps['loginSection']>(null);
+  const [myDoctorsCount, setMyDoctorsCount] = useState<AppCommonDataContextProps['myDoctorsCount']>(
+    0
+  );
+  const [homeBannerOfferSection, setHomeBannerOfferSection] = useState<
+    AppCommonDataContextProps['homeBannerOfferSection']
+  >(null);
+  const [recentGlobalSearchList, setRecentGlobalSearchList] = useState<
+    AppCommonDataContextProps['recentGlobalSearchList']
+  >([]);
+  const [offersList, setOffersList] = useState<any[]>([]);
+  const [offersListLoading, setOffersListLoading] = useState<boolean>(false);
 
   const [phrSession, setPhrSession] = useState<AppCommonDataContextProps['phrSession']>('');
 
@@ -714,6 +752,16 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setCovidVaccineCtaV2,
         loginSection,
         setLoginSection,
+        myDoctorsCount,
+        setMyDoctorsCount,
+        homeBannerOfferSection,
+        setHomeBannerOfferSection,
+        recentGlobalSearchList,
+        setRecentGlobalSearchList,
+        offersList,
+        setOffersList,
+        offersListLoading,
+        setOffersListLoading,
         phrSession,
         setPhrSession,
         notificationCount,

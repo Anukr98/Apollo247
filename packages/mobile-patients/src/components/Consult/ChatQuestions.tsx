@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-end',
     backgroundColor: 'transparent',
-    zIndex: 1000,
+    zIndex: 4,
   },
   mainView: {
     minHeight: 200,

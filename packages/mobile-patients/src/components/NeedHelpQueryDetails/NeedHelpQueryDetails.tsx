@@ -20,6 +20,7 @@ import {
   GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS,
   CANCEL_MEDICINE_ORDER_OMS,
   GET_MEDICINE_ORDER_CANCEL_REASONS,
+  GET_MEDICINE_ORDER_CANCEL_REASONS_V2,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetMedicineOrderShipmentDetails,
@@ -28,6 +29,7 @@ import {
 import {
   MEDICINE_ORDER_STATUS,
   ORDER_TYPE,
+  GetMedicineOrderCancelReasonsV2Input,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   SendHelpEmail,
@@ -78,18 +80,17 @@ import {
   TicketNumberMutation,
   TicketNumberMutationVariables,
 } from '@aph/mobile-patients/src/graphql/types/TicketNumberMutation';
-import { Overlay } from 'react-native-elements';
-import { DropDown, Option } from '@aph/mobile-patients/src/components/ui/DropDown';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import {
-  GetMedicineOrderCancelReasons,
-  GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons,
-} from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderCancelReasons';
+import { GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderCancelReasons';
 import {
   CancelMedicineOrderOMS,
   CancelMedicineOrderOMSVariables,
 } from '@aph/mobile-patients/src/graphql/types/CancelMedicineOrderOMS';
-import { Spinner } from '../ui/Spinner';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { OrderCancelComponent } from '@aph/mobile-patients/src/components/ui/OrderCancelComponent';
+import {
+  getMedicineOrderCancelReasonsV2,
+  getMedicineOrderCancelReasonsV2_getMedicineOrderCancelReasonsV2_cancellationReasonBuckets,
+} from '@aph/mobile-patients/src/graphql/types/getMedicineOrderCancelReasonsV2';
 
 export interface Props
   extends NavigationScreenProps<{
@@ -154,11 +155,15 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const [isCancelVisible, setCancelVisible] = useState(false);
   const [selectedReason, setSelectedReason] = useState('');
   const [comment, setComment] = useState('');
-  const [overlayDropdown, setOverlayDropdown] = useState(false);
-  const apolloClient = useApolloClient();
-  const [cancellationReasons, setCancellationReasons] = useState<
-    GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons[]
+  const [selectedSubReason, setSelectedSubReason] = useState('');
+  const [showReasons, setShowReasons] = useState<boolean>(false);
+  const [newCancellationReasonsBucket, setNewCancellationReasonsBucket] = useState<
+    getMedicineOrderCancelReasonsV2_getMedicineOrderCancelReasonsV2_cancellationReasonBuckets[]
   >([]);
+  const [selectedReasonBucket, setSelectedReasonBucket] = useState<
+    getMedicineOrderCancelReasonsV2_getMedicineOrderCancelReasonsV2_cancellationReasonBuckets[]
+  >([]);
+  const apolloClient = useApolloClient();
   const [click, setClick] = useState<string>('');
   const [showSpinner, setShowSpinner] = useState(false);
   const billNumber = navigation.getParam('billNumber');
@@ -214,7 +219,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
   useEffect(() => {
     if (cancellationAllowed && !cancellationRequestRaised && click === orderCancelId) {
-      getCancellationReasons();
+      getCancellationReasonsBuckets();
     }
   }, [click]);
 
@@ -308,30 +313,40 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     fetchPolicy: 'no-cache',
   });
 
-  const getCancellationReasons = () => {
+  const getCancellationReasonsBuckets = () => {
+    const vars: GetMedicineOrderCancelReasonsV2Input = {
+      orderId: Number(orderId),
+    };
     setShowSpinner(true);
     client
-      .query<GetMedicineOrderCancelReasons>({
-        query: GET_MEDICINE_ORDER_CANCEL_REASONS,
-        variables: {},
+      .query<getMedicineOrderCancelReasonsV2>({
+        query: GET_MEDICINE_ORDER_CANCEL_REASONS_V2,
+        variables: {
+          getMedicineOrderCancelReasonsV2Input: vars,
+        },
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
         if (
-          data.data.getMedicineOrderCancelReasons &&
-          data.data.getMedicineOrderCancelReasons.cancellationReasons &&
-          data.data.getMedicineOrderCancelReasons.cancellationReasons.length > 0
+          data?.data?.getMedicineOrderCancelReasonsV2 &&
+          data?.data?.getMedicineOrderCancelReasonsV2?.cancellationReasonBuckets &&
+          data?.data?.getMedicineOrderCancelReasonsV2?.cancellationReasonBuckets.length > 0
         ) {
-          let cancellationArray: any = [];
-          data.data.getMedicineOrderCancelReasons.cancellationReasons.forEach(
-            (cancellationReasons, index) => {
-              if (cancellationReasons && cancellationReasons.isUserReason) {
+          const cancellationArray: any = [];
+          data?.data?.getMedicineOrderCancelReasonsV2?.cancellationReasonBuckets.forEach(
+            (cancellationReasons) => {
+              if (
+                cancellationReasons &&
+                cancellationReasons?.reasons &&
+                cancellationReasons?.reasons?.length
+              ) {
                 cancellationArray.push(cancellationReasons);
               }
             }
           );
-          setCancellationReasons(cancellationArray);
+          setNewCancellationReasonsBucket(cancellationArray);
           setCancelVisible(true);
+          setShowReasons(true);
         }
       })
       .catch((error) => {
@@ -349,8 +364,10 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       medicineOrderCancelOMSInput: {
         orderNo: typeof orderId == 'string' ? parseInt(orderId, 10) : orderId,
         cancelReasonCode:
-          cancellationReasons &&
-          cancellationReasons.find((item) => item.description == selectedReason)!.reasonCode,
+          selectedReasonBucket &&
+          selectedReasonBucket?.[0]?.reasons?.find(
+            (item) => selectedSubReason === item?.description
+          )?.reasonCode,
         cancelReasonText: comment,
       },
     };
@@ -369,6 +386,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           setCancelVisible(false);
           setComment('');
           setSelectedReason('');
+          setSelectedSubReason('');
           setClick('');
           setSubheading('');
         };
@@ -416,125 +434,24 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderReturnOrderOverlay = () => {
-    const optionsDropdown = overlayDropdown && (
-      <Overlay
-        onBackdropPress={() => setOverlayDropdown(false)}
-        isVisible={overlayDropdown}
-        overlayStyle={styles.dropdownOverlayStyle}
-      >
-        <DropDown
-          cardContainer={{
-            margin: 0,
-          }}
-          options={cancellationReasons.map(
-            (cancellationReasons, i) =>
-              ({
-                onPress: () => {
-                  setSelectedReason(cancellationReasons.description!);
-                  setOverlayDropdown(false);
-                },
-                optionText: cancellationReasons.description,
-              } as Option)
-          )}
-        />
-      </Overlay>
-    );
-
-    const heading = (
-      <View style={styles.headingView}>
-        <Text
-          style={{
-            ...theme.fonts.IBMPlexSansMedium(16),
-            color: theme.colors.SHERPA_BLUE,
-            textAlign: 'center',
-          }}
-        >
-          Cancel Order
-        </Text>
-      </View>
-    );
-
-    const content = (
-      <View style={{ paddingHorizontal: 16 }}>
-        <Text style={styles.contentView}>Why are you cancelling this order?</Text>
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={() => {
-            setOverlayDropdown(true);
-          }}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text
-              style={[
-                {
-                  flex: 0.9,
-                  ...theme.fonts.IBMPlexSansMedium(18),
-                  color: theme.colors.SHERPA_BLUE,
-                },
-                selectedReason ? {} : { opacity: 0.3 },
-              ]}
-              numberOfLines={1}
-            >
-              {selectedReason || 'Select reason for cancelling'}
-            </Text>
-            <View style={{ flex: 0.1 }}>
-              <DropdownGreen style={{ alignSelf: 'flex-end' }} />
-            </View>
-          </View>
-          <View
-            style={{
-              marginTop: 5,
-              backgroundColor: theme.colors.CONSULT_SUCCESS_TEXT,
-              height: 2,
-            }}
-          />
-        </TouchableOpacity>
-        <TextInputComponent
-          value={comment}
-          onChangeText={(text) => {
-            setComment(text);
-          }}
-          label={'Add Comments (Optional)'}
-          placeholder={'Enter your comments here…'}
-        />
-      </View>
-    );
-
-    const bottomButton = (
-      <Button
-        style={{ margin: 16, marginTop: 32, width: 'auto' }}
-        onPress={onPressConfirmCancelOrder}
-        disabled={(!selectedReason && showSpinner) || selectedReason === ''}
-        title={'SUBMIT REQUEST'}
-      />
-    );
-
     return (
-      isCancelVisible && (
-        <View style={styles.cancel}>
-          <View style={{ marginHorizontal: 20 }}>
-            <TouchableOpacity
-              style={{ marginTop: 38, alignSelf: 'flex-end' }}
-              onPress={() => {
-                setCancelVisible(!isCancelVisible);
-                setSelectedReason('');
-                setComment('');
-                setClick('');
-                setSubheading('');
-              }}
-            >
-              <CrossPopup />
-            </TouchableOpacity>
-            <View style={{ height: 16 }} />
-            <View style={styles.cancelView}>
-              {optionsDropdown}
-              {heading}
-              {content}
-              {bottomButton}
-            </View>
-          </View>
-        </View>
-      )
+      <OrderCancelComponent
+        showReasons={showReasons}
+        setShowReasons={setShowReasons}
+        selectedReason={selectedReason}
+        setSelectedReason={setSelectedReason}
+        selectedSubReason={selectedSubReason}
+        setSelectedSubReason={setSelectedSubReason}
+        comment={comment}
+        setComment={setComment}
+        isCancelVisible={isCancelVisible}
+        setCancelVisible={setCancelVisible}
+        showSpinner={showSpinner}
+        onPressConfirmCancelOrder={onPressConfirmCancelOrder}
+        newCancellationReasonsBucket={newCancellationReasonsBucket}
+        selectedReasonBucket={selectedReasonBucket}
+        setSelectedReasonBucket={setSelectedReasonBucket}
+      />
     );
   };
 

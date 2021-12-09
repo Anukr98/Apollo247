@@ -12,17 +12,20 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { OrderDelayNoticeView } from '@aph/mobile-patients/src/components/MedicineOrderDetails';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
+import { OrderCancelComponent } from '@aph/mobile-patients/src/components/ui/OrderCancelComponent';
 import { ChatWithUs } from '@aph/mobile-patients/src/components/ui/ChatWithUs';
 import { DropDown, Option } from '@aph/mobile-patients/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   CrossPopup,
+  Down,
   DropdownGreen,
   MedicalIcon,
   More,
   NotificationIcon,
   NotifySymbolGreen,
   RetryButtonIcon,
+  Up,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { OrderProgressCard } from '@aph/mobile-patients/src/components/ui/OrderProgressCard';
@@ -36,6 +39,7 @@ import {
   ALERT_MEDICINE_ORDER_PICKUP,
   CANCEL_MEDICINE_ORDER_OMS,
   GET_MEDICINE_ORDER_CANCEL_REASONS,
+  GET_MEDICINE_ORDER_CANCEL_REASONS_V2,
   GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS,
   GET_PATIENT_ADDRESS_BY_ID,
   GET_PATIENT_FEEDBACK,
@@ -53,6 +57,10 @@ import {
   GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons,
 } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderCancelReasons';
 import {
+  getMedicineOrderCancelReasonsV2,
+  getMedicineOrderCancelReasonsV2_getMedicineOrderCancelReasonsV2_cancellationReasonBuckets,
+} from '@aph/mobile-patients/src/graphql/types/getMedicineOrderCancelReasonsV2';
+import {
   getMedicineOrderOMSDetailsWithAddress,
   getMedicineOrderOMSDetailsWithAddressVariables,
   getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails,
@@ -68,6 +76,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/GetPatientFeedback';
 import {
   FEEDBACKTYPE,
+  GetMedicineOrderCancelReasonsV2Input,
   MEDICINE_DELIVERY_TYPE,
   MEDICINE_ORDER_STATUS,
   MEDICINE_ORDER_TYPE,
@@ -103,11 +112,13 @@ import {
   Alert,
   BackHandler,
   Dimensions,
+  Image,
   Linking,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import { Overlay } from 'react-native-elements';
@@ -118,6 +129,7 @@ import {
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { NavigationActions, StackActions } from 'react-navigation';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -144,9 +156,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
   const AutoreOrder = props.navigation.getParam('reOrder');
-  const [cancellationReasons, setCancellationReasons] = useState<
-    GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons[]
-  >([]);
   const client = useApolloClient();
 
   const [showAlertStore, setShowAlertStore] = useState<boolean>(true);
@@ -167,14 +176,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       scrollViewRef.current.scrollTo({ x: 0, y: scrollYValue, animated: true });
   };
   const { currentPatient } = useAllCurrentPatients();
+  const { addresses, onHoldOptionOrder } = useShoppingCart();
   const {
-    addMultipleCartItems,
-    addMultipleEPrescriptions,
-    addresses,
-    onHoldOptionOrder,
-    setEPrescriptions,
-    setPhysicalPrescriptions,
-  } = useShoppingCart();
+    setUserActionPayload,
+    uploadEPrescriptionsToServerCart,
+    uploadPhysicalPrescriptionsToServerCart,
+  } = useServerCart();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [isCancelVisible, setCancelVisible] = useState(false);
   const [showPrescriptionPopup, setPrescriptionPopUp] = useState(false);
@@ -184,6 +191,17 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const [cancellationRequestRejected, setCancellationrequestRejected] = React.useState<Boolean>(
     false
   );
+
+  const [selectedReason, setSelectedReason] = useState('');
+  const [selectedSubReason, setSelectedSubReason] = useState('');
+  const [comment, setComment] = useState('');
+  const [showReasons, setShowReasons] = useState<boolean>(false);
+  const [newCancellationReasonsBucket, setNewCancellationReasonsBucket] = useState<
+    getMedicineOrderCancelReasonsV2_getMedicineOrderCancelReasonsV2_cancellationReasonBuckets[]
+  >([]);
+  const [selectedReasonBucket, setSelectedReasonBucket] = useState<
+    getMedicineOrderCancelReasonsV2_getMedicineOrderCancelReasonsV2_cancellationReasonBuckets[]
+  >([]);
 
   const vars: getMedicineOrderOMSDetailsWithAddressVariables = {
     patientId: currentPatient && currentPatient.id,
@@ -518,8 +536,17 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       };
       postCleverTapEvent(CleverTapEventName.PHARMACY_RE_ORDER_MEDICINE, cleverTapEventAttributes);
       postWebEngageEvent(WebEngageEventName.RE_ORDER_MEDICINE, eventAttributes);
-      items.length && addMultipleCartItems!(items);
-      items.length && prescriptions.length && addMultipleEPrescriptions!(prescriptions);
+      items?.forEach((item) => {
+        setUserActionPayload?.({
+          medicineOrderCartLineItems: [
+            {
+              medicineSKU: item.id,
+              quantity: item.quantity,
+            },
+          ],
+        });
+      });
+      uploadEPrescriptionsToServerCart(prescriptions);
       setLoading!(false);
       if (unavailableItems.length) {
         setReOrderDetails({ total: totalItemsCount, unavailable: unavailableItems });
@@ -528,7 +555,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           index: 1,
           actions: [
             NavigationActions.navigate({ routeName: AppRoutes.MyOrdersScreen }),
-            NavigationActions.navigate({ routeName: AppRoutes.MedicineCart }),
+            NavigationActions.navigate({ routeName: AppRoutes.ServerCart }),
           ],
         });
         props.navigation.dispatch(resetAction);
@@ -1645,7 +1672,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           setPrescriptionPopUp(false);
           if (selectedType == 'CAMERA_AND_GALLERY') {
             if (response.length == 0) return;
-            setPhysicalPrescriptions && setPhysicalPrescriptions(response);
+            uploadPhysicalPrescriptionsToServerCart(response);
             props.navigation.navigate(AppRoutes.UploadPrescription, {
               phyPrescriptionsProp: response,
               type,
@@ -1670,7 +1697,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           if (selectedEPres.length == 0) {
             return;
           }
-          setEPrescriptions && setEPrescriptions(selectedEPres);
+          uploadEPrescriptionsToServerCart(selectedEPres);
           props.navigation.navigate(AppRoutes.UploadPrescription, {
             ePrescriptionsProp: selectedEPres,
             type: 'E-Prescription',
@@ -1843,170 +1870,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       ],
     });
 
-  const [selectedReason, setSelectedReason] = useState('');
-  const [comment, setComment] = useState('');
-  const [overlayDropdown, setOverlayDropdown] = useState(false);
-  const renderReturnOrderOverlay = () => {
-    const optionsDropdown = overlayDropdown && (
-      <Overlay
-        onBackdropPress={() => setOverlayDropdown(false)}
-        isVisible={overlayDropdown}
-        overlayStyle={styles.dropdownOverlayStyle}
-      >
-        <DropDown
-          cardContainer={{
-            margin: 0,
-          }}
-          options={cancellationReasons.map(
-            (cancellationReasons, i) =>
-              ({
-                onPress: () => {
-                  setSelectedReason(cancellationReasons.description!);
-                  setOverlayDropdown(false);
-                },
-                optionText: cancellationReasons.description,
-              } as Option)
-          )}
-        />
-      </Overlay>
-    );
-
-    const heading = (
-      <View
-        style={{
-          ...theme.viewStyles.cardContainer,
-          backgroundColor: theme.colors.WHITE,
-          padding: 18,
-          marginBottom: 24,
-          borderTopLeftRadius: 10,
-          borderTopRightRadius: 10,
-        }}
-      >
-        <Text
-          style={{
-            ...theme.fonts.IBMPlexSansMedium(16),
-            color: theme.colors.SHERPA_BLUE,
-            textAlign: 'center',
-          }}
-        >
-          Cancel Order
-        </Text>
-      </View>
-    );
-
-    const content = (
-      <View style={{ paddingHorizontal: 16 }}>
-        <Text
-          style={[
-            {
-              marginBottom: 12,
-              color: '#0087ba',
-              ...theme.fonts.IBMPlexSansMedium(17),
-              lineHeight: 24,
-            },
-          ]}
-        >
-          Why are you cancelling this order?
-        </Text>
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={() => {
-            setOverlayDropdown(true);
-          }}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text
-              style={[
-                {
-                  flex: 0.9,
-                  ...theme.fonts.IBMPlexSansMedium(18),
-                  color: theme.colors.SHERPA_BLUE,
-                },
-                selectedReason ? {} : { opacity: 0.3 },
-              ]}
-              numberOfLines={1}
-            >
-              {selectedReason || 'Select reason for cancelling'}
-            </Text>
-            <View style={{ flex: 0.1 }}>
-              <DropdownGreen style={{ alignSelf: 'flex-end' }} />
-            </View>
-          </View>
-          <View
-            style={{
-              marginTop: 5,
-              backgroundColor: '#00b38e',
-              height: 2,
-            }}
-          />
-        </TouchableOpacity>
-        <TextInputComponent
-          value={comment}
-          onChangeText={(text) => {
-            setComment(text);
-          }}
-          label={'Add Comments (Optional)'}
-          placeholder={'Enter your comments here…'}
-        />
-      </View>
-    );
-
-    const bottomButton = (
-      <Button
-        style={{ margin: 16, marginTop: 32, width: 'auto' }}
-        onPress={onPressConfirmCancelOrder}
-        disabled={(!!!selectedReason && showSpinner) || selectedReason === ''}
-        title={'SUBMIT REQUEST'}
-      />
-    );
-
-    return (
-      isCancelVisible && (
-        <View
-          style={{
-            backgroundColor: 'rgba(0,0,0,0.8)',
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            justifyContent: 'flex-start',
-            flex: 1,
-            left: 0,
-            right: 0,
-            zIndex: 100,
-          }}
-        >
-          <View style={{ marginHorizontal: 20 }}>
-            <TouchableOpacity
-              style={{ marginTop: 38, alignSelf: 'flex-end' }}
-              onPress={() => {
-                setCancelVisible(!isCancelVisible);
-                setSelectedReason('');
-                setComment('');
-              }}
-            >
-              <CrossPopup />
-            </TouchableOpacity>
-            <View style={{ height: 16 }} />
-            <View
-              style={{
-                backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-                borderTopLeftRadius: 10,
-                borderTopRightRadius: 10,
-                borderBottomRightRadius: 10,
-                borderBottomLeftRadius: 10,
-              }}
-            >
-              {optionsDropdown}
-              {heading}
-              {content}
-              {bottomButton}
-            </View>
-          </View>
-        </View>
-      )
-    );
-  };
-
   const getFormattedOrderPlacedDateTime = (
     orderDetails: getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails
   ) => {
@@ -2073,8 +1936,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       medicineOrderCancelOMSInput: {
         orderNo: typeof orderAutoId == 'string' ? parseInt(orderAutoId, 10) : orderAutoId,
         cancelReasonCode:
-          cancellationReasons &&
-          cancellationReasons.find((item) => item.description == selectedReason)!.reasonCode,
+          selectedReasonBucket &&
+          selectedReasonBucket?.[0]?.reasons?.find(
+            (item) => selectedSubReason === item?.description
+          )?.reasonCode,
         cancelReasonText: comment,
       },
     };
@@ -2093,6 +1958,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           setCancelVisible(false);
           setComment('');
           setSelectedReason('');
+          setSelectedSubReason('');
         };
         const requestStatus = g(data, 'cancelMedicineOrderOMS', 'orderStatus');
         if (
@@ -2129,30 +1995,40 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       });
   };
 
-  const getCancellationReasons = () => {
+  const getCancellationReasonsBuckets = () => {
+    const vars: GetMedicineOrderCancelReasonsV2Input = {
+      orderId: Number(orderAutoId),
+    };
     setShowSpinner(true);
     client
-      .query<GetMedicineOrderCancelReasons>({
-        query: GET_MEDICINE_ORDER_CANCEL_REASONS,
-        variables: {},
+      .query<getMedicineOrderCancelReasonsV2>({
+        query: GET_MEDICINE_ORDER_CANCEL_REASONS_V2,
+        variables: {
+          getMedicineOrderCancelReasonsV2Input: vars,
+        },
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
         if (
-          data.data.getMedicineOrderCancelReasons &&
-          data.data.getMedicineOrderCancelReasons.cancellationReasons &&
-          data.data.getMedicineOrderCancelReasons.cancellationReasons.length > 0
+          data?.data?.getMedicineOrderCancelReasonsV2 &&
+          data?.data?.getMedicineOrderCancelReasonsV2?.cancellationReasonBuckets &&
+          data?.data?.getMedicineOrderCancelReasonsV2?.cancellationReasonBuckets.length > 0
         ) {
           let cancellationArray: any = [];
-          data.data.getMedicineOrderCancelReasons.cancellationReasons.forEach(
-            (cancellationReasons, index) => {
-              if (cancellationReasons && cancellationReasons.isUserReason) {
+          data?.data?.getMedicineOrderCancelReasonsV2?.cancellationReasonBuckets.forEach(
+            (cancellationReasons) => {
+              if (
+                cancellationReasons &&
+                cancellationReasons?.reasons &&
+                cancellationReasons?.reasons?.length
+              ) {
                 cancellationArray.push(cancellationReasons);
               }
             }
           );
-          setCancellationReasons(cancellationArray);
+          setNewCancellationReasonsBucket(cancellationArray);
           setCancelVisible(true);
+          setShowReasons(true);
         }
       })
       .catch((error) => {
@@ -2185,7 +2061,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b') }}
         onPress={(item) => {
           if (item.value == 'Cancel Order') {
-            getCancellationReasons();
+            getCancellationReasonsBuckets();
           }
         }}
       >
@@ -2269,7 +2145,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             ))}
           <Button
             style={styles.cancelOrderButton}
-            onPress={getCancellationReasons}
+            onPress={getCancellationReasonsBuckets}
             title={'CANCEL ORDER'}
           />
         </View>
@@ -2285,13 +2161,35 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           itemDetails={{ total, unavailable }}
           onContinue={() => {
             setReOrderDetails({ total: 0, unavailable: [] });
-            props.navigation.navigate(AppRoutes.MedicineCart);
+            props.navigation.navigate(AppRoutes.ServerCart);
           }}
           onClose={() => {
             setReOrderDetails({ total: 0, unavailable: [] });
           }}
         />
       )
+    );
+  };
+
+  const renderReturnOrderOverlay = () => {
+    return (
+      <OrderCancelComponent
+        showReasons={showReasons}
+        setShowReasons={setShowReasons}
+        selectedReason={selectedReason}
+        setSelectedReason={setSelectedReason}
+        selectedSubReason={selectedSubReason}
+        setSelectedSubReason={setSelectedSubReason}
+        comment={comment}
+        setComment={setComment}
+        isCancelVisible={isCancelVisible}
+        setCancelVisible={setCancelVisible}
+        showSpinner={showSpinner}
+        onPressConfirmCancelOrder={onPressConfirmCancelOrder}
+        newCancellationReasonsBucket={newCancellationReasonsBucket}
+        selectedReasonBucket={selectedReasonBucket}
+        setSelectedReasonBucket={setSelectedReasonBucket}
+      />
     );
   };
 
@@ -2359,7 +2257,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                       ? true
                       : isNonCartOrderBilled
                     : true;
-
                 if (enableOrderSummary) {
                   setSelectedTab(title);
                 }
@@ -2367,6 +2264,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               data={
                 offlineOrderBillNumber
                   ? [{ title: string.orders.viewBill }]
+                  : !orderDetails?.orderTat && orderDetails?.medicineOrderLineItems?.length === 0
+                  ? [{ title: string.orders.trackOrder }]
                   : [{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]
               }
               selectedTab={selectedTab}
@@ -2573,5 +2472,17 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginTop: 9,
     marginBottom: 17,
+  },
+  reasonHeadingStyle: {
+    ...theme.fonts.IBMPlexSansRegular(16),
+    color: theme.colors.SHERPA_BLUE,
+    fontWeight: '500',
+    lineHeight: 24,
+  },
+  nudgeText: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    color: theme.colors.SKY_BLUE,
+    lineHeight: 16,
+    fontWeight: '600',
   },
 });

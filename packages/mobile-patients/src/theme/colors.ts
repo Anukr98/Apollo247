@@ -48,6 +48,7 @@ const Buttons = {
   BUTTON_BG: '#fcb716',
   BUTTON_TEXT: white,
   BUTTON_DISABLED_BG: '#fed984',
+  BUTTON_ORANGE: '#FC9916',
 };
 
 const Card = {
@@ -125,6 +126,9 @@ const Common = {
   COMPLETE_STATUS_BGK: '#E3FCEF',
   INTERMITTENT_STATUS_BGK: '#FFF0B3',
   ICE_BERG: '#DFF4F4',
+  ICE_BERG_FLAT: '#E7FFFD',
+  BLUE_FADED_FLAT: '#FAFEFF',
+  D4_GRAY: '#D4D4D4',
   GRAYED: '#CBCBCB',
   SLATE_GRAY: '#68919D',
   NILE_BLUE: '#1C4659',
@@ -147,7 +151,7 @@ const Common = {
   ORANGE: "#FF774B",
   LIGHT_ORANGE_YELLOW: "#FCA317",
   GREEN_BACKGROUND: "#F5FFFD",
-  BGK_GRAY : '#f9f9f9',
+  BGK_GRAY: '#f9f9f9',
   TEAL_BLUE: '#3F7281',
   SHERPA_BLUE_LIGHT: sherpa_blue_light,
   APP_REFERRAL_BLUE: '#4E69FF',
@@ -160,8 +164,12 @@ const Common = {
   LIGHT_GREEN_ONE: '#E8EDF0',
   LIGHT_BLUE_TWO: '#DCF0FF',
   BLUE_GRADIENT_ONE: '#1C9FC2',
+  LIGHT_GRAY_3: '#ECECEC',
   DISCOUNT_GREEN: "#34AA55",
-  GREEN_BG: "#F3FFFF"
+  GREEN_BG: "#F3FFFF",
+  LIGHT_REFERRER_AQUA_ONE: "#85e2dc",
+  LIGHT_REFERRER_AQUA_TWO: "#FFFCFF",
+  BLUE_REFERRER_BORDER: "#74b9ed"
 };
 
 const Header = {
@@ -202,6 +210,7 @@ const TextInput = {
   INPUT_FAILURE_TEXT: '#890000',
   INPUT_INFO: tangerine_yellow,
   placeholderTextColor: 'rgba(1,48,91, 0.3)',
+  HOME_SEARCH_PLACEHOLDER: 'rgba(2,71,91,0.7)',
   searchAreaPlaceholderTextColor: 'rgba(1,71,91,0.6)',
   light_label: '#658f9b',
 };

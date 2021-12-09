@@ -52,6 +52,7 @@ import {
   g,
   getMaxQtyForMedicineItem,
   getIsMedicine,
+  formatToCartItem,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   ProductPageViewedSource,
@@ -64,6 +65,7 @@ import { MedicineSearchSuggestionItem } from '@aph/mobile-patients/src/component
 import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
 import _ from 'lodash';
 import { MedicineSearchEvents } from '@aph/mobile-patients/src/components/MedicineSearch/MedicineSearchEvents';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -144,25 +146,17 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const {
-    addCartItem,
-    removeCartItem,
-    updateCartItem,
-    cartItems,
     pinCode,
-    pharmacyCircleAttributes,
-    asyncPincode,
     axdcCode,
+    serverCartItems,
+    cartLocationDetails,
+    pharmacyCircleAttributes,
   } = useShoppingCart();
+  const { setUserActionPayload } = useServerCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { getPatientApiCall } = useAuth();
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
-  const {
-    locationDetails,
-    pharmacyLocation,
-    isPharmacyLocationServiceable,
-    pharmacyUserType,
-  } = useAppCommonData();
-  const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
+  const { pharmacyUserType, isPharmacyLocationServiceable } = useAppCommonData();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -227,66 +221,51 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     });
 
   const onAddCartItem = (item: MedicineProduct, suggestionItem?: boolean) => {
-    const {
-      sku,
-      mou,
-      name,
-      price,
-      special_price,
-      is_prescription_required,
-      thumbnail,
-      type_id,
-      MaxOrderQty,
-      url_key,
-      subcategory,
-    } = item;
+    const { sku } = item;
     suggestionItem && setItemsLoading({ ...itemsLoading, [sku]: true });
+    setUserActionPayload?.({
+      medicineOrderCartLineItems: [
+        {
+          medicineSKU: item?.sku,
+          quantity: 1,
+        },
+      ],
+    });
     addPharmaItemToCart(
-      {
-        id: sku,
-        mou,
-        name,
-        price: price,
-        specialPrice: special_price
-          ? typeof special_price == 'string'
-            ? Number(special_price)
-            : special_price
-          : undefined,
-        prescriptionRequired: is_prescription_required == '1',
-        isMedicine: getIsMedicine(type_id?.toLowerCase()) || '0',
-        quantity: 1,
-        thumbnail,
-        isInStock: true,
-        maxOrderQty: MaxOrderQty,
-        productType: type_id,
-        url_key,
-        subcategory,
-      },
-      asyncPincode?.pincode || pharmacyPincode!,
-      addCartItem,
+      formatToCartItem(item),
+      cartLocationDetails?.pincode,
+      () => {},
       suggestionItem ? null : globalLoading,
       props.navigation,
       currentPatient,
       !!isPharmacyLocationServiceable,
       { source: 'Pharmacy List', categoryId: category_id },
-      JSON.stringify(cartItems),
+      JSON.stringify(serverCartItems),
       suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined,
       pharmacyCircleAttributes!
     );
   };
 
   const onRemoveCartItem = ({ sku }: MedicineProduct) => {
-    removeCartItem && removeCartItem(sku);
+    setUserActionPayload?.({
+      medicineOrderCartLineItems: [
+        {
+          medicineSKU: sku,
+          quantity: 0,
+        },
+      ],
+    });
   };
 
   const onUpdateCartItem = ({ sku }: MedicineProduct, unit: number) => {
-    if (!(unit < 1)) {
-      updateCartItem &&
-        updateCartItem({
-          id: sku,
+    setUserActionPayload?.({
+      medicineOrderCartLineItems: [
+        {
+          medicineSKU: sku,
           quantity: unit,
-        });
-    }
+        },
+      ],
+    });
   };
 
   const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
@@ -298,7 +277,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   };
 
   const renderHeader = () => {
-    const cartItemsCount = cartItems.length + diagnosticCartItems.length;
+    const cartItemsCount = serverCartItems.length + diagnosticCartItems.length;
     return (
       <Header
         container={{
@@ -317,7 +296,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
               activeOpacity={1}
               onPress={() => {
                 props.navigation.navigate(
-                  diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.MedicineCart
+                  diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.ServerCart
                 );
               }}
             >
@@ -337,7 +316,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
                   key: null,
                   actions: [
                     NavigationActions.navigate({
-                      routeName: AppRoutes.ConsultRoom,
+                      routeName: AppRoutes.HomeScreen,
                     }),
                   ],
                 })
@@ -375,11 +354,25 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         onPressAdd={() => {
           const q = getItemQuantity(item.sku);
           if (q == getMaxQtyForMedicineItem(item.MaxOrderQty)) return;
-          onUpdateCartItem(item, getItemQuantity(item.sku) + 1);
+          setUserActionPayload?.({
+            medicineOrderCartLineItems: [
+              {
+                medicineSKU: item?.sku,
+                quantity: q - 1,
+              },
+            ],
+          });
         }}
         onPressSubstract={() => {
           const q = getItemQuantity(item.sku);
-          q == 1 ? onRemoveCartItem(item) : onUpdateCartItem(item, q - 1);
+          setUserActionPayload?.({
+            medicineOrderCartLineItems: [
+              {
+                medicineSKU: item?.sku,
+                quantity: q - 1,
+              },
+            ],
+          });
         }}
         quantity={getItemQuantity(item.sku)}
         data={item}
@@ -468,7 +461,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     });
   };
   const getItemQuantity = (id: string) => {
-    const foundItem = cartItems.find((item) => item.id == id);
+    const foundItem = serverCartItems?.find((item) => item.id == id);
     return foundItem ? foundItem.quantity : 0;
   };
 
@@ -535,7 +528,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         }
         isInStock={!!medicine.is_in_stock}
         isPrescriptionRequired={medicine.is_prescription_required == '1'}
-        removeCartItem={() => removeCartItem!(medicine.sku)}
+        removeCartItem={() => onRemoveCartItem(medicine)}
         maxOrderQty={getMaxQtyForMedicineItem(medicine.MaxOrderQty)}
         type_id={medicine.type_id}
         is_express={medicine.is_express}
@@ -608,7 +601,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         }
         isInStock={!!medicine.is_in_stock}
         isPrescriptionRequired={medicine.is_prescription_required == '1'}
-        removeCartItem={() => removeCartItem!(medicine.sku)}
+        removeCartItem={() => onRemoveCartItem(medicine)}
         maxOrderQty={getMaxQtyForMedicineItem(medicine.MaxOrderQty)}
         type_id={medicine.type_id}
         is_express={medicine.is_express}

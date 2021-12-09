@@ -180,7 +180,7 @@ const pushTheView = (
       break;
 
     case 'ConsultRoom':
-      navigation.replace(AppRoutes.ConsultRoom);
+      navigation.replace(AppRoutes.HomeScreen);
       break;
 
     case 'Speciality':
@@ -232,7 +232,7 @@ const pushTheView = (
       break;
 
     case 'MedicineCart':
-      navigation.navigate(AppRoutes.MedicineCart, {
+      navigation.navigate(AppRoutes.ServerCart, {
         movedFrom: 'splashscreen',
       });
       break;

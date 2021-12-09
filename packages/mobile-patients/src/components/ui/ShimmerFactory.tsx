@@ -5,6 +5,7 @@ import { createShimmerPlaceholder } from 'react-native-shimmer-placeholder';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CovidOrange } from '@aph/mobile-patients/src/components/ui/Icons';
 import { cardWidth } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultedDoctorsCard';
+import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 
 const { width, height } = Dimensions.get('window');
 const ShimmerPlaceHolder = createShimmerPlaceholder(LinearGradient);
@@ -193,12 +194,12 @@ const styles = StyleSheet.create({
     margin: 10,
   },
   homeBanner: {
-    borderRadius: 5,
+    borderRadius: 6,
     borderColor: '#D3D3D3',
-    borderWidth: 0.5,
+    borderWidth: 1,
     height: 150,
-    width: '95%',
-    margin: 10,
+    width: '90%',
+    margin: 16,
   },
   subPlanTwoShimmer1: {
     borderRadius: 5,
@@ -245,7 +246,7 @@ const styles = StyleSheet.create({
     width: cardWidth,
     marginBottom: 20,
     marginLeft: 20,
-    borderRadius: 10,
+    borderRadius: 6,
     justifyContent: 'center',
   },
   vaccineAppointmentBlock: {
@@ -454,7 +455,18 @@ export const renderCovidVaccinationShimmer = () => {
 
 export const renderCircleShimmer = () => {
   return (
-    <View style={{ paddingTop: 10 }}>
+    <LinearGradientComponent
+      colors={['#FFEEDB', '#FFFCFA']}
+      style={{
+        marginVertical: 6,
+        marginHorizontal: 16,
+        padding: 6,
+        borderWidth: 1,
+        borderColor: '#F9D5B4',
+        borderRadius: 6,
+        width: '90%',
+      }}
+    >
       <View style={styles.planContainer}>
         <View style={styles.subPlanOne}>
           <Image
@@ -483,31 +495,190 @@ export const renderCircleShimmer = () => {
           />
         </View>
       </View>
-
-      <View style={{ flexDirection: 'row' }}>
-        <ShimmerPlaceHolder
-          shimmerColors={shimmerColors}
-          LinearGradient={LinearGradient}
-          shimmerStyle={styles.circleCard}
-        />
-        <ShimmerPlaceHolder
-          shimmerColors={shimmerColors}
-          LinearGradient={LinearGradient}
-          shimmerStyle={styles.circleCard}
-        />
-      </View>
-    </View>
+    </LinearGradientComponent>
   );
 };
 
 export const renderBannerShimmer = () => {
   return (
-    <View style={{ backgroundColor: '#f0f1ec', paddingHorizontal: 8 }}>
+    <View>
       <ShimmerPlaceHolder LinearGradient={LinearGradient} shimmerStyle={styles.homeBanner} />
       <View style={styles.sliderDotsContainer}>
         <View style={styles.sliderDots} />
         <View style={styles.sliderDots} />
         <View style={styles.sliderDots} />
+      </View>
+    </View>
+  );
+};
+
+export const renderOffersForYouShimmer = () => {
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        marginLeft: 16,
+        marginTop: 16,
+        marginBottom: 8,
+      }}
+    >
+      <ShimmerPlaceHolder
+        shimmerColors={['#FFE7AA', '#FCDCFF']}
+        shimmerStyle={{
+          height: 150,
+          marginRight: 12,
+          marginBottom: 12,
+          borderRadius: 6,
+          width: width - 32,
+        }}
+      />
+    </View>
+  );
+};
+
+export const renderGlobalSearchShimmer = () => {
+  return (
+    <View
+      style={{
+        width: width,
+        marginBottom: 6,
+        paddingHorizontal: 16,
+        backgroundColor: '#fff',
+        height: '100%',
+        paddingBottom: 16,
+      }}
+    >
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: '#EAF6FF',
+          marginVertical: 16,
+          paddingVertical: 8,
+        }}
+      >
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={{
+            ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
+            marginLeft: 14,
+          }}
+        />
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={{ width: 25, height: 25 }}
+        />
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={{
+            ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+            marginLeft: 14,
+          }}
+        />
+      </View>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: '#FEE7DA',
+          marginVertical: 16,
+          paddingVertical: 8,
+        }}
+      >
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={{
+            ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
+            marginLeft: 14,
+          }}
+        />
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={{ width: 25, height: 25 }}
+        />
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={{
+            ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+            marginLeft: 14,
+          }}
+        />
+      </View>
+
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={{ width: 25, height: 25 }}
+        />
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={{
+            ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+            marginLeft: 14,
+          }}
+        />
+      </View>
+
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: '#E5FFFD',
+          marginVertical: 16,
+          paddingVertical: 8,
+        }}
+      >
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={{
+            ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 24),
+            marginLeft: 14,
+          }}
+        />
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={{ width: 25, height: 25 }}
+        />
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={{
+            ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+            marginLeft: 14,
+          }}
+        />
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={{ width: 25, height: 25 }}
+        />
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={{
+            ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+            marginLeft: 14,
+          }}
+        />
       </View>
     </View>
   );
@@ -897,6 +1068,23 @@ export const renderPackageItemPriceShimmer = () => {
       shimmerColors={shimmerColors}
       LinearGradient={LinearGradient}
       shimmerStyle={styles.itemPackagePrice}
+    />
+  );
+};
+
+export const renderAppointmentCountShimmer = () => {
+  return (
+    <ShimmerPlaceHolder
+      shimmerColors={['#E8E8E8', theme.colors.SKY_BLUE]}
+      LinearGradient={LinearGradient}
+      shimmerStyle={{
+        height: 40,
+        width: 40,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#E8E8E8',
+        borderRadius: 6,
+      }}
     />
   );
 };

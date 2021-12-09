@@ -236,6 +236,7 @@ import {
   createVonageSessionToken,
   createVonageSessionTokenVariables,
 } from '../../graphql/types/createVonageSessionToken';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 interface OpentokStreamObject {
   connection: {
@@ -469,7 +470,7 @@ const styles = StyleSheet.create({
     width: 65,
     height: 60,
     position: 'absolute',
-    zIndex: 900,
+    zIndex: 3,
     left: 5,
     bottom: 20,
     alignItems: 'center',
@@ -1247,12 +1248,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
-  const {
-    setEPrescriptions,
-    addMultipleCartItems,
-    circleSubPlanId,
-    circleSubscriptionId,
-  } = useShoppingCart();
+  const { circleSubPlanId, circleSubscriptionId } = useShoppingCart();
+  const { setUserActionPayload, uploadEPrescriptionsToServerCart } = useServerCart();
   const [name, setname] = useState<string>('');
   const [showRescheduleCancel, setShowRescheduleCancel] = useState<boolean>(false);
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
@@ -4643,31 +4640,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (isCartOrder) {
       try {
         setLoading(true);
-        const response: AxiosResponse<MedicineProductDetailsResponse>[] = await Promise.all(
-          medPrescription.map((item) => getMedicineDetailsApi(item?.id!))
-        );
-        const cartItems = response
-          .filter(({ data }) => {
-            const medicine = data?.productdp?.[0];
-            return medicine?.id && medicine?.sku;
-          })
-          .map(({ data }, index) => ({
-            ...formatToCartItem({ ...data?.productdp?.[0]!, image: '' }),
-            quantity: getPrescriptionItemQuantity(
-              medPrescription?.[index]?.medicineUnit,
-              medPrescription?.[index]?.medicineTimings,
-              medPrescription?.[index]?.medicineDosage,
-              medPrescription?.[index]?.medicineCustomDosage,
-              medPrescription?.[index]?.medicineConsumptionDurationInDays,
-              medPrescription?.[index]?.medicineConsumptionDurationUnit,
-              parseInt(data?.productdp?.[0]?.mou || '1', 10)
-            ),
-          }));
-        addMultipleCartItems?.(cartItems);
-        setEPrescriptions?.([presToAdd]);
+        medPrescription?.forEach((value) => {
+          setUserActionPayload?.({
+            medicineOrderCartLineItems: [
+              {
+                medicineSKU: value?.id,
+                quantity: 1,
+              },
+            ],
+          });
+        });
+        uploadEPrescriptionsToServerCart([presToAdd]);
         setLoading(false);
         postCleverTapUploadPrescriptionEvents('Consult Room', 'Cart');
-        props.navigation.push(AppRoutes.MedicineCart);
+        props.navigation.push(AppRoutes.ServerCart);
       } catch (error) {
         setLoading(false);
         showAphAlert?.({
@@ -4678,7 +4664,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
       return;
     }
-    setEPrescriptions?.([presToAdd]);
+    uploadEPrescriptionsToServerCart([presToAdd]);
     postCleverTapUploadPrescriptionEvents('Consult Room', 'Non-Cart');
     props.navigation.navigate(AppRoutes.UploadPrescription, {
       ePrescriptionsProp: [presToAdd],

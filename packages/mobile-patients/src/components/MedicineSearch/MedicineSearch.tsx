@@ -47,6 +47,7 @@ import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/Diagnost
 import { Badge } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { SuggestedQuantityNudge } from '@aph/mobile-patients/src/components/SuggestedQuantityNudge/SuggestedQuantityNudge';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 type RecentSearch = getPatientPastMedicineSearches_getPatientPastMedicineSearches;
 
@@ -74,6 +75,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     : '';
 
   const { currentPatient } = useAllCurrentPatients();
+  const { setUserActionPayload } = useServerCart();
   const {
     locationDetails,
     pharmacyLocation,
@@ -84,17 +86,16 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
   const {
     getCartItemQty,
     addCartItem,
-    updateCartItem,
-    removeCartItem,
     pinCode,
     pharmacyCircleAttributes,
-    cartItems,
     asyncPincode,
     axdcCode,
+    serverCartItems,
+    setAddToCartSource,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
 
-  const cartItemsCount = cartItems.length + diagnosticCartItems.length;
+  const cartItemsCount = serverCartItems?.length + diagnosticCartItems.length;
 
   const { data } = useQuery<
     getPatientPastMedicineSearches,
@@ -125,12 +126,12 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     }
   };
   useEffect(() => {
-    if (cartItems.find(({ id }) => id?.toUpperCase() === currentProductIdInCart)) {
+    if (serverCartItems.find(({ sku }) => sku?.toUpperCase() === currentProductIdInCart)) {
       if (shownNudgeOnce === false) {
         setShowSuggestedQuantityNudge(true);
       }
     }
-  }, [cartItems, currentProductQuantityInCart, currentProductIdInCart]);
+  }, [serverCartItems, currentProductQuantityInCart, currentProductIdInCart]);
 
   useEffect(() => {
     if (showSuggestedQuantityNudge === false) {
@@ -182,7 +183,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
         activeOpacity={1}
         onPress={() =>
           navigation.navigate(
-            diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.MedicineCart
+            diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.ServerCart
           )
         }
       >
@@ -400,16 +401,25 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       cleverTapSearchSuccessEventAttributes: object
     ) => {
       setItemsAddingToCart({ ...itemsAddingToCart, [item.sku]: true });
+      setAddToCartSource?.({ source: 'Pharmacy Full Search', categoryId: item?.category_id });
+      setUserActionPayload?.({
+        medicineOrderCartLineItems: [
+          {
+            medicineSKU: item?.sku,
+            quantity: 1,
+          },
+        ],
+      });
       addPharmaItemToCart(
         formatToCartItem(item),
         asyncPincode?.pincode || pharmacyPincode!,
-        addCartItem,
+        () => {},
         null,
         navigation,
         currentPatient,
         !!isPharmacyLocationServiceable,
         { source: 'Pharmacy Partial Search', categoryId: item.category_id },
-        JSON.stringify(cartItems),
+        JSON.stringify(serverCartItems),
         () => setItemsAddingToCart({ ...itemsAddingToCart, [item.sku]: false }),
         pharmacyCircleAttributes!,
         () => {},
@@ -432,13 +442,27 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       const qty = getCartItemQty(id);
       const onPressAdd = () => {
         if (qty < item.MaxOrderQty) {
-          updateCartItem!({ id, quantity: qty + 1 });
           setCurrentProductQuantityInCart(qty + 1);
+          setUserActionPayload?.({
+            medicineOrderCartLineItems: [
+              {
+                medicineSKU: item?.sku,
+                quantity: qty + 1,
+              },
+            ],
+          });
         }
       };
       const onPressSubstract = () => {
-        qty == 1 ? removeCartItem!(id) : updateCartItem!({ id, quantity: qty - 1 });
         setCurrentProductQuantityInCart(qty - 1);
+        setUserActionPayload?.({
+          medicineOrderCartLineItems: [
+            {
+              medicineSKU: item?.sku,
+              quantity: qty - 1,
+            },
+          ],
+        });
       };
       const comingFromSearch = true;
 

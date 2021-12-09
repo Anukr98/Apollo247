@@ -22,26 +22,24 @@ export interface ProceedBarProps {
 }
 
 export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
-  const { deliveryAddressId, addresses } = useShoppingCart();
+  const { addresses, cartAddressId } = useShoppingCart();
   const {
     onPressSelectDeliveryAddress,
     onPressAddDeliveryAddress,
     onPressPlaceOrder,
-    onPressTatCard,
     onPressChangeAddress,
-    vdcType,
     screen,
     disableButton,
     selectedMedicineOption,
     onPressProceed,
     deliveryTime,
   } = props;
-  const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
+  const selectedAddress = addresses.find((item) => item.id == cartAddressId);
 
   function getTitle() {
     return selectedMedicineOption == 'search'
       ? 'PROCEED'
-      : !deliveryAddressId
+      : !cartAddressId
       ? addresses?.length
         ? string.selectDeliveryAddress
         : string.addDeliveryAddress
@@ -51,7 +49,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
   function onPressButton() {
     return selectedMedicineOption == 'search'
       ? onPressProceed?.()
-      : !deliveryAddressId
+      : !cartAddressId
       ? addresses?.length
         ? onPressSelectDeliveryAddress?.()
         : onPressAddDeliveryAddress?.()
@@ -75,15 +73,12 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
       selectedAddress &&
       screen != 'summary' &&
       selectedMedicineOption != 'search' &&
-      deliveryTime != undefined
+      (deliveryTime != undefined || screen == 'prescription')
     ) {
       return (
         <TatCard
-          deliveryTime={deliveryTime}
-          isNonCartOrder={true}
           deliveryAddress={formatSelectedAddress(selectedAddress!)}
           onPressChangeAddress={onPressChangeAddress!}
-          onPressTatCard={onPressTatCard}
         />
       );
     } else {

@@ -22,11 +22,11 @@ export const MedicineListingHeader: React.FC<Props> = ({
   navSrcForSearchSuccess,
 }) => {
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
-  const { cartItems } = useShoppingCart();
+  const { serverCartItems } = useShoppingCart();
 
   const onBackPress = () => {
     if (movedFrom === 'registration') {
-      navigation.replace(AppRoutes.ConsultRoom);
+      navigation.replace(AppRoutes.HomeScreen);
     } else {
       navigation.goBack();
     }
@@ -43,14 +43,14 @@ export const MedicineListingHeader: React.FC<Props> = ({
   };
 
   const onPressApolloIcon = () => {
-    navigation.replace(AppRoutes.ConsultRoom);
+    navigation.replace(AppRoutes.HomeScreen);
   };
 
   const renderHeaderRightView = () => {
-    const cartItemsCount = cartItems.length + diagnosticCartItems.length;
+    const cartItemsCount = serverCartItems?.length + diagnosticCartItems.length;
     const onPressCartIcon = () => {
       navigation.navigate(
-        diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.MedicineCart
+        diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.ServerCart
       );
     };
     const onPressSearchIcon = () => {

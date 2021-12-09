@@ -47,9 +47,9 @@ export interface TabHeaderProps {
 }
 
 export const TabHeader: React.FC<TabHeaderProps> = (props) => {
-  const { cartItems } = useShoppingCart();
+  const { serverCartItems } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
-  const cartItemsCount = cartItems.length + diagnosticCartItems.length;
+  const cartItemsCount = serverCartItems?.length + diagnosticCartItems.length;
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { pharmacyCircleAttributes } = useShoppingCart();
 
