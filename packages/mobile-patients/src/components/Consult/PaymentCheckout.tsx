@@ -135,6 +135,7 @@ import {
 import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { Decimal } from 'decimal.js';
+import { CouponOfferMessage } from '@aph/mobile-patients/src/components/ServerCart/Components/CouponOfferMessage';
 
 interface PaymentCheckoutProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
@@ -664,6 +665,14 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     );
   };
 
+  const renderCouponHighlights = () => {
+    return (
+      <View style={{ marginLeft: -10, marginRight: 10, width: '100%', marginTop: 5 }}>
+        <CouponOfferMessage movedFrom={'consultation'} />
+      </View>
+    );
+  };
+
   const renderApplyCoupon = () => {
     return (
       <ListCard
@@ -676,7 +685,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         leftIcon={<CouponIcon />}
         rightIcon={<ArrowRight />}
         leftTitle={coupon}
-        children={coupon ? renderCouponSavingsView() : null}
+        children={coupon ? renderCouponSavingsView() : renderCouponHighlights()}
         title={coupon ? ' applied' : 'Apply Coupon'}
         onPress={() => {
           if (!selectedTimeSlot) {
