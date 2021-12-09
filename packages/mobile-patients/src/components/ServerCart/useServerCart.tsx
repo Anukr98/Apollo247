@@ -104,7 +104,7 @@ export const useServerCart = () => {
         }
       })
       .catch((error) => {
-        setServerCartErrorMessage?.(error);
+        setServerCartErrorMessage?.(genericErrorMessage);
       })
       .finally(() => {
         setUserActionPayload?.(null);
@@ -137,7 +137,7 @@ export const useServerCart = () => {
         }
       })
       .catch((error) => {
-        setServerCartErrorMessage?.(error);
+        setServerCartErrorMessage?.(genericErrorMessage);
       })
       .finally(() => {
         setUserActionPayload?.(null);
@@ -171,7 +171,7 @@ export const useServerCart = () => {
         }
       })
       .catch((error) => {
-        setServerCartErrorMessage?.(error);
+        setServerCartErrorMessage?.(genericErrorMessage);
       })
       .finally(() => {
         setUserActionPayload?.(null);
@@ -223,7 +223,7 @@ export const useServerCart = () => {
         if (deleteCartResponse?.success) fetchReviewCart();
       })
       .catch((error) => {
-        setServerCartErrorMessage?.(error);
+        setServerCartErrorMessage?.(genericErrorMessage);
       })
       .finally(() => {
         setServerCartLoading?.(false);
