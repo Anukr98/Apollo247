@@ -795,8 +795,8 @@ export const pushTheView = (
         .then(({ data }) => {
           const response = data;
           if (response?.success === true && response?.data?.length) {
-            !!movedFromBrandPages ? navigation.navigate(AppRoutes.BrandPages, { movedFrom: 'brandPages', brandData: response?.data }) :
-            navigateToView(navigation, AppRoutes.BrandPages, { movedFrom: 'deeplink', brandData: response?.data });
+            !!movedFromBrandPages ? navigation.navigate(AppRoutes.BrandPages, { movedFrom: 'brandPages', brandData: response?.data, categoryName: id }) :
+            navigateToView(navigation, AppRoutes.BrandPages, { movedFrom: 'deeplink', brandData: response?.data, categoryName: id });
           } else {
             !!movedFromBrandPages ? navigation.navigate(AppRoutes.MedicineListing, { categoryName: id, movedFrom: 'brandPages' }) :
             navigateToView(navigation, AppRoutes.MedicineListing, { categoryName: id, movedFrom: 'deeplink' });
