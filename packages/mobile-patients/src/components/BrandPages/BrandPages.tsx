@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
   View,
   Text,
   FlatList,
-  Image as ImageNative,
+  Image,
   StyleSheet,
   TouchableOpacity,
+  Dimensions,
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { MedicineListingHeader } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingHeader';
@@ -21,7 +22,7 @@ import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/dee
 
 export interface BrandPagesProps
   extends NavigationScreenProps<{
-    movedFrom?: 'home';
+    movedFrom?: 'home' | 'deeplink';
     brandData?: BrandData[];
     category_id?: string;
     title?: string;
@@ -44,6 +45,7 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
 
   const imgHeight = 175;
   const movedFromBrandPages = true;
+  const win = Dimensions.get('window');
   const imageUrl = brandData?.[0]?.brandMobileBannerImg
     ? brandData?.[0]?.brandMobileBannerImg
     : brandData?.[0]?.brandMainBannerImg;
@@ -52,10 +54,61 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
   const [selectedMenuItemName, setSelectedMenuItemName] = useState<string>('Home');
   const [categoryID, setCategoryID] = useState(props.navigation.getParam('category_id'));
   const [title, setTitle] = useState(props.navigation.getParam('title'));
+  const [bannerImageHeightWidthData, setBannerImageHeightWidthData] = useState([]);
+  const [mainBannerImageData, setMainBannerImageData] = useState([]);
 
   AsyncStorage.getItem(USER_AGENT).then((userAgent) => {
     setUserAgent(userAgent || '');
   });
+
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      let mainBannerImageData = [];
+      Image.getSize(
+        imageUrl,
+        (width, height) => {
+          const ratio = win.width / width;
+          const product = height * ratio;
+          const obj = {
+            imgWidth: width,
+            imgHeight: height,
+            heightToBeSet: product,
+            imgUrl: imageUrl,
+          };
+          mainBannerImageData.push(obj);
+          setMainBannerImageData(mainBannerImageData);
+        },
+        () => {}
+      );
+      let bannerImageData = [];
+      brandData?.[0]?.brandBannersList.map((banner) => {
+        const url = banner?.brandBannerImgUrl;
+        Image.getSize(
+          url,
+          (width, height) => {
+            const ratio = win.width / width;
+            const product = height * ratio;
+            const obj = {
+              imgWidth: width,
+              imgHeight: height,
+              heightToBeSet: product,
+              imgUrl: url,
+            };
+            bannerImageData.push(obj);
+            setBannerImageHeightWidthData([bannerImageData]);
+          },
+          () => {}
+        );
+      });
+    });
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+      setBannerImageHeightWidthData([]);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      didBlur && didBlur.remove();
+    };
+  }, [props.navigation]);
 
   const renderHeader = () => {
     return (
@@ -67,12 +120,14 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
     );
   };
 
-  const renderMainBanner = () => {
+  const renderMainBanner = (imgData: object) => {
     return (
       <TouchableOpacity activeOpacity={1}>
-        <ImageNative
-          resizeMode="stretch"
-          style={{ width: '100%', minHeight: imgHeight }}
+        <Image
+          style={{
+            width: win.width,
+            height: imgData?.heightToBeSet,
+          }}
           source={{
             uri: imageUrl,
             headers: {
@@ -121,7 +176,7 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
     }
   };
 
-  const renderOtherBanner = (imgUrl: string, item) => {
+  const renderOtherBanner = (imgUrl: string, item, imageData: object) => {
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -129,17 +184,21 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
           handleOnPressBanner(item?.brandRedirectionUrl);
         }}
       >
-        <ImageNative
-          resizeMode="stretch"
-          style={{ width: '100%', minHeight: imgHeight }}
-          source={{
-            uri: imgUrl,
-            headers: {
-              'User-Agent': userAgent,
-            },
-          }}
-          progressiveRenderingEnabled={true}
-        />
+        {!!imageData && (
+          <Image
+            style={{
+              width: win.width,
+              height: imageData?.heightToBeSet,
+            }}
+            source={{
+              uri: imgUrl,
+              headers: {
+                'User-Agent': userAgent,
+              },
+            }}
+            progressiveRenderingEnabled={true}
+          />
+        )}
       </TouchableOpacity>
     );
   };
@@ -240,7 +299,9 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
     <SafeAreaView style={styles.container}>
       {renderHeader()}
       <ScrollView>
-        {imageUrl !== '' && renderMainBanner()}
+        {imageUrl !== '' &&
+          mainBannerImageData?.length > 0 &&
+          renderMainBanner(mainBannerImageData[0])}
         <View style={styles.menuContainer}>
           <FlatList
             horizontal={true}
@@ -253,14 +314,17 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
             }}
           />
         </View>
-        {selectedMenuItemName === 'Home' && (
+        {selectedMenuItemName === 'Home' && bannerImageHeightWidthData?.length > 0 && (
           <FlatList
             bounces={false}
             keyExtractor={(_, index) => `${index}`}
             data={brandData?.[0]?.brandBannersList}
             renderItem={({ item, index }) => {
               const imgUrl = item?.brandBannerImgUrl;
-              return renderOtherBanner(imgUrl, item);
+              const imageData = bannerImageHeightWidthData?.[0]?.find(
+                (item) => item?.imgUrl === imgUrl
+              );
+              return !!imageData ? renderOtherBanner(imgUrl, item, imageData) : null;
             }}
           />
         )}
