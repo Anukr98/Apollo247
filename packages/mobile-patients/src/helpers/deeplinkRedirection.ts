@@ -47,11 +47,8 @@ export const handleOpenURL = (event: any) => {
       route = data?.[0];
     }
 
-    console.log('data here--------------------', data);
-
     try {
       if (data?.length >= 2) {
-        console.log('data-------', data);
         linkId = data?.[1]?.split('?');
 
         const params = data[1]?.split('&');
@@ -175,23 +172,6 @@ export const handleOpenURL = (event: any) => {
         };
         break;
 
-      // case 'shop-by-health-conditions':
-      // case 'shop-by-category':
-      // case 'shop-by-brand':
-      // case 'explore-popular-products':
-      //   console.log('response................', route, linkId, data);
-      //   if (linkId) {
-      //     return {
-      //       routeName: 'MedicineCategory',
-      //       id: linkId,
-      //     };
-      //   } else {
-      //     return {
-      //       routeName: 'Medicine',
-      //     };
-      //   }
-      //   break;
-
       case 'shop-by-health-conditions':
       case 'explore-popular-products':
         if (linkId) {
@@ -208,32 +188,9 @@ export const handleOpenURL = (event: any) => {
 
       case 'shop-by-category':
       case 'shop-by-brand':
-        console.log('response................', route, linkId, data);
         if (linkId) {
           return {
             // if brand data exist it will go to brand pages else it will be redirected to medicine listing page
-            // getBrandPagesData(linkId)
-            //       .then(({ data }) => {
-            //         const response = data;
-            //         if (response?.success === true && response?.data?.length) {
-            //           return {
-            //             routeName: 'BrandPages',
-            //             id: linkId,
-            //           };
-            //         } else {
-            //           return {
-            //             routeName: 'MedicineCategory',
-            //             id: linkId,
-            //           };
-            //         }
-            //       })
-            //       .catch(({ error }) => {
-            //         CommonBugFender('Deeplink_fetchBrandPageData', error);
-            //         return {
-            //           routeName: 'MedicineCategory',
-            //           id: linkId,
-            //         };
-            //       });
             routeName: 'BrandPages',
             id: linkId,
           };
@@ -542,7 +499,6 @@ export const pushTheView = (
   params?: any,
   movedFromBrandPages?: boolean,
 ) => {
-  console.log('res---------', routeName, movedFromBrandPages);
   setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
   switch (routeName) {
     case 'Consult':
@@ -835,10 +791,6 @@ export const pushTheView = (
       })
       break;
     case 'BrandPages':
-      // navigateToView(navigation, AppRoutes.BrandPages, {
-      //                     movedFrom: !!movedFromBrandPages ? movedFromBrandPages : 'deeplink',
-      //                     brandData: response?.data,
-      //                   });
       getBrandPagesData(id)
         .then(({ data }) => {
           const response = data;
