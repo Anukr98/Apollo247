@@ -212,6 +212,28 @@ export const handleOpenURL = (event: any) => {
         if (linkId) {
           return {
             // if brand data exist it will go to brand pages else it will be redirected to medicine listing page
+            // getBrandPagesData(linkId)
+            //       .then(({ data }) => {
+            //         const response = data;
+            //         if (response?.success === true && response?.data?.length) {
+            //           return {
+            //             routeName: 'BrandPages',
+            //             id: linkId,
+            //           };
+            //         } else {
+            //           return {
+            //             routeName: 'MedicineCategory',
+            //             id: linkId,
+            //           };
+            //         }
+            //       })
+            //       .catch(({ error }) => {
+            //         CommonBugFender('Deeplink_fetchBrandPageData', error);
+            //         return {
+            //           routeName: 'MedicineCategory',
+            //           id: linkId,
+            //         };
+            //       });
             routeName: 'BrandPages',
             id: linkId,
           };
@@ -520,6 +542,7 @@ export const pushTheView = (
   params?: any,
   movedFromBrandPages?: boolean,
 ) => {
+  console.log('res---------', routeName, movedFromBrandPages);
   setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
   switch (routeName) {
     case 'Consult':
@@ -812,22 +835,26 @@ export const pushTheView = (
       })
       break;
     case 'BrandPages':
+      // navigateToView(navigation, AppRoutes.BrandPages, {
+      //                     movedFrom: !!movedFromBrandPages ? movedFromBrandPages : 'deeplink',
+      //                     brandData: response?.data,
+      //                   });
       getBrandPagesData(id)
-                  .then(({ data }) => {
-                    const response = data;
-                    if (response?.success === true && response?.data?.length) {
-                      navigateToView(navigation, AppRoutes.BrandPages, {
-                        movedFrom: 'deeplink',
-                        brandData: response?.data,
-                      });
-                    } else {
-                      navigateToView(navigation, AppRoutes.MedicineListing, { categoryName: id, movedFrom: 'deeplink' });
-                    }
-                  })
-                  .catch(({ error }) => {
-                    CommonBugFender('Deeplink_fetchBrandPageData', error);
-                    navigateToView(navigation, AppRoutes.MedicineListing, { categoryName: id, movedFrom: 'deeplink' });
-                  });
+        .then(({ data }) => {
+          const response = data;
+          if (response?.success === true && response?.data?.length) {
+            !!movedFromBrandPages ? navigation.navigate(AppRoutes.BrandPages, { movedFrom: 'brandPages', brandData: response?.data }) :
+            navigateToView(navigation, AppRoutes.BrandPages, { movedFrom: 'deeplink', brandData: response?.data });
+          } else {
+            !!movedFromBrandPages ? navigation.navigate(AppRoutes.MedicineListing, { categoryName: id, movedFrom: 'brandPages' }) :
+            navigateToView(navigation, AppRoutes.MedicineListing, { categoryName: id, movedFrom: 'deeplink' });
+          }
+        })
+        .catch(({ error }) => {
+          CommonBugFender('Deeplink_fetchBrandPageData', error);
+          !!movedFromBrandPages ? navigation.navigate(AppRoutes.MedicineListing, { categoryName: id, movedFrom: 'brandPages' }) :
+          navigateToView(navigation, AppRoutes.MedicineListing, { categoryName: id, movedFrom: 'deeplink' });
+        });
       break;
     default:
       const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {

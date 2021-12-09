@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
   View,
@@ -53,12 +53,77 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
   const [selectedMenuItemName, setSelectedMenuItemName] = useState<string>('Home');
   const [categoryID, setCategoryID] = useState(props.navigation.getParam('category_id'));
   const [title, setTitle] = useState(props.navigation.getParam('title'));
-  const [w, setW] = useState<number>(0);
-  const [h, setH] = useState<number>(0);
+  const win = Dimensions.get('window');
+  const [bannerImageHeightWidthData, setBannerImageHeightWidthData] = useState([]);
 
   AsyncStorage.getItem(USER_AGENT).then((userAgent) => {
     setUserAgent(userAgent || '');
   });
+
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      let bannerImageData = [];
+      brandData?.[0]?.brandBannersList.map(async (banner) => {
+        const url = banner?.brandBannerImgUrl;
+        await Image.getSize(
+          url,
+          (width, height) => {
+            const ratio = win.width / width;
+            const productIs = height * ratio;
+            console.log('--------', width, height, ratio, productIs);
+            const obj = {
+              imgWidth: width,
+              imgHeight: height,
+              heightToBeSet: productIs,
+              imgUrl: url,
+            };
+            console.log('obj is', obj);
+            bannerImageData.push(obj);
+            setBannerImageHeightWidthData([bannerImageData]);
+            console.log('setting banner image data..............');
+          },
+          () => {}
+        );
+      });
+      // console.log(bannerImageData);
+      // setBannerImageHeightWidthData([bannerImageData]);
+    });
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+      setBannerImageHeightWidthData([]);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      didBlur && didBlur.remove();
+    };
+  }, [props.navigation]);
+
+  useEffect(() => {
+    console.log('bannerImageHeightWidthData*****************', bannerImageHeightWidthData);
+  }, [bannerImageHeightWidthData]);
+
+  useEffect(() => {
+    console.log(' i am calledd..............');
+    let bannerImageData = [];
+    brandData?.[0]?.brandBannersList.map((banner) => {
+      const url = banner?.brandBannerImgUrl;
+      Image.getSize(
+        url,
+        (width, height) => {
+          const ratio = win.width / width;
+          const productIs = height * ratio;
+          const obj = {
+            imgWidth: width,
+            imgHeight: height,
+            heightToBeSet: productIs,
+            imgUrl: url,
+          };
+          bannerImageData.push(obj);
+          setBannerImageHeightWidthData([bannerImageData]);
+        },
+        () => {}
+      );
+    });
+  }, []);
 
   const renderHeader = () => {
     return (
@@ -124,57 +189,19 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
     }
   };
 
-  const renderOtherBanner = (imgUrl: string, item) => {
-    let width1 = 0;
-    let height1 = 0;
-    const imageSize = Image.getSize(
-      imgUrl,
-      (width, height) => {
-        width1 = width;
-        height1 = height;
-        setW(width);
-        setH(height);
-        // console.log('size is---', width, height, width1, height1, 4 / 3, 4 % 3);
-      },
-      () => {}
-    );
-    console.log('imageSize', imageSize);
+  const renderOtherBanner = (imgUrl: string, item, imageData: object, index: number) => {
     return (
-      <View
-        style={{
-          borderWidth: 2,
-          marginBottom: 15,
-          flexDirection: 'row',
-          flex: 1,
-          backgroundColor: '#00ff33',
-          justifyContent: 'flex-start',
-          // alignItems: 'stretch',
-          width: '100%',
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={() => {
+          handleOnPressBanner(item?.brandRedirectionUrl);
         }}
       >
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={() => {
-            handleOnPressBanner(item?.brandRedirectionUrl);
-          }}
-          style={{
-            justifyContent: 'flex-start',
-            // alignItems: 'stretch',
-          }}
-        >
-          {console.log('hry ya', w, h)}
+        {!!imageData && (
           <Image
-            // resizeMode="cover"
             style={{
-              // aspectRatio: w / h,
-              // width: '100%',
-              // height: height1,
-              // width: width1,
-              height: 150,
-              // height: Dimensions.get('window').height * 0.2,
-              flex: 1,
-              // display: 'flex',
-              resizeMode: 'contain',
+              width: win.width,
+              height: imageData?.heightToBeSet,
             }}
             source={{
               uri: imgUrl,
@@ -182,10 +209,10 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
                 'User-Agent': userAgent,
               },
             }}
-            // progressiveRenderingEnabled={true}
+            progressiveRenderingEnabled={true}
           />
-        </TouchableOpacity>
-      </View>
+        )}
+      </TouchableOpacity>
     );
   };
 
@@ -298,14 +325,17 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
             }}
           />
         </View>
-        {selectedMenuItemName === 'Home' && (
+        {selectedMenuItemName === 'Home' && bannerImageHeightWidthData?.length > 0 && (
           <FlatList
             bounces={false}
             keyExtractor={(_, index) => `${index}`}
             data={brandData?.[0]?.brandBannersList}
             renderItem={({ item, index }) => {
               const imgUrl = item?.brandBannerImgUrl;
-              return renderOtherBanner(imgUrl, item);
+              const imageData = bannerImageHeightWidthData?.[0]?.find(
+                (item) => item?.imgUrl === imgUrl
+              );
+              return !!imageData ? renderOtherBanner(imgUrl, item, imageData, index) : null;
             }}
           />
         )}
