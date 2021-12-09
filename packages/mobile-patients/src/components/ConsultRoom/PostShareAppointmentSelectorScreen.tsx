@@ -191,7 +191,7 @@ export const PostShareAppointmentSelectorScreen: React.FC<PostShareAppointmentSe
           )}
 
           <View>
-            <Text style={styles.doctorName}>{item?.doctorInfo?.fullName}</Text>
+            <Text style={styles.doctorName}>{item?.doctorInfo?.displayName}</Text>
             <Text style={styles.department}>
               {item?.doctorInfo?.specialty?.specialistSingularTerm}
             </Text>
