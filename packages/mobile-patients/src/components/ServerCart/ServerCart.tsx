@@ -286,7 +286,11 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
         <Text style={styles.amountHeaderText}>TOTAL CHARGES</Text>
       </View>
       <ApplyCircleBenefits navigation={props.navigation} />
-      <CouponSection onPressApplyCoupon={onPressApplyCoupon} onPressRemove={onPressRemoveCoupon} />
+      <CouponSection
+        onPressApplyCoupon={onPressApplyCoupon}
+        onPressRemove={onPressRemoveCoupon}
+        movedFrom={'pharmacy'}
+      />
       {!!serverCartAmount && <CartTotalSection />}
       <CartSavings />
     </View>

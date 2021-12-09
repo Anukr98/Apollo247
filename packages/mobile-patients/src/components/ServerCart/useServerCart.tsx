@@ -24,7 +24,6 @@ import { getProductsByCategoryApi } from '@aph/mobile-patients/src/helpers/apiCa
 import { Helpers } from '@aph/mobile-patients/src/components/MedicineCartPrescription';
 import { USER_AGENT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
 import AsyncStorage from '@react-native-community/async-storage';
-import { addPharmaItemToCart } from '@aph/mobile-patients/src/components/ServerCart/ServerCartHelperFunctions';
 
 export const useServerCart = () => {
   const client = useApolloClient();
@@ -80,7 +79,6 @@ export const useServerCart = () => {
 
   const saveServerCart = (cartInputData: CartInputData) => {
     setServerCartLoading?.(true);
-    console.log('saveServerCart cartInputData >>>>> ', JSON.stringify(cartInputData));
     client
       .mutate({
         mutation: SERVER_CART_SAVE_CART,
@@ -96,17 +94,12 @@ export const useServerCart = () => {
       })
       .then((result) => {
         const saveCartResponse = result?.data?.saveCart;
-        console.log('saveCartResponse >>>>> ', JSON.stringify(saveCartResponse));
-        // handle cartMessage
         if (saveCartResponse?.errorMessage) {
           setServerCartErrorMessage?.(saveCartResponse?.errorMessage || genericErrorMessage);
           return;
         }
         if (saveCartResponse?.data?.patientId) {
           const cartResponse = saveCartResponse?.data;
-          // if (addToCartSource?.source) {
-          //   fireAddToCartEvent(cartResponse);
-          // }
           setCartValues(cartResponse);
         }
       })
@@ -120,7 +113,6 @@ export const useServerCart = () => {
   };
 
   const fetchServerCart = (userAgentInput?: string) => {
-    console.log('fetchServerCart inputData userAgent >>>>> ', userAgent);
     client
       .query({
         query: SERVER_CART_FETCH_CART,
@@ -136,9 +128,7 @@ export const useServerCart = () => {
       })
       .then((result) => {
         const fetchCartResponse = result?.data?.fetchCart;
-        console.log('fetchCartResponse >>>>> ', JSON.stringify(fetchCartResponse));
         if (fetchCartResponse?.errorMessage) {
-          // setServerCartErrorMessage?.(fetchCartResponse?.errorMessage);
           return;
         }
         if (fetchCartResponse?.data?.patientId) {
@@ -156,7 +146,6 @@ export const useServerCart = () => {
 
   const fetchReviewCart = () => {
     setServerCartLoading?.(true);
-    console.log('ReviewCart inputData >>>>> ', currentPatient?.id);
     client
       .query({
         query: SERVER_CART_REVIEW_CART,
@@ -172,8 +161,6 @@ export const useServerCart = () => {
       })
       .then((result) => {
         const reviewCartResponse = result?.data?.reviewCartPage;
-        // handle cartMessage
-        console.log('reviewCartResponse >>>>> ', JSON.stringify(reviewCartResponse));
         if (reviewCartResponse?.errorMessage) {
           setServerCartErrorMessage?.(reviewCartResponse?.errorMessage || genericErrorMessage);
           return;
@@ -212,24 +199,6 @@ export const useServerCart = () => {
       setCartSubscriptionDetails?.(cartResponse?.subscriptionDetails);
       setNoOfShipments?.(cartResponse?.noOfShipments);
     } catch (error) {}
-  };
-
-  const fireAddToCartEvent = (cartResponse: any) => {
-    const cartItem = cartResponse?.medicineOrderCartLineItems?.filter(
-      (item) => item?.sku == userActionPayload?.medicineOrderCartLineItems?.[0]?.medicineSKU
-    );
-    if (cartItem?.length) {
-      addPharmaItemToCart(
-        cartItem[0],
-        cartResponse?.zipcode,
-        currentPatient,
-        !!isPharmacyLocationServiceable,
-        addToCartSource,
-        cartResponse?.cartItems?.length,
-        pharmacyCircleAttributes,
-        setAddToCartSource
-      );
-    }
   };
 
   const deleteServerCart = (paymentSuccess: boolean, paymentOrderId: string) => {

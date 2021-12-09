@@ -52,6 +52,7 @@ import {
   g,
   getMaxQtyForMedicineItem,
   getIsMedicine,
+  formatToCartItem,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   ProductPageViewedSource,
@@ -144,13 +145,18 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   const [searchQuery, setSearchQuery] = useState({});
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const { pinCode, axdcCode, serverCartItems, cartLocationDetails } = useShoppingCart();
+  const {
+    pinCode,
+    axdcCode,
+    serverCartItems,
+    cartLocationDetails,
+    pharmacyCircleAttributes,
+  } = useShoppingCart();
   const { setUserActionPayload } = useServerCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { getPatientApiCall } = useAuth();
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
-  const { pharmacyUserType } = useAppCommonData();
-  const pharmacyPincode = cartLocationDetails?.pincode;
+  const { pharmacyUserType, isPharmacyLocationServiceable } = useAppCommonData();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -215,19 +221,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     });
 
   const onAddCartItem = (item: MedicineProduct, suggestionItem?: boolean) => {
-    const {
-      sku,
-      mou,
-      name,
-      price,
-      special_price,
-      is_prescription_required,
-      thumbnail,
-      type_id,
-      MaxOrderQty,
-      url_key,
-      subcategory,
-    } = item;
+    const { sku } = item;
     suggestionItem && setItemsLoading({ ...itemsLoading, [sku]: true });
     setUserActionPayload?.({
       medicineOrderCartLineItems: [
@@ -237,38 +231,19 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         },
       ],
     });
-    // addPharmaItemToCart(
-    //   {
-    //     id: sku,
-    //     mou,
-    //     name,
-    //     price: price,
-    //     specialPrice: special_price
-    //       ? typeof special_price == 'string'
-    //         ? Number(special_price)
-    //         : special_price
-    //       : undefined,
-    //     prescriptionRequired: is_prescription_required == '1',
-    //     isMedicine: getIsMedicine(type_id?.toLowerCase()) || '0',
-    //     quantity: 1,
-    //     thumbnail,
-    //     isInStock: true,
-    //     maxOrderQty: MaxOrderQty,
-    //     productType: type_id,
-    //     url_key,
-    //     subcategory,
-    //   },
-    //   asyncPincode?.pincode || pharmacyPincode!,
-    //   addCartItem,
-    //   suggestionItem ? null : globalLoading,
-    //   props.navigation,
-    //   currentPatient,
-    //   !!isPharmacyLocationServiceable,
-    //   { source: 'Pharmacy List', categoryId: category_id },
-    //   JSON.stringify(serverCartItems),
-    //   suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined,
-    //   pharmacyCircleAttributes!
-    // );
+    addPharmaItemToCart(
+      formatToCartItem(item),
+      cartLocationDetails?.pincode,
+      () => {},
+      suggestionItem ? null : globalLoading,
+      props.navigation,
+      currentPatient,
+      !!isPharmacyLocationServiceable,
+      { source: 'Pharmacy List', categoryId: category_id },
+      JSON.stringify(serverCartItems),
+      suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined,
+      pharmacyCircleAttributes!
+    );
   };
 
   const onRemoveCartItem = ({ sku }: MedicineProduct) => {

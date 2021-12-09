@@ -114,6 +114,7 @@ import {
   getDiscountPercentage,
   getIsMedicine,
   getAge,
+  formatToCartItem,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { USER_AGENT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
@@ -2111,45 +2112,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     comingFromSearch: boolean,
     cleverTapSearchSuccessEventAttributes: object
   ) => {
-    const {
-      sku,
-      mou,
-      name,
-      price,
-      special_price,
-      is_prescription_required,
-      type_id,
-      thumbnail,
-      MaxOrderQty,
-      category_id,
-      url_key,
-      subcategory,
-    } = item;
+    const { sku } = item;
     setItemsLoading({ ...itemsLoading, [sku]: true });
     addPharmaItemToCart(
-      {
-        id: sku,
-        mou,
-        name,
-        price: price,
-        specialPrice: special_price
-          ? typeof special_price == 'string'
-            ? Number(special_price)
-            : special_price
-          : undefined,
-        prescriptionRequired: is_prescription_required == '1',
-        isMedicine: getIsMedicine(type_id?.toLowerCase()) || '0',
-        quantity: Number(1),
-        thumbnail: thumbnail,
-        isInStock: true,
-        maxOrderQty: MaxOrderQty,
-        productType: type_id,
-        circleCashbackAmt: 0,
-        url_key,
-        subcategory,
-      },
+      formatToCartItem(item),
       pharmacyPincode,
-      addCartItem,
+      () => {},
       null,
       props.navigation,
       currentPatient,

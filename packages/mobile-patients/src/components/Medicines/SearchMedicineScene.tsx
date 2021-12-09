@@ -35,6 +35,7 @@ import {
   getMaxQtyForMedicineItem,
   postCleverTapEvent,
   getIsMedicine,
+  formatToCartItem,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -79,6 +80,7 @@ import {
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { MedicineSearchEvents } from '@aph/mobile-patients/src/components/MedicineSearch/MedicineSearchEvents';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -178,26 +180,17 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const {
-    addCartItem,
-    removeCartItem,
-    updateCartItem,
-    cartItems,
-    pinCode,
     pharmacyCircleAttributes,
-    asyncPincode,
     axdcCode,
     serverCartItems,
+    cartLocationDetails,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
-  const {
-    locationDetails,
-    pharmacyLocation,
-    isPharmacyLocationServiceable,
-    pharmacyUserType,
-  } = useAppCommonData();
-  const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
+  const { isPharmacyLocationServiceable, pharmacyUserType } = useAppCommonData();
+  const pharmacyPincode = cartLocationDetails?.pincode;
+  const { setUserActionPayload } = useServerCart();
 
   const getSpecialPrice = (special_price?: string | number) =>
     special_price
@@ -254,7 +247,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
 
   const onSearchMedicine = (_searchText: string) => {
     setsearchSate('load');
-    getMedicineSearchSuggestionsApi(_searchText, axdcCode, pinCode)
+    getMedicineSearchSuggestionsApi(_searchText, axdcCode, pharmacyPincode)
       .then(({ data }) => {
         const products = data.products || [];
         setMedicineList(products);
@@ -290,7 +283,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       }
       setShowMatchingMedicines(true);
       setProductsIsLoading(true);
-      searchMedicineApi(_searchText, pageCount, sortBy, {}, axdcCode, pinCode)
+      searchMedicineApi(_searchText, pageCount, sortBy, {}, axdcCode, pharmacyPincode)
         .then(async ({ data }) => {
           const products = data.products || [];
           setSearchHeading(data.search_heading!);
@@ -371,66 +364,55 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     });
 
   const onAddCartItem = (item: MedicineProduct, suggestionItem?: boolean) => {
-    const {
-      sku,
-      mou,
-      name,
-      price,
-      special_price,
-      is_prescription_required,
-      thumbnail,
-      type_id,
-      MaxOrderQty,
-      category_id,
-      url_key,
-      subcategory,
-    } = item;
+    const { sku, category_id } = item;
     savePastSeacrh(sku, name).catch((e) => {
       aphConsole.log({ e });
     });
     suggestionItem && setItemsLoading({ ...itemsLoading, [sku]: true });
-
+    setUserActionPayload?.({
+      medicineOrderCartLineItems: [
+        {
+          medicineSKU: item?.sku,
+          quantity: 1,
+        },
+      ],
+    });
     addPharmaItemToCart(
-      {
-        id: sku,
-        mou,
-        name: stripHtml(name),
-        price: price,
-        specialPrice: special_price
-          ? typeof special_price == 'string'
-            ? Number(special_price)
-            : special_price
-          : undefined,
-        prescriptionRequired: is_prescription_required == '1',
-        isMedicine: getIsMedicine(type_id?.toLowerCase()) || '0',
-        quantity: 1,
-        thumbnail,
-        isInStock: true,
-        maxOrderQty: MaxOrderQty,
-        productType: type_id,
-        url_key,
-        subcategory,
-      },
-      asyncPincode?.pincode || pharmacyPincode!,
-      addCartItem,
+      formatToCartItem(item),
+      pharmacyPincode!,
+      () => {},
       suggestionItem ? null : globalLoading,
       props.navigation,
       currentPatient,
       !!isPharmacyLocationServiceable,
       { source: 'Pharmacy Full Search', categoryId: category_id },
-      JSON.stringify(cartItems),
+      JSON.stringify(serverCartItems),
       suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined,
       pharmacyCircleAttributes!
     );
   };
 
-  const onRemoveCartItem = ({ sku }: MedicineProduct) => {
-    removeCartItem && removeCartItem(sku);
+  const onRemoveCartItem = ({ sku }: any) => {
+    setUserActionPayload?.({
+      medicineOrderCartLineItems: [
+        {
+          medicineSKU: sku,
+          quantity: 0,
+        },
+      ],
+    });
   };
 
   const onUpdateCartItem = ({ sku }: MedicineProduct, unit: number) => {
     if (!(unit < 1)) {
-      updateCartItem && updateCartItem({ id: sku, quantity: unit });
+      setUserActionPayload?.({
+        medicineOrderCartLineItems: [
+          {
+            medicineSKU: sku,
+            quantity: unit,
+          },
+        ],
+      });
     }
   };
 
@@ -679,7 +661,16 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         }
         isInStock={!!medicine.is_in_stock}
         isPrescriptionRequired={medicine.is_prescription_required == '1'}
-        removeCartItem={() => removeCartItem!(medicine.sku)}
+        removeCartItem={() => {
+          setUserActionPayload?.({
+            medicineOrderCartLineItems: [
+              {
+                medicineSKU: medicine?.sku,
+                quantity: 0,
+              },
+            ],
+          });
+        }}
         maxOrderQty={getMaxQtyForMedicineItem(medicine.MaxOrderQty)}
         type_id={medicine.type_id}
         is_express={medicine.is_express}
@@ -752,7 +743,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         }
         isInStock={!!medicine.is_in_stock}
         isPrescriptionRequired={medicine.is_prescription_required == '1'}
-        removeCartItem={() => removeCartItem!(medicine.sku)}
+        removeCartItem={() => onRemoveCartItem({ sku: medicine?.sku })}
         maxOrderQty={getMaxQtyForMedicineItem(medicine.MaxOrderQty)}
         type_id={medicine.type_id}
         is_express={medicine.is_express}
@@ -852,7 +843,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
                 onEndReached={() => {
                   if (!listFetching && !endReached) {
                     setListFetching(true);
-                    searchMedicineApi(searchText, pageCount, sortBy, {}, axdcCode, pinCode)
+                    searchMedicineApi(searchText, pageCount, sortBy, {}, axdcCode, pharmacyPincode)
                       .then(({ data }) => {
                         const products = data.products || [];
                         if (prevData && JSON.stringify(prevData) !== JSON.stringify(products)) {
@@ -1009,7 +1000,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     });
   };
   const getItemQuantity = (id: string) => {
-    const foundItem = cartItems.find((item) => item.id == id);
+    const foundItem = serverCartItems?.find((item) => item?.sku == id);
     return foundItem ? foundItem.quantity : 0;
   };
 

@@ -1093,7 +1093,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const { refreeReward, setRefreeReward, setRewardId, setCampaignId } = useReferralProgram();
   const [isReferrerAvailable, setReferrerAvailable] = useState<boolean>(false);
   const {
-    cartItems: shopCartItems,
     setHdfcPlanName,
     setIsFreeDelivery,
     setCircleSubscriptionId,
@@ -1395,7 +1394,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       setVaccineLoacalStorageData();
       checkApisToCall();
       getUserBanners();
-      // fetchServerCart();
 
       AsyncStorage.getItem('verifyCorporateEmailOtpAndSubscribe').then((data) => {
         if (JSON.parse(data || 'false') === true) {
@@ -2863,7 +2861,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
     getProductCashbackDetails();
     getUserProfileType();
-    // fetchServerCart();
   }, []);
 
   const initializeVoip = () => {
@@ -4836,9 +4833,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     const onPressCart = () => {
       postVaccineWidgetEvents(CleverTapEventName.MY_CART_CLICKED, 'Top bar');
       const route =
-        (shopCartItems.length && cartItems.length) || (!shopCartItems.length && !cartItems.length)
+        (serverCartItems.length && cartItems.length) ||
+        (!serverCartItems.length && !cartItems.length)
           ? AppRoutes.MedAndTestCart
-          : shopCartItems.length
+          : serverCartItems.length
           ? AppRoutes.ServerCart
           : AppRoutes.AddPatients;
       props.navigation.navigate(route);

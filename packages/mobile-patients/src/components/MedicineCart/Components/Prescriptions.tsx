@@ -11,6 +11,7 @@ import {
   PhysicalPrescription,
   useShoppingCart,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { EPrescriptionCardProps } from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
 import { PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { saveCart_saveCart_data_prescriptionDetails } from '@aph/mobile-patients/src/graphql/types/saveCart';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -29,7 +30,7 @@ import {
 
 export interface PrescriptionsProps {
   onPressUploadMore?: () => void;
-  // ePresProps?: Partial<EPrescriptionCardProps>;
+  ePresProps?: Partial<EPrescriptionCardProps>;
   myPresProps?: Partial<PhysicalPrescriptionCardProps>;
   hideHeader?: boolean;
   showSelectedOption?: boolean;
@@ -55,7 +56,7 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
   const { removePrescriptionFromCart } = useServerCart();
   const {
     onPressUploadMore,
-    // ePresProps,
+    ePresProps,
     myPresProps,
     style,
     hideHeader,
@@ -123,11 +124,11 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
           marginTop: i === 0 ? 15 : 4,
           marginBottom: arrayLength === i + 1 ? 16 : 4,
         }}
-        // medicines={item?.medicines}
+        medicines={item?.medicines}
         actionType="removal"
-        // date={item?.date}
-        // doctorName={item?.doctorName}
-        // forPatient={item?.forPatient}
+        date={item?.date}
+        doctorName={item?.doctorName}
+        forPatient={item?.forPatient}
         onRemove={() => {
           removePrescriptionFromCart(item?.prismPrescriptionFileId);
         }}
@@ -135,7 +136,7 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
         isDisabled={false}
         onSelect={() => {}}
         showTick={false}
-        // {...ePresProps}
+        {...ePresProps}
       />
     );
   };
