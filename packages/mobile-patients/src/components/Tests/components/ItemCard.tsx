@@ -56,7 +56,7 @@ export interface ItemCardProps {
   isPriceAvailable?: boolean;
   onPressAddToCartFromCart?: (item: any, addedItems: any) => void;
   onPressRemoveItemFromCart?: (item: any) => void;
-  recommedationDataSource?: string
+  recommedationDataSource?: string;
 }
 
 const ItemCard: React.FC<ItemCardProps> = (props) => {
@@ -80,7 +80,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     sourceScreen,
     onPressAddToCartFromCart,
     onPressRemoveItemFromCart,
-    recommedationDataSource
+    recommedationDataSource,
   } = props;
   const { currentPatient } = useAllCurrentPatients();
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
@@ -118,6 +118,8 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
         inclusions?.map((inclusion: any) =>
           inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
         );
+
+      const getInclusionCount = !!inclusions && inclusions?.length > 0 ? inclusions?.length : 1;
 
       const getMandatoryParameterCount =
         !!getMandatoryParamter &&
@@ -159,9 +161,10 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
               </Text>
             </View>
             <View style={{ minHeight: isSmallDevice ? 25 : 30 }}>
-              {getMandatoryParameterCount > 0 ? (
+              {getMandatoryParameterCount > 0 || !!getInclusionCount ? (
                 <Text style={styles.parameterText}>
-                  {getMandatoryParameterCount} {getMandatoryParameterCount == 1 ? 'test' : 'tests'}{' '}
+                  {getMandatoryParameterCount || getInclusionCount}{' '}
+                  {(getMandatoryParameterCount || getInclusionCount) == 1 ? 'test' : 'tests'}{' '}
                   included
                 </Text>
               ) : null}
@@ -404,8 +407,10 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       mrpToDisplay,
       discountToDisplay,
       source,
-      recommedationDataSource ? recommedationDataSource : widgetType === string.diagnosticCategoryTitle.categoryGrid ||
-        widgetType == string.diagnosticCategoryTitle.category
+      recommedationDataSource
+        ? recommedationDataSource
+        : widgetType === string.diagnosticCategoryTitle.categoryGrid ||
+          widgetType == string.diagnosticCategoryTitle.category
         ? 'Category page'
         : data?.diagnosticWidgetTitle,
       currentPatient,
@@ -623,7 +628,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
             ? {
                 alignSelf: actualItemsToShow?.length > 1 ? 'center' : 'flex-start',
                 marginLeft: '1.5%',
-                flex: 1
+                flex: 1,
               }
             : {}
         }

@@ -921,6 +921,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             diagnosticPricing: _diagItems?.diagnosticPricing,
             packageCalculatedMrp: _diagItems?.packageCalculatedMrp,
             inclusions: _diagItems?.inclusions,
+            inclusionData: _diagItems?.inclusions,
           });
         }
       });
