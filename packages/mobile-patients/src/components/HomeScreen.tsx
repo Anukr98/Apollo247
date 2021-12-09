@@ -4398,8 +4398,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             setShowCirclePlans(true);
             onClickCircleBenefits('New User', 'renew');
           }}
-          price={'199'}
-          validity={'6'}
+          price={membershipPlans?.length > 0 ? membershipPlans?.[1]?.price : '199' || '199'}
+          validity={
+            membershipPlans?.length > 0 ? membershipPlans?.[1]?.durationInMonth : '6' || '6'
+          }
         />
       </View>
     );
