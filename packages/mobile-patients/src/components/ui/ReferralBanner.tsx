@@ -14,7 +14,6 @@ import moment from 'moment';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
-import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 
 export interface ReferralBannerProps extends NavigationScreenProps {
   redirectOnShareReferrer: () => void;
@@ -46,44 +45,39 @@ export const ReferralBanner: React.FC<ReferralBannerProps> = (props) => {
   };
 
   return (
-    <LinearGradientComponent
-      colors={[theme.colors.LIGHT_REFERRER_AQUA_ONE, theme.colors.LIGHT_REFERRER_AQUA_TWO]}
-      style={styles.referrerMainGradientContainer}
+    <TouchableOpacity
+      style={styles.referEarnMainContainer}
+      onPress={() => {
+        const eventArributes = {
+          ...getReferEarnCommonAttributes(),
+        };
+        postCleverTapEvent(CleverTapEventName.REFER_EARN_CTA_CLICKED, {
+          ...eventArributes,
+        });
+        props.redirectOnShareReferrer();
+      }}
     >
-      <TouchableOpacity
-        style={styles.referEarnMainContainer}
-        onPress={() => {
-          const eventArributes = {
-            ...getReferEarnCommonAttributes(),
-          };
-          postCleverTapEvent(CleverTapEventName.REFER_EARN_CTA_CLICKED, {
-            ...eventArributes,
-          });
-          props.redirectOnShareReferrer();
-        }}
-      >
-        <View style={styles.referEarnImageContainer}>
-          <ReferralBannerIcon style={styles.referrelBannerImage} resizeMode={'contain'} />
+      <View style={styles.referEarnImageContainer}>
+        <ReferralBannerIcon style={styles.referrelBannerImage} resizeMode={'contain'} />
+      </View>
+      <View style={styles.referEarntextMainContainer}>
+        <View style={styles.referEarntextContainer}>
+          <Text style={styles.referEarntext}>
+            {string.referAndEarn.referAndEarn}{' '}
+            {string.referAndEarn.currency + string.referAndEarn.referrHC}
+          </Text>
+          <Text style={styles.referEarntextLine2}>{string.referAndEarn.referAndEarnLine2}</Text>
         </View>
-        <View style={styles.referEarntextMainContainer}>
-          <View style={styles.referEarntextContainer}>
-            <Text style={styles.referEarntext}>
-              {string.referAndEarn.referAndEarn}{' '}
-              {string.referAndEarn.currency + string.referAndEarn.referrHC}
-            </Text>
-            <Text style={styles.referEarntextLine2}>{string.referAndEarn.referAndEarnLine2}</Text>
-          </View>
-          <View style={styles.referEarnearnBtn}>
-            <ArrowRight
-              style={{
-                width: 35,
-                height: 35,
-              }}
-            />
-          </View>
+        <View style={styles.referEarnearnBtn}>
+          <ArrowRight
+            style={{
+              width: 35,
+              height: 35,
+            }}
+          />
         </View>
-      </TouchableOpacity>
-    </LinearGradientComponent>
+      </View>
+    </TouchableOpacity>
   );
 };
 
@@ -116,7 +110,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingLeft: 10,
-    marginTop: 15,
+    marginTop: 10,
   },
   referEarntextContainer: {
     marginTop: -10,
@@ -131,16 +125,14 @@ const styles = StyleSheet.create({
   },
   referEarnMainContainer: {
     paddingHorizontal: 6,
-    paddingTop: 6,
+    paddingTop: 7,
     borderRadius: 5,
     flexDirection: 'row',
     alignItems: 'center',
     marginVertical: 7,
-  },
-  referrerMainGradientContainer: {
     borderWidth: 1,
-    borderColor: theme.colors.BLUE_REFERRER_BORDER,
+    borderColor: theme.colors.LIGHT_GRAY,
     marginHorizontal: 10,
-    borderRadius: 5,
+    backgroundColor: theme.colors.BLUE_FADED_FLAT,
   },
 });
