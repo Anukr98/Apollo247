@@ -360,7 +360,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       selectedOrder: null,
       refundStatusArr: [],
       goToHomeOnBack: true,
-      comingFrom: AppRoutes.TestsCart,
+      comingFrom: AppRoutes.CartPage,
       showOrderSummaryTab: false,
       disableTrackOrder: false,
       amount: orderDetails?.amount,

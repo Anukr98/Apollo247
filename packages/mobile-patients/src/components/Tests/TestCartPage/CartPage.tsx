@@ -163,10 +163,14 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     uploadPrescriptionRequired,
     coupon,
     hcCharges,
-    diagnosticSlot
+    diagnosticSlot,
   } = useDiagnosticsCart();
 
-  const { setAddresses: setMedAddresses,circlePlanValidity, circleSubscriptionId } = useShoppingCart();
+  const {
+    setAddresses: setMedAddresses,
+    circlePlanValidity,
+    circleSubscriptionId,
+  } = useShoppingCart();
 
   const {
     locationDetails,
@@ -258,7 +262,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     newAddressAddedCartPage != '' && setNewAddressAddedCartPage?.('');
   }
 
-  function triggerCartPageViewed(isRecommendationShown : boolean,recomData: any) {
+  function triggerCartPageViewed(isRecommendationShown: boolean, recomData: any) {
     const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
     const pinCodeFromAddress = addressToUse?.zipcode!;
     const cityFromAddress = addressToUse?.city;
@@ -271,7 +275,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       uploadPrescriptionRequired,
       diagnosticSlot,
       coupon,
-      hcCharges,circlePlanValidity,
+      hcCharges,
+      circlePlanValidity,
       circleSubscriptionId,
       isDiagnosticCircleSubscription,
       pinCodeFromAddress,
@@ -375,31 +380,32 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     }
   }, [cartItems?.length, addressCityId]);
 
-  const recomData = recommedationData?.length > 2 ? recommedationData : alsoAddListData
+  const recomData = recommedationData?.length > 2 ? recommedationData : alsoAddListData;
   useEffect(() => {
     const isRecommendationShown = recommedationData?.length > 2;
     if (cartItems?.length > 0 && recomData?.length > 0 && !loading) {
-    const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
-    const pinCodeFromAddress = addressToUse?.zipcode!;
-    const cityFromAddress = addressToUse?.city;
-    DiagnosticCartViewed(
-      'cart page',
-      currentPatient,
-      cartItems,
-      couponDiscount,
-      grandTotal,
-      uploadPrescriptionRequired,
-      diagnosticSlot,
-      coupon,
-      hcCharges,circlePlanValidity,
-      circleSubscriptionId,
-      isDiagnosticCircleSubscription,
-      pinCodeFromAddress,
-      cityFromAddress,
-      '',
-      isRecommendationShown,
-      recomData
-    );
+      const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
+      const pinCodeFromAddress = addressToUse?.zipcode!;
+      const cityFromAddress = addressToUse?.city;
+      DiagnosticCartViewed(
+        'cart page',
+        currentPatient,
+        cartItems,
+        couponDiscount,
+        grandTotal,
+        uploadPrescriptionRequired,
+        diagnosticSlot,
+        coupon,
+        hcCharges,
+        circlePlanValidity,
+        circleSubscriptionId,
+        isDiagnosticCircleSubscription,
+        pinCodeFromAddress,
+        cityFromAddress,
+        '',
+        isRecommendationShown,
+        recomData
+      );
     }
   }, [cartItems?.length, recomData?.length, loading]);
 
@@ -995,7 +1001,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           props.navigation.push(AppRoutes.AddAddressNew, {
             KeyName: 'Update',
             addressDetails: address,
-            ComingFrom: AppRoutes.TestsCart,
+            ComingFrom: AppRoutes.CartPage,
             updateLatLng: true,
             source: 'Diagnostics Cart' as AddressSource,
           });
@@ -1023,7 +1029,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           hidePincodeCurrentLocation
           addresses={addresses}
           onPressSelectAddress={(_address) => {
-            CommonLogEvent(AppRoutes.TestsCart, 'Check service availability');
+            CommonLogEvent(AppRoutes.CartPage, 'Check service availability');
             setDefaultAddress(_address);
             const tests = cartItems?.filter(
               (item) => item.collectionMethod == TEST_COLLECTION_TYPE.CENTER
@@ -1062,7 +1068,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
             }
           }}
           onPressEditAddress={(_address) => {
-            _navigateToEditAddress('Update', _address, AppRoutes.TestsCart);
+            _navigateToEditAddress('Update', _address, AppRoutes.CartPage);
             hideAphAlert?.();
           }}
           onPressAddAddress={() => {
@@ -1484,7 +1490,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
             item?.id,
             (product) => {
               props.navigation.navigate(AppRoutes.TestDetails, {
-                comingFrom: AppRoutes.TestsCart,
+                comingFrom: AppRoutes.CartPage,
                 cityId: addressCityId,
                 testDetails: {
                   ItemID: item?.id,
@@ -1512,7 +1518,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           );
         }}
         onPressRemove={(item) => {
-          CommonLogEvent(AppRoutes.TestsCart, 'Remove item from cart');
+          CommonLogEvent(AppRoutes.CartPage, 'Remove item from cart');
           if (isModifyFlow) {
             removeCartItem?.(item?.id);
           }
@@ -1554,7 +1560,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                 }}
                 onPressRemoveItemFromCart={(item) => {}}
                 data={dataToShow}
-                recommedationDataSource = {recommedationData?.length > 2 ? 'Recommendations' : 'You can also order'}
+                recommedationDataSource={
+                  recommedationData?.length > 2 ? 'Recommendations' : 'You can also order'
+                }
                 isCircleSubscribed={isDiagnosticCircleSubscription}
                 isServiceable={isServiceable}
                 isVertical={false}

@@ -206,7 +206,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const movedFrom = props.navigation.getParam('comingFrom');
   const isDeep = props.navigation.getParam('movedFrom');
   const itemId =
-    movedFrom == AppRoutes.TestsCart ? testDetails?.ItemID : props.navigation.getParam('itemId');
+    movedFrom == AppRoutes.CartPage ? testDetails?.ItemID : props.navigation.getParam('itemId');
   const source = props.navigation.getParam('source');
   const isAlreadyPartOfOrder =
     !!modifiedOrderItemIds &&
@@ -242,7 +242,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [packageRecommendationsShimmer, setPackageRecommendationsShimmer] = useState<boolean>(
     false
   );
-  const originalItemIds = !!packageRecommendations?.length || !!frequentlyBroughtRecommendations?.length ? [itemId!] : null;
+  const originalItemIds =
+    !!packageRecommendations?.length || !!frequentlyBroughtRecommendations?.length
+      ? [itemId!]
+      : null;
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
   const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
@@ -589,7 +592,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       cityID: Number(serviceabilityObject?.cityId),
       stateID: Number(serviceabilityObject?.stateId),
     };
-    if (movedFrom === AppRoutes.TestsCart) {
+    if (movedFrom === AppRoutes.CartPage) {
       const selectedAddressIndex = addresses?.findIndex(
         (address) => address?.id == deliveryAddressId
       );
@@ -603,7 +606,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     }
 
     if (
-      (movedFrom == AppRoutes.TestsCart && Number(deliveryAddressStateId) == 0) ||
+      (movedFrom == AppRoutes.CartPage && Number(deliveryAddressStateId) == 0) ||
       !isDiagnosticLocationServiceable
     ) {
       setExpressSlotMsg('');
@@ -641,7 +644,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     const itemIds = [Number(itemId)];
     const id = cityIdToUse;
     const pincode =
-      movedFrom === AppRoutes.TestsCart
+      movedFrom === AppRoutes.CartPage
         ? addresses?.[selectedAddressIndex]?.zipcode!
         : diagnosticLocation?.pincode! || '500030';
     const formattedDate = moment(diagnosticSlot?.date).format('YYYY/MM/DD');
@@ -798,7 +801,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           },
         });
       }
-      if (movedFrom === AppRoutes.TestsCart) {
+      if (movedFrom === AppRoutes.CartPage) {
         breadcrumb.push({
           title: 'Cart',
           onPress: () => {
@@ -831,10 +834,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         isDiagnosticCircleSubscription,
         originalItemIds,
         originalItemIds
-        ? packageRecommendations > 2
-          ? 'Recommendations'
-          : 'You can also order'
-        : '',
+          ? packageRecommendations > 2
+            ? 'Recommendations'
+            : 'You can also order'
+          : ''
       );
     }
   }, [testInfo]);
