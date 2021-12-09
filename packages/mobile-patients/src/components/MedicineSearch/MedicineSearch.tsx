@@ -88,7 +88,6 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     addCartItem,
     pinCode,
     pharmacyCircleAttributes,
-    cartItems,
     asyncPincode,
     axdcCode,
     serverCartItems,
@@ -127,12 +126,12 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     }
   };
   useEffect(() => {
-    if (cartItems.find(({ id }) => id?.toUpperCase() === currentProductIdInCart)) {
+    if (serverCartItems.find(({ sku }) => sku?.toUpperCase() === currentProductIdInCart)) {
       if (shownNudgeOnce === false) {
         setShowSuggestedQuantityNudge(true);
       }
     }
-  }, [cartItems, currentProductQuantityInCart, currentProductIdInCart]);
+  }, [serverCartItems, currentProductQuantityInCart, currentProductIdInCart]);
 
   useEffect(() => {
     if (showSuggestedQuantityNudge === false) {
@@ -420,7 +419,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
         currentPatient,
         !!isPharmacyLocationServiceable,
         { source: 'Pharmacy Partial Search', categoryId: item.category_id },
-        JSON.stringify(cartItems),
+        JSON.stringify(serverCartItems),
         () => setItemsAddingToCart({ ...itemsAddingToCart, [item.sku]: false }),
         pharmacyCircleAttributes!,
         () => {},
