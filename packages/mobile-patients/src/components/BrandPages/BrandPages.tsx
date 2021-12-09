@@ -45,6 +45,7 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
 
   const imgHeight = 175;
   const movedFromBrandPages = true;
+  const win = Dimensions.get('window');
   const imageUrl = brandData?.[0]?.brandMobileBannerImg
     ? brandData?.[0]?.brandMobileBannerImg
     : brandData?.[0]?.brandMainBannerImg;
@@ -53,7 +54,6 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
   const [selectedMenuItemName, setSelectedMenuItemName] = useState<string>('Home');
   const [categoryID, setCategoryID] = useState(props.navigation.getParam('category_id'));
   const [title, setTitle] = useState(props.navigation.getParam('title'));
-  const win = Dimensions.get('window');
   const [bannerImageHeightWidthData, setBannerImageHeightWidthData] = useState([]);
 
   AsyncStorage.getItem(USER_AGENT).then((userAgent) => {
@@ -63,30 +63,25 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       let bannerImageData = [];
-      brandData?.[0]?.brandBannersList.map(async (banner) => {
+      brandData?.[0]?.brandBannersList.map((banner) => {
         const url = banner?.brandBannerImgUrl;
-        await Image.getSize(
+        Image.getSize(
           url,
           (width, height) => {
             const ratio = win.width / width;
-            const productIs = height * ratio;
-            console.log('--------', width, height, ratio, productIs);
+            const product = height * ratio;
             const obj = {
               imgWidth: width,
               imgHeight: height,
-              heightToBeSet: productIs,
+              heightToBeSet: product,
               imgUrl: url,
             };
-            console.log('obj is', obj);
             bannerImageData.push(obj);
             setBannerImageHeightWidthData([bannerImageData]);
-            console.log('setting banner image data..............');
           },
           () => {}
         );
       });
-      // console.log(bannerImageData);
-      // setBannerImageHeightWidthData([bannerImageData]);
     });
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       setBannerImageHeightWidthData([]);
@@ -96,34 +91,6 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
       didBlur && didBlur.remove();
     };
   }, [props.navigation]);
-
-  useEffect(() => {
-    console.log('bannerImageHeightWidthData*****************', bannerImageHeightWidthData);
-  }, [bannerImageHeightWidthData]);
-
-  useEffect(() => {
-    console.log(' i am calledd..............');
-    let bannerImageData = [];
-    brandData?.[0]?.brandBannersList.map((banner) => {
-      const url = banner?.brandBannerImgUrl;
-      Image.getSize(
-        url,
-        (width, height) => {
-          const ratio = win.width / width;
-          const productIs = height * ratio;
-          const obj = {
-            imgWidth: width,
-            imgHeight: height,
-            heightToBeSet: productIs,
-            imgUrl: url,
-          };
-          bannerImageData.push(obj);
-          setBannerImageHeightWidthData([bannerImageData]);
-        },
-        () => {}
-      );
-    });
-  }, []);
 
   const renderHeader = () => {
     return (
@@ -189,7 +156,7 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
     }
   };
 
-  const renderOtherBanner = (imgUrl: string, item, imageData: object, index: number) => {
+  const renderOtherBanner = (imgUrl: string, item, imageData: object) => {
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -335,7 +302,7 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
               const imageData = bannerImageHeightWidthData?.[0]?.find(
                 (item) => item?.imgUrl === imgUrl
               );
-              return !!imageData ? renderOtherBanner(imgUrl, item, imageData, index) : null;
+              return !!imageData ? renderOtherBanner(imgUrl, item, imageData) : null;
             }}
           />
         )}
