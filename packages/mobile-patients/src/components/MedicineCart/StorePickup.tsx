@@ -29,6 +29,9 @@ import {
   postPharmacyStorePickupViewed,
   postPharmacyStoreSelectedSuccess,
 } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import { saveCart_saveCart_data_medicineOrderCartLineItems } from '@aph/mobile-patients/src/graphql/types/saveCart';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import { InputCartLineItems } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 export interface StorePickupProps extends NavigationScreenProps {}
 
 export const StorePickup: React.FC<StorePickupProps> = (props) => {
@@ -41,11 +44,11 @@ export const StorePickup: React.FC<StorePickupProps> = (props) => {
     stores: storesFromContext,
     storesInventory,
     setStoresInventory,
-    cartItems,
-    setCartItems,
+    serverCartItems,
     addresses,
     deliveryAddressId,
   } = useShoppingCart();
+  const { setUserActionPayload } = useServerCart();
   const { locationDetails, pharmacyLocation } = useAppCommonData();
 
   const [loading, setloading] = useState<boolean>(false);
@@ -76,17 +79,20 @@ export const StorePickup: React.FC<StorePickupProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (storeId && storesInventory.length && cartItems.length) {
+    if (storeId && storesInventory.length && serverCartItems?.length) {
       SyncwithStorePrices();
     }
   }, [storeId]);
 
-  const getStoresInventory = (storeIds: string[], cartItems: ShoppingCartItem[]) =>
+  const getStoresInventory = (
+    storeIds: string[],
+    serverCartItems: saveCart_saveCart_data_medicineOrderCartLineItems[]
+  ) =>
     Promise.all(
       storeIds.map((storeId) =>
         getStoreInventoryApi(
           storeId,
-          cartItems.map((item) => item.id)
+          serverCartItems?.map((item) => item?.sku)
         )
       )
     );
@@ -116,7 +122,7 @@ export const StorePickup: React.FC<StorePickupProps> = (props) => {
   async function fetchStoresInventory(Stores: Store[]) {
     const response = await getStoresInventory(
       Stores.map((s) => s.storeid),
-      cartItems
+      serverCartItems
     );
     const storesInventory = response.map((item) => item.data);
     const storesWithInventory = storesInventory.filter((item) => {
@@ -136,31 +142,34 @@ export const StorePickup: React.FC<StorePickupProps> = (props) => {
   }
 
   const areItemsAvailableInStore = (storeItems: GetStoreInventoryResponse['itemDetails']) => {
-    const isInventoryAvailable = (cartItem: ShoppingCartItem) =>
-      !!storeItems.find((item) => item.itemId == cartItem.id && item.qty >= cartItem.quantity);
-    return !cartItems.find((item) => !isInventoryAvailable(item));
+    const isInventoryAvailable = (cartItem: saveCart_saveCart_data_medicineOrderCartLineItems) =>
+      !!storeItems?.find((item) => item?.itemId == cartItem?.sku && item.qty >= cartItem?.quantity);
+    return !serverCartItems?.find((item) => !isInventoryAvailable(item));
   };
 
   const SyncwithStorePrices = () => {
-    let Items: ShoppingCartItem[] = [];
-    cartItems.forEach((item) => {
-      let object = item;
-      let inventoryData = storesInventory.filter((item) => item.shopId == storeId);
-      let cartItem = inventoryData[0]['itemDetails'].filter(
-        (cartItem) => cartItem.itemId == item.id
-      );
-      if (cartItem.length) {
-        if (object.price != Number(object.mou) * cartItem[0].mrp && cartItem[0].mrp != 0) {
-          object.specialPrice &&
-            (object.specialPrice =
-              Number(object.mou) * cartItem[0].mrp * (object.specialPrice / object.price));
-          object.price = Number(object.mou) * cartItem[0].mrp;
-        }
-      }
-      Items.push(object);
-    });
-    setCartItems!(Items);
-    postPharmacyStoreSelectedSuccess(pinCode, selectedStore!);
+    try {
+      let Items: InputCartLineItems[] = [];
+      serverCartItems?.forEach((item) => {
+        let inventoryData = storesInventory.filter((item) => item.shopId == storeId);
+        let cartItem = inventoryData?.[0]?.['itemDetails']?.filter(
+          (cartItem) => cartItem?.itemId == item?.sku
+        );
+        cartItem?.forEach((itemCart) => {
+          let cartItemToAdd: InputCartLineItems = {
+            medicineSKU: itemCart?.itemId,
+            quantity: itemCart?.qty,
+          };
+          Items.push(cartItemToAdd);
+        });
+      });
+      setUserActionPayload?.({
+        medicineOrderCartLineItems: {
+          Items,
+        },
+      });
+      postPharmacyStoreSelectedSuccess(pinCode, selectedStore!);
+    } catch (error) {}
   };
 
   const renderHeader = () => {

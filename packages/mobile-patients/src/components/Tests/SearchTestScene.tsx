@@ -130,7 +130,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     setDeliveryAddressId,
     setCartItems,
   } = useDiagnosticsCart();
-  const { cartItems: shopCartItems } = useShoppingCart();
+  const { serverCartItems: shopCartItems } = useShoppingCart();
   const { showAphAlert, setLoading: setGlobalLoading, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();

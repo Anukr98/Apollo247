@@ -19,6 +19,7 @@ import {
   UPDATE_MEDICINE_ORDER_SUBSTITUTION,
   GET_CAMPAIGN_ID_FOR_REFERRER,
   GET_REWARD_ID,
+  CREATE_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   apiCallEnums,
@@ -73,6 +74,7 @@ import { OrderPlacedPopUp } from '@aph/mobile-patients/src/components/ui/OrderPl
 import {
   MEDICINE_ORDER_PAYMENT_TYPE,
   MEDICINE_ORDER_STATUS,
+  one_apollo_store_code,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   AppsFlyerEventName,
@@ -119,23 +121,23 @@ export interface PharmacyPaymentStatusProps extends NavigationScreenProps {}
 
 export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (props) => {
   const {
-    clearCartInfo,
     setCircleMembershipCharges,
-    isCircleSubscription,
+    cartSubscriptionDetails,
     setIsCircleSubscription,
-    cartItems,
-    coupon,
+    serverCartItems,
+    cartCoupon,
     circlePlanSelected,
     circleMembershipCharges,
     setCirclePlanSelected,
-    circleSubscriptionId,
-    grandTotal,
-    cartTotalCashback,
+    cartCircleSubscriptionId,
     pharmacyCircleAttributes,
-    deliveryCharges,
     prescriptionType,
     consultProfile,
+    serverCartAmount,
   } = useShoppingCart();
+  const grandTotal = serverCartAmount?.cartTotal;
+  const cartTotalCashback = serverCartAmount?.totalCashBack;
+  const deliveryCharges = serverCartAmount?.isDeliveryFree ? 0 : serverCartAmount?.deliveryCharges;
   const [loading, setLoading] = useState<boolean>(true);
   const { success, failure, aborted, pending } = Payment;
   const [status, setStatus] = useState<string>(
@@ -341,9 +343,6 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const clearCircleSubscriptionData = () => {
-    if (status !== failure && status !== aborted && status !== 'PAYMENT_PENDING') {
-      clearCartInfo?.();
-    }
     AsyncStorage.removeItem('circlePlanSelected');
     setCircleMembershipCharges && setCircleMembershipCharges(0);
     setIsCircleSubscription && setIsCircleSubscription(false);
@@ -417,17 +416,11 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       'Payment Instrument': paymentMode,
       'Order Type': 'Cart',
       'Shipping Charges': deliveryCharges,
-      'Circle Member': circleSubscriptionId || isCircleSubscription ? true : false,
+      'Circle Member':
+        cartCircleSubscriptionId || cartSubscriptionDetails?.subscriptionApplied ? true : false,
       'Substitution Option Shown': showSubstituteMessage ? 'Yes' : 'No',
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_POST_CART_PAGE_VIEWED, eventAttributes);
-    if (
-      status !== failure &&
-      status !== aborted &&
-      status !== pending &&
-      status !== 'PAYMENT_PENDING'
-    )
-      clearCartInfo?.();
   };
 
   const fireSubstituteResponseEvent = (action: string) => {
@@ -477,17 +470,21 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   ) => {
     const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED] = {
       af_customer_user_id: currentPatient ? currentPatient?.id : '',
-      'cart size': cartItems?.length,
+      'cart size': serverCartItems?.length,
       af_revenue: getFormattedAmount(grandTotal),
       af_currency: 'INR',
       af_order_id: orderId ? orderId : '0',
       orderAutoId: orderAutoId ? orderAutoId : '0',
-      'coupon applied': coupon ? true : false,
-      af_content_id: cartItems?.map((item) => item?.id),
-      af_quantity: cartItems?.map((item) => item?.quantity),
-      af_price: cartItems?.map((item) => (item?.specialPrice ? item?.specialPrice : item?.price)),
+      'coupon applied': cartCoupon?.coupon ? true : false,
+      af_content_id: serverCartItems?.map((item) => item?.id),
+      af_quantity: serverCartItems?.map((item) => item?.quantity),
+      af_price: serverCartItems?.map((item) =>
+        item?.sellingPrice ? item?.sellingPrice : item?.price
+      ),
       'Circle Cashback amount':
-        circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
+        cartCircleSubscriptionId || cartSubscriptionDetails?.subscriptionApplied
+          ? Number(cartTotalCashback)
+          : 0,
       ...pharmacyCircleAttributes!,
       ...pharmacyUserTypeAttribute,
       TransactionId: transId,
@@ -513,32 +510,40 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     });
   };
 
+  const createJusPayOrder = (transactionId: number) => {
+    const orderInput = {
+      payment_order_id: transactionId,
+      health_credits_used: 0,
+      cash_to_collect: price,
+      prepaid_amount: 0,
+      store_code:
+        Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS,
+      is_mobile_sdk: true,
+      return_url: AppConfig.Configuration.baseUrl,
+    };
+    return client.mutate({
+      mutation: CREATE_ORDER,
+      variables: { order_input: orderInput },
+      fetchPolicy: 'no-cache',
+    });
+  };
+
   const placeOrder = async (
     orders: (saveMedicineOrderV2_saveMedicineOrderV2_orders | null)[],
     transactionId: number
   ) => {
-    const paymentInfo: saveMedicineOrderPaymentMqV2Variables = {
-      medicinePaymentMqInput: {
-        transactionId: transactionId,
-        amountPaid: getFormattedAmount(price),
-        paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,
-        paymentStatus: 'success',
-        responseCode: '',
-        responseMessage: '',
-      },
-    };
     try {
-      const response = await savePaymentV2(paymentInfo);
+      const response = await createJusPayOrder(transactionId);
       const { data } = response;
-      const { errorCode, errorMessage } = data?.saveMedicineOrderPaymentMqV2 || {};
-      if (errorCode || errorMessage) {
-        errorPopUp();
-      } else {
+      const status =
+        data?.createOrderV2?.payment_status || data?.updateOrderDetails?.payment_status;
+      if (status === 'TXN_SUCCESS') {
         fireCleverTapOrderSuccessEvent();
         orders?.forEach((order) => {
           handleOrderSuccess(`${order?.orderAutoId}`, order?.id!);
         });
-        clearCartInfo?.();
+      } else {
+        errorPopUp();
       }
     } catch (error) {
       CommonBugFender('PaymentStatusScreen_savePayment', error);
@@ -596,14 +601,14 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     );
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, {
       ...checkoutEventAttributes,
-      'Cart Items': JSON.stringify(cartItems),
+      'Cart Items': JSON.stringify(serverCartItems),
     });
-    const skus = cartItems?.map((item) => item?.id);
+    const skus = serverCartItems?.map((item) => item?.sku);
     const firebaseCheckoutEventAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED] = {
       order_id: `${orderAutoId}`,
       transaction_id: transId,
       currency: 'INR',
-      coupon: coupon?.coupon,
+      coupon: cartCoupon?.coupon,
       shipping: deliveryCharges,
       items: JSON.stringify(skus),
       value: grandTotal,
@@ -625,7 +630,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const fireCleverTapOrderSuccessEvent = () => {
     postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, {
       ...cleverTapCheckoutEventAttributes,
-      'Cart items': cartItems?.length,
+      'Cart items': serverCartItems?.length,
     });
   };
 
@@ -639,21 +644,21 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
 
   const firePurchaseEvent = (orderId: string) => {
     let items: any = [];
-    cartItems.forEach((item, index) => {
+    serverCartItems.forEach((item, index) => {
       let itemObj: any = {};
-      itemObj.item_name = item.name; // Product Name or Doctor Name
-      itemObj.item_id = item.id; // Product SKU or Doctor ID
-      itemObj.price = item.specialPrice ? item.specialPrice : item.price; // Product Price After discount or Doctor VC price (create another item in array for PC price)
+      itemObj.item_name = item?.name; // Product Name or Doctor Name
+      itemObj.item_id = item?.sku; // Product SKU or Doctor ID
+      itemObj.price = item?.sellingPrice ? item?.sellingPrice : item?.price; // Product Price After discount or Doctor VC price (create another item in array for PC price)
       itemObj.item_brand = ''; // Product brand or Apollo (for Apollo doctors) or Partner Doctors (for 3P doctors)
       itemObj.item_category = 'Pharmacy'; // 'Pharmacy' or 'Consultations'
-      itemObj.item_category2 = item.isMedicine ? 'Drug' : 'FMCG'; // FMCG or Drugs (for Pharmacy) or Specialty Name (for Consultations)
+      itemObj.item_category2 = item?.typeId?.toLowerCase() == 'pharma' ? 'Drug' : 'FMCG'; // FMCG or Drugs (for Pharmacy) or Specialty Name (for Consultations)
       itemObj.item_variant = 'Default'; // "Default" (for Pharmacy) or Virtual / Physcial (for Consultations)
       itemObj.index = index + 1; // Item sequence number in the list
-      itemObj.quantity = item.quantity; // "1" or actual quantity
+      itemObj.quantity = item?.quantity; // "1" or actual quantity
       items.push(itemObj);
     });
     const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
-      coupon: coupon?.coupon,
+      coupon: cartCoupon?.coupon,
       currency: 'INR',
       items: items,
       transaction_id: orderId,
@@ -973,8 +978,8 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       setCircleMembershipCharges && setCircleMembershipCharges(0);
       setIsCircleSubscription && setIsCircleSubscription(false);
       setCirclePlanSelected?.(null);
-      props.navigation.navigate(AppRoutes.MedicineCart);
       setSelectedPrescriptionType && setSelectedPrescriptionType('');
+      props.navigation.navigate(AppRoutes.ServerCart);
     } else {
       clearCircleSubscriptionData();
       moveToHome();
