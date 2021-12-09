@@ -55,6 +55,7 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
   const [categoryID, setCategoryID] = useState(props.navigation.getParam('category_id'));
   const [title, setTitle] = useState(props.navigation.getParam('title'));
   const [bannerImageHeightWidthData, setBannerImageHeightWidthData] = useState([]);
+  const [mainBannerImageData, setMainBannerImageData] = useState([]);
 
   AsyncStorage.getItem(USER_AGENT).then((userAgent) => {
     setUserAgent(userAgent || '');
@@ -62,6 +63,23 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      let mainBannerImageData = [];
+      Image.getSize(
+        imageUrl,
+        (width, height) => {
+          const ratio = win.width / width;
+          const product = height * ratio;
+          const obj = {
+            imgWidth: width,
+            imgHeight: height,
+            heightToBeSet: product,
+            imgUrl: imageUrl,
+          };
+          mainBannerImageData.push(obj);
+          setMainBannerImageData(mainBannerImageData);
+        },
+        () => {}
+      );
       let bannerImageData = [];
       brandData?.[0]?.brandBannersList.map((banner) => {
         const url = banner?.brandBannerImgUrl;
@@ -102,12 +120,14 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
     );
   };
 
-  const renderMainBanner = () => {
+  const renderMainBanner = (imgData: object) => {
     return (
       <TouchableOpacity activeOpacity={1}>
         <Image
-          resizeMode="stretch"
-          style={{ width: '100%', minHeight: imgHeight }}
+          style={{
+            width: win.width,
+            height: imgData?.heightToBeSet,
+          }}
           source={{
             uri: imageUrl,
             headers: {
@@ -279,7 +299,9 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
     <SafeAreaView style={styles.container}>
       {renderHeader()}
       <ScrollView>
-        {imageUrl !== '' && renderMainBanner()}
+        {imageUrl !== '' &&
+          mainBannerImageData?.length > 0 &&
+          renderMainBanner(mainBannerImageData[0])}
         <View style={styles.menuContainer}>
           <FlatList
             horizontal={true}
