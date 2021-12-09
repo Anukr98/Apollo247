@@ -438,13 +438,19 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       'review page',
       currentPatient,
       cartItems,
+      couponDiscount,
+      grandTotal,
+      uploadPrescriptionRequired,
+      diagnosticSlot,
+      coupon,
+      hcCharges,circlePlanValidity,
+      circleSubscriptionId,
       isDiagnosticCircleSubscription,
       pinCodeFromAddress,
       cityFromAddress,
+      coupon,
       false,
-      toPayPrice,
-      hcCharges,
-      circleSubscriptionId
+      []
     );
     //add coupon code + coupon discount
   }

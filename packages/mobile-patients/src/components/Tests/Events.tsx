@@ -149,7 +149,7 @@ export function DiagnosticAddToCartEvent(
   section?: string,
   currentPatient?: any,
   isDiagnosticCircleSubscription?: boolean | undefined,
-  originalItemIds?: any | undefined
+  originalItemIds?: string[] | null,
 ) {
   const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes:
@@ -160,7 +160,7 @@ export function DiagnosticAddToCartEvent(
     'Item ID': id,
     Source: source,
     'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
-    'Original Item ids': originalItemIds
+    'Original Item ids': JSON.stringify(originalItemIds)
   };
   if (section) {
     eventAttributes['Section name'] = section;
@@ -287,7 +287,9 @@ export function DiagnosticDetailsViewed(
   currentPatient: any,
   itemPrice: number,
   pharmacyCircleAttributes: any,
-  isDiagnosticCircleSubscription?: boolean | undefined
+  isDiagnosticCircleSubscription?: boolean | undefined,
+  originalItemIds?: string[] | null,
+  section?: string,
 ) {
   const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes:
@@ -302,9 +304,14 @@ export function DiagnosticDetailsViewed(
     'Patient UHID': currentPatient?.uhid,
     'Item Price': itemPrice,
     'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+    'Original Item ids': JSON.stringify(originalItemIds),
+
   };
   if (!!itemType) {
     eventAttributes['Item Type'] = itemType;
+  }
+  if (section) {
+    eventAttributes['Section name'] = section;
   }
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
@@ -358,26 +365,26 @@ export function DiagnosticBannerClick(
   postCleverTapEvent(CleverTapEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED, eventAttributes);
 }
 
-export async function DiagnosticCartViewed(
-  currentPatient?: any,
-  cartItems?: DiagnosticsCartItem[],
-  couponDiscount?: number | string,
-  gTotal?: number,
-  prescReqd?: boolean,
-  diagnosticSlot?: any,
-  coupon?: any,
-  collectionCharges?: number,
-  validity?: circleValidity | null,
-  circleSubId?: string,
-  isCircle?: boolean,
-  pincode?: string | number,
-  source?: string,
-  city?: string,
-  couponCode?: string,
-  isRecommendationShown?: boolean,
-  recommendationData?: any,
+export function DiagnosticCartViewed(
+  source: string,
+  currentPatient: any,
+  cartItems: any,
+  couponDiscount: number | string,
+  gTotal: number,
+  prescReqd: boolean,
+  diagnosticSlot: any,
+  coupon: any,
+  collectionCharges: number,
+  validity: circleValidity | null,
+  circleSubId: string,
+  isCircle: boolean,
+  pincode: string | number,
+  city: string,
+  couponCode: string,
+  isRecommendationShown: boolean,
+  recommendationData: any,
 ) {
-  const getPatientAttributes = await createPatientAttributes(currentPatient);
+  const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CART_VIEWED]
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_CART_VIEWED] = {
@@ -387,26 +394,26 @@ export async function DiagnosticCartViewed(
     // 'Delivery charge': deliveryCharges,
     'Total Discount': couponDiscount ? Number(couponDiscount) : 0,
     'Recommendation Shown': isRecommendationShown ? 'Yes' : 'No',
-    'Recommendation Item ids': recommendationData?.map((item: any) => {
+    'Recommendation Item ids': JSON.stringify(recommendationData?.map((item: any) => {
       return item?.itemId;
-    }),
+    })),
     'Net after discount': gTotal,
-    'Cart Items': cartItems?.map(
-      (item) =>
+    'Cart Items': JSON.stringify(cartItems?.map(
+      (item: { id: any; name: any; price: any; specialPrice: any; }) =>
         (({
           id: item?.id,
           name: item?.name,
           price: item?.price,
           specialPrice: item?.specialPrice || item.price,
-        } as unknown) as DiagnosticsCartItem)
-    ),
+        }))
+    )),
     'Circle user': isCircle ? 'Yes' : 'No',
-    'Item ids': cartItems?.map((item: any) => {
+    'Item ids': JSON.stringify(cartItems?.map((item: any) => {
       return item?.id;
-    }),
-    'Item names': cartItems?.map((item: any) => {
+    })),
+    'Item names': JSON.stringify(cartItems?.map((item: any) => {
       return item?.name;
-    }),
+    })),
     Pincode: pincode,
     UHID: currentPatient?.uhid,
     city: city,

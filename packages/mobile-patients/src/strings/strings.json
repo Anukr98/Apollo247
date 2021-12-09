@@ -170,7 +170,9 @@
     "consult_via_visit": "Wish to consult with a doctor at hospital?",
     "selectSpeciality": "Select Speciality",
     "apollo247UniversalLink": "www.apollo247.com",
-    "apolloPharmacyUniversalLink": "www.apollopharmacy.in"
+    "apolloPharmacyUniversalLink": "www.apollopharmacy.in",
+    "goBack": "GO BACK",
+    "proceedCta": "PROCEED TO CONNECT"
   },
   "diagnosticsLocation": {
     "savedAddressText": "Saved Addresses",
@@ -740,7 +742,13 @@
     "needToAddOrder":"• Do you want to add tests to your order?",
     "radiology": "radiology",
     "prescriptionUploaded": "Prescription Uploaded",
-    "homepagePastOrderRecommendations":"Recommended for You"
+    "homepagePastOrderRecommendations":"Recommended for You",
+    "phleboConnectCall" : "Connect on a phone call with the Apollo Agent",
+    "phleboFollowSteps" : "Please follow the steps below to connect",
+    "phleboWaitText": "Wait for Apollo Agent to Connect",
+    "phleboPleaseNote": "Please Note: Your personal number would not be shared with the agent",
+    "phleboTextOne": "Answer the call from",
+    "phleboTextTwo": "to connect"
   },
   "diagnosticCategoryTitle": {
     "category": "category",

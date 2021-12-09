@@ -334,6 +334,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [clickedItem, setClickedItem] = useState<any>([]);
   const [expressSlotMsg, setExpressSlotMsg] = useState<string>('');
   const [isPriceAvailable, setIsPriceAvailable] = useState<boolean>(false);
+  const [priceAvailable, setPriceAvailable] = useState<boolean>(false);
   const [fetchAddressLoading, setFetchAddressLoading] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>('');
   const [diagnosticResults, setDiagnosticResults] = useState<
@@ -469,7 +470,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }, [loading, banners]);
 
   useEffect(() => {
-    fetchPastOrderRecommendations();
+    if (drupalWidgetData?.length > 0) {
+      fetchPastOrderRecommendations();
+    }
   }, [drupalWidgetData]);
 
   function fetchNumberSpecificOrderDetails() {
@@ -651,6 +654,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         client,
         currentPatient?.mobileNumber
       );
+
       const pastOrders =
         getPastOrderRecommendation?.data?.getDiagnosticItemRecommendationsByPastOrders?.itemsData;
       //show top 10 , res > 10
@@ -665,7 +669,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
             string.diagnostics.homepagePastOrderRecommendations
           );
         } else {
-          const getRecommendationsFromDrupal = getRanking('0')?.[0]?.diagnosticWidgetData;
+          const findRank =
+            !!drupalWidgetData &&
+            drupalWidgetData?.length > 0 &&
+            drupalWidgetData?.filter((item: any) => item?.diagnosticwidgetsRankOrder === '0');
+          const getRecommendationsFromDrupal = findRank?.[0]?.diagnosticWidgetData;
           const appenedRecommendations = [
             ...new Set(pastOrders?.concat(getRecommendationsFromDrupal)),
           ];
@@ -929,7 +937,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     _recommendedBookings?.length >= 6
       ? setPastOrderRecommendations(_recommendedBookings)
       : setPastOrderRecommendations([]);
-    setIsPriceAvailable(true);
+    setPriceAvailable(true);
     setPastOrderRecommendationShimmer(false);
   }
 
@@ -1760,7 +1768,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       data?.diagnosticWidgetData?.find((item: any) => item?.diagnosticPricing);
     const showViewAll = !!isPricesAvailable && data?.diagnosticWidgetData?.length > 2;
     const lengthOfTitle = data?.diagnosticWidgetTitle?.length;
-
     return (
       <View style={styles.widgetSpacing}>
         {
@@ -2637,7 +2644,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               <ItemCard
                 data={pastOrderRecommendations}
                 diagnosticWidgetData={pastOrderRecommendations}
-                isPriceAvailable={isPriceAvailable}
+                isPriceAvailable={priceAvailable}
                 isCircleSubscribed={isDiagnosticCircleSubscription}
                 isServiceable={isDiagnosticLocationServiceable}
                 isVertical={false}
@@ -3471,6 +3478,8 @@ const styles = StyleSheet.create({
   nudgeMsgHeight: {
     // height: NON_CIRCLE_NUDGE_HEIGHT,
     flex: 1,
+    paddingTop: 5,
+    paddingBottom: 5,
     backgroundColor: '#FFF6DE',
     flexDirection: 'row',
     width: '100%',
